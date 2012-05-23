@@ -53,6 +53,9 @@ var port = props.get('gcc-explorer', 'port', 10240);
 function compile(req, res) {
     var source = req.body.source;
     var compiler = req.body.compiler;
+    if (getCompilerExecutables().indexOf(compiler) < 0) {
+        return res.end(JSON.stringify({code: -1, stderr: "bad compiler " + compiler}));
+    }
     var options = req.body.options.split(' ').filter(function(x){return x!=""});
     temp.mkdir('gcc-explorer-compiler', function(err, dirPath) {
         if (err) {
@@ -60,9 +63,6 @@ function compile(req, res) {
         }
         var outputFilename = path.join(dirPath, 'output.S');
         options = options.concat([ '-x', 'c++', '-o', outputFilename, '-S', '-']);
-        if (getCompilerExecutables().indexOf(compiler) < 0) {
-            return res.end(JSON.stringify({code: -1, stderr: "bad compiler " + compiler}));
-        }
         var child = child_process.spawn(
             compiler,
             options
@@ -84,7 +84,8 @@ function compile(req, res) {
                     stdout: stdout,
                     stderr: stderr,
                     asm: data,
-                    code: code }))
+                    code: code }));
+                fs.unlink(outputFilename, function() { fs.rmdir(dirPath); });
             });
         });
     });
