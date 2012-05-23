@@ -24,6 +24,11 @@ body {
     display: none;
 }
 
+
+li.social {
+    padding: 4px;
+}
+
 .CodeMirror-scroll {
     min-height: 600px;
     overflow-y: auto;
