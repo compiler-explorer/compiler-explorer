@@ -1,0 +1,21 @@
+{
+  "author": "Matt Godbolt <matt@godbolt.org>",
+  "name": "gcc-explorer",
+  "description": "Investigate what on earth GCC does",
+  "version": "0.0.1",
+  "engines": {
+    "node": "0.4.x"
+  },
+  "main": "./app.js",
+  "dependencies": {
+      "connect": "1.7.x",
+      "async": "0.1.x",
+      "mustache": "0.4.x",
+      "nopt": "1.0.x",
+      "temp": "0.4.x"
+  },
+  "devDependencies": {
+      "supervisor": "0.2.x"
+  },
+  "license": "BSD-2-Clause"
+}

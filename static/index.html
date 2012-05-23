@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>GCC Explorer</title>
+        <link href="ext/bootstrap/css/bootstrap.css" rel="stylesheet">
+        <link href="ext/codemirror/codemirror.css" rel="stylesheet">
+        <link href="gcc.css" rel="stylesheet">
+        <script src="ext/codemirror/codemirror.js"></script>
+        <script src="ext/codemirror/clike.js"></script>
+        <script src="asm.js"></script>
+        <script src="ext/jquery/jquery-1.7.1.min.js"></script>
+        <script src="ext/bootstratp/bootstrap-modal.js"></script>
+        <script src="gcc.js"></script>
+        <script type="text/javascript">
+            $(function() {
+                    cppEditor = CodeMirror.fromTextArea($("#c")[0], {
+                        lineNumbers: true,
+                        matchBrackets: true,
+                        useCPP: true,
+                        mode: "text/x-c++src",
+                        onChange: onChange
+                        });
+                    asmCodeMirror = CodeMirror.fromTextArea($(".asm textarea")[0], {
+                        lineNumbers: true,
+                        matchBrackets: true,
+                        mode: "text/x-asm",
+                        readOnly: true
+                        });
+                    $('.compiler').change(onChange);
+                    $('.compiler_options').change(onChange).keyup(onChange);
+                    $.getJSON("/compilers", function(results) {
+                        $('.compiler option').remove();
+                        $.each(results, function(index, arg) {
+                            $('.compiler').append($('<option value="' + arg.exe + '">' + arg.version + '</option>'));
+                            if (window.localStorage['compiler'] == arg.exe) {
+                                $('.compiler').val(arg.exe);
+                            }
+                        });
+                        onChange();
+                    });
+                    $('.files .source').change(onSourceChange);
+                    $.getJSON("/sources", function(results) {
+                        $('.source option').remove();
+                        $.each(results, function(index, arg) {
+                            $('.files .source').append($('<option value="' + arg.urlpart + '">' + arg.name + '</option>'));
+                            if (window.localStorage['source'] == arg.urlpart) {
+                                $('.files .source').val(arg.urlpart);
+                            }
+                        });
+                        onSourceChange();
+                    });
+                    $('.files .load').click(function() {
+                        loadFile();
+                        return false;
+                    });
+                    $('.files .save').click(function() {
+                        saveFile();
+                        return false;
+                    });
+                    $('.files .saveas').click(function() {
+                        saveFileAs();
+                        return false;
+                    });
+                    if (window.localStorage['code']) cppEditor.setValue(window.localStorage['code']);
+                    if (window.localStorage['compilerOptions']) $('.compiler_options').val(window.localStorage['compilerOptions']);
+            });
+        </script>
+        <script src="js/bootstrap.js"></script>
+    </head>
+    <body>
+        <div class="navbar navbar-fixed-top">
+            <div class="navbar-inner">
+                <div class="container-fluid">
+                    <a class="brand" href="#">Interactive compiler</a>
+                </div>
+            </div>
+        </div>
+
+        <section id="main" class="container-fluid">
+        <div class="row-fluid">
+            <div class="span6">
+                <form class="well form-inline files">
+                    <div>
+                        <label>Source: <select class="source" style="width:3m"></select></label>
+                        <label>Name: <select class="filename"></select></label>
+                    </div>
+                    <div>
+                        <button class="load">Load</button>
+                        <button class="save">Save</button>
+                        <button class="saveas">Save as...</button>
+                    </div>
+                </form>
+            </div>
+            <div class="span6">
+                <form class="well form-inline">
+                    <label>Compiler: <select class="compiler"></select></label>
+                    <label>Compiler options: <input class="compiler_options" style="width: 30em;" type="text" value="-O2 -std=c++0x -march=native"></label>
+                </form>
+            </div>
+       </div>
+        <div class="row-fluid">
+            <div class="span6 editor">
+                <div class="topbar indented">C++ editor</div>
+                <textarea id="c">// Type C++ code here, or load an example.</textarea>
+            </div>
+            <div class="span6 asm">
+                <div class="topbar indented">Assembly output</div>
+                <textarea>Awaiting</textarea>
+            </div>
+        </div>
+        <div class="row result">
+            <div class="topbar">Compiler output</div>
+            <div class="output span12">
+                <p class="template"></p>
+            </div>
+        </div>
+        </section>
+
+        <div class="modal hide" id="saveDialog">
+            <div class="modal-header">
+                <button class="close" data-dismiss="modal">×</button>
+                <h3>Save as...</h3>
+            </div>
+            <div class="modal-body">
+                <label>Filename: <input class="save-filename" style="width: 30em;" type="text"></label>
+            </div>
+            <div class="modal-footer">
+                <a href="#" data-dismiss="modal" class="btn">Cancel</a>
+                <a href="#" class="btn btn-primary save">Save</a>
+            </div>
+        </div>
+    </body>
+</html>
+

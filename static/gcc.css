@@ -1,0 +1,44 @@
+body {
+    padding-top: 60px;
+    padding-bottom: 40px;
+}
+
+.sideBySide {
+}
+
+.options {
+    background: #ddf;
+    border-radius: 4px;
+    padding: 8px;
+}
+
+.options label {
+    display: inline-block;
+}
+
+.error {
+    background: #faa !important;
+}
+
+.template {
+    display: none;
+}
+
+.CodeMirror-scroll {
+    min-height: 600px;
+    overflow-y: auto;
+    overflow-x: auto;
+    width: 100%;
+}
+
+.topbar {
+    margin-top: 10px;
+    padding: 6px;
+    background: #eee;
+    border-top-right-radius: 10px;
+    border-top-left-radius: 10px;
+}
+
+.indented {
+    margin-left: 36px;
+}
