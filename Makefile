@@ -1,7 +1,7 @@
 ifeq "" "$(shell which npm)"
 default:
 	@echo "Please install node.js"
-	@echo "See http://howtonode.org/how-to-install-nodejs for more details"
+	@echo "Visit http://nodejs.org/ for more details"
 	exit 1
 else
 default: run
