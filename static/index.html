@@ -65,7 +65,8 @@
                     if (window.localStorage['compilerOptions']) $('.compiler_options').val(window.localStorage['compilerOptions']);
             });
         </script>
-        <script src="js/bootstrap.js"></script>
+        <script src="ext/bootstrap/js/bootstrap.js"></script>
+        <script src="ext/bootstrap/js/bootstrap-dropdown.js"></script>
 <script type="text/javascript">
 
   var _gaq = _gaq || [];
@@ -79,12 +80,30 @@
   })();
 
 </script>
+<script type="text/javascript">
+    (function() {
+     var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;
+     po.src = 'https://apis.google.com/js/plusone.js';
+     var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);
+     })();
+</script>
     </head>
     <body>
         <div class="navbar navbar-fixed-top">
             <div class="navbar-inner">
                 <div class="container-fluid">
                     <a class="brand" href="#">Interactive compiler</a>
+                    <ul class="nav pull-right">
+                        <!--
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">Social<b class="caret"></b></a>
+                            <ul class="dropdown-menu">
+                                <li><g:plusone annotation="inline" width="150"></g:plusone><li>
+                            </ul>
+                        </li>
+                        -->
+                        <li><a href="mailto:matt@godbolt.org">Contact me</a></li>
+                    </ul>
                 </div>
             </div>
         </div>
