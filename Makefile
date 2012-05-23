@@ -1,4 +1,11 @@
+ifeq "" "$(shell which npm)"
+default:
+	@echo "Please install node.js"
+	@echo "See http://howtonode.org/how-to-install-nodejs for more details"
+	exit 1
+else
 default: run
+endif
 
 node_modules: package.json
 	npm install
