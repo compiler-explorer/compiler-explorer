@@ -56,13 +56,15 @@ function compile(req, res) {
     var options = req.body.options.split(' ').filter(function(x){return x!=""});
     temp.mkdir('gcc-explorer-compiler', function(err, dirPath) {
         if (err) {
-            res.end(JSON.stringify({code: -1, stderr: "Unable to open temp file: " + err}));
-            return;
+            return res.end(JSON.stringify({code: -1, stderr: "Unable to open temp file: " + err}));
         }
         var outputFilename = path.join(dirPath, 'output.S');
         options = options.concat([ '-x', 'c++', '-o', outputFilename, '-S', '-']);
+        if (getCompilerExecutables().indexOf(compiler) < 0) {
+            return res.end(JSON.stringify({code: -1, stderr: "bad compiler " + compiler}));
+        }
         var child = child_process.spawn(
-            compiler, // TODO: yes, this is a gaping security hole
+            compiler,
             options
             );
         var stdout = "";
@@ -141,9 +143,12 @@ function getSource(req, res, next) {
         }}));
 }
 
+function getCompilerExecutables() {
+    return props.get("gcc-explorer", "compilers", "/usr/bin/g++").split(":");
+}
+
 function getCompilers(req, res) {
-    var compilers = props.get("gcc-explorer", "compilers", "/usr/bin/g++").split(":");
-    async.map(compilers,
+    async.map(getCompilerExecutables(),
         function (compiler, callback) {
             fs.stat(compiler, function(err, result) {
                 if (err) {
