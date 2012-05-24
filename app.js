@@ -64,7 +64,7 @@ function checkOptions(options) {
 }
 
 function checkSource(source) {
-    var re = /^\s*#include\s+["<"](\/|.*\.\.)/;
+    var re = /^\s*#include(_next)?\s+["<"](\/|.*\.\.)/;
     var failed = [];
     source.split('\n').forEach(function(line, index) {
         if (line.match(re)) {
