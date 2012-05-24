@@ -50,6 +50,19 @@ props.initialize(rootDir + '/config', propHierarchy);
 
 var port = props.get('gcc-explorer', 'port', 10240);
 
+function checkOptions(options) {
+    var okOptions = new RegExp(props.get('gcc-options', 'whitelistRe', '.*'));
+    var badOptions = new RegExp(props.get('gcc-options', 'blacklistRe'));
+    var error = [];
+    options.forEach(function(option) {
+        if (!option.match(okOptions) || option.match(badOptions)) {
+            error.push(option);
+        }
+    });
+    if (error.length > 0) return "Bad options: " + error.join(", ");
+    return null;
+}
+
 function compile(req, res) {
     var source = req.body.source;
     var compiler = req.body.compiler;
@@ -57,6 +70,10 @@ function compile(req, res) {
         return res.end(JSON.stringify({code: -1, stderr: "bad compiler " + compiler}));
     }
     var options = req.body.options.split(' ').filter(function(x){return x!=""});
+    var optionsErr = checkOptions(options);
+    if (optionsErr) {
+        return res.end(JSON.stringify({code: -1, stderr: optionsErr}));
+    }
     temp.mkdir('gcc-explorer-compiler', function(err, dirPath) {
         if (err) {
             return res.end(JSON.stringify({code: -1, stderr: "Unable to open temp file: " + err}));

@@ -43,8 +43,8 @@ function parseLines(lines, callback) {
 
 var errorLines = [];
 function onCompileResponse(data) {
-    var stdout = data.stdout;
-    var stderr = data.stderr;
+    var stdout = data.stdout || "";
+    var stderr = data.stderr || "";
     if (data.code == 0) {
         stdout += "\nCompiled ok";
     } else {
@@ -67,7 +67,7 @@ function onCompileResponse(data) {
             elem.text(msg);
         }
     });
-    asmCodeMirror.setValue(data.asm);
+    asmCodeMirror.setValue(data.asm || "[no output]");
 }
 
 function onChange() {
