@@ -104,8 +104,6 @@ function compile(req, res) {
         var stderr = "";
         child.stdout.on('data', function (data) { stdout += data; });
         child.stderr.on('data', function (data) { stderr += data; });
-        child.stdin.write(source);
-        child.stdin.end();
         child.on('exit', function (code) {
             child_process.exec('cat "' + outputFilename + '" | c++filt', function(err, filt_stdout, filt_stderr) {
                 var data = filt_stdout;
@@ -121,6 +119,8 @@ function compile(req, res) {
                 fs.unlink(outputFilename, function() { fs.rmdir(dirPath); });
             });
         });
+        child.stdin.write(source);
+        child.stdin.end();
     });
 }
 
