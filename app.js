@@ -63,6 +63,18 @@ function checkOptions(options) {
     return null;
 }
 
+function checkSource(source) {
+    var re = /^\s*#include\s+["<"](\/|.*\.\.)/;
+    var failed = [];
+    source.split('\n').forEach(function(line, index) {
+        if (line.match(re)) {
+            failed.push("<stdin>:" + (index + 1) + ":1: no absolute or relative includes please");
+        }
+    });
+    if (failed.length > 0) return failed.join("\n");
+    return null;
+}
+
 function compile(req, res) {
     var source = req.body.source;
     var compiler = req.body.compiler;
@@ -73,6 +85,10 @@ function compile(req, res) {
     var optionsErr = checkOptions(options);
     if (optionsErr) {
         return res.end(JSON.stringify({code: -1, stderr: optionsErr}));
+    }
+    var sourceErr = checkSource(source);
+    if (sourceErr) {
+        return res.end(JSON.stringify({code: -1, stderr: sourceErr}));
     }
     temp.mkdir('gcc-explorer-compiler', function(err, dirPath) {
         if (err) {
