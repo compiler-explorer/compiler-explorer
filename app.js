@@ -78,6 +78,8 @@ function checkSource(source) {
 function compile(req, res) {
     var source = req.body.source;
     var compiler = req.body.compiler;
+    var mixed_listing = req.body.mixed_listing;
+    var cppfilt = '" | c++filt';
     if (getCompilerExecutables().indexOf(compiler) < 0) {
         return res.end(JSON.stringify({code: -1, stderr: "bad compiler " + compiler}));
     }
@@ -94,9 +96,22 @@ function compile(req, res) {
         if (err) {
             return res.end(JSON.stringify({code: -1, stderr: "Unable to open temp file: " + err}));
         }
+
         var outputFilename = path.join(dirPath, 'output.S');
-        options = options.concat([ '-x', 'c++', '-o', outputFilename, '-S', '-']);
-        var child = child_process.spawn(
+
+        if (!mixed_listing) {
+            options = options.concat([ '-x', 'c++', '-o', outputFilename, '-S', '-']);
+        } else {
+
+            fs.writeFile(outputFilename, source, function(err) {
+                if(err) {
+                    console.log(err);
+                }});
+
+	    options = options.concat([ '-x', 'c++', '-g', '-c', '-Wa,-a,-alhdn', outputFilename]);
+        }
+
+	var child = child_process.spawn(
             compiler,
             options
             );
@@ -104,8 +119,21 @@ function compile(req, res) {
         var stderr = "";
         child.stdout.on('data', function (data) { stdout += data; });
         child.stderr.on('data', function (data) { stderr += data; });
+
         child.on('exit', function (code) {
-            child_process.exec('cat "' + outputFilename + '" | c++filt', function(err, filt_stdout, filt_stderr) {
+ 
+            if (mixed_listing) {
+                fs.writeFile(outputFilename, stdout, function(err) {
+                if(err) {
+                    console.log(err);
+                }});
+
+                stdout = "";
+                stderr = "";
+                cppfilt = '"';
+            }
+
+            child_process.exec('cat "' + outputFilename + cppfilt, function(err, filt_stdout, filt_stderr) {
                 var data = filt_stdout;
                 if (err) {
                     data = '<No output>';

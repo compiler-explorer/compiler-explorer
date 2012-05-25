@@ -76,10 +76,12 @@ function onChange() {
         var data = { 
             source: cppEditor.getValue(),
             compiler: $('.compiler').val(),
-            options: $('.compiler_options').val()
+            options: $('.compiler_options').val(),
+            mixed_listing: $('.mixed_listing').is(':checked')?$('.mixed_listing').val():""
         };
         window.localStorage['compiler'] = data.compiler;
         window.localStorage['compilerOptions'] = data.options;
+        window.localStorage['mixed_listing'] = data.mixed_listing;
         if (data == lastRequest) return;
         lastRequest = data;
         $.ajax({
