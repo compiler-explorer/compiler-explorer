@@ -102,9 +102,14 @@ function compile(req, res) {
             );
         var stdout = "";
         var stderr = "";
+        var timeout = setTimeout(function() {
+            child.kill();
+            stderr += "\nKilled - processing time exceeded";
+        }, props.get("gcc-explorer", "compileTimeoutMs", 100));
         child.stdout.on('data', function (data) { stdout += data; });
         child.stderr.on('data', function (data) { stderr += data; });
         child.on('exit', function (code) {
+            clearTimeout(timeout);
             child_process.exec('cat "' + outputFilename + '" | c++filt', function(err, filt_stdout, filt_stderr) {
                 var data = filt_stdout;
                 if (err) {
