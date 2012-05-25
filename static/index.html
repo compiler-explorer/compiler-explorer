@@ -27,6 +27,7 @@
                         });
                     $('.compiler').change(onChange);
                     $('.compiler_options').change(onChange).keyup(onChange);
+                    $('.mixed_listing').change(onChange);
                     $.getJSON("/compilers", function(results) {
                         $('.compiler option').remove();
                         $.each(results, function(index, arg) {
@@ -125,6 +126,7 @@
                 <form class="well form-inline">
                     <label>Compiler: <select class="compiler"></select></label>
                     <label>Compiler options: <input class="compiler_options" style="width: 30em;" type="text" value="-O2 -std=c++0x -march=native"></label>
+                    <label>Combined C++/Assembly listing: <input class="mixed_listing" type="checkbox" name="mixed_listing" value="-c -g -Wa,-a,-alhdn"></label> 
                 </form>
             </div>
        </div>
