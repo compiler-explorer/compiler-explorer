@@ -10,61 +10,6 @@
         <script src="asm.js"></script>
         <script src="ext/jquery/jquery-1.7.1.min.js"></script>
         <script src="gcc.js"></script>
-        <script type="text/javascript">
-            $(function() {
-                    cppEditor = CodeMirror.fromTextArea($("#c")[0], {
-                        lineNumbers: true,
-                        matchBrackets: true,
-                        useCPP: true,
-                        mode: "text/x-c++src",
-                        onChange: onChange
-                        });
-                    asmCodeMirror = CodeMirror.fromTextArea($(".asm textarea")[0], {
-                        lineNumbers: true,
-                        matchBrackets: true,
-                        mode: "text/x-asm",
-                        readOnly: true
-                        });
-                    $('form').submit(function() { return false; });
-                    $('.compiler').change(onChange);
-                    $('.compiler_options').change(onChange).keyup(onChange);
-                    $.getJSON("/compilers", function(results) {
-                        $('.compiler option').remove();
-                        $.each(results, function(index, arg) {
-                            $('.compiler').append($('<option value="' + arg.exe + '">' + arg.version + '</option>'));
-                            if (window.localStorage['compiler'] == arg.exe) {
-                                $('.compiler').val(arg.exe);
-                            }
-                        });
-                        onChange();
-                    });
-                    $('.files .source').change(onSourceChange);
-                    $.getJSON("/sources", function(results) {
-                        $('.source option').remove();
-                        $.each(results, function(index, arg) {
-                            $('.files .source').append($('<option value="' + arg.urlpart + '">' + arg.name + '</option>'));
-                            if (window.localStorage['source'] == arg.urlpart) {
-                                $('.files .source').val(arg.urlpart);
-                            }
-                        });
-                        onSourceChange();
-                    });
-                    $('.files .load').click(function() {
-                        loadFile();
-                        return false;
-                    });
-                    $('.files .save').click(function() {
-                        saveFile();
-                        return false;
-                    });
-                    $('.files .saveas').click(function() {
-                        saveFileAs();
-                        return false;
-                    });
-                    if (window.localStorage['code']) cppEditor.setValue(window.localStorage['code']);
-                    if (window.localStorage['compilerOptions']) $('.compiler_options').val(window.localStorage['compilerOptions']);
-            });
-        </script>
         <script src="ext/bootstrap/js/bootstrap.js"></script>
 <script type="text/javascript">
 
@@ -115,10 +60,11 @@
                         <label>Source: <select class="source" style="width:3m"></select></label>
                         <label>Name: <select class="filename"></select></label>
                     </div>
-                    <div>
-                        <button class="load">Load</button>
-                        <button class="save">Save</button>
-                        <button class="saveas">Save as...</button>
+                    <div class="btn-group">
+                        <button class="btn load">Load</button>
+                        <button class="btn save">Save</button>
+                        <button class="btn saveas">Save as...</button>
+                        <a class="btn permalink" href="#">Permalink</a>
                     </div>
                 </form>
             </div>

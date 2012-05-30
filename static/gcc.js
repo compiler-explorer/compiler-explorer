@@ -24,6 +24,7 @@
 
 var pendingTimeout = null;
 var asmCodeMirror = null;
+var cppEditor = null;
 var lastRequest = null;
 
 function parseLines(lines, callback) {
@@ -90,6 +91,7 @@ function onChange() {
             success: onCompileResponse});
     }, 750);
     window.localStorage['code'] = cppEditor.getValue();
+    $('a.permalink').attr('href', '#' + serialiseState());
 }
 
 function getSource() {
@@ -186,3 +188,88 @@ function saveFileAs() {
         if (event.keyCode == 13) onSave();
     });
 }
+
+function serialiseState() {
+    var state = {
+        version: 1,
+        source: cppEditor.getValue(),
+        compiler: $('.compiler').val(),
+        options: $('.compiler_options').val()
+    };
+    return encodeURIComponent(JSON.stringify(state));
+}
+
+function deserialiseState(state) {
+    try {
+        var state = $.parseJSON(decodeURIComponent(state));
+        if (state.version != 1) return false;
+    } catch (ignored) { return false; }
+    cppEditor.setValue(state.source);
+    $('.compiler').val(state.compiler);
+    $('.compiler_options').val(state.options);
+    return true;
+}
+
+function initialise() {
+    cppEditor = CodeMirror.fromTextArea($("#c")[0], {
+        lineNumbers: true,
+              matchBrackets: true,
+              useCPP: true,
+              mode: "text/x-c++src",
+              onChange: onChange
+    });
+    asmCodeMirror = CodeMirror.fromTextArea($(".asm textarea")[0], {
+        lineNumbers: true,
+                  matchBrackets: true,
+                  mode: "text/x-asm",
+                  readOnly: true
+    });
+    $('form').submit(function() { return false; });
+    $('.compiler').change(onChange);
+    $('.compiler_options').change(onChange).keyup(onChange);
+    $.getJSON("/compilers", function(results) {
+        $('.compiler option').remove();
+        $.each(results, function(index, arg) {
+            $('.compiler').append($('<option value="' + arg.exe + '">' + arg.version + '</option>'));
+            if (window.localStorage['compiler'] == arg.exe) {
+                $('.compiler').val(arg.exe);
+            }
+        });
+        onChange();
+    });
+    $('.files .source').change(onSourceChange);
+    $.getJSON("/sources", function(results) {
+        $('.source option').remove();
+        $.each(results, function(index, arg) {
+            $('.files .source').append($('<option value="' + arg.urlpart + '">' + arg.name + '</option>'));
+            if (window.localStorage['source'] == arg.urlpart) {
+                $('.files .source').val(arg.urlpart);
+            }
+        });
+        onSourceChange();
+    });
+    $('.files .load').click(function() {
+        loadFile();
+        return false;
+    });
+    $('.files .save').click(function() {
+        saveFile();
+        return false;
+    });
+    $('.files .saveas').click(function() {
+        saveFileAs();
+        return false;
+    });
+    
+    $(window).bind('hashchange', function() {
+        deserialiseState(window.location.hash.substr(1));
+    });
+
+    if (deserialiseState(window.location.hash.substr(1))) {
+        return;
+    }
+    if (window.localStorage['code']) cppEditor.setValue(window.localStorage['code']);
+    if (window.localStorage['compilerOptions']) $('.compiler_options').val(window.localStorage['compilerOptions']);
+}
+
+$(initialise);
