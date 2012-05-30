@@ -25,6 +25,7 @@
                         mode: "text/x-asm",
                         readOnly: true
                         });
+                    $('form').submit(function() { return false; });
                     $('.compiler').change(onChange);
                     $('.compiler_options').change(onChange).keyup(onChange);
                     $.getJSON("/compilers", function(results) {
