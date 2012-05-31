@@ -96,6 +96,11 @@ function compile(req, res) {
         }
         var outputFilename = path.join(dirPath, 'output.S');
         options = options.concat([ '-x', 'c++', '-o', outputFilename, '-S', '-']);
+        var compilerWrapper = props.get("gcc-explorer", "compiler-wrapper");
+        if (compilerWrapper) {
+            options = [compiler].concat(options);
+            compiler = compilerWrapper;
+        }
         var child = child_process.spawn(
             compiler,
             options

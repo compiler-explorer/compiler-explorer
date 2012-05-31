@@ -1,6 +1,6 @@
 #/bin/sh
 
-export LD_PRELOAD=$(pwd)/libpreload.so
+export LD_PRELOAD=$(dirname $0)/libpreload.so
 export ALLOWED_FOR_CREATE=/tmp 
 export ALLOWED_FOR_READ=/usr/local/include:/usr/include:/usr/lib
 
