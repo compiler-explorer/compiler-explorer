@@ -37,7 +37,7 @@ static int allowed_env(const char* pathname, const char* envvar) {
         while (*okpath == ':') ++okpath;
     }
 
-    fprintf(stderr, "Access to \"%s\" denied by gcc-explorer policy\n", pathname);
+    //fprintf(stderr, "Access to \"%s\" denied by gcc-explorer policy\n", pathname);
     errno = EACCES;
     return 0;
 }
