@@ -7,9 +7,12 @@ else
 default: run
 endif
 
-node_modules: package.json
+NODE_MODULES=.npm-updated
+$(NODE_MODULES): package.json
 	npm install
 	@touch $@
+
+node_modules: $(NODE_MODULES)
 
 clean:
 	rm -rf node_modules
