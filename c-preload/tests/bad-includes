@@ -1,0 +1,2 @@
+#define DOTDOTFILE "../../../etc/passwd"
+#include DOTDOTFILE

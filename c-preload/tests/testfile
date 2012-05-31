@@ -1,0 +1,6 @@
+// I am a test C++ program
+#include <cstdint>
+
+int foo() {
+    return 1;
+}
