@@ -22,4 +22,4 @@ run: node_modules
 	./node_modules/.bin/supervisor ./app.js
 
 run-amazon: node_modules
-	./node_modules/.bin/supervisor ./app.js --env amazon
+	./node_modules/.bin/supervisor  -- ./app.js --env amazon
