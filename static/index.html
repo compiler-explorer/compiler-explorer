@@ -12,7 +12,6 @@
         <script src="gcc.js"></script>
         <script src="ext/bootstrap/js/bootstrap.js"></script>
 <script type="text/javascript">
-
   var _gaq = _gaq || [];
   _gaq.push(['_setAccount', 'UA-55180-6']);
   _gaq.push(['_trackPageview']);
@@ -22,7 +21,6 @@
     ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
     var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
   })();
-
 </script>
 <script type="text/javascript">
     (function() {
@@ -72,6 +70,14 @@
                 <form class="well form-inline">
                     <label>Compiler: <select class="compiler"></select></label>
                     <label>Compiler options: <input class="compiler_options" style="width: 30em;" type="text" value="-O2 -std=c++0x -march=native"></label>
+                    <table><tbody><tr><td>Filter:&nbsp;</td>
+                    <td>
+                        <div class="btn-group filter">
+                            <button class="btn" value="labels">Unused labels</button>
+                            <button class="btn" value="directives">Directives</button>
+                            <button class="btn" value="commentOnly">Comment-only lines</button>
+                        </div>
+                    </td></table>
                 </form>
             </div>
        </div>

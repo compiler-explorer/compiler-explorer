@@ -26,6 +26,7 @@ var pendingTimeout = null;
 var asmCodeMirror = null;
 var cppEditor = null;
 var lastRequest = null;
+var currentAssembly = null;
 
 function parseLines(lines, callback) {
     var re = /^\<stdin\>:([0-9]+):([0-9]+):\s+(.*)/;
@@ -68,7 +69,13 @@ function onCompileResponse(data) {
             elem.text(msg);
         }
     });
-    asmCodeMirror.setValue(data.asm || "[no output]");
+    currentAssembly = data.asm || "[no output]";
+    updateAsm();
+}
+
+function updateAsm() {
+    if (!currentAssembly) return;
+    asmCodeMirror.setValue(filterAsm(currentAssembly, getAsmFilters()));
 }
 
 function onChange() {
@@ -91,6 +98,8 @@ function onChange() {
             success: onCompileResponse});
     }, 750);
     window.localStorage['code'] = cppEditor.getValue();
+    window.localStorage['filter'] = JSON.stringify(getAsmFilters());
+    updateAsm();
     $('a.permalink').attr('href', '#' + serialiseState());
 }
 
@@ -191,10 +200,11 @@ function saveFileAs() {
 
 function serialiseState() {
     var state = {
-        version: 1,
+        version: 2,
         source: cppEditor.getValue(),
         compiler: $('.compiler').val(),
-        options: $('.compiler_options').val()
+        options: $('.compiler_options').val(),
+        filterAsm: getAsmFilters()
     };
     return encodeURIComponent(JSON.stringify(state));
 }
@@ -202,11 +212,13 @@ function serialiseState() {
 function deserialiseState(state) {
     try {
         var state = $.parseJSON(decodeURIComponent(state));
-        if (state.version != 1) return false;
+        if (state.version == 1) { state.filterAsm = true; }
+        else if (state.version != 2) return false;
     } catch (ignored) { return false; }
     cppEditor.setValue(state.source);
     $('.compiler').val(state.compiler);
     $('.compiler_options').val(state.options);
+    setFilterUi(state.filterAsm);
     return true;
 }
 
@@ -261,6 +273,11 @@ function initialise() {
         return false;
     });
     
+    $('.filter button.btn').click(function(e) {
+        $(e.target).toggleClass('active');
+        onChange();
+    });
+
     $(window).bind('hashchange', function() {
         deserialiseState(window.location.hash.substr(1));
     });
@@ -270,6 +287,21 @@ function initialise() {
     }
     if (window.localStorage['code']) cppEditor.setValue(window.localStorage['code']);
     if (window.localStorage['compilerOptions']) $('.compiler_options').val(window.localStorage['compilerOptions']);
+    setFilterUi($.parseJSON(window.localStorage['filter'] || "{}"));
+}
+
+function getAsmFilters() {
+    var asmFilters = {};
+    $('.filter button.btn.active').each(function() {
+        asmFilters[$(this).val()] = true;
+    });
+    return asmFilters;
+}
+
+function setFilterUi(asmFilters) {
+    $('.filter button.btn').each(function() {
+        $(this).toggleClass('active', !!asmFilters[$(this).val()]);
+    });
 }
 
 $(initialise);

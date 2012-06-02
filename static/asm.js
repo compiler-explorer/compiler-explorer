@@ -47,3 +47,35 @@ CodeMirror.defineMode("asm", function() {
 });
 
 CodeMirror.defineMIME("text/x-asm", "asm");
+
+function filterAsm(asm, filters) {
+    var result = [];
+    var asmLines = asm.split("\n");
+    var labelsUsed = {};
+    var labelFind = /\.[a-zA-Z0-9$_.]+/g;
+    $.each(asmLines, function(_, line) {
+        if (line == "" || line[0] == ".") return;
+        var match = line.match(labelFind);
+        if (match) $.each(match, function(_, label) { labelsUsed[label] = true; });
+    });
+    var directive = /^\s*\..*$/;
+    var labelDefinition = /^(\.[a-zA-Z0-9$_.]+):/;
+    var commentOnly = /^\s*#.*/;
+    $.each(asmLines, function(_, line) {
+        if (line.trim() == "") return;
+        if (filters.commentOnly && line.match(commentOnly)) return;
+        var match = line.match(labelDefinition);
+        if (match && labelsUsed[match[1]] == undefined) {
+            if (filters.labels) return;
+        }
+        if (!match && filters.directives) {
+            // Check for directives only if it wasn't a label; the regexp would
+            // otherwise misinterpret labels as directives.
+            match = line.match(directive);
+            if (match) return;
+        }
+        result.push(line);
+    });
+    return result.join("\n");
+}
+
