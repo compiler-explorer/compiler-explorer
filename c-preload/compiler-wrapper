@@ -2,6 +2,6 @@
 
 export LD_PRELOAD=$(dirname $0)/libpreload.so
 export ALLOWED_FOR_CREATE=/tmp 
-export ALLOWED_FOR_READ=/usr/local/include:/usr/include:/usr/lib
+export ALLOWED_FOR_READ=/usr/local/include:/usr/include:/usr/lib:/usr/msp430
 
 "$@"
