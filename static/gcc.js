@@ -223,6 +223,10 @@ function deserialiseState(state) {
     $('.compiler').val(state.compiler);
     $('.compiler_options').val(state.options);
     setFilterUi(state.filterAsm);
+    // Somewhat hackily persist compiler into local storage else when the ajax response comes in
+    // with the list of compilers it can splat over the deserialized version.
+    // The whole serialize/hash/localStorage code is a mess! TODO(mg): fix
+    window.localStorage['compiler'] = state.compiler;
     return true;
 }
 
@@ -245,8 +249,6 @@ function initialise() {
     if (window.localStorage['code']) cppEditor.setValue(window.localStorage['code']);
     if (window.localStorage['compilerOptions']) $('.compiler_options').val(window.localStorage['compilerOptions']);
     setFilterUi($.parseJSON(window.localStorage['filter'] || "{}"));
-
-    ignoreChanges = false;
 
     $('form').submit(function() { return false; });
     $('.compiler').change(onChange);
@@ -298,6 +300,7 @@ function initialise() {
         loadFromHash();
     });
     loadFromHash();
+    ignoreChanges = false;
 }
 
 function getAsmFilters() {
