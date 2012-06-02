@@ -27,6 +27,7 @@ var asmCodeMirror = null;
 var cppEditor = null;
 var lastRequest = null;
 var currentAssembly = null;
+var ignoreChanges = false;
 
 function parseLines(lines, callback) {
     var re = /^\<stdin\>:([0-9]+):([0-9]+):\s+(.*)/;
@@ -79,6 +80,7 @@ function updateAsm() {
 }
 
 function onChange() {
+    if (ignoreChanges) return;  // Ugly hack during startup.
     if (pendingTimeout) clearTimeout(pendingTimeout);
     pendingTimeout = setTimeout(function() {
         var data = { 
@@ -212,7 +214,9 @@ function serialiseState() {
 function deserialiseState(state) {
     try {
         var state = $.parseJSON(decodeURIComponent(state));
-        if (state.version == 1) { state.filterAsm = true; }
+        if (state.version == 1) { 
+            state.filterAsm = {};
+        }
         else if (state.version != 2) return false;
     } catch (ignored) { return false; }
     cppEditor.setValue(state.source);
@@ -223,6 +227,7 @@ function deserialiseState(state) {
 }
 
 function initialise() {
+    ignoreChanges = true; // Horrible hack to avoid onChange being called on first starting, ie before we've set anything up.
     cppEditor = CodeMirror.fromTextArea($("#c")[0], {
         lineNumbers: true,
               matchBrackets: true,
@@ -236,6 +241,13 @@ function initialise() {
                   mode: "text/x-asm",
                   readOnly: true
     });
+
+    if (window.localStorage['code']) cppEditor.setValue(window.localStorage['code']);
+    if (window.localStorage['compilerOptions']) $('.compiler_options').val(window.localStorage['compilerOptions']);
+    setFilterUi($.parseJSON(window.localStorage['filter'] || "{}"));
+
+    ignoreChanges = false;
+
     $('form').submit(function() { return false; });
     $('.compiler').change(onChange);
     $('.compiler_options').change(onChange).keyup(onChange);
@@ -278,16 +290,14 @@ function initialise() {
         onChange();
     });
 
-    $(window).bind('hashchange', function() {
+    function loadFromHash() {
         deserialiseState(window.location.hash.substr(1));
-    });
-
-    if (deserialiseState(window.location.hash.substr(1))) {
-        return;
     }
-    if (window.localStorage['code']) cppEditor.setValue(window.localStorage['code']);
-    if (window.localStorage['compilerOptions']) $('.compiler_options').val(window.localStorage['compilerOptions']);
-    setFilterUi($.parseJSON(window.localStorage['filter'] || "{}"));
+
+    $(window).bind('hashchange', function() {
+        loadFromHash();
+    });
+    loadFromHash();
 }
 
 function getAsmFilters() {
