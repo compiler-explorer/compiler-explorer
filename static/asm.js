@@ -48,19 +48,29 @@ CodeMirror.defineMode("asm", function() {
 
 CodeMirror.defineMIME("text/x-asm", "asm");
 
-function filterAsm(asm, filters) {
+function processAsm(asm, filters) {
     var result = [];
     var asmLines = asm.split("\n");
     var labelsUsed = {};
     var labelFind = /\.[a-zA-Z0-9$_.]+/g;
+    var files = {};
+    var fileFind = /^\s*\.file\s+(\d+)\s+"([^"]+)"$/;
     $.each(asmLines, function(_, line) {
         if (line == "" || line[0] == ".") return;
         var match = line.match(labelFind);
         if (match) $.each(match, function(_, label) { labelsUsed[label] = true; });
+        match = line.match(fileFind);
+        if (match) {
+            files[parseInt(match[1])] = match[2];
+        }
     });
+
     var directive = /^\s*\..*$/;
     var labelDefinition = /^(\.[a-zA-Z0-9$_.]+):/;
     var commentOnly = /^\s*#.*/;
+    var sourceTag = /^\s*\.loc\s+(\d+)\s+(\d+).*/;
+    var stdInLooking = /.*<stdin>|-/;
+    var source = null;
     $.each(asmLines, function(_, line) {
         if (line.trim() == "") return;
         if (filters.commentOnly && line.match(commentOnly)) return;
@@ -74,8 +84,17 @@ function filterAsm(asm, filters) {
             match = line.match(directive);
             if (match) return;
         }
-        result.push(line);
+
+        if (match = line.match(sourceTag)) {
+            source = null;
+            var file = files[parseInt(match[1])];
+            if (file && file.match(stdInLooking)) {
+                source = parseInt(match[2]);
+            }
+        }
+
+        result.push({text: line, source: source});
     });
-    return result.join("\n");
+    return result;
 }
 

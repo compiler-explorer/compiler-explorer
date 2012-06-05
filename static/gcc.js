@@ -76,7 +76,9 @@ function onCompileResponse(data) {
 
 function updateAsm() {
     if (!currentAssembly) return;
-    asmCodeMirror.setValue(filterAsm(currentAssembly, getAsmFilters()));
+    var asm = processAsm(currentAssembly, getAsmFilters());
+    var asmText = $.map(asm, function(x){ return x.text; }).join("\n");
+    asmCodeMirror.setValue(asmText);
 }
 
 function onChange() {
