@@ -55,10 +55,14 @@ function processAsm(asm, filters) {
     var labelFind = /\.[a-zA-Z0-9$_.]+/g;
     var files = {};
     var fileFind = /^\s*\.file\s+(\d+)\s+"([^"]+)"$/;
+    var hasOpcode = /^\s*([a-zA-Z0-9$_][a-zA-Z0-9$_.]*:\s*)?[a-zA-Z].*/;
     $.each(asmLines, function(_, line) {
         if (line == "" || line[0] == ".") return;
         var match = line.match(labelFind);
-        if (match) $.each(match, function(_, label) { labelsUsed[label] = true; });
+        if (match && (!filters.directives || line.match(hasOpcode))) {
+            // Only count a label as used if it's used by an opcode, or else we're not filtering directives.
+            $.each(match, function(_, label) { labelsUsed[label] = true; });
+        }
         match = line.match(fileFind);
         if (match) {
             files[parseInt(match[1])] = match[2];
@@ -70,7 +74,6 @@ function processAsm(asm, filters) {
     var commentOnly = /^\s*#.*/;
     var sourceTag = /^\s*\.loc\s+(\d+)\s+(\d+).*/;
     var stdInLooking = /.*<stdin>|-/;
-    var hasOpcode = /^\s*([a-zA-Z0-9$_][a-zA-Z0-9$_.]*:\s*)?[a-zA-Z].*/;
     var source = null;
     $.each(asmLines, function(_, line) {
         var match;
