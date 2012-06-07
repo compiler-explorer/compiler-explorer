@@ -95,7 +95,6 @@ function updateAsm(forceUpdate) {
     if (!currentAssembly) return;
     var newFilters = getAsmFilters();
     var hashedUpdate = JSON.stringify({
-        src: cppEditor.getValue(), 
         asm: currentAssembly, 
         filter: newFilters
     });
