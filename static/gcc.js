@@ -91,7 +91,7 @@ function numberUsedLines(asm) {
 }
 
 var lastUpdatedAsm = null;
-function updateAsm() {
+function updateAsm(forceUpdate) {
     if (!currentAssembly) return;
     var newFilters = getAsmFilters();
     var hashedUpdate = JSON.stringify({
@@ -99,7 +99,7 @@ function updateAsm() {
         asm: currentAssembly, 
         filter: newFilters
     });
-    if (lastUpdatedAsm == hashedUpdate) { return; }
+    if (!forceUpdate && lastUpdatedAsm == hashedUpdate) { return; }
     lastUpdatedAsm = hashedUpdate;
 
     var asm = processAsm(currentAssembly, newFilters);
@@ -269,6 +269,7 @@ function deserialiseState(state) {
     // with the list of compilers it can splat over the deserialized version.
     // The whole serialize/hash/localStorage code is a mess! TODO(mg): fix
     window.localStorage['compiler'] = state.compiler;
+    updateAsm(true);  // Force the update to reset colours after calling cppEditor.setValue
     return true;
 }
 
