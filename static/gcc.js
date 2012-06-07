@@ -290,7 +290,8 @@ function initialise() {
 
     if (window.localStorage['code']) cppEditor.setValue(window.localStorage['code']);
     if (window.localStorage['compilerOptions']) $('.compiler_options').val(window.localStorage['compilerOptions']);
-    setFilterUi($.parseJSON(window.localStorage['filter'] || "{}"));
+    var defaultFilters = JSON.stringify(getAsmFilters());
+    setFilterUi($.parseJSON(window.localStorage['filter'] || defaultFilters));
 
     $('form').submit(function() { return false; });
     $('.compiler').change(onChange);
