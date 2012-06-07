@@ -95,7 +95,7 @@ function compile(req, res) {
             return res.end(JSON.stringify({code: -1, stderr: "Unable to open temp file: " + err}));
         }
         var outputFilename = path.join(dirPath, 'output.S');
-        options = options.concat([ '-x', 'c++', '-o', outputFilename, '-S', '-']);
+        options = options.concat([ '-x', 'c++', '-g', '-o', outputFilename, '-S', '-']);
         var compilerWrapper = props.get("gcc-explorer", "compiler-wrapper");
         if (compilerWrapper) {
             options = [compiler].concat(options);

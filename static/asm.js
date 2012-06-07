@@ -70,11 +70,21 @@ function processAsm(asm, filters) {
     var commentOnly = /^\s*#.*/;
     var sourceTag = /^\s*\.loc\s+(\d+)\s+(\d+).*/;
     var stdInLooking = /.*<stdin>|-/;
+    var hasOpcode = /^\s*([a-zA-Z0-9$_][a-zA-Z0-9$_.]*:\s*)?[a-zA-Z].*/;
     var source = null;
     $.each(asmLines, function(_, line) {
+        var match;
         if (line.trim() == "") return;
+        if (match = line.match(sourceTag)) {
+            source = null;
+            var file = files[parseInt(match[1])];
+            if (file && file.match(stdInLooking)) {
+                source = parseInt(match[2]);
+            }
+        }
+
         if (filters.commentOnly && line.match(commentOnly)) return;
-        var match = line.match(labelDefinition);
+        match = line.match(labelDefinition);
         if (match && labelsUsed[match[1]] == undefined) {
             if (filters.labels) return;
         }
@@ -85,15 +95,8 @@ function processAsm(asm, filters) {
             if (match) return;
         }
 
-        if (match = line.match(sourceTag)) {
-            source = null;
-            var file = files[parseInt(match[1])];
-            if (file && file.match(stdInLooking)) {
-                source = parseInt(match[2]);
-            }
-        }
-
-        result.push({text: line, source: source});
+        var hasOpcodeMatch = line.match(hasOpcode);
+        result.push({text: line, source: hasOpcodeMatch ? source : null});
     });
     return result;
 }

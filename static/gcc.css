@@ -47,3 +47,12 @@ li.social {
 .indented {
     margin-left: 36px;
 }
+
+.rainbow-0 { background: #ffa !important; }
+.rainbow-1 { background: #faf !important; }
+.rainbow-2 { background: #faa !important; }
+.rainbow-3 { background: #aff !important; }
+.rainbow-4 { background: #afa !important; }
+.rainbow-5 { background: #aaf !important; }
+.rainbow-6 { background: #77a !important; }
+.rainbow-7 { background: #a77 !important; }

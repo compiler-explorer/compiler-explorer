@@ -43,8 +43,13 @@ function parseLines(lines, callback) {
         }
     });
 }
+function clearBackground(cm) {
+    for (var i = 0; i < cm.lineCount(); ++i) {
+        cm.setLineClass(i, null, null);
+    }
+}
 
-var errorLines = [];
+var hasErrors = false;
 function onCompileResponse(data) {
     var stdout = data.stdout || "";
     var stderr = data.stderr || "";
@@ -53,15 +58,16 @@ function onCompileResponse(data) {
     } else {
         stderr += "\nCompilation failed";
     }
-    $.each(errorLines, function(_, line) { 
-        if (line) cppEditor.setLineClass(line, null, null);
-    });
-    errorLines = [];
     $('.result .output :visible').remove();
+    hasErrors = false;
     parseLines(stderr + stdout, function(lineNum, msg) {
         var elem = $('.result .output .template').clone().appendTo('.result .output').removeClass('template');
         if (lineNum) {
-            errorLines.push(cppEditor.setLineClass(lineNum - 1, null, "error"));
+            if (!hasErrors) {
+                clearBackground(cppEditor);
+            }
+            hasErrors = true;
+            cppEditor.setLineClass(lineNum - 1, null, "error");
             elem.html($('<a href="#">').append(lineNum + " : " + msg)).click(function() {
                 cppEditor.setSelection({line: lineNum - 1, ch: 0}, {line: lineNum, ch: 0});
                 return false;
@@ -74,11 +80,45 @@ function onCompileResponse(data) {
     updateAsm();
 }
 
+function numberUsedLines(asm) {
+    var sourceLines = {};
+    $.each(asm, function(_, x) { if (x.source) sourceLines[x.source - 1] = true; });
+    var ordinal = 0;
+    $.each(sourceLines, function(k, _) { sourceLines[k] = ordinal++; });
+    var asmLines = {};
+    $.each(asm, function(index, x) { if (x.source) asmLines[index] = sourceLines[x.source - 1]; });
+    return { source: sourceLines, asm: asmLines };
+}
+
+var lastUpdatedAsm = null;
 function updateAsm() {
     if (!currentAssembly) return;
-    var asm = processAsm(currentAssembly, getAsmFilters());
+    var newFilters = getAsmFilters();
+    var hashedUpdate = JSON.stringify({
+        src: cppEditor.getValue(), 
+        asm: currentAssembly, 
+        filter: newFilters
+    });
+    if (lastUpdatedAsm == hashedUpdate) { return; }
+    lastUpdatedAsm = hashedUpdate;
+
+    var asm = processAsm(currentAssembly, newFilters);
     var asmText = $.map(asm, function(x){ return x.text; }).join("\n");
+    var numberedLines = numberUsedLines(asm);
     asmCodeMirror.setValue(asmText);
+    
+    if (!hasErrors) {
+        clearBackground(cppEditor);
+        clearBackground(asmCodeMirror);
+        if (newFilters.colouriseAsm) {
+            $.each(numberedLines.source, function(line, ordinal) {
+                cppEditor.setLineClass(parseInt(line), null, "rainbow-" + (ordinal & 7));
+            });
+            $.each(numberedLines.asm, function(line, ordinal) {
+                asmCodeMirror.setLineClass(parseInt(line), null, "rainbow-" + (ordinal & 7));
+            });
+        }
+    }
 }
 
 function onChange() {
