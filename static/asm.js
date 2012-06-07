@@ -71,7 +71,7 @@ function processAsm(asm, filters) {
 
     var directive = /^\s*\..*$/;
     var labelDefinition = /^(\.[a-zA-Z0-9$_.]+):/;
-    var commentOnly = /^\s*#.*/;
+    var commentOnly = /^\s*(#|@|\/\/).*/;
     var sourceTag = /^\s*\.loc\s+(\d+)\s+(\d+).*/;
     var stdInLooking = /.*<stdin>|-/;
     var source = null;
