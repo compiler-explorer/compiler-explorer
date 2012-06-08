@@ -210,6 +210,7 @@ function getCompilers(req, res) {
         },
         function (err, all) {
             all = all.filter(function(x){return x!=null;});
+            all.sort(function(x,y){return x.version < y.version ? -1 : x.version > y.version > 1 ? 1 : 0;});
             res.end(JSON.stringify(all));
         }
     );
