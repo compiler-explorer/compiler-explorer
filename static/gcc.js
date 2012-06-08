@@ -49,7 +49,6 @@ function clearBackground(cm) {
     }
 }
 
-var hasErrors = false;
 function onCompileResponse(data) {
     var stdout = data.stdout || "";
     var stderr = data.stderr || "";
@@ -59,15 +58,12 @@ function onCompileResponse(data) {
         stderr += "\nCompilation failed";
     }
     $('.result .output :visible').remove();
-    hasErrors = false;
+    var highlightLine = (data.asm == null);
+    for (var i = 0; i < cppEditor.lineCount(); ++i) cppEditor.setMarker(i);
     parseLines(stderr + stdout, function(lineNum, msg) {
         var elem = $('.result .output .template').clone().appendTo('.result .output').removeClass('template');
         if (lineNum) {
-            if (!hasErrors) {
-                clearBackground(cppEditor);
-            }
-            hasErrors = true;
-            cppEditor.setLineClass(lineNum - 1, null, "error");
+            cppEditor.setMarker(lineNum - 1, null, "error");
             elem.html($('<a href="#">').append(lineNum + " : " + msg)).click(function() {
                 cppEditor.setSelection({line: lineNum - 1, ch: 0}, {line: lineNum, ch: 0});
                 return false;
@@ -106,17 +102,15 @@ function updateAsm(forceUpdate) {
     var numberedLines = numberUsedLines(asm);
     asmCodeMirror.setValue(asmText);
     
-    if (!hasErrors) {
-        clearBackground(cppEditor);
-        clearBackground(asmCodeMirror);
-        if (newFilters.colouriseAsm) {
-            $.each(numberedLines.source, function(line, ordinal) {
-                cppEditor.setLineClass(parseInt(line), null, "rainbow-" + (ordinal & 7));
-            });
-            $.each(numberedLines.asm, function(line, ordinal) {
-                asmCodeMirror.setLineClass(parseInt(line), null, "rainbow-" + (ordinal & 7));
-            });
-        }
+    clearBackground(cppEditor);
+    clearBackground(asmCodeMirror);
+    if (newFilters.colouriseAsm) {
+        $.each(numberedLines.source, function(line, ordinal) {
+            cppEditor.setLineClass(parseInt(line), null, "rainbow-" + (ordinal & 7));
+        });
+        $.each(numberedLines.asm, function(line, ordinal) {
+            asmCodeMirror.setLineClass(parseInt(line), null, "rainbow-" + (ordinal & 7));
+        });
     }
 }
 
