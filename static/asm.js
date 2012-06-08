@@ -28,7 +28,7 @@ CodeMirror.defineMode("asm", function() {
             return tokenString(ch)(stream);
         }
         if (/[\[\]{}\(\),;\:]/.test(ch)) return null;
-        if (/[\d$]/.test(ch)) {
+        if (/[\d$]/.test(ch) || (ch == '-' && stream.peek().match(/[0-9]/))) {
             stream.eatWhile(/[\w\.]/);
             return "number";
         }
