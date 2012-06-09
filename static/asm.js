@@ -54,6 +54,9 @@ function processAsm(asm, filters) {
     var labelsUsed = {};
     var labelFind = /\.[a-zA-Z0-9$_.]+/g;
     var files = {};
+    var prevLabel = "";
+    var literalConstant = /^\.LC\d+/;
+    var lcString = /\.string/;
     var fileFind = /^\s*\.file\s+(\d+)\s+"([^"]+)"$/;
     var hasOpcode = /^\s*([a-zA-Z0-9$_][a-zA-Z0-9$_.]*:\s*)?[a-zA-Z].*/;
     $.each(asmLines, function(_, line) {
@@ -88,8 +91,16 @@ function processAsm(asm, filters) {
 
         if (filters.commentOnly && line.match(commentOnly)) return;
         match = line.match(labelDefinition);
+        if (!match && line.match(lcString) && prevLabel) {
+	    result.push({text: line, source: null});
+            prevLabel = "";
+            return;
+        }
         if (match && labelsUsed[match[1]] == undefined) {
             if (filters.labels) return;
+        }
+        if (match && line.match(literalConstant)) {
+            prevLabel = line;
         }
         if (!match && filters.directives) {
             // Check for directives only if it wasn't a label; the regexp would
