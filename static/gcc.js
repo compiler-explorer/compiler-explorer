@@ -121,7 +121,8 @@ function onChange() {
         var data = { 
             source: cppEditor.getValue(),
             compiler: $('.compiler').val(),
-            options: $('.compiler_options').val()
+            options: $('.compiler_options').val(),
+            filters: getAsmFilters()
         };
         window.localStorage['compiler'] = data.compiler;
         window.localStorage['compilerOptions'] = data.options;

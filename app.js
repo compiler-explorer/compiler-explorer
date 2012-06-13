@@ -82,6 +82,7 @@ function compile(req, res) {
         return res.end(JSON.stringify({code: -1, stderr: "bad compiler " + compiler}));
     }
     var options = req.body.options.split(' ').filter(function(x){return x!=""});
+    var filters = req.body.filters;
     var optionsErr = checkOptions(options);
     if (optionsErr) {
         return res.end(JSON.stringify({code: -1, stderr: optionsErr}));
@@ -95,7 +96,9 @@ function compile(req, res) {
             return res.end(JSON.stringify({code: -1, stderr: "Unable to open temp file: " + err}));
         }
         var outputFilename = path.join(dirPath, 'output.S');
-        options = options.concat([ '-x', 'c++', '-g', '-o', outputFilename, '-S', '-']);
+        var syntax = '-masm=att'; // default at&t
+        if (filters["intel"]) syntax = '-masm=intel';
+        options = options.concat([ '-x', 'c++', '-g', '-o', outputFilename, '-S', syntax,'-']);
         var compilerWrapper = props.get("gcc-explorer", "compiler-wrapper");
         if (compilerWrapper) {
             options = [compiler].concat(options);
