@@ -49,6 +49,8 @@ var rootDir = opts.rootDir || './etc';
 props.initialize(rootDir + '/config', propHierarchy);
 
 var port = props.get('gcc-explorer', 'port', 10240);
+var compilers = [];
+var compilersByExe = {};
 
 function checkOptions(options) {
     var okOptions = new RegExp(props.get('gcc-options', 'whitelistRe', '.*'));
@@ -81,6 +83,10 @@ function compile(req, res) {
     if (getCompilerExecutables().indexOf(compiler) < 0) {
         return res.end(JSON.stringify({code: -1, stderr: "bad compiler " + compiler}));
     }
+    var compilerInfo = compilersByExe[compiler];
+    if (!compilerInfo) {
+        return res.end(JSON.stringify({code: -1, stderr: "bad compiler " + compiler}));
+    }
     var options = req.body.options.split(' ').filter(function(x){return x!=""});
     var filters = req.body.filters;
     var optionsErr = checkOptions(options);
@@ -96,9 +102,12 @@ function compile(req, res) {
             return res.end(JSON.stringify({code: -1, stderr: "Unable to open temp file: " + err}));
         }
         var outputFilename = path.join(dirPath, 'output.S');
-        var syntax = '-masm=att'; // default at&t
-        if (filters["intel"]) syntax = '-masm=intel';
-        options = options.concat([ '-x', 'c++', '-g', '-o', outputFilename, '-S', syntax,'-']);
+        if (compilerInfo.supportedOpts['-masm']) {
+            var syntax = '-masm=att'; // default at&t
+            if (filters["intel"]) syntax = '-masm=intel';
+            options = options.concat([syntax]);
+        }
+        options = options.concat(['-x', 'c++', '-g', '-o', outputFilename, '-S', '-']);
         var compilerWrapper = props.get("gcc-explorer", "compiler-wrapper");
         if (compilerWrapper) {
             options = [compiler].concat(options);
@@ -195,29 +204,44 @@ function getCompilerExecutables() {
 }
 
 function getCompilers(req, res) {
+    res.end(JSON.stringify(compilers));
+}
+
+function findCompilers() {
     async.map(getCompilerExecutables(),
         function (compiler, callback) {
             fs.stat(compiler, function(err, result) {
-                if (err) {
-                    callback(null, null);
-                } else {
-                    child_process.exec(compiler + ' --version', function(err, output) {
-                        if (err) {
-                            callback(null, null);
-                        } else {
-                            callback(null, {exe: compiler, version: output.split('\n')[0]});
+                if (err) return callback(null, null);
+                child_process.exec(compiler + ' --version', function(err, output) {
+                    if (err) return callback(null, null);
+                    var version = output.split('\n')[0];
+                    child_process.exec(compiler + ' --target-help', function(err, output) {
+                        var options = {};
+                        if (!err) {
+                            var splitness = /--?[-a-zA-Z]+( ?[-a-zA-Z]+)/;
+                            output.split('\n').forEach(function(line) {
+                                var match = line.match(splitness);
+                                if (!match) return;
+                                options[match[0]] = true;
+                            });
                         }
+                        callback(null, {exe: compiler, version: version, supportedOpts: options});
                     });
-                }
+                });
             });
         },
         function (err, all) {
             all = all.filter(function(x){return x!=null;});
-            all = all.sort(function(x,y){return x.version < y.version ? -1 : x.version > y.version ? 1 : 0;});
-            res.end(JSON.stringify(all));
+            compilers = all.sort(function(x,y){return x.version < y.version ? -1 : x.version > y.version ? 1 : 0;});
+            compilersByExe = {};
+            compilers.forEach(function(compiler) {
+                compilersByExe[compiler.exe] = compiler;
+            });
         }
     );
 }
+
+findCompilers();
 
 // WebServer.
 var webServer = connect();
