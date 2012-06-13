@@ -28,6 +28,7 @@ var cppEditor = null;
 var lastRequest = null;
 var currentAssembly = null;
 var ignoreChanges = false;
+var compilersByExe = {};
 
 function parseLines(lines, callback) {
     var re = /^\<stdin\>:([0-9]+):([0-9]+):\s+(.*)/;
@@ -267,6 +268,12 @@ function deserialiseState(state) {
     return true;
 }
 
+function onCompilerChange() {
+    onChange();
+    var compiler = compilersByExe[$('.compiler').val()];
+    $('.filter button.btn[value="intel"]').toggleClass("disabled", !compiler.supportedOpts["-masm"]);
+}
+
 function initialise() {
     ignoreChanges = true; // Horrible hack to avoid onChange being called on first starting, ie before we've set anything up.
     cppEditor = CodeMirror.fromTextArea($("#c")[0], {
@@ -289,17 +296,19 @@ function initialise() {
     setFilterUi($.parseJSON(window.localStorage['filter'] || defaultFilters));
 
     $('form').submit(function() { return false; });
-    $('.compiler').change(onChange);
+    $('.compiler').change(onCompilerChange);
     $('.compiler_options').change(onChange).keyup(onChange);
     $.getJSON("/compilers", function(results) {
         $('.compiler option').remove();
+        compilersByExe = {};
         $.each(results, function(index, arg) {
             $('.compiler').append($('<option value="' + arg.exe + '">' + arg.version + '</option>'));
+            compilersByExe[arg.exe] = arg;
             if (window.localStorage['compiler'] == arg.exe) {
                 $('.compiler').val(arg.exe);
             }
         });
-        onChange();
+        onCompilerChange();
     });
     $('.files .source').change(onSourceChange);
     $.getJSON("/sources", function(results) {
