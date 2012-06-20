@@ -74,11 +74,6 @@ function Compiler(domRoot) {
         domRoot.find('.compiler_options').val(window.localStorage['compilerOptions']);
     }
 
-    $('.filter button.btn').click(function(e) {
-        $(e.target).toggleClass('active');
-        onChange();
-    });
-
     function onCompileResponse(data) {
         var stdout = data.stdout || "";
         var stderr = data.stderr || "";
@@ -166,7 +161,6 @@ function Compiler(domRoot) {
                 success: onCompileResponse});
         }, 750);
         window.localStorage['code'] = cppEditor.getValue();
-        window.localStorage['filter'] = JSON.stringify(getAsmFilters());
         updateAsm();
         $('a.permalink').attr('href', '#' + serialiseState());
     }
@@ -229,8 +223,7 @@ function Compiler(domRoot) {
     return {
         deserialiseState: deserialiseState,
         setCompilers: setCompilers,
-        loadFile: loadFile,
-        saveFile: saveFile,
-        saveFileAs: saveFileAs 
+        getSource: getSource,
+        setSource: setSource
     };
 }
