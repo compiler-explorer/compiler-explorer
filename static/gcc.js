@@ -54,6 +54,19 @@ function getSource() {
     }
 }
 
+var currentFileList = {};
+function updateFileList() {
+    getSource().list(function(results) {
+        currentFileList = {};
+        $('.filename option').remove();
+        $.each(results, function(index, arg) {
+            currentFileList[arg.name] = arg;
+            $('.filename').append($('<option value="' + arg.urlpart + '">' + arg.name + '</option>'));
+            if (window.localStorage['filename'] == arg.urlpart) $('.filename').val(arg.urlpart);
+        });
+    });
+}
+
 function onSourceChange() {
     updateFileList();
     window.localStorage['source'] = $('.source').val();
@@ -133,18 +146,24 @@ function initialise() {
         onSourceChange();
     });
     $('.files .load').click(function() {
-        compiler.loadFile();
+        loadFile();
         return false;
     });
     $('.files .save').click(function() {
-        compiler.saveFile();
+        saveFile();
         return false;
     });
     $('.files .saveas').click(function() {
-        compiler.saveFileAs();
+        saveFileAs();
         return false;
     });
     
+    $('.filter button.btn').click(function(e) {
+        $(e.target).toggleClass('active');
+        window.localStorage['filter'] = JSON.stringify(getAsmFilters());
+        currentCompiler.onChange();
+    });
+
     function loadFromHash() {
         compiler.deserialiseState(window.location.hash.substr(1));
     }
