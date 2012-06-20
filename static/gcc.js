@@ -22,25 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 // POSSIBILITY OF SUCH DAMAGE.
 
-function parseLines(lines, callback) {
-    var re = /^\<stdin\>:([0-9]+):([0-9]+):\s+(.*)/;
-    $.each(lines.split('\n'), function(_, line) {
-        line = line.trim();
-        if (line != "") {
-            var match = line.match(re);
-            if (match) {
-                callback(parseInt(match[1]), match[3]);
-            } else {
-                callback(null, line);
-            }
-        }
-    });
-}
-function clearBackground(cm) {
-    for (var i = 0; i < cm.lineCount(); ++i) {
-        cm.setLineClass(i, null, null);
-    }
-}
+var currentCompiler = null;
 
 function getSource() {
     var source = $('.source').val();
@@ -72,255 +54,62 @@ function getSource() {
     }
 }
 
-var compilersByExe = {};
-
-var currentFileList = {};
-function updateFileList() {
-    getSource().list(function(results) {
-        currentFileList = {};
-        $('.filename option').remove();
-        $.each(results, function(index, arg) {
-            currentFileList[arg.name] = arg;
-            $('.filename').append($('<option value="' + arg.urlpart + '">' + arg.name + '</option>'));
-            if (window.localStorage['filename'] == arg.urlpart) $('.filename').val(arg.urlpart);
-        });
-    });
-}
-
 function onSourceChange() {
     updateFileList();
     window.localStorage['source'] = $('.source').val();
 }
 
-function Compiler(domRoot) {
-    var pendingTimeout = null;
-    var asmCodeMirror = null;
-    var cppEditor = null;
-    var lastRequest = null;
-    var currentAssembly = null;
-    var ignoreChanges = true; // Horrible hack to avoid onChange doing anything on first starting, ie before we've set anything up.
-
-    cppEditor = CodeMirror.fromTextArea(domRoot.find(".editor textarea")[0], {
-        lineNumbers: true,
-              matchBrackets: true,
-              useCPP: true,
-              mode: "text/x-c++src",
-              onChange: onChange
-    });
-    asmCodeMirror = CodeMirror.fromTextArea(domRoot.find(".asm textarea")[0], {
-        lineNumbers: true,
-                  matchBrackets: true,
-                  mode: "text/x-asm",
-                  readOnly: true
-    });
-
-    if (window.localStorage['code']) cppEditor.setValue(window.localStorage['code']);
-    domRoot.find('.compiler').change(onCompilerChange);
-    domRoot.find('.compiler_options').change(onChange).keyup(onChange);
-    ignoreChanges = false;
-
-    $('.filter button.btn').click(function(e) {
-        $(e.target).toggleClass('active');
-        onChange();
-    });
-
-    function onCompileResponse(data) {
-        var stdout = data.stdout || "";
-        var stderr = data.stderr || "";
-        if (data.code == 0) {
-            stdout += "\nCompiled ok";
+function loadFile() {
+    var name = $('.filename').val();
+    window.localStorage['filename'] = name;
+    getSource().load(name, function(results) {
+        if (results.file) {
+            currentCompiler.setSource(results.file);
         } else {
-            stderr += "\nCompilation failed";
+            // TODO: error?
+            console.log(results);
         }
-        $('.result .output :visible').remove();
-        var highlightLine = (data.asm == null);
-        for (var i = 0; i < cppEditor.lineCount(); ++i) cppEditor.setMarker(i);
-        parseLines(stderr + stdout, function(lineNum, msg) {
-            var elem = $('.result .output .template').clone().appendTo('.result .output').removeClass('template');
-            if (lineNum) {
-                cppEditor.setMarker(lineNum - 1, null, "error");
-                elem.html($('<a href="#">').append(lineNum + " : " + msg)).click(function() {
-                    cppEditor.setSelection({line: lineNum - 1, ch: 0}, {line: lineNum, ch: 0});
-                    return false;
-                });
-            } else {
-                elem.text(msg);
-            }
-        });
-        currentAssembly = data.asm || "[no output]";
-        updateAsm();
+    });
+}
+
+function saveFile() {
+    saveAs($('.files .filename').val());
+}
+
+function saveAs(filename) {
+    var prevFilename = window.localStorage['filename'] || "";
+    if (filename != prevFilename && currentFileList[filename]) {
+        // TODO!
+        alert("Coming soon - overwriting files");
+        return;
     }
-
-    function numberUsedLines(asm) {
-        var sourceLines = {};
-        $.each(asm, function(_, x) { if (x.source) sourceLines[x.source - 1] = true; });
-        var ordinal = 0;
-        $.each(sourceLines, function(k, _) { sourceLines[k] = ordinal++; });
-        var asmLines = {};
-        $.each(asm, function(index, x) { if (x.source) asmLines[index] = sourceLines[x.source - 1]; });
-        return { source: sourceLines, asm: asmLines };
-    }
-
-    var lastUpdatedAsm = null;
-    function updateAsm(forceUpdate) {
-        if (!currentAssembly) return;
-        var newFilters = getAsmFilters();
-        var hashedUpdate = JSON.stringify({
-            asm: currentAssembly, 
-            filter: newFilters
-        });
-        if (!forceUpdate && lastUpdatedAsm == hashedUpdate) { return; }
-        lastUpdatedAsm = hashedUpdate;
-
-        var asm = processAsm(currentAssembly, newFilters);
-        var asmText = $.map(asm, function(x){ return x.text; }).join("\n");
-        var numberedLines = numberUsedLines(asm);
-        asmCodeMirror.setValue(asmText);
-        
-        clearBackground(cppEditor);
-        clearBackground(asmCodeMirror);
-        if (newFilters.colouriseAsm) {
-            $.each(numberedLines.source, function(line, ordinal) {
-                cppEditor.setLineClass(parseInt(line), null, "rainbow-" + (ordinal & 7));
-            });
-            $.each(numberedLines.asm, function(line, ordinal) {
-                asmCodeMirror.setLineClass(parseInt(line), null, "rainbow-" + (ordinal & 7));
-            });
+    var obj = { urlpart: filename, name: filename, file: currentCompiler.getSource() };
+    getSource().save(obj, function(ok) {
+        if (ok) {
+            window.localStorage['filename'] = filename;
+            updateFileList();
         }
-    }
+    });
+}
 
-    function onChange() {
-        if (ignoreChanges) return;  // Ugly hack during startup.
-        if (pendingTimeout) clearTimeout(pendingTimeout);
-        pendingTimeout = setTimeout(function() {
-            var data = { 
-                source: cppEditor.getValue(),
-                compiler: $('.compiler').val(),
-                options: $('.compiler_options').val(),
-                filters: getAsmFilters()
-            };
-            window.localStorage['compiler'] = data.compiler;
-            window.localStorage['compilerOptions'] = data.options;
-            if (data == lastRequest) return;
-            lastRequest = data;
-            $.ajax({
-                type: 'POST',
-                url: '/compile',
-                dataType: 'json',
-                data: data,
-                success: onCompileResponse});
-        }, 750);
-        window.localStorage['code'] = cppEditor.getValue();
-        window.localStorage['filter'] = JSON.stringify(getAsmFilters());
-        updateAsm();
-        $('a.permalink').attr('href', '#' + serialiseState());
-    }
-
-    function loadFile() {
-        var name = $('.filename').val();
-        window.localStorage['filename'] = name;
-        getSource().load(name, function(results) {
-            if (results.file) {
-                cppEditor.setValue(results.file);
-            } else {
-                // TODO: error?
-                console.log(results);
-            }
-        });
-    }
-
-    function saveFile() {
-        saveAs($('.files .filename').val());
-    }
-
-    function saveAs(filename) {
-        var prevFilename = window.localStorage['filename'] || "";
-        if (filename != prevFilename && currentFileList[filename]) {
-            // TODO!
-            alert("Coming soon - overwriting files");
-            return;
-        }
-        var obj = { urlpart: filename, name: filename, file: cppEditor.getValue() };
-        getSource().save(obj, function(ok) {
-            if (ok) {
-                window.localStorage['filename'] = filename;
-                updateFileList();
-            }
-        });
-    }
-
-    function saveFileAs() {
-        $('#saveDialog').modal();
-        $('#saveDialog .save-filename').val($('.files .filename').val());
-        $('#saveDialog .save-filename').focus();
-        function onSave() {
-            $('#saveDialog').modal('hide');
-            saveAs($('#saveDialog .save-filename').val());
-        };
-        $('#saveDialog .save').click(onSave);
-        $('#saveDialog .save-filename').keyup(function(event) {
-            if (event.keyCode == 13) onSave();
-        });
-    }
-
-    function serialiseState() {
-        var state = {
-            version: 2,
-            source: cppEditor.getValue(),
-            compiler: domRoot.find('.compiler').val(),
-            options: domRoot.find('.compiler_options').val(),
-            filterAsm: getAsmFilters()
-        };
-        return encodeURIComponent(JSON.stringify(state));
-    }
-
-    function deserialiseState(state) {
-        try {
-            var state = $.parseJSON(decodeURIComponent(state));
-            if (state.version == 1) { 
-                state.filterAsm = {};
-            }
-            else if (state.version != 2) return false;
-        } catch (ignored) { return false; }
-        cppEditor.setValue(state.source);
-        domRoot.find('.compiler').val(state.compiler);
-        domRoot.find('.compiler_options').val(state.options);
-        setFilterUi(state.filterAsm);
-        // Somewhat hackily persist compiler into local storage else when the ajax response comes in
-        // with the list of compilers it can splat over the deserialized version.
-        // The whole serialize/hash/localStorage code is a mess! TODO(mg): fix
-        window.localStorage['compiler'] = state.compiler;
-        updateAsm(true);  // Force the update to reset colours after calling cppEditor.setValue
-        return true;
-    }
-
-    function onCompilerChange() {
-        onChange();
-        var compiler = compilersByExe[$('.compiler').val()];
-        domRoot.find('.filter button.btn[value="intel"]').toggleClass("disabled", !compiler.supportedOpts["-masm"]);
-    }
-    
-    function setCompilers(compilers) {
-        domRoot.find('.compiler option').remove();
-        $.each(compilers, function(index, arg) {
-            $('.compiler').append($('<option value="' + arg.exe + '">' + arg.version + '</option>'));
-        });
-        onCompilerChange();
-    }
-
-    return {
-        deserialiseState: deserialiseState,
-        setCompilers: setCompilers,
-        loadFile: loadFile,
-        saveFile: saveFile,
-        saveFileAs: saveFileAs 
+function saveFileAs() {
+    $('#saveDialog').modal();
+    $('#saveDialog .save-filename').val($('.files .filename').val());
+    $('#saveDialog .save-filename').focus();
+    function onSave() {
+        $('#saveDialog').modal('hide');
+        saveAs($('#saveDialog .save-filename').val());
     };
+    $('#saveDialog .save').click(onSave);
+    $('#saveDialog .save-filename').keyup(function(event) {
+        if (event.keyCode == 13) onSave();
+    });
 }
 
 function initialise() {
     var compiler = new Compiler($('body'));
+    currentCompiler = compiler;
 
-    if (window.localStorage['compilerOptions']) $('.compiler_options').val(window.localStorage['compilerOptions']);
     var defaultFilters = JSON.stringify(getAsmFilters());
     setFilterUi($.parseJSON(window.localStorage['filter'] || defaultFilters));
 
