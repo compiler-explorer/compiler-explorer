@@ -120,11 +120,12 @@ function saveFileAs() {
 }
 
 function initialise() {
-    var compiler = new Compiler($('body'));
-    currentCompiler = compiler;
-
     var defaultFilters = JSON.stringify(getAsmFilters());
-    setFilterUi($.parseJSON(window.localStorage['filter'] || defaultFilters));
+    var actualFilters = $.parseJSON(window.localStorage['filter'] || defaultFilters);
+    setFilterUi(actualFilters);
+
+    var compiler = new Compiler($('body'), actualFilters);
+    currentCompiler = compiler;
 
     $('form').submit(function() { return false; });
     $('.files .source').change(onSourceChange);
@@ -160,8 +161,9 @@ function initialise() {
     
     $('.filter button.btn').click(function(e) {
         $(e.target).toggleClass('active');
-        window.localStorage['filter'] = JSON.stringify(getAsmFilters());
-        currentCompiler.onChange();
+        var filters = getAsmFilters();
+        window.localStorage['filter'] = JSON.stringify(filters);
+        currentCompiler.setFilters(filters);
     });
 
     function loadFromHash() {

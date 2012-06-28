@@ -42,13 +42,14 @@ function clearBackground(cm) {
     }
 }
 
-function Compiler(domRoot) {
+function Compiler(domRoot, origFilters) {
     var compilersByExe = {};
     var pendingTimeout = null;
     var asmCodeMirror = null;
     var cppEditor = null;
     var lastRequest = null;
     var currentAssembly = null;
+    var filters = origFilters;
     var ignoreChanges = true; // Horrible hack to avoid onChange doing anything on first starting, ie before we've set anything up.
 
     cppEditor = CodeMirror.fromTextArea(domRoot.find(".editor textarea")[0], {
@@ -114,22 +115,21 @@ function Compiler(domRoot) {
     var lastUpdatedAsm = null;
     function updateAsm(forceUpdate) {
         if (!currentAssembly) return;
-        var newFilters = getAsmFilters();
         var hashedUpdate = JSON.stringify({
             asm: currentAssembly, 
-            filter: newFilters
+            filter: filters
         });
         if (!forceUpdate && lastUpdatedAsm == hashedUpdate) { return; }
         lastUpdatedAsm = hashedUpdate;
 
-        var asm = processAsm(currentAssembly, newFilters);
+        var asm = processAsm(currentAssembly, filters);
         var asmText = $.map(asm, function(x){ return x.text; }).join("\n");
         var numberedLines = numberUsedLines(asm);
         asmCodeMirror.setValue(asmText);
         
         clearBackground(cppEditor);
         clearBackground(asmCodeMirror);
-        if (newFilters.colouriseAsm) {
+        if (filters.colouriseAsm) {
             $.each(numberedLines.source, function(line, ordinal) {
                 cppEditor.setLineClass(parseInt(line), null, "rainbow-" + (ordinal & 7));
             });
@@ -147,7 +147,7 @@ function Compiler(domRoot) {
                 source: cppEditor.getValue(),
                 compiler: $('.compiler').val(),
                 options: $('.compiler_options').val(),
-                filters: getAsmFilters()
+                filters: filters
             };
             window.localStorage['compiler'] = data.compiler;
             window.localStorage['compilerOptions'] = data.options;
@@ -179,7 +179,7 @@ function Compiler(domRoot) {
             source: cppEditor.getValue(),
             compiler: domRoot.find('.compiler').val(),
             options: domRoot.find('.compiler_options').val(),
-            filterAsm: getAsmFilters()
+            filterAsm: filters
         };
         return encodeURIComponent(JSON.stringify(state));
     }
@@ -220,10 +220,16 @@ function Compiler(domRoot) {
         onCompilerChange();
     }
 
+    function setFilters(f) {
+        filters = f;
+        updateAsm();
+    }
+
     return {
         deserialiseState: deserialiseState,
         setCompilers: setCompilers,
         getSource: getSource,
-        setSource: setSource
+        setSource: setSource,
+        setFilters: setFilters
     };
 }
