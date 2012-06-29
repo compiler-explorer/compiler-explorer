@@ -127,19 +127,21 @@ function compile(req, res) {
         child.stderr.on('data', function (data) { stderr += data; });
         child.on('exit', function (code) {
             clearTimeout(timeout);
-            child_process.exec('cat "' + outputFilename + '" | c++filt', function(err, filt_stdout, filt_stderr) {
-                var data = filt_stdout;
-                if (err) {
-                    data = '<No output>';
-                }
+            child_process.exec('cat "' + outputFilename + '" | c++filt',
+                { maxBuffer: props.get("gcc-explorer", "max-asm-size", 8 * 1024 * 1024) },
+                function(err, filt_stdout, filt_stderr) {
+                    var data = filt_stdout;
+                    if (err) {
+                        data = '<No output: ' + err + '>';
+                    }
 
-                res.end(JSON.stringify({
-                    stdout: stdout,
-                    stderr: stderr,
-                    asm: data,
-                    code: code }));
-                fs.unlink(outputFilename, function() { fs.rmdir(dirPath); });
-            });
+                    res.end(JSON.stringify({
+                        stdout: stdout,
+                        stderr: stderr,
+                        asm: data,
+                        code: code }));
+                    fs.unlink(outputFilename, function() { fs.rmdir(dirPath); });
+                });
         });
         child.stdin.write(source);
         child.stdin.end();
