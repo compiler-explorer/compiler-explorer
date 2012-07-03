@@ -5,7 +5,7 @@ function processAsm(asm, filters) {
     var labelFind = /[.a-zA-Z0-9_][a-zA-Z0-9$_.]*/g;
     var files = {};
     var prevLabel = "";
-    var dataDefn = /\.(string|asciz|ascii|[1248]?byte|short|word|long|quad|value)/;
+    var dataDefn = /\.(string|asciz|ascii|[1248]?byte|short|word|long|quad|value|zero)/;
     var fileFind = /^\s*\.file\s+(\d+)\s+"([^"]+)"$/;
     var hasOpcode = /^\s*([a-zA-Z0-9$_][a-zA-Z0-9$_.]*:\s*)?[a-zA-Z].*/;
     asmLines.forEach(function(line) {
