@@ -1,70 +1,19 @@
-
-CodeMirror.defineMode("asm", function() {
-  function tokenString(quote) {
-    return function(stream) {
-      var escaped = false, next, end = false;
-      while ((next = stream.next()) != null) {
-        if (next == quote && !escaped) {end = true; break;}
-        escaped = !escaped && next == "\\";
-      }
-      return "string";
-    };
-  }
-
-  return {
-    token: function(stream) {
-        if (stream.match(/^.+:$/)) {
-            return "variable-2";
-        }
-        if (stream.sol() && stream.match(/^\s*\.\w+/)) {
-            return "header";
-        }
-        if (stream.sol() && stream.match(/^\s\w+/)) {
-            return "keyword";
-        }
-        if (stream.eatSpace()) return null;
-        var ch = stream.next();
-        if (ch == '"' || ch == "'") {
-            return tokenString(ch)(stream);
-        }
-        if (/[\[\]{}\(\),;\:]/.test(ch)) return null;
-        if (/[\d$]/.test(ch) || (ch == '-' && stream.peek().match(/[0-9]/))) {
-            stream.eatWhile(/[\w\.]/);
-            return "number";
-        }
-        if (ch == '%') {
-            stream.eatWhile(/\w+/);
-            return "variable-3";
-        }
-        if (ch == '#') {
-            stream.eatWhile(/.*/);
-            return "comment";
-        }
-        stream.eatWhile(/[\w\$_]/);
-        return "word";
-    }
-  };
-});
-
-CodeMirror.defineMIME("text/x-asm", "asm");
-
 function processAsm(asm, filters) {
     var result = [];
     var asmLines = asm.split("\n");
     var labelsUsed = {};
-    var labelFind = /\.[a-zA-Z0-9$_.]+/g;
+    var labelFind = /[.a-zA-Z0-9_][a-zA-Z0-9$_.]*/g;
     var files = {};
     var prevLabel = "";
-    var literalConstant = /^\.LC\d+/;
-    var lcString = /\.string/;
+    var dataDefn = /\.(string|asciz|ascii|[1248]?byte|short|word|long|quad|value)/;
     var fileFind = /^\s*\.file\s+(\d+)\s+"([^"]+)"$/;
     var hasOpcode = /^\s*([a-zA-Z0-9$_][a-zA-Z0-9$_.]*:\s*)?[a-zA-Z].*/;
-    $.each(asmLines, function(_, line) {
+    asmLines.forEach(function(line) {
         if (line == "" || line[0] == ".") return;
         var match = line.match(labelFind);
         if (match && (!filters.directives || line.match(hasOpcode))) {
             // Only count a label as used if it's used by an opcode, or else we're not filtering directives.
-            $.each(match, function(_, label) { labelsUsed[label] = true; });
+            match.forEach(function(label) { labelsUsed[label] = true; });
         }
         match = line.match(fileFind);
         if (match) {
@@ -73,14 +22,18 @@ function processAsm(asm, filters) {
     });
 
     var directive = /^\s*\..*$/;
-    var labelDefinition = /^(\.[a-zA-Z0-9$_.]+):/;
+    var labelDefinition = /^([a-zA-Z0-9$_.]+):/;
     var commentOnly = /^\s*(#|@|\/\/).*/;
     var sourceTag = /^\s*\.loc\s+(\d+)\s+(\d+).*/;
     var stdInLooking = /.*<stdin>|-/;
+    var endBlock = /\.(cfi_endproc|data|text|section)/;
     var source = null;
-    $.each(asmLines, function(_, line) {
+    asmLines.forEach(function(line) {
         var match;
-        if (line.trim() == "") return;
+        if (line.trim() == "") {
+            result.push({text:"", source:null});
+            return;
+        }
         if (match = line.match(sourceTag)) {
             source = null;
             var file = files[parseInt(match[1])];
@@ -88,25 +41,32 @@ function processAsm(asm, filters) {
                 source = parseInt(match[2]);
             }
         }
+        if (line.match(endBlock)) {
+            source = null;
+            prevLabel = null;
+        }
 
         if (filters.commentOnly && line.match(commentOnly)) return;
+
         match = line.match(labelDefinition);
-        if (!match && line.match(lcString) && prevLabel) {
-	    result.push({text: line, source: null});
-            prevLabel = "";
-            return;
-        }
-        if (match && labelsUsed[match[1]] == undefined) {
-            if (filters.labels) return;
-        }
-        if (match && line.match(literalConstant)) {
-            prevLabel = line;
+        if (match) {
+            // It's a label definition.
+            if (labelsUsed[match[1]] == undefined) {
+                // It's an unused label.
+                if (filters.labels) return;
+            } else {
+                // A used label.
+                prevLabel = match;
+            }
         }
         if (!match && filters.directives) {
             // Check for directives only if it wasn't a label; the regexp would
             // otherwise misinterpret labels as directives.
-            match = line.match(directive);
-            if (match) return;
+            if (line.match(dataDefn) && prevLabel) {
+                // We're defining data that's being used somewhere.
+            } else {
+                if (line.match(directive)) return;
+            }
         }
 
         var hasOpcodeMatch = line.match(hasOpcode);
@@ -115,3 +75,8 @@ function processAsm(asm, filters) {
     return result;
 }
 
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = {
+        processAsm: processAsm
+    };
+}
