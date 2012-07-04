@@ -14,9 +14,14 @@ $(NODE_MODULES): package.json
 
 node_modules: $(NODE_MODULES)
 
+test:
+	(cd test; node test.js)
+	@echo Tests pass
+
 clean:
 	rm -rf node_modules
-.PHONY: clean run
+
+.PHONY: clean run test run-amazon
 
 run: node_modules
 	./node_modules/.bin/supervisor ./app.js
