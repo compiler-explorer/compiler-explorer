@@ -186,7 +186,7 @@ function Compiler(domRoot, origFilters) {
 
     function deserialiseState(state) {
         try {
-            var state = $.parseJSON(decodeURIComponent(state));
+            state = $.parseJSON(decodeURIComponent(state));
             if (state.version == 1) { 
                 state.filterAsm = {};
             }
@@ -217,6 +217,9 @@ function Compiler(domRoot, origFilters) {
             compilersByExe[arg.exe] = arg;
             $('.compiler').append($('<option value="' + arg.exe + '">' + arg.version + '</option>'));
         });
+        if (window.localStorage['compiler']) {
+            domRoot.find('.compiler').val(window.localStorage['compiler']);
+        }
         onCompilerChange();
     }
 

@@ -174,7 +174,6 @@ function initialise() {
         loadFromHash();
     });
     loadFromHash();
-    ignoreChanges = false;
 }
 
 function getAsmFilters() {
