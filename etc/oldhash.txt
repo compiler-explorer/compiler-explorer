@@ -1,0 +1,2 @@
+http://localhost:10240/#%7B%22version%22%3A2%2C%22source%22%3A%22%23include%20%3Cxmmintrin.h%3E%5Cn%5Cnvoid%20f(__m128%20a%2C%20__m128%20b)%5Cn%7B%5Cn%20%20%2F%2F%20I%20am%20a%20walrus.%5Cn%7D%22%2C%22compiler%22%3A%22%2Fhome%2Fmgodbolt%2Fapps%2Fintel-icc-oss%2Fbin%2Ficc%22%2C%22options%22%3A%22-O3%20-std%3Dc%2B%2B0x%22%2C%22filterAsm%22%3A%7B%22labels%22%3Atrue%2C%22directives%22%3Atrue%7D%7D
+-- should be icc, "-O3 -std=c++0x", all filters but comments

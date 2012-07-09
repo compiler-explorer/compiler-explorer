@@ -42,7 +42,7 @@ function clearBackground(cm) {
     }
 }
 
-function Compiler(domRoot, origFilters) {
+function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback) {
     var compilersByExe = {};
     var pendingTimeout = null;
     var asmCodeMirror = null;
@@ -66,13 +66,20 @@ function Compiler(domRoot, origFilters) {
                   readOnly: true
     });
 
-    if (window.localStorage['code']) cppEditor.setValue(window.localStorage['code']);
+    function getSetting(name) {
+        return window.localStorage[windowLocalPrefix + "." + name];
+    }
+    function setSetting(name, value) {
+        window.localStorage[windowLocalPrefix + "." + name] = value;
+    }
+
+    if (getSetting('code')) cppEditor.setValue(getSetting('code'));
     domRoot.find('.compiler').change(onCompilerChange);
     domRoot.find('.compiler_options').change(onChange).keyup(onChange);
     ignoreChanges = false;
 
-    if (window.localStorage['compilerOptions']) {
-        domRoot.find('.compiler_options').val(window.localStorage['compilerOptions']);
+    if (getSetting('compilerOptions')) {
+        domRoot.find('.compiler_options').val(getSetting('compilerOptions'));
     }
 
     function onCompileResponse(data) {
@@ -149,8 +156,8 @@ function Compiler(domRoot, origFilters) {
                 options: $('.compiler_options').val(),
                 filters: filters
             };
-            window.localStorage['compiler'] = data.compiler;
-            window.localStorage['compilerOptions'] = data.options;
+            setSetting('compiler', data.compiler);
+            setSetting('compilerOptions', data.options);
             if (data == lastRequest) return;
             lastRequest = data;
             $.ajax({
@@ -160,9 +167,9 @@ function Compiler(domRoot, origFilters) {
                 data: data,
                 success: onCompileResponse});
         }, 750);
-        window.localStorage['code'] = cppEditor.getValue();
+        setSetting('code', cppEditor.getValue());
         updateAsm();
-        $('a.permalink').attr('href', '#' + serialiseState());
+        onChangeCallback();
     }
 
     function setSource(code) {
@@ -175,31 +182,21 @@ function Compiler(domRoot, origFilters) {
 
     function serialiseState() {
         var state = {
-            version: 2,
             source: cppEditor.getValue(),
             compiler: domRoot.find('.compiler').val(),
             options: domRoot.find('.compiler_options').val(),
-            filterAsm: filters
         };
-        return encodeURIComponent(JSON.stringify(state));
+        return state;
     }
 
     function deserialiseState(state) {
-        try {
-            state = $.parseJSON(decodeURIComponent(state));
-            if (state.version == 1) { 
-                state.filterAsm = {};
-            }
-            else if (state.version != 2) return false;
-        } catch (ignored) { return false; }
         cppEditor.setValue(state.source);
         domRoot.find('.compiler').val(state.compiler);
         domRoot.find('.compiler_options').val(state.options);
-        setFilterUi(state.filterAsm);
         // Somewhat hackily persist compiler into local storage else when the ajax response comes in
         // with the list of compilers it can splat over the deserialized version.
         // The whole serialize/hash/localStorage code is a mess! TODO(mg): fix
-        window.localStorage['compiler'] = state.compiler;
+        setSetting('compiler', state.compiler);
         updateAsm(true);  // Force the update to reset colours after calling cppEditor.setValue
         return true;
     }
@@ -215,10 +212,10 @@ function Compiler(domRoot, origFilters) {
         compilersByExe = {};
         $.each(compilers, function(index, arg) {
             compilersByExe[arg.exe] = arg;
-            $('.compiler').append($('<option value="' + arg.exe + '">' + arg.version + '</option>'));
+            domRoot.find('.compiler').append($('<option value="' + arg.exe + '">' + arg.version + '</option>'));
         });
-        if (window.localStorage['compiler']) {
-            domRoot.find('.compiler').val(window.localStorage['compiler']);
+        if (getSetting('compiler')) {
+            domRoot.find('.compiler').val(getSetting('compiler'));
         }
         onCompilerChange();
     }
@@ -229,6 +226,7 @@ function Compiler(domRoot, origFilters) {
     }
 
     return {
+        serialiseState: serialiseState,
         deserialiseState: deserialiseState,
         setCompilers: setCompilers,
         getSource: getSource,

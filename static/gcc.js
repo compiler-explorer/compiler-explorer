@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 var currentCompiler = null;
+var allCompilers = [];
 
 function getSource() {
     var source = $('.source').val();
@@ -119,12 +120,47 @@ function saveFileAs() {
     });
 }
 
+function serialiseState() {
+    var state = {
+        version: 3,
+        filterAsm: getAsmFilters(),
+        compilers: $.map(allCompilers, function(compiler) { return compiler.serialiseState(); })
+    };
+    return encodeURIComponent(JSON.stringify(state));
+}
+
+function deserialiseState(state) {
+    try {
+        state = $.parseJSON(decodeURIComponent(state));
+        switch (state.version) {
+        case 1:
+            state.filterAsm = {};
+            // falls into
+        case 2:
+            state.compilers = [state];
+            // falls into
+        case 3:
+            break;
+        default:
+            return false;
+        }
+    } catch (ignored) { return false; }
+    setFilterUi(state.filterAsm);
+    for (var i = 0; i < Math.min(allCompilers.length, state.compilers.length); i++) {
+        allCompilers[i].deserialiseState(state.compilers[i]);
+    }
+    return true;
+}
+
 function initialise() {
     var defaultFilters = JSON.stringify(getAsmFilters());
     var actualFilters = $.parseJSON(window.localStorage['filter'] || defaultFilters);
     setFilterUi(actualFilters);
 
-    var compiler = new Compiler($('body'), actualFilters);
+    var compiler = new Compiler($('body'), actualFilters, "a", function() {
+        $('a.permalink').attr('href', '#' + serialiseState());
+    });
+    allCompilers.push(compiler);
     currentCompiler = compiler;
 
     $('form').submit(function() { return false; });
@@ -167,7 +203,7 @@ function initialise() {
     });
 
     function loadFromHash() {
-        compiler.deserialiseState(window.location.hash.substr(1));
+        deserialiseState(window.location.hash.substr(1));
     }
 
     $(window).bind('hashchange', function() {
