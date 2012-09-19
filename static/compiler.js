@@ -124,7 +124,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback) {
         if (!currentAssembly) return;
         var hashedUpdate = JSON.stringify({
             asm: currentAssembly, 
-            filter: filters
+            filters: filters
         });
         if (!forceUpdate && lastUpdatedAsm == hashedUpdate) { return; }
         lastUpdatedAsm = hashedUpdate;
@@ -146,6 +146,10 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback) {
         }
     }
 
+    function pickOnlyRequestFilters(filters) {
+        return {intel: !!filters.intel };
+    }
+
     function onChange() {
         if (ignoreChanges) return;  // Ugly hack during startup.
         if (pendingTimeout) clearTimeout(pendingTimeout);
@@ -154,11 +158,11 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback) {
                 source: cppEditor.getValue(),
                 compiler: $('.compiler').val(),
                 options: $('.compiler_options').val(),
-                filters: filters
+                filters: pickOnlyRequestFilters(filters)
             };
             setSetting('compiler', data.compiler);
             setSetting('compilerOptions', data.options);
-            if (data == lastRequest) return;
+            if (JSON.stringify(data) == JSON.stringify(lastRequest)) return;
             lastRequest = data;
             $.ajax({
                 type: 'POST',
@@ -222,7 +226,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback) {
 
     function setFilters(f) {
         filters = f;
-        updateAsm();
+        onChange();  // used to just update ASM, but things like "Intel syntax" need a new request
     }
 
     return {
