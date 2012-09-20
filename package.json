@@ -11,7 +11,8 @@
       "connect": "2.3.x",
       "async": "0.1.x",
       "nopt": "1.0.x",
-      "temp": "0.4.x"
+      "temp": "0.4.x",
+      "ffi": "1.0.x"
   },
   "devDependencies": {
       "supervisor": "0.3.1"
