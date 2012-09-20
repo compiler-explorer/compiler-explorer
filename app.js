@@ -104,7 +104,7 @@ function compile(req, res) {
         var outputFilename = path.join(dirPath, 'output.S');
         if (compilerInfo.supportedOpts['-masm']) {
             var syntax = '-masm=att'; // default at&t
-            if (filters["intel"]) syntax = '-masm=intel';
+            if (filters["intel"] == "true") syntax = '-masm=intel';
             options = options.concat([syntax]);
         }
         options = options.concat(['-x', 'c++', '-g', '-o', outputFilename, '-S', '-']);
