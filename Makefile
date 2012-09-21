@@ -34,6 +34,12 @@ clean:
 run: node_modules optional_d_support
 	./node_modules/.bin/supervisor ./app.js
 
-run-amazon: node_modules optional_d_support
+c-preload:
 	$(MAKE) -C c-preload
+
+run-amazon: node_modules optional_d_support c-preload
 	./node_modules/.bin/supervisor -- ./app.js --env amazon
+
+run-amazon-d: node_modules optional_d_support c-preload
+	./node_modules/.bin/supervisor -- ./app.js --env amazon-d
+
