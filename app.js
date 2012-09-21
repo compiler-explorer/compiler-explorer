@@ -109,19 +109,23 @@ function compile(req, res) {
     if (sourceErr) {
         return res.end(JSON.stringify({code: -1, stderr: sourceErr}));
     }
-
-    compileTask = function(taskFinished) {
+    var compileTask = function(taskFinished) {
         temp.mkdir('gcc-explorer-compiler', function(err, dirPath) {
             if (err) {
                 return res.end(JSON.stringify({code: -1, stderr: "Unable to open temp file: " + err}));
             }
+            var postProcess = props.get("gcc-explorer", "postProcess");
+            var inputFilename = path.join(dirPath, props.get("gcc-explorer", "compileFilename"));
             var outputFilename = path.join(dirPath, 'output.S');
             if (compilerInfo.supportedOpts['-masm']) {
                 var syntax = '-masm=att'; // default at&t
                 if (filters["intel"] == "true") syntax = '-masm=intel';
                 options = options.concat([syntax]);
             }
-            options = options.concat(['-x', 'c++', '-g', '-o', outputFilename, '-S', '-']);
+            options = options.concat(['-g', '-o', outputFilename, '-S', inputFilename]);
+            var file = fs.openSync(inputFilename, "w");
+            fs.writeSync(file, source);
+            fs.closeSync(file);
             var compilerWrapper = props.get("gcc-explorer", "compiler-wrapper");
             if (compilerWrapper) {
                 options = [compiler].concat(options);
@@ -141,7 +145,7 @@ function compile(req, res) {
             child.stderr.on('data', function (data) { stderr += data; });
             child.on('exit', function (code) {
                 clearTimeout(timeout);
-                child_process.exec('cat "' + outputFilename + '" | c++filt',
+                child_process.exec('cat "' + outputFilename + '" | ' + postProcess,
                     { maxBuffer: props.get("gcc-explorer", "max-asm-size", 8 * 1024 * 1024) },
                     function(err, filt_stdout, filt_stderr) {
                         var data = filt_stdout;
@@ -154,11 +158,13 @@ function compile(req, res) {
                             stderr: stderr,
                             asm: data,
                             code: code }));
-                        fs.unlink(outputFilename, function() { fs.rmdir(dirPath); });
+                        fs.unlink(outputFilename, function() { 
+                            fs.unlink(inputFilename, 
+                                function() { fs.rmdir(dirPath); });
+                        });
                         taskFinished();
                     });
             });
-            child.stdin.write(source);
             child.stdin.end();
         });
     };

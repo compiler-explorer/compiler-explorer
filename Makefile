@@ -7,6 +7,14 @@ else
 default: run
 endif
 
+ifeq "" "$(shell which gdc-4.6)"
+optional_d_support:
+	@echo "D language support disabled"
+else
+optional_d_support:
+	$(MAKE) -C d
+endif
+
 NODE_MODULES=.npm-updated
 $(NODE_MODULES): package.json
 	npm install
@@ -23,9 +31,9 @@ clean:
 
 .PHONY: clean run test run-amazon
 
-run: node_modules
+run: node_modules optional_d_support
 	./node_modules/.bin/supervisor ./app.js
 
-run-amazon: node_modules
+run-amazon: node_modules optional_d_support
 	$(MAKE) -C c-preload
 	./node_modules/.bin/supervisor -- ./app.js --env amazon
