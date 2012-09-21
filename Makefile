@@ -7,7 +7,7 @@ else
 default: run
 endif
 
-ifeq "" "$(shell which gdc-4.6)"
+ifeq "" "$(shell which gdc)"
 optional_d_support:
 	@echo "D language support disabled"
 else

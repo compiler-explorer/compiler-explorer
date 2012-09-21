@@ -1,3 +1,3 @@
-GDC=gdc-4.6
+GDC=gdc
 demangle: demangle.d
 	$(GDC) -O2 $< -o $@
