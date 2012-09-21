@@ -4,7 +4,7 @@
   var loading = {};
   function splitCallback(cont, n) {
     var countDown = n;
-    return function() { if (--countDown == 0) cont(); }
+    return function() { if (--countDown == 0) cont(); };
   }
   function ensureDeps(mode, cont) {
     var deps = CodeMirror.modes[mode].dependencies;
@@ -21,7 +21,8 @@
   }
 
   CodeMirror.requireMode = function(mode, cont) {
-    if (CodeMirror.modes.hasOwnProperty(mode)) return ensureDeps(mode, cont());
+    if (typeof mode != "string") mode = mode.name;
+    if (CodeMirror.modes.hasOwnProperty(mode)) return ensureDeps(mode, cont);
     if (loading.hasOwnProperty(mode)) return loading[mode].push(cont);
 
     var script = document.createElement("script");

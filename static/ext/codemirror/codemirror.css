@@ -1,6 +1,11 @@
 .CodeMirror {
   line-height: 1em;
   font-family: monospace;
+
+  /* Necessary so the scrollbar can be absolutely positioned within the wrapper on Lion. */
+  position: relative;
+  /* This prevents unwanted scrollbars from showing up on the body and wrapper in IE. */
+  overflow: hidden;
 }
 
 .CodeMirror-scroll {
@@ -10,6 +15,35 @@
      is visible outside of the scrolling box. */
   position: relative;
   outline: none;
+}
+
+/* Vertical scrollbar */
+.CodeMirror-scrollbar {
+  position: absolute;
+  right: 0; top: 0;
+  overflow-x: hidden;
+  overflow-y: scroll;
+  z-index: 5;
+}
+.CodeMirror-scrollbar-inner {
+  /* This needs to have a nonzero width in order for the scrollbar to appear
+     in Firefox and IE9. */
+  width: 1px;
+}
+.CodeMirror-scrollbar.cm-sb-overlap {
+  /* Ensure that the scrollbar appears in Lion, and that it overlaps the content
+     rather than sitting to the right of it. */
+  position: absolute;
+  z-index: 1;
+  float: none;
+  right: 0;
+  min-width: 12px;
+}
+.CodeMirror-scrollbar.cm-sb-nonoverlap {
+  min-width: 12px;
+}
+.CodeMirror-scrollbar.cm-sb-ie7 {
+  min-width: 18px;
 }
 
 .CodeMirror-gutter {
@@ -25,10 +59,12 @@
   text-align: right;
   padding: .4em .2em .4em .4em;
   white-space: pre !important;
+  cursor: default;
 }
 .CodeMirror-lines {
   padding: .4em;
   white-space: pre;
+  cursor: text;
 }
 
 .CodeMirror pre {
@@ -43,6 +79,7 @@
   white-space: pre;
   word-wrap: normal;
   line-height: inherit;
+  color: inherit;
 }
 
 .CodeMirror-wrap pre {
@@ -63,8 +100,19 @@
   position: absolute;
   visibility: hidden;
   border-left: 1px solid black;
-  border-right:none;
-  width:0;
+  border-right: none;
+  width: 0;
+}
+.cm-keymap-fat-cursor pre.CodeMirror-cursor {
+  width: auto;
+  border: 0;
+  background: transparent;
+  background: rgba(0, 200, 0, .4);
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#6600c800, endColorstr=#4c00c800);
+}
+/* Kludge to turn off filter in ie9+, which also accepts rgba */
+.cm-keymap-fat-cursor pre.CodeMirror-cursor:not(#nonsense_id) {
+  filter: progid:DXImageTransform.Microsoft.gradient(enabled=false);
 }
 .CodeMirror pre.CodeMirror-cursor.CodeMirror-overwrite {}
 .CodeMirror-focused pre.CodeMirror-cursor {
@@ -97,10 +145,10 @@ div.CodeMirror-selected { background: #d9d9d9; }
 .cm-s-default span.cm-error {color: #f00;}
 .cm-s-default span.cm-qualifier {color: #555;}
 .cm-s-default span.cm-builtin {color: #30a;}
-.cm-s-default span.cm-bracket {color: #cc7;}
+.cm-s-default span.cm-bracket {color: #997;}
 .cm-s-default span.cm-tag {color: #170;}
 .cm-s-default span.cm-attribute {color: #00c;}
-.cm-s-default span.cm-header {color: #a0a;}
+.cm-s-default span.cm-header {color: blue;}
 .cm-s-default span.cm-quote {color: #090;}
 .cm-s-default span.cm-hr {color: #999;}
 .cm-s-default span.cm-link {color: #00c;}
@@ -110,5 +158,16 @@ span.cm-em {font-style: italic;}
 span.cm-emstrong {font-style: italic; font-weight: bold;}
 span.cm-link {text-decoration: underline;}
 
+span.cm-invalidchar {color: #f00;}
+
 div.CodeMirror span.CodeMirror-matchingbracket {color: #0f0;}
 div.CodeMirror span.CodeMirror-nonmatchingbracket {color: #f22;}
+
+@media print {
+
+  /* Hide the cursor when printing */
+  .CodeMirror pre.CodeMirror-cursor {
+    visibility: hidden;
+  }
+
+}
