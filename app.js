@@ -52,6 +52,18 @@ var port = props.get('gcc-explorer', 'port', 10240);
 var compilers = [];
 var compilersByExe = {};
 
+var compileQueue = async.queue(function(task, callback) {
+    console.log("Compiling, queue size " + compileQueue.length());
+    task.task(callback);
+}, props.get("gcc-explorer", "maxConcurrentCompiles", 1));
+compileQueue.drain = function() {
+    console.log("Compile queue empty");
+};
+compileQueue.saturated = function() {
+    console.log("Compile queue full");
+};
+
+
 function checkOptions(options) {
     var okOptions = new RegExp(props.get('gcc-options', 'whitelistRe', '.*'));
     var badOptions = new RegExp(props.get('gcc-options', 'blacklistRe'));
@@ -97,55 +109,61 @@ function compile(req, res) {
     if (sourceErr) {
         return res.end(JSON.stringify({code: -1, stderr: sourceErr}));
     }
-    temp.mkdir('gcc-explorer-compiler', function(err, dirPath) {
-        if (err) {
-            return res.end(JSON.stringify({code: -1, stderr: "Unable to open temp file: " + err}));
-        }
-        var outputFilename = path.join(dirPath, 'output.S');
-        if (compilerInfo.supportedOpts['-masm']) {
-            var syntax = '-masm=att'; // default at&t
-            if (filters["intel"] == "true") syntax = '-masm=intel';
-            options = options.concat([syntax]);
-        }
-        options = options.concat(['-x', 'c++', '-g', '-o', outputFilename, '-S', '-']);
-        var compilerWrapper = props.get("gcc-explorer", "compiler-wrapper");
-        if (compilerWrapper) {
-            options = [compiler].concat(options);
-            compiler = compilerWrapper;
-        }
-        var child = child_process.spawn(
-            compiler,
-            options
-            );
-        var stdout = "";
-        var stderr = "";
-        var timeout = setTimeout(function() {
-            child.kill();
-            stderr += "\nKilled - processing time exceeded";
-        }, props.get("gcc-explorer", "compileTimeoutMs", 100));
-        child.stdout.on('data', function (data) { stdout += data; });
-        child.stderr.on('data', function (data) { stderr += data; });
-        child.on('exit', function (code) {
-            clearTimeout(timeout);
-            child_process.exec('cat "' + outputFilename + '" | c++filt',
-                { maxBuffer: props.get("gcc-explorer", "max-asm-size", 8 * 1024 * 1024) },
-                function(err, filt_stdout, filt_stderr) {
-                    var data = filt_stdout;
-                    if (err) {
-                        data = '<No output: ' + err + '>';
-                    }
 
-                    res.end(JSON.stringify({
-                        stdout: stdout,
-                        stderr: stderr,
-                        asm: data,
-                        code: code }));
-                    fs.unlink(outputFilename, function() { fs.rmdir(dirPath); });
-                });
+    compileTask = function(taskFinished) {
+        temp.mkdir('gcc-explorer-compiler', function(err, dirPath) {
+            if (err) {
+                return res.end(JSON.stringify({code: -1, stderr: "Unable to open temp file: " + err}));
+            }
+            var outputFilename = path.join(dirPath, 'output.S');
+            if (compilerInfo.supportedOpts['-masm']) {
+                var syntax = '-masm=att'; // default at&t
+                if (filters["intel"] == "true") syntax = '-masm=intel';
+                options = options.concat([syntax]);
+            }
+            options = options.concat(['-x', 'c++', '-g', '-o', outputFilename, '-S', '-']);
+            var compilerWrapper = props.get("gcc-explorer", "compiler-wrapper");
+            if (compilerWrapper) {
+                options = [compiler].concat(options);
+                compiler = compilerWrapper;
+            }
+            var child = child_process.spawn(
+                compiler,
+                options
+                );
+            var stdout = "";
+            var stderr = "";
+            var timeout = setTimeout(function() {
+                child.kill();
+                stderr += "\nKilled - processing time exceeded";
+            }, props.get("gcc-explorer", "compileTimeoutMs", 100));
+            child.stdout.on('data', function (data) { stdout += data; });
+            child.stderr.on('data', function (data) { stderr += data; });
+            child.on('exit', function (code) {
+                clearTimeout(timeout);
+                child_process.exec('cat "' + outputFilename + '" | c++filt',
+                    { maxBuffer: props.get("gcc-explorer", "max-asm-size", 8 * 1024 * 1024) },
+                    function(err, filt_stdout, filt_stderr) {
+                        var data = filt_stdout;
+                        if (err) {
+                            data = '<No output: ' + err + '>';
+                        }
+
+                        res.end(JSON.stringify({
+                            stdout: stdout,
+                            stderr: stderr,
+                            asm: data,
+                            code: code }));
+                        fs.unlink(outputFilename, function() { fs.rmdir(dirPath); });
+                        taskFinished();
+                    });
+            });
+            child.stdin.write(source);
+            child.stdin.end();
         });
-        child.stdin.write(source);
-        child.stdin.end();
-    });
+    };
+
+    compileQueue.push({task: compileTask});
 }
 
 function loadSources() {
