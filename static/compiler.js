@@ -23,13 +23,13 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 function parseLines(lines, callback) {
-    var re = /^\<stdin\>:([0-9]+):([0-9]+):\s+(.*)/;
+    var re = /^\/tmp\/[^:]+:([0-9]+)(:([0-9]+))?:\s+(.*)/;
     $.each(lines.split('\n'), function(_, line) {
         line = line.trim();
         if (line != "") {
             var match = line.match(re);
             if (match) {
-                callback(parseInt(match[1]), match[3]);
+                callback(parseInt(match[1]), match[4]);
             } else {
                 callback(null, line);
             }
