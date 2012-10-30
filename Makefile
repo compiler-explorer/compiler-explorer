@@ -2,6 +2,7 @@ ifeq "" "$(shell which npm)"
 default:
 	@echo "Please install node.js"
 	@echo "Visit http://nodejs.org/ for more details"
+	@echo "On Ubuntu/Debian try: sudo apt-get install nodejs npm"
 	exit 1
 else
 default: run
