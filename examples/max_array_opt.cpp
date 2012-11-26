@@ -4,7 +4,7 @@ void maxArray(double* __restrict x, double* __restrict y) {
     x = static_cast<double*>(__builtin_assume_aligned(x, 64));
     y = static_cast<double*>(__builtin_assume_aligned(y, 64));
 #endif
-    for (auto i = 0; i < 65536; i++) {
+    for (int i = 0; i < 65536; i++) {
         x[i] = ((y[i] > x[i]) ? y[i] : x[i]);
     }
 }
