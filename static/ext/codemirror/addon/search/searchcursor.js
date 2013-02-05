@@ -17,20 +17,20 @@
           query.lastIndex = 0;
           var line = cm.getLine(pos.line).slice(0, pos.ch), match = query.exec(line), start = 0;
           while (match) {
-            start += match.index;
-            line = line.slice(match.index);
+            start += match.index + 1;
+            line = line.slice(start);
             query.lastIndex = 0;
             var newmatch = query.exec(line);
             if (newmatch) match = newmatch;
             else break;
-            start++;
           }
+          start--;
         } else {
           query.lastIndex = pos.ch;
           var line = cm.getLine(pos.line), match = query.exec(line),
           start = match && match.index;
         }
-        if (match)
+        if (match && match[0])
           return {from: {line: pos.line, ch: start},
                   to: {line: pos.line, ch: start + match[0].length},
                   match: match};
@@ -40,15 +40,21 @@
       var fold = caseFold ? function(str){return str.toLowerCase();} : function(str){return str;};
       var target = query.split("\n");
       // Different methods for single-line and multi-line queries
-      if (target.length == 1)
-        this.matches = function(reverse, pos) {
-          var line = fold(cm.getLine(pos.line)), len = query.length, match;
-          if (reverse ? (pos.ch >= len && (match = line.lastIndexOf(query, pos.ch - len)) != -1)
-              : (match = line.indexOf(query, pos.ch)) != -1)
-            return {from: {line: pos.line, ch: match},
-                    to: {line: pos.line, ch: match + len}};
-        };
-      else
+      if (target.length == 1) {
+        if (!query.length) {
+          // Empty string would match anything and never progress, so
+          // we define it to match nothing instead.
+          this.matches = function() {};
+        } else {
+          this.matches = function(reverse, pos) {
+            var line = fold(cm.getLine(pos.line)), len = query.length, match;
+            if (reverse ? (pos.ch >= len && (match = line.lastIndexOf(query, pos.ch - len)) != -1)
+                        : (match = line.indexOf(query, pos.ch)) != -1)
+              return {from: {line: pos.line, ch: match},
+                      to: {line: pos.line, ch: match + len}};
+          };
+        }
+      } else {
         this.matches = function(reverse, pos) {
           var ln = pos.line, idx = (reverse ? target.length - 1 : 0), match = target[idx], line = fold(cm.getLine(ln));
           var offsetA = (reverse ? line.indexOf(match) + match.length : line.lastIndexOf(match));
@@ -70,6 +76,7 @@
             return {from: reverse ? end : start, to: reverse ? start : end};
           }
         };
+      }
     }
   }
 

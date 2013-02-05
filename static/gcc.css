@@ -18,22 +18,22 @@ body {
 
 .error {
     background: #faa !important;
+    font-family: arial;
+    font-size: 70%; 
+    color: #a00; 
+    padding: 2px 5px 3px;
+}
+
+span.error-icon {
+    color: white; background-color: red; font-weight: bold; border-radius: 50%; padding: 0 3px; margin-right: 7px;
 }
 
 .template {
     display: none;
 }
 
-
 li.social {
     padding: 4px;
-}
-
-.CodeMirror-scroll {
-    min-height: 600px;
-    overflow-y: auto;
-    overflow-x: auto;
-    width: 100%;
 }
 
 .topbar {

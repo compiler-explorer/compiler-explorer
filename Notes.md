@@ -7,3 +7,9 @@ Notes:
 
 * storage in both hash tag and in local storage need to change. Specifically they are too tied to the notion of a single compiler.
 * should ensure backwards compatibility: store off some hash tags and test the decode to the same view in the new scheme.
+
+
+NB
+--
+
+Killing due to time seems broken.
