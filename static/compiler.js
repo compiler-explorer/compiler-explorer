@@ -146,16 +146,24 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback) {
         var asm = processAsm(currentAssembly, filters);
         var asmText = $.map(asm, function(x){ return x.text; }).join("\n");
         var numberedLines = numberUsedLines(asm);
-        asmCodeMirror.setValue(asmText);
         
-        clearBackground(cppEditor);
-        clearBackground(asmCodeMirror);
+        cppEditor.operation(function(){ clearBackground(cppEditor);});
+        asmCodeMirror.operation(function() { 
+            asmCodeMirror.setValue(asmText); 
+            clearBackground(asmCodeMirror);
+        });
         if (filters.colouriseAsm) {
-            $.each(numberedLines.source, function(line, ordinal) {
-                cppEditor.addLineClass(parseInt(line), "background", "rainbow-" + (ordinal % NumRainbowColours));
+            cppEditor.operation(function() {
+                $.each(numberedLines.source, function(line, ordinal) {
+                    cppEditor.addLineClass(parseInt(line), 
+                        "background", "rainbow-" + (ordinal % NumRainbowColours));
+                });
             });
-            $.each(numberedLines.asm, function(line, ordinal) {
-                asmCodeMirror.addLineClass(parseInt(line), "background", "rainbow-" + (ordinal % NumRainbowColours));
+            asmCodeMirror.operation(function() {
+                $.each(numberedLines.asm, function(line, ordinal) {
+                    asmCodeMirror.addLineClass(parseInt(line), 
+                        "background", "rainbow-" + (ordinal % NumRainbowColours));
+                });
             });
         }
     }
