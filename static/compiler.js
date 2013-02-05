@@ -36,11 +36,14 @@ function parseLines(lines, callback) {
         }
     });
 }
+
 function clearBackground(cm) {
     for (var i = 0; i < cm.lineCount(); ++i) {
         cm.setLineClass(i, null, null);
     }
 }
+
+const NumRainbowColours = 12;
 
 function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback) {
     var compilersByExe = {};
@@ -138,10 +141,10 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback) {
         clearBackground(asmCodeMirror);
         if (filters.colouriseAsm) {
             $.each(numberedLines.source, function(line, ordinal) {
-                cppEditor.setLineClass(parseInt(line), null, "rainbow-" + (ordinal & 7));
+                cppEditor.setLineClass(parseInt(line), null, "rainbow-" + (ordinal % NumRainbowColours));
             });
             $.each(numberedLines.asm, function(line, ordinal) {
-                asmCodeMirror.setLineClass(parseInt(line), null, "rainbow-" + (ordinal & 7));
+                asmCodeMirror.setLineClass(parseInt(line), null, "rainbow-" + (ordinal % NumRainbowColours));
             });
         }
     }

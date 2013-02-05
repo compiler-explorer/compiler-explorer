@@ -48,11 +48,18 @@ li.social {
     margin-left: 36px;
 }
 
-.rainbow-0 { background: #ffa !important; }
-.rainbow-1 { background: #faf !important; }
-.rainbow-2 { background: #faa !important; }
-.rainbow-3 { background: #aff !important; }
-.rainbow-4 { background: #afa !important; }
-.rainbow-5 { background: #aaf !important; }
-.rainbow-6 { background: #77a !important; }
-.rainbow-7 { background: #a77 !important; }
+/* These colours from Cynthia Brewer's excellent page at
+ * http://colorbrewer2.org/
+ */
+.rainbow-0 { background: rgb(141, 211, 199) !important; }
+.rainbow-1 { background: rgb(255, 255, 179) !important; }
+.rainbow-2 { background: rgb(190, 186, 218) !important; }
+.rainbow-3 { background: rgb(251, 128, 114) !important; }
+.rainbow-4 { background: rgb(128, 177, 211) !important; }
+.rainbow-5 { background: rgb(253, 180, 98) !important; }
+.rainbow-6 { background: rgb(179, 222, 105) !important; }
+.rainbow-7 { background: rgb(252, 205, 229) !important; }
+.rainbow-8 { background: rgb(217, 217, 217) !important; }
+.rainbow-9 { background: rgb(188, 128, 189) !important; }
+.rainbow-10 { background: rgb(204,234,197) !important; }
+.rainbow-11 { background: rgb(255, 237, 111) !important; }
