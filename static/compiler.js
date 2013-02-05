@@ -184,6 +184,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback) {
                 dataType: 'json',
                 data: data,
                 success: onCompileResponse});
+            asmCodeMirror.setValue("Processing...");
         }, 750);
         setSetting('code', cppEditor.getValue());
         updateAsm();
