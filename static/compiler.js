@@ -39,7 +39,7 @@ function parseLines(lines, callback) {
 
 function clearBackground(cm) {
     for (var i = 0; i < cm.lineCount(); ++i) {
-        cm.setLineClass(i, null, null);
+        cm.removeLineClass(i, "background", null);
     }
 }
 
@@ -57,11 +57,12 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback) {
 
     cppEditor = CodeMirror.fromTextArea(domRoot.find(".editor textarea")[0], {
         lineNumbers: true,
-              matchBrackets: true,
-              useCPP: true,
-              mode: "text/x-c++src",
-              onChange: onChange
+        gutters: ["CodeMirror-linenumbers", "info-margin"],
+        matchBrackets: true,
+        useCPP: true,
+        mode: "text/x-c++src"
     });
+    cppEditor.on("change", onChange);
     asmCodeMirror = CodeMirror.fromTextArea(domRoot.find(".asm textarea")[0], {
         lineNumbers: true,
                   matchBrackets: true,
@@ -85,6 +86,10 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback) {
         domRoot.find('.compiler_options').val(getSetting('compilerOptions'));
     }
 
+    function makeErrNode(tooltip) {
+        return $('<div></div>').text(">").addClass("error").attr("title", tooltip)[0];
+    }
+
     function onCompileResponse(data) {
         var stdout = data.stdout || "";
         var stderr = data.stderr || "";
@@ -95,11 +100,11 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback) {
         }
         $('.result .output :visible').remove();
         var highlightLine = (data.asm == null);
-        for (var i = 0; i < cppEditor.lineCount(); ++i) cppEditor.setMarker(i);
+        for (var i = 0; i < cppEditor.lineCount(); ++i) cppEditor.setGutterMarker(i, "info-margin", null);
         parseLines(stderr + stdout, function(lineNum, msg) {
             var elem = $('.result .output .template').clone().appendTo('.result .output').removeClass('template');
             if (lineNum) {
-                cppEditor.setMarker(lineNum - 1, null, "error");
+                cppEditor.setGutterMarker(lineNum - 1, "info-margin", makeErrNode(msg));
                 elem.html($('<a href="#">').append(lineNum + " : " + msg)).click(function() {
                     cppEditor.setSelection({line: lineNum - 1, ch: 0}, {line: lineNum, ch: 0});
                     return false;
@@ -141,10 +146,10 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback) {
         clearBackground(asmCodeMirror);
         if (filters.colouriseAsm) {
             $.each(numberedLines.source, function(line, ordinal) {
-                cppEditor.setLineClass(parseInt(line), null, "rainbow-" + (ordinal % NumRainbowColours));
+                cppEditor.addLineClass(parseInt(line), "background", "rainbow-" + (ordinal % NumRainbowColours));
             });
             $.each(numberedLines.asm, function(line, ordinal) {
-                asmCodeMirror.setLineClass(parseInt(line), null, "rainbow-" + (ordinal % NumRainbowColours));
+                asmCodeMirror.addLineClass(parseInt(line), "background", "rainbow-" + (ordinal % NumRainbowColours));
             });
         }
     }

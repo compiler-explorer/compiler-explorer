@@ -20,6 +20,8 @@ body {
     background: #faa !important;
 }
 
+.info-margin { width: .8em; }
+
 .template {
     display: none;
 }

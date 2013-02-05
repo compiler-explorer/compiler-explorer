@@ -1,5 +1,5 @@
 // Define match-highlighter commands. Depends on searchcursor.js
-// Use by attaching the following function call to the onCursorActivity event:
+// Use by attaching the following function call to the cursorActivity event:
 	//myCodeMirror.matchHighlight(minChars);
 // And including a special span.CodeMirror-matchhighlight css class (also optionally a separate one for .CodeMirror-focused -- see demo matchhighlighter.html)
 
@@ -30,8 +30,10 @@
 			if (cm.lineCount() < 2000) { // This is too expensive on big documents.
 			  for (var cursor = cm.getSearchCursor(query); cursor.findNext();) {
 				//Only apply matchhighlight to the matches other than the one actually selected
-				if (!(cursor.from().line === cm.getCursor(true).line && cursor.from().ch === cm.getCursor(true).ch))
-					state.marked.push(cm.markText(cursor.from(), cursor.to(), className));
+				if (cursor.from().line !== cm.getCursor(true).line ||
+                                    cursor.from().ch !== cm.getCursor(true).ch)
+					state.marked.push(cm.markText(cursor.from(), cursor.to(),
+                                                                      {className: className}));
 			  }
 			}
 		  });
