@@ -57,7 +57,6 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback) {
 
     cppEditor = CodeMirror.fromTextArea(domRoot.find(".editor textarea")[0], {
         lineNumbers: true,
-        gutters: ["CodeMirror-linenumbers", "info-margin"],
         matchBrackets: true,
         useCPP: true,
         mode: "text/x-c++src"
@@ -86,10 +85,13 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback) {
         domRoot.find('.compiler_options').val(getSetting('compilerOptions'));
     }
 
-    function makeErrNode(tooltip) {
-        return $('<div></div>').text(">").addClass("error").attr("title", tooltip)[0];
+    function makeErrNode(text) {
+        var node = $('<div class="error"><span class="error-icon">!!</span><span class="msg"></span></div>');
+        node.find(".msg").text(text);
+        return node[0];
     }
 
+    var errorWidgets = [];
     function onCompileResponse(data) {
         var stdout = data.stdout || "";
         var stderr = data.stderr || "";
@@ -100,11 +102,15 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback) {
         }
         $('.result .output :visible').remove();
         var highlightLine = (data.asm == null);
-        for (var i = 0; i < cppEditor.lineCount(); ++i) cppEditor.setGutterMarker(i, "info-margin", null);
+        for (var i = 0; i < errorWidgets.length; ++i) 
+            cppEditor.removeLineWidget(errorWidgets[i]);
+        errorWidgets.length = 0;
         parseLines(stderr + stdout, function(lineNum, msg) {
             var elem = $('.result .output .template').clone().appendTo('.result .output').removeClass('template');
             if (lineNum) {
-                cppEditor.setGutterMarker(lineNum - 1, "info-margin", makeErrNode(msg));
+                errorWidgets.push(cppEditor.addLineWidget(lineNum - 1, makeErrNode(msg), {
+                    coverGutter:false, noHScroll: true
+                }));
                 elem.html($('<a href="#">').append(lineNum + " : " + msg)).click(function() {
                     cppEditor.setSelection({line: lineNum - 1, ch: 0}, {line: lineNum, ch: 0});
                     return false;
