@@ -16,16 +16,41 @@ body {
     display: inline-block;
 }
 
-.error {
-    background: #faa !important;
+.inline-msg {
     font-family: arial;
     font-size: 70%; 
-    color: #a00; 
     padding: 2px 5px 3px;
 }
 
-span.error-icon {
-    color: white; background-color: red; font-weight: bold; border-radius: 50%; padding: 0 3px; margin-right: 7px;
+span.icon {
+    border-radius: 50%; padding: 0 3px; margin-right: 7px;
+}
+
+.error {
+    background: #faa !important;
+    color: #a00; 
+}
+
+.error span.icon {
+    color: white; background-color: red; font-weight: bold;
+}
+
+.warning {
+    background: #ffa !important;
+    color: #440; 
+}
+
+.warning span.icon {
+    color: black; background-color: yellow;
+}
+
+.note {
+    background: #aaf !important;
+    color: #00a; 
+}
+
+.note span.icon {
+    color: white; background-color: blue;
 }
 
 .template {

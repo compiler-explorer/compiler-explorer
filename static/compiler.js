@@ -29,7 +29,7 @@ function parseLines(lines, callback) {
         if (line != "") {
             var match = line.match(re);
             if (match) {
-                callback(parseInt(match[1]), match[4]);
+                callback(parseInt(match[1]), match[4].trim());
             } else {
                 callback(null, line);
             }
@@ -86,7 +86,10 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback) {
     }
 
     function makeErrNode(text) {
-        var node = $('<div class="error"><span class="error-icon">!!</span><span class="msg"></span></div>');
+        var clazz = "error";
+        if (text.match(/^warning/)) clazz = "warning";
+        if (text.match(/^note/)) clazz = "note";
+        var node = $('<div class="' + clazz + ' inline-msg"><span class="icon">!!</span><span class="msg"></span></div>');
         node.find(".msg").text(text);
         return node[0];
     }
