@@ -100,6 +100,9 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback) {
         } else {
             stderr += "\nCompilation failed";
         }
+        if (_gaq) {
+            _gaq.push(['_trackEvent', 'Compile', data.compiler, data.options, data.code]);
+        }
         $('.result .output :visible').remove();
         var highlightLine = (data.asm == null);
         for (var i = 0; i < errorWidgets.length; ++i) 
