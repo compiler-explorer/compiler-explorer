@@ -29,7 +29,7 @@ function parseLines(lines, callback) {
         if (line != "") {
             var match = line.match(re);
             if (match) {
-                callback(parseInt(match[1]), match[4]);
+                callback(parseInt(match[1]), match[4].trim());
             } else {
                 callback(null, line);
             }
@@ -86,11 +86,15 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback) {
     }
 
     function makeErrNode(text) {
-        var node = $('<div class="error"><span class="error-icon">!!</span><span class="msg"></span></div>');
+        var clazz = "error";
+        if (text.match(/^warning/)) clazz = "warning";
+        if (text.match(/^note/)) clazz = "note";
+        var node = $('<div class="' + clazz + ' inline-msg"><span class="icon">!!</span><span class="msg"></span></div>');
         node.find(".msg").text(text);
         return node[0];
     }
 
+    var compileStartTime = new Date();
     var errorWidgets = [];
     function onCompileResponse(data) {
         var stdout = data.stdout || "";
@@ -102,6 +106,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback) {
         }
         if (_gaq) {
             _gaq.push(['_trackEvent', 'Compile', data.compiler, data.options, data.code]);
+            _gaq.push(['_trackTiming', 'Compile', 'Timing', +(new Date() - compileStartTime)]);
         }
         $('.result .output :visible').remove();
         var highlightLine = (data.asm == null);
@@ -195,7 +200,9 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback) {
                 dataType: 'json',
                 data: data,
                 success: onCompileResponse});
-            asmCodeMirror.setValue("Processing...");
+            currentAssembly = "[Processing...]";
+            compileStartTime = new Date();
+            updateAsm();
         }, 750);
         setSetting('code', cppEditor.getValue());
         updateAsm();
@@ -255,12 +262,20 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback) {
         onChange();  // used to just update ASM, but things like "Intel syntax" need a new request
     }
 
+    function setEditorHeight(height) {
+        const MinHeight = 100;
+        if (height < MinHeight) height = MinHeight;
+        cppEditor.setSize(null, height);
+        asmCodeMirror.setSize(null, height);
+    }
+
     return {
         serialiseState: serialiseState,
         deserialiseState: deserialiseState,
         setCompilers: setCompilers,
         getSource: getSource,
         setSource: setSource,
-        setFilters: setFilters
+        setFilters: setFilters,
+        setEditorHeight: setEditorHeight
     };
 }
