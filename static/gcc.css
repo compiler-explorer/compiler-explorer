@@ -6,6 +6,11 @@ body {
 .sideBySide {
 }
 
+.output {
+    height: 80px;
+    overflow: auto;
+}
+
 .options {
     background: #ddf;
     border-radius: 4px;

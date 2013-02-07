@@ -94,6 +94,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback) {
         return node[0];
     }
 
+    var compileStartTime = new Date();
     var errorWidgets = [];
     function onCompileResponse(data) {
         var stdout = data.stdout || "";
@@ -105,6 +106,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback) {
         }
         if (_gaq) {
             _gaq.push(['_trackEvent', 'Compile', data.compiler, data.options, data.code]);
+            _gaq.push(['_trackTiming', 'Compile', 'Timing', +(new Date() - compileStartTime)]);
         }
         $('.result .output :visible').remove();
         var highlightLine = (data.asm == null);
@@ -198,7 +200,9 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback) {
                 dataType: 'json',
                 data: data,
                 success: onCompileResponse});
-            asmCodeMirror.setValue("Processing...");
+            currentAssembly = "[Processing...]";
+            compileStartTime = new Date();
+            updateAsm();
         }, 750);
         setSetting('code', cppEditor.getValue());
         updateAsm();
@@ -258,12 +262,20 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback) {
         onChange();  // used to just update ASM, but things like "Intel syntax" need a new request
     }
 
+    function setEditorHeight(height) {
+        const MinHeight = 100;
+        if (height < MinHeight) height = MinHeight;
+        cppEditor.setSize(null, height);
+        asmCodeMirror.setSize(null, height);
+    }
+
     return {
         serialiseState: serialiseState,
         deserialiseState: deserialiseState,
         setCompilers: setCompilers,
         getSource: getSource,
         setSource: setSource,
-        setFilters: setFilters
+        setFilters: setFilters,
+        setEditorHeight: setEditorHeight
     };
 }
