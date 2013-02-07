@@ -94,9 +94,8 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback) {
         return node[0];
     }
 
-    var compileStartTime = new Date();
     var errorWidgets = [];
-    function onCompileResponse(data) {
+    function onCompileResponse(request, data) {
         var stdout = data.stdout || "";
         var stderr = data.stderr || "";
         if (data.code == 0) {
@@ -105,8 +104,8 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback) {
             stderr += "\nCompilation failed";
         }
         if (_gaq) {
-            _gaq.push(['_trackEvent', 'Compile', data.compiler, data.options, data.code]);
-            _gaq.push(['_trackTiming', 'Compile', 'Timing', +(new Date() - compileStartTime)]);
+            _gaq.push(['_trackEvent', 'Compile', request.compiler, request.options, data.code]);
+            _gaq.push(['_trackTiming', 'Compile', 'Timing', new Date() - request.timestamp]);
         }
         $('.result .output :visible').remove();
         var highlightLine = (data.asm == null);
@@ -188,7 +187,8 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback) {
                 source: cppEditor.getValue(),
                 compiler: $('.compiler').val(),
                 options: $('.compiler_options').val(),
-                filters: pickOnlyRequestFilters(filters)
+                filters: pickOnlyRequestFilters(filters),
+                timestamp: +new Date()
             };
             setSetting('compiler', data.compiler);
             setSetting('compilerOptions', data.options);
@@ -199,9 +199,9 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback) {
                 url: '/compile',
                 dataType: 'json',
                 data: data,
-                success: onCompileResponse});
+                success: function(result) { onCompileResponse(data, result);}
+            });
             currentAssembly = "[Processing...]";
-            compileStartTime = new Date();
             updateAsm();
         }, 750);
         setSetting('code', cppEditor.getValue());
