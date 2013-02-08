@@ -33,6 +33,7 @@ var nopt = require('nopt'),
     temp = require('temp'),
     path = require('path'),
     async = require('async'),
+    LRU = require('lru-cache'),
     fs = require('fs');
 
 var opts = nopt({
@@ -51,6 +52,13 @@ props.initialize(rootDir + '/config', propHierarchy);
 var port = props.get('gcc-explorer', 'port', 10240);
 var compilers = [];
 var compilersByExe = {};
+
+var cache = LRU({ 
+    max: props.get('gcc-explorer', 'cacheMb') * 1024 * 1024, 
+    length: function(n) { return n.length; }
+});
+var cacheHits = 0;
+var cacheMisses = 0;
 
 var compileQueue = async.queue(function(task, callback) {
     console.log("Compiling, queue size " + compileQueue.length());
@@ -89,6 +97,10 @@ function checkSource(source) {
     return null;
 }
 
+function cacheStats() {
+    console.log("Cache stats: " + cacheHits + " hits, " + cacheMisses + " misses");
+}
+
 function compile(req, res) {
     var source = req.body.source;
     var compiler = req.body.compiler;
@@ -109,6 +121,17 @@ function compile(req, res) {
     if (sourceErr) {
         return res.end(JSON.stringify({code: -1, stderr: sourceErr}));
     }
+
+    var key = compiler + " | " + source;
+    var cached = cache.get(key);
+    if (cached) {
+        cacheHits++;
+        cacheStats();
+        res.end(cached);
+        return;
+    }
+    cacheMisses++;
+
     var compileTask = function(taskFinished) {
         temp.mkdir('gcc-explorer-compiler', function(err, dirPath) {
             if (err) {
@@ -153,11 +176,14 @@ function compile(req, res) {
                             data = '<No output: ' + err + '>';
                         }
 
-                        res.end(JSON.stringify({
+                        var result = JSON.stringify({
                             stdout: stdout,
                             stderr: stderr,
                             asm: data,
-                            code: code }));
+                            code: code });
+                        cache.set(key, result);
+                        cacheStats();
+                        res.end(result);
                         fs.unlink(outputFilename, function() { 
                             fs.unlink(inputFilename, 
                                 function() { fs.rmdir(dirPath); });
