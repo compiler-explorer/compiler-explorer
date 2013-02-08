@@ -122,7 +122,7 @@ function compile(req, res) {
         return res.end(JSON.stringify({code: -1, stderr: sourceErr}));
     }
 
-    var key = compiler + " | " + source;
+    var key = compiler + " | " + source + " | " + options + " | " + filters["intel"];
     var cached = cache.get(key);
     if (cached) {
         cacheHits++;
