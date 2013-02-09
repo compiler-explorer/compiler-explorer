@@ -149,6 +149,7 @@ function compile(req, res) {
             var file = fs.openSync(inputFilename, "w");
             fs.writeSync(file, source);
             fs.closeSync(file);
+            var okToCache = true;
             var compilerWrapper = props.get("gcc-explorer", "compiler-wrapper");
             if (compilerWrapper) {
                 options = [compiler].concat(options);
@@ -161,6 +162,7 @@ function compile(req, res) {
             var stdout = "";
             var stderr = "";
             var timeout = setTimeout(function() {
+                okToCache = false;
                 child.kill();
                 stderr += "\nKilled - processing time exceeded";
             }, props.get("gcc-explorer", "compileTimeoutMs", 100));
@@ -181,8 +183,10 @@ function compile(req, res) {
                             stderr: stderr,
                             asm: data,
                             code: code });
-                        cache.set(key, result);
-                        cacheStats();
+                        if (okToCache) {
+                            cache.set(key, result);
+                            cacheStats();
+                        }
                         res.end(result);
                         fs.unlink(outputFilename, function() { 
                             fs.unlink(inputFilename, 
