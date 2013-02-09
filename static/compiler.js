@@ -188,11 +188,11 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback) {
                 compiler: $('.compiler').val(),
                 options: $('.compiler_options').val(),
                 filters: pickOnlyRequestFilters(filters),
-                timestamp: +new Date()
             };
             setSetting('compiler', data.compiler);
             setSetting('compilerOptions', data.options);
             if (JSON.stringify(data) == JSON.stringify(lastRequest)) return;
+            data.timestamp: new Date(); // Only after we check for "same as last time"
             lastRequest = data;
             $.ajax({
                 type: 'POST',
