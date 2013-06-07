@@ -157,7 +157,8 @@ function compile(req, res) {
             }
             var child = child_process.spawn(
                 compiler,
-                options
+                options,
+                {detached: true}
                 );
             var stdout = "";
             var stderr = "";

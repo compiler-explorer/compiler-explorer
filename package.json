@@ -2,9 +2,9 @@
   "author": "Matt Godbolt <matt@godbolt.org>",
   "name": "gcc-explorer",
   "description": "Investigate what on earth GCC does",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "engines": {
-    "node": "0.6.x"
+    "node": "0.10.x"
   },
   "main": "./app.js",
   "dependencies": {
