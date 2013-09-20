@@ -2,7 +2,7 @@
 
 export LD_PRELOAD=$(dirname $0)/libpreload.so
 export ALLOWED_FOR_CREATE=/tmp 
-export ALLOWED_FOR_READ=/usr/local/include:/usr/include:/usr/lib:/usr/msp430:/usr/arm-linux-gnueabi/include:/tmp:/opt/intel
+export ALLOWED_FOR_READ=/usr/local/include:/usr/include:/usr/lib:/usr/msp430:/usr/arm-linux-gnueabi/include:/tmp:/opt/intel:/opt/clang
 # Last-gasp limits
 ulimit -t 10 # CPU time in seconds
 ulimit -v 500000 # virtual RAM limit in K
