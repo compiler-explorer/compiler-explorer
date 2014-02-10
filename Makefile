@@ -28,7 +28,7 @@ test:
 	@echo Tests pass
 
 clean:
-	rm -rf node_modules
+	rm -rf node_modules .npm-updated
 
 .PHONY: clean run test run-amazon
 
