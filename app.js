@@ -52,6 +52,7 @@ props.initialize(rootDir + '/config', propHierarchy);
 var port = props.get('gcc-explorer', 'port', 10240);
 var compilers = [];
 var compilersByExe = {};
+var compilerExecutables;
 
 var cache = LRU({ 
     max: props.get('gcc-explorer', 'cacheMb') * 1024 * 1024, 
@@ -257,7 +258,29 @@ function getSource(req, res, next) {
 }
 
 function getCompilerExecutables() {
-    return props.get("gcc-explorer", "compilers", "/usr/bin/g++").split(":");
+    if (compilerExecutables) {
+        return compilerExecutables;
+    }
+    var exes = props.get("gcc-explorer", "compilers", "/usr/bin/g++").split(":");
+    var ndk = props.get('gcc-explorer', 'androidNdk');
+    if (ndk) {
+        var toolchains = fs.readdirSync(ndk + "/toolchains");
+        toolchains.forEach(function(v, i, a) {
+            var path = ndk + "/toolchains/" + v + "/prebuilt/linux-x86_64/bin/";
+            if (fs.existsSync(path)) {
+                var cc = fs.readdirSync(path).filter(function(filename) {
+                    return filename.indexOf("g++") != -1;
+                });
+                a[i] = path + cc[0];
+            } else {
+                a[i] = null;
+            }
+        });
+        toolchains = toolchains.filter(function(x){return x!=null;});
+        exes.push.apply(exes, toolchains);
+    }
+    compilerExecutables = exes;
+    return exes;
 }
 
 function getCompilers(req, res) {
