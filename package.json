@@ -12,7 +12,7 @@
       "async": "0.1.x",
       "nopt": "1.0.x",
       "temp": "0.4.x",
-      "ffi": "1.0.x",
+      "ffi": "1.2.x",
       "lru-cache": "2.2.x"
   },
   "devDependencies": {
