@@ -245,6 +245,8 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback) {
     function onCompilerChange() {
         onChange();
         var compiler = compilersByExe[$('.compiler').val()];
+        if (compiler === undefined)
+            return;
         domRoot.find('.filter button.btn[value="intel"]').toggleClass("disabled", !compiler.supportedOpts["-masm"]);
     }
     
