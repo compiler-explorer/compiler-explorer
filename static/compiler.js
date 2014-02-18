@@ -219,7 +219,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback) {
 
     function serialiseState() {
         var state = {
-            source: cppEditor.getValue(),
+            sourcez: LZString.compressToBase64(cppEditor.getValue()),
             compiler: domRoot.find('.compiler').val(),
             options: domRoot.find('.compiler_options').val(),
         };
@@ -227,7 +227,11 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback) {
     }
 
     function deserialiseState(state) {
-        cppEditor.setValue(state.source);
+        if (state.hasOwnProperty('sourcez')) {
+            cppEditor.setValue(LZString.decompressFromBase64(state.sourcez));
+        } else {
+            cppEditor.setValue(state.source);
+        }
         domRoot.find('.compiler').val(state.compiler);
         domRoot.find('.compiler_options').val(state.options);
         // Somewhat hackily persist compiler into local storage else when the ajax response comes in
@@ -241,6 +245,8 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback) {
     function onCompilerChange() {
         onChange();
         var compiler = compilersByExe[$('.compiler').val()];
+        if (compiler === undefined)
+            return;
         domRoot.find('.filter button.btn[value="intel"]').toggleClass("disabled", !compiler.supportedOpts["-masm"]);
     }
     
