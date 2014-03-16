@@ -120,6 +120,49 @@ function saveFileAs() {
     });
 }
 
+function loadUrlShortenerApi() {
+    gapi.client.load('urlshortener', 'v1', makePermalink);
+}
+
+function loadGoogleApisClientLibrary() {
+    $(document.body).append('<script src="https://apis.google.com/js/client.js?onload=loadUrlShortenerApi">');
+}
+
+function makePermalink() {
+    $('#permalink').val('');
+    if (!gapi.client) {
+        // Load the Google APIs client library asynchronously, then the
+        // urlshortener API, and finally come back here.
+        loadGoogleApisClientLibrary();
+        return;
+    }
+    var request = gapi.client.urlshortener.url.insert({
+        resource: {
+            longUrl: window.location.href.split('#')[0] + '#' + serialiseState(),
+        }
+    });
+    request.execute(function(response) {
+        $('#permalink').val(response.id);
+    });
+}
+
+function hidePermalink() {
+    if ($('.files .permalink').hasClass('active')) {  // do nothing if already hidden.
+        togglePermalink();
+    }
+}
+
+function togglePermalink() {
+    if (!$('.files .permalink').hasClass('active')) {
+        $('.files .permalink').addClass('active');
+        $('.files .permalink-collapse').collapse('show');
+        makePermalink();
+    } else {
+        $('.files .permalink-collapse').collapse('hide');
+        $('.files .permalink').removeClass('active');
+    }
+}
+
 function serialiseState() {
     var state = {
         version: 3,
@@ -158,7 +201,7 @@ function initialise() {
     setFilterUi(actualFilters);
 
     var compiler = new Compiler($('body'), actualFilters, "a", function() {
-        $('a.permalink').attr('href', '#' + serialiseState());
+        hidePermalink();
     });
     allCompilers.push(compiler);
     currentCompiler = compiler;
@@ -192,6 +235,10 @@ function initialise() {
     });
     $('.files .saveas').click(function() {
         saveFileAs();
+        return false;
+    });
+    $('.files .permalink').click(function(e) {
+        togglePermalink(e);
         return false;
     });
     
