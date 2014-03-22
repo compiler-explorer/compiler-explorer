@@ -3,6 +3,13 @@ body {
     padding-bottom: 40px;
 }
 
+/* Override the cursor that Bootstrap defines for readonly inputs, as it looks
+ * very odd on IE (and 'text' makes it clearer that it's copyable everywhere).
+ */
+#permalink {
+    cursor: text;
+}
+
 .sideBySide {
 }
 
