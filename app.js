@@ -34,7 +34,7 @@ var nopt = require('nopt'),
     path = require('path'),
     async = require('async'),
     LRU = require('lru-cache'),
-    fs = require('fs');
+    fs = require('fs-extra');
 
 var opts = nopt({
         'env': [String],
@@ -190,10 +190,7 @@ function compile(req, res) {
                             cacheStats();
                         }
                         res.end(result);
-                        fs.unlink(outputFilename, function() { 
-                            fs.unlink(inputFilename, 
-                                function() { fs.rmdir(dirPath); });
-                        });
+                        fs.remove(dirPath);
                         taskFinished();
                     });
             });

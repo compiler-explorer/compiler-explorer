@@ -8,12 +8,12 @@
   },
   "main": "./app.js",
   "dependencies": {
-      "connect": "2.3.x",
-      "async": "0.1.x",
+      "connect": "2.14.x",
+      "async": "0.7.x",
+      "fs-extra": "0.8.x",
       "nopt": "1.0.x",
-      "temp": "0.4.x",
-      "ffi": "1.2.x",
-      "lru-cache": "2.2.x"
+      "temp": "0.7.x",
+      "lru-cache": "2.5.x"
   },
   "devDependencies": {
       "supervisor": "0.3.1"
