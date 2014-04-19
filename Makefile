@@ -32,7 +32,7 @@ clean:
 
 .PHONY: clean run test run-amazon
 
-run: node_modules optional_d_support
+run: node_modules optional_d_support c-preload
 	./node_modules/.bin/supervisor ./app.js
 
 c-preload:
