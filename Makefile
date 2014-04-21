@@ -8,11 +8,14 @@ else
 default: run
 endif
 
+.PHONY: clean run test run-amazon c-preload optional-d-support prereqs
+prereqs: optional-d-support node_modules c-preload
+
 ifeq "" "$(shell which gdc)"
-optional_d_support:
+optional-d-support:
 	@echo "D language support disabled"
 else
-optional_d_support:
+optional-d-support:
 	$(MAKE) -C d
 endif
 
@@ -30,17 +33,15 @@ test:
 clean:
 	rm -rf node_modules .npm-updated
 
-.PHONY: clean run test run-amazon
-
-run: node_modules optional_d_support c-preload
+run: node_modules optional-d-support c-preload
 	./node_modules/.bin/supervisor ./app.js
 
 c-preload:
 	$(MAKE) -C c-preload
 
-run-amazon: node_modules optional_d_support c-preload
+run-amazon: node_modules optional-d-support c-preload
 	./node_modules/.bin/supervisor -- ./app.js --env amazon
 
-run-amazon-d: node_modules optional_d_support c-preload
+run-amazon-d: node_modules optional-d-support c-preload
 	./node_modules/.bin/supervisor -- ./app.js --env amazon-d
 
