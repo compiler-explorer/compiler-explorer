@@ -191,9 +191,10 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback) {
             };
             setSetting('compiler', data.compiler);
             setSetting('compilerOptions', data.options);
-            if (JSON.stringify(data) == JSON.stringify(lastRequest)) return;
-            data.timestamp = new Date(); // Only after we check for "same as last time"
-            lastRequest = data;
+            var stringifiedReq = JSON.stringify(data);
+            if (stringifiedReq == lastRequest) return;
+            lastRequest = stringifiedReq;
+            data.timestamp = new Date();
             $.ajax({
                 type: 'POST',
                 url: '/compile',
