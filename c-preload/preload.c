@@ -13,21 +13,11 @@
 #define O_CREAT 0100
 #endif
 
-static int allowed_env(const char* pathname, const char* envvar) {
-    char* dirpathbuf = strdup(pathname);
-    char* dirpath = dirname(dirpathbuf);
-
+static int allowed_match(const char* path, const char* okpath) {
     char resolvedBuf[PATH_MAX];
-    char* resolved = realpath(dirpath, resolvedBuf);
-    free(dirpathbuf);
+    char* resolved = realpath(path, resolvedBuf);
     if (resolved == NULL) {
         return 0;
-    }
-
-    const char* okpath = getenv(envvar);
-    if (okpath == NULL) {
-       errno = EINVAL;
-       return 0;
     }
 
     while (*okpath) {
@@ -37,9 +27,28 @@ static int allowed_env(const char* pathname, const char* envvar) {
         while (*okpath == ':') ++okpath;
     }
 
-    //fprintf(stderr, "Access to \"%s\" denied by gcc-explorer policy\n", pathname);
+    fprintf(stderr, "Access to \"%s\" denied by gcc-explorer policy\n", path);
     errno = EACCES;
     return 0;
+}
+
+static int allowed_env(const char* pathname, const char* envvar) {
+    const char* okpath = getenv(envvar);
+    if (okpath == NULL) {
+       errno = EINVAL;
+       return 0;
+    }
+
+    // Check file name first
+    if (allowed_match(pathname, okpath)) return 1;
+
+    // Check directory name
+    char* dirpathbuf = strdup(pathname);
+    char* dirpath = dirname(dirpathbuf);
+    int dir_ok = allowed_match(dirpath, okpath);
+    free(dirpathbuf);
+
+    return dir_ok;
 }
 
 static int allowed(const char* pathname, int flags) {
