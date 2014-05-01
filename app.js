@@ -31,6 +31,7 @@ var nopt = require('nopt'),
     connect = require('connect'),
     child_process = require('child_process'),
     temp = require('temp'),
+    mu = require('mu2'),
     path = require('path'),
     async = require('async'),
     LRU = require('lru-cache'),
@@ -231,6 +232,13 @@ function getSources(req, res) {
     res.end(JSON.stringify(sources.sort(compareOn("name"))));
 }
 
+function getInfo(req, res) {
+    res.end(JSON.stringify({
+        language: props.get("gcc-explorer", "language"),
+        options: props.get("gcc-explorer", "options"),
+    }));
+}
+
 function getSource(req, res, next) {
     var bits = req.url.split("/");
     var handler = sourceToHandler[bits[1]];
@@ -328,6 +336,7 @@ webServer
     .use(connect.favicon('static/favicon.ico'))
     .use(connect.static('static'))
     .use(connect.bodyParser())
+    .use('/info', getInfo)
     .use('/sources', getSources)
     .use('/source', getSource)
     .use('/compilers', getCompilers)

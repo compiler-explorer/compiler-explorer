@@ -200,9 +200,27 @@ function initialise() {
     var actualFilters = $.parseJSON(window.localStorage['filter'] || defaultFilters);
     setFilterUi(actualFilters);
 
+    // Synchronous request here to make the whole race condition problem of
+    // getting language and compiler options after we've set local overrides.
+    var languageType = "text/x-c++src";
+    $.ajax({
+        url: "/info",
+        dataType: "json",
+        async: false,
+        success: function(results) {
+            $(".language-name").text(results.language);
+            if (results.language == "Rust") {
+                languageType = "text/x-rustsrc";
+            } else if (results.language == "D") {
+                languageType = "text/x-d";
+            }
+            $(".compiler_options").val(results.options);
+        }
+    }); // must be ahead of the compiler creation. This is all terrible.
+
     var compiler = new Compiler($('body'), actualFilters, "a", function() {
         hidePermalink();
-    });
+    }, languageType);
     allCompilers.push(compiler);
     currentCompiler = compiler;
 

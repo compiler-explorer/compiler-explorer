@@ -45,7 +45,7 @@ function clearBackground(cm) {
 
 const NumRainbowColours = 12;
 
-function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback) {
+function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, cmMode) {
     var compilersByExe = {};
     var pendingTimeout = null;
     var asmCodeMirror = null;
@@ -59,14 +59,14 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback) {
         lineNumbers: true,
         matchBrackets: true,
         useCPP: true,
-        mode: "text/x-c++src"
+        mode: cmMode
     });
     cppEditor.on("change", onChange);
     asmCodeMirror = CodeMirror.fromTextArea(domRoot.find(".asm textarea")[0], {
         lineNumbers: true,
-                  matchBrackets: true,
-                  mode: "text/x-asm",
-                  readOnly: true
+        matchBrackets: true,
+        mode: "text/x-asm",
+        readOnly: true
     });
 
     function getSetting(name) {

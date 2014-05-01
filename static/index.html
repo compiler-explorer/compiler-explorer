@@ -1,12 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <title>GCC Explorer</title>
+        <title>Compiler Explorer</title>
         <link href="ext/bootstrap/css/bootstrap.css" rel="stylesheet">
         <link href="ext/codemirror/codemirror.css" rel="stylesheet">
         <link href="gcc.css" rel="stylesheet">
         <script src="ext/codemirror/codemirror.js"></script>
-        <script src="ext/codemirror/clike.js"></script>
         <script src="asm.js"></script>
         <script src="asm-mode.js"></script>
         <script src="ext/jquery/jquery-1.7.1.min.js"></script>
@@ -37,7 +36,7 @@
         <div class="navbar navbar-fixed-top">
             <div class="navbar-inner">
                 <div class="container-fluid">
-                    <a class="brand" href="#">Interactive compiler</a>
+                    <a class="brand" href="#">Interactive compiler - <span class="language-name"></span></a>
                     <ul class="nav pull-right">
                         <li class="dropdown">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown">Share<b class="caret"></b></a>
@@ -82,7 +81,7 @@
             <div class="span6">
                 <form class="well form-inline">
                     <label>Compiler: <select class="compiler"></select></label>
-                    <label>Compiler options: <input class="compiler_options" style="width: 30em;" type="text" value="-O2"></label>
+                    <label>Compiler options: <input class="compiler_options" style="width: 30em;" type="text" value=""></label>
                     <table><tbody><tr><td>Filter:&nbsp;</td>
                     <td>
                         <div class="btn-group filter">
