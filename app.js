@@ -146,7 +146,8 @@ function compile(req, res) {
                 if (filters["intel"] == "true") syntax = '-masm=intel';
                 options = options.concat([syntax]);
             }
-            options = options.concat(['-g', '-o', outputFilename, '-S', inputFilename]);
+            var compileToAsm = props.get("gcc-explorer", "compileToAsm", "-S").split(" ");
+            options = options.concat(['-g', '-o', outputFilename]).concat(compileToAsm).concat([inputFilename]);
             var file = fs.openSync(inputFilename, "w");
             fs.writeSync(file, source);
             fs.closeSync(file);
