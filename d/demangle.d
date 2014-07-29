@@ -3,7 +3,7 @@ import std.demangle;
 import std.regex;
 
 void main() {
-    string dem(RegexMatch!(string) m)
+    string dem(Captures!(string) m)
     {
         return demangle(m.hit);
     }
