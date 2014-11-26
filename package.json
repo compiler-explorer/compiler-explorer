@@ -8,15 +8,15 @@
   },
   "main": "./app.js",
   "dependencies": {
-      "async": "0.7.x",
-      "connect": "2.14.x",
-      "fs-extra": "0.8.x",
-      "lru-cache": "2.5.x",
-      "nopt": "1.0.x",
-      "temp": "0.7.x"
+    "async": "0.7.x",
+    "connect": "2.14.x",
+    "fs-extra": "0.8.x",
+    "lru-cache": "2.5.x",
+    "nopt": "1.0.x",
+    "temp": "0.7.x"
   },
   "devDependencies": {
-      "supervisor": "0.3.1"
+    "supervisor": "0.3.1"
   },
   "license": "BSD-2-Clause"
 }

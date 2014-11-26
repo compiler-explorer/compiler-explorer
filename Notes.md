@@ -12,5 +12,4 @@ Notes:
 NB
 --
 
-Killing due to time seems broken.
-Bug with clicked URLs and race to get the list of copmilers (null compiler)
+Bug with clicked URLs and race to get the list of compilers (null compiler)

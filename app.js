@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-// Copyright (c) 2012, Matt Godbolt
+// Copyright (c) 2012-2014, Matt Godbolt
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without 
@@ -27,7 +27,6 @@
 var nopt = require('nopt'),
     os = require('os'),
     props = require('./lib/properties'),
-    querystring = require('querystring'),
     connect = require('connect'),
     child_process = require('child_process'),
     temp = require('temp'),
@@ -37,11 +36,12 @@ var nopt = require('nopt'),
     fs = require('fs-extra');
 
 var opts = nopt({
-        'env': [String],
-        'rootDir': [String]});
+    'env': [String],
+    'rootDir': [String]
+});
 
 var propHierarchy = [
-    'defaults', 
+    'defaults',
     opts.env || 'dev',
     os.hostname()];
 
@@ -54,30 +54,31 @@ var compilers = [];
 var compilersByExe = {};
 var compilerExecutables;
 
-var cache = LRU({ 
-    max: props.get('gcc-explorer', 'cacheMb') * 1024 * 1024, 
-    length: function(n) { return n.length; }
+var cache = LRU({
+    max: props.get('gcc-explorer', 'cacheMb') * 1024 * 1024,
+    length: function (n) {
+        return n.length;
+    }
 });
 var cacheHits = 0;
 var cacheMisses = 0;
 
-var compileQueue = async.queue(function(task, callback) {
+var compileQueue = async.queue(function (task, callback) {
     console.log("Compiling, queue size " + compileQueue.length());
     task.task(callback);
 }, props.get("gcc-explorer", "maxConcurrentCompiles", 1));
-compileQueue.drain = function() {
+compileQueue.drain = function () {
     console.log("Compile queue empty");
 };
-compileQueue.saturated = function() {
+compileQueue.saturated = function () {
     console.log("Compile queue full");
 };
-
 
 function checkOptions(options) {
     var okOptions = new RegExp(props.get('gcc-options', 'whitelistRe', '.*'));
     var badOptions = new RegExp(props.get('gcc-options', 'blacklistRe'));
     var error = [];
-    options.forEach(function(option) {
+    options.forEach(function (option) {
         if (!option.match(okOptions) || option.match(badOptions)) {
             error.push(option);
         }
@@ -89,7 +90,7 @@ function checkOptions(options) {
 function checkSource(source) {
     var re = /^\s*#include(_next)?\s+["<"](\/|.*\.\.)/;
     var failed = [];
-    source.split('\n').forEach(function(line, index) {
+    source.split('\n').forEach(function (line, index) {
         if (line.match(re)) {
             failed.push("<stdin>:" + (index + 1) + ":1: no absolute or relative includes please");
         }
@@ -112,7 +113,9 @@ function compile(req, res) {
     if (!compilerInfo) {
         return res.end(JSON.stringify({code: -1, stderr: "bad compiler " + compiler}));
     }
-    var options = req.body.options.split(' ').filter(function(x){return x!=""});
+    var options = req.body.options.split(' ').filter(function (x) {
+        return x !== "";
+    });
     var filters = req.body.filters;
     var optionsErr = checkOptions(options);
     if (optionsErr) {
@@ -123,7 +126,7 @@ function compile(req, res) {
         return res.end(JSON.stringify({code: -1, stderr: sourceErr}));
     }
 
-    var key = compiler + " | " + source + " | " + options + " | " + filters["intel"];
+    var key = compiler + " | " + source + " | " + options + " | " + filters.intel;
     var cached = cache.get(key);
     if (cached) {
         cacheHits++;
@@ -133,8 +136,8 @@ function compile(req, res) {
     }
     cacheMisses++;
 
-    var compileTask = function(taskFinished) {
-        temp.mkdir('gcc-explorer-compiler', function(err, dirPath) {
+    var compileTask = function (taskFinished) {
+        temp.mkdir('gcc-explorer-compiler', function (err, dirPath) {
             if (err) {
                 return res.end(JSON.stringify({code: -1, stderr: "Unable to open temp file: " + err}));
             }
@@ -143,7 +146,7 @@ function compile(req, res) {
             var outputFilename = path.join(dirPath, 'output.S');
             if (compilerInfo.supportedOpts['-masm']) {
                 var syntax = '-masm=att'; // default at&t
-                if (filters["intel"] == "true") syntax = '-masm=intel';
+                if (filters.intel == "true") syntax = '-masm=intel';
                 options = options.concat([syntax]);
             }
             var compileToAsm = props.get("gcc-explorer", "compileToAsm", "-S").split(" ");
@@ -161,21 +164,25 @@ function compile(req, res) {
                 compiler,
                 options,
                 {detached: true}
-                );
+            );
             var stdout = "";
             var stderr = "";
-            var timeout = setTimeout(function() {
+            var timeout = setTimeout(function () {
                 okToCache = false;
                 child.kill();
                 stderr += "\nKilled - processing time exceeded";
             }, props.get("gcc-explorer", "compileTimeoutMs", 100));
-            child.stdout.on('data', function (data) { stdout += data; });
-            child.stderr.on('data', function (data) { stderr += data; });
+            child.stdout.on('data', function (data) {
+                stdout += data;
+            });
+            child.stderr.on('data', function (data) {
+                stderr += data;
+            });
             child.on('exit', function (code) {
                 clearTimeout(timeout);
                 child_process.exec('cat "' + outputFilename + '" | ' + postProcess,
-                    { maxBuffer: props.get("gcc-explorer", "max-asm-size", 8 * 1024 * 1024) },
-                    function(err, filt_stdout, filt_stderr) {
+                    {maxBuffer: props.get("gcc-explorer", "max-asm-size", 8 * 1024 * 1024)},
+                    function (err, filt_stdout, filt_stderr) {
                         var data = filt_stdout;
                         if (err) {
                             data = '<No output: ' + err + '>';
@@ -185,7 +192,8 @@ function compile(req, res) {
                             stdout: stdout,
                             stderr: stderr,
                             asm: data,
-                            code: code });
+                            code: code
+                        });
                         if (okToCache) {
                             cache.set(key, result);
                             cacheStats();
@@ -205,17 +213,23 @@ function compile(req, res) {
 function loadSources() {
     var sourcesDir = "lib/sources";
     var sources = fs.readdirSync(sourcesDir)
-        .filter(function(file) { return file.match(/.*\.js$/); })
-        .map(function(file) { return require("./" + path.join(sourcesDir, file)); });
+        .filter(function (file) {
+            return file.match(/.*\.js$/);
+        })
+        .map(function (file) {
+            return require("./" + path.join(sourcesDir, file));
+        });
     return sources;
 }
 
 var fileSources = loadSources();
 var sourceToHandler = {};
-fileSources.forEach(function(source) { sourceToHandler[source.urlpart] = source; });
+fileSources.forEach(function (source) {
+    sourceToHandler[source.urlpart] = source;
+});
 
 function compareOn(key) {
-    return function(xObj, yObj) {
+    return function (xObj, yObj) {
         var x = xObj[key];
         var y = yObj[key];
         if (x < y) return -1;
@@ -225,7 +239,7 @@ function compareOn(key) {
 }
 
 function getSources(req, res) {
-    var sources = fileSources.map(function(source) { 
+    var sources = fileSources.map(function (source) {
         return {name: source.name, urlpart: source.urlpart};
     });
     res.end(JSON.stringify(sources.sort(compareOn("name"))));
@@ -250,16 +264,17 @@ function getSource(req, res, next) {
     else if (action == "load") action = handler.load;
     else if (action == "save") action = handler.save;
     else action = null;
-    if (action == null) {
+    if (action === null) {
         next();
         return;
     }
-    action.apply(handler, bits.slice(3).concat(function(err, response) {
+    action.apply(handler, bits.slice(3).concat(function (err, response) {
         if (err) {
             res.end(JSON.stringify({err: err}));
         } else {
             res.end(JSON.stringify(response));
-        }}));
+        }
+    }));
 }
 
 function getCompilerExecutables() {
@@ -270,10 +285,10 @@ function getCompilerExecutables() {
     var ndk = props.get('gcc-explorer', 'androidNdk');
     if (ndk) {
         var toolchains = fs.readdirSync(ndk + "/toolchains");
-        toolchains.forEach(function(v, i, a) {
+        toolchains.forEach(function (v, i, a) {
             var path = ndk + "/toolchains/" + v + "/prebuilt/linux-x86_64/bin/";
             if (fs.existsSync(path)) {
-                var cc = fs.readdirSync(path).filter(function(filename) {
+                var cc = fs.readdirSync(path).filter(function (filename) {
                     return filename.indexOf("g++") != -1;
                 });
                 a[i] = path + cc[0];
@@ -281,7 +296,9 @@ function getCompilerExecutables() {
                 a[i] = null;
             }
         });
-        toolchains = toolchains.filter(function(x){return x!=null;});
+        toolchains = toolchains.filter(function (x) {
+            return x !== null;
+        });
         exes.push.apply(exes, toolchains);
     }
     compilerExecutables = exes;
@@ -295,16 +312,16 @@ function getCompilers(req, res) {
 function findCompilers() {
     async.map(getCompilerExecutables(),
         function (compiler, callback) {
-            fs.stat(compiler, function(err, result) {
+            fs.stat(compiler, function (err, result) {
                 if (err) return callback(null, null);
-                child_process.exec(compiler + ' --version', function(err, output) {
+                child_process.exec(compiler + ' --version', function (err, output) {
                     if (err) return callback(null, null);
                     var version = output.split('\n')[0];
-                    child_process.exec(compiler + ' --target-help', function(err, output) {
+                    child_process.exec(compiler + ' --target-help', function (err, output) {
                         var options = {};
                         if (!err) {
                             var splitness = /--?[-a-zA-Z]+( ?[-a-zA-Z]+)/;
-                            output.split('\n').forEach(function(line) {
+                            output.split('\n').forEach(function (line) {
                                 var match = line.match(splitness);
                                 if (!match) return;
                                 options[match[0]] = true;
@@ -316,10 +333,14 @@ function findCompilers() {
             });
         },
         function (err, all) {
-            all = all.filter(function(x){return x!=null;});
-            compilers = all.sort(function(x,y){return x.version < y.version ? -1 : x.version > y.version ? 1 : 0;});
+            all = all.filter(function (x) {
+                return x !== null;
+            });
+            compilers = all.sort(function (x, y) {
+                return x.version < y.version ? -1 : x.version > y.version ? 1 : 0;
+            });
             compilersByExe = {};
-            compilers.forEach(function(compiler) {
+            compilers.forEach(function (compiler) {
                 compilersByExe[compiler.exe] = compiler;
             });
         }

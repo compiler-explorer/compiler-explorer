@@ -1,4 +1,4 @@
-// Copyright (c) 2012, Matt Godbolt
+// Copyright (c) 2012-2014, Matt Godbolt
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without 
@@ -24,9 +24,9 @@
 
 function parseLines(lines, callback) {
     var re = /^\/tmp\/[^:]+:([0-9]+)(:([0-9]+))?:\s+(.*)/;
-    $.each(lines.split('\n'), function(_, line) {
+    $.each(lines.split('\n'), function (_, line) {
         line = line.trim();
-        if (line != "") {
+        if (line !== "") {
             var match = line.match(re);
             if (match) {
                 callback(parseInt(match[1]), match[4].trim());
@@ -72,6 +72,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, cmM
     function getSetting(name) {
         return window.localStorage[windowLocalPrefix + "." + name];
     }
+
     function setSetting(name, value) {
         window.localStorage[windowLocalPrefix + "." + name] = value;
     }
@@ -95,10 +96,11 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, cmM
     }
 
     var errorWidgets = [];
+
     function onCompileResponse(request, data) {
         var stdout = data.stdout || "";
         var stderr = data.stderr || "";
-        if (data.code == 0) {
+        if (data.code === 0) {
             stdout += "\nCompiled ok";
         } else {
             stderr += "\nCompilation failed";
@@ -108,17 +110,16 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, cmM
             _gaq.push(['_trackTiming', 'Compile', 'Timing', new Date() - request.timestamp]);
         }
         $('.result .output :visible').remove();
-        var highlightLine = (data.asm == null);
-        for (var i = 0; i < errorWidgets.length; ++i) 
+        for (var i = 0; i < errorWidgets.length; ++i)
             cppEditor.removeLineWidget(errorWidgets[i]);
         errorWidgets.length = 0;
-        parseLines(stderr + stdout, function(lineNum, msg) {
+        parseLines(stderr + stdout, function (lineNum, msg) {
             var elem = $('.result .output .template').clone().appendTo('.result .output').removeClass('template');
             if (lineNum) {
                 errorWidgets.push(cppEditor.addLineWidget(lineNum - 1, makeErrNode(msg), {
-                    coverGutter:false, noHScroll: true
+                    coverGutter: false, noHScroll: true
                 }));
-                elem.html($('<a href="#">').append(lineNum + " : " + msg)).click(function() {
+                elem.html($('<a href="#">').append(lineNum + " : " + msg)).click(function () {
                     cppEditor.setSelection({line: lineNum - 1, ch: 0}, {line: lineNum, ch: 0});
                     return false;
                 });
@@ -132,43 +133,56 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, cmM
 
     function numberUsedLines(asm) {
         var sourceLines = {};
-        $.each(asm, function(_, x) { if (x.source) sourceLines[x.source - 1] = true; });
+        $.each(asm, function (_, x) {
+            if (x.source) sourceLines[x.source - 1] = true;
+        });
         var ordinal = 0;
-        $.each(sourceLines, function(k, _) { sourceLines[k] = ordinal++; });
+        $.each(sourceLines, function (k, _) {
+            sourceLines[k] = ordinal++;
+        });
         var asmLines = {};
-        $.each(asm, function(index, x) { if (x.source) asmLines[index] = sourceLines[x.source - 1]; });
-        return { source: sourceLines, asm: asmLines };
+        $.each(asm, function (index, x) {
+            if (x.source) asmLines[index] = sourceLines[x.source - 1];
+        });
+        return {source: sourceLines, asm: asmLines};
     }
 
     var lastUpdatedAsm = null;
+
     function updateAsm(forceUpdate) {
         if (!currentAssembly) return;
         var hashedUpdate = JSON.stringify({
-            asm: currentAssembly, 
+            asm: currentAssembly,
             filters: filters
         });
-        if (!forceUpdate && lastUpdatedAsm == hashedUpdate) { return; }
+        if (!forceUpdate && lastUpdatedAsm == hashedUpdate) {
+            return;
+        }
         lastUpdatedAsm = hashedUpdate;
 
         var asm = processAsm(currentAssembly, filters);
-        var asmText = $.map(asm, function(x){ return x.text; }).join("\n");
+        var asmText = $.map(asm, function (x) {
+            return x.text;
+        }).join("\n");
         var numberedLines = numberUsedLines(asm);
-        
-        cppEditor.operation(function(){ clearBackground(cppEditor);});
-        asmCodeMirror.operation(function() { 
-            asmCodeMirror.setValue(asmText); 
+
+        cppEditor.operation(function () {
+            clearBackground(cppEditor);
+        });
+        asmCodeMirror.operation(function () {
+            asmCodeMirror.setValue(asmText);
             clearBackground(asmCodeMirror);
         });
         if (filters.colouriseAsm) {
-            cppEditor.operation(function() {
-                $.each(numberedLines.source, function(line, ordinal) {
-                    cppEditor.addLineClass(parseInt(line), 
+            cppEditor.operation(function () {
+                $.each(numberedLines.source, function (line, ordinal) {
+                    cppEditor.addLineClass(parseInt(line),
                         "background", "rainbow-" + (ordinal % NumRainbowColours));
                 });
             });
-            asmCodeMirror.operation(function() {
-                $.each(numberedLines.asm, function(line, ordinal) {
-                    asmCodeMirror.addLineClass(parseInt(line), 
+            asmCodeMirror.operation(function () {
+                $.each(numberedLines.asm, function (line, ordinal) {
+                    asmCodeMirror.addLineClass(parseInt(line),
                         "background", "rainbow-" + (ordinal % NumRainbowColours));
                 });
             });
@@ -176,14 +190,14 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, cmM
     }
 
     function pickOnlyRequestFilters(filters) {
-        return {intel: !!filters.intel };
+        return {intel: !!filters.intel};
     }
 
     function onChange() {
         if (ignoreChanges) return;  // Ugly hack during startup.
         if (pendingTimeout) clearTimeout(pendingTimeout);
-        pendingTimeout = setTimeout(function() {
-            var data = { 
+        pendingTimeout = setTimeout(function () {
+            var data = {
                 source: cppEditor.getValue(),
                 compiler: $('.compiler').val(),
                 options: $('.compiler_options').val(),
@@ -200,7 +214,9 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, cmM
                 url: '/compile',
                 dataType: 'json',
                 data: data,
-                success: function(result) { onCompileResponse(data, result);}
+                success: function (result) {
+                    onCompileResponse(data, result);
+                }
             });
             currentAssembly = "[Processing...]";
             updateAsm();
@@ -250,11 +266,11 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, cmM
             return;
         domRoot.find('.filter button.btn[value="intel"]').toggleClass("disabled", !compiler.supportedOpts["-masm"]);
     }
-    
+
     function setCompilers(compilers) {
         domRoot.find('.compiler option').remove();
         compilersByExe = {};
-        $.each(compilers, function(index, arg) {
+        $.each(compilers, function (index, arg) {
             compilersByExe[arg.exe] = arg;
             domRoot.find('.compiler').append($('<option value="' + arg.exe + '">' + arg.version + '</option>'));
         });
