@@ -180,27 +180,38 @@ function compile(req, res) {
             });
             child.on('exit', function (code) {
                 clearTimeout(timeout);
+                var maxSize = props.get("gcc-explorer", "max-asm-size", 8 * 1024 * 1024);
+                function complete(data) {
+                    var result = JSON.stringify({
+                        stdout: stdout,
+                        stderr: stderr,
+                        asm: data,
+                        code: code
+                    });
+                    if (okToCache) {
+                        cache.set(key, result);
+                        cacheStats();
+                    }
+                    res.end(result);
+                    fs.remove(dirPath);
+                    taskFinished();
+                }
+
+                var size = fs.statSync(outputFilename).size;
+                if (size >= maxSize) {
+                    complete("<No output: generated assembly was too large (" + size + " > " + maxSize + " bytes)>");
+                    return;
+                }
+
                 child_process.exec('cat "' + outputFilename + '" | ' + postProcess,
-                    {maxBuffer: props.get("gcc-explorer", "max-asm-size", 8 * 1024 * 1024)},
+                    {maxBuffer: maxSize},
                     function (err, filt_stdout, filt_stderr) {
                         var data = filt_stdout;
                         if (err) {
+                            if ("")
                             data = '<No output: ' + err + '>';
                         }
-
-                        var result = JSON.stringify({
-                            stdout: stdout,
-                            stderr: stderr,
-                            asm: data,
-                            code: code
-                        });
-                        if (okToCache) {
-                            cache.set(key, result);
-                            cacheStats();
-                        }
-                        res.end(result);
-                        fs.remove(dirPath);
-                        taskFinished();
+                        complete(data);
                     });
             });
             child.stdin.end();
