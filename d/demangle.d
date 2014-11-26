@@ -26,15 +26,16 @@ import std.stdio;
 import std.demangle;
 import std.regex;
 
+auto idRegex = ctRegex!("[_$a-zA-Z][_$a-zA-Z0-9]*", "g");
+
 void main() {
-    string dem(Captures!(string) m)
-    {
+    string dem(Captures!(string) m) {
         return demangle(m.hit);
     }
 
     foreach (line; stdin.byLine()) {
         string s2 = cast(string)line;
-        auto s = replace!(dem)(s2, regex("[_$a-zA-Z][_$a-zA-Z0-9]*", "g"));
+        auto s = replaceAll!(dem)(s2, idRegex);
         writeln(s);
     }
 }
