@@ -39,9 +39,15 @@
 
 static int allowed_match(const char* path, const char* okpath) {
     char resolvedBuf[PATH_MAX];
-    char* resolved = realpath(path, resolvedBuf);
-    if (resolved == NULL) {
-        return 0;
+    const char* resolved = path;
+    if (!strcmp(resolved, "/proc/self")) {
+        // Leave references to /proc/self alone as its real path is different
+        // each time.
+    } else {
+        resolved = realpath(path, resolvedBuf);
+        if (resolved == NULL) {
+            return 0;
+        }
     }
 
     while (*okpath) {
