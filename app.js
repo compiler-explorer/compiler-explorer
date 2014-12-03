@@ -197,10 +197,16 @@ function compile(req, res) {
                     taskFinished();
                 }
 
-                var size = fs.statSync(outputFilename).size;
-                if (size >= maxSize) {
-                    complete("<No output: generated assembly was too large (" + size + " > " + maxSize + " bytes)>");
-                    return;
+                if (code !== 0) {
+                    return complete("<Compilation failed>");
+                }
+                try {
+                    var size = fs.statSync(outputFilename).size;
+                    if (size >= maxSize) {
+                        return complete("<No output: generated assembly was too large (" + size + " > " + maxSize + " bytes)>");
+                    }
+                } catch (e) {
+                    return complete("<No output file>");
                 }
 
                 child_process.exec('cat "' + outputFilename + '" | ' + postProcess,
