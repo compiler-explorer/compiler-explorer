@@ -13,27 +13,23 @@
         <script src="gcc.js"></script>
         <script src="ext/bootstrap/js/bootstrap.js"></script>
         <script src="ext/lz-string/lz-string-1.3.3-min.js"></script>
-<script type="text/javascript">
-  var _gaq = _gaq || [];
-  _gaq.push(['_setAccount', 'UA-55180-6']);
-  _gaq.push(['_trackPageview']);
+	<script type="text/javascript">
+	 var _gaq = _gaq || [];
+	 _gaq.push(['_setAccount', 'UA-55180-6']);
+	 _gaq.push(['_trackPageview']);
 
-  (function() {
-    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-  })();
-</script>
-<script type="text/javascript">
-    (function() {
-     var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;
-     po.src = 'https://apis.google.com/js/plusone.js';
-     var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);
-     })();
-</script>
-<script type="text/javascript">
-  !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");
-</script>
+	 (function() {
+	     "use strict";
+	     function create_script_element (id, url) {
+		 var el = document.createElement('script'); el.type = 'text/javascript'; el.async = true; el.id = id;
+		 el.src = url;
+		 var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(el, s);
+	     }
+	     create_script_element('ga', ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js');
+	     create_script_element('gp', 'https://apis.google.com/js/plusone.js');
+	     create_script_element('twitter-wjs', '//platform.twitter.com/widgets.js');
+	 })()
+	</script>
     </head>
     <body>
         <div class="navbar navbar-fixed-top">
