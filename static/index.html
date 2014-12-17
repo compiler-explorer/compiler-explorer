@@ -11,6 +11,7 @@
 	     google_analytics_enabled: true,
 	     sharing_enabled: true,
 	     github_ribbon_enabled: true,
+	     urlshortener: 'google',
 	 };
 	</script>
         <script src="ext/codemirror/codemirror.js"></script>
@@ -33,6 +34,7 @@
 		 el.src = url;
 		 var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(el, s);
 	     }
+	     create_script_element('urlshortener', 'urlshorten-' + OPTIONS.urlshortener + ".js");
 	     if (OPTIONS.google_analytics_enabled)
 		 create_script_element('ga', ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js');
 	     if (OPTIONS.sharing_enabled) {
