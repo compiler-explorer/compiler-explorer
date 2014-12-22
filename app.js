@@ -134,7 +134,7 @@ function clientOptionsHandler(compilers, fileSources) {
     sources = sources.sort(compareOn("name"));
     var options = {
         google_analytics_account: props.get('gcc-explorer', 'clientGoogleAnalyticsAccount', 'UA-55180-6'),
-        google_analytics_enabled: props.get('gcc-explorer', 'clientGoogleAnalyticsEnabled', true),
+        google_analytics_enabled: props.get('gcc-explorer', 'clientGoogleAnalyticsEnabled', false),
         sharing_enabled: props.get('gcc-explorer', 'clientSharingEnabled', true),
         github_ribbon_enabled: props.get('gcc-explorer', 'clientGitHubRibbonEnabled', true),
         urlshortener: props.get('gcc-explorer', 'clientURLShortener', 'google'),
