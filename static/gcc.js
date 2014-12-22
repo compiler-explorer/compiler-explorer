@@ -129,30 +129,13 @@ function saveFileAs() {
     });
 }
 
-function loadUrlShortenerApi() {
-    gapi.client.load('urlshortener', 'v1', makePermalink);
-}
-
-function loadGoogleApisClientLibrary() {
-    $(document.body).append('<script src="https://apis.google.com/js/client.js?onload=loadUrlShortenerApi">');
-}
-
 function makePermalink() {
     $('#permalink').val('');
-    if (!gapi.client) {
-        // Load the Google APIs client library asynchronously, then the
-        // urlshortener API, and finally come back here.
-        loadGoogleApisClientLibrary();
-        return;
-    }
-    var request = gapi.client.urlshortener.url.insert({
-        resource: {
-            longUrl: window.location.href.split('#')[0] + '#' + serialiseState(),
-        }
-    });
-    request.execute(function (response) {
-        $('#permalink').val(response.id);
-    });
+
+    shortenURL(window.location.href.split('#')[0] + '#' + serialiseState(),
+	       function (shorturl) {
+		   $('#permalink').val(shorturl);
+	       })
 }
 
 function hidePermalink() {

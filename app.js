@@ -326,6 +326,17 @@ function getCompilers(req, res) {
     res.end(JSON.stringify(compilers));
 }
 
+function getClientOptions(req, res) {
+    var options = {
+	     google_analytics_account: props.get('gcc-explorer', 'clientGoogleAnalyticsAccount', 'UA-55180-6'),
+	     google_analytics_enabled: props.get('gcc-explorer', 'clientGoogleAnalyticsEnabled', true),
+	     sharing_enabled: props.get('gcc-explorer', 'clientSharingEnabled', true),
+	     github_ribbon_enabled: props.get('gcc-explorer', 'clientGitHubRibbonEnabled', true),
+	     urlshortener: props.get('gcc-explorer', 'clientURLShortener', 'google')
+    };
+    res.end("var OPTIONS = " + JSON.stringify(options) + ";");
+}
+
 function findCompilers() {
     async.map(getCompilerExecutables(),
         function (compiler, callback) {
@@ -373,6 +384,7 @@ webServer
     .use(connect.favicon('static/favicon.ico'))
     .use(connect.static('static'))
     .use(connect.bodyParser())
+    .use('/client-options.js', getClientOptions)
     .use('/info', getInfo)
     .use('/sources', getSources)
     .use('/source', getSource)
