@@ -13,6 +13,11 @@ body {
 .sideBySide {
 }
 
+#changetip_tipme_button {
+    height: 25px; 
+    width: 135px;
+    padding: 7px 3px 4px;
+}
 .output {
     height: 80px;
     overflow: auto;
