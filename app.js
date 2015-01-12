@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-// Copyright (c) 2012-2014, Matt Godbolt
+// Copyright (c) 2012-2015, Matt Godbolt
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without 
@@ -181,6 +181,7 @@ function compile(req, res) {
             child.on('exit', function (code) {
                 clearTimeout(timeout);
                 var maxSize = props.get("gcc-explorer", "max-asm-size", 8 * 1024 * 1024);
+
                 function complete(data) {
                     var result = JSON.stringify({
                         stdout: stdout,
@@ -215,7 +216,7 @@ function compile(req, res) {
                         var data = filt_stdout;
                         if (err) {
                             if ("")
-                            data = '<No output: ' + err + '>';
+                                data = '<No output: ' + err + '>';
                         }
                         complete(data);
                     });
@@ -328,11 +329,11 @@ function getCompilers(req, res) {
 
 function getClientOptions(req, res) {
     var options = {
-	     google_analytics_account: props.get('gcc-explorer', 'clientGoogleAnalyticsAccount', 'UA-55180-6'),
-	     google_analytics_enabled: props.get('gcc-explorer', 'clientGoogleAnalyticsEnabled', true),
-	     sharing_enabled: props.get('gcc-explorer', 'clientSharingEnabled', true),
-	     github_ribbon_enabled: props.get('gcc-explorer', 'clientGitHubRibbonEnabled', true),
-	     urlshortener: props.get('gcc-explorer', 'clientURLShortener', 'google')
+        google_analytics_account: props.get('gcc-explorer', 'clientGoogleAnalyticsAccount', 'UA-55180-6'),
+        google_analytics_enabled: props.get('gcc-explorer', 'clientGoogleAnalyticsEnabled', true),
+        sharing_enabled: props.get('gcc-explorer', 'clientSharingEnabled', true),
+        github_ribbon_enabled: props.get('gcc-explorer', 'clientGitHubRibbonEnabled', true),
+        urlshortener: props.get('gcc-explorer', 'clientURLShortener', 'google')
     };
     res.end("var OPTIONS = " + JSON.stringify(options) + ";");
 }
