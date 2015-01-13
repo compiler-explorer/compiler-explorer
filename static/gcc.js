@@ -233,9 +233,10 @@ function initialise() {
     });
     $.getJSON("/sources", function (results) {
         $('.source option').remove();
+        var source = window.localStorage.source || OPTIONS.defaultSource;
         $.each(results, function (index, arg) {
             $('.files .source').append($('<option value="' + arg.urlpart + '">' + arg.name + '</option>'));
-            if (window.localStorage.source == arg.urlpart) {
+            if (source == arg.urlpart) {
                 $('.files .source').val(arg.urlpart);
             }
         });

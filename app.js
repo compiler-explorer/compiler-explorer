@@ -334,7 +334,8 @@ function getClientOptions(req, res) {
         sharing_enabled: props.get('gcc-explorer', 'clientSharingEnabled', true),
         github_ribbon_enabled: props.get('gcc-explorer', 'clientGitHubRibbonEnabled', true),
         urlshortener: props.get('gcc-explorer', 'clientURLShortener', 'google'),
-        defaultCompiler: props.get('gcc-explorer', 'defaultCompiler', '')
+        defaultCompiler: props.get('gcc-explorer', 'defaultCompiler', ''),
+        defaultSource: props.get('gcc-explorer', 'defaultSource', '')
     };
     res.end("var OPTIONS = " + JSON.stringify(options) + ";");
 }
