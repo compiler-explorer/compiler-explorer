@@ -274,8 +274,10 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, cmM
             compilersByExe[arg.exe] = arg;
             domRoot.find('.compiler').append($('<option value="' + arg.exe + '">' + arg.version + '</option>'));
         });
-        if (getSetting('compiler')) {
-            domRoot.find('.compiler').val(getSetting('compiler'));
+        var defaultCompiler = getSetting('compiler');
+        if (!defaultCompiler) defaultCompiler = OPTIONS.defaultCompiler;
+        if (defaultCompiler) {
+            domRoot.find('.compiler').val(defaultCompiler);
         }
         onCompilerChange();
     }

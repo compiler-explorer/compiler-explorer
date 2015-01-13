@@ -333,7 +333,8 @@ function getClientOptions(req, res) {
         google_analytics_enabled: props.get('gcc-explorer', 'clientGoogleAnalyticsEnabled', true),
         sharing_enabled: props.get('gcc-explorer', 'clientSharingEnabled', true),
         github_ribbon_enabled: props.get('gcc-explorer', 'clientGitHubRibbonEnabled', true),
-        urlshortener: props.get('gcc-explorer', 'clientURLShortener', 'google')
+        urlshortener: props.get('gcc-explorer', 'clientURLShortener', 'google'),
+        defaultCompiler: props.get('gcc-explorer', 'defaultCompiler', '')
     };
     res.end("var OPTIONS = " + JSON.stringify(options) + ";");
 }
