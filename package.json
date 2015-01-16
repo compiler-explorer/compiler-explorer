@@ -1,19 +1,31 @@
 {
-  "author": "Matt Godbolt <matt@godbolt.org>",
   "name": "gcc-explorer",
-  "description": "Investigate what on earth GCC does",
-  "version": "0.0.2",
+  "description": "Interactively investigate compiler output",
+  "author": {
+    "name": "Matt Godbolt",
+    "email": "matt@godbolt.org",
+    "url": "http://xania.org"
+  },
+  "repository": {
+    "type": "git",
+    "url": "mattgodbolt/gcc-explorer"
+  },
+  "version": "0.0.3",
   "engines": {
     "node": "0.10.x"
   },
   "main": "./app.js",
   "dependencies": {
-    "async": "0.7.x",
-    "connect": "2.14.x",
+    "async": "0.9.x",
+    "body-parser": "1.10.x",
+    "connect": "3.3.x",
     "fs-extra": "0.8.x",
     "lru-cache": "2.5.x",
-    "nopt": "1.0.x",
-    "temp": "0.7.x"
+    "morgan": "1.5.x",
+    "nopt": "3.0.x",
+    "serve-favicon": "2.2.x",
+    "serve-static": "1.8.x",
+    "temp": "0.8.x"
   },
   "devDependencies": {
     "supervisor": "0.3.1"

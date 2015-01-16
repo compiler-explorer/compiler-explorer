@@ -381,12 +381,17 @@ function findCompilers() {
 findCompilers();
 
 // WebServer.
-var webServer = connect();
+var webServer = connect(),
+    sFavicon = require('serve-favicon'),
+    sStatic = require('serve-static'),
+    bodyParser = require('body-parser'),
+    logger = require('morgan');
+
 webServer
-    .use(connect.logger())
-    .use(connect.favicon('static/favicon.ico'))
-    .use(connect.static('static'))
-    .use(connect.bodyParser())
+    .use(logger('combined'))
+    .use(sFavicon('static/favicon.ico'))
+    .use(sStatic('static'))
+    .use(bodyParser.urlencoded({extended:true}))
     .use('/client-options.js', getClientOptions)
     .use('/info', getInfo)
     .use('/sources', getSources)
