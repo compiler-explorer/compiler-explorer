@@ -18,10 +18,11 @@
   "dependencies": {
     "async": "0.9.x",
     "body-parser": "1.10.x",
-    "connect": "3.3.x",
+    "express": "4.11.x",
     "fs-extra": "0.8.x",
     "lru-cache": "2.5.x",
     "morgan": "1.5.x",
+    "promise": "6.1.x",
     "nopt": "3.0.x",
     "serve-favicon": "2.2.x",
     "serve-static": "1.8.x",

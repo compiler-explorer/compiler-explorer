@@ -191,28 +191,19 @@ function deserialiseState(state) {
     return true;
 }
 
-function initialise() {
+function initialise(options) {
     var defaultFilters = JSON.stringify(getAsmFilters());
     var actualFilters = $.parseJSON(window.localStorage.filter || defaultFilters);
     setFilterUi(actualFilters);
 
-    // Synchronous request here to make the whole race condition problem of
-    // getting language and compiler options after we've set local overrides.
     var languageType = "text/x-c++src";
-    $.ajax({
-        url: "/info",
-        dataType: "json",
-        async: false,
-        success: function (results) {
-            $(".language-name").text(results.language);
-            if (results.language == "Rust") {
-                languageType = "text/x-rustsrc";
-            } else if (results.language == "D") {
-                languageType = "text/x-d";
-            }
-            $(".compiler_options").val(results.options);
-        }
-    }); // must be ahead of the compiler creation. This is all terrible.
+    $(".language-name").text(options.language);
+    if (options.language == "Rust") {
+        languageType = "text/x-rustsrc";
+    } else if (options.language == "D") {
+        languageType = "text/x-d";
+    }
+    $(".compiler_options").val(options.compileoptions);
 
     var compiler = new Compiler($('body'), actualFilters, "a", function () {
         hidePermalink();
@@ -224,24 +215,19 @@ function initialise() {
         return false;
     });
     $('.files .source').change(onSourceChange);
-    $.getJSON("/compilers", function (results) {
-        compilersByExe = {};
-        $.each(results, function (index, arg) {
-            compilersByExe[arg.exe] = arg;
-        });
-        compiler.setCompilers(results);
-    });
-    $.getJSON("/sources", function (results) {
+    compiler.setCompilers(options.compilers, options.defaultCompiler);
+    function setSources(sources, defaultSource) {
         $('.source option').remove();
-        var source = window.localStorage.source || OPTIONS.defaultSource;
-        $.each(results, function (index, arg) {
+        $.each(sources, function (index, arg) {
             $('.files .source').append($('<option value="' + arg.urlpart + '">' + arg.name + '</option>'));
-            if (source == arg.urlpart) {
+            if (defaultSource == arg.urlpart) {
                 $('.files .source').val(arg.urlpart);
             }
         });
         onSourceChange();
-    });
+    }
+
+    setSources(options.sources, window.localStorage.source || options.defaultSource);
     $('.files .load').click(function () {
         loadFile();
         return false;
@@ -304,4 +290,6 @@ function setFilterUi(asmFilters) {
     });
 }
 
-$(initialise);
+$(function () {
+    initialise(OPTIONS)
+});
