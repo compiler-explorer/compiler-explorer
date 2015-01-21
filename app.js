@@ -177,7 +177,7 @@ function findCompilers() {
     var compilers = getCompilerExecutables().map(getCompilerInfo);
     return Promise.all(compilers).then(function (compilers) {
         compilers = compilers.filter(function (x) {
-            return x !== null
+            return x !== null;
         });
         compilers = compilers.sort(function (x, y) {
             return x.version < y.version ? -1 : x.version > y.version ? 1 : 0;
