@@ -27,12 +27,10 @@
 var nopt = require('nopt'),
     os = require('os'),
     props = require('./lib/properties'),
+    compileHandler = require('./lib/compile').compileHandler,
     express = require('express'),
     child_process = require('child_process'),
-    temp = require('temp'),
     path = require('path'),
-    async = require('async'),
-    LRU = require('lru-cache'),
     fs = require('fs-extra'),
     Promise = require('promise');
 
@@ -51,188 +49,6 @@ var rootDir = opts.rootDir || './etc';
 props.initialize(rootDir + '/config', propHierarchy);
 
 var port = props.get('gcc-explorer', 'port', 10240);
-var compilersByExe = {};
-var compilerExecutables;
-
-var cache = LRU({
-    max: props.get('gcc-explorer', 'cacheMb') * 1024 * 1024,
-    length: function (n) {
-        return n.length;
-    }
-});
-var cacheHits = 0;
-var cacheMisses = 0;
-
-var compileQueue = async.queue(function (task, callback) {
-    console.log("Compiling, queue size " + compileQueue.length());
-    task.task(callback);
-}, props.get("gcc-explorer", "maxConcurrentCompiles", 1));
-compileQueue.drain = function () {
-    console.log("Compile queue empty");
-};
-compileQueue.saturated = function () {
-    console.log("Compile queue full");
-};
-
-function checkOptions(options) {
-    var okOptions = new RegExp(props.get('gcc-options', 'whitelistRe', '.*'));
-    var badOptions = new RegExp(props.get('gcc-options', 'blacklistRe'));
-    var error = [];
-    options.forEach(function (option) {
-        if (!option.match(okOptions) || option.match(badOptions)) {
-            error.push(option);
-        }
-    });
-    if (error.length > 0) return "Bad options: " + error.join(", ");
-    return null;
-}
-
-function checkSource(source) {
-    var re = /^\s*#include(_next)?\s+["<"](\/|.*\.\.)/;
-    var failed = [];
-    source.split('\n').forEach(function (line, index) {
-        if (line.match(re)) {
-            failed.push("<stdin>:" + (index + 1) + ":1: no absolute or relative includes please");
-        }
-    });
-    if (failed.length > 0) return failed.join("\n");
-    return null;
-}
-
-function cacheStats() {
-    console.log("Cache stats: " + cacheHits + " hits, " + cacheMisses + " misses");
-}
-
-function compileHandler(compilers) {
-    var compilersByExe = {};
-    compilers.forEach(function (compiler) {
-        compilersByExe[compiler.exe] = compiler; // todo: kill global
-    });
-    return function compile(req, res) {
-        var source = req.body.source;
-        var compiler = req.body.compiler;
-        if (getCompilerExecutables().indexOf(compiler) < 0) {
-            return res.end(JSON.stringify({code: -1, stderr: "bad compiler " + compiler}));
-        }
-        var compilerInfo = compilersByExe[compiler];
-        if (!compilerInfo) {
-            return res.end(JSON.stringify({code: -1, stderr: "bad compiler " + compiler}));
-        }
-        var options = req.body.options.split(' ').filter(function (x) {
-            return x !== "";
-        });
-        var filters = req.body.filters;
-        var optionsErr = checkOptions(options);
-        if (optionsErr) {
-            return res.end(JSON.stringify({code: -1, stderr: optionsErr}));
-        }
-        var sourceErr = checkSource(source);
-        if (sourceErr) {
-            return res.end(JSON.stringify({code: -1, stderr: sourceErr}));
-        }
-
-        var key = compiler + " | " + source + " | " + options + " | " + filters.intel;
-        var cached = cache.get(key);
-        if (cached) {
-            cacheHits++;
-            cacheStats();
-            res.end(cached);
-            return;
-        }
-        cacheMisses++;
-
-        var compileTask = function (taskFinished) {
-            temp.mkdir('gcc-explorer-compiler', function (err, dirPath) {
-                if (err) {
-                    return res.end(JSON.stringify({code: -1, stderr: "Unable to open temp file: " + err}));
-                }
-                var postProcess = props.get("gcc-explorer", "postProcess");
-                var inputFilename = path.join(dirPath, props.get("gcc-explorer", "compileFilename"));
-                var outputFilename = path.join(dirPath, 'output.S');
-                if (compilerInfo.supportedOpts['-masm']) {
-                    var syntax = '-masm=att'; // default at&t
-                    if (filters.intel == "true") syntax = '-masm=intel';
-                    options = options.concat([syntax]);
-                }
-                var compileToAsm = props.get("gcc-explorer", "compileToAsm", "-S").split(" ");
-                options = options.concat(['-g', '-o', outputFilename]).concat(compileToAsm).concat([inputFilename]);
-                var file = fs.openSync(inputFilename, "w");
-                fs.writeSync(file, source);
-                fs.closeSync(file);
-                var okToCache = true;
-                var compilerWrapper = props.get("gcc-explorer", "compiler-wrapper");
-                if (compilerWrapper) {
-                    options = [compiler].concat(options);
-                    compiler = compilerWrapper;
-                }
-                var child = child_process.spawn(
-                    compiler,
-                    options,
-                    {detached: true}
-                );
-                var stdout = "";
-                var stderr = "";
-                var timeout = setTimeout(function () {
-                    okToCache = false;
-                    child.kill();
-                    stderr += "\nKilled - processing time exceeded";
-                }, props.get("gcc-explorer", "compileTimeoutMs", 100));
-                child.stdout.on('data', function (data) {
-                    stdout += data;
-                });
-                child.stderr.on('data', function (data) {
-                    stderr += data;
-                });
-                child.on('exit', function (code) {
-                    clearTimeout(timeout);
-                    var maxSize = props.get("gcc-explorer", "max-asm-size", 8 * 1024 * 1024);
-
-                    function complete(data) {
-                        var result = JSON.stringify({
-                            stdout: stdout,
-                            stderr: stderr,
-                            asm: data,
-                            code: code
-                        });
-                        if (okToCache) {
-                            cache.set(key, result);
-                            cacheStats();
-                        }
-                        res.end(result);
-                        fs.remove(dirPath);
-                        taskFinished();
-                    }
-
-                    if (code !== 0) {
-                        return complete("<Compilation failed>");
-                    }
-                    try {
-                        var size = fs.statSync(outputFilename).size;
-                        if (size >= maxSize) {
-                            return complete("<No output: generated assembly was too large (" + size + " > " + maxSize + " bytes)>");
-                        }
-                    } catch (e) {
-                        return complete("<No output file>");
-                    }
-
-                    child_process.exec('cat "' + outputFilename + '" | ' + postProcess,
-                        {maxBuffer: maxSize},
-                        function (err, filt_stdout, filt_stderr) {
-                            var data = filt_stdout;
-                            if (err) {
-                                if ("")
-                                    data = '<No output: ' + err + '>';
-                            }
-                            complete(data);
-                        });
-                });
-                child.stdin.end();
-            });
-        };
-
-        compileQueue.push({task: compileTask});
-    };
-}
 
 function loadSources() {
     var sourcesDir = "lib/sources";
@@ -288,9 +104,6 @@ function getSource(req, res, next) {
 }
 
 function getCompilerExecutables() {
-    if (compilerExecutables) {
-        return compilerExecutables;
-    }
     var exes = props.get("gcc-explorer", "compilers", "/usr/bin/g++").split(":");
     var ndk = props.get('gcc-explorer', 'androidNdk');
     if (ndk) {
@@ -311,7 +124,6 @@ function getCompilerExecutables() {
         });
         exes.push.apply(exes, toolchains);
     }
-    compilerExecutables = exes;
     return exes;
 }
 
@@ -395,4 +207,6 @@ findCompilers().then(function (compilers) {
     console.log("Listening on http://" + os.hostname() + ":" + port + "/");
     console.log("=======================================");
     webServer.listen(port);
+}).catch(function (err) {
+    console.log("Error: " + err.stack);
 });
