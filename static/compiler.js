@@ -46,7 +46,8 @@ function clearBackground(cm) {
 const NumRainbowColours = 12;
 
 function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, cmMode) {
-    var compilersByExe = {};
+    var compilersById = {};
+    var compilersByAlias = {};
     var pendingTimeout = null;
     var asmCodeMirror = null;
     var cppEditor = null;
@@ -261,7 +262,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, cmM
 
     function onCompilerChange() {
         onChange();
-        var compiler = compilersByExe[$('.compiler').val()];
+        var compiler = compilersById[$('.compiler').val()];
         if (compiler === undefined)
             return;
         domRoot.find('.filter button.btn[value="intel"]').toggleClass("disabled", !compiler.supportedOpts["-masm"]);
@@ -269,15 +270,21 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, cmM
 
     function setCompilers(compilers, defaultCompiler) {
         domRoot.find('.compiler option').remove();
-        compilersByExe = {};
+        compilersById = {};
+        compilersByAlias = {};
         $.each(compilers, function (index, arg) {
-            compilersByExe[arg.exe] = arg;
-            domRoot.find('.compiler').append($('<option value="' + arg.exe + '">' + arg.version + '</option>'));
+            compilersById[arg.id] = arg;
+            if (arg.alias) compilersByAlias[arg.alias] = arg;
+            domRoot.find('.compiler').append($('<option value="' + arg.id + '">' + arg.name + " (" +arg.version + ')</option>'));
         });
-        var defaultCompiler = getSetting('compiler');
-        if (!defaultCompiler) defaultCompiler = defaultCompiler;
-        if (defaultCompiler) {
-            domRoot.find('.compiler').val(defaultCompiler);
+        var compiler = getSetting('compiler');
+        if (!compiler) compiler = defaultCompiler;
+        if (!compilersById[compiler]) {
+            // Handle old settings and try the alias table.
+            compiler = compilersByAlias[compiler].id;
+        }
+        if (compiler) {
+            domRoot.find('.compiler').val(compiler);
         }
         onCompilerChange();
     }

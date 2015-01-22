@@ -103,7 +103,7 @@ function getSource(req, res, next) {
     }));
 }
 
-function getCompilerExecutables() {
+function configuredCompilers() {
     var exes = props.get("gcc-explorer", "compilers", "/usr/bin/g++").split(":");
     var ndk = props.get('gcc-explorer', 'androidNdk');
     if (ndk) {
@@ -124,7 +124,20 @@ function getCompilerExecutables() {
         });
         exes.push.apply(exes, toolchains);
     }
-    return exes;
+    // Map any named compilers to their executable
+    return exes.map(function (name) {
+        var base = "compiler." + name;
+        var exe = props.get("gcc-explorer", base + ".exe", "");
+        if (!exe) {
+            return {id: name, exe: name, name: name};
+        }
+        return {
+            id: name,
+            exe: exe,
+            name: props.get("gcc-explorer", base + ".name", name),
+            alias: props.get("gcc-explorer", base + ".alias")
+        };
+    });
 }
 
 function clientOptionsHandler(compilers, fileSources) {
@@ -152,8 +165,9 @@ function clientOptionsHandler(compilers, fileSources) {
     };
 }
 
-function getCompilerInfo(compiler) {
-    return new Promise(function (resolve, reject) {
+function getCompilerInfo(compilerInfo) {
+    return new Promise(function (resolve) {
+        var compiler = compilerInfo.exe;
         child_process.exec(compiler + ' --version', function (err, output) {
             if (err) return resolve(null);
             var version = output.split('\n')[0];
@@ -167,14 +181,16 @@ function getCompilerInfo(compiler) {
                         options[match[0]] = true;
                     });
                 }
-                resolve({exe: compiler, version: version, supportedOpts: options});
+                compilerInfo.version = version;
+                compilerInfo.supportedOpts = options;
+                resolve(compilerInfo);
             });
         });
     });
 }
 
 function findCompilers() {
-    var compilers = getCompilerExecutables().map(getCompilerInfo);
+    var compilers = configuredCompilers().map(getCompilerInfo);
     return Promise.all(compilers).then(function (compilers) {
         compilers = compilers.filter(function (x) {
             return x !== null;
