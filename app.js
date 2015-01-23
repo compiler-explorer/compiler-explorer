@@ -196,7 +196,7 @@ function findCompilers() {
             return x !== null;
         });
         compilers = compilers.sort(function (x, y) {
-            return x.version < y.version ? -1 : x.version > y.version ? 1 : 0;
+            return x.name < y.name ? -1 : x.name > y.name ? 1 : 0;
         });
         return compilers;
     });

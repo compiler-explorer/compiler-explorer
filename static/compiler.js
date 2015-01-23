@@ -239,7 +239,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, cmM
         var state = {
             sourcez: LZString.compressToBase64(cppEditor.getValue()),
             compiler: domRoot.find('.compiler').val(),
-            options: domRoot.find('.compiler_options').val(),
+            options: domRoot.find('.compiler_options').val()
         };
         return state;
     }
@@ -250,6 +250,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, cmM
         } else {
             cppEditor.setValue(state.source);
         }
+        state.compiler = mapCompiler(state.compiler);
         domRoot.find('.compiler').val(state.compiler);
         domRoot.find('.compiler_options').val(state.options);
         // Somewhat hackily persist compiler into local storage else when the ajax response comes in
@@ -268,6 +269,14 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, cmM
         domRoot.find('.filter button.btn[value="intel"]').toggleClass("disabled", !compiler.supportedOpts["-masm"]);
     }
 
+    function mapCompiler(compiler) {
+        if (!compilersById[compiler]) {
+            // Handle old settings and try the alias table.
+            compiler = compilersByAlias[compiler].id;
+        }
+        return compiler;
+    }
+
     function setCompilers(compilers, defaultCompiler) {
         domRoot.find('.compiler option').remove();
         compilersById = {};
@@ -279,10 +288,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, cmM
         });
         var compiler = getSetting('compiler');
         if (!compiler) compiler = defaultCompiler;
-        if (!compilersById[compiler]) {
-            // Handle old settings and try the alias table.
-            compiler = compilersByAlias[compiler].id;
-        }
+        compiler = mapCompiler(compiler);
         if (compiler) {
             domRoot.find('.compiler').val(compiler);
         }
