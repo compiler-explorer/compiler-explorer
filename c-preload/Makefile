@@ -1,7 +1,13 @@
+ifeq (FreeBSD,$(shell uname -s))
+    LDL :=
+else
+    LDL := -ldl
+endif
+
 all: libpreload.so
 
 libpreload.so: preload.c
-	$(CC) -std=c99 -shared -O1 -fPIC $^ -o $@ -ldl
+	$(CC) -std=c99 -shared -O1 -fPIC $^ -o $@ $(LDL)
 
 .PHONY: test clean
 test: libpreload.so
