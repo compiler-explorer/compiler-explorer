@@ -272,7 +272,8 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, cmM
     function mapCompiler(compiler) {
         if (!compilersById[compiler]) {
             // Handle old settings and try the alias table.
-            compiler = compilersByAlias[compiler].id;
+            compiler = compilersByAlias[compiler];
+            if (compiler) compiler = compiler.id;
         }
         return compiler;
     }
