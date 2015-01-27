@@ -5,6 +5,7 @@ default:
 	@echo "On Ubuntu/Debian try: sudo apt-get install nodejs npm"
 	exit 1
 else
+NODE:= $(shell which node nodejs)
 default: run
 endif
 
@@ -27,21 +28,21 @@ $(NODE_MODULES): package.json
 node_modules: $(NODE_MODULES)
 
 test:
-	(cd test; node test.js)
+	(cd test; $(NODE) test.js)
 	@echo Tests pass
 
 clean:
 	rm -rf node_modules .npm-updated
 
 run: node_modules optional-d-support c-preload
-	./node_modules/.bin/supervisor ./app.js
+	$(NODE) ./node_modules/.bin/supervisor --exec $(NODE) ./app.js
 
 c-preload:
 	$(MAKE) -C c-preload
 
 run-amazon: node_modules optional-d-support c-preload
-	./node_modules/.bin/supervisor -- ./app.js --env amazon
+	$(NODE) ./node_modules/.bin/supervisor --exec $(NODE) -- ./app.js --env amazon
 
 run-amazon-d: node_modules optional-d-support c-preload
-	./node_modules/.bin/supervisor -- ./app.js --env amazon-d
+	$(NODE) ./node_modules/.bin/supervisor --exec $(NODE) -- ./app.js --env amazon-d
 
