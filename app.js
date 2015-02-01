@@ -210,10 +210,12 @@ findCompilers().then(function (compilers) {
         sFavicon = require('serve-favicon'),
         sStatic = require('serve-static'),
         bodyParser = require('body-parser'),
-        logger = require('morgan');
+        logger = require('morgan'),
+        compression = require('compression');
 
     webServer
         .use(logger('combined'))
+        .use(compression())
         .use(sFavicon('static/favicon.ico'))
         .use(sStatic('static', {maxAge: staticMaxAgeMs}))
         .use(bodyParser.urlencoded({extended: true}))
