@@ -49,6 +49,7 @@ var rootDir = opts.rootDir || './etc';
 props.initialize(rootDir + '/config', propHierarchy);
 
 var port = props.get('gcc-explorer', 'port', 10240);
+var staticMaxAgeMs = props.get('gcc-explorer', 'staticMaxAgeMs', 0);
 
 function loadSources() {
     var sourcesDir = "lib/sources";
@@ -95,6 +96,7 @@ function getSource(req, res, next) {
         return;
     }
     action.apply(handler, bits.slice(3).concat(function (err, response) {
+        res.set('Cache-Control', 'public, max-age=' + staticMaxAgeMs);
         if (err) {
             res.end(JSON.stringify({err: err}));
         } else {
@@ -161,6 +163,7 @@ function clientOptionsHandler(compilers, fileSources) {
     var text = "var OPTIONS = " + JSON.stringify(options) + ";";
     return function getClientOptions(req, res) {
         res.set('Content-Type', 'application/javascript');
+        res.set('Cache-Control', 'public, max-age=' + staticMaxAgeMs);
         res.end(text);
     };
 }
@@ -212,7 +215,7 @@ findCompilers().then(function (compilers) {
     webServer
         .use(logger('combined'))
         .use(sFavicon('static/favicon.ico'))
-        .use(sStatic('static'))
+        .use(sStatic('static', {maxAge: staticMaxAgeMs}))
         .use(bodyParser.urlencoded({extended: true}))
         .get('/client-options.js', clientOptionsHandler(compilers, fileSources))
         .use('/source', getSource)
