@@ -135,7 +135,7 @@ function makePermalink() {
     shortenURL(window.location.href.split('#')[0] + '#' + serialiseState(),
         function (shorturl) {
             $('#permalink').val(shorturl);
-        })
+        });
 }
 
 function hidePermalink() {
@@ -291,5 +291,5 @@ function setFilterUi(asmFilters) {
 }
 
 $(function () {
-    initialise(OPTIONS)
+    initialise(OPTIONS);
 });
