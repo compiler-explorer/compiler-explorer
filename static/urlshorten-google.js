@@ -3,7 +3,7 @@ function googleJSClientLoaded() {
 }
 
 function shortenURL(url, done) {
-    if (!gapi.client) {
+    if (!window.gapi || !gapi.client) {
         // Load the Google APIs client library asynchronously, then the
         // urlshortener API, and finally come back here.
         $(document.body).append('<script src="https://apis.google.com/js/client.js?onload=googleJSClientLoaded">');
