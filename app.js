@@ -32,6 +32,7 @@ var nopt = require('nopt'),
     child_process = require('child_process'),
     path = require('path'),
     fs = require('fs-extra'),
+    http = require('http'),
     Promise = require('promise');
 
 var opts = nopt({
@@ -76,6 +77,32 @@ function compareOn(key) {
         if (x < y) return -1;
         if (x > y) return 1;
         return 0;
+    };
+}
+
+function clientOptionsHandler(compilers, fileSources) {
+    var sources = fileSources.map(function (source) {
+        return {name: source.name, urlpart: source.urlpart};
+    });
+    sources = sources.sort(compareOn("name"));
+    var options = {
+        google_analytics_account: props.get('gcc-explorer', 'clientGoogleAnalyticsAccount', 'UA-55180-6'),
+        google_analytics_enabled: props.get('gcc-explorer', 'clientGoogleAnalyticsEnabled', false),
+        sharing_enabled: props.get('gcc-explorer', 'clientSharingEnabled', true),
+        github_ribbon_enabled: props.get('gcc-explorer', 'clientGitHubRibbonEnabled', true),
+        urlshortener: props.get('gcc-explorer', 'clientURLShortener', 'google'),
+        defaultCompiler: props.get('gcc-explorer', 'defaultCompiler', ''),
+        defaultSource: props.get('gcc-explorer', 'defaultSource', ''),
+        compilers: compilers,
+        language: props.get("gcc-explorer", "language"),
+        compileOptions: props.get("gcc-explorer", "options"),
+        sources: sources
+    };
+    var text = "var OPTIONS = " + JSON.stringify(options) + ";";
+    return function getClientOptions(req, res) {
+        res.set('Content-Type', 'application/javascript');
+        res.set('Cache-Control', 'public, max-age=' + staticMaxAgeMs);
+        res.end(text);
     };
 }
 
@@ -127,48 +154,53 @@ function configuredCompilers() {
         exes.push.apply(exes, toolchains);
     }
     // Map any named compilers to their executable
-    return exes.map(function (name) {
+    return Promise.all(exes.map(function (name) {
+        if (name.indexOf("@") !== -1) {
+            var bits = name.split("@");
+            var host = bits[0];
+            var port = parseInt(bits[1]);
+            console.log("Fetching compilers from remote source " + host + ":" + port);
+            return new Promise(function (resolve, reject) {
+                http.get({
+                    hostname: host,
+                    port: port,
+                    path: "/api/compilers"
+                }, function (res) {
+                    var str = '';
+                    res.on('data', function (chunk) {
+                        str += chunk;
+                    });
+                    res.on('end', function () {
+                        var compilers = JSON.parse(str).map(function (compiler) {
+                            compiler.exe = null;
+                            compiler.remote = "http://" + host + ":" + port;
+                            return compiler;
+                        });
+                        resolve(compilers);
+                    });
+                }).on('error', function (e) {
+                    reject(e);
+                });
+            });
+        }
         var base = "compiler." + name;
         var exe = props.get("gcc-explorer", base + ".exe", "");
         if (!exe) {
-            return {id: name, exe: name, name: name};
+            return Promise.resolve({id: name, exe: name, name: name});
         }
-        return {
+        return Promise.resolve({
             id: name,
             exe: exe,
             name: props.get("gcc-explorer", base + ".name", name),
             alias: props.get("gcc-explorer", base + ".alias")
-        };
-    });
-}
-
-function clientOptionsHandler(compilers, fileSources) {
-    var sources = fileSources.map(function (source) {
-        return {name: source.name, urlpart: source.urlpart};
-    });
-    sources = sources.sort(compareOn("name"));
-    var options = {
-        google_analytics_account: props.get('gcc-explorer', 'clientGoogleAnalyticsAccount', 'UA-55180-6'),
-        google_analytics_enabled: props.get('gcc-explorer', 'clientGoogleAnalyticsEnabled', false),
-        sharing_enabled: props.get('gcc-explorer', 'clientSharingEnabled', true),
-        github_ribbon_enabled: props.get('gcc-explorer', 'clientGitHubRibbonEnabled', true),
-        urlshortener: props.get('gcc-explorer', 'clientURLShortener', 'google'),
-        defaultCompiler: props.get('gcc-explorer', 'defaultCompiler', ''),
-        defaultSource: props.get('gcc-explorer', 'defaultSource', ''),
-        compilers: compilers,
-        language: props.get("gcc-explorer", "language"),
-        compileOptions: props.get("gcc-explorer", "options"),
-        sources: sources
-    };
-    var text = "var OPTIONS = " + JSON.stringify(options) + ";";
-    return function getClientOptions(req, res) {
-        res.set('Content-Type', 'application/javascript');
-        res.set('Cache-Control', 'public, max-age=' + staticMaxAgeMs);
-        res.end(text);
-    };
+        });
+    }));
 }
 
 function getCompilerInfo(compilerInfo) {
+    if (Array.isArray(compilerInfo)) {
+        return Promise.resolve(compilerInfo);
+    }
     return new Promise(function (resolve) {
         var compiler = compilerInfo.exe;
         child_process.exec(compiler + ' --version', function (err, output) {
@@ -193,16 +225,42 @@ function getCompilerInfo(compilerInfo) {
 }
 
 function findCompilers() {
-    var compilers = configuredCompilers().map(getCompilerInfo);
-    return Promise.all(compilers).then(function (compilers) {
-        compilers = compilers.filter(function (x) {
-            return x !== null;
+    return configuredCompilers()
+        .then(function (compilers) {
+            return Promise.all(compilers.map(getCompilerInfo));
+        })
+        .then(function (compilers) {
+            compilers = Array.prototype.concat.apply([], compilers);
+            compilers = compilers.filter(function (x) {
+                return x !== null;
+            });
+            compilers = compilers.sort(function (x, y) {
+                return x.name < y.name ? -1 : x.name > y.name ? 1 : 0;
+            });
+            console.log("Compilers:");
+            compilers.forEach(function (c) {
+                console.log(c.id + " : " + c.name + " : " + (c.exe || c.remote));
+            });
+            return compilers;
         });
-        compilers = compilers.sort(function (x, y) {
-            return x.name < y.name ? -1 : x.name > y.name ? 1 : 0;
-        });
-        return compilers;
-    });
+}
+
+function apiHandler(compilers) {
+    var reply = JSON.stringify(compilers);
+    return function apiHandler(req, res, next) {
+        var bits = req.url.split("/");
+        if (bits.length !== 2 || req.method !== "GET") return next();
+        switch (bits[1]) {
+            default:
+                next();
+                break;
+
+            case "compilers":
+                res.set('Content-Type', 'application/json');
+                res.end(reply);
+                break;
+        }
+    };
 }
 
 findCompilers().then(function (compilers) {
@@ -211,16 +269,19 @@ findCompilers().then(function (compilers) {
         sStatic = require('serve-static'),
         bodyParser = require('body-parser'),
         logger = require('morgan'),
-        compression = require('compression');
+        compression = require('compression'),
+        restreamer = require('connect-restreamer');
 
     webServer
         .use(logger('combined'))
         .use(compression())
         .use(sFavicon('static/favicon.ico'))
         .use(sStatic('static', {maxAge: staticMaxAgeMs}))
-        .use(bodyParser.urlencoded({extended: true}))
+        .use(bodyParser.json())
+        .use(restreamer())
         .get('/client-options.js', clientOptionsHandler(compilers, fileSources))
         .use('/source', getSource)
+        .use('/api', apiHandler(compilers))
         .post('/compile', compileHandler(compilers));
 
     // GO!

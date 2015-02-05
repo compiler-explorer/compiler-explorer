@@ -214,7 +214,8 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, cmM
                 type: 'POST',
                 url: '/compile',
                 dataType: 'json',
-                data: data,
+                contentType: 'application/json',
+                data: JSON.stringify(data),
                 success: function (result) {
                     onCompileResponse(data, result);
                 }
