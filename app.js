@@ -132,6 +132,30 @@ function getSource(req, res, next) {
     }));
 }
 
+function retryPromise(promiseFunc, name, maxFails, retryMs) {
+    return new Promise(function (resolve, reject) {
+        var fails = 0;
+
+        function doit() {
+            var promise = promiseFunc();
+            promise.then(function (arg) {
+                resolve(arg);
+            }, function (e) {
+                fails++;
+                if (fails < maxFails) {
+                    console.log("Failed " + name + " : " + e + ", retrying");
+                    setTimeout(doit, retryMs);
+                } else {
+                    console.log("Too many retries for " + name + " : " + e);
+                    reject(e);
+                }
+            });
+        }
+
+        doit();
+    });
+}
+
 function configuredCompilers() {
     var exes = props.get("gcc-explorer", "compilers", "/usr/bin/g++").split(":");
     var ndk = props.get('gcc-explorer', 'androidNdk');
@@ -160,28 +184,33 @@ function configuredCompilers() {
             var host = bits[0];
             var port = parseInt(bits[1]);
             console.log("Fetching compilers from remote source " + host + ":" + port);
-            return new Promise(function (resolve, reject) {
-                http.get({
-                    hostname: host,
-                    port: port,
-                    path: "/api/compilers"
-                }, function (res) {
-                    var str = '';
-                    res.on('data', function (chunk) {
-                        str += chunk;
-                    });
-                    res.on('end', function () {
-                        var compilers = JSON.parse(str).map(function (compiler) {
-                            compiler.exe = null;
-                            compiler.remote = "http://" + host + ":" + port;
-                            return compiler;
+            return retryPromise(function () {
+                return new Promise(function (resolve, reject) {
+                    http.get({
+                        hostname: host,
+                        port: port,
+                        path: "/api/compilers"
+                    }, function (res) {
+                        var str = '';
+                        res.on('data', function (chunk) {
+                            str += chunk;
                         });
-                        resolve(compilers);
+                        res.on('end', function () {
+                            var compilers = JSON.parse(str).map(function (compiler) {
+                                compiler.exe = null;
+                                compiler.remote = "http://" + host + ":" + port;
+                                return compiler;
+                            });
+                            resolve(compilers);
+                        });
+                    }).on('error', function (e) {
+                        reject(e);
                     });
-                }).on('error', function (e) {
-                    reject(e);
                 });
-            });
+            },
+                host + ":" + port,
+                props.get('gcc-explorer', 'proxyRetries', 20),
+                props.get('gcc-explorer', 'proxyRetryMs', 500));
         }
         var base = "compiler." + name;
         var exe = props.get("gcc-explorer", base + ".exe", "");
