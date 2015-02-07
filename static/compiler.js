@@ -268,6 +268,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, cmM
         if (compiler === undefined)
             return;
         domRoot.find('.filter button.btn[value="intel"]').toggleClass("disabled", !compiler.supportedOpts["-masm"]);
+        $(".compilerVersion").text(compiler.name + " (" + compiler.version + ")");
     }
 
     function mapCompiler(compiler) {
@@ -286,7 +287,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, cmM
         $.each(compilers, function (index, arg) {
             compilersById[arg.id] = arg;
             if (arg.alias) compilersByAlias[arg.alias] = arg;
-            domRoot.find('.compiler').append($('<option value="' + arg.id + '">' + arg.name + " (" +arg.version + ')</option>'));
+            domRoot.find('.compiler').append($('<option value="' + arg.id + '">' + arg.name + '</option>'));
         });
         var compiler = getSetting('compiler');
         if (!compiler) compiler = defaultCompiler;
