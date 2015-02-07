@@ -45,7 +45,7 @@ function clearBackground(cm) {
 
 const NumRainbowColours = 12;
 
-function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, cmMode) {
+function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, lang) {
     var compilersById = {};
     var compilersByAlias = {};
     var pendingTimeout = null;
@@ -55,6 +55,13 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, cmM
     var currentAssembly = null;
     var filters = origFilters;
     var ignoreChanges = true; // Horrible hack to avoid onChange doing anything on first starting, ie before we've set anything up.
+
+    var cmMode = "text/x-c++src";
+    if (lang == "Rust") {
+        cmMode = "text/x-rustsrc";
+    } else if (lang == "D") {
+        cmMode = "text/x-d";
+    }
 
     cppEditor = CodeMirror.fromTextArea(domRoot.find(".editor textarea")[0], {
         lineNumbers: true,
@@ -78,7 +85,9 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, cmM
         window.localStorage[windowLocalPrefix + "." + name] = value;
     }
 
-    if (getSetting('code')) cppEditor.setValue(getSetting('code'));
+    var codeText = getSetting('code');
+    if (!codeText) codeText = $(".template.lang." + lang.replace(/[^a-zA-Z]/g, '').toLowerCase()).text();
+    if (codeText) cppEditor.setValue(codeText);
     domRoot.find('.compiler').change(onCompilerChange);
     domRoot.find('.compiler_options').change(onChange).keyup(onChange);
     ignoreChanges = false;

@@ -196,18 +196,12 @@ function initialise(options) {
     var actualFilters = $.parseJSON(window.localStorage.filter || defaultFilters);
     setFilterUi(actualFilters);
 
-    var languageType = "text/x-c++src";
-    $(".language-name").text(options.language);
-    if (options.language == "Rust") {
-        languageType = "text/x-rustsrc";
-    } else if (options.language == "D") {
-        languageType = "text/x-d";
-    }
     $(".compiler_options").val(options.compileoptions);
+    $(".language-name").text(options.language);
 
     var compiler = new Compiler($('body'), actualFilters, "a", function () {
         hidePermalink();
-    }, languageType);
+    }, options.language);
     allCompilers.push(compiler);
     currentCompiler = compiler;
 
