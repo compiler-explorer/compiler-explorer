@@ -186,6 +186,7 @@ function deserialiseState(state) {
     }
     setFilterUi(state.filterAsm);
     for (var i = 0; i < Math.min(allCompilers.length, state.compilers.length); i++) {
+        allCompilers[i].setFilters(state.filterAsm);
         allCompilers[i].deserialiseState(state.compilers[i]);
     }
     return true;
