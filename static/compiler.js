@@ -56,11 +56,20 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, lan
     var filters = origFilters;
     var ignoreChanges = true; // Horrible hack to avoid onChange doing anything on first starting, ie before we've set anything up.
 
-    var cmMode = "text/x-c++src";
-    if (lang == "Rust") {
-        cmMode = "text/x-rustsrc";
-    } else if (lang == "D") {
-        cmMode = "text/x-d";
+    var cmMode;
+    switch (lang.toLowerCase()) {
+        default:
+            cmMode = "text/x-c++src";
+            break;
+        case "rust":
+            cmMode = "text/x-rustsrc";
+            break;
+        case "d":
+            cmMode = "text/x-d";
+            break;
+        case "go":
+            cmMode = "text/x-go";
+            break;
     }
 
     cppEditor = CodeMirror.fromTextArea(domRoot.find(".editor textarea")[0], {
