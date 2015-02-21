@@ -221,7 +221,9 @@ function configuredCompilers() {
             id: name,
             exe: exe,
             name: props.get("gcc-explorer", base + ".name", name),
-            alias: props.get("gcc-explorer", base + ".alias")
+            alias: props.get("gcc-explorer", base + ".alias"),
+            versionFlag: props.get("gcc-explorer", base + ".versionFlag"),
+            is6g: !!props.get("gcc-explorer", base + ".is6g", false)
         });
     }));
 }
@@ -232,7 +234,8 @@ function getCompilerInfo(compilerInfo) {
     }
     return new Promise(function (resolve) {
         var compiler = compilerInfo.exe;
-        child_process.exec(compiler + ' --version', function (err, output) {
+        var versionFlag = compilerInfo.versionFlag || '--version';
+        child_process.exec(compiler + ' ' + versionFlag, function (err, output) {
             if (err) return resolve(null);
             var version = output.split('\n')[0];
             child_process.exec(compiler + ' --target-help', function (err, output) {
