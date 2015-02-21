@@ -132,7 +132,14 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, lan
         for (var i = 0; i < errorWidgets.length; ++i)
             cppEditor.removeLineWidget(errorWidgets[i]);
         errorWidgets.length = 0;
+        var numLines = 0;
         parseLines(stderr + stdout, function (lineNum, msg) {
+            if (numLines > 50) return;
+            if (numLines === 50) {
+                lineNum = null;
+                msg = "Too many output lines...truncated";
+            }
+            numLines++;
             var elem = $('.result .output .template').clone().appendTo('.result .output').removeClass('template');
             if (lineNum) {
                 errorWidgets.push(cppEditor.addLineWidget(lineNum - 1, makeErrNode(msg), {
