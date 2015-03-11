@@ -292,7 +292,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, lan
         var compiler = compilersById[$('.compiler').val()];
         if (compiler === undefined)
             return;
-        domRoot.find('.filter button.btn[value="intel"]').toggleClass("disabled", !compiler.supportedOpts["-masm"]);
+        domRoot.find('.filter button.btn[value="intel"]').toggleClass("disabled", !compiler.intelAsm);
         $(".compilerVersion").text(compiler.name + " (" + compiler.version + ")");
     }
 

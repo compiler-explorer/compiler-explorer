@@ -223,7 +223,8 @@ function configuredCompilers() {
             name: props.get("gcc-explorer", base + ".name", name),
             alias: props.get("gcc-explorer", base + ".alias"),
             versionFlag: props.get("gcc-explorer", base + ".versionFlag"),
-            is6g: !!props.get("gcc-explorer", base + ".is6g", false)
+            is6g: !!props.get("gcc-explorer", base + ".is6g", false),
+            intelAsm: props.get("gcc-explorer", base + ".intelAsm", "")
         });
     }));
 }
@@ -237,7 +238,10 @@ function getCompilerInfo(compilerInfo) {
         var versionFlag = compilerInfo.versionFlag || '--version';
         child_process.exec(compiler + ' ' + versionFlag, function (err, output) {
             if (err) return resolve(null);
-            var version = output.split('\n')[0];
+            compilerInfo.version = output.split('\n')[0];
+            if (compilerInfo.intelAsm) {
+                return resolve(compilerInfo);
+            }
             child_process.exec(compiler + ' --target-help', function (err, output) {
                 var options = {};
                 if (!err) {
@@ -248,8 +252,9 @@ function getCompilerInfo(compilerInfo) {
                         options[match[0]] = true;
                     });
                 }
-                compilerInfo.version = version;
-                compilerInfo.supportedOpts = options;
+                if (options['-masm']) {
+                    compilerInfo.intelAsm="-masm=intel";
+                }
                 resolve(compilerInfo);
             });
         });
