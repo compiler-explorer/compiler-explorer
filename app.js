@@ -91,6 +91,7 @@ function clientOptionsHandler(compilers, fileSources) {
         sharing_enabled: props.get('gcc-explorer', 'clientSharingEnabled', true),
         github_ribbon_enabled: props.get('gcc-explorer', 'clientGitHubRibbonEnabled', true),
         urlshortener: props.get('gcc-explorer', 'clientURLShortener', 'google'),
+        gapiKey: props.get('gcc-explorer', 'google-api-key', 'AIzaSyAaz35KJv8DA0ABoime0fEIh32NmbyYbcQ'),
         defaultCompiler: props.get('gcc-explorer', 'defaultCompiler', ''),
         defaultSource: props.get('gcc-explorer', 'defaultSource', ''),
         compilers: compilers,

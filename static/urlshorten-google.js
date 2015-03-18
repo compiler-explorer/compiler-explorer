@@ -1,4 +1,5 @@
 function googleJSClientLoaded() {
+    gapi.client.setApiKey(OPTIONS.gapiKey);
     gapi.client.load('urlshortener', 'v1', makePermalink);
 }
 
@@ -14,7 +15,9 @@ function shortenURL(url, done) {
             longUrl: url
         }
     });
-    request.execute(function (response) {
+    request.then(function (response) {
         done(response.id);
+    }, function () {
+        done(url);
     });
 }
