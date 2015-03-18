@@ -15,8 +15,8 @@ function shortenURL(url, done) {
             longUrl: url
         }
     });
-    request.then(function (response) {
-        done(response.id);
+    request.then(function (resp) {
+        done(resp.result.id);
     }, function () {
         done(url);
     });
