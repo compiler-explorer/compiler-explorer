@@ -36,12 +36,12 @@ var nopt = require('nopt'),
     Promise = require('promise'),
     memwatch = require('memwatch');
 
-memwatch.on('leak', function(info){
-    console.log("Memwatch leak: " + info);
+memwatch.on('leak', function (info) {
+    console.log("Memwatch leak: " + JSON.stringify(info));
 });
 
-memwatch.on('stats', function(stats){
-    console.log("Memwatch stats: " + info);
+memwatch.on('stats', function (stats) {
+    console.log("Memwatch stats: " + JSON.stringify(stats));
 });
 
 var opts = nopt({
@@ -195,29 +195,29 @@ function configuredCompilers() {
             var port = parseInt(bits[1]);
             console.log("Fetching compilers from remote source " + host + ":" + port);
             return retryPromise(function () {
-                return new Promise(function (resolve, reject) {
-                    http.get({
-                        hostname: host,
-                        port: port,
-                        path: "/api/compilers"
-                    }, function (res) {
-                        var str = '';
-                        res.on('data', function (chunk) {
-                            str += chunk;
-                        });
-                        res.on('end', function () {
-                            var compilers = JSON.parse(str).map(function (compiler) {
-                                compiler.exe = null;
-                                compiler.remote = "http://" + host + ":" + port;
-                                return compiler;
+                    return new Promise(function (resolve, reject) {
+                        http.get({
+                            hostname: host,
+                            port: port,
+                            path: "/api/compilers"
+                        }, function (res) {
+                            var str = '';
+                            res.on('data', function (chunk) {
+                                str += chunk;
                             });
-                            resolve(compilers);
+                            res.on('end', function () {
+                                var compilers = JSON.parse(str).map(function (compiler) {
+                                    compiler.exe = null;
+                                    compiler.remote = "http://" + host + ":" + port;
+                                    return compiler;
+                                });
+                                resolve(compilers);
+                            });
+                        }).on('error', function (e) {
+                            reject(e);
                         });
-                    }).on('error', function (e) {
-                        reject(e);
                     });
-                });
-            },
+                },
                 host + ":" + port,
                 props.get('gcc-explorer', 'proxyRetries', 20),
                 props.get('gcc-explorer', 'proxyRetryMs', 500));
@@ -263,7 +263,7 @@ function getCompilerInfo(compilerInfo) {
                     });
                 }
                 if (options['-masm']) {
-                    compilerInfo.intelAsm="-masm=intel";
+                    compilerInfo.intelAsm = "-masm=intel";
                 }
                 resolve(compilerInfo);
             });
