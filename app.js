@@ -33,16 +33,7 @@ var nopt = require('nopt'),
     path = require('path'),
     fs = require('fs-extra'),
     http = require('http'),
-    Promise = require('promise'),
-    memwatch = require('memwatch');
-
-memwatch.on('leak', function(info){
-    console.log("Memwatch leak: " + info);
-});
-
-memwatch.on('stats', function(stats){
-    console.log("Memwatch stats: " + info);
-});
+    Promise = require('promise');
 
 var opts = nopt({
     'env': [String],
