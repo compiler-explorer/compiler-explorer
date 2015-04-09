@@ -331,6 +331,11 @@ findCompilers().then(function (compilers) {
         .use('/api', apiHandler(compilers))
         .post('/compile', compileHandler(compilers));
 
+    var gcIntervalSecs = props.get("gcc-explorer", "gcIntervalSecs", 0);
+    if (gcIntervalSecs) {
+        setInterval(function() { memwatch.gc(); }, 1000 * gcIntervalSecs);
+    }
+
     // GO!
     console.log("=======================================");
     console.log("Listening on http://" + os.hostname() + ":" + port + "/");
