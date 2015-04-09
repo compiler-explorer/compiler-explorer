@@ -295,7 +295,7 @@ function findCompilers() {
 function apiHandler(compilers) {
     var reply = JSON.stringify(compilers);
     return function apiHandler(req, res, next) {
-        var bits = req.url.split("/eafe0fa644b616c7d265623b17ad69042f79b3e5");
+        var bits = req.url.split("/");
         if (bits.length !== 2 || req.method !== "GET") return next();
         switch (bits[1]) {
             default:
