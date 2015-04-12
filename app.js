@@ -36,12 +36,17 @@ var nopt = require('nopt'),
     Promise = require('promise'),
     memwatch = require('memwatch');
 
+var lastDiff = new memwatch.HeapDiff();
+
 memwatch.on('leak', function (info) {
     console.log("Memwatch leak: " + JSON.stringify(info));
 });
 
 memwatch.on('stats', function (stats) {
     console.log("Memwatch stats: " + JSON.stringify(stats));
+    var diff = lastDiff.end();
+    lastDiff = new memwatch.HeapDiff();
+    console.log("Memwatch diff from last stats: " + JSON.stringify(diff));
 });
 
 var opts = nopt({
@@ -333,7 +338,9 @@ findCompilers().then(function (compilers) {
 
     var gcIntervalSecs = props.get("gcc-explorer", "gcIntervalSecs", 0);
     if (gcIntervalSecs) {
-        setInterval(function() { memwatch.gc(); }, 1000 * gcIntervalSecs);
+        setInterval(function () {
+            memwatch.gc();
+        }, 1000 * gcIntervalSecs);
     }
 
     // GO!
