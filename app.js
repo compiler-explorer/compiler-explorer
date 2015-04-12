@@ -33,21 +33,7 @@ var nopt = require('nopt'),
     path = require('path'),
     fs = require('fs-extra'),
     http = require('http'),
-    Promise = require('promise'),
-    memwatch = require('memwatch');
-
-var lastDiff = new memwatch.HeapDiff();
-
-memwatch.on('leak', function (info) {
-    console.log("Memwatch leak: " + JSON.stringify(info));
-});
-
-memwatch.on('stats', function (stats) {
-    console.log("Memwatch stats: " + JSON.stringify(stats));
-    var diff = lastDiff.end();
-    lastDiff = new memwatch.HeapDiff();
-    console.log("Memwatch diff from last stats: " + JSON.stringify(diff));
-});
+    Promise = require('promise');
 
 var opts = nopt({
     'env': [String],
@@ -65,6 +51,30 @@ props.initialize(rootDir + '/config', propHierarchy);
 
 var port = props.get('gcc-explorer', 'port', 10240);
 var staticMaxAgeMs = props.get('gcc-explorer', 'staticMaxAgeMs', 0);
+
+function initializeMemwatch() {
+    var memwatch = require('memwatch');
+    memwatch.gc();
+    var lastDiff = new memwatch.HeapDiff();
+
+    memwatch.on('leak', function (info) {
+        console.log("Memwatch leak: " + JSON.stringify(info));
+    });
+
+    memwatch.on('stats', function (stats) {
+        console.log("Memwatch stats: " + JSON.stringify(stats));
+        var diff = lastDiff.end();
+        lastDiff = new memwatch.HeapDiff();
+        console.log("Memwatch diff from last stats: " + JSON.stringify(diff));
+    });
+
+    var gcIntervalSecs = props.get("gcc-explorer", "gcIntervalSecs", 0);
+    if (gcIntervalSecs) {
+        setInterval(function () {
+            memwatch.gc();
+        }, 1000 * gcIntervalSecs);
+    }
+}
 
 function loadSources() {
     var sourcesDir = "lib/sources";
@@ -336,17 +346,11 @@ findCompilers().then(function (compilers) {
         .use('/api', apiHandler(compilers))
         .post('/compile', compileHandler(compilers));
 
-    var gcIntervalSecs = props.get("gcc-explorer", "gcIntervalSecs", 0);
-    if (gcIntervalSecs) {
-        setInterval(function () {
-            memwatch.gc();
-        }, 1000 * gcIntervalSecs);
-    }
-
     // GO!
     console.log("=======================================");
     console.log("Listening on http://" + os.hostname() + ":" + port + "/");
     console.log("=======================================");
+    initializeMemwatch();
     webServer.listen(port);
 }).catch(function (err) {
     console.log("Error: " + err.stack);
