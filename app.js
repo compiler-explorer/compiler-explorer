@@ -54,26 +54,36 @@ var staticMaxAgeMs = props.get('gcc-explorer', 'staticMaxAgeMs', 0);
 
 function initializeMemwatch() {
     var memwatch = require('memwatch');
+    console.log("Initial GC");
     memwatch.gc();
-    var lastDiff = new memwatch.HeapDiff();
+    // Everything else happens a little later to let the initial GC finish.
+    setTimeout(function () {
+        var lastDiff = new memwatch.HeapDiff();
+        memwatch.on('leak', function (info) {
+            console.log("Memwatch leak: " + JSON.stringify(info));
+        });
 
-    memwatch.on('leak', function (info) {
-        console.log("Memwatch leak: " + JSON.stringify(info));
-    });
+        memwatch.on('stats', function (stats) {
+            console.log("Memwatch stats: " + JSON.stringify(stats));
+        });
 
-    memwatch.on('stats', function (stats) {
-        console.log("Memwatch stats: " + JSON.stringify(stats));
-        var diff = lastDiff.end();
-        lastDiff = new memwatch.HeapDiff();
-        console.log("Memwatch diff from last stats: " + JSON.stringify(diff));
-    });
-
-    var gcIntervalSecs = props.get("gcc-explorer", "gcIntervalSecs", 0);
-    if (gcIntervalSecs) {
-        setInterval(function () {
-            memwatch.gc();
-        }, 1000 * gcIntervalSecs);
-    }
+        var heapDiffEverySecs = props.get('gcc-explorer', 'gcHeapDiffEverySecs', 0);
+        if (heapDiffEverySecs) {
+            console.log("Diffing heap every " + heapDiffEverySecs + "s");
+            setInterval(function () {
+                var diff = lastDiff.end();
+                lastDiff = new memwatch.HeapDiff();
+                console.log("Memwatch diff from last stats: " + JSON.stringify(diff));
+            }, 1000 * heapDiffEverySecs);
+        }
+        var gcIntervalSecs = props.get("gcc-explorer", "gcIntervalSecs", 0);
+        if (gcIntervalSecs) {
+            console.log("Forcing a GC every " + gcIntervalSecs + "s");
+            setInterval(function () {
+                memwatch.gc();
+            }, 1000 * gcIntervalSecs);
+        }
+    }, 1 * 1000);
 }
 
 function loadSources() {
