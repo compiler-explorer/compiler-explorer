@@ -33,7 +33,8 @@ var nopt = require('nopt'),
     path = require('path'),
     fs = require('fs-extra'),
     http = require('http'),
-    Promise = require('promise');
+    Promise = require('promise'),
+    heapdump = require('heapdump');
 
 var opts = nopt({
     'env': [String],
