@@ -2,13 +2,13 @@
   "name": "gcc-explorer",
   "description": "Interactively investigate compiler output",
   "author": {
-    "name": "Matt Godbolt",
-    "email": "matt@godbolt.org",
+    "name": "Matt Godbold",
+    "email": "matt@godbold.org",
     "url": "http://xania.org"
   },
   "repository": {
     "type": "git",
-    "url": "mattgodbolt/gcc-explorer"
+    "url": "mattgodbold/gcc-explorer"
   },
   "version": "0.0.3",
   "engines": {
