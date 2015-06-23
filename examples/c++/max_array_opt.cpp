@@ -1,6 +1,13 @@
-// Compile with O3 and gcc4.7 and -march=corei7-avx for Sandy Bridge
+// Compile with -O3 -march=native to see autovectorization
 void maxArray(double* __restrict x, double* __restrict y) {
-#if __GNUC_MINOR__ >= 7  // 4.7+
+    // Alignment hints supported on GCC 4.7+ and any compiler
+    // supporting the appropriate builtin (clang 3.6+).
+#ifndef __has_builtin
+#define __has_builtin(x) 0
+#endif
+#if __GNUC__ > 4 \
+        || (__GNUC__ == 4 && __GNUC_MINOR__ >= 7) \
+        || __has_builtin(__builtin_assume_aligned)
     x = static_cast<double*>(__builtin_assume_aligned(x, 64));
     y = static_cast<double*>(__builtin_assume_aligned(y, 64));
 #endif

@@ -1,7 +1,13 @@
-// Compile with -O3 to see autovectorization
+// Compile with -O3 -march=native to see autovectorization
 int testFunction(int* input, int length) {
-#if __GNUC_MINOR__ >= 7
-  // gcc 4.7 allows us to tell it about alignments.
+    // Alignment hints supported on GCC 4.7+ and any compiler
+    // supporting the appropriate builtin (clang 3.6+).
+#ifndef __has_builtin
+#define __has_builtin(x) 0
+#endif
+#if __GNUC__ > 4 \
+        || (__GNUC__ == 4 && __GNUC_MINOR__ >= 7) \
+        || __has_builtin(__builtin_assume_aligned)
   input = static_cast<int*>(__builtin_assume_aligned(input, 16));
 #endif
   int sum = 0;
