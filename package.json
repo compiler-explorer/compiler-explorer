@@ -24,7 +24,7 @@
     "heapdump": "0.3.x",
     "http-proxy": "1.8.x",
     "lru-cache": "2.5.x",
-    "memwatch": "0.2.x",
+    "memwatch-next": "0.2.x",
     "morgan": "1.5.x",
     "promise": "6.1.x",
     "promise-queue": "2.1.x",

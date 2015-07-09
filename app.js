@@ -54,7 +54,7 @@ var port = props.get('gcc-explorer', 'port', 10240);
 var staticMaxAgeMs = props.get('gcc-explorer', 'staticMaxAgeMs', 0);
 
 function initializeMemwatch() {
-    var memwatch = require('memwatch');
+    var memwatch = require('memwatch-next');
     console.log("Initial GC");
     memwatch.gc();
     // Everything else happens a little later to let the initial GC finish.
