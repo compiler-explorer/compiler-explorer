@@ -19,7 +19,7 @@
             _gaq.push(['_setAccount', OPTIONS.google_analytics_account]);
             _gaq.push(['_trackPageview']);
 
-            (function () {
+            setTimeout(function () {
                 "use strict";
                 function create_script_element(id, url) {
                     var el = document.createElement('script');
@@ -46,8 +46,18 @@
                             r.parentNode.insertBefore(js, r)
                         }
                     }(document, 'script', 'changetip_w_0'));
+                    (function(document, i) {
+                     var f,s=document.getElementById(i);
+                     f=document.createElement('iframe');
+                     f.src='//api.flattr.com/button/view/?uid=mattgodbolt&button=compact&url='+encodeURIComponent(document.URL);
+                     f.title='Flattr';
+                     f.height=20;
+                     f.width=110;
+                     f.style.borderWidth=0;
+                     s.appendChild(f);
+                         }(document, 'flattr_button'));
                 }
-            })()
+            }, 0);
         </script>
     </head>
     <body>
@@ -57,6 +67,7 @@
                     <a class="brand" href="#">Interactive compiler - <span class="language-name"></span></a>
                     <ul class="nav pull-left">
                         <li id="changetip_tipme_button" data-bid="MzRgCSeSnVWvAP9SVRoYFC" data-uid="Qy46jQ356qex2GD2JGaHaK" style=""></li>
+                        <li id="flattr_button"></li>
                     </ul>
                     <ul class="nav pull-right">
                         <li class="dropdown">

@@ -14,8 +14,13 @@ body {
 }
 
 #changetip_tipme_button {
-    height: 25px; 
-    width: 135px;
+    height: 24px; 
+    width: 120px;
+    padding: 7px 3px 4px;
+}
+#flattr_button {
+    height: 20px; 
+    width: 120px;
     padding: 7px 3px 4px;
 }
 .output {
