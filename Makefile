@@ -5,7 +5,7 @@ default:
 	@echo "On Ubuntu/Debian try: sudo apt-get install nodejs npm"
 	exit 1
 else
-NODE:= $(shell which node nodejs)
+NODE:= $(shell which node || which nodejs)
 default: run
 endif
 
