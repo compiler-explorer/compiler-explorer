@@ -61,6 +61,9 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, lan
         default:
             cmMode = "text/x-c++src";
             break;
+        case "c":
+            cmMode = "text/x-c";
+            break;
         case "rust":
             cmMode = "text/x-rustsrc";
             break;
