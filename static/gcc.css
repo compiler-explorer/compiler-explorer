@@ -26,6 +26,7 @@ body {
 .output {
     height: 80px;
     overflow: auto;
+    font-family: monospace;
 }
 
 .options {

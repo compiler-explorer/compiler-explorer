@@ -148,7 +148,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, lan
                 errorWidgets.push(cppEditor.addLineWidget(lineNum - 1, makeErrNode(msg), {
                     coverGutter: false, noHScroll: true
                 }));
-                elem.html($('<a href="#">').append(lineNum + " : " + msg)).click(function () {
+                elem.html($('<a href="#">').text(lineNum + " : " + msg)).click(function () {
                     cppEditor.setSelection({line: lineNum - 1, ch: 0}, {line: lineNum, ch: 0});
                     return false;
                 });
