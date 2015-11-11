@@ -156,7 +156,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, lan
                 elem.text(msg);
             }
         });
-        currentAssembly = data.asm || "[no output]";
+        currentAssembly = data.asm || fakeAsm("[no output]");
         updateAsm();
     }
 
@@ -180,20 +180,16 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, lan
 
     function updateAsm(forceUpdate) {
         if (!currentAssembly) return;
-        var hashedUpdate = JSON.stringify({
-            asm: currentAssembly,
-            filters: filters
-        });
+        var hashedUpdate = JSON.stringify(currentAssembly);
         if (!forceUpdate && lastUpdatedAsm == hashedUpdate) {
             return;
         }
         lastUpdatedAsm = hashedUpdate;
 
-        var asm = processAsm(currentAssembly, filters);
-        var asmText = $.map(asm, function (x) {
+        var asmText = $.map(currentAssembly, function (x) {
             return x.text;
         }).join("\n");
-        var numberedLines = numberUsedLines(asm);
+        var numberedLines = numberUsedLines(currentAssembly);
 
         cppEditor.operation(function () {
             clearBackground(cppEditor);
@@ -218,8 +214,8 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, lan
         }
     }
 
-    function pickOnlyRequestFilters(filters) {
-        return {intel: !!filters.intel};
+    function fakeAsm(text) {
+        return [{text: text, source: null}];
     }
 
     function onChange() {
@@ -230,7 +226,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, lan
                 source: cppEditor.getValue(),
                 compiler: $('.compiler').val(),
                 options: $('.compiler_options').val(),
-                filters: pickOnlyRequestFilters(filters),
+                filters: filters,
             };
             setSetting('compiler', data.compiler);
             setSetting('compilerOptions', data.options);
@@ -248,7 +244,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, lan
                     onCompileResponse(data, result);
                 }
             });
-            currentAssembly = "[Processing...]";
+            currentAssembly = fakeAsm("[Processing...]");
             updateAsm();
         }, 750);
         setSetting('code', cppEditor.getValue());
@@ -328,7 +324,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, lan
 
     function setFilters(f) {
         filters = f;
-        onChange();  // used to just update ASM, but things like "Intel syntax" need a new request
+        onChange();
     }
 
     function setEditorHeight(height) {
