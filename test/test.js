@@ -49,21 +49,25 @@ function assertEq(a, b, context) {
     }
 }
 
-function testFilter(filename, suffix, filters) {
+function testFilter(filename, suffix, filters, withSource) {
     var result = processAsm(filename, filters);
     var expected = filename + suffix;
     try {
         var file = fs.readFileSync(expected, 'utf-8').split('\n');
     } catch (e) {
+        console.log("Skipping non-existent test case " + expected);
         return;
     }
     assertEq(file.length, result.length, expected);
     if (file.length != result.length) return;
     for (var i = 0; i < file.length; ++i) {
-        assertEq(file[i], result[i].text, expected + ":" + (i + 1));
+        var lineExpected = result[i].text;
+        if (withSource && result[i].source) {
+            lineExpected += " @ " + result[i].source;
+        }
+        assertEq(file[i], lineExpected, expected + ":" + (i + 1));
     }
 }
-
 
 cases.forEach(function (x) {
     testFilter(x, "", {})
@@ -78,6 +82,11 @@ cases.forEach(function (x) {
 cases.forEach(function (x) {
     testFilter(x, ".directives.labels.comments",
         {directives: true, labels: true, commentOnly: true})
+});
+
+cases.forEach(function (x) {
+    testFilter(x, ".dlc.source",
+        {directives: true, labels: true, commentOnly: true}, true)
 });
 
 if (failures) {

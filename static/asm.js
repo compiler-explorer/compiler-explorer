@@ -30,7 +30,7 @@ function processAsm(asm, filters) {
     var files = {};
     var prevLabel = "";
     var dataDefn = /\.(string|asciz|ascii|[1248]?byte|short|word|long|quad|value|zero)/;
-    var fileFind = /^\s*\.file\s+(\d+)\s+"([^"]+)"$/;
+    var fileFind = /^\s*\.file\s+(\d+)\s+"([^"]+)".*/;
     var hasOpcode = /^\s*([a-zA-Z0-9$_][a-zA-Z0-9$_.]*:\s*)?[a-zA-Z].*/;
     asmLines.forEach(function (line) {
         if (line === "" || line[0] === ".") return;
