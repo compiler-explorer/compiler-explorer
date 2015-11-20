@@ -260,7 +260,8 @@ function configuredCompilers() {
             alias: props.get("gcc-explorer", base + ".alias"),
             versionFlag: props.get("gcc-explorer", base + ".versionFlag"),
             is6g: !!props.get("gcc-explorer", base + ".is6g", false),
-            intelAsm: props.get("gcc-explorer", base + ".intelAsm", "")
+            intelAsm: props.get("gcc-explorer", base + ".intelAsm", ""),
+            supportsBinary: !!props.get("gcc-explorer", base + ".supportsBinary", false)
         });
     }));
 }
