@@ -83,10 +83,10 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, lan
     });
     cppEditor.on("change", onChange);
     asmCodeMirror = CodeMirror.fromTextArea(domRoot.find(".asm textarea")[0], {
-        lineNumbers: true,
-        matchBrackets: true,
+        lineNumbers: false, // TODO make based off of binary
         mode: "text/x-asm",
-        readOnly: true
+        readOnly: true,
+        gutters: ['address', 'opcodes']
     });
 
     function getSetting(name) {
@@ -197,6 +197,23 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, lan
         asmCodeMirror.operation(function () {
             asmCodeMirror.setValue(asmText);
             clearBackground(asmCodeMirror);
+            $.each(currentAssembly, function (line, obj) {
+                var address = obj.address ? obj.address.toString(16) : "";
+                asmCodeMirror.setGutterMarker(line, 'address', $("<div class='address cm-number'>" + address + "</div>")[0]);
+                var opcodes = $("<div class='opcodes'></div>");
+                if (obj.opcodes) {
+                    var title = [];
+                    $.each(obj.opcodes, function (_, op) {
+                        var opcodeNum = "00" + op.toString(16);
+                        opcodeNum = opcodeNum.substr(opcodeNum.length - 2);
+                        title.push(opcodeNum);
+                        var opcode = $("<span class='opcode'>" + opcodeNum + "</span>");
+                        opcodes.append(opcode);
+                    });
+                    opcodes.attr('title', title.join(" "));
+                }
+                asmCodeMirror.setGutterMarker(line, 'opcodes', opcodes[0]);
+            });
         });
         if (filters.colouriseAsm) {
             cppEditor.operation(function () {

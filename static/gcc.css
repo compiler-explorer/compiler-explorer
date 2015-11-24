@@ -14,12 +14,12 @@ body {
 }
 
 #changetip_tipme_button {
-    height: 24px; 
+    height: 24px;
     width: 120px;
     padding: 7px 3px 4px;
 }
 #flattr_button {
-    height: 20px; 
+    height: 20px;
     width: 120px;
     padding: 7px 3px 4px;
 }
@@ -41,7 +41,7 @@ body {
 
 .inline-msg {
     font-family: arial;
-    font-size: 70%; 
+    font-size: 70%;
     padding: 2px 5px 3px;
 }
 
@@ -51,7 +51,7 @@ span.icon {
 
 .error {
     background: #faa !important;
-    color: #a00; 
+    color: #a00;
 }
 
 .error span.icon {
@@ -60,7 +60,7 @@ span.icon {
 
 .warning {
     background: #ffa !important;
-    color: #440; 
+    color: #440;
 }
 
 .warning span.icon {
@@ -69,7 +69,7 @@ span.icon {
 
 .note {
     background: #aaf !important;
-    color: #00a; 
+    color: #00a;
 }
 
 .note span.icon {
@@ -111,3 +111,22 @@ li.social {
 .rainbow-9 { background: rgb(188, 128, 189) !important; }
 .rainbow-10 { background: rgb(204,234,197) !important; }
 .rainbow-11 { background: rgb(255, 237, 111) !important; }
+
+.address {
+    width: 4em;
+    font-size: smaller;
+}
+.opcodes {
+    width: 7em;
+    overflow: hidden;
+    font-size: smaller;
+}
+
+.opcode {
+    color: #066;
+    margin-right:0.2em;
+}
+
+.opcode:nth-child(odd) {
+    color: #060;
+}
