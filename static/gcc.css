@@ -130,3 +130,8 @@ li.social {
 .opcode:nth-child(odd) {
     color: #060;
 }
+.highlighted {
+    background-color: rgba(255, 0, 0, 0.2);
+    color: #0000b0;
+    font-weight: bold;
+}

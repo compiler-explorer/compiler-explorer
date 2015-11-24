@@ -197,9 +197,14 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, lan
         asmCodeMirror.operation(function () {
             asmCodeMirror.setValue(asmText);
             clearBackground(asmCodeMirror);
+            var addrToAddrDiv = {};
             $.each(currentAssembly, function (line, obj) {
                 var address = obj.address ? obj.address.toString(16) : "";
-                asmCodeMirror.setGutterMarker(line, 'address', $("<div class='address cm-number'>" + address + "</div>")[0]);
+                var div = $("<div class='address cm-number'>" + address + "</div>");
+                addrToAddrDiv[address] = {div: div, line: line};
+                asmCodeMirror.setGutterMarker(line, 'address', div[0]);
+            });
+            $.each(currentAssembly, function (line, obj) {
                 var opcodes = $("<div class='opcodes'></div>");
                 if (obj.opcodes) {
                     var title = [];
@@ -213,6 +218,27 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, lan
                     opcodes.attr('title', title.join(" "));
                 }
                 asmCodeMirror.setGutterMarker(line, 'opcodes', opcodes[0]);
+                if (obj.links) {
+                    $.each(obj.links, function (_, link) {
+                        var from = {line: line, ch: link.offset};
+                        var to = {line: line, ch: link.offset + link.length};
+                        var address = link.to.toString(16);
+                        var thing = $("<a href='#' class='cm-number'>" + address + "</a>");
+                        asmCodeMirror.markText(
+                            from, to, {replacedWith: thing[0], handleMouseEvents: false});
+                        var dest = addrToAddrDiv[address];
+                        if (dest) {
+                            thing.on('hover', function (e) {
+                                var entered = e.type == "mouseenter";
+                                dest.div.toggleClass("highlighted", entered);
+                                thing.toggleClass("highlighted", entered);
+                            });
+                            thing.on('click', function (e) {
+                                asmCodeMirror.scrollIntoView({line: dest.line, ch: 0}, 30);
+                            });
+                        }
+                    });
+                }
             });
         });
         if (filters.colouriseAsm) {
