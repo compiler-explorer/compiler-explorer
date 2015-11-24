@@ -83,10 +83,10 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, lan
     });
     cppEditor.on("change", onChange);
     asmCodeMirror = CodeMirror.fromTextArea(domRoot.find(".asm textarea")[0], {
-        lineNumbers: false, // TODO make based off of binary
+        lineNumbers: true,
         mode: "text/x-asm",
         readOnly: true,
-        gutters: ['address', 'opcodes']
+        gutters: ['CodeMirror-linenumbers']
     });
 
     function getSetting(name) {
@@ -235,11 +235,20 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, lan
                             });
                             thing.on('click', function (e) {
                                 asmCodeMirror.scrollIntoView({line: dest.line, ch: 0}, 30);
+                                dest.div.toggleClass("highlighted", false);
+                                thing.toggleClass("highlighted", false);
                             });
                         }
                     });
                 }
             });
+            if (filters.binary) {
+                asmCodeMirror.setOption('lineNumbers', false);
+                asmCodeMirror.setOption('gutters', ['address', 'opcodes']);
+            } else {
+                asmCodeMirror.setOption('lineNumbers', true);
+                asmCodeMirror.setOption('gutters', ['CodeMirror-linenumbers']);
+            }
         });
         if (filters.colouriseAsm) {
             cppEditor.operation(function () {
