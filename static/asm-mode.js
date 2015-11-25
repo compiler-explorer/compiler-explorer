@@ -45,7 +45,7 @@ CodeMirror.defineMode("asm", function () {
             if (stream.sol() && stream.match(/^\s*\.\w+/)) {
                 return "header";
             }
-            if (stream.sol() && stream.match(/^\s\w+/)) {
+            if (stream.sol() && stream.match(/^\s+\w+/)) {
                 return "keyword";
             }
             if (stream.eatSpace()) return null;
