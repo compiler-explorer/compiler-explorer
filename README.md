@@ -9,7 +9,7 @@ Try out the [demo site][demo]!
 
 ### Developing
 
-GCC Explorer is written in node. Most of the heavy lifting is actually done on the client, which is arguably a bad decision.
+GCC Explorer is written in node.
 
 Assuming you have npm and node installed, simply running `make` ought to get you up and running with a GCC explorer running on port 10240 on your local machine: http://localhost:10240
 
