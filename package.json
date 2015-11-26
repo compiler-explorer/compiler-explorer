@@ -21,7 +21,6 @@
     "connect-restreamer": "1.0.x",
     "express": "4.13.x",
     "fs-extra": "0.26.x",
-    "heapdump": "0.3.x",
     "http-proxy": "1.12.x",
     "lru-cache": "2.7.x",
     "memwatch-next": "0.2.x",
@@ -35,6 +34,9 @@
   },
   "devDependencies": {
     "supervisor": "0.3.1"
+  },
+  "scripts": {
+    "test": "make test"
   },
   "license": "BSD-2-Clause"
 }
