@@ -25,6 +25,8 @@ $(NODE_MODULES): package.json
 	npm install
 	@touch $@
 
+LANG:=C++
+
 node_modules: $(NODE_MODULES)
 
 test:
@@ -35,14 +37,7 @@ clean:
 	rm -rf node_modules .npm-updated
 
 run: node_modules optional-d-support c-preload
-	$(NODE) ./node_modules/.bin/supervisor --exec $(NODE) ./app.js
+	$(NODE) ./node_modules/.bin/supervisor -w etc -e properties --exec $(NODE) -- ./app.js --language $(LANG)
 
 c-preload:
 	$(MAKE) -C c-preload
-
-run-amazon: node_modules optional-d-support c-preload
-	$(NODE) ./node_modules/.bin/supervisor --exec $(NODE) -- ./app.js --env amazon
-
-run-amazon-d: node_modules optional-d-support c-preload
-	$(NODE) ./node_modules/.bin/supervisor --exec $(NODE) -- ./app.js --env amazon-d
-

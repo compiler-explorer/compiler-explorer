@@ -343,7 +343,8 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, lan
         var compiler = compilersById[$('.compiler').val()];
         if (compiler === undefined)
             return;
-        domRoot.find('.filter button.btn[value="intel"]').toggleClass("disabled", !compiler.intelAsm);
+        var supportsIntel = compiler.asm || filters.binary;  // TODO: separate binary so it has its own buttons and then this problem goes away
+        domRoot.find('.filter button.btn[value="intel"]').toggleClass("disabled", !supportsIntel);
         $(".compilerVersion").text(compiler.name + " (" + compiler.version + ")");
     }
 
