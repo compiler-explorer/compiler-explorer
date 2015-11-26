@@ -19,21 +19,21 @@ main:
         popq      %rbp                                          #5.1
         ret                                                     #5.1
 .L_2__STRING.0:
-	.byte	72
-	.byte	101
-	.byte	108
-	.byte	108
-	.byte	111
-	.byte	32
-	.byte	119
-	.byte	111
-	.byte	114
-	.byte	108
-	.byte	100
-	.byte	0
+        .byte   72
+        .byte   101
+        .byte   108
+        .byte   108
+        .byte   111
+        .byte   32
+        .byte   119
+        .byte   111
+        .byte   114
+        .byte   108
+        .byte   100
+        .byte   0
 .L_2__STRING.1:
-	.byte	109
-	.byte	111
-	.byte	111
-	.byte	10
-	.byte	0
+        .byte   109
+        .byte   111
+        .byte   111
+        .byte   10
+        .byte   0

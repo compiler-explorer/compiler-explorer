@@ -1,8 +1,8 @@
 LongLong:
-	.long	0x0001e240,0x00000000
+        .long   0x0001e240,0x00000000
 Int:
-	.long	123
+        .long   123
 Short:
-	.word	4660
+        .word   4660
 Char:
-	.byte	-128
+        .byte   -128

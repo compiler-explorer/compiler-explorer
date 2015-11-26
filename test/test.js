@@ -25,7 +25,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 var fs = require('fs');
-var asm = require('../static/asm.js');
+var asm = require('../lib/asm.js');
 
 function processAsm(filename, filters) {
     var file = fs.readFileSync(filename, 'utf-8');

@@ -1,34 +1,34 @@
 .Ltext0:
 .LC0:
-	.string	"Hello world"
+        .string "Hello world"
 .LC1:
-	.string	"moo\n"
+        .string "moo\n"
 main:
 .LFB31:
 .LVL0:
-	subq	$8, %rsp
+        subq    $8, %rsp
 .LCFI0:
 .LBB6:
 .LBB7:
-	movl	$.LC0, %esi
-	movl	$1, %edi
-	xorl	%eax, %eax
-	call	__printf_chk
+        movl    $.LC0, %esi
+        movl    $1, %edi
+        xorl    %eax, %eax
+        call    __printf_chk
 .LVL1:
 .LBE7:
 .LBE6:
 .LBB8:
 .LBB9:
-	movl	$.LC1, %esi
-	movl	$1, %edi
-	xorl	%eax, %eax
-	call	__printf_chk
+        movl    $.LC1, %esi
+        movl    $1, %edi
+        xorl    %eax, %eax
+        call    __printf_chk
 .LBE9:
 .LBE8:
-	xorl	%eax, %eax
-	addq	$8, %rsp
+        xorl    %eax, %eax
+        addq    $8, %rsp
 .LCFI1:
-	ret
+        ret
 .LFE31:
 .Letext0:
 .Ldebug_info0:
