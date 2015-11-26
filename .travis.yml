@@ -1,0 +1,4 @@
+sudo: false
+language: node
+script:
+  - make test
