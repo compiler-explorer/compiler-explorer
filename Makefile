@@ -37,7 +37,7 @@ clean:
 	rm -rf node_modules .npm-updated
 
 run: node_modules optional-d-support c-preload
-	$(NODE) ./node_modules/.bin/supervisor -w etc -e properties --exec $(NODE) -- ./app.js --language $(LANG)
+	$(NODE) ./node_modules/.bin/supervisor -e 'js|node|properties' --exec $(NODE) -- ./app.js --language $(LANG)
 
 c-preload:
 	$(MAKE) -C c-preload
