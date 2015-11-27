@@ -37,7 +37,9 @@ var nopt = require('nopt'),
 
 var opts = nopt({
     'env': [String],
-    'rootDir': [String]
+    'rootDir': [String],
+    'language': [String],
+    'propDebug': [Boolean]
 });
 
 var propHierarchy = [
@@ -46,11 +48,15 @@ var propHierarchy = [
     os.hostname()];
 
 var rootDir = opts.rootDir || './etc';
+var language = opts.language || "C++";
 
 props.initialize(rootDir + '/config', propHierarchy);
-
-var port = props.get('gcc-explorer', 'port', 10240);
-var staticMaxAgeMs = props.get('gcc-explorer', 'staticMaxAgeMs', 0);
+if (opts.propDebug) props.setDebug(true);
+var gccProps = props.propsFor("gcc-explorer");
+var compilerProps = props.propsFor(language.toLowerCase());
+require('./lib/compile').initialise(gccProps, compilerProps);
+var port = gccProps('port', 10240);
+var staticMaxAgeMs = gccProps('staticMaxAgeMs', 0);
 
 function initializeMemwatch() {
     var memwatch = require('memwatch-next');
@@ -67,7 +73,7 @@ function initializeMemwatch() {
             console.log("Memwatch stats: " + JSON.stringify(stats));
         });
 
-        var heapDiffEverySecs = props.get('gcc-explorer', 'gcHeapDiffEverySecs', 0);
+        var heapDiffEverySecs = gccProps('gcHeapDiffEverySecs', 0);
         if (heapDiffEverySecs) {
             console.log("Diffing heap every " + heapDiffEverySecs + "s");
             setInterval(function () {
@@ -76,7 +82,7 @@ function initializeMemwatch() {
                 console.log("Memwatch diff from last stats: " + JSON.stringify(diff));
             }, 1000 * heapDiffEverySecs);
         }
-        var gcIntervalSecs = props.get("gcc-explorer", "gcIntervalSecs", 0);
+        var gcIntervalSecs = gccProps("gcIntervalSecs", 0);
         if (gcIntervalSecs) {
             console.log("Forcing a GC every " + gcIntervalSecs + "s");
             setInterval(function () {
@@ -120,17 +126,17 @@ function clientOptionsHandler(compilers, fileSources) {
     });
     sources = sources.sort(compareOn("name"));
     var options = {
-        google_analytics_account: props.get('gcc-explorer', 'clientGoogleAnalyticsAccount', 'UA-55180-6'),
-        google_analytics_enabled: props.get('gcc-explorer', 'clientGoogleAnalyticsEnabled', false),
-        sharing_enabled: props.get('gcc-explorer', 'clientSharingEnabled', true),
-        github_ribbon_enabled: props.get('gcc-explorer', 'clientGitHubRibbonEnabled', true),
-        urlshortener: props.get('gcc-explorer', 'clientURLShortener', 'google'),
-        gapiKey: props.get('gcc-explorer', 'google-api-key', 'AIzaSyAaz35KJv8DA0ABoime0fEIh32NmbyYbcQ'),
-        defaultCompiler: props.get('gcc-explorer', 'defaultCompiler', ''),
-        defaultSource: props.get('gcc-explorer', 'defaultSource', ''),
+        google_analytics_account: gccProps('clientGoogleAnalyticsAccount', 'UA-55180-6'),
+        google_analytics_enabled: gccProps('clientGoogleAnalyticsEnabled', false),
+        sharing_enabled: gccProps('clientSharingEnabled', true),
+        github_ribbon_enabled: gccProps('clientGitHubRibbonEnabled', true),
+        urlshortener: gccProps('clientURLShortener', 'google'),
+        gapiKey: gccProps('google-api-key', 'AIzaSyAaz35KJv8DA0ABoime0fEIh32NmbyYbcQ'),
+        defaultSource: gccProps('defaultSource', ''),
+        language: language,
         compilers: compilers,
-        language: props.get("gcc-explorer", "language"),
-        compileOptions: props.get("gcc-explorer", "options"),
+        defaultCompiler: compilerProps('defaultCompiler', ''),
+        compileOptions: compilerProps("options"),
         sources: sources
     };
     var text = "var OPTIONS = " + JSON.stringify(options) + ";";
@@ -192,8 +198,8 @@ function retryPromise(promiseFunc, name, maxFails, retryMs) {
 }
 
 function configuredCompilers() {
-    var exes = props.get("gcc-explorer", "compilers", "/usr/bin/g++").split(":");
-    var ndk = props.get('gcc-explorer', 'androidNdk');
+    var exes = compilerProps("compilers", "/usr/bin/g++").split(":");
+    var ndk = compilerProps('androidNdk');
     if (ndk) {
         var toolchains = fs.readdirSync(ndk + "/toolchains");
         toolchains.forEach(function (v, i, a) {
@@ -244,22 +250,23 @@ function configuredCompilers() {
                     });
                 },
                 host + ":" + port,
-                props.get('gcc-explorer', 'proxyRetries', 20),
-                props.get('gcc-explorer', 'proxyRetryMs', 500));
+                gccProps('proxyRetries', 20),
+                gccProps('proxyRetryMs', 500));
         }
         var base = "compiler." + name;
-        var exe = props.get("gcc-explorer", base + ".exe", "");
+        var exe = compilerProps(base + ".exe", "");
         if (!exe) {
             return Promise.resolve({id: name, exe: name, name: name});
         }
         return Promise.resolve({
             id: name,
             exe: exe,
-            name: props.get("gcc-explorer", base + ".name", name),
-            alias: props.get("gcc-explorer", base + ".alias"),
-            versionFlag: props.get("gcc-explorer", base + ".versionFlag"),
-            is6g: !!props.get("gcc-explorer", base + ".is6g", false),
-            intelAsm: props.get("gcc-explorer", base + ".intelAsm", "")
+            name: compilerProps(base + ".name", name),
+            alias: compilerProps(base + ".alias"),
+            versionFlag: compilerProps(base + ".versionFlag"),
+            is6g: !!compilerProps(base + ".is6g", false),
+            intelAsm: compilerProps(base + ".intelAsm", ""),
+            supportsBinary: !!compilerProps(base + ".supportsBinary", false)
         });
     }));
 }
