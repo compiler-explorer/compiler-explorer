@@ -48,7 +48,7 @@ var language = opts.language || "C++";
 var env = opts.env || ['dev'];
 var port = opts.port || 10240;
 
-var propHierarchy = ['defaults'].concat(env).concat([os.hostname()]);
+var propHierarchy = ['defaults'].concat(env).concat([language, os.hostname()]);
 
 props.initialize(rootDir + '/config', propHierarchy);
 if (opts.propDebug) props.setDebug(true);
