@@ -36,26 +36,31 @@ var nopt = require('nopt'),
     Promise = require('promise');
 
 var opts = nopt({
-    'env': [String],
+    'env': [String, Array],
     'rootDir': [String],
     'language': [String],
+    'port': [Number],
     'propDebug': [Boolean]
 });
 
-var propHierarchy = [
-    'defaults',
-    opts.env || 'dev',
-    os.hostname()];
-
 var rootDir = opts.rootDir || './etc';
 var language = opts.language || "C++";
+var env = opts.env || ['dev'];
+var port = opts.port || 10240;
+
+var propHierarchy = ['defaults'].concat(env).concat([os.hostname()]);
 
 props.initialize(rootDir + '/config', propHierarchy);
 if (opts.propDebug) props.setDebug(true);
 var gccProps = props.propsFor("gcc-explorer");
-var compilerProps = props.propsFor(language.toLowerCase());
+var compilerPropsFunc = props.propsFor(language.toLowerCase());
+function compilerProps(property, defaultValue) {
+    // My kingdom for ccs...
+    var forCompiler = compilerPropsFunc(property, undefined);
+    if (forCompiler !== undefined) return forCompiler;
+    return gccProps(property, defaultValue);
+}
 require('./lib/compile').initialise(gccProps, compilerProps);
-var port = gccProps('port', 10240);
 var staticMaxAgeMs = gccProps('staticMaxAgeMs', 0);
 
 function initializeMemwatch() {
