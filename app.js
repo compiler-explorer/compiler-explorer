@@ -264,14 +264,18 @@ function configuredCompilers() {
         if (!exe) {
             return Promise.resolve({id: name, exe: name, name: name});
         }
+        function props(name, def) {
+            return compilerProps(base + "." + name, compilerProps(name, def));
+        }
         return Promise.resolve({
             id: name,
             exe: exe,
-            name: compilerProps(base + ".name", name),
-            alias: compilerProps(base + ".alias"),
-            versionFlag: compilerProps(base + ".versionFlag"),
-            is6g: !!compilerProps(base + ".is6g", false),
-            intelAsm: compilerProps(base + ".intelAsm", "")
+            name: props("name", name),
+            alias: props("alias"),
+            versionFlag: props("versionFlag"),
+            is6g: !!props("is6g", false),
+            intelAsm: props("intelAsm", ""),
+            supportsBinary: !!props("supportsBinary", true)
         });
     }));
 }

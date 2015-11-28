@@ -43,12 +43,6 @@ function clearBackground(cm) {
     }
 }
 
-function patchUpFilters(filters) {
-    if (!OPTIONS.supportsBinary && filters.binary)
-        filters.binary = false;
-    return filters;
-}
-
 const NumRainbowColours = 12;
 
 function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, lang) {
@@ -59,8 +53,22 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, lan
     var cppEditor = null;
     var lastRequest = null;
     var currentAssembly = null;
-    var filters = patchUpFilters(origFilters);
+    var filters_ = $.extend({}, origFilters);
     var ignoreChanges = true; // Horrible hack to avoid onChange doing anything on first starting, ie before we've set anything up.
+
+    function currentCompiler() {
+        return compilersById[$('.compiler').val()];
+    }
+
+    function patchUpFilters(filters) {
+        filters = $.extend({}, filters);
+        var compiler = currentCompiler();
+        var compilerSupportsBinary = compiler ? compiler.supportsBinary : true;
+        if (filters.binary && !(OPTIONS.supportsBinary && compilerSupportsBinary)) {
+            filters.binary = false;
+        }
+        return filters;
+    }
 
     var cmMode;
     switch (lang.toLowerCase()) {
@@ -200,6 +208,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, lan
         cppEditor.operation(function () {
             clearBackground(cppEditor);
         });
+        var filters = currentFilters();
         asmCodeMirror.operation(function () {
             asmCodeMirror.setValue(asmText);
             clearBackground(asmCodeMirror);
@@ -284,7 +293,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, lan
                 source: cppEditor.getValue(),
                 compiler: $('.compiler').val(),
                 options: $('.compiler_options').val(),
-                filters: filters,
+                filters: currentFilters()
             };
             setSetting('compiler', data.compiler);
             setSetting('compilerOptions', data.options);
@@ -345,12 +354,12 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, lan
     }
 
     function updateCompilerAndButtons() {
-        var compiler = compilersById[$('.compiler').val()];
-        if (compiler === undefined)
-            return;
+        var compiler = currentCompiler();
         $(".compilerVersion").text(compiler.name + " (" + compiler.version + ")");
+        var filters = currentFilters();
         var supportsIntel = compiler.intelAsm || filters.binary;
         domRoot.find('.filter button.btn[value="intel"]').toggleClass("disabled", !supportsIntel);
+        domRoot.find('.filter button.btn[value="binary"]').toggleClass("disabled", !compiler.supportsBinary);
         domRoot.find('.filter .nonbinary').toggleClass("disabled", !!filters.binary);
     }
 
@@ -386,8 +395,11 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, lan
         onCompilerChange();
     }
 
+    function currentFilters() {
+        return patchUpFilters(filters_);
+    }
     function setFilters(f) {
-        filters = patchUpFilters(f);
+        filters_ = $.extend({}, f);
         onChange();
         updateCompilerAndButtons();
     }
