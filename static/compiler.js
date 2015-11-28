@@ -344,14 +344,21 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, lan
         return true;
     }
 
-    function onCompilerChange() {
-        onChange();
+    function updateCompilerAndButtons() {
         var compiler = compilersById[$('.compiler').val()];
         if (compiler === undefined)
             return;
-        var supportsIntel = compiler.asm || (filters.binary);  // TODO: separate binary so it has its own buttons and then this problem goes away
-        domRoot.find('.filter button.btn[value="intel"]').toggleClass("disabled", !supportsIntel);
+        console.log(compiler);
+        console.log(filters);
         $(".compilerVersion").text(compiler.name + " (" + compiler.version + ")");
+        var supportsIntel = compiler.intelAsm || filters.binary;
+        domRoot.find('.filter button.btn[value="intel"]').toggleClass("disabled", !supportsIntel);
+        domRoot.find('.filter .nonbinary').toggleClass("disabled", !!filters.binary);
+    }
+
+    function onCompilerChange() {
+        onChange();
+        updateCompilerAndButtons();
     }
 
     function mapCompiler(compiler) {
@@ -384,6 +391,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, lan
     function setFilters(f) {
         filters = patchUpFilters(f);
         onChange();
+        updateCompilerAndButtons();
     }
 
     function setEditorHeight(height) {
