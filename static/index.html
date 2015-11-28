@@ -115,12 +115,12 @@
                     <table><tbody><tr><td>Filter:&nbsp;</td>
                     <td>
                         <div class="btn-group filter">
+                            <button class="btn" type="button" value="binary">Binary</button>
                             <button class="btn active" type="button" value="labels">Unused labels</button>
                             <button class="btn active" type="button" value="directives">Directives</button>
                             <button class="btn active" type="button" value="commentOnly">Comment-only lines</button>
                             <button class="btn" type="button" value="intel">Intel syntax</button>
                             <button class="btn" type="button" value="colouriseAsm">Colourise</button>
-                            <button class="btn" type="button" value="binary">Binary</button>
                         </div>
                     </td></table>
                 </form>
@@ -199,6 +199,7 @@ func main() {}
                             .attr('useMap', '#ghm')
                             .appendTo(document.body)
                 }
+                $('.filter button.btn[value="binary"]').toggle(OPTIONS.supportsBinary);
             })();
         </script>
     </body>

@@ -142,6 +142,7 @@ function clientOptionsHandler(compilers, fileSources) {
         compilers: compilers,
         defaultCompiler: compilerProps('defaultCompiler', ''),
         compileOptions: compilerProps("options"),
+        supportsBinary: !!compilerProps("supportsBinary"),
         sources: sources
     };
     var text = "var OPTIONS = " + JSON.stringify(options) + ";";
@@ -270,8 +271,7 @@ function configuredCompilers() {
             alias: compilerProps(base + ".alias"),
             versionFlag: compilerProps(base + ".versionFlag"),
             is6g: !!compilerProps(base + ".is6g", false),
-            intelAsm: compilerProps(base + ".intelAsm", ""),
-            supportsBinary: !!compilerProps(base + ".supportsBinary", false)
+            intelAsm: compilerProps(base + ".intelAsm", "")
         });
     }));
 }

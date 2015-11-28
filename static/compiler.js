@@ -43,6 +43,12 @@ function clearBackground(cm) {
     }
 }
 
+function patchUpFilters(filters) {
+    if (!OPTIONS.supportsBinary && filters.binary)
+        filters.binary = false;
+    return filters;
+}
+
 const NumRainbowColours = 12;
 
 function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, lang) {
@@ -53,7 +59,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, lan
     var cppEditor = null;
     var lastRequest = null;
     var currentAssembly = null;
-    var filters = origFilters;
+    var filters = patchUpFilters(origFilters);
     var ignoreChanges = true; // Horrible hack to avoid onChange doing anything on first starting, ie before we've set anything up.
 
     var cmMode;
@@ -343,7 +349,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, lan
         var compiler = compilersById[$('.compiler').val()];
         if (compiler === undefined)
             return;
-        var supportsIntel = compiler.asm || filters.binary;  // TODO: separate binary so it has its own buttons and then this problem goes away
+        var supportsIntel = compiler.asm || (filters.binary);  // TODO: separate binary so it has its own buttons and then this problem goes away
         domRoot.find('.filter button.btn[value="intel"]').toggleClass("disabled", !supportsIntel);
         $(".compilerVersion").text(compiler.name + " (" + compiler.version + ")");
     }
@@ -376,7 +382,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, lan
     }
 
     function setFilters(f) {
-        filters = f;
+        filters = patchUpFilters(f);
         onChange();
     }
 
