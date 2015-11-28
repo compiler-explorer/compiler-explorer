@@ -348,8 +348,6 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, lan
         var compiler = compilersById[$('.compiler').val()];
         if (compiler === undefined)
             return;
-        console.log(compiler);
-        console.log(filters);
         $(".compilerVersion").text(compiler.name + " (" + compiler.version + ")");
         var supportsIntel = compiler.intelAsm || filters.binary;
         domRoot.find('.filter button.btn[value="intel"]').toggleClass("disabled", !supportsIntel);
