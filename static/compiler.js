@@ -53,8 +53,22 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, lan
     var cppEditor = null;
     var lastRequest = null;
     var currentAssembly = null;
-    var filters = origFilters;
+    var filters_ = $.extend({}, origFilters);
     var ignoreChanges = true; // Horrible hack to avoid onChange doing anything on first starting, ie before we've set anything up.
+
+    function currentCompiler() {
+        return compilersById[$('.compiler').val()];
+    }
+
+    function patchUpFilters(filters) {
+        filters = $.extend({}, filters);
+        var compiler = currentCompiler();
+        var compilerSupportsBinary = compiler ? compiler.supportsBinary : true;
+        if (filters.binary && !(OPTIONS.supportsBinary && compilerSupportsBinary)) {
+            filters.binary = false;
+        }
+        return filters;
+    }
 
     var cmMode;
     switch (lang.toLowerCase()) {
@@ -84,9 +98,9 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, lan
     cppEditor.on("change", onChange);
     asmCodeMirror = CodeMirror.fromTextArea(domRoot.find(".asm textarea")[0], {
         lineNumbers: true,
-        matchBrackets: true,
         mode: "text/x-asm",
-        readOnly: true
+        readOnly: true,
+        gutters: ['CodeMirror-linenumbers']
     });
 
     function getSetting(name) {
@@ -194,9 +208,62 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, lan
         cppEditor.operation(function () {
             clearBackground(cppEditor);
         });
+        var filters = currentFilters();
         asmCodeMirror.operation(function () {
             asmCodeMirror.setValue(asmText);
             clearBackground(asmCodeMirror);
+            var addrToAddrDiv = {};
+            $.each(currentAssembly, function (line, obj) {
+                var address = obj.address ? obj.address.toString(16) : "";
+                var div = $("<div class='address cm-number'>" + address + "</div>");
+                addrToAddrDiv[address] = {div: div, line: line};
+                asmCodeMirror.setGutterMarker(line, 'address', div[0]);
+            });
+            $.each(currentAssembly, function (line, obj) {
+                var opcodes = $("<div class='opcodes'></div>");
+                if (obj.opcodes) {
+                    var title = [];
+                    $.each(obj.opcodes, function (_, op) {
+                        var opcodeNum = "00" + op.toString(16);
+                        opcodeNum = opcodeNum.substr(opcodeNum.length - 2);
+                        title.push(opcodeNum);
+                        var opcode = $("<span class='opcode'>" + opcodeNum + "</span>");
+                        opcodes.append(opcode);
+                    });
+                    opcodes.attr('title', title.join(" "));
+                }
+                asmCodeMirror.setGutterMarker(line, 'opcodes', opcodes[0]);
+                if (obj.links) {
+                    $.each(obj.links, function (_, link) {
+                        var from = {line: line, ch: link.offset};
+                        var to = {line: line, ch: link.offset + link.length};
+                        var address = link.to.toString(16);
+                        var thing = $("<a href='#' class='cm-number'>" + address + "</a>");
+                        asmCodeMirror.markText(
+                            from, to, {replacedWith: thing[0], handleMouseEvents: false});
+                        var dest = addrToAddrDiv[address];
+                        if (dest) {
+                            thing.on('hover', function (e) {
+                                var entered = e.type == "mouseenter";
+                                dest.div.toggleClass("highlighted", entered);
+                                thing.toggleClass("highlighted", entered);
+                            });
+                            thing.on('click', function (e) {
+                                asmCodeMirror.scrollIntoView({line: dest.line, ch: 0}, 30);
+                                dest.div.toggleClass("highlighted", false);
+                                thing.toggleClass("highlighted", false);
+                            });
+                        }
+                    });
+                }
+            });
+            if (filters.binary) {
+                asmCodeMirror.setOption('lineNumbers', false);
+                asmCodeMirror.setOption('gutters', ['address', 'opcodes']);
+            } else {
+                asmCodeMirror.setOption('lineNumbers', true);
+                asmCodeMirror.setOption('gutters', ['CodeMirror-linenumbers']);
+            }
         });
         if (filters.colouriseAsm) {
             cppEditor.operation(function () {
@@ -226,7 +293,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, lan
                 source: cppEditor.getValue(),
                 compiler: $('.compiler').val(),
                 options: $('.compiler_options').val(),
-                filters: filters,
+                filters: currentFilters()
             };
             setSetting('compiler', data.compiler);
             setSetting('compilerOptions', data.options);
@@ -286,13 +353,19 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, lan
         return true;
     }
 
+    function updateCompilerAndButtons() {
+        var compiler = currentCompiler();
+        $(".compilerVersion").text(compiler.name + " (" + compiler.version + ")");
+        var filters = currentFilters();
+        var supportsIntel = compiler.intelAsm || filters.binary;
+        domRoot.find('.filter button.btn[value="intel"]').toggleClass("disabled", !supportsIntel);
+        domRoot.find('.filter button.btn[value="binary"]').toggleClass("disabled", !compiler.supportsBinary).toggle(OPTIONS.supportsBinary);
+        domRoot.find('.filter .nonbinary').toggleClass("disabled", !!filters.binary);
+    }
+
     function onCompilerChange() {
         onChange();
-        var compiler = compilersById[$('.compiler').val()];
-        if (compiler === undefined)
-            return;
-        domRoot.find('.filter button.btn[value="intel"]').toggleClass("disabled", !compiler.intelAsm);
-        $(".compilerVersion").text(compiler.name + " (" + compiler.version + ")");
+        updateCompilerAndButtons();
     }
 
     function mapCompiler(compiler) {
@@ -322,9 +395,13 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, lan
         onCompilerChange();
     }
 
+    function currentFilters() {
+        return patchUpFilters(filters_);
+    }
     function setFilters(f) {
-        filters = f;
+        filters_ = $.extend({}, f);
         onChange();
+        updateCompilerAndButtons();
     }
 
     function setEditorHeight(height) {

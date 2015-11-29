@@ -37,7 +37,7 @@ CodeMirror.defineMode("asm", function () {
         };
     }
 
-    var x86_32regName = /[re]?(ax|bx|cx|dx|si|di|bp|ip|sp)/;
+    var x86_32regName = /\b[re]?(ax|bx|cx|dx|si|di|bp|ip|sp)\b/;
     var x86_64regName = /r[\d]+[d]?/;
     var x86_xregName = /[xy]mm\d+/;
     var x86_keywords = /PTR|BYTE|[DQ]?WORD|XMMWORD|YMMWORD/;
