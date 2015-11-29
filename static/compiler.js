@@ -359,7 +359,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, lan
         var filters = currentFilters();
         var supportsIntel = compiler.intelAsm || filters.binary;
         domRoot.find('.filter button.btn[value="intel"]').toggleClass("disabled", !supportsIntel);
-        domRoot.find('.filter button.btn[value="binary"]').toggleClass("disabled", !compiler.supportsBinary);
+        domRoot.find('.filter button.btn[value="binary"]').toggleClass("disabled", !compiler.supportsBinary).toggle(!OPTIONS.supportsBinary);
         domRoot.find('.filter .nonbinary').toggleClass("disabled", !!filters.binary);
     }
 
