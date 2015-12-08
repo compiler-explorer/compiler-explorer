@@ -63,40 +63,6 @@ function compilerProps(property, defaultValue) {
 require('./lib/compile').initialise(gccProps, compilerProps);
 var staticMaxAgeMs = gccProps('staticMaxAgeMs', 0);
 
-function initializeMemwatch() {
-    var memwatch = require('memwatch-next');
-    console.log("Initial GC");
-    memwatch.gc();
-    // Everything else happens a little later to let the initial GC finish.
-    setTimeout(function () {
-        var lastDiff = new memwatch.HeapDiff();
-        memwatch.on('leak', function (info) {
-            console.log("Memwatch leak: " + JSON.stringify(info));
-        });
-
-        memwatch.on('stats', function (stats) {
-            console.log("Memwatch stats: " + JSON.stringify(stats));
-        });
-
-        var heapDiffEverySecs = gccProps('gcHeapDiffEverySecs', 0);
-        if (heapDiffEverySecs) {
-            console.log("Diffing heap every " + heapDiffEverySecs + "s");
-            setInterval(function () {
-                var diff = lastDiff.end();
-                lastDiff = new memwatch.HeapDiff();
-                console.log("Memwatch diff from last stats: " + JSON.stringify(diff));
-            }, 1000 * heapDiffEverySecs);
-        }
-        var gcIntervalSecs = gccProps("gcIntervalSecs", 0);
-        if (gcIntervalSecs) {
-            console.log("Forcing a GC every " + gcIntervalSecs + "s");
-            setInterval(function () {
-                memwatch.gc();
-            }, 1000 * gcIntervalSecs);
-        }
-    }, 1 * 1000);
-}
-
 function loadSources() {
     var sourcesDir = "lib/sources";
     var sources = fs.readdirSync(sourcesDir)
@@ -376,7 +342,6 @@ findCompilers().then(function (compilers) {
     console.log("=======================================");
     console.log("Listening on http://" + os.hostname() + ":" + port + "/");
     console.log("=======================================");
-    initializeMemwatch();
     webServer.listen(port);
 }).catch(function (err) {
     console.log("Error: " + err.stack);
