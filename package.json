@@ -18,7 +18,6 @@
   "dependencies": {
     "body-parser": "1.14.x",
     "compression": "1.6.x",
-    "connect-restreamer": "1.0.x",
     "express": "4.13.x",
     "fs-extra": "0.26.x",
     "http-proxy": "1.12.x",
