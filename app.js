@@ -324,7 +324,7 @@ findCompilers().then(function (compilers) {
         bodyParser = require('body-parser'),
         logger = require('morgan'),
         compression = require('compression'),
-        restreamer = require('connect-restreamer');
+        restreamer = require('./lib/restreamer');
 
     webServer
         .use(logger('combined'))
