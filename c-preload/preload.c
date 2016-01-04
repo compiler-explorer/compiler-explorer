@@ -37,7 +37,7 @@
 #define O_CREAT 0100
 #endif
 
-static int allowed_match(const char* path, const char* okpath) {
+static int allowed_match(const char* path, const char* okpath, const char *denypath) {
     char resolvedBuf[PATH_MAX];
     const char* resolved = path;
     if (!strncmp(resolved, "/proc/self", 10)) {
@@ -50,6 +50,13 @@ static int allowed_match(const char* path, const char* okpath) {
         }
     }
 
+    while (*denypath) {
+        const char* end = strchrnul(denypath, ':');
+        if (strncmp(denypath, resolved, end - denypath) == 0) goto deny;
+        denypath = end;
+        while (*denypath == ':') ++denypath;
+    }
+
     while (*okpath) {
         const char* end = strchrnul(okpath, ':');
         if (strncmp(okpath, resolved, end - okpath) == 0) return 1;
@@ -57,6 +64,7 @@ static int allowed_match(const char* path, const char* okpath) {
         while (*okpath == ':') ++okpath;
     }
 
+deny:
     fprintf(stderr, "Access to \"%s\" denied by gcc-explorer policy\n", path);
     errno = EACCES;
     return 0;
@@ -68,14 +76,16 @@ static int allowed_env(const char* pathname, const char* envvar) {
        errno = EINVAL;
        return 0;
     }
+    const char* denypath = getenv("DENIED");
+    if (denypath == NULL) denypath = "";
 
     // Check file name first
-    if (allowed_match(pathname, okpath)) return 1;
+    if (allowed_match(pathname, okpath, denypath)) return 1;
 
     // Check directory name
     char* dirpathbuf = strdup(pathname);
     char* dirpath = dirname(dirpathbuf);
-    int dir_ok = allowed_match(dirpath, okpath);
+    int dir_ok = allowed_match(dirpath, okpath, denypath);
     free(dirpathbuf);
 
     return dir_ok;

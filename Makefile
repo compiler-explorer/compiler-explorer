@@ -31,6 +31,7 @@ node_modules: $(NODE_MODULES)
 
 test:
 	(cd test; $(NODE) test.js)
+	$(MAKE) -C c-preload test
 	@echo Tests pass
 
 clean:

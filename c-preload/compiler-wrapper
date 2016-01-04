@@ -3,6 +3,7 @@
 export LD_PRELOAD=$(dirname $0)/libpreload.so
 export ALLOWED_FOR_CREATE=/tmp 
 export ALLOWED_FOR_READ=/usr/local/include:/usr/include:/usr/lib:/lib:/lib64:/usr/msp430:/usr/arm-linux-gnueabi:/tmp:/opt/:/dev/urandom:/etc/lsb-release:/etc/debian_version:/proc/self:/proc/self/maps:/usr/arm-linux-gnueabihf:/usr/aarch64-linux-gnu:/usr/powerpc-linux-gnu/include:/usr/lib/x86_64-linux-gnu
+export DENIED=/proc/self/cwd:/proc/self/root:/proc/self/exe
 # Last-gasp limits
 ulimit -t 3 # CPU time in seconds
 ulimit -v 500000 # virtual RAM limit in K
