@@ -238,6 +238,7 @@ function configuredCompilers() {
             exe: exe,
             name: props("name", name),
             alias: props("alias"),
+            options: props("options"),
             versionFlag: props("versionFlag"),
             is6g: !!props("is6g", false),
             intelAsm: props("intelAsm", ""),
