@@ -242,6 +242,7 @@ function configuredCompilers() {
             versionFlag: props("versionFlag"),
             is6g: !!props("is6g", false),
             intelAsm: props("intelAsm", ""),
+            needsMulti: !!props("needsMulti", true),
             supportsBinary: !!props("supportsBinary", true)
         });
     }));
