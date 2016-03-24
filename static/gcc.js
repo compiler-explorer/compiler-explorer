@@ -197,6 +197,15 @@ function toGist(state) {
     });
 }
 
+function isGithubLimitError(request) {
+    var remaining = parseInt(request.getResponseHeader('X-RateLimit-Remaining'));
+    var reset = parseInt(request.getResponseHeader('X-RateLimit-Reset'));
+    var limit = parseInt(request.getResponseHeader('X-RateLimit-Limit'));
+    if (remaining !== 0) return null;
+    var left = (new Date(reset * 1000) - Date.now()) / 1000;
+    return "Rate limit of " + limit + " exceeded: " + Math.round(left / 60) + " mins til reset";
+}
+
 function makeGist(onDone, onFail) {
     var req = $.ajax('https://api.github.com/gists', {
         type: 'POST',
@@ -209,7 +218,11 @@ function makeGist(onDone, onFail) {
         onDone(msg);
     });
     req.fail(function (jqXHR, textStatus) {
-        onFail(textStatus + " (" + jqXHR.statusText + ")");
+        var rateLimited = isGithubLimitError(jqXHR);
+        if (rateLimited)
+            onFail(rateLimited);
+        else
+            onFail(textStatus + " (" + jqXHR.statusText + ")");
     });
 }
 
@@ -226,7 +239,11 @@ function loadGist(gist) {
         loadState(fromGist(msg));
     });
     req.fail(function (jqXHR, textStatus) {
-        alert("Unable to load gist: " + textStatus + " (" + jqXHR.statusText + ")");
+        var err = isGithubLimitError(jqXHR);
+        if (!err) {
+            err = textStatus + " (" + jqXHR.statusText + ")";
+        }
+        alert("Unable to load gist: " + err);
     });
 }
 
