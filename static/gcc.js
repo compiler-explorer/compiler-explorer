@@ -156,33 +156,106 @@ function togglePermalink() {
 }
 
 function serialiseState() {
-    var state = {
+    return encodeURIComponent(JSON.stringify(getState(true)));
+}
+
+function getState(compress) {
+    return {
         version: 3,
         filterAsm: getAsmFilters(),
         compilers: $.map(allCompilers, function (compiler) {
-            return compiler.serialiseState();
+            return compiler.serialiseState(compress);
         })
     };
-    return encodeURIComponent(JSON.stringify(state));
+}
+
+function toGist(state) {
+    files = {};
+    function nameFor(compiler) {
+        var addNum = 0;
+        var name, add;
+        for (; ;) {
+            add = addNum ? addNum.toString() : "";
+            name = compiler + add + '.' + OPTIONS.sourceExtension;
+            if (files[name] === undefined) return name;
+            addNum++;
+        }
+    };
+    state.compilers.forEach(function (s) {
+        var name = nameFor(s.compiler);
+        files[name] = {
+            content: s.source,
+            language: OPTIONS.language
+        };
+        s.source = name;
+    });
+    files['state.json'] = {content: JSON.stringify(state)};
+    return JSON.stringify({
+        description: "Compiler Explorer automatically generated files",
+        'public': false,
+        files: files
+    });
+}
+
+function makeGist(onDone, onFail) {
+    var req = $.ajax('https://api.github.com/gists', {
+        type: 'POST',
+        //accepts: 'application/vnd.github.v3+json',
+        dataType: 'json',
+        contentType: 'application/json',
+        data: toGist(getState())
+    });
+    req.done(function (msg) {
+        onDone(msg);
+    });
+    req.fail(function (jqXHR, textStatus) {
+        onFail(textStatus + " (" + jqXHR.statusText + ")");
+    });
+}
+
+function fromGist(msg) {
+    var state = JSON.parse(msg.files['state.json'].content);
+    state.compilers.forEach(function (s) {
+        s.source = msg.files[s.source].content;
+    });
+    return state;
+}
+function loadGist(gist) {
+    var req = $.ajax('https://api.github.com/gists/' + gist);
+    req.done(function (msg) {
+        loadState(fromGist(msg));
+    });
+    req.fail(function (jqXHR, textStatus) {
+        alert("Unable to load gist: " + textStatus + " (" + jqXHR.statusText + ")");
+    });
 }
 
 function deserialiseState(state) {
+    if (state.substr(0, 2) == "g=") {
+        loadGist(state.substr(2));
+        return;
+    }
     try {
         state = $.parseJSON(decodeURIComponent(state));
-        switch (state.version) {
-            case 1:
-                state.filterAsm = {};
-            /* falls through */
-            case 2:
-                state.compilers = [state];
-            /* falls through */
-            case 3:
-                break;
-            default:
-                return false;
-        }
     } catch (ignored) {
         return false;
+    }
+    return loadState(state);
+}
+
+function loadState(state) {
+    if (!state || state['version'] === undefined) return false;
+    switch (state.version) {
+        case 1:
+            state.filterAsm = {};
+        /* falls through */
+        case 2:
+            state.compilers = [state];
+        /* falls through */
+        case 3:
+            break;
+        default:
+            return false;
     }
     setFilterUi(state.filterAsm);
     for (var i = 0; i < Math.min(allCompilers.length, state.compilers.length); i++) {
