@@ -209,7 +209,7 @@ function isGithubLimitError(request) {
 function makeGist(onDone, onFail) {
     var req = $.ajax('https://api.github.com/gists', {
         type: 'POST',
-        //accepts: 'application/vnd.github.v3+json',
+        accepts: 'application/vnd.github.v3+json',
         dataType: 'json',
         contentType: 'application/json',
         data: toGist(getState())
