@@ -156,7 +156,14 @@ function togglePermalink() {
 }
 
 function serialiseState() {
-    return encodeURIComponent(JSON.stringify(getState(true)));
+    var compressed = rison.quote(rison.encode_object(getState(true)));
+    var uncompressed = rison.quote(rison.encode_object(getState(false)));
+    var MinimalSavings = 0.20;  // at least this ratio smaller
+    if (compressed.length < uncompressed.length * (1.0 - MinimalSavings)) {
+        return compressed;
+    } else {
+        return uncompressed;
+    }
 }
 
 function getState(compress) {
@@ -247,17 +254,28 @@ function loadGist(gist) {
     });
 }
 
-function deserialiseState(state) {
-    if (state.substr(0, 2) == "g=") {
-        loadGist(state.substr(2));
+function deserialiseState(stateText) {
+    var state = null;
+    if (stateText.substr(0, 2) == "g=") {
+        loadGist(stateText.substr(2));
         return;
     }
+
     try {
-        state = $.parseJSON(decodeURIComponent(state));
+        state = rison.decode_object(decodeURIComponent(stateText.replace(/\+/g, '%20')));
     } catch (ignored) {
-        return false;
     }
-    return loadState(state);
+
+    if (!state) {
+        try {
+            state = $.parseJSON(decodeURIComponent(stateText));
+        } catch (ignored) {
+        }
+    }
+    if (state) {
+        return loadState(state);
+    }
+    return false;
 }
 
 function loadState(state) {
