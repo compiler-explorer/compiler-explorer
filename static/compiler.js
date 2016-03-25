@@ -327,12 +327,16 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, lan
         return cppEditor.getValue();
     }
 
-    function serialiseState() {
+    function serialiseState(compress) {
         var state = {
-            sourcez: LZString.compressToBase64(cppEditor.getValue()),
             compiler: domRoot.find('.compiler').val(),
             options: domRoot.find('.compiler_options').val()
         };
+        if (compress) {
+            state.sourcez = LZString.compressToBase64(cppEditor.getValue());
+        } else {
+            state.source = cppEditor.getValue();
+        }
         return state;
     }
 

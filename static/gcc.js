@@ -156,33 +156,141 @@ function togglePermalink() {
 }
 
 function serialiseState() {
-    var state = {
+    var compressed = rison.quote(rison.encode_object(getState(true)));
+    var uncompressed = rison.quote(rison.encode_object(getState(false)));
+    var MinimalSavings = 0.20;  // at least this ratio smaller
+    if (compressed.length < uncompressed.length * (1.0 - MinimalSavings)) {
+        return compressed;
+    } else {
+        return uncompressed;
+    }
+}
+
+function getState(compress) {
+    return {
         version: 3,
         filterAsm: getAsmFilters(),
         compilers: $.map(allCompilers, function (compiler) {
-            return compiler.serialiseState();
+            return compiler.serialiseState(compress);
         })
     };
-    return encodeURIComponent(JSON.stringify(state));
 }
 
-function deserialiseState(state) {
-    try {
-        state = $.parseJSON(decodeURIComponent(state));
-        switch (state.version) {
-            case 1:
-                state.filterAsm = {};
-            /* falls through */
-            case 2:
-                state.compilers = [state];
-            /* falls through */
-            case 3:
-                break;
-            default:
-                return false;
+function toGist(state) {
+    files = {};
+    function nameFor(compiler) {
+        var addNum = 0;
+        var name, add;
+        for (; ;) {
+            add = addNum ? addNum.toString() : "";
+            name = compiler + add + '.' + OPTIONS.sourceExtension;
+            if (files[name] === undefined) return name;
+            addNum++;
         }
+    };
+    state.compilers.forEach(function (s) {
+        var name = nameFor(s.compiler);
+        files[name] = {
+            content: s.source,
+            language: OPTIONS.language
+        };
+        s.source = name;
+    });
+    files['state.json'] = {content: JSON.stringify(state)};
+    return JSON.stringify({
+        description: "Compiler Explorer automatically generated files",
+        'public': false,
+        files: files
+    });
+}
+
+function isGithubLimitError(request) {
+    var remaining = parseInt(request.getResponseHeader('X-RateLimit-Remaining'));
+    var reset = parseInt(request.getResponseHeader('X-RateLimit-Reset'));
+    var limit = parseInt(request.getResponseHeader('X-RateLimit-Limit'));
+    if (remaining !== 0) return null;
+    var left = (new Date(reset * 1000) - Date.now()) / 1000;
+    return "Rate limit of " + limit + " exceeded: " + Math.round(left / 60) + " mins til reset";
+}
+
+function makeGist(onDone, onFail) {
+    var req = $.ajax('https://api.github.com/gists', {
+        type: 'POST',
+        accepts: 'application/vnd.github.v3+json',
+        dataType: 'json',
+        contentType: 'application/json',
+        data: toGist(getState())
+    });
+    req.done(function (msg) {
+        onDone(msg);
+    });
+    req.fail(function (jqXHR, textStatus) {
+        var rateLimited = isGithubLimitError(jqXHR);
+        if (rateLimited)
+            onFail(rateLimited);
+        else
+            onFail(textStatus + " (" + jqXHR.statusText + ")");
+    });
+}
+
+function fromGist(msg) {
+    var state = JSON.parse(msg.files['state.json'].content);
+    state.compilers.forEach(function (s) {
+        s.source = msg.files[s.source].content;
+    });
+    return state;
+}
+function loadGist(gist) {
+    var req = $.ajax('https://api.github.com/gists/' + gist);
+    req.done(function (msg) {
+        loadState(fromGist(msg));
+    });
+    req.fail(function (jqXHR, textStatus) {
+        var err = isGithubLimitError(jqXHR);
+        if (!err) {
+            err = textStatus + " (" + jqXHR.statusText + ")";
+        }
+        alert("Unable to load gist: " + err);
+    });
+}
+
+function deserialiseState(stateText) {
+    var state = null;
+    if (stateText.substr(0, 2) == "g=") {
+        loadGist(stateText.substr(2));
+        return;
+    }
+
+    try {
+        state = rison.decode_object(decodeURIComponent(stateText.replace(/\+/g, '%20')));
     } catch (ignored) {
-        return false;
+    }
+
+    if (!state) {
+        try {
+            state = $.parseJSON(decodeURIComponent(stateText));
+        } catch (ignored) {
+        }
+    }
+    if (state) {
+        return loadState(state);
+    }
+    return false;
+}
+
+function loadState(state) {
+    if (!state || state['version'] === undefined) return false;
+    switch (state.version) {
+        case 1:
+            state.filterAsm = {};
+        /* falls through */
+        case 2:
+            state.compilers = [state];
+        /* falls through */
+        case 3:
+            break;
+        default:
+            return false;
     }
     setFilterUi(state.filterAsm);
     for (var i = 0; i < Math.min(allCompilers.length, state.compilers.length); i++) {
