@@ -33,6 +33,8 @@ var nopt = require('nopt'),
     path = require('path'),
     fs = require('fs-extra'),
     http = require('http'),
+    https = require('https'),
+    url = require('url'),
     Promise = require('promise');
 
 var opts = nopt({
@@ -234,6 +236,7 @@ function configuredCompilers() {
         function props(name, def) {
             return compilerProps(base + "." + name, compilerProps(name, def));
         }
+
         return Promise.resolve({
             id: name,
             exe: exe,
@@ -320,6 +323,42 @@ function apiHandler(compilers) {
     };
 }
 
+function shortUrlHandler(req, res, next) {
+    var bits = req.url.split("/");
+    if (bits.length !== 2 || req.method !== "GET") return next();
+    var key = process.env.GOOGLE_API_KEY;
+    var googleApiUrl = 'https://www.googleapis.com/urlshortener/v1/url?shortUrl=http://goo.gl/'
+        + encodeURIComponent(bits[1]) + '&key=' + key;
+    https.get(googleApiUrl, function (response) {
+        var responseText = '';
+        response.on('data', function (d) {
+            responseText += d;
+        });
+        response.on('end', function () {
+            if (response.statusCode != 200) {
+                console.log("Failed to resolve short URL " + bits[1] + " - got response "
+                    + response.statusCode + " : " + responseText);
+                return next();
+            }
+
+            var resultObj = JSON.parse(responseText);
+            var parsed = url.parse(resultObj.longUrl);
+            var allowedRe = new RegExp(gccProps('allowedShortUrlHostRe'));
+            if (parsed.host.match(allowedRe) === null) {
+                console.log("Denied access to short URL " + bits[1] + " - linked to " + resultObj.longUrl);
+                return next();
+            }
+            res.writeHead(301, {
+                Location: resultObj.id,
+                'Cache-Control': 'public'
+            });
+            res.end();
+        });
+    }).on('error', function (e) {
+        res.end("TODO: error " + e.message);
+    });
+}
+
 findCompilers().then(function (compilers) {
     var webServer = express(),
         sFavicon = require('serve-favicon'),
@@ -339,6 +378,7 @@ findCompilers().then(function (compilers) {
         .get('/client-options.js', clientOptionsHandler(compilers, fileSources))
         .use('/source', getSource)
         .use('/api', apiHandler(compilers))
+        .use('/g', shortUrlHandler)
         .post('/compile', compileHandler(compilers));
 
     // GO!
