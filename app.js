@@ -101,7 +101,7 @@ function clientOptionsHandler(compilers, fileSources) {
         google_analytics_enabled: gccProps('clientGoogleAnalyticsEnabled', false),
         sharing_enabled: gccProps('clientSharingEnabled', true),
         github_ribbon_enabled: gccProps('clientGitHubRibbonEnabled', true),
-        urlshortener: gccProps('clientURLShortener', 'gist'),
+        urlshortener: gccProps('clientURLShortener', 'google'),
         gapiKey: gccProps('google-api-key', 'AIzaSyAaz35KJv8DA0ABoime0fEIh32NmbyYbcQ'),
         defaultSource: gccProps('defaultSource', ''),
         language: language,
