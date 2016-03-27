@@ -105,6 +105,7 @@ function clientOptionsHandler(compilers, fileSources) {
         github_ribbon_enabled: gccProps('clientGitHubRibbonEnabled', true),
         urlshortener: gccProps('clientURLShortener', 'google'),
         gapiKey: gccProps('google-api-key', 'AIzaSyAaz35KJv8DA0ABoime0fEIh32NmbyYbcQ'),
+        googleShortLinkRewrite: gccProps('googleShortLinkRewrite', '').split('|'),
         defaultSource: gccProps('defaultSource', ''),
         language: language,
         compilers: compilers,
