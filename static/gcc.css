@@ -1,5 +1,5 @@
 body {
-    padding-top: 60px;
+    padding-top: 56px;
     padding-bottom: 40px;
 }
 
@@ -8,26 +8,30 @@ body {
  */
 #permalink {
     cursor: text;
-    width: 300px;
+    width: 100%;
 }
 
 .sideBySide {
 }
 
 #changetip_tipme_button {
-    height: 24px;
-    width: 120px;
-    padding: 7px 3px 4px;
+    width: 80px;
 }
 #flattr_button {
-    height: 20px;
     width: 120px;
-    padding: 7px 3px 4px;
 }
 .output {
     height: 80px;
     overflow: auto;
     font-family: monospace;
+}
+
+.compilers-container {
+}
+
+.compiler_options {
+    margin-left: 10px;
+    width: 100%;
 }
 
 .options {

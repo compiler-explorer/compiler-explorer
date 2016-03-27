@@ -371,7 +371,7 @@ function initialise(options) {
         var compOutputSize = Math.max(100, windowHeight * 0.05);
         $('.output').height(compOutputSize);
         var resultHeight = $('.result').height();
-        var height = windowHeight - top - resultHeight - 40;
+        var height = windowHeight - top - resultHeight - 160;
         currentCompiler.setEditorHeight(height);
     }
 
