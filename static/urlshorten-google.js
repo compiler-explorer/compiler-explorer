@@ -16,7 +16,11 @@ function shortenURL(url, done) {
         }
     });
     request.then(function (resp) {
-        done(resp.result.id);
+        var id = resp.result.id;
+        if (OPTIONS.googleShortLinkRewrite.length === 2) {
+            id = id.replace(new RegExp(OPTIONS.googleShortLinkRewrite[0]), OPTIONS.googleShortLinkRewrite[1]);
+        }
+        done(id);
     }, function () {
         done(url);
     });
