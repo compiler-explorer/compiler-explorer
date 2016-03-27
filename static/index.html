@@ -106,7 +106,7 @@
             <div class="col-md-6">
                 <form class="well form-inline files">
                     <div>
-                        <label>Source: <select class="source" style="width:3m"></select></label>
+                        <label>Source: <select class="source"></select></label>
                         <label>Name: <select class="filename"></select></label>
                     </div>
                     <div class="btn-group btn-group-sm">
@@ -139,7 +139,7 @@
                         <tbody>
                         <tr>
                             <td class="dropdown compilers-container">
-                                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"
+                                <button accesskey="c" type="button" title="Compiler to use (alt-C)" class="btn btn-default dropdown-toggle" data-toggle="dropdown"
                                         aria-haspopup="true" aria-expanded="true">
                                     <span class="compiler">g++</span>
                                     <span class="caret"></span>
@@ -148,7 +148,7 @@
                                 </ul>
                             </td>
                             <td>
-                                <input class="compiler_options" placeholder="compiler options" type="text" value="" size="256">
+                                <input accesskey="o" title="Options to pass to compiler (alt-O)" class="compiler_options" placeholder="compiler options" type="text" value="" size="256">
                             </td>
                         </tr>
                         </tbody>
