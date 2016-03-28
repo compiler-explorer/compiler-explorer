@@ -13,6 +13,7 @@
         <script src="asm-mode.js"></script>
         <script src="ext/jquery/jquery-2.2.2.min.js"></script>
         <script src="ext/rison.js"></script>
+        <script src="ext/clipboard.min.js"></script>
         <script src="compiler.js"></script>
         <script src="gcc.js"></script>
         <script src="ext/bootstrap/js/bootstrap.min.js"></script>
@@ -113,23 +114,19 @@
                         <button class="btn btn-sm load">Load</button>
                         <button class="btn btn-sm save">Save</button>
                         <button class="btn btn-sm saveas">Save as...</button>
-                        <button class="btn btn-sm permalink">Permalink</button>
-                        <!--<div class="btn-group">-->
-                            <!--<button type="button" class="btn">Shortlink</button>-->
-                            <!--<button type="button" class="btn dropdown-toggle" data-toggle="dropdown"-->
-                                    <!--aria-haspopup="true" aria-expanded="false">-->
-                                <!--<span class="caret"></span>-->
-                            <!--</button>-->
-                            <!--<ul class="dropdown-menu">-->
-                                <!--<li><a href="#">Shortlink</a></li>-->
-                                <!--<li><a href="#">Permalink</a></li>-->
-                                <!--<li><a href="#">Gistlink</a></li>-->
-                            <!--</ul>-->
-                        <!--</div>-->
+                        <button class="btn btn-sm fulllink" title="Permanent, full URL to this page">Full link</button>
+                        <button class="btn btn-sm shortlink" title="Permanent link to this page as a short link">Short link</button>
                     </div>
                     <div class="collapse permalink-collapse">
-                        <label>Permalink: <input class="input-uneditable" type="text" placeholder="Loading" readonly size="1024"
-                                                 id="permalink"></input></label>
+                        <div class="input-group input-grou-sm permalink">
+                            <input type="text" class="form-control input-sm" placeholder="Loading" readonly id="permalink" size="1024">
+                            <span class="input-group-btn">
+                                <button class="btn btn-sm btn-default clippy" type="button" data-clipboard-target="#permalink"
+                                        title="Copy to clipboard">
+                                    <img src="ext/clippy.svg" class="clippy" width="13px" alt="Copy to clipboard">
+                                </button>
+                            </span>
+                        </div>
                     </div>
                 </form>
             </div>

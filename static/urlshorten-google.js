@@ -1,12 +1,16 @@
 function googleJSClientLoaded() {
     gapi.client.setApiKey(OPTIONS.gapiKey);
-    gapi.client.load('urlshortener', 'v1', makePermalink);
+    gapi.client.load('urlshortener', 'v1', function () {
+        shortenURL(googleJSClientLoaded.url, googleJSClientLoaded.done);
+    });
 }
 
 function shortenURL(url, done) {
     if (!window.gapi || !gapi.client) {
         // Load the Google APIs client library asynchronously, then the
         // urlshortener API, and finally come back here.
+        googleJSClientLoaded.url = url;
+        googleJSClientLoaded.done = done;
         $(document.body).append('<script src="https://apis.google.com/js/client.js?onload=googleJSClientLoaded">');
         return;
     }
