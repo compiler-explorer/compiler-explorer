@@ -104,7 +104,7 @@
 
     <section id="main" class="container-fluid">
         <div class="row">
-            <div class="col-md-6">
+            <div class="col-md-5">
                 <form class="well form-inline files">
                     <div>
                         <label>Source: <select class="source"></select></label>
@@ -118,7 +118,7 @@
                         <button class="btn btn-sm shortlink" title="Permanent link to this page as a short link">Short link</button>
                     </div>
                     <div class="collapse permalink-collapse">
-                        <div class="input-group input-grou-sm permalink">
+                        <div class="input-group input-group-sm permalink">
                             <input type="text" class="form-control input-sm" placeholder="Loading" readonly id="permalink" size="1024">
                             <span class="input-group-btn">
                                 <button class="btn btn-sm btn-default clippy" type="button" data-clipboard-target="#permalink"
@@ -130,7 +130,7 @@
                     </div>
                 </form>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-7">
                 <form class="well form-inline">
                     <table>
                         <tbody>
@@ -178,7 +178,15 @@
         </div>
         <div class="row">
             <div class="col-md-6 editor">
-                <div class="topbar indented">Code editor</div>
+                <div class="topbar indented">
+                    Code editor
+                    <span class="pull-right input-group input-group-sm">
+                        <button accesskey="a" title="Automatically build when you stop typing"
+                                class="btn btn-default btn-sm autocompile active">
+                            <span class="glyphicon glyphicon-play-circle"></span>
+                        </button>
+                    </span>
+                </div>
                 <textarea>// Type your code here, or load an example.</textarea>
             </div>
             <div class="col-md-6 asm">
@@ -214,24 +222,24 @@
     </div>
 
     <div class="template lang c">// Type your code here, or load an example.
-        int square(int num) {
-        return num * num;
-        }
+int square(int num) {
+  return num * num;
+}
     </div>
     <div class="template lang rust">// Type your code here, or load an example.
-        pub fn square(num: i32) -&gt; i32 {
-        num * num
-        }
+pub fn square(num: i32) -&gt; i32 {
+  num * num
+}
     </div>
     <div class="template lang go">// Type your code here, or load an example.
-        // Your function name should start with a capital letter.
-        package main
+// Your function name should start with a capital letter.
+package main
 
-        func Square(x int) int {
-        return x * x
-        }
+func Square(x int) int {
+  return x * x
+}
 
-        func main() {}
+func main() {}
     </div>
     <div class="template lang d">// Type your code here, or load an example.</div>
 

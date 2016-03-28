@@ -70,6 +70,13 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, lan
         return compilersById[currentCompilerId()];
     }
 
+    $('.autocompile').click(function () {
+        $('.autocompile').toggleClass('active');
+        onChange();
+        setSetting('autocompile', $('.autocompile').hasClass('active'));
+    });
+    $('.autocompile').toggleClass('active', getSetting("autocompile") !== "false");
+
     function patchUpFilters(filters) {
         filters = $.extend({}, filters);
         var compiler = currentCompiler();
@@ -105,7 +112,11 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, lan
         useCPP: true,
         mode: cmMode
     });
-    cppEditor.on("change", onChange);
+    cppEditor.on("change", function () {
+        if ($('.autocompile').hasClass('active')) {
+            onChange();
+        }
+    });
     asmCodeMirror = CodeMirror.fromTextArea(domRoot.find(".asm textarea")[0], {
         lineNumbers: true,
         mode: "text/x-asm",
