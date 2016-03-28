@@ -349,7 +349,7 @@ function initialise(options) {
         return false;
     });
 
-    new Clipboard('.btn');
+    new Clipboard('.btn.clippy');
 
     $('.filter button.btn').click(function (e) {
         $(e.target).toggleClass('active');
