@@ -1,5 +1,5 @@
 body {
-    padding-top: 60px;
+    padding-top: 58px;
     padding-bottom: 40px;
 }
 
@@ -8,26 +8,41 @@ body {
  */
 #permalink {
     cursor: text;
-    width: 300px;
+    width: 100%;
 }
 
-.sideBySide {
+.btn.active {
+    color: #fff;
+    border-color: #46b8da;
+    background-color: #5bc0de;
+}
+
+.autocompile {
+    font-size: 18px;
+    height: 24px;
+    padding-top: 0;
 }
 
 #changetip_tipme_button {
-    height: 24px;
-    width: 120px;
-    padding: 7px 3px 4px;
+    width: 80px;
 }
+
 #flattr_button {
-    height: 20px;
     width: 120px;
-    padding: 7px 3px 4px;
 }
+
 .output {
     height: 80px;
     overflow: auto;
     font-family: monospace;
+}
+
+.compilers-container {
+}
+
+.compiler_options {
+    margin-left: 10px;
+    width: 100%;
 }
 
 .options {
@@ -47,7 +62,9 @@ body {
 }
 
 span.icon {
-    border-radius: 50%; padding: 0 3px; margin-right: 7px;
+    border-radius: 50%;
+    padding: 0 3px;
+    margin-right: 7px;
 }
 
 .error {
@@ -56,7 +73,9 @@ span.icon {
 }
 
 .error span.icon {
-    color: white; background-color: red; font-weight: bold;
+    color: white;
+    background-color: red;
+    font-weight: bold;
 }
 
 .warning {
@@ -65,7 +84,8 @@ span.icon {
 }
 
 .warning span.icon {
-    color: black; background-color: yellow;
+    color: black;
+    background-color: yellow;
 }
 
 .note {
@@ -74,7 +94,8 @@ span.icon {
 }
 
 .note span.icon {
-    color: white; background-color: blue;
+    color: white;
+    background-color: blue;
 }
 
 .template {
@@ -100,23 +121,59 @@ li.social {
 /* These colours from Cynthia Brewer's excellent page at
  * http://colorbrewer2.org/
  */
-.rainbow-0 { background: rgb(141, 211, 199) !important; }
-.rainbow-1 { background: rgb(255, 255, 179) !important; }
-.rainbow-2 { background: rgb(190, 186, 218) !important; }
-.rainbow-3 { background: rgb(251, 128, 114) !important; }
-.rainbow-4 { background: rgb(128, 177, 211) !important; }
-.rainbow-5 { background: rgb(253, 180, 98) !important; }
-.rainbow-6 { background: rgb(179, 222, 105) !important; }
-.rainbow-7 { background: rgb(252, 205, 229) !important; }
-.rainbow-8 { background: rgb(217, 217, 217) !important; }
-.rainbow-9 { background: rgb(188, 128, 189) !important; }
-.rainbow-10 { background: rgb(204,234,197) !important; }
-.rainbow-11 { background: rgb(255, 237, 111) !important; }
+.rainbow-0 {
+    background: rgb(141, 211, 199) !important;
+}
+
+.rainbow-1 {
+    background: rgb(255, 255, 179) !important;
+}
+
+.rainbow-2 {
+    background: rgb(190, 186, 218) !important;
+}
+
+.rainbow-3 {
+    background: rgb(251, 128, 114) !important;
+}
+
+.rainbow-4 {
+    background: rgb(128, 177, 211) !important;
+}
+
+.rainbow-5 {
+    background: rgb(253, 180, 98) !important;
+}
+
+.rainbow-6 {
+    background: rgb(179, 222, 105) !important;
+}
+
+.rainbow-7 {
+    background: rgb(252, 205, 229) !important;
+}
+
+.rainbow-8 {
+    background: rgb(217, 217, 217) !important;
+}
+
+.rainbow-9 {
+    background: rgb(188, 128, 189) !important;
+}
+
+.rainbow-10 {
+    background: rgb(204, 234, 197) !important;
+}
+
+.rainbow-11 {
+    background: rgb(255, 237, 111) !important;
+}
 
 .address {
     width: 4em;
     font-size: smaller;
 }
+
 .opcodes {
     width: 7em;
     overflow: hidden;
@@ -125,12 +182,13 @@ li.social {
 
 .opcode {
     color: #066;
-    margin-right:0.2em;
+    margin-right: 0.2em;
 }
 
 .opcode:nth-child(odd) {
     color: #060;
 }
+
 .highlighted {
     background-color: rgba(255, 0, 0, 0.2);
     color: #0000b0;

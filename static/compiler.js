@@ -56,9 +56,26 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, lan
     var filters_ = $.extend({}, origFilters);
     var ignoreChanges = true; // Horrible hack to avoid onChange doing anything on first starting, ie before we've set anything up.
 
-    function currentCompiler() {
-        return compilersById[$('.compiler').val()];
+    function setCompilerById(id) {
+        var compilerNode = domRoot.find('.compiler');
+        compilerNode.text(compilersById[id].name);
+        compilerNode.attr('data', id);
     }
+
+    function currentCompilerId() {
+        return domRoot.find('.compiler').attr('data');
+    }
+
+    function currentCompiler() {
+        return compilersById[currentCompilerId()];
+    }
+
+    $('.autocompile').click(function () {
+        $('.autocompile').toggleClass('active');
+        onChange();
+        setSetting('autocompile', $('.autocompile').hasClass('active'));
+    });
+    $('.autocompile').toggleClass('active', getSetting("autocompile") !== "false");
 
     function patchUpFilters(filters) {
         filters = $.extend({}, filters);
@@ -95,7 +112,11 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, lan
         useCPP: true,
         mode: cmMode
     });
-    cppEditor.on("change", onChange);
+    cppEditor.on("change", function () {
+        if ($('.autocompile').hasClass('active')) {
+            onChange();
+        }
+    });
     asmCodeMirror = CodeMirror.fromTextArea(domRoot.find(".asm textarea")[0], {
         lineNumbers: true,
         mode: "text/x-asm",
@@ -114,7 +135,6 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, lan
     var codeText = getSetting('code');
     if (!codeText) codeText = $(".template.lang." + lang.replace(/[^a-zA-Z]/g, '').toLowerCase()).text();
     if (codeText) cppEditor.setValue(codeText);
-    domRoot.find('.compiler').change(onCompilerChange);
     domRoot.find('.compiler_options').change(onChange).keyup(onChange);
     ignoreChanges = false;
 
@@ -291,7 +311,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, lan
         pendingTimeout = setTimeout(function () {
             var data = {
                 source: cppEditor.getValue(),
-                compiler: $('.compiler').val(),
+                compiler: currentCompilerId(),
                 options: $('.compiler_options').val(),
                 filters: currentFilters()
             };
@@ -329,7 +349,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, lan
 
     function serialiseState(compress) {
         var state = {
-            compiler: domRoot.find('.compiler').val(),
+            compiler: currentCompilerId(),
             options: domRoot.find('.compiler_options').val()
         };
         if (compress) {
@@ -347,7 +367,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, lan
             cppEditor.setValue(state.source);
         }
         state.compiler = mapCompiler(state.compiler);
-        domRoot.find('.compiler').val(state.compiler);
+        setCompilerById(state.compiler);
         domRoot.find('.compiler_options').val(state.options);
         // Somewhat hackily persist compiler into local storage else when the ajax response comes in
         // with the list of compilers it can splat over the deserialized version.
@@ -382,19 +402,26 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, lan
     }
 
     function setCompilers(compilers, defaultCompiler) {
-        domRoot.find('.compiler option').remove();
+        domRoot.find('.compilers li').remove();
         compilersById = {};
         compilersByAlias = {};
         $.each(compilers, function (index, arg) {
             compilersById[arg.id] = arg;
             if (arg.alias) compilersByAlias[arg.alias] = arg;
-            domRoot.find('.compiler').append($('<option value="' + arg.id + '">' + arg.name + '</option>'));
+            var elem = $('<li><a href="#">' + arg.name + '</a></li>');
+            domRoot.find('.compilers').append(elem);
+            (function () {
+                elem.click(function () {
+                    setCompilerById(arg.id);
+                    onCompilerChange();
+                });
+            })(elem.find("a"), arg.id);
         });
         var compiler = getSetting('compiler');
         if (!compiler) compiler = defaultCompiler;
         compiler = mapCompiler(compiler);
         if (compiler) {
-            domRoot.find('.compiler').val(compiler);
+            setCompilerById(compiler);
         }
         onCompilerChange();
     }
@@ -402,6 +429,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, lan
     function currentFilters() {
         return patchUpFilters(filters_);
     }
+
     function setFilters(f) {
         filters_ = $.extend({}, f);
         onChange();

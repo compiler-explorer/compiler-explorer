@@ -129,29 +129,26 @@ function saveFileAs() {
     });
 }
 
-function makePermalink() {
-    $('#permalink').val('');
-
-    shortenURL(window.location.href.split('#')[0] + '#' + serialiseState(),
-        function (shorturl) {
-            $('#permalink').val(shorturl);
-        });
-}
-
 function hidePermalink() {
-    if ($('.files .permalink').hasClass('active')) {  // do nothing if already hidden.
-        togglePermalink();
+    if ($('.files .permalink-collapse').hasClass('in')) {  // do nothing if already hidden.
+        $('.files .permalink-collapse').collapse('hide');
     }
 }
 
-function togglePermalink() {
-    if (!$('.files .permalink').hasClass('active')) {
-        $('.files .permalink').addClass('active');
+function showPermalink(short) {
+    if (!$('.files .permalink-collapse').hasClass('in')) {
         $('.files .permalink-collapse').collapse('show');
-        makePermalink();
+    }
+    $('#permalink').val('');
+
+    var fullUrl = window.location.href.split('#')[0] + '#' + serialiseState();
+    if (short) {
+        shortenURL(fullUrl,
+            function (shortUrl) {
+                $('#permalink').val(shortUrl);
+            });
     } else {
-        $('.files .permalink-collapse').collapse('hide');
-        $('.files .permalink').removeClass('active');
+        $('#permalink').val(fullUrl);
     }
 }
 
@@ -343,10 +340,16 @@ function initialise(options) {
         saveFileAs();
         return false;
     });
-    $('.files .permalink').click(function (e) {
-        togglePermalink(e);
+    $('.files .fulllink').click(function (e) {
+        showPermalink(false);
         return false;
     });
+    $('.files .shortlink').click(function (e) {
+        showPermalink(true);
+        return false;
+    });
+
+    new Clipboard('.btn.clippy');
 
     $('.filter button.btn').click(function (e) {
         $(e.target).toggleClass('active');
@@ -371,7 +374,7 @@ function initialise(options) {
         var compOutputSize = Math.max(100, windowHeight * 0.05);
         $('.output').height(compOutputSize);
         var resultHeight = $('.result').height();
-        var height = windowHeight - top - resultHeight - 40;
+        var height = windowHeight - top - resultHeight - 160;
         currentCompiler.setEditorHeight(height);
     }
 
