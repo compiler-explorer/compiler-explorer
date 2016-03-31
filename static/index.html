@@ -41,15 +41,6 @@
                 if (OPTIONS.sharing_enabled) {
                     create_script_element('gp', 'https://apis.google.com/js/plusone.js');
                     create_script_element('twitter-wjs', '//platform.twitter.com/widgets.js');
-                    (function (document, script, id) {
-                        var js, r = document.getElementsByTagName(script)[0], protocol = /^http:/.test(document.location) ? 'http' : 'https';
-                        if (!document.getElementById(id)) {
-                            js = document.createElement(script);
-                            js.id = id;
-                            js.src = protocol + '://widgets.changetip.com/public/js/widgets.js';
-                            r.parentNode.insertBefore(js, r)
-                        }
-                    }(document, 'script', 'changetip_w_0'));
                     (function(document, i) {
                      var f,s=document.getElementById(i);
                      f=document.createElement('iframe');
@@ -71,15 +62,16 @@
                 <a class="navbar-brand" href="#">Compiler Explorer - <span class="language-name"></span></a>
             </div>
             <div class="navbar-collapse collapse">
-                <ul class="nav navbar-nav navbar-left">
-                    <li class="navbar-text" id="changetip_tipme_button" data-bid="MzRgCSeSnVWvAP9SVRoYFC"
-                        data-uid="Qy46jQ356qex2GD2JGaHaK"
-                        style=""></li>
-                    <li class="navbar-text" id="flattr_button"></li>
-                </ul>
                 <ul class="nav navbar-nav navbar-right">
-                    <li class="dropdown">
-                        <a href="#" class="dropdown-toggle" id="share" data-toggle="dropdown">Share<b class="caret"></b></a>
+                    <li class="dropdown if-share-enabled">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Donate<b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                            <li class="navbar-text"><a href="https://www.changetip.com/tipme/mattgodbolt">ChangeTip.Me</a></li>
+                            <li class="navbar-text" id="flattr_button"></li>
+                        </ul>
+                    </li>
+                    <li class="dropdown if-share-enabled">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Share<b class="caret"></b></a>
                         <ul class="dropdown-menu">
                             <li class="social">
                                 <g:plusone annotation="inline" width="150"></g:plusone>
@@ -249,7 +241,7 @@ func main() {}
     <script type="text/javascript">
         (function () {
             if (!OPTIONS.sharing_enabled)
-                $('#share').remove();
+                $('.if-share-enabled').remove();
 
             if (OPTIONS.github_ribbon_enabled) {
                 $(document.createElement('img'))
@@ -257,9 +249,11 @@ func main() {}
                             position: "absolute",
                             top: "40px",
                             right: 0,
-                            border: 0
+                            border: 0,
+                            width: "149px",
+                            height: "149px"
                         })
-                        .attr('src', 'https://s3.amazonaws.com/github/ribbons/forkme_right_green_007200.png')
+                        .attr('src', 'https://aral.github.com/fork-me-on-github-retina-ribbons/right-green@2x.png')
                         .attr('alt', 'Fork me on GitHub')
                         .attr('useMap', '#ghm')
                         .appendTo(document.body)

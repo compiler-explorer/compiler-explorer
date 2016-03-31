@@ -37,6 +37,15 @@
 #define O_CREAT 0100
 #endif
 
+// OS X et al doesn't have this. Rather than optionally replace it, I'd rather
+// run using this substitute function all the time.
+static const char *my_strchrnul(const char *s, int c) {
+    const char *ptr = strchr(s, c);
+    if (!ptr)
+        ptr = s + strlen(s);
+    return ptr;
+}
+
 static int allowed_match(const char* path, const char* okpath, const char *denypath) {
     char resolvedBuf[PATH_MAX];
     const char* resolved = path;
@@ -51,14 +60,14 @@ static int allowed_match(const char* path, const char* okpath, const char *denyp
     }
 
     while (*denypath) {
-        const char* end = strchrnul(denypath, ':');
+        const char* end = my_strchrnul(denypath, ':');
         if (strncmp(denypath, resolved, end - denypath) == 0) goto deny;
         denypath = end;
         while (*denypath == ':') ++denypath;
     }
 
     while (*okpath) {
-        const char* end = strchrnul(okpath, ':');
+        const char* end = my_strchrnul(okpath, ':');
         if (strncmp(okpath, resolved, end - okpath) == 0) return 1;
         okpath = end;
         while (*okpath == ':') ++okpath;
