@@ -369,12 +369,12 @@ function initialise(options) {
 
     function resizeEditors() {
         var codeMirrors = $('.CodeMirror');
-        var top = codeMirrors.position().top;
+        var top = codeMirrors.offset().top;
         var windowHeight = $(window).height();
         var compOutputSize = Math.max(100, windowHeight * 0.05);
         $('.output').height(compOutputSize);
         var resultHeight = $('.result').height();
-        var height = windowHeight - top - resultHeight - 160;
+        var height = windowHeight - top - resultHeight - 40;
         currentCompiler.setEditorHeight(height);
     }
 
