@@ -41,6 +41,7 @@ var opts = nopt({
     'env': [String, Array],
     'rootDir': [String],
     'language': [String],
+    'host': [String],
     'port': [Number],
     'propDebug': [Boolean]
 });
@@ -48,6 +49,7 @@ var opts = nopt({
 var rootDir = opts.rootDir || './etc';
 var language = opts.language || "C++";
 var env = opts.env || ['dev'];
+var hostname = opts.host || os.hostname();
 var port = opts.port || 10240;
 
 var propHierarchy = ['defaults'].concat(env).concat([language, os.hostname()]);
@@ -384,9 +386,9 @@ findCompilers().then(function (compilers) {
 
     // GO!
     console.log("=======================================");
-    console.log("Listening on http://" + os.hostname() + ":" + port + "/");
+    console.log("Listening on http://" + hostname + ":" + port + "/");
     console.log("=======================================");
-    webServer.listen(port);
+    webServer.listen(port, hostname);
 }).catch(function (err) {
     console.log("Error: " + err.stack);
 });
