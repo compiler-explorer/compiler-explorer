@@ -1,0 +1,5 @@
+Reading symbols from /grid/opt/zindex/zq...done.
+quit
+Reading symbols from /grid/opt/zindex/zindex...done.
+Quit
+quit
