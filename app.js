@@ -262,7 +262,8 @@ function getCompilerInfo(compilerInfo) {
     return new Promise(function (resolve) {
         var compiler = compilerInfo.exe;
         var versionFlag = compilerInfo.versionFlag || '--version';
-        child_process.exec(compiler + ' ' + versionFlag, function (err, output) {
+        child_process.exec('"' + compiler + '" ' + versionFlag, function (err, output) {
+console.log(err);
             if (err) return resolve(null);
             compilerInfo.version = output.split('\n')[0];
             if (compilerInfo.intelAsm) {
