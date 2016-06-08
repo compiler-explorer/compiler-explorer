@@ -52,11 +52,13 @@ var env = opts.env || ['dev'];
 var hostname = opts.host || os.hostname();
 var port = opts.port || 10240;
 
-var propHierarchy = ['defaults'].concat(env).concat([
+var propHierarchy = [
+    'defaults',
+    env,
     language,
-    language + '.' + process.platform,
+    env + '.' + process.platform,
     process.platform,
-    os.hostname()]);
+    os.hostname()];
 
 props.initialize(rootDir + '/config', propHierarchy);
 if (opts.propDebug) props.setDebug(true);
