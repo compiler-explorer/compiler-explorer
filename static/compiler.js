@@ -170,9 +170,10 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, lan
             cppEditor.removeLineWidget(errorWidgets[i]);
         errorWidgets.length = 0;
         var numLines = 0;
+        var maxLines = 50;
         parseLines(stderr + stdout, function (lineNum, msg) {
-            if (numLines > 50) return;
-            if (numLines === 50) {
+            if (numLines > maxLines) return;
+            if (numLines === maxLines) {
                 lineNum = null;
                 msg = "Too many output lines...truncated";
             }

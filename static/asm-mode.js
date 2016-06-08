@@ -55,7 +55,7 @@ CodeMirror.defineMode("asm", function () {
                 return "keyword";
             }
             if (stream.eatSpace()) return null;
-            if (stream.match(x86_32regName) 
+            if (stream.match(x86_32regName)
                     || stream.match(x86_64regName)
                     || stream.match(x86_xregName)) {
                 return "variable-3";
@@ -79,6 +79,7 @@ CodeMirror.defineMode("asm", function () {
                 stream.eatWhile(/.*/);
                 return "comment";
             }
+            stream.eatWhile(/[^\s]*/);
             return "word";
         }
     };
