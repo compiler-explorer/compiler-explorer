@@ -52,7 +52,11 @@ var env = opts.env || ['dev'];
 var hostname = opts.host || os.hostname();
 var port = opts.port || 10240;
 
-var propHierarchy = ['defaults'].concat(env).concat([language, os.hostname()]);
+var propHierarchy = ['defaults'].concat(env).concat([
+    language,
+    language + '.' + process.platform,
+    process.platform,
+    os.hostname()]);
 
 props.initialize(rootDir + '/config', propHierarchy);
 if (opts.propDebug) props.setDebug(true);
@@ -248,6 +252,7 @@ function configuredCompilers() {
             options: props("options"),
             versionFlag: props("versionFlag"),
             is6g: !!props("is6g", false),
+            isCl: !!props("isCl", false),
             intelAsm: props("intelAsm", ""),
             needsMulti: !!props("needsMulti", true),
             supportsBinary: !!props("supportsBinary", true)
@@ -263,7 +268,6 @@ function getCompilerInfo(compilerInfo) {
         var compiler = compilerInfo.exe;
         var versionFlag = compilerInfo.versionFlag || '--version';
         child_process.exec('"' + compiler + '" ' + versionFlag, function (err, output) {
-console.log(err);
             if (err) return resolve(null);
             compilerInfo.version = output.split('\n')[0];
             if (compilerInfo.intelAsm) {
