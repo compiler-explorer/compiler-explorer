@@ -1,0 +1,22 @@
+[
+  {"text":"maxArray(double*, double*):                        # @maxArray(double*, double*)","source":null},
+  {"text":"        xor     eax, eax","source":1},
+  {"text":".LBB0_1:                                # =>This Inner Loop Header: Depth=1","source":null},
+  {"text":"        movsd   xmm0, qword ptr [rsi + 8*rax]","source":3},
+  {"text":"        ucomisd xmm0, qword ptr [rdi + 8*rax]","source":3},
+  {"text":"        jbe     .LBB0_3","source":3},
+  {"text":"        movsd   qword ptr [rdi + 8*rax], xmm0","source":3},
+  {"text":".LBB0_3:                                #   in Loop: Header=BB0_1 Depth=1","source":null},
+  {"text":"        lea     rcx, qword ptr [rax + 1]","source":2},
+  {"text":"        movsd   xmm0, qword ptr [rsi + 8*rax + 8]","source":3},
+  {"text":"        ucomisd xmm0, qword ptr [rdi + 8*rax + 8]","source":3},
+  {"text":"        jbe     .LBB0_5","source":3},
+  {"text":"        movsd   qword ptr [rdi + 8*rax + 8], xmm0","source":3},
+  {"text":".LBB0_5:                                #   in Loop: Header=BB0_1 Depth=1","source":null},
+  {"text":"        inc     rcx","source":2},
+  {"text":"        cmp     rcx, 65536","source":2},
+  {"text":"        mov     rax, rcx","source":2},
+  {"text":"        jne     .LBB0_1","source":2},
+  {"text":"        ret","source":5},
+  {"text":"","source":null}
+]
