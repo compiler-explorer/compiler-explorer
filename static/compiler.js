@@ -112,6 +112,9 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, lan
         useCPP: true,
         mode: cmMode
     });
+    cppEditor.setOption("extraKeys", {
+      "Alt-F": false
+    });
     cppEditor.on("change", function () {
         if ($('.autocompile').hasClass('active')) {
             onChange();
