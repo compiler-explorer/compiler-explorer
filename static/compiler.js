@@ -112,6 +112,8 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, lan
         useCPP: true,
         mode: cmMode
     });
+    // With reference to "fix typing '#' in emacs mode"
+    // https://github.com/mattgodbolt/gcc-explorer/pull/131
     cppEditor.setOption("extraKeys", {
       "Alt-F": false
     });
