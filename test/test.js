@@ -51,11 +51,7 @@ function assertEq(a, b, context) {
 
 function bless(filename, output, filters) {
     var result = processAsm(filename, filters);
-    var f = fs.openSync(output, 'w');
-    for (var i = 0; i < result.length; ++i) {
-        fs.writeSync(f, JSON.stringify(result[i]) + "\n");
-    }
-    fs.closeSync(f);
+    fs.writeFileSync(output, JSON.stringify(result));
 }
 
 function testFilter(filename, suffix, filters) {
@@ -66,7 +62,8 @@ function testFilter(filename, suffix, filters) {
     try {
         file = fs.readFileSync(expected + '.json', 'utf-8');
         json = true;
-    } catch (e) { }
+    } catch (e) {
+    }
     if (!file) {
         try {
             file = fs.readFileSync(expected, 'utf-8');
@@ -96,11 +93,9 @@ function testFilter(filename, suffix, filters) {
     }
 }
 
-// bless("cases/clang-maxArray.asm", "/tmp/out", {directives: true, labels: true, commentOnly: true});
+// bless("cases/cl-regex.asm", "cases/cl-regex.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
+// bless("cases/cl-regex.asm", "cases/cl-regex.asm.dlcb.json", {directives: true, labels: true, commentOnly: true, binary:true});
 
-cases.forEach(function (x) {
-    testFilter(x, "", {})
-});
 cases.forEach(function (x) {
     testFilter(x, ".directives", {directives: true})
 });
@@ -111,6 +106,10 @@ cases.forEach(function (x) {
 cases.forEach(function (x) {
     testFilter(x, ".directives.labels.comments",
         {directives: true, labels: true, commentOnly: true})
+});
+cases.forEach(function (x) {
+    testFilter(x, ".dlcb",
+        {directives: true, labels: true, commentOnly: true, binary: true})
 });
 
 if (failures) {
