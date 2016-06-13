@@ -1,14 +1,14 @@
 [
   {
-    "text": "    self_regex$ = 32",
+    "text": "self_regex$ = 32",
     "source": null
   },
   {
-    "text": "    s$ = 72",
+    "text": "s$ = 72",
     "source": null
   },
   {
-    "text": "    regexTest PROC",
+    "text": "regexTest PROC",
     "source": null
   },
   {
@@ -307,7 +307,7 @@
     "address": 108
   },
   {
-    "text": "    regexTest ENDP",
+    "text": "regexTest ENDP",
     "source": null
   },
   {
