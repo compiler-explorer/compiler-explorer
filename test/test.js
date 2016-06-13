@@ -51,7 +51,7 @@ function assertEq(a, b, context) {
 
 function bless(filename, output, filters) {
     var result = processAsm(filename, filters);
-    fs.writeFileSync(output, JSON.stringify(result));
+    fs.writeFileSync(output, JSON.stringify(result, null, 2));
 }
 
 function testFilter(filename, suffix, filters) {
