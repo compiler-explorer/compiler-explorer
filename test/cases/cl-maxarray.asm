@@ -8,7 +8,7 @@ INCLUDELIB OLDNAMES
 PUBLIC	?maxArray@@YAXPEAN0@Z				; maxArray
 EXTRN	_fltused:DWORD
 ; Function compile flags: /Ogtpy
-; File c:\users\administrator\maxarray.cc
+; File c:\users\administrator\gcc-explorer-compiler1234\maxarray.cc
 _TEXT	SEGMENT
 x$ = 8
 y$ = 16
