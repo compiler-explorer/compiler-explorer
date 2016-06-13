@@ -16,7 +16,7 @@
     "source": null
   },
   {
-    "text": "    sub  rsp, 120   ; 00000078H",
+    "text": "  sub    rsp, 120       ; 00000078H",
     "source": 5
   },
   {
@@ -24,15 +24,15 @@
     "source": null
   },
   {
-    "text": "    mov  rax, QWORD PTR __security_cookie",
+    "text": "  mov    rax, QWORD PTR __security_cookie",
     "source": 5
   },
   {
-    "text": "    xor  rax, rsp",
+    "text": "  xor    rax, rsp",
     "source": 5
   },
   {
-    "text": "    mov  QWORD PTR __$ArrayPad$[rsp], rax",
+    "text": "  mov    QWORD PTR __$ArrayPad$[rsp], rax",
     "source": 5
   },
   {
@@ -40,15 +40,15 @@
     "source": null
   },
   {
-    "text": "    lea  rdx, OFFSET FLAT:$SG44257",
+    "text": "  lea    rdx, OFFSET FLAT:$SG44257",
     "source": 6
   },
   {
-    "text": "    lea  rcx, QWORD PTR s$[rsp]",
+    "text": "  lea    rcx, QWORD PTR s$[rsp]",
     "source": 6
   },
   {
-    "text": "    call         std::basic_string<char,std::char_traits<char>,std::allocator<char> >::basic_string<char,std::char_traits<char>,std::allocator<char> >",
+    "text": "  call   std::basic_string<char,std::char_traits<char>,std::allocator<char> >::basic_string<char,std::char_traits<char>,std::allocator<char> >",
     "source": 6
   },
   {
@@ -56,35 +56,19 @@
     "source": null
   },
   {
-    "text": "    mov  edx, 256   ; 00000100H",
+    "text": "  mov    edx, 256       ; 00000100H",
     "source": 9
   },
   {
-    "text": "    mov  ecx, 1",
+    "text": "  mov    ecx, 1",
     "source": 9
   },
   {
-    "text": "    call         std::regex_constants::operator|",
+    "text": "  call   std::regex_constants::operator|",
     "source": 9
   },
   {
-    "text": "    mov  r8d, eax",
-    "source": 9
-  },
-  {
-    "text": "",
-    "source": null
-  },
-  {
-    "text": "    lea  rdx, OFFSET FLAT:$SG44258",
-    "source": 9
-  },
-  {
-    "text": "    lea  rcx, QWORD PTR self_regex$[rsp]",
-    "source": 9
-  },
-  {
-    "text": "    call         std::basic_regex<char,std::regex_traits<char> >::basic_regex<char,std::regex_traits<char> >",
+    "text": "  mov    r8d, eax",
     "source": 9
   },
   {
@@ -92,39 +76,55 @@
     "source": null
   },
   {
-    "text": "    lea  rcx, QWORD PTR self_regex$[rsp]",
+    "text": "  lea    rdx, OFFSET FLAT:$SG44258",
+    "source": 9
+  },
+  {
+    "text": "  lea    rcx, QWORD PTR self_regex$[rsp]",
+    "source": 9
+  },
+  {
+    "text": "  call   std::basic_regex<char,std::regex_traits<char> >::basic_regex<char,std::regex_traits<char> >",
+    "source": 9
+  },
+  {
+    "text": "",
+    "source": null
+  },
+  {
+    "text": "  lea    rcx, QWORD PTR self_regex$[rsp]",
     "source": 11
   },
   {
-    "text": "    call         std::basic_regex<char,std::regex_traits<char> >::~basic_regex<char,std::regex_traits<char> >",
+    "text": "  call   std::basic_regex<char,std::regex_traits<char> >::~basic_regex<char,std::regex_traits<char> >",
     "source": 11
   },
   {
-    "text": "    lea  rcx, QWORD PTR s$[rsp]",
+    "text": "  lea    rcx, QWORD PTR s$[rsp]",
     "source": 11
   },
   {
-    "text": "    call         std::basic_string<char,std::char_traits<char>,std::allocator<char> >::~basic_string<char,std::char_traits<char>,std::allocator<char> >",
+    "text": "  call   std::basic_string<char,std::char_traits<char>,std::allocator<char> >::~basic_string<char,std::char_traits<char>,std::allocator<char> >",
     "source": 11
   },
   {
-    "text": "    mov  rcx, QWORD PTR __$ArrayPad$[rsp]",
+    "text": "  mov    rcx, QWORD PTR __$ArrayPad$[rsp]",
     "source": 11
   },
   {
-    "text": "    xor  rcx, rsp",
+    "text": "  xor    rcx, rsp",
     "source": 11
   },
   {
-    "text": "    call         __security_check_cookie",
+    "text": "  call   __security_check_cookie",
     "source": 11
   },
   {
-    "text": "    rsp, 120            ; 00000078H",
+    "text": "  rsp, 120          ; 00000078H",
     "source": 11
   },
   {
-    "text": "    ret  0",
+    "text": "  ret    0",
     "source": 11
   },
   {
