@@ -12,7 +12,11 @@ int testFunction(int* input, int length) {
     || __has_builtin(__builtin_assume_aligned)
   input = static_cast<int*>(__builtin_assume_aligned(input, 64));
 #endif
+#if _MSC_VER
+  __assume((length & 63) == 0);
+#else
   if (length & 63) __builtin_unreachable();
+#endif
   int sum = 0;
   for (int i = 0; i < length; ++i) {
     sum += input[i];
