@@ -35,7 +35,9 @@ var nopt = require('nopt'),
     http = require('http'),
     https = require('https'),
     url = require('url'),
-    Promise = require('promise');
+    Promise = require('promise'),
+    aws = require('./lib/aws'),
+    _ = require('underscore');
 
 var opts = nopt({
     'env': [String, Array],
@@ -72,6 +74,13 @@ function compilerProps(property, defaultValue) {
 }
 require('./lib/compile').initialise(gccProps, compilerProps);
 var staticMaxAgeMs = gccProps('staticMaxAgeMs', 0);
+
+var awsProps = props.propsFor("aws");
+var awsPoller = null;
+function awsInstances() {
+    if (!awsPoller) awsPoller = new aws.InstanceFetcher(awsProps);
+    return awsPoller.getInstances();
+}
 
 function loadSources() {
     var sourcesDir = "lib/sources";
@@ -206,40 +215,64 @@ function configuredCompilers() {
         });
         exes.push.apply(exes, toolchains);
     }
-    // Map any named compilers to their executable
+
+    function fetchRemote(host, port) {
+        console.log("Fetching compilers from remote source " + host + ":" + port);
+        return retryPromise(function () {
+                return new Promise(function (resolve, reject) {
+                    var request = http.get({
+                        hostname: host,
+                        port: port,
+                        path: "/api/compilers"
+                    }, function (res) {
+                        var str = '';
+                        res.on('data', function (chunk) {
+                            str += chunk;
+                        });
+                        res.on('end', function () {
+                            var compilers = JSON.parse(str).map(function (compiler) {
+                                compiler.exe = null;
+                                compiler.remote = "http://" + host + ":" + port;
+                                return compiler;
+                            });
+                            resolve(compilers);
+                        });
+                    }).on('error', function (e) {
+                        reject(e);
+                    }).on('timeout', function () {
+                        reject("timeout");
+                    });
+                    request.setTimeout(1000);
+                });
+            },
+            host + ":" + port,
+            gccProps('proxyRetries', 20),
+            gccProps('proxyRetryMs', 500));
+    }
+
+    function fetchAws() {
+        console.log("Fetching instances from AWS");
+        return awsInstances().then(function (instances) {
+            return Promise.all(instances.map(function (instance) {
+                console.log("Checking instance " + instance.InstanceId);
+                var address = instance.PrivateDnsName;
+                if (awsProps("externalTestMode", false)) {
+                    address = instance.PublicDnsName;
+                }
+                return fetchRemote(address, port);
+            }));
+        });
+    }
+
     return Promise.all(exes.map(function (name) {
         if (name.indexOf("@") !== -1) {
             var bits = name.split("@");
             var host = bits[0];
             var port = parseInt(bits[1]);
-            console.log("Fetching compilers from remote source " + host + ":" + port);
-            return retryPromise(function () {
-                    return new Promise(function (resolve, reject) {
-                        http.get({
-                            hostname: host,
-                            port: port,
-                            path: "/api/compilers"
-                        }, function (res) {
-                            var str = '';
-                            res.on('data', function (chunk) {
-                                str += chunk;
-                            });
-                            res.on('end', function () {
-                                var compilers = JSON.parse(str).map(function (compiler) {
-                                    compiler.exe = null;
-                                    compiler.remote = "http://" + host + ":" + port;
-                                    return compiler;
-                                });
-                                resolve(compilers);
-                            });
-                        }).on('error', function (e) {
-                            reject(e);
-                        });
-                    });
-                },
-                host + ":" + port,
-                gccProps('proxyRetries', 20),
-                gccProps('proxyRetryMs', 500));
+            return fetchRemote(host, port);
+        }
+        if (name == "AWS") {
+            return fetchAws();
         }
         var base = "compiler." + name;
         var exe = compilerProps(base + ".exe", "");
@@ -263,11 +296,11 @@ function configuredCompilers() {
             needsMulti: !!props("needsMulti", true),
             supportsBinary: !!props("supportsBinary", true)
         });
-    }));
+    })).then(_.flatten);
 }
 
 function getCompilerInfo(compilerInfo) {
-    if (Array.isArray(compilerInfo)) {
+    if (compilerInfo.remote) {
         return Promise.resolve(compilerInfo);
     }
     return new Promise(function (resolve) {
@@ -304,7 +337,6 @@ function findCompilers() {
             return Promise.all(compilers.map(getCompilerInfo));
         })
         .then(function (compilers) {
-            compilers = Array.prototype.concat.apply([], compilers);
             compilers = compilers.filter(function (x) {
                 return x !== null;
             });
@@ -399,7 +431,7 @@ findCompilers().then(function (compilers) {
     var rescanCompilerSecs = gccProps('rescanCompilerSecs', 0);
     if (rescanCompilerSecs) {
         console.log("Rescanning compilers every " + rescanCompilerSecs + "secs");
-        setTimeout(function () {
+        setInterval(function () {
             findCompilers().then(onCompilerChange);
         }, rescanCompilerSecs * 1000);
     }
