@@ -24,6 +24,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 // POSSIBILITY OF SUCH DAMAGE.
 
+// load external libraries (will load internal binaries later)
 var nopt = require('nopt'),
     os = require('os'),
     props = require('./lib/properties'),
@@ -37,6 +38,7 @@ var nopt = require('nopt'),
     url = require('url'),
     Promise = require('promise');
 
+// Parse arguments from command line 'node ./app.js args...'
 var opts = nopt({
     'env': [String, Array],
     'rootDir': [String],
@@ -46,6 +48,7 @@ var opts = nopt({
     'propDebug': [Boolean]
 });
 
+// Set default values for ommited arguments
 var rootDir = opts.rootDir || './etc';
 var language = opts.language || "C++";
 var env = opts.env || ['dev'];
@@ -53,22 +56,33 @@ var hostname = opts.host || os.hostname();
 var port = opts.port || 10240;
 
 var propHierarchy = ['defaults'].concat(env).concat([language, os.hostname()]);
-console.log("propHierarchy =" + propHierarchy)
+console.log("properties hierarchy: " + propHierarchy)
 
-props.initialize(rootDir + '/config', propHierarchy);
-props.debug_show_properties()
+// Propagate debug mode if need be
 if (opts.propDebug) props.setDebug(true);
+
+// *All* files in config dir are parsed 
+props.initialize(rootDir + '/config', propHierarchy);
+
+// Instantiate a function to access records concerning "gcc-explorer" 
+// in hidden object props.properties
 var gccProps = props.propsFor("gcc-explorer");
+
+// Instantiate a function to access records concerning the chosen language
+// in hidden object props.properties
 var compilerPropsFunc = props.propsFor(language.toLowerCase());
+
+// If no option for the compiler ... use gcc's options (??)
 function compilerProps(property, defaultValue) {
-    // My kingdom for ccs...
+    // My kingdom for ccs... [see Matt's github page]
     var forCompiler = compilerPropsFunc(property, undefined);
     if (forCompiler !== undefined) return forCompiler;
-    return gccProps(property, defaultValue);
+    return gccProps(property, defaultValue); // gccProps comes from lib/compile.js
 }
 require('./lib/compile').initialise(gccProps, compilerProps);
 var staticMaxAgeMs = gccProps('staticMaxAgeMs', 0);
 
+// load internal binaries (i.e. lib/source/*.js)
 function loadSources() {
     var sourcesDir = "lib/sources";
     var sources = fs.readdirSync(sourcesDir)
