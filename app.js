@@ -24,7 +24,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 // POSSIBILITY OF SUCH DAMAGE.
 
-// load external libraries (will load internal binaries later)
+// load external and internal libraries (will load more internal binaries later)
 var nopt = require('nopt'),
     os = require('os'),
     props = require('./lib/properties'),
@@ -209,6 +209,7 @@ function retryPromise(promiseFunc, name, maxFails, retryMs) {
     });
 }
 
+// Auxiliary function to findCompilers()
 function configuredCompilers() {
     // read config (file already read) (':' are used to separate compilers names)
     var exes = compilerProps("compilers", "/usr/bin/g++").split(":");
@@ -290,6 +291,7 @@ function configuredCompilers() {
     }));
 }
 
+// Auxiliary function to findCompilers()
 function getCompilerInfo(compilerInfo) {
     if (Array.isArray(compilerInfo)) {
         return Promise.resolve(compilerInfo);
@@ -349,6 +351,8 @@ function findCompilers() {
         });
 }
 
+// Instantiate a function that write informations on compiler,
+// in JSON format (on which page ?)
 function apiHandler(compilers) {
     var reply = JSON.stringify(compilers);
     return function apiHandler(req, res, next) {
