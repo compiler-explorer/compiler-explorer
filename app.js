@@ -53,8 +53,10 @@ var hostname = opts.host || os.hostname();
 var port = opts.port || 10240;
 
 var propHierarchy = ['defaults'].concat(env).concat([language, os.hostname()]);
+console.log("propHierarchy =" + propHierarchy)
 
 props.initialize(rootDir + '/config', propHierarchy);
+props.debug_show_properties()
 if (opts.propDebug) props.setDebug(true);
 var gccProps = props.propsFor("gcc-explorer");
 var compilerPropsFunc = props.propsFor(language.toLowerCase());
