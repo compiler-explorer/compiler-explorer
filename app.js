@@ -58,6 +58,13 @@ var port = opts.port || 10240;
 var propHierarchy = ['defaults'].concat(env).concat([language, os.hostname()]);
 console.log("properties hierarchy: " + propHierarchy)
 
+// Define an ugly debug function
+function debug_show_variable(variable_string_name) {
+    if (opts.propDebug) {
+        console.log("DEBUG:" + variable_string_name +" has value " + JSON.stringify(eval(variable_string_name)))
+    }
+}
+
 // Propagate debug mode if need be
 if (opts.propDebug) props.setDebug(true);
 
@@ -82,7 +89,7 @@ function compilerProps(property, defaultValue) {
 require('./lib/compile').initialise(gccProps, compilerProps);
 var staticMaxAgeMs = gccProps('staticMaxAgeMs', 0);
 
-// load internal binaries (i.e. lib/source/*.js)
+// function to load internal binaries (i.e. lib/source/*.js)
 function loadSources() {
     var sourcesDir = "lib/sources";
     var sources = fs.readdirSync(sourcesDir)
@@ -95,12 +102,16 @@ function loadSources() {
     return sources;
 }
 
+// load effectively
 var fileSources = loadSources();
 var sourceToHandler = {};
 fileSources.forEach(function (source) {
     sourceToHandler[source.urlpart] = source;
 });
 
+debug_show_variable("sourceToHandler")
+
+// auxiliary function used in clientOptionsHandler
 function compareOn(key) {
     return function (xObj, yObj) {
         var x = xObj[key];
@@ -111,10 +122,15 @@ function compareOn(key) {
     };
 }
 
+// instantiate a function that generate javascript code,
+// this code will be embedded gcc-explorer-website/client-options.js
 function clientOptionsHandler(compilers, fileSources) {
     var sources = fileSources.map(function (source) {
         return {name: source.name, urlpart: source.urlpart};
     });
+    // debug_show_variable("sources")
+    console.log("sources: " + JSON.stringify(sources)); // debug
+    // sort source file alphabetically
     sources = sources.sort(compareOn("name"));
     var options = {
         google_analytics_account: gccProps('clientGoogleAnalyticsAccount', 'UA-55180-6'),
@@ -141,7 +157,9 @@ function clientOptionsHandler(compilers, fileSources) {
     };
 }
 
+// function used to enable loading and saving source code from web interface
 function getSource(req, res, next) {
+    //debug_show_variable("req");
     var bits = req.url.split("/");
     var handler = sourceToHandler[bits[1]];
     if (!handler) {
@@ -192,6 +210,7 @@ function retryPromise(promiseFunc, name, maxFails, retryMs) {
 }
 
 function configuredCompilers() {
+    // read config (file already read) (':' are used to separate compilers names)
     var exes = compilerProps("compilers", "/usr/bin/g++").split(":");
     var ndk = compilerProps('androidNdk');
     if (ndk) {
@@ -278,12 +297,16 @@ function getCompilerInfo(compilerInfo) {
     return new Promise(function (resolve) {
         var compiler = compilerInfo.exe;
         var versionFlag = compilerInfo.versionFlag || '--version';
+        // fill field compilerInfo.version,
+        // assuming the compiler returns it's version on 1 line
         child_process.exec(compiler + ' ' + versionFlag, function (err, output) {
             if (err) return resolve(null);
             compilerInfo.version = output.split('\n')[0];
             if (compilerInfo.intelAsm) {
                 return resolve(compilerInfo);
             }
+
+            // get informations on the compiler's options
             child_process.exec(compiler + ' --target-help', function (err, output) {
                 var options = {};
                 if (!err) {
@@ -297,6 +320,10 @@ function getCompilerInfo(compilerInfo) {
                 if (options['-masm']) {
                     compilerInfo.intelAsm = "-masm=intel";
                 }
+
+                // debug (seems to be displayed multiple times):
+                if (opts.propDebug) console.log("compiler options: "+ JSON.stringify(options,null,4));
+
                 resolve(compilerInfo);
             });
         });
