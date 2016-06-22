@@ -427,7 +427,7 @@ findCompilers().then(function (compilers) {
         .use('/source', getSource)
         .use('/api', apiHandler(compilers))
         .use('/g', shortUrlHandler)
-        .post('/compile', compileHandler(compilers));
+        .post('/compile', compileHandler(compilers)); // used inside static/compiler.js
 
     // GO!
     console.log("=======================================");

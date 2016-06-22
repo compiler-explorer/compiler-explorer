@@ -65,7 +65,11 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, lan
 
     var cppEditor = null;
 
-    var lastRequest = null; // not slot depedant but editor dependant
+    // may be seen as slot dependant... or not !
+    var lastRequest = [];
+    for (var i = 0; i<slotsCount; i++) {
+        lastRequest.push(null);
+    }
 
     var currentAssembly = [];
     for (var i = 0; i<slotsCount; i++) {
@@ -188,13 +192,22 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, lan
 
     var errorWidgets = [];
 
+    function echo_to_out(out,msg) {
+        out += msg;
+    }
+
     function onCompileResponse(request, data) {
+        console.log("In onCompileResponse, seen slot = " + request.slot);
         var stdout = data.stdout || "";
         var stderr = data.stderr || "";
         if (data.code === 0) {
-            stdout += "\nCompiled ok";
+            //echo_to_out(stdout,"\nCompiled ok in slot " + slot); // does not seem to work
+            //stdout += "\nCompiled ok in slot " + slot;
+            stdout += "Compiled ok in slot " + request.slot + "\n";
         } else {
-            stderr += "\nCompilation failed";
+            //echo_to_out(stderr,"\nCompilation failed in slot " + slot); // does not seem to work
+            //stderr += "\nCompilation failed in slot " + slot;
+            stderr += "Compilation failed in slot " + request.slot + "\n";
         }
         if (_gaq) {
             // to be modified
@@ -213,7 +226,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, lan
                 msg = "Too many output lines...truncated";
             }
             numLines++;
-            var elem = $('.result .output .template').clone().appendTo('.result .output').removeClass('template');
+            var elem = $('.result .output'+request.slot+' .template').clone().appendTo('.result .output'+request.slot).removeClass('template');
             if (lineNum) {
                 errorWidgets.push(cppEditor.addLineWidget(lineNum - 1, makeErrNode(msg), {
                     coverGutter: false, noHScroll: true
@@ -226,10 +239,10 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, lan
                 elem.text(msg);
             }
         });
-        for (var i = 0; i < slotsCount; i++) {
-            currentAssembly[i] = data.asm || fakeAsm("[no output]");
-            updateAsm(i);
-        }
+        //for (var i = 0; i < slotsCount; i++) {
+            currentAssembly[request.slot] = data.asm || fakeAsm("[no output]");
+            updateAsm(request.slot);
+        //}
     }
 
     function numberUsedLines(asm) {
@@ -360,33 +373,39 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, lan
 
         console.log("Setting time out");
         pendingTimeout = setTimeout(function () {
-            var data = {
-                source: cppEditor.getValue(),
-                compiler: currentCompilerId(),
-                options: $('.compiler_options').val(),
-                filters: currentFilters()
-            };
-            setSetting('compiler', data.compiler);
-            setSetting('compilerOptions', data.options);
-            var stringifiedReq = JSON.stringify(data);
-            if (stringifiedReq == lastRequest) return;
-            lastRequest = stringifiedReq;
-            data.timestamp = new Date();
-            console.log("Timed out !");
-            $.ajax({
-                type: 'POST',
-                url: '/compile',
-                dataType: 'json',
-                contentType: 'application/json',
-                data: JSON.stringify(data),
-                success: function (result) {
-                    onCompileResponse(data, result);
-                }
-            });
+            console.log("Timed out ! Compiling for " + slotsCount + " slots...");
             for (var i = 0; i < slotsCount; i++) {
+                console.log("Compiling for slot " + i + "...");
                 (function(slot) {
-                    currentAssembly[slot] = fakeAsm("[Processing...]");
-                    updateAsm(slot);
+                    var data = {
+                        slot: slot, // TO DECIDE : probably better not put it here
+                        source: cppEditor.getValue(),
+                        compiler: currentCompilerId(),
+                        options: $('.compiler_options').val(),
+                        filters: currentFilters()
+                    };
+                    setSetting('compiler', data.compiler);
+                    setSetting('compilerOptions', data.options);
+                    var stringifiedReq = JSON.stringify(data);
+                    if (stringifiedReq == lastRequest) return;
+                    lastRequest[slot] = stringifiedReq;
+                    data.timestamp = new Date();
+                    $.ajax({
+                        type: 'POST',
+                        url: '/compile',
+                        dataType: 'json',
+                        contentType: 'application/json',
+                        data: JSON.stringify(data),
+                        success: function (result) {
+                            onCompileResponse(data, result);
+                        },
+                        error: function (xhr, e_status, error) {
+                            console.log("ajax request failed, reason : " + error);
+                        },
+                        cache: false
+                    });
+                    currentassembly[slot] = fakeasm("[processing...]");
+                    updateasm(slot);
                 }) (i);
             }
         }, 750); // Time in ms after which action is taken (if inactivity)
