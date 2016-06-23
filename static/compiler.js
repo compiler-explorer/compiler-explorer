@@ -47,7 +47,7 @@ function clearBackground(cm) {
 const NumRainbowColours = 12;
 
 // This function is called in function initialise in static/gcc.js
-function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, lang) {
+function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallback, lang) {
     console.log("Entering in function Compiler()");
     var slotsCount = 2;
     var slotsClassName = ["asm0", "asm1"];
@@ -77,7 +77,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, lan
     }
 
     var filters_ = $.extend({}, origFilters);
-    var ignoreChanges = true; // Horrible hack to avoid onChange doing anything on first starting, ie before we've set anything up.
+    var ignoreChanges = true; // Horrible hack to avoid onEditorChange doing anything on first starting, ie before we've set anything up.
 
     // to be modified
     function setCompilerById(id) {
@@ -98,7 +98,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, lan
 
     $('.autocompile').click(function () {
         $('.autocompile').toggleClass('active');
-        onChange();
+        onEditorChange();
         setSetting('autocompile', $('.autocompile').hasClass('active'));
     });
     $('.autocompile').toggleClass('active', getSetting("autocompile") !== "false");
@@ -145,7 +145,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, lan
     });
     cppEditor.on("change", function () {
         if ($('.autocompile').hasClass('active')) {
-            onChange();
+            onEditorChange();
         }
     });
 
@@ -172,7 +172,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, lan
     if (codeText) cppEditor.setValue(codeText);
 
     // to be modified
-    domRoot.find('.compiler_options').change(onChange).keyup(onChange);
+    domRoot.find('.compiler_options').change(onParamChange).keyup(onParamChange);
     ignoreChanges = false;
 
 
@@ -197,7 +197,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, lan
     }
 
     function onCompileResponse(request, data) {
-        console.log("In onCompileResponse, seen slot = " + request.slot);
+        //console.log("In onCompileResponse, seen slot = " + request.slot);
         var stdout = data.stdout || "";
         var stderr = data.stderr || "";
         if (data.code === 0) {
@@ -267,7 +267,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, lan
     }
 
     function updateAsm(slot,forceUpdate) {
-        console.log("In updateAsm, slot = " + slot + ",asmCodeMirrors = " + asmCodeMirrors[slot] + "forceUpdate = " + forceUpdate);
+        //console.log("In updateAsm, slot = " + slot + ",asmCodeMirrors = " + asmCodeMirrors[slot] + "forceUpdate = " + forceUpdate);
         if (!currentAssembly[slot]) return;
         var hashedUpdate = JSON.stringify(currentAssembly[slot]);
         // TODO : real hash here ?
@@ -364,7 +364,61 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, lan
         return [{text: text, source: null}];
     }
 
-    function onChange() {
+    function onParamChange() { // TODO : refactor with onEditorChange : those functions will call updateSlot(slot)
+        console.log("[CHANGE] in params");
+        if (ignoreChanges) return;  // Ugly hack during startup.
+        if (pendingTimeout) {
+            console.log("Clearing time out");
+            clearTimeout(pendingTimeout);
+        }
+
+        console.log("Setting time out");
+        pendingTimeout = setTimeout(function () {
+            console.log("Timed out !");
+            for (var i = 0; i < slotsCount; i++) {
+                console.log("Compilation in slot " + i + " triggered by modification in compiler parameters...");
+                (function(slot) {
+                    var data = {
+                        slot: slot, // TO DECIDE : probably better not put it here
+                        source: cppEditor.getValue(),
+                        compiler: currentCompilerId(),
+                        options: $('.compiler_options').val(),
+                        filters: currentFilters()
+                    };
+                    setSetting('compiler', data.compiler);
+                    setSetting('compilerOptions', data.options);
+                    var stringifiedReq = JSON.stringify(data);
+                    if (stringifiedReq == lastRequest[slot]) return;
+                    lastRequest[slot] = stringifiedReq;
+                    data.timestamp = new Date();
+                    $.ajax({
+                        type: 'POST',
+                        url: '/compile',
+                        dataType: 'json',
+                        contentType: 'application/json',
+                        data: JSON.stringify(data),
+                        success: function (result) {
+                            onCompileResponse(data, result);
+                        },
+                        error: function (xhr, e_status, error) {
+                            console.log("AJAX request failed, reason : " + error);
+                        },
+                        cache: false
+                    });
+                    currentAssembly[slot] = fakeAsm("[Processing...]");
+                    updateAsm(slot);
+                    setSetting('code', cppEditor.getValue());
+                    updateAsm(slot);
+                }) (i);
+            }
+        }, 750); // Time in ms after which action is taken (if inactivity)
+
+        // (maybe redundant) execute the callback passed to Compiler()
+        onEditorChangeCallback();
+    }
+
+    function onEditorChange() {
+        console.log("[CHANGE] in editor");
         if (ignoreChanges) return;  // Ugly hack during startup.
         if (pendingTimeout) {
             console.log("Clearing time out");
@@ -416,7 +470,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, lan
             }) (i);
         }
         // execute the callback passed to Compiler()
-        onChangeCallback();
+        onEditorChangeCallback();
     }
 
     function setSource(code) {
@@ -470,7 +524,8 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, lan
     }
 
     function onCompilerChange() {
-        onChange();
+        //onEditorChange();
+        onParamChange();
         updateCompilerAndButtons();
     }
 
@@ -514,7 +569,8 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, lan
 
     function setFilters(f) {
         filters_ = $.extend({}, f);
-        onChange();
+        //onEditorChange();
+        onParamChange();
         updateCompilerAndButtons();
     }
 
