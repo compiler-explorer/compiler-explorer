@@ -53,9 +53,105 @@
                          }(document, 'flattr_button'));
                 }
             }, 0);
+
+            /* to handle tabs, source : http://inspirationalpixels.com/tutorials/creating-tabs-with-html-css-and-jquery */
+            $(document).ready(function() {
+                    $('.tabs .tab-links a').on('click', function(e)  {
+                        var currentAttrValue = $(this).attr('href');
+
+                        // Show/Hide Tabs
+                        $('.tabs ' + currentAttrValue).show().siblings().hide();
+
+                        // Change/remove current tab to active
+                        $(this).parent('li').addClass('active').siblings().removeClass('active');
+
+                        e.preventDefault();
+                        });
+                    });
         </script>
     </head>
     <body>
+    <div class="tabs">
+        <ul class="tab-links">
+            <li class="active"><a href="#tab0">Slot #0</a></li>
+            <li><a href="#tab1">Slot #1</a></li>
+        </ul>
+
+        <div class="tab-content">
+            <div id="tab0" class="tab active">
+                <div class="col-md-7" id="params0">
+                    <form class="well form-inline">
+                        <p> Params 0 </p>
+                        <table>
+                            <tbody>
+                            <tr>
+                                <td class="dropdown compilers-container">
+                                    <button accesskey="c" type="button" title="Compiler to use (alt-C)" class="btn btn-default dropdown-toggle" data-toggle="dropdown"
+                                            aria-haspopup="true" aria-expanded="true">
+                                        <span class="compiler">g++</span>
+                                        <span class="caret"></span>
+                                    </button>
+                                    <ul class="dropdown-menu compilers">
+                                    </ul>
+                                </td>
+                                <td>
+                                    <input accesskey="o" title="Options to pass to compiler (alt-O)" class="compiler_options" placeholder="compiler options" type="text" value="" size="256">
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                        <div class="btn-group btn-group-sm filter">
+                            <!--
+                            <button class="btn btn-sm" type="button"
+                                    title="Colourise lines so one can see how the source maps to the output"
+                                    value="colouriseAsm">Colourise
+                            </button>
+                            -->
+                        </div>
+                    </form>
+                </div>
+            <!--
+                <p>Tab #0 content goes here!</p>
+                <p>Donec pulvinar neque sed semper lacinia. Curabitur lacinia ullamcorper nibh; quis imperdiet velit eleifend ac. Donec blandit mauris eget aliquet lacinia! Donec pulvinar massa interdum risus ornare mollis.</p>
+            -->
+            </div>
+
+            <div id="tab1" class="tab">
+            <div class="col-md-7" id="params1"> <!--  begining of a horrible copy pasta -->
+                <form class="well form-inline">
+                    <p> Params 1 </p>
+                    <table>
+                        <tbody>
+                        <tr>
+                            <td class="dropdown compilers-container">
+                                <button accesskey="c" type="button" title="Compiler to use (alt-C)" class="btn btn-default dropdown-toggle" data-toggle="dropdown"
+                                        aria-haspopup="true" aria-expanded="true">
+                                    <span class="compiler">g++</span>
+                                    <span class="caret"></span>
+                                </button>
+                                <ul class="dropdown-menu compilers">
+                                </ul>
+                            </td>
+                            <td>
+                                <input accesskey="o" title="Options to pass to compiler (alt-O)" class="compiler_options" placeholder="compiler options" type="text" value="" size="256">
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <div class="btn-group btn-group-sm filter">
+                        <!--
+                        <button class="btn btn-sm" type="button"
+                                title="Colourise lines so one can see how the source maps to the output"
+                                value="colouriseAsm">Colourise
+                        </button>
+                        -->
+                    </div>
+                </form>
+            </div> <!--  end of horrible copy pasta -->
+            </div>
+
+        </div>
+    </div>
     <div class="navbar-nav navbar-inverse navbar-fixed-top">
         <div class="container-fluid">
             <div class="navbar-header">
@@ -156,68 +252,6 @@
                     </div>
                 </form>
             </div>
-            <div class="col-md-7" id="params0">
-                <form class="well form-inline">
-                    <p> Params 0 </p>
-                    <table>
-                        <tbody>
-                        <tr>
-                            <td class="dropdown compilers-container">
-                                <button accesskey="c" type="button" title="Compiler to use (alt-C)" class="btn btn-default dropdown-toggle" data-toggle="dropdown"
-                                        aria-haspopup="true" aria-expanded="true">
-                                    <span class="compiler">g++</span>
-                                    <span class="caret"></span>
-                                </button>
-                                <ul class="dropdown-menu compilers">
-                                </ul>
-                            </td>
-                            <td>
-                                <input accesskey="o" title="Options to pass to compiler (alt-O)" class="compiler_options" placeholder="compiler options" type="text" value="" size="256">
-                            </td>
-                        </tr>
-                        </tbody>
-                    </table>
-                    <div class="btn-group btn-group-sm filter">
-                        <!--
-                        <button class="btn btn-sm" type="button"
-                                title="Colourise lines so one can see how the source maps to the output"
-                                value="colouriseAsm">Colourise
-                        </button>
-                        -->
-                    </div>
-                </form>
-            </div>
-            <div class="col-md-7" id="params1"> <!--  begining of a horrible copy pasta -->
-                <form class="well form-inline">
-                    <p> Params 1 </p>
-                    <table>
-                        <tbody>
-                        <tr>
-                            <td class="dropdown compilers-container">
-                                <button accesskey="c" type="button" title="Compiler to use (alt-C)" class="btn btn-default dropdown-toggle" data-toggle="dropdown"
-                                        aria-haspopup="true" aria-expanded="true">
-                                    <span class="compiler">g++</span>
-                                    <span class="caret"></span>
-                                </button>
-                                <ul class="dropdown-menu compilers">
-                                </ul>
-                            </td>
-                            <td>
-                                <input accesskey="o" title="Options to pass to compiler (alt-O)" class="compiler_options" placeholder="compiler options" type="text" value="" size="256">
-                            </td>
-                        </tr>
-                        </tbody>
-                    </table>
-                    <div class="btn-group btn-group-sm filter">
-                        <!--
-                        <button class="btn btn-sm" type="button"
-                                title="Colourise lines so one can see how the source maps to the output"
-                                value="colouriseAsm">Colourise
-                        </button>
-                        -->
-                    </div>
-                </form>
-            </div> <!--  end of horrible copy pasta -->
         </div>
         <div class="row">
             <div class="col-md-6 editor">
