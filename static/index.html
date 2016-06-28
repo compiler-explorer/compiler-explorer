@@ -98,6 +98,7 @@
     <div class="row">
         <div class="col-md-6">
             <section id="main" class="container-fluid">
+                <div id="commonParams">
                         <form class="well form-inline files">
                             <div>
                                 <label>Source: <select class="source"></select></label>
@@ -134,7 +135,10 @@
                                 </button>
                             </div>
                             <div>
-                                <td class="dropdown slots-numbers-container">
+                                <table>
+                                    <tbody>
+                                    <tr>
+                                <td class="dropdown compiler-container">
                                     <button accesskey="m" type="button" title="Slot (compiler) to use to show error in the editor." class="btn btn-default dropdown-toggle" data-toggle="dropdown"
                                             aria-haspopup="true" aria-expanded="true">
                                         <span class="leaderSlot">leader slot</span>
@@ -143,6 +147,9 @@
                                     <ul class="dropdown-menu slots">
                                     </ul>
                                 </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
                             </div>
                             <div class="collapse permalink-collapse">
                                 <div class="input-group input-group-sm permalink">
@@ -156,6 +163,7 @@
                                 </div>
                             </div>
                         </form>
+                    </div>
                     <div class="editor">
                         <div class="topbar indented">
                             Code editor
