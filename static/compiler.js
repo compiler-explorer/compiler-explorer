@@ -223,7 +223,10 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
             domRoot.find('#commonParams .slots').append(elem);
             (function (n) {
                 elem.click(function () {
+                    var leaderSlotMenuNode = domRoot.find('#commonParams .leaderSlot');
+                    leaderSlotMenuNode.text('leader slot : '+n);
                     setSetting('leaderSlot', n);
+                    onEditorChange(true);
                 });
             })(n);
         }
@@ -464,7 +467,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
         onEditorChangeCallback();
     }
 
-    function onEditorChange() {
+    function onEditorChange(force) {
         console.log("[CALLBACK] onEditorChange()");
         if (ignoreChanges) return;  // Ugly hack during startup.
         if (pendingTimeoutInEditor) {
@@ -488,7 +491,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
                     setSetting('compiler'+slot, data.compiler);
                     setSetting('compilerOptions'+slot, data.options);
                     var stringifiedReq = JSON.stringify(data);
-                    if (stringifiedReq == lastRequest[slot]) return;
+                    if (!force && stringifiedReq == lastRequest[slot]) return;
                     lastRequest[slot] = stringifiedReq;
                     data.timestamp = new Date();
                     $.ajax({
@@ -501,7 +504,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
                             onCompileResponse(data, result);
                         },
                         error: function (xhr, e_status, error) {
-                            console.log("Ajax request failed, reason : " + error);
+                            console.log("AJAX request failed, reason : " + error);
                         },
                         cache: false
                     });
