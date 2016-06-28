@@ -172,7 +172,8 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
             lineNumbers: true,
             mode: "text/x-asm",
             readOnly: true,
-            gutters: ['CodeMirror-linenumbers']
+            gutters: ['CodeMirror-linenumbers'],
+            lineWrapping: true
         });
     }
 
