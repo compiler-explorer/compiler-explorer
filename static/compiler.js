@@ -69,8 +69,8 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
     }
 
     // returns the smallest Natural that is not used as an id
-    // (require that ids are Naturals, but any other way of getting 
-    // an unique id usable in HTML's class should work)
+    // (suppose that ids are Naturals, but any other way of getting 
+    // an unique id usable in HTML's classes should work)
     function get_available_id(array) {
         if (array.length == 0) return 0;
         used_ids = [];
@@ -116,8 +116,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
     $('.autocompile').click(function () {
         $('.autocompile').toggleClass('active');
         onEditorChange();
-        setSetting('autocompile', $('.autocompile').hasClass('active'));
-    });
+        setSetting('autocompile', $('.autocompile').hasClass('active')); });
     $('.autocompile').toggleClass('active', getSetting("autocompile") !== "false");
 
     // handle filter options that are specific to a compiler
@@ -173,13 +172,18 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
         }
     });
 
-    // Load/Save setting from the browser
+    // Load/Save/Remove setting from the browser
     function getSetting(name) {
         return window.localStorage[windowLocalPrefix + "." + name];
     }
     function setSetting(name, value) {
         window.localStorage[windowLocalPrefix + "." + name] = value;
     }
+    function removeSetting(name) {
+        // source: http://stackoverflow.com/questions/9943220/how-to-delete-a-localstorage-item-when-the-browser-window-tab-is-closed
+        window.localStorage.removeItem(windowLocalPrefix + "." + name);
+    }
+
 
     var codeText = getSetting('code');
     if (!codeText) codeText = $(".template.lang." + lang.replace(/[^a-zA-Z]/g, '').toLowerCase()).text();
@@ -201,7 +205,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
             (function (i) {
                 elem.click(function () {
                     var leaderSlotMenuNode = domRoot.find('#commonParams .leaderSlot');
-                    leaderSlotMenuNode.text('(TOUPDATE) leader slot : '+i);
+                    leaderSlotMenuNode.text('leader slot : '+i);
                     setSetting('leaderSlot', i);
                     onEditorChange(true);
                 });
@@ -503,18 +507,17 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
         return cppEditor.getValue();
     }
 
-    // TODO : rework serialisation / deserialisation
     function serialiseState(compress) {
         console.log("[WINDOW] Serialising state...");
+        var slotsId = [];
         var compilersInSlots = [];
         var optionsInSlots = [];
         slots.forEach(function(slot) {
             compilersInSlots.push(currentCompilerId(slot));
             optionsInSlots.push(domRoot.find('#slot'+slot.id+' .compiler_options').val());
         });
-        // TODO : add slotCount in state
         var state = {
-            // compiler: currentCompilerId(), became :
+            slotCount: slots.length,
             compilersInSlots: compilersInSlots,
             optionsInSlots: optionsInSlots
         };
@@ -526,41 +529,34 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
         return state;
     }
 
-    function deserialiseState(state) {
-        console.log("[WINDOW] Deserialising state TODO...");
-        //if (state.hasOwnProperty('sourcez')) {
-        //    cppEditor.setValue(LZString.decompressFromBase64(state.sourcez));
-        //} else {
-        //    cppEditor.setValue(state.source);
-        //}
+    function deserialiseState(state, compilers, defaultCompiler) {
+        console.log("[WINDOW] Deserialising state ...");
+        if (state.hasOwnProperty('sourcez')) {
+            cppEditor.setValue(LZString.decompressFromBase64(state.sourcez));
+        } else {
+            cppEditor.setValue(state.source);
+        }
 
-        //// Deserialise Compilers id
-        //state.compilersInSlots = mapCompiler(state.compilersInSlots);
-        //for (var slot = 0; slot < slotsCount; slot ++) {
-        //    (function(slot) {
-        //        setCompilerById(state.compilersInSlots[slot],slot);
-        //    }) (slot);
-        //}
+        if (slots.length != 0) {
+            console.log("[WINDOW] Deserialisation : deleting existing slots ...");
+            while (slots.length != 0) {
+                delete_and_unplace_slot(slots[slots.length - 1]);
+            }
+        }
 
-        //// Deserialise Compilers options
-        //for (var slot = 0; slot < slotsCount; slot ++) {
-        //    domRoot.find('#slot'+slot+' .compiler_options').val(state.optionsInSlots[slot]);
-        //}
-        //// Somewhat hackily persist compiler into local storage else when the ajax response comes in
-        //// with the list of compilers it can splat over the deserialized version.
-        //// The whole serialize/hash/localStorage code is a mess! TODO(mg): fix
-        //
-        //// compiler -> compilerX
-        //for (var slot = 0; slot < slotsCount; slot ++) {
-        //    setSetting('compiler'+slot, state.compilersInSlots[slot]);
-        //}
+        // Deserialise 
+        for (var i = 0; i < state.slotCount; i++) {
+            var newSlot = create_and_place_slot(compilers, defaultCompiler);
+            setCompilerById(state.compilersInSlots[i],newSlot);
+            domRoot.find('#slot'+newSlot.id+' .compiler_options').val(state.optionsInSlots[i]);
+            // Somewhat hackily persist compiler into local storage else when the ajax response comes in
+            // with the list of compilers it can splat over the deserialized version.
+            // The whole serialize/hash/localStorage code is a mess! TODO(mg): fix
 
-        //for (var slot = 0; slot < slotsCount; slot++) {
-        //    (function(i) {
-        //        updateAsm(i,true);  // Force the update to reset colours after calling cppEditor.setValue
-        //    })(slot);
-        //}
-        //return true;
+            setSetting('compiler'+newSlot.id, state.compilersInSlots[i]);
+        }
+        resizeEditors();
+
         return true;
     }
 
@@ -592,7 +588,8 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
     // added has auxiliary to setCompilers, in order not to break interface
     // TODO : consider refactoring as some tasks are repeated
     function setCompilersInSlot(compilers, defaultCompiler, slot) {
-        console.log("[INIT] in setCompilersInSlot(), compilers = "+JSON.stringify(compilers)+", slot = "+slot.id);
+        console.log("[INIT] in setCompilersInSlot(), compilers = "+
+        JSON.stringify(compilers)+", slot = "+slot.id);
         domRoot.find('#slot'+slot.id+' .compilers li').remove();
         compilersById = {};
         compilersByAlias = {};
@@ -614,11 +611,13 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
             compiler = defaultCompiler;
             compiler = mapCompiler(compiler);
             if (!compiler)
-                console.log("Could not map the default compiler id. Please double check your configuration file.");
+                console.log("Could not map the default compiler id. " +
+                "Please double check your configuration file.");
         } else {
             compiler = mapCompiler(compiler);
             if (!compiler)
-                console.log("Could not map the compiler found in settings. Please clear your browser cache.");
+                console.log("Could not map the compiler found in settings. " +
+                "Please clear your browser cache.");
         }
         if (compiler) {
             setCompilerById(compiler,slot);
@@ -627,7 +626,8 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
     }
 
     function setCompilers(compilers, defaultCompiler) {
-        console.log("[INIT] setCompilers() was called with compilers = "+JSON.stringify(compilers)+", defaultCompiler = "+defaultCompiler);
+        console.log("[INIT] setCompilers() was called with compilers = "+
+        JSON.stringify(compilers)+", defaultCompiler = "+defaultCompiler);
         setLeaderSlotMenu();
         for (var i = 0; i < slots.length; i++) {
             (function(slot){
@@ -661,17 +661,19 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
     function refreshSlot(slot) {
         onCompilerChange(slot);
     }
-    //
-    // auxiliary function to oneMoreSlot
+    
+    // Auxiliary function to slot_use_DOM
     function generate_change_callback(slot) {
         return function callback() {
             onParamChange(slot);
         }
     }
 
+    // Function to call each time a slot is added to the page.
+    // This function requires that the slot's DOM object already exists.
     function slot_use_DOM(slot) {
-        // Require the slot's DOM part to be present on page
-        slot.asmCodeMirror = CodeMirror.fromTextArea(domRoot.find("#slot"+slot.id+" .asm textarea")[0], {
+        slot.asmCodeMirror = CodeMirror.fromTextArea(
+        domRoot.find("#slot"+slot.id+" .asm textarea")[0], {
             lineNumbers: true,
             mode: "text/x-asm",
             readOnly: true,
@@ -679,13 +681,35 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
             lineWrapping: true
         });
         // handle compiler option (slot specific) such as '-O1'
-        domRoot.find('#slot'+slot.id+' .compiler_options').change(generate_change_callback(slot)).keyup(generate_change_callback(slot));
+        domRoot.find('#slot'+slot.id+' .compiler_options').change(
+            generate_change_callback(slot)).keyup(
+            generate_change_callback(slot));
+
+        setLeaderSlotMenu();
+        if (slots.length == 1) {
+            // "force" menu update if this is the first slot added
+            var leaderSlotMenuNode = domRoot.find('#commonParams .leaderSlot');
+            leaderSlotMenuNode.text('leader slot : '+0);
+        }
     }
 
-    function slot_ctor() {
+    function get_slots_ids() {
+        var ids = [];
+        for (var i = 0; i < slots.length; i++) {
+            ids.push(slots[i].id);
+        }
+        return ids;
+    }
+
+    function slot_ctor(optionalId) {
         var newSlot = new Slot();
-        newSlot.id = get_available_id(slots);
+        if (optionalId) {
+            newSlot.id = optionalId;
+        } else {
+            newSlot.id = get_available_id(slots);
+        }
         slots.push(newSlot);
+        setSetting('slotsId',JSON.stringify(get_slots_ids()));
         return newSlot;
     }
     
@@ -706,6 +730,9 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
     }
 
     function slot_dtor(slot) {
+        removeSetting('compiler'+slot.id);
+        removeSetting('compilerOptions'+slot.id);
+        setSetting('slotsId',JSON.stringify(get_slots_ids()));
         remove_id_in_array(slot.id, slots);
     }
 
@@ -716,18 +743,77 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
         return null;
     }
 
-    // TODO : recycle
+    function setPanelListSortable() {
+        // source : JQuery UI examples
+        var panelList = $('#draggablePanelList');
+        panelList.sortable({
+            // Do not set the new-slot button sortable (nor a place to set windows)
+            items: "li:not(.panel-sortable-disabled)", // source : JQuery examples
+            // Omit this to make then entire <li>...</li> draggable.
+            handle: '.panel-heading', 
+            update: function() {
+                $('.panel', panelList).each(function(index, elem) {
+                    var $listItem = $(elem),
+                newIndex = $listItem.index();
+
+                // Persist the new indices.
+                });
+            }
+        });
+    }
+
+    function slot_DOM_ctor(slot) {
+        // source : http://stackoverflow.com/questions/10126395/how-to-jquery-clone-and-change-id
+        var slotTemplate = $('#slotTemplate');
+        var clone = slotTemplate.clone().prop('id', 'slot'+slot.id);
+        var last = $('#new-slot');
+        last.before(clone); // insert right before the "+" button
+
+        $('#slot'+slot.id+' .title').text("Slot "+slot.id+" (drag me)  ");
+        $('#slot'+slot.id).show();
+        $('#slot'+slot.id+' .closeButton').on('click', function(e)  {
+            console.log("[UI] User clicked on closeButton in slot "+slot.id);
+            var slotToDelete = get_slot_by_id(slot.id);
+            delete_and_unplace_slot(slotToDelete);
+        });
+
+        setPanelListSortable();
+    }
+
+    function slot_DOM_dtor(slot) {
+        $('#slot'+slot.id).remove();
+    }
+
+    function create_and_place_slot(compilers,defaultCompiler) {
+        var newSlot = slot_ctor();
+        slot_DOM_ctor(newSlot);
+        slot_use_DOM(newSlot);
+        setCompilersInSlot(compilers, defaultCompiler, newSlot);
+        return newSlot;
+    }
+
+    function delete_and_unplace_slot(slot) {
+        slot_DOM_dtor(slot);
+        slot_dtor(slot);
+    }
+
     // on startup, for each slot,
     // if a setting is defined, set it on static/index.html page
-    //for (var slot = 0; slot < slotsCount; slot++) {
-    //    if (getSetting('compilerOptions'+slot)) {
-    //        domRoot.find('#slot'+slot+' .compiler_options').val(getSetting('compilerOptions'+slot));
-    //    }
-    //}
-    //var lastUpdatedAsm = [];
-    //for (var i = 0; i < slotsCount; i++) {
-    //    lastUpdatedAsm.push(null);
-    //}
+    var slotsIds = getSetting('slotsId');
+    if (slotsIds) {
+        console.log("[STARTUP] found data : restoring from previous session");
+        slotsIds = JSON.parse(slotsIds);
+        for (var i = 0; i < slotsIds.length; i++) {
+            var newSlot = slot_ctor(slotsIds[i]);
+            slot_DOM_ctor(newSlot);
+            slot_use_DOM(newSlot);
+            if (getSetting('compilerOptions'+slotsIds[i])) {
+                domRoot.find('#slot'+newSlot.id+' .compiler_options').val(getSetting('compilerOptions'+newSlot.id));
+            } else {
+                console.log("[STARTUP] There was a problem while restoring previous session.");
+            }
+        }
+    }
 
     return {
         serialiseState: serialiseState,
@@ -738,10 +824,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
         setFilters: setFilters,
         setEditorHeight: setEditorHeight,
         setCompilersInSlot : setCompilersInSlot,
-        refreshSlot: refreshSlot,
-        slot_ctor: slot_ctor,
-        slot_use_DOM: slot_use_DOM,
-        get_slot_by_id: get_slot_by_id,
-        slot_dtor: slot_dtor
+        create_and_place_slot: create_and_place_slot,
+        refreshSlot: refreshSlot
     };
 }

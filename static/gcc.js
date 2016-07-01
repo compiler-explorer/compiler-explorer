@@ -173,6 +173,7 @@ function getState(compress) {
     };
 }
 
+// Gist is a pastbin service operated by github
 function toGist(state) {
     files = {};
     function nameFor(compiler) {
@@ -292,7 +293,7 @@ function loadState(state) {
     setFilterUi(state.filterAsm);
     for (var i = 0; i < Math.min(allCompilers.length, state.compilers.length); i++) {
         allCompilers[i].setFilters(state.filterAsm);
-        allCompilers[i].deserialiseState(state.compilers[i]);
+        allCompilers[i].deserialiseState(state.compilers[i],OPTIONS.compilers, OPTIONS.defaultCompiler);
     }
     return true;
 }
@@ -304,7 +305,7 @@ function resizeEditors() {
     var compOutputSize = Math.max(100, windowHeight * 0.05);
     $('.output').height(compOutputSize);
     var resultHeight = $('.result').height();
-    var height = windowHeight - top - resultHeight - 40;
+    var height = windowHeight - top - resultHeight - 90;
     currentCompiler.setEditorHeight(height);
 }
 
@@ -396,58 +397,11 @@ function setFilterUi(asmFilters) {
     });
 }
 
-function setPanelListSortable() {
-        var panelList = $('#draggablePanelList');
-
-        panelList.sortable({
-            // Do not set the new-slot button sortable (nor a place to set windows)
-            items: "li:not(.panel-sortable-disabled)", // source : JQuery examples
-            // Omit this to make then entire <li>...</li> draggable.
-            handle: '.panel-heading', 
-            update: function() {
-                $('.panel', panelList).each(function(index, elem) {
-                    var $listItem = $(elem),
-                newIndex = $listItem.index();
-
-                // Persist the new indices.
-                });
-            }
-        });
-}
-
-//TODO : remove
-$(document).ready(setPanelListSortable);
-
-function slot_DOM_ctor(slot) {
-        // source : http://stackoverflow.com/questions/10126395/how-to-jquery-clone-and-change-id
-        var slotTemplate = $('#slotTemplate');
-        var clone = slotTemplate.clone().prop('id', 'slot'+slot.id);
-        var last = $('#new-slot');
-        last.before(clone); // insert right before the "+" button
-
-        $('#slot'+slot.id+' .title').text("Slot (("+slot.id+")) (drag me)  ");
-        $('#slot'+slot.id).show();
-        $('#slot'+slot.id+' .closeButton').on('click', function(e)  {
-            console.log("[UI] User clicked on closeButton in slot "+slot.id);
-            var slotToDelete = currentCompiler.get_slot_by_id(slot.id);
-            slot_DOM_dtor(slotToDelete);
-            currentCompiler.slot_dtor(slotToDelete);
-        });
-
-        setPanelListSortable();
-}
-
-function slot_DOM_dtor(slot) {
-    $('#slot'+slot.id).remove();
-}
-
 $(document).ready(function() {
     $('#new-slot').on('click', function(e)  {
         console.log("[UI] User clicked on new-slot button.");
-        var newSlot = currentCompiler.slot_ctor();
-        slot_DOM_ctor(newSlot);
-        currentCompiler.slot_use_DOM(newSlot);
-        currentCompiler.setCompilersInSlot(OPTIONS.compilers, OPTIONS.defaultCompiler, newSlot);
+        var newSlot = currentCompiler.create_and_place_slot(
+            OPTIONS.compilers, OPTIONS.defaultCompiler);
         resizeEditors();
         currentCompiler.refreshSlot(newSlot);
     });
