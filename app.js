@@ -297,9 +297,7 @@ function findCompilers() {
             compilers = compilers.filter(function (x) {
                 return x !== null;
             });
-            compilers = compilers.sort(function (x, y) {
-                return x.name < y.name ? -1 : x.name > y.name ? 1 : 0;
-            });
+            compilers = compilers.sort(compareOn("name"));
             console.log("Compilers:");
             compilers.forEach(function (c) {
                 console.log(c.id + " : " + c.name + " : " + (c.exe || c.remote));
