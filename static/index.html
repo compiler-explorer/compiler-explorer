@@ -1,4 +1,8 @@
 <!DOCTYPE html>
+<script>
+// debug - tests
+    console.log("Hello from index.html");
+</script>
 <html lang="en">
     <head>
         <title>Compiler Explorer</title>
@@ -167,6 +171,51 @@
                     </div>
                 </form>
             </div>
+            <div class="col-md-7"> <!--  begining of a horrible copy pasta -->
+                <form class="well form-inline">
+                    <table>
+                        <tbody>
+                        <tr>
+                            <td class="dropdown compilers-container">
+                                <button accesskey="c" type="button" title="Compiler to use (alt-C)" class="btn btn-default dropdown-toggle" data-toggle="dropdown"
+                                        aria-haspopup="true" aria-expanded="true">
+                                    <span class="compiler">g++</span>
+                                    <span class="caret"></span>
+                                </button>
+                                <ul class="dropdown-menu compilers">
+                                </ul>
+                            </td>
+                            <td>
+                                <input accesskey="o" title="Options to pass to compiler (alt-O)" class="compiler_options" placeholder="compiler options" type="text" value="" size="256">
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <div class="btn-group btn-group-sm filter">
+                        <button class="btn btn-sm" type="button" value="binary"
+                                title="Compile to binary and disassemble the output">Binary
+                        </button>
+                        <button class="btn btn-sm active nonbinary" type="button"
+                                title="Filter unused labels from the output" value="labels">Unused labels
+                        </button>
+                        <button class="btn btn-sm active nonbinary" type="button"
+                                title="Filter all assembler directives from the output" value="directives">Directives
+                        </button>
+                        <button class="btn btn-sm active nonbinary" type="button"
+                                title="Remove all lines which are only comments from the output" value="commentOnly">
+                            Comment-only
+                            lines
+                        </button>
+                        <button class="btn btn-sm" type="button" title="Output disassembly in Intel syntax"
+                                value="intel">Intel syntax
+                        </button>
+                        <button class="btn btn-sm" type="button"
+                                title="Colourise lines so one can see how the source maps to the output"
+                                value="colouriseAsm">Colourise
+                        </button>
+                    </div>
+                </form>
+            </div> <!--  end of horrible copy pasta -->
         </div>
         <div class="row">
             <div class="col-md-6 editor">
@@ -181,13 +230,23 @@
                 </div>
                 <textarea>// Type your code here, or load an example.</textarea>
             </div>
-            <div class="col-md-6 asm">
-                <div class="topbar indented">Assembly output</div>
-                <textarea>Awaiting</textarea>
+            <div class="col-md-6 asm0">
+                <div class="topbar indented">Assembly output slot 0</div>
+                <textarea>Awaiting in slot 0</textarea>
+            </div>
+            <div class="col-md-6 asm1">
+                <div class="topbar indented">Assembly output slot 1</div>
+                <textarea>Awaiting in slot 1</textarea>
             </div>
         </div>
         <div class="row result">
             <div class="topbar">Compiler output &mdash; <span class="compilerVersion"></span></div>
+            <div class="output">
+                <div class="template"></div>
+            </div>
+        </div>
+        <div class="row result">
+            <div class="topbar">Compiler output number 2 &mdash; <span class="compilerVersion"></span></div>
             <div class="output">
                 <div class="template"></div>
             </div>
