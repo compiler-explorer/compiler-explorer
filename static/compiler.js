@@ -51,7 +51,7 @@ const NumRainbowColours = 12;
 function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallback, lang) {
     console.log("[TRACE] Entering function Compiler()");
     // TODO : allow user to dynamically change the number of slots
-    var slotsCount = 2;
+    var slotsCount = 3;
     setSetting('leaderSlot', 0);
     var compilersById = {};
     var compilersByAlias = {};

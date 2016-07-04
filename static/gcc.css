@@ -195,60 +195,7 @@ li.social {
     font-weight: bold;
 }
 
-/*----- Tabs -----*/
-.tabs {
-    width:100%;
-    display:inline-block;
+/* show the move cursor as the user moves the mouse over the panel header.*/
+#draggablePanelList .panel-heading {
+    cursor: move;
 }
-
-/*----- Tab Links -----*/
-/* Clearfix */
-.tab-links:after {
-    display:block;
-    clear:both;
-    content:'';
-}
-
-.tab-links li {
-    margin:0px 5px;
-    float:left;
-    list-style:none;
-}
-
-.tab-links a {
-    padding:9px 15px;
-    display:inline-block;
-    border-radius:3px 3px 0px 0px;
-    font-size:16px;
-    font-weight:600;
-    background:#fff;
-    color:#4c4c4c;
-    transition:all linear 0.15s;
-}
-
-.tab-links a:hover {
-    background:#a7cce5;
-    text-decoration:none;
-}
-
-li.active a, li.active a:hover {
-    background:#7FB5DA;
-    color:#4c4c4c;
-}
-
-/*----- Content of Tabs -----*/
-.tab-content {
-    padding:15px;
-    border-radius:3px;
-    box-shadow:-1px 1px 1px rgba(0,0,0,0.15);
-    background:#fff;
-}
-
-.tab {
-    display:none;
-}
-
-.tab.active {
-    display:block;
-}
-

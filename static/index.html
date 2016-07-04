@@ -12,6 +12,7 @@
         <script src="ext/codemirror/codemirror.js"></script>
         <script src="asm-mode.js"></script>
         <script src="ext/jquery/jquery-2.2.2.min.js"></script>
+        <script src="ext/jquery-ui-1.11.4/jquery-ui.min.js"></script>
         <script src="ext/rison.js"></script>
         <script src="ext/clipboard.min.js"></script>
         <script src="compiler.js"></script>
@@ -96,7 +97,7 @@
     </div>
 
     <div class="row">
-        <div class="col-md-6">
+        <div class="col-md-4">
             <section id="main" class="container-fluid">
                 <div id="commonParams">
                         <form class="well form-inline files">
@@ -198,108 +199,136 @@
             </div>
         </div>
 
-        <div class="col-md-5">
-            <div class="tabs">
-                <ul class="tab-links">
-                    <li class="active"><a href="#tab0">Slot 0</a></li>
-                    <li><a href="#tab1">Slot 1</a></li>
-                </ul>
 
-                <div class="tab-content">
-                    <div id="tab0" class="tab active">
-                        <div id="params0">
-                            <form class="well form-inline">
-                                <p> Params 0 </p>
-                                <table>
-                                    <tbody>
-                                    <tr>
-                                        <td class="dropdown compilers-container">
-                                            <button accesskey="c" type="button" title="Compiler to use (alt-C)" class="btn btn-default dropdown-toggle" data-toggle="dropdown"
-                                                    aria-haspopup="true" aria-expanded="true">
-                                                <span class="compiler">g++</span>
-                                                <span class="caret"></span>
-                                            </button>
-                                            <ul class="dropdown-menu compilers">
-                                            </ul>
-                                        </td>
-                                        <td>
-                                            <input accesskey="o" title="Options to pass to compiler (alt-O)" class="compiler_options" placeholder="compiler options" type="text" value="" size="64">
-                                        </td>
-                                    </tr>
-                                    </tbody>
-                                </table>
-                                <div class="btn-group btn-group-sm filter">
+        <ul id="draggablePanelList" class="list-unstyled">
+            <li class="panel panel-primary col-md-4" id="slot0">
+            <div class="panel-heading">Slot 0 (drag me)</div>
+            <div class="panel-body" id="params0">
+                <form class="well well-sm form-inline">
+                    <table>
+                        <tbody>
+                        <tr>
+                            <td class="dropdown compilers-container">
+                                <button accesskey="c" type="button" title="Compiler to use (alt-C)" class="btn btn-default dropdown-toggle" data-toggle="dropdown"
+                                    aria-haspopup="true" aria-expanded="true">
+                                    <span class="compiler">g++</span>
+                                    <span class="caret"></span>
+                                </button>
+                                <ul class="dropdown-menu compilers">
+                                </ul>
+                            </td>
+                            <td>
+                                <input accesskey="o" title="Options to pass to compiler (alt-O)" class="compiler_options" placeholder="compiler options" type="text" value="" size="48">
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <div class="btn-group btn-group-sm filter">
                                     <!--
                                     <button class="btn btn-sm" type="button"
                                             title="Colourise lines so one can see how the source maps to the output"
                                             value="colouriseAsm">Colourise
                                     </button>
                                     -->
-                                </div>
-                            </form>
-                        </div>
-                            <div id="asm0">
-                                <div class="topbar indented">Assembly output slot 0</div>
-                                <textarea>Awaiting in slot 0</textarea>
-                            </div>
-                        <div id="output0">
-                            <div class="result">
-                                <div class="topbar">Compiler output 0 &mdash; <span class="compilerVersion"></span></div>
-                                <div class="output">
-                                    <div class="template"></div>
-                                </div>
-                            </div>
-                        </div>
                     </div>
-
-                    <div id="tab1" class="tab">
-                        <div id="params1"> <!--  begining of a horrible copy pasta -->
-                            <form class="well form-inline">
-                                <p> Params 1 </p>
-                                <table>
-                                    <tbody>
-                                    <tr>
-                                        <td class="dropdown compilers-container">
-                                            <button accesskey="c" type="button" title="Compiler to use (alt-C)" class="btn btn-default dropdown-toggle" data-toggle="dropdown"
-                                                    aria-haspopup="true" aria-expanded="true">
-                                                <span class="compiler">g++</span>
-                                                <span class="caret"></span>
-                                            </button>
-                                            <ul class="dropdown-menu compilers">
-                                            </ul>
-                                        </td>
-                                        <td>
-                                            <input accesskey="o" title="Options to pass to compiler (alt-O)" class="compiler_options" placeholder="compiler options" type="text" value="" size="64">
-                                        </td>
-                                    </tr>
-                                    </tbody>
-                                </table>
-                                <div class="btn-group btn-group-sm filter">
-                                    <!--
-                                    <button class="btn btn-sm" type="button"
-                                            title="Colourise lines so one can see how the source maps to the output"
-                                            value="colouriseAsm">Colourise
-                                    </button>
-                                    -->
-                                </div>
-                            </form>
-                        </div> <!--  end of horrible copy pasta -->
-                            <div id="asm1">
-                                <div class="topbar indented">Assembly output slot 1</div>
-                                <textarea>Awaiting in slot 1</textarea>
-                            </div>
-                        <div id="output1">
-                            <div class="result">
-                                <div class="topbar">Compiler output 1 &mdash; <span class="compilerVersion"></span></div>
-                                <div class="output">
-                                    <div class="template"></div>
-                                </div>
-                            </div>
-                        </div>
+                </form>
+            </div>
+            <div id="asm0">
+                <div class="topbar indented">Assembly output slot 0</div>
+                <textarea>Awaiting in slot 0</textarea>
+            </div>
+            <div id="output0">
+                <div class="result">
+                    <div class="topbar">Compiler output 0 &mdash; <span class="compilerVersion"></span></div>
+                    <div class="output">
+                        <div class="template"></div>
                     </div>
-
                 </div>
             </div>
+            </li>
+
+            <li class="panel panel-primary col-md-4" id="slot1">
+            <div class="panel-heading">Slot 1 (drag me)</div>
+            <div class="panel-body" id="params1">
+                <form class="well well-sm form-inline">
+                    <table>
+                        <tbody>
+                        <tr>
+                            <td class="dropdown compilers-container">
+                                <button accesskey="c" type="button" title="Compiler to use (alt-C)" class="btn btn-default dropdown-toggle" data-toggle="dropdown"
+                                    aria-haspopup="true" aria-expanded="true">
+                                    <span class="compiler">g++</span>
+                                    <span class="caret"></span>
+                                </button>
+                                <ul class="dropdown-menu compilers">
+                                </ul>
+                            </td>
+                            <td>
+                                <input accesskey="o" title="Options to pass to compiler (alt-O)" class="compiler_options" placeholder="compiler options" type="text" value="" size="48">
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <div class="btn-group btn-group-sm filter">
+                    </div>
+                </form>
+            </div>
+            <div id="asm1">
+                <div class="topbar indented">Assembly output slot 1</div>
+                <textarea>Awaiting in slot 1</textarea>
+            </div>
+            <div id="output1">
+                <div class="result">
+                    <div class="topbar">Compiler output 1 &mdash; <span class="compilerVersion"></span></div>
+                    <div class="output">
+                        <div class="template"></div>
+                    </div>
+                </div>
+            </div>
+            </li>
+
+            <li class="panel panel-primary col-md-4" id="slot2">
+            <div class="panel-heading">Slot 2 (drag me)</div>
+            <div class="panel-body" id="params2">
+                <form class="well well-sm form-inline">
+                    <table>
+                        <tbody>
+                        <tr>
+                            <td class="dropdown compilers-container">
+                                <button accesskey="c" type="button" title="Compiler to use (alt-C)" class="btn btn-default dropdown-toggle" data-toggle="dropdown"
+                                    aria-haspopup="true" aria-expanded="true">
+                                    <span class="compiler">g++</span>
+                                    <span class="caret"></span>
+                                </button>
+                                <ul class="dropdown-menu compilers">
+                                </ul>
+                            </td>
+                            <td>
+                                <input accesskey="o" title="Options to pass to compiler (alt-O)" class="compiler_options" placeholder="compiler options" type="text" value="" size="48">
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <div class="btn-group btn-group-sm filter">
+                    </div>
+                </form>
+            </div>
+            <div id="asm2">
+                <div class="topbar indented">Assembly output slot 2</div>
+                <textarea>Awaiting in slot 2</textarea>
+            </div>
+            <div id="output2">
+                <div class="result">
+                    <div class="topbar">Compiler output 2 &mdash; <span class="compilerVersion"></span></div>
+                    <div class="output">
+                        <div class="template"></div>
+                    </div>
+                </div>
+            </div>
+            </li>
+        </ul>
+
+
         </div>
     </div>
 
@@ -353,7 +382,7 @@ int square(int num) {
                         .appendTo(document.body)
             }
         })();
+
     </script>
     </body>
 </html>
-
