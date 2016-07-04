@@ -199,3 +199,8 @@ li.social {
 #draggablePanelList .panel-heading {
     cursor: move;
 }
+
+.panel-modest,
+.panel-modest .panel-body {
+      display: inline-block;
+  }

@@ -51,7 +51,7 @@ const NumRainbowColours = 12;
 function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallback, lang) {
     console.log("[TRACE] Entering function Compiler()");
     // TODO : allow user to dynamically change the number of slots
-    var slotsCount = 3;
+    var slotsCount = 0;
     setSetting('leaderSlot', 0);
     var compilersById = {};
     var compilersByAlias = {};
@@ -92,13 +92,13 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
     var ignoreChanges = true; // Horrible hack to avoid onEditorChange doing anything on first starting, ie before we've set anything up.
 
     function setCompilerById(id,slot) {
-        var compilerNode = domRoot.find('#params'+slot+' .compiler');
+        var compilerNode = domRoot.find('#slot'+slot+' .compiler');
         compilerNode.text(compilersById[id].name);
         compilerNode.attr('data', id);
     }
 
     function currentCompilerId(slot) {
-        return domRoot.find('#params'+slot+' .compiler').attr('data');
+        return domRoot.find('#slot'+slot+' .compiler').attr('data');
     }
 
     function currentCompiler(slot) {
@@ -168,7 +168,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
     // Set up all slot's windows
     for (var i = 0; i < slotsCount; i++) {
         // TODO : explain why [0] is mandatory here
-        asmCodeMirrors[i] = CodeMirror.fromTextArea(domRoot.find("#asm"+i+" textarea")[0], {
+        asmCodeMirrors[i] = CodeMirror.fromTextArea(domRoot.find("#slot"+i+" .asm textarea")[0], {
             lineNumbers: true,
             mode: "text/x-asm",
             readOnly: true,
@@ -192,7 +192,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
     // handle compiler option (slot specific) such as '-O1'
     for (var slot = 0; slot < slotsCount; slot++) {
         (function (slot) {
-            domRoot.find('#params'+slot+' .compiler_options').change(generate_change_callback(slot)).keyup(generate_change_callback(slot));
+            domRoot.find('#slot'+slot+' .compiler_options').change(generate_change_callback(slot)).keyup(generate_change_callback(slot));
         })(slot);
     }
     // auxiliary function to the previous for loop
@@ -209,7 +209,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
     // if a setting is defined, set it on static/index.html page
     for (var slot = 0; slot < slotsCount; slot++) {
         if (getSetting('compilerOptions'+slot)) {
-            domRoot.find('#params'+slot+' .compiler_options').val(getSetting('compilerOptions'+slot));
+            domRoot.find('#slot'+slot+' .compiler_options').val(getSetting('compilerOptions'+slot));
         }
     }
 
@@ -263,7 +263,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
             _gaq.push(['_trackEvent', 'Compile', request.compiler, request.options, data.code]);
             _gaq.push(['_trackTiming', 'Compile', 'Timing', new Date() - request.timestamp]);
         }
-        domRoot.find('#output'+request.slot+' .result .output :visible').remove();
+        domRoot.find('#slot'+request.slot+' .result .output :visible').remove();
         // only show in Editor messages comming from the leaderSlot
         if (request.slot == leaderSlot) {
             for (var i = 0; i < errorWidgets.length; ++i)
@@ -278,7 +278,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
                 msg = "Too many output lines...truncated";
             }
             numLines++;
-            var elem = domRoot.find('#output'+request.slot+' .result .output .template').clone().appendTo(domRoot.find('#output'+request.slot+' .result .output')).removeClass('template');
+            var elem = domRoot.find('#slot'+request.slot+' .result .output .template').clone().appendTo(domRoot.find('#slot'+request.slot+' .result .output')).removeClass('template');
             if (lineNum) {
                 // only show in Editor messages comming from the leaderSlot
                 if  (request.slot == leaderSlot) {
@@ -435,7 +435,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
                     slot: slot, // TO DECIDE : probably better not put it here
                     source: cppEditor.getValue(),
                     compiler: currentCompilerId(slot),
-                    options: $('#params'+slot+' .compiler_options').val(),
+                    options: $('#slot'+slot+' .compiler_options').val(),
                     filters: currentFilters()
                 };
                 setSetting('compiler'+slot, data.compiler);
@@ -534,14 +534,14 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
     }
 
     function serialiseState(compress) {
-
+        console.log("[WINDOW] Serialising state...");
         var compilersInSlots = [];
         for (var slot = 0; slot < slotCount; slot++) {
             compilersInSlots.push(currentCompilerId(slot));
         }
         var optionsInSlots = [];
         for (var slot = 0; slot < slotCount; slot++) {
-            optionsInSlots.push(domRoot.find('#params'+slot+' .compiler_options').val());
+            optionsInSlots.push(domRoot.find('#slot'+slot+' .compiler_options').val());
         }
         // TODO : add slotCount in state
         var state = {
@@ -558,13 +558,14 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
     }
 
     function deserialiseState(state) {
+        console.log("[WINDOW] Deserialising state...");
         if (state.hasOwnProperty('sourcez')) {
             cppEditor.setValue(LZString.decompressFromBase64(state.sourcez));
         } else {
             cppEditor.setValue(state.source);
         }
 
-        // Deserealise Compilers id
+        // Deserialise Compilers id
         state.compilersInSlots = mapCompiler(state.compilersInSlots);
         for (var slot = 0; slot < slotsCount; slot ++) {
             (function(slot) {
@@ -572,9 +573,9 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
             }) (slot);
         }
 
-        // Deserealise Compilers options
+        // Deserialise Compilers options
         for (var slot = 0; slot < slotsCount; slot ++) {
-            domRoot.find('#params'+slot+' .compiler_options').val(state.optionsInSlots[slot]);
+            domRoot.find('#slot'+slot+' .compiler_options').val(state.optionsInSlots[slot]);
         }
         // Somewhat hackily persist compiler into local storage else when the ajax response comes in
         // with the list of compilers it can splat over the deserialized version.
@@ -596,7 +597,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
     // TODO : split in two functions : one is slot dependant, the other set parameters common to all slots
     function updateCompilerAndButtons(slot) {
         var compiler = currentCompiler(slot);
-        domRoot.find('#output'+slot+' .compilerVersion').text(compiler.name + " (" + compiler.version + ")");
+        domRoot.find('#slot'+slot+' .compilerVersion').text(compiler.name + " (" + compiler.version + ")");
         var filters = currentFilters();
         var supportsIntel = compiler.intelAsm || filters.binary;
         domRoot.find('#commonParams .filter button.btn[value="intel"]').toggleClass("disabled", !supportsIntel);
@@ -622,7 +623,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
     // TODO : consider refactoring as some tasks are repeated
     function setCompilersInSlot(compilers, defaultCompiler, slot) {
         console.log("[INIT] in setCompilersInSlot(), compilers = "+JSON.stringify(compilers)+", slot = "+slot);
-        domRoot.find('#params'+slot+' .compilers li').remove();
+        domRoot.find('#slot'+slot+' .compilers li').remove();
         compilersById = {};
         compilersByAlias = {};
         // fills the compiler list
@@ -630,7 +631,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
             compilersById[arg.id] = arg;
             if (arg.alias) compilersByAlias[arg.alias] = arg;
             var elem = $('<li><a href="#">' + arg.name + '</a></li>');
-            domRoot.find('#params'+slot+' .compilers').append(elem);
+            domRoot.find('#slot'+slot+' .compilers').append(elem);
             (function () {
                 elem.click(function () {
                     setCompilerById(arg.id,slot);
@@ -687,6 +688,36 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
         }
     }
 
+    function getSlotsCount() {
+        return slotsCount;
+    }
+
+    function setSlotsCount(newSlotCount) {
+        slotsCount = newSlotCount;
+    }
+    
+    // External wrapper used by gcc.js only
+    function refreshSlot(slot) {
+        onCompilerChange(slot);
+    }
+
+    function oneMoreSlot() {
+        var slot = slotsCount-1;
+        pendingTimeoutInSlots.push(null);
+        lastRequest.push(null);
+        currentAssembly.push(null);
+        asmCodeMirrors.push(null);
+        asmCodeMirrors[slot] = CodeMirror.fromTextArea(domRoot.find("#slot"+slot+" .asm textarea")[0], {
+            lineNumbers: true,
+            mode: "text/x-asm",
+            readOnly: true,
+            gutters: ['CodeMirror-linenumbers'],
+            lineWrapping: true
+        });
+        domRoot.find('#slot'+slot+' .compiler_options').change(generate_change_callback(slot)).keyup(generate_change_callback(slot));
+        lastUpdatedAsm.push(null);
+    }
+
     return {
         serialiseState: serialiseState,
         deserialiseState: deserialiseState,
@@ -694,6 +725,11 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
         getSource: getSource,
         setSource: setSource,
         setFilters: setFilters,
-        setEditorHeight: setEditorHeight
+        setEditorHeight: setEditorHeight,
+        getSlotsCount : getSlotsCount,
+        setSlotsCount : setSlotsCount,
+        oneMoreSlot : oneMoreSlot,
+        setCompilersInSlot : setCompilersInSlot,
+        refreshSlot : refreshSlot
     };
 }

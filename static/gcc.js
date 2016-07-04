@@ -396,32 +396,12 @@ function setFilterUi(asmFilters) {
     });
 }
 
-/* to handle tabs, source : http://inspirationalpixels.com/tutorials/creating-tabs-with-html-css-and-jquery */
-$(document).ready(function() {
-    $('.tabs .tab-links a').on('click', function(e)  {
-        var currentAttrValue = $(this).attr('href');
-        var tabNumber = currentAttrValue.substring(4);
-        console.log("[UI] clicked on tab = "+tabNumber);
-
-        // Show/Hide Tabs
-        $('.tabs ' + currentAttrValue).show().siblings().hide();
-
-        // Change/remove current tab to active
-        $(this).parent('li').addClass('active').siblings().removeClass('active');
-
-        // Refresh the asm CodeMirror window contained in the div (there is only one : no .each)
-        // source : http://stackoverflow.com/a/13976668
-        $('#asm'+tabNumber+' .CodeMirror')[0].CodeMirror.refresh();
-        
-        //console.log(JSON.stringify(JSON.decycle($('#asm'+tabNumber+' .CodeMirror')))); // debug
-        e.preventDefault();
-    });
-});
-
-$(document).ready(function() {
+function setPanelListSortable() {
         var panelList = $('#draggablePanelList');
 
         panelList.sortable({
+            // Do not set the new-slot button sortable (nor a place to set windows)
+            items: "li:not(.panel-sortable-disabled)", // source : JQuery examples
             // Omit this to make then entire <li>...</li> draggable.
             handle: '.panel-heading', 
             update: function() {
@@ -433,7 +413,40 @@ $(document).ready(function() {
                 });
             }
         });
+}
+
+$(document).ready(setPanelListSortable);
+
+$(document).ready(function() {
+    $('#new-slot').on('click', function(e)  {
+        console.log("[UI] User clicked on new-slot button. slotCount was : "+ currentCompiler.getSlotsCount());
+        var newSlotCode = currentCompiler.getSlotsCount();
+        currentCompiler.setSlotsCount(currentCompiler.getSlotsCount() + 1);
+        // source : http://stackoverflow.com/questions/10126395/how-to-jquery-clone-and-change-id
+        var slotTemplate = $('#slotTemplate');
+        var clone = slotTemplate.clone().prop('id', 'slot'+newSlotCode);
+        var last = $('#new-slot');
+        last.before(clone); // insert right before the "+" button
+
+        $('#slot'+newSlotCode+' .title').text("Slot " + newSlotCode+" (drag me) ");
+        $('#slot'+newSlotCode).show();
+        $('#slot'+newSlotCode+' .closeButton').on('click', function(e)  {
+            console.log("[UI] User clicked on closeButton in slot "+newSlotCode);
+            // demo code : 
+            $('#slot'+newSlotCode).remove();
+            currentCompiler.setSlotsCount(currentCompiler.getSlotsCount() - 1);
+        });
+
+        setPanelListSortable();
+        currentCompiler.oneMoreSlot();
+        currentCompiler.setCompilersInSlot(OPTIONS.compilers, OPTIONS.defaultCompiler, newSlotCode);
+        currentCompiler.refreshSlot(newSlotCode);
     });
+});
+
+$(document).ready(function() {
+    $('#slotTemplate').hide();
+});
 
 $(function () {
     initialise(OPTIONS);
