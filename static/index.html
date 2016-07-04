@@ -71,87 +71,6 @@
         </script>
     </head>
     <body>
-    <div class="tabs">
-        <ul class="tab-links">
-            <li class="active"><a href="#tab0">Slot #0</a></li>
-            <li><a href="#tab1">Slot #1</a></li>
-        </ul>
-
-        <div class="tab-content">
-            <div id="tab0" class="tab active">
-                <div class="col-md-7" id="params0">
-                    <form class="well form-inline">
-                        <p> Params 0 </p>
-                        <table>
-                            <tbody>
-                            <tr>
-                                <td class="dropdown compilers-container">
-                                    <button accesskey="c" type="button" title="Compiler to use (alt-C)" class="btn btn-default dropdown-toggle" data-toggle="dropdown"
-                                            aria-haspopup="true" aria-expanded="true">
-                                        <span class="compiler">g++</span>
-                                        <span class="caret"></span>
-                                    </button>
-                                    <ul class="dropdown-menu compilers">
-                                    </ul>
-                                </td>
-                                <td>
-                                    <input accesskey="o" title="Options to pass to compiler (alt-O)" class="compiler_options" placeholder="compiler options" type="text" value="" size="256">
-                                </td>
-                            </tr>
-                            </tbody>
-                        </table>
-                        <div class="btn-group btn-group-sm filter">
-                            <!--
-                            <button class="btn btn-sm" type="button"
-                                    title="Colourise lines so one can see how the source maps to the output"
-                                    value="colouriseAsm">Colourise
-                            </button>
-                            -->
-                        </div>
-                    </form>
-                </div>
-            <!--
-                <p>Tab #0 content goes here!</p>
-                <p>Donec pulvinar neque sed semper lacinia. Curabitur lacinia ullamcorper nibh; quis imperdiet velit eleifend ac. Donec blandit mauris eget aliquet lacinia! Donec pulvinar massa interdum risus ornare mollis.</p>
-            -->
-            </div>
-
-            <div id="tab1" class="tab">
-            <div class="col-md-7" id="params1"> <!--  begining of a horrible copy pasta -->
-                <form class="well form-inline">
-                    <p> Params 1 </p>
-                    <table>
-                        <tbody>
-                        <tr>
-                            <td class="dropdown compilers-container">
-                                <button accesskey="c" type="button" title="Compiler to use (alt-C)" class="btn btn-default dropdown-toggle" data-toggle="dropdown"
-                                        aria-haspopup="true" aria-expanded="true">
-                                    <span class="compiler">g++</span>
-                                    <span class="caret"></span>
-                                </button>
-                                <ul class="dropdown-menu compilers">
-                                </ul>
-                            </td>
-                            <td>
-                                <input accesskey="o" title="Options to pass to compiler (alt-O)" class="compiler_options" placeholder="compiler options" type="text" value="" size="256">
-                            </td>
-                        </tr>
-                        </tbody>
-                    </table>
-                    <div class="btn-group btn-group-sm filter">
-                        <!--
-                        <button class="btn btn-sm" type="button"
-                                title="Colourise lines so one can see how the source maps to the output"
-                                value="colouriseAsm">Colourise
-                        </button>
-                        -->
-                    </div>
-                </form>
-            </div> <!--  end of horrible copy pasta -->
-            </div>
-
-        </div>
-    </div>
     <div class="navbar-nav navbar-inverse navbar-fixed-top">
         <div class="container-fluid">
             <div class="navbar-header">
@@ -190,123 +109,211 @@
         </div>
     </div>
 
-    <section id="main" class="container-fluid">
-        <div class="row">
-            <div class="col-md-5" id="commonParams">
-                <form class="well form-inline files">
-                    <div>
-                        <label>Source: <select class="source"></select></label>
-                        <label>Name: <select class="filename"></select></label>
+    <div class="wrap">
+        <div class="fleft">
+            <section id="main" class="container-fluid">
+                <div class="row">
+                    <div class="col-md-5" id="commonParams">
+                        <form class="well form-inline files">
+                            <div>
+                                <label>Source: <select class="source"></select></label>
+                                <label>Name: <select class="filename"></select></label>
+                            </div>
+                            <div class="btn-group btn-group-sm">
+                                <button class="btn btn-sm load">Load</button>
+                                <button class="btn btn-sm save">Save</button>
+                                <button class="btn btn-sm saveas">Save as...</button>
+                                <button class="btn btn-sm fulllink" title="Permanent, full URL to this page">Full link</button>
+                                <button class="btn btn-sm shortlink" title="Permanent link to this page as a short link">Short link</button>
+                            </div>
+                            <div class="btn-group btn-group-sm filter">
+                                <button class="btn btn-sm" type="button" value="binary"
+                                        title="Compile to binary and disassemble the output">Binary
+                                </button>
+                                <button class="btn btn-sm active nonbinary" type="button"
+                                        title="Filter unused labels from the output" value="labels">Unused labels
+                                </button>
+                                <button class="btn btn-sm active nonbinary" type="button"
+                                        title="Filter all assembler directives from the output" value="directives">Directives
+                                </button>
+                                <button class="btn btn-sm active nonbinary" type="button"
+                                        title="Remove all lines which are only comments from the output" value="commentOnly">
+                                    Comment-only
+                                    lines
+                                </button>
+                                <button class="btn btn-sm" type="button" title="Output disassembly in Intel syntax"
+                                        value="intel">Intel syntax
+                                </button>
+                                <button class="btn btn-sm" type="button"
+                                        title="Colourise lines so one can see how the source maps to the output"
+                                        value="colouriseAsm">Colourise
+                                </button>
+                            </div>
+                            <div>
+                                <td class="dropdown slots-numbers-container">
+                                    <button accesskey="m" type="button" title="Slot (compiler) to use to show error in the editor." class="btn btn-default dropdown-toggle" data-toggle="dropdown"
+                                            aria-haspopup="true" aria-expanded="true">
+                                        <span class="leaderSlot">leader slot</span>
+                                        <span class="caret"></span>
+                                    </button>
+                                    <ul class="dropdown-menu slots">
+                                    </ul>
+                                </td>
+                            </div>
+                            <div class="collapse permalink-collapse">
+                                <div class="input-group input-group-sm permalink">
+                                    <input type="text" class="form-control input-sm" placeholder="Loading" readonly id="permalink" size="1024">
+                                    <span class="input-group-btn">
+                                        <button class="btn btn-sm btn-default clippy" type="button" data-clipboard-target="#permalink"
+                                                title="Copy to clipboard">
+                                            <img src="ext/clippy.svg" class="clippy" width="13px" alt="Copy to clipboard">
+                                        </button>
+                                    </span>
+                                </div>
+                            </div>
+                        </form>
                     </div>
-                    <div class="btn-group btn-group-sm">
-                        <button class="btn btn-sm load">Load</button>
-                        <button class="btn btn-sm save">Save</button>
-                        <button class="btn btn-sm saveas">Save as...</button>
-                        <button class="btn btn-sm fulllink" title="Permanent, full URL to this page">Full link</button>
-                        <button class="btn btn-sm shortlink" title="Permanent link to this page as a short link">Short link</button>
-                    </div>
-                    <div class="btn-group btn-group-sm filter">
-                        <button class="btn btn-sm" type="button" value="binary"
-                                title="Compile to binary and disassemble the output">Binary
-                        </button>
-                        <button class="btn btn-sm active nonbinary" type="button"
-                                title="Filter unused labels from the output" value="labels">Unused labels
-                        </button>
-                        <button class="btn btn-sm active nonbinary" type="button"
-                                title="Filter all assembler directives from the output" value="directives">Directives
-                        </button>
-                        <button class="btn btn-sm active nonbinary" type="button"
-                                title="Remove all lines which are only comments from the output" value="commentOnly">
-                            Comment-only
-                            lines
-                        </button>
-                        <button class="btn btn-sm" type="button" title="Output disassembly in Intel syntax"
-                                value="intel">Intel syntax
-                        </button>
-                        <button class="btn btn-sm" type="button"
-                                title="Colourise lines so one can see how the source maps to the output"
-                                value="colouriseAsm">Colourise
-                        </button>
-                    </div>
-                    <div>
-                        <td class="dropdown slots-numbers-container">
-                            <button accesskey="m" type="button" title="Slot (compiler) to use to show error in the editor." class="btn btn-default dropdown-toggle" data-toggle="dropdown"
-                                    aria-haspopup="true" aria-expanded="true">
-                                <span class="leaderSlot">leader slot</span>
-                                <span class="caret"></span>
-                            </button>
-                            <ul class="dropdown-menu slots">
-                            </ul>
-                        </td>
-                    </div>
-                    <div class="collapse permalink-collapse">
-                        <div class="input-group input-group-sm permalink">
-                            <input type="text" class="form-control input-sm" placeholder="Loading" readonly id="permalink" size="1024">
-                            <span class="input-group-btn">
-                                <button class="btn btn-sm btn-default clippy" type="button" data-clipboard-target="#permalink"
-                                        title="Copy to clipboard">
-                                    <img src="ext/clippy.svg" class="clippy" width="13px" alt="Copy to clipboard">
+                </div>
+                <div class="row">
+                    <div class="col-md-6 editor">
+                        <div class="topbar indented">
+                            Code editor
+                            <span class="pull-right input-group input-group-sm">
+                                <button accesskey="a" title="Automatically build when you stop typing"
+                                        class="btn btn-default btn-sm autocompile active">
+                                    <span class="glyphicon glyphicon-play-circle"></span>
                                 </button>
                             </span>
                         </div>
+                        <textarea>// Type your code here, or load an example.</textarea>
                     </div>
-                </form>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-6 editor">
-                <div class="topbar indented">
-                    Code editor
-                    <span class="pull-right input-group input-group-sm">
-                        <button accesskey="a" title="Automatically build when you stop typing"
-                                class="btn btn-default btn-sm autocompile active">
-                            <span class="glyphicon glyphicon-play-circle"></span>
-                        </button>
-                    </span>
                 </div>
-                <textarea>// Type your code here, or load an example.</textarea>
-            </div>
-            <div class="col-md-6" id="asm0">
-                <div class="topbar indented">Assembly output slot 0</div>
-                <textarea>Awaiting in slot 0</textarea>
-            </div>
-            <div class="col-md-6" id="asm1">
-                <div class="topbar indented">Assembly output slot 1</div>
-                <textarea>Awaiting in slot 1</textarea>
-            </div>
-        </div>
-        <div id="output0">
-            <div class="row result">
-                <div class="topbar">Compiler output 0 &mdash; <span class="compilerVersion"></span></div>
-                <div class="output">
-                    <div class="template"></div>
-                </div>
-            </div>
-        </div>
-        <div id="output1">
-            <div class="row result">
-                <div class="topbar">Compiler output 1 &mdash; <span class="compilerVersion"></span></div>
-                <div class="output">
-                    <div class="template"></div>
-                </div>
-            </div>
-        </div>
-    </section>
+            </section>
 
-    <div class="modal fade" id="saveDialog">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
-                            aria-hidden="true">&times;</span></button>
-                    <h4>Save as...</h4>
+            <div class="modal fade" id="saveDialog">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                                    aria-hidden="true">&times;</span></button>
+                            <h4>Save as...</h4>
+                        </div>
+                        <div class="modal-body">
+                            <label>Filename: <input class="save-filename" style="width: 30em;" type="text"></label>
+                        </div>
+                        <div class="modal-footer">
+                            <a href="#" data-dismiss="modal" class="btn btn-default">Cancel</a>
+                            <a href="#" class="btn btn-primary save">Save</a>
+                        </div>
+                    </div>
                 </div>
-                <div class="modal-body">
-                    <label>Filename: <input class="save-filename" style="width: 30em;" type="text"></label>
-                </div>
-                <div class="modal-footer">
-                    <a href="#" data-dismiss="modal" class="btn btn-default">Cancel</a>
-                    <a href="#" class="btn btn-primary save">Save</a>
+            </div>
+        </div>
+
+        <div class="fright">
+            <div class="tabs">
+                <ul class="tab-links">
+                    <li class="active"><a href="#tab0">Slot 0</a></li>
+                    <li><a href="#tab1">Slot 1</a></li>
+                </ul>
+
+                <div class="tab-content">
+                    <div id="tab0" class="tab active">
+                        <div class="col-md-7" id="params0">
+                            <form class="well form-inline">
+                                <p> Params 0 </p>
+                                <table>
+                                    <tbody>
+                                    <tr>
+                                        <td class="dropdown compilers-container">
+                                            <button accesskey="c" type="button" title="Compiler to use (alt-C)" class="btn btn-default dropdown-toggle" data-toggle="dropdown"
+                                                    aria-haspopup="true" aria-expanded="true">
+                                                <span class="compiler">g++</span>
+                                                <span class="caret"></span>
+                                            </button>
+                                            <ul class="dropdown-menu compilers">
+                                            </ul>
+                                        </td>
+                                        <td>
+                                            <input accesskey="o" title="Options to pass to compiler (alt-O)" class="compiler_options" placeholder="compiler options" type="text" value="" size="64">
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                                <div class="btn-group btn-group-sm filter">
+                                    <!--
+                                    <button class="btn btn-sm" type="button"
+                                            title="Colourise lines so one can see how the source maps to the output"
+                                            value="colouriseAsm">Colourise
+                                    </button>
+                                    -->
+                                </div>
+                            </form>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6" id="asm0">
+                                <div class="topbar indented">Assembly output slot 0</div>
+                                <textarea>Awaiting in slot 0</textarea>
+                            </div>
+                        </div>
+                        <div id="output0">
+                            <div class="row result">
+                                <div class="topbar">Compiler output 0 &mdash; <span class="compilerVersion"></span></div>
+                                <div class="output">
+                                    <div class="template"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="tab1" class="tab">
+                        <div class="col-md-7" id="params1"> <!--  begining of a horrible copy pasta -->
+                            <form class="well form-inline">
+                                <p> Params 1 </p>
+                                <table>
+                                    <tbody>
+                                    <tr>
+                                        <td class="dropdown compilers-container">
+                                            <button accesskey="c" type="button" title="Compiler to use (alt-C)" class="btn btn-default dropdown-toggle" data-toggle="dropdown"
+                                                    aria-haspopup="true" aria-expanded="true">
+                                                <span class="compiler">g++</span>
+                                                <span class="caret"></span>
+                                            </button>
+                                            <ul class="dropdown-menu compilers">
+                                            </ul>
+                                        </td>
+                                        <td>
+                                            <input accesskey="o" title="Options to pass to compiler (alt-O)" class="compiler_options" placeholder="compiler options" type="text" value="" size="64">
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                                <div class="btn-group btn-group-sm filter">
+                                    <!--
+                                    <button class="btn btn-sm" type="button"
+                                            title="Colourise lines so one can see how the source maps to the output"
+                                            value="colouriseAsm">Colourise
+                                    </button>
+                                    -->
+                                </div>
+                            </form>
+                        </div> <!--  end of horrible copy pasta -->
+                        <div class="row">
+                            <div class="col-md-6" id="asm1">
+                                <div class="topbar indented">Assembly output slot 1</div>
+                                <textarea>Awaiting in slot 1</textarea>
+                            </div>
+                        </div>
+                        <div id="output1">
+                            <div class="row result">
+                                <div class="topbar">Compiler output 1 &mdash; <span class="compilerVersion"></span></div>
+                                <div class="output">
+                                    <div class="template"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </div>
