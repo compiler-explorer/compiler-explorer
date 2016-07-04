@@ -109,11 +109,9 @@
         </div>
     </div>
 
-    <div class="wrap">
-        <div class="fleft">
+    <div class="row">
+        <div class="col-md-6">
             <section id="main" class="container-fluid">
-                <div class="row">
-                    <div class="col-md-5" id="commonParams">
                         <form class="well form-inline files">
                             <div>
                                 <label>Source: <select class="source"></select></label>
@@ -172,10 +170,7 @@
                                 </div>
                             </div>
                         </form>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-6 editor">
+                    <div class="editor">
                         <div class="topbar indented">
                             Code editor
                             <span class="pull-right input-group input-group-sm">
@@ -187,7 +182,6 @@
                         </div>
                         <textarea>// Type your code here, or load an example.</textarea>
                     </div>
-                </div>
             </section>
 
             <div class="modal fade" id="saveDialog">
@@ -210,7 +204,7 @@
             </div>
         </div>
 
-        <div class="fright">
+        <div class="col-md-5">
             <div class="tabs">
                 <ul class="tab-links">
                     <li class="active"><a href="#tab0">Slot 0</a></li>
@@ -219,7 +213,7 @@
 
                 <div class="tab-content">
                     <div id="tab0" class="tab active">
-                        <div class="col-md-7" id="params0">
+                        <div id="params0">
                             <form class="well form-inline">
                                 <p> Params 0 </p>
                                 <table>
@@ -250,14 +244,12 @@
                                 </div>
                             </form>
                         </div>
-                        <div class="row">
-                            <div class="col-md-6" id="asm0">
+                            <div id="asm0">
                                 <div class="topbar indented">Assembly output slot 0</div>
                                 <textarea>Awaiting in slot 0</textarea>
                             </div>
-                        </div>
                         <div id="output0">
-                            <div class="row result">
+                            <div class="result">
                                 <div class="topbar">Compiler output 0 &mdash; <span class="compilerVersion"></span></div>
                                 <div class="output">
                                     <div class="template"></div>
@@ -267,7 +259,7 @@
                     </div>
 
                     <div id="tab1" class="tab">
-                        <div class="col-md-7" id="params1"> <!--  begining of a horrible copy pasta -->
+                        <div id="params1"> <!--  begining of a horrible copy pasta -->
                             <form class="well form-inline">
                                 <p> Params 1 </p>
                                 <table>
@@ -298,14 +290,12 @@
                                 </div>
                             </form>
                         </div> <!--  end of horrible copy pasta -->
-                        <div class="row">
-                            <div class="col-md-6" id="asm1">
+                            <div id="asm1">
                                 <div class="topbar indented">Assembly output slot 1</div>
                                 <textarea>Awaiting in slot 1</textarea>
                             </div>
-                        </div>
                         <div id="output1">
-                            <div class="row result">
+                            <div class="result">
                                 <div class="topbar">Compiler output 1 &mdash; <span class="compilerVersion"></span></div>
                                 <div class="output">
                                     <div class="template"></div>

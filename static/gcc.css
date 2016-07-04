@@ -42,7 +42,7 @@ body {
 
 .compiler_options {
     margin-left: 10px; // space between the scroll-down and the compiler's options
-    width: 50%;
+    width: 100%;
 }
 
 .options {
@@ -252,28 +252,3 @@ li.active a, li.active a:hover {
     display:block;
 }
 
-
-
-/** 
- * Split index.html in two  : on the left editor + common settings,
- *                            on the right asmX + settingsX
- **/
-.wrap {
-    width: 100%;
-    overflow: auto;
-    padding: 2px;
-}
-
-.fleft {
-    float: left;
-    background: lightblue;
-    width: 50%;
-    //height: 400px;
-}
-
-.fright {
-    float: right;
-    background: pink;
-    width: 50%;
-    //height: 400px;
-}

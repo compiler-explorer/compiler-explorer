@@ -52,6 +52,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
     console.log("[TRACE] Entering function Compiler()");
     // TODO : allow user to dynamically change the number of slots
     var slotsCount = 2;
+    setSetting('leaderSlot', 0);
     var compilersById = {};
     var compilersByAlias = {};
 
@@ -214,7 +215,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
     // function similar to setCompilersInSlot
     // TODO : should be returned by Compiler() !
     // (not executed in setCompilers)
-    function setLeaderSlot() {
+    function setLeaderSlotMenu() {
         domRoot.find('#commonParams .slots li').remove();
         // fills the leader-slot list
         for (var n = 0; n < slotsCount; n++) {
@@ -562,7 +563,9 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
         // Deserealise Compilers id
         state.compilersInSlots = mapCompiler(state.compilersInSlots);
         for (var slot = 0; slot < slotsCount; slot ++) {
-            setCompilerById(state.compilersInSlots[slot],slot);
+            (function(slot) {
+                setCompilerById(state.compilersInSlots[slot],slot);
+            }) (slot);
         }
 
         // Deserealise Compilers options
@@ -598,12 +601,10 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
     }
 
     function onCompilerChange(slot) {
-        //onEditorChange();
         onParamChange(slot);
         updateCompilerAndButtons(slot);
     }
 
-    // TODO : is this function really useful ?
     function mapCompiler(compiler) {
         if (!compilersById[compiler]) {
             // Handle old settings and try the alias table.
@@ -613,21 +614,10 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
         return compiler;
     }
     
-    // TODO : check if not broken
-    function mapCompilersInSlots(compilersInSlots) {
-        for (var slot = 0; slot < slotsCount; slot ++) {
-            if (!compilersById[compilersInSlots[slot]]) {
-                // Handle old settings and try the alias table.
-                compilersInSlots[slot] = compilersByAlias[compilersInSlots[slot]];
-                if (compilersInSlots[slot]) compilersInSlots[slot] = compilersInSlots[slot].id;
-            }
-        }
-        return compilersInSlots;
-    }
-
     // added has auxiliary to setCompilers, in order not to break interface
     // TODO : consider refactoring as some tasks are repeated
     function setCompilersInSlot(compilers, defaultCompiler, slot) {
+        console.log("[INIT] in setCompilersInSlot(), compilers = "+JSON.stringify(compilers)+", slot = "+slot);
         domRoot.find('#params'+slot+' .compilers li').remove();
         compilersById = {};
         compilersByAlias = {};
@@ -645,8 +635,16 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
             })(elem.find("a"), arg.id);
         });
         var compiler = getSetting('compiler'+slot);
-        if (!compiler) compiler = defaultCompiler;
-        compiler = mapCompiler(compiler);
+        if (!compiler) {
+            compiler = defaultCompiler;
+            compiler = mapCompiler(compiler);
+            if (!compiler)
+                console.log("Could not map the default compiler id. Please double check your configuration file.");
+        } else {
+            compiler = mapCompiler(compiler);
+            if (!compiler)
+                console.log("Could not map the compiler found in settings. Please clear your browser cache.");
+        }
         if (compiler) {
             setCompilerById(compiler,slot);
         }
@@ -654,7 +652,8 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
     }
 
     function setCompilers(compilers, defaultCompiler) {
-        setLeaderSlot();
+        console.log("[INIT] setCompilers() was called with compilers = "+JSON.stringify(compilers)+", defaultCompiler = "+defaultCompiler);
+        setLeaderSlotMenu();
         for (var slot = 0; slot < slotsCount; slot++) {
             (function(slot){
                 setCompilersInSlot(compilers,defaultCompiler,slot);
@@ -682,7 +681,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
     }
 
     function setEditorHeight(height) {
-        const MinHeight = 100;
+        const MinHeight = 80;
         if (height < MinHeight) height = MinHeight;
         cppEditor.setSize(null, height);
 
