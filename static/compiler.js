@@ -98,7 +98,8 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
         return used_ids.length;
     }
 
-    setSetting('leaderSlot', 0);
+    
+    setSetting('leaderSlot', null); // TODO : remove ?
     var compilersById = {};
     var compilersByAlias = {};
 
@@ -212,13 +213,13 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
         domRoot.find('#commonParams .slots li').remove();
         // fills the leader-slot list
         for (var i = 0; i < slots.length; i++) {
-            var elem = $('<li><a href="#">' + i + '</a></li>');
+            var elem = $('<li><a href="#">' + slots[i].id + '</a></li>');
             domRoot.find('#commonParams .slots').append(elem);
             (function (i) {
                 elem.click(function () {
                     var leaderSlotMenuNode = domRoot.find('#commonParams .leaderSlot');
-                    leaderSlotMenuNode.text('leader slot : '+i);
-                    setSetting('leaderSlot', i);
+                    leaderSlotMenuNode.text('leader slot : '+slots[i].id);
+                    setSetting('leaderSlot', slots[i].id);
                     onEditorChange(true);
                 });
             })(i);
@@ -703,7 +704,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
         if (slots.length == 1) {
             // "force" menu update if this is the first slot added
             var leaderSlotMenuNode = domRoot.find('#commonParams .leaderSlot');
-            leaderSlotMenuNode.text('leader slot : '+0);
+            leaderSlotMenuNode.text('leader slot : '+slots[0].id);
         }
     }
 
@@ -927,6 +928,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
                 console.log("[STARTUP] There was a problem while restoring previous session.");
             }
         }
+        setSetting('leaderSlot', slots[0].id); 
     }
 
     return {
