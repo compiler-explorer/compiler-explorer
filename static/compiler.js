@@ -889,14 +889,14 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
             " and diff.id = "+diff.id);
             domRoot.find('#diff'+diff.id+' .'+className+' li').remove();
             for (var i = 0; i < slots.length; i++) {
-                var elem = $('<li><a href="#">' + i + '</a></li>');
+                var elem = $('<li><a href="#">' + slots[i].id + '</a></li>');
                 domRoot.find('#diff'+diff.id+' .'+className+' .slots').append(elem);
                 (function (i) {
                     elem.click(function () {
-                        console.log("[UI] user set "+i+" as "+className+
+                        console.log("[UI] user set "+slots[i].id+" as "+className+
                         " slot in diff with id "+diff.id);
                         var diffSlotMenuNode = domRoot.find('#diff'+diff.id+' .'+className+' .slot');
-                        diffSlotMenuNode.text('\''+className+'\' slot (id?) : '+i);
+                        diffSlotMenuNode.text('\''+className+'\' slot : '+slots[i].id);
                     });
                 })(i);
             }
