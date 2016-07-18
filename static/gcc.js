@@ -408,7 +408,19 @@ $(document).ready(function() {
 });
 
 $(document).ready(function() {
+    $('#new-diff').on('click', function(e)  {
+        console.log("[UI] User clicked on new-diff button.");
+        var newDiff = currentCompiler.create_and_place_diff();
+        resizeEditors();
+    });
+});
+
+$(document).ready(function() {
     $('#slotTemplate').hide();
+});
+
+$(document).ready(function() {
+    $('#diffTemplate').hide();
 });
 
 $(function () {

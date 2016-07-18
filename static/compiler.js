@@ -68,6 +68,18 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
         this.lastRequest = null;
     }
 
+    diffs = [];
+    var Diff = function(id) {
+        this.id = id;
+        this.slotBefore = null;
+        this.slotAfter = null;
+        this.asmCodeMirror = null;
+        this.currentDiff = null;
+        // this.pendingTimeOut = null;
+        // this.lastUpdateAsm = null;
+        // this.lastRequest = null;
+    }
+
     // returns the smallest Natural that is not used as an id
     // (suppose that ids are Naturals, but any other way of getting 
     // an unique id usable in HTML's classes should work)
@@ -572,8 +584,10 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
     }
 
     function onCompilerChange(slot) {
+        console.log("[Debug] : onCompilerChange called with slot.id = "+slot.id);
         onParamChange(slot);
         updateCompilerAndButtons(slot);
+        setAllDiffSlotsMenus();
     }
 
     function mapCompiler(compiler) {
@@ -701,6 +715,15 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
         return ids;
     }
 
+    // TODO : refactor !
+    function get_diffs_ids() {
+        var ids = [];
+        for (var i = 0; i < diffs.length; i++) {
+            ids.push(diffs[i].id);
+        }
+        return ids;
+    }
+
     function slot_ctor(optionalId) {
         var newSlot = new Slot();
         if (optionalId) {
@@ -711,6 +734,18 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
         slots.push(newSlot);
         setSetting('slotsId',JSON.stringify(get_slots_ids()));
         return newSlot;
+    }
+
+    function diff_ctor(optionalId) {
+        var newDiff = new Diff();
+        if (optionalId) {
+            newDiff.id = optionalId;
+        } else {
+            newDiff.id = get_available_id(diffs);
+        }
+        diffs.push(newDiff);
+        setSetting('diffsId',JSON.stringify(get_diffs_ids()));
+        return newDiff;
     }
     
     // Array Remove - By John Resig (MIT Licensed)
@@ -732,13 +767,28 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
     function slot_dtor(slot) {
         removeSetting('compiler'+slot.id);
         removeSetting('compilerOptions'+slot.id);
-        setSetting('slotsId',JSON.stringify(get_slots_ids()));
         remove_id_in_array(slot.id, slots);
+        // after the deletion, update the browser's settings :
+        setSetting('slotsId', JSON.stringify(get_slots_ids()));
+        setLeaderSlotMenu();
+    }
+
+    function diff_dtor(diff) {
+        remove_id_in_array(diff.id, diffs);
+        // after the deletion, update the browser's settings :
+        setSetting('diffsId', JSON.stringify(get_diffs_ids()));
     }
 
     function get_slot_by_id(slotId) {
-        for ( var i = 0; i < slots.length; i++) {
+        for (var i = 0; i < slots.length; i++) {
             if (slots[i].id == slotId) return slots[i];
+        }
+        return null;
+    }
+
+    function get_diff_by_id(diffId) {
+        for (var i = 0; i < diffs.length; i++) {
+            if (diffs[i].id == diffId) return diffs[i];
         }
         return null;
     }
@@ -780,8 +830,30 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
         setPanelListSortable();
     }
 
+    function diff_DOM_ctor(diff) {
+            var diffTemplate = $('#diffTemplate');
+            var clone = diffTemplate.clone().prop('id', 'diff'+diff.id);
+            var last = $('#new-diff');
+            last.before(clone); // insert right before the "+" button
+
+            $('#diff'+diff.id+' .title').text("Diff "+diff.id+" (drag me)  ");
+            $('#diff'+diff.id).show();
+            $('#diff'+diff.id+' .closeButton').on('click', function(e)  {
+                console.log("[UI] User clicked on closeButton in diff "+diff.id);
+                var diffToDelete = get_diff_by_id(diff.id);
+                delete_and_unplace_diff(diffToDelete);
+            });
+
+            setPanelListSortable();
+            setDiffSlotsMenus(diff);
+    }
+
     function slot_DOM_dtor(slot) {
         $('#slot'+slot.id).remove();
+    }
+
+    function diff_DOM_dtor(diff) {
+        $('#diff'+diff.id).remove();
     }
 
     function create_and_place_slot(compilers,defaultCompiler) {
@@ -792,9 +864,51 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
         return newSlot;
     }
 
+    function create_and_place_diff() {
+            var newDiff = diff_ctor();
+            diff_DOM_ctor(newDiff);
+            //setCompilersInSlot(compilers, defaultCompiler, newSlot);
+            return newSlot;
+    }
+
     function delete_and_unplace_slot(slot) {
         slot_DOM_dtor(slot);
         slot_dtor(slot);
+    }
+
+    function delete_and_unplace_diff(diff) {
+        diff_DOM_dtor(diff);
+        diff_dtor(diff);
+    }
+
+    function setDiffSlotsMenus(diff) {
+        // className currently is "before" or "after"
+        function setSlotMenu(className) {
+            console.log("Debug : setSlotMenu with "+className+
+            " and diff.id = "+diff.id);
+            domRoot.find('#diff'+diff.id+' .'+className+' li').remove();
+            for (var i = 0; i < slots.length; i++) {
+                var elem = $('<li><a href="#">' + i + '</a></li>');
+                domRoot.find('#diff'+diff.id+' .'+className+' .slots').append(elem);
+                (function (i) {
+                    elem.click(function () {
+                        console.log("[UI] user set "+i+" as "+className+
+                        " slot in diff with id "+diff.id);
+                        var diffSlotMenuNode = domRoot.find('#diff'+diff.id+' .'+className+' .slot');
+                        diffSlotMenuNode.text('\''+className+'\' slot (id?) : '+i);
+                    });
+                })(i);
+            }
+        }
+        setSlotMenu("before");
+        setSlotMenu("after");
+    }
+
+    function setAllDiffSlotsMenus() {
+        console.log("[Debug] : inside setAllDiffSlotsMenus, diffs.length = "+diffs.length);
+        for (var i = 0; i<diffs.length; i++) {
+            setDiffSlotsMenus(diffs[i]);
+        }
     }
 
     // on startup, for each slot,
@@ -825,6 +939,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
         setEditorHeight: setEditorHeight,
         setCompilersInSlot : setCompilersInSlot,
         create_and_place_slot: create_and_place_slot,
+        create_and_place_diff: create_and_place_diff,
         refreshSlot: refreshSlot
     };
 }
