@@ -74,6 +74,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
         this.afterSlot = null;
         this.currentDiff = null;
         this.asmCodeMirror = null;
+        this.zones = null;
         // this.pendingTimeOut = null;
         // this.lastUpdateAsm = null;
         // this.lastRequest = null;
@@ -627,6 +628,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
         console.log("[CALLBACK] onDiffResponse() with diff = "+diff.id);
         // console.log("[DEBUG] result: "+result);
         diff.currentDiff = result.computedDiff;
+        diff.zones = result.zones;
         updateDiff(diff);
     }
 
@@ -636,43 +638,30 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
         if (!diff.currentDiff) {
             return;
         }
-        // TODO : have a display closer to the one in asm panels ?
 
         diff.asmCodeMirror.operation(function () {
             diff.asmCodeMirror.setValue(diff.currentDiff);
             clearBackground(diff.asmCodeMirror);
         });
-        coloriseRegexZone(diff,
-            /\[-[^]+?-\]/g, // this regex is not greedy
-            "background-color: #32CD32;");
-        coloriseRegexZone(diff,
-            /\{\+[^]+?\+\}/g,
-            "background-color: #FF0000;");
-    }
-
-    function coloriseRegexZone(diff, re, cssStyle){
-        var doc = diff.asmCodeMirror.getDoc();
+        doc = diff.asmCodeMirror.getDoc();
         var computeLineChCoord = buildComputeLineChCoord(diff.currentDiff);
-        var match = null;
-
-        while ((match = re.exec(diff.currentDiff)) != null) {
-            var first = match.index;
-            var firstLineCh = computeLineChCoord(first);
-            var length = match[0].length;
-            var last = first + length - 1 + 1; // why does it needs + 1 ?
-            var lastLineCh = computeLineChCoord(last);
-            // console.log("[DEBUG] match found at "+first+
-            //     " ("+JSON.stringify(firstLineCh)+") "+
-            //     " up to "+last+
-            //     " ("+JSON.stringify(lastLineCh)+")");
-            
-            doc.markText(
-                firstLineCh,
-                lastLineCh,
-                {css: cssStyle});
+        // Same colors as in phabricator's diffs
+        var cssStyles = ["background-color: rgba(151,234,151,.6);",
+                         "background-color: rgba(251,175,175,.7);"];
+        colorMarkedZones = [];
+        for (var i = 0; i<diff.zones.length; i++) {
+            for (var j = 0; j<diff.zones[i].length; j++) {
+                colorMarkedZones.push(
+                    doc.markText(computeLineChCoord(diff.zones[i][j].begin),
+                                 computeLineChCoord(diff.zones[i][j].end+1),
+                                 {css: cssStyles[i]}));
+            }
         }
     }
 
+    // This function is required to place multiline marks in a CodeMirror
+    // windows: markText accepts only coordinates in the form (line, column)
+    // with line and column starting at 1.
     function buildComputeLineChCoord(text) {
         // assume text is 1 line containing '\n' to break lines
         // below calculations are placed outside the function to speed up
@@ -702,9 +691,6 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
             return {line: line, ch: ch};
         }
     }
-
-    //function computeLineChCoord(pos, lastPosInLine) {
-    //}
 
     function mapCompiler(compiler) {
         if (!compilersById[compiler]) {
