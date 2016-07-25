@@ -410,7 +410,7 @@ $(document).ready(function() {
 $(document).ready(function() {
     $('#new-diff').on('click', function(e)  {
         console.log("[UI] User clicked on new-diff button.");
-        var newDiff = currentCompiler.create_and_place_diff();
+        var newDiff = currentCompiler.create_and_place_diff_UI();
         resizeEditors();
     });
 });
@@ -426,3 +426,18 @@ $(document).ready(function() {
 $(function () {
     initialise(OPTIONS);
 });
+
+
+// DEBUG :
+function listSettings() {
+    // console.log(JSON.stringify(window.localStorage));
+    var entries = Object.getOwnPropertyNames(window.localStorage);
+    for (var i = 0; i < entries.length; i++) {
+        console.log(entries[i]);
+    }
+}
+
+// Unit test:
+function wipeSettings() {
+    window.localStorage.clear();
+}
