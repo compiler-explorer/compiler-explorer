@@ -65,6 +65,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
         // it can be used to prevent useless re-compilation
         // if no parameters were really changed (e.g. spaces moved)
         this.lastRequest = null;
+        this.pendingDiffs = [];
     }
 
     diffs = [];
@@ -78,6 +79,22 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
         // this.pendingTimeOut = null;
         // this.lastUpdateAsm = null;
         // this.lastRequest = null;
+    }
+
+    function contains(array, object) {
+        for (var i = 0; i < array.length; i++) {
+            if (array[i] === object) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // adds diff to the set (array) slot.pendingDiffs
+    function add_to_pendings(slot, diff) {
+        if (!contains(slot.pendingDiffs,diff)) {
+            slot.pendingDiffs.push(diff);
+        }
     }
 
     // returns the smallest Natural that is not used as an id
@@ -290,6 +307,9 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
         });
         slot.currentAssembly = data.asm || fakeAsm("[no output]");
         updateAsm(slot);
+        for (var i = 0; i < slot.pendingDiffs.length; i++) {
+            onDiffChange(slot.pendingDiffs[i]);
+        }
     }
 
     function numberUsedLines(asm) {
@@ -524,7 +544,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
         console.log("[WINDOW] Serialising state...");
 
         // Memorize informations on slots
-        var slotIds = []; // necessary only to link with diffs
+        var slotIds = []; // necessary only to link with iiffs
         var compilersInSlots = [];
         var optionsInSlots = [];
         slots.forEach(function(slot) {
@@ -1069,6 +1089,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
             var diffSlotMenuNode = domRoot.find('#diff'+diff.id+' .'+className+' .slot');
             diffSlotMenuNode.text('\''+className+'\' slot : '+slot.id);
             setSetting('diff'+diff.id+className,slot.id);
+            add_to_pendings(slot, diff);
         }
     }
 
