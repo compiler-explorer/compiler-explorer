@@ -600,13 +600,9 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
         console.log("[WINDOW] Deserialisation : deserializing diffs...");
         for (var i = 0; i < state.diffCount; i++) {
             var newDiff = create_and_place_diff(state.diffIds[i]);
-            // console.log("[DEBUG] setDiffButton: newDiff.id = " +
-            //             newDiff.id + ", before,"+get_slot_by_id(state.slotsInDiffs[i]["before"]).id);
             setDiffButton(newDiff,
                           "before",
                           get_slot_by_id(state.slotsInDiffs[i]["before"]));
-            // console.log("[DEBUG] setDiffButton: newDiff.id = " +
-            //             newDiff.id + ", after,"+get_slot_by_id(state.slotsInDiffs[i]["after"]).id);
             setDiffButton(newDiff,
                           "after",
                           get_slot_by_id(state.slotsInDiffs[i]["after"]));
@@ -1031,6 +1027,20 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
         return newDiff;
     }
 
+    function create_and_place_diff_UI(optionalId) {
+        var newDiff = create_and_place_diff(optionalId);
+        if (slots.length > 0) {
+            setDiffButton(newDiff,"before",slots[0]);
+            if (slots.length > 1) {
+                setDiffButton(newDiff,"after",slots[1]);
+            } else {
+                setDiffButton(newDiff,"after",slots[0]);
+            }
+            onDiffChange(newDiff);
+        }
+        return newDiff;
+    }
+
     function delete_and_unplace_slot(slot) {
         slot_DOM_dtor(slot);
         slot_dtor(slot);
@@ -1047,12 +1057,19 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
     // Auxilary to setDiffSlotsMenus and deserialisation
     function setDiffButton(diff, className, slot) {
         // className can be "before" or "after"
+        if (slot == null) {
+            console.log("[DEBUG] setDiffButton: diff.id = " +
+                diff.id + ", "+className+" -> "+"null.id");
+        } else {
+            console.log("[DEBUG] setDiffButton: diff.id = " +
+                diff.id + ", "+className+" -> "+slot.id);
+        }
         diff[className+'Slot'] = slot;
         if (slot != null) {
             var diffSlotMenuNode = domRoot.find('#diff'+diff.id+' .'+className+' .slot');
             diffSlotMenuNode.text('\''+className+'\' slot : '+slot.id);
+            setSetting('diff'+diff.id+className,slot.id);
         }
-        setSetting('diff'+diff.id+className,slot.id);
     }
 
     function setDiffSlotsMenus(diff) {
@@ -1126,6 +1143,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
 
             var afterSlot = get_slot_by_id(getSetting('diff'+newDiff.id+"after"));
             setDiffButton(newDiff, "after", afterSlot);
+            //onDiffChange(newDiff);
         }
     }
 
@@ -1139,7 +1157,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
         setEditorHeight: setEditorHeight,
         setCompilersInSlot : setCompilersInSlot,
         create_and_place_slot: create_and_place_slot,
-        create_and_place_diff: create_and_place_diff,
+        create_and_place_diff_UI: create_and_place_diff_UI,
         refreshSlot: refreshSlot
     };
 }
