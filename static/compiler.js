@@ -79,6 +79,10 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
         // this.pendingTimeOut = null;
         // this.lastUpdateAsm = null;
         // this.lastRequest = null;
+        
+        // used only if the editor's code is modified,
+        // to prevent two diff generation by waiting for the second one.
+        this.remainingTriggers = 2;
     }
 
     function contains(array, object) {
@@ -308,7 +312,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
         slot.currentAssembly = data.asm || fakeAsm("[no output]");
         updateAsm(slot);
         for (var i = 0; i < slot.pendingDiffs.length; i++) {
-            onDiffChange(slot.pendingDiffs[i]);
+            onDiffChange(slot.pendingDiffs[i], request.fromEditor);
         }
     }
 
@@ -441,6 +445,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
             console.log("[TIME] Timed out : compiling in slot " + slot.id + " triggered by modification of params...");
             (function(slot) {
                 var data = {
+                    fromEditor: false,
                     source: cppEditor.getValue(),
                     compiler: currentCompilerId(slot),
                     options: $('#slot'+slot.id+' .compiler_options').val(),
@@ -486,11 +491,11 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
 
         console.log("[TIME] Setting time out in editor");
         pendingTimeoutInEditor = setTimeout(function () {
-            console.log("[TIME] Timed out in editor : compiling in all "+slotsCount+ " slots...");
+            console.log("[TIME] Timed out in editor : compiling in all "+slots.length+ " slots...");
             for (var i = 0; i < slots.length; i++) {
-                //console.log("Compiling for slot " + i + "...");
                 (function(slot) {
                     var data = {
+                        fromEditor: true,
                         source: cppEditor.getValue(),
                         compiler: currentCompilerId(slot),
                         options: $('#slot'+slot.id+' .compiler_options').val(),
@@ -652,11 +657,21 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
         setAllDiffSlotsMenus();
     }
 
-    function onDiffChange(diff) {
+    function onDiffChange(diff, fromEditor) {
         console.log("[DEBUG] inside onDiffChange with diff id = "+diff.id);
-        domRoot.find('#diff'+diff.id+' .diffText').val(function(index, text) {
-            return "Incoming..."
-        });
+
+        console.log("[DEBUG] inside onDiffChange seen fromEditor = "+fromEditor);
+        if (fromEditor == false) {
+            diff.remainingTriggers = 2;
+        } else {
+            diff.remainingTriggers = diff.remainingTriggers - 1;
+            if (diff.remainingTriggers == 0) {
+                diff.remainingTriggers = 2;
+            } else {
+                return null;
+            }
+        }
+
         // If one slot is not mentioned, stop before making the ajax request
         if (diff.beforeSlot == null || diff.afterSlot == null) {
             return null;
