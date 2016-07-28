@@ -631,7 +631,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
             setDiffButton(newDiff,
                           "after",
                           get_slot_by_id(state.slotsInDiffs[i]["after"]));
-            onDiffChange(newDiff);
+            onDiffChange(newDiff, false);
         }
 
         resizeEditors();
@@ -658,9 +658,8 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
     }
 
     function onDiffChange(diff, fromEditor) {
-        console.log("[DEBUG] inside onDiffChange with diff id = "+diff.id);
-
-        console.log("[DEBUG] inside onDiffChange seen fromEditor = "+fromEditor);
+        console.log("[DEBUG] inside onDiffChange with diff id = "+diff.id+
+                    ", seen fromEditor = "+fromEditor);
         if (fromEditor == false) {
             diff.remainingTriggers = 2;
         } else {
@@ -1071,7 +1070,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
             } else {
                 setDiffButton(newDiff,"after",slots[0]);
             }
-            onDiffChange(newDiff);
+            onDiffChange(newDiff, false);
         }
         return newDiff;
     }
@@ -1127,7 +1126,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
                         //diff[className+'Slot'] = slots[i];
                         //var diffSlotMenuNode = domRoot.find('#diff'+diff.id+' .'+className+' .slot');
                         //diffSlotMenuNode.text('\''+className+'\' slot : '+slots[i].id);
-                        onDiffChange(diff);
+                        onDiffChange(diff, false);
                     });
                 })(i);
             }
@@ -1149,9 +1148,13 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
     // on startup, for each slot,
     // if a setting is defined, set it on static/index.html page
     var slotIds = getSetting('slotIds');
-    if (slotIds) {
-        console.log("[STARTUP] found slot data : restoring from previous session");
+    if (slotIds != null) {
         slotIds = JSON.parse(slotIds);
+    } else {
+        slotIds = [];
+    }
+    if (slotIds.length > 0) {
+        console.log("[STARTUP] found slot data : restoring from previous session");
         for (var i = 0; i < slotIds.length; i++) {
             var newSlot = slot_ctor(slotIds[i]);
             slot_DOM_ctor(newSlot);
@@ -1168,9 +1171,13 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
     // on startup, for each diff,
     // if a setting is defined, set it on static/index.html page
     var diffIds = getSetting('diffIds');
-    if (diffIds) {
-        console.log("[STARTUP] found diff data : restoring from previous session");
+    if (diffIds != null) {
         diffIds = JSON.parse(diffIds);
+    } else {
+        diffIds = [];
+    }
+    if (diffIds.length > 0) {
+        console.log("[STARTUP] found diff data : restoring from previous session");
         for (var i = 0; i < diffIds.length; i++) {
             var newDiff = create_and_place_diff(diffIds[i]);
 
