@@ -430,10 +430,14 @@ $(function () {
 ////////////////////////////////////////////////////////////////////////////////
 // Unit/Functional tests require:
 
-function getSettings() {
+function getSettingsList() {
     // console.log(JSON.stringify(window.localStorage));
     var entries = Object.getOwnPropertyNames(window.localStorage);
     return entries;
+}
+
+function getSetting(settingName) {
+    return window.localStorage[settingName];
 }
 
 function wipeSettings() {
@@ -443,8 +447,12 @@ function wipeSettings() {
 ////////////////////////////////////////////////////////////////////////////////
 // DEBUG :
 function listSettings() {
-    var entries = getSettings();
+    var entries = getSettingsList();
     for (var i = 0; i < entries.length; i++) {
         console.log(entries[i]);
     }
+}
+
+function showSetting(settingName) {
+    console.log(JSON.stringify(getSetting(settingName, null, ' ')));
 }
