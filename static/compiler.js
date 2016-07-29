@@ -121,7 +121,12 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
     }
 
     
-    setSetting('leaderSlot', null); // TODO : remove ?
+    // setSetting('leaderSlot', null); // TODO : remove ?
+    var leaderSlot = null; // is set up correctly at the end of this function.
+    function isLeader(slot) {
+        return (slot == leaderSlot);
+    }
+
     var compilersById = {};
     var compilersByAlias = {};
 
@@ -225,28 +230,6 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
     if (codeText) cppEditor.setValue(codeText);
 
     ignoreChanges = false;
-
-
-
-    // function similar to setCompilersInSlot
-    // TODO : should be returned by Compiler() !
-    // (not executed in setCompilers)
-    function setLeaderSlotMenu() {
-        domRoot.find('#commonParams .slots li').remove();
-        // fills the leader-slot list
-        for (var i = 0; i < slots.length; i++) {
-            var elem = $('<li><a href="#">' + slots[i].id + '</a></li>');
-            domRoot.find('#commonParams .slots').append(elem);
-            (function (i) {
-                elem.click(function () {
-                    var leaderSlotMenuNode = domRoot.find('#commonParams .leaderSlot');
-                    leaderSlotMenuNode.text('leader slot : '+slots[i].id);
-                    setSetting('leaderSlot', slots[i].id);
-                    onEditorChange(true);
-                });
-            })(i);
-        }
-    }
 
     // auxiliary function to onCompileResponse(),
     // used to display the compiler error messages in the editor's window
@@ -409,7 +392,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
             }
         });
 
-        if (filters.colouriseAsm) {
+        if (slot == leaderSlot && filters.colouriseAsm) {
             // colorise the editor
             cppEditor.operation(function () {
                 $.each(numberedLines.source, function (line, ordinal) {
@@ -433,7 +416,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
 
     // slot's parameters callback
     // TODO : refactor with onEditorChange : those functions could call an updateSlot(slot)
-    function onParamChange(slot) { 
+    function onParamChange(slot, force) { 
         console.log("[CALLBACK] onParamChange() on slot "+slot.id);
         if (ignoreChanges) return;  // Ugly hack during startup.
         if (slot.pendingTimeoutInSlot) {
@@ -455,7 +438,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
                 setSetting('compiler'+slot.id, data.compiler);
                 setSetting('compilerOptions'+slot.id, data.options);
                 var stringifiedReq = JSON.stringify(data);
-                if (stringifiedReq == slot.lastRequest) return;
+                if (!force && stringifiedReq == slot.lastRequest) return;
                 slot.lastRequest = stringifiedReq;
                 data.timestamp = new Date();
                 $.ajax({
@@ -819,7 +802,6 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
     function setCompilers(compilers, defaultCompiler) {
         console.log("[INIT] setCompilers() was called with compilers = "+
         JSON.stringify(compilers)+", defaultCompiler = "+defaultCompiler);
-        setLeaderSlotMenu();
         for (var i = 0; i < slots.length; i++) {
             (function(slot){
                 setCompilersInSlot(compilers,defaultCompiler,slot);
@@ -863,6 +845,34 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
         }
     }
 
+    function setLeaderSlotIcon(slot) {
+        console.log("[UI] Toggling icon(s)...");
+
+        // source for javascript unicode escape codes:
+        // http://www.fileformat.info/info/unicode/char/search.htm
+        // to convert a character to JS/HTML/CSS/URIs... escape code:
+        // https://r12a.github.io/apps/conversion/
+        
+        var selectedIcon = "\u2605"; // Unicode character: full star
+        var unselectedIcon = "\u2606"; // Unicode character: empty star
+        // you must keep those characters in sync with the template 
+        // slotTemplate in index.html
+        
+        // toggling the previous icon if there was one
+        if (leaderSlot != null) {
+            var prevIcon = domRoot.find('#slot'+leaderSlot.id+' .leaderSlotIcon');
+            prevIcon.text(unselectedIcon);
+            prevIcon.addClass("unselectedCharacterIcon");
+            prevIcon.removeClass("selectedCharacterIcon");
+        }
+
+        // toggling the new icon
+        var newIcon = domRoot.find('#slot'+slot.id+' .leaderSlotIcon');
+        newIcon.text(selectedIcon);
+        newIcon.addClass("selectedCharacterIcon");
+        newIcon.removeClass("unselectedCharacterIcon");
+    }
+
     // Function to call each time a slot is added to the page.
     // This function requires that the slot's DOM object already exists.
     function slot_use_DOM(slot) {
@@ -879,7 +889,18 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
             generate_change_callback(slot)).keyup(
             generate_change_callback(slot));
 
-        setLeaderSlotMenu();
+        domRoot.find('#slot'+slot.id+' .leaderSlotIcon').on('click', function(e)  {
+            console.log("[UI] Clicked on leaderSlotIcon in slot "+slot.id);
+            if (slot != leaderSlot) {
+                clearBackground(leaderSlot.asmCodeMirror);
+
+                setLeaderSlotIcon(slot);
+                leaderSlot = slot;
+                setSetting("leaderSlot",slot.id);
+                onParamChange(slot, true);
+            }
+        });
+
         if (slots.length == 1) {
             // "force" menu update if this is the first slot added
             var leaderSlotMenuNode = domRoot.find('#commonParams .leaderSlot');
@@ -955,13 +976,28 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
         }
     }
 
+    function anotherSlot(slot){
+        for (var i = 0; i < slots.length; i++) {
+            if (slots[i] != slot) {
+                return slots[i];
+            }
+        }
+        return null; // should not happen (at least 1 slot is open)
+    }
+
     function slot_dtor(slot) {
+        // if slot is the leader, find a new leader and change the icon
+        var newLeader = anotherSlot(slot);
+        leaderSlot = newLeader;
+        setLeaderSlotIcon(leaderSlot);
+        setSetting('leaderSlot', leaderSlot.id);
+
+        // now safely delete:
         removeSetting('compiler'+slot.id);
         removeSetting('compilerOptions'+slot.id);
         remove_id_in_array(slot.id, slots);
         // after the deletion, update the browser's settings :
         setSetting('slotIds', JSON.stringify(get_slots_ids()));
-        setLeaderSlotMenu();
     }
 
     function diff_dtor(diff) {
@@ -1170,12 +1206,17 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
                 console.log("[STARTUP] There was a problem while restoring previous session.");
             }
         }
-        setSetting('leaderSlot', slots[0].id); 
+        var leaderSlotSetting = getSetting('leaderSlot'); // Cannot be null !
+        leaderSlot = get_slot_by_id(leaderSlotSetting);
+        setLeaderSlotIcon(leaderSlot);
     } else {
-        create_and_place_slot(compilers, defaultCompiler);
         // not slot data found. It is probably the first time the user come to
         // visit (or to debug a wipeSetting(); was done in the browser console)
         // therefore it seems logical to open at least 1 slot
+        var newSlot = create_and_place_slot(compilers, defaultCompiler);
+        leaderSlot = newSlot;
+        setSetting(leaderSlot);
+        setLeaderSlotIcon(leaderSlot);
     }
 
     

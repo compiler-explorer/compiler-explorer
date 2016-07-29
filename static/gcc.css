@@ -204,3 +204,28 @@ li.social {
 .panel-modest .panel-body {
       display: inline-block;
   }
+
+.characterIcon {
+    /* disable text selection on character icons
+     * source : http://stackoverflow.com/a/9314458/4669135 */
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.selectedCharacterIcon {
+    color: #01DF01;
+    font-size: 25px;
+    margin-top: 0.4em;
+    margin-right: 0.2em;
+}
+
+.unselectedCharacterIcon {
+    color: #BDBDBD;
+    font-size: 25px;
+    margin-top: 0.4em;
+    margin-right: 0.2em;
+}
