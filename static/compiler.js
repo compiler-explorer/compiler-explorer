@@ -48,7 +48,8 @@ function clearBackground(cm) {
 const NumRainbowColours = 12;
 
 // This function is called in function initialise in static/gcc.js
-function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallback, lang) {
+function Compiler(domRoot, origFilters, windowLocalPrefix, 
+                  onEditorChangeCallback, lang, compilers, defaultCompiler) {
     console.log("[TRACE] Entering function Compiler()");
     // Global array that will contain the slots.
     slots = [];
@@ -1166,7 +1167,13 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
             }
         }
         setSetting('leaderSlot', slots[0].id); 
+    } else {
+        create_and_place_slot(compilers, defaultCompiler);
+        // not slot data found. It is probably the first time the user come to
+        // visit (or to debug a wipeSetting(); was done in the browser console)
+        // therefore it seems logical to open at least 1 slot
     }
+
     
     // on startup, for each diff,
     // if a setting is defined, set it on static/index.html page

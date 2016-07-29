@@ -319,7 +319,7 @@ function initialise(options) {
 
     var compiler = new Compiler($('body'), actualFilters, "a", function () {
         hidePermalink();
-    }, options.language);
+    }, options.language, options.compilers, options.defaultCompiler);
     allCompilers.push(compiler);
     currentCompiler = compiler;
 
