@@ -229,3 +229,16 @@ li.social {
     margin-top: 0.4em;
     margin-right: 0.2em;
 }
+
+.unicode-arrow {
+    font-size: 25px;
+    padding: 10px;
+}
+
+.diff-before-button {
+    background-color: rgba(251,175,175,.7);
+}
+
+.diff-after-button {
+    background-color: rgba(151,234,151,.6);
+}

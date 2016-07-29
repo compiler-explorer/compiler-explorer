@@ -917,6 +917,17 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
             gutters: ['CodeMirror-linenumbers'],
             lineWrapping: true
         });
+        var reverseDiffButton = domRoot.find('#diff'+diff.id+' .reverse-diff');
+        reverseDiffButton.on('click', function(e)  {
+            console.log("[UI] User clicked on reverse-diff button in diff "+diff.id);
+            var tmp = diff.beforeSlot;
+            diff.beforeSlot = diff.afterSlot;
+            diff.afterSlot = tmp;
+            setDiffButton(diff, "before", diff.beforeSlot);
+            setDiffButton(diff, "after", diff.afterSlot);
+            setDiffSlotsMenus(diff);
+            onDiffChange(diff,false);
+        });
     }
 
     function get_slots_ids() {
