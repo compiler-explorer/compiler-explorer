@@ -1014,8 +1014,12 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
         $('#slot'+slot.id).show();
         $('#slot'+slot.id+' .closeButton').on('click', function(e)  {
             console.log("[UI] User clicked on closeButton in slot "+slot.id);
-            var slotToDelete = get_slot_by_id(slot.id);
-            delete_and_unplace_slot(slotToDelete);
+            if (slots.length > 1) {
+                var slotToDelete = get_slot_by_id(slot.id);
+                delete_and_unplace_slot(slotToDelete);
+            } else {
+                console.log("[UI] It is useless to close the last compiler!");
+            }
         });
 
         setPanelListSortable();
