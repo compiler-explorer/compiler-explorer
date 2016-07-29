@@ -29,7 +29,7 @@ var nopt = require('nopt'),
     os = require('os'),
     props = require('./lib/properties'),
     compileHandler = require('./lib/compile').compileHandler,
-    diffHandler = require('./lib/diff').diffHandler,
+    buildDiffHandler = require('./lib/diff').buildDiffHandler,
     express = require('express'),
     child_process = require('child_process'),
     path = require('path'),
@@ -75,6 +75,11 @@ props.initialize(rootDir + '/config', propHierarchy);
 // Instantiate a function to access records concerning "gcc-explorer" 
 // in hidden object props.properties
 var gccProps = props.propsFor("gcc-explorer");
+
+// Read from gccexplorer's config the wdiff configuration
+// that will be used to configure lib/diff.js
+var wdiffConfig = {wdiffExe: gccProps('wdiff_exe'," /usr/bin/wdiff"),
+                   wdiffTmpDir: gccProps('wdiff_tmp_dir',"/tmp")};
 
 // Instantiate a function to access records concerning the chosen language
 // in hidden object props.properties
@@ -415,7 +420,8 @@ findCompilers().then(function (compilers) {
         bodyParser = require('body-parser'),
         logger = require('morgan'),
         compression = require('compression'),
-        restreamer = require('./lib/restreamer');
+        restreamer = require('./lib/restreamer'),
+        diffHandler = buildDiffHandler(wdiffConfig);
 
     webServer
         .use(logger('combined'))
