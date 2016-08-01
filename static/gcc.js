@@ -427,17 +427,24 @@ $(function () {
     initialise(OPTIONS);
 });
 
+////////////////////////////////////////////////////////////////////////////////
+// Unit/Functional tests require:
 
-// DEBUG :
-function listSettings() {
+function getSettings() {
     // console.log(JSON.stringify(window.localStorage));
     var entries = Object.getOwnPropertyNames(window.localStorage);
+    return entries;
+}
+
+function wipeSettings() {
+    window.localStorage.clear();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// DEBUG :
+function listSettings() {
+    var entries = getSettings();
     for (var i = 0; i < entries.length; i++) {
         console.log(entries[i]);
     }
-}
-
-// Unit test:
-function wipeSettings() {
-    window.localStorage.clear();
 }
