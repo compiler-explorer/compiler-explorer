@@ -297,6 +297,17 @@ function loadState(state) {
     return true;
 }
 
+function resizeEditors() {
+    var codeMirrors = $('.CodeMirror');
+    var top = codeMirrors.offset().top;
+    var windowHeight = $(window).height();
+    var compOutputSize = Math.max(100, windowHeight * 0.05);
+    $('.output').height(compOutputSize);
+    var resultHeight = $('.result').height();
+    var height = windowHeight - top - resultHeight - 40;
+    currentCompiler.setEditorHeight(height);
+}
+
 function initialise(options) {
     var defaultFilters = JSON.stringify(getAsmFilters());
     var actualFilters = $.parseJSON(window.localStorage.filter || defaultFilters);
@@ -367,17 +378,6 @@ function initialise(options) {
     });
     loadFromHash();
 
-    function resizeEditors() {
-        var codeMirrors = $('.CodeMirror');
-        var top = codeMirrors.offset().top;
-        var windowHeight = $(window).height();
-        var compOutputSize = Math.max(100, windowHeight * 0.05);
-        $('.output').height(compOutputSize);
-        var resultHeight = $('.result').height();
-        var height = windowHeight - top - resultHeight - 40;
-        currentCompiler.setEditorHeight(height);
-    }
-
     $(window).on("resize", resizeEditors);
     resizeEditors();
 }
@@ -415,32 +415,41 @@ function setPanelListSortable() {
         });
 }
 
+//TODO : remove
 $(document).ready(setPanelListSortable);
 
-$(document).ready(function() {
-    $('#new-slot').on('click', function(e)  {
-        console.log("[UI] User clicked on new-slot button. slotCount was : "+ currentCompiler.getSlotsCount());
-        var newSlotCode = currentCompiler.getSlotsCount();
-        currentCompiler.setSlotsCount(currentCompiler.getSlotsCount() + 1);
+function slot_DOM_ctor(slot) {
         // source : http://stackoverflow.com/questions/10126395/how-to-jquery-clone-and-change-id
         var slotTemplate = $('#slotTemplate');
-        var clone = slotTemplate.clone().prop('id', 'slot'+newSlotCode);
+        var clone = slotTemplate.clone().prop('id', 'slot'+slot.id);
         var last = $('#new-slot');
         last.before(clone); // insert right before the "+" button
 
-        $('#slot'+newSlotCode+' .title').text("Slot " + newSlotCode+" (drag me) ");
-        $('#slot'+newSlotCode).show();
-        $('#slot'+newSlotCode+' .closeButton').on('click', function(e)  {
-            console.log("[UI] User clicked on closeButton in slot "+newSlotCode);
-            // demo code : 
-            $('#slot'+newSlotCode).remove();
-            currentCompiler.setSlotsCount(currentCompiler.getSlotsCount() - 1);
+        $('#slot'+slot.id+' .title').text("Slot (("+slot.id+")) (drag me)  ");
+        $('#slot'+slot.id).show();
+        $('#slot'+slot.id+' .closeButton').on('click', function(e)  {
+            console.log("[UI] User clicked on closeButton in slot "+slot.id);
+            var slotToDelete = currentCompiler.get_slot_by_id(slot.id);
+            slot_DOM_dtor(slotToDelete);
+            currentCompiler.slot_dtor(slotToDelete);
         });
 
         setPanelListSortable();
-        currentCompiler.oneMoreSlot();
-        currentCompiler.setCompilersInSlot(OPTIONS.compilers, OPTIONS.defaultCompiler, newSlotCode);
-        currentCompiler.refreshSlot(newSlotCode);
+}
+
+function slot_DOM_dtor(slot) {
+    $('#slot'+slot.id).remove();
+}
+
+$(document).ready(function() {
+    $('#new-slot').on('click', function(e)  {
+        console.log("[UI] User clicked on new-slot button.");
+        var newSlot = currentCompiler.slot_ctor();
+        slot_DOM_ctor(newSlot);
+        currentCompiler.slot_use_DOM(newSlot);
+        currentCompiler.setCompilersInSlot(OPTIONS.compilers, OPTIONS.defaultCompiler, newSlot);
+        resizeEditors();
+        currentCompiler.refreshSlot(newSlot);
     });
 });
 
