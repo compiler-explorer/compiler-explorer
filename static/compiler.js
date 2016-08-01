@@ -50,13 +50,20 @@ const NumRainbowColours = 12;
 function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallback, lang) {
     console.log("Entering in function Compiler()");
     var slotsCount = 2;
+    // TODO : create "asm0" just when needed. No need for slotsClassName
     var slotsClassName = ["asm0", "asm1"];
     var compilersById = {};
     var compilersByAlias = {};
 
-    // The time out is not slot dependant : 
+    // The time out is not slot dependant (??)
     // it correponds to the time in ms after which resend code to compiler 
-    var pendingTimeout = null;
+    //var pendingTimeout = null;
+    var pendingTimeoutInSlots = [];
+    for (var i = 0; i<slotsCount; i++) {
+        pendingTimeoutInSlots.push(null);
+    }
+
+    var pendingTimeoutInEditor = null;
 
     var asmCodeMirrors = [];
     for (var i = 0; i<slotsCount; i++) {
@@ -79,21 +86,21 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
     var filters_ = $.extend({}, origFilters);
     var ignoreChanges = true; // Horrible hack to avoid onEditorChange doing anything on first starting, ie before we've set anything up.
 
-    // to be modified
-    function setCompilerById(id) {
-        var compilerNode = domRoot.find('.compiler');
+    // modificating...
+    function setCompilerById(id,slot) {
+        var compilerNode = domRoot.find('#params'+slot+' .compiler');
         compilerNode.text(compilersById[id].name);
         compilerNode.attr('data', id);
     }
 
-    // to be modified
-    function currentCompilerId() {
-        return domRoot.find('.compiler').attr('data');
+    // modificating...
+    function currentCompilerId(slot) {
+        return domRoot.find('#params'+slot+' .compiler').attr('data');
     }
 
     // to be modified
-    function currentCompiler() {
-        return compilersById[currentCompilerId()];
+    function currentCompiler(slot) {
+        return compilersById[currentCompilerId(slot)];
     }
 
     $('.autocompile').click(function () {
@@ -171,15 +178,48 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
     if (!codeText) codeText = $(".template.lang." + lang.replace(/[^a-zA-Z]/g, '').toLowerCase()).text();
     if (codeText) cppEditor.setValue(codeText);
 
-    // to be modified
-    domRoot.find('.compiler_options').change(onParamChange).keyup(onParamChange);
+    // modificating...
+    //domRoot.find('.compiler_options').change(onParamChange().keyup(onParamChange);
+    function generate_change_callback(slot) {
+        return function callback() {
+            onParamChange(slot);
+        }
+    }
+
+    // handle compiler option (slot specific) such as '-O1'
+    for (var slot = 0; slot < slotsCount; slot++) {
+        (function (slot) {
+            domRoot.find('#params'+slot+' .compiler_options').change(generate_change_callback(slot)).keyup(generate_change_callback(slot));
+        })(slot);
+    }
+
     ignoreChanges = false;
 
 
-    // to be modified
-    if (getSetting('compilerOptions')) {
-        domRoot.find('.compiler_options').val(getSetting('compilerOptions'));
+    // modificating...
+    for (var slot = 0; slot < slotsCount; slot++) {
+        // in get/setSetting, 'compilerOptions' -> 'compilerOptionsX' with X the slot number
+        if (getSetting('compilerOptions'+slot)) {
+            domRoot.find('#params'+slot+' .compiler_options').val(getSetting('compilerOptions'+slot));
+        }
     }
+
+    // function similar to setCompilersInSlot
+    function setLeaderSlot() {
+        domRoot.find('#commonParams .slots li').remove();
+        // fills the leader-slot list
+        for (var n = 0; n < slotsCount; n++) {
+            var elem = $('<li><a href="#">' + n + '</a></li>');
+            domRoot.find('#commonParams .slots').append(elem);
+            (function (n) {
+                elem.click(function () {
+                    setSetting('leaderSlot', n);
+                });
+            })(n);
+        }
+    }
+    // TODO : should be returned by Compiler() !
+    // not executed in setCompilers
 
     function makeErrNode(text) {
         var clazz = "error";
@@ -192,20 +232,14 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
 
     var errorWidgets = [];
 
-    function echo_to_out(out,msg) {
-        out += msg;
-    }
-
     function onCompileResponse(request, data) {
-        //console.log("In onCompileResponse, seen slot = " + request.slot);
+        console.log("In onCompileResponse, seen slot = " + request.slot);
         var stdout = data.stdout || "";
         var stderr = data.stderr || "";
         if (data.code === 0) {
-            //echo_to_out(stdout,"\nCompiled ok in slot " + slot); // does not seem to work
             //stdout += "\nCompiled ok in slot " + slot;
             stdout += "Compiled ok in slot " + request.slot + "\n";
         } else {
-            //echo_to_out(stderr,"\nCompilation failed in slot " + slot); // does not seem to work
             //stderr += "\nCompilation failed in slot " + slot;
             stderr += "Compilation failed in slot " + request.slot + "\n";
         }
@@ -214,10 +248,15 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
             _gaq.push(['_trackEvent', 'Compile', request.compiler, request.options, data.code]);
             _gaq.push(['_trackTiming', 'Compile', 'Timing', new Date() - request.timestamp]);
         }
-        $('.result .output :visible').remove();
-        for (var i = 0; i < errorWidgets.length; ++i)
-            cppEditor.removeLineWidget(errorWidgets[i]);
-        errorWidgets.length = 0;
+        domRoot.find('#output'+request.slot+' .result .output :visible').remove();
+        var leaderSlot = getSetting('leaderSlot');
+        console.log("In onCompileResponse, slot = "+request.slot+", leaderSlot = ",+leaderSlot);
+        // only show in Editor messages comming from the leaderSlot
+        if (request.slot == leaderSlot) {
+            for (var i = 0; i < errorWidgets.length; ++i)
+                cppEditor.removeLineWidget(errorWidgets[i]);
+            errorWidgets.length = 0;
+        }
         var numLines = 0;
         parseLines(stderr + stdout, function (lineNum, msg) {
             if (numLines > 50) return;
@@ -226,11 +265,15 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
                 msg = "Too many output lines...truncated";
             }
             numLines++;
-            var elem = $('.result .output'+request.slot+' .template').clone().appendTo('.result .output'+request.slot).removeClass('template');
+            var elem = domRoot.find('#output'+request.slot+' .result .output .template').clone().appendTo(domRoot.find('#output'+request.slot+' .result .output')).removeClass('template');
             if (lineNum) {
-                errorWidgets.push(cppEditor.addLineWidget(lineNum - 1, makeErrNode(msg), {
-                    coverGutter: false, noHScroll: true
-                }));
+                console.log("In onCompileResponse, slot = "+request.slot+", leaderSlot = ",+leaderSlot);
+                if  (request.slot == leaderSlot) {
+                    errorWidgets.push(cppEditor.addLineWidget(lineNum - 1, makeErrNode(msg), {
+                        coverGutter: false, noHScroll: true
+                    }));
+                }
+                //elem.html($('<a href="#">').text(lineNum + " : " + msg)).click(function () {
                 elem.html($('<a href="#">').text(lineNum + " : " + msg)).click(function () {
                     cppEditor.setSelection({line: lineNum - 1, ch: 0}, {line: lineNum, ch: 0});
                     return false;
@@ -267,7 +310,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
     }
 
     function updateAsm(slot,forceUpdate) {
-        //console.log("In updateAsm, slot = " + slot + ",asmCodeMirrors = " + asmCodeMirrors[slot] + "forceUpdate = " + forceUpdate);
+        console.log("In updateAsm, slot = " + slot + ",asmCodeMirrors = " + asmCodeMirrors[slot] + "forceUpdate = " + forceUpdate);
         if (!currentAssembly[slot]) return;
         var hashedUpdate = JSON.stringify(currentAssembly[slot]);
         // TODO : real hash here ?
@@ -286,6 +329,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
         });
         var filters = currentFilters();
         asmCodeMirrors[slot].operation(function () {
+            console.log("Operating on asm in slot "+slot);
             asmCodeMirrors[slot].setValue(asmText);
             clearBackground(asmCodeMirrors[slot]);
             var addrToAddrDiv = {};
@@ -343,20 +387,20 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
         });
 
         if (filters.colouriseAsm) {
+            // colorise the editor
             cppEditor.operation(function () {
                 $.each(numberedLines.source, function (line, ordinal) {
                     cppEditor.addLineClass(parseInt(line),
                         "background", "rainbow-" + (ordinal % NumRainbowColours));
                 });
             });
-            for (var i = 0; i < slotsCount; i++) {
+            // colorise the assembly in slot
                 asmCodeMirrors[slot].operation(function () {
                     $.each(numberedLines.asm, function (line, ordinal) {
                         asmCodeMirrors[slot].addLineClass(parseInt(line),
                             "background", "rainbow-" + (ordinal % NumRainbowColours));
                     });
                 });
-            }
         }
     }
 
@@ -364,29 +408,80 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
         return [{text: text, source: null}];
     }
 
-    function onParamChange() { // TODO : refactor with onEditorChange : those functions will call updateSlot(slot)
-        console.log("[CHANGE] in params");
+    function onParamChange(slot) { // TODO : refactor with onEditorChange : those functions could call an updateSlot(slot)
+        console.log("slot = " + slot + " in onParamChange");
+        console.log("[CHANGE] in params of slot "+slot);
         if (ignoreChanges) return;  // Ugly hack during startup.
-        if (pendingTimeout) {
+        if (pendingTimeoutInSlots[slot]) {
             console.log("Clearing time out");
-            clearTimeout(pendingTimeout);
+            clearTimeout(pendingTimeoutInSlots[slot]);
         }
 
         console.log("Setting time out");
-        pendingTimeout = setTimeout(function () {
+        pendingTimeoutInSlots[slot] = setTimeout(function () {
             console.log("Timed out !");
+            console.log("Compilation in slot " + slot + " triggered by modification in compiler parameters...");
+            (function(slot) {
+                var data = {
+                    slot: slot, // TO DECIDE : probably better not put it here
+                    source: cppEditor.getValue(),
+                    compiler: currentCompilerId(slot),
+                    options: $('#params'+slot+' .compiler_options').val(),
+                    filters: currentFilters()
+                };
+                setSetting('compiler'+slot, data.compiler);
+                setSetting('compilerOptions'+slot, data.options);
+                var stringifiedReq = JSON.stringify(data);
+                if (stringifiedReq == lastRequest[slot]) return;
+                lastRequest[slot] = stringifiedReq;
+                data.timestamp = new Date();
+                $.ajax({
+                    type: 'POST',
+                    url: '/compile',
+                    dataType: 'json',
+                    contentType: 'application/json',
+                    data: JSON.stringify(data),
+                    success: function (result) {
+                        onCompileResponse(data, result);
+                    },
+                    error: function (xhr, e_status, error) {
+                        console.log("AJAX request failed, reason : " + error);
+                    },
+                    cache: false
+                });
+                currentAssembly[slot] = fakeAsm("[Processing...]");
+                updateAsm(slot);
+                setSetting('code', cppEditor.getValue());
+                updateAsm(slot);
+            }) (slot);
+        }, 750); // Time in ms after which action is taken (if inactivity)
+
+        // (maybe redundant) execute the callback passed to Compiler()
+        onEditorChangeCallback();
+    }
+
+    function onEditorChange() {
+        console.log("[CHANGE] in editor");
+        if (ignoreChanges) return;  // Ugly hack during startup.
+        if (pendingTimeoutInEditor) {
+            console.log("Clearing time out");
+            clearTimeout(pendingTimeoutInEditor);
+        }
+        console.log("Setting time out");
+        pendingTimeoutInEditor = setTimeout(function () {
+            console.log("Timed out ! Compiling for " + slotsCount + " slots...");
             for (var i = 0; i < slotsCount; i++) {
-                console.log("Compilation in slot " + i + " triggered by modification in compiler parameters...");
+                console.log("Compiling for slot " + i + "...");
                 (function(slot) {
                     var data = {
                         slot: slot, // TO DECIDE : probably better not put it here
                         source: cppEditor.getValue(),
-                        compiler: currentCompilerId(),
-                        options: $('.compiler_options').val(),
+                        compiler: currentCompilerId(slot),
+                        options: $('#params'+slot+' .compiler_options').val(),
                         filters: currentFilters()
                     };
-                    setSetting('compiler', data.compiler);
-                    setSetting('compilerOptions', data.options);
+                    setSetting('compiler'+slot, data.compiler);
+                    setSetting('compilerOptions'+slot, data.options);
                     var stringifiedReq = JSON.stringify(data);
                     if (stringifiedReq == lastRequest[slot]) return;
                     lastRequest[slot] = stringifiedReq;
@@ -401,65 +496,12 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
                             onCompileResponse(data, result);
                         },
                         error: function (xhr, e_status, error) {
-                            console.log("AJAX request failed, reason : " + error);
+                            console.log("Ajax request failed, reason : " + error);
                         },
                         cache: false
                     });
                     currentAssembly[slot] = fakeAsm("[Processing...]");
                     updateAsm(slot);
-                    setSetting('code', cppEditor.getValue());
-                    updateAsm(slot);
-                }) (i);
-            }
-        }, 750); // Time in ms after which action is taken (if inactivity)
-
-        // (maybe redundant) execute the callback passed to Compiler()
-        onEditorChangeCallback();
-    }
-
-    function onEditorChange() {
-        console.log("[CHANGE] in editor");
-        if (ignoreChanges) return;  // Ugly hack during startup.
-        if (pendingTimeout) {
-            console.log("Clearing time out");
-            clearTimeout(pendingTimeout);
-        }
-
-        console.log("Setting time out");
-        pendingTimeout = setTimeout(function () {
-            console.log("Timed out ! Compiling for " + slotsCount + " slots...");
-            for (var i = 0; i < slotsCount; i++) {
-                console.log("Compiling for slot " + i + "...");
-                (function(slot) {
-                    var data = {
-                        slot: slot, // TO DECIDE : probably better not put it here
-                        source: cppEditor.getValue(),
-                        compiler: currentCompilerId(),
-                        options: $('.compiler_options').val(),
-                        filters: currentFilters()
-                    };
-                    setSetting('compiler', data.compiler);
-                    setSetting('compilerOptions', data.options);
-                    var stringifiedReq = JSON.stringify(data);
-                    if (stringifiedReq == lastRequest) return;
-                    lastRequest[slot] = stringifiedReq;
-                    data.timestamp = new Date();
-                    $.ajax({
-                        type: 'POST',
-                        url: '/compile',
-                        dataType: 'json',
-                        contentType: 'application/json',
-                        data: JSON.stringify(data),
-                        success: function (result) {
-                            onCompileResponse(data, result);
-                        },
-                        error: function (xhr, e_status, error) {
-                            console.log("ajax request failed, reason : " + error);
-                        },
-                        cache: false
-                    });
-                    currentassembly[slot] = fakeasm("[processing...]");
-                    updateasm(slot);
                 }) (i);
             }
         }, 750); // Time in ms after which action is taken (if inactivity)
@@ -482,9 +524,20 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
     }
 
     function serialiseState(compress) {
+
+        var compilersInSlots = [];
+        for (var slot = 0; slot < slotCount; slot++) {
+            compilersInSlots.push(currentCompilerId(slot));
+        }
+        var optionsInSlots = [];
+        for (var slot = 0; slot < slotCount; slot++) {
+            optionsInSlots.push(domRoot.find('#params'+slot+' .compiler_options').val());
+        }
+        // TODO : add slotCount in state
         var state = {
-            compiler: currentCompilerId(),
-            options: domRoot.find('.compiler_options').val()
+            //compiler: currentCompilerId(), become :
+            compilersInSlots: compilersInSlots,
+            optionsInSlots: optionsInSlots
         };
         if (compress) {
             state.sourcez = LZString.compressToBase64(cppEditor.getValue());
@@ -500,35 +553,52 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
         } else {
             cppEditor.setValue(state.source);
         }
-        state.compiler = mapCompiler(state.compiler);
-        setCompilerById(state.compiler);
-        domRoot.find('.compiler_options').val(state.options);
+
+        // Deserealise Compilers id
+        state.compilersInSlots = mapCompiler(state.compilersInSlots);
+        for (var slot = 0; slot < slotsCount; slot ++) {
+            setCompilerById(state.compilersInSlots[slot],slot);
+        }
+
+        // Deserealise Compilers options
+        for (var slot = 0; slot < slotsCount; slot ++) {
+            domRoot.find('#params'+slot+' .compiler_options').val(state.optionsInSlots[slot]);
+        }
         // Somewhat hackily persist compiler into local storage else when the ajax response comes in
         // with the list of compilers it can splat over the deserialized version.
         // The whole serialize/hash/localStorage code is a mess! TODO(mg): fix
-        setSetting('compiler', state.compiler);
-        for (var i = 0; i < slotsCount; i++) {
-            updateAsm(i,true);  // Force the update to reset colours after calling cppEditor.setValue
+        
+        // compiler -> compilerX
+        for (var slot = 0; slot < slotsCount; slot ++) {
+            setSetting('compiler'+slot, state.compilersInSlots[slot]);
+        }
+
+        for (var slot = 0; slot < slotsCount; slot++) {
+            (function(i) {
+                updateAsm(i,true);  // Force the update to reset colours after calling cppEditor.setValue
+            })(slot);
         }
         return true;
     }
 
-    function updateCompilerAndButtons() {
-        var compiler = currentCompiler();
-        $(".compilerVersion").text(compiler.name + " (" + compiler.version + ")");
+    function updateCompilerAndButtons(slot) {
+        var compiler = currentCompiler(slot);
+        // TODO : use dom below
+        domRoot.find('#output'+slot+' .compilerVersion').text(compiler.name + " (" + compiler.version + ")");
         var filters = currentFilters();
         var supportsIntel = compiler.intelAsm || filters.binary;
-        domRoot.find('.filter button.btn[value="intel"]').toggleClass("disabled", !supportsIntel);
-        domRoot.find('.filter button.btn[value="binary"]').toggleClass("disabled", !compiler.supportsBinary).toggle(OPTIONS.supportsBinary);
-        domRoot.find('.filter .nonbinary').toggleClass("disabled", !!filters.binary);
+        domRoot.find('#commonParams .filter button.btn[value="intel"]').toggleClass("disabled", !supportsIntel);
+        domRoot.find('#commonParams .filter button.btn[value="binary"]').toggleClass("disabled", !compiler.supportsBinary).toggle(OPTIONS.supportsBinary);
+        domRoot.find('#commonParams .filter .nonbinary').toggleClass("disabled", !!filters.binary);
     }
 
-    function onCompilerChange() {
+    function onCompilerChange(slot) {
         //onEditorChange();
-        onParamChange();
-        updateCompilerAndButtons();
+        onParamChange(slot);
+        updateCompilerAndButtons(slot);
     }
 
+    // TODO : is this function really useful ?
     function mapCompiler(compiler) {
         if (!compilersById[compiler]) {
             // Handle old settings and try the alias table.
@@ -537,30 +607,55 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
         }
         return compiler;
     }
+    
+    // TODO : check if not broken
+    // useless function ?
+    function mapCompilersInSlots(compilersInSlots) {
+        for (var slot = 0; slot < slotsCount; slot ++) {
+            if (!compilersById[compilersInSlots[slot]]) {
+                // Handle old settings and try the alias table.
+                compilersInSlots[slot] = compilersByAlias[compilersInSlots[slot]];
+                if (compilersInSlots[slot]) compilersInSlots[slot] = compilersInSlots[slot].id;
+            }
+        }
+        return compilersInSlots;
+    }
 
-    function setCompilers(compilers, defaultCompiler) {
-        domRoot.find('.compilers li').remove();
+    // added has auxiliary to setCompilers, in order not to break interface
+    // TODO : consider refactoring as some tasks are repeated
+    function setCompilersInSlot(compilers, defaultCompiler, slot) {
+        domRoot.find('#params'+slot+' .compilers li').remove();
         compilersById = {};
         compilersByAlias = {};
+        // fills the compiler list
         $.each(compilers, function (index, arg) {
             compilersById[arg.id] = arg;
             if (arg.alias) compilersByAlias[arg.alias] = arg;
             var elem = $('<li><a href="#">' + arg.name + '</a></li>');
-            domRoot.find('.compilers').append(elem);
+            domRoot.find('#params'+slot+' .compilers').append(elem);
             (function () {
                 elem.click(function () {
-                    setCompilerById(arg.id);
-                    onCompilerChange();
+                    setCompilerById(arg.id,slot);
+                    onCompilerChange(slot);
                 });
             })(elem.find("a"), arg.id);
         });
-        var compiler = getSetting('compiler');
+        var compiler = getSetting('compiler'+slot);
         if (!compiler) compiler = defaultCompiler;
         compiler = mapCompiler(compiler);
         if (compiler) {
-            setCompilerById(compiler);
+            setCompilerById(compiler,slot);
         }
-        onCompilerChange();
+        onCompilerChange(slot);
+    }
+
+    function setCompilers(compilers, defaultCompiler) {
+        setLeaderSlot();
+        for (var slot = 0; slot < slotsCount; slot++) {
+            (function(slot){
+                setCompilersInSlot(compilers,defaultCompiler,slot);
+            })(slot);
+        }
     }
 
     function currentFilters() {
@@ -569,9 +664,17 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
 
     function setFilters(f) {
         filters_ = $.extend({}, f);
-        //onEditorChange();
-        onParamChange();
+        for (var slot = 0; slot < slotsCount; slot++) {
+            onParamChange(slot);
+        }
         updateCompilerAndButtons();
+    }
+
+    function setEditorHeight(height) {
+        const MinHeight = 100;
+        if (height < MinHeight) height = MinHeight;
+        cppEditor.setSize(null, height);
+        asmCodeMirror.setSize(null, height);
     }
 
     function setEditorHeight(height) {
