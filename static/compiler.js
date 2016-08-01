@@ -331,9 +331,11 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
         }).join("\n");
         var numberedLines = numberUsedLines(slot.currentAssembly);
 
-        cppEditor.operation(function () {
-            clearBackground(cppEditor);
-        });
+        if (slot == leaderSlot) {
+            cppEditor.operation(function () {
+                clearBackground(cppEditor);
+            });
+        }
         var filters = currentFilters();
         slot.asmCodeMirror.operation(function () {
             slot.asmCodeMirror.setValue(asmText);
