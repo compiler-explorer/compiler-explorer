@@ -674,13 +674,6 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
     }
 
     function setEditorHeight(height) {
-        const MinHeight = 100;
-        if (height < MinHeight) height = MinHeight;
-        cppEditor.setSize(null, height);
-        asmCodeMirror.setSize(null, height);
-    }
-
-    function setEditorHeight(height) {
         const MinHeight = 80;
         if (height < MinHeight) height = MinHeight;
         cppEditor.setSize(null, height);

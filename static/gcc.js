@@ -400,6 +400,8 @@ function setFilterUi(asmFilters) {
 $(document).ready(function() {
     $('.tabs .tab-links a').on('click', function(e)  {
         var currentAttrValue = $(this).attr('href');
+        var tabNumber = currentAttrValue.substring(4);
+        console.log("[UI] clicked on tab = "+tabNumber);
 
         // Show/Hide Tabs
         $('.tabs ' + currentAttrValue).show().siblings().hide();
@@ -407,6 +409,11 @@ $(document).ready(function() {
         // Change/remove current tab to active
         $(this).parent('li').addClass('active').siblings().removeClass('active');
 
+        // Refresh the asm CodeMirror window contained in the div (there is only one : no .each)
+        // source : http://stackoverflow.com/a/13976668
+        $('#asm'+tabNumber+' .CodeMirror')[0].CodeMirror.refresh();
+        
+        //console.log(JSON.stringify(JSON.decycle($('#asm'+tabNumber+' .CodeMirror')))); // debug
         e.preventDefault();
     });
 });
