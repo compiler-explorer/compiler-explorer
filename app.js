@@ -29,6 +29,7 @@ var nopt = require('nopt'),
     os = require('os'),
     props = require('./lib/properties'),
     compileHandler = require('./lib/compile').compileHandler,
+    diffHandler = require('./lib/diff').diffHandler,
     express = require('express'),
     child_process = require('child_process'),
     path = require('path'),
@@ -427,7 +428,8 @@ findCompilers().then(function (compilers) {
         .use('/source', getSource)
         .use('/api', apiHandler(compilers))
         .use('/g', shortUrlHandler)
-        .post('/compile', compileHandler(compilers)); // used inside static/compiler.js
+        .post('/compile', compileHandler(compilers)) // used inside static/compiler.js
+        .post('/diff', diffHandler); // used inside static/compiler.js
 
     // GO!
     console.log("=======================================");

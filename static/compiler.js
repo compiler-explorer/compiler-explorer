@@ -58,7 +58,6 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
         // lead to confusion if the Slot is not pushed in slots
         this.id = id;
         this.asmCodeMirror = null;
-        // currentAssembly[i] contains
         this.currentAssembly = null;
         this.pendingTimeOut = null;
         this.lastUpdateAsm = null;
@@ -71,10 +70,10 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
     diffs = [];
     var Diff = function(id) {
         this.id = id;
-        this.slotBefore = null;
-        this.slotAfter = null;
-        this.asmCodeMirror = null;
+        this.beforeSlot = null;
+        this.afterSlot = null;
         this.currentDiff = null;
+        this.asmCodeMirror = null;
         // this.pendingTimeOut = null;
         // this.lastUpdateAsm = null;
         // this.lastRequest = null;
@@ -584,12 +583,128 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
         domRoot.find('#commonParams .filter .nonbinary').toggleClass("disabled", !!filters.binary);
     }
 
+
     function onCompilerChange(slot) {
-        console.log("[Debug] : onCompilerChange called with slot.id = "+slot.id);
+        console.log("[DEBUG] onCompilerChange called with slot.id = "+slot.id);
         onParamChange(slot);
         updateCompilerAndButtons(slot);
         setAllDiffSlotsMenus();
     }
+
+    function onDiffChange(diff) {
+        console.log("[DEBUG] inside onDiffChange with diff id = "+diff.id);
+        domRoot.find('#diff'+diff.id+' .diffText').val(function(index, text) {
+            return "Incoming..."
+        });
+        // If one slot is not mentioned, stop before making the ajax request
+        if (diff.beforeSlot == null || diff.afterSlot == null) {
+            return null;
+        }
+        var data = {
+            // it should also be possible to use .currentAsembly
+            before: diff.beforeSlot.asmCodeMirror.getValue(),
+            after: diff.afterSlot.asmCodeMirror.getValue()
+        }
+
+        $.ajax({
+            type: 'POST',
+            url: '/diff',
+            dataType: 'json',
+            contentType: 'application/json',
+            data: JSON.stringify(data),
+            success: function (result) {
+                //console.log("Success : "+JSON.stringify(result));
+                onDiffResponse(diff, data, result);
+            },
+            error: function (xhr, e_status, error) {
+                console.log("AJAX request for diff failed, reason : " + error);
+            },
+            cache: false
+        });
+    }
+
+    function onDiffResponse(diff, data, result) {
+        console.log("[CALLBACK] onDiffResponse() with diff = "+diff.id);
+        // console.log("[DEBUG] result: "+result);
+        diff.currentDiff = result.computedDiff;
+        updateDiff(diff);
+    }
+
+    function updateDiff(diff) {
+        console.log("[CALLBACK] updateDiff() with diff = " + diff.id);
+        // console.log("[DEBUG] currentDiff: " + JSON.stringify(diff.currentDiff));
+        if (!diff.currentDiff) {
+            return;
+        }
+        // TODO : have a display closer to the one in asm panels ?
+
+        diff.asmCodeMirror.operation(function () {
+            diff.asmCodeMirror.setValue(diff.currentDiff);
+            clearBackground(diff.asmCodeMirror);
+        });
+        coloriseRegexZone(diff,
+            /\[-[^]+?-\]/g, // this regex is not greedy
+            "background-color: #32CD32;");
+        coloriseRegexZone(diff,
+            /\{\+[^]+?\+\}/g,
+            "background-color: #FF0000;");
+    }
+
+    function coloriseRegexZone(diff, re, cssStyle){
+        var doc = diff.asmCodeMirror.getDoc();
+        var computeLineChCoord = buildComputeLineChCoord(diff.currentDiff);
+        var match = null;
+
+        while ((match = re.exec(diff.currentDiff)) != null) {
+            var first = match.index;
+            var firstLineCh = computeLineChCoord(first);
+            var length = match[0].length;
+            var last = first + length - 1 + 1; // why does it needs + 1 ?
+            var lastLineCh = computeLineChCoord(last);
+            // console.log("[DEBUG] match found at "+first+
+            //     " ("+JSON.stringify(firstLineCh)+") "+
+            //     " up to "+last+
+            //     " ("+JSON.stringify(lastLineCh)+")");
+            
+            doc.markText(
+                firstLineCh,
+                lastLineCh,
+                {css: cssStyle});
+        }
+    }
+
+    function buildComputeLineChCoord(text) {
+        // assume text is 1 line containing '\n' to break lines
+        // below calculations are placed outside the function to speed up
+        var splitedStr = text.split("\n");
+        for (var i = 0; i<splitedStr.length; i++) {
+            splitedStr[i] = splitedStr[i] +"\n";
+        }
+        var lastPosInLine = [];
+        var currentSum = splitedStr[0].length - 1;
+        // console.log("Last pos in line "+0+": "+currentSum);
+        lastPosInLine.push(currentSum)
+        for (var i = 1; i < splitedStr.length; i++) {
+            currentSum = currentSum + splitedStr[i].length;
+            lastPosInLine.push(currentSum)
+            // console.log("Last pos in line "+i+": "+currentSum);
+        }
+        return function(pos) {
+            var line = 0;
+            while(lastPosInLine[line] < pos) {
+                line = line + 1;
+            }
+            if (line == 0) {
+                var ch = pos;
+            } else {
+                var ch = pos - lastPosInLine[line-1] - 1;
+            }
+            return {line: line, ch: ch};
+        }
+    }
+
+    //function computeLineChCoord(pos, lastPosInLine) {
+    //}
 
     function mapCompiler(compiler) {
         if (!compilersById[compiler]) {
@@ -670,6 +785,9 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
         for (var i = 0; i < slots.length; i++) {
             slots[i].asmCodeMirror.setSize(null, height);
         }
+        for (var i = 0; i < diffs.length; i++) {
+            diffs[i].asmCodeMirror.setSize(null, height);
+        }
     }
 
     // External wrapper used by gcc.js only
@@ -706,6 +824,17 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
             var leaderSlotMenuNode = domRoot.find('#commonParams .leaderSlot');
             leaderSlotMenuNode.text('leader slot : '+slots[0].id);
         }
+    }
+
+    function diff_use_DOM(diff) {
+        diff.asmCodeMirror = CodeMirror.fromTextArea(
+        domRoot.find("#diff"+diff.id+" .diffText textarea")[0], {
+            lineNumbers: true,
+            mode: "text/x-asm",
+            readOnly: true,
+            gutters: ['CodeMirror-linenumbers'],
+            lineWrapping: true
+        });
     }
 
     function get_slots_ids() {
@@ -868,6 +997,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
     function create_and_place_diff() {
             var newDiff = diff_ctor();
             diff_DOM_ctor(newDiff);
+            diff_use_DOM(newDiff);
             //setCompilersInSlot(compilers, defaultCompiler, newSlot);
             return newSlot;
     }
@@ -885,7 +1015,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
     function setDiffSlotsMenus(diff) {
         // className currently is "before" or "after"
         function setSlotMenu(className) {
-            console.log("Debug : setSlotMenu with "+className+
+            console.log("[DEBUG] : setSlotMenu with "+className+
             " and diff.id = "+diff.id);
             domRoot.find('#diff'+diff.id+' .'+className+' li').remove();
             for (var i = 0; i < slots.length; i++) {
@@ -893,10 +1023,14 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
                 domRoot.find('#diff'+diff.id+' .'+className+' .slots').append(elem);
                 (function (i) {
                     elem.click(function () {
+                        // TODO : check if modifying diff with [] survive
+                        // minifying http://stackoverflow.com/questions/4244896/
+                        diff[className+'Slot'] = slots[i];
                         console.log("[UI] user set "+slots[i].id+" as "+className+
                         " slot in diff with id "+diff.id);
                         var diffSlotMenuNode = domRoot.find('#diff'+diff.id+' .'+className+' .slot');
                         diffSlotMenuNode.text('\''+className+'\' slot : '+slots[i].id);
+                        onDiffChange(diff);
                     });
                 })(i);
             }
@@ -906,7 +1040,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix, onEditorChangeCallbac
     }
 
     function setAllDiffSlotsMenus() {
-        console.log("[Debug] : inside setAllDiffSlotsMenus, diffs.length = "+diffs.length);
+        console.log("[DEBUG] : inside setAllDiffSlotsMenus, diffs.length = "+diffs.length);
         for (var i = 0; i<diffs.length; i++) {
             setDiffSlotsMenus(diffs[i]);
         }

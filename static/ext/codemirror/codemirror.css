@@ -127,6 +127,10 @@
 .cm-s-default .cm-attribute {color: #00c;}
 .cm-s-default .cm-hr {color: #999;}
 .cm-s-default .cm-link {color: #00c;}
+.cm-s-default .cm-added-open {background-color: #32CD32;}
+.cm-s-default .cm-added-close {background-color: #32CD32;}
+.cm-s-default .cm-deleted-open {background-color: #FF0000;}
+.cm-s-default .cm-deleted-close {background-color: #FF0000;}
 
 .cm-s-default .cm-error {color: #f00;}
 .cm-invalidchar {color: #f00;}
