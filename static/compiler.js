@@ -898,7 +898,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
 
                 setLeaderSlotIcon(slot);
                 leaderSlot = slot;
-                setSetting("leaderSlot",slot.id);
+                setSetting('leaderSlot', slot.id);
                 onParamChange(slot, true);
             }
         });
@@ -1228,7 +1228,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
         // therefore it seems logical to open at least 1 slot
         var newSlot = create_and_place_slot(compilers, defaultCompiler);
         leaderSlot = newSlot;
-        setSetting(leaderSlot);
+        setSetting('leaderSlot', leaderSlot.id);
         setLeaderSlotIcon(leaderSlot);
     }
 
