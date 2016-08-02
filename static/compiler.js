@@ -67,6 +67,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
         // if no parameters were really changed (e.g. spaces moved)
         this.lastRequest = null;
         this.pendingDiffs = [];
+        this.node = null; // Will be initialized in slot_DOM_ctor
     }
 
     diffs = [];
@@ -84,6 +85,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
         // used only if the editor's code is modified,
         // to prevent two diff generation by waiting for the second one.
         this.remainingTriggers = 2;
+        this.node = null; // Will be initialized in diff_DOM_ctor
     }
 
     function contains(array, object) {
@@ -139,13 +141,13 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
     var ignoreChanges = true; // Horrible hack to avoid onEditorChange doing anything on first starting, ie before we've set anything up.
 
     function setCompilerById(compilerId,slot) {
-        var compilerNode = domRoot.find('#slot'+slot.id+' .compiler');
+        var compilerNode = slot.node.find('.compiler');
         compilerNode.text(compilersById[compilerId].name);
         compilerNode.attr('data', compilerId);
     }
 
     function currentCompilerId(slot) {
-        return domRoot.find('#slot'+slot.id+' .compiler').attr('data');
+        return slot.node.find('.compiler').attr('data');
     }
 
     function currentCompiler(slot) {
@@ -262,7 +264,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
             _gaq.push(['_trackEvent', 'Compile', request.compiler, request.options, data.code]);
             _gaq.push(['_trackTiming', 'Compile', 'Timing', new Date() - request.timestamp]);
         }
-        domRoot.find('#slot'+slot.id+' .result .output :visible').remove();
+        slot.node.find('.result .output :visible').remove();
         // only show in Editor messages comming from the leaderSlot
         if (slot.id == leaderSlot) {
             for (var i = 0; i < errorWidgets.length; ++i)
@@ -277,7 +279,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
                 msg = "Too many output lines...truncated";
             }
             numLines++;
-            var elem = domRoot.find('#slot'+slot.id+' .result .output .template').clone().appendTo(domRoot.find('#slot'+slot.id+' .result .output')).removeClass('template');
+            var elem = slot.node.find('.result .output .template').clone().appendTo(slot.node.find(' .result .output')).removeClass('template');
             if (lineNum) {
                 // only show in Editor messages comming from the leaderSlot
                 if  (slot.id == leaderSlot) {
@@ -434,7 +436,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
                     fromEditor: false,
                     source: cppEditor.getValue(),
                     compiler: currentCompilerId(slot),
-                    options: $('#slot'+slot.id+' .compiler_options').val(),
+                    options: slot.node.find('.compiler_options').val(),
                     filters: currentFilters()
                 };
                 setSetting('compiler'+slot.id, data.compiler);
@@ -484,7 +486,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
                         fromEditor: true,
                         source: cppEditor.getValue(),
                         compiler: currentCompilerId(slot),
-                        options: $('#slot'+slot.id+' .compiler_options').val(),
+                        options: slot.node.find('.compiler_options').val(),
                         filters: currentFilters()
                     };
                     setSetting('compiler'+slot.id, data.compiler);
@@ -541,7 +543,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
         slots.forEach(function(slot) {
             slotIds.push(slot.id);
             compilersInSlots.push(currentCompilerId(slot));
-            optionsInSlots.push(domRoot.find('#slot'+slot.id+' .compiler_options').val());
+            optionsInSlots.push(slot.node.find('.compiler_options').val());
         });
 
         // Memorize informations on diffs
@@ -600,7 +602,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
                                                 defaultCompiler,
                                                 state.slotIds[i]);
             setCompilerById(state.compilersInSlots[i],newSlot);
-            domRoot.find('#slot'+newSlot.id+' .compiler_options').val(state.optionsInSlots[i]);
+            slot.node.find('.compiler_options').val(state.optionsInSlots[i]);
             // Somewhat hackily persist compiler into local storage else when the ajax response comes in
             // with the list of compilers it can splat over the deserialized version.
             // The whole serialize/hash/localStorage code is a mess! TODO(mg): fix
@@ -627,7 +629,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
     // TODO : split in two functions : one is slot dependant, the other set parameters common to all slots
     function updateCompilerAndButtons(slot) {
         var compiler = currentCompiler(slot);
-        domRoot.find('#slot'+slot.id+' .compilerVersion').text(compiler.name + " (" + compiler.version + ")");
+        slot.node.find('.compilerVersion').text(compiler.name + " (" + compiler.version + ")");
         var filters = currentFilters();
         var supportsIntel = compiler.intelAsm || filters.binary;
         domRoot.find('#commonParams .filter button.btn[value="intel"]').toggleClass("disabled", !supportsIntel);
@@ -766,7 +768,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
     function setCompilersInSlot(compilers, defaultCompiler, slot) {
         console.log("[INIT] in setCompilersInSlot(), compilers = "+
         JSON.stringify(compilers)+", slot = "+slot.id);
-        domRoot.find('#slot'+slot.id+' .compilers li').remove();
+        slot.node.find('.compilers li').remove();
         compilersById = {};
         compilersByAlias = {};
         // fills the compiler list
@@ -774,7 +776,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
             compilersById[arg.id] = arg;
             if (arg.alias) compilersByAlias[arg.alias] = arg;
             var elem = $('<li><a href="#">' + arg.name + '</a></li>');
-            domRoot.find('#slot'+slot.id+' .compilers').append(elem);
+            slot.node.find('.compilers').append(elem);
             (function () {
                 elem.click(function () {
                     setCompilerById(arg.id,slot);
@@ -862,14 +864,14 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
         
         // toggling the previous icon if there was one
         if (leaderSlot != null) {
-            var prevIcon = domRoot.find('#slot'+leaderSlot.id+' .leaderSlotIcon');
+            var prevIcon = leaderSlot.node.find('.leaderSlotIcon');
             prevIcon.text(unselectedIcon);
             prevIcon.addClass("unselectedCharacterIcon");
             prevIcon.removeClass("selectedCharacterIcon");
         }
 
         // toggling the new icon
-        var newIcon = domRoot.find('#slot'+slot.id+' .leaderSlotIcon');
+        var newIcon = slot.node.find('.leaderSlotIcon');
         newIcon.text(selectedIcon);
         newIcon.addClass("selectedCharacterIcon");
         newIcon.removeClass("unselectedCharacterIcon");
@@ -879,7 +881,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
     // This function requires that the slot's DOM object already exists.
     function slot_use_DOM(slot) {
         slot.asmCodeMirror = CodeMirror.fromTextArea(
-        domRoot.find("#slot"+slot.id+" .asm textarea")[0], {
+        slot.node.find(".asm textarea")[0], {
             lineNumbers: true,
             mode: "text/x-asm",
             readOnly: true,
@@ -887,11 +889,11 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
             lineWrapping: true
         });
         // handle compiler option (slot specific) such as '-O1'
-        domRoot.find('#slot'+slot.id+' .compiler_options').change(
+        slot.node.find('.compiler_options').change(
             generate_change_callback(slot)).keyup(
             generate_change_callback(slot));
 
-        domRoot.find('#slot'+slot.id+' .leaderSlotIcon').on('click', function(e)  {
+        slot.node.find('.leaderSlotIcon').on('click', function(e)  {
             console.log("[UI] Clicked on leaderSlotIcon in slot "+slot.id);
             if (slot != leaderSlot) {
                 clearBackground(leaderSlot.asmCodeMirror);
@@ -912,14 +914,14 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
 
     function diff_use_DOM(diff) {
         diff.asmCodeMirror = CodeMirror.fromTextArea(
-        domRoot.find("#diff"+diff.id+" .diffText textarea")[0], {
+        diff.node.find('.diffText textarea')[0], {
             lineNumbers: true,
             mode: "text/x-asm",
             readOnly: true,
             gutters: ['CodeMirror-linenumbers'],
             lineWrapping: true
         });
-        var reverseDiffButton = domRoot.find('#diff'+diff.id+' .reverse-diff');
+        var reverseDiffButton = diff.node.find('.reverse-diff');
         reverseDiffButton.on('click', function(e)  {
             console.log("[UI] User clicked on reverse-diff button in diff "+diff.id);
             var tmp = diff.beforeSlot;
@@ -1054,14 +1056,16 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
 
     function slot_DOM_ctor(slot) {
         // source : http://stackoverflow.com/questions/10126395/how-to-jquery-clone-and-change-id
-        var slotTemplate = $('#slotTemplate');
+        var slotTemplate = domRoot.find('#slotTemplate');
         var clone = slotTemplate.clone().prop('id', 'slot'+slot.id);
-        var last = $('#new-slot');
+        var last = domRoot.find('#new-slot');
         last.before(clone); // insert right before the "+" button
 
-        $('#slot'+slot.id+' .title').text("Slot "+slot.id+" (drag me)  ");
-        $('#slot'+slot.id).show();
-        $('#slot'+slot.id+' .closeButton').on('click', function(e)  {
+        slot.node = domRoot.find('#slot'+slot.id);
+
+        slot.node.find('.title').text("Slot "+slot.id+" (drag me)  ");
+        slot.node.show();
+        slot.node.find('.closeButton').on('click', function(e)  {
             console.log("[UI] User clicked on closeButton in slot "+slot.id);
             if (slots.length > 1) {
                 var slotToDelete = get_slot_by_id(slot.id);
@@ -1075,14 +1079,16 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
     }
 
     function diff_DOM_ctor(diff) {
-        var diffTemplate = $('#diffTemplate');
+        var diffTemplate = domRoot.find('#diffTemplate');
         var clone = diffTemplate.clone().prop('id', 'diff'+diff.id);
-        var last = $('#new-diff');
+        var last = domRoot.find('#new-diff');
         last.before(clone); // insert right before the "+" button
 
-        $('#diff'+diff.id+' .title').text("Diff "+diff.id+" (drag me)  ");
-        $('#diff'+diff.id).show();
-        $('#diff'+diff.id+' .closeButton').on('click', function(e)  {
+        diff.node = domRoot.find('#diff'+diff.id)
+
+        diff.node.find('.title').text("Diff "+diff.id+" (drag me)  ");
+        diff.node.show();
+        diff.node.find('.closeButton').on('click', function(e)  {
             console.log("[UI] User clicked on closeButton in diff "+diff.id);
             var diffToDelete = get_diff_by_id(diff.id);
             delete_and_unplace_diff(diffToDelete);
@@ -1093,11 +1099,11 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
     }
 
     function slot_DOM_dtor(slot) {
-        $('#slot'+slot.id).remove();
+        slot.node.remove();
     }
 
     function diff_DOM_dtor(diff) {
-        $('#diff'+diff.id).remove();
+        diff.node.remove();
     }
 
     function create_and_place_slot(compilers,defaultCompiler,optionalId) {
@@ -1154,7 +1160,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
         }
         diff[className+'Slot'] = slot;
         if (slot != null) {
-            var diffSlotMenuNode = domRoot.find('#diff'+diff.id+' .'+className+' .slot');
+            var diffSlotMenuNode = diff.node.find('.'+className+' .slot');
             diffSlotMenuNode.text('\''+className+'\' slot : '+slot.id);
             setSetting('diff'+diff.id+className,slot.id);
             add_to_pendings(slot, diff);
@@ -1166,20 +1172,17 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
         function setSlotMenu(className) {
             console.log("[DEBUG] : setSlotMenu with "+className+
             " and diff.id = "+diff.id);
-            domRoot.find('#diff'+diff.id+' .'+className+' li').remove();
+            diff.node.find('.'+className+' li').remove();
             for (var i = 0; i < slots.length; i++) {
                 var elem = $('<li><a href="#">' + slots[i].id + '</a></li>');
-                domRoot.find('#diff'+diff.id+' .'+className+' .slots').append(elem);
+                diff.node.find('.'+className+' .slots').append(elem);
                 (function (i) {
                     elem.click(function () {
-                        // TODO : check if modifying diff with [] survive
+                        // TODO: check if modifying diff with [] will survive to
                         // minifying http://stackoverflow.com/questions/4244896/
                         console.log("[UI] user set "+slots[i].id+" as "+className+
                         " slot in diff with id "+diff.id);
                         setDiffButton(diff, className, slots[i]);
-                        //diff[className+'Slot'] = slots[i];
-                        //var diffSlotMenuNode = domRoot.find('#diff'+diff.id+' .'+className+' .slot');
-                        //diffSlotMenuNode.text('\''+className+'\' slot : '+slots[i].id);
                         onDiffChange(diff, false);
                     });
                 })(i);
@@ -1214,7 +1217,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
             slot_DOM_ctor(newSlot);
             slot_use_DOM(newSlot);
             if (getSetting('compilerOptions'+slotIds[i])) {
-                domRoot.find('#slot'+newSlot.id+' .compiler_options').val(getSetting('compilerOptions'+newSlot.id));
+                slot.node.find('.compiler_options').val(getSetting('compilerOptions'+newSlot.id));
             } else {
                 console.log("[STARTUP] There was a problem while restoring previous session.");
             }
