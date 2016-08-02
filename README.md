@@ -1,3 +1,5 @@
+[![Codewake](https://www.codewake.com/badges/ask_question.svg)](https://www.codewake.com/p/compiler-explorer)
+
 GCC Explorer
 ------------
 
