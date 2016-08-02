@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/mattgodbolt/gcc-explorer.svg?branch=master)](https://travis-ci.org/mattgodbolt/gcc-explorer)
 [![Codewake](https://www.codewake.com/badges/ask_question.svg)](https://www.codewake.com/p/compiler-explorer)
 
 GCC Explorer
