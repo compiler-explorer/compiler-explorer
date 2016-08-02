@@ -40,7 +40,7 @@ body {
 .compilers-container {
 }
 
-.compiler_options {
+.compiler-options {
     margin-left: 10px; // space between the scroll-down and the compiler's options
     width: 100%;
 }

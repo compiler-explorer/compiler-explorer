@@ -314,7 +314,7 @@ function initialise(options) {
     var actualFilters = $.parseJSON(window.localStorage.filter || defaultFilters);
     setFilterUi(actualFilters);
 
-    $(".compiler_options").val(options.compileoptions);
+    $(".compiler-options").val(options.compileoptions);
     $(".language-name").text(options.language);
 
     var compiler = new Compiler($('body'), actualFilters, "a", function () {
@@ -400,7 +400,7 @@ function setFilterUi(asmFilters) {
 $(document).ready(function() {
     $('#new-slot').on('click', function(e)  {
         console.log("[UI] User clicked on new-slot button.");
-        var newSlot = currentCompiler.create_and_place_slot(
+        var newSlot = currentCompiler.createAndPlaceSlot(
             OPTIONS.compilers, OPTIONS.defaultCompiler);
         resizeEditors();
         currentCompiler.refreshSlot(newSlot);
@@ -410,7 +410,7 @@ $(document).ready(function() {
 $(document).ready(function() {
     $('#new-diff').on('click', function(e)  {
         console.log("[UI] User clicked on new-diff button.");
-        var newDiff = currentCompiler.create_and_place_diff_UI();
+        var newDiff = currentCompiler.createAndPlaceDiffUI();
         resizeEditors();
     });
 });
