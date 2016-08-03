@@ -849,6 +849,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
         }
     }
 
+    // must be called *before* doing slot = leaderSlot;
     function setLeaderSlotIcon(slot) {
         console.log("[UI] Toggling icon(s)...");
 
@@ -856,25 +857,36 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
         // http://www.fileformat.info/info/unicode/char/search.htm
         // to convert a character to JS/HTML/CSS/URIs... escape code:
         // https://r12a.github.io/apps/conversion/
+
+        // accessKey property : www.w3schools.com/jsref/prop_html_accesskey.asp
         
         var selectedIcon = "\u2605"; // Unicode character: full star
         var unselectedIcon = "\u2606"; // Unicode character: empty star
         // you must keep those characters in sync with the template 
         // slotTemplate in index.html
         
-        // toggling the previous icon if there was one
+        // if there was a leaderSlot,
         if (leaderSlot != null) {
+            // toggle icon in previous leaderSlot:
             var prevIcon = leaderSlot.node.find('.leaderSlotIcon');
             prevIcon.text(unselectedIcon);
             prevIcon.addClass("unselectedCharacterIcon");
             prevIcon.removeClass("selectedCharacterIcon");
+
+            // removes access key in previous leaderSlot
+            leaderSlot.node.find('.compiler-selection').prop( "accessKey", "");
+            leaderSlot.node.find('.compiler-options').prop( "accessKey", "");
         }
 
-        // toggling the new icon
+        // toggles the new icon
         var newIcon = slot.node.find('.leaderSlotIcon');
         newIcon.text(selectedIcon);
         newIcon.addClass("selectedCharacterIcon");
         newIcon.removeClass("unselectedCharacterIcon");
+
+        // enables accesskeys in the leaderSlot
+        slot.node.find('.compiler-selection').prop( "accessKey", "c");
+        slot.node.find('.compiler-options').prop( "accessKey", "o");
     }
 
     // Function to call each time a slot is added to the page.
