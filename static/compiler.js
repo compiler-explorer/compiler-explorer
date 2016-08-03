@@ -68,6 +68,11 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
         this.lastRequest = null;
         this.pendingDiffs = [];
         this.node = null; // Will be initialized in slotDomCtor
+        this.description = function() {
+            var options = this.node.find('.compiler-options').val();
+            var compiler = currentCompiler(this);
+            return compiler.name + " " + options;
+        }
     }
 
     diffs = [];
@@ -422,6 +427,12 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
     // TODO : refactor with onEditorChange : those functions could call an updateSlot(slot)
     function onParamChange(slot, force) { 
         console.log("[CALLBACK] onParamChange() on slot "+slot.id);
+
+        // update the UI of the diff that depends of this slot
+        for (var i = 0; i < slot.pendingDiffs.length; i++) {
+            updateDiffUI(slot.pendingDiffs[i]);
+        }
+
         if (ignoreChanges) return;  // Ugly hack during startup.
         if (slot.pendingTimeoutInSlot) {
             console.log("[TIME] Clearing time out in slot " + slot.id);
@@ -613,10 +624,10 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
         console.log("[WINDOW] Deserialisation : deserializing diffs...");
         for (var i = 0; i < state.diffCount; i++) {
             var newDiff = createAndPlaceDiff(state.diffIds[i]);
-            setDiffButton(newDiff,
+            setSlotInDiff(newDiff,
                           "before",
                           getSlotById(state.slotsInDiffs[i]["before"]));
-            setDiffButton(newDiff,
+            setSlotInDiff(newDiff,
                           "after",
                           getSlotById(state.slotsInDiffs[i]["after"]));
             onDiffChange(newDiff, false);
@@ -766,8 +777,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
     // added has auxiliary to setCompilers, in order not to break interface
     // TODO : consider refactoring as some tasks are repeated
     function setCompilersInSlot(compilers, defaultCompiler, slot) {
-        console.log("[INIT] in setCompilersInSlot(), compilers = "+
-        JSON.stringify(compilers)+", slot = "+slot.id);
+        console.log("[INIT] inside setCompilersInSlot()");
         slot.node.find('.compilers li').remove();
         compilersById = {};
         compilersByAlias = {};
@@ -939,8 +949,8 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
             var tmp = diff.beforeSlot;
             diff.beforeSlot = diff.afterSlot;
             diff.afterSlot = tmp;
-            setDiffButton(diff, "before", diff.beforeSlot);
-            setDiffButton(diff, "after", diff.afterSlot);
+            setSlotInDiff(diff, "before", diff.beforeSlot);
+            setSlotInDiff(diff, "after", diff.afterSlot);
             setDiffSlotsMenus(diff);
             onDiffChange(diff,false);
         });
@@ -955,7 +965,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
     }
 
     // TODO : refactor !
-    function getdiffsIds() {
+    function getDiffsIds() {
         var ids = [];
         for (var i = 0; i < diffs.length; i++) {
             ids.push(diffs[i].id);
@@ -983,7 +993,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
             newDiff.id = getAvailableId(diffs);
         }
         diffs.push(newDiff);
-        setSetting('diffIds',JSON.stringify(getdiffsIds()));
+        setSetting('diffIds',JSON.stringify(getDiffsIds()));
         return newDiff;
     }
     
@@ -1030,7 +1040,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
     function diffDtor(diff) {
         removeIdInArray(diff.id, diffs);
         // after the deletion, update the browser's settings :
-        setSetting('diffIds', JSON.stringify(getdiffsIds()));
+        setSetting('diffIds', JSON.stringify(getDiffsIds()));
     }
 
     function getSlotById(slotId) {
@@ -1136,11 +1146,11 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
     function createAndPlaceDiffUI(optionalId) {
         var newDiff = createAndPlaceDiff(optionalId);
         if (slots.length > 0) {
-            setDiffButton(newDiff,"before",slots[0]);
+            setSlotInDiff(newDiff,"before",slots[0]);
             if (slots.length > 1) {
-                setDiffButton(newDiff,"after",slots[1]);
+                setSlotInDiff(newDiff,"after",slots[1]);
             } else {
-                setDiffButton(newDiff,"after",slots[0]);
+                setSlotInDiff(newDiff,"after",slots[0]);
             }
             onDiffChange(newDiff, false);
         }
@@ -1160,21 +1170,35 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
     // refresh (or place) the two drop-down lists of the diff panel containging 
     // descriptions of the slots that can be used to make a diff
 
+    function updateDiffButton(diff, className) {
+        var slot = diff[className+'Slot'];
+        var diffSlotMenuNode = diff.node.find('.'+className+' .slot');
+        diffSlotMenuNode.text(slot.description());
+    }
+
+    // this function is called if the name or option of a compiler is changed.
+    function updateDiffUI(diff) {
+        updateDiffButton(diff, "before");
+        updateDiffButton(diff, "after");
+        setDiffSlotsMenus(diff);
+    }
+
     // Auxilary to setDiffSlotsMenus and deserialisation
-    function setDiffButton(diff, className, slot) {
+    function setSlotInDiff(diff, className, slot) {
         // className can be "before" or "after"
         if (slot == null) {
-            console.log("[DEBUG] setDiffButton: diff.id = " +
+            console.log("[DEBUG] setSlotInDiff: diff.id = " +
                 diff.id + ", "+className+" -> "+"null.id");
         } else {
-            console.log("[DEBUG] setDiffButton: diff.id = " +
+            console.log("[DEBUG] setSlotInDiff: diff.id = " +
                 diff.id + ", "+className+" -> "+slot.id);
         }
         diff[className+'Slot'] = slot;
         if (slot != null) {
-            var diffSlotMenuNode = diff.node.find('.'+className+' .slot');
-            diffSlotMenuNode.text('\''+className+'\' slot : '+slot.id);
+            updateDiffButton(diff, className);
+
             setSetting('diff'+diff.id+className,slot.id);
+
             addToPendings(slot, diff);
         }
     }
@@ -1186,7 +1210,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
             " and diff.id = "+diff.id);
             diff.node.find('.'+className+' li').remove();
             for (var i = 0; i < slots.length; i++) {
-                var elem = $('<li><a href="#">' + slots[i].id + '</a></li>');
+                var elem = $('<li><a href="#">' + slots[i].description() + '</a></li>');
                 diff.node.find('.'+className+' .slots').append(elem);
                 (function (i) {
                     elem.click(function () {
@@ -1194,7 +1218,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
                         // minifying http://stackoverflow.com/questions/4244896/
                         console.log("[UI] user set "+slots[i].id+" as "+className+
                         " slot in diff with id "+diff.id);
-                        setDiffButton(diff, className, slots[i]);
+                        setSlotInDiff(diff, className, slots[i]);
                         onDiffChange(diff, false);
                     });
                 })(i);
@@ -1224,14 +1248,15 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
     }
     if (slotIds.length > 0) {
         console.log("[STARTUP] found slot data : restoring from previous session");
+        console.log("[DEBUG] slotIds: "+JSON.stringify(slotIds));
         for (var i = 0; i < slotIds.length; i++) {
             var newSlot = slotCtor(slotIds[i]);
             slotDomCtor(newSlot);
             slotUseDom(newSlot);
-            if (getSetting('compilerOptions'+slotIds[i])) {
-                slot.node.find('.compiler-options').val(getSetting('compilerOptions'+newSlot.id));
+            if (getSetting('compilerOptions'+slotIds[i]) == undefined) {
+                console.log("[STARTUP] There was a problem while restoring slots from previous session.");
             } else {
-                console.log("[STARTUP] There was a problem while restoring previous session.");
+                newSlot.node.find('.compiler-options').val(getSetting('compilerOptions'+newSlot.id));
             }
         }
         var leaderSlotSetting = getSetting('leaderSlot'); // Cannot be null !
@@ -1247,6 +1272,10 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
         setLeaderSlotIcon(leaderSlot);
     }
 
+    // This part of the initialisation must (currently) occur 
+    // after the creation of slots, and before the creation of diffs.
+    // Previously it was located in gcc.js, in Initialize()
+    setCompilers(compilers, defaultCompiler);
     
     // on startup, for each diff,
     // if a setting is defined, set it on static/index.html page
@@ -1256,16 +1285,19 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
     } else {
         diffIds = [];
     }
+    console.log("[DEBUG] diffIds: " + JSON.stringify(diffIds));
     if (diffIds.length > 0) {
-        console.log("[STARTUP] found diff data : restoring from previous session");
+        console.log("[STARTUP] found diff data : restoring diffs from previous session");
         for (var i = 0; i < diffIds.length; i++) {
             var newDiff = createAndPlaceDiff(diffIds[i]);
 
-            var beforeSlot = getSlotById(getSetting('diff'+newDiff.id+"before"));
-            setDiffButton(newDiff, "before", beforeSlot);
+            newDiff.beforeSlot = getSlotById(getSetting('diff'+newDiff.id+"before"));
+            setSlotInDiff(newDiff, "before", newDiff.beforeSlot);
+            addToPendings(newDiff.beforeSlot, newDiff);
 
-            var afterSlot = getSlotById(getSetting('diff'+newDiff.id+"after"));
-            setDiffButton(newDiff, "after", afterSlot);
+            newDiff.afterSlot = getSlotById(getSetting('diff'+newDiff.id+"after"));
+            setSlotInDiff(newDiff, "after", newDiff.afterSlot);
+            addToPendings(newDiff.afterSlot, newDiff);
             //onDiffChange(newDiff);
         }
     }
@@ -1273,12 +1305,10 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
     return {
         serialiseState: serialiseState,
         deserialiseState: deserialiseState,
-        setCompilers: setCompilers,
         getSource: getSource,
         setSource: setSource,
         setFilters: setFilters,
         setEditorHeight: setEditorHeight,
-        setCompilersInSlot : setCompilersInSlot,
         createAndPlaceSlot: createAndPlaceSlot,
         createAndPlaceDiffUI: createAndPlaceDiffUI,
         refreshSlot: refreshSlot

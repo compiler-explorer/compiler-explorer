@@ -327,7 +327,8 @@ function initialise(options) {
         return false;
     });
     $('.files .source').change(onSourceChange);
-    compiler.setCompilers(options.compilers, options.defaultCompiler);
+    // This initialization is moved inside var compiler = new Compiler ....
+    // compiler.setCompilers(options.compilers, options.defaultCompiler);
     function setSources(sources, defaultSource) {
         $('.source option').remove();
         $.each(sources, function (index, arg) {
