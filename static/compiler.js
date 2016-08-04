@@ -73,6 +73,14 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
             var compiler = currentCompiler(this);
             return compiler.name + " " + options;
         }
+        this.shortDescription = function() {
+            var description = this.description();
+            if (description.length >= 19) {
+                return description.substring(0,13)+"[...]"
+            } else {
+                return description;
+            }
+        }
     }
 
     diffs = [];
@@ -160,7 +168,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
     }
 
     // set the autocompile button on static/index.html
-    $('.autocompile').click(function () {
+    $('.autocompile').click(function (e) {
         $('.autocompile').toggleClass('active');
         onEditorChange();
         setSetting('autocompile', $('.autocompile').hasClass('active')); });
@@ -292,8 +300,12 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
                         coverGutter: false, noHScroll: true
                     }));
                 }
-                elem.html($('<a href="#">').text(lineNum + " : " + msg)).click(function () {
+                elem.html($('<a href="#">').text(lineNum + " : " + msg)).click(function (e) {
                     cppEditor.setSelection({line: lineNum - 1, ch: 0}, {line: lineNum, ch: 0});
+
+                    // do not bring user to the top of index.html
+                    // http://stackoverflow.com/questions/3252730
+                    e.preventDefault();
                     return false;
                 });
             } else {
@@ -387,6 +399,9 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
                                 slot.asmCodeMirror.scrollIntoView({line: dest.line, ch: 0}, 30);
                                 dest.div.toggleClass("highlighted", false);
                                 thing.toggleClass("highlighted", false);
+
+                                // do not bring user to the top of index.html
+                                e.preventDefault();
                             });
                         }
                     });
@@ -798,9 +813,12 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
             var elem = $('<li><a href="#">' + arg.name + '</a></li>');
             slot.node.find('.compilers').append(elem);
             (function () {
-                elem.click(function () {
+                elem.click(function (e) {
                     setCompilerById(arg.id,slot);
                     onCompilerChange(slot);
+
+                    // do not bring user to the top of index.html
+                    e.preventDefault();
                 });
             })(elem.find("a"), arg.id);
         });
@@ -935,6 +953,9 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
                 setSetting('leaderSlot', slot.id);
                 onParamChange(slot, true);
             }
+
+            // do not bring user to the top of index.html
+            e.preventDefault();
         });
 
         if (slots.length == 1) {
@@ -963,6 +984,9 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
             setSlotInDiff(diff, "after", diff.afterSlot);
             setDiffSlotsMenus(diff);
             onDiffChange(diff,false);
+
+            // do not bring user to the top of index.html
+            e.preventDefault();
         });
     }
 
@@ -1110,6 +1134,9 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
             console.log("[UI] User clicked on closeButton in slot "+slot.id);
             var slotToDelete = getSlotById(slot.id);
             deleteAndUnplaceSlot(slotToDelete);
+
+            // do not bring user to the top of index.html
+            e.preventDefault();
         });
 
         // show the close-slot icons if there will be more than 1 slot
@@ -1139,6 +1166,8 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
             console.log("[UI] User clicked on closeButton in diff "+diff.id);
             var diffToDelete = getDiffById(diff.id);
             deleteAndUnplaceDiff(diffToDelete);
+            // do not bring user to the top of index.html
+            e.preventDefault();
         });
 
         setPanelListSortable();
@@ -1198,7 +1227,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
     function updateDiffButton(diff, className) {
         var slot = diff[className+'Slot'];
         var diffSlotMenuNode = diff.node.find('.'+className+' .slotName');
-        diffSlotMenuNode.text(slot.description());
+        diffSlotMenuNode.text(slot.shortDescription());
     }
 
     // this function is called if the name or option of a compiler is changed.
@@ -1238,13 +1267,16 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
                 var elem = $('<li><a href="#">' + slots[i].description() + '</a></li>');
                 diff.node.find('.'+className+' .slotNameList').append(elem);
                 (function (i) {
-                    elem.click(function () {
+                    elem.click(function (e) {
                         // TODO: check if modifying diff with [] will survive to
                         // minifying http://stackoverflow.com/questions/4244896/
                         console.log("[UI] user set "+slots[i].id+" as "+className+
                         " slot in diff with id "+diff.id);
                         setSlotInDiff(diff, className, slots[i]);
                         onDiffChange(diff, false);
+
+                        // do not bring user to the top of index.html
+                        e.preventDefault();
                     });
                 })(i);
             }
