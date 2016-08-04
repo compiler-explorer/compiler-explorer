@@ -1067,7 +1067,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
 
         // hide the close-slot icon if there will remain 1 slot
         if (slots.length <= 2) {
-            domRoot.find('.slot .closeButton').hide()
+            domRoot.find('.slot .closeButton').fadeOut(550);
         }
 
         // now safely delete:
@@ -1117,7 +1117,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
         });
     }
 
-    function slotDomCtor(slot) {
+    function slotDomCtor(slot, onUserAction) {
         // source : http://stackoverflow.com/questions/10126395/how-to-jquery-clone-and-change-id
         var slotTemplate = domRoot.find('#slotTemplate');
         var clone = slotTemplate.clone().prop('id', 'slot'+slot.id);
@@ -1129,11 +1129,18 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
         slot.node = domRoot.find('#slot'+slot.id);
 
         slot.node.find('.title').text("Slot "+slot.id+" (drag me)  ");
-        slot.node.show();
+
+        if (onUserAction) {
+            slot.node.fadeIn(550);
+        } else {
+            // auto spawn of the panel: no need to fade in
+            slot.node.show();
+        }
+
         slot.node.find('.closeButton').on('click', function(e)  {
             console.log("[UI] User clicked on closeButton in slot "+slot.id);
             var slotToDelete = getSlotById(slot.id);
-            deleteAndUnplaceSlot(slotToDelete);
+            deleteAndUnplaceSlot(slotToDelete, true);
 
             // do not bring user to the top of index.html
             e.preventDefault();
@@ -1141,16 +1148,16 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
 
         // show the close-slot icons if there will be more than 1 slot
         if (slots.length == 1) {
-            domRoot.find('.slot .closeButton').hide()
+            domRoot.find('.slot .closeButton').fadeOut(550);
         }
         if (slots.length == 2) {
-            domRoot.find('.slot .closeButton').show()
+            domRoot.find('.slot .closeButton').fadeIn(550);
         }
 
         setPanelListSortable();
     }
 
-    function diffDomCtor(diff) {
+    function diffDomCtor(diff, onUserAction) {
         var diffTemplate = domRoot.find('#diffTemplate');
         var clone = diffTemplate.clone().prop('id', 'diff'+diff.id);
 
@@ -1161,11 +1168,18 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
         diff.node = domRoot.find('#diff'+diff.id)
 
         diff.node.find('.title').text("Diff "+diff.id+" (drag me)  ");
-        diff.node.show();
+
+        if (onUserAction) {
+            diff.node.fadeIn(550);
+        } else {
+            // auto spawn of the panel: no need to fade in
+            diff.node.show();
+        }
+
         diff.node.find('.closeButton').on('click', function(e)  {
             console.log("[UI] User clicked on closeButton in diff "+diff.id);
             var diffToDelete = getDiffById(diff.id);
-            deleteAndUnplaceDiff(diffToDelete);
+            deleteAndUnplaceDiff(diffToDelete, true);
             // do not bring user to the top of index.html
             e.preventDefault();
         });
@@ -1174,31 +1188,43 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
         setDiffSlotsMenus(diff);
     }
 
-    function slotDomDtor(slot) {
-        slot.node.remove();
+    function slotDomDtor(slot, onUserAction) {
+        if (onUserAction) {
+            slot.node.fadeOut(550, function () {
+                slot.node.remove();
+            });
+        } else {
+            slot.node.remove();
+        }
     }
 
-    function diffDomDtor(diff) {
-        diff.node.remove();
+    function diffDomDtor(diff, onUserAction) {
+        if (onUserAction) {
+            diff.node.fadeOut(550, function () {
+                diff.node.remove();
+            });
+        } else {
+            diff.node.remove();
+        }
     }
 
-    function createAndPlaceSlot(compilers,defaultCompiler,optionalId) {
+    function createAndPlaceSlot(compilers, defaultCompiler, optionalId, onUserAction) {
         var newSlot = slotCtor(optionalId);
-        slotDomCtor(newSlot);
+        slotDomCtor(newSlot, onUserAction);
         slotUseDom(newSlot);
         setCompilersInSlot(compilers, defaultCompiler, newSlot);
         return newSlot;
     }
 
-    function createAndPlaceDiff(optionalId) {
+    function createAndPlaceDiff(optionalId, onUserAction) {
         var newDiff = diffCtor(optionalId);
-        diffDomCtor(newDiff);
+        diffDomCtor(newDiff, onUserAction);
         diffUseDom(newDiff);
         return newDiff;
     }
 
-    function createAndPlaceDiffUI(optionalId) {
-        var newDiff = createAndPlaceDiff(optionalId);
+    function createAndPlaceDiffUI(optionalId, onUserAction) {
+        var newDiff = createAndPlaceDiff(optionalId, onUserAction);
         if (slots.length > 0) {
             setSlotInDiff(newDiff,"before",slots[0]);
             if (slots.length > 1) {
@@ -1211,13 +1237,13 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
         return newDiff;
     }
 
-    function deleteAndUnplaceSlot(slot) {
-        slotDomDtor(slot);
+    function deleteAndUnplaceSlot(slot, onUserAction) {
+        slotDomDtor(slot, onUserAction);
         slotDtor(slot);
     }
 
-    function deleteAndUnplaceDiff(diff) {
-        diffDomDtor(diff);
+    function deleteAndUnplaceDiff(diff, onUserAction) {
+        diffDomDtor(diff, onUserAction);
         diffDtor(diff);
     }
 

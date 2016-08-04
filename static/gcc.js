@@ -402,7 +402,7 @@ $(document).ready(function() {
     $('#new-slot').on('click', function(e)  {
         console.log("[UI] User clicked on new-slot button.");
         var newSlot = currentCompiler.createAndPlaceSlot(
-            OPTIONS.compilers, OPTIONS.defaultCompiler);
+            OPTIONS.compilers, OPTIONS.defaultCompiler, null, true);
         resizeEditors();
         currentCompiler.refreshSlot(newSlot);
     });
@@ -411,7 +411,7 @@ $(document).ready(function() {
 $(document).ready(function() {
     $('#new-diff').on('click', function(e)  {
         console.log("[UI] User clicked on new-diff button.");
-        var newDiff = currentCompiler.createAndPlaceDiffUI();
+        var newDiff = currentCompiler.createAndPlaceDiffUI(null, true);
         resizeEditors();
     });
 });
