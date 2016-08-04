@@ -546,9 +546,12 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
 
     function serialiseState(compress) {
         console.log("[WINDOW] Serialising state...");
+        // Beware: we do not serialise the whole objects Slots / Diffs !
+        // (they are to big to be passed by a URL)
 
         // Memorize informations on slots
         var slotIds = []; // necessary only to link with iiffs
+        var leaderSlotId = leaderSlot.id;
         var compilersInSlots = [];
         var optionsInSlots = [];
         slots.forEach(function(slot) {
@@ -569,6 +572,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
         var state = {
             slotCount: slots.length,
             slotIds: slotIds,
+            leaderSlotId: leaderSlotId,
             compilersInSlots: compilersInSlots,
             optionsInSlots: optionsInSlots,
 
@@ -606,14 +610,14 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
             }
         }
 
-        // Deserialise 
+        // Deserialise slots
         console.log("[WINDOW] Deserialisation : deserializing slots...");
         for (var i = 0; i < state.slotCount; i++) {
             var newSlot = createAndPlaceSlot(compilers,
                                                 defaultCompiler,
                                                 state.slotIds[i]);
             setCompilerById(state.compilersInSlots[i],newSlot);
-            slot.node.find('.compiler-options').val(state.optionsInSlots[i]);
+            newSlot.node.find('.compiler-options').val(state.optionsInSlots[i]);
             // Somewhat hackily persist compiler into local storage else when the ajax response comes in
             // with the list of compilers it can splat over the deserialized version.
             // The whole serialize/hash/localStorage code is a mess! TODO(mg): fix
@@ -621,6 +625,12 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
             setSetting('compiler'+newSlot.id, state.compilersInSlots[i]);
         }
 
+        // Deserialise leaderSlot
+        setLeaderSlotIcon(getSlotById(state.leaderSlotId));
+        leaderSlot = getSlotById(state.leaderSlotId);
+        setSetting('leaderSlot', leaderSlot.id);
+
+        // Deserialise diffs
         console.log("[WINDOW] Deserialisation : deserializing diffs...");
         for (var i = 0; i < state.diffCount; i++) {
             var newDiff = createAndPlaceDiff(state.diffIds[i]);
@@ -1024,10 +1034,12 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
 
     function slotDtor(slot) {
         // if slot is the leader, find a new leader and change the icon
-        var newLeader = anotherSlot(slot);
-        leaderSlot = newLeader;
-        setLeaderSlotIcon(leaderSlot);
-        setSetting('leaderSlot', leaderSlot.id);
+        if (slots.length > 1) {
+            var newLeader = anotherSlot(slot);
+            leaderSlot = newLeader;
+            setLeaderSlotIcon(leaderSlot);
+            setSetting('leaderSlot', leaderSlot.id);
+        }
 
         // now safely delete:
         removeSetting('compiler'+slot.id);
