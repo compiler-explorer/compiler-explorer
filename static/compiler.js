@@ -1092,8 +1092,10 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
         // source : http://stackoverflow.com/questions/10126395/how-to-jquery-clone-and-change-id
         var slotTemplate = domRoot.find('#slotTemplate');
         var clone = slotTemplate.clone().prop('id', 'slot'+slot.id);
-        var last = domRoot.find('#new-slot');
-        last.before(clone); // insert right before the "+" button
+
+        // Insert the slot in the list of panels
+        // domRoot.find('#slotTemplate').after(clone);
+        domRoot.find('#draggablePanelList').append(clone);
 
         slot.node = domRoot.find('#slot'+slot.id);
 
@@ -1115,8 +1117,10 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
     function diffDomCtor(diff) {
         var diffTemplate = domRoot.find('#diffTemplate');
         var clone = diffTemplate.clone().prop('id', 'diff'+diff.id);
-        var last = domRoot.find('#new-diff');
-        last.before(clone); // insert right before the "+" button
+
+        // Insert the diff in the list of panels
+        // domRoot.find('#diffTemplate').after(clone);
+        domRoot.find('#draggablePanelList').append(clone);
 
         diff.node = domRoot.find('#diff'+diff.id)
 
