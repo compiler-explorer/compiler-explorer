@@ -96,9 +96,12 @@
         </div>
     </div>
 
-    <div class="row">
-        <div class="col-md-3">
-            <section id="main" class="container-fluid">
+    <div class="container-fluid">
+        <ul id="draggablePanelList" class="list-unstyled">
+
+            <li class="panel panel-primary col-md-3" id="test">
+            <div class="panel-heading"><span class="title">Code editor</span></div>
+            <div class="panel-body">
                 <div id="commonParams">
                         <form class="well form-inline files">
                             <div>
@@ -168,7 +171,7 @@
                         </div>
                         <textarea>// Type your code here, or load an example.</textarea>
                     </div>
-            </section>
+            </div>
 
             <div class="modal fade" id="saveDialog">
                 <div class="modal-dialog">
@@ -186,12 +189,8 @@
                             <a href="#" class="btn btn-primary save">Save</a>
                         </div>
                     </div>
-                </div>
             </div>
-        </div>
 
-
-        <ul id="draggablePanelList" class="list-unstyled">
             <li class="panel panel-primary col-md-3" id="slotTemplate">
             <div class="panel-heading"><span class="title">Slot template (should *not* be visible)</span><span class="closeButton">[X]</span></div>
             <div class="panel-body">
@@ -251,7 +250,7 @@
                             <tbody>
                             <tr>
                                 <td class="dropdown compilers-container before">
-                                    <button accesskey="c" type="button"
+                                    <button type="button"
                                         title="Slot before" class="btn btn-default dropdown-toggle diff-before-button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
                                         <span class="slot">before</span>
                                         <span class="caret"></span>
@@ -261,7 +260,7 @@
                                 </td>
                                 <td <span class="compilers-container unicode-arrow" >&#8658;</span> </td>
                                 <td class="dropdown compilers-container after">
-                                    <button accesskey="c" type="button"
+                                    <button type="button"
                                         title="Slot after" class="btn btn-default dropdown-toggle diff-after-button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
                                         <span class="slot">after</span>
                                         <span class="caret"></span>
@@ -292,6 +291,7 @@
                 </div>
                 </li
         </ul>
+        </div>
 
 
         </div>
