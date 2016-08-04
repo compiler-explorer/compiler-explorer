@@ -1041,6 +1041,11 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
             setSetting('leaderSlot', leaderSlot.id);
         }
 
+        // hide the close-slot icon if there will remain 1 slot
+        if (slots.length <= 2) {
+            domRoot.find('.slot .closeButton').hide()
+        }
+
         // now safely delete:
         removeSetting('compiler'+slot.id);
         removeSetting('compilerOptions'+slot.id);
@@ -1103,13 +1108,17 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
         slot.node.show();
         slot.node.find('.closeButton').on('click', function(e)  {
             console.log("[UI] User clicked on closeButton in slot "+slot.id);
-            if (slots.length > 1) {
-                var slotToDelete = getSlotById(slot.id);
-                deleteAndUnplaceSlot(slotToDelete);
-            } else {
-                console.log("[UI] It is useless to close the last compiler!");
-            }
+            var slotToDelete = getSlotById(slot.id);
+            deleteAndUnplaceSlot(slotToDelete);
         });
+
+        // show the close-slot icons if there will be more than 1 slot
+        if (slots.length == 1) {
+            domRoot.find('.slot .closeButton').hide()
+        }
+        if (slots.length == 2) {
+            domRoot.find('.slot .closeButton').show()
+        }
 
         setPanelListSortable();
     }
@@ -1188,7 +1197,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
 
     function updateDiffButton(diff, className) {
         var slot = diff[className+'Slot'];
-        var diffSlotMenuNode = diff.node.find('.'+className+' .slot');
+        var diffSlotMenuNode = diff.node.find('.'+className+' .slotName');
         diffSlotMenuNode.text(slot.description());
     }
 
@@ -1227,7 +1236,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
             diff.node.find('.'+className+' li').remove();
             for (var i = 0; i < slots.length; i++) {
                 var elem = $('<li><a href="#">' + slots[i].description() + '</a></li>');
-                diff.node.find('.'+className+' .slots').append(elem);
+                diff.node.find('.'+className+' .slotNameList').append(elem);
                 (function (i) {
                     elem.click(function () {
                         // TODO: check if modifying diff with [] will survive to

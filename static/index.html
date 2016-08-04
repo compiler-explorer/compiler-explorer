@@ -195,15 +195,15 @@
             </div>
 
             <li class="panel panel-primary col-md-3" id="slotTemplate">
-            <div class="panel-heading"><span class="title">Slot template (should *not* be visible)</span><span class="closeButton">[X]</span></div>
-            <div class="panel-body">
+            <div class="panel-heading slot"><span class="title">Slot template (should *not* be visible)</span><span class="closeButton unicodeCross unselectable characterIcon">&#10006;</span></div>
+            <div class="panel-body slot">
                 <div class="params">
                     <form class="well well-sm form-inline">
                         <table>
                             <tbody>
                             <tr>
                                 <td>
-                                    <p class="leaderSlotIcon characterIcon unselectedCharacterIcon">&#9734;</p>
+                                    <p class="leaderSlotIcon unselectable characterIcon unselectedCharacterIcon">&#9734;</p>
                                 <td class="dropdown compilers-container">
                                     <!-- the accesskey is set in static/compiler.js -->
                                     <button accesskey="" type="button" title="Compiler to use (alt-C)" class="btn btn-default dropdown-toggle compiler-selection" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
@@ -245,7 +245,7 @@
                 </div>
             </div>
             <li class="panel panel-primary col-md-3" id="diffTemplate">
-            <div class="panel-heading"><span class="title">Diff template (should *not* be visible)</span><span class="closeButton">[X]</span></div>
+            <div class="panel-heading"><span class="title">Diff template (should *not* be visible)</span><span class="closeButton unicodeCross unselectable characterIcon">&#10006;</span></div>
             <div class="panel-body">
                 <div class="params">
                     <form class="well well-sm form-inline">
@@ -255,23 +255,23 @@
                                 <td class="dropdown compilers-container before">
                                     <button type="button"
                                         title="Slot before" class="btn btn-default dropdown-toggle diff-before-button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-                                        <span class="slot">before</span>
+                                        <span class="slotName">before</span>
                                         <span class="caret"></span>
                                     </button>
-                                    <ul class="dropdown-menu slots">
+                                    <ul class="dropdown-menu slotNameList">
                                     </ul>
                                 </td>
-                                <td <span class="compilers-container unicode-arrow" >&#8658;</span> </td>
+                                <td <span class="compilers-container unicode-arrow unselectable" >&#8658;</span> </td>
                                 <td class="dropdown compilers-container after">
                                     <button type="button"
                                         title="Slot after" class="btn btn-default dropdown-toggle diff-after-button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-                                        <span class="slot">after</span>
+                                        <span class="slotName">after</span>
                                         <span class="caret"></span>
                                     </button>
-                                    <ul class="dropdown-menu slots">
+                                    <ul class="dropdown-menu slotNameList">
                                     </ul>
                                 </td>
-                                <td <span class="compilers-container unicode-arrow reverse-diff">&#8646;</span> </td>
+                                <td <span class="compilers-container unicode-arrow reverse-diff unselectable characterIcon">&#8646;</span> </td>
                             </tr>
                             </tbody>
                         </table>

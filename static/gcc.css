@@ -232,7 +232,7 @@ li.social {
       display: inline-block;
   }
 
-.characterIcon {
+.unselectable{
     /* disable text selection on character icons
      * source : http://stackoverflow.com/a/9314458/4669135 */
     -webkit-touch-callout: none;
@@ -241,6 +241,11 @@ li.social {
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
+}
+
+.characterIcon {
+    /* Show classical cursor when hovering */
+    cursor: pointer;
 }
 
 .selectedCharacterIcon {
@@ -259,8 +264,16 @@ li.social {
 
 .unicode-arrow {
     font-size: 25px;
-    padding: 10px;
 }
+
+.unicodeCross {
+    overflow: visible;
+    font-weight: bold;
+    color: #B90000;
+    font-size: 20px; /* problem : it makes the panel header (title zone) bigger*/
+    float: right;
+}
+
 
 .diff-before-button {
     background-color: rgba(251,175,175,.7);
