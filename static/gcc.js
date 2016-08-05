@@ -173,6 +173,7 @@ function getState(compress) {
     };
 }
 
+// Gist is a pastbin service operated by github
 function toGist(state) {
     files = {};
     function nameFor(compiler) {
@@ -292,9 +293,20 @@ function loadState(state) {
     setFilterUi(state.filterAsm);
     for (var i = 0; i < Math.min(allCompilers.length, state.compilers.length); i++) {
         allCompilers[i].setFilters(state.filterAsm);
-        allCompilers[i].deserialiseState(state.compilers[i]);
+        allCompilers[i].deserialiseState(state.compilers[i],OPTIONS.compilers, OPTIONS.defaultCompiler);
     }
     return true;
+}
+
+function resizeEditors() {
+    var codeMirrors = $('.CodeMirror');
+    var top = codeMirrors.offset().top;
+    var windowHeight = $(window).height();
+    var compOutputSize = Math.max(100, windowHeight * 0.05);
+    $('.output').height(compOutputSize);
+    var resultHeight = $('.result').height();
+    var height = windowHeight - top - resultHeight - 90;
+    currentCompiler.setEditorHeight(height);
 }
 
 function initialise(options) {
@@ -302,12 +314,12 @@ function initialise(options) {
     var actualFilters = $.parseJSON(window.localStorage.filter || defaultFilters);
     setFilterUi(actualFilters);
 
-    $(".compiler_options").val(options.compileoptions);
+    $(".compiler-options").val(options.compileoptions);
     $(".language-name").text(options.language);
 
     var compiler = new Compiler($('body'), actualFilters, "a", function () {
         hidePermalink();
-    }, options.language);
+    }, options.language, options.compilers, options.defaultCompiler);
     allCompilers.push(compiler);
     currentCompiler = compiler;
 
@@ -315,7 +327,8 @@ function initialise(options) {
         return false;
     });
     $('.files .source').change(onSourceChange);
-    compiler.setCompilers(options.compilers, options.defaultCompiler);
+    // This initialization is moved inside var compiler = new Compiler ....
+    // compiler.setCompilers(options.compilers, options.defaultCompiler);
     function setSources(sources, defaultSource) {
         $('.source option').remove();
         $.each(sources, function (index, arg) {
@@ -367,17 +380,6 @@ function initialise(options) {
     });
     loadFromHash();
 
-    function resizeEditors() {
-        var codeMirrors = $('.CodeMirror');
-        var top = codeMirrors.offset().top;
-        var windowHeight = $(window).height();
-        var compOutputSize = Math.max(100, windowHeight * 0.05);
-        $('.output').height(compOutputSize);
-        var resultHeight = $('.result').height();
-        var height = windowHeight - top - resultHeight - 40;
-        currentCompiler.setEditorHeight(height);
-    }
-
     $(window).on("resize", resizeEditors);
     resizeEditors();
 }
@@ -396,6 +398,54 @@ function setFilterUi(asmFilters) {
     });
 }
 
+$(document).ready(function() {
+    $('#new-slot').on('click', function(e)  {
+        console.log("[UI] User clicked on new-slot button.");
+        var newSlot = currentCompiler.createAndPlaceSlot(
+            OPTIONS.compilers, OPTIONS.defaultCompiler, null, true);
+        resizeEditors();
+        currentCompiler.refreshSlot(newSlot);
+    });
+});
+
+$(document).ready(function() {
+    $('#new-diff').on('click', function(e)  {
+        console.log("[UI] User clicked on new-diff button.");
+        var newDiff = currentCompiler.createAndPlaceDiffUI(null, true);
+        resizeEditors();
+    });
+});
+
 $(function () {
     initialise(OPTIONS);
 });
+
+////////////////////////////////////////////////////////////////////////////////
+// Unit/Functional tests require:
+
+function getSettingsList() {
+    // console.log(JSON.stringify(window.localStorage));
+    var entries = Object.getOwnPropertyNames(window.localStorage);
+    return entries;
+}
+
+function getSetting(settingName) {
+    return window.localStorage[settingName];
+}
+
+function wipeSettings() {
+    window.localStorage.clear();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// DEBUG :
+function listSettings() {
+    var entries = getSettingsList();
+    for (var i = 0; i < entries.length; i++) {
+        console.log(entries[i]);
+    }
+}
+
+function showSetting(settingName) {
+    console.log(JSON.stringify(getSetting(settingName, null, ' ')));
+}

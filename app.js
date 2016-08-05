@@ -24,10 +24,12 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 // POSSIBILITY OF SUCH DAMAGE.
 
+// load external and internal libraries (will load more internal binaries later)
 var nopt = require('nopt'),
     os = require('os'),
     props = require('./lib/properties'),
     compileHandler = require('./lib/compile').compileHandler,
+    buildDiffHandler = require('./lib/diff').buildDiffHandler,
     express = require('express'),
     child_process = require('child_process'),
     path = require('path'),
@@ -37,6 +39,7 @@ var nopt = require('nopt'),
     url = require('url'),
     Promise = require('promise');
 
+// Parse arguments from command line 'node ./app.js args...'
 var opts = nopt({
     'env': [String, Array],
     'rootDir': [String],
@@ -46,6 +49,7 @@ var opts = nopt({
     'propDebug': [Boolean]
 });
 
+// Set default values for ommited arguments
 var rootDir = opts.rootDir || './etc';
 var language = opts.language || "C++";
 var env = opts.env || ['dev'];
@@ -53,20 +57,45 @@ var hostname = opts.host || os.hostname();
 var port = opts.port || 10240;
 
 var propHierarchy = ['defaults'].concat(env).concat([language, os.hostname()]);
+console.log("properties hierarchy: " + propHierarchy)
 
-props.initialize(rootDir + '/config', propHierarchy);
+// Define an ugly debug function
+function debug_show_variable(variable_string_name) {
+    if (opts.propDebug) {
+        console.log("DEBUG:" + variable_string_name +" has value " + JSON.stringify(eval(variable_string_name)))
+    }
+}
+
+// Propagate debug mode if need be
 if (opts.propDebug) props.setDebug(true);
+
+// *All* files in config dir are parsed 
+props.initialize(rootDir + '/config', propHierarchy);
+
+// Instantiate a function to access records concerning "gcc-explorer" 
+// in hidden object props.properties
 var gccProps = props.propsFor("gcc-explorer");
+
+// Read from gccexplorer's config the wdiff configuration
+// that will be used to configure lib/diff.js
+var wdiffConfig = {wdiffExe: gccProps('wdiff_exe'," /usr/bin/wdiff"),
+                   wdiffTmpDir: gccProps('wdiff_tmp_dir',"/tmp")};
+
+// Instantiate a function to access records concerning the chosen language
+// in hidden object props.properties
 var compilerPropsFunc = props.propsFor(language.toLowerCase());
+
+// If no option for the compiler ... use gcc's options (??)
 function compilerProps(property, defaultValue) {
-    // My kingdom for ccs...
+    // My kingdom for ccs... [see Matt's github page]
     var forCompiler = compilerPropsFunc(property, undefined);
     if (forCompiler !== undefined) return forCompiler;
-    return gccProps(property, defaultValue);
+    return gccProps(property, defaultValue); // gccProps comes from lib/compile.js
 }
 require('./lib/compile').initialise(gccProps, compilerProps);
 var staticMaxAgeMs = gccProps('staticMaxAgeMs', 0);
 
+// function to load internal binaries (i.e. lib/source/*.js)
 function loadSources() {
     var sourcesDir = "lib/sources";
     var sources = fs.readdirSync(sourcesDir)
@@ -79,12 +108,16 @@ function loadSources() {
     return sources;
 }
 
+// load effectively
 var fileSources = loadSources();
 var sourceToHandler = {};
 fileSources.forEach(function (source) {
     sourceToHandler[source.urlpart] = source;
 });
 
+debug_show_variable("sourceToHandler")
+
+// auxiliary function used in clientOptionsHandler
 function compareOn(key) {
     return function (xObj, yObj) {
         var x = xObj[key];
@@ -95,10 +128,15 @@ function compareOn(key) {
     };
 }
 
+// instantiate a function that generate javascript code,
+// this code will be embedded gcc-explorer-website/client-options.js
 function clientOptionsHandler(compilers, fileSources) {
     var sources = fileSources.map(function (source) {
         return {name: source.name, urlpart: source.urlpart};
     });
+    // debug_show_variable("sources")
+    console.log("sources: " + JSON.stringify(sources)); // debug
+    // sort source file alphabetically
     sources = sources.sort(compareOn("name"));
     var options = {
         google_analytics_account: gccProps('clientGoogleAnalyticsAccount', 'UA-55180-6'),
@@ -125,7 +163,9 @@ function clientOptionsHandler(compilers, fileSources) {
     };
 }
 
+// function used to enable loading and saving source code from web interface
 function getSource(req, res, next) {
+    //debug_show_variable("req");
     var bits = req.url.split("/");
     var handler = sourceToHandler[bits[1]];
     if (!handler) {
@@ -175,7 +215,9 @@ function retryPromise(promiseFunc, name, maxFails, retryMs) {
     });
 }
 
+// Auxiliary function to findCompilers()
 function configuredCompilers() {
+    // read config (file already read) (':' are used to separate compilers names)
     var exes = compilerProps("compilers", "/usr/bin/g++").split(":");
     var ndk = compilerProps('androidNdk');
     if (ndk) {
@@ -255,6 +297,7 @@ function configuredCompilers() {
     }));
 }
 
+// Auxiliary function to findCompilers()
 function getCompilerInfo(compilerInfo) {
     if (Array.isArray(compilerInfo)) {
         return Promise.resolve(compilerInfo);
@@ -262,12 +305,16 @@ function getCompilerInfo(compilerInfo) {
     return new Promise(function (resolve) {
         var compiler = compilerInfo.exe;
         var versionFlag = compilerInfo.versionFlag || '--version';
+        // fill field compilerInfo.version,
+        // assuming the compiler returns it's version on 1 line
         child_process.exec(compiler + ' ' + versionFlag, function (err, output) {
             if (err) return resolve(null);
             compilerInfo.version = output.split('\n')[0];
             if (compilerInfo.intelAsm) {
                 return resolve(compilerInfo);
             }
+
+            // get informations on the compiler's options
             child_process.exec(compiler + ' --target-help', function (err, output) {
                 var options = {};
                 if (!err) {
@@ -281,6 +328,10 @@ function getCompilerInfo(compilerInfo) {
                 if (options['-masm']) {
                     compilerInfo.intelAsm = "-masm=intel";
                 }
+
+                // debug (seems to be displayed multiple times):
+                if (opts.propDebug) console.log("compiler options: "+ JSON.stringify(options,null,4));
+
                 resolve(compilerInfo);
             });
         });
@@ -306,6 +357,8 @@ function findCompilers() {
         });
 }
 
+// Instantiate a function that write informations on compiler,
+// in JSON format (on which page ?)
 function apiHandler(compilers) {
     var reply = JSON.stringify(compilers);
     return function apiHandler(req, res, next) {
@@ -367,7 +420,8 @@ findCompilers().then(function (compilers) {
         bodyParser = require('body-parser'),
         logger = require('morgan'),
         compression = require('compression'),
-        restreamer = require('./lib/restreamer');
+        restreamer = require('./lib/restreamer'),
+        diffHandler = buildDiffHandler(wdiffConfig);
 
     webServer
         .use(logger('combined'))
@@ -380,7 +434,8 @@ findCompilers().then(function (compilers) {
         .use('/source', getSource)
         .use('/api', apiHandler(compilers))
         .use('/g', shortUrlHandler)
-        .post('/compile', compileHandler(compilers));
+        .post('/compile', compileHandler(compilers)) // used inside static/compiler.js
+        .post('/diff', diffHandler); // used inside static/compiler.js
 
     // GO!
     console.log("=======================================");

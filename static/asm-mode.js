@@ -45,6 +45,9 @@ CodeMirror.defineMode("asm", function () {
 
     return {
         token: function (stream) {
+            if (stream.match(/\/\*([^*]|[*][^\/])*\**\//)) {
+                return "comment";
+            }
             if (stream.match(/^.+:$/)) {
                 return "variable-2";
             }
