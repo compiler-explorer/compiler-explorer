@@ -78,7 +78,7 @@ var gccProps = props.propsFor("gcc-explorer");
 
 // Read from gccexplorer's config the wdiff configuration
 // that will be used to configure lib/diff.js
-var wdiffConfig = {wdiffExe: gccProps('wdiff_exe'," /usr/bin/wdiff"),
+var wdiffConfig = {wdiffExe: gccProps('wdiff_exe', "wdiff"),
                    wdiffTmpDir: gccProps('wdiff_tmp_dir',"/tmp")};
 
 // Instantiate a function to access records concerning the chosen language
