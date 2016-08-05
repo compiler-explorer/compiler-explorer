@@ -98,105 +98,99 @@
 
     <div class="container-fluid">
         <ul id="draggablePanelList" class="list-unstyled">
-
-            <li class="panel panel-primary col-md-3" id="test">
+            <li class="panel panel-primary col-md-3">
             <div class="panel-heading"><span class="title">Code editor</span></div>
             <div class="panel-body">
                 <div id="commonParams">
-                        <form class="well form-inline files">
-                            <div>
-                                <label>Source: <select class="source"></select></label>
-                                <label>Name: <select class="filename"></select></label>
-                                <button id="new-slot" class="btn btn-sm" title="Open a new slot.">New slot</button>
-                                <button id="new-diff" class="btn btn-sm" title="Open a new diff.">New diff</button>
-                            </div>
-                            <div class="btn-group btn-group-sm">
-                                <button class="btn btn-sm load">Load</button>
-                                <button class="btn btn-sm save">Save</button>
-                                <button class="btn btn-sm saveas">Save as...</button>
-                                <button class="btn btn-sm fulllink" title="Permanent, full URL to this page">Full link</button>
-                                <button class="btn btn-sm shortlink" title="Permanent link to this page as a short link">Short link</button>
-                            </div>
-                            <div class="btn-group btn-group-sm filter">
-                                <button class="btn btn-sm" type="button" value="binary"
-                                        title="Compile to binary and disassemble the output">Binary
-                                </button>
-                                <button class="btn btn-sm active nonbinary" type="button"
-                                        title="Filter unused labels from the output" value="labels">Unused labels
-                                </button>
-                                <button class="btn btn-sm active nonbinary" type="button"
-                                        title="Filter all assembler directives from the output" value="directives">Directives
-                                </button>
-                                <button class="btn btn-sm active nonbinary" type="button"
-                                        title="Remove all lines which are only comments from the output" value="commentOnly">
-                                    Comment-only
-                                    lines
-                                </button>
-                                <button class="btn btn-sm" type="button" title="Output disassembly in Intel syntax"
-                                        value="intel">Intel syntax
-                                </button>
-                                <button class="btn btn-sm" type="button"
-                                        title="Colourise lines so one can see how the source maps to the output"
-                                        value="colouriseAsm">Colourise
-                                </button>
-                            </div>
-                            <div>
-                                <table>
-                                    <tbody>
-                                    <tr>
-                                    </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                            <div class="collapse permalink-collapse">
-                                <div class="input-group input-group-sm permalink">
-                                    <input type="text" class="form-control input-sm" placeholder="Loading" readonly id="permalink" size="1024">
-                                    <span class="input-group-btn">
-                                        <button class="btn btn-sm btn-default clippy" type="button" data-clipboard-target="#permalink"
-                                                title="Copy to clipboard">
-                                            <img src="ext/clippy.svg" class="clippy" width="13px" alt="Copy to clipboard">
-                                        </button>
-                                    </span>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                    <div class="editor">
-                        <div class="topbar indented">
-                            Code editor
-                            <span class="pull-right input-group input-group-sm">
-                                <button accesskey="a" title="Automatically build when you stop typing"
-                                        class="btn btn-default btn-sm autocompile active">
-                                    <span class="glyphicon glyphicon-play-circle"></span>
-                                </button>
-                            </span>
+                    <form class="well form-inline files">
+                        <div>
+                            <label>Source: <select class="source"></select></label>
+                            <label>Name: <select class="filename"></select></label>
+                            <button id="new-slot" class="btn btn-sm" title="Open a new slot.">New slot</button>
+                            <button id="new-diff" class="btn btn-sm" title="Open a new diff.">New diff</button>
                         </div>
-                        <textarea>// Type your code here, or load an example.</textarea>
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-sm load">Load</button>
+                            <button class="btn btn-sm save">Save</button>
+                            <button class="btn btn-sm saveas">Save as...</button>
+                            <button class="btn btn-sm fulllink" title="Permanent, full URL to this page">Full link</button>
+                            <button class="btn btn-sm shortlink" title="Permanent link to this page as a short link">Short link</button>
+                        </div>
+                        <div class="btn-group btn-group-sm filter">
+                            <button class="btn btn-sm" type="button" value="binary"
+                                    title="Compile to binary and disassemble the output">Binary
+                            </button>
+                            <button class="btn btn-sm active nonbinary" type="button"
+                                    title="Filter unused labels from the output" value="labels">Unused labels
+                            </button>
+                            <button class="btn btn-sm active nonbinary" type="button"
+                                    title="Filter all assembler directives from the output" value="directives">Directives
+                            </button>
+                            <button class="btn btn-sm active nonbinary" type="button"
+                                    title="Remove all lines which are only comments from the output" value="commentOnly">
+                                    Comment-only lines
+                            </button>
+                            <button class="btn btn-sm" type="button" title="Output disassembly in Intel syntax"
+                                    value="intel">Intel syntax
+                            </button>
+                            <button class="btn btn-sm" type="button"
+                                    title="Colourise lines so one can see how the source maps to the output"
+                                    value="colouriseAsm">Colourise
+                            </button>
+                        </div>
+                        <div class="collapse permalink-collapse">
+                            <div class="input-group input-group-sm permalink">
+                                <input type="text" class="form-control input-sm" placeholder="Loading" readonly id="permalink" size="1024">
+                                <span class="input-group-btn">
+                                    <button class="btn btn-sm btn-default clippy" type="button" data-clipboard-target="#permalink"
+                                            title="Copy to clipboard">
+                                        <img src="ext/clippy.svg" class="clippy" width="13px" alt="Copy to clipboard">
+                                    </button>
+                                </span>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="editor">
+                    <div class="topbar indented">
+                        Code editor
+                        <span class="pull-right input-group input-group-sm">
+                            <button accesskey="a" title="Automatically build when you stop typing"
+                                    class="btn btn-default btn-sm autocompile active">
+                                <span class="glyphicon glyphicon-play-circle"></span>
+                            </button>
+                        </span>
                     </div>
-            </div>
+                    <textarea>// Type your code here, or load an example.</textarea>
+                </div>
 
-            <div class="modal fade" id="saveDialog">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
-                                    aria-hidden="true">&times;</span></button>
-                            <h4>Save as...</h4>
-                        </div>
-                        <div class="modal-body">
-                            <label>Filename: <input class="save-filename" style="width: 30em;" type="text"></label>
-                        </div>
-                        <div class="modal-footer">
-                            <a href="#" data-dismiss="modal" class="btn btn-default">Cancel</a>
-                            <a href="#" class="btn btn-primary save">Save</a>
+                <div class="modal fade" id="saveDialog">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                                        aria-hidden="true">&times;</span></button>
+                                <h4>Save as...</h4>
+                            </div>
+                            <div class="modal-body">
+                                <label>Filename: <input class="save-filename" style="width: 30em;" type="text"></label>
+                            </div>
+                            <div class="modal-footer">
+                                <a href="#" data-dismiss="modal" class="btn btn-default">Cancel</a>
+                                <a href="#" class="btn btn-primary save">Save</a>
+                            </div>
                         </div>
                     </div>
-                    <!-- </div> -->
+                </div>
             </div>
+            </li>
 
-            <li class="panel panel-primary col-md-3" id="slotTemplate">
-            <div class="panel-heading slot"><span class="title">Slot template (should *not* be visible)</span><span class="closeButton unicodeCross unselectable characterIcon">&#10006;</span></div>
-            <div class="panel-body slot">
+            <li class="panel panel-primary col-md-3 slot" id="slotTemplate">
+            <div class="panel-heading">
+                <span class="title">Slot template (should *not* be visible)</span>
+                <span class="closeButton unicodeCross unselectable characterIcon">&#10006;</span>
+            </div>
+            <div class="panel-body">
                 <div class="params">
                     <form class="well well-sm form-inline">
                         <table>
@@ -221,13 +215,7 @@
                             </tbody>
                         </table>
                         <div class="btn-group btn-group-sm filter">
-                            <!-- It should be possible to place slot-specific
-                                 buttons here.
-                                    <button class="btn btn-sm" type="button"
-                                            title="Colourise lines so one can see how the source maps to the output"
-                                            value="colouriseAsm">Colourise
-                                    </button>
-                                    -->
+                            <!-- Place slot-specific buttons here. -->
                         </div>
                     </form>
                 </div>
@@ -244,7 +232,8 @@
                     </div>
                 </div>
             </div>
-            <li class="panel panel-primary col-md-3" id="diffTemplate">
+
+            <li class="panel panel-primary col-md-3 diff" id="diffTemplate">
             <div class="panel-heading"><span class="title">Diff template (should *not* be visible)</span><span class="closeButton unicodeCross unselectable characterIcon">&#10006;</span></div>
             <div class="panel-body">
                 <div class="params">
@@ -261,7 +250,7 @@
                                     <ul class="dropdown-menu slotNameList">
                                     </ul>
                                 </td>
-                                <td <span class="compilers-container unicode-arrow unselectable" >&#8658;</span> </td>
+                                <td> <span class="compilers-container unicode-arrow unselectable" >&#8658;</span> </td>
                                 <td class="dropdown compilers-container after">
                                     <button type="button"
                                         title="Slot after" class="btn btn-default dropdown-toggle diff-after-button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
@@ -271,7 +260,7 @@
                                     <ul class="dropdown-menu slotNameList">
                                     </ul>
                                 </td>
-                                <td <span class="compilers-container unicode-arrow reverse-diff unselectable characterIcon">&#8646;</span> </td>
+                                <td> <span class="compilers-container unicode-arrow reverse-diff unselectable characterIcon">&#8646;</span> </td>
                             </tr>
                             </tbody>
                         </table>
@@ -282,13 +271,9 @@
                     <textarea>Awaiting...</textarea>
                 </div>
             </div>
-                </li>
+            </li>
 
         </ul>
-        </div>
-
-
-        </div>
     </div>
 
     <div class="template lang c">// Type your code here, or load an example.
