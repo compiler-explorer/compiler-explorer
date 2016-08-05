@@ -416,14 +416,6 @@ $(document).ready(function() {
     });
 });
 
-$(document).ready(function() {
-    $('#slotTemplate').hide();
-});
-
-$(document).ready(function() {
-    $('#diffTemplate').hide();
-});
-
 $(function () {
     initialise(OPTIONS);
 });
