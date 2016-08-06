@@ -52,7 +52,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
                   onEditorChangeCallback, lang, compilers, defaultCompiler) {
     console.log("[TRACE] Entering function Compiler()");
     // Global array that will contain the slots.
-    slots = [];
+    var slots = [];
     var Slot = function(id) {
         // this id will be used in the DOM, ex : class="slot"+id
         // the getAvailableId could be placed here but that could
@@ -60,8 +60,6 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
         this.id = id;
         this.asmCodeMirror = null;
         this.currentAssembly = null;
-        this.pendingTimeOut = null;
-        this.lastUpdateAsm = null;
         // lastRequest contains the previous request in the slot
         // it can be used to prevent useless re-compilation
         // if no parameters were really changed (e.g. spaces moved)
@@ -72,7 +70,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
             var options = this.node.find('.compiler-options').val();
             var compiler = currentCompiler(this);
             return compiler.name + " " + options;
-        }
+        };
         this.shortDescription = function() {
             var description = this.description();
             if (description.length >= 19) {
@@ -81,9 +79,9 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
                 return description;
             }
         }
-    }
+    };
 
-    diffs = [];
+    var diffs = [];
     var Diff = function(id) {
         this.id = id;
         this.beforeSlot = null;
@@ -91,15 +89,12 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
         this.currentDiff = null;
         this.asmCodeMirror = null;
         this.zones = null;
-        // this.pendingTimeOut = null;
-        // this.lastUpdateAsm = null;
-        // this.lastRequest = null;
-        
+
         // used only if the editor's code is modified,
         // to prevent two diff generation by waiting for the second one.
         this.remainingTriggers = 2;
         this.node = null; // Will be initialized in diffDomCtor
-    }
+    };
 
     function contains(array, object) {
         for (var i = 0; i < array.length; i++) {
@@ -122,13 +117,14 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
     // an unique id usable in HTML's classes should work)
     function getAvailableId(array) {
         if (array.length == 0) return 0;
-        usedIds = [];
-        for (var i = 0; i < array.length; i++) {
+        var usedIds = [];
+        var i;
+        for (i = 0; i < array.length; i++) {
             usedIds.push(array[i].id)
         }
         usedIds.sort();
         var prev = -1;
-        for (var i = 0; i < usedIds.length; i++) {
+        for (i = 0; i < usedIds.length; i++) {
             if (usedIds[i] - prev > 1) return prev + 1;
             prev = usedIds[i];
         }
@@ -168,11 +164,12 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
     }
 
     // set the autocompile button on static/index.html
-    $('.autocompile').click(function (e) {
-        $('.autocompile').toggleClass('active');
+    var autocompile = $('.autocompile');
+    autocompile.click(function (e) {
+        autocompile.toggleClass('active');
         onEditorChange();
-        setSetting('autocompile', $('.autocompile').hasClass('active')); });
-    $('.autocompile').toggleClass('active', getSetting("autocompile") !== "false");
+        setSetting('autocompile', autocompile.hasClass('active')); });
+    autocompile.toggleClass('active', getSetting("autocompile") !== "false");
 
     // handle filter options that are specific to a compiler
     function patchUpFilters(filters) {
@@ -239,7 +236,6 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
         window.localStorage.removeItem(windowLocalPrefix + "." + name);
     }
 
-
     var codeText = getSetting('code');
     if (!codeText) codeText = $(".template.lang." + lang.replace(/[^a-zA-Z]/g, '').toLowerCase()).text();
     if (codeText) cppEditor.setValue(codeText);
@@ -279,8 +275,9 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
         }
         slot.node.find('.result .output :visible').remove();
         // only show in Editor messages comming from the leaderSlot
+        var i;
         if (slot.id == leaderSlot) {
-            for (var i = 0; i < errorWidgets.length; ++i)
+            for (i = 0; i < errorWidgets.length; ++i)
                 cppEditor.removeLineWidget(errorWidgets[i]);
             errorWidgets.length = 0;
         }
@@ -314,7 +311,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
         });
         slot.currentAssembly = data.asm || fakeAsm("[no output]");
         updateAsm(slot);
-        for (var i = 0; i < slot.pendingDiffs.length; i++) {
+        for (i = 0; i < slot.pendingDiffs.length; i++) {
             onDiffChange(slot.pendingDiffs[i], request.fromEditor);
         }
     }
@@ -325,7 +322,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
             if (x.source) sourceLines[x.source - 1] = true;
         });
         var ordinal = 0;
-        $.each(sourceLines, function (k, _) {
+        $.each(sourceLines, function (k) {
             sourceLines[k] = ordinal++;
         });
         var asmLines = {};
@@ -627,7 +624,8 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
 
         // Deserialise slots
         console.log("[WINDOW] Deserialisation : deserializing slots...");
-        for (var i = 0; i < state.slotCount; i++) {
+        var i;
+        for (i = 0; i < state.slotCount; i++) {
             var newSlot = createAndPlaceSlot(compilers,
                                                 defaultCompiler,
                                                 state.slotIds[i]);
@@ -647,7 +645,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
 
         // Deserialise diffs
         console.log("[WINDOW] Deserialisation : deserializing diffs...");
-        for (var i = 0; i < state.diffCount; i++) {
+        for (i = 0; i < state.diffCount; i++) {
             var newDiff = createAndPlaceDiff(state.diffIds[i]);
             setSlotInDiff(newDiff,
                           "before",
@@ -703,7 +701,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
             // it should also be possible to use .currentAsembly
             before: diff.beforeSlot.asmCodeMirror.getValue(),
             after: diff.afterSlot.asmCodeMirror.getValue()
-        }
+        };
 
         $.ajax({
             type: 'POST',
@@ -741,12 +739,12 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
             diff.asmCodeMirror.setValue(diff.currentDiff);
             clearBackground(diff.asmCodeMirror);
         });
-        doc = diff.asmCodeMirror.getDoc();
+        var doc = diff.asmCodeMirror.getDoc();
         var computeLineChCoord = buildComputeLineChCoord(diff.currentDiff);
         // Same colors as in phabricator's diffs
         var cssStyles = ["background-color: rgba(151,234,151,.6);",
                          "background-color: rgba(251,175,175,.7);"];
-        colorMarkedZones = [];
+        var colorMarkedZones = [];
         for (var i = 0; i<diff.zones.length; i++) {
             for (var j = 0; j<diff.zones[i].length; j++) {
                 colorMarkedZones.push(
@@ -764,16 +762,17 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
         // assume text is 1 line containing '\n' to break lines
         // below calculations are placed outside the function to speed up
         var splitedStr = text.split("\n");
-        for (var i = 0; i<splitedStr.length; i++) {
+        var i;
+        for (i = 0; i<splitedStr.length; i++) {
             splitedStr[i] = splitedStr[i] +"\n";
         }
         var lastPosInLine = [];
         var currentSum = splitedStr[0].length - 1;
         // console.log("Last pos in line "+0+": "+currentSum);
-        lastPosInLine.push(currentSum)
-        for (var i = 1; i < splitedStr.length; i++) {
+        lastPosInLine.push(currentSum);
+        for (i = 1; i < splitedStr.length; i++) {
             currentSum = currentSum + splitedStr[i].length;
-            lastPosInLine.push(currentSum)
+            lastPosInLine.push(currentSum);
             // console.log("Last pos in line "+i+": "+currentSum);
         }
         return function(pos) {
@@ -781,11 +780,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
             while(lastPosInLine[line] < pos) {
                 line = line + 1;
             }
-            if (line == 0) {
-                var ch = pos;
-            } else {
-                var ch = pos - lastPosInLine[line-1] - 1;
-            }
+            var ch = (line === 0) ? pos : pos - lastPosInLine[line-1] - 1;
             return {line: line, ch: ch};
         }
     }
@@ -867,10 +862,11 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
         const MinHeight = 80;
         if (height < MinHeight) height = MinHeight;
         cppEditor.setSize(null, height);
-        for (var i = 0; i < slots.length; i++) {
+        var i;
+        for (i = 0; i < slots.length; i++) {
             slots[i].asmCodeMirror.setSize(null, height);
         }
-        for (var i = 0; i < diffs.length; i++) {
+        for (i = 0; i < diffs.length; i++) {
             diffs[i].asmCodeMirror.setSize(null, height);
         }
     }
@@ -1059,8 +1055,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
     function slotDtor(slot) {
         // if slot is the leader, find a new leader and change the icon
         if (slots.length > 1) {
-            var newLeader = anotherSlot(slot);
-            leaderSlot = newLeader;
+            leaderSlot = anotherSlot(slot);
             setLeaderSlotIcon(leaderSlot);
             setSetting('leaderSlot', leaderSlot.id);
         }
@@ -1111,7 +1106,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
                     var $listItem = $(elem),
                 newIndex = $listItem.index();
 
-                // Persist the new indices.
+                // TODO Persist the new indices.
                 });
             }
         });
@@ -1165,7 +1160,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
         // domRoot.find('#diffTemplate').after(clone);
         domRoot.find('#draggablePanelList').append(clone);
 
-        diff.node = domRoot.find('#diff'+diff.id)
+        diff.node = domRoot.find('#diff'+diff.id);
 
         diff.node.find('.title').text("Diff "+diff.id+" (drag me)  ");
 
@@ -1329,11 +1324,12 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
     } else {
         slotIds = [];
     }
+    var i, newSlot;
     if (slotIds.length > 0) {
         console.log("[STARTUP] found slot data : restoring from previous session");
         console.log("[DEBUG] slotIds: "+JSON.stringify(slotIds));
-        for (var i = 0; i < slotIds.length; i++) {
-            var newSlot = slotCtor(slotIds[i]);
+        for (i = 0; i < slotIds.length; i++) {
+            newSlot = slotCtor(slotIds[i]);
             slotDomCtor(newSlot);
             slotUseDom(newSlot);
             if (getSetting('compilerOptions'+slotIds[i]) == undefined) {
@@ -1349,7 +1345,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
         // not slot data found. It is probably the first time the user come to
         // visit (or to debug a wipeSetting(); was done in the browser console)
         // therefore it seems logical to open at least 1 slot
-        var newSlot = createAndPlaceSlot(compilers, defaultCompiler);
+        newSlot = createAndPlaceSlot(compilers, defaultCompiler);
         leaderSlot = newSlot;
         setSetting('leaderSlot', leaderSlot.id);
         setLeaderSlotIcon(leaderSlot);
@@ -1371,7 +1367,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
     console.log("[DEBUG] diffIds: " + JSON.stringify(diffIds));
     if (diffIds.length > 0) {
         console.log("[STARTUP] found diff data : restoring diffs from previous session");
-        for (var i = 0; i < diffIds.length; i++) {
+        for (i = 0; i < diffIds.length; i++) {
             var newDiff = createAndPlaceDiff(diffIds[i]);
 
             newDiff.beforeSlot = getSlotById(getSetting('diff'+newDiff.id+"before"));
