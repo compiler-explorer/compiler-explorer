@@ -744,6 +744,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
             diff.asmCodeMirror.setValue(diff.currentDiff);
             clearBackground(diff.asmCodeMirror);
         });
+        if (!diff.zones) return;
         var doc = diff.asmCodeMirror.getDoc();
         var computeLineChCoord = buildComputeLineChCoord(diff.currentDiff);
         // Same colors as in phabricator's diffs
