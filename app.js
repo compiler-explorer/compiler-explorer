@@ -62,7 +62,7 @@ console.log("properties hierarchy: " + propHierarchy)
 // Define an ugly debug function
 function debug_show_variable(variable_string_name) {
     if (opts.propDebug) {
-        console.log("DEBUG:" + variable_string_name +" has value " + JSON.stringify(eval(variable_string_name)))
+        console.log("DEBUG:" + variable_string_name + " has value " + JSON.stringify(eval(variable_string_name)))
     }
 }
 
@@ -78,8 +78,10 @@ var gccProps = props.propsFor("gcc-explorer");
 
 // Read from gccexplorer's config the wdiff configuration
 // that will be used to configure lib/diff.js
-var wdiffConfig = {wdiffExe: gccProps('wdiff_exe', "wdiff"),
-                   wdiffTmpDir: gccProps('wdiff_tmp_dir',"/tmp")};
+var wdiffConfig = {
+    wdiffExe: gccProps('wdiff', "wdiff"),
+    maxOutput: gccProps("max-diff-output", 100000)
+};
 
 // Instantiate a function to access records concerning the chosen language
 // in hidden object props.properties
@@ -330,7 +332,7 @@ function getCompilerInfo(compilerInfo) {
                 }
 
                 // debug (seems to be displayed multiple times):
-                if (opts.propDebug) console.log("compiler options: "+ JSON.stringify(options,null,4));
+                if (opts.propDebug) console.log("compiler options: " + JSON.stringify(options, null, 4));
 
                 resolve(compilerInfo);
             });
