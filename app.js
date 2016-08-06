@@ -57,14 +57,7 @@ var hostname = opts.host || os.hostname();
 var port = opts.port || 10240;
 
 var propHierarchy = ['defaults'].concat(env).concat([language, os.hostname()]);
-console.log("properties hierarchy: " + propHierarchy)
-
-// Define an ugly debug function
-function debug_show_variable(variable_string_name) {
-    if (opts.propDebug) {
-        console.log("DEBUG:" + variable_string_name + " has value " + JSON.stringify(eval(variable_string_name)))
-    }
-}
+console.log("properties hierarchy: " + propHierarchy);
 
 // Propagate debug mode if need be
 if (opts.propDebug) props.setDebug(true);
@@ -117,8 +110,6 @@ fileSources.forEach(function (source) {
     sourceToHandler[source.urlpart] = source;
 });
 
-debug_show_variable("sourceToHandler")
-
 // auxiliary function used in clientOptionsHandler
 function compareOn(key) {
     return function (xObj, yObj) {
@@ -136,7 +127,6 @@ function clientOptionsHandler(compilers, fileSources) {
     var sources = fileSources.map(function (source) {
         return {name: source.name, urlpart: source.urlpart};
     });
-    // debug_show_variable("sources")
     console.log("sources: " + JSON.stringify(sources)); // debug
     // sort source file alphabetically
     sources = sources.sort(compareOn("name"));
@@ -167,7 +157,6 @@ function clientOptionsHandler(compilers, fileSources) {
 
 // function used to enable loading and saving source code from web interface
 function getSource(req, res, next) {
-    //debug_show_variable("req");
     var bits = req.url.split("/");
     var handler = sourceToHandler[bits[1]];
     if (!handler) {
