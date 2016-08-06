@@ -416,15 +416,16 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
             }
         });
 
+        // TODO: union the used lines among all the compilations and number those.
         if (slot == leaderSlot && filters.colouriseAsm) {
-            // colorise the editor
+            // colourise the editor
             cppEditor.operation(function () {
                 $.each(numberedLines.source, function (line, ordinal) {
                     cppEditor.addLineClass(parseInt(line),
                         "background", "rainbow-" + (ordinal % NumRainbowColours));
                 });
             });
-            // colorise the assembly in slot
+            // colourise the assembly in slot
             slot.asmCodeMirror.operation(function () {
                 $.each(numberedLines.asm, function (line, ordinal) {
                     slot.asmCodeMirror.addLineClass(parseInt(line),
