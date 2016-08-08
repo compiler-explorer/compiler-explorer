@@ -131,10 +131,10 @@ function clientOptionsHandler(compilers, fileSources) {
     // sort source file alphabetically
     sources = sources.sort(compareOn("name"));
     var options = {
-        google_analytics_account: gccProps('clientGoogleAnalyticsAccount', 'UA-55180-6'),
-        google_analytics_enabled: gccProps('clientGoogleAnalyticsEnabled', false),
-        sharing_enabled: gccProps('clientSharingEnabled', true),
-        github_ribbon_enabled: gccProps('clientGitHubRibbonEnabled', true),
+        googleAnalyticsAccount: gccProps('clientGoogleAnalyticsAccount', 'UA-55180-6'),
+        googleAnalyticsEnabled: gccProps('clientGoogleAnalyticsEnabled', false),
+        sharingEnabled: gccProps('clientSharingEnabled', true),
+        githubEnabled: gccProps('clientGitHubRibbonEnabled', true),
         urlshortener: gccProps('clientURLShortener', 'google'),
         gapiKey: gccProps('google-api-key', 'AIzaSyAaz35KJv8DA0ABoime0fEIh32NmbyYbcQ'),
         googleShortLinkRewrite: gccProps('googleShortLinkRewrite', '').split('|'),
