@@ -294,7 +294,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
             numLines++;
             var elem = slot.node.find('.result .output .template').clone().appendTo(slot.node.find(' .result .output')).removeClass('template');
             if (lineNum) {
-                // only show in Editor messages comming from the leaderSlot
+                // only show messages coming from the leaderSlot in the Editor
                 if (slot.id == leaderSlot) {
                     errorWidgets.push(cppEditor.addLineWidget(lineNum - 1, makeErrNode(msg), {
                         coverGutter: false, noHScroll: true
@@ -319,28 +319,60 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
         }
     }
 
-    function numberUsedLines(asm) {
-        var sourceLines = {};
-        $.each(asm, function (_, x) {
-            if (x.source) sourceLines[x.source - 1] = true;
+    function numberUsedLines() {
+        var result = {source: {}, pending: false, asm: {}};
+        _.each(slots, function (slot) {
+            if (slot.currentAssembly) {
+                slot.currentAssembly.forEach(function (x) {
+                    if (x.source) result.source[x.source - 1] = true;
+                });
+            }
         });
         var ordinal = 0;
-        $.each(sourceLines, function (k) {
-            sourceLines[k] = ordinal++;
+        _.each(result.source, function (v, k) {
+            result.source[k] = ordinal++;
         });
-        var asmLines = {};
-        $.each(asm, function (index, x) {
-            if (x.source) asmLines[index] = sourceLines[x.source - 1];
+        _.each(slots, function (slot) {
+            var asmLines = {};
+            if (slot.currentAssembly) {
+                slot.currentAssembly.forEach(function (x, index) {
+                    if (x.source) asmLines[index] = result.source[x.source - 1];
+                    if (x.fake) result.pending = true;
+                });
+            }
+            result.asm[slot.id] = asmLines;
         });
-        return {source: sourceLines, asm: asmLines};
+        return result;
     }
+
+    var colourise = function colourise() {
+        var numberedLines = numberUsedLines();
+        cppEditor.operation(function () {
+            clearBackground(cppEditor);
+            if (numberedLines.pending) return; // don't colourise until all results are in
+            _.each(numberedLines.source, function (ordinal, line) {
+                cppEditor.addLineClass(parseInt(line),
+                    "background", "rainbow-" + (ordinal % NumRainbowColours));
+            });
+        });
+        // colourise the assembly in slots
+        _.each(slots, function (slot) {
+            slot.asmCodeMirror.operation(function () {
+                clearBackground(slot.asmCodeMirror);
+                if (numberedLines.pending) return; // don't colourise until all results are in
+                _.each(numberedLines.asm[slot.id], function (ordinal, line) {
+                    slot.asmCodeMirror.addLineClass(parseInt(line),
+                        "background", "rainbow-" + (ordinal % NumRainbowColours));
+                });
+            });
+        });
+    };
 
     function updateAsm(slot, forceUpdate) {
         console.log("[CALLBACK] updateAsm() with slot = " + slot.id + ", forceUpdate = " + forceUpdate);
         if (!slot.currentAssembly) return;
         var hashedUpdate = JSON.stringify(slot.currentAssembly);
-        // TODO : real hash here ?
-        if (!forceUpdate && slot.lastUpdatedAsm == hashedUpdate) {
+        if (!forceUpdate && JSON.stringify(slot.lastUpdatedAsm) == hashedUpdate) {
             return;
         }
         slot.lastUpdatedAsm = hashedUpdate;
@@ -348,13 +380,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
         var asmText = $.map(slot.currentAssembly, function (x) {
             return x.text;
         }).join("\n");
-        var numberedLines = numberUsedLines(slot.currentAssembly);
 
-        if (slot == leaderSlot) {
-            cppEditor.operation(function () {
-                clearBackground(cppEditor);
-            });
-        }
         var filters = currentFilters();
         slot.asmCodeMirror.operation(function () {
             slot.asmCodeMirror.setValue(asmText);
@@ -416,27 +442,14 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
             }
         });
 
-        // TODO: union the used lines among all the compilations and number those.
-        if (slot == leaderSlot && filters.colouriseAsm) {
-            // colourise the editor
-            cppEditor.operation(function () {
-                $.each(numberedLines.source, function (line, ordinal) {
-                    cppEditor.addLineClass(parseInt(line),
-                        "background", "rainbow-" + (ordinal % NumRainbowColours));
-                });
-            });
-            // colourise the assembly in slot
-            slot.asmCodeMirror.operation(function () {
-                $.each(numberedLines.asm, function (line, ordinal) {
-                    slot.asmCodeMirror.addLineClass(parseInt(line),
-                        "background", "rainbow-" + (ordinal % NumRainbowColours));
-                });
-            });
+        // colourise the editor
+        if (filters.colouriseAsm) {
+            colourise();
         }
     }
 
     function fakeAsm(text) {
-        return [{text: text, source: null}];
+        return [{text: text, source: null, fake: true}];
     }
 
     // slot's parameters callback
