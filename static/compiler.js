@@ -1415,7 +1415,6 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
             var containerSize = container.height();
             var top = parent.position().top;
             cm.setSize(null, containerSize - top);
-            console.log(containerSize, top);
         }
         _.each(slots, function(slot) { doResize(slot.asmCodeMirror); });
         _.each(diffs, function(slot) { doResize(slot.asmCodeMirror); });
