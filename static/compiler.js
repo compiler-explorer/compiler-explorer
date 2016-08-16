@@ -276,7 +276,8 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
             _gaq.push(['_trackEvent', 'Compile', request.compiler, request.options, data.code]);
             _gaq.push(['_trackTiming', 'Compile', 'Timing', new Date() - request.timestamp]);
         }
-        slot.node.find('.result .output :visible').remove();
+        var outputRoot = slot.node.find('.result .output');
+        outputRoot.find(':visible').remove();
         // only show in Editor messages comming from the leaderSlot
         var i;
         if (slot.id == leaderSlot) {
@@ -292,7 +293,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
                 msg = "Too many output lines...truncated";
             }
             numLines++;
-            var elem = slot.node.find('.result .output .template').clone().appendTo(slot.node.find(' .result .output')).removeClass('template');
+            var elem = outputRoot.find('.template').clone().appendTo(outputRoot).removeClass('template');
             if (lineNum) {
                 // only show messages coming from the leaderSlot in the Editor
                 if (slot.id == leaderSlot) {
@@ -877,19 +878,6 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
         });
     }
 
-    function setEditorHeight(height) {
-        const MinHeight = 80;
-        if (height < MinHeight) height = MinHeight;
-        cppEditor.setSize(null, height);
-        var i;
-        for (i = 0; i < slots.length; i++) {
-            slots[i].asmCodeMirror.setSize(null, height);
-        }
-        for (i = 0; i < diffs.length; i++) {
-            diffs[i].asmCodeMirror.setSize(null, height);
-        }
-    }
-
     // External wrapper used by gcc.js only
     function refreshSlot(slot) {
         onCompilerChange(slot);
@@ -1116,9 +1104,6 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
         // source : JQuery UI examples
         var panelList = $('#draggablePanelList');
         panelList.sortable({
-            // Do not set the new-slot button sortable (nor a place to set windows)
-            items: "li:not(.panel-sortable-disabled)", // source : JQuery examples
-            // Omit this to make then entire <li>...</li> draggable.
             handle: '.panel-heading',
             update: function () {
                 $('.panel', panelList).each(function (index, elem) {
@@ -1129,6 +1114,15 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
                 });
             }
         });
+        $('.resizable:visible').resizable(
+            {
+                resize: resizeOutputs,
+                minHeight: 300,
+                minWidth: 300,
+                alsoResize: ".resizable:visible"
+            }
+        );
+        $('.resizable-e:visible').resizable({handles: 'e'});
     }
 
     function slotDomCtor(slot, onUserAction) {
@@ -1222,11 +1216,20 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
         }
     }
 
+    function ensureAllSlotsSameSize() {
+        var allResizable = $('.resizable:visible');
+        var w = allResizable.width();
+        var h = allResizable.height();
+        allResizable.width(w);
+        allResizable.height(h);
+    }
+
     function createAndPlaceSlot(compilers, defaultCompiler, optionalId, onUserAction) {
         var newSlot = slotCtor(optionalId);
         slotDomCtor(newSlot, onUserAction);
         slotUseDom(newSlot);
         setCompilersInSlot(compilers, defaultCompiler, newSlot);
+        ensureAllSlotsSameSize();
         return newSlot;
     }
 
@@ -1234,6 +1237,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
         var newDiff = diffCtor(optionalId);
         diffDomCtor(newDiff, onUserAction);
         diffUseDom(newDiff);
+        ensureAllSlotsSameSize();
         return newDiff;
     }
 
@@ -1404,15 +1408,39 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
         }
     }
 
+    function resizeOutputs() {
+        function doResize(cm) {
+            var parent = $(cm.getTextArea()).parent().find(".CodeMirror");
+            var container = parent.closest(".panel");
+            var containerSize = container.height();
+            var top = parent.position().top;
+            cm.setSize(null, containerSize - top);
+            console.log(containerSize, top);
+        }
+        _.each(slots, function(slot) { doResize(slot.asmCodeMirror); });
+        _.each(diffs, function(slot) { doResize(slot.asmCodeMirror); });
+    }
+
+    function resize(windowHeight) {
+        var editor = $(cppEditor.getTextArea()).parent();
+        var top = editor.offset().top;
+        var compOutputSize = Math.max(100, windowHeight * 0.05);
+        $('.output').height(compOutputSize);
+        var resultHeight = $('.result').height();
+        var height = windowHeight - top - resultHeight - 10;
+        cppEditor.setSize(null, height);
+        resizeOutputs();
+    }
+
     return {
         serialiseState: serialiseState,
         deserialiseState: deserialiseState,
         getSource: getSource,
         setSource: setSource,
         setFilters: setFilters,
-        setEditorHeight: setEditorHeight,
         createAndPlaceSlot: createAndPlaceSlot,
         createAndPlaceDiffUI: createAndPlaceDiffUI,
-        refreshSlot: refreshSlot
+        refreshSlot: refreshSlot,
+        resize: resize
     };
 }

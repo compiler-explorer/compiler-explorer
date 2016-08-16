@@ -6,6 +6,7 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link href="ext/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+        <link href="ext/jquery-ui-1.11.4/jquery-ui.min.css" rel="stylesheet">
         <link href="ext/codemirror/codemirror.css" rel="stylesheet">
         <link href="gcc.css" rel="stylesheet">
         <script src="client-options.js"></script>
@@ -101,8 +102,7 @@
     </div>
 
     <div class="container-fluid">
-        <ul id="draggablePanelList" class="list-unstyled">
-            <li class="panel panel-primary col-md-3">
+        <div class="panel panel-primary col-md-5 resizable-e">
             <div class="panel-heading"><span class="title">Code editor</span></div>
             <div class="panel-body">
                 <div id="commonParams">
@@ -110,8 +110,8 @@
                         <div>
                             <label>Source: <select class="source"></select></label>
                             <label>Name: <select class="filename"></select></label>
-                            <button id="new-slot" class="btn btn-sm" title="Open a new slot.">New slot</button>
-                            <button id="new-diff" class="btn btn-sm" title="Open a new diff.">New diff</button>
+                            <button id="new-slot" class="btn btn-sm" title="Open a new compiler output slot">New slot</button>
+                            <button id="new-diff" class="btn btn-sm" title="Open a new difference slot">New diff</button>
                         </div>
                         <div class="btn-group btn-group-sm">
                             <button class="btn btn-sm load">Load</button>
@@ -132,7 +132,7 @@
                             </button>
                             <button class="btn btn-sm active nonbinary" type="button"
                                     title="Remove all lines which are only comments from the output" value="commentOnly">
-                                    Comment-only lines
+                                Comment-only lines
                             </button>
                             <button class="btn btn-sm" type="button" title="Output disassembly in Intel syntax"
                                     value="intel">Intel syntax
@@ -167,6 +167,14 @@
                     </div>
                     <textarea>// Type your code here, or load an example.</textarea>
                 </div>
+                <div class="output">
+                    <div class="result">
+                        <div class="topbar">TODO: Compiler output &mdash; <span class="compilerVersion"></span></div>
+                        <div class="output">
+                            <div class="template"></div>
+                        </div>
+                    </div>
+                </div>
 
                 <div class="modal fade" id="saveDialog">
                     <div class="modal-dialog">
@@ -187,21 +195,22 @@
                     </div>
                 </div>
             </div>
-            </li>
-
-            <li class="panel panel-primary col-md-3 template slot" id="slotTemplate">
+        </div>
+        <ul id="draggablePanelList" class="list-unstyled">
+            <li class="panel panel-primary col-md-3 resizable template slot" id="slotTemplate">
             <div class="panel-heading">
                 <span class="title">Slot template (should *not* be visible)</span>
                 <span class="closeButton unicodeCross unselectable characterIcon">&#10006;</span>
             </div>
             <div class="panel-body">
                 <div class="params">
-                    <form class="well well-sm form-inline">
+                    <form class="well well-tiny form-inline">
                         <table>
                             <tbody>
                             <tr>
                                 <td>
                                     <p class="leaderSlotIcon unselectable characterIcon unselectedCharacterIcon">&#9734;</p>
+                                </td>
                                 <td class="dropdown compilers-container">
                                     <!-- the accesskey is set in static/compiler.js -->
                                     <button accesskey="" type="button" title="Compiler to use (alt-C)" class="btn btn-default dropdown-toggle compiler-selection" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
@@ -218,16 +227,17 @@
                             </tr>
                             </tbody>
                         </table>
+                        <!-- Place slot-specific buttons here.
                         <div class="btn-group btn-group-sm filter">
-                            <!-- Place slot-specific buttons here. -->
                         </div>
+                        -->
                     </form>
                 </div>
                 <div class="asm">
                     <div class="topbar indented">Assembly output</div>
                     <textarea>Awaiting...</textarea>
                 </div>
-                <div class="output">
+                <div class="output hidden">
                     <div class="result">
                         <div class="topbar">Compiler output &mdash; <span class="compilerVersion"></span></div>
                         <div class="output">
@@ -237,11 +247,11 @@
                 </div>
             </div>
 
-            <li class="panel panel-primary col-md-3 template diff" id="diffTemplate">
+            <li class="panel panel-primary col-md-3 resizable template diff" id="diffTemplate">
             <div class="panel-heading"><span class="title">Diff template (should *not* be visible)</span><span class="closeButton unicodeCross unselectable characterIcon">&#10006;</span></div>
             <div class="panel-body">
                 <div class="params">
-                    <form class="well well-sm form-inline">
+                    <form class="well well-tiny form-inline">
                         <table>
                             <tbody>
                             <tr>

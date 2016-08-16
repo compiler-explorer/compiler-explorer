@@ -41,7 +41,7 @@ body {
 }
 
 .compiler-options {
-    margin-left: 10px; // space between the scroll-down and the compiler's options
+    margin-left: 10px; /* space between the scroll-down and the compiler's options */
     width: 100%;
 }
 
@@ -195,7 +195,6 @@ li.social {
     font-weight: bold;
 }
 
-
 /* Only one of these class is currently used on index.html but just in case
  * we change it, it is already tuned */
 .col-lg-1, .col-lg-10, .col-lg-11, .col-lg-12, .col-lg-2, .col-lg-3, .col-lg-4,
@@ -212,7 +211,7 @@ li.social {
 }
 
 .panel-primary {
-        border-color: #000;
+    border-color: #000;
 }
 
 .panel-body {
@@ -229,10 +228,10 @@ li.social {
 
 .panel-modest,
 .panel-modest .panel-body {
-      display: inline-block;
-  }
+    display: inline-block;
+}
 
-.unselectable{
+.unselectable {
     /* disable text selection on character icons
      * source : http://stackoverflow.com/a/9314458/4669135 */
     -webkit-touch-callout: none;
@@ -274,11 +273,15 @@ li.social {
     float: right;
 }
 
-
 .diff-before-button {
-    background-color: rgba(251,175,175,.7);
+    background-color: rgba(251, 175, 175, .7);
 }
 
 .diff-after-button {
-    background-color: rgba(151,234,151,.6);
+    background-color: rgba(151, 234, 151, .6);
+}
+
+.well-tiny {
+    padding: 2px;
+    border-radius: 2px;
 }

@@ -299,14 +299,8 @@ function loadState(state) {
 }
 
 function resizeEditors() {
-    var codeMirrors = $('.CodeMirror');
-    var top = codeMirrors.offset().top;
     var windowHeight = $(window).height();
-    var compOutputSize = Math.max(100, windowHeight * 0.05);
-    $('.output').height(compOutputSize);
-    var resultHeight = $('.result').height();
-    var height = windowHeight - top - resultHeight - 90;
-    currentCompiler.setEditorHeight(height);
+    _.each(allCompilers, function (compiler) { compiler.resize(windowHeight); });
 }
 
 function initialise(options) {
