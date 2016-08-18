@@ -7,11 +7,14 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link href="ext/bootstrap/css/bootstrap.min.css" rel="stylesheet">
         <link href="ext/codemirror/codemirror.css" rel="stylesheet">
+        <link href="ext/golden-layout/goldenlayout-base.css" rel="stylesheet">
+        <link href="ext/golden-layout/goldenlayout-light-theme.css" rel="stylesheet">
         <link href="gcc.css" rel="stylesheet">
         <script src="client-options.js"></script>
         <script src="ext/codemirror/codemirror.js"></script>
         <script src="asm-mode.js"></script>
         <script src="ext/jquery/jquery-2.2.2.min.js"></script>
+        <script src="ext/golden-layout/goldenlayout.min.js"></script>
         <script src="ext/jquery-ui-1.11.4/jquery-ui.min.js"></script>
         <script src="ext/rison.js"></script>
         <script src="ext/underscore-min.js"></script>
@@ -59,7 +62,7 @@
         </script>
     </head>
     <body>
-    <div class="navbar-nav navbar-inverse navbar-fixed-top">
+    <div class="navbar navbar-inverse">
         <div class="container-fluid">
             <div class="navbar-header">
                 <a class="navbar-brand" href="#">Compiler Explorer - <span class="language-name"></span></a>
@@ -100,7 +103,48 @@
         </div>
     </div>
 
-    <div class="container-fluid">
+    <div id="codeEditor" class="template">
+        <textarea>// Type your code here, or load an example.</textarea>
+    </div>
+
+    <div id="compiler" class="template">
+        <div class="panel-body">
+            <div class="params">
+                <form class="well well-sm form-inline">
+                    <table>
+                        <tbody>
+                        <tr>
+                            <td class="dropdown compilers-container">
+                                <button type="button" title="Compiler to use" class="btn btn-default dropdown-toggle compiler-selection" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                                    <span class="compiler">g++</span>
+                                    <span class="caret"></span>
+                                </button>
+                                <ul class="dropdown-menu compilers">
+                                </ul>
+                            </td>
+                            <td>
+                                <input accesskey="" title="Options to pass to compiler" class="compiler-options" placeholder="compiler options" type="text" value="" style="width:90%">
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </form>
+            </div>
+            <div class="asm">
+                <textarea>Awaiting...</textarea>
+            </div>
+            <div class="output">
+                <div class="result">
+                    <div class="topbar">Compiler output &mdash; <span class="compilerVersion"></span></div>
+                    <div class="output">
+                        <div class="template"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-fluid" id="#root"><!--
         <ul id="draggablePanelList" class="list-unstyled">
             <li class="panel panel-primary col-md-3">
             <div class="panel-heading"><span class="title">Code editor</span></div>
@@ -203,7 +247,7 @@
                                 <td>
                                     <p class="leaderSlotIcon unselectable characterIcon unselectedCharacterIcon">&#9734;</p>
                                 <td class="dropdown compilers-container">
-                                    <!-- the accesskey is set in static/compiler.js -->
+                                    &lt;!&ndash; the accesskey is set in static/compiler.js &ndash;&gt;
                                     <button accesskey="" type="button" title="Compiler to use (alt-C)" class="btn btn-default dropdown-toggle compiler-selection" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
                                         <span class="compiler">g++</span>
                                         <span class="caret"></span>
@@ -212,14 +256,14 @@
                                     </ul>
                                 </td>
                                 <td>
-                                    <!-- the accesskey is set in static/compiler.js -->
+                                    &lt;!&ndash; the accesskey is set in static/compiler.js &ndash;&gt;
                                     <input accesskey="" title="Options to pass to compiler (alt-O)" class="compiler-options" placeholder="compiler options" type="text" value="" style="width:90%">
                                 </td>
                             </tr>
                             </tbody>
                         </table>
                         <div class="btn-group btn-group-sm filter">
-                            <!-- Place slot-specific buttons here. -->
+                            &lt;!&ndash; Place slot-specific buttons here. &ndash;&gt;
                         </div>
                     </form>
                 </div>
@@ -278,7 +322,7 @@
             </li>
 
         </ul>
-    </div>
+    --></div>
 
     <div class="template lang c">// Type your code here, or load an example.
 int square(int num) {

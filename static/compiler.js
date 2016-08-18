@@ -45,6 +45,71 @@ function clearBackground(cm) {
     }
 }
 
+function Editor(container, lang) {
+    var domRoot = container.getElement();
+    var cmMode;
+    switch (lang.toLowerCase()) {
+        default:
+            cmMode = "text/x-c++src";
+            break;
+        case "c":
+            cmMode = "text/x-c";
+            break;
+        case "rust":
+            cmMode = "text/x-rustsrc";
+            break;
+        case "d":
+            cmMode = "text/x-d";
+            break;
+        case "go":
+            cmMode = "text/x-go";
+            break;
+    }
+
+    var cppEditor = CodeMirror.fromTextArea(domRoot.find("textarea")[0], {
+        lineNumbers: true,
+        matchBrackets: true,
+        useCPP: true,
+        mode: cmMode
+    });
+
+    // With reference to "fix typing '#' in emacs mode"
+    // https://github.com/mattgodbolt/gcc-explorer/pull/131
+    cppEditor.setOption("extraKeys", {
+        "Alt-F": false
+    });
+    // cppEditor.on("change", function () {
+    //     if ($('.autocompile').hasClass('active')) {
+    //         onEditorChange();
+    //     }
+    // });
+    function resize() {
+        cppEditor.setSize(domRoot.width(), domRoot.height());
+        cppEditor.refresh();
+    }
+    container.on('resize', resize);
+    container.on('open', resize);
+    container.setTitle(lang + " source");
+}
+
+function CompileToAsm(container) {
+    var domRoot = container.getElement();
+    var asmCodeMirror = CodeMirror.fromTextArea(domRoot.find("textarea")[0], {
+        lineNumbers: true,
+        mode: "text/x-asm",
+        readOnly: true,
+        gutters: ['CodeMirror-linenumbers'],
+        lineWrapping: true
+    });
+    function resize() {
+        asmCodeMirror.setSize(domRoot.width(), domRoot.height());
+        asmCodeMirror.refresh();
+    }
+    container.on('resize', resize);
+    container.on('open', resize);
+    container.setTitle("monkey");
+}
+
 const NumRainbowColours = 12;
 
 // This function is called in function initialise in static/gcc.js
@@ -207,7 +272,7 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
     // [0] is mandatory here because domRoot.find() returns an array of all
     // matching elements. It is not a problem for jquery which applies it's
     // functions to all elements, whereas CodeMirror works on a single DOM node.
-    cppEditor = CodeMirror.fromTextArea(domRoot.find(".editor textarea")[0], {
+    cppEditor = CodeMirror.fromTextArea(domRoot.find("textarea.editor")[0], {
         lineNumbers: true,
         matchBrackets: true,
         useCPP: true,

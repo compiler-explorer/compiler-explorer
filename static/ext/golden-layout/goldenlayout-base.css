@@ -1,0 +1,210 @@
+.lm_root{
+	position: relative;
+}
+
+.lm_row > .lm_item{
+	float: left;
+}
+
+.lm_content{
+	overflow: hidden;
+}
+
+.lm_dragging, .lm_dragging *{
+	cursor: move !important;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	-o-user-select: none;
+	user-select: none;
+}
+
+.lm_maximised{
+	position: absolute;
+	left: 0;
+	top: 0;
+	z-index: 40;
+}
+
+.lm_maximise_placeholder{
+	display: none;
+}
+
+.lm_splitter{
+	position: relative;
+	z-index: 2;
+}
+
+.lm_splitter:hover{
+	background: orange;
+}
+
+.lm_splitter.lm_vertical .lm_drag_handle{
+	position: absolute;
+	height: 25px;
+	top: -10px;
+	cursor: n-resize;
+	width: 100%;
+}
+
+.lm_splitter.lm_horizontal{
+	height: 100%;
+	float: left;
+}
+
+.lm_splitter.lm_horizontal .lm_drag_handle{
+	position: absolute;
+	width: 25px;
+	left: -10px;
+	cursor: e-resize;
+	height: 100%;
+}
+
+.lm_header{
+	position: relative;
+	overflow: visible;
+}
+
+.lm_header * {
+	box-sizing: content-box !important;
+}
+
+.lm_header > ul{
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+}
+
+.lm_header .lm_controls{
+	right: 3px;
+	position: absolute;
+}
+
+.lm_header .lm_controls > li{
+	width: 18px;
+	height: 18px;
+	float: left;
+	text-align: center;
+	cursor: pointer;
+}
+
+.lm_header .lm_tabs{
+	position: absolute;
+}
+
+.lm_header .lm_tab{
+	float: left;
+	padding: 0px 10px 5px;
+	height: 14px;
+	margin-top: 1px;
+	cursor: pointer;
+	position: relative;
+	padding-right: 25px;
+}
+
+.lm_header .lm_tab i{
+	height: 19px;
+	width: 2px;
+	position: absolute;
+}
+
+.lm_header .lm_tab i.lm_left{
+	left: -2px;
+	top: 0;
+}
+
+.lm_header .lm_tab i.lm_right{
+	right: -2px;
+	top: 0;
+}
+
+.lm_header .lm_tab .lm_title{
+	text-overflow: ellipsis;
+	display: inline-block;
+	overflow: hidden;
+}
+
+.lm_header .lm_tab .lm_close_tab{
+	position: absolute;
+	right: 0;
+	top: 0;
+	width: 14px;
+	height: 14px;
+	text-align: center;
+}
+
+.lm_drop_tab_placeholder{
+	width: 100px;
+	height: 10px;
+	float: left;
+	visibility: hidden;
+}
+
+/***********************************
+* Drag Proxy
+***********************************/
+.lm_dragProxy{
+	position: absolute;
+	z-index: 3;
+	top: 0;
+	left: 0;
+}
+
+.lm_dragProxy .lm_header{
+	background: transparent;
+}
+
+.lm_dragProxy .lm_content{
+	border-top: none;
+	overflow: hidden;
+}
+
+.lm_dropTargetIndicator{
+	position: absolute;
+	z-index: 2;
+	display: none;
+}
+
+.lm_dropTargetIndicator .lm_inner{
+	position: relative;
+	width: 100%;
+	height: 100%;
+	left: 0;
+	top: 0;
+}
+
+.lm_transition_indicator{
+	position: absolute;
+	top: 0;
+	left: 0;
+	display: none;
+	width: 20px;
+	height: 20px;
+	z-index: 2;
+}
+
+
+.lm_popin{
+	width: 20px;
+	height: 20px;
+	position: absolute;
+	z-index: 9999;
+	bottom: 0;
+	right: 0;
+}
+
+.lm_popin > *{
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
+}
+
+.lm_popin > .lm_bg{
+	z-index: 1;
+}
+
+.lm_popin > .lm_icon{
+	z-index: 2;
+}

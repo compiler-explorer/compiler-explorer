@@ -309,7 +309,47 @@ function resizeEditors() {
     currentCompiler.setEditorHeight(height);
 }
 
+function codeEditorFactory(container, state) {
+    var template = $('#codeEditor');
+    var options = state.options;
+    container.getElement().html(template.html());
+    return new Editor(container, options.language);
+}
+
+function compilerOutputFactory(container, state) {
+    var template = $('#compiler');
+    var options = state.options;
+    container.getElement().html(template.html());
+    return new CompileToAsm(container);
+}
+
 function initialise(options) {
+    var config = {
+        content: [{
+            type: 'row',
+            content: [{
+                type: 'component',
+                componentName: 'codeEditor',
+                componentState: { options: options }
+            }, {
+                type: 'column',
+                content: [{
+                    type: 'component',
+                    componentName: 'compilerOutput',
+                    componentState: { options: options }
+                }, {
+                    type: 'component',
+                    componentName: 'compilerOutput',
+                    componentState: { options: options }
+                }]
+            }]
+        }]
+    };
+    var myLayout = new GoldenLayout(config, $("#root")[0]);
+    myLayout.registerComponent('codeEditor', codeEditorFactory);
+    myLayout.registerComponent('compilerOutput', compilerOutputFactory);
+    myLayout.init();
+    /*
     var defaultFilters = JSON.stringify(getAsmFilters());
     var actualFilters = $.parseJSON(window.localStorage.filter || defaultFilters);
     setFilterUi(actualFilters);
@@ -382,6 +422,7 @@ function initialise(options) {
 
     $(window).on("resize", resizeEditors);
     resizeEditors();
+*/
 }
 
 function getAsmFilters() {
