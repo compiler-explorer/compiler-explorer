@@ -32,11 +32,15 @@ body {
 }
 
 .output {
-    height: 80px;
+    /*height: 40px;*/
     overflow: auto;
     font-family: monospace;
+    font-size: x-small;
 }
 
+.compilerVersion {
+    font-size: small;
+}
 .compilers-container {
 }
 

@@ -1414,7 +1414,9 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
             var container = parent.closest(".panel");
             var containerSize = container.height();
             var top = parent.position().top;
-            cm.setSize(null, containerSize - top);
+            var footerHeight = container.find('.panel-footer').height() || 0;
+            // TODO - padding!
+            cm.setSize(null, containerSize - top - footerHeight);
         }
         _.each(slots, function(slot) { doResize(slot.asmCodeMirror); });
         _.each(diffs, function(slot) { doResize(slot.asmCodeMirror); });
@@ -1423,10 +1425,12 @@ function Compiler(domRoot, origFilters, windowLocalPrefix,
     function resize(windowHeight) {
         var editor = $(cppEditor.getTextArea()).parent();
         var top = editor.offset().top;
-        var compOutputSize = Math.max(100, windowHeight * 0.05);
-        $('.output').height(compOutputSize);
-        var resultHeight = $('.result').height();
-        var height = windowHeight - top - resultHeight - 10;
+        // TODO: a total rethink here. kill output/result etc
+        // make errors a pop-up-able thing?
+        // var compOutputSize = Math.max(100, windowHeight * 0.05);
+        // $('.output').height(compOutputSize);
+        // var resultHeight = $('.result').height();
+        var height = windowHeight - top;// - resultHeight - 10;
         cppEditor.setSize(null, height);
         resizeOutputs();
     }
