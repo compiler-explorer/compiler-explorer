@@ -49,7 +49,7 @@ test:
 	@echo Tests pass
 
 clean:
-	rm -rf bower_modules node_modules .npm-updated .bower-updated out
+	rm -rf bower_modules node_modules .npm-updated .bower-updated out static/ext
 	$(MAKE) -C d clean
 	$(MAKE) -C c-preload clean
 
