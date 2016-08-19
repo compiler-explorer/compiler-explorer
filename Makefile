@@ -17,6 +17,7 @@ endif
 endif
 
 .PHONY: clean run test run-amazon c-preload optional-d-support prereqs node_modules bower_modules
+.PHONY: dist
 prereqs: optional-d-support node_modules c-preload bower_modules
 
 ifeq "" "$(shell which gdc)"
@@ -48,12 +49,15 @@ test:
 	@echo Tests pass
 
 clean:
-	rm -rf bower_modules node_modules .npm-updated .bower-updated
+	rm -rf bower_modules node_modules .npm-updated .bower-updated out
 	$(MAKE) -C d clean
 	$(MAKE) -C c-preload clean
 
 run: prereqs
 	$(NODE) ./node_modules/.bin/supervisor -e 'js|node|properties' --exec $(NODE) -- ./app.js --language $(LANG)
+
+dist: prereqs
+	$(NODE) ./node_modules/requirejs/bin/r.js -o app.build.js
 
 c-preload:
 	$(MAKE) -C c-preload

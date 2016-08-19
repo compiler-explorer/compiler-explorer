@@ -418,6 +418,7 @@ findCompilers().then(function (compilers) {
         .use(logger('combined'))
         .use(compression())
         .use(sFavicon('static/favicon.ico'))
+        .use(sStatic('out/dist', {maxAge: staticMaxAgeMs}))
         .use(sStatic('static', {maxAge: staticMaxAgeMs}))
         .use(bodyParser.json())
         .use(restreamer())
