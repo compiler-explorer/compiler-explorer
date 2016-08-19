@@ -31,7 +31,8 @@
     "temp": "0.8.x"
   },
   "devDependencies": {
-    "supervisor": "0.3.1"
+    "supervisor": "0.3.1",
+    "bower": "*"
   },
   "scripts": {
     "test": "make test"

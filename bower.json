@@ -1,0 +1,26 @@
+{
+  "name": "gcc-explorer",
+  "description": "Interactively investigate compiler output",
+  "main": "./app.js",
+  "authors": [
+    "Matt Godbolt"
+  ],
+  "license": "BSD-2-Clause",
+  "homepage": "https://github.com/mattgodbolt/gcc-explorer",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "codemirror": "CodeMirror#^5.17.0",
+    "requirejs": "^2.2.0",
+    "underscore": "^1.8.3",
+    "golden-layout": "^1.5.1",
+    "jquery": "^3.1.0",
+    "bootstrap": "^3.3.7"
+  }
+}
