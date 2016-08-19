@@ -23,17 +23,10 @@ define(function (require) {
     var _ = require('underscore');
     var $ = require('jquery');
     var GoldenLayout = require('goldenlayout');
-    var Editor = require('editor');
+    var Hub = require('hub');
 
     analytics.initialise();
     sharing.initialise();
-
-    function codeEditorFactory(container, state) {
-        var template = $('#codeEditor');
-        var options = state.options;
-        container.getElement().html(template.html());
-        return new Editor(container, options.language);
-    }
 
     var options = require('options');
     var config = {
@@ -42,11 +35,14 @@ define(function (require) {
             content: [{
                 type: 'component',
                 componentName: 'codeEditor',
-                componentState: {options: options}
+                componentState: {}
+            }, {
+                type: 'component',
+                componentName: 'compilerOutput',
+                componentState: {}
             }]
         }]
     };
     var myLayout = new GoldenLayout(config, $("#root")[0]);
-    myLayout.registerComponent('codeEditor', codeEditorFactory);
-    myLayout.init();
+    var hub = new Hub(myLayout);
 });

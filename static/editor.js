@@ -5,10 +5,13 @@ define(function (require) {
     require('codemirror/mode/d/d');
     require('codemirror/mode/go/go');
     require('codemirror/mode/rust/rust');
-    require('asm-mode');
 
-    return function Editor(container, lang) {
+    function Editor(hub, id, container, lang) {
+        var self = this;
+        this.id = id;
         var domRoot = container.getElement();
+        domRoot.html($('#codeEditor').html());
+
         var cmMode;
         switch (lang.toLowerCase()) {
             default:
@@ -28,7 +31,7 @@ define(function (require) {
                 break;
         }
 
-        var cppEditor = CodeMirror.fromTextArea(domRoot.find("textarea")[0], {
+        this.editor = CodeMirror.fromTextArea(domRoot.find("textarea")[0], {
             lineNumbers: true,
             matchBrackets: true,
             useCPP: true,
@@ -37,21 +40,33 @@ define(function (require) {
 
         // With reference to "fix typing '#' in emacs mode"
         // https://github.com/mattgodbolt/gcc-explorer/pull/131
-        cppEditor.setOption("extraKeys", {
+        this.editor.setOption("extraKeys", {
             "Alt-F": false
         });
-        // cppEditor.on("change", function () {
-        //     if ($('.autocompile').hasClass('active')) {
-        //         onEditorChange();
-        //     }
-        // });
+        this.editor.on("change", function () {
+            hub.onEditorChange(self);
+        });
+
         function resize() {
-            cppEditor.setSize(domRoot.width(), domRoot.height());
-            cppEditor.refresh();
+            self.editor.setSize(domRoot.width(), domRoot.height());
+            self.editor.refresh();
         }
 
         container.on('resize', resize);
         container.on('open', resize);
+        container.on('close', function () {
+            hub.removeEditor(self);
+        });
         container.setTitle(lang + " source");
+    }
+
+    Editor.prototype.getSource = function () {
+        return this.editor.getValue();
     };
+
+    Editor.prototype.getId = function () {
+        return this.id;
+    };
+
+    return Editor;
 });
