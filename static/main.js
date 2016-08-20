@@ -3,7 +3,10 @@ require.config({
         bootstrap: 'ext/bootstrap/dist/js/bootstrap.min',
         jquery: 'ext/jquery/dist/jquery.min',
         underscore: 'ext/underscore/underscore-min',
-        goldenlayout: 'ext/golden-layout/dist/goldenlayout.min'
+        goldenlayout: 'ext/golden-layout/dist/goldenlayout.min',
+        selectize: 'ext/selectize/dist/js/selectize.min',
+        sifter: 'ext/sifter/sifter.min',
+        microplugin: 'ext/microplugin/src/microplugin'
     },
     packages: [{
         name: "codemirror",

@@ -9,15 +9,11 @@
     <link href="ext/codemirror/lib/codemirror.css" rel="stylesheet">
     <link href="ext/golden-layout/src/css/goldenlayout-base.css" rel="stylesheet">
     <link href="ext/golden-layout/src/css/goldenlayout-light-theme.css" rel="stylesheet">
+    <link href="ext/selectize/dist/css/selectize.bootstrap2.css" rel="stylesheet">
     <link href="explorer.css" rel="stylesheet">
     <script data-main="main" src="ext/requirejs/require.js"></script>
-    <!--<script src="asm-mode.js"></script>-->
-    <!--<script src="ext/jquery-ui-1.11.4/jquery-ui.min.js"></script>-->
     <!--<script src="ext/rison.js"></script>-->
     <!--<script src="ext/clipboard.min.js"></script>x-->
-    <!--<script src="compiler.js"></script>-->
-    <!--<script src="gcc.js"></script>-->
-    <!--<script src="ext/bootstrap/js/bootstrap.min.js"></script>-->
     <!--<script src="ext/lz-string/lz-string-1.3.3-min.js"></script>-->
     <script type="text/javascript"></script>
 </head>
@@ -69,32 +65,34 @@
 </div>
 
 <div id="compiler" class="template">
+    <div>
+        <select class="compiler" placeholder="Select a compiler..."></select>
+    </div>
     <textarea>    mov eax, $20</textarea>
 </div>
 
 <div class="container-fluid" id="#root"></div>
 
 <div class="template lang c">// Type your code here, or load an example.
-    int square(int num) {
-    return num * num;
-    }
-</div>
+int square(int num) {
+  return num * num;
+}</div>
 <pre class="template lang rust">// Type your code here, or load an example.
 pub fn square(num: i32) -&gt; i32 {
   num * num
 }</pre>
 <pre class="template lang go">// Type your code here, or load an example.
-    // Your function name should start with a capital letter.
-    package main
+// Your function name should start with a capital letter.
+package main
 
-    func Square(x int) int {
-    return x * x
-    }
+func Square(x int) int {
+  return x * x
+}
 
-    func main() {}</pre>
+func main() {}</pre>
 <pre class="template lang d">// Type your code here, or load an example.
-    int square(int num) {
-    return num * num;
-    }</pre>
+int square(int num) {
+  return num * num;
+}</pre>
 </body>
 </html>

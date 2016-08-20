@@ -2,7 +2,9 @@ define(function (require) {
     "use strict";
     var CodeMirror = require('codemirror');
     var $ = require('jquery');
+    var _ = require('underscore');
     require('asm-mode');
+    require('selectize');
 
     var options = require('options');
     var compilers = options.compilers;
@@ -11,6 +13,16 @@ define(function (require) {
         var self = this;
         var domRoot = container.getElement();
         domRoot.html($('#compiler').html());
+        domRoot.find(".compiler").selectize({
+            sortField: 'name',
+            valueField: 'id',
+            labelField: 'name',
+            options: compilers,
+            items: [compilers[0].id],  // TODO persist and depersist from state
+            openOnFocus: true
+        }).on('change', function () {
+            self.onCompilerChange($(this).val());
+        });
 
         var outputEditor = CodeMirror.fromTextArea(domRoot.find("textarea")[0], {
             lineNumbers: true,
@@ -34,19 +46,20 @@ define(function (require) {
 
         this.source = state.source || 1;
         this.sourceEditor = null;
+        this.compiler = null;
     }
 
     var debouncedAjax = _.debounce($.ajax, 500);
 
     Compiler.prototype.compile = function (fromEditor) {
         var self = this;
-        if (!this.sourceEditor) return;
+        if (!this.sourceEditor || !this.compiler) return;  // TODO blank out the output?
         var request = {
             fromEditor: fromEditor,
             source: this.sourceEditor.getSource(),
-            compiler: compilers[0].id, // TODO
+            compiler: this.compiler,
             options: "-O1", // TODO
-            filters: {}
+            filters: {}  // TODO
         };
         debouncedAjax({
             type: 'POST',
@@ -58,7 +71,7 @@ define(function (require) {
                 self.onCompileResponse(request, result);
             },
             error: function (xhr, e_status, error) {
-                console.log("AJAX request failed, reason : " + error);
+                console.log("AJAX request failed, reason : " + error);  // TODO better error handling
             },
             cache: false
         });
@@ -73,10 +86,16 @@ define(function (require) {
         // TODO: Update dropdown of source
     };
     Compiler.prototype.onEditorChange = function (editor) {
+        // TODO: persist and depersist
         if (editor.getId() == this.source) {
             this.sourceEditor = editor;
             this.compile();
         }
+    };
+    Compiler.prototype.onCompilerChange = function (value) {
+        this.compiler = value;  // TODO check validity?
+        // TODO: persist
+        this.compile();
     };
 
     return Compiler;
