@@ -3,6 +3,7 @@ define(function (require) {
     var CodeMirror = require('codemirror');
     var $ = require('jquery');
     var _ = require('underscore');
+    var ga = require('analytics').ga;
     require('asm-mode');
     require('selectize');
 
@@ -24,7 +25,7 @@ define(function (require) {
         }).on('change', function () {
             self.onCompilerChange($(this).val());
         });
-        var optionsChange = function (){
+        var optionsChange = function () {
             self.onOptionsChange($(this).val());
         };
         domRoot.find(".options")
@@ -38,6 +39,7 @@ define(function (require) {
             gutters: ['CodeMirror-linenumbers'],
             lineWrapping: true
         });
+        this.outputEditor = outputEditor;
 
         function resize() {
             outputEditor.setSize(domRoot.width(), domRoot.height());
@@ -69,6 +71,8 @@ define(function (require) {
             options: this.options,
             filters: {}  // TODO
         };
+
+        request.timestamp = Date.now();
         debouncedAjax({
             type: 'POST',
             url: '/compile',
@@ -85,14 +89,29 @@ define(function (require) {
         });
     };
 
+    Compiler.prototype.setAssembly = function (assembly) {
+        var self = this;
+        this.outputEditor.operation(function () {
+            self.outputEditor.setValue(_.pluck(assembly, 'text').join("\n"));
+        });
+    };
+
+    function fakeAsm(text) {
+        return [{text: text, source: null, fake: true}];
+    }
+
     Compiler.prototype.onCompileResponse = function (request, result) {
-        console.log(request, result);
+        ga('send', 'event', 'Compile', request.compiler, request.options, result.code);
+        ga('send', 'timing', 'Compile', 'Timing', Date.now() - request.timestamp)
+        console.log(request, result); // TODO remove
+        this.setAssembly(result.asm || fakeAsm("[no output]"));
     };
 
     Compiler.prototype.onEditorListChange = function () {
         // TODO: if we can't find our source, select none?
         // TODO: Update dropdown of source
     };
+
     Compiler.prototype.onEditorChange = function (editor) {
         // TODO: persist and depersist
         if (editor.getId() == this.source) {
