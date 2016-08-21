@@ -13,16 +13,23 @@ define(function (require) {
         var self = this;
         var domRoot = container.getElement();
         domRoot.html($('#compiler').html());
+        var compilerId = compilers[0].id;
         domRoot.find(".compiler").selectize({
             sortField: 'name',
             valueField: 'id',
             labelField: 'name',
             options: compilers,
-            items: [compilers[0].id],  // TODO persist and depersist from state
+            items: [compilerId],  // TODO persist and depersist from state
             openOnFocus: true
         }).on('change', function () {
             self.onCompilerChange($(this).val());
         });
+        var optionsChange = function (){
+            self.onOptionsChange($(this).val());
+        };
+        domRoot.find(".options")
+            .on("change", optionsChange)
+            .on("keyup", optionsChange);
 
         var outputEditor = CodeMirror.fromTextArea(domRoot.find("textarea")[0], {
             lineNumbers: true,
@@ -46,7 +53,8 @@ define(function (require) {
 
         this.source = state.source || 1;
         this.sourceEditor = null;
-        this.compiler = null;
+        this.compiler = compilerId;
+        this.options = "";
     }
 
     var debouncedAjax = _.debounce($.ajax, 500);
@@ -58,7 +66,7 @@ define(function (require) {
             fromEditor: fromEditor,
             source: this.sourceEditor.getSource(),
             compiler: this.compiler,
-            options: "-O1", // TODO
+            options: this.options,
             filters: {}  // TODO
         };
         debouncedAjax({
@@ -91,6 +99,11 @@ define(function (require) {
             this.sourceEditor = editor;
             this.compile();
         }
+    };
+    Compiler.prototype.onOptionsChange = function (options) {
+        // TODO: persist and dep
+        this.options = options;
+        this.compile();
     };
     Compiler.prototype.onCompilerChange = function (value) {
         this.compiler = value;  // TODO check validity?

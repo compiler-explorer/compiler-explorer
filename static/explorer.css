@@ -1,3 +1,11 @@
 .template {
     display: none;
 }
+
+.compiler {
+    width: 10em;
+}
+
+.options {
+    width: 15em;
+}
