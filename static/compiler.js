@@ -12,10 +12,10 @@ define(function (require) {
 
     function Compiler(hub, container, state) {
         var self = this;
-        var domRoot = container.getElement();
-        domRoot.html($('#compiler').html());
+        this.domRoot = container.getElement();
+        this.domRoot.html($('#compiler').html());
         var compilerId = compilers[0].id;
-        domRoot.find(".compiler").selectize({
+        this.domRoot.find(".compiler").selectize({
             sortField: 'name',
             valueField: 'id',
             labelField: 'name',
@@ -29,11 +29,11 @@ define(function (require) {
         var optionsChange = function () {
             self.onOptionsChange($(this).val());
         };
-        domRoot.find(".options")
+        this.domRoot.find(".options")
             .on("change", optionsChange)
             .on("keyup", optionsChange);
 
-        var outputEditor = CodeMirror.fromTextArea(domRoot.find("textarea")[0], {
+        var outputEditor = CodeMirror.fromTextArea(this.domRoot.find("textarea")[0], {
             lineNumbers: true,
             mode: "text/x-asm",
             readOnly: true,
@@ -43,8 +43,8 @@ define(function (require) {
         this.outputEditor = outputEditor;
 
         function resize() {
-            var topBarHeight = domRoot.find(".top-bar").outerHeight(true);
-            outputEditor.setSize(domRoot.width(), domRoot.height() - topBarHeight);
+            var topBarHeight = self.domRoot.find(".top-bar").outerHeight(true);
+            outputEditor.setSize(self.domRoot.width(), self.domRoot.height() - topBarHeight);
             outputEditor.refresh();
         }
 
@@ -55,10 +55,15 @@ define(function (require) {
             hub.removeCompiler(self);
         });
 
+        this.domRoot.find(".filters .btn input").on('change', function () {
+            self.onFilterChange();
+        });
+
         this.source = state.source || 1;
         this.sourceEditor = null;
         this.compiler = compilerId;
         this.options = "";
+        this.filters = {};
     }
 
     var debouncedAjax = _.debounce($.ajax, 500);
@@ -71,7 +76,7 @@ define(function (require) {
             source: this.sourceEditor.getSource(),
             compiler: this.compiler,
             options: this.options,
-            filters: {}  // TODO
+            filters: this.filters
         };
 
         request.timestamp = Date.now();
@@ -105,7 +110,6 @@ define(function (require) {
     Compiler.prototype.onCompileResponse = function (request, result) {
         ga('send', 'event', 'Compile', request.compiler, request.options, result.code);
         ga('send', 'timing', 'Compile', 'Timing', Date.now() - request.timestamp)
-        console.log(request, result); // TODO remove
         this.setAssembly(result.asm || fakeAsm("[no output]"));
     };
 
@@ -129,6 +133,15 @@ define(function (require) {
     Compiler.prototype.onCompilerChange = function (value) {
         this.compiler = value;  // TODO check validity?
         // TODO: persist
+        this.compile();
+    };
+
+    Compiler.prototype.onFilterChange = function () {
+        this.filters = {};
+        var self = this;
+        _.each(this.domRoot.find(".filters .btn.active input"), function (a) {
+            self.filters[$(a).val()] = true;
+        });
         this.compile();
     };
 

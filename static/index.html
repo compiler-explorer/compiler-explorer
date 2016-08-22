@@ -73,13 +73,25 @@
                            size="256"></td>
             </tr>
         </table>
-        <div class="btn-group btn-group-sm" data-toggle="buttons">
-            <label class="btn btn-sm"><input type="checkbox" autocomplete="off">Binary</label>
-            <label class="btn btn-sm"><input type="checkbox" autocomplete="off">Unused labels</label>
-            <label class="btn btn-sm"><input type="checkbox" autocomplete="off">Directives</label>
-            <label class="btn btn-sm"><input type="checkbox" autocomplete="off">Comment-only lines</label>
-            <label class="btn btn-sm"><input type="checkbox" autocomplete="off">Intel syntax</label>
-            <label class="btn btn-sm"><input type="checkbox" autocomplete="off">Colourise</label>
+        <div class="btn-group btn-group-sm filters" data-toggle="buttons">
+            <label class="btn btn-sm" title="Compile to binary and disassemble the output">
+                <input value="binary" type="checkbox" autocomplete="off">Binary
+            </label>
+            <label class="btn btn-sm" title="Filter unused labels from the output">
+                <input value="labels" type="checkbox" autocomplete="off">Unused labels
+            </label>
+            <label class="btn btn-sm" title="Filter all assembler directives from the output">
+                <input value="directives" type="checkbox" autocomplete="off">Directives
+            </label>
+            <label class="btn btn-sm" title="Remove all lines which are only comments from the output">
+                <input value="commentOnly" type="checkbox" autocomplete="off">Comment-only lines
+            </label>
+            <label class="btn btn-sm" title="Output disassembly in Intel syntax">
+                <input value="intel" type="checkbox" autocomplete="off">Intel syntax
+            </label>
+            <label class="btn btn-sm" title="Colourise lines so one can see how the source maps to the output">
+                <input value="colouriseAsm" type="checkbox" autocomplete="off">Colourise
+            </label>
         </div>
     </div>
     <textarea>    mov eax, $20</textarea>
