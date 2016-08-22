@@ -42,7 +42,8 @@ define(function (require) {
         this.outputEditor = outputEditor;
 
         function resize() {
-            outputEditor.setSize(domRoot.width(), domRoot.height());
+            var topBarHeight = domRoot.find(".top-bar").outerHeight(true);
+            outputEditor.setSize(domRoot.width(), domRoot.height() - topBarHeight);
             outputEditor.refresh();
         }
 

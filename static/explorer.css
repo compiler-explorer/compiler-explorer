@@ -9,3 +9,10 @@
 .options {
     width: 15em;
 }
+
+#root {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}

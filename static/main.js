@@ -46,6 +46,14 @@ define(function (require) {
             }]
         }]
     };
-    var myLayout = new GoldenLayout(config, $("#root")[0]);
+    var root = $("#root");
+    var myLayout = new GoldenLayout(config, root);
     var hub = new Hub(myLayout);
+    function sizeRoot() {
+        var height = $(window).height() - root.position().top;
+        root.height(height);
+        myLayout.updateSize();
+    }
+    $(window).resize(sizeRoot);
+    sizeRoot();
 });

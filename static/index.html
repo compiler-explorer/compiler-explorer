@@ -65,16 +65,18 @@
 </div>
 
 <div id="compiler" class="template">
-    <table class="form-group">
-        <tr>
-            <td><select class="compiler" placeholder="Select a compiler..."></select></td>
-            <td><input class="options form-control" type="text" placeholder="compiler options..."></td>
-        </tr>
-    </table>
+    <div class="top-bar form-group">
+        <table>
+            <tr>
+                <td><select class="compiler" placeholder="Select a compiler..."></select></td>
+                <td><input class="options form-control" type="text" placeholder="compiler options..."></td>
+            </tr>
+        </table>
+    </div>
     <textarea>    mov eax, $20</textarea>
 </div>
 
-<div class="container-fluid" id="#root"></div>
+<div id="root"></div>
 
 <div class="template lang c">// Type your code here, or load an example.
 int square(int num) {
