@@ -19,6 +19,7 @@ define(function (require) {
             sortField: 'name',
             valueField: 'id',
             labelField: 'name',
+            searchField: ['name'],
             options: compilers,
             items: [compilerId],  // TODO persist and depersist from state
             openOnFocus: true

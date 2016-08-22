@@ -6,8 +6,14 @@
     width: 10em;
 }
 
+.CodeMirror {
+    font-size: 10pt;
+}
+
 .options {
-    width: 15em;
+    width: 98%;
+    margin-left: 0.25em;
+    margin-right: 0.25em;
 }
 
 #root {
@@ -15,4 +21,18 @@
     margin: 0;
     padding: 0;
     overflow: hidden;
+}
+
+.btn.active {
+    color: #fff;
+    border-color: #46b8da;
+    background-color: #5bc0de;
+}
+
+#changetip_tipme_button {
+    width: 80px;
+}
+
+#flattr_button {
+    width: 120px;
 }

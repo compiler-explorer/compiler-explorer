@@ -69,9 +69,18 @@
         <table>
             <tr>
                 <td><select class="compiler" placeholder="Select a compiler..."></select></td>
-                <td><input class="options form-control" type="text" placeholder="compiler options..."></td>
+                <td><input class="options form-control" type="text" placeholder="compiler options..."
+                           size="256"></td>
             </tr>
         </table>
+        <div class="btn-group btn-group-sm" data-toggle="buttons">
+            <label class="btn btn-sm"><input type="checkbox" autocomplete="off">Binary</label>
+            <label class="btn btn-sm"><input type="checkbox" autocomplete="off">Unused labels</label>
+            <label class="btn btn-sm"><input type="checkbox" autocomplete="off">Directives</label>
+            <label class="btn btn-sm"><input type="checkbox" autocomplete="off">Comment-only lines</label>
+            <label class="btn btn-sm"><input type="checkbox" autocomplete="off">Intel syntax</label>
+            <label class="btn btn-sm"><input type="checkbox" autocomplete="off">Colourise</label>
+        </div>
     </div>
     <textarea>    mov eax, $20</textarea>
 </div>
