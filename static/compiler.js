@@ -10,6 +10,14 @@ define(function (require) {
     var options = require('options');
     var compilers = options.compilers;
 
+    function getFilters(domRoot) {
+        var filters = {};
+        _.each(domRoot.find(".filters .btn.active input"), function (a) {
+            filters[$(a).val()] = true;
+        });
+        return filters;
+    }
+
     function Compiler(hub, container, state) {
         var self = this;
         this.container = container;
@@ -18,9 +26,9 @@ define(function (require) {
 
         this.source = state.source || 1;
         this.sourceEditor = null;
-        this.compiler = state.compiler || compilers[0].id;
-        this.options = state.options || "";
-        this.filters = state.filters || {}; // TODO default values
+        this.compiler = state.compiler || options.defaultCompiler;
+        this.options = state.options || options.compileOptions;
+        this.filters = state.filters || getFilters(this.domRoot);
 
         this.domRoot.find(".compiler").selectize({
             sortField: 'name',
@@ -142,11 +150,7 @@ define(function (require) {
     };
 
     Compiler.prototype.onFilterChange = function () {
-        this.filters = {};
-        var self = this;
-        _.each(this.domRoot.find(".filters .btn.active input"), function (a) {
-            self.filters[$(a).val()] = true;
-        });
+        this.filters = getFilters(this.domRoot);
         this.saveState();
         this.compile();
     };
