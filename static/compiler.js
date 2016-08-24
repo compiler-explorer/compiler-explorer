@@ -12,16 +12,23 @@ define(function (require) {
 
     function Compiler(hub, container, state) {
         var self = this;
+        this.container = container;
         this.domRoot = container.getElement();
         this.domRoot.html($('#compiler').html());
-        var compilerId = compilers[0].id;
+
+        this.source = state.source || 1;
+        this.sourceEditor = null;
+        this.compiler = state.compiler || compilers[0].id;
+        this.options = state.options || "";
+        this.filters = state.filters || {}; // TODO default values
+
         this.domRoot.find(".compiler").selectize({
             sortField: 'name',
             valueField: 'id',
             labelField: 'name',
             searchField: ['name'],
             options: compilers,
-            items: [compilerId],  // TODO persist and depersist from state
+            items: [this.compiler],
             openOnFocus: true
         }).on('change', function () {
             self.onCompilerChange($(this).val());
@@ -30,6 +37,7 @@ define(function (require) {
             self.onOptionsChange($(this).val());
         };
         this.domRoot.find(".options")
+            .val(this.options)
             .on("change", optionsChange)
             .on("keyup", optionsChange);
 
@@ -48,22 +56,20 @@ define(function (require) {
             outputEditor.refresh();
         }
 
+        this.domRoot.find(".filters .btn input")
+            .on('change', function () {
+                self.onFilterChange();
+            })
+            .each(function () {
+                $(this).parent().toggleClass('active', !!self.filters[$(this).val()]);
+            });
+
         container.on('resize', resize);
         container.on('open', resize);
         container.setTitle("Compiled");
         container.on('close', function () {
             hub.removeCompiler(self);
         });
-
-        this.domRoot.find(".filters .btn input").on('change', function () {
-            self.onFilterChange();
-        });
-
-        this.source = state.source || 1;
-        this.sourceEditor = null;
-        this.compiler = compilerId;
-        this.options = "";
-        this.filters = {};
     }
 
     var debouncedAjax = _.debounce($.ajax, 500);
@@ -119,20 +125,19 @@ define(function (require) {
     };
 
     Compiler.prototype.onEditorChange = function (editor) {
-        // TODO: persist and depersist
         if (editor.getId() == this.source) {
             this.sourceEditor = editor;
             this.compile();
         }
     };
     Compiler.prototype.onOptionsChange = function (options) {
-        // TODO: persist and dep
         this.options = options;
+        this.saveState();
         this.compile();
     };
     Compiler.prototype.onCompilerChange = function (value) {
         this.compiler = value;  // TODO check validity?
-        // TODO: persist
+        this.saveState();
         this.compile();
     };
 
@@ -142,7 +147,17 @@ define(function (require) {
         _.each(this.domRoot.find(".filters .btn.active input"), function (a) {
             self.filters[$(a).val()] = true;
         });
+        this.saveState();
         this.compile();
+    };
+
+    Compiler.prototype.saveState = function () {
+        this.container.setState({
+            compiler: this.compiler,
+            options: this.options,
+            source: this.editor,
+            filters: this.filters
+        });
     };
 
     return Compiler;

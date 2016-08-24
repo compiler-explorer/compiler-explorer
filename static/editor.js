@@ -6,9 +6,11 @@ define(function (require) {
     require('codemirror/mode/go/go');
     require('codemirror/mode/rust/rust');
 
-    function Editor(hub, id, container, lang) {
+    function Editor(hub, state, container, lang, defaultSrc) {
         var self = this;
-        this.id = id;
+        this.id = state.id || hub.nextEditorId();
+
+        this.container = container;
         var domRoot = container.getElement();
         domRoot.html($('#codeEditor').html());
 
@@ -38,6 +40,12 @@ define(function (require) {
             mode: cmMode
         });
 
+        if (state.src) {
+            this.editor.setValue(state.src);
+        } else if (defaultSrc) {
+            this.editor.setValue(defaultSrc);
+        }
+
         // With reference to "fix typing '#' in emacs mode"
         // https://github.com/mattgodbolt/gcc-explorer/pull/131
         this.editor.setOption("extraKeys", {
@@ -45,6 +53,7 @@ define(function (require) {
         });
         this.editor.on("change", function () {
             hub.onEditorChange(self);
+            self.updateState();
         });
 
         function resize() {
@@ -59,6 +68,13 @@ define(function (require) {
         });
         container.setTitle(lang + " source");
     }
+
+    Editor.prototype.updateState = function () {
+        this.container.setState({
+            id: this.id,
+            src: this.getSource()
+        });
+    };
 
     Editor.prototype.getSource = function () {
         return this.editor.getValue();

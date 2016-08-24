@@ -33,6 +33,8 @@ define(function (require) {
 
     var options = require('options');
     $('.language-name').text(options.language);
+    var safeLang = options.language.toLowerCase().replace(/[^a-z_]+/g, '');
+    var defaultSrc = $('.template.lang.' + safeLang).text().trim();
     var config = {
         content: [{
             type: 'row',
@@ -48,13 +50,26 @@ define(function (require) {
         }]
     };
     var root = $("#root");
+    // TODO: find old storage and convert
+    var savedState = localStorage.getItem('gl');
+    if (savedState !== null) {
+        config = JSON.parse(savedState);
+    }
+
     var layout = new GoldenLayout(config, root);
-    var hub = new Hub(layout);
+    layout.on('stateChanged', function () {
+        var state = JSON.stringify(layout.toConfig());
+        localStorage.setItem('gl', state);
+    });
+
+    var hub = new Hub(layout, defaultSrc);
+
     function sizeRoot() {
         var height = $(window).height() - root.position().top;
         root.height(height);
         layout.updateSize();
     }
+
     $(window).resize(sizeRoot);
     sizeRoot();
 });

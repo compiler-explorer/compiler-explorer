@@ -6,8 +6,9 @@ define(function (require) {
     var Editor = require('editor');
     var Compiler = require('compiler');
 
-    function Hub(layout) {
+    function Hub(layout, defaultSrc) {
         this.layout = layout;
+        this.defaultSrc = defaultSrc;
         this.compilers = [];
         this.editors = {};
         this.initialised = false;
@@ -60,8 +61,7 @@ define(function (require) {
     };
 
     Hub.prototype.codeEditorFactory = function (container, state) {
-        var id = state.id || this.nextEditorId();
-        var editor = new Editor(this, id, container, options.language);
+        var editor = new Editor(this, state, container, options.language, this.defaultSrc);
         this.addEditor(editor);
         return editor;
     };
