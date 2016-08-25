@@ -29,6 +29,7 @@ define(function (require) {
         this.compiler = state.compiler || options.defaultCompiler;
         this.options = state.options || options.compileOptions;
         this.filters = state.filters || getFilters(this.domRoot);
+        this.editorState = {};
 
         this.domRoot.find(".compiler").selectize({
             sortField: 'name',
@@ -76,10 +77,14 @@ define(function (require) {
         container.on('open', resize);
         container.setTitle("Compiled");
         container.on('close', function () {
+            if (self.sourceEditor) self.sourceEditor.onCompilerDetach(self);
             hub.removeCompiler(self);
         });
     }
 
+    // TODO: old gcc explorer used keyboard events to prevent compiling if you were
+    // still typing and not even changing anything. This new approach here means
+    // 500ms after the last _change_ we compile.
     var debouncedAjax = _.debounce($.ajax, 500);
 
     Compiler.prototype.compile = function (fromEditor) {
@@ -125,16 +130,20 @@ define(function (require) {
         ga('send', 'event', 'Compile', request.compiler, request.options, result.code);
         ga('send', 'timing', 'Compile', 'Timing', Date.now() - request.timestamp)
         this.setAssembly(result.asm || fakeAsm("[no output]"));
+        if (this.sourceEditor) this.sourceEditor.onCompileResponse(this, result);
     };
 
     Compiler.prototype.onEditorListChange = function () {
         // TODO: if we can't find our source, select none?
         // TODO: Update dropdown of source
+        // TODO: remember if we change editor source we must detach and re-attach
     };
 
     Compiler.prototype.onEditorChange = function (editor) {
+        if (this.sourceEditor) this.sourceEditor.onCompilerDetach(this);
         if (editor.getId() == this.source) {
             this.sourceEditor = editor;
+            if (this.sourceEditor) this.sourceEditor.onCompilerAttach(this);
             this.compile();
         }
     };

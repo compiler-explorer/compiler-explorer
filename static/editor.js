@@ -84,5 +84,62 @@ define(function (require) {
         return this.id;
     };
 
+    function makeErrorNode(text) {
+        var clazz = "error";
+        if (text.match(/^warning/)) clazz = "warning";
+        if (text.match(/^note/)) clazz = "note";
+        var node = $('<div class="' + clazz + ' inline-msg"><span class="icon">!!</span><span class="msg"></span></div>');
+        node.find(".msg").text(text);
+        return node[0];
+    }
+
+    function parseLines(lines, callback) {
+        var re = /^\/tmp\/[^:]+:([0-9]+)(:([0-9]+))?:\s+(.*)/;
+        $.each(lines.split('\n'), function (_, line) {
+            line = line.trim();
+            if (line !== "") {
+                var match = line.match(re);
+                if (match) {
+                    callback(parseInt(match[1]), match[4].trim());
+                } else {
+                    callback(null, line);
+                }
+            }
+        });
+    }
+
+    Editor.prototype.removeWidgets = function (compiler) {
+        var self = this;
+        _.each(compiler.editorState.widgets, function (widget) {
+            self.editor.removeLineWidget(widget);
+        });
+    };
+
+    Editor.prototype.onCompilerAttach = function (compiler) {
+        compiler.editorState = {
+            widgets: []
+        };
+    };
+
+    Editor.prototype.onCompilerDetach = function (compiler) {
+        this.removeWidgets(compiler);
+        compiler.editorState = {};
+    };
+
+    Editor.prototype.onCompileResponse = function (compiler, result) {
+        var output = (result.stdout || "") + (result.stderr || "");
+        var self = this;
+        this.removeWidgets(compiler);
+        parseLines(output, function (lineNum, msg) {
+            if (lineNum) {
+                var widget = self.editor.addLineWidget(
+                    lineNum - 1,
+                    makeErrorNode(msg),
+                    {coverGutter: false, noHScroll: true});
+                compiler.editorState.widgets.push(widget);
+            }
+        });
+    };
+
     return Editor;
 });
