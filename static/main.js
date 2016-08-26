@@ -35,26 +35,36 @@ define(function (require) {
     $('.language-name').text(options.language);
     var safeLang = options.language.toLowerCase().replace(/[^a-z_]+/g, '');
     var defaultSrc = $('.template.lang.' + safeLang).text().trim();
-    var config = {
+    var defaultConfig = {
         content: [{
             type: 'row',
-            content: [{
-                type: 'component',
-                componentName: 'codeEditor',
-                componentState: {}
-            }, {
-                type: 'component',
-                componentName: 'compilerOutput',
-                componentState: {}
-            }]
+            content: [
+                {
+                    type: 'component',
+                    componentName: 'codeEditor',
+                    componentState: {}
+                },
+                {
+                    type: 'column', content: [
+                    {
+                        type: 'component',
+                        componentName: 'compilerOutput',
+                        componentState: {}
+                    },
+                    {
+                        type: 'component',
+                        componentName: 'compilerOutput',
+                        componentState: {}
+                    }
+                ]
+                }
+            ]
         }]
     };
     var root = $("#root");
     // TODO: find old storage and convert
     var savedState = localStorage.getItem('gl');
-    if (savedState !== null) {
-        config = JSON.parse(savedState);
-    }
+    var config = savedState !== null ? JSON.parse(savedState) : defaultConfig;
 
     var layout = new GoldenLayout(config, root);
     layout.on('stateChanged', function () {
