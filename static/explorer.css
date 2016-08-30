@@ -43,6 +43,11 @@
     padding: 2px 5px 3px;
 }
 
+.inline-msg .compiler {
+    font-style: italic;
+    float: right;
+}
+
 span.icon {
     border-radius: 50%;
     padding: 0 3px;

@@ -9,9 +9,7 @@ define(function (require) {
     function Hub(layout, defaultSrc) {
         this.layout = layout;
         this.defaultSrc = defaultSrc;
-        this.compilers = [];
-        this.editors = {};
-        this.initialised = false;
+        this.ids = {};
 
         var self = this;
         layout.registerComponent('codeEditor', function (container, state) {
@@ -20,63 +18,30 @@ define(function (require) {
         layout.registerComponent('compilerOutput', function (container, state) {
             return self.compilerOutputFactory(container, state);
         });
+        var removeId = function (id) {
+            self.ids[id] = false;
+        };
+        layout.eventHub.on('editorClose', removeId)
+        layout.eventHub.on('compilerClose', removeId);
         layout.init();
-
-        this.initialised = true;
-
-        _.each(this.editors, function (editor) {
-            self.onEditorChange(editor);
-        });
-        this.onEditorListChange();
     }
 
-    Hub.prototype.addCompiler = function (compiler) {
-        this.compilers.push(compiler);
-    };
-    Hub.prototype.removeCompiler = function (compiler) {
-        this.compilers = _.without(this.compilers, compiler);
-    };
-
-    Hub.prototype.addEditor = function (editor) {
-        this.editors[editor.getId()] = editor;
-        this.onEditorListChange();
-    };
-    Hub.prototype.removeEditor = function (editor) {
-        delete this.editors[editor.getId()];
-        this.onEditorListChange();
-    };
-
-    Hub.prototype.onEditorListChange = function () {
-        if (!this.initialised) return;
-        _.each(this.compilers, function (compiler) {
-            compiler.onEditorListChange();
-        });
-    };
-
-    Hub.prototype.nextEditorId = function () {
+    Hub.prototype.nextId = function () {
         for (var i = 1; i < 100000; ++i) {
-            if (!this.editors[i]) return i;
+            if (!this.ids[i]) {
+                this.ids[i] = true;
+                return i;
+            }
         }
         throw "Ran out of ids!?";
     };
 
     Hub.prototype.codeEditorFactory = function (container, state) {
-        var editor = new Editor(this, state, container, options.language, this.defaultSrc);
-        this.addEditor(editor);
-        return editor;
+        return new Editor(this, state, container, options.language, this.defaultSrc);
     };
 
     Hub.prototype.compilerOutputFactory = function (container, state) {
-        var compiler = new Compiler(this, container, state);
-        this.addCompiler(compiler);
-        return compiler;
-    };
-
-    Hub.prototype.onEditorChange = function (editor) {
-        if (!this.initialised) return;
-        _.each(this.compilers, function (compiler) {
-            compiler.onEditorChange(editor);
-        });
+        return new Compiler(this, container, state);
     };
 
     return Hub;

@@ -3,7 +3,7 @@ require.config({
         bootstrap: 'ext/bootstrap/dist/js/bootstrap.min',
         jquery: 'ext/jquery/dist/jquery.min',
         underscore: 'ext/underscore/underscore-min',
-        goldenlayout: 'ext/golden-layout/dist/goldenlayout.min',
+        goldenlayout: 'ext/golden-layout/dist/goldenlayout',
         selectize: 'ext/selectize/dist/js/selectize.min',
         sifter: 'ext/sifter/sifter.min',
         microplugin: 'ext/microplugin/src/microplugin'
@@ -41,20 +41,25 @@ define(function (require) {
             content: [
                 {
                     type: 'component',
+                    componentName: 'compilerOutput',
+                    componentState: {source: 1}
+                },
+                {
+                    type: 'component',
                     componentName: 'codeEditor',
-                    componentState: {}
+                    componentState: {id: 1}
                 },
                 {
                     type: 'column', content: [
                     {
                         type: 'component',
                         componentName: 'compilerOutput',
-                        componentState: {}
+                        componentState: {source: 1}
                     },
                     {
                         type: 'component',
                         componentName: 'compilerOutput',
-                        componentState: {}
+                        componentState: {source: 1}
                     }
                 ]
                 }

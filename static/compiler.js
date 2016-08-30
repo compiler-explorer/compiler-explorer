@@ -9,6 +9,7 @@ define(function (require) {
 
     var options = require('options');
     var compilers = options.compilers;
+    var compilersById = _.object(_.pluck(compilers, "id"), compilers);
 
     function getFilters(domRoot) {
         var filters = {};
@@ -21,15 +22,18 @@ define(function (require) {
     function Compiler(hub, container, state) {
         var self = this;
         this.container = container;
+        this.eventHub = container.layoutManager.eventHub;
         this.domRoot = container.getElement();
         this.domRoot.html($('#compiler').html());
 
-        this.source = state.source || 1;
-        this.sourceEditor = null;
-        this.compiler = state.compiler || options.defaultCompiler;
+        this.id = state.id || hub.nextId();
+        this.sourceEditorId = state.source || 1;
+        this.compiler = compilersById[state.compiler] || options.defaultCompiler;
         this.options = state.options || options.compileOptions;
         this.filters = state.filters || getFilters(this.domRoot);
-        this.editorState = {};
+        this.source = "";
+
+        this.debouncedAjax = _.debounce($.ajax, 250);
 
         this.domRoot.find(".compiler").selectize({
             sortField: 'name',
@@ -37,7 +41,7 @@ define(function (require) {
             labelField: 'name',
             searchField: ['name'],
             options: compilers,
-            items: [this.compiler],
+            items: [this.compiler.id],
             openOnFocus: true
         }).on('change', function () {
             self.onCompilerChange($(this).val());
@@ -74,32 +78,30 @@ define(function (require) {
             });
 
         container.on('resize', resize);
-        container.on('open', resize);
+        container.on('open', function () {
+            self.eventHub.emit('compilerOpen', self.id);
+            resize();
+        });
         container.setTitle("Compiled");
         container.on('close', function () {
-            if (self.sourceEditor) self.sourceEditor.onCompilerDetach(self);
-            hub.removeCompiler(self);
+            self.eventHub.emit('compilerClose', self.id);
         });
+        self.eventHub.on('editorChange', this.onEditorChange, this);
     }
-
-    // TODO: old gcc explorer used keyboard events to prevent compiling if you were
-    // still typing and not even changing anything. This new approach here means
-    // 500ms after the last _change_ we compile.
-    var debouncedAjax = _.debounce($.ajax, 500);
 
     Compiler.prototype.compile = function (fromEditor) {
         var self = this;
-        if (!this.sourceEditor || !this.compiler) return;  // TODO blank out the output?
+        if (!this.source || !this.compiler) return;  // TODO blank out the output?
         var request = {
             fromEditor: fromEditor,
-            source: this.sourceEditor.getSource(),
-            compiler: this.compiler,
+            source: this.source,
+            compiler: this.compiler.id,
             options: this.options,
             filters: this.filters
         };
 
         request.timestamp = Date.now();
-        debouncedAjax({
+        this.debouncedAjax({
             type: 'POST',
             url: '/compile',
             dataType: 'json',
@@ -109,7 +111,7 @@ define(function (require) {
                 self.onCompileResponse(request, result);
             },
             error: function (xhr, e_status, error) {
-                console.log("AJAX request failed, reason : " + error);  // TODO better error handling
+                self.onCompileResponse(request, errorResult("Remote compilation failed: " + error));
             },
             cache: false
         });
@@ -122,6 +124,10 @@ define(function (require) {
         });
     };
 
+    function errorResult(text) {
+        return {asm: fakeAsm(text)};
+    }
+
     function fakeAsm(text) {
         return [{text: text, source: null, fake: true}];
     }
@@ -130,20 +136,19 @@ define(function (require) {
         ga('send', 'event', 'Compile', request.compiler, request.options, result.code);
         ga('send', 'timing', 'Compile', 'Timing', Date.now() - request.timestamp)
         this.setAssembly(result.asm || fakeAsm("[no output]"));
-        if (this.sourceEditor) this.sourceEditor.onCompileResponse(this, result);
+        this.eventHub.emit('compileResult', this.id, this.compiler, result);
     };
 
     Compiler.prototype.onEditorListChange = function () {
         // TODO: if we can't find our source, select none?
         // TODO: Update dropdown of source
         // TODO: remember if we change editor source we must detach and re-attach
+        //this.sourceEditorId = ...
     };
 
-    Compiler.prototype.onEditorChange = function (editor) {
-        if (this.sourceEditor) this.sourceEditor.onCompilerDetach(this);
-        if (editor.getId() == this.source) {
-            this.sourceEditor = editor;
-            if (this.sourceEditor) this.sourceEditor.onCompilerAttach(this);
+    Compiler.prototype.onEditorChange = function (editor, source) {
+        if (editor == this.sourceEditorId) {
+            this.source = source;
             this.compile();
         }
     };
@@ -153,7 +158,7 @@ define(function (require) {
         this.compile();
     };
     Compiler.prototype.onCompilerChange = function (value) {
-        this.compiler = value;  // TODO check validity?
+        this.compiler = compilersById[value];  // TODO check validity?
         this.saveState();
         this.compile();
     };
@@ -166,7 +171,7 @@ define(function (require) {
 
     Compiler.prototype.saveState = function () {
         this.container.setState({
-            compiler: this.compiler,
+            compiler: this.compiler.id,
             options: this.options,
             source: this.editor,
             filters: this.filters
