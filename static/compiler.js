@@ -4,6 +4,7 @@ define(function (require) {
     var $ = require('jquery');
     var _ = require('underscore');
     var ga = require('analytics').ga;
+    var colour = require('colour');
     require('asm-mode');
     require('selectize');
 
@@ -32,6 +33,7 @@ define(function (require) {
         this.options = state.options || options.compileOptions;
         this.filters = state.filters || getFilters(this.domRoot);
         this.source = "";
+        this.assembly = [];
 
         this.debouncedAjax = _.debounce($.ajax, 250);
 
@@ -87,6 +89,7 @@ define(function (require) {
             self.eventHub.emit('compilerClose', self.id);
         });
         self.eventHub.on('editorChange', this.onEditorChange, this);
+        self.eventHub.on('colours', this.onColours, this);
     }
 
     Compiler.prototype.compile = function (fromEditor) {
@@ -118,10 +121,8 @@ define(function (require) {
     };
 
     Compiler.prototype.setAssembly = function (assembly) {
-        var self = this;
-        this.outputEditor.operation(function () {
-            self.outputEditor.setValue(_.pluck(assembly, 'text').join("\n"));
-        });
+        this.assembly = assembly;
+        this.outputEditor.setValue(_.pluck(assembly, 'text').join("\n"));
     };
 
     function errorResult(text) {
@@ -176,6 +177,16 @@ define(function (require) {
             source: this.editor,
             filters: this.filters
         });
+    };
+
+    Compiler.prototype.onColours = function (editor, colours) {
+        if (editor == this.sourceEditorId) {
+            var asmColours = {};
+            this.assembly.forEach(function (x, index) {
+                if (x.source) asmColours[index] = colours[x.source - 1];
+            });
+            colour.applyColours(this.outputEditor, asmColours);
+        }
     };
 
     return Compiler;

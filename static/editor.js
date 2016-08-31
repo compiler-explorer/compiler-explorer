@@ -2,6 +2,7 @@ define(function (require) {
     "use strict";
     var CodeMirror = require('codemirror');
     var _ = require('underscore');
+    var colour = require('colour');
     require('codemirror/mode/clike/clike');
     require('codemirror/mode/d/d');
     require('codemirror/mode/go/go');
@@ -12,6 +13,7 @@ define(function (require) {
         this.id = state.id || hub.nextId();
         this.eventHub = container.layoutManager.eventHub;
         this.widgetsByCompiler = {};
+        this.asmByCompiler = {};
 
         this.container = container;
         var domRoot = container.getElement();
@@ -75,6 +77,15 @@ define(function (require) {
             // movement etc).
             this.debouncedEmitChange();
         }, this));
+
+        // A small debounce used to give multiple compilers a chance to respond
+        // before unioning the colours and updating them. Another approach to reducing
+        // flicker as multiple compilers update is to track those compilers which
+        // are busy, and only union/update colours when all are complete.
+        var ColourDebounceMs = 200;
+        this.debouncedUpdateColours = _.debounce(function (colours) {
+            self.updateColours(colours);
+        }, ColourDebounceMs);
 
         function resize() {
             self.editor.setSize(domRoot.width(), domRoot.height());
@@ -148,9 +159,34 @@ define(function (require) {
         });
     };
 
+    Editor.prototype.numberUsedLines = function () {
+        var result = {};
+        // First, note all lines used.
+        _.each(this.asmByCompiler, function (asm) {
+            _.each(asm, function (asmLine) {
+                if (asmLine.source) result[asmLine.source - 1] = true;
+            });
+        });
+        // Now assign an ordinal to each used line.
+        var ordinal = 0;
+        _.each(result, function (v, k) {
+            result[k] = ordinal++;
+        });
+
+        // TODO: make colourise an option on the editor not the asm views
+        this.debouncedUpdateColours(result);
+    };
+
+    Editor.prototype.updateColours = function (colours) {
+        colour.applyColours(this.editor, colours);
+        this.eventHub.emit('colours', this.id, colours);
+    };
+
     Editor.prototype.onCompilerClose = function (compilerId) {
         this.removeWidgets(this.widgetsByCompiler[compilerId]);
         delete this.widgetsByCompiler[compilerId];
+        delete this.asmByCompiler[compilerId];
+        this.numberUsedLines();
     };
 
     Editor.prototype.onCompileResponse = function (compilerId, compiler, result) {
@@ -168,6 +204,8 @@ define(function (require) {
             }
         });
         this.widgetsByCompiler[compilerId] = widgets;
+        this.asmByCompiler[compilerId] = result.asm;
+        this.numberUsedLines();
     };
 
     return Editor;
