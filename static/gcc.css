@@ -194,3 +194,8 @@ li.social {
     color: #0000b0;
     font-weight: bold;
 }
+
+.dropdown-menu.compilers {
+    max-height: 400px;
+    overflow-y: auto;
+}
