@@ -15,7 +15,7 @@ define(function (require) {
     function Toggles(root, state) {
         EventEmitter.call(this);
         this.domRoot = root;
-        state = state || this.get();
+        state = state || get(this.domRoot);
         this.domRoot.find('.btn')
             .click(_.bind(this.onClick, this))
             .each(function () {
