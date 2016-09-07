@@ -10,7 +10,7 @@
     font-size: 10pt;
 }
 
-.options {
+input.options {
     width: 98%;
     margin-left: 0.25em;
     margin-right: 0.25em;
@@ -24,9 +24,9 @@
 }
 
 .btn.active {
-    color: #fff;
-    border-color: #46b8da;
-    background-color: #5bc0de;
+    color: #fff !important;
+    border-color: #46b8da !important;
+    background-color: #5bc0de !important;
 }
 
 #changetip_tipme_button {

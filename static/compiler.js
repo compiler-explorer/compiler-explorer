@@ -5,20 +5,13 @@ define(function (require) {
     var _ = require('underscore');
     var ga = require('analytics').ga;
     var colour = require('colour');
+    var Toggles = require('toggles')
     require('asm-mode');
     require('selectize');
 
     var options = require('options');
     var compilers = options.compilers;
     var compilersById = _.object(_.pluck(compilers, "id"), compilers);
-
-    function getFilters(domRoot) {
-        var filters = {};
-        _.each(domRoot.find(".filters .btn.active input"), function (a) {
-            filters[$(a).val()] = true;
-        });
-        return filters;
-    }
 
     function Compiler(hub, container, state) {
         var self = this;
@@ -31,7 +24,7 @@ define(function (require) {
         this.sourceEditorId = state.source || 1;
         this.compiler = compilersById[state.compiler] || options.defaultCompiler;
         this.options = state.options || options.compileOptions;
-        this.filters = state.filters || getFilters(this.domRoot);
+        this.filters = new Toggles(this.domRoot.find(".filters"), state.filters);
         this.source = "";
         this.assembly = [];
 
@@ -71,13 +64,7 @@ define(function (require) {
             outputEditor.refresh();
         }
 
-        this.domRoot.find(".filters .btn input")
-            .on('change', function () {
-                self.onFilterChange();
-            })
-            .each(function () {
-                $(this).parent().toggleClass('active', !!self.filters[$(this).val()]);
-            });
+        this.filters.on('change', _.bind(this.onFilterChange, this));
 
         container.on('resize', resize);
         container.on('open', function () {
@@ -100,9 +87,9 @@ define(function (require) {
             source: this.source,
             compiler: this.compiler.id,
             options: this.options,
-            filters: this.filters
+            filters: this.filters.get()
         };
-
+        // TODO: caching (pre-timestamp)
         request.timestamp = Date.now();
         this.debouncedAjax({
             type: 'POST',
@@ -165,7 +152,6 @@ define(function (require) {
     };
 
     Compiler.prototype.onFilterChange = function () {
-        this.filters = getFilters(this.domRoot);
         this.saveState();
         this.compile();
     };
@@ -175,7 +161,7 @@ define(function (require) {
             compiler: this.compiler.id,
             options: this.options,
             source: this.editor,
-            filters: this.filters
+            filters: this.filters.get()
         });
     };
 

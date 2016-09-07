@@ -3,6 +3,7 @@ define(function (require) {
     var CodeMirror = require('codemirror');
     var _ = require('underscore');
     var colour = require('colour');
+    var Toggles = require('toggles')
     require('codemirror/mode/clike/clike');
     require('codemirror/mode/d/d');
     require('codemirror/mode/go/go');
@@ -11,13 +12,15 @@ define(function (require) {
     function Editor(hub, state, container, lang, defaultSrc) {
         var self = this;
         this.id = state.id || hub.nextId();
+        this.container = container;
+        this.domRoot = container.getElement();
+        this.domRoot.html($('#codeEditor').html());
         this.eventHub = container.layoutManager.eventHub;
+
         this.widgetsByCompiler = {};
         this.asmByCompiler = {};
-
-        this.container = container;
-        var domRoot = container.getElement();
-        domRoot.html($('#codeEditor').html());
+        this.options = new Toggles(this.domRoot.find('.options'), state.options);
+        this.options.on('change', _.bind(this.onOptionsChange, this));
 
         var cmMode;
         switch (lang.toLowerCase()) {
@@ -38,7 +41,7 @@ define(function (require) {
                 break;
         }
 
-        this.editor = CodeMirror.fromTextArea(domRoot.find("textarea")[0], {
+        this.editor = CodeMirror.fromTextArea(this.domRoot.find("textarea")[0], {
             lineNumbers: true,
             matchBrackets: true,
             useCPP: true,
@@ -65,7 +68,7 @@ define(function (require) {
         this.lastChangeEmitted = null;
         var ChangeDebounceMs = 500;
         this.debouncedEmitChange = _.debounce(function () {
-            self.maybeEmitChange();
+            if (self.options.get().compileOnChange) self.maybeEmitChange();
         }, ChangeDebounceMs);
         this.editor.on("change", _.bind(function () {
             this.debouncedEmitChange();
@@ -88,7 +91,8 @@ define(function (require) {
         }, ColourDebounceMs);
 
         function resize() {
-            self.editor.setSize(domRoot.width(), domRoot.height());
+            var topBarHeight = self.domRoot.find(".top-bar").outerHeight(true);
+            self.editor.setSize(self.domRoot.width(), self.domRoot.height() - topBarHeight);
             self.editor.refresh();
         }
 
@@ -109,9 +113,9 @@ define(function (require) {
         this.eventHub.on('compileResult', this.onCompileResponse, this);
     }
 
-    Editor.prototype.maybeEmitChange = function () {
+    Editor.prototype.maybeEmitChange = function (force) {
         var source = this.getSource();
-        if (source == this.lastChangeEmitted) return;
+        if (!force && source == this.lastChangeEmitted) return;
         this.lastChangeEmitted = this.getSource();
         this.eventHub.emit('editorChange', this.id, this.lastChangeEmitted);
     };
@@ -119,12 +123,30 @@ define(function (require) {
     Editor.prototype.updateState = function () {
         this.container.setState({
             id: this.id,
-            src: this.getSource()
+            src: this.getSource(),
+            options: this.options.get()
         });
     };
 
     Editor.prototype.getSource = function () {
         return this.editor.getValue();
+    };
+
+    Editor.prototype.onOptionsChange = function (before, after) {
+        this.updateState();
+        // TODO: bug with options and filters: initial click seems to get lost!
+        // TODO: bug when:
+        // * Turn off auto.
+        // * edit code
+        // * change compiler or compiler options (out of date code is used)
+        if (after.compileOnChange && !before.compileOnChange) {
+            // If we've just enabled "compile on change"; forcibly send a change
+            // which will recolourise as required.
+            this.maybeEmitChange(true);
+        } else if (before.colouriseAsm !== after.colouriseAsm) {
+            // if the colourise option has been toggled...recompute colours
+            this.numberUsedLines();
+        }
     };
 
     function makeErrorNode(text, compiler) {
@@ -173,8 +195,7 @@ define(function (require) {
             result[k] = ordinal++;
         });
 
-        // TODO: make colourise an option on the editor not the asm views
-        this.debouncedUpdateColours(result);
+        this.debouncedUpdateColours(this.options.get().colouriseAsm ? result : []);
     };
 
     Editor.prototype.updateColours = function (colours) {

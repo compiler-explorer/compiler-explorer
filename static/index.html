@@ -15,7 +15,6 @@
     <!--<script src="ext/rison.js"></script>-->
     <!--<script src="ext/clipboard.min.js"></script>x-->
     <!--<script src="ext/lz-string/lz-string-1.3.3-min.js"></script>-->
-    <script type="text/javascript"></script>
 </head>
 <body>
 <div class="navbar navbar-inverse">
@@ -25,6 +24,8 @@
         </div>
         <div class="navbar-collapse collapse">
             <ul class="nav navbar-nav navbar-right">
+                <li>Full link</li><!-- TODO -->
+                <li>Short link</li>
                 <li class="if-github-enabled">
                     <a href="https://github.com/mattgodbolt/gcc-explorer">Source on GitHub</a>
                 </li>
@@ -61,11 +62,29 @@
 </div>
 
 <div id="codeEditor" class="template">
+    <div class="top-bar btn-toolbar" role="toolbar">
+        <div class="btn-group btn-group-sm options" role="group">
+            <button title="Colourise lines so one can see how the source maps to the output"
+                    class="btn btn-default btn-sm active" data-bind="colouriseAsm">
+                <span class="glyphicon glyphicon-adjust"></span>
+            </button>
+            <button title="Run the compilers automatically as you type"
+                    class="btn btn-default btn-sm active" data-bind="compileOnChange">
+                <span class="glyphicon glyphicon-play-circle"></span>
+            </button>
+        </div>
+        <div class="btn-group btn-group-sm">
+            <button title="Load text from an example"
+                    class="btn btn-default btn-sm">
+                <span class="glyphicon glyphicon-floppy-disk"></span>
+            </button>
+        </div>
+    </div>
     <textarea>// Type your code here, or load an example.</textarea>
 </div>
 
 <div id="compiler" class="template">
-    <div class="top-bar form-group">
+    <div class="top-bar">
         <table>
             <tr>
                 <td><select class="compiler" placeholder="Select a compiler..."></select></td>
@@ -74,35 +93,37 @@
             </tr>
         </table>
         <div class="btn-group btn-group-sm filters" data-toggle="buttons">
-            <label class="btn btn-sm" title="Compile to binary and disassemble the output">
-                <input value="binary" type="checkbox" autocomplete="off">Binary
-            </label>
-            <label class="btn btn-sm active" title="Filter unused labels from the output">
-                <input value="labels" type="checkbox" autocomplete="off">Unused labels
-            </label>
-            <label class="btn btn-sm active" title="Filter all assembler directives from the output">
-                <input value="directives" type="checkbox" autocomplete="off">Directives
-            </label>
-            <label class="btn btn-sm active" title="Remove all lines which are only comments from the output">
-                <input value="commentOnly" type="checkbox" autocomplete="off">Comment-only lines
-            </label>
-            <label class="btn btn-sm active" title="Output disassembly in Intel syntax">
-                <input value="intel" type="checkbox" autocomplete="off">Intel syntax
-            </label>
-            <label class="btn btn-sm active" title="Colourise lines so one can see how the source maps to the output">
-                <input value="colouriseAsm" type="checkbox" autocomplete="off">Colourise
-            </label>
+            <button class="btn btn-sm" title="Compile to binary and disassemble the output"
+                    data-bind="binary">
+                <span>11010</span>
+            </button>
+            <button class="btn btn-sm active" title="Filter unused labels from the output"
+                    data-bind="labels">
+                <span>.LX0:</span>
+            </button>
+            <button class="btn btn-sm active" title="Filter all assembler directives from the output"
+                    data-bind="directives">
+                <span>.text</span>
+            </button>
+            <button class="btn btn-sm active" title="Remove all lines which are only comments from the output"
+                    data-bind="commentOnly">
+                <span>//</span>
+            </button>
+            <button class="btn btn-sm active" title="Output disassembly in Intel syntax"
+                    data-bind="intel">
+                <span>Intel</span>
+            </button>
         </div>
     </div>
-    <textarea>    mov eax, $20</textarea>
+    <textarea>[Waiting...]</textarea>
 </div>
 
 <div id="root"></div>
 
-<div class="template lang c">// Type your code here, or load an example.
+<pre class="template lang c">// Type your code here, or load an example.
 int square(int num) {
-  return num * num;
-}</div>
+    return num * num;
+}</pre>
 <pre class="template lang rust">// Type your code here, or load an example.
 pub fn square(num: i32) -&gt; i32 {
   num * num
