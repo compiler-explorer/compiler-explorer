@@ -6,7 +6,8 @@ require.config({
         goldenlayout: 'ext/golden-layout/dist/goldenlayout',
         selectize: 'ext/selectize/dist/js/selectize.min',
         sifter: 'ext/sifter/sifter.min',
-        microplugin: 'ext/microplugin/src/microplugin'
+        microplugin: 'ext/microplugin/src/microplugin',
+        events: 'ext/eventEmitter/EventEmitter'
     },
     packages: [{
         name: "codemirror",
