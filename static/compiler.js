@@ -144,7 +144,7 @@ define(function (require) {
                     var dest = addrToAddrDiv[address];
                     if (dest) {
                         var editor = this.outputEditor;
-                        thing.on('hover', function (e) {
+                        thing.hover(function (e) {
                             var entered = e.type == "mouseenter";
                             dest.div.toggleClass("highlighted", entered);
                             thing.toggleClass("highlighted", entered);
