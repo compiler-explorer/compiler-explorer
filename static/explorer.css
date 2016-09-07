@@ -135,3 +135,23 @@ span.icon {
 .rainbow-11 {
     background: rgb(255, 237, 111) !important;
 }
+
+.address {
+    width: 4em;
+    font-size: smaller;
+}
+
+.opcodes {
+    width: 7em;
+    overflow: hidden;
+    font-size: smaller;
+}
+
+.opcode {
+    color: #066;
+    margin-right: 0.2em;
+}
+
+.opcode:nth-child(odd) {
+    color: #060;
+}

@@ -110,6 +110,55 @@ define(function (require) {
     Compiler.prototype.setAssembly = function (assembly) {
         this.assembly = assembly;
         this.outputEditor.setValue(_.pluck(assembly, 'text').join("\n"));
+
+        var addrToAddrDiv = {};
+        _.each(this.assembly, _.bind(function (obj, line) {
+            var address = obj.address ? obj.address.toString(16) : "";
+            var div = $("<div class='address cm-number'>" + address + "</div>");
+            addrToAddrDiv[address] = {div: div, line: line};
+            this.outputEditor.setGutterMarker(line, 'address', div[0]);
+        }, this));
+
+        _.each(this.assembly, _.bind(function (obj, line) {
+            var opcodes = $("<div class='opcodes'></div>");
+            if (obj.opcodes) {
+                var title = [];
+                _.each(obj.opcodes, function (op) {
+                    var opcodeNum = "00" + op.toString(16);
+                    opcodeNum = opcodeNum.substr(opcodeNum.length - 2);
+                    title.push(opcodeNum);
+                    var opcode = $("<span class='opcode'>" + opcodeNum + "</span>");
+                    opcodes.append(opcode);
+                });
+                opcodes.attr('title', title.join(" "));
+            }
+            this.outputEditor.setGutterMarker(line, 'opcodes', opcodes[0]);
+            if (obj.links) {
+                _.each(obj.links, _.bind(function (link) {
+                    var from = {line: line, ch: link.offset};
+                    var to = {line: line, ch: link.offset + link.length};
+                    var address = link.to.toString(16);
+                    var thing = $("<a href='#' class='cm-number'>" + address + "</a>");
+                    this.outputEditor.markText(
+                        from, to, {replacedWith: thing[0], handleMouseEvents: false});
+                    var dest = addrToAddrDiv[address];
+                    if (dest) {
+                        var editor = this.outputEditor;
+                        thing.on('hover', function (e) {
+                            var entered = e.type == "mouseenter";
+                            dest.div.toggleClass("highlighted", entered);
+                            thing.toggleClass("highlighted", entered);
+                        });
+                        thing.on('click', function (e) {
+                            editor.scrollIntoView({line: dest.line, ch: 0}, 30);
+                            dest.div.toggleClass("highlighted", false);
+                            thing.toggleClass("highlighted", false);
+                            e.preventDefault();
+                        });
+                    }
+                }, this));
+            }
+        }, this));
     };
 
     function errorResult(text) {
@@ -123,7 +172,16 @@ define(function (require) {
     Compiler.prototype.onCompileResponse = function (request, result) {
         ga('send', 'event', 'Compile', request.compiler, request.options, result.code);
         ga('send', 'timing', 'Compile', 'Timing', Date.now() - request.timestamp)
-        this.setAssembly(result.asm || fakeAsm("[no output]"));
+        this.outputEditor.operation(_.bind(function () {
+            this.setAssembly(result.asm || fakeAsm("[no output]"));
+            if (request.filters.binary) {
+                this.outputEditor.setOption('lineNumbers', false);
+                this.outputEditor.setOption('gutters', ['address', 'opcodes']);
+            } else {
+                this.outputEditor.setOption('lineNumbers', true);
+                this.outputEditor.setOption('gutters', ['CodeMirror-linenumbers']);
+            }
+        }, this));
         this.eventHub.emit('compileResult', this.id, this.compiler, result);
     };
 
