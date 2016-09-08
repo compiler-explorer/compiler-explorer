@@ -247,7 +247,8 @@ define(function (require) {
             return {
                 type: 'component',
                 componentName: 'codeEditor',
-                componentState: {id: id}
+                componentState: {id: id},
+                isClosable: false
             };
         }
     };

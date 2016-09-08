@@ -39,6 +39,7 @@ define(function (require) {
     var safeLang = options.language.toLowerCase().replace(/[^a-z_]+/g, '');
     var defaultSrc = $('.template.lang.' + safeLang).text().trim();
     var defaultConfig = {
+        showPopoutIcon: false,
         content: [{type: 'row', content: [editor.getComponent(1), compiler.getComponent(1)]}]
     };
     var root = $("#root");
