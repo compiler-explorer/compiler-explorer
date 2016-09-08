@@ -46,5 +46,27 @@ define(function (require) {
         return new compiler.Compiler(this, container, state);
     };
 
+    function WrappedEventHub(eventHub) {
+        this.eventHub = eventHub;
+        this.subscriptions = [];
+    }
+
+    WrappedEventHub.prototype.emit = function () {
+        this.eventHub.emit.apply(this.eventHub, arguments);
+    };
+    WrappedEventHub.prototype.on = function (event, callback, context) {
+        this.eventHub.on(event, callback, context);
+        this.subscriptions.push({evt: event, fn: callback, ctx: context});
+    };
+    WrappedEventHub.prototype.unsubscribe = function () {
+        _.each(this.subscriptions, _.bind(function (obj) {
+            this.eventHub.off(obj.evt, obj.fn, obj.ctx);
+        }, this));
+    };
+
+    Hub.prototype.createEventHub = function () {
+        return new WrappedEventHub(this.layout.eventHub);
+    };
+
     return Hub;
 });

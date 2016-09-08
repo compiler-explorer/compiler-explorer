@@ -16,7 +16,7 @@ define(function (require) {
     function Compiler(hub, container, state) {
         var self = this;
         this.container = container;
-        this.eventHub = container.layoutManager.eventHub;
+        this.eventHub = hub.createEventHub();
         this.domRoot = container.getElement();
         this.domRoot.html($('#compiler').html());
 
@@ -27,6 +27,7 @@ define(function (require) {
         this.filters = new Toggles(this.domRoot.find(".filters"), state.filters);
         this.source = "";
         this.assembly = [];
+        this.lastRequestRespondedTo = "";
 
         this.debouncedAjax = _.debounce($.ajax, 250);
 
@@ -66,17 +67,18 @@ define(function (require) {
 
         this.filters.on('change', _.bind(this.onFilterChange, this));
 
+        container.on('destroy', function () {
+            self.eventHub.unsubscribe();
+            self.eventHub.emit('compilerClose', self.id);
+        }, this);
         container.on('resize', resize);
         container.on('open', function () {
             self.eventHub.emit('compilerOpen', self.id);
         });
-        this.updateTitle();
-        container.on('destroy', function () {
-            self.eventHub.emit('compilerClose', self.id);
-        });
         self.eventHub.on('editorChange', this.onEditorChange, this);
         self.eventHub.on('editorClose', this.onEditorClose, this);
         self.eventHub.on('colours', this.onColours, this);
+        this.updateTitle();
     }
 
     Compiler.prototype.compile = function (fromEditor) {
@@ -89,20 +91,30 @@ define(function (require) {
             options: this.options,
             filters: this.filters.get()
         };
-        // TODO: caching (pre-timestamp)
+
+        var cacheableRequest = JSON.stringify(request);
+        if (cacheableRequest === this.lastRequestRespondedTo) return;
+        // only set the request timestamp after checking cache; else we'll always fetch
         request.timestamp = Date.now();
+
         this.debouncedAjax({
             type: 'POST',
             url: '/compile',
             dataType: 'json',
             contentType: 'application/json',
             data: JSON.stringify(request),
-            success: function (result) {
+            success: _.bind(function (result) {
+                if (result.okToCache) {
+                    this.lastRequestRespondedTo = cacheableRequest;
+                } else {
+                    this.lastRequestRespondedTo = "";
+                }
                 self.onCompileResponse(request, result);
-            },
-            error: function (xhr, e_status, error) {
+            }, this),
+            error: _.bind(function (xhr, e_status, error) {
+                this.lastRequestRespondedTo = "";
                 self.onCompileResponse(request, errorResult("Remote compilation failed: " + error));
-            },
+            }, this),
             cache: false
         });
     };
@@ -185,13 +197,6 @@ define(function (require) {
         this.eventHub.emit('compileResult', this.id, this.compiler, result);
     };
 
-    Compiler.prototype.onEditorListChange = function () {
-        // TODO: if we can't find our source, select none?
-        // TODO: Update dropdown of source
-        // TODO: remember if we change editor source we must detach and re-attach
-        //this.sourceEditorId = ...
-    };
-
     Compiler.prototype.onEditorChange = function (editor, source) {
         if (editor === this.sourceEditorId) {
             this.source = source;
@@ -242,7 +247,7 @@ define(function (require) {
         }
     };
 
-    Compiler.prototype.updateTitle = function() {
+    Compiler.prototype.updateTitle = function () {
         this.container.setTitle("#" + this.sourceEditorId + " with " + this.compiler.name);
     };
 

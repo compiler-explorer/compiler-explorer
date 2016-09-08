@@ -17,7 +17,7 @@ define(function (require) {
         this.container = container;
         this.domRoot = container.getElement();
         this.domRoot.html($('#codeEditor').html());
-        this.eventHub = container.layoutManager.eventHub;
+        this.eventHub = hub.createEventHub();
 
         this.widgetsByCompiler = {};
         this.asmByCompiler = {};
@@ -103,6 +103,7 @@ define(function (require) {
             self.eventHub.emit('editorOpen', self.id);
         });
         container.on('destroy', function () {
+            self.eventHub.unsubscribe();
             self.eventHub.emit('editorClose', self.id);
         });
         container.setTitle(lang + " source #" + self.id);
