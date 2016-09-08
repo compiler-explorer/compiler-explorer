@@ -4,6 +4,8 @@ define(function (require) {
     var _ = require('underscore');
     var colour = require('colour');
     var Toggles = require('toggles')
+    var compiler = require('compiler');
+
     require('codemirror/mode/clike/clike');
     require('codemirror/mode/d/d');
     require('codemirror/mode/go/go');
@@ -100,17 +102,22 @@ define(function (require) {
         container.on('open', function () {
             self.eventHub.emit('editorOpen', self.id);
         });
-        container.on('close', function () {
+        container.on('destroy', function () {
             self.eventHub.emit('editorClose', self.id);
         });
-        container.setTitle(lang + " source");
+        container.setTitle(lang + " source #" + self.id);
         this.container.layoutManager.on('initialised', function () {
             // Once initialized, let everyone know what text we have.
             self.maybeEmitChange();
         });
 
+        this.eventHub.on('compilerOpen', this.onCompilerOpen, this);
         this.eventHub.on('compilerClose', this.onCompilerClose, this);
         this.eventHub.on('compileResult', this.onCompileResponse, this);
+
+        var compilerConfig = compiler.getComponent(this.id);
+        this.container.layoutManager.createDragSource(
+            this.domRoot.find('.btn.add-compiler'), compilerConfig);
     }
 
     Editor.prototype.maybeEmitChange = function (force) {
@@ -210,6 +217,11 @@ define(function (require) {
         this.numberUsedLines();
     };
 
+    Editor.prototype.onCompilerOpen = function () {
+        // On any compiler open, rebroadcast our state in case they need to know it.
+        this.maybeEmitChange(true);
+    };
+
     Editor.prototype.onCompileResponse = function (compilerId, compiler, result) {
         var output = (result.stdout || "") + (result.stderr || "");
         var self = this;
@@ -229,5 +241,14 @@ define(function (require) {
         this.numberUsedLines();
     };
 
-    return Editor;
+    return {
+        Editor: Editor,
+        getComponent: function (id) {
+            return {
+                type: 'component',
+                componentName: 'codeEditor',
+                componentState: {id: id}
+            };
+        }
+    };
 });

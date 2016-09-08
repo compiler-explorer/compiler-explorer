@@ -3,8 +3,8 @@ define(function (require) {
 
     var _ = require('underscore');
     var options = require('options');
-    var Editor = require('editor');
-    var Compiler = require('compiler');
+    var editor = require('editor');
+    var compiler = require('compiler');
 
     function Hub(layout, defaultSrc) {
         this.layout = layout;
@@ -12,16 +12,18 @@ define(function (require) {
         this.ids = {};
 
         var self = this;
-        layout.registerComponent('codeEditor', function (container, state) {
-            return self.codeEditorFactory(container, state);
-        });
-        layout.registerComponent('compilerOutput', function (container, state) {
-            return self.compilerOutputFactory(container, state);
-        });
+        layout.registerComponent(editor.getComponent().componentName,
+            function (container, state) {
+                return self.codeEditorFactory(container, state);
+            });
+        layout.registerComponent(compiler.getComponent().componentName,
+            function (container, state) {
+                return self.compilerOutputFactory(container, state);
+            });
         var removeId = function (id) {
             self.ids[id] = false;
         };
-        layout.eventHub.on('editorClose', removeId)
+        layout.eventHub.on('editorClose', removeId);
         layout.eventHub.on('compilerClose', removeId);
         layout.init();
     }
@@ -37,11 +39,11 @@ define(function (require) {
     };
 
     Hub.prototype.codeEditorFactory = function (container, state) {
-        return new Editor(this, state, container, options.language, this.defaultSrc);
+        return new editor.Editor(this, state, container, options.language, this.defaultSrc);
     };
 
     Hub.prototype.compilerOutputFactory = function (container, state) {
-        return new Compiler(this, container, state);
+        return new compiler.Compiler(this, container, state);
     };
 
     return Hub;

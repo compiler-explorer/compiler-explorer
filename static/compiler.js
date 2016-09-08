@@ -22,7 +22,7 @@ define(function (require) {
 
         this.id = state.id || hub.nextId();
         this.sourceEditorId = state.source || 1;
-        this.compiler = compilersById[state.compiler] || options.defaultCompiler;
+        this.compiler = compilersById[state.compiler] || compilersById[options.defaultCompiler];
         this.options = state.options || options.compileOptions;
         this.filters = new Toggles(this.domRoot.find(".filters"), state.filters);
         this.source = "";
@@ -69,13 +69,13 @@ define(function (require) {
         container.on('resize', resize);
         container.on('open', function () {
             self.eventHub.emit('compilerOpen', self.id);
-            resize();
         });
-        container.setTitle("Compiled");
-        container.on('close', function () {
+        this.updateTitle();
+        container.on('destroy', function () {
             self.eventHub.emit('compilerClose', self.id);
         });
         self.eventHub.on('editorChange', this.onEditorChange, this);
+        self.eventHub.on('editorClose', this.onEditorClose, this);
         self.eventHub.on('colours', this.onColours, this);
     }
 
@@ -193,20 +193,29 @@ define(function (require) {
     };
 
     Compiler.prototype.onEditorChange = function (editor, source) {
-        if (editor == this.sourceEditorId) {
+        if (editor === this.sourceEditorId) {
             this.source = source;
             this.compile();
         }
     };
+
     Compiler.prototype.onOptionsChange = function (options) {
         this.options = options;
         this.saveState();
         this.compile();
     };
+
     Compiler.prototype.onCompilerChange = function (value) {
         this.compiler = compilersById[value];  // TODO check validity?
         this.saveState();
         this.compile();
+        this.updateTitle();
+    };
+
+    Compiler.prototype.onEditorClose = function (editor) {
+        if (editor === this.sourceEditorId) {
+            this.container.close();
+        }
     };
 
     Compiler.prototype.onFilterChange = function () {
@@ -233,5 +242,18 @@ define(function (require) {
         }
     };
 
-    return Compiler;
+    Compiler.prototype.updateTitle = function() {
+        this.container.setTitle("#" + this.sourceEditorId + " with " + this.compiler.name);
+    };
+
+    return {
+        Compiler: Compiler,
+        getComponent: function (editorId) {
+            return {
+                type: 'component',
+                componentName: 'compilerOutput',
+                componentState: {source: editorId}
+            };
+        }
+    };
 });

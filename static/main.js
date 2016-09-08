@@ -27,6 +27,8 @@ define(function (require) {
     var _ = require('underscore');
     var $ = require('jquery');
     var GoldenLayout = require('goldenlayout');
+    var compiler = require('compiler');
+    var editor = require('editor');
     var Hub = require('hub');
 
     analytics.initialise();
@@ -37,35 +39,7 @@ define(function (require) {
     var safeLang = options.language.toLowerCase().replace(/[^a-z_]+/g, '');
     var defaultSrc = $('.template.lang.' + safeLang).text().trim();
     var defaultConfig = {
-        content: [{
-            type: 'row',
-            content: [
-                {
-                    type: 'component',
-                    componentName: 'compilerOutput',
-                    componentState: {source: 1}
-                },
-                {
-                    type: 'component',
-                    componentName: 'codeEditor',
-                    componentState: {id: 1}
-                },
-                {
-                    type: 'column', content: [
-                    {
-                        type: 'component',
-                        componentName: 'compilerOutput',
-                        componentState: {source: 1}
-                    },
-                    {
-                        type: 'component',
-                        componentName: 'compilerOutput',
-                        componentState: {source: 1}
-                    }
-                ]
-                }
-            ]
-        }]
+        content: [{type: 'row', content: [editor.getComponent(1), compiler.getComponent(1)]}]
     };
     var root = $("#root");
     // TODO: find old storage and convert
