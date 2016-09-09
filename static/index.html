@@ -80,7 +80,7 @@
             </div>
             <div class="btn-group btn-group-sm">
                 <button title="Load text from an example"
-                        class="btn btn-default btn-sm">
+                        class="btn btn-default btn-sm load-save">
                     <span class="glyphicon glyphicon-floppy-disk"></span>
                 </button>
                 <button title="Add a new compiler window (drag)"
@@ -130,6 +130,7 @@
             <span class="full-compiler-name"></span>
         </div>
     </div>
+
 <pre class="template lang c">// Type your code here, or load an example.
 int square(int num) {
     return num * num;
@@ -152,5 +153,29 @@ int square(int num) {
   return num * num;
 }</pre>
 </div>
+
+<div class="modal fade gl_keep" id="load-save">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title">Load and save editor text</h4>
+            </div>
+            <div class="modal-body">
+                <h5>Load from examples:</h5>
+                <ul class="examples">
+                    <li class="template example"><a href="#"></a></li>
+                </ul>
+            </div>
+            <!-- model-body -->
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
 </body>
 </html>

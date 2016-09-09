@@ -3,13 +3,16 @@ define(function (require) {
     var CodeMirror = require('codemirror');
     var _ = require('underscore');
     var colour = require('colour');
-    var Toggles = require('toggles')
+    var Toggles = require('toggles');
     var compiler = require('compiler');
+    var loadSaveLib = require('loadSave');
 
     require('codemirror/mode/clike/clike');
     require('codemirror/mode/d/d');
     require('codemirror/mode/go/go');
     require('codemirror/mode/rust/rust');
+
+    var loadSave = new loadSaveLib.LoadSave();
 
     function Editor(hub, state, container, lang, defaultSrc) {
         var self = this;
@@ -97,6 +100,13 @@ define(function (require) {
             self.editor.setSize(self.domRoot.width(), self.domRoot.height() - topBarHeight);
             self.editor.refresh();
         }
+
+        this.domRoot.find('.load-save').click(_.bind(function () {
+            loadSave.run(_.bind(function (text) {
+                this.editor.setValue(text);
+                this.maybeEmitChange();
+            }, this));
+        }, this));
 
         container.on('resize', resize);
         container.on('open', function () {
