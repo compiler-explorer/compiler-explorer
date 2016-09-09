@@ -13,6 +13,9 @@ define(function (require) {
     var compilers = options.compilers;
     var compilersById = _.object(_.pluck(compilers, "id"), compilers);
 
+    // TODO: filter filters by supportedness of compiler
+    // Hide binary on platforms that don't support it.
+
     function Compiler(hub, container, state) {
         var self = this;
         this.container = container;
