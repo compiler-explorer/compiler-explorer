@@ -161,3 +161,18 @@ span.icon {
     color: #0000b0;
     font-weight: bold;
 }
+
+.bottom-bar {
+    overflow-x: hidden;
+    width: auto;
+    padding-left: 8px;
+    padding-right: 8px;
+}
+
+.status.error {
+    color: #d81e1b;
+}
+
+.status.warning {
+    color: #d7d800;
+}

@@ -61,7 +61,8 @@ define(function (require) {
 
         function resize() {
             var topBarHeight = self.domRoot.find(".top-bar").outerHeight(true);
-            outputEditor.setSize(self.domRoot.width(), self.domRoot.height() - topBarHeight);
+            var bottomBarHeight = self.domRoot.find(".bottom-bar").outerHeight(true);
+            outputEditor.setSize(self.domRoot.width(), self.domRoot.height() - topBarHeight - bottomBarHeight);
             outputEditor.refresh();
         }
 
@@ -78,7 +79,7 @@ define(function (require) {
         self.eventHub.on('editorChange', this.onEditorChange, this);
         self.eventHub.on('editorClose', this.onEditorClose, this);
         self.eventHub.on('colours', this.onColours, this);
-        this.updateTitle();
+        this.updateCompilerName();
     }
 
     Compiler.prototype.compile = function (fromEditor) {
@@ -174,7 +175,7 @@ define(function (require) {
     };
 
     function errorResult(text) {
-        return {asm: fakeAsm(text)};
+        return {asm: fakeAsm(text), code: -1, stdout: "", stderr: ""};
     }
 
     function fakeAsm(text) {
@@ -194,6 +195,13 @@ define(function (require) {
                 this.outputEditor.setOption('gutters', ['CodeMirror-linenumbers']);
             }
         }, this));
+        var status = this.domRoot.find(".status");
+        var allText = result.stdout + result.stderr;
+        var failed = result.code !== 0;
+        var warns = !failed && !!allText;
+        status.toggleClass('error', failed);
+        status.toggleClass('warning', warns);
+        status.attr('title', allText);
         this.eventHub.emit('compileResult', this.id, this.compiler, result);
     };
 
@@ -214,7 +222,7 @@ define(function (require) {
         this.compiler = compilersById[value];  // TODO check validity?
         this.saveState();
         this.compile();
-        this.updateTitle();
+        this.updateCompilerName();
     };
 
     Compiler.prototype.onEditorClose = function (editor) {
@@ -247,8 +255,9 @@ define(function (require) {
         }
     };
 
-    Compiler.prototype.updateTitle = function () {
+    Compiler.prototype.updateCompilerName = function () {
         this.container.setTitle("#" + this.sourceEditorId + " with " + this.compiler.name);
+        this.domRoot.find(".full-compiler-name").text(this.compiler.version);
     };
 
     return {
