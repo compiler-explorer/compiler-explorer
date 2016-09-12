@@ -85,16 +85,19 @@ define(function (require) {
         this.updateCompilerName();
     }
 
-    Compiler.prototype.compile = function (fromEditor) {
+    Compiler.prototype.compile = function () {
         var self = this;
-        if (!this.source || !this.compiler) return;  // TODO blank out the output?
         var request = {
-            fromEditor: fromEditor,
-            source: this.source,
-            compiler: this.compiler.id,
+            source: this.source || "",
+            compiler: this.compiler ? this.compiler.id : "",
             options: this.options,
             filters: this.filters.get()
         };
+
+        if (!this.compiler) {
+            this.onCompileResponse(request, errorResult("Please select a compiler"));
+            return;
+        }
 
         var cacheableRequest = JSON.stringify(request);
         if (cacheableRequest === this.lastRequestRespondedTo) return;
@@ -241,7 +244,7 @@ define(function (require) {
 
     Compiler.prototype.saveState = function () {
         this.container.setState({
-            compiler: this.compiler.id,
+            compiler: this.compiler ? this.compiler.id : "",
             options: this.options,
             source: this.editor,
             filters: this.filters.get()
@@ -259,8 +262,10 @@ define(function (require) {
     };
 
     Compiler.prototype.updateCompilerName = function () {
-        this.container.setTitle("#" + this.sourceEditorId + " with " + this.compiler.name);
-        this.domRoot.find(".full-compiler-name").text(this.compiler.version);
+        var compilerName = this.compiler ? this.compiler.name : "no compiler set";
+        var compilerVersion = this.compiler ? this.compiler.version : "";
+        this.container.setTitle("#" + this.sourceEditorId + " with " + compilerName);
+        this.domRoot.find(".full-compiler-name").text(compilerVersion);
     };
 
     return {
