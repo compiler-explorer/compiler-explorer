@@ -152,7 +152,6 @@ define(function (require) {
 
     Editor.prototype.onOptionsChange = function (before, after) {
         this.updateState();
-        // TODO: bug with options and filters: initial click seems to get lost!
         // TODO: bug when:
         // * Turn off auto.
         // * edit code
