@@ -176,3 +176,7 @@ span.icon {
 .status.warning {
     color: #d7d800;
 }
+.navbar {
+    margin-bottom: 2px;
+    border-radius: 0;
+}
