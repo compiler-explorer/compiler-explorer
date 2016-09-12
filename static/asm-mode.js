@@ -61,9 +61,7 @@ define(function (require) {
                     return "keyword";
                 }
                 if (stream.eatSpace()) return null;
-                if (stream.match(x86_32regName)
-                    || stream.match(x86_64regName)
-                    || stream.match(x86_xregName)) {
+                if (stream.match(x86_32regName) || stream.match(x86_64regName) || stream.match(x86_xregName)) {
                     return "variable-3";
                 }
                 if (stream.match(x86_keywords)) return "keyword";
