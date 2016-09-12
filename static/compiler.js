@@ -5,16 +5,13 @@ define(function (require) {
     var _ = require('underscore');
     var ga = require('analytics').ga;
     var colour = require('colour');
-    var Toggles = require('toggles')
+    var Toggles = require('toggles');
     require('asm-mode');
     require('selectize');
 
     var options = require('options');
     var compilers = options.compilers;
     var compilersById = _.object(_.pluck(compilers, "id"), compilers);
-
-    // TODO: filter filters by supportedness of compiler
-    // Hide binary on platforms that don't support it.
 
     function Compiler(hub, container, state) {
         var self = this;
@@ -53,6 +50,9 @@ define(function (require) {
             .on("change", optionsChange)
             .on("keyup", optionsChange);
 
+        // Hide the binary option if the global options has it disabled.
+        this.domRoot.find("[data-bind='binary']").toggle(options.supportsBinary);
+
         var outputEditor = CodeMirror.fromTextArea(this.domRoot.find("textarea")[0], {
             lineNumbers: true,
             mode: "text/x-asm",
@@ -83,7 +83,19 @@ define(function (require) {
         self.eventHub.on('editorClose', this.onEditorClose, this);
         self.eventHub.on('colours', this.onColours, this);
         this.updateCompilerName();
+        this.updateButtons();
     }
+
+    // Gets the filters that will actually be used (accounting for issues with binary
+    // mode etc).
+    Compiler.prototype.getEffectiveFilters = function() {
+        if (!this.compiler) return {};
+        var filters = this.filters.get();
+        if (filters.binary && !this.compiler.supportsBinary) {
+            delete filters.binary;
+        }
+        return filters;
+    };
 
     Compiler.prototype.compile = function () {
         var self = this;
@@ -91,7 +103,7 @@ define(function (require) {
             source: this.source || "",
             compiler: this.compiler ? this.compiler.id : "",
             options: this.options,
-            filters: this.filters.get()
+            filters: this.getEffectiveFilters()
         };
 
         if (!this.compiler) {
@@ -218,16 +230,32 @@ define(function (require) {
         }
     };
 
+    Compiler.prototype.updateButtons = function () {
+        if (!this.compiler) return;
+        var filters = this.getEffectiveFilters();
+        // We can support intel output if the compiler supports it, or if we're compiling
+        // to binary (as we can disassemble it however we like).
+        var intelAsm = this.compiler.intelAsm || filters.binary;
+        this.domRoot.find("[data-bind='intel']").toggleClass("disabled", !intelAsm);
+        // Disable binary support on compilers that don't work with it.
+        this.domRoot.find("[data-bind='binary']")
+            .toggleClass("disabled", !this.compiler.supportsBinary);
+        // Disable any of the options which don't make sense in binary mode
+        this.domRoot.find('.nonbinary').toggleClass("disabled", !!filters.binary);
+    };
+
     Compiler.prototype.onOptionsChange = function (options) {
         this.options = options;
         this.saveState();
         this.compile();
+        this.updateButtons();
     };
 
     Compiler.prototype.onCompilerChange = function (value) {
-        this.compiler = compilersById[value];  // TODO check validity?
+        this.compiler = compilersById[value];
         this.saveState();
         this.compile();
+        this.updateButtons();
         this.updateCompilerName();
     };
 
@@ -240,6 +268,7 @@ define(function (require) {
     Compiler.prototype.onFilterChange = function () {
         this.saveState();
         this.compile();
+        this.updateButtons();
     };
 
     Compiler.prototype.saveState = function () {
@@ -247,7 +276,7 @@ define(function (require) {
             compiler: this.compiler ? this.compiler.id : "",
             options: this.options,
             source: this.editor,
-            filters: this.filters.get()
+            filters: this.filters.get()  // NB must *not* be effective filters
         });
     };
 
