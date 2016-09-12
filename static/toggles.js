@@ -7,7 +7,8 @@ define(function (require) {
     function get(domRoot) {
         var result = {};
         _.each(domRoot.find(".btn.active"), function (a) {
-            result[$(a).data().bind] = true;
+            var obj = $(a);
+            result[obj.data().bind] = true;
         });
         return result;
     }
@@ -27,11 +28,12 @@ define(function (require) {
     _.extend(Toggles.prototype, EventEmitter.prototype);
 
     Toggles.prototype.get = function () {
-        return this.state;
+        return _.clone(this.state);
     };
 
     Toggles.prototype.onClick = function (event) {
         var button = $(event.currentTarget);
+        if (button.hasClass("disabled")) return;
         button.toggleClass('active');
         var before = this.state;
         var after = this.state = get(this.domRoot);
