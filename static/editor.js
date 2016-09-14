@@ -78,8 +78,8 @@ define(function (require) {
             mode: cmMode
         });
 
-        if (state.src) {
-            this.editor.setValue(state.src);
+        if (state.source) {
+            this.editor.setValue(state.source);
         } else if (defaultSrc) {
             this.editor.setValue(defaultSrc);
         }
@@ -166,7 +166,7 @@ define(function (require) {
     Editor.prototype.updateState = function () {
         this.container.setState({
             id: this.id,
-            src: this.getSource(),
+            source: this.getSource(),
             options: this.options.get()
         });
     };
@@ -283,6 +283,14 @@ define(function (require) {
                 type: 'component',
                 componentName: 'codeEditor',
                 componentState: {id: id},
+                isClosable: false
+            };
+        },
+        getComponentWith: function (id, source, options) {
+            return {
+                type: 'component',
+                componentName: 'codeEditor',
+                componentState: {id: id, source: source, options: options},
                 isClosable: false
             };
         }

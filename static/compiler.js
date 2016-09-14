@@ -113,7 +113,7 @@ define(function (require) {
 
     // Gets the filters that will actually be used (accounting for issues with binary
     // mode etc).
-    Compiler.prototype.getEffectiveFilters = function() {
+    Compiler.prototype.getEffectiveFilters = function () {
         if (!this.compiler) return {};
         var filters = this.filters.get();
         if (filters.binary && !this.compiler.supportsBinary) {
@@ -329,6 +329,18 @@ define(function (require) {
                 type: 'component',
                 componentName: 'compilerOutput',
                 componentState: {source: editorId}
+            };
+        },
+        getComponentWith: function (editorId, filters, options, compilerId) {
+            return {
+                type: 'component',
+                componentName: 'compilerOutput',
+                componentState: {
+                    source: editorId,
+                    filters: filters,
+                    options: options,
+                    compiler: compilerId
+                }
             };
         }
     };

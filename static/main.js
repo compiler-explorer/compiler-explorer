@@ -32,7 +32,8 @@ require.config({
         selectize: 'ext/selectize/dist/js/selectize.min',
         sifter: 'ext/sifter/sifter.min',
         microplugin: 'ext/microplugin/src/microplugin',
-        events: 'ext/eventEmitter/EventEmitter'
+        events: 'ext/eventEmitter/EventEmitter',
+        lzstring: 'ext/lz-string/libs/lz-string'
     },
     packages: [{
         name: "codemirror",
@@ -54,6 +55,7 @@ define(function (require) {
     var GoldenLayout = require('goldenlayout');
     var compiler = require('compiler');
     var editor = require('editor');
+    var url = require('url');
     var Hub = require('hub');
 
     analytics.initialise();
@@ -68,9 +70,16 @@ define(function (require) {
         content: [{type: 'row', content: [editor.getComponent(1), compiler.getComponent(1)]}]
     };
     var root = $("#root");
-    // TODO: find old storage and convert
-    var savedState = localStorage.getItem('gl');
-    var config = savedState !== null ? JSON.parse(savedState) : defaultConfig;
+    var config = url.deserialiseState(window.location.hash.substr(1));
+    $(window).bind('hashchange', function () {
+        window.location.reload();  // punt on hash events and just reload the page
+    });
+
+    if (!config) {
+        // TODO: find old storage and convert
+        var savedState = localStorage.getItem('gl');
+        config = savedState !== null ? JSON.parse(savedState) : defaultConfig;
+    }
 
     var layout = new GoldenLayout(config, root);
     layout.on('stateChanged', function () {
