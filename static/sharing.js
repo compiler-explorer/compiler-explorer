@@ -35,9 +35,5 @@ define(function (require, exports) {
             if (!options.githubEnabled)
                 $('.if-github-enabled').remove();
         });
-
-        // TODO: url shortening service choice here
-        // was in analytics:\
-        // create_script_element('urlshortener', 'urlshorten-' + options.urlshortener + ".js");
     };
 });

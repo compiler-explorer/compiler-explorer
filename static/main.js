@@ -48,6 +48,7 @@ require.config({
 });
 
 define(function (require) {
+    "use strict";
     require('bootstrap');
     var analytics = require('analytics');
     var sharing = require('sharing');
@@ -59,12 +60,14 @@ define(function (require) {
     var url = require('url');
     var clipboard = require('clipboard');
     var Hub = require('hub');
+    var shortenURL = require('urlshorten-google');
 
     analytics.initialise();
     sharing.initialise();
 
     var options = require('options');
     $('.language-name').text(options.language);
+
     var safeLang = options.language.toLowerCase().replace(/[^a-z_]+/g, '');
     var defaultSrc = $('.template.lang.' + safeLang).text().trim();
     var defaultConfig = {
@@ -89,7 +92,6 @@ define(function (require) {
         config = savedState !== null ? JSON.parse(savedState) : defaultConfig;
     }
 
-    console.log(config);
     var layout = new GoldenLayout(config, root);
     layout.on('stateChanged', function () {
         var state = JSON.stringify(layout.toConfig());
@@ -109,39 +111,48 @@ define(function (require) {
 
     new clipboard('.btn.clippy');
 
-    // TODO: promises?
+    function initPopover(getLink, provider) {
+        var html = $('.urls.template').html();
+
+        getLink.popover({
+            container: 'body',
+            content: html,
+            html: true,
+            placement: 'bottom',
+            trigger: 'manual'
+        }).click(function () {
+            getLink.popover('show');
+        }).on('inserted.bs.popover', function () {
+            provider(function (url) {
+                $(".permalink:visible").val(url);
+            });
+        });
+
+        // Dismiss the popover on escape.
+        $(document).on('keyup.editable', function (e) {
+            if (e.which === 27) {
+                getLink.popover("hide");
+            }
+        });
+
+        // Dismiss on any click that isn't either on the opening element, or inside
+        // the popover.
+        $(document).on('click.editable', function (e) {
+            var target = $(e.target);
+            if (!target.is(getLink) && target.closest('.popover').length === 0)
+                getLink.popover("hide");
+        });
+    }
+
     function permalink() {
         var config = layout.toConfig();
         return window.location.href.split('#')[0] + '#' + url.serialiseState(config);
     }
 
-    function popover() {
-        var elem = $(".urls.template").clone();
-        _.defer(function () {
-            $(".permalink:visible").val(permalink());
-        });
-        return elem.html();
-    }
-
-    var getLink = $("#get-link").popover({
-        container: 'body',
-        content: popover,
-        html: true,
-        placement: 'bottom',
-        trigger: 'manual'
-    }).click(function () {
-        getLink.popover('show');
+    initPopover($("#get-full-link"), function (done) {
+        done(permalink)
     });
-
-    $(document).on('keyup.editable', function (e) {
-        if (e.which === 27) {
-            getLink.popover("hide");
-        }
-    });
-
-    $(document).on('click.editable', function (e) {
-        var target = $(e.target);
-        if (!target.is(getLink) && target.closest('.popover').length === 0)
-            getLink.popover("hide");
+    initPopover($("#get-short-link"), function (done) {
+        shortenURL(permalink(), done);
     });
 });
