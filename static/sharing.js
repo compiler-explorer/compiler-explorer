@@ -34,6 +34,8 @@ define(function (require, exports) {
 
             if (!options.githubEnabled)
                 $('.if-github-enabled').remove();
+            if (!options.gapiKey)
+                $('#get-short-link').remove();
         });
     };
 });

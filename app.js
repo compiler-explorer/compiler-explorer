@@ -135,7 +135,7 @@ function clientOptionsHandler(compilers, fileSources) {
         googleAnalyticsEnabled: gccProps('clientGoogleAnalyticsEnabled', false),
         sharingEnabled: gccProps('clientSharingEnabled', true),
         githubEnabled: gccProps('clientGitHubRibbonEnabled', true),
-        gapiKey: gccProps('google-api-key', 'AIzaSyAaz35KJv8DA0ABoime0fEIh32NmbyYbcQ'),
+        gapiKey: gccProps('google-api-key', ''),
         googleShortLinkRewrite: gccProps('googleShortLinkRewrite', '').split('|'),
         defaultSource: gccProps('defaultSource', ''),
         language: language,
