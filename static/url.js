@@ -25,6 +25,7 @@
 
 define(function (require) {
     "use strict";
+    var GoldenLayout = require('goldenlayout');
     var rison = require('rison');
     var $ = require('jquery');
     var editor = require('editor');
@@ -62,8 +63,9 @@ define(function (require) {
             /* falls through */
             case 3:
                 state = convertOldState(state);
-                break;
+                break;  // no fall through
             case 4:
+                state = GoldenLayout.unminifyConfig(state);
                 break;
             default:
                 return false;
@@ -71,12 +73,24 @@ define(function (require) {
         return state;
     }
 
+    function risonify(obj) {
+        return rison.quote(rison.encode_object(obj));
+    }
+
+    function unrisonify(text) {
+        return rison.decode_object(decodeURIComponent(text.replace(/\+/g, '%20')));
+    }
+
     function deserialiseState(stateText) {
         var state;
         try {
-            state = rison.decode_object(decodeURIComponent(stateText.replace(/\+/g, '%20')));
+            state = unrisonify(stateText);
+            if (state && state.z) {
+                state = unrisonify(lzstring.decompressFromBase64(state.z));
+            }
         } catch (ignored) {
         }
+
 
         if (!state) {
             try {
@@ -88,10 +102,16 @@ define(function (require) {
     }
 
     function serialiseState(stateText) {
-        // convert arrays to objects
-        // filter out anything barring content from non-leaves
-        // filter out anything barring type, componentName, componentState from leaves
-        // compress the whole thing if savings made?
+        var ctx = GoldenLayout.minifyConfig({content: stateText.content});
+        ctx.version = 4;
+        var uncompressed = risonify(ctx);
+        var compressed = risonify({z: lzstring.compressToBase64(uncompressed)});
+        var MinimalSavings = 0.20;  // at least this ratio smaller
+        if (compressed.length < uncompressed.length * (1.0 - MinimalSavings)) {
+            return compressed;
+        } else {
+            return uncompressed;
+        }
     }
 
     return {

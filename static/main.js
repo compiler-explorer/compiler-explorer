@@ -33,7 +33,8 @@ require.config({
         sifter: 'ext/sifter/sifter.min',
         microplugin: 'ext/microplugin/src/microplugin',
         events: 'ext/eventEmitter/EventEmitter',
-        lzstring: 'ext/lz-string/libs/lz-string'
+        lzstring: 'ext/lz-string/libs/lz-string',
+        clipboard: 'ext/clipboard/dist/clipboard'
     },
     packages: [{
         name: "codemirror",
@@ -56,6 +57,7 @@ define(function (require) {
     var compiler = require('compiler');
     var editor = require('editor');
     var url = require('url');
+    var clipboard = require('clipboard');
     var Hub = require('hub');
 
     analytics.initialise();
@@ -71,8 +73,14 @@ define(function (require) {
     };
     var root = $("#root");
     var config = url.deserialiseState(window.location.hash.substr(1));
+    if (config) {
+        // replace anything in the default config with that from the hash
+        config = _.extend(defaultConfig, config);
+    }
     $(window).bind('hashchange', function () {
-        window.location.reload();  // punt on hash events and just reload the page
+        // punt on hash events and just reload the page if there's a hash
+        if (window.location.hash.substr(1))
+            window.location.reload();
     });
 
     if (!config) {
@@ -81,6 +89,7 @@ define(function (require) {
         config = savedState !== null ? JSON.parse(savedState) : defaultConfig;
     }
 
+    console.log(config);
     var layout = new GoldenLayout(config, root);
     layout.on('stateChanged', function () {
         var state = JSON.stringify(layout.toConfig());
@@ -97,4 +106,42 @@ define(function (require) {
 
     $(window).resize(sizeRoot);
     sizeRoot();
+
+    new clipboard('.btn.clippy');
+
+    // TODO: promises?
+    function permalink() {
+        var config = layout.toConfig();
+        return window.location.href.split('#')[0] + '#' + url.serialiseState(config);
+    }
+
+    function popover() {
+        var elem = $(".urls.template").clone();
+        _.defer(function () {
+            $(".permalink:visible").val(permalink());
+        });
+        return elem.html();
+    }
+
+    var getLink = $("#get-link").popover({
+        container: 'body',
+        content: popover,
+        html: true,
+        placement: 'bottom',
+        trigger: 'manual'
+    }).click(function () {
+        getLink.popover('show');
+    });
+
+    $(document).on('keyup.editable', function (e) {
+        if (e.which === 27) {
+            getLink.popover("hide");
+        }
+    });
+
+    $(document).on('click.editable', function (e) {
+        var target = $(e.target);
+        if (!target.is(getLink) && target.closest('.popover').length === 0)
+            getLink.popover("hide");
+    });
 });

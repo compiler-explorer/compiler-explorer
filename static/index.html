@@ -15,15 +15,15 @@
     <!--<script src="ext/clipboard.min.js"></script>x-->
 </head>
 <body>
+
 <div class="navbar navbar-inverse">
     <div class="container-fluid">
         <div class="navbar-header">
             <a class="navbar-brand" href="#">Compiler Explorer - <span class="language-name"></span></a>
         </div>
-        <div class="navbar-collapse collapse">
+        <li class="navbar-collapse collapse">
             <ul class="nav navbar-nav navbar-left">
-                <li><a href="#">Full link</a></li>
-                <li><a href="#">Short link</a></li>
+                <li><a href="#" id="get-link">Get link</a></li>
             </ul>
             <ul class="nav navbar-nav navbar-right">
                 <li class="if-github-enabled">
@@ -57,7 +57,7 @@
                     </ul>
                 </li>
             </ul>
-        </div>
+        </li>
     </div>
 </div>
 
@@ -130,7 +130,23 @@
         </div>
     </div>
 
-<pre class="template lang c">// Type your code here, or load an example.
+    <div class="urls template">
+        <div class="input-group">
+            <input type="text"
+                   class="form-control input-sm permalink"
+                   placeholder="Loading"
+                   readonly size="1024">
+            <span class="input-group-btn">
+                <button class="btn btn-sm btn-default clippy" type="button"
+                        data-clipboard-target=".popover .permalink"
+                        title="Copy to clipboard">
+                    <img src="clippy.svg" class="clippy" width="13px" alt="Copy to clipboard">
+                </button>
+            </span>
+        </div>
+    </div>
+
+    <pre class="template lang c">// Type your code here, or load an example.
 int square(int num) {
     return num * num;
 }</pre>
