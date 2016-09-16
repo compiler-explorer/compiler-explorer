@@ -35,6 +35,7 @@ $(NODE_MODULES): package.json
 
 BOWER_MODULES=.bower-updated
 $(BOWER_MODULES): bower.json $(NODE_MODULES)
+	if ! test -f "${BOWER_MODULES}"; then rm -rf static/ext; fi
 	$(NODE) ./node_modules/bower/bin/bower install
 	@touch $@
 
