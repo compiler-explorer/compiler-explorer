@@ -62,7 +62,7 @@ define(function (require) {
             labelField: 'name',
             searchField: ['name'],
             options: compilers,
-            items: [this.compiler.id],
+            items: this.compiler ? [this.compiler.id] : [],
             openOnFocus: true
         }).on('change', function () {
             self.onCompilerChange($(this).val());
