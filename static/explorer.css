@@ -161,32 +161,3 @@ span.icon {
     color: #0000b0;
     font-weight: bold;
 }
-
-.bottom-bar {
-    overflow-x: hidden;
-    width: auto;
-    padding-left: 8px;
-    padding-right: 8px;
-}
-
-.status.error {
-    color: #d81e1b;
-}
-
-.status.warning {
-    color: #d7d800;
-}
-
-.navbar {
-    margin-bottom: 2px;
-    border-radius: 0;
-}
-
-/* Override the cursor that Bootstrap defines for readonly inputs, as it looks
- * very odd on IE (and 'text' makes it clearer that it's copyable everywhere).
- */
-.permalink {
-    cursor: text;
-    display: inline;
-    width: 100%;
-}
