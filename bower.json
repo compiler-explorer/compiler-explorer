@@ -19,7 +19,7 @@
     "codemirror": "CodeMirror#^5.17.0",
     "requirejs": "^2.2.0",
     "underscore": "^1.8.3",
-    "mg-golden-layout": "^1.5.2",
+    "mg-golden-layout": "^1.5.3",
     "jquery": "^3.1.0",
     "bootstrap": "^3.3.7",
     "selectize": "^0.12.2",
