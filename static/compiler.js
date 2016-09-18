@@ -31,6 +31,7 @@ define(function (require) {
     var ga = require('analytics').ga;
     var colour = require('colour');
     var Toggles = require('toggles');
+    var FontScale = require('fontscale');
     require('asm-mode');
     require('selectize');
 
@@ -86,6 +87,9 @@ define(function (require) {
             lineWrapping: true
         });
         this.outputEditor = outputEditor;
+
+        this.fontScale = new FontScale(this.domRoot, state);
+        this.fontScale.on('change', _.bind(this.saveState,  this));
 
         function resize() {
             var topBarHeight = self.domRoot.find(".top-bar").outerHeight(true);
@@ -297,12 +301,14 @@ define(function (require) {
     };
 
     Compiler.prototype.saveState = function () {
-        this.container.setState({
+        var state = {
             compiler: this.compiler ? this.compiler.id : "",
             options: this.options,
             source: this.editor,
             filters: this.filters.get()  // NB must *not* be effective filters
-        });
+        };
+        this.fontScale.addState(state);
+        this.container.setState(state);
     };
 
     Compiler.prototype.onColours = function (editor, colours) {

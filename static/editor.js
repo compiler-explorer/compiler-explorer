@@ -31,6 +31,7 @@ define(function (require) {
     var Toggles = require('toggles');
     var compiler = require('compiler');
     var loadSaveLib = require('loadSave');
+    var FontScale = require('fontscale');
 
     require('codemirror/mode/clike/clike');
     require('codemirror/mode/d/d');
@@ -77,6 +78,9 @@ define(function (require) {
             useCPP: true,
             mode: cmMode
         });
+
+        this.fontScale = new FontScale(this.domRoot, state);
+        this.fontScale.on('change', _.bind(this.updateState,  this));
 
         if (state.source) {
             this.editor.setValue(state.source);
@@ -129,6 +133,7 @@ define(function (require) {
         this.domRoot.find('.load-save').click(_.bind(function () {
             loadSave.run(_.bind(function (text) {
                 this.editor.setValue(text);
+                this.updateState();
                 this.maybeEmitChange();
             }, this));
         }, this));
@@ -164,11 +169,13 @@ define(function (require) {
     };
 
     Editor.prototype.updateState = function () {
-        this.container.setState({
+        var state = {
             id: this.id,
             source: this.getSource(),
             options: this.options.get()
-        });
+        };
+        this.fontScale.addState(state);
+        this.container.setState(state);
     };
 
     Editor.prototype.getSource = function () {

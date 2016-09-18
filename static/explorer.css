@@ -161,3 +161,15 @@ span.icon {
     color: #0000b0;
     font-weight: bold;
 }
+
+.decrease-font-size span.glyphicon {
+    font-size: 70%;
+}
+
+.reset-font-size span.glyphicon {
+    font-size: 90%;
+}
+
+.increase-font-size span.glyphicon {
+    font-size: 110%;
+}
