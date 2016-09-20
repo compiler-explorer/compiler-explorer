@@ -80,7 +80,7 @@ define(function (require) {
         });
 
         this.fontScale = new FontScale(this.domRoot, state);
-        this.fontScale.on('change', _.bind(this.updateState,  this));
+        this.fontScale.on('change', _.bind(this.updateState, this));
 
         if (state.source) {
             this.editor.setValue(state.source);
@@ -157,8 +157,22 @@ define(function (require) {
         this.eventHub.on('compileResult', this.onCompileResponse, this);
 
         var compilerConfig = compiler.getComponent(this.id);
+
+        function findParentRowOrColumn(elem) {
+            while (elem) {
+                if (elem.isRow || elem.isColumn) return elem;
+                elem = elem.parent;
+            }
+            return elem;
+        }
+
         this.container.layoutManager.createDragSource(
             this.domRoot.find('.btn.add-compiler'), compilerConfig);
+        this.domRoot.find('.btn.add-compiler').click(_.bind(function () {
+            var insertPoint = findParentRowOrColumn(this.container)
+                || this.container.layoutManager.root.contentItems[0];
+            insertPoint.addChild(copmilerConfig);
+        }, this));
     }
 
     Editor.prototype.maybeEmitChange = function (force) {
@@ -290,6 +304,9 @@ define(function (require) {
                 type: 'component',
                 componentName: 'codeEditor',
                 componentState: {id: id},
+                // TODO: making this non closeable breaks placement
+                // See: https://github.com/deepstreamIO/golden-layout/issues/17
+                // https://github.com/deepstreamIO/golden-layout/issues/60 and others
                 isClosable: false
             };
         },
