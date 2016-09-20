@@ -171,7 +171,7 @@ define(function (require) {
         this.domRoot.find('.btn.add-compiler').click(_.bind(function () {
             var insertPoint = findParentRowOrColumn(this.container)
                 || this.container.layoutManager.root.contentItems[0];
-            insertPoint.addChild(copmilerConfig);
+            insertPoint.addChild(compilerConfig);
         }, this));
     }
 
