@@ -57,14 +57,13 @@ define(function (require) {
 
         this.debouncedAjax = _.debounce($.ajax, 250);
 
-        this.domRoot.find(".compiler").selectize({
+        this.domRoot.find(".compiler-picker").selectize({
             sortField: 'name',
             valueField: 'id',
             labelField: 'name',
             searchField: ['name'],
             options: compilers,
-            items: this.compiler ? [this.compiler.id] : [],
-            openOnFocus: true
+            items: this.compiler ? [this.compiler.id] : []
         }).on('change', function () {
             self.onCompilerChange($(this).val());
         });
