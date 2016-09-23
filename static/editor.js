@@ -221,7 +221,8 @@ define(function (require) {
         var clazz = "error";
         if (text.match(/^warning/)) clazz = "warning";
         if (text.match(/^note/)) clazz = "note";
-        var node = $('<div class="' + clazz + ' inline-msg"><span class="icon">!!</span><span class="compiler">: </span><span class="msg"></span></div>');
+        var node = $('.template .inline-msg').clone();
+        node.find('.icon').addClass(clazz);
         node.find(".msg").text(text);
         node.find(".compiler").text(compiler);
         return node[0];

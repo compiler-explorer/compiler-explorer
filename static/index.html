@@ -64,7 +64,7 @@
 <div id="root"></div>
 
 <div class="gl_keep template">
-    <div id="codeEditor" class="template">
+    <div id="codeEditor">
         <div class="top-bar btn-toolbar" role="toolbar">
             <div class="btn-group btn-group-sm options" role="group">
                 <button title="Colourise lines so one can see how the source maps to the output"
@@ -102,7 +102,7 @@
         <textarea>// Type your code here, or load an example.</textarea>
     </div>
 
-    <div id="compiler" class="template">
+    <div id="compiler">
         <div class="top-bar">
             <table>
                 <tr>
@@ -156,7 +156,7 @@
         </div>
     </div>
 
-    <div class="urls template">
+    <div class="urls">
         <div class="input-group">
             <input type="text"
                    class="form-control input-sm permalink"
@@ -172,15 +172,19 @@
         </div>
     </div>
 
+    <div class="inline-msg">
+        <span class="compiler"></span><span class="icon">!!</span><span class="msg"></span>
+    </div>
+
     <pre class="template lang c">// Type your code here, or load an example.
 int square(int num) {
     return num * num;
 }</pre>
-<pre class="template lang rust">// Type your code here, or load an example.
+    <pre class="template lang rust">// Type your code here, or load an example.
 pub fn square(num: i32) -&gt; i32 {
   num * num
 }</pre>
-<pre class="template lang go">// Type your code here, or load an example.
+    <pre class="template lang go">// Type your code here, or load an example.
 // Your function name should start with a capital letter.
 package main
 
@@ -189,7 +193,7 @@ func Square(x int) int {
 }
 
 func main() {}</pre>
-<pre class="template lang d">// Type your code here, or load an example.
+    <pre class="template lang d">// Type your code here, or load an example.
 int square(int num) {
   return num * num;
 }</pre>

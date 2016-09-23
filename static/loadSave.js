@@ -34,7 +34,7 @@ define(function (require) {
         $.getJSON('/source/builtin/list', _.bind(function (list) {
             this.modal.find('.example:visible').remove();
             var examples = this.modal.find('.examples');
-            var template = examples.find('.example.template');
+            var template = examples.find('.template.example');
             _.each(list, _.bind(function (elem) {
                 template
                     .clone()

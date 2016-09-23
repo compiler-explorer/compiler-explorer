@@ -69,7 +69,7 @@ define(function (require) {
     $('.language-name').text(options.language);
 
     var safeLang = options.language.toLowerCase().replace(/[^a-z_]+/g, '');
-    var defaultSrc = $('.template.lang.' + safeLang).text().trim();
+    var defaultSrc = $('.template .lang.' + safeLang).text().trim();
     var defaultConfig = {
         settings: {showPopoutIcon: false},
         content: [{type: 'row', content: [editor.getComponent(1), compiler.getComponent(1)]}]
@@ -112,7 +112,7 @@ define(function (require) {
     new clipboard('.btn.clippy');
 
     function initPopover(getLink, provider) {
-        var html = $('.urls.template').html();
+        var html = $('.template .urls').html();
 
         getLink.popover({
             container: 'body',
