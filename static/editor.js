@@ -124,10 +124,14 @@ define(function (require) {
             self.updateColours(colours);
         }, ColourDebounceMs);
 
+        function refresh() {
+            self.editor.refresh();
+        }
+
         function resize() {
             var topBarHeight = self.domRoot.find(".top-bar").outerHeight(true);
             self.editor.setSize(self.domRoot.width(), self.domRoot.height() - topBarHeight);
-            self.editor.refresh();
+            refresh();
         }
 
         this.domRoot.find('.load-save').click(_.bind(function () {
@@ -139,6 +143,7 @@ define(function (require) {
         }, this));
 
         container.on('resize', resize);
+        container.on('shown', refresh);
         container.on('open', function () {
             self.eventHub.emit('editorOpen', self.id);
         });

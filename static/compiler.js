@@ -88,13 +88,17 @@ define(function (require) {
         this.outputEditor = outputEditor;
 
         this.fontScale = new FontScale(this.domRoot, state);
-        this.fontScale.on('change', _.bind(this.saveState,  this));
+        this.fontScale.on('change', _.bind(this.saveState, this));
+
+        function refresh() {
+            outputEditor.refresh();
+        }
 
         function resize() {
             var topBarHeight = self.domRoot.find(".top-bar").outerHeight(true);
             var bottomBarHeight = self.domRoot.find(".bottom-bar").outerHeight(true);
             outputEditor.setSize(self.domRoot.width(), self.domRoot.height() - topBarHeight - bottomBarHeight);
-            outputEditor.refresh();
+            refresh();
         }
 
         this.filters.on('change', _.bind(this.onFilterChange, this));
@@ -104,6 +108,7 @@ define(function (require) {
             self.eventHub.emit('compilerClose', self.id);
         }, this);
         container.on('resize', resize);
+        container.on('shown', refresh);
         container.on('open', function () {
             self.eventHub.emit('compilerOpen', self.id);
         });
