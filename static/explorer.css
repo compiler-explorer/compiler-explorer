@@ -173,3 +173,13 @@ span.icon {
 .increase-font-size span.glyphicon {
     font-size: 110%;
 }
+
+.lm_splitter.lm_vertical .lm_drag_handle {
+    height: 10px;
+    top: -2.5px;
+}
+
+.lm_splitter.lm_horizontal .lm_drag_handle {
+    width: 10px;
+    left: -2.5px;
+}
