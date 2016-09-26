@@ -68,7 +68,6 @@ function testFilter(filename, suffix, filters, withSource) {
         assertEq(file[i], lineExpected, expected + ":" + (i + 1));
     }
 }
-
 cases.forEach(function (x) {
     testFilter(x, "", {})
 });
@@ -91,4 +90,5 @@ cases.forEach(function (x) {
 
 if (failures) {
     console.log(failures + " failures");
+    process.exit(1);
 }
