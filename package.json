@@ -28,7 +28,8 @@
     "nopt": "3.0.x",
     "serve-favicon": "2.3.x",
     "serve-static": "1.10.x",
-    "temp": "0.8.x"
+    "temp": "0.8.x",
+    "underscore-node": "*"
   },
   "devDependencies": {
     "supervisor": "0.3.1",

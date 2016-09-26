@@ -31,6 +31,7 @@ define(function (require) {
     var ga = require('analytics').ga;
     var colour = require('colour');
     var Toggles = require('toggles');
+    var FontScale = require('fontscale');
     require('asm-mode');
     require('selectize');
 
@@ -56,14 +57,13 @@ define(function (require) {
 
         this.debouncedAjax = _.debounce($.ajax, 250);
 
-        this.domRoot.find(".compiler").selectize({
+        this.domRoot.find(".compiler-picker").selectize({
             sortField: 'name',
             valueField: 'id',
             labelField: 'name',
             searchField: ['name'],
             options: compilers,
-            items: this.compiler ? [this.compiler.id] : [],
-            openOnFocus: true
+            items: this.compiler ? [this.compiler.id] : []
         }).on('change', function () {
             self.onCompilerChange($(this).val());
         });
@@ -87,11 +87,18 @@ define(function (require) {
         });
         this.outputEditor = outputEditor;
 
+        this.fontScale = new FontScale(this.domRoot, state);
+        this.fontScale.on('change', _.bind(this.saveState, this));
+
+        function refresh() {
+            outputEditor.refresh();
+        }
+
         function resize() {
             var topBarHeight = self.domRoot.find(".top-bar").outerHeight(true);
             var bottomBarHeight = self.domRoot.find(".bottom-bar").outerHeight(true);
             outputEditor.setSize(self.domRoot.width(), self.domRoot.height() - topBarHeight - bottomBarHeight);
-            outputEditor.refresh();
+            refresh();
         }
 
         this.filters.on('change', _.bind(this.onFilterChange, this));
@@ -101,6 +108,7 @@ define(function (require) {
             self.eventHub.emit('compilerClose', self.id);
         }, this);
         container.on('resize', resize);
+        container.on('shown', refresh);
         container.on('open', function () {
             self.eventHub.emit('compilerOpen', self.id);
         });
@@ -297,12 +305,14 @@ define(function (require) {
     };
 
     Compiler.prototype.saveState = function () {
-        this.container.setState({
+        var state = {
             compiler: this.compiler ? this.compiler.id : "",
             options: this.options,
             source: this.editor,
             filters: this.filters.get()  // NB must *not* be effective filters
-        });
+        };
+        this.fontScale.addState(state);
+        this.container.setState(state);
     };
 
     Compiler.prototype.onColours = function (editor, colours) {

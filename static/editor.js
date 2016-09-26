@@ -31,6 +31,7 @@ define(function (require) {
     var Toggles = require('toggles');
     var compiler = require('compiler');
     var loadSaveLib = require('loadSave');
+    var FontScale = require('fontscale');
 
     require('codemirror/mode/clike/clike');
     require('codemirror/mode/d/d');
@@ -78,6 +79,9 @@ define(function (require) {
             mode: cmMode
         });
 
+        this.fontScale = new FontScale(this.domRoot, state);
+        this.fontScale.on('change', _.bind(this.updateState, this));
+
         if (state.source) {
             this.editor.setValue(state.source);
         } else if (defaultSrc) {
@@ -120,20 +124,26 @@ define(function (require) {
             self.updateColours(colours);
         }, ColourDebounceMs);
 
+        function refresh() {
+            self.editor.refresh();
+        }
+
         function resize() {
             var topBarHeight = self.domRoot.find(".top-bar").outerHeight(true);
             self.editor.setSize(self.domRoot.width(), self.domRoot.height() - topBarHeight);
-            self.editor.refresh();
+            refresh();
         }
 
         this.domRoot.find('.load-save').click(_.bind(function () {
             loadSave.run(_.bind(function (text) {
                 this.editor.setValue(text);
+                this.updateState();
                 this.maybeEmitChange();
             }, this));
         }, this));
 
         container.on('resize', resize);
+        container.on('shown', refresh);
         container.on('open', function () {
             self.eventHub.emit('editorOpen', self.id);
         });
@@ -152,8 +162,22 @@ define(function (require) {
         this.eventHub.on('compileResult', this.onCompileResponse, this);
 
         var compilerConfig = compiler.getComponent(this.id);
+
+        function findParentRowOrColumn(elem) {
+            while (elem) {
+                if (elem.isRow || elem.isColumn) return elem;
+                elem = elem.parent;
+            }
+            return elem;
+        }
+
         this.container.layoutManager.createDragSource(
             this.domRoot.find('.btn.add-compiler'), compilerConfig);
+        this.domRoot.find('.btn.add-compiler').click(_.bind(function () {
+            var insertPoint = findParentRowOrColumn(this.container)
+                || this.container.layoutManager.root.contentItems[0];
+            insertPoint.addChild(compilerConfig);
+        }, this));
     }
 
     Editor.prototype.maybeEmitChange = function (force) {
@@ -164,11 +188,13 @@ define(function (require) {
     };
 
     Editor.prototype.updateState = function () {
-        this.container.setState({
+        var state = {
             id: this.id,
             source: this.getSource(),
             options: this.options.get()
-        });
+        };
+        this.fontScale.addState(state);
+        this.container.setState(state);
     };
 
     Editor.prototype.getSource = function () {
@@ -195,7 +221,8 @@ define(function (require) {
         var clazz = "error";
         if (text.match(/^warning/)) clazz = "warning";
         if (text.match(/^note/)) clazz = "note";
-        var node = $('<div class="' + clazz + ' inline-msg"><span class="icon">!!</span><span class="compiler">: </span><span class="msg"></span></div>');
+        var node = $('.template .inline-msg').clone();
+        node.find('.icon').addClass(clazz);
         node.find(".msg").text(text);
         node.find(".compiler").text(compiler);
         return node[0];
@@ -283,6 +310,9 @@ define(function (require) {
                 type: 'component',
                 componentName: 'codeEditor',
                 componentState: {id: id},
+                // TODO: making this non closeable breaks placement
+                // See: https://github.com/deepstreamIO/golden-layout/issues/17
+                // https://github.com/deepstreamIO/golden-layout/issues/60 and others
                 isClosable: false
             };
         },
