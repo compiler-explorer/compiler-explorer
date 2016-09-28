@@ -102,5 +102,13 @@ define(function (require) {
         return new WrappedEventHub(this.layout.eventHub);
     };
 
+    Hub.prototype.findParentRowOrColumn = function (elem) {
+        while (elem) {
+            if (elem.isRow || elem.isColumn) return elem;
+            elem = elem.parent;
+        }
+        return elem;
+    }
+
     return Hub;
 });

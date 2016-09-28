@@ -106,21 +106,6 @@ define(function (require) {
 
         this.filters.on('change', _.bind(this.onFilterChange, this));
 
-        function findParentRowOrColumn(elem) {
-            while (elem) {
-                if (elem.isRow || elem.isColumn) return elem;
-                elem = elem.parent;
-            }
-            return elem;
-        }
-
-        var outputConfig = output.getComponent(this.id, this.sourceEditorId);
-
-        this.domRoot.find(".status").click(_.bind(function () {
-            var insertPoint = findParentRowOrColumn(this.container)
-                || this.container.layoutManager.root.contentItems[0];
-            insertPoint.addChild(outputConfig);
-        }, this));
         container.on('destroy', function () {
             self.eventHub.unsubscribe();
             self.eventHub.emit('compilerClose', self.id);
@@ -137,6 +122,16 @@ define(function (require) {
         this.updateCompilerName();
         this.updateButtons();
 
+        var outputConfig = _.bind(function () {
+            return output.getComponent(this.id, this.sourceEditorId);
+        }, this);
+        this.container.layoutManager.createDragSource(this.domRoot.find(".status"), outputConfig);
+        this.domRoot.find(".status").click(_.bind(function () {
+            var insertPoint = hub.findParentRowOrColumn(this.container)
+                || this.container.layoutManager.root.contentItems[0];
+            insertPoint.addChild(outputConfig());
+        }, this));
+
         function cloneComponent() {
             return {
                 type: 'component',
@@ -145,18 +140,10 @@ define(function (require) {
             };
         }
 
-        function findParentRowOrColumn(elem) {
-            while (elem) {
-                if (elem.isRow || elem.isColumn) return elem;
-                elem = elem.parent;
-            }
-            return elem;
-        }
-
         this.container.layoutManager.createDragSource(
             this.domRoot.find('.btn.add-compiler'), cloneComponent);
         this.domRoot.find('.btn.add-compiler').click(_.bind(function () {
-            var insertPoint = findParentRowOrColumn(this.container)
+            var insertPoint = hub.findParentRowOrColumn(this.container)
                 || this.container.layoutManager.root.contentItems[0];
             insertPoint.addChild(cloneComponent());
         }, this));

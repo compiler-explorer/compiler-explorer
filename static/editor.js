@@ -164,18 +164,10 @@ define(function (require) {
 
         var compilerConfig = compiler.getComponent(this.id);
 
-        function findParentRowOrColumn(elem) {
-            while (elem) {
-                if (elem.isRow || elem.isColumn) return elem;
-                elem = elem.parent;
-            }
-            return elem;
-        }
-
         this.container.layoutManager.createDragSource(
             this.domRoot.find('.btn.add-compiler'), compilerConfig);
         this.domRoot.find('.btn.add-compiler').click(_.bind(function () {
-            var insertPoint = findParentRowOrColumn(this.container)
+            var insertPoint = hub.findParentRowOrColumn(this.container)
                 || this.container.layoutManager.root.contentItems[0];
             insertPoint.addChild(compilerConfig);
         }, this));
