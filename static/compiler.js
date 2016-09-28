@@ -344,7 +344,7 @@ define(function (require) {
         };
         this.fontScale.addState(state);
         return state;
-    }
+    };
 
     Compiler.prototype.saveState = function () {
         this.container.setState(this.currentState());

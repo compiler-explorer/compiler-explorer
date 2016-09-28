@@ -87,13 +87,13 @@ define(function (require) {
         } else {
             elem.text(msg);
         }
-    }
+    };
 
     Output.prototype.updateCompilerName = function () {
         var name = "#" + this.compilerId;
         if (this.compiler) name += " with " + this.compiler.name;
         this.container.setTitle(name);
-    }
+    };
 
     return {
         Output: Output,

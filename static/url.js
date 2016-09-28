@@ -51,7 +51,7 @@ define(function (require) {
     }
 
     function loadState(state) {
-        if (!state || state['version'] === undefined) return false;
+        if (!state || state.version === undefined) return false;
         switch (state.version) {
             case 1:
                 state.filterAsm = {};

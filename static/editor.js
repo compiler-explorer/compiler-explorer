@@ -300,7 +300,7 @@ define(function (require) {
         if (id === this.id) {
             this.editor.setSelection({line: lineNum - 1, ch: 0}, {line: lineNum, ch: 0});
         }
-    }
+    };
 
     return {
         Editor: Editor,

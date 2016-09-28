@@ -108,7 +108,7 @@ define(function (require) {
             elem = elem.parent;
         }
         return elem;
-    }
+    };
 
     return Hub;
 });
