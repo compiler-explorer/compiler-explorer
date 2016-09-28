@@ -93,19 +93,19 @@ define(function (require) {
         config = savedState !== null ? JSON.parse(savedState) : defaultConfig;
     }
 
-    var layout;
+    var layout, hub;
     try {
         layout = new GoldenLayout(config, root);
+        hub = new Hub(layout, defaultSrc);
     } catch (e) {
         Raven.captureException(e);
         layout = new GoldenLayout(defaultConfig, root);
+        hub = new Hub(layout, defaultSrc);
     }
     layout.on('stateChanged', function () {
         var state = JSON.stringify(layout.toConfig());
         localStorage.setItem('gl', state);
     });
-
-    var hub = new Hub(layout, defaultSrc);
 
     function sizeRoot() {
         var height = $(window).height() - root.position().top;
