@@ -136,6 +136,30 @@ define(function (require) {
         this.eventHub.on('resendCompilation', this.onResendCompilation, this);
         this.updateCompilerName();
         this.updateButtons();
+
+        function cloneComponent() {
+            return {
+                type: 'component',
+                componentName: 'compiler',
+                componentState: self.currentState()
+            };
+        }
+
+        function findParentRowOrColumn(elem) {
+            while (elem) {
+                if (elem.isRow || elem.isColumn) return elem;
+                elem = elem.parent;
+            }
+            return elem;
+        }
+
+        this.container.layoutManager.createDragSource(
+            this.domRoot.find('.btn.add-compiler'), cloneComponent);
+        this.domRoot.find('.btn.add-compiler').click(_.bind(function () {
+            var insertPoint = findParentRowOrColumn(this.container)
+                || this.container.layoutManager.root.contentItems[0];
+            insertPoint.addChild(cloneComponent());
+        }, this));
     }
 
     // Gets the filters that will actually be used (accounting for issues with binary
@@ -324,7 +348,7 @@ define(function (require) {
         this.updateButtons();
     };
 
-    Compiler.prototype.saveState = function () {
+    Compiler.prototype.currentState = function () {
         var state = {
             compiler: this.compiler ? this.compiler.id : "",
             options: this.options,
@@ -332,7 +356,11 @@ define(function (require) {
             filters: this.filters.get()  // NB must *not* be effective filters
         };
         this.fontScale.addState(state);
-        this.container.setState(state);
+        return state;
+    }
+
+    Compiler.prototype.saveState = function () {
+        this.container.setState(this.currentState());
     };
 
     Compiler.prototype.onColours = function (editor, colours) {
