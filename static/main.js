@@ -34,7 +34,8 @@ require.config({
         microplugin: 'ext/microplugin/src/microplugin',
         events: 'ext/eventEmitter/EventEmitter',
         lzstring: 'ext/lz-string/libs/lz-string',
-        clipboard: 'ext/clipboard/dist/clipboard'
+        clipboard: 'ext/clipboard/dist/clipboard',
+        'raven-js': 'ext/raven-js/dist/raven'
     },
     packages: [{
         name: "codemirror",
@@ -61,6 +62,7 @@ define(function (require) {
     var clipboard = require('clipboard');
     var Hub = require('hub');
     var shortenURL = require('urlshorten-google');
+    var Raven = require('raven-js');
 
     analytics.initialise();
     sharing.initialise();
@@ -95,7 +97,7 @@ define(function (require) {
     try {
         layout = new GoldenLayout(config, root);
     } catch (e) {
-        console.log("Caught " + e + " during layout; using default layout");
+        Raven.captureException(e);
         layout = new GoldenLayout(defaultConfig, root);
     }
     layout.on('stateChanged', function () {
@@ -155,7 +157,7 @@ define(function (require) {
     }
 
     initPopover($("#get-full-link"), function (done) {
-        done(permalink)
+        done(permalink);
     });
     initPopover($("#get-short-link"), function (done) {
         shortenURL(permalink(), done);

@@ -26,6 +26,11 @@
 define(function (require, exports) {
     "use strict";
     var options = require('options');
+    var Raven = require('raven-js');
+
+    if (options.raven) {
+        Raven.config(options.raven).install();
+    }
 
     if (options.googleAnalyticsEnabled) {
         (function (i, s, o, g, r, a, m) {

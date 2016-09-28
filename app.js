@@ -145,7 +145,8 @@ function clientOptionsHandler(compilers, fileSources) {
         compileOptions: compilerProps("options"),
         supportsBinary: !!compilerProps("supportsBinary"),
         postProcess: compilerProps("postProcess"),
-        sources: sources
+        sources: sources,
+        raven: gccProps('ravenUrl', '')
     };
     var text = JSON.stringify(options);
     return function getClientOptions(req, res) {
