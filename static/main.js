@@ -87,12 +87,17 @@ define(function (require) {
     });
 
     if (!config) {
-        // TODO: find old storage and convert
         var savedState = localStorage.getItem('gl');
         config = savedState !== null ? JSON.parse(savedState) : defaultConfig;
     }
 
-    var layout = new GoldenLayout(config, root);
+    var layout;
+    try {
+        layout = new GoldenLayout(config, root);
+    } catch (e) {
+        console.log("Caught " + e + " during layout; using default layout");
+        layout = new GoldenLayout(defaultConfig, root);
+    }
     layout.on('stateChanged', function () {
         var state = JSON.stringify(layout.toConfig());
         localStorage.setItem('gl', state);

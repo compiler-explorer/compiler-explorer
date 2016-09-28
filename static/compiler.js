@@ -32,6 +32,8 @@ define(function (require) {
     var colour = require('colour');
     var Toggles = require('toggles');
     var FontScale = require('fontscale');
+    var output = require('output');
+
     require('asm-mode');
     require('selectize');
 
@@ -53,6 +55,7 @@ define(function (require) {
         this.filters = new Toggles(this.domRoot.find(".filters"), state.filters);
         this.source = "";
         this.assembly = [];
+        this.lastResult = null;
         this.lastRequestRespondedTo = "";
 
         this.debouncedAjax = _.debounce($.ajax, 250);
@@ -103,6 +106,21 @@ define(function (require) {
 
         this.filters.on('change', _.bind(this.onFilterChange, this));
 
+        function findParentRowOrColumn(elem) {
+            while (elem) {
+                if (elem.isRow || elem.isColumn) return elem;
+                elem = elem.parent;
+            }
+            return elem;
+        }
+
+        var outputConfig = output.getComponent(this.id, this.sourceEditorId);
+
+        this.domRoot.find(".status").click(_.bind(function () {
+            var insertPoint = findParentRowOrColumn(this.container)
+                || this.container.layoutManager.root.contentItems[0];
+            insertPoint.addChild(outputConfig);
+        }, this));
         container.on('destroy', function () {
             self.eventHub.unsubscribe();
             self.eventHub.emit('compilerClose', self.id);
@@ -112,9 +130,10 @@ define(function (require) {
         container.on('open', function () {
             self.eventHub.emit('compilerOpen', self.id);
         });
-        self.eventHub.on('editorChange', this.onEditorChange, this);
-        self.eventHub.on('editorClose', this.onEditorClose, this);
-        self.eventHub.on('colours', this.onColours, this);
+        this.eventHub.on('editorChange', this.onEditorChange, this);
+        this.eventHub.on('editorClose', this.onEditorClose, this);
+        this.eventHub.on('colours', this.onColours, this);
+        this.eventHub.on('resendCompilation', this.onResendCompilation, this);
         this.updateCompilerName();
         this.updateButtons();
     }
@@ -234,6 +253,7 @@ define(function (require) {
     }
 
     Compiler.prototype.onCompileResponse = function (request, result) {
+        this.lastResult = result;
         ga('send', 'event', 'Compile', request.compiler, request.options, result.code);
         ga('send', 'timing', 'Compile', 'Timing', Date.now() - request.timestamp);
         this.outputEditor.operation(_.bind(function () {
@@ -332,19 +352,25 @@ define(function (require) {
         this.domRoot.find(".full-compiler-name").text(compilerVersion);
     };
 
+    Compiler.prototype.onResendCompilation = function (id) {
+        if (id == this.id && this.lastResult) {
+            this.eventHub.emit('compileResult', this.id, this.compiler, this.lastResult);
+        }
+    };
+
     return {
         Compiler: Compiler,
         getComponent: function (editorId) {
             return {
                 type: 'component',
-                componentName: 'compilerOutput',
+                componentName: 'compiler',
                 componentState: {source: editorId}
             };
         },
         getComponentWith: function (editorId, filters, options, compilerId) {
             return {
                 type: 'component',
-                componentName: 'compilerOutput',
+                componentName: 'compiler',
                 componentState: {
                     source: editorId,
                     filters: filters,

@@ -30,6 +30,7 @@ define(function (require) {
     var options = require('options');
     var editor = require('editor');
     var compiler = require('compiler');
+    var output = require('output');
 
     function Hub(layout, defaultSrc) {
         this.layout = layout;
@@ -43,7 +44,11 @@ define(function (require) {
             });
         layout.registerComponent(compiler.getComponent().componentName,
             function (container, state) {
-                return self.compilerOutputFactory(container, state);
+                return self.compilerFactory(container, state);
+            });
+        layout.registerComponent(output.getComponent().componentName,
+            function (container, state) {
+                return self.outputFactory(container, state);
             });
         var removeId = function (id) {
             self.ids[id] = false;
@@ -67,8 +72,12 @@ define(function (require) {
         return new editor.Editor(this, state, container, options.language, this.defaultSrc);
     };
 
-    Hub.prototype.compilerOutputFactory = function (container, state) {
+    Hub.prototype.compilerFactory = function (container, state) {
         return new compiler.Compiler(this, container, state);
+    };
+
+    Hub.prototype.outputFactory = function (container, state) {
+        return new output.Output(this, container, state);
     };
 
     function WrappedEventHub(eventHub) {

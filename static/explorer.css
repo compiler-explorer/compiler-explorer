@@ -183,3 +183,8 @@ span.icon {
     width: 10px;
     left: -2.5px;
 }
+
+pre.content {
+    width: 100%;
+    height: 100%;
+}

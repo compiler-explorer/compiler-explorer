@@ -160,6 +160,7 @@ define(function (require) {
         this.eventHub.on('compilerOpen', this.onCompilerOpen, this);
         this.eventHub.on('compilerClose', this.onCompilerClose, this);
         this.eventHub.on('compileResult', this.onCompileResponse, this);
+        this.eventHub.on('selectLine', this.onSelectLine, this);
 
         var compilerConfig = compiler.getComponent(this.id);
 
@@ -303,6 +304,12 @@ define(function (require) {
         this.numberUsedLines();
     };
 
+    Editor.prototype.onSelectLine = function (id, lineNum) {
+        if (id === this.id) {
+            this.editor.setSelection({line: lineNum - 1, ch: 0}, {line: lineNum, ch: 0});
+        }
+    }
+
     return {
         Editor: Editor,
         getComponent: function (id) {
@@ -310,9 +317,6 @@ define(function (require) {
                 type: 'component',
                 componentName: 'codeEditor',
                 componentState: {id: id},
-                // TODO: making this non closeable breaks placement
-                // See: https://github.com/deepstreamIO/golden-layout/issues/17
-                // https://github.com/deepstreamIO/golden-layout/issues/60 and others
                 isClosable: false
             };
         },
