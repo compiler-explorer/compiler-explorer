@@ -289,3 +289,8 @@ li.social {
     padding: 2px;
     border-radius: 2px;
 }
+
+.dropdown-menu.compilers {
+    max-height: 400px;
+    overflow-y: auto;
+}
