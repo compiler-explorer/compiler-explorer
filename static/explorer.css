@@ -1,3 +1,7 @@
+.navbar {
+    border-radius: 0px;
+    margin-bottom: 5px;
+}
 .template {
     display: none;
 }
