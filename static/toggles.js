@@ -25,35 +25,45 @@
 
 define(function (require) {
     "use strict";
-    var options = require('options');
+    var _ = require('underscore');
+    var $ = require('jquery');
+    var EventEmitter = require('events');
 
-    function googleJSClientLoaded() {
-        gapi.client.setApiKey(options.gapiKey);
-        gapi.client.load('urlshortener', 'v1', googleJSClientLoaded.done);
-    }
-
-    function shortenURL(url, done) {
-        if (!window.gapi || !gapi.client) {
-            // Load the Google APIs client library asynchronously, then the
-            // urlshortener API, and finally come back here.
-            window.googleJSClientLoaded = googleJSClientLoaded;
-            googleJSClientLoaded.done = function () {
-                shortenURL(url, done);
-            };
-            $(document.body).append('<script src="https://apis.google.com/js/client.js?onload=googleJSClientLoaded">');
-            return;
-        }
-        var request = gapi.client.urlshortener.url.insert({resource: {longUrl: url}});
-        request.then(function (resp) {
-            var id = resp.result.id;
-            if (options.googleShortLinkRewrite.length === 2) {
-                id = id.replace(new RegExp(options.googleShortLinkRewrite[0]), options.googleShortLinkRewrite[1]);
-            }
-            done(id);
-        }, function () {
-            done(url);
+    function get(domRoot) {
+        var result = {};
+        _.each(domRoot.find(".btn.active"), function (a) {
+            var obj = $(a);
+            result[obj.data().bind] = true;
         });
+        return result;
     }
 
-    return shortenURL;
+    function Toggles(root, state) {
+        EventEmitter.call(this);
+        this.domRoot = root;
+        state = state || get(this.domRoot);
+        this.domRoot.find('.btn')
+            .click(_.bind(this.onClick, this))
+            .each(function () {
+                $(this).toggleClass('active', !!state[$(this).data().bind]);
+            });
+        this.state = get(this.domRoot);
+    }
+
+    _.extend(Toggles.prototype, EventEmitter.prototype);
+
+    Toggles.prototype.get = function () {
+        return _.clone(this.state);
+    };
+
+    Toggles.prototype.onClick = function (event) {
+        var button = $(event.currentTarget);
+        if (button.hasClass("disabled")) return;
+        button.toggleClass('active');
+        var before = this.state;
+        var after = this.state = get(this.domRoot);
+        this.emit('change', before, after);
+    };
+
+    return Toggles;
 });

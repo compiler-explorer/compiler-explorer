@@ -25,35 +25,43 @@
 
 define(function (require) {
     "use strict";
-    var options = require('options');
+    var _ = require('underscore');
+    var EventEmitter = require('events');
 
-    function googleJSClientLoaded() {
-        gapi.client.setApiKey(options.gapiKey);
-        gapi.client.load('urlshortener', 'v1', googleJSClientLoaded.done);
+    function FontScale(domRoot, state) {
+        EventEmitter.call(this);
+        this.domRoot = domRoot;
+        this.scale = state.fontScale || 1.0;
+        this.apply();
+
+        this.domRoot.find('.increase-font-size').click(_.bind(function () {
+            this.scale += 0.1;
+            this.apply();
+            this.emit('change');
+        }, this));
+        this.domRoot.find('.decrease-font-size').click(_.bind(function () {
+            if (this.scale <= 0.3) return;
+            this.scale -= 0.1;
+            this.apply();
+            this.emit('change');
+        }, this));
+        this.domRoot.find('.reset-font-size').click(_.bind(function () {
+            this.scale = 1.0;
+            this.apply();
+            this.emit('change');
+        }, this));
     }
 
-    function shortenURL(url, done) {
-        if (!window.gapi || !gapi.client) {
-            // Load the Google APIs client library asynchronously, then the
-            // urlshortener API, and finally come back here.
-            window.googleJSClientLoaded = googleJSClientLoaded;
-            googleJSClientLoaded.done = function () {
-                shortenURL(url, done);
-            };
-            $(document.body).append('<script src="https://apis.google.com/js/client.js?onload=googleJSClientLoaded">');
-            return;
-        }
-        var request = gapi.client.urlshortener.url.insert({resource: {longUrl: url}});
-        request.then(function (resp) {
-            var id = resp.result.id;
-            if (options.googleShortLinkRewrite.length === 2) {
-                id = id.replace(new RegExp(options.googleShortLinkRewrite[0]), options.googleShortLinkRewrite[1]);
-            }
-            done(id);
-        }, function () {
-            done(url);
-        });
-    }
+    _.extend(FontScale.prototype, EventEmitter.prototype);
 
-    return shortenURL;
+    FontScale.prototype.apply = function () {
+        this.domRoot.find('.CodeMirror').css('font-size', (10 * this.scale) + "pt");
+    };
+
+    FontScale.prototype.addState = function (state) {
+        if (this.scale != 1.0)
+            state.fontScale = this.scale;
+    };
+
+    return FontScale;
 });

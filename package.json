@@ -32,7 +32,9 @@
     "underscore-node": "*"
   },
   "devDependencies": {
-    "supervisor": "0.3.1"
+    "supervisor": "0.3.1",
+    "bower": "*",
+    "requirejs": "*"
   },
   "scripts": {
     "test": "make test"

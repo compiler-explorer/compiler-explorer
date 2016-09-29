@@ -135,8 +135,7 @@ function clientOptionsHandler(compilers, fileSources) {
         googleAnalyticsEnabled: gccProps('clientGoogleAnalyticsEnabled', false),
         sharingEnabled: gccProps('clientSharingEnabled', true),
         githubEnabled: gccProps('clientGitHubRibbonEnabled', true),
-        urlshortener: gccProps('clientURLShortener', 'google'),
-        gapiKey: gccProps('google-api-key', 'AIzaSyAaz35KJv8DA0ABoime0fEIh32NmbyYbcQ'),
+        gapiKey: gccProps('googleApiKey', ''),
         googleShortLinkRewrite: gccProps('googleShortLinkRewrite', '').split('|'),
         defaultSource: gccProps('defaultSource', ''),
         language: language,
@@ -145,11 +144,13 @@ function clientOptionsHandler(compilers, fileSources) {
         defaultCompiler: compilerProps('defaultCompiler', ''),
         compileOptions: compilerProps("options"),
         supportsBinary: !!compilerProps("supportsBinary"),
-        sources: sources
+        postProcess: compilerProps("postProcess"),
+        sources: sources,
+        raven: gccProps('ravenUrl', '')
     };
-    var text = "var OPTIONS = " + JSON.stringify(options) + ";";
+    var text = JSON.stringify(options);
     return function getClientOptions(req, res) {
-        res.set('Content-Type', 'application/javascript');
+        res.set('Content-Type', 'application/json');
         res.set('Cache-Control', 'public, max-age=' + staticMaxAgeMs);
         res.end(text);
     };
@@ -283,7 +284,8 @@ function configuredCompilers() {
             is6g: !!props("is6g", false),
             intelAsm: props("intelAsm", ""),
             needsMulti: !!props("needsMulti", true),
-            supportsBinary: !!props("supportsBinary", true)
+            supportsBinary: !!props("supportsBinary", true),
+            postProcess: props("postProcess", "")
         });
     }));
 }
@@ -418,10 +420,11 @@ findCompilers().then(function (compilers) {
         .use(logger('combined'))
         .use(compression())
         .use(sFavicon('static/favicon.ico'))
+        .use(sStatic('out/dist', {maxAge: staticMaxAgeMs}))
         .use(sStatic('static', {maxAge: staticMaxAgeMs}))
         .use(bodyParser.json())
         .use(restreamer())
-        .get('/client-options.js', clientOptionsHandler(compilers, fileSources))
+        .get('/client-options.json', clientOptionsHandler(compilers, fileSources))
         .use('/source', getSource)
         .use('/api', apiHandler(compilers))
         .use('/g', shortUrlHandler)

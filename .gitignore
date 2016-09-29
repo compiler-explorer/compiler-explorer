@@ -1,4 +1,6 @@
 *.swp
 /node_modules
-.npm-updated
+/.npm-updated
+/.bower-updated
+/out
 *.heapsnapshot
