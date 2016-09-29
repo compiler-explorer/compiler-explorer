@@ -93,25 +93,14 @@ define(function (require) {
         this.fontScale = new FontScale(this.domRoot, state);
         this.fontScale.on('change', _.bind(this.saveState, this));
 
-        function refresh() {
-            outputEditor.refresh();
-        }
-
-        function resize() {
-            var topBarHeight = self.domRoot.find(".top-bar").outerHeight(true);
-            var bottomBarHeight = self.domRoot.find(".bottom-bar").outerHeight(true);
-            outputEditor.setSize(self.domRoot.width(), self.domRoot.height() - topBarHeight - bottomBarHeight);
-            refresh();
-        }
-
         this.filters.on('change', _.bind(this.onFilterChange, this));
 
         container.on('destroy', function () {
             self.eventHub.unsubscribe();
             self.eventHub.emit('compilerClose', self.id);
         }, this);
-        container.on('resize', resize);
-        container.on('shown', refresh);
+        container.on('resize', this.resize, this);
+        container.on('shown', this.refresh, this);
         container.on('open', function () {
             self.eventHub.emit('compilerOpen', self.id);
         });
@@ -148,6 +137,20 @@ define(function (require) {
             insertPoint.addChild(cloneComponent());
         }, this));
     }
+
+    Compiler.prototype.refresh = function () {
+        this.outputEditor.refresh();
+    };
+
+    // TODO: need to call resize if either .top-bar or .bottom-bar resizes, which needs some work.
+    // Issue manifests if you make a window where one compiler is small enough that the buttons spill onto two lines:
+    // reload the page and the bottom-bar is off the bottom until you scroll a tiny bit.
+    Compiler.prototype.resize = function () {
+        var topBarHeight = this.domRoot.find(".top-bar").outerHeight(true);
+        var bottomBarHeight = this.domRoot.find(".bottom-bar").outerHeight(true);
+        this.outputEditor.setSize(this.domRoot.width(), this.domRoot.height() - topBarHeight - bottomBarHeight);
+        this.refresh();
+    };
 
     // Gets the filters that will actually be used (accounting for issues with binary
     // mode etc).
