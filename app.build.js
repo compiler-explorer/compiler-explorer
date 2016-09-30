@@ -8,6 +8,8 @@
     removeCombined: true,
     useStrict: true,
     mainConfigFile: "static/main.js",
+    skipDirOptimize: true,
+    optimizeCss: "standard",
     modules: [
         {
             name: "main"

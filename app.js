@@ -46,7 +46,8 @@ var opts = nopt({
     'language': [String],
     'host': [String],
     'port': [Number],
-    'propDebug': [Boolean]
+    'propDebug': [Boolean],
+    'static': [String]
 });
 
 // Set default values for ommited arguments
@@ -55,6 +56,7 @@ var language = opts.language || "C++";
 var env = opts.env || ['dev'];
 var hostname = opts.host || os.hostname();
 var port = opts.port || 10240;
+var staticDir = opts.static || 'static';
 
 var propHierarchy = ['defaults'].concat(env).concat([language, os.hostname()]);
 console.log("properties hierarchy: " + propHierarchy);
@@ -419,9 +421,8 @@ findCompilers().then(function (compilers) {
     webServer
         .use(logger('combined'))
         .use(compression())
-        .use(sFavicon('static/favicon.ico'))
-        .use(sStatic('out/dist', {maxAge: staticMaxAgeMs}))
-        .use(sStatic('static', {maxAge: staticMaxAgeMs}))
+        .use(sFavicon(staticDir + '/favicon.ico'))
+        .use(sStatic(staticDir, {maxAge: staticMaxAgeMs}))
         .use(bodyParser.json())
         .use(restreamer())
         .get('/client-options.json', clientOptionsHandler(compilers, fileSources))
