@@ -46,7 +46,7 @@ define(function (require) {
     var lineRe = /^\/tmp\/[^:]+(:([0-9]+))?(:([0-9]+))?:\s*(.*)/;
 
     function parseLines(lines, callback) {
-        _.forEach(lines.split('\n'), function (line) {
+        _.each(lines.split('\n'), function (line) {
             line = line.trim();
             if (line !== "") {
                 var match = line.match(lineRe);

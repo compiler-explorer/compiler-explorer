@@ -356,7 +356,7 @@ define(function (require) {
     Compiler.prototype.onColours = function (editor, colours) {
         if (editor == this.sourceEditorId) {
             var asmColours = {};
-            this.assembly.forEach(function (x, index) {
+            _.each(this.assembly, function (x, index) {
                 if (x.source) asmColours[index] = colours[x.source - 1];
             });
             colour.applyColours(this.outputEditor, asmColours);
