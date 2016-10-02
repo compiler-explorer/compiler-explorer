@@ -27,6 +27,7 @@ define(function (require, exports) {
     "use strict";
     var options = require('options');
     var Raven = require('raven-js');
+    var $ = require('jquery');
 
     if (options.raven) {
         Raven.config(options.raven).install();
@@ -54,7 +55,7 @@ define(function (require, exports) {
     }
 
     exports.initialise = function () {
-        setTimeout(function () {
+        $(function () {
             function create_script_element(id, url) {
                 var el = document.createElement('script');
                 el.type = 'text/javascript';
@@ -79,6 +80,6 @@ define(function (require, exports) {
                     s.appendChild(f);
                 }(document, 'flattr_button'));
             }
-        }, 0);
+        });
     };
 });
