@@ -57,6 +57,7 @@ var env = opts.env || ['dev'];
 var hostname = opts.host || os.hostname();
 var port = opts.port || 10240;
 var staticDir = opts.static || 'static';
+var gitReleaseName = child_process.execSync('git rev-parse HEAD').toString().trim();
 
 var propHierarchy = ['defaults'].concat(env).concat([language, os.hostname()]);
 console.log("properties hierarchy: " + propHierarchy);
@@ -124,12 +125,10 @@ function compareOn(key) {
 }
 
 // instantiate a function that generate javascript code,
-// this code will be embedded gcc-explorer-website/client-options.js
 function clientOptionsHandler(compilers, fileSources) {
     var sources = fileSources.map(function (source) {
         return {name: source.name, urlpart: source.urlpart};
     });
-    console.log("sources: " + JSON.stringify(sources)); // debug
     // sort source file alphabetically
     sources = sources.sort(compareOn("name"));
     var options = {
@@ -148,7 +147,9 @@ function clientOptionsHandler(compilers, fileSources) {
         supportsBinary: !!compilerProps("supportsBinary"),
         postProcess: compilerProps("postProcess"),
         sources: sources,
-        raven: gccProps('ravenUrl', '')
+        raven: gccProps('ravenUrl', ''),
+        release: gitReleaseName,
+        environment: env
     };
     var text = JSON.stringify(options);
     return function getClientOptions(req, res) {
@@ -435,6 +436,8 @@ findCompilers().then(function (compilers) {
     // GO!
     console.log("=======================================");
     console.log("Listening on http://" + hostname + ":" + port + "/");
+    console.log("  serving static files from '" + staticDir + "'");
+    console.log("  git release " + gitReleaseName);
     console.log("=======================================");
     webServer.listen(port, hostname);
 }).catch(function (err) {

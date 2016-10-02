@@ -30,7 +30,10 @@ define(function (require, exports) {
     var $ = require('jquery');
 
     if (options.raven) {
-        Raven.config(options.raven).install();
+        Raven.config(options.raven, {
+            release: options.release,
+            environment: options.environment
+        }).install();
     }
 
     if (options.googleAnalyticsEnabled) {
