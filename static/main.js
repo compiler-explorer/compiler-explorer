@@ -25,12 +25,12 @@
 
 require.config({
     paths: {
-        bootstrap: 'ext/bootstrap/dist/js/bootstrap.min',
-        jquery: 'ext/jquery/dist/jquery.min',
-        underscore: 'ext/underscore/underscore-min',
+        bootstrap: 'ext/bootstrap/dist/js/bootstrap',
+        jquery: 'ext/jquery/dist/jquery',
+        underscore: 'ext/underscore/underscore',
         goldenlayout: 'ext/golden-layout/dist/goldenlayout',
-        selectize: 'ext/selectize/dist/js/selectize.min',
-        sifter: 'ext/sifter/sifter.min',
+        selectize: 'ext/selectize/dist/js/selectize',
+        sifter: 'ext/sifter/sifter',
         microplugin: 'ext/microplugin/src/microplugin',
         events: 'ext/eventEmitter/EventEmitter',
         lzstring: 'ext/lz-string/libs/lz-string',
