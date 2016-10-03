@@ -92,7 +92,6 @@ function testFilter(filename, suffix, filters) {
         }
     }
 }
-
 // bless("cases/cl-regex.asm", "cases/cl-regex.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
 // bless("cases/cl-regex.asm", "cases/cl-regex.asm.dlcb.json", {directives: true, labels: true, commentOnly: true, binary:true});
 // bless("cases/cl-maxarray.asm", "cases/cl-maxarray.asm.dlcb.json", {directives: true, labels: true, commentOnly: true, binary:true});
@@ -115,4 +114,5 @@ cases.forEach(function (x) {
 
 if (failures) {
     console.log(failures + " failures");
+    process.exit(1);
 }

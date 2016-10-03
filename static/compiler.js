@@ -1,4 +1,5 @@
 // Copyright (c) 2012-2016, Matt Godbolt
+//
 // All rights reserved.
 // 
 // Redistribution and use in source and binary forms, with or without 
@@ -22,435 +23,379 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 // POSSIBILITY OF SUCH DAMAGE.
 
-function parseLines(lines, callback) {
-    var re = /^\/tmp\/[^:]+:([0-9]+)(:([0-9]+))?:\s+(.*)/;
-    $.each(lines.split('\n'), function (_, line) {
-        line = line.trim();
-        if (line !== "") {
-            var match = line.match(re);
-            if (match) {
-                callback(parseInt(match[1]), match[4].trim());
-            } else {
-                callback(null, line);
-            }
+define(function (require) {
+    "use strict";
+    var CodeMirror = require('codemirror');
+    var $ = require('jquery');
+    var _ = require('underscore');
+    var ga = require('analytics').ga;
+    var colour = require('colour');
+    var Toggles = require('toggles');
+    var FontScale = require('fontscale');
+    var output = require('output');
+
+    require('asm-mode');
+    require('selectize');
+
+    var options = require('options');
+    var compilers = options.compilers;
+    var compilersById = _.object(_.pluck(compilers, "id"), compilers);
+
+    function Compiler(hub, container, state) {
+        var self = this;
+        this.container = container;
+        this.eventHub = hub.createEventHub();
+        this.domRoot = container.getElement();
+        this.domRoot.html($('#compiler').html());
+
+        this.id = state.id || hub.nextId();
+        this.sourceEditorId = state.source || 1;
+        this.compiler = compilersById[state.compiler] || compilersById[options.defaultCompiler];
+        this.options = state.options || options.compileOptions;
+        this.filters = new Toggles(this.domRoot.find(".filters"), state.filters);
+        this.source = "";
+        this.assembly = [];
+        this.lastResult = null;
+        this.lastRequestRespondedTo = "";
+
+        this.debouncedAjax = _.debounce($.ajax, 250);
+
+        this.domRoot.find(".compiler-picker").selectize({
+            sortField: 'name',
+            valueField: 'id',
+            labelField: 'name',
+            searchField: ['name'],
+            options: compilers,
+            items: this.compiler ? [this.compiler.id] : []
+        }).on('change', function () {
+            self.onCompilerChange($(this).val());
+        });
+        var optionsChange = function () {
+            self.onOptionsChange($(this).val());
+        };
+        this.domRoot.find(".options")
+            .val(this.options)
+            .on("change", optionsChange)
+            .on("keyup", optionsChange);
+
+        // Hide the binary option if the global options has it disabled.
+        this.domRoot.find("[data-bind='binary']").toggle(options.supportsBinary);
+
+        var outputEditor = CodeMirror.fromTextArea(this.domRoot.find("textarea")[0], {
+            lineNumbers: true,
+            mode: "text/x-asm",
+            readOnly: true,
+            gutters: ['CodeMirror-linenumbers'],
+            lineWrapping: true
+        });
+        this.outputEditor = outputEditor;
+
+        this.fontScale = new FontScale(this.domRoot, state);
+        this.fontScale.on('change', _.bind(this.saveState, this));
+
+        this.filters.on('change', _.bind(this.onFilterChange, this));
+
+        container.on('destroy', function () {
+            self.eventHub.unsubscribe();
+            self.eventHub.emit('compilerClose', self.id);
+        }, this);
+        container.on('resize', this.resize, this);
+        container.on('shown', this.refresh, this);
+        container.on('open', function () {
+            self.eventHub.emit('compilerOpen', self.id);
+        });
+        this.eventHub.on('editorChange', this.onEditorChange, this);
+        this.eventHub.on('editorClose', this.onEditorClose, this);
+        this.eventHub.on('colours', this.onColours, this);
+        this.eventHub.on('resendCompilation', this.onResendCompilation, this);
+        this.updateCompilerName();
+        this.updateButtons();
+
+        var outputConfig = _.bind(function () {
+            return output.getComponent(this.id, this.sourceEditorId);
+        }, this);
+        this.container.layoutManager.createDragSource(this.domRoot.find(".status"), outputConfig);
+        this.domRoot.find(".status").click(_.bind(function () {
+            var insertPoint = hub.findParentRowOrColumn(this.container)
+                || this.container.layoutManager.root.contentItems[0];
+            insertPoint.addChild(outputConfig());
+        }, this));
+
+        function cloneComponent() {
+            return {
+                type: 'component',
+                componentName: 'compiler',
+                componentState: self.currentState()
+            };
         }
-    });
-}
 
-function clearBackground(cm) {
-    for (var i = 0; i < cm.lineCount(); ++i) {
-        cm.removeLineClass(i, "background", null);
-    }
-}
-
-const NumRainbowColours = 12;
-
-function Compiler(domRoot, origFilters, windowLocalPrefix, onChangeCallback, lang) {
-    var compilersById = {};
-    var compilersByAlias = {};
-    var pendingTimeout = null;
-    var asmCodeMirror = null;
-    var cppEditor = null;
-    var lastRequest = null;
-    var currentAssembly = null;
-    var filters_ = $.extend({}, origFilters);
-    var ignoreChanges = true; // Horrible hack to avoid onChange doing anything on first starting, ie before we've set anything up.
-
-    function setCompilerById(id) {
-        var compilerNode = domRoot.find('.compiler');
-        compilerNode.text(compilersById[id].name);
-        compilerNode.attr('data', id);
+        this.container.layoutManager.createDragSource(
+            this.domRoot.find('.btn.add-compiler'), cloneComponent);
+        this.domRoot.find('.btn.add-compiler').click(_.bind(function () {
+            var insertPoint = hub.findParentRowOrColumn(this.container)
+                || this.container.layoutManager.root.contentItems[0];
+            insertPoint.addChild(cloneComponent());
+        }, this));
     }
 
-    function currentCompilerId() {
-        return domRoot.find('.compiler').attr('data');
-    }
+    Compiler.prototype.refresh = function () {
+        this.outputEditor.refresh();
+    };
 
-    function currentCompiler() {
-        return compilersById[currentCompilerId()];
-    }
+    // TODO: need to call resize if either .top-bar or .bottom-bar resizes, which needs some work.
+    // Issue manifests if you make a window where one compiler is small enough that the buttons spill onto two lines:
+    // reload the page and the bottom-bar is off the bottom until you scroll a tiny bit.
+    Compiler.prototype.resize = function () {
+        var topBarHeight = this.domRoot.find(".top-bar").outerHeight(true);
+        var bottomBarHeight = this.domRoot.find(".bottom-bar").outerHeight(true);
+        this.outputEditor.setSize(this.domRoot.width(), this.domRoot.height() - topBarHeight - bottomBarHeight);
+        this.refresh();
+    };
 
-    $('.autocompile').click(function () {
-        $('.autocompile').toggleClass('active');
-        onChange();
-        setSetting('autocompile', $('.autocompile').hasClass('active'));
-    });
-    $('.autocompile').toggleClass('active', getSetting("autocompile") !== "false");
-
-    function patchUpFilters(filters) {
-        filters = $.extend({}, filters);
-        var compiler = currentCompiler();
-        var compilerSupportsBinary = compiler ? compiler.supportsBinary : true;
-        if (filters.binary && !(OPTIONS.supportsBinary && compilerSupportsBinary)) {
-            filters.binary = false;
+    // Gets the filters that will actually be used (accounting for issues with binary
+    // mode etc).
+    Compiler.prototype.getEffectiveFilters = function () {
+        if (!this.compiler) return {};
+        var filters = this.filters.get();
+        if (filters.binary && !this.compiler.supportsBinary) {
+            delete filters.binary;
         }
         return filters;
-    }
+    };
 
-    var cmMode;
-    switch (lang.toLowerCase()) {
-        default:
-            cmMode = "text/x-c++src";
-            break;
-        case "c":
-            cmMode = "text/x-c";
-            break;
-        case "rust":
-            cmMode = "text/x-rustsrc";
-            break;
-        case "d":
-            cmMode = "text/x-d";
-            break;
-        case "go":
-            cmMode = "text/x-go";
-            break;
-    }
+    Compiler.prototype.compile = function () {
+        var self = this;
+        var request = {
+            source: this.source || "",
+            compiler: this.compiler ? this.compiler.id : "",
+            options: this.options,
+            filters: this.getEffectiveFilters()
+        };
 
-    cppEditor = CodeMirror.fromTextArea(domRoot.find(".editor textarea")[0], {
-        lineNumbers: true,
-        matchBrackets: true,
-        useCPP: true,
-        mode: cmMode
-    });
-    cppEditor.on("change", function () {
-        if ($('.autocompile').hasClass('active')) {
-            onChange();
-        }
-    });
-    asmCodeMirror = CodeMirror.fromTextArea(domRoot.find(".asm textarea")[0], {
-        lineNumbers: true,
-        mode: "text/x-asm",
-        readOnly: true,
-        gutters: ['CodeMirror-linenumbers']
-    });
-
-    function getSetting(name) {
-        return window.localStorage[windowLocalPrefix + "." + name];
-    }
-
-    function setSetting(name, value) {
-        window.localStorage[windowLocalPrefix + "." + name] = value;
-    }
-
-    var codeText = getSetting('code');
-    if (!codeText) codeText = $(".template.lang." + lang.replace(/[^a-zA-Z]/g, '').toLowerCase()).text();
-    if (codeText) cppEditor.setValue(codeText);
-    domRoot.find('.compiler_options').change(onChange).keyup(onChange);
-    ignoreChanges = false;
-
-    if (getSetting('compilerOptions')) {
-        domRoot.find('.compiler_options').val(getSetting('compilerOptions'));
-    }
-
-    function makeErrNode(text) {
-        var clazz = "error";
-        if (text.match(/^warning/)) clazz = "warning";
-        if (text.match(/^note/)) clazz = "note";
-        var node = $('<div class="' + clazz + ' inline-msg"><span class="icon">!!</span><span class="msg"></span></div>');
-        node.find(".msg").text(text);
-        return node[0];
-    }
-
-    var errorWidgets = [];
-
-    function onCompileResponse(request, data) {
-        var stdout = data.stdout || "";
-        var stderr = data.stderr || "";
-        if (data.code === 0) {
-            stdout += "\nCompiled ok";
-        } else {
-            stderr += "\nCompilation failed";
-        }
-        if (_gaq) {
-            _gaq.push(['_trackEvent', 'Compile', request.compiler, request.options, data.code]);
-            _gaq.push(['_trackTiming', 'Compile', 'Timing', new Date() - request.timestamp]);
-        }
-        $('.result .output :visible').remove();
-        for (var i = 0; i < errorWidgets.length; ++i)
-            cppEditor.removeLineWidget(errorWidgets[i]);
-        errorWidgets.length = 0;
-        var numLines = 0;
-        var maxLines = 50;
-        parseLines(stderr + stdout, function (lineNum, msg) {
-            if (numLines > maxLines) return;
-            if (numLines === maxLines) {
-                lineNum = null;
-                msg = "Too many output lines...truncated";
-            }
-            numLines++;
-            var elem = $('.result .output .template').clone().appendTo('.result .output').removeClass('template');
-            if (lineNum) {
-                errorWidgets.push(cppEditor.addLineWidget(lineNum - 1, makeErrNode(msg), {
-                    coverGutter: false, noHScroll: true
-                }));
-                elem.html($('<a href="#">').text(lineNum + " : " + msg)).click(function () {
-                    cppEditor.setSelection({line: lineNum - 1, ch: 0}, {line: lineNum, ch: 0});
-                    return false;
-                });
-            } else {
-                elem.text(msg);
-            }
-        });
-        currentAssembly = data.asm || fakeAsm("[no output]");
-        updateAsm();
-    }
-
-    function numberUsedLines(asm) {
-        var sourceLines = {};
-        $.each(asm, function (_, x) {
-            if (x.source) sourceLines[x.source - 1] = true;
-        });
-        var ordinal = 0;
-        $.each(sourceLines, function (k, _) {
-            sourceLines[k] = ordinal++;
-        });
-        var asmLines = {};
-        $.each(asm, function (index, x) {
-            if (x.source) asmLines[index] = sourceLines[x.source - 1];
-        });
-        return {source: sourceLines, asm: asmLines};
-    }
-
-    var lastUpdatedAsm = null;
-
-    function updateAsm(forceUpdate) {
-        if (!currentAssembly) return;
-        var hashedUpdate = JSON.stringify(currentAssembly);
-        if (!forceUpdate && lastUpdatedAsm == hashedUpdate) {
+        if (!this.compiler) {
+            this.onCompileResponse(request, errorResult("Please select a compiler"));
             return;
         }
-        lastUpdatedAsm = hashedUpdate;
 
-        var asmText = $.map(currentAssembly, function (x) {
-            return x.text;
-        }).join("\n");
-        var numberedLines = numberUsedLines(currentAssembly);
+        var cacheableRequest = JSON.stringify(request);
+        if (cacheableRequest === this.lastRequestRespondedTo) return;
+        // only set the request timestamp after checking cache; else we'll always fetch
+        request.timestamp = Date.now();
 
-        cppEditor.operation(function () {
-            clearBackground(cppEditor);
+        this.debouncedAjax({
+            type: 'POST',
+            url: '/compile',
+            dataType: 'json',
+            contentType: 'application/json',
+            data: JSON.stringify(request),
+            success: _.bind(function (result) {
+                if (result.okToCache) {
+                    this.lastRequestRespondedTo = cacheableRequest;
+                } else {
+                    this.lastRequestRespondedTo = "";
+                }
+                self.onCompileResponse(request, result);
+            }, this),
+            error: _.bind(function (xhr, e_status, error) {
+                this.lastRequestRespondedTo = "";
+                self.onCompileResponse(request, errorResult("Remote compilation failed: " + error));
+            }, this),
+            cache: false
         });
-        var filters = currentFilters();
-        asmCodeMirror.operation(function () {
-            asmCodeMirror.setValue(asmText);
-            clearBackground(asmCodeMirror);
-            var addrToAddrDiv = {};
-            $.each(currentAssembly, function (line, obj) {
-                var address = obj.address ? obj.address.toString(16) : "";
-                var div = $("<div class='address cm-number'>" + address + "</div>");
-                addrToAddrDiv[address] = {div: div, line: line};
-                asmCodeMirror.setGutterMarker(line, 'address', div[0]);
-            });
-            $.each(currentAssembly, function (line, obj) {
-                var opcodes = $("<div class='opcodes'></div>");
-                if (obj.opcodes) {
-                    var title = [];
-                    $.each(obj.opcodes, function (_, op) {
-                        var opcodeNum = "00" + op.toString(16);
-                        opcodeNum = opcodeNum.substr(opcodeNum.length - 2);
-                        title.push(opcodeNum);
-                        var opcode = $("<span class='opcode'>" + opcodeNum + "</span>");
-                        opcodes.append(opcode);
-                    });
-                    opcodes.attr('title', title.join(" "));
-                }
-                asmCodeMirror.setGutterMarker(line, 'opcodes', opcodes[0]);
-                if (obj.links) {
-                    $.each(obj.links, function (_, link) {
-                        var from = {line: line, ch: link.offset};
-                        var to = {line: line, ch: link.offset + link.length};
-                        var address = link.to.toString(16);
-                        var thing = $("<a href='#' class='cm-number'>" + address + "</a>");
-                        asmCodeMirror.markText(
-                            from, to, {replacedWith: thing[0], handleMouseEvents: false});
-                        var dest = addrToAddrDiv[address];
-                        if (dest) {
-                            thing.on('hover', function (e) {
-                                var entered = e.type == "mouseenter";
-                                dest.div.toggleClass("highlighted", entered);
-                                thing.toggleClass("highlighted", entered);
-                            });
-                            thing.on('click', function (e) {
-                                asmCodeMirror.scrollIntoView({line: dest.line, ch: 0}, 30);
-                                dest.div.toggleClass("highlighted", false);
-                                thing.toggleClass("highlighted", false);
-                            });
-                        }
-                    });
-                }
-            });
-            if (filters.binary) {
-                asmCodeMirror.setOption('lineNumbers', false);
-                asmCodeMirror.setOption('gutters', ['address', 'opcodes']);
-            } else {
-                asmCodeMirror.setOption('lineNumbers', true);
-                asmCodeMirror.setOption('gutters', ['CodeMirror-linenumbers']);
+    };
+
+    Compiler.prototype.setAssembly = function (assembly) {
+        this.assembly = assembly;
+        this.outputEditor.setValue(_.pluck(assembly, 'text').join("\n"));
+
+        var addrToAddrDiv = {};
+        _.each(this.assembly, _.bind(function (obj, line) {
+            var address = obj.address ? obj.address.toString(16) : "";
+            var div = $("<div class='address cm-number'>" + address + "</div>");
+            addrToAddrDiv[address] = {div: div, line: line};
+            this.outputEditor.setGutterMarker(line, 'address', div[0]);
+        }, this));
+
+        _.each(this.assembly, _.bind(function (obj, line) {
+            var opcodes = $("<div class='opcodes'></div>");
+            if (obj.opcodes) {
+                var title = [];
+                _.each(obj.opcodes, function (op) {
+                    var opcodeNum = "00" + op.toString(16);
+                    opcodeNum = opcodeNum.substr(opcodeNum.length - 2);
+                    title.push(opcodeNum);
+                    var opcode = $("<span class='opcode'>" + opcodeNum + "</span>");
+                    opcodes.append(opcode);
+                });
+                opcodes.attr('title', title.join(" "));
             }
-        });
-        if (filters.colouriseAsm) {
-            cppEditor.operation(function () {
-                $.each(numberedLines.source, function (line, ordinal) {
-                    cppEditor.addLineClass(parseInt(line),
-                        "background", "rainbow-" + (ordinal % NumRainbowColours));
-                });
-            });
-            asmCodeMirror.operation(function () {
-                $.each(numberedLines.asm, function (line, ordinal) {
-                    asmCodeMirror.addLineClass(parseInt(line),
-                        "background", "rainbow-" + (ordinal % NumRainbowColours));
-                });
-            });
-        }
+            this.outputEditor.setGutterMarker(line, 'opcodes', opcodes[0]);
+            if (obj.links) {
+                _.each(obj.links, _.bind(function (link) {
+                    var from = {line: line, ch: link.offset};
+                    var to = {line: line, ch: link.offset + link.length};
+                    var address = link.to.toString(16);
+                    var thing = $("<a href='#' class='cm-number'>" + address + "</a>");
+                    this.outputEditor.markText(
+                        from, to, {replacedWith: thing[0], handleMouseEvents: false});
+                    var dest = addrToAddrDiv[address];
+                    if (dest) {
+                        var editor = this.outputEditor;
+                        thing.hover(function (e) {
+                            var entered = e.type == "mouseenter";
+                            dest.div.toggleClass("highlighted", entered);
+                            thing.toggleClass("highlighted", entered);
+                        });
+                        thing.on('click', function (e) {
+                            editor.scrollIntoView({line: dest.line, ch: 0}, 30);
+                            dest.div.toggleClass("highlighted", false);
+                            thing.toggleClass("highlighted", false);
+                            e.preventDefault();
+                        });
+                    }
+                }, this));
+            }
+        }, this));
+    };
+
+    function errorResult(text) {
+        return {asm: fakeAsm(text), code: -1, stdout: "", stderr: ""};
     }
 
     function fakeAsm(text) {
-        return [{text: text, source: null}];
+        return [{text: text, source: null, fake: true}];
     }
 
-    function onChange() {
-        if (ignoreChanges) return;  // Ugly hack during startup.
-        if (pendingTimeout) clearTimeout(pendingTimeout);
-        pendingTimeout = setTimeout(function () {
-            var data = {
-                source: cppEditor.getValue(),
-                compiler: currentCompilerId(),
-                options: $('.compiler_options').val(),
-                filters: currentFilters()
-            };
-            setSetting('compiler', data.compiler);
-            setSetting('compilerOptions', data.options);
-            var stringifiedReq = JSON.stringify(data);
-            if (stringifiedReq == lastRequest) return;
-            lastRequest = stringifiedReq;
-            data.timestamp = new Date();
-            $.ajax({
-                type: 'POST',
-                url: '/compile',
-                dataType: 'json',
-                contentType: 'application/json',
-                data: JSON.stringify(data),
-                success: function (result) {
-                    onCompileResponse(data, result);
-                }
-            });
-            currentAssembly = fakeAsm("[Processing...]");
-            updateAsm();
-        }, 750);
-        setSetting('code', cppEditor.getValue());
-        updateAsm();
-        onChangeCallback();
-    }
+    Compiler.prototype.onCompileResponse = function (request, result) {
+        this.lastResult = result;
+        ga('send', 'event', 'Compile', request.compiler, request.options, result.code);
+        ga('send', 'timing', 'Compile', 'Timing', Date.now() - request.timestamp);
+        this.outputEditor.operation(_.bind(function () {
+            this.setAssembly(result.asm || fakeAsm("[no output]"));
+            if (request.filters.binary) {
+                this.outputEditor.setOption('lineNumbers', false);
+                this.outputEditor.setOption('gutters', ['address', 'opcodes']);
+            } else {
+                this.outputEditor.setOption('lineNumbers', true);
+                this.outputEditor.setOption('gutters', ['CodeMirror-linenumbers']);
+            }
+        }, this));
+        var status = this.domRoot.find(".status");
+        var allText = result.stdout + result.stderr;
+        var failed = result.code !== 0;
+        var warns = !failed && !!allText;
+        status.toggleClass('error', failed);
+        status.toggleClass('warning', warns);
+        status.attr('title', allText);
+        this.eventHub.emit('compileResult', this.id, this.compiler, result);
+    };
 
-    function setSource(code) {
-        cppEditor.setValue(code);
-    }
+    Compiler.prototype.onEditorChange = function (editor, source) {
+        if (editor === this.sourceEditorId) {
+            this.source = source;
+            this.compile();
+        }
+    };
 
-    function getSource() {
-        return cppEditor.getValue();
-    }
+    Compiler.prototype.updateButtons = function () {
+        if (!this.compiler) return;
+        var filters = this.getEffectiveFilters();
+        // We can support intel output if the compiler supports it, or if we're compiling
+        // to binary (as we can disassemble it however we like).
+        var intelAsm = this.compiler.intelAsm || filters.binary;
+        this.domRoot.find("[data-bind='intel']").toggleClass("disabled", !intelAsm);
+        // Disable binary support on compilers that don't work with it.
+        this.domRoot.find("[data-bind='binary']")
+            .toggleClass("disabled", !this.compiler.supportsBinary);
+        // Disable any of the options which don't make sense in binary mode.
+        this.domRoot.find('.nonbinary').toggleClass("disabled", !!filters.binary && !this.compiler.isCl);
+    };
 
-    function serialiseState(compress) {
+    Compiler.prototype.onOptionsChange = function (options) {
+        this.options = options;
+        this.saveState();
+        this.compile();
+        this.updateButtons();
+    };
+
+    Compiler.prototype.onCompilerChange = function (value) {
+        this.compiler = compilersById[value];
+        this.saveState();
+        this.compile();
+        this.updateButtons();
+        this.updateCompilerName();
+    };
+
+    Compiler.prototype.onEditorClose = function (editor) {
+        if (editor === this.sourceEditorId) {
+            this.container.close();
+        }
+    };
+
+    Compiler.prototype.onFilterChange = function () {
+        this.saveState();
+        this.compile();
+        this.updateButtons();
+    };
+
+    Compiler.prototype.currentState = function () {
         var state = {
-            compiler: currentCompilerId(),
-            options: domRoot.find('.compiler_options').val()
+            compiler: this.compiler ? this.compiler.id : "",
+            options: this.options,
+            source: this.editor,
+            filters: this.filters.get()  // NB must *not* be effective filters
         };
-        if (compress) {
-            state.sourcez = LZString.compressToBase64(cppEditor.getValue());
-        } else {
-            state.source = cppEditor.getValue();
-        }
+        this.fontScale.addState(state);
         return state;
-    }
+    };
 
-    function deserialiseState(state) {
-        if (state.hasOwnProperty('sourcez')) {
-            cppEditor.setValue(LZString.decompressFromBase64(state.sourcez));
-        } else {
-            cppEditor.setValue(state.source);
+    Compiler.prototype.saveState = function () {
+        this.container.setState(this.currentState());
+    };
+
+    Compiler.prototype.onColours = function (editor, colours) {
+        if (editor == this.sourceEditorId) {
+            var asmColours = {};
+            _.each(this.assembly, function (x, index) {
+                if (x.source) asmColours[index] = colours[x.source - 1];
+            });
+            colour.applyColours(this.outputEditor, asmColours);
         }
-        state.compiler = mapCompiler(state.compiler);
-        setCompilerById(state.compiler);
-        domRoot.find('.compiler_options').val(state.options);
-        // Somewhat hackily persist compiler into local storage else when the ajax response comes in
-        // with the list of compilers it can splat over the deserialized version.
-        // The whole serialize/hash/localStorage code is a mess! TODO(mg): fix
-        setSetting('compiler', state.compiler);
-        updateAsm(true);  // Force the update to reset colours after calling cppEditor.setValue
-        return true;
-    }
+    };
 
-    function updateCompilerAndButtons() {
-        var compiler = currentCompiler();
-        $(".compilerVersion").text(compiler.name + " (" + compiler.version + ")");
-        var filters = currentFilters();
-        var supportsIntel = compiler.intelAsm || filters.binary;
-        domRoot.find('.filter button.btn[value="intel"]').toggleClass("disabled", !supportsIntel);
-        domRoot.find('.filter button.btn[value="binary"]').toggleClass("disabled", !compiler.supportsBinary).toggle(OPTIONS.supportsBinary);
-        domRoot.find('.filter .nonbinary').toggleClass("disabled", !!filters.binary && !compiler.isCl);
-    }
+    Compiler.prototype.updateCompilerName = function () {
+        var compilerName = this.compiler ? this.compiler.name : "no compiler set";
+        var compilerVersion = this.compiler ? this.compiler.version : "";
+        this.container.setTitle("#" + this.sourceEditorId + " with " + compilerName);
+        this.domRoot.find(".full-compiler-name").text(compilerVersion);
+    };
 
-    function onCompilerChange() {
-        onChange();
-        updateCompilerAndButtons();
-    }
-
-    function mapCompiler(compiler) {
-        if (!compilersById[compiler]) {
-            // Handle old settings and try the alias table.
-            compiler = compilersByAlias[compiler];
-            if (compiler) compiler = compiler.id;
+    Compiler.prototype.onResendCompilation = function (id) {
+        if (id == this.id && this.lastResult) {
+            this.eventHub.emit('compileResult', this.id, this.compiler, this.lastResult);
         }
-        return compiler;
-    }
-
-    function setCompilers(compilers, defaultCompiler) {
-        domRoot.find('.compilers li').remove();
-        compilersById = {};
-        compilersByAlias = {};
-        $.each(compilers, function (index, arg) {
-            compilersById[arg.id] = arg;
-            if (arg.alias) compilersByAlias[arg.alias] = arg;
-            var elem = $('<li><a href="#">' + arg.name + '</a></li>');
-            domRoot.find('.compilers').append(elem);
-            (function () {
-                elem.click(function () {
-                    setCompilerById(arg.id);
-                    onCompilerChange();
-                });
-            })(elem.find("a"), arg.id);
-        });
-        var compiler = getSetting('compiler');
-        if (!compiler) compiler = defaultCompiler;
-        compiler = mapCompiler(compiler);
-        if (compiler) {
-            setCompilerById(compiler);
-        }
-        onCompilerChange();
-    }
-
-    function currentFilters() {
-        return patchUpFilters(filters_);
-    }
-
-    function setFilters(f) {
-        filters_ = $.extend({}, f);
-        onChange();
-        updateCompilerAndButtons();
-    }
-
-    function setEditorHeight(height) {
-        const MinHeight = 100;
-        if (height < MinHeight) height = MinHeight;
-        cppEditor.setSize(null, height);
-        asmCodeMirror.setSize(null, height);
-    }
+    };
 
     return {
-        serialiseState: serialiseState,
-        deserialiseState: deserialiseState,
-        setCompilers: setCompilers,
-        getSource: getSource,
-        setSource: setSource,
-        setFilters: setFilters,
-        setEditorHeight: setEditorHeight
+        Compiler: Compiler,
+        getComponent: function (editorId) {
+            return {
+                type: 'component',
+                componentName: 'compiler',
+                componentState: {source: editorId}
+            };
+        },
+        getComponentWith: function (editorId, filters, options, compilerId) {
+            return {
+                type: 'component',
+                componentName: 'compiler',
+                componentState: {
+                    source: editorId,
+                    filters: filters,
+                    options: options,
+                    compiler: compilerId
+                }
+            };
+        }
     };
-}
+});

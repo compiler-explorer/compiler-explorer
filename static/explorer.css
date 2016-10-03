@@ -1,0 +1,200 @@
+@import url("ext/bootstrap/dist/css/bootstrap.min.css");
+@import url("ext/codemirror/lib/codemirror.css");
+@import url("ext/golden-layout/src/css/goldenlayout-base.css");
+@import url("ext/golden-layout/src/css/goldenlayout-light-theme.css");
+@import url("ext/selectize/dist/css/selectize.bootstrap2.css");
+
+.navbar {
+    border-radius: 0px;
+    margin-bottom: 5px;
+}
+.template {
+    display: none;
+}
+
+.compiler-picker {
+    width: 14em;
+}
+
+.CodeMirror {
+    font-size: 10pt;
+}
+
+input.options {
+    width: 98%;
+    margin-left: 0.25em;
+    margin-right: 0.25em;
+}
+
+#root {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+.btn.active {
+    color: #fff !important;
+    border-color: #46b8da !important;
+    background-color: #5bc0de !important;
+}
+
+#changetip_tipme_button {
+    width: 80px;
+}
+
+#flattr_button {
+    width: 120px;
+}
+
+.inline-msg {
+    font-family: arial;
+    font-size: 70%;
+    padding: 2px 5px 3px;
+}
+
+.inline-msg .compiler {
+    font-style: italic;
+    float: right;
+}
+
+span.icon {
+    border-radius: 50%;
+    padding: 0 3px;
+    margin-right: 7px;
+}
+
+.error {
+    background: #faa !important;
+    color: #a00;
+}
+
+.error span.icon {
+    color: white;
+    background-color: red;
+    font-weight: bold;
+}
+
+.warning {
+    background: #ffa !important;
+    color: #440;
+}
+
+.warning span.icon {
+    color: black;
+    background-color: yellow;
+}
+
+.note {
+    background: #aaf !important;
+    color: #00a;
+}
+
+.note span.icon {
+    color: white;
+    background-color: blue;
+}
+
+/* These colours from Cynthia Brewer's excellent page at
+ * http://colorbrewer2.org/
+ */
+.rainbow-0 {
+    background: rgb(141, 211, 199) !important;
+}
+
+.rainbow-1 {
+    background: rgb(255, 255, 179) !important;
+}
+
+.rainbow-2 {
+    background: rgb(190, 186, 218) !important;
+}
+
+.rainbow-3 {
+    background: rgb(251, 128, 114) !important;
+}
+
+.rainbow-4 {
+    background: rgb(128, 177, 211) !important;
+}
+
+.rainbow-5 {
+    background: rgb(253, 180, 98) !important;
+}
+
+.rainbow-6 {
+    background: rgb(179, 222, 105) !important;
+}
+
+.rainbow-7 {
+    background: rgb(252, 205, 229) !important;
+}
+
+.rainbow-8 {
+    background: rgb(217, 217, 217) !important;
+}
+
+.rainbow-9 {
+    background: rgb(188, 128, 189) !important;
+}
+
+.rainbow-10 {
+    background: rgb(204, 234, 197) !important;
+}
+
+.rainbow-11 {
+    background: rgb(255, 237, 111) !important;
+}
+
+.address {
+    width: 5em;
+    font-size: smaller;
+}
+
+.opcodes {
+    width: 7em;
+    overflow: hidden;
+    font-size: smaller;
+}
+
+.opcode {
+    color: #066;
+    margin-right: 0.2em;
+}
+
+.opcode:nth-child(odd) {
+    color: #060;
+}
+
+.highlighted {
+    background-color: rgba(255, 0, 0, 0.2);
+    color: #0000b0;
+    font-weight: bold;
+}
+
+.decrease-font-size span.glyphicon {
+    font-size: 70%;
+}
+
+.reset-font-size span.glyphicon {
+    font-size: 90%;
+}
+
+.increase-font-size span.glyphicon {
+    font-size: 110%;
+}
+
+.lm_splitter.lm_vertical .lm_drag_handle {
+    height: 10px;
+    top: -2.5px;
+}
+
+.lm_splitter.lm_horizontal .lm_drag_handle {
+    width: 10px;
+    left: -2.5px;
+}
+
+pre.content {
+    width: 100%;
+    height: 100%;
+}
