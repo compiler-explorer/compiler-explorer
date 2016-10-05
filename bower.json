@@ -16,11 +16,11 @@
     "tests"
   ],
   "dependencies": {
-    "codemirror": "CodeMirror#^5.17.0",
-    "requirejs": "^2.2.0",
+    "codemirror": "CodeMirror#^5.19.0",
+    "requirejs": "^2.3.2",
     "underscore": "^1.8.3",
     "golden-layout": "^1.5.6",
-    "jquery": "^3.1.0",
+    "jquery": "^3.1.1",
     "bootstrap": "^3.3.7",
     "selectize": "^0.12.2",
     "eventEmitter": "^5.1.0",

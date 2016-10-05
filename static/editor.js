@@ -76,6 +76,8 @@ define(function (require) {
             lineNumbers: true,
             matchBrackets: true,
             useCPP: true,
+            dragDrop: false,
+            extraKeys: { "Alt-F": false }, // see https://github.com/mattgodbolt/gcc-explorer/pull/131
             mode: cmMode
         });
 
@@ -87,12 +89,6 @@ define(function (require) {
         } else if (defaultSrc) {
             this.editor.setValue(defaultSrc);
         }
-
-        // With reference to "fix typing '#' in emacs mode"
-        // https://github.com/mattgodbolt/gcc-explorer/pull/131
-        this.editor.setOption("extraKeys", {
-            "Alt-F": false
-        });
 
         // We suppress posting changes until the user has stopped typing by:
         // * Using _.debounce() to run emitChange on any key event or change
