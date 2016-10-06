@@ -114,8 +114,8 @@ define(function (require) {
         var outputConfig = _.bind(function () {
             return output.getComponent(this.id, this.sourceEditorId);
         }, this);
-        this.container.layoutManager.createDragSource(this.domRoot.find(".status"), outputConfig);
-        this.domRoot.find(".status").click(_.bind(function () {
+        this.container.layoutManager.createDragSource(this.domRoot.find(".status").parent(), outputConfig);
+        this.domRoot.find(".status").parent().click(_.bind(function () {
             var insertPoint = hub.findParentRowOrColumn(this.container)
                 || this.container.layoutManager.root.contentItems[0];
             insertPoint.addChild(outputConfig());
@@ -286,7 +286,7 @@ define(function (require) {
         var warns = !failed && !!allText;
         status.toggleClass('error', failed);
         status.toggleClass('warning', warns);
-        status.attr('title', allText);
+        status.parent().attr('title', allText);
         this.eventHub.emit('compileResult', this.id, this.compiler, result);
     };
 
