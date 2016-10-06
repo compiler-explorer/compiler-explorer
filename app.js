@@ -278,12 +278,16 @@ function configuredCompilers() {
                     }).on('timeout', function () {
                         reject("timeout");
                     });
-                    request.setTimeout(1000);
+                    request.setTimeout(awsProps('proxyTimeout', 1000));
                 });
             },
             host + ":" + port,
-            gccProps('proxyRetries', 20),
-            gccProps('proxyRetryMs', 500));
+            awsProps('proxyRetries', 5),
+            awsProps('proxyRetryMs', 500))
+            .catch(function () {
+                console.log("Unable to contact " + host + ":" + port + "; skipping");
+                return [];
+            });
     }
 
     function fetchAws() {
@@ -513,5 +517,6 @@ findCompilers().then(function (compilers) {
     console.log("=======================================");
     webServer.listen(port, hostname);
 }).catch(function (err) {
-    console.log("Error: " + err.stack);
+    console.log("Error: " + err);
+    process.exit(1);
 });
