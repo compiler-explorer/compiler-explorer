@@ -271,13 +271,13 @@ define(function (require) {
         ga('send', {
             hitType: 'event',
             eventCategory: 'Compile',
-            eventAction: request.compiler.name,
+            eventAction: request.compiler,
             eventLabel: request.options
         });
         ga('send', {
             hitType: 'timing',
             timingCategory: 'Compile',
-            timingVar: request.compiler.name,
+            timingVar: request.compiler,
             timingValue: Date.now() - request.timestamp
         });
         this.outputEditor.operation(_.bind(function () {
