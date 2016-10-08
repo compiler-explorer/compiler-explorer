@@ -268,8 +268,18 @@ define(function (require) {
 
     Compiler.prototype.onCompileResponse = function (request, result) {
         this.lastResult = result;
-        ga('send', 'event', 'Compile', request.compiler, request.options, result.code);
-        ga('send', 'timing', 'Compile', 'Timing', Date.now() - request.timestamp);
+        ga('send', {
+            hitType: 'event',
+            eventCategory: 'Compile',
+            eventAction: request.compiler,
+            eventLabel: request.options
+        });
+        ga('send', {
+            hitType: 'timing',
+            timingCategory: 'Compile',
+            timingVar: request.compiler,
+            timingValue: Date.now() - request.timestamp
+        });
         this.outputEditor.operation(_.bind(function () {
             this.setAssembly(result.asm || fakeAsm("[no output]"));
             if (request.filters.binary) {

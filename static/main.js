@@ -89,7 +89,12 @@ define(function (require) {
     });
 
     if (!config) {
-        var savedState = localStorage.getItem('gl');
+        var savedState = null;
+        try {
+            savedState = window.localStorage.getItem('gl');
+        } catch (e) {
+            // Some browsers in secure modes can throw exceptions here...
+        }
         config = savedState !== null ? JSON.parse(savedState) : defaultConfig;
     }
 
@@ -104,7 +109,11 @@ define(function (require) {
     }
     layout.on('stateChanged', function () {
         var state = JSON.stringify(layout.toConfig());
-        localStorage.setItem('gl', state);
+        try {
+            window.localStorage.setItem('gl', state);
+        } catch (e) {
+            // Some browsers in secure modes may throw
+        }
     });
 
     function sizeRoot() {
