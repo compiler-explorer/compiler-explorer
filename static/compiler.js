@@ -33,6 +33,7 @@ define(function (require) {
     var Toggles = require('toggles');
     var FontScale = require('fontscale');
     var output = require('output');
+    var Promise = require('es6-promise').Promise;
 
     require('asm-mode');
     require('selectize');
@@ -300,10 +301,39 @@ define(function (require) {
         this.eventHub.emit('compileResult', this.id, this.compiler, result);
     };
 
+    Compiler.prototype.expand = function (source) {
+        var includeFind = /^\s*#include\s*["<](https?:\/\/[^>"]+)[>"]$/;
+        var lines = source.split("\n");
+        var promises = [];
+        _.each(lines, function (line, lineNumZeroBased) {
+            var match = line.match(includeFind);
+            if (match) {
+                console.log(line, lineNumZeroBased);
+                promises.push(new Promise(function (resolve, reject) {
+                    var req = $.get(match[1], function (data) {
+                        data = '# 1 "' + match[1] + '"\n' + data + '\n\n# ' +
+                            (lineNumZeroBased + 1) + ' "<stdin>"\n';
+
+                        lines[lineNumZeroBased] = data;
+                        resolve();
+                    });
+                    req.fail(function () {
+                        resolve();
+                    });
+                }));
+            }
+        });
+        return Promise.all(promises).then(function () {
+            return lines.join("\n");
+        });
+    };
+
     Compiler.prototype.onEditorChange = function (editor, source) {
         if (editor === this.sourceEditorId) {
-            this.source = source;
-            this.compile();
+            this.expand(source).then(_.bind(function (expanded) {
+                this.source = expanded;
+                this.compile();
+            }, this));
         }
     };
 

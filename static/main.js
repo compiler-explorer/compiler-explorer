@@ -35,7 +35,8 @@ require.config({
         events: 'ext/eventEmitter/EventEmitter',
         lzstring: 'ext/lz-string/libs/lz-string',
         clipboard: 'ext/clipboard/dist/clipboard',
-        'raven-js': 'ext/raven-js/dist/raven'
+        'raven-js': 'ext/raven-js/dist/raven',
+        'es6-promise': 'ext/es6-promise/es6-promise'
     },
     packages: [{
         name: "codemirror",
