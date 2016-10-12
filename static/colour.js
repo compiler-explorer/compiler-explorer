@@ -26,6 +26,8 @@
 define(function (require) {
     "use strict";
 
+    var _ = require('underscore');
+
     var NumRainbowColours = 12;
 
     function clearBackground(editor) {

@@ -27,6 +27,7 @@ define(function (require) {
     "use strict";
     var CodeMirror = require('codemirror');
     var _ = require('underscore');
+    var $ = require('jquery');
     var colour = require('colour');
     var Toggles = require('toggles');
     var compiler = require('compiler');

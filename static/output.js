@@ -26,6 +26,8 @@
 define(function (require) {
     "use strict";
 
+    var _ = require('underscore');
+
     function Output(hub, container, state) {
         var self = this;
         this.container = container;
