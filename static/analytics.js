@@ -32,7 +32,7 @@ define(function (require) {
     if (options.raven) {
         Raven.config(options.raven, {
             release: options.release,
-            environment: options.environment
+            environment: options.environment.join("/")
         }).install();
     }
 
