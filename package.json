@@ -16,6 +16,7 @@
   },
   "main": "./app.js",
   "dependencies": {
+    "aws-sdk": "*",
     "body-parser": "1.14.x",
     "compression": "1.6.x",
     "express": "4.13.x",
@@ -34,7 +35,8 @@
   "devDependencies": {
     "supervisor": "*",
     "bower": "*",
-    "requirejs": "*"
+    "requirejs": "*",
+    "jshint": "*"
   },
   "scripts": {
     "test": "make test"

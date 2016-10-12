@@ -26,6 +26,7 @@
 define(function (require) {
     "use strict";
     var $ = require('jquery');
+    var _ = require('underscore');
 
     function LoadSave() {
         this.modal = $('#load-save');

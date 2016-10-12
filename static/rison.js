@@ -1,5 +1,5 @@
 // Taken from https://github.com/Nanonid/rison at 917679fb6cafa15e2a186cd5a47163792899b321
-
+/* jshint ignore:start */
 // Uses CommonJS, AMD or browser globals to create a module.
 // Based on: https://github.com/umdjs/umd/blob/master/commonjsStrict.js
 (function (root, factory) {

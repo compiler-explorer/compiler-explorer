@@ -117,8 +117,8 @@ define(function (require) {
         }, this);
         this.container.layoutManager.createDragSource(this.domRoot.find(".status").parent(), outputConfig);
         this.domRoot.find(".status").parent().click(_.bind(function () {
-            var insertPoint = hub.findParentRowOrColumn(this.container)
-                || this.container.layoutManager.root.contentItems[0];
+            var insertPoint = hub.findParentRowOrColumn(this.container) || 
+                this.container.layoutManager.root.contentItems[0];
             insertPoint.addChild(outputConfig());
         }, this));
 
@@ -133,8 +133,8 @@ define(function (require) {
         this.container.layoutManager.createDragSource(
             this.domRoot.find('.btn.add-compiler'), cloneComponent);
         this.domRoot.find('.btn.add-compiler').click(_.bind(function () {
-            var insertPoint = hub.findParentRowOrColumn(this.container)
-                || this.container.layoutManager.root.contentItems[0];
+            var insertPoint = hub.findParentRowOrColumn(this.container) || 
+                this.container.layoutManager.root.contentItems[0];
             insertPoint.addChild(cloneComponent());
         }, this));
     }
@@ -347,8 +347,8 @@ define(function (require) {
         // Disable binary support on compilers that don't work with it.
         this.domRoot.find("[data-bind='binary']")
             .toggleClass("disabled", !this.compiler.supportsBinary);
-        // Disable any of the options which don't make sense in binary mode
-        this.domRoot.find('.nonbinary').toggleClass("disabled", !!filters.binary);
+        // Disable any of the options which don't make sense in binary mode.
+        this.domRoot.find('.nonbinary').toggleClass("disabled", !!filters.binary && !this.compiler.isCl);
     };
 
     Compiler.prototype.onOptionsChange = function (options) {

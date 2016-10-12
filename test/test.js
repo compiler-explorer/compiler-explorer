@@ -24,7 +24,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 // POSSIBILITY OF SUCH DAMAGE.
 
-var fs = require('fs');
+var fs = require('fs'), assert = require('assert');
 var asm = require('../lib/asm.js');
 
 function processAsm(filename, filters) {
@@ -49,28 +49,53 @@ function assertEq(a, b, context) {
     }
 }
 
-function testFilter(filename, suffix, filters, withSource) {
+function bless(filename, output, filters) {
+    var result = processAsm(filename, filters);
+    fs.writeFileSync(output, JSON.stringify(result, null, 2));
+}
+
+function testFilter(filename, suffix, filters) {
     var result = processAsm(filename, filters);
     var expected = filename + suffix;
+    var json = false;
+    var file;
     try {
-        var file = fs.readFileSync(expected, 'utf-8').split('\n');
+        file = fs.readFileSync(expected + '.json', 'utf-8');
+        json = true;
     } catch (e) {
-        console.log("Skipping non-existent test case " + expected);
-        return;
+    }
+    if (!file) {
+        try {
+            file = fs.readFileSync(expected, 'utf-8');
+        } catch (e) {
+            console.log("Skipping non-existent test case " + expected);
+            return;
+        }
+    }
+    if (json) {
+        file = JSON.parse(file);
+    } else {
+        file = file.split(/\r?\n/);
     }
     assertEq(file.length, result.length, expected);
-    if (file.length != result.length) return;
-    for (var i = 0; i < file.length; ++i) {
-        var lineExpected = result[i].text;
-        if (withSource && result[i].source) {
-            lineExpected += " @ " + result[i].source;
+    var count = Math.min(file.length, result.length);
+    for (var i = 0; i < count; ++i) {
+        if (json) {
+            try {
+                assert.deepEqual(file[i], result[i]);
+            } catch (e) {
+                throw new Error(e + " at " + expected + ":" + (i + 1));
+            }
+        } else {
+            var lineExpected = result[i].text;
+            assertEq(file[i], lineExpected, expected + ":" + (i + 1));
         }
-        assertEq(file[i], lineExpected, expected + ":" + (i + 1));
     }
 }
-cases.forEach(function (x) {
-    testFilter(x, "", {})
-});
+// bless("cases/cl-regex.asm", "cases/cl-regex.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
+// bless("cases/cl-regex.asm", "cases/cl-regex.asm.dlcb.json", {directives: true, labels: true, commentOnly: true, binary:true});
+// bless("cases/cl-maxarray.asm", "cases/cl-maxarray.asm.dlcb.json", {directives: true, labels: true, commentOnly: true, binary:true});
+
 cases.forEach(function (x) {
     testFilter(x, ".directives", {directives: true})
 });
@@ -82,10 +107,9 @@ cases.forEach(function (x) {
     testFilter(x, ".directives.labels.comments",
         {directives: true, labels: true, commentOnly: true})
 });
-
 cases.forEach(function (x) {
-    testFilter(x, ".dlc.source",
-        {directives: true, labels: true, commentOnly: true}, true)
+    testFilter(x, ".dlcb",
+        {directives: true, labels: true, commentOnly: true, binary: true})
 });
 
 if (failures) {

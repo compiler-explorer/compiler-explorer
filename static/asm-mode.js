@@ -83,6 +83,7 @@ define(function (require) {
                     stream.eatWhile(/.*/);
                     return "comment";
                 }
+                stream.eatWhile(/[^\s]*/);
                 return "word";
             }
         };

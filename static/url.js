@@ -31,6 +31,7 @@ define(function (require) {
     var editor = require('editor');
     var compiler = require('compiler');
     var lzstring = require('lzstring');
+    var _ = require('underscore');
 
     function convertOldState(state) {
         var sc = state.compilers[0];
