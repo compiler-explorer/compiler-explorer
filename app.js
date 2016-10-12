@@ -169,7 +169,7 @@ function ClientOptionsHandler(fileSources) {
             environment: env
         };
         text = JSON.stringify(options);
-    }
+    };
     this.handler = function getClientOptions(req, res) {
         res.set('Content-Type', 'application/json');
         res.set('Cache-Control', 'public, max-age=' + staticMaxAgeMs);
@@ -422,8 +422,8 @@ function shortUrlHandler(req, res, next) {
     var bits = req.url.split("/");
     if (bits.length !== 2 || req.method !== "GET") return next();
     var key = process.env.GOOGLE_API_KEY;
-    var googleApiUrl = 'https://www.googleapis.com/urlshortener/v1/url?shortUrl=http://goo.gl/'
-        + encodeURIComponent(bits[1]) + '&key=' + key;
+    var googleApiUrl = 'https://www.googleapis.com/urlshortener/v1/url?shortUrl=http://goo.gl/' + 
+        encodeURIComponent(bits[1]) + '&key=' + key;
     https.get(googleApiUrl, function (response) {
         var responseText = '';
         response.on('data', function (d) {
@@ -431,8 +431,8 @@ function shortUrlHandler(req, res, next) {
         });
         response.on('end', function () {
             if (response.statusCode != 200) {
-                console.log("Failed to resolve short URL " + bits[1] + " - got response "
-                    + response.statusCode + " : " + responseText);
+                console.log("Failed to resolve short URL " + bits[1] + " - got response " + 
+                    response.statusCode + " : " + responseText);
                 return next();
             }
 

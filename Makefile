@@ -17,7 +17,7 @@ endif
 endif
 
 .PHONY: clean run test run-amazon c-preload optional-d-support prereqs node_modules bower_modules
-.PHONY: dist
+.PHONY: dist lint
 prereqs: optional-d-support node_modules c-preload bower_modules
 
 ifeq "" "$(shell which gdc)"
@@ -39,12 +39,15 @@ $(BOWER_MODULES): bower.json $(NODE_MODULES)
 	$(NODE) ./node_modules/bower/bin/bower install
 	@touch $@
 
+lint: $(NODE_MODULES)
+	$(NODE) ./node_modules/.bin/jshint app.js $(shell find lib static -name '*.js' -not -path 'static/ext/*')
+
 LANG:=C++
 
 node_modules: $(NODE_MODULES)
 bower_modules: $(BOWER_MODULES)
 
-test:
+test: $(NODE_MODULES) lint
 	(cd test; $(NODE) test.js)
 	$(MAKE) -C c-preload test
 	@echo Tests pass

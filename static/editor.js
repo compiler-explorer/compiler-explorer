@@ -164,8 +164,8 @@ define(function (require) {
         this.container.layoutManager.createDragSource(
             this.domRoot.find('.btn.add-compiler'), compilerConfig);
         this.domRoot.find('.btn.add-compiler').click(_.bind(function () {
-            var insertPoint = hub.findParentRowOrColumn(this.container)
-                || this.container.layoutManager.root.contentItems[0];
+            var insertPoint = hub.findParentRowOrColumn(this.container) || 
+                this.container.layoutManager.root.contentItems[0];
             insertPoint.addChild(compilerConfig);
         }, this));
     }

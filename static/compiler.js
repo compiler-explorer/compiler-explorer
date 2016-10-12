@@ -117,8 +117,8 @@ define(function (require) {
         }, this);
         this.container.layoutManager.createDragSource(this.domRoot.find(".status").parent(), outputConfig);
         this.domRoot.find(".status").parent().click(_.bind(function () {
-            var insertPoint = hub.findParentRowOrColumn(this.container)
-                || this.container.layoutManager.root.contentItems[0];
+            var insertPoint = hub.findParentRowOrColumn(this.container) || 
+                this.container.layoutManager.root.contentItems[0];
             insertPoint.addChild(outputConfig());
         }, this));
 
@@ -133,8 +133,8 @@ define(function (require) {
         this.container.layoutManager.createDragSource(
             this.domRoot.find('.btn.add-compiler'), cloneComponent);
         this.domRoot.find('.btn.add-compiler').click(_.bind(function () {
-            var insertPoint = hub.findParentRowOrColumn(this.container)
-                || this.container.layoutManager.root.contentItems[0];
+            var insertPoint = hub.findParentRowOrColumn(this.container) || 
+                this.container.layoutManager.root.contentItems[0];
             insertPoint.addChild(cloneComponent());
         }, this));
     }

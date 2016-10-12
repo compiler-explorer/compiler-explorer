@@ -35,7 +35,8 @@
   "devDependencies": {
     "supervisor": "*",
     "bower": "*",
-    "requirejs": "*"
+    "requirejs": "*",
+    "jshint": "*"
   },
   "scripts": {
     "test": "make test"
