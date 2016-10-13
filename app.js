@@ -252,7 +252,7 @@ function configuredCompilers() {
         exes.push.apply(exes, toolchains);
     }
 
-    function fetchRemote(host, port) {
+    function fetchRemote(host, port, props) {
         console.log("Fetching compilers from remote source " + host + ":" + port);
         return retryPromise(function () {
                 return new Promise(function (resolve, reject) {
@@ -282,8 +282,8 @@ function configuredCompilers() {
                 });
             },
             host + ":" + port,
-            awsProps('proxyRetries', 5),
-            awsProps('proxyRetryMs', 500))
+            props('proxyRetries', 5),
+            props('proxyRetryMs', 500))
             .catch(function () {
                 console.log("Unable to contact " + host + ":" + port + "; skipping");
                 return [];
@@ -299,7 +299,7 @@ function configuredCompilers() {
                 if (awsProps("externalTestMode", false)) {
                     address = instance.PublicDnsName;
                 }
-                return fetchRemote(address, port);
+                return fetchRemote(address, port, awsProps);
             }));
         });
     }
@@ -309,7 +309,7 @@ function configuredCompilers() {
             var bits = name.split("@");
             var host = bits[0];
             var port = parseInt(bits[1]);
-            return fetchRemote(host, port);
+            return fetchRemote(host, port, gccProps);
         }
         if (name == "AWS") {
             return fetchAws();
