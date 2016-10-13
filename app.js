@@ -52,7 +52,7 @@ var opts = nopt({
     'static': [String]
 });
 
-// Set default values for ommited arguments
+// Set default values for omitted arguments
 var rootDir = opts.rootDir || './etc';
 var language = opts.language || "C++";
 var env = opts.env || ['dev'];
