@@ -308,7 +308,6 @@ define(function (require) {
         _.each(lines, function (line, lineNumZeroBased) {
             var match = line.match(includeFind);
             if (match) {
-                console.log(line, lineNumZeroBased);
                 promises.push(new Promise(function (resolve, reject) {
                     var req = $.get(match[1], function (data) {
                         data = '# 1 "' + match[1] + '"\n' + data + '\n\n# ' +
