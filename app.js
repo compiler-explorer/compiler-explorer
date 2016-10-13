@@ -103,7 +103,7 @@ function compilerProps(property, defaultValue) {
     return gccProps(property, defaultValue); // gccProps comes from lib/compile.js
 }
 require('./lib/compile').initialise(gccProps, compilerProps);
-var staticMaxAgeMs = gccProps('staticMaxAgeMs', 0);
+var staticMaxAgeSecs = gccProps('staticMaxAgeSecs', 0);
 
 var awsProps = props.propsFor("aws");
 var awsPoller = null;
@@ -176,7 +176,7 @@ function ClientOptionsHandler(fileSources) {
     };
     this.handler = function getClientOptions(req, res) {
         res.set('Content-Type', 'application/json');
-        res.set('Cache-Control', 'public, max-age=' + staticMaxAgeMs);
+        res.set('Cache-Control', 'public, max-age=' + staticMaxAgeSecs);
         res.end(text);
     };
 }
@@ -199,7 +199,7 @@ function getSource(req, res, next) {
         return;
     }
     action.apply(handler, bits.slice(3).concat(function (err, response) {
-        res.set('Cache-Control', 'public, max-age=' + staticMaxAgeMs);
+        res.set('Cache-Control', 'public, max-age=' + staticMaxAgeSecs);
         if (err) {
             res.end(JSON.stringify({err: err}));
         } else {
@@ -503,7 +503,7 @@ findCompilers().then(function (compilers) {
         .use(logger('combined'))
         .use(compression())
         .use(sFavicon(staticDir + '/favicon.ico'))
-        .use(sStatic(staticDir, {maxAge: staticMaxAgeMs}))
+        .use(sStatic(staticDir, {maxAge: staticMaxAgeSecs * 1000}))
         .use(bodyParser.json())
         .use(restreamer())
         .get('/client-options.json', clientOptionsHandler.handler)
