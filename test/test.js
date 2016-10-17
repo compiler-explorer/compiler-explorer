@@ -54,6 +54,12 @@ function bless(filename, output, filters) {
     fs.writeFileSync(output, JSON.stringify(result, null, 2));
 }
 
+function dump(file) {
+    for (var i = 0; i < file.length; ++i) {
+        console.log((i + 1) + " : " + JSON.stringify(file[i]));
+    }
+}
+
 function testFilter(filename, suffix, filters) {
     var result = processAsm(filename, filters);
     var expected = filename + suffix;
@@ -84,6 +90,10 @@ function testFilter(filename, suffix, filters) {
             try {
                 assert.deepEqual(file[i], result[i]);
             } catch (e) {
+                console.log("########### got ##########");
+                dump(result);
+                console.log("########### expected ##########");
+                dump(file);
                 throw new Error(e + " at " + expected + ":" + (i + 1));
             }
         } else {
@@ -95,6 +105,7 @@ function testFilter(filename, suffix, filters) {
 // bless("cases/cl-regex.asm", "cases/cl-regex.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
 // bless("cases/cl-regex.asm", "cases/cl-regex.asm.dlcb.json", {directives: true, labels: true, commentOnly: true, binary:true});
 // bless("cases/cl-maxarray.asm", "cases/cl-maxarray.asm.dlcb.json", {directives: true, labels: true, commentOnly: true, binary:true});
+// bless("cases/cl64-sum.asm", "cases/cl64-sum.asm.dlcb.json", {directives: true, labels: true, commentOnly: true, binary:true});
 
 cases.forEach(function (x) {
     testFilter(x, ".directives", {directives: true})
