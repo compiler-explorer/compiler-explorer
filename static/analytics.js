@@ -23,7 +23,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 // POSSIBILITY OF SUCH DAMAGE.
 
-define(function (require, exports) {
+define(function (require) {
     "use strict";
     var options = require('options');
     var Raven = require('raven-js');
@@ -36,6 +36,7 @@ define(function (require, exports) {
         }).install();
     }
 
+    var gaProxy;
     if (options.googleAnalyticsEnabled) {
         (function (i, s, o, g, r, a, m) {
             i.GoogleAnalyticsObject = r;
@@ -49,15 +50,17 @@ define(function (require, exports) {
             a.src = g;
             m.parentNode.insertBefore(a, m);
         })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
-        exports.ga = window.ga;
         ga('create', options.googleAnalyticsAccount, 'auto');
         ga('send', 'pageview');
+        gaProxy = function () {
+            window.ga.apply(window.ga, arguments);
+        };
     } else {
-        exports.ga = function () {
+        gaProxy = function () {
         };
     }
 
-    exports.initialise = function () {
+    function initialise() {
         $(function () {
             function create_script_element(id, url) {
                 var el = document.createElement('script');
@@ -84,5 +87,10 @@ define(function (require, exports) {
                 }(document, 'flattr_button'));
             }
         });
+    }
+
+    return {
+        ga: gaProxy,
+        initialise: initialise
     };
 });
