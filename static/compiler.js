@@ -82,14 +82,13 @@ define(function (require) {
         // Hide the binary option if the global options has it disabled.
         this.domRoot.find("[data-bind='binary']").toggle(options.supportsBinary);
 
-        var outputEditor = CodeMirror.fromTextArea(this.domRoot.find("textarea")[0], {
+        this.outputEditor = CodeMirror.fromTextArea(this.domRoot.find("textarea")[0], {
             lineNumbers: true,
             mode: "text/x-asm",
             readOnly: true,
             gutters: ['CodeMirror-linenumbers'],
             lineWrapping: true
         });
-        this.outputEditor = outputEditor;
 
         this.fontScale = new FontScale(this.domRoot, state);
         this.fontScale.on('change', _.bind(this.saveState, this));
