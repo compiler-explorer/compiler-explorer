@@ -20,12 +20,15 @@ endif
 .PHONY: dist lint
 prereqs: optional-d-support node_modules c-preload bower_modules
 
-ifeq "" "$(shell which gdc)"
-optional-d-support:
-	@echo "D language support disabled"
-else
+ifneq "" "$(shell which gdc)"
 optional-d-support:
 	$(MAKE) -C d
+else ifneq "" "$(shell which ${DMD})"
+optional-d-support:
+	$(MAKE) -C d
+else
+optional-d-support:
+	@echo "D language support disabled"
 endif
 
 NODE_MODULES=.npm-updated
