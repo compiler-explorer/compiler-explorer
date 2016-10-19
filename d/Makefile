@@ -1,6 +1,7 @@
 GDC?=gdc
+DMD?=dmd
 demangle: demangle.d
-ifeq "" "$(shell which $DMD)"
+ifneq "" "$(shell which $DMD)"
 	$(DMD) -O -release $< -of$@
 else
 	$(GDC) -O2 $< -o $@
