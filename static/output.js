@@ -45,31 +45,15 @@ define(function (require) {
         this.updateCompilerName();
     }
 
-    var lineRe = /^\/tmp\/[^:]+(:([0-9]+))?(:([0-9]+))?:\s*(.*)/;
-
-    function parseLines(lines, callback) {
-        _.each(lines.split('\n'), function (line) {
-            line = line.trim();
-            if (line !== "") {
-                var match = line.match(lineRe);
-                if (match) {
-                    callback(parseInt(match[2]), match[5].trim());
-                } else {
-                    callback(null, line);
-                }
-            }
-        });
-    }
-
     Output.prototype.onCompileResult = function (id, compiler, result) {
         if (id !== this.compilerId) return;
         this.compiler = compiler;
 
         this.contentRoot.empty();
 
-        parseLines(result.stdout + result.stderr, _.bind(function (lineNum, msg) {
-            this.add(msg, lineNum);
-        }, this));
+        _.each(result.stdout.concat(result.stderr), function (obj) {
+            this.add(obj.text, obj.line);
+        }, this);
 
         this.add("Compiler exited with result code " + result.code);
 

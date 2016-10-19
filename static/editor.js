@@ -78,7 +78,7 @@ define(function (require) {
             matchBrackets: true,
             useCPP: true,
             dragDrop: false,
-            extraKeys: { "Alt-F": false }, // see https://github.com/mattgodbolt/gcc-explorer/pull/131
+            extraKeys: {"Alt-F": false}, // see https://github.com/mattgodbolt/gcc-explorer/pull/131
             mode: cmMode
         });
 
@@ -164,7 +164,7 @@ define(function (require) {
         this.container.layoutManager.createDragSource(
             this.domRoot.find('.btn.add-compiler'), compilerConfig);
         this.domRoot.find('.btn.add-compiler').click(_.bind(function () {
-            var insertPoint = hub.findParentRowOrColumn(this.container) || 
+            var insertPoint = hub.findParentRowOrColumn(this.container) ||
                 this.container.layoutManager.root.contentItems[0];
             insertPoint.addChild(compilerConfig);
         }, this));
@@ -218,21 +218,6 @@ define(function (require) {
         return node[0];
     }
 
-    function parseLines(lines, callback) {
-        var re = /^\/tmp\/[^:]+:([0-9]+)(:([0-9]+))?:\s+(.*)/;
-        $.each(lines.split('\n'), function (_, line) {
-            line = line.trim();
-            if (line !== "") {
-                var match = line.match(re);
-                if (match) {
-                    callback(parseInt(match[1]), match[4].trim());
-                } else {
-                    callback(null, line);
-                }
-            }
-        });
-    }
-
     Editor.prototype.removeWidgets = function (widgets) {
         var self = this;
         _.each(widgets, function (widget) {
@@ -275,19 +260,19 @@ define(function (require) {
     };
 
     Editor.prototype.onCompileResponse = function (compilerId, compiler, result) {
-        var output = (result.stdout || "") + (result.stderr || "");
+        var output = result.stdout.concat(result.stderr);
         var self = this;
         this.removeWidgets(this.widgetsByCompiler[compilerId]);
         var widgets = [];
-        parseLines(output, function (lineNum, msg) {
-            if (lineNum) {
+        _.each(output, function (obj) {
+            if (obj.line) {
                 var widget = self.editor.addLineWidget(
-                    lineNum - 1,
-                    makeErrorNode(msg, compiler.name),
+                    obj.line - 1,
+                    makeErrorNode(obj.text, compiler.name),
                     {coverGutter: false, noHScroll: true});
                 widgets.push(widget);
             }
-        });
+        }, this);
         this.widgetsByCompiler[compilerId] = widgets;
         this.asmByCompiler[compilerId] = result.asm;
         this.numberUsedLines();
