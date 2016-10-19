@@ -26,11 +26,26 @@ import std.stdio;
 import std.demangle;
 import std.regex;
 
-auto idRegex = ctRegex!("[_$a-zA-Z][_$a-zA-Z0-9]*", "g");
+auto idRegex = ctRegex!("\\b_?_D[0-9a-zA-Z_]+\\b", "g");
 
 void main() {
     string dem(Captures!(string) m) {
-        return demangle(m.hit);
+        if (m.hit[1] == '_') {
+            // Could be a symbolname with double leading underscore
+            auto result = demangle(m.hit[1..$]);
+            if (result == m.hit[1..$])
+            {
+                return m.hit;
+            }
+            else
+            {
+                return result;
+            }
+        }
+        else
+        {
+            return demangle(m.hit);
+        }
     }
 
     foreach (line; stdin.byLine()) {

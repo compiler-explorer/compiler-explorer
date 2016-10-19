@@ -337,6 +337,8 @@ function configuredCompilers() {
             is6g: !!props("is6g", false),
             isCl: !!props("isCl", false),
             intelAsm: props("intelAsm", ""),
+            asmFlag: props("asmFlag", "-S"),
+            outputFlag: props("outputFlag", "-o"),
             needsMulti: !!props("needsMulti", true),
             supportsBinary: !!props("supportsBinary", true),
             postProcess: props("postProcess", "")
