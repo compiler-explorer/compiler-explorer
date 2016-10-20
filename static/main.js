@@ -65,111 +65,115 @@ define(function (require) {
     var shortenURL = require('urlshorten-google');
     var Raven = require('raven-js');
 
-    analytics.initialise();
-    sharing.initialise();
+    function start() {
+        analytics.initialise();
+        sharing.initialise();
 
-    var options = require('options');
-    $('.language-name').text(options.language);
+        var options = require('options');
+        $('.language-name').text(options.language);
 
-    var safeLang = options.language.toLowerCase().replace(/[^a-z_]+/g, '');
-    var defaultSrc = $('.template .lang.' + safeLang).text().trim();
-    var defaultConfig = {
-        settings: {showPopoutIcon: false},
-        content: [{type: 'row', content: [editor.getComponent(1), compiler.getComponent(1)]}]
-    };
-    var root = $("#root");
-    var config = url.deserialiseState(window.location.hash.substr(1));
-    if (config) {
-        // replace anything in the default config with that from the hash
-        config = _.extend(defaultConfig, config);
-    }
-    $(window).bind('hashchange', function () {
-        // punt on hash events and just reload the page if there's a hash
-        if (window.location.hash.substr(1))
-            window.location.reload();
-    });
-
-    if (!config) {
-        var savedState = null;
-        try {
-            savedState = window.localStorage.getItem('gl');
-        } catch (e) {
-            // Some browsers in secure modes can throw exceptions here...
+        var safeLang = options.language.toLowerCase().replace(/[^a-z_]+/g, '');
+        var defaultSrc = $('.template .lang.' + safeLang).text().trim();
+        var defaultConfig = {
+            settings: {showPopoutIcon: false},
+            content: [{type: 'row', content: [editor.getComponent(1), compiler.getComponent(1)]}]
+        };
+        var root = $("#root");
+        var config = url.deserialiseState(window.location.hash.substr(1));
+        if (config) {
+            // replace anything in the default config with that from the hash
+            config = _.extend(defaultConfig, config);
         }
-        config = savedState !== null ? JSON.parse(savedState) : defaultConfig;
-    }
-
-    var layout, hub;
-    try {
-        layout = new GoldenLayout(config, root);
-        hub = new Hub(layout, defaultSrc);
-    } catch (e) {
-        Raven.captureException(e);
-        layout = new GoldenLayout(defaultConfig, root);
-        hub = new Hub(layout, defaultSrc);
-    }
-    layout.on('stateChanged', function () {
-        var state = JSON.stringify(layout.toConfig());
-        try {
-            window.localStorage.setItem('gl', state);
-        } catch (e) {
-            // Some browsers in secure modes may throw
-        }
-    });
-
-    function sizeRoot() {
-        var height = $(window).height() - root.position().top;
-        root.height(height);
-        layout.updateSize();
-    }
-
-    $(window).resize(sizeRoot);
-    sizeRoot();
-
-    new clipboard('.btn.clippy');
-
-    function initPopover(getLink, provider) {
-        var html = $('.template .urls').html();
-
-        getLink.popover({
-            container: 'body',
-            content: html,
-            html: true,
-            placement: 'bottom',
-            trigger: 'manual'
-        }).click(function () {
-            getLink.popover('show');
-        }).on('inserted.bs.popover', function () {
-            provider(function (url) {
-                $(".permalink:visible").val(url);
-            });
+        $(window).bind('hashchange', function () {
+            // punt on hash events and just reload the page if there's a hash
+            if (window.location.hash.substr(1))
+                window.location.reload();
         });
 
-        // Dismiss the popover on escape.
-        $(document).on('keyup.editable', function (e) {
-            if (e.which === 27) {
-                getLink.popover("hide");
+        if (!config) {
+            var savedState = null;
+            try {
+                savedState = window.localStorage.getItem('gl');
+            } catch (e) {
+                // Some browsers in secure modes can throw exceptions here...
+            }
+            config = savedState !== null ? JSON.parse(savedState) : defaultConfig;
+        }
+
+        var layout;
+        try {
+            layout = new GoldenLayout(config, root);
+            new Hub(layout, defaultSrc);
+        } catch (e) {
+            Raven.captureException(e);
+            layout = new GoldenLayout(defaultConfig, root);
+            new Hub(layout, defaultSrc);
+        }
+        layout.on('stateChanged', function () {
+            var state = JSON.stringify(layout.toConfig());
+            try {
+                window.localStorage.setItem('gl', state);
+            } catch (e) {
+                // Some browsers in secure modes may throw
             }
         });
 
-        // Dismiss on any click that isn't either on the opening element, or inside
-        // the popover.
-        $(document).on('click.editable', function (e) {
-            var target = $(e.target);
-            if (!target.is(getLink) && target.closest('.popover').length === 0)
-                getLink.popover("hide");
+        function sizeRoot() {
+            var height = $(window).height() - root.position().top;
+            root.height(height);
+            layout.updateSize();
+        }
+
+        $(window).resize(sizeRoot);
+        sizeRoot();
+
+        new clipboard('.btn.clippy');
+
+        function initPopover(getLink, provider) {
+            var html = $('.template .urls').html();
+
+            getLink.popover({
+                container: 'body',
+                content: html,
+                html: true,
+                placement: 'bottom',
+                trigger: 'manual'
+            }).click(function () {
+                getLink.popover('show');
+            }).on('inserted.bs.popover', function () {
+                provider(function (url) {
+                    $(".permalink:visible").val(url);
+                });
+            });
+
+            // Dismiss the popover on escape.
+            $(document).on('keyup.editable', function (e) {
+                if (e.which === 27) {
+                    getLink.popover("hide");
+                }
+            });
+
+            // Dismiss on any click that isn't either on the opening element, or inside
+            // the popover.
+            $(document).on('click.editable', function (e) {
+                var target = $(e.target);
+                if (!target.is(getLink) && target.closest('.popover').length === 0)
+                    getLink.popover("hide");
+            });
+        }
+
+        function permalink() {
+            var config = layout.toConfig();
+            return window.location.href.split('#')[0] + '#' + url.serialiseState(config);
+        }
+
+        initPopover($("#get-full-link"), function (done) {
+            done(permalink);
+        });
+        initPopover($("#get-short-link"), function (done) {
+            shortenURL(permalink(), done);
         });
     }
 
-    function permalink() {
-        var config = layout.toConfig();
-        return window.location.href.split('#')[0] + '#' + url.serialiseState(config);
-    }
-
-    initPopover($("#get-full-link"), function (done) {
-        done(permalink);
-    });
-    initPopover($("#get-short-link"), function (done) {
-        shortenURL(permalink(), done);
-    });
+    $(start);
 });
