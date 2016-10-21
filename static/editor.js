@@ -260,7 +260,7 @@ define(function (require) {
     };
 
     Editor.prototype.onCompileResponse = function (compilerId, compiler, result) {
-        var output = result.stdout.concat(result.stderr);
+        var output = (result.stdout || []).concat(result.stderr || []);
         var self = this;
         this.removeWidgets(this.widgetsByCompiler[compilerId]);
         var widgets = [];

@@ -291,7 +291,7 @@ define(function (require) {
             }
         }, this));
         var status = this.domRoot.find(".status");
-        var allText = _.pluck(result.stdout.concat(result.stderr), 'text').join("\n");
+        var allText = _.pluck((result.stdout || []).concat(result.stderr | []), 'text').join("\n");
         var failed = result.code !== 0;
         var warns = !failed && !!allText;
         status.toggleClass('error', failed);
