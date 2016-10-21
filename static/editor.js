@@ -265,10 +265,10 @@ define(function (require) {
         this.removeWidgets(this.widgetsByCompiler[compilerId]);
         var widgets = [];
         _.each(output, function (obj) {
-            if (obj.line) {
+            if (obj.tag) {
                 var widget = self.editor.addLineWidget(
-                    obj.line - 1,
-                    makeErrorNode(obj.text, compiler.name),
+                    obj.tag.line - 1,
+                    makeErrorNode(obj.tag.text, compiler.name),
                     {coverGutter: false, noHScroll: true});
                 widgets.push(widget);
             }
