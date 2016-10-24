@@ -167,7 +167,6 @@ function ClientOptionsHandler(fileSources) {
             defaultCompiler: compilerProps('defaultCompiler', ''),
             compileOptions: compilerProps("options"),
             supportsBinary: !!compilerProps("supportsBinary"),
-            postProcess: compilerProps("postProcess"),
             sources: sources,
             raven: gccProps('ravenUrl', ''),
             release: gitReleaseName,
@@ -342,7 +341,7 @@ function configuredCompilers() {
             outputFlag: props("outputFlag", "-o"),
             needsMulti: !!props("needsMulti", true),
             supportsBinary: !!props("supportsBinary", true),
-            postProcess: props("postProcess", "")
+            postProcess: props("postProcess", "").split("|")
         });
     })).then(_.flatten);
 }
@@ -356,15 +355,18 @@ function getCompilerInfo(compilerInfo) {
         var compiler = compilerInfo.exe;
         var versionFlag = compilerInfo.versionFlag || '--version';
         // fill field compilerInfo.version,
-        // assuming the compiler returns it's version on 1 line
+        // assuming the compiler returns its version on 1 line
         child_process.exec('"' + compiler + '" ' + versionFlag, function (err, output) {
-            if (err) return resolve(null);
+            if (err) {
+                console.log("Unable to run compiler '" + compiler + "' : " + err);
+                return resolve(null);
+            }
             compilerInfo.version = output.split('\n')[0];
             if (compilerInfo.intelAsm) {
                 return resolve(compilerInfo);
             }
 
-            // get informations on the compiler's options
+            // get information on the compiler's options
             child_process.exec(compiler + ' --target-help', function (err, output) {
                 var options = {};
                 if (!err) {
