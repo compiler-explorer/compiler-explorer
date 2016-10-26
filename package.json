@@ -30,7 +30,8 @@
     "serve-favicon": "2.3.x",
     "serve-static": "1.10.x",
     "temp": "0.8.x",
-    "underscore-node": "*"
+    "underscore-node": "*",
+    "shell-quote": "1.6.x"
   },
   "devDependencies": {
     "supervisor": "*",
