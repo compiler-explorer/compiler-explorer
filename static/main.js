@@ -65,6 +65,36 @@ define(function (require) {
     var shortenURL = require('urlshorten-google');
     var Raven = require('raven-js');
 
+    function contentFromEmbedded(embeddedUrl) {
+        var params = url.unrisonify(embeddedUrl);
+        var filters = _.chain((params.filters || "").split(','))
+            .map(function (o) {
+                return [o, true];
+            })
+            .object()
+            .value();
+        return [
+            {
+                type: 'row',
+                content: [
+                    editor.getComponentWith(1, params.source, filters),
+                    compiler.getComponentWith(1, filters, params.options, params.compiler)
+                ]
+            }
+        ];
+    }
+
+    function getEmbeddedUrl(layout) {
+        window.layout = layout;
+
+        return window.location.origin + '/e#' + url.risonify({
+                filters: "",
+                source: "",
+                compiler: "",
+                options: ""
+            });
+    }
+
     function start() {
         analytics.initialise();
         sharing.initialise();
@@ -78,27 +108,43 @@ define(function (require) {
             settings: {showPopoutIcon: false},
             content: [{type: 'row', content: [editor.getComponent(1), compiler.getComponent(1)]}]
         };
-        var root = $("#root");
-        var config = url.deserialiseState(window.location.hash.substr(1));
-        if (config) {
-            // replace anything in the default config with that from the hash
-            config = _.extend(defaultConfig, config);
-        }
+
         $(window).bind('hashchange', function () {
             // punt on hash events and just reload the page if there's a hash
             if (window.location.hash.substr(1))
                 window.location.reload();
         });
 
-        if (!config) {
-            var savedState = null;
-            try {
-                savedState = window.localStorage.getItem('gl');
-            } catch (e) {
-                // Some browsers in secure modes can throw exceptions here...
+        var config;
+        if (!options.embedded) {
+            config = url.deserialiseState(window.location.hash.substr(1));
+            if (config) {
+                // replace anything in the default config with that from the hash
+                config = _.extend(defaultConfig, config);
             }
-            config = savedState !== null ? JSON.parse(savedState) : defaultConfig;
+
+            if (!config) {
+                var savedState = null;
+                try {
+                    savedState = window.localStorage.getItem('gl');
+                } catch (e) {
+                    // Some browsers in secure modes can throw exceptions here...
+                }
+                config = savedState !== null ? JSON.parse(savedState) : defaultConfig;
+            }
+        } else {
+            config = _.extend(defaultConfig,
+                {
+                    settings: {
+                        showMaximiseIcon: false,
+                        showCloseIcon: false,
+                        hasHeaders: false
+                    },
+                    content: contentFromEmbedded(window.location.hash.substr(1))
+                });
         }
+
+        var root = $("#root");
 
         var layout;
         try {
@@ -110,11 +156,17 @@ define(function (require) {
             new Hub(layout, defaultSrc);
         }
         layout.on('stateChanged', function () {
-            var state = JSON.stringify(layout.toConfig());
-            try {
-                window.localStorage.setItem('gl', state);
-            } catch (e) {
-                // Some browsers in secure modes may throw
+            var config = layout.toConfig();
+            // Only preserve state in localStorage in non-embedded mode.
+            if (!options.embedded) {
+                var state = JSON.stringify(config);
+                try {
+                    window.localStorage.setItem('gl', state);
+                } catch (e) {
+                    // Some browsers in secure modes may throw
+                }
+            } else {
+                $('a.link').attr('href', '/#' + url.serialiseState(config));
             }
         });
 
@@ -172,6 +224,12 @@ define(function (require) {
         });
         initPopover($("#get-short-link"), function (done) {
             shortenURL(permalink(), done);
+        });
+        initPopover($("#get-embed-link"), function (done) {
+            done(function () {
+                return '<iframe width="800px" height="200px" src="' +
+                    getEmbeddedUrl(layout) + '"></iframe>';
+            });
         });
     }
 

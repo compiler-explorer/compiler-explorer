@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Compiler Explorer</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="explorer.css" rel="stylesheet">
+    <script data-main="main" src="ext/requirejs/require.js"></script>
+</head>
+<body class="embedded">
+
+<a href="/" class="float-link link" target="_blank">
+    Compiler Explorer &dash; <span class="language-name"></span>
+    <span class="glyphicon glyphicon-new-window"></span><br/>
+</a>
+
+<div id="root"></div>
+
+<div class="gl_keep template">
+    <div id="codeEditor">
+        <div class="top-bar btn-toolbar hidden">
+            <div class="btn-group btn-group-sm options" role="group">
+                <button title="Colourise lines so one can see how the source maps to the output"
+                        class="btn btn-default btn-sm active" data-bind="colouriseAsm">
+                    <span class="glyphicon glyphicon-adjust"></span>
+                </button>
+                <button title="Run the compilers automatically as you type"
+                        class="btn btn-default btn-sm active" data-bind="compileOnChange">
+                    <span class="glyphicon glyphicon-play-circle"></span>
+                </button>
+            </div>
+        </div>
+        <textarea>// Type your code here, or load an example.</textarea>
+    </div>
+
+    <div id="compiler">
+        <div class="top-bar">
+            <table>
+                <tr>
+                    <td><select class="compiler-picker" placeholder="Select a compiler..."></select></td>
+                    <td><input class="options form-control" type="text" placeholder="compiler options..."
+                               size="256"></td>
+                </tr>
+            </table>
+            <div class="btn-group btn-group-sm filters hidden" data-toggle="buttons">
+                <button class="btn btn-sm" title="Compile to binary and disassemble the output"
+                        data-bind="binary">
+                    <span>11010</span>
+                </button>
+                <button class="btn btn-sm active nonbinary" title="Filter unused labels from the output"
+                        data-bind="labels">
+                    <span>.LX0:</span>
+                </button>
+                <button class="btn btn-sm active nonbinary" title="Filter all assembler directives from the output"
+                        data-bind="directives">
+                    <span>.text</span>
+                </button>
+                <button class="btn btn-sm active nonbinary"
+                        title="Remove all lines which are only comments from the output"
+                        data-bind="commentOnly">
+                    <span>//</span>
+                </button>
+                <button class="btn btn-sm active" title="Output disassembly in Intel syntax"
+                        data-bind="intel">
+                    <span>Intel</span>
+                </button>
+            </div>
+        </div>
+        <textarea>[Waiting...]</textarea>
+        <div class="bottom-bar"></div>
+    </div>
+
+    <div id="compiler-output">
+        <pre class="content"></pre>
+    </div>
+
+    <div class="inline-msg">
+        <span class="compiler"></span><span class="icon">!!</span><span class="msg"></span>
+    </div>
+
+</div>
+
+</body>
+</html>

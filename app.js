@@ -463,6 +463,15 @@ function shortUrlHandler(req, res, next) {
     });
 }
 
+// TODO: write the info here directly instead of redirecting...
+function embeddedHandler(req, res, next) {
+    res.writeHead(301, {
+        Location: 'embed.html',
+        'Cache-Control': 'public'
+    });
+    res.end();
+}
+
 var clientOptionsHandler = new ClientOptionsHandler(fileSources);
 var apiHandler = new ApiHandler();
 var compileHandler = new CompileHandler();
@@ -515,6 +524,7 @@ findCompilers().then(function (compilers) {
         .use('/source', getSource)
         .use('/api', apiHandler.handler)
         .use('/g', shortUrlHandler)
+        .use('/e', embeddedHandler)
         .post('/compile', compileHandler.handler) // used inside static/compiler.js
         .post('/diff', diffHandler); // used inside static/compiler.js
 

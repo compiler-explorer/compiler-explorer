@@ -5,9 +5,28 @@
 @import url("ext/selectize/dist/css/selectize.bootstrap2.css");
 
 .navbar {
-    border-radius: 0px;
+    border-radius: 0;
     margin-bottom: 5px;
 }
+
+.float-link {
+    z-index: 100;
+    position: absolute;
+    bottom: 0.5em;
+    right: 0.5em;
+    display: inline-block;
+    padding: 0.25em;
+    font-size: x-small;
+    font-weight: bold;
+    text-align: center;
+    background-color: rgba(128,128,128,0.5);
+    border-radius: 5px;
+}
+
+.float-link:hover {
+    background-color: rgba(128,128,128,0.9);
+}
+
 .template {
     display: none;
 }

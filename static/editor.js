@@ -173,7 +173,7 @@ define(function (require) {
     Editor.prototype.maybeEmitChange = function (force) {
         var source = this.getSource();
         if (!force && source == this.lastChangeEmitted) return;
-        this.lastChangeEmitted = this.getSource();
+        this.lastChangeEmitted = source;
         this.eventHub.emit('editorChange', this.id, this.lastChangeEmitted);
     };
 
