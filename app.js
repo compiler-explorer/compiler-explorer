@@ -61,8 +61,6 @@ var port = opts.port || 10240;
 var staticDir = opts.static || 'static';
 var gitReleaseName = child_process.execSync('git rev-parse HEAD').toString().trim();
 
-console.log(env);
-console.log(typeof(env));
 var propHierarchy = _.flatten([
     'defaults',
     env,
@@ -319,17 +317,14 @@ function configuredCompilers() {
             return fetchAws();
         }
         var base = "compiler." + name;
-        var exe = compilerProps(base + ".exe", "");
-        if (!exe) {
-            return Promise.resolve({id: name, exe: name, name: name});
-        }
+
         function props(name, def) {
             return compilerProps(base + "." + name, compilerProps(name, def));
         }
 
         return Promise.resolve({
             id: name,
-            exe: exe,
+            exe: compilerProps(base + ".exe", name),
             name: props("name", name),
             alias: props("alias"),
             options: props("options"),
@@ -477,8 +472,7 @@ var apiHandler = new ApiHandler();
 var compileHandler = new CompileHandler();
 
 findCompilers().then(function (compilers) {
-
-    var prevCompilers = [];
+    var prevCompilers;
 
     function onCompilerChange(compilers) {
         if (JSON.stringify(prevCompilers) == JSON.stringify(compilers)) {
@@ -488,6 +482,9 @@ findCompilers().then(function (compilers) {
         compilers.forEach(function (c) {
             console.log(c.id + " : " + c.name + " : " + (c.exe || c.remote));
         });
+        if (compilers.length == 0) {
+            console.log("#### No compilers found: no compilation will be done!");
+        }
         prevCompilers = compilers;
         clientOptionsHandler.setCompilers(compilers);
         apiHandler.setCompilers(compilers);
