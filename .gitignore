@@ -4,3 +4,4 @@
 /.bower-updated
 /out
 *.heapsnapshot
+etc/config/*.local.properties
