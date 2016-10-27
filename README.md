@@ -25,10 +25,10 @@ running on port 10240 on your local machine: http://localhost:10240/
 The `Makefile` will automatically install all the third party libraries needed to run; using `npm` to install server-side
 components and `bower` to install all the client-facing libraries.
 
-If you want to point it at your own GCC or similar binaries,either edit the
-`etc/config/gcc-explorer.defaults.properties` or else make a new one with the name
-`gcc-explorer.YOURHOSTNAME.properties`.  The config system leaves a lot to be desired,
-I'm working on porting [CCS](https://github.com/hellige/ccs-cpp) to javascript and then something more rational can be used.
+If you want to point it at your own GCC or similar binaries, either edit the `etc/config/gcc-explorer.defaults.properties` or else make a new one with the name
+`gcc-explorer.local.properties`. `*.local.properties` files have the highest priority when loading properties.
+
+The config system leaves a lot to be desired, I'm working on porting [CCS](https://github.com/hellige/ccs-cpp) to javascript and then something more rational can be used.
 
 Feel free to raise an issue on [github](https://github.com/mattgodbolt/gcc-explorer/issues) or
 [email me directly](mailto:matt@godbolt.org) for more help.

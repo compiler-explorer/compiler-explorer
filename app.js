@@ -71,7 +71,8 @@ var propHierarchy = _.flatten([
         return e + '.' + process.platform;
     }),
     process.platform,
-    os.hostname()]);
+    os.hostname(),
+    'local']);
 console.log("properties hierarchy: " + propHierarchy.join(', '));
 
 // Propagate debug mode if need be
