@@ -84,14 +84,36 @@ define(function (require) {
         ];
     }
 
+    function getItemsByComponent(layout, component) {
+        return layout.root.getItemsByFilter(function (o) {
+            return o.type === "component" && o.componentName === component;
+        });
+    }
+
     function getEmbeddedUrl(layout) {
         window.layout = layout;
-
+        var source = "";
+        var filters = {};
+        var compilerName = "";
+        var options = "";
+        _.each(getItemsByComponent(layout, editor.getComponent().componentName),
+            function (editor) {
+                var state = editor.config.componentState;
+                source = state.source;
+                filters = _.extend(filters, state.options);
+            });
+        _.each(getItemsByComponent(layout, compiler.getComponent().componentName),
+            function (compiler) {
+                var state = compiler.config.componentState;
+                compilerName = state.compiler;
+                options = state.options;
+                filters = _.extend(filters, state.filters);
+            });
         return window.location.origin + '/e#' + url.risonify({
-                filters: "",
-                source: "",
-                compiler: "",
-                options: ""
+                filters: _.keys(filters).join(","),
+                source: source,
+                compiler: compilerName,
+                options: options
             });
     }
 
