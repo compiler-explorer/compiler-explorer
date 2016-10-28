@@ -39,7 +39,8 @@ var nopt = require('nopt'),
     url = require('url'),
     Promise = require('promise'),
     aws = require('./lib/aws'),
-    _ = require('underscore-node');
+    _ = require('underscore-node'),
+    logger = require('./lib/logger').logger;
 
 // Parse arguments from command line 'node ./app.js args...'
 var opts = nopt({
@@ -71,7 +72,7 @@ var propHierarchy = _.flatten([
     process.platform,
     os.hostname(),
     'local']);
-console.log("properties hierarchy: " + propHierarchy.join(', '));
+logger.info("properties hierarchy: " + propHierarchy.join(', '));
 
 // Propagate debug mode if need be
 if (opts.propDebug) props.setDebug(true);
@@ -217,10 +218,10 @@ function retryPromise(promiseFunc, name, maxFails, retryMs) {
             }, function (e) {
                 fails++;
                 if (fails < maxFails) {
-                    console.log("Failed " + name + " : " + e + ", retrying");
+                    logger.warn("Failed " + name + " : " + e + ", retrying");
                     setTimeout(doit, retryMs);
                 } else {
-                    console.log("Too many retries for " + name + " : " + e);
+                    logger.error("Too many retries for " + name + " : " + e);
                     reject(e);
                 }
             });
@@ -255,7 +256,7 @@ function configuredCompilers() {
     }
 
     function fetchRemote(host, port, props) {
-        console.log("Fetching compilers from remote source " + host + ":" + port);
+        logger.info("Fetching compilers from remote source " + host + ":" + port);
         return retryPromise(function () {
                 return new Promise(function (resolve, reject) {
                     var request = http.get({
@@ -287,16 +288,16 @@ function configuredCompilers() {
             props('proxyRetries', 5),
             props('proxyRetryMs', 500))
             .catch(function () {
-                console.log("Unable to contact " + host + ":" + port + "; skipping");
+                logger.warn("Unable to contact " + host + ":" + port + "; skipping");
                 return [];
             });
     }
 
     function fetchAws() {
-        console.log("Fetching instances from AWS");
+        logger.info("Fetching instances from AWS");
         return awsInstances().then(function (instances) {
             return Promise.all(instances.map(function (instance) {
-                console.log("Checking instance " + instance.InstanceId);
+                logger.info("Checking instance " + instance.InstanceId);
                 var address = instance.PrivateDnsName;
                 if (awsProps("externalTestMode", false)) {
                     address = instance.PublicDnsName;
@@ -353,7 +354,7 @@ function getCompilerInfo(compilerInfo) {
         // assuming the compiler returns its version on 1 line
         child_process.exec('"' + compiler + '" ' + versionFlag, function (err, output) {
             if (err) {
-                console.log("Unable to run compiler '" + compiler + "' : " + err);
+                logger.error("Unable to run compiler '" + compiler + "' : " + err);
                 return resolve(null);
             }
             compilerInfo.version = output.split('\n')[0];
@@ -377,7 +378,7 @@ function getCompilerInfo(compilerInfo) {
                 }
 
                 // debug (seems to be displayed multiple times):
-                if (opts.propDebug) console.log("compiler options: " + JSON.stringify(options, null, 4));
+                logger.debug("compiler options: ", options);
 
                 resolve(compilerInfo);
             });
@@ -435,7 +436,7 @@ function shortUrlHandler(req, res, next) {
         });
         response.on('end', function () {
             if (response.statusCode != 200) {
-                console.log("Failed to resolve short URL " + bits[1] + " - got response " +
+                logger.error("Failed to resolve short URL " + bits[1] + " - got response " +
                     response.statusCode + " : " + responseText);
                 return next();
             }
@@ -444,7 +445,7 @@ function shortUrlHandler(req, res, next) {
             var parsed = url.parse(resultObj.longUrl);
             var allowedRe = new RegExp(gccProps('allowedShortUrlHostRe'));
             if (parsed.host.match(allowedRe) === null) {
-                console.log("Denied access to short URL " + bits[1] + " - linked to " + resultObj.longUrl);
+                logger.warn("Denied access to short URL " + bits[1] + " - linked to " + resultObj.longUrl);
                 return next();
             }
             res.writeHead(301, {
@@ -478,12 +479,9 @@ findCompilers().then(function (compilers) {
         if (JSON.stringify(prevCompilers) == JSON.stringify(compilers)) {
             return;
         }
-        console.log("Compilers:");
-        compilers.forEach(function (c) {
-            console.log(c.id + " : " + c.name + " : " + (c.exe || c.remote));
-        });
-        if (compilers.length == 0) {
-            console.log("#### No compilers found: no compilation will be done!");
+        logger.info("Compilers:", compilers);
+        if (compilers.length === 0) {
+            logger.error("#### No compilers found: no compilation will be done!");
         }
         prevCompilers = compilers;
         clientOptionsHandler.setCompilers(compilers);
@@ -495,7 +493,7 @@ findCompilers().then(function (compilers) {
 
     var rescanCompilerSecs = gccProps('rescanCompilerSecs', 0);
     if (rescanCompilerSecs) {
-        console.log("Rescanning compilers every " + rescanCompilerSecs + "secs");
+        logger.info("Rescanning compilers every " + rescanCompilerSecs + "secs");
         setInterval(function () {
             findCompilers().then(onCompilerChange);
         }, rescanCompilerSecs * 1000);
@@ -505,13 +503,13 @@ findCompilers().then(function (compilers) {
         sFavicon = require('serve-favicon'),
         sStatic = require('serve-static'),
         bodyParser = require('body-parser'),
-        logger = require('morgan'),
+        morgan = require('morgan'),
         compression = require('compression'),
         restreamer = require('./lib/restreamer'),
         diffHandler = buildDiffHandler(wdiffConfig);
 
     webServer
-        .use(logger('combined'))
+        .use(morgan('combined', {stream: logger.stream}))
         .use(compression())
         .use(sFavicon(staticDir + '/favicon.ico'))
         .use(sStatic(staticDir, {maxAge: staticMaxAgeSecs * 1000}))
@@ -526,13 +524,13 @@ findCompilers().then(function (compilers) {
         .post('/diff', diffHandler); // used inside static/compiler.js
 
     // GO!
-    console.log("=======================================");
-    console.log("Listening on http://" + hostname + ":" + port + "/");
-    console.log("  serving static files from '" + staticDir + "'");
-    console.log("  git release " + gitReleaseName);
-    console.log("=======================================");
+    logger.info("=======================================");
+    logger.info("Listening on http://" + hostname + ":" + port + "/");
+    logger.info("  serving static files from '" + staticDir + "'");
+    logger.info("  git release " + gitReleaseName);
+    logger.info("=======================================");
     webServer.listen(port, hostname);
 }).catch(function (err) {
-    console.log("Error: " + err);
+    logger.error("Error: " + err);
     process.exit(1);
 });
