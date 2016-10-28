@@ -109,6 +109,8 @@ define(function (require) {
                 options = state.options;
                 filters = _.extend(filters, state.filters);
             });
+        if (!filters.compileOnChange)
+            filters.readOnly = true;
         return window.location.origin + '/e#' + url.risonify({
                 filters: _.keys(filters).join(","),
                 source: source,

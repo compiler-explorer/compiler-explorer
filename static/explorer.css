@@ -19,12 +19,12 @@
     font-size: x-small;
     font-weight: bold;
     text-align: center;
-    background-color: rgba(128,128,128,0.5);
+    background-color: rgba(128, 128, 128, 0.5);
     border-radius: 5px;
 }
 
 .float-link:hover {
-    background-color: rgba(128,128,128,0.9);
+    background-color: rgba(128, 128, 160, 0.5);
 }
 
 .template {
