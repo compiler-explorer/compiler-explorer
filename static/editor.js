@@ -78,6 +78,7 @@ define(function (require) {
             matchBrackets: true,
             useCPP: true,
             dragDrop: false,
+            readOnly: !!state.options.readOnly,
             extraKeys: {"Alt-F": false}, // see https://github.com/mattgodbolt/gcc-explorer/pull/131
             mode: cmMode
         });
@@ -173,7 +174,7 @@ define(function (require) {
     Editor.prototype.maybeEmitChange = function (force) {
         var source = this.getSource();
         if (!force && source == this.lastChangeEmitted) return;
-        this.lastChangeEmitted = this.getSource();
+        this.lastChangeEmitted = source;
         this.eventHub.emit('editorChange', this.id, this.lastChangeEmitted);
     };
 

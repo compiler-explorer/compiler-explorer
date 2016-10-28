@@ -117,6 +117,8 @@ define(function (require) {
 
     return {
         deserialiseState: deserialiseState,
-        serialiseState: serialiseState
+        serialiseState: serialiseState,
+        unrisonify: unrisonify,
+        risonify: risonify
     };
 });

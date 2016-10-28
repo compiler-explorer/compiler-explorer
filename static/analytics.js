@@ -61,6 +61,7 @@ define(function (require) {
     }
 
     function initialise() {
+        if (options.embedded) return;
         $(function () {
             function create_script_element(id, url) {
                 var el = document.createElement('script');
