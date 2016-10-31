@@ -76,16 +76,6 @@ define(function (require) {
             if (options.sharingEnabled) {
                 create_script_element('gp', 'https://apis.google.com/js/plusone.js');
                 create_script_element('twitter-wjs', '//platform.twitter.com/widgets.js');
-                (function (document, i) {
-                    var f, s = document.getElementById(i);
-                    f = document.createElement('iframe');
-                    f.src = '//api.flattr.com/button/view/?uid=mattgodbolt&button=compact&url=' + encodeURIComponent(document.URL);
-                    f.title = 'Flattr';
-                    f.height = 20;
-                    f.width = 110;
-                    f.style.borderWidth = 0;
-                    s.appendChild(f);
-                }(document, 'flattr_button'));
             }
         });
     }
