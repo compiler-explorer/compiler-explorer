@@ -51,7 +51,7 @@ define(function (require) {
 
         this.contentRoot.empty();
 
-        _.each(result.stdout.concat(result.stderr), function (obj) {
+        _.each((result.stdout || []).concat(result.stderr || []), function (obj) {
             this.add(obj.text, obj.line);
         }, this);
 
