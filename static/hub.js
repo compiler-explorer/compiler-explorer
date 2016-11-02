@@ -31,6 +31,7 @@ define(function (require) {
     var editor = require('editor');
     var compiler = require('compiler');
     var output = require('output');
+    var Components = require('components');
 
     function Hub(layout, defaultSrc) {
         this.layout = layout;
@@ -38,15 +39,15 @@ define(function (require) {
         this.ids = {};
 
         var self = this;
-        layout.registerComponent(editor.getComponent().componentName,
+        layout.registerComponent(Components.getEditor().componentName,
             function (container, state) {
                 return self.codeEditorFactory(container, state);
             });
-        layout.registerComponent(compiler.getComponent().componentName,
+        layout.registerComponent(Components.getCompiler().componentName,
             function (container, state) {
                 return self.compilerFactory(container, state);
             });
-        layout.registerComponent(output.getComponent().componentName,
+        layout.registerComponent(Components.getOutput().componentName,
             function (container, state) {
                 return self.outputFactory(container, state);
             });

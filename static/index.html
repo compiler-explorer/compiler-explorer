@@ -16,11 +16,6 @@
             <a class="navbar-brand" href="#">Compiler Explorer &dash; <span class="language-name"></span></a>
         </div>
         <li class="navbar-collapse collapse">
-            <ul class="nav navbar-nav navbar-left">
-                <li><a href="#" id="get-short-link">Short link</a></li>
-                <li><a href="#" id="get-full-link">Full link</a></li>
-                <li><a href="#" id="get-embed-link">Embed</a></li>
-            </ul>
             <ul class="nav navbar-nav navbar-right">
                 <li class="if-github-enabled">
                     <a href="https://github.com/mattgodbolt/gcc-explorer">Source on GitHub</a>
@@ -65,10 +60,6 @@
                 </button>
             </div>
             <div class="btn-group btn-group-sm">
-                <button title="Load text from an example"
-                        class="btn btn-default btn-sm load-save">
-                    <span class="glyphicon glyphicon-floppy-disk"></span>
-                </button>
                 <button title="Decrease font size"
                         class="btn btn-default btn-sm decrease-font-size">
                     <span class="glyphicon glyphicon-sm glyphicon-font"></span>
@@ -81,9 +72,19 @@
                         class="btn btn-default btn-sm increase-font-size">
                     <span class="glyphicon glyphicon-sm glyphicon-font"></span>
                 </button>
+            </div>
+            <div class="btn-group btn-group-sm">
+                <button title="Load text from an example"
+                        class="btn btn-default btn-sm load-save">
+                    <span class="glyphicon glyphicon-floppy-save"></span>
+                </button>
+                <button title="Get URLs for sharing"
+                        class="btn btn-default btn-sm share">
+                    <span class="glyphicon glyphicon-share"></span>
+                </button>
                 <button title="Add a new compiler for this source (click or drag)"
                         class="btn btn-default btn-sm add-compiler">
-                    <span class="glyphicon glyphicon-plus"></span>
+                    <span class="glyphicon glyphicon-open"></span>
                 </button>
             </div>
         </div>
@@ -135,9 +136,11 @@
                         class="btn btn-default btn-sm increase-font-size">
                     <span class="glyphicon glyphicon-sm glyphicon-font"></span>
                 </button>
+            </div>
+            <div class="btn-group btn-group-sm">
                 <button title="Clone this compiler window (click or drag)"
                         class="btn btn-default btn-sm add-compiler">
-                    <span class="glyphicon glyphicon-plus"></span>
+                    <span class="glyphicon glyphicon-new-window"></span>
                 </button>
             </div>
         </div>
@@ -155,13 +158,27 @@
     </div>
 
     <div class="urls">
-        <div class="input-group">
+        <div class="input-group urls-container">
+            <div class="input-group-btn">
+                <div class="btn-group btn-group-sm">
+                    <button type="button" class="btn btn-sm dropdown-toggle" data-toggle="dropdown"
+                            aria-haspopup="true" aria-expanded="false">
+                        <span class="current">Short</span>
+                        <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu sources">
+                        <li><a href="#" class="get-short-link" data-bind="Short">Short</a></li>
+                        <li><a href="#" data-bind="Full">Full</a></li>
+                        <li><a href="#" data-bind="Embed">Embed</a></li>
+                    </ul>
+                </div>
+            </div>
             <input type="text"
                    class="form-control input-sm permalink"
                    placeholder="Loading"
                    readonly size="1024">
             <span class="input-group-btn">
-                <button class="btn btn-sm btn-default clippy" type="button"
+                <button class="btn btn-sm clippy" type="button"
                         data-clipboard-target=".popover .permalink"
                         title="Copy to clipboard">
                     <img src="clippy.svg" class="clippy" width="13px" alt="Copy to clipboard">

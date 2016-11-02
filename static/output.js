@@ -82,13 +82,6 @@ define(function (require) {
     };
 
     return {
-        Output: Output,
-        getComponent: function (compiler, editor) {
-            return {
-                type: 'component',
-                componentName: 'output',
-                componentState: {compiler: compiler, editor: editor},
-            };
-        }
+        Output: Output
     };
 });

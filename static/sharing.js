@@ -23,19 +23,149 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 // POSSIBILITY OF SUCH DAMAGE.
 
-define(function (require, exports) {
+define(function (require) {
     "use strict";
     var $ = require('jquery');
+    var _ = require('underscore');
     var options = require('options');
-    exports.initialise = function () {
-        $(function () {
-            if (!options.sharingEnabled)
-                $('.if-share-enabled').remove();
+    var shortenURL = require('urlshorten-google');
+    var Components = require('components');
+    var url = require('url');
 
-            if (!options.githubEnabled)
-                $('.if-github-enabled').remove();
-            if (!options.gapiKey)
-                $('#get-short-link').remove();
+    function contentFromEmbedded(embeddedUrl) {
+        var params = url.unrisonify(embeddedUrl);
+        var filters = _.chain((params.filters || "").split(','))
+            .map(function (o) {
+                return [o, true];
+            })
+            .object()
+            .value();
+        return [
+            {
+                type: 'row',
+                content: [
+                    Components.getEditorWith(1, params.source, filters),
+                    Components.getCompilerWith(1, filters, params.options, params.compiler)
+                ]
+            }
+        ];
+    }
+
+    function getItemsByComponent(layout, component) {
+        return layout.root.getItemsByFilter(function (o) {
+            return o.type === "component" && o.componentName === component;
         });
+    }
+
+    function getEmbeddedUrl(layout) {
+        var source = "";
+        var filters = {};
+        var compilerName = "";
+        var options = "";
+        _.each(getItemsByComponent(layout, Components.getEditor().componentName),
+            function (editor) {
+                var state = editor.config.componentState;
+                source = state.source;
+                filters = _.extend(filters, state.options);
+            });
+        _.each(getItemsByComponent(layout, Components.getCompiler().componentName),
+            function (compiler) {
+                var state = compiler.config.componentState;
+                compilerName = state.compiler;
+                options = state.options;
+                filters = _.extend(filters, state.filters);
+            });
+        if (!filters.compileOnChange)
+            filters.readOnly = true;
+        return window.location.origin + '/e#' + url.risonify({
+                filters: _.keys(filters).join(","),
+                source: source,
+                compiler: compilerName,
+                options: options
+            });
+    }
+
+    function initShareButton(getLink, layout) {
+        var html = $('.template .urls').html();
+        var currentBind = '';
+
+        getLink.popover({
+            container: 'body',
+            content: html,
+            html: true,
+            placement: 'bottom',
+            trigger: 'manual'
+        }).click(function () {
+            getLink.popover('show');
+        }).on('inserted.bs.popover', function () {
+            var root = $('.urls-container:visible');
+            var urls = {};
+            if (!currentBind) currentBind = $(root.find('.sources a')[0]).data().bind;
+
+            function update() {
+                if (!currentBind) return;
+                root.find('.current').text(currentBind);
+                $(".permalink:visible").val(urls[currentBind] || "");
+            }
+
+            root.find('.sources a').on('click', function () {
+                currentBind = $(this).data().bind;
+                update();
+            });
+            getLinks(layout, function (theUrls) {
+                urls = theUrls;
+                update();
+            });
+            update();
+        });
+
+        // Dismiss the popover on escape.
+        $(document).on('keyup.editable', function (e) {
+            if (e.which === 27) {
+                getLink.popover("hide");
+            }
+        });
+
+        // Dismiss on any click that isn't either in the opening element, or inside
+        // the popover.
+        $(document).on('click.editable', function (e) {
+            var target = $(e.target);
+            if (!target.is(getLink) && getLink.has(target).length === 0 && target.closest('.popover').length === 0)
+                getLink.popover("hide");
+        });
+    }
+
+    function permalink(layout) {
+        return window.location.href.split('#')[0] + '#' + url.serialiseState(layout.toConfig());
+    }
+
+    function getLinks(layout, done) {
+        var result = {
+            Full: permalink(layout),
+            Embed: '<iframe width="800px" height="200px" src="' + getEmbeddedUrl(layout) + '"></iframe>'
+        };
+        if (!options.gapiKey) {
+            done(result);
+        } else {
+            shortenURL(full, function (shorter) {
+                result.Short = shorter;
+                done(result);
+            });
+        }
+    }
+
+    function initialise() {
+        if (!options.sharingEnabled)
+            $('.if-share-enabled').remove();
+        if (!options.githubEnabled)
+            $('.if-github-enabled').remove();
+        if (!options.gapiKey)
+            $('.get-short-link').remove();
+    }
+
+    return {
+        initialise: initialise,
+        initShareButton: initShareButton,
+        contentFromEmbedded: contentFromEmbedded
     };
 });

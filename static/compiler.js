@@ -32,8 +32,8 @@ define(function (require) {
     var colour = require('colour');
     var Toggles = require('toggles');
     var FontScale = require('fontscale');
-    var output = require('output');
     var Promise = require('es6-promise').Promise;
+    var Components = require('components');
 
     require('asm-mode');
     require('selectize');
@@ -112,7 +112,7 @@ define(function (require) {
         this.updateButtons();
 
         var outputConfig = _.bind(function () {
-            return output.getComponent(this.id, this.sourceEditorId);
+            return Components.getOutput(this.id, this.sourceEditorId);
         }, this);
         this.container.layoutManager.createDragSource(this.domRoot.find(".status").parent(), outputConfig);
         this.domRoot.find(".status").parent().click(_.bind(function () {
@@ -415,25 +415,6 @@ define(function (require) {
     };
 
     return {
-        Compiler: Compiler,
-        getComponent: function (editorId) {
-            return {
-                type: 'component',
-                componentName: 'compiler',
-                componentState: {source: editorId}
-            };
-        },
-        getComponentWith: function (editorId, filters, options, compilerId) {
-            return {
-                type: 'component',
-                componentName: 'compiler',
-                componentState: {
-                    source: editorId,
-                    filters: filters,
-                    options: options,
-                    compiler: compilerId
-                }
-            };
-        }
+        Compiler: Compiler
     };
 });
