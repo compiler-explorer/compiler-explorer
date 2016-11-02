@@ -89,6 +89,8 @@ define(function (require) {
         var html = $('.template .urls').html();
         var currentBind = '';
 
+        var title = getLink.attr('title'); // preserve before popover/tooltip breaks it
+
         getLink.popover({
             container: 'body',
             content: html,
@@ -117,7 +119,7 @@ define(function (require) {
                 update();
             });
             update();
-        });
+        }).attr('title', title);
 
         // Dismiss the popover on escape.
         $(document).on('keyup.editable', function (e) {
