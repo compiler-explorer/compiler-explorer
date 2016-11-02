@@ -136,6 +136,8 @@ define(function (require) {
                 this.container.layoutManager.root.contentItems[0];
             insertPoint.addChild(cloneComponent());
         }, this));
+
+        this.saveState();
     }
 
     Compiler.prototype.refresh = function () {

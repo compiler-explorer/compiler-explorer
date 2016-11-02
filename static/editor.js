@@ -172,6 +172,8 @@ define(function (require) {
         }, this));
 
         Sharing.initShareButton(this.domRoot.find('.share'), container.layoutManager);
+
+        this.updateState();
     }
 
     Editor.prototype.maybeEmitChange = function (force) {
