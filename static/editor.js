@@ -79,7 +79,7 @@ define(function (require) {
             matchBrackets: true,
             useCPP: true,
             dragDrop: false,
-            readOnly: !!state.options.readOnly,
+            readOnly: state.options ? !!state.options.readOnly : false,
             extraKeys: {"Alt-F": false}, // see https://github.com/mattgodbolt/gcc-explorer/pull/131
             mode: cmMode
         });
