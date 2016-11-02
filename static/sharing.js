@@ -147,7 +147,7 @@ define(function (require) {
         if (!options.gapiKey) {
             done(result);
         } else {
-            shortenURL(full, function (shorter) {
+            shortenURL(result.Full, function (shorter) {
                 result.Short = shorter;
                 done(result);
             });
