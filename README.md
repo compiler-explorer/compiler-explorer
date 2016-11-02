@@ -15,10 +15,6 @@ Try out one of the demo sites: [C++][cpp], [Rust][rust], [D][d] or [Go][go].
 [d]: https://d.godbolt.org/ "Compiler Explorer for D"
 [go]: https://go.godbolt.org/ "Compiler Explorer for Go"
 
-Compiler Explorer can also be embedded in other sites, like this:
-
-<iframe width="800px" height="200px" src="https://gcc.godbolt.org/e#compiler:g62,filters:'colouriseAsm,compileOnChange,labels,directives,commentOnly,intel',options:'-O2',source:'//+Notice+how+the+compiler+is+smart+enough+to+use+the+LEA%0A//+instruction+and+a+subtract+to+do+the+multiply.%0Aint+multiplyBySeven(int+x)+%7B+%0A++return+x+*+7%3B+%0A%7D'"></iframe>
-
 ### Developing
 
 Compiler Explorer is written in node.js.
