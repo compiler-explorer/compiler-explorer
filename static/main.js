@@ -57,67 +57,11 @@ define(function (require) {
     var _ = require('underscore');
     var $ = require('jquery');
     var GoldenLayout = require('goldenlayout');
-    var compiler = require('compiler');
-    var editor = require('editor');
+    var Components = require('components');
     var url = require('url');
     var clipboard = require('clipboard');
     var Hub = require('hub');
-    var shortenURL = require('urlshorten-google');
     var Raven = require('raven-js');
-
-    function contentFromEmbedded(embeddedUrl) {
-        var params = url.unrisonify(embeddedUrl);
-        var filters = _.chain((params.filters || "").split(','))
-            .map(function (o) {
-                return [o, true];
-            })
-            .object()
-            .value();
-        return [
-            {
-                type: 'row',
-                content: [
-                    editor.getComponentWith(1, params.source, filters),
-                    compiler.getComponentWith(1, filters, params.options, params.compiler)
-                ]
-            }
-        ];
-    }
-
-    function getItemsByComponent(layout, component) {
-        return layout.root.getItemsByFilter(function (o) {
-            return o.type === "component" && o.componentName === component;
-        });
-    }
-
-    function getEmbeddedUrl(layout) {
-        window.layout = layout;
-        var source = "";
-        var filters = {};
-        var compilerName = "";
-        var options = "";
-        _.each(getItemsByComponent(layout, editor.getComponent().componentName),
-            function (editor) {
-                var state = editor.config.componentState;
-                source = state.source;
-                filters = _.extend(filters, state.options);
-            });
-        _.each(getItemsByComponent(layout, compiler.getComponent().componentName),
-            function (compiler) {
-                var state = compiler.config.componentState;
-                compilerName = state.compiler;
-                options = state.options;
-                filters = _.extend(filters, state.filters);
-            });
-        if (!filters.compileOnChange)
-            filters.readOnly = true;
-        return window.location.origin + '/e#' + url.risonify({
-                filters: _.keys(filters).join(","),
-                source: source,
-                compiler: compilerName,
-                options: options
-            });
-    }
 
     function start() {
         analytics.initialise();
@@ -130,7 +74,7 @@ define(function (require) {
         var defaultSrc = $('.template .lang.' + safeLang).text().trim();
         var defaultConfig = {
             settings: {showPopoutIcon: false},
-            content: [{type: 'row', content: [editor.getComponent(1), compiler.getComponent(1)]}]
+            content: [{type: 'row', content: [Components.getEditor(1), Components.getCompiler(1)]}]
         };
 
         $(window).bind('hashchange', function () {
@@ -164,7 +108,7 @@ define(function (require) {
                         showCloseIcon: false,
                         hasHeaders: false
                     },
-                    content: contentFromEmbedded(window.location.hash.substr(1))
+                    content: sharing.contentFromEmbedded(window.location.hash.substr(1))
                 });
         }
 
@@ -204,57 +148,6 @@ define(function (require) {
         sizeRoot();
 
         new clipboard('.btn.clippy');
-
-        function initPopover(getLink, provider) {
-            var html = $('.template .urls').html();
-
-            getLink.popover({
-                container: 'body',
-                content: html,
-                html: true,
-                placement: 'bottom',
-                trigger: 'manual'
-            }).click(function () {
-                getLink.popover('show');
-            }).on('inserted.bs.popover', function () {
-                provider(function (url) {
-                    $(".permalink:visible").val(url);
-                });
-            });
-
-            // Dismiss the popover on escape.
-            $(document).on('keyup.editable', function (e) {
-                if (e.which === 27) {
-                    getLink.popover("hide");
-                }
-            });
-
-            // Dismiss on any click that isn't either on the opening element, or inside
-            // the popover.
-            $(document).on('click.editable', function (e) {
-                var target = $(e.target);
-                if (!target.is(getLink) && target.closest('.popover').length === 0)
-                    getLink.popover("hide");
-            });
-        }
-
-        function permalink() {
-            var config = layout.toConfig();
-            return window.location.href.split('#')[0] + '#' + url.serialiseState(config);
-        }
-
-        initPopover($("#get-full-link"), function (done) {
-            done(permalink);
-        });
-        initPopover($("#get-short-link"), function (done) {
-            shortenURL(permalink(), done);
-        });
-        initPopover($("#get-embed-link"), function (done) {
-            done(function () {
-                return '<iframe width="800px" height="200px" src="' +
-                    getEmbeddedUrl(layout) + '"></iframe>';
-            });
-        });
     }
 
     $(start);

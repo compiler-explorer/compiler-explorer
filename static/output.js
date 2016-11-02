@@ -51,7 +51,7 @@ define(function (require) {
 
         this.contentRoot.empty();
 
-        _.each(result.stdout.concat(result.stderr), function (obj) {
+        _.each((result.stdout || []).concat(result.stderr || []), function (obj) {
             this.add(obj.text, obj.line);
         }, this);
 
@@ -82,13 +82,6 @@ define(function (require) {
     };
 
     return {
-        Output: Output,
-        getComponent: function (compiler, editor) {
-            return {
-                type: 'component',
-                componentName: 'output',
-                componentState: {compiler: compiler, editor: editor},
-            };
-        }
+        Output: Output
     };
 });
