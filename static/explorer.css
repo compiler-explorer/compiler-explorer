@@ -58,14 +58,6 @@ input.options {
     background-color: #5bc0de !important;
 }
 
-#changetip_tipme_button {
-    width: 80px;
-}
-
-#flattr_button {
-    width: 120px;
-}
-
 .inline-msg {
     font-family: arial;
     font-size: 70%;
@@ -118,51 +110,51 @@ span.icon {
  * http://colorbrewer2.org/
  */
 .rainbow-0 {
-    background: rgb(141, 211, 199) !important;
+    background: rgba(141, 211, 199, 0.35) !important;
 }
 
 .rainbow-1 {
-    background: rgb(255, 255, 179) !important;
+    background: rgba(255, 255, 179, 0.35) !important;
 }
 
 .rainbow-2 {
-    background: rgb(190, 186, 218) !important;
+    background: rgba(190, 186, 218, 0.35) !important;
 }
 
 .rainbow-3 {
-    background: rgb(251, 128, 114) !important;
+    background: rgba(251, 128, 114, 0.35) !important;
 }
 
 .rainbow-4 {
-    background: rgb(128, 177, 211) !important;
+    background: rgba(128, 177, 211, 0.35) !important;
 }
 
 .rainbow-5 {
-    background: rgb(253, 180, 98) !important;
+    background: rgba(253, 180, 98, 0.35) !important;
 }
 
 .rainbow-6 {
-    background: rgb(179, 222, 105) !important;
+    background: rgba(179, 222, 105, 0.35) !important;
 }
 
 .rainbow-7 {
-    background: rgb(252, 205, 229) !important;
+    background: rgba(252, 205, 229, 0.35) !important;
 }
 
 .rainbow-8 {
-    background: rgb(217, 217, 217) !important;
+    background: rgba(217, 217, 217, 0.35) !important;
 }
 
 .rainbow-9 {
-    background: rgb(188, 128, 189) !important;
+    background: rgba(188, 128, 189, 0.35) !important;
 }
 
 .rainbow-10 {
-    background: rgb(204, 234, 197) !important;
+    background: rgba(204, 234, 197, 0.35) !important;
 }
 
 .rainbow-11 {
-    background: rgb(255, 237, 111) !important;
+    background: rgba(255, 237, 111, 0.35) !important;
 }
 
 .address {
