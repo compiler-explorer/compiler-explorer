@@ -63,9 +63,12 @@ clean:
 run: prereqs
 	$(NODE) ./node_modules/.bin/supervisor -w app.js,lib,etc/config -e 'js|node|properties' --exec $(NODE) -- ./app.js --language $(LANG)
 
+HASH := $(shell git rev-parse HEAD)
 dist: prereqs
 	$(NODE) ./node_modules/requirejs/bin/r.js -o app.build.js
+	mv out/dist/main.js out/dist/main.$(HASH).js
+	sed -i -e 's/data-main="main"/data-main="main.'"$(HASH)"'"'/ out/dist/*.html
+	sed -i -e 's/define("main",/define("main.'"$(HASH)"'",'/ out/dist/main.$(HASH).js
 
 c-preload:
 	$(MAKE) -C c-preload
-
