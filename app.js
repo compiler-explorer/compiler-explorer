@@ -509,6 +509,7 @@ findCompilers().then(function (compilers) {
         diffHandler = buildDiffHandler(wdiffConfig);
 
     webServer
+        .set('trust proxy', true)
         .use(morgan('combined', {stream: logger.stream}))
         .use(compression())
         .use(sFavicon(staticDir + '/favicon.ico'))
