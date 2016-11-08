@@ -513,6 +513,7 @@ findCompilers().then(function (compilers) {
         .use(morgan('combined', {stream: logger.stream}))
         .use(compression())
         .use(sFavicon(staticDir + '/favicon.ico'))
+        .use('/v', sStatic(staticDir + '/v', {maxAge: Infinity}))
         .use(sStatic(staticDir, {maxAge: staticMaxAgeSecs * 1000}))
         .use(bodyParser.json())
         .use(restreamer())

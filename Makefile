@@ -65,10 +65,28 @@ run: prereqs
 
 HASH := $(shell git rev-parse HEAD)
 dist: prereqs
+	rm -rf out/dist
 	$(NODE) ./node_modules/requirejs/bin/r.js -o app.build.js
-	mv out/dist/main.js out/dist/main.$(HASH).js
-	sed -i -e 's/data-main="main"/data-main="main.'"$(HASH)"'"'/ out/dist/*.html
-	sed -i -e 's/define("main",/define("main.'"$(HASH)"'",'/ out/dist/main.$(HASH).js
+	# Move all assets to a versioned directory
+	mkdir -p out/dist/v/$(HASH)
+	# main.js
+	mv out/dist/main.js* out/dist/v/$(HASH)/
+	sed -i -e 's!data-main="main"!data-main="v/'"$(HASH)"'/main"'! out/dist/*.html
+	# explorer.css
+	mv out/dist/explorer.css out/dist/v/$(HASH)/
+	sed -i -e 's!href="explorer.css"!href="v/'"$(HASH)"'/explorer.css"'! out/dist/*.html
+	# any actual assets
+	mv out/dist/assets/ out/dist/v/$(HASH)/
+	# copy any external references into the directory too
+	cp -r $(shell pwd)/out/dist/ext out/dist/v/$(HASH)/ext
+	# uglify requirejs itself
+	$(NODE) ./node_modules/.bin/uglifyjs out/dist/ext/requirejs/require.js \
+	    -c \
+	    --output out/dist/v/$(HASH)/ext/requirejs/require.js \
+	    --source-map out/dist/v/$(HASH)/ext/requirejs/require.js.map \
+	    --source-map-url v/$(HASH)/ext/requirejs/require.js.map
+	# rewrite any src refs
+	sed -i -e 's!src="!src="v/'"$(HASH)"'/'! out/dist/*.html
 
 c-preload:
 	$(MAKE) -C c-preload
