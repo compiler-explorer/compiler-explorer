@@ -80,11 +80,13 @@ dist: prereqs
 	# copy any external references into the directory too
 	cp -r $(shell pwd)/out/dist/ext out/dist/v/$(HASH)/ext
 	# uglify requirejs itself
-	$(NODE) ./node_modules/.bin/uglifyjs out/dist/ext/requirejs/require.js \
+	$(NODE) ./node_modules/.bin/uglifyjs out/dist/v/$(HASH)/ext/requirejs/require.js \
 	    -c \
 	    --output out/dist/v/$(HASH)/ext/requirejs/require.js \
 	    --source-map out/dist/v/$(HASH)/ext/requirejs/require.js.map \
-	    --source-map-url v/$(HASH)/ext/requirejs/require.js.map
+	    --source-map-url require.js.map \
+	    --source-map-root //v/$(HASH)/ext/requirejs
+	    --prefix 6
 	# rewrite any src refs
 	sed -i -e 's!src="!src="v/'"$(HASH)"'/'! out/dist/*.html
 
