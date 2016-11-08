@@ -38,7 +38,8 @@
     "supervisor": "*",
     "bower": "*",
     "requirejs": "*",
-    "jshint": "*"
+    "jshint": "*",
+    "uglify-js": "*"
   },
   "scripts": {
     "test": "make test"
