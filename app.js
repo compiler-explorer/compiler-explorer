@@ -37,6 +37,7 @@ var nopt = require('nopt'),
     http = require('http'),
     https = require('https'),
     url = require('url'),
+    utils = require('./lib/utils'),
     Promise = require('promise'),
     aws = require('./lib/aws'),
     _ = require('underscore-node'),
@@ -330,8 +331,10 @@ function configuredCompilers() {
             alias: props("alias"),
             options: props("options"),
             versionFlag: props("versionFlag"),
+            versionRe: props("versionRe"),
             is6g: !!props("is6g", false),
             isCl: !!props("isCl", false),
+            needsWine: !!props("isCl", false) && process.platform == 'linux',
             intelAsm: props("intelAsm", ""),
             asmFlag: props("asmFlag", "-S"),
             outputFlag: props("outputFlag", "-o"),
@@ -350,15 +353,32 @@ function getCompilerInfo(compilerInfo) {
     return new Promise(function (resolve) {
         var compiler = compilerInfo.exe;
         var versionFlag = compilerInfo.versionFlag || '--version';
+        var versionRe = new RegExp(compilerInfo.versionRe || '.*');
+        var maybeWine = "";
+        if (compilerInfo.needsWine) {
+            maybeWine = '"' + gccProps("wine") + '" ';
+        }
         // fill field compilerInfo.version,
         // assuming the compiler returns its version on 1 line
-        child_process.exec('"' + compiler + '" ' + versionFlag, function (err, output) {
+        child_process.exec(maybeWine + '"' + compiler + '" ' + versionFlag, function (err, output, stderr) {
             if (err) {
                 logger.error("Unable to run compiler '" + compiler + "' : " + err);
                 return resolve(null);
             }
-            compilerInfo.version = output.split('\n')[0];
-            if (compilerInfo.intelAsm) {
+
+            var version = "";
+            _.each(utils.splitLines(output + stderr), function(line) {
+                if (version) return;
+                var match = line.match(versionRe);
+                if (match) version = match[0];
+            });
+            if (!version) {
+                logger.error("Unable to get compiler version for '" + compiler + "'");
+                return resolve(null);
+            }
+            logger.info(compiler + " is version '" + version + "'");
+            compilerInfo.version = version;
+            if (compilerInfo.intelAsm || compilerInfo.isCl) {
                 return resolve(compilerInfo);
             }
 
@@ -367,7 +387,7 @@ function getCompilerInfo(compilerInfo) {
                 var options = {};
                 if (!err) {
                     var splitness = /--?[-a-zA-Z]+( ?[-a-zA-Z]+)/;
-                    output.split('\n').forEach(function (line) {
+                    utils.eachLine(output, function (line) {
                         var match = line.match(splitness);
                         if (!match) return;
                         options[match[0]] = true;

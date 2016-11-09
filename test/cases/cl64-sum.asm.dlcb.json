@@ -4,8 +4,13 @@
     "text": "testFunction, COMDAT PROC"
   },
   {
+    "opcodes": [
+      0,
+      1
+    ],
+    "address": 0,
     "source": null,
-    "text": ""
+    "text": "        mov    QWORD PTR [rsp+8], rbx"
   },
   {
     "opcodes": [
@@ -14,11 +19,7 @@
     ],
     "address": 0,
     "source": null,
-    "text": "  mov    QWORD PTR [rsp+8], rbx"
-  },
-  {
-    "source": null,
-    "text": ""
+    "text": "        xor    r8d, r8d"
   },
   {
     "opcodes": [
@@ -27,7 +28,7 @@
     ],
     "address": 0,
     "source": null,
-    "text": "  xor    r8d, r8d"
+    "text": "        movsxd         rbx, edx"
   },
   {
     "opcodes": [
@@ -36,7 +37,7 @@
     ],
     "address": 0,
     "source": null,
-    "text": "  movsxd         rbx, edx"
+    "text": "        mov    r9, rcx"
   },
   {
     "opcodes": [
@@ -45,7 +46,7 @@
     ],
     "address": 0,
     "source": null,
-    "text": "  mov    r9, rcx"
+    "text": "        mov    r11d, r8d"
   },
   {
     "opcodes": [
@@ -54,11 +55,7 @@
     ],
     "address": 0,
     "source": null,
-    "text": "  mov    r11d, r8d"
-  },
-  {
-    "source": null,
-    "text": ""
+    "text": "        mov    r10d, r8d"
   },
   {
     "opcodes": [
@@ -67,7 +64,7 @@
     ],
     "address": 0,
     "source": null,
-    "text": "  mov    r10d, r8d"
+    "text": "        test   edx, edx"
   },
   {
     "opcodes": [
@@ -76,7 +73,7 @@
     ],
     "address": 0,
     "source": null,
-    "text": "  test   edx, edx"
+    "text": "        jle    SHORT $LN9@testFuncti"
   },
   {
     "opcodes": [
@@ -85,7 +82,7 @@
     ],
     "address": 0,
     "source": null,
-    "text": "  jle    SHORT $LN9@testFuncti"
+    "text": "        cmp    ebx, 8"
   },
   {
     "opcodes": [
@@ -94,7 +91,7 @@
     ],
     "address": 0,
     "source": null,
-    "text": "  cmp    ebx, 8"
+    "text": "        jb     SHORT $LN9@testFuncti"
   },
   {
     "opcodes": [
@@ -103,7 +100,7 @@
     ],
     "address": 0,
     "source": null,
-    "text": "  jb     SHORT $LN9@testFuncti"
+    "text": "        mov    eax, ebx"
   },
   {
     "opcodes": [
@@ -112,7 +109,7 @@
     ],
     "address": 0,
     "source": null,
-    "text": "  mov    eax, ebx"
+    "text": "        and    eax, -2147483641     ; ffffffff80000007H"
   },
   {
     "opcodes": [
@@ -121,7 +118,7 @@
     ],
     "address": 0,
     "source": null,
-    "text": "  and    eax, -2147483641     ; ffffffff80000007H"
+    "text": "        jge    SHORT $LN19@testFuncti"
   },
   {
     "opcodes": [
@@ -130,7 +127,7 @@
     ],
     "address": 0,
     "source": null,
-    "text": "  jge    SHORT $LN19@testFuncti"
+    "text": "        dec    eax"
   },
   {
     "opcodes": [
@@ -139,7 +136,7 @@
     ],
     "address": 0,
     "source": null,
-    "text": "  dec    eax"
+    "text": "        or     eax, -8"
   },
   {
     "opcodes": [
@@ -148,16 +145,7 @@
     ],
     "address": 0,
     "source": null,
-    "text": "  or     eax, -8"
-  },
-  {
-    "opcodes": [
-      0,
-      1
-    ],
-    "address": 0,
-    "source": null,
-    "text": "  inc    eax"
+    "text": "        inc    eax"
   },
   {
     "source": null,
@@ -170,7 +158,7 @@
     ],
     "address": 0,
     "source": null,
-    "text": "  mov    edx, ebx"
+    "text": "        mov    edx, ebx"
   },
   {
     "opcodes": [
@@ -179,7 +167,7 @@
     ],
     "address": 0,
     "source": null,
-    "text": "  xorps  xmm2, xmm2"
+    "text": "        xorps  xmm2, xmm2"
   },
   {
     "opcodes": [
@@ -188,7 +176,7 @@
     ],
     "address": 0,
     "source": null,
-    "text": "  sub    edx, eax"
+    "text": "        sub    edx, eax"
   },
   {
     "opcodes": [
@@ -197,11 +185,7 @@
     ],
     "address": 0,
     "source": null,
-    "text": "  movdqa         xmm1, xmm2"
-  },
-  {
-    "source": null,
-    "text": ""
+    "text": "        movdqa         xmm1, xmm2"
   },
   {
     "opcodes": [
@@ -210,15 +194,20 @@
     ],
     "address": 0,
     "source": null,
-    "text": "  npad   8"
+    "text": "        npad   8"
   },
   {
     "source": null,
     "text": "$LL4@testFuncti:"
   },
   {
+    "opcodes": [
+      0,
+      1
+    ],
+    "address": 0,
     "source": null,
-    "text": ""
+    "text": "        movsxd         rax, r10d"
   },
   {
     "opcodes": [
@@ -227,11 +216,7 @@
     ],
     "address": 0,
     "source": null,
-    "text": "  movsxd         rax, r10d"
-  },
-  {
-    "source": null,
-    "text": ""
+    "text": "        movdqu         xmm0, XMMWORD PTR [r9+rax*4]"
   },
   {
     "opcodes": [
@@ -240,7 +225,7 @@
     ],
     "address": 0,
     "source": null,
-    "text": "  movdqu         xmm0, XMMWORD PTR [r9+rax*4]"
+    "text": "        lea    eax, DWORD PTR [r10+4]"
   },
   {
     "opcodes": [
@@ -249,7 +234,7 @@
     ],
     "address": 0,
     "source": null,
-    "text": "  lea    eax, DWORD PTR [r10+4]"
+    "text": "        add    r10d, 8"
   },
   {
     "opcodes": [
@@ -258,7 +243,7 @@
     ],
     "address": 0,
     "source": null,
-    "text": "  add    r10d, 8"
+    "text": "        movsxd         rcx, eax"
   },
   {
     "opcodes": [
@@ -267,7 +252,7 @@
     ],
     "address": 0,
     "source": null,
-    "text": "  movsxd         rcx, eax"
+    "text": "        paddd  xmm0, xmm2"
   },
   {
     "opcodes": [
@@ -276,7 +261,7 @@
     ],
     "address": 0,
     "source": null,
-    "text": "  paddd  xmm0, xmm2"
+    "text": "        movdqa         xmm2, xmm0"
   },
   {
     "opcodes": [
@@ -285,11 +270,7 @@
     ],
     "address": 0,
     "source": null,
-    "text": "  movdqa         xmm2, xmm0"
-  },
-  {
-    "source": null,
-    "text": ""
+    "text": "        movdqu         xmm0, XMMWORD PTR [r9+rcx*4]"
   },
   {
     "opcodes": [
@@ -298,7 +279,7 @@
     ],
     "address": 0,
     "source": null,
-    "text": "  movdqu         xmm0, XMMWORD PTR [r9+rcx*4]"
+    "text": "        paddd  xmm0, xmm1"
   },
   {
     "opcodes": [
@@ -307,7 +288,7 @@
     ],
     "address": 0,
     "source": null,
-    "text": "  paddd  xmm0, xmm1"
+    "text": "        movdqa         xmm1, xmm0"
   },
   {
     "opcodes": [
@@ -316,7 +297,7 @@
     ],
     "address": 0,
     "source": null,
-    "text": "  movdqa         xmm1, xmm0"
+    "text": "        cmp    r10d, edx"
   },
   {
     "opcodes": [
@@ -325,7 +306,7 @@
     ],
     "address": 0,
     "source": null,
-    "text": "  cmp    r10d, edx"
+    "text": "        jl     SHORT $LL4@testFuncti"
   },
   {
     "opcodes": [
@@ -334,7 +315,7 @@
     ],
     "address": 0,
     "source": null,
-    "text": "  jl     SHORT $LL4@testFuncti"
+    "text": "        paddd  xmm1, xmm2"
   },
   {
     "opcodes": [
@@ -343,7 +324,7 @@
     ],
     "address": 0,
     "source": null,
-    "text": "  paddd  xmm1, xmm2"
+    "text": "        movdqa         xmm0, xmm1"
   },
   {
     "opcodes": [
@@ -352,7 +333,7 @@
     ],
     "address": 0,
     "source": null,
-    "text": "  movdqa         xmm0, xmm1"
+    "text": "        psrldq         xmm0, 8"
   },
   {
     "opcodes": [
@@ -361,7 +342,7 @@
     ],
     "address": 0,
     "source": null,
-    "text": "  psrldq         xmm0, 8"
+    "text": "        paddd  xmm1, xmm0"
   },
   {
     "opcodes": [
@@ -370,7 +351,7 @@
     ],
     "address": 0,
     "source": null,
-    "text": "  paddd  xmm1, xmm0"
+    "text": "        movdqa         xmm0, xmm1"
   },
   {
     "opcodes": [
@@ -379,7 +360,7 @@
     ],
     "address": 0,
     "source": null,
-    "text": "  movdqa         xmm0, xmm1"
+    "text": "        psrldq         xmm0, 4"
   },
   {
     "opcodes": [
@@ -388,7 +369,7 @@
     ],
     "address": 0,
     "source": null,
-    "text": "  psrldq         xmm0, 4"
+    "text": "        paddd  xmm1, xmm0"
   },
   {
     "opcodes": [
@@ -397,16 +378,7 @@
     ],
     "address": 0,
     "source": null,
-    "text": "  paddd  xmm1, xmm0"
-  },
-  {
-    "opcodes": [
-      0,
-      1
-    ],
-    "address": 0,
-    "source": null,
-    "text": "  movd   r11d, xmm1"
+    "text": "        movd   r11d, xmm1"
   },
   {
     "source": null,
@@ -419,11 +391,7 @@
     ],
     "address": 0,
     "source": null,
-    "text": "  movsxd         rcx, r10d"
-  },
-  {
-    "source": null,
-    "text": ""
+    "text": "        movsxd         rcx, r10d"
   },
   {
     "opcodes": [
@@ -432,7 +400,7 @@
     ],
     "address": 0,
     "source": null,
-    "text": "  mov    edx, r8d"
+    "text": "        mov    edx, r8d"
   },
   {
     "opcodes": [
@@ -441,7 +409,7 @@
     ],
     "address": 0,
     "source": null,
-    "text": "  cmp    rcx, rbx"
+    "text": "        cmp    rcx, rbx"
   },
   {
     "opcodes": [
@@ -450,7 +418,7 @@
     ],
     "address": 0,
     "source": null,
-    "text": "  jge    SHORT $LN20@testFuncti"
+    "text": "        jge    SHORT $LN20@testFuncti"
   },
   {
     "opcodes": [
@@ -459,7 +427,7 @@
     ],
     "address": 0,
     "source": null,
-    "text": "  mov    rax, rbx"
+    "text": "        mov    rax, rbx"
   },
   {
     "opcodes": [
@@ -468,7 +436,7 @@
     ],
     "address": 0,
     "source": null,
-    "text": "  sub    rax, rcx"
+    "text": "        sub    rax, rcx"
   },
   {
     "opcodes": [
@@ -477,7 +445,7 @@
     ],
     "address": 0,
     "source": null,
-    "text": "  cmp    rax, 2"
+    "text": "        cmp    rax, 2"
   },
   {
     "opcodes": [
@@ -486,7 +454,7 @@
     ],
     "address": 0,
     "source": null,
-    "text": "  jl     SHORT $LC14@testFuncti"
+    "text": "        jl     SHORT $LC14@testFuncti"
   },
   {
     "opcodes": [
@@ -495,7 +463,7 @@
     ],
     "address": 0,
     "source": null,
-    "text": "  lea    rax, QWORD PTR [rbx-1]"
+    "text": "        lea    rax, QWORD PTR [rbx-1]"
   },
   {
     "opcodes": [
@@ -504,15 +472,20 @@
     ],
     "address": 0,
     "source": null,
-    "text": "  npad   3"
+    "text": "        npad   3"
   },
   {
     "source": null,
     "text": "$LL16@testFuncti:"
   },
   {
+    "opcodes": [
+      0,
+      1
+    ],
+    "address": 0,
     "source": null,
-    "text": ""
+    "text": "        add    r8d, DWORD PTR [r9+rcx*4]"
   },
   {
     "opcodes": [
@@ -521,7 +494,7 @@
     ],
     "address": 0,
     "source": null,
-    "text": "  add    r8d, DWORD PTR [r9+rcx*4]"
+    "text": "        add    edx, DWORD PTR [r9+rcx*4+4]"
   },
   {
     "opcodes": [
@@ -530,7 +503,7 @@
     ],
     "address": 0,
     "source": null,
-    "text": "  add    edx, DWORD PTR [r9+rcx*4+4]"
+    "text": "        add    rcx, 2"
   },
   {
     "opcodes": [
@@ -539,7 +512,7 @@
     ],
     "address": 0,
     "source": null,
-    "text": "  add    rcx, 2"
+    "text": "        cmp    rcx, rax"
   },
   {
     "opcodes": [
@@ -548,24 +521,20 @@
     ],
     "address": 0,
     "source": null,
-    "text": "  cmp    rcx, rax"
-  },
-  {
-    "opcodes": [
-      0,
-      1
-    ],
-    "address": 0,
-    "source": null,
-    "text": "  jl     SHORT $LL16@testFuncti"
+    "text": "        jl     SHORT $LL16@testFuncti"
   },
   {
     "source": null,
     "text": "$LC14@testFuncti:"
   },
   {
+    "opcodes": [
+      0,
+      1
+    ],
+    "address": 0,
     "source": null,
-    "text": ""
+    "text": "        cmp    rcx, rbx"
   },
   {
     "opcodes": [
@@ -574,7 +543,7 @@
     ],
     "address": 0,
     "source": null,
-    "text": "  cmp    rcx, rbx"
+    "text": "        jge    SHORT $LN15@testFuncti"
   },
   {
     "opcodes": [
@@ -583,28 +552,20 @@
     ],
     "address": 0,
     "source": null,
-    "text": "  jge    SHORT $LN15@testFuncti"
-  },
-  {
-    "source": null,
-    "text": ""
-  },
-  {
-    "opcodes": [
-      0,
-      1
-    ],
-    "address": 0,
-    "source": null,
-    "text": "  add    r11d, DWORD PTR [r9+rcx*4]"
+    "text": "        add    r11d, DWORD PTR [r9+rcx*4]"
   },
   {
     "source": null,
     "text": "$LN15@testFuncti:"
   },
   {
+    "opcodes": [
+      0,
+      1
+    ],
+    "address": 0,
     "source": null,
-    "text": ""
+    "text": "        lea    eax, DWORD PTR [rdx+r8]"
   },
   {
     "opcodes": [
@@ -613,7 +574,7 @@
     ],
     "address": 0,
     "source": null,
-    "text": "  lea    eax, DWORD PTR [rdx+r8]"
+    "text": "        add    eax, r11d"
   },
   {
     "opcodes": [
@@ -622,11 +583,7 @@
     ],
     "address": 0,
     "source": null,
-    "text": "  add    eax, r11d"
-  },
-  {
-    "source": null,
-    "text": ""
+    "text": "        mov    rbx, QWORD PTR [rsp+8]"
   },
   {
     "opcodes": [
@@ -635,16 +592,7 @@
     ],
     "address": 0,
     "source": null,
-    "text": "  mov    rbx, QWORD PTR [rsp+8]"
-  },
-  {
-    "opcodes": [
-      0,
-      1
-    ],
-    "address": 0,
-    "source": null,
-    "text": "  ret    0"
+    "text": "        ret    0"
   },
   {
     "source": null,
@@ -657,7 +605,7 @@
     ],
     "address": 0,
     "source": null,
-    "text": "  mov    rbx, QWORD PTR [rsp+8]"
+    "text": "        mov    rbx, QWORD PTR [rsp+8]"
   },
   {
     "opcodes": [
@@ -666,7 +614,7 @@
     ],
     "address": 0,
     "source": null,
-    "text": "  mov    eax, r11d"
+    "text": "        mov    eax, r11d"
   },
   {
     "opcodes": [
@@ -675,14 +623,10 @@
     ],
     "address": 0,
     "source": null,
-    "text": "  ret    0"
+    "text": "        ret    0"
   },
   {
     "source": null,
     "text": "testFunction ENDP"
-  },
-  {
-    "source": null,
-    "text": ""
   }
 ]
