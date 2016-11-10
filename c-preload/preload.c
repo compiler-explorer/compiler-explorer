@@ -46,7 +46,8 @@ static const char *my_strchrnul(const char *s, int c) {
     return ptr;
 }
 
-static int allowed_match(const char* path, const char* okpath, const char *denypath) {
+static int allowed_match(const char* path, const char* okpath, const char *denypath,
+                         int debug) {
     char resolvedBuf[PATH_MAX];
     const char* resolved = path;
     if (!strncmp(resolved, "/proc/self", 10)) {
@@ -74,7 +75,9 @@ static int allowed_match(const char* path, const char* okpath, const char *denyp
     }
 
 deny:
-    fprintf(stderr, "Access to \"%s\" denied by gcc-explorer policy\n", path);
+    if (debug) {
+        fprintf(stderr, "Access to \"%s\" denied by gcc-explorer policy\n", path);
+    }
     errno = EACCES;
     return 0;
 }
@@ -88,13 +91,15 @@ static int allowed_env(const char* pathname, const char* envvar) {
     const char* denypath = getenv("DENIED");
     if (denypath == NULL) denypath = "";
 
+    int debug = getenv("PRELOAD_DEBUG") ? 1 : 0;
+
     // Check file name first
-    if (allowed_match(pathname, okpath, denypath)) return 1;
+    if (allowed_match(pathname, okpath, denypath, debug)) return 1;
 
     // Check directory name
     char* dirpathbuf = strdup(pathname);
     char* dirpath = dirname(dirpathbuf);
-    int dir_ok = allowed_match(dirpath, okpath, denypath);
+    int dir_ok = allowed_match(dirpath, okpath, denypath, debug);
     free(dirpathbuf);
 
     return dir_ok;
