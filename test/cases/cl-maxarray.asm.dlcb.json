@@ -4,10 +4,6 @@
     "text": "maxArray PROC"
   },
   {
-    "source": null,
-    "text": ""
-  },
-  {
     "opcodes": [
       72,
       141,
@@ -16,7 +12,7 @@
     ],
     "address": 0,
     "source": 2,
-    "text": "  lea    rax, QWORD PTR [rcx+8]"
+    "text": "        lea      rax, QWORD PTR [rcx+8]"
   },
   {
     "opcodes": [
@@ -26,7 +22,7 @@
     ],
     "address": 4,
     "source": 2,
-    "text": "  sub    rdx, rcx"
+    "text": "        sub      rdx, rcx"
   },
   {
     "opcodes": [
@@ -38,7 +34,7 @@
     ],
     "address": 7,
     "source": 2,
-    "text": "  mov    ecx, 16384         ; 00004000H"
+    "text": "        mov      ecx, 16384             ; 00004000H"
   },
   {
     "opcodes": [
@@ -49,15 +45,11 @@
     ],
     "address": 12,
     "source": 2,
-    "text": "  npad   4"
+    "text": "        npad     4"
   },
   {
     "source": null,
     "text": "$LL9@maxArray:"
-  },
-  {
-    "source": null,
-    "text": ""
   },
   {
     "opcodes": [
@@ -70,7 +62,7 @@
     ],
     "address": 16,
     "source": 3,
-    "text": "  movsd  xmm0, QWORD PTR [rdx+rax-8]"
+    "text": "        movsd    xmm0, QWORD PTR [rdx+rax-8]"
   },
   {
     "opcodes": [
@@ -82,7 +74,7 @@
     ],
     "address": 22,
     "source": 3,
-    "text": "  comisd         xmm0, QWORD PTR [rax-8]"
+    "text": "        comisd   xmm0, QWORD PTR [rax-8]"
   },
   {
     "opcodes": [
@@ -91,7 +83,7 @@
     ],
     "address": 27,
     "source": 3,
-    "text": "  jbe    SHORT $LN10@maxArray"
+    "text": "        jbe      SHORT $LN10@maxArray"
   },
   {
     "opcodes": [
@@ -103,7 +95,7 @@
     ],
     "address": 29,
     "source": 3,
-    "text": "  movsd  QWORD PTR [rax-8], xmm0"
+    "text": "        movsd    QWORD PTR [rax-8], xmm0"
   },
   {
     "source": null,
@@ -119,7 +111,7 @@
     ],
     "address": 34,
     "source": 3,
-    "text": "  movsd  xmm0, QWORD PTR [rdx+rax]"
+    "text": "        movsd    xmm0, QWORD PTR [rdx+rax]"
   },
   {
     "opcodes": [
@@ -130,7 +122,7 @@
     ],
     "address": 39,
     "source": 3,
-    "text": "  comisd         xmm0, QWORD PTR [rax]"
+    "text": "        comisd   xmm0, QWORD PTR [rax]"
   },
   {
     "opcodes": [
@@ -139,7 +131,7 @@
     ],
     "address": 43,
     "source": 3,
-    "text": "  jbe    SHORT $LN14@maxArray"
+    "text": "        jbe      SHORT $LN14@maxArray"
   },
   {
     "opcodes": [
@@ -150,15 +142,11 @@
     ],
     "address": 45,
     "source": 3,
-    "text": "  movsd  QWORD PTR [rax], xmm0"
+    "text": "        movsd    QWORD PTR [rax], xmm0"
   },
   {
     "source": null,
     "text": "$LN14@maxArray:"
-  },
-  {
-    "source": null,
-    "text": ""
   },
   {
     "opcodes": [
@@ -171,7 +159,7 @@
     ],
     "address": 49,
     "source": 3,
-    "text": "  movsd  xmm0, QWORD PTR [rdx+rax+8]"
+    "text": "        movsd    xmm0, QWORD PTR [rdx+rax+8]"
   },
   {
     "opcodes": [
@@ -183,7 +171,7 @@
     ],
     "address": 55,
     "source": 3,
-    "text": "  comisd         xmm0, QWORD PTR [rax+8]"
+    "text": "        comisd   xmm0, QWORD PTR [rax+8]"
   },
   {
     "opcodes": [
@@ -192,7 +180,7 @@
     ],
     "address": 60,
     "source": 3,
-    "text": "  jbe    SHORT $LN15@maxArray"
+    "text": "        jbe      SHORT $LN15@maxArray"
   },
   {
     "opcodes": [
@@ -204,15 +192,11 @@
     ],
     "address": 62,
     "source": 3,
-    "text": "  movsd  QWORD PTR [rax+8], xmm0"
+    "text": "        movsd    QWORD PTR [rax+8], xmm0"
   },
   {
     "source": null,
     "text": "$LN15@maxArray:"
-  },
-  {
-    "source": null,
-    "text": ""
   },
   {
     "opcodes": [
@@ -225,7 +209,7 @@
     ],
     "address": 67,
     "source": 3,
-    "text": "  movsd  xmm0, QWORD PTR [rdx+rax+16]"
+    "text": "        movsd    xmm0, QWORD PTR [rdx+rax+16]"
   },
   {
     "opcodes": [
@@ -237,7 +221,7 @@
     ],
     "address": 73,
     "source": 3,
-    "text": "  comisd         xmm0, QWORD PTR [rax+16]"
+    "text": "        comisd   xmm0, QWORD PTR [rax+16]"
   },
   {
     "opcodes": [
@@ -246,7 +230,7 @@
     ],
     "address": 78,
     "source": 3,
-    "text": "  jbe    SHORT $LN16@maxArray"
+    "text": "        jbe      SHORT $LN16@maxArray"
   },
   {
     "opcodes": [
@@ -258,7 +242,7 @@
     ],
     "address": 80,
     "source": 3,
-    "text": "  movsd  QWORD PTR [rax+16], xmm0"
+    "text": "        movsd    QWORD PTR [rax+16], xmm0"
   },
   {
     "source": null,
@@ -273,11 +257,7 @@
     ],
     "address": 85,
     "source": 3,
-    "text": "  add    rax, 32                  ; 00000020H"
-  },
-  {
-    "source": null,
-    "text": ""
+    "text": "        add      rax, 32              ; 00000020H"
   },
   {
     "opcodes": [
@@ -288,7 +268,7 @@
     ],
     "address": 89,
     "source": 2,
-    "text": "  sub    rcx, 1"
+    "text": "        sub      rcx, 1"
   },
   {
     "opcodes": [
@@ -297,11 +277,7 @@
     ],
     "address": 93,
     "source": 2,
-    "text": "  jne    SHORT $LL9@maxArray"
-  },
-  {
-    "source": null,
-    "text": ""
+    "text": "        jne      SHORT $LL9@maxArray"
   },
   {
     "opcodes": [
@@ -309,14 +285,10 @@
     ],
     "address": 95,
     "source": 4,
-    "text": "  ret    0"
+    "text": "        ret      0"
   },
   {
     "source": null,
     "text": "maxArray ENDP"
-  },
-  {
-    "source": null,
-    "text": ""
   }
 ]
