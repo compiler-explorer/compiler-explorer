@@ -535,7 +535,7 @@ findCompilers().then(function (compilers) {
         .use(sFavicon(staticDir + '/favicon.ico'))
         .use('/v', sStatic(staticDir + '/v', {maxAge: Infinity}))
         .use(sStatic(staticDir, {maxAge: staticMaxAgeSecs * 1000}))
-        .use(bodyParser.json())
+        .use(bodyParser.json({limit: gccProps('bodyParserLimit', '1mb')}))
         .use(restreamer())
         .get('/client-options.json', clientOptionsHandler.handler)
         .use('/source', getSource)
