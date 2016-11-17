@@ -35,14 +35,16 @@
     "winston": "2.2.x"
   },
   "devDependencies": {
-    "supervisor": "*",
     "bower": "*",
-    "requirejs": "*",
+    "chai": "3.5.x",
     "jshint": "*",
+    "mocha": "3.1.x",
+    "requirejs": "*",
+    "supervisor": "*",
     "uglify-js": "*"
   },
   "scripts": {
-    "test": "make test"
+    "test": "mocha && make test"
   },
   "license": "BSD-2-Clause"
 }
