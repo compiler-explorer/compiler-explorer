@@ -308,23 +308,14 @@ function configuredCompilers() {
         });
     }
 
-    return Promise.all(exes.map(function (name) {
-        if (name.indexOf("@") !== -1) {
-            var bits = name.split("@");
-            var host = bits[0];
-            var port = parseInt(bits[1]);
-            return fetchRemote(host, port, gccProps);
-        }
-        if (name == "AWS") {
-            return fetchAws();
-        }
+    function compilerConfigFor(name, parentProps) {
         var base = "compiler." + name;
 
         function props(name, def) {
-            return compilerProps(base + "." + name, compilerProps(name, def));
+            return parentProps(base + "." + name, parentProps(name, def));
         }
 
-        return Promise.resolve({
+        var compilerInfo = {
             id: name,
             exe: compilerProps(base + ".exe", name),
             name: props("name", name),
@@ -341,15 +332,43 @@ function configuredCompilers() {
             needsMulti: !!props("needsMulti", true),
             supportsBinary: !!props("supportsBinary", true),
             postProcess: props("postProcess", "").split("|")
-        });
+        };
+        logger.info("Found compiler", compilerInfo);
+        return Promise.resolve(compilerInfo);
+    }
+
+    function recurseGetCompilers(name, parentProps) {
+        if (name.indexOf("@") !== -1) {
+            var bits = name.split("@");
+            var host = bits[0];
+            var port = parseInt(bits[1]);
+            return fetchRemote(host, port, gccProps);
+        }
+        if (name.indexOf("&") === 0) {
+            var groupName = name.substr(1);
+
+            function props(name, def) {
+                return compilerProps("group." + groupName + "." + name, parentProps(name, def));
+            }
+
+            var exes = props('compilers', '').split(":");
+            logger.info("Processing compilers from group " + groupName);
+            return Promise.all(exes.map(function (compiler) {
+                return recurseGetCompilers(compiler, props);
+            }));
+        }
+        if (name == "AWS") return fetchAws();
+        return Promise.resolve(compilerConfigFor(name, parentProps));
+    }
+
+    return Promise.all(exes.map(function (compiler) {
+        return recurseGetCompilers(compiler, compilerProps);
     })).then(_.flatten);
 }
 
 // Auxiliary function to findCompilers()
 function getCompilerInfo(compilerInfo) {
-    if (compilerInfo.remote) {
-        return Promise.resolve(compilerInfo);
-    }
+    if (compilerInfo.remote) return Promise.resolve(compilerInfo);
     return new Promise(function (resolve) {
         var compiler = compilerInfo.exe;
         var versionFlag = compilerInfo.versionFlag || '--version';
@@ -358,6 +377,7 @@ function getCompilerInfo(compilerInfo) {
         if (compilerInfo.needsWine) {
             maybeWine = '"' + gccProps("wine") + '" ';
         }
+        logger.info("Gathering information on", compilerInfo);
         // fill field compilerInfo.version,
         // assuming the compiler returns its version on 1 line
         child_process.exec(maybeWine + '"' + compiler + '" ' + versionFlag, function (err, output, stderr) {
@@ -367,7 +387,7 @@ function getCompilerInfo(compilerInfo) {
             }
 
             var version = "";
-            _.each(utils.splitLines(output + stderr), function(line) {
+            _.each(utils.splitLines(output + stderr), function (line) {
                 if (version) return;
                 var match = line.match(versionRe);
                 if (match) version = match[0];
