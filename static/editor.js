@@ -39,6 +39,7 @@ define(function (require) {
     require('codemirror/mode/d/d');
     require('codemirror/mode/go/go');
     require('codemirror/mode/rust/rust');
+    require('codemirror/addon/comment/comment');
 
     var loadSave = new loadSaveLib.LoadSave();
 
@@ -80,7 +81,10 @@ define(function (require) {
             useCPP: true,
             dragDrop: false,
             readOnly: state.options ? !!state.options.readOnly : false,
-            extraKeys: {"Alt-F": false}, // see https://github.com/mattgodbolt/gcc-explorer/pull/131
+            extraKeys: {
+                "Alt-F": false, // see https://github.com/mattgodbolt/gcc-explorer/pull/131
+                "Ctrl-/": 'toggleComment'
+            },
             mode: cmMode
         });
 
