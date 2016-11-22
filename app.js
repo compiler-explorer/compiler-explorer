@@ -347,9 +347,9 @@ function configuredCompilers() {
         if (name.indexOf("&") === 0) {
             var groupName = name.substr(1);
 
-            function props(name, def) {
+            var props = function (name, def) {
                 return compilerProps("group." + groupName + "." + name, parentProps(name, def));
-            }
+            };
 
             var exes = props('compilers', '').split(":");
             logger.info("Processing compilers from group " + groupName);
