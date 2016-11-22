@@ -91,7 +91,10 @@ define(function (require) {
         });
 
         this.fontScale = new FontScale(this.domRoot, state);
-        this.fontScale.on('change', _.bind(this.saveState, this));
+        this.fontScale.on('change', _.bind(function () {
+            this.saveState();
+            this.updateFontScale();
+        }, this));
 
         this.filters.on('change', _.bind(this.onFilterChange, this));
 
@@ -103,6 +106,7 @@ define(function (require) {
         container.on('shown', this.refresh, this);
         container.on('open', function () {
             self.eventHub.emit('compilerOpen', self.id);
+            self.updateFontScale();
         });
         this.eventHub.on('editorChange', this.onEditorChange, this);
         this.eventHub.on('editorClose', this.onEditorClose, this);
@@ -391,6 +395,10 @@ define(function (require) {
 
     Compiler.prototype.saveState = function () {
         this.container.setState(this.currentState());
+    };
+
+    Compiler.prototype.updateFontScale = function () {
+        this.eventHub.emit('compilerFontScale', this.id, this.fontScale.scale);
     };
 
     Compiler.prototype.onColours = function (editor, colours) {
