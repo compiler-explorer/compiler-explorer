@@ -40,8 +40,8 @@ var cases = fs.readdirSync(__dirname + '/cases')
     });
 
 function bless(filename, output, filters) {
-    var result = processAsm(filename, filters);
-    fs.writeFileSync(output, JSON.stringify(result, null, 2));
+    var result = processAsm(__dirname + '/' + filename, filters);
+    fs.writeFileSync(__dirname + '/' + output, JSON.stringify(result, null, 2));
 }
 
 function dump(file) {
@@ -90,6 +90,12 @@ function testFilter(filename, suffix, filters) {
 // bless("cases/cl-maxarray.asm", "cases/cl-maxarray.asm.dlcb.json", {directives: true, labels: true, commentOnly: true, binary:true});
 // bless("cases/cl64-sum.asm", "cases/cl64-sum.asm.dlcb.json", {directives: true, labels: true, commentOnly: true, binary:true});
 // bless("cases/avr-loop.asm", "cases/avr-loop.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
+// bless("cases/bug-192.asm", "cases/bug-192.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
+// describe('A test', function() {
+//     it('should work', function(){
+//         console.log(processAsm(__dirname + '/cases/bug-192.asm', {directives: true, labels: true, commentOnly: true}));
+//     });
+// });
 
 describe('Filter test cases', function () {
     describe('Directive filters', function () {
