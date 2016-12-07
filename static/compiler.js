@@ -352,7 +352,8 @@ define(function (require) {
         this.domRoot.find("[data-bind='binary']")
             .toggleClass("disabled", !this.compiler.supportsBinary);
         // Disable any of the options which don't make sense in binary mode.
-        this.domRoot.find('.nonbinary').toggleClass("disabled", !!filters.binary && !this.compiler.isCl);
+        var filtersDisabled = !!filters.binary && !this.compiler.supportsFiltersInBinary;
+        this.domRoot.find('.nonbinary').toggleClass("disabled", filtersDisabled);
     };
 
     Compiler.prototype.onOptionsChange = function (options) {
