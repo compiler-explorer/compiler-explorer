@@ -373,9 +373,11 @@ function findCompilers() {
             return compileHandler.setCompilers(compilers)
         })
         .then(function (compilers) {
-            compilers = compilers.filter(function (x) {
-                return x !== null;
+            return _.filter(compilers, function (x) {
+                return x;
             });
+        })
+        .then(function (compilers) {
             compilers = compilers.sort(compareOn("name"));
             return compilers;
         });
