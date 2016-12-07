@@ -51,8 +51,11 @@ var opts = nopt({
     'host': [String],
     'port': [Number],
     'propDebug': [Boolean],
+    'debug': [Boolean],
     'static': [String]
 });
+
+if (opts.debug) logger.level = 'debug';
 
 // Set default values for omitted arguments
 var rootDir = opts.rootDir || './etc';
