@@ -368,7 +368,7 @@ function findCompilers() {
     )
         .then(_.flatten)
         .then(function (compilers) {
-            return compileHandler.setCompilers(compilers)
+            return compileHandler.setCompilers(compilers);
         })
         .then(function (compilers) {
             return _.filter(compilers, function (x) {
