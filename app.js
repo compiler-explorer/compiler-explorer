@@ -329,8 +329,6 @@ function findCompilers() {
             versionRe: props("versionRe"),
             compilerType: props("compilerType", ""),
             intelAsm: props("intelAsm", ""),
-            asmFlag: props("asmFlag", "-S"),
-            outputFlag: props("outputFlag", "-o"),
             needsMulti: !!props("needsMulti", true),
             supportsBinary: !!props("supportsBinary", true),
             postProcess: props("postProcess", "").split("|")
