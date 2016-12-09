@@ -51,6 +51,7 @@ node_modules: $(NODE_MODULES)
 bower_modules: $(BOWER_MODULES)
 
 test: $(NODE_MODULES) lint
+	$(NPM) test
 	$(MAKE) -C c-preload test
 	@echo Tests pass
 
