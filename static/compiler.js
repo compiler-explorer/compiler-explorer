@@ -225,15 +225,10 @@ define(function (require) {
         _.each(this.assembly, _.bind(function (obj, line) {
             var opcodes = $("<div class='opcodes'></div>");
             if (obj.opcodes) {
-                var title = [];
                 _.each(obj.opcodes, function (op) {
-                    var opcodeNum = "00" + op.toString(16);
-                    opcodeNum = opcodeNum.substr(opcodeNum.length - 2);
-                    title.push(opcodeNum);
-                    var opcode = $("<span class='opcode'>" + opcodeNum + "</span>");
-                    opcodes.append(opcode);
+                    opcodes.append($("<span class='opcode'>" + op + "</span>"));
                 });
-                opcodes.attr('title', title.join(" "));
+                opcodes.attr('title', obj.opcodes.join(" "));
             }
             this.outputEditor.setGutterMarker(line, 'opcodes', opcodes[0]);
             if (obj.links) {

@@ -77,10 +77,9 @@ function testFilter(filename, suffix, filters) {
         var count = Math.min(file.length, result.length);
         for (var i = 0; i < count; ++i) {
             if (json) {
-                file[i].should.deep.equal(result[i]);
+                result[i].should.deep.equal(file[i]);
             } else {
-                var lineExpected = result[i].text;
-                file[i].should.deep.equal(lineExpected);//, expected + ":" + (i + 1));
+                result[i].text.should.deep.equal(file[i]);
             }
         }
     });
@@ -91,9 +90,11 @@ function testFilter(filename, suffix, filters) {
 // bless("cases/cl64-sum.asm", "cases/cl64-sum.asm.dlcb.json", {directives: true, labels: true, commentOnly: true, binary:true});
 // bless("cases/avr-loop.asm", "cases/avr-loop.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
 // bless("cases/bug-192.asm", "cases/bug-192.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
+// bless("cases/arm-moose.asm", "cases/arm-moose.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
+// bless("cases/arm-moose.asm", "cases/arm-moose.asm.dlcb.json", {directives: true, labels: true, commentOnly: true, binary: true});
 // describe('A test', function() {
 //     it('should work', function(){
-//         console.log(processAsm(__dirname + '/cases/bug-192.asm', {directives: true, labels: true, commentOnly: true}));
+//         console.log(processAsm(__dirname + '/cases/arm-moose.asm', {directives: true, labels: true, commentOnly: true, binary: true}));
 //     });
 // });
 
