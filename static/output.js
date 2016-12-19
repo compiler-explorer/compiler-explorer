@@ -27,6 +27,7 @@ define(function (require) {
     "use strict";
 
     var _ = require('underscore');
+    var FontScale = require('fontscale');
 
     function Output(hub, container, state) {
         var self = this;
@@ -38,9 +39,11 @@ define(function (require) {
         this.domRoot.html($('#compiler-output').html());
         this.contentRoot = this.domRoot.find(".content");
         this.compiler = null;
+        this.fontScale = new FontScale(this.domRoot, state, "pre");
 
         this.eventHub.on('compileResult', this.onCompileResult, this);
         this.eventHub.emit('resendCompilation', this.compilerId);
+        this.eventHub.on('compilerFontScale', this.onFontScale, this);
 
         this.updateCompilerName();
     }
@@ -58,6 +61,10 @@ define(function (require) {
         this.add("Compiler exited with result code " + result.code);
 
         this.updateCompilerName();
+    };
+
+    Output.prototype.onFontScale = function (id, scale) {
+        if (id === this.compilerId) this.fontScale.setScale(scale);
     };
 
     Output.prototype.add = function (msg, lineNum) {

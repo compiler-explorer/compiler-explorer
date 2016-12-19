@@ -1,0 +1,412 @@
+[
+  {
+    "opcodes": [],
+    "address": 0,
+    "source": null,
+    "text": "        |moose| PROC"
+  },
+  {
+    "opcodes": [
+      "b538"
+    ],
+    "address": 0,
+    "source": null,
+    "text": "        push        {r3-r5,lr}"
+  },
+  {
+    "opcodes": [],
+    "address": 2,
+    "source": null,
+    "text": "        |$M22|"
+  },
+  {
+    "opcodes": [
+      "4605"
+    ],
+    "address": 2,
+    "source": null,
+    "text": "        mov         r5,r0"
+  },
+  {
+    "opcodes": [
+      "2001"
+    ],
+    "address": 4,
+    "source": null,
+    "text": "        movs        r0,#1"
+  },
+  {
+    "opcodes": [
+      "2400"
+    ],
+    "address": 6,
+    "source": null,
+    "text": "        movs        r4,#0"
+  },
+  {
+    "opcodes": [
+      "eea4",
+      "5b90"
+    ],
+    "address": 8,
+    "source": null,
+    "text": "        vdup.32     q10,r5"
+  },
+  {
+    "opcodes": [
+      "2900"
+    ],
+    "address": 12,
+    "source": null,
+    "text": "        cmp         r1,#0"
+  },
+  {
+    "opcodes": [
+      "dd2b"
+    ],
+    "address": 14,
+    "source": null,
+    "text": "        ble         |$LN18@moose|"
+  },
+  {
+    "opcodes": [
+      "2908"
+    ],
+    "address": 16,
+    "source": null,
+    "text": "        cmp         r1,#8"
+  },
+  {
+    "opcodes": [
+      "d321"
+    ],
+    "address": 18,
+    "source": null,
+    "text": "        bcc         |$LN11@moose|"
+  },
+  {
+    "opcodes": [
+      "108b"
+    ],
+    "address": 20,
+    "source": null,
+    "text": "        asrs        r3,r1,#2"
+  },
+  {
+    "opcodes": [
+      "eb01",
+      "7353"
+    ],
+    "address": 22,
+    "source": null,
+    "text": "        add         r3,r1,r3,lsr #0x1D"
+  },
+  {
+    "opcodes": [
+      "10db"
+    ],
+    "address": 26,
+    "source": null,
+    "text": "        asrs        r3,r3,#3"
+  },
+  {
+    "opcodes": [
+      "eba1",
+      "03c3"
+    ],
+    "address": 28,
+    "source": null,
+    "text": "        sub         r3,r1,r3,lsl #3"
+  },
+  {
+    "opcodes": [
+      "efc0",
+      "0e70"
+    ],
+    "address": 32,
+    "source": null,
+    "text": "        vmov.i64    q8,#0"
+  },
+  {
+    "opcodes": [
+      "1acb"
+    ],
+    "address": 36,
+    "source": null,
+    "text": "        subs        r3,r1,r3"
+  },
+  {
+    "opcodes": [
+      "ef60",
+      "21f0"
+    ],
+    "address": 38,
+    "source": null,
+    "text": "        vmov        q9,q8"
+  },
+  {
+    "opcodes": [
+      "ef64",
+      "49f4"
+    ],
+    "address": 42,
+    "source": null,
+    "text": "        vmul.i32    q10,q10,q10"
+  },
+  {
+    "opcodes": [],
+    "address": 46,
+    "source": null,
+    "text": "        |$LL4@moose|"
+  },
+  {
+    "opcodes": [
+      "3408"
+    ],
+    "address": 46,
+    "source": null,
+    "text": "        adds        r4,r4,#8"
+  },
+  {
+    "opcodes": [
+      "429c"
+    ],
+    "address": 48,
+    "source": null,
+    "text": "        cmp         r4,r3"
+  },
+  {
+    "opcodes": [
+      "ef64",
+      "08e0"
+    ],
+    "address": 50,
+    "source": null,
+    "text": "        vadd.i32    q8,q10,q8"
+  },
+  {
+    "opcodes": [
+      "ef64",
+      "28e2"
+    ],
+    "address": 54,
+    "source": null,
+    "text": "        vadd.i32    q9,q10,q9"
+  },
+  {
+    "opcodes": [
+      "dbf8"
+    ],
+    "address": 58,
+    "source": null,
+    "text": "        blt         |$LL4@moose|"
+  },
+  {
+    "opcodes": [
+      "ef62",
+      "08e0"
+    ],
+    "address": 60,
+    "source": null,
+    "text": "        vadd.i32    q8,q9,q8"
+  },
+  {
+    "opcodes": [
+      "ee31",
+      "2b90"
+    ],
+    "address": 64,
+    "source": null,
+    "text": "        vmov.32     r2,d17[1]"
+  },
+  {
+    "opcodes": [
+      "ee11",
+      "3b90"
+    ],
+    "address": 68,
+    "source": null,
+    "text": "        vmov.32     r3,d17[0]"
+  },
+  {
+    "opcodes": [
+      "441a"
+    ],
+    "address": 72,
+    "source": null,
+    "text": "        add         r2,r2,r3"
+  },
+  {
+    "opcodes": [
+      "ee30",
+      "3b90"
+    ],
+    "address": 74,
+    "source": null,
+    "text": "        vmov.32     r3,d16[1]"
+  },
+  {
+    "opcodes": [
+      "441a"
+    ],
+    "address": 78,
+    "source": null,
+    "text": "        add         r2,r2,r3"
+  },
+  {
+    "opcodes": [
+      "ee10",
+      "3b90"
+    ],
+    "address": 80,
+    "source": null,
+    "text": "        vmov.32     r3,d16[0]"
+  },
+  {
+    "opcodes": [
+      "4413"
+    ],
+    "address": 84,
+    "source": null,
+    "text": "        add         r3,r3,r2"
+  },
+  {
+    "opcodes": [
+      "1c58"
+    ],
+    "address": 86,
+    "source": null,
+    "text": "        adds        r0,r3,#1"
+  },
+  {
+    "opcodes": [],
+    "address": 88,
+    "source": null,
+    "text": "        |$LN11@moose|"
+  },
+  {
+    "opcodes": [
+      "428c"
+    ],
+    "address": 88,
+    "source": null,
+    "text": "        cmp         r4,r1"
+  },
+  {
+    "opcodes": [
+      "da04"
+    ],
+    "address": 90,
+    "source": null,
+    "text": "        bge         |$LN17@moose|"
+  },
+  {
+    "opcodes": [
+      "1b0b"
+    ],
+    "address": 92,
+    "source": null,
+    "text": "        subs        r3,r1,r4"
+  },
+  {
+    "opcodes": [
+      "fb03",
+      "f305"
+    ],
+    "address": 94,
+    "source": null,
+    "text": "        mul         r3,r3,r5"
+  },
+  {
+    "opcodes": [
+      "fb03",
+      "0005"
+    ],
+    "address": 98,
+    "source": null,
+    "text": "        mla         r0,r3,r5,r0"
+  },
+  {
+    "opcodes": [],
+    "address": 102,
+    "source": null,
+    "text": "        |$LN17@moose|"
+  },
+  {
+    "opcodes": [],
+    "address": 102,
+    "source": null,
+    "text": "        |$M20|"
+  },
+  {
+    "opcodes": [
+      "bd38"
+    ],
+    "address": 102,
+    "source": null,
+    "text": "        pop         {r3-r5,pc}"
+  },
+  {
+    "opcodes": [],
+    "address": 104,
+    "source": null,
+    "text": "        |$LN18@moose|"
+  },
+  {
+    "opcodes": [],
+    "address": 104,
+    "source": null,
+    "text": "        |$M21|"
+  },
+  {
+    "opcodes": [
+      "bd38"
+    ],
+    "address": 104,
+    "source": null,
+    "text": "        pop         {r3-r5,pc}"
+  },
+  {
+    "opcodes": [],
+    "address": 106,
+    "source": null,
+    "text": "        |$M23|"
+  },
+  {
+    "source": null,
+    "text": "ENDP"
+  },
+  {
+    "opcodes": [],
+    "address": 0,
+    "source": null,
+    "text": "        |thing| PROC"
+  },
+  {
+    "opcodes": [
+      "fb00",
+      "f000"
+    ],
+    "address": 0,
+    "source": null,
+    "text": "        mul         r0,r0,r0"
+  },
+  {
+    "opcodes": [],
+    "address": 4,
+    "source": null,
+    "text": "        |$M4|"
+  },
+  {
+    "opcodes": [
+      "4770"
+    ],
+    "address": 4,
+    "source": null,
+    "text": "        bx          lr"
+  },
+  {
+    "source": null,
+    "text": "ENDP"
+  }
+]
