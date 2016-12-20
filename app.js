@@ -28,7 +28,7 @@
 var nopt = require('nopt'),
     os = require('os'),
     props = require('./lib/properties'),
-    CompileHandler = require('./lib/compile').CompileHandler,
+    CompileHandler = require('./lib/compile-handler').CompileHandler,
     buildDiffHandler = require('./lib/diff').buildDiffHandler,
     express = require('express'),
     child_process = require('child_process'),
@@ -104,9 +104,8 @@ function compilerProps(property, defaultValue) {
     // My kingdom for ccs... [see Matt's github page]
     var forCompiler = compilerPropsFunc(property, undefined);
     if (forCompiler !== undefined) return forCompiler;
-    return gccProps(property, defaultValue); // gccProps comes from lib/compile.js
+    return gccProps(property, defaultValue); // gccProps comes from lib/compile-handler.js
 }
-require('./lib/compile').initialise(gccProps, compilerProps);
 var staticMaxAgeSecs = gccProps('staticMaxAgeSecs', 0);
 
 var awsProps = props.propsFor("aws");
@@ -138,7 +137,7 @@ fileSources.forEach(function (source) {
 
 var clientOptionsHandler = new ClientOptionsHandler(fileSources);
 var apiHandler = new ApiHandler();
-var compileHandler = new CompileHandler();
+var compileHandler = new CompileHandler(gccProps, compilerProps);
 
 // auxiliary function used in clientOptionsHandler
 function compareOn(key) {
