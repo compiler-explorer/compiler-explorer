@@ -91,7 +91,10 @@ define(function (require) {
         });
 
         this.fontScale = new FontScale(this.domRoot, state);
-        this.fontScale.on('change', _.bind(this.saveState, this));
+        this.fontScale.on('change', _.bind(function () {
+            this.saveState();
+            this.updateFontScale();
+        }, this));
 
         this.filters.on('change', _.bind(this.onFilterChange, this));
 
@@ -103,6 +106,7 @@ define(function (require) {
         container.on('shown', this.refresh, this);
         container.on('open', function () {
             self.eventHub.emit('compilerOpen', self.id);
+            self.updateFontScale();
         });
         this.eventHub.on('editorChange', this.onEditorChange, this);
         this.eventHub.on('editorClose', this.onEditorClose, this);
@@ -221,15 +225,10 @@ define(function (require) {
         _.each(this.assembly, _.bind(function (obj, line) {
             var opcodes = $("<div class='opcodes'></div>");
             if (obj.opcodes) {
-                var title = [];
                 _.each(obj.opcodes, function (op) {
-                    var opcodeNum = "00" + op.toString(16);
-                    opcodeNum = opcodeNum.substr(opcodeNum.length - 2);
-                    title.push(opcodeNum);
-                    var opcode = $("<span class='opcode'>" + opcodeNum + "</span>");
-                    opcodes.append(opcode);
+                    opcodes.append($("<span class='opcode'>" + op + "</span>"));
                 });
-                opcodes.attr('title', title.join(" "));
+                opcodes.attr('title', obj.opcodes.join(" "));
             }
             this.outputEditor.setGutterMarker(line, 'opcodes', opcodes[0]);
             if (obj.links) {
@@ -348,7 +347,8 @@ define(function (require) {
         this.domRoot.find("[data-bind='binary']")
             .toggleClass("disabled", !this.compiler.supportsBinary);
         // Disable any of the options which don't make sense in binary mode.
-        this.domRoot.find('.nonbinary').toggleClass("disabled", !!filters.binary && !this.compiler.isCl);
+        var filtersDisabled = !!filters.binary && !this.compiler.supportsFiltersInBinary;
+        this.domRoot.find('.nonbinary').toggleClass("disabled", filtersDisabled);
     };
 
     Compiler.prototype.onOptionsChange = function (options) {
@@ -391,6 +391,10 @@ define(function (require) {
 
     Compiler.prototype.saveState = function () {
         this.container.setState(this.currentState());
+    };
+
+    Compiler.prototype.updateFontScale = function () {
+        this.eventHub.emit('compilerFontScale', this.id, this.fontScale.scale);
     };
 
     Compiler.prototype.onColours = function (editor, colours) {

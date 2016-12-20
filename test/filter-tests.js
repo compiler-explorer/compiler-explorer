@@ -23,12 +23,18 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 var fs = require('fs'), assert = require('assert');
-var asm = require('../lib/asm.js');
+var asm = require('../lib/asm');
+var asmCl = require('../lib/asm-cl');
 var should = require('chai').should();
 
 function processAsm(filename, filters) {
     var file = fs.readFileSync(filename, 'utf-8');
-    return asm.processAsm(file, filters);
+    var parser;
+    if (file.indexOf('Microsoft') >= 0)
+        parser = new asmCl.AsmParser();
+    else
+        parser = new asm.AsmParser();
+    return parser.process(file, filters);
 }
 
 var cases = fs.readdirSync(__dirname + '/cases')
@@ -40,8 +46,8 @@ var cases = fs.readdirSync(__dirname + '/cases')
     });
 
 function bless(filename, output, filters) {
-    var result = processAsm(filename, filters);
-    fs.writeFileSync(output, JSON.stringify(result, null, 2));
+    var result = processAsm(__dirname + '/' + filename, filters);
+    fs.writeFileSync(__dirname + '/' + output, JSON.stringify(result, null, 2));
 }
 
 function dump(file) {
@@ -77,10 +83,9 @@ function testFilter(filename, suffix, filters) {
         var count = Math.min(file.length, result.length);
         for (var i = 0; i < count; ++i) {
             if (json) {
-                file[i].should.deep.equal(result[i]);
+                result[i].should.deep.equal(file[i]);
             } else {
-                var lineExpected = result[i].text;
-                file[i].should.deep.equal(lineExpected);//, expected + ":" + (i + 1));
+                result[i].text.should.deep.equal(file[i]);
             }
         }
     });
@@ -90,6 +95,14 @@ function testFilter(filename, suffix, filters) {
 // bless("cases/cl-maxarray.asm", "cases/cl-maxarray.asm.dlcb.json", {directives: true, labels: true, commentOnly: true, binary:true});
 // bless("cases/cl64-sum.asm", "cases/cl64-sum.asm.dlcb.json", {directives: true, labels: true, commentOnly: true, binary:true});
 // bless("cases/avr-loop.asm", "cases/avr-loop.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
+// bless("cases/bug-192.asm", "cases/bug-192.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
+// bless("cases/arm-moose.asm", "cases/arm-moose.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
+// bless("cases/arm-moose.asm", "cases/arm-moose.asm.dlcb.json", {directives: true, labels: true, commentOnly: true, binary: true});
+// describe('A test', function() {
+//     it('should work', function(){
+//         console.log(processAsm(__dirname + '/cases/arm-moose.asm', {directives: true, labels: true, commentOnly: true, binary: true}));
+//     });
+// });
 
 describe('Filter test cases', function () {
     describe('Directive filters', function () {

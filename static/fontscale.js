@@ -28,10 +28,11 @@ define(function (require) {
     var _ = require('underscore');
     var EventEmitter = require('events');
 
-    function FontScale(domRoot, state) {
+    function FontScale(domRoot, state, fontSelector) {
         EventEmitter.call(this);
         this.domRoot = domRoot;
         this.scale = state.fontScale || 1.0;
+        this.fontSelector = fontSelector || ".CodeMirror";
         this.apply();
 
         this.domRoot.find('.increase-font-size').click(_.bind(function () {
@@ -55,12 +56,17 @@ define(function (require) {
     _.extend(FontScale.prototype, EventEmitter.prototype);
 
     FontScale.prototype.apply = function () {
-        this.domRoot.find('.CodeMirror').css('font-size', (10 * this.scale) + "pt");
+        this.domRoot.find(this.fontSelector).css('font-size', (10 * this.scale) + "pt");
     };
 
     FontScale.prototype.addState = function (state) {
         if (this.scale != 1.0)
             state.fontScale = this.scale;
+    };
+
+    FontScale.prototype.setScale = function (scale) {
+        this.scale = scale;
+        this.apply();
     };
 
     return FontScale;
