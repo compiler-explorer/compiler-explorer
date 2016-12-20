@@ -23,12 +23,18 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 var fs = require('fs'), assert = require('assert');
-var asm = require('../lib/asm.js');
+var asm = require('../lib/asm');
+var asmCl = require('../lib/asm-cl');
 var should = require('chai').should();
 
 function processAsm(filename, filters) {
     var file = fs.readFileSync(filename, 'utf-8');
-    return asm.processAsm(file, filters);
+    var parser;
+    if (file.indexOf('Microsoft') >= 0)
+        parser = new asmCl.AsmParser();
+    else
+        parser = new asm.AsmParser();
+    return parser.process(file, filters);
 }
 
 var cases = fs.readdirSync(__dirname + '/cases')
