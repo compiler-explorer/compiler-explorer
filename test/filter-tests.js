@@ -79,17 +79,18 @@ function testFilter(filename, suffix, filters) {
         } else {
             file = file.split(/\r?\n/);
         }
-        result.length.should.equal(file.length);
-        var count = Math.min(file.length, result.length);
-        for (var i = 0; i < count; ++i) {
-            if (json) {
-                result[i].should.deep.equal(file[i]);
-            } else {
+        if (json) {
+            result.should.deep.equal(file);
+        } else {
+            result.length.should.equal(file.length);
+            var count = Math.min(file.length, result.length);
+            for (var i = 0; i < count; ++i) {
                 result[i].text.should.deep.equal(file[i]);
             }
         }
     });
 }
+// bless("cases/gcc-sum.asm", "cases/gcc-sum.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
 // bless("cases/cl-regex.asm", "cases/cl-regex.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
 // bless("cases/cl-regex.asm", "cases/cl-regex.asm.dlcb.json", {directives: true, labels: true, commentOnly: true, binary:true});
 // bless("cases/cl-maxarray.asm", "cases/cl-maxarray.asm.dlcb.json", {directives: true, labels: true, commentOnly: true, binary:true});
