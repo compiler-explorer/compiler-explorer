@@ -28,10 +28,6 @@
     "source": null
   },
   {
-    "text": ".LFBB1:",
-    "source": null
-  },
-  {
     "text": "        push r29",
     "source": 2
   },
@@ -80,10 +76,6 @@
     "source": null
   },
   {
-    "text": ".LM3:",
-    "source": null
-  },
-  {
     "text": "        rcall bar()",
     "source": 5
   },
@@ -112,10 +104,6 @@
     "source": 5
   },
   {
-    "text": ".LM4:",
-    "source": null
-  },
-  {
     "text": "        ldd r24,Y+3",
     "source": 4
   },
@@ -137,10 +125,6 @@
   },
   {
     "text": ".L2:",
-    "source": null
-  },
-  {
-    "text": ".LM5:",
     "source": null
   },
   {

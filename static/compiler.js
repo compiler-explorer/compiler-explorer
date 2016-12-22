@@ -341,7 +341,7 @@ define(function (require) {
         var filters = this.getEffectiveFilters();
         // We can support intel output if the compiler supports it, or if we're compiling
         // to binary (as we can disassemble it however we like).
-        var intelAsm = this.compiler.intelAsm || filters.binary;
+        var intelAsm = this.compiler.supportsIntel || filters.binary;
         this.domRoot.find("[data-bind='intel']").toggleClass("disabled", !intelAsm);
         // Disable binary support on compilers that don't work with it.
         this.domRoot.find("[data-bind='binary']")

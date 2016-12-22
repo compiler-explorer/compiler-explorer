@@ -52,7 +52,8 @@ var opts = nopt({
     'port': [Number],
     'propDebug': [Boolean],
     'debug': [Boolean],
-    'static': [String]
+    'static': [String],
+    'archivedVersions': [String]
 });
 
 if (opts.debug) logger.level = 'debug';
@@ -64,6 +65,7 @@ var env = opts.env || ['dev'];
 var hostname = opts.host || os.hostname();
 var port = opts.port || 10240;
 var staticDir = opts.static || 'static';
+var archivedVersions = opts.archivedVersions;
 var gitReleaseName = child_process.execSync('git rev-parse HEAD').toString().trim();
 
 var propHierarchy = _.flatten([
@@ -490,13 +492,25 @@ findCompilers()
             restreamer = require('./lib/restreamer'),
             diffHandler = buildDiffHandler(wdiffConfig);
 
+        logger.info("=======================================");
+        logger.info("Listening on http://" + hostname + ":" + port + "/");
+        logger.info("  serving static files from '" + staticDir + "'");
+        logger.info("  git release " + gitReleaseName);
+
         webServer
             .set('trust proxy', true)
             .use(morgan('combined', {stream: logger.stream}))
             .use(compression())
             .use(sFavicon(staticDir + '/favicon.ico'))
             .use('/v', sStatic(staticDir + '/v', {maxAge: Infinity}))
-            .use(sStatic(staticDir, {maxAge: staticMaxAgeSecs * 1000}))
+            .use(sStatic(staticDir, {maxAge: staticMaxAgeSecs * 1000}));
+        if (archivedVersions) {
+            // The archived versions directory is used to serve "old" versioned data during updates. It's expected
+            // to contain all the SHA-hashed directories from previous versions of Compiler Explorer.
+            logger.info("  serving archived versions from", archivedVersions);
+            webServer.use('/v', sStatic(archivedVersions, {maxAge: Infinity}));
+        }
+        webServer
             .use(bodyParser.json({limit: gccProps('bodyParserLimit', '1mb')}))
             .use(restreamer())
             .get('/client-options.json', clientOptionsHandler.handler)
@@ -506,13 +520,8 @@ findCompilers()
             .use('/e', embeddedHandler)
             .post('/compile', compileHandler.handler) // used inside static/compiler.js
             .post('/diff', diffHandler); // used inside static/compiler.js
+        logger.info("=======================================");
 
-        // GO!
-        logger.info("=======================================");
-        logger.info("Listening on http://" + hostname + ":" + port + "/");
-        logger.info("  serving static files from '" + staticDir + "'");
-        logger.info("  git release " + gitReleaseName);
-        logger.info("=======================================");
         webServer.listen(port, hostname);
     }).catch(function (err) {
     logger.error("Error: " + err);

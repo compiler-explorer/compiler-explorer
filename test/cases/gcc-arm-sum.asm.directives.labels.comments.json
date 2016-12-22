@@ -1,0 +1,114 @@
+[
+  {
+    "text": "_Z12testFunctionPii:",
+    "source": null
+  },
+  {
+    "text": "        sub     sp, sp, #32",
+    "source": 1
+  },
+  {
+    "text": "        str     x0, [sp, 8]",
+    "source": 1
+  },
+  {
+    "text": "        str     w1, [sp, 4]",
+    "source": 1
+  },
+  {
+    "text": "        str     wzr, [sp, 24]",
+    "source": 2
+  },
+  {
+    "text": "        str     wzr, [sp, 28]",
+    "source": 3
+  },
+  {
+    "text": ".L3:",
+    "source": null
+  },
+  {
+    "text": "        ldr     w1, [sp, 28]",
+    "source": 3
+  },
+  {
+    "text": "        ldr     w0, [sp, 4]",
+    "source": 3
+  },
+  {
+    "text": "        cmp     w1, w0",
+    "source": 3
+  },
+  {
+    "text": "        bge     .L2",
+    "source": 3
+  },
+  {
+    "text": "        ldrsw   x0, [sp, 28]",
+    "source": 4
+  },
+  {
+    "text": "        lsl     x0, x0, 2",
+    "source": 4
+  },
+  {
+    "text": "        ldr     x1, [sp, 8]",
+    "source": 4
+  },
+  {
+    "text": "        add     x0, x1, x0",
+    "source": 4
+  },
+  {
+    "text": "        ldr     w0, [x0]",
+    "source": 4
+  },
+  {
+    "text": "        ldr     w1, [sp, 24]",
+    "source": 4
+  },
+  {
+    "text": "        add     w0, w1, w0",
+    "source": 4
+  },
+  {
+    "text": "        str     w0, [sp, 24]",
+    "source": 4
+  },
+  {
+    "text": "        ldr     w0, [sp, 28]",
+    "source": 3
+  },
+  {
+    "text": "        add     w0, w0, 1",
+    "source": 3
+  },
+  {
+    "text": "        str     w0, [sp, 28]",
+    "source": 3
+  },
+  {
+    "text": "        b       .L3",
+    "source": 3
+  },
+  {
+    "text": ".L2:",
+    "source": null
+  },
+  {
+    "text": "        ldr     w0, [sp, 24]",
+    "source": 6
+  },
+  {
+    "text": "        add     sp, sp, 32",
+    "source": 7
+  },
+  {
+    "text": "        ret",
+    "source": 7
+  },
+  {
+    "text": "",
+    "source": null
+  }
+]
