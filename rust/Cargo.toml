@@ -5,3 +5,4 @@ authors = ["Matt Godbolt <matt@godbolt.org>"]
 
 [dependencies]
 rustc-demangle = "*"
+regex = "*"
