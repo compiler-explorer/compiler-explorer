@@ -1,0 +1,9 @@
+[package]
+name = "rustfilt"
+version = "0.1.0"
+authors = ["Matt Godbolt <matt@godbolt.org>"]
+
+[dependencies]
+rustc-demangle = "*"
+regex = "*"
+lazy_static = "*"
