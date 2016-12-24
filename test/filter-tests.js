@@ -90,6 +90,7 @@ function testFilter(filename, suffix, filters) {
         }
     });
 }
+// bless("cases/mips5-square.asm", "cases/mips5-square.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
 // bless("cases/gcc-sum.asm", "cases/gcc-sum.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
 // bless("cases/gcc-arm-sum.asm", "cases/gcc-arm-sum.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
 // bless("cases/gcc-avr-sum.asm", "cases/gcc-avr-sum.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
@@ -101,11 +102,11 @@ function testFilter(filename, suffix, filters) {
 // bless("cases/bug-192.asm", "cases/bug-192.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
 // bless("cases/arm-moose.asm", "cases/arm-moose.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
 // bless("cases/arm-moose.asm", "cases/arm-moose.asm.dlcb.json", {directives: true, labels: true, commentOnly: true, binary: true});
-describe('A test', function() {
-    it('should work', function(){
-        console.log(processAsm(__dirname + '/cases/gcc-avr-sum.asm', {directives: true, labels: true, commentOnly: true}));
-    });
-});
+// describe('A test', function() {
+//     it('should work', function(){
+//         console.log(processAsm(__dirname + '/cases/mips5-square.asm', {directives: true, labels: true, commentOnly: true}));
+//     });
+// });
 
 describe('Filter test cases', function () {
     describe('Directive filters', function () {
