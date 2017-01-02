@@ -1,5 +1,5 @@
 {
-  "name": "gcc-explorer",
+  "name": "compiler-explorer",
   "description": "Interactively investigate compiler output",
   "author": {
     "name": "Matt Godbolt",
@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "mattgodbolt/gcc-explorer"
+    "url": "mattgodbolt/compiler-explorer"
   },
   "version": "0.0.3",
   "engines": {

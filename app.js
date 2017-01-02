@@ -86,9 +86,9 @@ if (opts.propDebug) props.setDebug(true);
 // *All* files in config dir are parsed 
 props.initialize(rootDir + '/config', propHierarchy);
 
-// Instantiate a function to access records concerning "gcc-explorer" 
+// Instantiate a function to access records concerning "compiler-explorer" 
 // in hidden object props.properties
-var gccProps = props.propsFor("gcc-explorer");
+var gccProps = props.propsFor("compiler-explorer");
 
 // Read from gccexplorer's config the wdiff configuration
 // that will be used to configure lib/diff.js

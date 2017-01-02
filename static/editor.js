@@ -82,7 +82,7 @@ define(function (require) {
             dragDrop: false,
             readOnly: state.options ? !!state.options.readOnly : false,
             extraKeys: {
-                "Alt-F": false, // see https://github.com/mattgodbolt/gcc-explorer/pull/131
+                "Alt-F": false, // see https://github.com/mattgodbolt/compiler-explorer/pull/131
                 "Ctrl-/": 'toggleComment'
             },
             mode: cmMode

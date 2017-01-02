@@ -150,6 +150,8 @@ define(function (require) {
         sizeRoot();
 
         new clipboard('.btn.clippy');
+
+        sharing.initShareButton($('#share'), layout);
     }
 
     $(start);
