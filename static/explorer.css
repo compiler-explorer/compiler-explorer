@@ -209,3 +209,8 @@ pre.content {
     width: 100%;
     height: 100%;
 }
+
+.compile-time {
+    font-size: x-small;
+    font-style: italic;
+}

@@ -34,6 +34,7 @@ define(function (require) {
     var FontScale = require('fontscale');
     var Promise = require('es6-promise').Promise;
     var Components = require('components');
+    var LruCache = require('lru-cache');
 
     require('asm-mode');
     require('selectize');
@@ -41,6 +42,12 @@ define(function (require) {
     var options = require('options');
     var compilers = options.compilers;
     var compilersById = _.object(_.pluck(compilers, "id"), compilers);
+    var Cache = new LruCache({
+        max: 200 * 1024,
+        length: function (n) {
+            return JSON.stringify(n).length;
+        }
+    });
 
     function Compiler(hub, container, state) {
         var self = this;
@@ -57,9 +64,8 @@ define(function (require) {
         this.source = "";
         this.assembly = [];
         this.lastResult = null;
-        this.lastRequestRespondedTo = "";
-
-        this.debouncedAjax = _.debounce($.ajax, 250);
+        this.pendingRequestSentAt = 0;
+        this.nextRequest = null;
 
         this.domRoot.find(".compiler-picker").selectize({
             sortField: 'name',
@@ -71,9 +77,9 @@ define(function (require) {
         }).on('change', function () {
             self.onCompilerChange($(this).val());
         });
-        var optionsChange = function () {
+        var optionsChange = _.debounce(function () {
             self.onOptionsChange($(this).val());
-        };
+        }, 1250);
         this.domRoot.find(".options")
             .val(this.options)
             .on("change", optionsChange)
@@ -170,7 +176,6 @@ define(function (require) {
     };
 
     Compiler.prototype.compile = function () {
-        var self = this;
         var request = {
             source: this.source || "",
             compiler: this.compiler ? this.compiler.id : "",
@@ -179,32 +184,49 @@ define(function (require) {
         };
 
         if (!this.compiler) {
-            this.onCompileResponse(request, errorResult("Please select a compiler"));
+            this.onCompileResponse(request, errorResult("Please select a compiler"), false);
             return;
         }
 
-        var cacheableRequest = JSON.stringify(request);
-        if (cacheableRequest === this.lastRequestRespondedTo) return;
-        // only set the request timestamp after checking cache; else we'll always fetch
-        request.timestamp = Date.now();
+        this.sendCompile(request);
+    };
 
-        this.debouncedAjax({
+    Compiler.prototype.sendCompile = function (request) {
+        if (this.pendingRequestSentAt) {
+            // If we have a request pending, then just store this request to do once the
+            // previous request completes.
+            this.nextRequest = request;
+            return;
+        }
+        var jsonRequest = JSON.stringify(request);
+        var cachedResult = Cache.get(jsonRequest);
+        if (cachedResult) {
+            this.onCompileResponse(request, cachedResult, true);
+            return;
+        }
+
+        this.pendingRequestSentAt = Date.now();
+        // After a short delay, give the user some indication that we're working on their
+        // compilation.
+        var progress = setTimeout(_.bind(function() {
+            this.setAssembly(fakeAsm("<Compiling...>"));
+        }, this), 500);
+        $.ajax({
             type: 'POST',
             url: '/compile',
             dataType: 'json',
             contentType: 'application/json',
-            data: JSON.stringify(request),
+            data: jsonRequest,
             success: _.bind(function (result) {
+                clearTimeout(progress);
                 if (result.okToCache) {
-                    this.lastRequestRespondedTo = cacheableRequest;
-                } else {
-                    this.lastRequestRespondedTo = "";
+                    Cache.set(jsonRequest, result);
                 }
-                self.onCompileResponse(request, result);
+                this.onCompileResponse(request, result, false);
             }, this),
             error: _.bind(function (xhr, e_status, error) {
-                this.lastRequestRespondedTo = "";
-                self.onCompileResponse(request, errorResult("Remote compilation failed: " + error));
+                clearTimeout(progress);
+                this.onCompileResponse(request, errorResult("Remote compilation failed: " + error), false);
             }, this),
             cache: false
         });
@@ -267,22 +289,30 @@ define(function (require) {
         return [{text: text, source: null, fake: true}];
     }
 
-    Compiler.prototype.onCompileResponse = function (request, result) {
+    Compiler.prototype.onCompileResponse = function (request, result, cached) {
         this.lastResult = result;
+        var timeTaken = Date.now() - this.pendingRequestSentAt;
+        this.pendingRequestSentAt = 0;
+        if (this.nextRequest) {
+            var next = this.nextRequest;
+            this.nextRequest = null;
+            this.sendCompile(next);
+        }
         ga('send', {
             hitType: 'event',
             eventCategory: 'Compile',
             eventAction: request.compiler,
-            eventLabel: request.options
+            eventLabel: request.options,
+            eventValue: cached ? 1 : 0
         });
         ga('send', {
             hitType: 'timing',
             timingCategory: 'Compile',
             timingVar: request.compiler,
-            timingValue: Date.now() - request.timestamp
+            timingValue: timeTaken
         });
         this.outputEditor.operation(_.bind(function () {
-            this.setAssembly(result.asm || fakeAsm("[no output]"));
+            this.setAssembly(result.asm || fakeAsm("<No output>"));
             if (request.filters.binary) {
                 this.outputEditor.setOption('lineNumbers', false);
                 this.outputEditor.setOption('gutters', ['address', 'opcodes']);
@@ -298,6 +328,11 @@ define(function (require) {
         status.toggleClass('error', failed);
         status.toggleClass('warning', warns);
         status.parent().attr('title', allText);
+        if (cached) {
+            this.domRoot.find('.compile-time').text("- cached");
+        } else {
+            this.domRoot.find('.compile-time').text("- " + timeTaken + "ms");
+        }
         this.eventHub.emit('compileResult', this.id, this.compiler, result);
     };
 

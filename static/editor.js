@@ -103,7 +103,7 @@ define(function (require) {
         // * Only actually triggering a change if the document text has changed from
         //   the previous emitted.
         this.lastChangeEmitted = null;
-        var ChangeDebounceMs = 500;
+        var ChangeDebounceMs = 1250;
         this.debouncedEmitChange = _.debounce(function () {
             if (self.options.get().compileOnChange) self.maybeEmitChange();
         }, ChangeDebounceMs);
