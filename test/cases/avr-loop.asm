@@ -5,8 +5,8 @@ __SP_L__ = 0x3d
 __CCP__ = 0x34
 __tmp_reg__ = 0
 __zero_reg__ = 1
-        .stabs  "/gcc-explorer/",100,0,4,.Ltext0
-        .stabs  "/tmp/gcc-explorer-compiler116922-97-ldr5x6/example.cpp",100,0,4,.Ltext0
+        .stabs  "/compiler-explorer/",100,0,4,.Ltext0
+        .stabs  "/tmp/compiler-explorer-compiler116922-97-ldr5x6/example.cpp",100,0,4,.Ltext0
         .text
 .Ltext0:
         .stabs  "gcc2_compiled.",60,0,0,0

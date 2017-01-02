@@ -1,12 +1,12 @@
 {
-  "name": "gcc-explorer",
+  "name": "compiler-explorer",
   "description": "Interactively investigate compiler output",
   "main": "./app.js",
   "authors": [
     "Matt Godbolt"
   ],
   "license": "BSD-2-Clause",
-  "homepage": "https://github.com/mattgodbolt/gcc-explorer",
+  "homepage": "https://github.com/mattgodbolt/compiler-explorer",
   "private": true,
   "ignore": [
     "**/.*",

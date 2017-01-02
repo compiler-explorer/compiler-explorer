@@ -1,4 +1,4 @@
-// Copyright (c) 2012-2016, Matt Godbolt
+// Copyright (c) 2012-2017, Matt Godbolt
 //
 // All rights reserved.
 // 
@@ -150,6 +150,8 @@ define(function (require) {
         sizeRoot();
 
         new clipboard('.btn.clippy');
+
+        sharing.initShareButton($('#share'), layout);
     }
 
     $(start);

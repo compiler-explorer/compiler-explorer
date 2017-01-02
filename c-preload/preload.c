@@ -1,4 +1,4 @@
-// Copyright (c) 2012-2016, Matt Godbolt
+// Copyright (c) 2012-2017, Matt Godbolt
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -76,7 +76,7 @@ static int allowed_match(const char* path, const char* okpath, const char *denyp
 
 deny:
     if (debug) {
-        fprintf(stderr, "Access to \"%s\" denied by gcc-explorer policy\n", path);
+        fprintf(stderr, "Access to \"%s\" denied by compiler-explorer policy\n", path);
     }
     errno = EACCES;
     return 0;

@@ -963,7 +963,7 @@ main:
 .LASF32:
         .ascii  "_vtable_offset\000"
 .LASF51:
-        .ascii  "/home/mgodbolt/dev/gcc-explorer\000"
+        .ascii  "/home/mgodbolt/dev/compiler-explorer\000"
 .LASF23:
         .ascii  "_IO_save_base\000"
 .LASF28:

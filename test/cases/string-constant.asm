@@ -23,7 +23,7 @@ s_sB:
         .type   main, @function
 main:
 .LFB0:
-        .file 1 "/tmp/gcc-explorer-compiler116820-58-ewfj5u/example.cpp"
+        .file 1 "/tmp/compiler-explorer-compiler116820-58-ewfj5u/example.cpp"
         .loc 1 6 0
         .cfi_startproc
         push    rbp

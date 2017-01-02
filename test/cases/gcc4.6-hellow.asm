@@ -927,7 +927,7 @@ main:
 .LASF29:
         .string "_vtable_offset"
 .LASF48:
-        .string "/home/mgodbolt/dev/gcc-explorer"
+        .string "/home/mgodbolt/dev/compiler-explorer"
 .LASF20:
         .string "_IO_save_base"
 .LASF25:
