@@ -1,15 +1,15 @@
         .text
         .intel_syntax noprefix
-        .file   "/tmp/gcc-explorer-compiler1161023-8026-16e0svr/example.cpp"
-        .file   1 "/tmp/gcc-explorer-compiler1161023-8026-16e0svr" "example.cpp"
+        .file   "/tmp/compiler-explorer-compiler1161023-8026-16e0svr/example.cpp"
+        .file   1 "/tmp/compiler-explorer-compiler1161023-8026-16e0svr" "example.cpp"
         .globl  main
         .p2align        4, 0x90
         .type   main,@function
 main:                                   # @main
 .Lfunc_begin0:
-        .loc    1 14 0                  # /tmp/gcc-explorer-compiler1161023-8026-16e0svr/example.cpp:14:0
+        .loc    1 14 0                  # /tmp/compiler-explorer-compiler1161023-8026-16e0svr/example.cpp:14:0
         .cfi_startproc
-        .loc    1 15 3 prologue_end     # /tmp/gcc-explorer-compiler1161023-8026-16e0svr/example.cpp:15:3
+        .loc    1 15 3 prologue_end     # /tmp/compiler-explorer-compiler1161023-8026-16e0svr/example.cpp:15:3
         mov     eax, 3
         ret
 .Ltmp0:
@@ -22,15 +22,15 @@ main:                                   # @main
         .type   __cxx_global_var_init,@function
 __cxx_global_var_init:                  # @__cxx_global_var_init
 .Lfunc_begin1:
-        .loc    1 5 0                   # /tmp/gcc-explorer-compiler1161023-8026-16e0svr/example.cpp:5:0
+        .loc    1 5 0                   # /tmp/compiler-explorer-compiler1161023-8026-16e0svr/example.cpp:5:0
         .cfi_startproc
-        .loc    1 5 15 prologue_end     # /tmp/gcc-explorer-compiler1161023-8026-16e0svr/example.cpp:5:15
+        .loc    1 5 15 prologue_end     # /tmp/compiler-explorer-compiler1161023-8026-16e0svr/example.cpp:5:15
         cmp     byte ptr [rip + guard variable for asdf<float>], 0
         jne     .LBB1_2
-        .loc    1 5 15 is_stmt 0 discriminator 1 # /tmp/gcc-explorer-compiler1161023-8026-16e0svr/example.cpp:5:15
+        .loc    1 5 15 is_stmt 0 discriminator 1 # /tmp/compiler-explorer-compiler1161023-8026-16e0svr/example.cpp:5:15
         mov     qword ptr [rip + guard variable for asdf<float>], 1
 .LBB1_2:
-        .loc    1 5 15 discriminator 2  # /tmp/gcc-explorer-compiler1161023-8026-16e0svr/example.cpp:5:15
+        .loc    1 5 15 discriminator 2  # /tmp/compiler-explorer-compiler1161023-8026-16e0svr/example.cpp:5:15
         ret
 .Ltmp1:
 .Lfunc_end1:
@@ -59,9 +59,9 @@ guard variable for asdf<float>:
 .Linfo_string0:
         .asciz  "clang version 3.9.0-1ubuntu1 (tags/RELEASE_390/final)" # string offset=0
 .Linfo_string1:
-        .asciz  "/tmp/gcc-explorer-compiler1161023-8026-16e0svr/example.cpp" # string offset=54
+        .asciz  "/tmp/compiler-explorer-compiler1161023-8026-16e0svr/example.cpp" # string offset=54
 .Linfo_string2:
-        .asciz  "/home/mgodbolt/dev/gcc-explorer" # string offset=113
+        .asciz  "/home/mgodbolt/dev/compiler-explorer" # string offset=113
 .Linfo_string3:
         .asciz  "asdf"                  # string offset=145
 .Linfo_string4:

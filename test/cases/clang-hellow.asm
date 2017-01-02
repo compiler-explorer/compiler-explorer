@@ -1,6 +1,6 @@
         .file   "-"
-        .file   1 "/home/mgodbolt/dev/gcc-explorer/-"
-        .file   2 "/home/mgodbolt/dev/gcc-explorer/<stdin>"
+        .file   1 "/home/mgodbolt/dev/compiler-explorer/-"
+        .file   2 "/home/mgodbolt/dev/compiler-explorer/<stdin>"
         .section        .debug_info,"",@progbits
 .Lsection_info:
         .section        .debug_abbrev,"",@progbits
@@ -88,7 +88,7 @@ str:
         .byte   0
         .quad   0                       # DW_AT_entry_pc
         .long   .Lsection_line          # DW_AT_stmt_list
-        .ascii   "/home/mgodbolt/dev/gcc-explorer" # DW_AT_comp_dir
+        .ascii   "/home/mgodbolt/dev/compiler-explorer" # DW_AT_comp_dir
         .byte   0
         .byte   1                       # DW_AT_APPLE_optimized
         .byte   2                       # Abbrev [2] 0x8b:0x20 DW_TAG_subprogram
