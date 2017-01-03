@@ -53,6 +53,7 @@ define(function (require) {
 
         this.widgetsByCompiler = {};
         this.asmByCompiler = {};
+        this.busyCompilers = {};
         this.options = new Toggles(this.domRoot.find('.options'), state.options);
         this.options.on('change', _.bind(this.onOptionsChange, this));
 
@@ -121,15 +122,6 @@ define(function (require) {
             this.debouncedEmitChange();
         }, this));
 
-        // A small debounce used to give multiple compilers a chance to respond
-        // before unioning the colours and updating them. Another approach to reducing
-        // flicker as multiple compilers update is to track those compilers which
-        // are busy, and only union/update colours when all are complete.
-        var ColourDebounceMs = 200;
-        this.debouncedUpdateColours = _.debounce(function (colours) {
-            self.updateColours(colours);
-        }, ColourDebounceMs);
-
         function refresh() {
             self.editor.refresh();
         }
@@ -165,6 +157,7 @@ define(function (require) {
 
         this.eventHub.on('compilerOpen', this.onCompilerOpen, this);
         this.eventHub.on('compilerClose', this.onCompilerClose, this);
+        this.eventHub.on('compiling', this.onCompiling, this);
         this.eventHub.on('compileResult', this.onCompileResponse, this);
         this.eventHub.on('selectLine', this.onSelectLine, this);
 
@@ -252,7 +245,8 @@ define(function (require) {
             result[k] = ordinal++;
         });
 
-        this.debouncedUpdateColours(this.options.get().colouriseAsm ? result : []);
+        if (_.any(this.busyCompilers)) return;
+        this.updateColours(this.options.get().colouriseAsm ? result : []);
     };
 
     Editor.prototype.updateColours = function (colours) {
@@ -264,6 +258,7 @@ define(function (require) {
         this.removeWidgets(this.widgetsByCompiler[compilerId]);
         delete this.widgetsByCompiler[compilerId];
         delete this.asmByCompiler[compilerId];
+        delete this.busyCompilers[compilerId];
         this.numberUsedLines();
     };
 
@@ -272,7 +267,12 @@ define(function (require) {
         this.maybeEmitChange(true);
     };
 
+    Editor.prototype.onCompiling = function(compilerId) {
+        this.busyCompilers[compilerId] = true;
+    };
+
     Editor.prototype.onCompileResponse = function (compilerId, compiler, result) {
+        this.busyCompilers[compilerId] = false;
         var output = (result.stdout || []).concat(result.stderr || []);
         var self = this;
         this.removeWidgets(this.widgetsByCompiler[compilerId]);

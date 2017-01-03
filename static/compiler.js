@@ -198,6 +198,7 @@ define(function (require) {
             this.nextRequest = request;
             return;
         }
+        this.eventHub.emit('compiling', this.id, this.compiler);
         var jsonRequest = JSON.stringify(request);
         var cachedResult = Cache.get(jsonRequest);
         if (cachedResult) {
@@ -294,11 +295,6 @@ define(function (require) {
         var timeTaken = Math.max(0, Date.now() - this.pendingRequestSentAt);
         var wasRealReply = this.pendingRequestSentAt > 0;
         this.pendingRequestSentAt = 0;
-        if (this.nextRequest) {
-            var next = this.nextRequest;
-            this.nextRequest = null;
-            this.sendCompile(next);
-        }
         ga('send', {
             hitType: 'event',
             eventCategory: 'Compile',
@@ -338,6 +334,12 @@ define(function (require) {
             compileTime.text("");
         }
         this.eventHub.emit('compileResult', this.id, this.compiler, result);
+
+        if (this.nextRequest) {
+            var next = this.nextRequest;
+            this.nextRequest = null;
+            this.sendCompile(next);
+        }
     };
 
     Compiler.prototype.expand = function (source) {
