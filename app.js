@@ -62,7 +62,7 @@ if (opts.debug) logger.level = 'debug';
 var rootDir = opts.rootDir || './etc';
 var language = opts.language || "C++";
 var env = opts.env || ['dev'];
-var hostname = opts.host || os.hostname();
+var hostname = opts.host;
 var port = opts.port || 10240;
 var staticDir = opts.static || 'static';
 var archivedVersions = opts.archivedVersions;
@@ -493,7 +493,7 @@ findCompilers()
             diffHandler = buildDiffHandler(wdiffConfig);
 
         logger.info("=======================================");
-        logger.info("Listening on http://" + hostname + ":" + port + "/");
+        logger.info("Listening on http://" + (hostname || 'localhost') + ":" + port + "/");
         logger.info("  serving static files from '" + staticDir + "'");
         logger.info("  git release " + gitReleaseName);
 
