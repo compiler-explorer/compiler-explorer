@@ -79,7 +79,7 @@ define(function (require) {
         });
         var optionsChange = _.debounce(function () {
             self.onOptionsChange($(this).val());
-        }, 1250);
+        }, 800);
         this.domRoot.find(".options")
             .val(this.options)
             .on("change", optionsChange)

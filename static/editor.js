@@ -83,7 +83,10 @@ define(function (require) {
             readOnly: state.options ? !!state.options.readOnly : false,
             extraKeys: {
                 "Alt-F": false, // see https://github.com/mattgodbolt/compiler-explorer/pull/131
-                "Ctrl-/": 'toggleComment'
+                "Ctrl-/": 'toggleComment',
+                "Ctrl-Enter": _.bind(function () {
+                    this.maybeEmitChange();
+                }, this)
             },
             mode: cmMode
         });
@@ -103,7 +106,7 @@ define(function (require) {
         // * Only actually triggering a change if the document text has changed from
         //   the previous emitted.
         this.lastChangeEmitted = null;
-        var ChangeDebounceMs = 1250;
+        var ChangeDebounceMs = 800;
         this.debouncedEmitChange = _.debounce(function () {
             if (self.options.get().compileOnChange) self.maybeEmitChange();
         }, ChangeDebounceMs);
