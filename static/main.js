@@ -152,6 +152,10 @@ define(function (require) {
         new clipboard('.btn.clippy');
 
         sharing.initShareButton($('#share'), layout);
+        $('#ui-reset').click(function () {
+            window.localStorage.removeItem('gl');
+            window.location.reload();
+        });
     }
 
     $(start);

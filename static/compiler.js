@@ -79,7 +79,7 @@ define(function (require) {
         });
         var optionsChange = _.debounce(function () {
             self.onOptionsChange($(this).val());
-        }, 1250);
+        }, 800);
         this.domRoot.find(".options")
             .val(this.options)
             .on("change", optionsChange)
@@ -198,6 +198,7 @@ define(function (require) {
             this.nextRequest = request;
             return;
         }
+        this.eventHub.emit('compiling', this.id, this.compiler);
         var jsonRequest = JSON.stringify(request);
         var cachedResult = Cache.get(jsonRequest);
         if (cachedResult) {
@@ -208,7 +209,7 @@ define(function (require) {
         this.pendingRequestSentAt = Date.now();
         // After a short delay, give the user some indication that we're working on their
         // compilation.
-        var progress = setTimeout(_.bind(function() {
+        var progress = setTimeout(_.bind(function () {
             this.setAssembly(fakeAsm("<Compiling...>"));
         }, this), 500);
         $.ajax({
@@ -291,13 +292,9 @@ define(function (require) {
 
     Compiler.prototype.onCompileResponse = function (request, result, cached) {
         this.lastResult = result;
-        var timeTaken = Date.now() - this.pendingRequestSentAt;
+        var timeTaken = Math.max(0, Date.now() - this.pendingRequestSentAt);
+        var wasRealReply = this.pendingRequestSentAt > 0;
         this.pendingRequestSentAt = 0;
-        if (this.nextRequest) {
-            var next = this.nextRequest;
-            this.nextRequest = null;
-            this.sendCompile(next);
-        }
         ga('send', {
             hitType: 'event',
             eventCategory: 'Compile',
@@ -328,12 +325,21 @@ define(function (require) {
         status.toggleClass('error', failed);
         status.toggleClass('warning', warns);
         status.parent().attr('title', allText);
+        var compileTime = this.domRoot.find('.compile-time');
         if (cached) {
-            this.domRoot.find('.compile-time').text("- cached");
+            compileTime.text("- cached");
+        } else if (wasRealReply) {
+            compileTime.text("- " + timeTaken + "ms");
         } else {
-            this.domRoot.find('.compile-time').text("- " + timeTaken + "ms");
+            compileTime.text("");
         }
         this.eventHub.emit('compileResult', this.id, this.compiler, result);
+
+        if (this.nextRequest) {
+            var next = this.nextRequest;
+            this.nextRequest = null;
+            this.sendCompile(next);
+        }
     };
 
     Compiler.prototype.expand = function (source) {
