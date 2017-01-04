@@ -91,6 +91,10 @@
                         class="btn btn-default btn-sm add-compiler">
                     <span class="glyphicon glyphicon-open"></span>
                 </button>
+                <button title="Add a diff view (click or drag)"
+                        class="btn btn-default btn-sm add-diff">
+                    <span class="glyphicon glyphicon-tree-deciduous"></span>
+                </button>
             </div>
         </div>
         <textarea>// Type your code here, or load an example.</textarea>
@@ -161,6 +165,30 @@
 
     <div id="compiler-output">
         <pre class="content"></pre>
+    </div>
+
+    <div id="diff">
+        <table>
+            <tr>
+                <td>Lhs: <select class="compiler-picker lhs" placeholder="Select a compiler..."></select></td>
+                <td>Rhs: <select class="compiler-picker rhs" placeholder="Select a compiler..."></select></td>
+            </tr>
+        </table>
+        <div class="btn-group btn-group-sm">
+            <button title="Decrease font size"
+                    class="btn btn-default btn-sm decrease-font-size">
+                <span class="glyphicon glyphicon-sm glyphicon-font"></span>
+            </button>
+            <button title="Reset font size"
+                    class="btn btn-default btn-sm reset-font-size">
+                <span class="glyphicon glyphicon-sm glyphicon-font"></span>
+            </button>
+            <button title="Increase font size"
+                    class="btn btn-default btn-sm increase-font-size">
+                <span class="glyphicon glyphicon-sm glyphicon-font"></span>
+            </button>
+        </div>
+        <textarea>[Waiting...]</textarea>
     </div>
 
     <div class="urls">

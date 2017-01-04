@@ -118,6 +118,7 @@ define(function (require) {
         this.eventHub.on('editorClose', this.onEditorClose, this);
         this.eventHub.on('colours', this.onColours, this);
         this.eventHub.on('resendCompilation', this.onResendCompilation, this);
+        this.eventHub.on('findCompilers', this.sendCompiler, this);
         this.updateCompilerName();
         this.updateButtons();
 
@@ -159,8 +160,7 @@ define(function (require) {
     // reload the page and the bottom-bar is off the bottom until you scroll a tiny bit.
     Compiler.prototype.resize = function () {
         var topBarHeight = this.domRoot.find(".top-bar").outerHeight(true);
-        var bottomBarHeight = this.domRoot.find(".bottom-bar").outerHeight(true);
-        this.outputEditor.setSize(this.domRoot.width(), this.domRoot.height() - topBarHeight - bottomBarHeight);
+        this.outputEditor.setSize(this.domRoot.width(), this.domRoot.height() - topBarHeight);
         this.refresh();
     };
 
@@ -397,6 +397,7 @@ define(function (require) {
         this.saveState();
         this.compile();
         this.updateButtons();
+        this.sendCompiler();
     };
 
     Compiler.prototype.onCompilerChange = function (value) {
@@ -405,6 +406,11 @@ define(function (require) {
         this.compile();
         this.updateButtons();
         this.updateCompilerName();
+        this.sendCompiler();
+    };
+
+    Compiler.prototype.sendCompiler = function () {
+        this.eventHub.emit('compiler', this.id, this.compiler, this.options);
     };
 
     Compiler.prototype.onEditorClose = function (editor) {

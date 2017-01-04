@@ -68,6 +68,13 @@ define(function (require) {
                 componentName: 'output',
                 componentState: {compiler: compiler, editor: editor},
             };
+        },
+        getDiff: function () {
+            return {
+                type: 'component',
+                componentName: 'diff',
+                componentState: {}
+            };
         }
     };
 

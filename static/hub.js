@@ -32,6 +32,7 @@ define(function (require) {
     var compiler = require('compiler');
     var output = require('output');
     var Components = require('components');
+    var diff = require('diff');
 
     function Hub(layout, defaultSrc) {
         this.layout = layout;
@@ -50,6 +51,10 @@ define(function (require) {
         layout.registerComponent(Components.getOutput().componentName,
             function (container, state) {
                 return self.outputFactory(container, state);
+            });
+        layout.registerComponent(diff.getComponent().componentName,
+            function (container, state) {
+                return self.diffFactory(container, state);
             });
         var removeId = function (id) {
             self.ids[id] = false;
@@ -79,6 +84,9 @@ define(function (require) {
 
     Hub.prototype.outputFactory = function (container, state) {
         return new output.Output(this, container, state);
+    }
+    Hub.prototype.diffFactory = function (container, state) {
+        return new diff.Diff(this, container, state);
     };
 
     function WrappedEventHub(eventHub) {
