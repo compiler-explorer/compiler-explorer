@@ -37,13 +37,9 @@ require.config({
         clipboard: 'ext/clipboard/dist/clipboard',
         'raven-js': 'ext/raven-js/dist/raven',
         'es6-promise': 'ext/es6-promise/es6-promise',
-        'lru-cache': 'ext/lru-cache/lib/lru-cache'
+        'lru-cache': 'ext/lru-cache/lib/lru-cache',
+        vs: 'ext/monaco-editor/dev/vs'
     },
-    packages: [{
-        name: "codemirror",
-        location: "ext/codemirror",
-        main: "lib/codemirror"
-    }],
     shim: {
         underscore: {exports: '_'},
         'lru-cache': {exports: 'LRUCache'},

@@ -27,27 +27,25 @@ define(function (require) {
     "use strict";
 
     var _ = require('underscore');
+    var monaco = require('monaco');
 
     var NumRainbowColours = 12;
 
-    function clearBackground(editor) {
-        for (var i = 0; i < editor.lineCount(); ++i) {
-            editor.removeLineClass(i, "background", null);
-        }
-    }
-
-    function applyColours(editor, colours) {
-        editor.operation(function () {
-            clearBackground(editor);
-            _.each(colours, function (ordinal, line) {
-                editor.addLineClass(parseInt(line),
-                    "background", "rainbow-" + (ordinal % NumRainbowColours));
-            });
+    function applyColours(editor, colours, prevDecorations) {
+        var newDecorations = _.map(colours, function (ordinal, line) {
+            line = parseInt(line) + 1;
+            return {
+                range: new monaco.Range(line, 1, line, 1),
+                options: {
+                    isWholeLine: true,
+                    className: "rainbow-" + (ordinal % NumRainbowColours)
+                }
+            };
         });
+        return editor.deltaDecorations(prevDecorations, newDecorations);
     }
 
     return {
-        applyColours: applyColours,
-        clearBackground: clearBackground
+        applyColours: applyColours
     };
 });

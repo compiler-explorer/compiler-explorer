@@ -1,4 +1,5 @@
 // Copyright (c) 2012-2017, Matt Godbolt
+//
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -23,6 +24,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 define(function (require) {
-    "use strict";
-    return;
+    require('vs/editor/editor.main');
+
+    return monaco;
 });

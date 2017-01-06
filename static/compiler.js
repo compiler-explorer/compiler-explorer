@@ -25,7 +25,6 @@
 
 define(function (require) {
     "use strict";
-    var CodeMirror = require('codemirror');
     var $ = require('jquery');
     var _ = require('underscore');
     var ga = require('analytics').ga;
@@ -35,8 +34,8 @@ define(function (require) {
     var Promise = require('es6-promise').Promise;
     var Components = require('components');
     var LruCache = require('lru-cache');
+    var monaco = require('monaco');
 
-    require('asm-mode');
     require('selectize');
 
     var options = require('options');
@@ -63,6 +62,7 @@ define(function (require) {
         this.filters = new Toggles(this.domRoot.find(".filters"), state.filters);
         this.source = "";
         this.assembly = [];
+        this.colours = [];
         this.lastResult = null;
         this.pendingRequestSentAt = 0;
         this.nextRequest = null;
@@ -88,12 +88,9 @@ define(function (require) {
         // Hide the binary option if the global options has it disabled.
         this.domRoot.find("[data-bind='binary']").toggle(options.supportsBinary);
 
-        this.outputEditor = CodeMirror.fromTextArea(this.domRoot.find("textarea")[0], {
-            lineNumbers: true,
-            mode: "text/x-asm",
-            readOnly: true,
-            gutters: ['CodeMirror-linenumbers'],
-            lineWrapping: true
+        // TODO: everything here
+        this.outputEditor = monaco.editor.create(this.domRoot.find(".monaco-placeholder")[0], {
+            readOnly: true
         });
 
         this.fontScale = new FontScale(this.domRoot, state);
@@ -109,7 +106,7 @@ define(function (require) {
             self.eventHub.emit('compilerClose', self.id);
         }, this);
         container.on('resize', this.resize, this);
-        container.on('shown', this.refresh, this);
+        container.on('shown', this.resize, this);
         container.on('open', function () {
             self.eventHub.emit('compilerOpen', self.id);
             self.updateFontScale();
@@ -150,9 +147,6 @@ define(function (require) {
         this.saveState();
     }
 
-    Compiler.prototype.refresh = function () {
-        this.outputEditor.refresh();
-    };
 
     // TODO: need to call resize if either .top-bar or .bottom-bar resizes, which needs some work.
     // Issue manifests if you make a window where one compiler is small enough that the buttons spill onto two lines:
@@ -160,8 +154,10 @@ define(function (require) {
     Compiler.prototype.resize = function () {
         var topBarHeight = this.domRoot.find(".top-bar").outerHeight(true);
         var bottomBarHeight = this.domRoot.find(".bottom-bar").outerHeight(true);
-        this.outputEditor.setSize(this.domRoot.width(), this.domRoot.height() - topBarHeight - bottomBarHeight);
-        this.refresh();
+        this.outputEditor.layout({
+            width: this.domRoot.width(),
+            height: this.domRoot.height() - topBarHeight - bottomBarHeight
+        });
     };
 
     // Gets the filters that will actually be used (accounting for issues with binary
@@ -235,8 +231,8 @@ define(function (require) {
 
     Compiler.prototype.setAssembly = function (assembly) {
         this.assembly = assembly;
-        this.outputEditor.setValue(_.pluck(assembly, 'text').join("\n"));
-
+        this.outputEditor.getModel().setValue(_.pluck(assembly, 'text').join("\n"));
+return;
         var addrToAddrDiv = {};
         _.each(this.assembly, _.bind(function (obj, line) {
             var address = obj.address ? obj.address.toString(16) : "";
@@ -308,16 +304,15 @@ define(function (require) {
             timingVar: request.compiler,
             timingValue: timeTaken
         });
-        this.outputEditor.operation(_.bind(function () {
-            this.setAssembly(result.asm || fakeAsm("<No output>"));
-            if (request.filters.binary) {
-                this.outputEditor.setOption('lineNumbers', false);
-                this.outputEditor.setOption('gutters', ['address', 'opcodes']);
-            } else {
-                this.outputEditor.setOption('lineNumbers', true);
-                this.outputEditor.setOption('gutters', ['CodeMirror-linenumbers']);
-            }
-        }, this));
+        this.setAssembly(result.asm || fakeAsm("<No output>"));
+        // TODO
+        // if (request.filters.binary) {
+        //     this.outputEditor.setOption('lineNumbers', false);
+        //     this.outputEditor.setOption('gutters', ['address', 'opcodes']);
+        // } else {
+        //     this.outputEditor.setOption('lineNumbers', true);
+        //     this.outputEditor.setOption('gutters', ['CodeMirror-linenumbers']);
+        // }
         var status = this.domRoot.find(".status");
         var allText = _.pluck((result.stdout || []).concat(result.stderr | []), 'text').join("\n");
         var failed = result.code !== 0;
@@ -444,7 +439,7 @@ define(function (require) {
             _.each(this.assembly, function (x, index) {
                 if (x.source) asmColours[index] = colours[x.source - 1];
             });
-            colour.applyColours(this.outputEditor, asmColours);
+            this.colours = colour.applyColours(this.outputEditor, asmColours, this.colours);
         }
     };
 

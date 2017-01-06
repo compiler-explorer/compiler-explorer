@@ -25,7 +25,6 @@
 
 define(function (require) {
     "use strict";
-    var CodeMirror = require('codemirror');
     var _ = require('underscore');
     var $ = require('jquery');
     var colour = require('colour');
@@ -34,12 +33,7 @@ define(function (require) {
     var FontScale = require('fontscale');
     var Sharing = require('sharing');
     var Components = require('components');
-
-    require('codemirror/mode/clike/clike');
-    require('codemirror/mode/d/d');
-    require('codemirror/mode/go/go');
-    require('codemirror/mode/rust/rust');
-    require('codemirror/addon/comment/comment');
+    var monaco = require('monaco');
 
     var loadSave = new loadSaveLib.LoadSave();
 
@@ -54,18 +48,19 @@ define(function (require) {
         this.widgetsByCompiler = {};
         this.asmByCompiler = {};
         this.busyCompilers = {};
+        this.colours = [];
         this.options = new Toggles(this.domRoot.find('.options'), state.options);
         this.options.on('change', _.bind(this.onOptionsChange, this));
 
         var cmMode;
         switch (lang.toLowerCase()) {
             default:
-                cmMode = "text/x-c++src";
+                cmMode = "cpp";
                 break;
             case "c":
-                cmMode = "text/x-c";
+                cmMode = "cpp";
                 break;
-            case "rust":
+            case "rust":  // TODO
                 cmMode = "text/x-rustsrc";
                 break;
             case "d":
@@ -76,30 +71,23 @@ define(function (require) {
                 break;
         }
 
-        this.editor = CodeMirror.fromTextArea(this.domRoot.find("textarea")[0], {
-            lineNumbers: true,
-            matchBrackets: true,
-            useCPP: true,
-            dragDrop: false,
-            readOnly: state.options ? !!state.options.readOnly : false,
-            extraKeys: {
-                "Alt-F": false, // see https://github.com/mattgodbolt/compiler-explorer/pull/131
-                "Ctrl-/": 'toggleComment',
-                "Ctrl-Enter": _.bind(function () {
-                    this.maybeEmitChange();
-                }, this)
-            },
-            mode: cmMode
+        // TODOs!
+        // ctrl-enter
+        // other languages
+        // font scale
+        // check for other css styling
+        var root = this.domRoot.find(".monaco-placeholder");
+        this.editor = monaco.editor.create(root[0], {
+            value: state.source || defaultSrc || "",
+            language: cmMode
         });
+        // TODO
+        // "Ctrl-Enter": _.bind(function () {
+        //     this.maybeEmitChange();
+        // }, this)
 
         this.fontScale = new FontScale(this.domRoot, state);
         this.fontScale.on('change', _.bind(this.updateState, this));
-
-        if (state.source) {
-            this.editor.setValue(state.source);
-        } else if (defaultSrc) {
-            this.editor.setValue(defaultSrc);
-        }
 
         // We suppress posting changes until the user has stopped typing by:
         // * Using _.debounce() to run emitChange on any key event or change
@@ -111,25 +99,20 @@ define(function (require) {
         this.debouncedEmitChange = _.debounce(function () {
             if (self.options.get().compileOnChange) self.maybeEmitChange();
         }, ChangeDebounceMs);
-        this.editor.on("change", _.bind(function () {
+        this.editor.getModel().onDidChangeContent(_.bind(function () {
             this.debouncedEmitChange();
             this.updateState();
         }, this));
-        this.editor.on("keydown", _.bind(function () {
-            // Not strictly a change; but this suppresses changes until some time
-            // after the last key down (be it an actual change or a just a cursor
-            // movement etc).
-            this.debouncedEmitChange();
-        }, this));
+        // this.editor.on("keydown", _.bind(function () {
+        //     // Not strictly a change; but this suppresses changes until some time
+        //     // after the last key down (be it an actual change or a just a cursor
+        //     // movement etc).
+        //     this.debouncedEmitChange();
+        // }, this));
 
-        function refresh() {
-            self.editor.refresh();
-        }
-
-        function resize() {
+        function layout() {
             var topBarHeight = self.domRoot.find(".top-bar").outerHeight(true);
-            self.editor.setSize(self.domRoot.width(), self.domRoot.height() - topBarHeight);
-            refresh();
+            self.editor.layout({width: self.domRoot.width(), height: self.domRoot.height() - topBarHeight});
         }
 
         this.domRoot.find('.load-save').click(_.bind(function () {
@@ -140,14 +123,15 @@ define(function (require) {
             }, this));
         }, this));
 
-        container.on('resize', resize);
-        container.on('shown', refresh);
+        container.on('resize', layout);
+        container.on('shown', layout);
         container.on('open', function () {
             self.eventHub.emit('editorOpen', self.id);
         });
         container.on('destroy', function () {
             self.eventHub.unsubscribe();
             self.eventHub.emit('editorClose', self.id);
+            self.editor.dispose();
         });
         container.setTitle(lang + " source #" + self.id);
         this.container.layoutManager.on('initialised', function () {
@@ -194,7 +178,7 @@ define(function (require) {
     };
 
     Editor.prototype.getSource = function () {
-        return this.editor.getValue();
+        return this.editor.getModel().getValue();
     };
 
     Editor.prototype.onOptionsChange = function (before, after) {
@@ -250,7 +234,7 @@ define(function (require) {
     };
 
     Editor.prototype.updateColours = function (colours) {
-        colour.applyColours(this.editor, colours);
+        this.colours = colour.applyColours(this.editor, colours, this.colours);
         this.eventHub.emit('colours', this.id, colours);
     };
 
@@ -267,7 +251,7 @@ define(function (require) {
         this.maybeEmitChange(true);
     };
 
-    Editor.prototype.onCompiling = function(compilerId) {
+    Editor.prototype.onCompiling = function (compilerId) {
         this.busyCompilers[compilerId] = true;
     };
 
