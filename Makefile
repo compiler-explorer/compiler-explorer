@@ -50,6 +50,9 @@ $(BOWER_MODULES): bower.json $(NODE_MODULES)
 	if ! test -f "${BOWER_MODULES}"; then rm -rf static/ext; fi
 	$(NODE) ./node_modules/bower/bin/bower install
 	@touch $@
+	# Workaround for lack of versioned monaco-editor in bower
+	rm -rf static/ext/monaco-editor
+	cp -r node_modules/monaco-editor static/ext/
 
 lint: $(NODE_MODULES)
 	$(NODE) ./node_modules/.bin/jshint app.js $(shell find lib static -name '*.js' -not -path 'static/ext/*')
