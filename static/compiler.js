@@ -41,7 +41,11 @@ define(function (require) {
 
     var options = require('options');
     var compilers = options.compilers;
-    var compilersById = _.object(_.pluck(compilers, "id"), compilers);
+    var compilersById = {};
+    _.forEach(compilers, function(compiler) {
+        compilersById[compiler.id] = compiler;
+        if (compiler.alias) compilersById[compiler.alias] = compiler;
+    });
     var Cache = new LruCache({
         max: 200 * 1024,
         length: function (n) {
