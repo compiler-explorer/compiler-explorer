@@ -79,6 +79,7 @@ define(function (require) {
         var root = this.domRoot.find(".monaco-placeholder");
         this.editor = monaco.editor.create(root[0], {
             value: state.source || defaultSrc || "",
+            scrollBeyondLastLine: false,
             language: cmMode
         });
         // TODO
@@ -86,7 +87,7 @@ define(function (require) {
         //     this.maybeEmitChange();
         // }, this)
 
-        this.fontScale = new FontScale(this.domRoot, state);
+        this.fontScale = new FontScale(this.domRoot, state, this.editor);
         this.fontScale.on('change', _.bind(this.updateState, this));
 
         // We suppress posting changes until the user has stopped typing by:

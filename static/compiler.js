@@ -89,11 +89,13 @@ define(function (require) {
         this.domRoot.find("[data-bind='binary']").toggle(options.supportsBinary);
 
         // TODO: everything here
+        // ASM colour mode
         this.outputEditor = monaco.editor.create(this.domRoot.find(".monaco-placeholder")[0], {
+            scrollBeyondLastLine: false,
             readOnly: true
         });
 
-        this.fontScale = new FontScale(this.domRoot, state);
+        this.fontScale = new FontScale(this.domRoot, state, this.outputEditor);
         this.fontScale.on('change', _.bind(function () {
             this.saveState();
             this.updateFontScale();
