@@ -20,10 +20,9 @@ endif
 .PHONY: dist lint prereqs node_modules bower_modules
 prereqs: optional-d-support optional-rust-support node_modules c-preload bower_modules
 
-ifneq "" "$(shell which gdc)"
-optional-d-support:
-	$(MAKE) -C d
-else ifneq "" "$(shell which ${DMD})"
+GDC?=gdc
+DMD?=dmd
+ifneq "" "$(shell which $(GDC) 2>/dev/null || which $(DMD) 2>/dev/null)"
 optional-d-support:
 	$(MAKE) -C d
 else
