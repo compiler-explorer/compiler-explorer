@@ -522,8 +522,13 @@ findCompilers()
             .post('/diff', diffHandler); // used inside static/compiler.js
         logger.info("=======================================");
 
+        webServer.on('error', function (err) {
+            logger.error('Caught error:', err, "(in web error handler; continuing)");
+        });
+
         webServer.listen(port, hostname);
-    }).catch(function (err) {
-    logger.error("Error: " + err);
-    process.exit(1);
-});
+    })
+    .catch(function (err) {
+        logger.error("Promise error:", err, "(shutting down)");
+        process.exit(1);
+    });
