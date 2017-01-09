@@ -15,7 +15,7 @@ ALLOWED_FOR_READ=${ALLOWED_FOR_READ}:/usr/share/fonts:/etc/passwd
 
 # Last-gasp limits
 ulimit -m $((512 * 1024)) # RSS limit in K
-ulimit -t 5 # CPU time in seconds
+ulimit -t 10 # CPU time in seconds
 ulimit -v $((2 * 1024 * 1024)) # virtual RAM limit in K
 
 "$@"
