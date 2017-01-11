@@ -30,6 +30,7 @@
     "serve-favicon": "2.3.x",
     "serve-static": "1.10.x",
     "temp": "0.8.x",
+    "tree-kill": "1.1.x",
     "underscore-node": "*",
     "shell-quote": "1.6.x",
     "winston": "2.2.x"
