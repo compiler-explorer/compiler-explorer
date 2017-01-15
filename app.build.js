@@ -10,6 +10,7 @@
     mainConfigFile: "static/main.js",
     skipDirOptimize: true,
     optimizeCss: "standard",
+    paths: { "vs": "empty:" },
     modules: [
         {
             name: "main"
