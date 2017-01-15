@@ -213,3 +213,9 @@ pre.content {
     font-size: x-small;
     font-style: italic;
 }
+
+.url-parse-info {
+    font-size: small;
+    margin-top: 1em;
+    font-style: italic;
+}

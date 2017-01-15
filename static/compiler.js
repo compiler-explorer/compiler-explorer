@@ -40,7 +40,11 @@ define(function (require) {
 
     var options = require('options');
     var compilers = options.compilers;
-    var compilersById = _.object(_.pluck(compilers, "id"), compilers);
+    var compilersById = {};
+    _.forEach(compilers, function(compiler) {
+        compilersById[compiler.id] = compiler;
+        if (compiler.alias) compilersById[compiler.alias] = compiler;
+    });
     var Cache = new LruCache({
         max: 200 * 1024,
         length: function (n) {
@@ -149,7 +153,6 @@ define(function (require) {
         this.saveState();
     }
 
-
     // TODO: need to call resize if either .top-bar or .bottom-bar resizes, which needs some work.
     // Issue manifests if you make a window where one compiler is small enough that the buttons spill onto two lines:
     // reload the page and the bottom-bar is off the bottom until you scroll a tiny bit.
@@ -212,7 +215,7 @@ define(function (require) {
         }, this), 500);
         $.ajax({
             type: 'POST',
-            url: '/compile',
+            url: '/api/compiler/' + request.compiler + '/compile',
             dataType: 'json',
             contentType: 'application/json',
             data: jsonRequest,

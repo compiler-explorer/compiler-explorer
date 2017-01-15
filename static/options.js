@@ -25,8 +25,8 @@
 
 define(function (require) {
     "use strict";
-    var $ = require('jquery');
-    var options = $.ajax({type: "GET", url: 'client-options.json', async: false}).responseJSON;
+    var options = require('./async-get!client-options.json');
     options.embedded = window.location.pathname === "/embed.html";
     return options;
 });
+

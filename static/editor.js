@@ -146,14 +146,19 @@ define(function (require) {
         this.eventHub.on('compileResult', this.onCompileResponse, this);
         this.eventHub.on('selectLine', this.onSelectLine, this);
 
-        var compilerConfig = Components.getCompiler(this.id);
+        // NB a new compilerConfig needs to be created every time; else the state is shared
+        // between all compilers created this way. That leads to some nasty-to-find state
+        // bugs e.g. https://github.com/mattgodbolt/compiler-explorer/issues/225
+        var compilerConfig = _.bind(function () {
+            return Components.getCompiler(this.id);
+        }, this);
 
         this.container.layoutManager.createDragSource(
-            this.domRoot.find('.btn.add-compiler'), compilerConfig);
+            this.domRoot.find('.btn.add-compiler'), compilerConfig());
         this.domRoot.find('.btn.add-compiler').click(_.bind(function () {
             var insertPoint = hub.findParentRowOrColumn(this.container) ||
                 this.container.layoutManager.root.contentItems[0];
-            insertPoint.addChild(compilerConfig);
+            insertPoint.addChild(compilerConfig());
         }, this));
 
         Sharing.initShareButton(this.domRoot.find('.share'), container.layoutManager);
