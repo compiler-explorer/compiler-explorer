@@ -24,5 +24,82 @@
 
 define(function (require) {
     "use strict";
-    return;
+    var monaco = require('monaco');
+
+    // TODO: much more here
+
+    function definition() {
+        return {
+            // Set defaultToken to invalid to see what you do not tokenize yet
+            defaultToken: 'invalid',
+
+            // we include these common regular expressions
+            symbols: /[=><!~?:&|+\-*\/\^%]+/,
+
+            // C# style strings
+            escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
+
+            registers: /\b[er](ax|cx|dx|sp|bp|si|di)\b/,
+
+            // The main tokenizer for our languages
+            tokenizer: {
+                root: [
+                    [/^[.a-zA-Z0-9_$][^:]*:/, 'type.identifier'],
+                    [/@registers/, 'type.identifier'],
+                    [/[a-z]+/, {
+                        cases: {
+                            '@default': 'keyword'
+                        }
+                    }],
+
+                    // whitespace
+                    {include: '@whitespace'},
+
+                    // delimiters and operators
+                    [/[{}()\[\]]/, '@brackets'],
+                    [/[<>](?!@symbols)/, '@brackets'],
+
+                    // numbers
+                    [/\d*\.\d+([eE][\-+]?\d+)?/, 'number.float'],
+                    [/0[xX][0-9a-fA-F]+/, 'number.hex'],
+                    [/\d+/, 'number'],
+
+                    // delimiter: after number because of .\d floats
+                    [/[;,.]/, 'delimiter'],
+
+                    // strings
+                    [/"([^"\\]|\\.)*$/, 'string.invalid'],  // non-teminated string
+                    [/"/, {token: 'string.quote', bracket: '@open', next: '@string'}],
+
+                    // characters
+                    [/'[^\\']'/, 'string'],
+                    [/(')(@escapes)(')/, ['string', 'string.escape', 'string']],
+                    [/'/, 'string.invalid']
+                ],
+
+                comment: [
+                    [/[^\/*]+/, 'comment'],
+                    [/\/\*/, 'comment', '@push'],    // nested comment
+                    ["\\*/", 'comment', '@pop'],
+                    [/[\/*]/, 'comment']
+                ],
+
+                string: [
+                    [/[^\\"]+/, 'string'],
+                    [/@escapes/, 'string.escape'],
+                    [/\\./, 'string.escape.invalid'],
+                    [/"/, {token: 'string.quote', bracket: '@close', next: '@pop'}]
+                ],
+
+                whitespace: [
+                    [/[ \t\r\n]+/, 'white'],
+                    [/\/\*/, 'comment', '@comment'],
+                    [/\/\/.*$/, 'comment'],
+                ],
+            },
+        };
+    }
+
+    monaco.languages.register({id: 'asm'});
+    monaco.languages.setMonarchTokensProvider('asm', definition());
 });

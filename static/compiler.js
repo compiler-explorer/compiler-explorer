@@ -35,6 +35,7 @@ define(function (require) {
     var Components = require('components');
     var LruCache = require('lru-cache');
     var monaco = require('monaco');
+    require('asm-mode');
 
     require('selectize');
 
@@ -93,10 +94,10 @@ define(function (require) {
         this.domRoot.find("[data-bind='binary']").toggle(options.supportsBinary);
 
         // TODO: everything here
-        // ASM colour mode
         this.outputEditor = monaco.editor.create(this.domRoot.find(".monaco-placeholder")[0], {
             scrollBeyondLastLine: false,
-            readOnly: true
+            readOnly: true,
+            language: 'asm'
         });
 
         this.fontScale = new FontScale(this.domRoot, state, this.outputEditor);

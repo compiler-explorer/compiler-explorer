@@ -61,13 +61,13 @@ define(function (require) {
                 cmMode = "cpp";
                 break;
             case "rust":  // TODO
-                cmMode = "text/x-rustsrc";
+                cmMode = "cpp";
                 break;
-            case "d":
-                cmMode = "text/x-d";
+            case "d":  // TODO
+                cmMode = "cpp";
                 break;
             case "go":
-                cmMode = "text/x-go";
+                cmMode = "go";
                 break;
         }
 
