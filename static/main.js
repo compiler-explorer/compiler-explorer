@@ -41,7 +41,7 @@ require.config({
     },
     packages: [{
         name: "vs",
-        location: "ext/monaco-editor/dev/vs"
+        location: "ext/monaco-editor/release/dev/vs"
     }],
     shim: {
         underscore: {exports: '_'},
