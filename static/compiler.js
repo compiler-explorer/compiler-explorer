@@ -237,7 +237,7 @@ define(function (require) {
     Compiler.prototype.setAssembly = function (assembly) {
         this.assembly = assembly;
         this.outputEditor.getModel().setValue(_.pluck(assembly, 'text').join("\n"));
-return;
+        /* TODO!
         var addrToAddrDiv = {};
         _.each(this.assembly, _.bind(function (obj, line) {
             var address = obj.address ? obj.address.toString(16) : "";
@@ -281,6 +281,7 @@ return;
                 }, this));
             }
         }, this));
+        */
     };
 
     function errorResult(text) {
