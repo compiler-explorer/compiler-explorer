@@ -34,7 +34,7 @@ define(function (require) {
 
     function convertOldState(state) {
         var sc = state.compilers[0];
-        if (!sc) return false;
+        if (!sc) throw new Error("Unable to determine compiler from old state");
         var content = [];
         var source;
         if (sc.sourcez) {
@@ -68,7 +68,7 @@ define(function (require) {
                 state = GoldenLayout.unminifyConfig(state);
                 break;
             default:
-                return false;
+                throw new Error("Invalid version '" + state.version + "'");
         }
         return state;
     }
@@ -83,21 +83,24 @@ define(function (require) {
 
     function deserialiseState(stateText) {
         var state;
+        var exception;
         try {
             state = unrisonify(stateText);
             if (state && state.z) {
                 state = unrisonify(lzstring.decompressFromBase64(state.z));
             }
-        } catch (ignored) {
+        } catch (ex) {
+            exception = ex;
         }
-
 
         if (!state) {
             try {
                 state = $.parseJSON(decodeURIComponent(stateText));
-            } catch (ignored) {
+            } catch (ex) {
+                if (!exception) exception = ex;
             }
         }
+        if (!state && exception) throw exception;
         return loadState(state);
     }
 

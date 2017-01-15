@@ -455,7 +455,6 @@ function embeddedHandler(req, res, next) {
     res.end();
 }
 
-
 findCompilers()
     .then(function (compilers) {
         var prevCompilers;
