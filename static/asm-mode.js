@@ -39,7 +39,7 @@ define(function (require) {
             // C# style strings
             escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
 
-            registers: /\b[er](ax|cx|dx|sp|bp|si|di)\b/,
+            registers: /%?\b(r[0-9]+|([er]?(ax|cx|dx|sp|bp|si|di)))\b/,
 
             // The main tokenizer for our languages
             tokenizer: {
@@ -62,10 +62,10 @@ define(function (require) {
                     // numbers
                     [/\d*\.\d+([eE][\-+]?\d+)?/, 'number.float'],
                     [/0[xX][0-9a-fA-F]+/, 'number.hex'],
-                    [/\d+/, 'number'],
+                    [/[$]?\d+/, 'number'],
 
-                    // delimiter: after number because of .\d floats
-                    [/[;,.]/, 'delimiter'],
+                    // operators
+                    [/[-+]/, 'operator'],
 
                     // strings
                     [/"([^"\\]|\\.)*$/, 'string.invalid'],  // non-teminated string
