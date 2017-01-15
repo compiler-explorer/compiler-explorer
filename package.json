@@ -28,7 +28,6 @@
     "promise-queue": "2.1.x",
     "nopt": "3.0.x",
     "serve-favicon": "2.3.x",
-    "serve-static": "1.10.x",
     "temp": "0.8.x",
     "tree-kill": "1.1.x",
     "underscore-node": "*",

@@ -214,7 +214,7 @@ define(function (require) {
         }, this), 500);
         $.ajax({
             type: 'POST',
-            url: '/compile',
+            url: '/api/compiler/' + request.compiler + '/compile',
             dataType: 'json',
             contentType: 'application/json',
             data: jsonRequest,
