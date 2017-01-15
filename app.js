@@ -271,7 +271,10 @@ function findCompilers() {
                     var request = http.get({
                         hostname: host,
                         port: port,
-                        path: "/api/compilers"
+                        path: "/api/compilers",
+                        headers: {
+                            'Accept': 'application/json'
+                        }
                     }, function (res) {
                         var str = '';
                         res.on('data', function (chunk) {
@@ -401,9 +404,9 @@ function ApiHandler(compileHandler) {
             res.set('Content-Type', 'text/plain');
             var title = 'Compiler Name';
             var maxLength = _.max(_.pluck(_.pluck(this.compilers, 'id').concat([title]), 'length'));
-            res.write(padRight(title, maxLength) + ' | Description\n');
+            res.write(utils.padRight(title, maxLength) + ' | Description\n');
             res.end(_.map(this.compilers, function (compiler) {
-                return padRight(compiler.id, maxLength) + ' | ' + compiler.name + '\n';
+                return utils.padRight(compiler.id, maxLength) + ' | ' + compiler.name + '\n';
             }).join("\n"));
         }
     }, this));
