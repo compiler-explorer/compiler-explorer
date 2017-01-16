@@ -84,7 +84,7 @@ foo():
 
 If JSON is present in the request's `Accept` header, the compilation results are of the form:
 
-```json
+```
 {
     code: 0 if successful, else compiler return code,
     stdout: [ { text: "Output", 
