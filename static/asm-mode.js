@@ -26,8 +26,6 @@ define(function (require) {
     "use strict";
     var monaco = require('monaco');
 
-    // TODO: much more here
-
     function definition() {
         return {
             // Set defaultToken to invalid to see what you do not tokenize yet
@@ -39,33 +37,44 @@ define(function (require) {
             // C# style strings
             escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
 
-            registers: /%?\b(r[0-9]+|([er]?(ax|cx|dx|sp|bp|si|di)))\b/,
+            registers: /%?\b(r[0-9]+|([er]?(ax|cx|dx|sp|bp|si|di))|[xyz]mm[0-9]+|sp|fp|lr)\b/,
 
-            // The main tokenizer for our languages
+            intelOperators: /PTR|(D|Q|[XYZ]MM)?WORD/,
+
             tokenizer: {
                 root: [
-                    [/^[.a-zA-Z0-9_$][^:]*:/, 'type.identifier'],
-                    [/@registers/, 'type.identifier'],
-                    [/[a-z]+/, {
-                        cases: {
-                            '@default': 'keyword'
-                        }
-                    }],
+                    // Label definition
+                    [/^[.a-zA-Z0-9_$][^:]*:/, {token: 'type.identifier', next: '@rest'}],
+                    // Label defintion (CL style)
+                    [/^[.a-zA-Z0-9_$]+\s*(PROC|ENDP)/, {token: 'type.identifier', next: '@rest'}],
+                    // Constant definition
+                    [/^[.a-zA-Z0-9_$][^=]*=/, {token: 'type.identifier', next: '@rest'}],
+                    // opcode
+                    [/[a-zA-Z]+/, {token: 'keyword', next: '@rest'}],
 
                     // whitespace
-                    {include: '@whitespace'},
+                    {include: '@whitespace'}
+                ],
 
+                rest: [
+                    // pop at the beginning of the next line and rematch
+                    [/^.*$/, {token: '@rematch', next: '@pop'}],
+
+                    [/@registers/, 'variable.predefined'],
+                    [/@intelOperators/, 'annotation'],
                     // delimiters and operators
                     [/[{}()\[\]]/, '@brackets'],
                     [/[<>](?!@symbols)/, '@brackets'],
 
                     // numbers
                     [/\d*\.\d+([eE][\-+]?\d+)?/, 'number.float'],
-                    [/0[xX][0-9a-fA-F]+/, 'number.hex'],
-                    [/[$]?\d+/, 'number'],
+                    [/([$]|0[xX])[0-9a-fA-F]+/, 'number.hex'],
+                    [/\d+/, 'number'],
+                    // ARM-style immediate numbers (which otherwise look like comments)
+                    [/#-?\d+/, 'number'],
 
                     // operators
-                    [/[-+]/, 'operator'],
+                    [/[-+,*\/!]/, 'operator'],
 
                     // strings
                     [/"([^"\\]|\\.)*$/, 'string.invalid'],  // non-teminated string
@@ -74,7 +83,13 @@ define(function (require) {
                     // characters
                     [/'[^\\']'/, 'string'],
                     [/(')(@escapes)(')/, ['string', 'string.escape', 'string']],
-                    [/'/, 'string.invalid']
+                    [/'/, 'string.invalid'],
+
+                    // Assume anything else is a label reference
+                    [/[._$a-zA-Z][._$a-zA-Z0-9]*/, 'type.identifier'],
+
+                    // whitespace
+                    {include: '@whitespace'}
                 ],
 
                 comment: [
@@ -95,8 +110,9 @@ define(function (require) {
                     [/[ \t\r\n]+/, 'white'],
                     [/\/\*/, 'comment', '@comment'],
                     [/\/\/.*$/, 'comment'],
-                ],
-            },
+                    [/#.*$/, 'comment']
+                ]
+            }
         };
     }
 
