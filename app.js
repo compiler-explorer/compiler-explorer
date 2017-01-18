@@ -406,7 +406,7 @@ function ApiHandler(compileHandler) {
             var maxLength = _.max(_.pluck(_.pluck(this.compilers, 'id').concat([title]), 'length'));
             res.write(utils.padRight(title, maxLength) + ' | Description\n');
             res.end(_.map(this.compilers, function (compiler) {
-                return utils.padRight(compiler.id, maxLength) + ' | ' + compiler.name + '\n';
+                return utils.padRight(compiler.id, maxLength) + ' | ' + compiler.name;
             }).join("\n"));
         }
     }, this));

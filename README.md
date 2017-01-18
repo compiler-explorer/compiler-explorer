@@ -15,7 +15,7 @@ Try out one of the demo sites: [C++][cpp], [Rust][rust], [D][d] or [Go][go].
 [d]: https://d.godbolt.org/ "Compiler Explorer for D"
 [go]: https://go.godbolt.org/ "Compiler Explorer for Go"
 
-### Developing
+### Developing or running a local instance
 
 Compiler Explorer is written in node.js.
 
@@ -32,6 +32,8 @@ The config system leaves a lot to be desired, I'm working on porting [CCS](https
 
 Feel free to raise an issue on [github](https://github.com/mattgodbolt/compiler-explorer/issues) or
 [email me directly](mailto:matt@godbolt.org) for more help.
+
+There's now a [Road map](Roadmap.md) that gives a little insight into future plans for Compiler Explorer.
 
 ### Credits
 
