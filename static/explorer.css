@@ -57,54 +57,6 @@ input.options {
     background-color: #5bc0de !important;
 }
 
-.inline-msg {
-    font-family: arial;
-    font-size: 70%;
-    padding: 2px 5px 3px;
-}
-
-.inline-msg .compiler {
-    font-style: italic;
-    float: right;
-}
-
-span.icon {
-    border-radius: 50%;
-    padding: 0 3px;
-    margin-right: 7px;
-}
-
-.error {
-    background: #faa !important;
-    color: #a00;
-}
-
-.error span.icon {
-    color: white;
-    background-color: red;
-    font-weight: bold;
-}
-
-.warning {
-    background: #ffa !important;
-    color: #440;
-}
-
-.warning span.icon {
-    color: black;
-    background-color: yellow;
-}
-
-.note {
-    background: #aaf !important;
-    color: #00a;
-}
-
-.note span.icon {
-    color: white;
-    background-color: blue;
-}
-
 /* These colours from Cynthia Brewer's excellent page at
  * http://colorbrewer2.org/
  */

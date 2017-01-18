@@ -71,21 +71,21 @@ define(function (require) {
                 break;
         }
 
-        // TODOs!
-        // ctrl-enter
-        // other languages
-        // font scale
-        // check for other css styling
         var root = this.domRoot.find(".monaco-placeholder");
         this.editor = monaco.editor.create(root[0], {
             value: state.source || defaultSrc || "",
             scrollBeyondLastLine: false,
             language: cmMode
         });
-        // TODO
-        // "Ctrl-Enter": _.bind(function () {
-        //     this.maybeEmitChange();
-        // }, this)
+
+        this.editor.addAction({
+            id: 'compile',
+            label: 'Compile',
+            keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter],
+            run: _.bind(function () {
+                this.maybeEmitChange();
+            }, this)
+        });
 
         this.fontScale = new FontScale(this.domRoot, state, this.editor);
         this.fontScale.on('change', _.bind(this.updateState, this));
@@ -203,24 +203,6 @@ define(function (require) {
         }
     };
 
-    function makeErrorNode(text, compiler) {
-        var clazz = "error";
-        if (text.match(/^warning/)) clazz = "warning";
-        if (text.match(/^note/)) clazz = "note";
-        var node = $('.template .inline-msg').clone();
-        node.find('.icon').addClass(clazz);
-        node.find(".msg").text(text);
-        node.find(".compiler").text(compiler);
-        return node[0];
-    }
-
-    Editor.prototype.removeWidgets = function (widgets) {
-        var self = this;
-        _.each(widgets, function (widget) {
-            self.editor.removeLineWidget(widget);
-        });
-    };
-
     Editor.prototype.numberUsedLines = function () {
         var result = {};
         // First, note all lines used.
@@ -245,7 +227,7 @@ define(function (require) {
     };
 
     Editor.prototype.onCompilerClose = function (compilerId) {
-        this.removeWidgets(this.widgetsByCompiler[compilerId]);
+        monaco.editor.setModelMarkers(this.editor.getModel(), compilerId, []);
         delete this.widgetsByCompiler[compilerId];
         delete this.asmByCompiler[compilerId];
         delete this.busyCompilers[compilerId];
@@ -264,19 +246,22 @@ define(function (require) {
     Editor.prototype.onCompileResponse = function (compilerId, compiler, result) {
         this.busyCompilers[compilerId] = false;
         var output = (result.stdout || []).concat(result.stderr || []);
-        var self = this;
-        this.removeWidgets(this.widgetsByCompiler[compilerId]);
-        var widgets = [];
-        _.each(output, function (obj) {
-            if (obj.tag) {
-                var widget = self.editor.addLineWidget(
-                    obj.tag.line - 1,
-                    makeErrorNode(obj.tag.text, compiler.name),
-                    {coverGutter: false, noHScroll: true});
-                widgets.push(widget);
-            }
-        }, this);
-        this.widgetsByCompiler[compilerId] = widgets;
+        var widgets = _.compact(_.map(output, function (obj) {
+            if (!obj.tag) return;
+            var severity = 3; // error
+            if (obj.tag.text.match(/^warning/)) severity = 2;
+            if (obj.tag.text.match(/^note/)) severity = 1;
+            return {
+                severity: severity,
+                message: obj.tag.text,
+                source: compiler.name,
+                startLineNumber: obj.tag.line,
+                startColumn: obj.tag.column || 0,
+                endLineNumber: obj.tag.line,
+                endColumn: -1
+            };
+        }, this));
+        monaco.editor.setModelMarkers(this.editor.getModel(), compilerId, widgets);
         this.asmByCompiler[compilerId] = result.asm;
         this.numberUsedLines();
     };
