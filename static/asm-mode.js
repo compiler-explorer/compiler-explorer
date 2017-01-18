@@ -43,6 +43,8 @@ define(function (require) {
 
             tokenizer: {
                 root: [
+                    // Error document
+                    [/^<.*>$/, {token: 'annotation'}],
                     // Label definition
                     [/^[.a-zA-Z0-9_$][^:]*:/, {token: 'type.identifier', next: '@rest'}],
                     // Label defintion (CL style)
