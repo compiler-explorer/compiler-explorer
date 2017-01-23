@@ -168,6 +168,11 @@ define(function (require) {
             window.localStorage.removeItem('gl');
             window.location.reload();
         });
+        $('#thanks-to').click(function () {
+            $.get('thanks.html', function (result) {
+                alert.alert("Special thanks to", $(result));
+            });
+        });
     }
 
     $(start);
