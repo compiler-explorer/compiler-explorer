@@ -15,6 +15,8 @@ Try out one of the demo sites: [C++][cpp], [Rust][rust], [D][d] or [Go][go].
 [d]: https://d.godbolt.org/ "Compiler Explorer for D"
 [go]: https://go.godbolt.org/ "Compiler Explorer for Go"
 
+You can support this [this project on Patreon](https://patreon.com/mattgodbolt).
+
 ### Developing or running a local instance
 
 Compiler Explorer is written in node.js.
