@@ -51,7 +51,7 @@ $(BOWER_MODULES): bower.json $(NODE_MODULES)
 	@touch $@
 
 lint: $(NODE_MODULES)
-	$(NODE) ./node_modules/.bin/jshint app.js $(shell find lib static -name '*.js' -not -path 'static/ext/*')
+	$(NODE) ./node_modules/.bin/jshint app.js $(shell find lib static -name '*.js' -not -path 'static/ext/*' -not -path static/analytics.js)
 
 LANG:=C++
 
