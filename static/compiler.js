@@ -186,7 +186,7 @@ define(function (require) {
         };
 
         if (!this.compiler) {
-            this.onCompileResponse(request, errorResult("Please select a compiler"), false);
+            this.onCompileResponse(request, errorResult("<Please select a compiler>"), false);
             return;
         }
 
@@ -229,7 +229,7 @@ define(function (require) {
             }, this),
             error: _.bind(function (xhr, e_status, error) {
                 clearTimeout(progress);
-                this.onCompileResponse(request, errorResult("Remote compilation failed: " + error), false);
+                this.onCompileResponse(request, errorResult("<Remote compilation failed: " + error + ">"), false);
             }, this),
             cache: false
         });
