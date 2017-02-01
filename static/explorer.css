@@ -111,12 +111,15 @@ input.options {
 .address {
     width: 5em;
     font-size: smaller;
+    text-align: left;
+    display: inline-block;
 }
 
 .opcodes {
-    width: 7em;
-    overflow: hidden;
+    width: 6em;
     font-size: smaller;
+    text-align: left;
+    display: inline-block;
 }
 
 .opcode {

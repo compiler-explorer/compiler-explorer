@@ -42,7 +42,7 @@ define(function (require) {
     var options = require('options');
     var compilers = options.compilers;
     var compilersById = {};
-    _.forEach(compilers, function(compiler) {
+    _.forEach(compilers, function (compiler) {
         compilersById[compiler.id] = compiler;
         if (compiler.alias) compilersById[compiler.alias] = compiler;
     });
@@ -235,54 +235,64 @@ define(function (require) {
         });
     };
 
+    Compiler.prototype.getBinaryForLine = function (line) {
+        var obj = this.assembly[line - 1];
+        var address = obj.address ? obj.address.toString(16) : "";
+        var opcodes = '<div class="opcodes" title="' + (obj.opcodes || []).join(" ") + '">';
+        _.each(obj.opcodes, function (op) {
+            opcodes += ('<span class="opcode">' + op + '</span>');
+        })
+        return '<div class="address">' + address + '</div>' + opcodes + '</div>';
+    };
+
     Compiler.prototype.setAssembly = function (assembly) {
         this.assembly = assembly;
         this.outputEditor.getModel().setValue(_.pluck(assembly, 'text').join("\n"));
         /* TODO!
-        var addrToAddrDiv = {};
-        _.each(this.assembly, _.bind(function (obj, line) {
-            var address = obj.address ? obj.address.toString(16) : "";
-            var div = $("<div class='address cm-number'>" + address + "</div>");
-            addrToAddrDiv[address] = {div: div, line: line};
-            this.outputEditor.setGutterMarker(line, 'address', div[0]);
-        }, this));
+         var addrToAddrDiv = {};
+         _.each(this.assembly, _.bind(function (obj, line) {
+         var address = obj.address ? obj.address.toString(16) : "";
+         var div = $("<div class='address cm-number'>" + address + "</div>");
+         addrToAddrDiv[address] = {div: div, line: line};
+         this.outputEditor.setGutterMarker(line, 'address', div[0]);
+         }, this));
 
-        _.each(this.assembly, _.bind(function (obj, line) {
-            var opcodes = $("<div class='opcodes'></div>");
-            if (obj.opcodes) {
-                _.each(obj.opcodes, function (op) {
-                    opcodes.append($("<span class='opcode'>" + op + "</span>"));
-                });
-                opcodes.attr('title', obj.opcodes.join(" "));
-            }
-            this.outputEditor.setGutterMarker(line, 'opcodes', opcodes[0]);
-            if (obj.links) {
-                _.each(obj.links, _.bind(function (link) {
-                    var from = {line: line, ch: link.offset};
-                    var to = {line: line, ch: link.offset + link.length};
-                    var address = link.to.toString(16);
-                    var thing = $("<a href='#' class='cm-number'>" + address + "</a>");
-                    this.outputEditor.markText(
-                        from, to, {replacedWith: thing[0], handleMouseEvents: false});
-                    var dest = addrToAddrDiv[address];
-                    if (dest) {
-                        var editor = this.outputEditor;
-                        thing.hover(function (e) {
-                            var entered = e.type == "mouseenter";
-                            dest.div.toggleClass("highlighted", entered);
-                            thing.toggleClass("highlighted", entered);
-                        });
-                        thing.on('click', function (e) {
-                            editor.scrollIntoView({line: dest.line, ch: 0}, 30);
-                            dest.div.toggleClass("highlighted", false);
-                            thing.toggleClass("highlighted", false);
-                            e.preventDefault();
-                        });
-                    }
-                }, this));
-            }
-        }, this));
-        */
+         _.each(this.assembly, _.bind(function (obj, line) {
+         var opcodes = $("<div class='opcodes'></div>");
+         if (obj.opcodes) {
+         _.each(obj.opcodes, function (op) {
+         opcodes.append($("<span class='opcode'>" + op + "</span>"));
+         });
+         opcodes.attr('title', obj.opcodes.join(" "));
+         }
+         this.outputEditor.setGutterMarker(line, 'opcodes', opcodes[0]);
+         if (obj.links) {
+         _.each(obj.links, _.bind(function (link) {
+         var from = {line: line, ch: link.offset};
+         var to = {line: line, ch: link.offset + link.length};
+         var address = link.to.toString(16);
+         var thing = $("<a href='#' class='cm-number'>" + address + "</a>");
+         this.outputEditor.markText(
+         from, to, {replacedWith: thing[0], handleMouseEvents: false});
+         var dest = addrToAddrDiv[address];
+         if (dest) {
+         var editor = this.outputEditor;
+         thing.hover(function (e) {
+         var entered = e.type == "mouseenter";
+         dest.div.toggleClass("highlighted", entered);
+         thing.toggleClass("highlighted", entered);
+         });
+         thing.on('click', function (e) {
+         editor.scrollIntoView({line: dest.line, ch: 0}, 30);
+         dest.div.toggleClass("highlighted", false);
+         thing.toggleClass("highlighted", false);
+         e.preventDefault();
+         });
+         }
+         }, this));
+         }
+         }, this));
+         */
     };
 
     function errorResult(text) {
@@ -312,14 +322,17 @@ define(function (require) {
             timingValue: timeTaken
         });
         this.setAssembly(result.asm || fakeAsm("<No output>"));
-        // TODO
-        // if (request.filters.binary) {
-        //     this.outputEditor.setOption('lineNumbers', false);
-        //     this.outputEditor.setOption('gutters', ['address', 'opcodes']);
-        // } else {
-        //     this.outputEditor.setOption('lineNumbers', true);
-        //     this.outputEditor.setOption('gutters', ['CodeMirror-linenumbers']);
-        // }
+        if (request.filters.binary) {
+            this.outputEditor.updateOptions({
+                lineNumbers: _.bind(this.getBinaryForLine, this),
+                lineNumbersMinChars: 18
+            });
+        } else {
+            this.outputEditor.updateOptions({
+                lineNumbers: true,
+                lineNumbersMinChars: 5
+            });
+        }
         var status = this.domRoot.find(".status");
         var allText = _.pluck((result.stdout || []).concat(result.stderr | []), 'text').join("\n");
         var failed = result.code !== 0;
