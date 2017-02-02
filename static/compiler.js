@@ -241,7 +241,7 @@ define(function (require) {
         var opcodes = '<div class="opcodes" title="' + (obj.opcodes || []).join(" ") + '">';
         _.each(obj.opcodes, function (op) {
             opcodes += ('<span class="opcode">' + op + '</span>');
-        })
+        });
         return '<div class="address">' + address + '</div>' + opcodes + '</div>';
     };
 
