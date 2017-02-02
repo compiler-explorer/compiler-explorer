@@ -5,7 +5,16 @@
 
 .navbar {
     border-radius: 0;
-    margin-bottom: 5px;
+    margin-bottom: 2px;
+}
+
+.navbar-inverse {
+    background-color: #226;
+}
+
+.navbar-inverse .navbar-brand {
+    color: #ddd;
+    font-weight: bold;
 }
 
 .float-link {
