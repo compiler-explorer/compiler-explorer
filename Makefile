@@ -20,10 +20,9 @@ endif
 .PHONY: dist lint prereqs node_modules bower_modules
 prereqs: optional-d-support optional-rust-support node_modules c-preload bower_modules
 
-ifneq "" "$(shell which gdc)"
-optional-d-support:
-	$(MAKE) -C d
-else ifneq "" "$(shell which ${DMD})"
+GDC?=gdc
+DMD?=dmd
+ifneq "" "$(shell which $(GDC) 2>/dev/null || which $(DMD) 2>/dev/null)"
 optional-d-support:
 	$(MAKE) -C d
 else
@@ -52,7 +51,7 @@ $(BOWER_MODULES): bower.json $(NODE_MODULES)
 	@touch $@
 
 lint: $(NODE_MODULES)
-	$(NODE) ./node_modules/.bin/jshint app.js $(shell find lib static -name '*.js' -not -path 'static/ext/*')
+	$(NODE) ./node_modules/.bin/jshint app.js $(shell find lib static -name '*.js' -not -path 'static/ext/*' -not -path static/analytics.js)
 
 LANG:=C++
 

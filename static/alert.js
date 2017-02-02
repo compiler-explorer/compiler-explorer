@@ -1,4 +1,5 @@
 // Copyright (c) 2012-2017, Matt Godbolt
+//
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,55 +23,19 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-var _ = require('underscore-node');
+define(function (require) {
+    var $ = require('jquery');
 
-var tabsRe = /\t/g;
-var lineRe = /\r?\n/;
+    function Alert() {
+        this.modal = $('#alert');
+        this.title = this.modal.find('.modal-title');
+        this.body = this.modal.find('.modal-body');
+    }
 
-function splitLines(text) {
-    return text.split(lineRe);
-}
-exports.splitLines = splitLines;
-
-function eachLine(text, func, context) {
-    return _.each(splitLines(text), func, context);
-}
-exports.eachLine = eachLine;
-
-function expandTabs(line) {
-    "use strict";
-    var extraChars = 0;
-    return line.replace(tabsRe, function (match, offset) {
-        var total = offset + extraChars;
-        var spacesNeeded = (total + 8) & 7;
-        extraChars += spacesNeeded - 1;
-        return "        ".substr(spacesNeeded);
-    });
-}
-exports.expandTabs = expandTabs;
-
-function parseOutput(lines, inputFilename) {
-    var re = /^<source>[:(]([0-9]+)(:[0-9]+:)?[):]*\s*(.*)/;
-    var result = [];
-    eachLine(lines, function (line) {
-        line = line.trim().replace(inputFilename, '<source>');
-        if (line !== "" && line.indexOf("fixme:") !== 0) {
-            var lineObj = {text: line};
-            var match = line.match(re);
-            if (match) {
-                lineObj.tag = {line: parseInt(match[1]), text: match[3].trim()};
-            }
-            result.push(lineObj);
-        }
-    });
-    return result;
-}
-
-exports.parseOutput = parseOutput;
-
-function padRight(name, len) {
-    while (name.length < len) name = name + ' ';
-    return name;
-}
-
-exports.padRight = padRight;
+    Alert.prototype.alert = function (title, body) {
+        this.title.html(title);
+        this.body.html(body);
+        this.modal.modal();
+    };
+    return Alert;
+});

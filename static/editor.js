@@ -122,14 +122,10 @@ define(function (require) {
             this.debouncedEmitChange();
         }, this));
 
-        function refresh() {
-            self.editor.refresh();
-        }
-
         function resize() {
             var topBarHeight = self.domRoot.find(".top-bar").outerHeight(true);
             self.editor.setSize(self.domRoot.width(), self.domRoot.height() - topBarHeight);
-            refresh();
+            self.editor.refresh();
         }
 
         this.domRoot.find('.load-save').click(_.bind(function () {
@@ -141,7 +137,7 @@ define(function (require) {
         }, this));
 
         container.on('resize', resize);
-        container.on('shown', refresh);
+        container.on('shown', resize);
         container.on('open', function () {
             self.eventHub.emit('editorOpen', self.id);
         });
@@ -161,15 +157,20 @@ define(function (require) {
         this.eventHub.on('compileResult', this.onCompileResponse, this);
         this.eventHub.on('selectLine', this.onSelectLine, this);
 
-        var compilerConfig = Components.getCompiler(this.id);
+        // NB a new compilerConfig needs to be created every time; else the state is shared
+        // between all compilers created this way. That leads to some nasty-to-find state
+        // bugs e.g. https://github.com/mattgodbolt/compiler-explorer/issues/225
+        var compilerConfig = _.bind(function () {
+            return Components.getCompiler(this.id);
+        }, this);
         var diffConfig = Components.getDiff();
 
         this.container.layoutManager.createDragSource(
-            this.domRoot.find('.btn.add-compiler'), compilerConfig);
+            this.domRoot.find('.btn.add-compiler'), compilerConfig());
         this.domRoot.find('.btn.add-compiler').click(_.bind(function () {
             var insertPoint = hub.findParentRowOrColumn(this.container) ||
                 this.container.layoutManager.root.contentItems[0];
-            insertPoint.addChild(compilerConfig);
+            insertPoint.addChild(compilerConfig());
         }, this));
 
         this.container.layoutManager.createDragSource(
@@ -276,7 +277,7 @@ define(function (require) {
         this.maybeEmitChange(true);
     };
 
-    Editor.prototype.onCompiling = function(compilerId) {
+    Editor.prototype.onCompiling = function (compilerId) {
         this.busyCompilers[compilerId] = true;
     };
 

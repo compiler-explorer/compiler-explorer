@@ -138,8 +138,8 @@ fileSources.forEach(function (source) {
 });
 
 var clientOptionsHandler = new ClientOptionsHandler(fileSources);
-var apiHandler = new ApiHandler();
 var compileHandler = new CompileHandler(gccProps, compilerProps);
+var apiHandler = new ApiHandler(compileHandler);
 
 // auxiliary function used in clientOptionsHandler
 function compareOn(key) {
@@ -271,7 +271,10 @@ function findCompilers() {
                     var request = http.get({
                         hostname: host,
                         port: port,
-                        path: "/api/compilers"
+                        path: "/api/compilers",
+                        headers: {
+                            'Accept': 'application/json'
+                        }
                     }, function (res) {
                         var str = '';
                         res.on('data', function (chunk) {
@@ -386,27 +389,32 @@ function findCompilers() {
         });
 }
 
-// Instantiate a function that writes information on the compiler,
-// in JSON format, for ease of external listing.
-function ApiHandler() {
-    var reply = "";
+function ApiHandler(compileHandler) {
+    this.compilers = [];
+    this.compileHandler = compileHandler;
     this.setCompilers = function (compilers) {
-        reply = JSON.stringify(compilers);
+        this.compilers = compilers;
     };
-    this.handler = function apiHandler(req, res, next) {
-        var bits = req.url.split("/");
-        if (bits.length !== 2 || req.method !== "GET") return next();
-        switch (bits[1]) {
-            default:
-                next();
-                break;
-
-            case "compilers":
-                res.set('Content-Type', 'application/json');
-                res.end(reply);
-                break;
+    this.handler = express.Router();
+    this.handler.get('/compilers', _.bind(function (req, res, next) {
+        if (req.accepts(['text', 'json']) == 'json') {
+            res.set('Content-Type', 'application/json');
+            res.end(JSON.stringify(this.compilers));
+        } else {
+            res.set('Content-Type', 'text/plain');
+            var title = 'Compiler Name';
+            var maxLength = _.max(_.pluck(_.pluck(this.compilers, 'id').concat([title]), 'length'));
+            res.write(utils.padRight(title, maxLength) + ' | Description\n');
+            res.end(_.map(this.compilers, function (compiler) {
+                return utils.padRight(compiler.id, maxLength) + ' | ' + compiler.name;
+            }).join("\n"));
         }
-    };
+    }, this));
+    this.handler.param('compiler', _.bind(function (req, res, next, compilerName) {
+        req.compiler = compilerName;
+        next();
+    }, this));
+    this.handler.post('/compiler/:compiler/compile', this.compileHandler.handler);
 }
 
 function shortUrlHandler(req, res, next) {
@@ -455,7 +463,6 @@ function embeddedHandler(req, res, next) {
     res.end();
 }
 
-
 findCompilers()
     .then(function (compilers) {
         var prevCompilers;
@@ -485,7 +492,6 @@ findCompilers()
 
         var webServer = express(),
             sFavicon = require('serve-favicon'),
-            sStatic = require('serve-static'),
             bodyParser = require('body-parser'),
             morgan = require('morgan'),
             compression = require('compression'),
@@ -502,28 +508,38 @@ findCompilers()
             .use(morgan('combined', {stream: logger.stream}))
             .use(compression())
             .use(sFavicon(staticDir + '/favicon.ico'))
-            .use('/v', sStatic(staticDir + '/v', {maxAge: Infinity}))
-            .use(sStatic(staticDir, {maxAge: staticMaxAgeSecs * 1000}));
+            .use('/v', express.static(staticDir + '/v', {maxAge: Infinity, index: false}))
+            .use(express.static(staticDir, {maxAge: staticMaxAgeSecs * 1000}));
         if (archivedVersions) {
             // The archived versions directory is used to serve "old" versioned data during updates. It's expected
             // to contain all the SHA-hashed directories from previous versions of Compiler Explorer.
             logger.info("  serving archived versions from", archivedVersions);
-            webServer.use('/v', sStatic(archivedVersions, {maxAge: Infinity}));
+            webServer.use('/v', express.static(archivedVersions, {maxAge: Infinity, index: false}));
         }
         webServer
             .use(bodyParser.json({limit: gccProps('bodyParserLimit', '1mb')}))
+            .use(bodyParser.text({
+                limit: gccProps('bodyParserLimit', '1mb'), type: function () {
+                    return true;
+                }
+            }))
             .use(restreamer())
             .get('/client-options.json', clientOptionsHandler.handler)
             .use('/source', getSource)
             .use('/api', apiHandler.handler)
             .use('/g', shortUrlHandler)
             .use('/e', embeddedHandler)
-            .post('/compile', compileHandler.handler) // used inside static/compiler.js
-            .post('/diff', diffHandler); // used inside static/compiler.js
+            .post('/compile', compileHandler.handler)
+            .post('/diff', diffHandler);
         logger.info("=======================================");
 
+        webServer.on('error', function (err) {
+            logger.error('Caught error:', err, "(in web error handler; continuing)");
+        });
+
         webServer.listen(port, hostname);
-    }).catch(function (err) {
-    logger.error("Error: " + err);
-    process.exit(1);
-});
+    })
+    .catch(function (err) {
+        logger.error("Promise error:", err, "(shutting down)");
+        process.exit(1);
+    });

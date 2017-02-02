@@ -64,6 +64,7 @@ define(function (require) {
     var clipboard = require('clipboard');
     var Hub = require('hub');
     var Raven = require('raven-js');
+    var Alert = require('alert');
 
     function start() {
         analytics.initialise();
@@ -71,6 +72,7 @@ define(function (require) {
 
         var options = require('options');
         $('.language-name').text(options.language);
+        var alert = new Alert();
 
         var safeLang = options.language.toLowerCase().replace(/[^a-z_]+/g, '');
         var defaultSrc = $('.template .lang.' + safeLang).text().trim();
@@ -87,7 +89,17 @@ define(function (require) {
 
         var config;
         if (!options.embedded) {
-            config = url.deserialiseState(window.location.hash.substr(1));
+            var serializedState = window.location.hash.substr(1);
+            if (serializedState) {
+                try {
+                    config = url.deserialiseState(serializedState);
+                } catch (exception) {
+                    alert.alert("Unable to parse URL",
+                        "<div>Compiler Explorer was unable to parse the URL hash. " +
+                        "Please check it and try again.</div>" +
+                        "<div class='url-parse-info'>" + exception + "</div>");
+                }
+            }
             if (config) {
                 // replace anything in the default config with that from the hash
                 config = _.extend(defaultConfig, config);
@@ -155,6 +167,11 @@ define(function (require) {
         $('#ui-reset').click(function () {
             window.localStorage.removeItem('gl');
             window.location.reload();
+        });
+        $('#thanks-to').click(function () {
+            $.get('thanks.html', function (result) {
+                alert.alert("Special thanks to", $(result));
+            });
         });
     }
 

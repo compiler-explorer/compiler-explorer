@@ -41,7 +41,11 @@ define(function (require) {
 
     var options = require('options');
     var compilers = options.compilers;
-    var compilersById = _.object(_.pluck(compilers, "id"), compilers);
+    var compilersById = {};
+    _.forEach(compilers, function(compiler) {
+        compilersById[compiler.id] = compiler;
+        if (compiler.alias) compilersById[compiler.alias] = compiler;
+    });
     var Cache = new LruCache({
         max: 200 * 1024,
         length: function (n) {
@@ -109,7 +113,7 @@ define(function (require) {
             self.eventHub.emit('compilerClose', self.id);
         }, this);
         container.on('resize', this.resize, this);
-        container.on('shown', this.refresh, this);
+        container.on('shown', this.resize, this);
         container.on('open', function () {
             self.eventHub.emit('compilerOpen', self.id);
             self.updateFontScale();
@@ -151,17 +155,13 @@ define(function (require) {
         this.saveState();
     }
 
-    Compiler.prototype.refresh = function () {
-        this.outputEditor.refresh();
-    };
-
     // TODO: need to call resize if either .top-bar or .bottom-bar resizes, which needs some work.
     // Issue manifests if you make a window where one compiler is small enough that the buttons spill onto two lines:
     // reload the page and the bottom-bar is off the bottom until you scroll a tiny bit.
     Compiler.prototype.resize = function () {
         var topBarHeight = this.domRoot.find(".top-bar").outerHeight(true);
         this.outputEditor.setSize(this.domRoot.width(), this.domRoot.height() - topBarHeight);
-        this.refresh();
+        this.outputEditor.refresh();
     };
 
     // Gets the filters that will actually be used (accounting for issues with binary
@@ -214,7 +214,7 @@ define(function (require) {
         }, this), 500);
         $.ajax({
             type: 'POST',
-            url: '/compile',
+            url: '/api/compiler/' + encodeURIComponent(request.compiler) + '/compile',
             dataType: 'json',
             contentType: 'application/json',
             data: jsonRequest,
