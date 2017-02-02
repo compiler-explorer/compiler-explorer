@@ -121,6 +121,7 @@ define(function (require) {
         this.eventHub.on('editorClose', this.onEditorClose, this);
         this.eventHub.on('colours', this.onColours, this);
         this.eventHub.on('resendCompilation', this.onResendCompilation, this);
+        this.eventHub.on('findCompilers', this.sendCompiler, this);
         this.updateCompilerName();
         this.updateButtons();
 
@@ -405,6 +406,7 @@ define(function (require) {
         this.saveState();
         this.compile();
         this.updateButtons();
+        this.sendCompiler();
     };
 
     Compiler.prototype.onCompilerChange = function (value) {
@@ -413,6 +415,11 @@ define(function (require) {
         this.compile();
         this.updateButtons();
         this.updateCompilerName();
+        this.sendCompiler();
+    };
+
+    Compiler.prototype.sendCompiler = function () {
+        this.eventHub.emit('compiler', this.id, this.compiler, this.options);
     };
 
     Compiler.prototype.onEditorClose = function (editor) {
