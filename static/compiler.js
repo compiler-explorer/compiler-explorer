@@ -93,7 +93,6 @@ define(function (require) {
         // Hide the binary option if the global options has it disabled.
         this.domRoot.find("[data-bind='binary']").toggle(options.supportsBinary);
 
-        // TODO: everything here
         this.outputEditor = monaco.editor.create(this.domRoot.find(".monaco-placeholder")[0], {
             scrollBeyondLastLine: false,
             readOnly: true,
@@ -245,54 +244,48 @@ define(function (require) {
         return '<div class="address">' + address + '</div>' + opcodes + '</div>';
     };
 
+    // TODO: use ContentWidgets? OverlayWidgets?
+    // Use highlight providers? hover providers? highlight providers?
     Compiler.prototype.setAssembly = function (assembly) {
         this.assembly = assembly;
         this.outputEditor.getModel().setValue(_.pluck(assembly, 'text').join("\n"));
-        /* TODO!
-         var addrToAddrDiv = {};
-         _.each(this.assembly, _.bind(function (obj, line) {
-         var address = obj.address ? obj.address.toString(16) : "";
-         var div = $("<div class='address cm-number'>" + address + "</div>");
-         addrToAddrDiv[address] = {div: div, line: line};
-         this.outputEditor.setGutterMarker(line, 'address', div[0]);
-         }, this));
+        var addrToAddrDiv = {};
+        var decorations = [];
+        _.each(this.assembly, _.bind(function (obj, line) {
+            var address = obj.address ? obj.address.toString(16) : "";
+        //     var div = $("<div class='address cm-number'>" + address + "</div>");
+            addrToAddrDiv[address] = {div: "moo", line: line};
+        }, this));
 
-         _.each(this.assembly, _.bind(function (obj, line) {
-         var opcodes = $("<div class='opcodes'></div>");
-         if (obj.opcodes) {
-         _.each(obj.opcodes, function (op) {
-         opcodes.append($("<span class='opcode'>" + op + "</span>"));
-         });
-         opcodes.attr('title', obj.opcodes.join(" "));
-         }
-         this.outputEditor.setGutterMarker(line, 'opcodes', opcodes[0]);
-         if (obj.links) {
-         _.each(obj.links, _.bind(function (link) {
-         var from = {line: line, ch: link.offset};
-         var to = {line: line, ch: link.offset + link.length};
-         var address = link.to.toString(16);
-         var thing = $("<a href='#' class='cm-number'>" + address + "</a>");
-         this.outputEditor.markText(
-         from, to, {replacedWith: thing[0], handleMouseEvents: false});
-         var dest = addrToAddrDiv[address];
-         if (dest) {
-         var editor = this.outputEditor;
-         thing.hover(function (e) {
-         var entered = e.type == "mouseenter";
-         dest.div.toggleClass("highlighted", entered);
-         thing.toggleClass("highlighted", entered);
-         });
-         thing.on('click', function (e) {
-         editor.scrollIntoView({line: dest.line, ch: 0}, 30);
-         dest.div.toggleClass("highlighted", false);
-         thing.toggleClass("highlighted", false);
-         e.preventDefault();
-         });
-         }
-         }, this));
-         }
-         }, this));
-         */
+        _.each(this.assembly, _.bind(function (obj, line) {
+            if (obj.links) {
+                _.each(obj.links, _.bind(function (link) {
+                    var address = link.to.toString(16);
+                    // var thing = $("<a href='#' class='cm-number'>" + address + "</a>");
+                    // this.outputEditor.markText(
+                    //     from, to, {replacedWith: thing[0], handleMouseEvents: false});
+                    var dest = addrToAddrDiv[address];
+                    if (dest) {
+                        decorations.push({
+                            range: new monaco.Range(line, link.offset, line, link.offset + link.length),
+                            options: {}
+                        });
+                        // var editor = this.outputEditor;
+                        // thing.hover(function (e) {
+                        //     var entered = e.type == "mouseenter";
+                        //     dest.div.toggleClass("highlighted", entered);
+                        //     thing.toggleClass("highlighted", entered);
+                        // });
+                        // thing.on('click', function (e) {
+                        //     editor.scrollIntoView({line: dest.line, ch: 0}, 30);
+                        //     dest.div.toggleClass("highlighted", false);
+                        //     thing.toggleClass("highlighted", false);
+                        //     e.preventDefault();
+                        // });
+                    }
+                }, this));
+            }
+        }, this));
     };
 
     function errorResult(text) {
