@@ -183,3 +183,7 @@ pre.content {
     margin-top: 1em;
     font-style: italic;
 }
+
+.monaco-placeholder {
+    height: 100%;
+}

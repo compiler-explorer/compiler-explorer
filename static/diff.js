@@ -32,8 +32,9 @@ define(function (require) {
     require('asm-mode');
     require('selectize');
 
-    function State(id) {
+    function State(id, model) {
         this.id = id;
+        this.model = model;
         this.compiler = null;
         this.result = null;
     }
@@ -42,24 +43,29 @@ define(function (require) {
         if (this.id !== id) return false;
         this.compiler = compiler;
         this.result = result;
+        // TODO! result.asm being empty
+        this.model.setValue(_.pluck(result.asm, 'text').join("\n"));
         return true;
-    }
+    };
 
     function Diff(hub, container, state) {
         this.container = container;
-        this.lhs = new State(state.lhs);
-        this.rhs = new State(state.rhs);
         this.eventHub = hub.createEventHub();
         this.domRoot = container.getElement();
         this.domRoot.html($('#diff').html());
         this.compilers = {};
 
-        this.outputEditor = monaco.editor.create(this.domRoot.find(".monaco-placeholder")[0], {
+        this.outputEditor = monaco.editor.createDiffEditor(this.domRoot.find(".monaco-placeholder")[0], {
             scrollBeyondLastLine: false,
             readOnly: true,
             language: 'asm'
         });
 
+        this.lhs = new State(state.lhs, monaco.editor.createModel('', 'asm'));
+        this.rhs = new State(state.rhs, monaco.editor.createModel('', 'asm'));
+        this.outputEditor.setModel({original: this.lhs.model, modified: this.rhs.model});
+
+        var self = this;
         var selectize = this.domRoot.find(".compiler-picker").selectize({
             sortField: 'name',
             valueField: 'id',
@@ -68,9 +74,17 @@ define(function (require) {
             options: [],
             items: []
         }).on('change', function () {
-            console.log("yibble");
-            // TODO can't do this every time!!
-            // self.onCompilerChange($(this).val());
+            var compiler = self.compilers[$(this).val()];
+            if (!compiler) return;
+            if ($(this).hasClass('lhs')) {
+                self.lhs.compiler = compiler;
+                self.lhs.id = compiler.id;
+            } else {
+                self.rhs.compiler = compiler;
+                self.rhs.id = compiler.id;
+            }
+            self.eventHub.emit('resendCompilation', compiler.id);
+            self.updateCompilerNames();
         });
         this.selectize = {lhs: selectize[0].selectize, rhs: selectize[1].selectize};
 
@@ -87,8 +101,8 @@ define(function (require) {
         container.on('resize', this.resize, this);
         container.on('shown', this.resize, this);
 
-        this.eventHub.emit('resendCompilation', this.lhs);
-        this.eventHub.emit('resendCompilation', this.rhs);
+        this.eventHub.emit('resendCompilation', this.lhs.id);
+        this.eventHub.emit('resendCompilation', this.rhs.id);
         this.eventHub.emit('findCompilers');
 
         this.updateCompilerNames();

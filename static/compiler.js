@@ -122,6 +122,7 @@ define(function (require) {
         this.eventHub.on('colours', this.onColours, this);
         this.eventHub.on('resendCompilation', this.onResendCompilation, this);
         this.eventHub.on('findCompilers', this.sendCompiler, this);
+        this.sendCompiler();
         this.updateCompilerName();
         this.updateButtons();
 

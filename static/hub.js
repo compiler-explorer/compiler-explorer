@@ -84,7 +84,7 @@ define(function (require) {
 
     Hub.prototype.outputFactory = function (container, state) {
         return new output.Output(this, container, state);
-    }
+    };
     Hub.prototype.diffFactory = function (container, state) {
         return new diff.Diff(this, container, state);
     };
