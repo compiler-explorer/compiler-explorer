@@ -85,6 +85,7 @@ define(function (require) {
             }
             self.eventHub.emit('resendCompilation', compiler.id);
             self.updateCompilerNames();
+            self.updateState();
         });
         this.selectize = {lhs: selectize[0].selectize, rhs: selectize[1].selectize};
 
@@ -119,21 +120,22 @@ define(function (require) {
     };
 
     Diff.prototype.onCompileResult = function (id, compiler, result) {
-        var changed = this.lhs.update(id, compiler, result) || this.rhs.update(id, compiler, result);
-        if (changed) {
+        // both sides must be updated, don't be tempted to rewrite this as
+        // var changes = lhs.update() || rhs.update();
+        var lhsChanged = this.lhs.update(id, compiler, result);
+        var rhsChanged = this.rhs.update(id, compiler, result);
+        if (lhsChanged || rhsChanged) {
             this.updateCompilerNames();
         }
     };
 
     Diff.prototype.onCompiler = function (id, compiler, options) {
         if (!compiler) return;
-        // TODO update lhs, rhs?
         this.compilers[id] = {id: id, name: compiler.name + " " + options};
         this.updateCompilers();
     };
 
     Diff.prototype.onCompilerClose = function (id) {
-        // TODO update lhs, rhs
         delete this.compilers[id];
         this.updateCompilers();
     };
@@ -145,16 +147,19 @@ define(function (require) {
         this.container.setTitle(name);
     };
 
-    Diff.prototype.updateCompilersFor = function (selectize) {
+    Diff.prototype.updateCompilersFor = function (selectize, id) {
         selectize.clearOptions();
         _.each(this.compilers, function (compiler) {
             selectize.addOption(compiler);
         }, this);
+        if (this.compilers[id]) {
+            selectize.setValue(id);
+        }
     };
 
     Diff.prototype.updateCompilers = function () {
-        this.updateCompilersFor(this.selectize.lhs);
-        this.updateCompilersFor(this.selectize.rhs);
+        this.updateCompilersFor(this.selectize.lhs, this.lhs.id);
+        this.updateCompilersFor(this.selectize.rhs, this.rhs.id);
     };
 
     Diff.prototype.updateState = function () {
