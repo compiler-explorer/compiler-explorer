@@ -183,24 +183,26 @@
         <div class="top-bar">
             <table>
                 <tr>
-                    <td>Lhs: <select class="compiler-picker lhs" placeholder="Select a compiler..."></select></td>
-                    <td>Rhs: <select class="compiler-picker rhs" placeholder="Select a compiler..."></select></td>
+                    <td><select class="diff-picker lhs" placeholder="Select compiler output..."></select></td>
+                    <td><select class="diff-picker rhs" placeholder="Select compiler output..."></select></td>
+                    <td style="padding-left: 1em">
+                        <div class="btn-group btn-group-sm">
+                            <button title="Decrease font size"
+                                    class="btn btn-default btn-sm decrease-font-size">
+                                <span class="glyphicon glyphicon-sm glyphicon-font"></span>
+                            </button>
+                            <button title="Reset font size"
+                                    class="btn btn-default btn-sm reset-font-size">
+                                <span class="glyphicon glyphicon-sm glyphicon-font"></span>
+                            </button>
+                            <button title="Increase font size"
+                                    class="btn btn-default btn-sm increase-font-size">
+                                <span class="glyphicon glyphicon-sm glyphicon-font"></span>
+                            </button>
+                        </div>
+                    </td>
                 </tr>
             </table>
-            <div class="btn-group btn-group-sm">
-                <button title="Decrease font size"
-                        class="btn btn-default btn-sm decrease-font-size">
-                    <span class="glyphicon glyphicon-sm glyphicon-font"></span>
-                </button>
-                <button title="Reset font size"
-                        class="btn btn-default btn-sm reset-font-size">
-                    <span class="glyphicon glyphicon-sm glyphicon-font"></span>
-                </button>
-                <button title="Increase font size"
-                        class="btn btn-default btn-sm increase-font-size">
-                    <span class="glyphicon glyphicon-sm glyphicon-font"></span>
-                </button>
-            </div>
         </div>
         <div class="monaco-placeholder"></div>
     </div>

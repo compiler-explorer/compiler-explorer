@@ -66,7 +66,7 @@ define(function (require) {
         this.outputEditor.setModel({original: this.lhs.model, modified: this.rhs.model});
 
         var self = this;
-        var selectize = this.domRoot.find(".compiler-picker").selectize({
+        var selectize = this.domRoot.find(".diff-picker").selectize({
             sortField: 'name',
             valueField: 'id',
             labelField: 'name',

@@ -43,6 +43,10 @@
     width: 14em;
 }
 
+.diff-picker {
+    width: 20em;
+}
+
 .CodeMirror {
     font-size: 10pt;
 }
