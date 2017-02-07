@@ -43,8 +43,8 @@ define(function (require) {
         if (this.id !== id) return false;
         this.compiler = compiler;
         this.result = result;
-        // TODO! result.asm being empty
-        this.model.setValue(_.pluck(result.asm, 'text').join("\n"));
+        var asm = result.asm || [];
+        this.model.setValue(_.pluck(asm, 'text').join("\n"));
         return true;
     };
 
@@ -131,6 +131,7 @@ define(function (require) {
 
     Diff.prototype.onCompiler = function (id, compiler, options) {
         if (!compiler) return;
+        options = options || "";
         this.compilers[id] = {id: id, name: compiler.name + " " + options};
         this.updateCompilers();
     };
