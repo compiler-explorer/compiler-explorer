@@ -47,10 +47,6 @@
     width: 20em;
 }
 
-.CodeMirror {
-    font-size: 10pt;
-}
-
 input.options {
     width: 98%;
     margin-left: 0.25em;
@@ -186,8 +182,4 @@ pre.content {
     font-size: small;
     margin-top: 1em;
     font-style: italic;
-}
-
-.monaco-placeholder {
-    height: 100%;
 }
