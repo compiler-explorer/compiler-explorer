@@ -27,7 +27,6 @@
     "clipboard": "^1.5.12",
     "raven-js": "^3.7.0",
     "es6-promise": "^4.0.5",
-    "lru-cache": "2.7.3",
-    "monaco-editor": "0.7.x"
+    "lru-cache": "2.7.3"
   }
 }

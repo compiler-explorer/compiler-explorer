@@ -23,6 +23,7 @@
     "fs-extra": "0.26.x",
     "http-proxy": "1.12.x",
     "lru-cache": "2.7.x",
+    "monaco-editor": "0.7.x",
     "morgan": "1.6.x",
     "promise": "7.0.x",
     "promise-queue": "2.1.x",
