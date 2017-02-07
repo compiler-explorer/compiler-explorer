@@ -34,6 +34,7 @@ define(function (require) {
     var Sharing = require('sharing');
     var Components = require('components');
     var monaco = require('monaco');
+    require('./d-mode');
     require('./rust-mode');
 
     var loadSave = new loadSaveLib.LoadSave();
@@ -64,8 +65,8 @@ define(function (require) {
             case "rust":
                 cmMode = "rust";
                 break;
-            case "d":  // TODO
-                cmMode = "cpp";
+            case "d":
+                cmMode = "d";
                 break;
             case "go":
                 cmMode = "go";
