@@ -26,6 +26,43 @@
 define(function (require) {
     var _ = require('underscore');
 
+    function Setting(elem, name, Control, param) {
+        this.elem = elem;
+        this.name = name;
+        this.control = new Control(elem, param);
+    }
+
+    Setting.prototype.getUi = function () {
+        return this.control.getUi(this.elem);
+    };
+    Setting.prototype.putUi = function (value) {
+        this.control.putUi(this.elem, value);
+    };
+
+    function Checkbox() {
+    }
+
+    Checkbox.prototype.getUi = function (elem) {
+        return !!elem.prop('checked');
+    };
+    Checkbox.prototype.putUi = function (elem, value) {
+        elem.prop('checked', !!value);
+    };
+
+    function Slider(elem, sliderSettings) {
+        elem.slider(sliderSettings);
+    }
+
+    Slider.prototype.getUi = function (elem) {
+        return elem.slider('getValue');
+    };
+
+    Slider.prototype.putUi = function (elem, value) {
+        elem.slider('setValue', value);
+    };
+
+    // TODO: editor options like auto paren
+    // TODO: color choices for colourisation
     function setupSettings(root, settings, onChange) {
         settings = settings || {};
         if (settings.delayAfterChange === undefined)
@@ -33,8 +70,31 @@ define(function (require) {
         if (settings.colouriseAsm === undefined)
             settings.colouriseAsm = true;
 
-        root.find('.slider').slider({
-            value: settings.delayAfterChange,
+        var settingsObjs = [];
+
+        function onUiChange() {
+            var settings = {};
+            _.each(settingsObjs, function (s) {
+                settings[s.name] = s.getUi();
+            });
+            onChange(settings);
+        }
+
+        function onSettingsChange(settings) {
+            _.each(settingsObjs, function (s) {
+                s.putUi(settings[s.name]);
+            });
+        }
+
+        function add(elem, key, defaultValue, Type, param) {
+            if (settings[key] === undefined)
+                settings[key] = defaultValue;
+            settingsObjs.push(new Setting(elem, key, Type, param));
+            elem.change(onUiChange);
+        }
+
+        add(root.find('.colourise'), 'colouriseAsm', true, Checkbox);
+        add(root.find('.slider'), 'delayAfterChange', 750, Slider, {
             max: 3000,
             step: 250,
             formatter: function (x) {
@@ -43,24 +103,10 @@ define(function (require) {
             }
         });
 
-        function onSettingsChange(settings) {
-            root.find('.colourise').prop('checked', settings.colouriseAsm);
-            root.find('.slider').slider('setValue', settings.delayAfterChange);
-            onChange(settings);
-        }
-
-        function onUiChange() {
-            var settings = {};
-            settings.colouriseAsm = !!root.find('.colourise').prop('checked');
-            settings.delayAfterChange = root.find('.slider').slider('getValue');
-            onChange(settings);
-        }
-
-        root.find('.colourise').change(onUiChange);
-        root.find('.slider').change(onUiChange);
-
         onSettingsChange(settings);
+        onChange(settings);
     }
 
     return setupSettings;
-});
+})
+;
