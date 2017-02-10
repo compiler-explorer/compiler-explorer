@@ -20,9 +20,13 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="#">Compiler Explorer &dash; <span class="language-name"></span></a>
+            <a class="navbar-brand" href="#" title="Compiler Explorer">Compiler Explorer &dash; <span
+                    class="language-name"></span></a>
         </div>
         <li class="navbar-collapse collapse" id="navbar-collapse">
+            <ul class="nav navbar-nav navbar-left">
+                <li><a href="#" data-target="#settings" data-toggle="modal">Settings</a></li>
+            </ul>
             <ul class="nav navbar-nav navbar-right">
                 <li><a href="https://www.patreon.com/mattgodbolt">
                     <img height="20" width="20" src="assets/patreon_logo.png">&nbsp;
@@ -66,16 +70,6 @@
 <div class="gl_keep template">
     <div id="codeEditor">
         <div class="top-bar btn-toolbar" role="toolbar">
-            <div class="btn-group btn-group-sm options" role="group">
-                <button title="Colourise lines so one can see how the source maps to the output"
-                        class="btn btn-default btn-sm active" data-bind="colouriseAsm">
-                    <span class="glyphicon glyphicon-adjust"></span>
-                </button>
-                <button title="Run the compilers automatically as you type"
-                        class="btn btn-default btn-sm active" data-bind="compileOnChange">
-                    <span class="glyphicon glyphicon-play-circle"></span>
-                </button>
-            </div>
             <div class="btn-group btn-group-sm">
                 <button title="Decrease font size"
                         class="btn btn-default btn-sm decrease-font-size">
@@ -291,6 +285,35 @@ int square(int num) {
                 <h4 class="modal-title">Something alert worthy</h4>
             </div>
             <div class="modal-body">
+            </div>
+            <!-- model-body -->
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<div class="modal fade gl_keep" id="settings">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title">Compiler Explorer Settings</h4>
+            </div>
+            <div class="modal-body">
+                <div>These settings control how Compiler Explorer acts for you. They are not preserved as part of shared
+                    URLs, and are persisted locally using browser local storage.
+                </div>
+                <div class="form-group options" role="group">
+                    <div class="checkbox"><label><input type="checkbox" class="colourise">Colourise lines so one can see how the source
+                        maps to the output</label></div>
+                    <div>Delay before compiling:&nbsp;<b>Disabled</b>
+                        <div class="slider slider-horizontal delay"></div>
+                        <b>3s</b></div>
+                </div>
             </div>
             <!-- model-body -->
             <div class="modal-footer">

@@ -2,10 +2,15 @@
 @import url("ext/golden-layout/src/css/goldenlayout-base.css");
 @import url("ext/golden-layout/src/css/goldenlayout-light-theme.css");
 @import url("ext/selectize/dist/css/selectize.bootstrap2.css");
+@import url("ext/seiyria-bootstrap-slider/dist/css/bootstrap-slider.css");
 
 .navbar {
     border-radius: 0;
     margin-bottom: 2px;
+}
+
+.navbar-brand {
+    width: 13.5em;
 }
 
 .navbar-inverse {

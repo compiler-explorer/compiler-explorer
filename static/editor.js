@@ -28,7 +28,6 @@ define(function (require) {
     var _ = require('underscore');
     var $ = require('jquery');
     var colour = require('colour');
-    var Toggles = require('toggles');
     var loadSaveLib = require('loadSave');
     var FontScale = require('fontscale');
     var Sharing = require('sharing');
@@ -46,13 +45,12 @@ define(function (require) {
         this.domRoot = container.getElement();
         this.domRoot.html($('#codeEditor').html());
         this.eventHub = hub.createEventHub();
+        this.settings = {};
 
         this.widgetsByCompiler = {};
         this.asmByCompiler = {};
         this.busyCompilers = {};
         this.colours = [];
-        this.options = new Toggles(this.domRoot.find('.options'), state.options);
-        this.options.on('change', _.bind(this.onOptionsChange, this));
 
         var cmMode;
         switch (lang.toLowerCase()) {
@@ -98,10 +96,7 @@ define(function (require) {
         // * Only actually triggering a change if the document text has changed from
         //   the previous emitted.
         this.lastChangeEmitted = null;
-        var ChangeDebounceMs = 800;
-        this.debouncedEmitChange = _.debounce(function () {
-            if (self.options.get().compileOnChange) self.maybeEmitChange();
-        }, ChangeDebounceMs);
+        this.onSettingsChange({});
         this.editor.getModel().onDidChangeContent(_.bind(function () {
             this.debouncedEmitChange();
             this.updateState();
@@ -148,6 +143,8 @@ define(function (require) {
         this.eventHub.on('compileResult', this.onCompileResponse, this);
         this.eventHub.on('selectLine', this.onSelectLine, this);
 
+        this.eventHub.on('settingsChange', this.onSettingsChange, this);
+
         // NB a new compilerConfig needs to be created every time; else the state is shared
         // between all compilers created this way. That leads to some nasty-to-find state
         // bugs e.g. https://github.com/mattgodbolt/compiler-explorer/issues/225
@@ -187,8 +184,7 @@ define(function (require) {
     Editor.prototype.updateState = function () {
         var state = {
             id: this.id,
-            source: this.getSource(),
-            options: this.options.get()
+            source: this.getSource()
         };
         this.fontScale.addState(state);
         this.container.setState(state);
@@ -198,17 +194,27 @@ define(function (require) {
         return this.editor.getModel().getValue();
     };
 
-    Editor.prototype.onOptionsChange = function (before, after) {
-        this.updateState();
+    Editor.prototype.onSettingsChange = function (newSettings) {
+        var before = this.settings;
+        var after = newSettings;
+        this.settings = _.clone(newSettings);
+
         // TODO: bug when:
         // * Turn off auto.
         // * edit code
         // * change compiler or compiler options (out of date code is used)
-        if (after.compileOnChange && !before.compileOnChange) {
-            // If we've just enabled "compile on change"; forcibly send a change
-            // which will recolourise as required.
-            this.maybeEmitChange(true);
-        } else if (before.colouriseAsm !== after.colouriseAsm) {
+        if (before.delayAfterChange !== after.delayAfterChange || !this.debouncedEmitChange) {
+            if (after.delayAfterChange) {
+                this.debouncedEmitChange = _.debounce(_.bind(function () {
+                    this.maybeEmitChange();
+                }, this), after.delayAfterChange);
+                this.maybeEmitChange(true);
+            } else {
+                this.debouncedEmitChange = _.noop;
+            }
+        }
+
+        if (before.colouriseAsm !== after.colouriseAsm) {
             // if the colourise option has been toggled...recompute colours
             this.numberUsedLines();
         }
@@ -229,7 +235,7 @@ define(function (require) {
         });
 
         if (_.any(this.busyCompilers)) return;
-        this.updateColours(this.options.get().colouriseAsm ? result : []);
+        this.updateColours(this.settings.colouriseAsm ? result : []);
     };
 
     Editor.prototype.updateColours = function (colours) {
