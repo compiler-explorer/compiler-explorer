@@ -3,6 +3,7 @@
 @import url("ext/golden-layout/src/css/goldenlayout-light-theme.css");
 @import url("ext/selectize/dist/css/selectize.bootstrap2.css");
 @import url("ext/seiyria-bootstrap-slider/dist/css/bootstrap-slider.css");
+@import url("colours.css");
 
 /* TEMP HACK: https://github.com/Microsoft/monaco-editor/issues/349 */
 .quick-open-tree .row { margin-left: 0; }
@@ -72,57 +73,6 @@ input.options {
     color: #fff !important;
     border-color: #46b8da !important;
     background-color: #5bc0de !important;
-}
-
-/* These colours from Cynthia Brewer's excellent page at
- * http://colorbrewer2.org/
- */
-.rainbow-0 {
-    background: rgba(141, 211, 199, 0.35) !important;
-}
-
-.rainbow-1 {
-    background: rgba(255, 255, 179, 0.35) !important;
-}
-
-.rainbow-2 {
-    background: rgba(190, 186, 218, 0.35) !important;
-}
-
-.rainbow-3 {
-    background: rgba(251, 128, 114, 0.35) !important;
-}
-
-.rainbow-4 {
-    background: rgba(128, 177, 211, 0.35) !important;
-}
-
-.rainbow-5 {
-    background: rgba(253, 180, 98, 0.35) !important;
-}
-
-.rainbow-6 {
-    background: rgba(179, 222, 105, 0.35) !important;
-}
-
-.rainbow-7 {
-    background: rgba(252, 205, 229, 0.35) !important;
-}
-
-.rainbow-8 {
-    background: rgba(217, 217, 217, 0.35) !important;
-}
-
-.rainbow-9 {
-    background: rgba(188, 128, 189, 0.35) !important;
-}
-
-.rainbow-10 {
-    background: rgba(204, 234, 197, 0.35) !important;
-}
-
-.rainbow-11 {
-    background: rgba(255, 237, 111, 0.35) !important;
 }
 
 .address {

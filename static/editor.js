@@ -216,10 +216,7 @@ define(function (require) {
             }
         }
 
-        if (before.colouriseAsm !== after.colouriseAsm) {
-            // if the colourise option has been toggled...recompute colours
-            this.numberUsedLines();
-        }
+        this.numberUsedLines();
     };
 
     Editor.prototype.numberUsedLines = function () {
@@ -241,8 +238,8 @@ define(function (require) {
     };
 
     Editor.prototype.updateColours = function (colours) {
-        this.colours = colour.applyColours(this.editor, colours, this.colours);
-        this.eventHub.emit('colours', this.id, colours);
+        this.colours = colour.applyColours(this.editor, colours, this.settings.colourScheme, this.colours);
+        this.eventHub.emit('colours', this.id, colours, this.settings.colourScheme);
     };
 
     Editor.prototype.onCompilerClose = function (compilerId) {

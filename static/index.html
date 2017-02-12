@@ -308,17 +308,18 @@ int square(int num) {
                     URLs, and are persisted locally using browser local storage.
                 </div>
                 <h4>Editor</h4>
-                <div class="form-group options" role="group">
-                    <div class="checkbox"><label><input type="checkbox" class="autoCloseBrackets">
+                <div class="form-group" role="group">
+                    <div class="form-control checkbox"><label><input type="checkbox" class="autoCloseBrackets">
                         Automatically insert matching brackets and parentheses</label></div>
-                    <div>Delay before compiling:&nbsp;<b>Disabled</b>
+                    <div class="form-control">Delay before compiling:&nbsp;<b>Disabled</b>
                         <div class="slider slider-horizontal delay"></div>
                         <b>3s</b></div>
                 </div>
                 <h4>Compilation</h4>
-                <div class="form-group options" role="group">
-                    <div class="checkbox"><label><input type="checkbox" class="colourise">Colourise lines so one can see
-                        how the source maps to the output</label></div>
+                <div class="form-group" role="group">
+                    <div class="form-control checkbox"><label><input type="checkbox" class="colourise">Colourise lines
+                        so one can see how the source maps to the output</label></div>
+                    <div class="form-control"><label>Colour scheme: <select class="colourScheme"></select></label></div>
                 </div>
             </div>
             <!-- model-body -->

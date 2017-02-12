@@ -454,13 +454,13 @@ define(function (require) {
         this.eventHub.emit('compilerFontScale', this.id, this.fontScale.scale);
     };
 
-    Compiler.prototype.onColours = function (editor, colours) {
+    Compiler.prototype.onColours = function (editor, colours, scheme) {
         if (editor == this.sourceEditorId) {
             var asmColours = {};
             _.each(this.assembly, function (x, index) {
                 if (x.source) asmColours[index] = colours[x.source - 1];
             });
-            this.colours = colour.applyColours(this.outputEditor, asmColours, this.colours);
+            this.colours = colour.applyColours(this.outputEditor, asmColours, scheme, this.colours);
         }
     };
 
