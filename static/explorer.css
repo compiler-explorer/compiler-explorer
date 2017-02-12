@@ -4,6 +4,9 @@
 @import url("ext/selectize/dist/css/selectize.bootstrap2.css");
 @import url("ext/seiyria-bootstrap-slider/dist/css/bootstrap-slider.css");
 
+/* TEMP HACK: https://github.com/Microsoft/monaco-editor/issues/349 */
+.quick-open-tree .row { margin-left: 0; }
+
 .navbar {
     border-radius: 0;
     margin-bottom: 2px;
