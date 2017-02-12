@@ -301,18 +301,24 @@ int square(int num) {
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h4 class="modal-title">Compiler Explorer Settings</h4>
+                <h3 class="modal-title">Compiler Explorer Settings</h3>
             </div>
             <div class="modal-body">
                 <div>These settings control how Compiler Explorer acts for you. They are not preserved as part of shared
                     URLs, and are persisted locally using browser local storage.
                 </div>
+                <h4>Editor</h4>
                 <div class="form-group options" role="group">
-                    <div class="checkbox"><label><input type="checkbox" class="colourise">Colourise lines so one can see how the source
-                        maps to the output</label></div>
+                    <div class="checkbox"><label><input type="checkbox" class="autoCloseBrackets">
+                        Automatically insert matching brackets and parentheses</label></div>
                     <div>Delay before compiling:&nbsp;<b>Disabled</b>
                         <div class="slider slider-horizontal delay"></div>
                         <b>3s</b></div>
+                </div>
+                <h4>Compilation</h4>
+                <div class="form-group options" role="group">
+                    <div class="checkbox"><label><input type="checkbox" class="colourise">Colourise lines so one can see
+                        how the source maps to the output</label></div>
                 </div>
             </div>
             <!-- model-body -->

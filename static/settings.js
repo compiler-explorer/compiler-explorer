@@ -94,6 +94,7 @@ define(function (require) {
         }
 
         add(root.find('.colourise'), 'colouriseAsm', true, Checkbox);
+        add(root.find('.autoCloseBrackets'), 'autoCloseBrackets', true, Checkbox);
         add(root.find('.slider'), 'delayAfterChange', 750, Slider, {
             max: 3000,
             step: 250,
