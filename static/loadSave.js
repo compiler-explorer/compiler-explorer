@@ -59,7 +59,7 @@ define(function (require) {
         reader.onload = _.bind(function () {
             this.onLoad(reader.result);
         }, this);
-        reader.readAsText(file)
+        reader.readAsText(file);
         this.modal.modal('hide');
     };
 
