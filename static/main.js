@@ -38,18 +38,21 @@ require.config({
         'raven-js': 'ext/raven-js/dist/raven',
         'es6-promise': 'ext/es6-promise/es6-promise',
         'lru-cache': 'ext/lru-cache/lib/lru-cache',
-        'vs': "ext/monaco-editor/min/vs"
+        'vs': "ext/monaco-editor/min/vs",
+        'bootstrap-slider': 'ext/seiyria-bootstrap-slider/dist/bootstrap-slider'
     },
     shim: {
         underscore: {exports: '_'},
         'lru-cache': {exports: 'LRUCache'},
-        bootstrap: ['jquery']
+        bootstrap: ['jquery'],
+        'bootstrap-slider': ['bootstrap']
     }
 });
 
 define(function (require) {
     "use strict";
     require('bootstrap');
+    require('bootstrap-slider');
     var analytics = require('analytics');
     var sharing = require('sharing');
     var _ = require('underscore');
@@ -60,6 +63,7 @@ define(function (require) {
     var clipboard = require('clipboard');
     var Hub = require('hub');
     var Raven = require('raven-js');
+    var settings = require('./settings');
 
     function start() {
         analytics.initialise();
@@ -146,6 +150,16 @@ define(function (require) {
         sizeRoot();
 
         new clipboard('.btn.clippy');
+
+        settings($('#settings'), function () {
+            return JSON.parse(window.localStorage.getItem('settings'));
+        }(), function (settings) {
+            try {
+                window.localStorage.setItem('settings', JSON.stringify(settings));
+            } catch (e) {
+            }
+            layout.eventHub.emit('settingsChange', settings);
+        });
 
         sharing.initShareButton($('#share'), layout);
         $('#ui-reset').click(function () {

@@ -112,7 +112,8 @@ define(function (require) {
                     [/[ \t\r\n]+/, 'white'],
                     [/\/\*/, 'comment', '@comment'],
                     [/\/\/.*$/, 'comment'],
-                    [/#.*$/, 'comment']
+                    [/#.*$/, 'comment'],
+                    [/@.*$/, 'comment']
                 ]
             }
         };

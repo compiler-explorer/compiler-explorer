@@ -27,6 +27,7 @@
     "clipboard": "^1.5.12",
     "raven-js": "^3.10.0",
     "es6-promise": "^4.0.5",
-    "lru-cache": "2.7.3"
+    "lru-cache": "2.7.3",
+    "seiyria-bootstrap-slider": "9.7.x"
   }
 }
