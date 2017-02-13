@@ -52,8 +52,6 @@ define(function (require) {
         this.busyCompilers = {};
         this.colours = [];
 
-        this.lastCompilerIDResponse = -1;
-
         var cmMode;
         switch (lang.toLowerCase()) {
             default:
@@ -87,27 +85,6 @@ define(function (require) {
             run: _.bind(function () {
                 this.maybeEmitChange();
             }, this)
-        });
-
-        this.editor.addAction({
-            id: 'viewasm',
-            label: 'View assembly',
-            keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.F10],
-            keybindingContext: null,
-            contextMenuGroupId: 'navigation',
-            contextMenuOrder: 1.5,
-            run: function(ed) {
-                var desiredLine = ed.getPosition().lineNumber - 1;
-                var i = 0;
-                var targetLine = -1;
-                _.each(self.asmByCompiler[self.lastCompilerIDResponse], function (asm) {
-                    i++;
-                    if (targetLine == -1 && asm.source == desiredLine) {
-                        targetLine = i;
-                    }
-                });
-                self.eventHub.emit('compilerSelectLine', self.lastCompilerIDResponse, targetLine);
-            }
         });
 
         this.fontScale = new FontScale(this.domRoot, state, this.editor);
@@ -165,7 +142,6 @@ define(function (require) {
         this.eventHub.on('compiling', this.onCompiling, this);
         this.eventHub.on('compileResult', this.onCompileResponse, this);
         this.eventHub.on('selectLine', this.onSelectLine, this);
-        this.eventHub.on('editorSelectLine', this.onEditorSelectLine, this);
 
         this.eventHub.on('settingsChange', this.onSettingsChange, this);
 
@@ -306,20 +282,12 @@ define(function (require) {
         }, this));
         monaco.editor.setModelMarkers(this.editor.getModel(), compilerId, widgets);
         this.asmByCompiler[compilerId] = result.asm;
-        this.lastCompilerIDResponse = compilerId;
         this.numberUsedLines();
     };
 
     Editor.prototype.onSelectLine = function (id, lineNum) {
         if (id === this.id) {
             this.editor.setSelection({line: lineNum - 1, ch: 0}, {line: lineNum, ch: 0});
-        }
-    };
-
-    Editor.prototype.onEditorSelectLine = function (id, lineNum) {
-        if (id === this.id && lineNum != null) {
-            this.editor.setSelection({positionColumn: 0, positionLineNumber: lineNum + 1, selectionStartColumn: 0,
-                selectionStartLineNumber: lineNum});
         }
     };
 

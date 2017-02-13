@@ -99,19 +99,6 @@ define(function (require) {
             language: 'asm'
         });
 
-        this.outputEditor.addAction({
-            id: 'viewcode',
-            label: 'View code',
-            keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.F10],
-            keybindingContext: null,
-            contextMenuGroupId: 'navigation',
-            contextMenuOrder: 1.5,
-            run: function(ed) {
-                var desiredLine = ed.getPosition().lineNumber - 1;
-                self.eventHub.emit('editorSelectLine', self.sourceEditorId, self.assembly[desiredLine].source);
-            }
-        });
-
         this.fontScale = new FontScale(this.domRoot, state, this.outputEditor);
         this.fontScale.on('change', _.bind(function () {
             this.saveState();
@@ -135,7 +122,6 @@ define(function (require) {
         this.eventHub.on('colours', this.onColours, this);
         this.eventHub.on('resendCompilation', this.onResendCompilation, this);
         this.eventHub.on('findCompilers', this.sendCompiler, this);
-        this.eventHub.on('compilerSelectLine', this.onCompilerSelectLine, this);
         this.sendCompiler();
         this.updateCompilerName();
         this.updateButtons();
@@ -488,13 +474,6 @@ define(function (require) {
     Compiler.prototype.onResendCompilation = function (id) {
         if (id == this.id && this.lastResult) {
             this.eventHub.emit('compileResult', this.id, this.compiler, this.lastResult);
-        }
-    };
-
-    Compiler.prototype.onCompilerSelectLine = function (id, lineNum) {
-        if (id === this.id && lineNum != null) {
-            this.outputEditor.setSelection({positionColumn: 0, positionLineNumber: lineNum + 1, selectionStartColumn: 0,
-                selectionStartLineNumber: lineNum});
         }
     };
 
