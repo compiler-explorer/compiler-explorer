@@ -32,6 +32,8 @@ define(function (require) {
         this.modal = $('#load-save');
         this.onLoad = _.identity;
 
+        this.modal.find('.local-file').change(_.bind(this.onLocalFile, this));
+
         $.getJSON('/source/builtin/list', _.bind(function (list) {
             this.modal.find('.example:visible').remove();
             var examples = this.modal.find('.examples');
@@ -49,6 +51,17 @@ define(function (require) {
             }, this));
         }, this));
     }
+
+    LoadSave.prototype.onLocalFile = function (event) {
+        var files = event.target.files;
+        var file = files[0];
+        var reader = new FileReader();
+        reader.onload = _.bind(function () {
+            this.onLoad(reader.result);
+        }, this);
+        reader.readAsText(file)
+        this.modal.modal('hide');
+    };
 
     LoadSave.prototype.run = function (onLoad) {
         this.onLoad = onLoad;
