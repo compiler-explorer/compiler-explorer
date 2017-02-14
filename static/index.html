@@ -253,7 +253,7 @@ int square(int num) {
 }</pre>
 </div>
 
-<div class="modal fade gl_keep" id="load-save">
+<div class="modal fade gl_keep" tabindex="-1" role="dialog" id="load-save">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -261,21 +261,43 @@ int square(int num) {
                 <h3 class="modal-title">Load and save editor text</h3>
             </div>
             <div class="modal-body">
-                <div class="form-group">
-                    <h4>Load from examples:</h4>
-                    <ul class="examples">
-                        <li class="template example"><a href="#"></a></li>
+                <div>
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li role="presentation" class="active"><a href="#load-examples" aria-controls="home" role="tab"
+                                                                  data-toggle="tab">Examples</a></li>
+                        <li role="presentation"><a href="#load-browser-local" aria-controls="profile" role="tab"
+                                                   data-toggle="tab">Browser-local storage</a></li>
+                        <li role="presentation"><a href="#load-file-system" aria-controls="messages" role="tab"
+                                                   data-toggle="tab">File system</a></li>
                     </ul>
+                    <div class="tab-content">
+                        <div role="tabpanel" class="tab-pane active" id="load-examples">
+                            <h4>Load from examples:</h4>
+                            <ul class="examples small-v-scrollable">
+                                <li class="template"><a href="#"></a></li>
+                            </ul>
+                        </div>
+                        <div role="tabpanel" class="tab-pane" id="load-browser-local">
+                            <h4>Load from browser-local storage:</h4>
+                            <ul class="local-storage small-v-scrollable">
+                                <li class="template"><a href="#"></a></li>
+                            </ul>
+                            <div class="form-group">
+                                <input type="text" size="20" class="save-name">
+                                <button type="button" class="btn save-button">Save to browser-local storage</button>
+                            </div>
+                        </div>
+                        <div role="tabpanel" class="tab-pane" id="load-file-system">
+                            <label class="btn btn-default btn-file">Load from a local file
+                                <input style="display:none" type="file" class="local-file"
+                                       accept=".cpp,.cxx,.c,.h,.hpp,.hxx"></label>
+                        </div>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label class="btn btn-default btn-file">Load from a local file
-                        <input style="display:none" type="file" class="local-file"
-                               accept=".cpp,.cxx,.c,.h,.hpp,.hxx"></label>
+                <!-- model-body -->
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                 </div>
-            </div>
-            <!-- model-body -->
-            <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
             </div>
         </div>
         <!-- /.modal-content -->
@@ -283,7 +305,7 @@ int square(int num) {
     <!-- /.modal-dialog -->
 </div>
 
-<div class="modal fade gl_keep" id="alert">
+<div class="modal fade gl_keep" tabindex="-1" role="dialog" id="alert">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -302,7 +324,27 @@ int square(int num) {
     <!-- /.modal-dialog -->
 </div>
 
-<div class="modal fade gl_keep" id="settings">
+<div class="modal fade gl_keep" tabindex="-1" role="dialog" id="yes-no">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h3 class="modal-title">Well, do you or not?</h3>
+            </div>
+            <div class="modal-body">
+            </div>
+            <!-- model-body -->
+            <div class="modal-footer">
+                <button type="button" class="btn no" data-dismiss="modal">No</button>
+                <button type="button" class="btn yes" data-dismiss="modal">Yes</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+<div class="modal fade gl_keep" tabindex="-1" role="dialog" id="settings">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -310,7 +352,8 @@ int square(int num) {
                 <h3 class="modal-title">Compiler Explorer Settings</h3>
             </div>
             <div class="modal-body">
-                <div>These settings control how Compiler Explorer acts for you. They are not preserved as part of shared
+                <div>These settings control how Compiler Explorer acts for you. They are not preserved as part of
+                    shared
                     URLs, and are persisted locally using browser local storage.
                 </div>
                 <h4>Editor</h4>
@@ -323,9 +366,11 @@ int square(int num) {
                 </div>
                 <h4>Compilation</h4>
                 <div class="form-group" role="group">
-                    <div class="form-control checkbox"><label><input type="checkbox" class="colourise">Colourise lines
+                    <div class="form-control checkbox"><label><input type="checkbox" class="colourise">Colourise
+                        lines
                         so one can see how the source maps to the output</label></div>
-                    <div class="form-control"><label>Colour scheme: <select class="colourScheme"></select></label></div>
+                    <div class="form-control"><label>Colour scheme: <select class="colourScheme"></select></label>
+                    </div>
                 </div>
             </div>
             <!-- model-body -->

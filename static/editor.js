@@ -118,7 +118,7 @@ define(function (require) {
                 this.editor.setValue(text);
                 this.updateState();
                 this.maybeEmitChange();
-            }, this));
+            }, this), this.getSource());
         }, this));
 
         container.on('resize', layout);
@@ -199,7 +199,7 @@ define(function (require) {
         var after = newSettings;
         this.settings = _.clone(newSettings);
 
-        this.editor.updateOptions({autoClosingBrackets : this.settings.autoCloseBrackets});
+        this.editor.updateOptions({autoClosingBrackets: this.settings.autoCloseBrackets});
 
         // TODO: bug when:
         // * Turn off auto.

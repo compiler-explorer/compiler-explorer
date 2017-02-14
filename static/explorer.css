@@ -141,3 +141,8 @@ pre.content {
     margin-top: 1em;
     font-style: italic;
 }
+
+.small-v-scrollable {
+    max-height: 8em;
+    overflow-y: auto;
+}
