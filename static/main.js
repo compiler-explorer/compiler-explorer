@@ -152,7 +152,11 @@ define(function (require) {
         new clipboard('.btn.clippy');
 
         settings($('#settings'), function () {
-            return JSON.parse(window.localStorage.getItem('settings'));
+            try {
+                return JSON.parse(window.localStorage.getItem('settings'));
+            } catch (e) {
+                return {};
+            }
         }(), function (settings) {
             try {
                 window.localStorage.setItem('settings', JSON.stringify(settings));
