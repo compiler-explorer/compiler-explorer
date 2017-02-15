@@ -166,6 +166,12 @@ define(function (require) {
             window.localStorage.removeItem('gl');
             window.location.reload();
         });
+
+        var hostName = window.location.hostname;
+        $('#languages-links').append('<li><a href="//gcc.' + hostName + '">C++</a></li>');
+        $('#languages-links').append('<li><a href="//d.' + hostName + '">D</a></li>');
+        $('#languages-links').append('<li><a href="//go.' + hostName + '">Go</a></li>');
+        $('#languages-links').append('<li><a href="//rust.' + hostName + '">Rust</a></li>');
     }
 
     $(start);
