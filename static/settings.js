@@ -69,6 +69,8 @@ define(function (require) {
             settings.delayAfterChange = 750;
         if (settings.colouriseAsm === undefined)
             settings.colouriseAsm = true;
+        if (settings.hoverShowSource === undefined)
+            settings.hoverShowSource = true;
 
         var settingsObjs = [];
 
@@ -103,6 +105,7 @@ define(function (require) {
                 return (x / 1000.0).toFixed(2) + "s";
             }
         });
+        add(root.find('.hoverSource'), 'hoverShowSource', true, Checkbox);
 
         onSettingsChange(settings);
         onChange(settings);

@@ -71,6 +71,7 @@ define(function (require) {
         this.lastResult = null;
         this.pendingRequestSentAt = 0;
         this.nextRequest = null;
+        this.settings = {};
 
         this.domRoot.find(".compiler-picker").selectize({
             sortField: 'name',
@@ -112,6 +113,13 @@ define(function (require) {
             }
         });
 
+        this.outputEditor.onMouseMove(function (e) {
+            if (self.settings.hoverShowSource == true) {
+                var desiredLine = e.target.position.lineNumber - 1;
+                self.eventHub.emit('editorSelectLine', self.sourceEditorId, self.assembly[desiredLine].source);
+            }
+        });
+
         this.fontScale = new FontScale(this.domRoot, state, this.outputEditor);
         this.fontScale.on('change', _.bind(function () {
             this.saveState();
@@ -136,6 +144,7 @@ define(function (require) {
         this.eventHub.on('resendCompilation', this.onResendCompilation, this);
         this.eventHub.on('findCompilers', this.sendCompiler, this);
         this.eventHub.on('compilerSelectLine', this.onCompilerSelectLine, this);
+        this.eventHub.on('settingsChange', this.onSettingsChange, this);
         this.sendCompiler();
         this.updateCompilerName();
         this.updateButtons();
@@ -496,6 +505,10 @@ define(function (require) {
             this.outputEditor.setSelection({positionColumn: 0, positionLineNumber: lineNum + 1, selectionStartColumn: 0,
                     selectionStartLineNumber: lineNum});
         }
+    };
+
+    Compiler.prototype.onSettingsChange = function (newSettings) {
+        this.settings = _.clone(newSettings);
     };
 
     return {

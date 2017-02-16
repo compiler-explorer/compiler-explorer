@@ -88,6 +88,19 @@ define(function (require) {
             }, this)
         });
 
+        function tryCompilerSelectLine(thisLineNumber) {
+            var desiredLine = thisLineNumber;
+            var i = 0;
+            var targetLine = -1;
+            _.each(self.asmByCompiler[self.lastCompilerIDResponse], function (asm) {
+                i++;
+                if (targetLine == -1 && asm.source == desiredLine) {
+                    targetLine = i;
+                }
+            });
+            self.eventHub.emit('compilerSelectLine', self.lastCompilerIDResponse, targetLine);
+        }
+
         this.editor.addAction({
             id: 'viewasm',
             label: 'View assembly',
@@ -96,17 +109,13 @@ define(function (require) {
             contextMenuGroupId: 'navigation',
             contextMenuOrder: 1.5,
             run: function(ed) {
-                var desiredLine = ed.getPosition().lineNumber - 1;
-                var i = 0;
-                var targetLine = -1;
-                _.each(self.asmByCompiler[self.lastCompilerIDResponse], function (asm) {
-                    i++;
-                    if (targetLine == -1 && asm.source == desiredLine) {
-                        targetLine = i;
-                    }
-                });
-                self.eventHub.emit('compilerSelectLine', self.lastCompilerIDResponse, targetLine);
+                tryCompilerSelectLine(ed.getPosition().lineNumber);
             }
+        });
+
+        this.editor.onMouseMove(function (e) {
+            if (self.settings.hoverShowSource == true)
+                tryCompilerSelectLine(e.target.position.lineNumber);
         });
 
         this.fontScale = new FontScale(this.domRoot, state, this.editor);
