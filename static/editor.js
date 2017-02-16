@@ -114,7 +114,7 @@ define(function (require) {
         });
 
         this.editor.onMouseMove(function (e) {
-            if (self.settings.hoverShowSource == true)
+            if (self.settings.hoverShowSource === true)
                 tryCompilerSelectLine(e.target.position.lineNumber);
         });
 
@@ -324,7 +324,7 @@ define(function (require) {
     };
 
     Editor.prototype.onEditorSelectLine = function (id, lineNum) {
-        if (id === this.id && lineNum != null) {
+        if (id === this.id && lineNum !== null) {
             this.editor.setSelection({positionColumn: 0, positionLineNumber: lineNum + 1, selectionStartColumn: 0,
                 selectionStartLineNumber: lineNum});
         }
