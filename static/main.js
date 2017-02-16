@@ -173,7 +173,7 @@ define(function (require) {
             thing.click(function () {
                 hub.addAtRoot(func());
             });
-        };
+        }
 
         setupAdd($('#add-diff'), function () {
             return Components.getDiff();
