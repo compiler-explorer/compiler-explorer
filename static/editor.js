@@ -40,7 +40,7 @@ define(function (require) {
 
     function Editor(hub, state, container, lang, defaultSrc) {
         var self = this;
-        this.id = state.id || hub.nextId();
+        this.id = state.id || hub.nextEditorId();
         this.container = container;
         this.domRoot = container.getElement();
         this.domRoot.html($('#codeEditor').html());
@@ -149,7 +149,7 @@ define(function (require) {
                 this.editor.setValue(text);
                 this.updateState();
                 this.maybeEmitChange();
-            }, this));
+            }, this), this.getSource());
         }, this));
 
         container.on('resize', layout);
@@ -182,7 +182,6 @@ define(function (require) {
         var compilerConfig = _.bind(function () {
             return Components.getCompiler(this.id);
         }, this);
-        var diffConfig = Components.getDiff();
 
         this.container.layoutManager.createDragSource(
             this.domRoot.find('.btn.add-compiler'), compilerConfig());
@@ -191,16 +190,6 @@ define(function (require) {
                 this.container.layoutManager.root.contentItems[0];
             insertPoint.addChild(compilerConfig());
         }, this));
-
-        this.container.layoutManager.createDragSource(
-            this.domRoot.find('.btn.add-diff'), diffConfig);
-        this.domRoot.find('.btn.add-diff').click(_.bind(function () {
-            var insertPoint = hub.findParentRowOrColumn(this.container) ||
-                this.container.layoutManager.root.contentItems[0];
-            insertPoint.addChild(diffConfig);
-        }, this));
-
-        Sharing.initShareButton(this.domRoot.find('.share'), container.layoutManager);
 
         this.updateState();
     }
@@ -230,7 +219,7 @@ define(function (require) {
         var after = newSettings;
         this.settings = _.clone(newSettings);
 
-        this.editor.updateOptions({autoClosingBrackets : this.settings.autoCloseBrackets});
+        this.editor.updateOptions({autoClosingBrackets: this.settings.autoCloseBrackets});
 
         // TODO: bug when:
         // * Turn off auto.
@@ -247,10 +236,7 @@ define(function (require) {
             }
         }
 
-        if (before.colouriseAsm !== after.colouriseAsm) {
-            // if the colourise option has been toggled...recompute colours
-            this.numberUsedLines();
-        }
+        this.numberUsedLines();
     };
 
     Editor.prototype.numberUsedLines = function () {
@@ -272,8 +258,8 @@ define(function (require) {
     };
 
     Editor.prototype.updateColours = function (colours) {
-        this.colours = colour.applyColours(this.editor, colours, this.colours);
-        this.eventHub.emit('colours', this.id, colours);
+        this.colours = colour.applyColours(this.editor, colours, this.settings.colourScheme, this.colours);
+        this.eventHub.emit('colours', this.id, colours, this.settings.colourScheme);
     };
 
     Editor.prototype.onCompilerClose = function (compilerId) {

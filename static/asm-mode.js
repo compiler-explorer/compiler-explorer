@@ -47,8 +47,10 @@ define(function (require) {
                     [/^<.*>$/, {token: 'annotation'}],
                     // Label definition
                     [/^[.a-zA-Z0-9_$][^:]*:/, {token: 'type.identifier', next: '@rest'}],
+                    // Label definition (ARM style)
+                    [/^\s*[|][^|]*[|]/, {token: 'type.identifier', next: '@rest'}],
                     // Label defintion (CL style)
-                    [/^[.a-zA-Z0-9_$]+\s*(PROC|ENDP)/, {token: 'type.identifier', next: '@rest'}],
+                    [/^\s*[.a-zA-Z0-9_$|]*\s*(PROC|ENDP)/, {token: 'type.identifier', next: '@rest'}],
                     // Constant definition
                     [/^[.a-zA-Z0-9_$][^=]*=/, {token: 'type.identifier', next: '@rest'}],
                     // opcode
@@ -67,6 +69,9 @@ define(function (require) {
                     // delimiters and operators
                     [/[{}()\[\]]/, '@brackets'],
                     [/[<>](?!@symbols)/, '@brackets'],
+
+                    // ARM-style label reference
+                    [/[|][^|]*[|]*/, 'type.identifier'],
 
                     // numbers
                     [/\d*\.\d+([eE][\-+]?\d+)?/, 'number.float'],
@@ -88,7 +93,7 @@ define(function (require) {
                     [/'/, 'string.invalid'],
 
                     // Assume anything else is a label reference
-                    [/[._$a-zA-Z][._$a-zA-Z0-9]*/, 'type.identifier'],
+                    [/[.?_$a-zA-Z][.?_$a-zA-Z0-9]*/, 'type.identifier'],
 
                     // whitespace
                     {include: '@whitespace'}
@@ -112,7 +117,8 @@ define(function (require) {
                     [/[ \t\r\n]+/, 'white'],
                     [/\/\*/, 'comment', '@comment'],
                     [/\/\/.*$/, 'comment'],
-                    [/#.*$/, 'comment']
+                    [/#.*$/, 'comment'],
+                    [/@.*$/, 'comment']
                 ]
             }
         };

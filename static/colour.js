@@ -29,16 +29,25 @@ define(function (require) {
     var _ = require('underscore');
     var monaco = require('monaco');
 
-    var NumRainbowColours = 12;
+    var schemes = [
+        {name: 'rainbow', desc: 'Rainbow 1', count: 12},
+        {name: 'rainbow2', desc: 'Rainbow 2', count: 12},
+        {name: 'earth', desc: 'Earth tones (colourblind safe)', count: 9},
+        {name: 'green-blue', desc: 'Greens and blues (colourblind safe)', count: 4}
+    ];
 
-    function applyColours(editor, colours, prevDecorations) {
+    function applyColours(editor, colours, schemeName, prevDecorations) {
+        var scheme = _.findWhere(schemes, {name: schemeName});
+        if (!scheme) {
+            scheme = schemes[0];
+        }
         var newDecorations = _.map(colours, function (ordinal, line) {
             line = parseInt(line) + 1;
             return {
                 range: new monaco.Range(line, 1, line, 1),
                 options: {
                     isWholeLine: true,
-                    className: "rainbow-" + (ordinal % NumRainbowColours)
+                    className: scheme.name + "-" + (ordinal % scheme.count)
                 }
             };
         });
@@ -46,6 +55,7 @@ define(function (require) {
     }
 
     return {
-        applyColours: applyColours
+        applyColours: applyColours,
+        schemes: schemes
     };
 });
