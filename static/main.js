@@ -117,13 +117,14 @@ define(function (require) {
         var root = $("#root");
 
         var layout;
+        var hub;
         try {
             layout = new GoldenLayout(config, root);
-            new Hub(layout, defaultSrc);
+            hub = new Hub(layout, defaultSrc);
         } catch (e) {
             Raven.captureException(e);
             layout = new GoldenLayout(defaultConfig, root);
-            new Hub(layout, defaultSrc);
+            hub = new Hub(layout, defaultSrc);
         }
         layout.on('stateChanged', function () {
             var config = layout.toConfig();
@@ -152,7 +153,11 @@ define(function (require) {
         new clipboard('.btn.clippy');
 
         settings($('#settings'), function () {
-            return JSON.parse(window.localStorage.getItem('settings'));
+            try {
+                return JSON.parse(window.localStorage.getItem('settings'));
+            } catch (e) {
+                return {};
+            }
         }(), function (settings) {
             try {
                 window.localStorage.setItem('settings', JSON.stringify(settings));
@@ -162,6 +167,21 @@ define(function (require) {
         });
 
         sharing.initShareButton($('#share'), layout);
+
+        function setupAdd(thing, func) {
+            layout.createDragSource(thing, func);
+            thing.click(function () {
+                hub.addAtRoot(func());
+            });
+        }
+
+        setupAdd($('#add-diff'), function () {
+            return Components.getDiff();
+        });
+        setupAdd($('#add-editor'), function () {
+            return Components.getEditor();
+        });
+
         $('#ui-reset').click(function () {
             window.localStorage.removeItem('gl');
             window.location.reload();

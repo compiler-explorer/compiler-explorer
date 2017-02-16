@@ -60,7 +60,7 @@ define(function (require) {
         this.domRoot = container.getElement();
         this.domRoot.html($('#compiler').html());
 
-        this.id = state.id || hub.nextId();
+        this.id = state.id || hub.nextCompilerId();
         this.sourceEditorId = state.source || 1;
         this.compiler = compilersById[state.compiler] || compilersById[options.defaultCompiler];
         this.options = state.options || options.compileOptions;
@@ -477,13 +477,13 @@ define(function (require) {
         this.eventHub.emit('compilerFontScale', this.id, this.fontScale.scale);
     };
 
-    Compiler.prototype.onColours = function (editor, colours) {
+    Compiler.prototype.onColours = function (editor, colours, scheme) {
         if (editor == this.sourceEditorId) {
             var asmColours = {};
             _.each(this.assembly, function (x, index) {
                 if (x.source) asmColours[index] = colours[x.source - 1];
             });
-            this.colours = colour.applyColours(this.outputEditor, asmColours, this.colours);
+            this.colours = colour.applyColours(this.outputEditor, asmColours, scheme, this.colours);
         }
     };
 

@@ -27,15 +27,35 @@ define(function (require) {
     var $ = require('jquery');
 
     function Alert() {
-        this.modal = $('#alert');
-        this.title = this.modal.find('.modal-title');
-        this.body = this.modal.find('.modal-body');
+        this.yesHandler = null;
+        this.noHandler = null;
+        $('#yes-no button.yes').click(_.bind(function () {
+            if (this.yesHandler) this.yesHandler();
+        }, this));
+        $('#yes-no button.no').click(_.bind(function () {
+            if (this.noHandler) this.noHandler();
+        }, this));
     }
 
     Alert.prototype.alert = function (title, body) {
-        this.title.html(title);
-        this.body.html(body);
-        this.modal.modal();
+        var modal = $('#alert');
+        modal.find('.modal-title').html(title);
+        modal.find('.modal-body').html(body);
+        modal.modal();
     };
+
+    Alert.prototype.ask = function (title, question, handlers) {
+        var modal = $('#yes-no');
+        this.yesHandler = handlers.yes;
+        this.noHandler = handlers.no;
+        modal.find('.modal-title').html(title);
+        modal.find('.modal-body').html(question);
+        modal.modal();
+    };
+
+    Alert.prototype.onYesNoHide = function (evt) {
+        console.log(evt);
+    };
+
     return Alert;
 });

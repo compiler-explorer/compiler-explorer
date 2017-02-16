@@ -25,6 +25,7 @@
 
 define(function (require) {
     var _ = require('underscore');
+    var colour = require('./colour');
 
     function Setting(elem, name, Control, param) {
         this.elem = elem;
@@ -49,6 +50,20 @@ define(function (require) {
         elem.prop('checked', !!value);
     };
 
+    function Select(elem, populate) {
+        elem.empty();
+        _.each(populate, function (e) {
+            elem.append($('<option value="' + e.label + '">' + e.desc + "</option>"));
+        });
+    }
+
+    Select.prototype.getUi = function (elem) {
+        return elem.val();
+    };
+    Select.prototype.putUi = function (elem, value) {
+        elem.val(value);
+    };
+
     function Slider(elem, sliderSettings) {
         elem.slider(sliderSettings);
     }
@@ -61,17 +76,9 @@ define(function (require) {
         elem.slider('setValue', value);
     };
 
-    // TODO: editor options like auto paren
-    // TODO: color choices for colourisation
     function setupSettings(root, settings, onChange) {
         settings = settings || {};
-        if (settings.delayAfterChange === undefined)
-            settings.delayAfterChange = 750;
-        if (settings.colouriseAsm === undefined)
-            settings.colouriseAsm = true;
-        if (settings.hoverShowSource === undefined)
-            settings.hoverShowSource = true;
-
+      
         var settingsObjs = [];
 
         function onUiChange() {
@@ -97,6 +104,10 @@ define(function (require) {
 
         add(root.find('.colourise'), 'colouriseAsm', true, Checkbox);
         add(root.find('.autoCloseBrackets'), 'autoCloseBrackets', true, Checkbox);
+        add(root.find('.colourScheme'), 'colourScheme', colour.schemes[0].name, Select,
+            _.map(colour.schemes, function (scheme) {
+                return {label: scheme.name, desc: scheme.desc};
+            }));
         add(root.find('.slider'), 'delayAfterChange', 750, Slider, {
             max: 3000,
             step: 250,
