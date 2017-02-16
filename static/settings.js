@@ -76,14 +76,8 @@ define(function (require) {
         elem.slider('setValue', value);
     };
 
-    // TODO: editor options like auto paren
-    // TODO: color choices for colourisation
     function setupSettings(root, settings, onChange) {
         settings = settings || {};
-        if (settings.delayAfterChange === undefined)
-            settings.delayAfterChange = 750;
-        if (settings.colouriseAsm === undefined)
-            settings.colouriseAsm = true;
 
         var settingsObjs = [];
 
