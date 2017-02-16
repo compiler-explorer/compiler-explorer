@@ -25,7 +25,16 @@
         </div>
         <li class="navbar-collapse collapse" id="navbar-collapse">
             <ul class="nav navbar-nav navbar-left">
+                <li><a href="#" id="add-editor" title="Click or drag to desired destination">Add Editor</a></li>
+                <li><a href="#" id="add-diff" title="Click or drag to desired destination">Add Diff View</a></li>
                 <li><a href="#" data-target="#settings" data-toggle="modal">Settings</a></li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">More<b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        <!--<li class="divider"></li>-->
+                        <li><a href="#" id="ui-reset">Reset UI layout</a></li>
+                    </ul>
+                </li>
             </ul>
             <ul class="nav navbar-nav navbar-right">
                 <li><a href="https://www.patreon.com/mattgodbolt">
@@ -51,8 +60,6 @@
                     <ul class="dropdown-menu">
                         <li><a href="https://github.com/mattgodbolt/compiler-explorer/wiki">Wiki</a></li>
                         <li><a href="https://github.com/mattgodbolt/compiler-explorer/issues">Report an issue</a></li>
-                        <li class="divider"></li>
-                        <li><a href="#" id="ui-reset">Reset UI layout</a></li>
                         <li class="divider"></li>
                         <li><a href="#" id="thanks-to">Thanks to...</a></li>
                         <li><a href="http://xania.org/201609/how-compiler-explorer-runs-on-amazon">How it works</a></li>
@@ -88,17 +95,9 @@
                 <button title="Load or save text" class="btn btn-default btn-sm load-save">
                     <span class="glyphicon glyphicon-floppy-disk"></span>
                 </button>
-                <button title="Get URLs for sharing"
-                        class="btn btn-default btn-sm share">
-                    <span class="glyphicon glyphicon-share"></span>
-                </button>
                 <button title="Add a new compiler for this source (click or drag)"
                         class="btn btn-default btn-sm add-compiler">
                     <span class="glyphicon glyphicon-open"></span>
-                </button>
-                <button title="Add a diff view (click or drag)"
-                        class="btn btn-default btn-sm add-diff">
-                    <span class="glyphicon glyphicon-tree-deciduous"></span>
                 </button>
             </div>
         </div>

@@ -40,7 +40,7 @@ define(function (require) {
 
     function Editor(hub, state, container, lang, defaultSrc) {
         var self = this;
-        this.id = state.id || hub.nextId();
+        this.id = state.id || hub.nextEditorId();
         this.container = container;
         this.domRoot = container.getElement();
         this.domRoot.html($('#codeEditor').html());
@@ -151,7 +151,6 @@ define(function (require) {
         var compilerConfig = _.bind(function () {
             return Components.getCompiler(this.id);
         }, this);
-        var diffConfig = Components.getDiff();
 
         this.container.layoutManager.createDragSource(
             this.domRoot.find('.btn.add-compiler'), compilerConfig());
@@ -160,16 +159,6 @@ define(function (require) {
                 this.container.layoutManager.root.contentItems[0];
             insertPoint.addChild(compilerConfig());
         }, this));
-
-        this.container.layoutManager.createDragSource(
-            this.domRoot.find('.btn.add-diff'), diffConfig);
-        this.domRoot.find('.btn.add-diff').click(_.bind(function () {
-            var insertPoint = hub.findParentRowOrColumn(this.container) ||
-                this.container.layoutManager.root.contentItems[0];
-            insertPoint.addChild(diffConfig);
-        }, this));
-
-        Sharing.initShareButton(this.domRoot.find('.share'), container.layoutManager);
 
         this.updateState();
     }

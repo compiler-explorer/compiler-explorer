@@ -60,7 +60,7 @@ define(function (require) {
         this.domRoot = container.getElement();
         this.domRoot.html($('#compiler').html());
 
-        this.id = state.id || hub.nextId();
+        this.id = state.id || hub.nextCompilerId();
         this.sourceEditorId = state.source || 1;
         this.compiler = compilersById[state.compiler] || compilersById[options.defaultCompiler];
         this.options = state.options || options.compileOptions;

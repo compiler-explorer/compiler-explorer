@@ -49,7 +49,7 @@
 }
 
 .compiler-picker {
-    width: 14em;
+    min-width: 14em;
 }
 
 .diff-picker {
