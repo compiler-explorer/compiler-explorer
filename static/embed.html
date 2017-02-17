@@ -19,19 +19,7 @@
 
 <div class="gl_keep template">
     <div id="codeEditor">
-        <div class="top-bar btn-toolbar hidden">
-            <div class="btn-group btn-group-sm options" role="group">
-                <button title="Colourise lines so one can see how the source maps to the output"
-                        class="btn btn-default btn-sm active" data-bind="colouriseAsm">
-                    <span class="glyphicon glyphicon-adjust"></span>
-                </button>
-                <button title="Run the compilers automatically as you type"
-                        class="btn btn-default btn-sm active" data-bind="compileOnChange">
-                    <span class="glyphicon glyphicon-play-circle"></span>
-                </button>
-            </div>
-        </div>
-        <textarea></textarea>
+        <div class="monaco-placeholder"></div>
     </div>
 
     <div id="compiler">
@@ -67,8 +55,14 @@
                 </button>
             </div>
         </div>
-        <textarea>[Waiting...]</textarea>
-        <div class="bottom-bar"></div>
+        <div class="monaco-placeholder"></div>
+        <div class="bottom-bar">
+            <div class="btn-group btn-group-sm">
+                <button><span class="glyphicon glyphicon-alert status"></span></button>
+            </div>
+            <span class="full-compiler-name"></span>
+            <span class="compile-time"></span>
+        </div>
     </div>
 
     <div id="compiler-output">

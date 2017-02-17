@@ -109,7 +109,7 @@ define(function (require) {
         // }, this));
 
         function layout() {
-            var topBarHeight = self.domRoot.find(".top-bar").outerHeight(true);
+            var topBarHeight = self.domRoot.find(".top-bar").outerHeight(true) || 0;
             self.editor.layout({width: self.domRoot.width(), height: self.domRoot.height() - topBarHeight});
         }
 
