@@ -101,6 +101,10 @@ define(function (require) {
     };
 
     Hub.prototype.codeEditorFactory = function (container, state) {
+        // Ensure editors are closable: some older versions had 'isClosable' false.
+        // NB there doesn't seem to be a better way to do this than reach into the config and rely on the fact nothing
+        // has used it yet.
+        container.parent.config.isClosable = true;
         return new editor.Editor(this, state, container, options.language, this.defaultSrc);
     };
 
