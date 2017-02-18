@@ -73,6 +73,8 @@ define(function (require) {
         this.nextRequest = null;
         this.settings = {};
 
+        this.decorations = [];
+
         this.domRoot.find(".compiler-picker").selectize({
             sortField: 'name',
             valueField: 'id',
@@ -97,7 +99,8 @@ define(function (require) {
         this.outputEditor = monaco.editor.create(this.domRoot.find(".monaco-placeholder")[0], {
             scrollBeyondLastLine: false,
             readOnly: true,
-            language: 'asm'
+            language: 'asm',
+            glyphMargin: true
         });
 
         this.outputEditor.addAction({
@@ -114,7 +117,7 @@ define(function (require) {
         });
 
         this.outputEditor.onMouseMove(function (e) {
-            if (self.settings.hoverShowSource === true) {
+            if (self.settings.hoverShowSource === true && e.target.position !== null) {
                 var desiredLine = e.target.position.lineNumber - 1;
                 self.eventHub.emit('editorSelectLine', self.sourceEditorId, self.assembly[desiredLine].source);
             }
@@ -501,9 +504,17 @@ define(function (require) {
     };
 
     Compiler.prototype.onCompilerSelectLine = function (id, lineNum) {
-        if (id === this.id && lineNum !== null) {
-            this.outputEditor.setSelection({positionColumn: 0, positionLineNumber: lineNum + 1, selectionStartColumn: 0,
-                    selectionStartLineNumber: lineNum});
+        if (id === this.id) {
+            this.decorations = this.outputEditor.deltaDecorations(this.decorations, 
+                lineNum == -1 ? [] : [
+                {
+                    range: new monaco.Range(lineNum,1,lineNum,1),
+                    options: {
+                        isWholeLine: true,
+                        glyphMarginClassName: 'glyph-margin-linked-code'
+                    }
+                }
+            ]);
         }
     };
 

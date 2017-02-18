@@ -146,3 +146,7 @@ pre.content {
     max-height: 8em;
     overflow-y: auto;
 }
+
+.glyph-margin-linked-code {
+    background: red;
+}
