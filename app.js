@@ -152,6 +152,10 @@ function ClientOptionsHandler(fileSources) {
     // sort source file alphabetically
     sources = sources.sort(compareOn("name"));
     var text = "";
+    var languages = _.map(gccProps("languages", '').split(':'), function (thing) {
+        var splat = thing.split("=");
+        return {language: splat[0], url: splat[1]};
+    });
     this.setCompilers = function (compilers) {
         var options = {
             googleAnalyticsAccount: gccProps('clientGoogleAnalyticsAccount', 'UA-55180-6'),
@@ -167,6 +171,7 @@ function ClientOptionsHandler(fileSources) {
             defaultCompiler: compilerProps('defaultCompiler', ''),
             compileOptions: compilerProps("options"),
             supportsBinary: !!compilerProps("supportsBinary"),
+            languages: languages,
             sources: sources,
             raven: gccProps('ravenUrl', ''),
             release: gitReleaseName,

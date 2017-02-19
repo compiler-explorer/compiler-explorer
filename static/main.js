@@ -187,11 +187,18 @@ define(function (require) {
             window.location.reload();
         });
 
-        var hostName = window.location.hostname;
-        $('#languages-links').append('<li><a href="//gcc.' + hostName + '">C++</a></li>');
-        $('#languages-links').append('<li><a href="//d.' + hostName + '">D</a></li>');
-        $('#languages-links').append('<li><a href="//go.' + hostName + '">Go</a></li>');
-        $('#languages-links').append('<li><a href="//rust.' + hostName + '">Rust</a></li>');
+        if (options.languages) {
+            _.each(options.languages, function (lang) {
+                var links = $("#languages-links");
+                links.find(".template")
+                    .clone()
+                    .removeClass("template")
+                    .appendTo(links)
+                    .find('a').attr('href', lang.url).text(lang.language);
+            });
+        } else {
+            $("#languages-links").parent().hide();
+        }
     }
 
     $(start);
