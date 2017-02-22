@@ -65,6 +65,28 @@ define(function (require) {
     var Raven = require('raven-js');
     var settings = require('./settings');
 
+    function setupSettings(eventHub) {
+        var currentSettings = {};
+        try {
+            currentSettings = JSON.parse(window.localStorage.getItem('settings'));
+        } catch (e) {
+        }
+        function onChange(settings) {
+            currentSettings = settings;
+            try {
+                window.localStorage.setItem('settings', JSON.stringify(settings));
+            } catch (e) {
+            }
+            eventHub.emit('settingsChange', settings);
+        }
+
+        eventHub.on('requestSettings', function () {
+            eventHub.emit('settingsChange', currentSettings);
+        });
+
+        settings($('#settings'), currentSettings, onChange);
+    }
+
     function start() {
         analytics.initialise();
         sharing.initialise();
@@ -152,19 +174,7 @@ define(function (require) {
 
         new clipboard('.btn.clippy');
 
-        settings($('#settings'), function () {
-            try {
-                return JSON.parse(window.localStorage.getItem('settings'));
-            } catch (e) {
-                return {};
-            }
-        }(), function (settings) {
-            try {
-                window.localStorage.setItem('settings', JSON.stringify(settings));
-            } catch (e) {
-            }
-            layout.eventHub.emit('settingsChange', settings);
-        });
+        setupSettings(layout.eventHub);
 
         sharing.initShareButton($('#share'), layout);
 

@@ -114,7 +114,7 @@ define(function (require) {
         container.on('resize', this.resize, this);
         container.on('shown', this.resize, this);
         container.on('open', function () {
-            self.eventHub.emit('compilerOpen', self.id);
+            self.eventHub.emit('compilerOpen', self.id, self.sourceEditorId);
             self.updateFontScale();
         });
         this.eventHub.on('editorChange', this.onEditorChange, this);
@@ -438,8 +438,8 @@ define(function (require) {
     Compiler.prototype.currentState = function () {
         var state = {
             compiler: this.compiler ? this.compiler.id : "",
+            source: this.sourceEditorId,
             options: this.options,
-            source: this.editor,
             filters: this.filters.get()  // NB must *not* be effective filters
         };
         this.fontScale.addState(state);

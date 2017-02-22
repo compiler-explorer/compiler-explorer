@@ -46,6 +46,7 @@ define(function (require) {
         this.domRoot.html($('#codeEditor').html());
         this.eventHub = hub.createEventHub();
         this.settings = {};
+        this.ourCompilers = {}
 
         this.widgetsByCompiler = {};
         this.asmByCompiler = {};
@@ -144,6 +145,7 @@ define(function (require) {
         this.eventHub.on('selectLine', this.onSelectLine, this);
 
         this.eventHub.on('settingsChange', this.onSettingsChange, this);
+        this.eventHub.emit('requestSettings');
 
         // NB a new compilerConfig needs to be created every time; else the state is shared
         // between all compilers created this way. That leads to some nasty-to-find state
@@ -231,7 +233,16 @@ define(function (require) {
         this.eventHub.emit('colours', this.id, colours, this.settings.colourScheme);
     };
 
+    Editor.prototype.onCompilerOpen = function (compilerId, editorId) {
+        if (editorId === this.id) {
+            // On any compiler open, rebroadcast our state in case they need to know it.
+            this.maybeEmitChange(true);
+            this.ourCompilers[compilerId] = true;
+        }
+    };
+
     Editor.prototype.onCompilerClose = function (compilerId) {
+        if (!this.ourCompilers[compilerId]) return;
         monaco.editor.setModelMarkers(this.editor.getModel(), compilerId, []);
         delete this.widgetsByCompiler[compilerId];
         delete this.asmByCompiler[compilerId];
@@ -239,16 +250,13 @@ define(function (require) {
         this.numberUsedLines();
     };
 
-    Editor.prototype.onCompilerOpen = function () {
-        // On any compiler open, rebroadcast our state in case they need to know it.
-        this.maybeEmitChange(true);
-    };
-
     Editor.prototype.onCompiling = function (compilerId) {
+        if (!this.ourCompilers[compilerId]) return;
         this.busyCompilers[compilerId] = true;
     };
 
     Editor.prototype.onCompileResponse = function (compilerId, compiler, result) {
+        if (!this.ourCompilers[compilerId]) return;
         this.busyCompilers[compilerId] = false;
         var output = (result.stdout || []).concat(result.stderr || []);
         var widgets = _.compact(_.map(output, function (obj) {
