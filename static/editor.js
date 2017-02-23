@@ -46,7 +46,7 @@ define(function (require) {
         this.domRoot.html($('#codeEditor').html());
         this.eventHub = hub.createEventHub();
         this.settings = {};
-        this.ourCompilers = {}
+        this.ourCompilers = {};
 
         this.widgetsByCompiler = {};
         this.asmByCompiler = {};
