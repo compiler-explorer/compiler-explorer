@@ -175,7 +175,8 @@ function ClientOptionsHandler(fileSources) {
             sources: sources,
             raven: gccProps('ravenUrl', ''),
             release: gitReleaseName,
-            environment: env
+            environment: env,
+            localStoragePrefix: gccProps('localStoragePrefix')
         };
         text = JSON.stringify(options);
     };

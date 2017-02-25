@@ -64,19 +64,14 @@ define(function (require) {
     var Hub = require('hub');
     var Raven = require('raven-js');
     var settings = require('./settings');
+    var local = require('./local');
 
     function setupSettings(eventHub) {
-        var currentSettings = {};
-        try {
-            currentSettings = JSON.parse(window.localStorage.getItem('settings'));
-        } catch (e) {
-        }
+        var currentSettings = JSON.parse(local.get('settings', '{}'));
+
         function onChange(settings) {
             currentSettings = settings;
-            try {
-                window.localStorage.setItem('settings', JSON.stringify(settings));
-            } catch (e) {
-            }
+            local.set('settings', JSON.stringify(settings));
             eventHub.emit('settingsChange', settings);
         }
 
@@ -116,12 +111,7 @@ define(function (require) {
             }
 
             if (!config) {
-                var savedState = null;
-                try {
-                    savedState = window.localStorage.getItem('gl');
-                } catch (e) {
-                    // Some browsers in secure modes can throw exceptions here...
-                }
+                var savedState = local.get('gl', null);
                 config = savedState !== null ? JSON.parse(savedState) : defaultConfig;
             }
         } else {
@@ -152,12 +142,7 @@ define(function (require) {
             var config = layout.toConfig();
             // Only preserve state in localStorage in non-embedded mode.
             if (!options.embedded) {
-                var state = JSON.stringify(config);
-                try {
-                    window.localStorage.setItem('gl', state);
-                } catch (e) {
-                    // Some browsers in secure modes may throw
-                }
+                local.set('gl', JSON.stringify(config));
             } else {
                 $('a.link').attr('href', '#' + url.serialiseState(config));
             }
@@ -193,7 +178,7 @@ define(function (require) {
         });
 
         $('#ui-reset').click(function () {
-            window.localStorage.removeItem('gl');
+            local.remove('gl');
             window.location.reload();
         });
 
