@@ -159,7 +159,7 @@ define(function (require) {
                     // Some browsers in secure modes may throw
                 }
             } else {
-                $('a.link').attr('href', '/#' + url.serialiseState(config));
+                $('a.link').attr('href', '#' + url.serialiseState(config));
             }
         });
 

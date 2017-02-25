@@ -61,7 +61,7 @@ define(function (require) {
     }
 
     LoadSave.prototype.populateBuiltins = function () {
-        $.getJSON('/source/builtin/list', _.bind(function (list) {
+        $.getJSON('source/builtin/list', _.bind(function (list) {
             this.populate(
                 this.modal.find('.examples'),
                 _.map(list, _.bind(function (elem) {
@@ -143,7 +143,7 @@ define(function (require) {
 
     LoadSave.prototype.doLoad = function (urlpart) {
         // TODO: handle errors. consider promises...
-        $.getJSON('/source/builtin/load/' + urlpart, _.bind(function (response) {
+        $.getJSON('source/builtin/load/' + urlpart, _.bind(function (response) {
             this.onLoad(response.file);
         }, this));
         this.modal.modal('hide');
