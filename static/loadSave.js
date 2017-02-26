@@ -27,37 +27,115 @@ define(function (require) {
     "use strict";
     var $ = require('jquery');
     var _ = require('underscore');
+    var Alert = require('./alert');
+    var local = require('./local');
+
+    function getLocalFiles() {
+        return JSON.parse(local.get('files', "{}"));
+    }
+
+    function setLocalFile(name, file) {
+        var files = getLocalFiles();
+        files[name] = file;
+        local.set('files', JSON.stringify(files));
+    }
 
     function LoadSave() {
         this.modal = $('#load-save');
+        this.alert = new Alert();
         this.onLoad = _.identity;
+        this.editorText = '';
 
-        $.getJSON('/source/builtin/list', _.bind(function (list) {
-            this.modal.find('.example:visible').remove();
-            var examples = this.modal.find('.examples');
-            var template = examples.find('.template.example');
-            _.each(list, _.bind(function (elem) {
-                template
-                    .clone()
-                    .removeClass('template')
-                    .appendTo(examples)
-                    .find('a')
-                    .text(elem.name)
-                    .click(_.bind(function () {
-                        this.doLoad(elem.urlpart);
-                    }, this));
-            }, this));
-        }, this));
+        this.modal.find('.local-file').change(_.bind(this.onLocalFile, this));
+        this.modal.find('.save-button').click(_.bind(this.onSave, this));
+
+        this.populateBuiltins();
     }
 
-    LoadSave.prototype.run = function (onLoad) {
+    LoadSave.prototype.populateBuiltins = function () {
+        $.getJSON('source/builtin/list', _.bind(function (list) {
+            this.populate(
+                this.modal.find('.examples'),
+                _.map(list, _.bind(function (elem) {
+                    return {
+                        name: elem.name, load: _.bind(function () {
+                            this.doLoad(elem.urlpart);
+                        }, this)
+                    };
+                }, this)));
+        }, this));
+    };
+
+    LoadSave.prototype.populateLocalStorage = function () {
+        this.populate(
+            this.modal.find('.local-storage'),
+            _.map(getLocalFiles(), _.bind(function (data, name) {
+                return {
+                    name: name,
+                    load: _.bind(function () {
+                        this.onLoad(data);
+                        this.modal.modal('hide');
+                    }, this)
+                };
+            }, this)));
+    };
+
+    LoadSave.prototype.populate = function (root, list) {
+        root.find('li:not(.template)').remove();
+        var template = root.find('.template');
+        _.each(list, _.bind(function (elem) {
+            template
+                .clone()
+                .removeClass('template')
+                .appendTo(root)
+                .find('a')
+                .text(elem.name)
+                .click(elem.load);
+        }, this));
+    };
+
+    LoadSave.prototype.onLocalFile = function (event) {
+        var files = event.target.files;
+        var file = files[0];
+        var reader = new FileReader();
+        reader.onload = _.bind(function () {
+            this.onLoad(reader.result);
+        }, this);
+        reader.readAsText(file);
+        this.modal.modal('hide');
+    };
+
+    LoadSave.prototype.run = function (onLoad, editorText) {
+        this.populateLocalStorage();
         this.onLoad = onLoad;
+        this.editorText = editorText;
         this.modal.modal();
+    };
+
+    LoadSave.prototype.onSave = function () {
+        var name = this.modal.find('.save-name').val();
+        if (!name) {
+            this.alert.alert("Save name", "Invalid save name");
+            return;
+        }
+        var done = _.bind(function () {
+            setLocalFile(name, this.editorText);
+        }, this);
+        if (getLocalFiles()[name] !== undefined) {
+            this.modal.modal('hide');
+            this.alert.ask(
+                "Replace current?",
+                "Do you want to replace the existing saved file '" + name + "'?",
+                {yes: done});
+        } else {
+            done();
+            this.modal.modal('hide');
+        }
     };
 
     LoadSave.prototype.doLoad = function (urlpart) {
         // TODO: handle errors. consider promises...
-        $.getJSON('/source/builtin/load/' + urlpart, _.bind(function (response) {
+        $.getJSON('source/builtin/load/' + urlpart, _.bind(function (response) {
             this.onLoad(response.file);
         }, this));
         this.modal.modal('hide');

@@ -16,7 +16,6 @@
     "tests"
   ],
   "dependencies": {
-    "codemirror": "^5.19.0",
     "requirejs": "^2.3.2",
     "underscore": "^1.8.3",
     "golden-layout": "^1.5.6",
@@ -26,8 +25,9 @@
     "eventEmitter": "^5.1.0",
     "lz-string": "^1.4.4",
     "clipboard": "^1.5.12",
-    "raven-js": "^3.7.0",
+    "raven-js": "^3.10.0",
     "es6-promise": "^4.0.5",
-    "lru-cache": "2.7.3"
+    "lru-cache": "2.7.3",
+    "seiyria-bootstrap-slider": "9.7.x"
   }
 }

@@ -24,38 +24,42 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 define(function (require) {
-    var $ = require('jquery');
+    "use strict";
+    var options = require('./options');
+    var prefix = options.localStoragePrefix || '';
 
-    function Alert() {
-        this.yesHandler = null;
-        this.noHandler = null;
-        $('#yes-no button.yes').click(_.bind(function () {
-            if (this.yesHandler) this.yesHandler();
-        }, this));
-        $('#yes-no button.no').click(_.bind(function () {
-            if (this.noHandler) this.noHandler();
-        }, this));
+    function get(key, ifNotPresent) {
+        var result;
+        try {
+            result = window.localStorage.getItem(prefix + key);
+        } catch (e) {
+            // Swallow up any security exceptions...
+        }
+        if (result === null) return ifNotPresent;
+        return result;
     }
 
-    Alert.prototype.alert = function (title, body) {
-        var modal = $('#alert');
-        modal.find('.modal-title').html(title);
-        modal.find('.modal-body').html(body);
-        modal.modal();
-    };
+    function set(key, value) {
+        try {
+            window.localStorage.setItem(prefix + key, value);
+            return true;
+        } catch (e) {
+            // Swallow up any security exceptions...
+        }
+        return false;
+    }
 
-    Alert.prototype.ask = function (title, question, handlers) {
-        var modal = $('#yes-no');
-        this.yesHandler = handlers.yes;
-        this.noHandler = handlers.no;
-        modal.find('.modal-title').html(title);
-        modal.find('.modal-body').html(question);
-        modal.modal();
-    };
+    function remove(key) {
+        try {
+            window.localStorage.removeItem(prefix + key);
+        } catch (e) {
+            // Swallow up any security exceptions...
+        }
+    }
 
-    Alert.prototype.onYesNoHide = function (evt) {
-        console.log(evt);
+    return {
+        set: set,
+        get: get,
+        remove: remove
     };
-
-    return Alert;
 });

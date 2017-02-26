@@ -24,70 +24,106 @@
 
 define(function (require) {
     "use strict";
-    var CodeMirror = require('codemirror');
-    CodeMirror.defineMode("asm", function () {
-        function tokenString(quote) {
-            return function (stream) {
-                var escaped = false, next, end = false;
-                while ((next = stream.next()) !== null) {
-                    if (next == quote && !escaped) {
-                        end = true;
-                        break;
-                    }
-                    escaped = !escaped && next == "\\";
-                }
-                return "string";
-            };
-        }
+    var monaco = require('monaco');
 
-        var x86_32regName = /\b[re]?(ax|bx|cx|dx|si|di|bp|ip|sp)\b/;
-        var x86_64regName = /r[\d]+[d]?/;
-        var x86_xregName = /[xy]mm\d+/;
-        var x86_keywords = /PTR|BYTE|[DQ]?WORD|XMMWORD|YMMWORD/;
-        var labelName = /\.L\w+/;
-
+    function definition() {
         return {
-            token: function (stream) {
-                if (stream.match(/\/\*([^*]|[*][^\/])*\**\//)) {
-                    return "comment";
-                }
-                if (stream.match(/^.+:$/)) {
-                    return "variable-2";
-                }
-                if (stream.sol() && stream.match(/^\s*\.\w+/)) {
-                    return "header";
-                }
-                if (stream.sol() && stream.match(/^\s+\w+/)) {
-                    return "keyword";
-                }
-                if (stream.eatSpace()) return null;
-                if (stream.match(x86_32regName) || stream.match(x86_64regName) || stream.match(x86_xregName)) {
-                    return "variable-3";
-                }
-                if (stream.match(x86_keywords)) return "keyword";
-                if (stream.match(labelName)) return "variable-2";
-                var ch = stream.next();
-                if (ch == '"' || ch == "'") {
-                    return tokenString(ch)(stream);
-                }
-                if (/[\[\]{}\(\),;\:]/.test(ch)) return null;
-                if (/[\d$]/.test(ch) || (ch == '-' && stream.peek().match(/[0-9]/))) {
-                    stream.eatWhile(/[\w\.]/);
-                    return "number";
-                }
-                if (ch == '%') {
-                    stream.eatWhile(/\w+/);
-                    return "variable-3";
-                }
-                if (ch == '#') {
-                    stream.eatWhile(/.*/);
-                    return "comment";
-                }
-                stream.eatWhile(/[^\s]*/);
-                return "word";
+            // Set defaultToken to invalid to see what you do not tokenize yet
+            defaultToken: 'invalid',
+
+            // we include these common regular expressions
+            symbols: /[=><!~?:&|+\-*\/\^%]+/,
+
+            // C# style strings
+            escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
+
+            registers: /%?\b(r[0-9]+|([er]?(ax|cx|dx|sp|bp|si|di))|[xyz]mm[0-9]+|sp|fp|lr)\b/,
+
+            intelOperators: /PTR|(D|Q|[XYZ]MM)?WORD/,
+
+            tokenizer: {
+                root: [
+                    // Error document
+                    [/^<.*>$/, {token: 'annotation'}],
+                    // Label definition
+                    [/^[.a-zA-Z0-9_$][^:]*:/, {token: 'type.identifier', next: '@rest'}],
+                    // Label definition (ARM style)
+                    [/^\s*[|][^|]*[|]/, {token: 'type.identifier', next: '@rest'}],
+                    // Label defintion (CL style)
+                    [/^\s*[.a-zA-Z0-9_$|]*\s*(PROC|ENDP)/, {token: 'type.identifier', next: '@rest'}],
+                    // Constant definition
+                    [/^[.a-zA-Z0-9_$][^=]*=/, {token: 'type.identifier', next: '@rest'}],
+                    // opcode
+                    [/[a-zA-Z]+/, {token: 'keyword', next: '@rest'}],
+
+                    // whitespace
+                    {include: '@whitespace'}
+                ],
+
+                rest: [
+                    // pop at the beginning of the next line and rematch
+                    [/^.*$/, {token: '@rematch', next: '@pop'}],
+
+                    [/@registers/, 'variable.predefined'],
+                    [/@intelOperators/, 'annotation'],
+                    // delimiters and operators
+                    [/[{}()\[\]]/, '@brackets'],
+                    [/[<>](?!@symbols)/, '@brackets'],
+
+                    // ARM-style label reference
+                    [/[|][^|]*[|]*/, 'type.identifier'],
+
+                    // numbers
+                    [/\d*\.\d+([eE][\-+]?\d+)?/, 'number.float'],
+                    [/([$]|0[xX])[0-9a-fA-F]+/, 'number.hex'],
+                    [/\d+/, 'number'],
+                    // ARM-style immediate numbers (which otherwise look like comments)
+                    [/#-?\d+/, 'number'],
+
+                    // operators
+                    [/[-+,*\/!]/, 'operator'],
+
+                    // strings
+                    [/"([^"\\]|\\.)*$/, 'string.invalid'],  // non-teminated string
+                    [/"/, {token: 'string.quote', bracket: '@open', next: '@string'}],
+
+                    // characters
+                    [/'[^\\']'/, 'string'],
+                    [/(')(@escapes)(')/, ['string', 'string.escape', 'string']],
+                    [/'/, 'string.invalid'],
+
+                    // Assume anything else is a label reference
+                    [/[.?_$a-zA-Z][.?_$a-zA-Z0-9]*/, 'type.identifier'],
+
+                    // whitespace
+                    {include: '@whitespace'}
+                ],
+
+                comment: [
+                    [/[^\/*]+/, 'comment'],
+                    [/\/\*/, 'comment', '@push'],    // nested comment
+                    ["\\*/", 'comment', '@pop'],
+                    [/[\/*]/, 'comment']
+                ],
+
+                string: [
+                    [/[^\\"]+/, 'string'],
+                    [/@escapes/, 'string.escape'],
+                    [/\\./, 'string.escape.invalid'],
+                    [/"/, {token: 'string.quote', bracket: '@close', next: '@pop'}]
+                ],
+
+                whitespace: [
+                    [/[ \t\r\n]+/, 'white'],
+                    [/\/\*/, 'comment', '@comment'],
+                    [/\/\/.*$/, 'comment'],
+                    [/#.*$/, 'comment'],
+                    [/@.*$/, 'comment']
+                ]
             }
         };
-    });
+    }
 
-    CodeMirror.defineMIME("text/x-asm", "asm");
+    monaco.languages.register({id: 'asm'});
+    monaco.languages.setMonarchTokensProvider('asm', definition());
 });

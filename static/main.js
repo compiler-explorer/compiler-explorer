@@ -37,23 +37,22 @@ require.config({
         clipboard: 'ext/clipboard/dist/clipboard',
         'raven-js': 'ext/raven-js/dist/raven',
         'es6-promise': 'ext/es6-promise/es6-promise',
-        'lru-cache': 'ext/lru-cache/lib/lru-cache'
+        'lru-cache': 'ext/lru-cache/lib/lru-cache',
+        'vs': "ext/monaco-editor/min/vs",
+        'bootstrap-slider': 'ext/seiyria-bootstrap-slider/dist/bootstrap-slider'
     },
-    packages: [{
-        name: "codemirror",
-        location: "ext/codemirror",
-        main: "lib/codemirror"
-    }],
     shim: {
         underscore: {exports: '_'},
         'lru-cache': {exports: 'LRUCache'},
-        bootstrap: ['jquery']
+        bootstrap: ['jquery'],
+        'bootstrap-slider': ['bootstrap']
     }
 });
 
 define(function (require) {
     "use strict";
     require('bootstrap');
+    require('bootstrap-slider');
     var analytics = require('analytics');
     var sharing = require('sharing');
     var _ = require('underscore');
@@ -64,7 +63,24 @@ define(function (require) {
     var clipboard = require('clipboard');
     var Hub = require('hub');
     var Raven = require('raven-js');
-    var Alert = require('alert');
+    var settings = require('./settings');
+    var local = require('./local');
+
+    function setupSettings(eventHub) {
+        var currentSettings = JSON.parse(local.get('settings', '{}'));
+
+        function onChange(settings) {
+            currentSettings = settings;
+            local.set('settings', JSON.stringify(settings));
+            eventHub.emit('settingsChange', settings);
+        }
+
+        eventHub.on('requestSettings', function () {
+            eventHub.emit('settingsChange', currentSettings);
+        });
+
+        settings($('#settings'), currentSettings, onChange);
+    }
 
     function start() {
         analytics.initialise();
@@ -72,7 +88,6 @@ define(function (require) {
 
         var options = require('options');
         $('.language-name').text(options.language);
-        var alert = new Alert();
 
         var safeLang = options.language.toLowerCase().replace(/[^a-z_]+/g, '');
         var defaultSrc = $('.template .lang.' + safeLang).text().trim();
@@ -89,29 +104,14 @@ define(function (require) {
 
         var config;
         if (!options.embedded) {
-            var serializedState = window.location.hash.substr(1);
-            if (serializedState) {
-                try {
-                    config = url.deserialiseState(serializedState);
-                } catch (exception) {
-                    alert.alert("Unable to parse URL",
-                        "<div>Compiler Explorer was unable to parse the URL hash. " +
-                        "Please check it and try again.</div>" +
-                        "<div class='url-parse-info'>" + exception + "</div>");
-                }
-            }
+            config = url.deserialiseState(window.location.hash.substr(1));
             if (config) {
                 // replace anything in the default config with that from the hash
                 config = _.extend(defaultConfig, config);
             }
 
             if (!config) {
-                var savedState = null;
-                try {
-                    savedState = window.localStorage.getItem('gl');
-                } catch (e) {
-                    // Some browsers in secure modes can throw exceptions here...
-                }
+                var savedState = local.get('gl', null);
                 config = savedState !== null ? JSON.parse(savedState) : defaultConfig;
             }
         } else {
@@ -129,26 +129,22 @@ define(function (require) {
         var root = $("#root");
 
         var layout;
+        var hub;
         try {
             layout = new GoldenLayout(config, root);
-            new Hub(layout, defaultSrc);
+            hub = new Hub(layout, defaultSrc);
         } catch (e) {
             Raven.captureException(e);
             layout = new GoldenLayout(defaultConfig, root);
-            new Hub(layout, defaultSrc);
+            hub = new Hub(layout, defaultSrc);
         }
         layout.on('stateChanged', function () {
             var config = layout.toConfig();
             // Only preserve state in localStorage in non-embedded mode.
             if (!options.embedded) {
-                var state = JSON.stringify(config);
-                try {
-                    window.localStorage.setItem('gl', state);
-                } catch (e) {
-                    // Some browsers in secure modes may throw
-                }
+                local.set('gl', JSON.stringify(config));
             } else {
-                $('a.link').attr('href', '/#' + url.serialiseState(config));
+                $('a.link').attr('href', '#' + url.serialiseState(config));
             }
         });
 
@@ -163,16 +159,41 @@ define(function (require) {
 
         new clipboard('.btn.clippy');
 
+        setupSettings(layout.eventHub);
+
         sharing.initShareButton($('#share'), layout);
+
+        function setupAdd(thing, func) {
+            layout.createDragSource(thing, func);
+            thing.click(function () {
+                hub.addAtRoot(func());
+            });
+        }
+
+        setupAdd($('#add-diff'), function () {
+            return Components.getDiff();
+        });
+        setupAdd($('#add-editor'), function () {
+            return Components.getEditor();
+        });
+
         $('#ui-reset').click(function () {
-            window.localStorage.removeItem('gl');
+            local.remove('gl');
             window.location.reload();
         });
-        $('#thanks-to').click(function () {
-            $.get('thanks.html', function (result) {
-                alert.alert("Special thanks to", $(result));
+
+        if (options.languages) {
+            _.each(options.languages, function (lang) {
+                var links = $("#languages-links");
+                links.find(".template")
+                    .clone()
+                    .removeClass("template")
+                    .appendTo(links)
+                    .find('a').attr('href', lang.url).text(lang.language);
             });
-        });
+        } else {
+            $("#languages-links").parent().hide();
+        }
     }
 
     $(start);

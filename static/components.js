@@ -50,16 +50,14 @@ define(function (require) {
             return {
                 type: 'component',
                 componentName: 'codeEditor',
-                componentState: {id: id},
-                isClosable: false
+                componentState: {id: id}
             };
         },
         getEditorWith: function (id, source, options) {
             return {
                 type: 'component',
                 componentName: 'codeEditor',
-                componentState: {id: id, source: source, options: options},
-                isClosable: false
+                componentState: {id: id, source: source, options: options}
             };
         },
         getOutput: function (compiler, editor) {
@@ -67,6 +65,13 @@ define(function (require) {
                 type: 'component',
                 componentName: 'output',
                 componentState: {compiler: compiler, editor: editor},
+            };
+        },
+        getDiff: function () {
+            return {
+                type: 'component',
+                componentName: 'diff',
+                componentState: {}
             };
         }
     };

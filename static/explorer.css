@@ -1,12 +1,20 @@
 @import url("ext/bootstrap/dist/css/bootstrap.min.css");
-@import url("ext/codemirror/lib/codemirror.css");
 @import url("ext/golden-layout/src/css/goldenlayout-base.css");
 @import url("ext/golden-layout/src/css/goldenlayout-light-theme.css");
 @import url("ext/selectize/dist/css/selectize.bootstrap2.css");
+@import url("ext/seiyria-bootstrap-slider/dist/css/bootstrap-slider.css");
+@import url("colours.css");
+
+/* TEMP HACK: https://github.com/Microsoft/monaco-editor/issues/349 */
+.quick-open-tree .row { margin-left: 0; }
 
 .navbar {
     border-radius: 0;
     margin-bottom: 2px;
+}
+
+#lang-dropdown {
+    min-width: 5em;
 }
 
 .navbar-inverse {
@@ -41,11 +49,11 @@
 }
 
 .compiler-picker {
-    width: 14em;
+    min-width: 14em;
 }
 
-.CodeMirror {
-    font-size: 10pt;
+.diff-picker {
+    width: 20em;
 }
 
 input.options {
@@ -67,114 +75,18 @@ input.options {
     background-color: #5bc0de !important;
 }
 
-.inline-msg {
-    font-family: arial;
-    font-size: 70%;
-    padding: 2px 5px 3px;
-}
-
-.inline-msg .compiler {
-    font-style: italic;
-    float: right;
-}
-
-span.icon {
-    border-radius: 50%;
-    padding: 0 3px;
-    margin-right: 7px;
-}
-
-.error {
-    background: #faa !important;
-    color: #a00;
-}
-
-.error span.icon {
-    color: white;
-    background-color: red;
-    font-weight: bold;
-}
-
-.warning {
-    background: #ffa !important;
-    color: #440;
-}
-
-.warning span.icon {
-    color: black;
-    background-color: yellow;
-}
-
-.note {
-    background: #aaf !important;
-    color: #00a;
-}
-
-.note span.icon {
-    color: white;
-    background-color: blue;
-}
-
-/* These colours from Cynthia Brewer's excellent page at
- * http://colorbrewer2.org/
- */
-.rainbow-0 {
-    background: rgba(141, 211, 199, 0.35) !important;
-}
-
-.rainbow-1 {
-    background: rgba(255, 255, 179, 0.35) !important;
-}
-
-.rainbow-2 {
-    background: rgba(190, 186, 218, 0.35) !important;
-}
-
-.rainbow-3 {
-    background: rgba(251, 128, 114, 0.35) !important;
-}
-
-.rainbow-4 {
-    background: rgba(128, 177, 211, 0.35) !important;
-}
-
-.rainbow-5 {
-    background: rgba(253, 180, 98, 0.35) !important;
-}
-
-.rainbow-6 {
-    background: rgba(179, 222, 105, 0.35) !important;
-}
-
-.rainbow-7 {
-    background: rgba(252, 205, 229, 0.35) !important;
-}
-
-.rainbow-8 {
-    background: rgba(217, 217, 217, 0.35) !important;
-}
-
-.rainbow-9 {
-    background: rgba(188, 128, 189, 0.35) !important;
-}
-
-.rainbow-10 {
-    background: rgba(204, 234, 197, 0.35) !important;
-}
-
-.rainbow-11 {
-    background: rgba(255, 237, 111, 0.35) !important;
-}
-
 .address {
     width: 5em;
     font-size: smaller;
+    text-align: left;
+    display: inline-block;
 }
 
 .opcodes {
-    width: 7em;
-    overflow: hidden;
+    width: 6em;
     font-size: smaller;
+    text-align: left;
+    display: inline-block;
 }
 
 .opcode {
@@ -228,4 +140,9 @@ pre.content {
     font-size: small;
     margin-top: 1em;
     font-style: italic;
+}
+
+.small-v-scrollable {
+    max-height: 8em;
+    overflow-y: auto;
 }

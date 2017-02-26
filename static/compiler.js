@@ -25,7 +25,6 @@
 
 define(function (require) {
     "use strict";
-    var CodeMirror = require('codemirror');
     var $ = require('jquery');
     var _ = require('underscore');
     var ga = require('analytics').ga;
@@ -35,14 +34,15 @@ define(function (require) {
     var Promise = require('es6-promise').Promise;
     var Components = require('components');
     var LruCache = require('lru-cache');
-
+    var monaco = require('monaco');
     require('asm-mode');
+
     require('selectize');
 
     var options = require('options');
     var compilers = options.compilers;
     var compilersById = {};
-    _.forEach(compilers, function(compiler) {
+    _.forEach(compilers, function (compiler) {
         compilersById[compiler.id] = compiler;
         if (compiler.alias) compilersById[compiler.alias] = compiler;
     });
@@ -60,13 +60,14 @@ define(function (require) {
         this.domRoot = container.getElement();
         this.domRoot.html($('#compiler').html());
 
-        this.id = state.id || hub.nextId();
+        this.id = state.id || hub.nextCompilerId();
         this.sourceEditorId = state.source || 1;
         this.compiler = compilersById[state.compiler] || compilersById[options.defaultCompiler];
         this.options = state.options || options.compileOptions;
         this.filters = new Toggles(this.domRoot.find(".filters"), state.filters);
         this.source = "";
         this.assembly = [];
+        this.colours = [];
         this.lastResult = null;
         this.pendingRequestSentAt = 0;
         this.nextRequest = null;
@@ -92,15 +93,13 @@ define(function (require) {
         // Hide the binary option if the global options has it disabled.
         this.domRoot.find("[data-bind='binary']").toggle(options.supportsBinary);
 
-        this.outputEditor = CodeMirror.fromTextArea(this.domRoot.find("textarea")[0], {
-            lineNumbers: true,
-            mode: "text/x-asm",
+        this.outputEditor = monaco.editor.create(this.domRoot.find(".monaco-placeholder")[0], {
+            scrollBeyondLastLine: false,
             readOnly: true,
-            gutters: ['CodeMirror-linenumbers'],
-            lineWrapping: true
+            language: 'asm'
         });
 
-        this.fontScale = new FontScale(this.domRoot, state);
+        this.fontScale = new FontScale(this.domRoot, state, this.outputEditor);
         this.fontScale.on('change', _.bind(function () {
             this.saveState();
             this.updateFontScale();
@@ -115,13 +114,15 @@ define(function (require) {
         container.on('resize', this.resize, this);
         container.on('shown', this.resize, this);
         container.on('open', function () {
-            self.eventHub.emit('compilerOpen', self.id);
+            self.eventHub.emit('compilerOpen', self.id, self.sourceEditorId);
             self.updateFontScale();
         });
         this.eventHub.on('editorChange', this.onEditorChange, this);
         this.eventHub.on('editorClose', this.onEditorClose, this);
         this.eventHub.on('colours', this.onColours, this);
         this.eventHub.on('resendCompilation', this.onResendCompilation, this);
+        this.eventHub.on('findCompilers', this.sendCompiler, this);
+        this.sendCompiler();
         this.updateCompilerName();
         this.updateButtons();
 
@@ -160,8 +161,10 @@ define(function (require) {
     Compiler.prototype.resize = function () {
         var topBarHeight = this.domRoot.find(".top-bar").outerHeight(true);
         var bottomBarHeight = this.domRoot.find(".bottom-bar").outerHeight(true);
-        this.outputEditor.setSize(this.domRoot.width(), this.domRoot.height() - topBarHeight - bottomBarHeight);
-        this.outputEditor.refresh();
+        this.outputEditor.layout({
+            width: this.domRoot.width(),
+            height: this.domRoot.height() - topBarHeight - bottomBarHeight
+        });
     };
 
     // Gets the filters that will actually be used (accounting for issues with binary
@@ -184,7 +187,7 @@ define(function (require) {
         };
 
         if (!this.compiler) {
-            this.onCompileResponse(request, errorResult("Please select a compiler"), false);
+            this.onCompileResponse(request, errorResult("<Please select a compiler>"), false);
             return;
         }
 
@@ -214,7 +217,7 @@ define(function (require) {
         }, this), 500);
         $.ajax({
             type: 'POST',
-            url: '/api/compiler/' + encodeURIComponent(request.compiler) + '/compile',
+            url: 'api/compiler/' + encodeURIComponent(request.compiler) + '/compile',
             dataType: 'json',
             contentType: 'application/json',
             data: jsonRequest,
@@ -227,55 +230,60 @@ define(function (require) {
             }, this),
             error: _.bind(function (xhr, e_status, error) {
                 clearTimeout(progress);
-                this.onCompileResponse(request, errorResult("Remote compilation failed: " + error), false);
+                this.onCompileResponse(request, errorResult("<Remote compilation failed: " + error + ">"), false);
             }, this),
             cache: false
         });
     };
 
+    Compiler.prototype.getBinaryForLine = function (line) {
+        var obj = this.assembly[line - 1];
+        var address = obj.address ? obj.address.toString(16) : "";
+        var opcodes = '<div class="opcodes" title="' + (obj.opcodes || []).join(" ") + '">';
+        _.each(obj.opcodes, function (op) {
+            opcodes += ('<span class="opcode">' + op + '</span>');
+        });
+        return '<div class="address">' + address + '</div>' + opcodes + '</div>';
+    };
+
+    // TODO: use ContentWidgets? OverlayWidgets?
+    // Use highlight providers? hover providers? highlight providers?
     Compiler.prototype.setAssembly = function (assembly) {
         this.assembly = assembly;
-        this.outputEditor.setValue(_.pluck(assembly, 'text').join("\n"));
-
+        this.outputEditor.getModel().setValue(_.pluck(assembly, 'text').join("\n"));
         var addrToAddrDiv = {};
+        var decorations = [];
         _.each(this.assembly, _.bind(function (obj, line) {
             var address = obj.address ? obj.address.toString(16) : "";
-            var div = $("<div class='address cm-number'>" + address + "</div>");
-            addrToAddrDiv[address] = {div: div, line: line};
-            this.outputEditor.setGutterMarker(line, 'address', div[0]);
+        //     var div = $("<div class='address cm-number'>" + address + "</div>");
+            addrToAddrDiv[address] = {div: "moo", line: line};
         }, this));
 
         _.each(this.assembly, _.bind(function (obj, line) {
-            var opcodes = $("<div class='opcodes'></div>");
-            if (obj.opcodes) {
-                _.each(obj.opcodes, function (op) {
-                    opcodes.append($("<span class='opcode'>" + op + "</span>"));
-                });
-                opcodes.attr('title', obj.opcodes.join(" "));
-            }
-            this.outputEditor.setGutterMarker(line, 'opcodes', opcodes[0]);
             if (obj.links) {
                 _.each(obj.links, _.bind(function (link) {
-                    var from = {line: line, ch: link.offset};
-                    var to = {line: line, ch: link.offset + link.length};
                     var address = link.to.toString(16);
-                    var thing = $("<a href='#' class='cm-number'>" + address + "</a>");
-                    this.outputEditor.markText(
-                        from, to, {replacedWith: thing[0], handleMouseEvents: false});
+                    // var thing = $("<a href='#' class='cm-number'>" + address + "</a>");
+                    // this.outputEditor.markText(
+                    //     from, to, {replacedWith: thing[0], handleMouseEvents: false});
                     var dest = addrToAddrDiv[address];
                     if (dest) {
-                        var editor = this.outputEditor;
-                        thing.hover(function (e) {
-                            var entered = e.type == "mouseenter";
-                            dest.div.toggleClass("highlighted", entered);
-                            thing.toggleClass("highlighted", entered);
+                        decorations.push({
+                            range: new monaco.Range(line, link.offset, line, link.offset + link.length),
+                            options: {}
                         });
-                        thing.on('click', function (e) {
-                            editor.scrollIntoView({line: dest.line, ch: 0}, 30);
-                            dest.div.toggleClass("highlighted", false);
-                            thing.toggleClass("highlighted", false);
-                            e.preventDefault();
-                        });
+                        // var editor = this.outputEditor;
+                        // thing.hover(function (e) {
+                        //     var entered = e.type == "mouseenter";
+                        //     dest.div.toggleClass("highlighted", entered);
+                        //     thing.toggleClass("highlighted", entered);
+                        // });
+                        // thing.on('click', function (e) {
+                        //     editor.scrollIntoView({line: dest.line, ch: 0}, 30);
+                        //     dest.div.toggleClass("highlighted", false);
+                        //     thing.toggleClass("highlighted", false);
+                        //     e.preventDefault();
+                        // });
                     }
                 }, this));
             }
@@ -308,16 +316,18 @@ define(function (require) {
             timingVar: request.compiler,
             timingValue: timeTaken
         });
-        this.outputEditor.operation(_.bind(function () {
-            this.setAssembly(result.asm || fakeAsm("<No output>"));
-            if (request.filters.binary) {
-                this.outputEditor.setOption('lineNumbers', false);
-                this.outputEditor.setOption('gutters', ['address', 'opcodes']);
-            } else {
-                this.outputEditor.setOption('lineNumbers', true);
-                this.outputEditor.setOption('gutters', ['CodeMirror-linenumbers']);
-            }
-        }, this));
+        this.setAssembly(result.asm || fakeAsm("<No output>"));
+        if (request.filters.binary) {
+            this.outputEditor.updateOptions({
+                lineNumbers: _.bind(this.getBinaryForLine, this),
+                lineNumbersMinChars: 18
+            });
+        } else {
+            this.outputEditor.updateOptions({
+                lineNumbers: true,
+                lineNumbersMinChars: 5
+            });
+        }
         var status = this.domRoot.find(".status");
         var allText = _.pluck((result.stdout || []).concat(result.stderr | []), 'text').join("\n");
         var failed = result.code !== 0;
@@ -397,6 +407,7 @@ define(function (require) {
         this.saveState();
         this.compile();
         this.updateButtons();
+        this.sendCompiler();
     };
 
     Compiler.prototype.onCompilerChange = function (value) {
@@ -405,6 +416,11 @@ define(function (require) {
         this.compile();
         this.updateButtons();
         this.updateCompilerName();
+        this.sendCompiler();
+    };
+
+    Compiler.prototype.sendCompiler = function () {
+        this.eventHub.emit('compiler', this.id, this.compiler, this.options);
     };
 
     Compiler.prototype.onEditorClose = function (editor) {
@@ -422,8 +438,8 @@ define(function (require) {
     Compiler.prototype.currentState = function () {
         var state = {
             compiler: this.compiler ? this.compiler.id : "",
+            source: this.sourceEditorId,
             options: this.options,
-            source: this.editor,
             filters: this.filters.get()  // NB must *not* be effective filters
         };
         this.fontScale.addState(state);
@@ -438,13 +454,13 @@ define(function (require) {
         this.eventHub.emit('compilerFontScale', this.id, this.fontScale.scale);
     };
 
-    Compiler.prototype.onColours = function (editor, colours) {
+    Compiler.prototype.onColours = function (editor, colours, scheme) {
         if (editor == this.sourceEditorId) {
             var asmColours = {};
             _.each(this.assembly, function (x, index) {
                 if (x.source) asmColours[index] = colours[x.source - 1];
             });
-            colour.applyColours(this.outputEditor, asmColours);
+            this.colours = colour.applyColours(this.outputEditor, asmColours, scheme, this.colours);
         }
     };
 

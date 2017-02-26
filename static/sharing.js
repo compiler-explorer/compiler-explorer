@@ -77,7 +77,9 @@ define(function (require) {
             });
         if (!filters.compileOnChange)
             filters.readOnly = true;
-        return window.location.origin + '/e#' + url.risonify({
+        var location = window.location.origin + window.location.pathname;
+        if (location[location.length - 1] !== '/') location += '/';
+        return location + 'e#' + url.risonify({
                 filters: _.keys(filters).join(","),
                 source: source,
                 compiler: compilerName,

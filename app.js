@@ -29,7 +29,6 @@ var nopt = require('nopt'),
     os = require('os'),
     props = require('./lib/properties'),
     CompileHandler = require('./lib/compile-handler').CompileHandler,
-    buildDiffHandler = require('./lib/diff').buildDiffHandler,
     express = require('express'),
     child_process = require('child_process'),
     path = require('path'),
@@ -89,13 +88,6 @@ props.initialize(rootDir + '/config', propHierarchy);
 // Instantiate a function to access records concerning "compiler-explorer" 
 // in hidden object props.properties
 var gccProps = props.propsFor("compiler-explorer");
-
-// Read from gccexplorer's config the wdiff configuration
-// that will be used to configure lib/diff.js
-var wdiffConfig = {
-    wdiffExe: gccProps('wdiff', "wdiff"),
-    maxOutput: gccProps("max-diff-output", 100000)
-};
 
 // Instantiate a function to access records concerning the chosen language
 // in hidden object props.properties
@@ -160,6 +152,10 @@ function ClientOptionsHandler(fileSources) {
     // sort source file alphabetically
     sources = sources.sort(compareOn("name"));
     var text = "";
+    var languages = _.map(gccProps("languages", '').split(':'), function (thing) {
+        var splat = thing.split("=");
+        return {language: splat[0], url: splat[1]};
+    });
     this.setCompilers = function (compilers) {
         var options = {
             googleAnalyticsAccount: gccProps('clientGoogleAnalyticsAccount', 'UA-55180-6'),
@@ -175,10 +171,12 @@ function ClientOptionsHandler(fileSources) {
             defaultCompiler: compilerProps('defaultCompiler', ''),
             compileOptions: compilerProps("options"),
             supportsBinary: !!compilerProps("supportsBinary"),
+            languages: languages,
             sources: sources,
             raven: gccProps('ravenUrl', ''),
             release: gitReleaseName,
-            environment: env
+            environment: env,
+            localStoragePrefix: gccProps('localStoragePrefix')
         };
         text = JSON.stringify(options);
     };
@@ -495,8 +493,7 @@ findCompilers()
             bodyParser = require('body-parser'),
             morgan = require('morgan'),
             compression = require('compression'),
-            restreamer = require('./lib/restreamer'),
-            diffHandler = buildDiffHandler(wdiffConfig);
+            restreamer = require('./lib/restreamer');
 
         logger.info("=======================================");
         logger.info("Listening on http://" + (hostname || 'localhost') + ":" + port + "/");
@@ -529,8 +526,7 @@ findCompilers()
             .use('/api', apiHandler.handler)
             .use('/g', shortUrlHandler)
             .use('/e', embeddedHandler)
-            .post('/compile', compileHandler.handler)
-            .post('/diff', diffHandler);
+            .post('/compile', compileHandler.handler);
         logger.info("=======================================");
 
         webServer.on('error', function (err) {

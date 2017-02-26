@@ -24,38 +24,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 define(function (require) {
-    var $ = require('jquery');
+    require('vs/editor/editor.main');
 
-    function Alert() {
-        this.yesHandler = null;
-        this.noHandler = null;
-        $('#yes-no button.yes').click(_.bind(function () {
-            if (this.yesHandler) this.yesHandler();
-        }, this));
-        $('#yes-no button.no').click(_.bind(function () {
-            if (this.noHandler) this.noHandler();
-        }, this));
-    }
-
-    Alert.prototype.alert = function (title, body) {
-        var modal = $('#alert');
-        modal.find('.modal-title').html(title);
-        modal.find('.modal-body').html(body);
-        modal.modal();
-    };
-
-    Alert.prototype.ask = function (title, question, handlers) {
-        var modal = $('#yes-no');
-        this.yesHandler = handlers.yes;
-        this.noHandler = handlers.no;
-        modal.find('.modal-title').html(title);
-        modal.find('.modal-body').html(question);
-        modal.modal();
-    };
-
-    Alert.prototype.onYesNoHide = function (evt) {
-        console.log(evt);
-    };
-
-    return Alert;
+    return monaco;
 });

@@ -25,81 +25,71 @@
 
 define(function (require) {
     "use strict";
-    var CodeMirror = require('codemirror');
     var _ = require('underscore');
     var $ = require('jquery');
     var colour = require('colour');
-    var Toggles = require('toggles');
     var loadSaveLib = require('loadSave');
     var FontScale = require('fontscale');
     var Sharing = require('sharing');
     var Components = require('components');
-
-    require('codemirror/mode/clike/clike');
-    require('codemirror/mode/d/d');
-    require('codemirror/mode/go/go');
-    require('codemirror/mode/rust/rust');
-    require('codemirror/addon/comment/comment');
+    var monaco = require('monaco');
+    require('./d-mode');
+    require('./rust-mode');
 
     var loadSave = new loadSaveLib.LoadSave();
 
     function Editor(hub, state, container, lang, defaultSrc) {
         var self = this;
-        this.id = state.id || hub.nextId();
+        this.id = state.id || hub.nextEditorId();
         this.container = container;
         this.domRoot = container.getElement();
         this.domRoot.html($('#codeEditor').html());
         this.eventHub = hub.createEventHub();
+        this.settings = {};
+        this.ourCompilers = {};
 
         this.widgetsByCompiler = {};
         this.asmByCompiler = {};
         this.busyCompilers = {};
-        this.options = new Toggles(this.domRoot.find('.options'), state.options);
-        this.options.on('change', _.bind(this.onOptionsChange, this));
+        this.colours = [];
 
         var cmMode;
         switch (lang.toLowerCase()) {
             default:
-                cmMode = "text/x-c++src";
+                cmMode = "cpp";
                 break;
             case "c":
-                cmMode = "text/x-c";
+                cmMode = "cpp";
                 break;
             case "rust":
-                cmMode = "text/x-rustsrc";
+                cmMode = "rust";
                 break;
             case "d":
-                cmMode = "text/x-d";
+                cmMode = "d";
                 break;
             case "go":
-                cmMode = "text/x-go";
+                cmMode = "go";
                 break;
         }
 
-        this.editor = CodeMirror.fromTextArea(this.domRoot.find("textarea")[0], {
-            lineNumbers: true,
-            matchBrackets: true,
-            useCPP: true,
-            dragDrop: false,
-            readOnly: state.options ? !!state.options.readOnly : false,
-            extraKeys: {
-                "Alt-F": false, // see https://github.com/mattgodbolt/compiler-explorer/pull/131
-                "Ctrl-/": 'toggleComment',
-                "Ctrl-Enter": _.bind(function () {
-                    this.maybeEmitChange();
-                }, this)
-            },
-            mode: cmMode
+        var root = this.domRoot.find(".monaco-placeholder");
+        this.editor = monaco.editor.create(root[0], {
+            value: state.source || defaultSrc || "",
+            scrollBeyondLastLine: false,
+            language: cmMode
         });
 
-        this.fontScale = new FontScale(this.domRoot, state);
-        this.fontScale.on('change', _.bind(this.updateState, this));
+        this.editor.addAction({
+            id: 'compile',
+            label: 'Compile',
+            keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter],
+            run: _.bind(function () {
+                this.maybeEmitChange();
+            }, this)
+        });
 
-        if (state.source) {
-            this.editor.setValue(state.source);
-        } else if (defaultSrc) {
-            this.editor.setValue(defaultSrc);
-        }
+        this.fontScale = new FontScale(this.domRoot, state, this.editor);
+        this.fontScale.on('change', _.bind(this.updateState, this));
 
         // We suppress posting changes until the user has stopped typing by:
         // * Using _.debounce() to run emitChange on any key event or change
@@ -107,25 +97,21 @@ define(function (require) {
         // * Only actually triggering a change if the document text has changed from
         //   the previous emitted.
         this.lastChangeEmitted = null;
-        var ChangeDebounceMs = 800;
-        this.debouncedEmitChange = _.debounce(function () {
-            if (self.options.get().compileOnChange) self.maybeEmitChange();
-        }, ChangeDebounceMs);
-        this.editor.on("change", _.bind(function () {
+        this.onSettingsChange({});
+        this.editor.getModel().onDidChangeContent(_.bind(function () {
             this.debouncedEmitChange();
             this.updateState();
         }, this));
-        this.editor.on("keydown", _.bind(function () {
-            // Not strictly a change; but this suppresses changes until some time
-            // after the last key down (be it an actual change or a just a cursor
-            // movement etc).
-            this.debouncedEmitChange();
-        }, this));
+        // this.editor.on("keydown", _.bind(function () {
+        //     // Not strictly a change; but this suppresses changes until some time
+        //     // after the last key down (be it an actual change or a just a cursor
+        //     // movement etc).
+        //     this.debouncedEmitChange();
+        // }, this));
 
-        function resize() {
-            var topBarHeight = self.domRoot.find(".top-bar").outerHeight(true);
-            self.editor.setSize(self.domRoot.width(), self.domRoot.height() - topBarHeight);
-            self.editor.refresh();
+        function layout() {
+            var topBarHeight = self.domRoot.find(".top-bar").outerHeight(true) || 0;
+            self.editor.layout({width: self.domRoot.width(), height: self.domRoot.height() - topBarHeight});
         }
 
         this.domRoot.find('.load-save').click(_.bind(function () {
@@ -133,17 +119,18 @@ define(function (require) {
                 this.editor.setValue(text);
                 this.updateState();
                 this.maybeEmitChange();
-            }, this));
+            }, this), this.getSource());
         }, this));
 
-        container.on('resize', resize);
-        container.on('shown', resize);
+        container.on('resize', layout);
+        container.on('shown', layout);
         container.on('open', function () {
             self.eventHub.emit('editorOpen', self.id);
         });
         container.on('destroy', function () {
             self.eventHub.unsubscribe();
             self.eventHub.emit('editorClose', self.id);
+            self.editor.dispose();
         });
         container.setTitle(lang + " source #" + self.id);
         this.container.layoutManager.on('initialised', function () {
@@ -156,6 +143,9 @@ define(function (require) {
         this.eventHub.on('compiling', this.onCompiling, this);
         this.eventHub.on('compileResult', this.onCompileResponse, this);
         this.eventHub.on('selectLine', this.onSelectLine, this);
+
+        this.eventHub.on('settingsChange', this.onSettingsChange, this);
+        this.eventHub.emit('requestSettings');
 
         // NB a new compilerConfig needs to be created every time; else the state is shared
         // between all compilers created this way. That leads to some nasty-to-find state
@@ -172,8 +162,6 @@ define(function (require) {
             insertPoint.addChild(compilerConfig());
         }, this));
 
-        Sharing.initShareButton(this.domRoot.find('.share'), container.layoutManager);
-
         this.updateState();
     }
 
@@ -187,49 +175,39 @@ define(function (require) {
     Editor.prototype.updateState = function () {
         var state = {
             id: this.id,
-            source: this.getSource(),
-            options: this.options.get()
+            source: this.getSource()
         };
         this.fontScale.addState(state);
         this.container.setState(state);
     };
 
     Editor.prototype.getSource = function () {
-        return this.editor.getValue();
+        return this.editor.getModel().getValue();
     };
 
-    Editor.prototype.onOptionsChange = function (before, after) {
-        this.updateState();
+    Editor.prototype.onSettingsChange = function (newSettings) {
+        var before = this.settings;
+        var after = newSettings;
+        this.settings = _.clone(newSettings);
+
+        this.editor.updateOptions({autoClosingBrackets: this.settings.autoCloseBrackets});
+
         // TODO: bug when:
         // * Turn off auto.
         // * edit code
         // * change compiler or compiler options (out of date code is used)
-        if (after.compileOnChange && !before.compileOnChange) {
-            // If we've just enabled "compile on change"; forcibly send a change
-            // which will recolourise as required.
-            this.maybeEmitChange(true);
-        } else if (before.colouriseAsm !== after.colouriseAsm) {
-            // if the colourise option has been toggled...recompute colours
-            this.numberUsedLines();
+        if (before.delayAfterChange !== after.delayAfterChange || !this.debouncedEmitChange) {
+            if (after.delayAfterChange) {
+                this.debouncedEmitChange = _.debounce(_.bind(function () {
+                    this.maybeEmitChange();
+                }, this), after.delayAfterChange);
+                this.maybeEmitChange(true);
+            } else {
+                this.debouncedEmitChange = _.noop;
+            }
         }
-    };
 
-    function makeErrorNode(text, compiler) {
-        var clazz = "error";
-        if (text.match(/^warning/)) clazz = "warning";
-        if (text.match(/^note/)) clazz = "note";
-        var node = $('.template .inline-msg').clone();
-        node.find('.icon').addClass(clazz);
-        node.find(".msg").text(text);
-        node.find(".compiler").text(compiler);
-        return node[0];
-    }
-
-    Editor.prototype.removeWidgets = function (widgets) {
-        var self = this;
-        _.each(widgets, function (widget) {
-            self.editor.removeLineWidget(widget);
-        });
+        this.numberUsedLines();
     };
 
     Editor.prototype.numberUsedLines = function () {
@@ -247,47 +225,56 @@ define(function (require) {
         });
 
         if (_.any(this.busyCompilers)) return;
-        this.updateColours(this.options.get().colouriseAsm ? result : []);
+        this.updateColours(this.settings.colouriseAsm ? result : []);
     };
 
     Editor.prototype.updateColours = function (colours) {
-        colour.applyColours(this.editor, colours);
-        this.eventHub.emit('colours', this.id, colours);
+        this.colours = colour.applyColours(this.editor, colours, this.settings.colourScheme, this.colours);
+        this.eventHub.emit('colours', this.id, colours, this.settings.colourScheme);
+    };
+
+    Editor.prototype.onCompilerOpen = function (compilerId, editorId) {
+        if (editorId === this.id) {
+            // On any compiler open, rebroadcast our state in case they need to know it.
+            this.maybeEmitChange(true);
+            this.ourCompilers[compilerId] = true;
+        }
     };
 
     Editor.prototype.onCompilerClose = function (compilerId) {
-        this.removeWidgets(this.widgetsByCompiler[compilerId]);
+        if (!this.ourCompilers[compilerId]) return;
+        monaco.editor.setModelMarkers(this.editor.getModel(), compilerId, []);
         delete this.widgetsByCompiler[compilerId];
         delete this.asmByCompiler[compilerId];
         delete this.busyCompilers[compilerId];
         this.numberUsedLines();
     };
 
-    Editor.prototype.onCompilerOpen = function () {
-        // On any compiler open, rebroadcast our state in case they need to know it.
-        this.maybeEmitChange(true);
-    };
-
     Editor.prototype.onCompiling = function (compilerId) {
+        if (!this.ourCompilers[compilerId]) return;
         this.busyCompilers[compilerId] = true;
     };
 
     Editor.prototype.onCompileResponse = function (compilerId, compiler, result) {
+        if (!this.ourCompilers[compilerId]) return;
         this.busyCompilers[compilerId] = false;
         var output = (result.stdout || []).concat(result.stderr || []);
-        var self = this;
-        this.removeWidgets(this.widgetsByCompiler[compilerId]);
-        var widgets = [];
-        _.each(output, function (obj) {
-            if (obj.tag) {
-                var widget = self.editor.addLineWidget(
-                    obj.tag.line - 1,
-                    makeErrorNode(obj.tag.text, compiler.name),
-                    {coverGutter: false, noHScroll: true});
-                widgets.push(widget);
-            }
-        }, this);
-        this.widgetsByCompiler[compilerId] = widgets;
+        var widgets = _.compact(_.map(output, function (obj) {
+            if (!obj.tag) return;
+            var severity = 3; // error
+            if (obj.tag.text.match(/^warning/)) severity = 2;
+            if (obj.tag.text.match(/^note/)) severity = 1;
+            return {
+                severity: severity,
+                message: obj.tag.text,
+                source: compiler.name,
+                startLineNumber: obj.tag.line,
+                startColumn: obj.tag.column || 0,
+                endLineNumber: obj.tag.line,
+                endColumn: -1
+            };
+        }, this));
+        monaco.editor.setModelMarkers(this.editor.getModel(), compilerId, widgets);
         this.asmByCompiler[compilerId] = result.asm;
         this.numberUsedLines();
     };
