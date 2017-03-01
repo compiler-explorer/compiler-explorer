@@ -33,22 +33,33 @@ define(function (require) {
     var url = require('url');
 
     function contentFromEmbedded(embeddedUrl) {
-        var params = url.unrisonify(embeddedUrl);
-        var filters = _.chain((params.filters || "").split(','))
-            .map(function (o) {
-                return [o, true];
-            })
-            .object()
-            .value();
-        return [
-            {
-                type: 'row',
-                content: [
-                    Components.getEditorWith(1, params.source, filters),
-                    Components.getCompilerWith(1, filters, params.options, params.compiler)
-                ]
-            }
-        ];
+        // Old-style link?
+        var params;
+        try {
+            var params = url.unrisonify(embeddedUrl);
+        } catch (e) {
+        }
+        if (params && params.source && params.compiler) {
+            var filters = _.chain((params.filters || "").split(','))
+                .map(function (o) {
+                    return [o, true];
+                })
+                .object()
+                .value();
+            return [
+                {
+                    type: 'row',
+                    content: [
+                        Components.getEditorWith(1, params.source, filters),
+                        Components.getCompilerWith(1, filters, params.options, params.compiler)
+                    ]
+                }
+            ];
+        } else {
+            var config = url.deserialiseState(embeddedUrl);
+            console.log(config);
+            return config.content; // TODO not this? better to return whole config ?
+        }
     }
 
     function getItemsByComponent(layout, component) {
@@ -58,33 +69,10 @@ define(function (require) {
     }
 
     function getEmbeddedUrl(layout) {
-        var source = "";
-        var filters = {};
-        var compilerName = "";
-        var options = "";
-        _.each(getItemsByComponent(layout, Components.getEditor().componentName),
-            function (editor) {
-                var state = editor.config.componentState;
-                source = state.source;
-                filters = _.extend(filters, state.options);
-            });
-        _.each(getItemsByComponent(layout, Components.getCompiler().componentName),
-            function (compiler) {
-                var state = compiler.config.componentState;
-                compilerName = state.compiler;
-                options = state.options;
-                filters = _.extend(filters, state.filters);
-            });
-        if (!filters.compileOnChange)
-            filters.readOnly = true;
+        // TODO: readOnly?
         var location = window.location.origin + window.location.pathname;
         if (location[location.length - 1] !== '/') location += '/';
-        return location + 'e#' + url.risonify({
-                filters: _.keys(filters).join(","),
-                source: source,
-                compiler: compilerName,
-                options: options
-            });
+        return location + 'e#' + url.serialiseState(layout.toConfig());
     }
 
     function initShareButton(getLink, layout) {
