@@ -84,13 +84,10 @@ define(function (require) {
 
     function start() {
         analytics.initialise();
-        sharing.initialise();
 
         var options = require('options');
-        $('.language-name').text(options.language);
 
-        var safeLang = options.language.toLowerCase().replace(/[^a-z_]+/g, '');
-        var defaultSrc = $('.template .lang.' + safeLang).text().trim();
+        var defaultSrc = $('.template .lang').text().trim();
         var defaultConfig = {
             settings: {showPopoutIcon: false},
             content: [{type: 'row', content: [Components.getEditor(1), Components.getCompiler(1)]}]
@@ -181,19 +178,6 @@ define(function (require) {
             local.remove('gl');
             window.location.reload();
         });
-
-        if (options.languages) {
-            _.each(options.languages, function (lang) {
-                var links = $("#languages-links");
-                links.find(".template")
-                    .clone()
-                    .removeClass("template")
-                    .appendTo(links)
-                    .find('a').attr('href', lang.url).text(lang.language);
-            });
-        } else {
-            $("#languages-links").parent().hide();
-        }
     }
 
     $(start);

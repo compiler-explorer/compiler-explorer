@@ -1,0 +1,54 @@
+#alert.modal.fade.gl_keep(tabindex="-1" role="dialog")
+  .modal-dialog
+    .modal-content
+      .modal-header
+        button.close(type="button" data-dismiss="modal" aria-hidden="true")
+        h3.modal-title Something alert worthy
+      .modal-body
+      .modal-footer
+        button.btn.btn-default(type="button" data-dismiss="modal") Close
+
+#yes-no.modal.fade.gl_keep(tabindex="-1" role="dialog")
+  .modal-dialog
+    .modal-content
+      .modal-header
+        button.close(type="button" data-dismiss="modal" aria-hidden="true")
+        h3.modal-title Well, do you or not?
+      .modal-body
+      .modal-footer
+        button.btn.no(type="button" data-dismiss="modal") No
+        button.btn.yes(type="button" data-dismiss="modal") Yes
+
+#settings.modal.fade.gl_keep(tabindex="-1" role="dialog")
+  .modal-dialog
+    .modal-content
+      .modal-header
+        button.close(type="button" data-dismiss="modal" aria-hidden="true")
+        h3.modal-title Compiler Explorer Settings
+      .modal-body
+        div
+          | These settings control how Compiler Explorer acts for you. They are not
+          | preserved as part of shared URLs, and are persisted locally using browser
+          | local storage.
+          h4 Editor
+          .form-group(role="group")
+            .form-control.checkbox
+              label
+                input.autoCloseBrackets(type="checkbox")
+                | Automatically insert matching brackets and parentheses
+            .form-control Delay before compiling:&nbsp;
+              b Disabled
+              .slider.slider-horizontal.delay
+              b 3s
+          h4 Compilation
+            .form-group(role="group")
+              .form-control.checkbox
+                label
+                  input.colourise(type="checkbox")
+                  | Colourise lines so one can see how the source maps to the output
+              .form-control
+                label
+                  | Colour scheme:
+                  select.colourScheme
+      .modal-footer
+        button.btn.btn-default(type="button" data-dismiss="modal") Close

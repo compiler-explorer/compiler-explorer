@@ -25,14 +25,15 @@
     "lru-cache": "2.7.x",
     "monaco-editor": "0.8.x",
     "morgan": "1.6.x",
+    "nopt": "3.0.x",
     "promise": "7.0.x",
     "promise-queue": "2.1.x",
-    "nopt": "3.0.x",
+    "pug": "^2.0.0-beta11",
     "serve-favicon": "2.3.x",
+    "shell-quote": "1.6.x",
     "temp": "0.8.x",
     "tree-kill": "1.1.x",
     "underscore-node": "*",
-    "shell-quote": "1.6.x",
     "winston": "2.2.x"
   },
   "devDependencies": {

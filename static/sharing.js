@@ -36,7 +36,7 @@ define(function (require) {
         // Old-style link?
         var params;
         try {
-            var params = url.unrisonify(embeddedUrl);
+            params = url.unrisonify(embeddedUrl);
         } catch (e) {
         }
         if (params && params.source && params.compiler) {
@@ -146,17 +146,7 @@ define(function (require) {
         }
     }
 
-    function initialise() {
-        if (!options.sharingEnabled)
-            $('.if-share-enabled').remove();
-        if (!options.githubEnabled)
-            $('.if-github-enabled').remove();
-        if (!options.gapiKey)
-            $('.get-short-link').remove();
-    }
-
     return {
-        initialise: initialise,
         initShareButton: initShareButton,
         contentFromEmbedded: contentFromEmbedded
     };
