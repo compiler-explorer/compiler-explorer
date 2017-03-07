@@ -504,6 +504,10 @@ findCompilers()
             return options;
         }
 
+        // TODO: res.setHeader('Cache-Control', '')
+        // TODO: same for /
+        // Disable 'view cache' ? app.disable('view cache'); ... or confirm that only the view is compiled
+        // See: https://expressjs.com/en/advanced/best-practice-performance.html too (set production?)
         var embeddedHandler = function (req, res) {
             res.render('embed', renderConfig({embedded: true}));
         };
