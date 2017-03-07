@@ -118,9 +118,9 @@ define(function (require) {
                         showMaximiseIcon: false,
                         showCloseIcon: false,
                         hasHeaders: false
-                    },
-                    content: sharing.contentFromEmbedded(window.location.hash.substr(1))
-                });
+                    }
+                },
+                sharing.configFromEmbedded(window.location.hash.substr(1)));
         }
 
         var root = $("#root");

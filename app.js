@@ -517,6 +517,9 @@ findCompilers()
             })
             .get('/e', embeddedHandler)
             .get('/embed.html', embeddedHandler) // legacy. not a 301 to prevent any redirect loops between old e links and embed.html
+            .get('/embed-ro', function (req, res) {
+                res.render('embed', renderConfig({embedded: true, readOnly: true}));
+            })
             .use(sFavicon(staticDir + '/favicon.ico'))
             .use('/v', express.static(staticDir + '/v', {maxAge: Infinity, index: false}))
             .use(express.static(staticDir, {maxAge: staticMaxAgeSecs * 1000}));

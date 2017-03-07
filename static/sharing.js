@@ -32,7 +32,7 @@ define(function (require) {
     var Components = require('components');
     var url = require('url');
 
-    function contentFromEmbedded(embeddedUrl) {
+    function configFromEmbedded(embeddedUrl) {
         // Old-style link?
         var params;
         try {
@@ -46,19 +46,19 @@ define(function (require) {
                 })
                 .object()
                 .value();
-            return [
-                {
-                    type: 'row',
-                    content: [
-                        Components.getEditorWith(1, params.source, filters),
-                        Components.getCompilerWith(1, filters, params.options, params.compiler)
-                    ]
-                }
-            ];
+            return {
+                content: [
+                    {
+                        type: 'row',
+                        content: [
+                            Components.getEditorWith(1, params.source, filters),
+                            Components.getCompilerWith(1, filters, params.options, params.compiler)
+                        ]
+                    }
+                ]
+            };
         } else {
-            var config = url.deserialiseState(embeddedUrl);
-            console.log(config);
-            return config.content; // TODO not this? better to return whole config ?
+            return url.deserialiseState(embeddedUrl);
         }
     }
 
@@ -68,11 +68,11 @@ define(function (require) {
         });
     }
 
-    function getEmbeddedUrl(layout) {
-        // TODO: readOnly?
+    function getEmbeddedUrl(layout, readOnly) {
         var location = window.location.origin + window.location.pathname;
         if (location[location.length - 1] !== '/') location += '/';
-        return location + 'e#' + url.serialiseState(layout.toConfig());
+        var path = readOnly ? 'embed-ro#' : 'e#';
+        return location + path + url.serialiseState(layout.toConfig());
     }
 
     function initShareButton(getLink, layout) {
@@ -134,7 +134,8 @@ define(function (require) {
     function getLinks(layout, done) {
         var result = {
             Full: permalink(layout),
-            Embed: '<iframe width="800px" height="200px" src="' + getEmbeddedUrl(layout) + '"></iframe>'
+            Embed: '<iframe width="800px" height="200px" src="' + getEmbeddedUrl(layout, false) + '"></iframe>',
+            'Embed (RO)': '<iframe width="800px" height="200px" src="' + getEmbeddedUrl(layout, true) + '"></iframe>'
         };
         if (!options.gapiKey) {
             done(result);
@@ -148,6 +149,6 @@ define(function (require) {
 
     return {
         initShareButton: initShareButton,
-        contentFromEmbedded: contentFromEmbedded
+        configFromEmbedded: configFromEmbedded
     };
 });

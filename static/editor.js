@@ -33,6 +33,7 @@ define(function (require) {
     var Sharing = require('sharing');
     var Components = require('components');
     var monaco = require('monaco');
+    var options = require('options');
     require('./d-mode');
     require('./rust-mode');
 
@@ -73,10 +74,12 @@ define(function (require) {
         }
 
         var root = this.domRoot.find(".monaco-placeholder");
+        var legacyReadOnly = !!state.options.readOnly;
         this.editor = monaco.editor.create(root[0], {
             value: state.source || defaultSrc || "",
             scrollBeyondLastLine: false,
-            language: cmMode
+            language: cmMode,
+            readOnly: !!options.readOnly || legacyReadOnly
         });
 
         this.editor.addAction({
