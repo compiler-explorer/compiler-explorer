@@ -74,7 +74,7 @@ define(function (require) {
         }
 
         var root = this.domRoot.find(".monaco-placeholder");
-        var legacyReadOnly = !!state.options.readOnly;
+        var legacyReadOnly = state.options && !!state.options.readOnly;
         this.editor = monaco.editor.create(root[0], {
             value: state.source || defaultSrc || "",
             scrollBeyondLastLine: false,
