@@ -13,8 +13,8 @@
     margin-bottom: 2px;
 }
 
-.navbar-brand {
-    width: 13.5em;
+#lang-dropdown {
+    min-width: 5em;
 }
 
 .navbar-inverse {

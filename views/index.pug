@@ -1,0 +1,99 @@
+doctype html
+html(lang="en")
+  head
+    include head.pug
+  body
+    .navbar.navbar-inverse
+      .container-fluid
+        .navbar-header
+          button(type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+          data-target="#navbar-collapse" aria-expanded="false")
+            span.sr-only Toggle navigation
+            span.icon-bar
+            span.icon-bar
+            span.icon-bar
+          a.navbar-brand(href="#" title="Compiler Explorer") Compiler Explorer
+        li.navbar-collapse.collapse#navbar-collapse
+          ul.nav.navbar-nav.navbar-left
+            if languages.length
+              li.dropdown#lang-dropdown
+                a(href="#" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false")
+                  span= language
+                  span.caret
+                ul.dropdown-menu.dropdown-brand
+                  each language in languages
+                    li: a(href=language.url)= language.language
+            else
+              li#lang-dropdown
+                a(href="#"): span= language
+            li: a#add-editor(href="#" title="Click or drag to desired destination") Editor
+            li: a#add-diff(href="#" title="Click or drag to desired destination") Diff View
+            li.dropdown
+              a.dropdown-toggle(href="#" data-toggle="dropdown") More#[b.caret]
+              ul.dropdown-menu
+                li: a(href="#" data-target="#settings" data-toggle="modal") Settings
+                li.divider
+                li: a#ui-reset(href="#") Reset UI layout
+          ul.nav.navbar-nav.navbar-right
+            li: a#share(href="#") Share
+            li.dropdown
+              a.dropdown-toggle(href="#" data-toggle="dropdown") Help#[b.caret]
+              ul.dropdown-menu
+                li
+                  a(href="https://www.patreon.com/bePatron?u=3691963"
+                  title="Help Compiler Explorer - become a Patron")
+                    img(height="20" width="20" src=root + "assets/patreon_logo.png")
+                    | &nbsp; Become a Patron
+                if githubEnabled
+                  li
+                    a(href="https://github.com/mattgodbolt/compiler-explorer")
+                      img(height="20" width="20" src=root + "assets/GitHub-Mark-20px.png")
+                      | &nbsp; Source on GitHub
+                li: a(href="https://github.com/mattgodbolt/compiler-explorer/wiki") Wiki
+                li: a(href="https://github.com/mattgodbolt/compiler-explorer/issues") Report an issue
+                li.divider
+                if sharingEnabled
+                  li: g:plusone(annotation="inline" width="150")
+                  li: a.twitter-share-button(href="https://twitter.com/share" data-via="mattgodbolt")
+                  li.divider
+                li#thanks-to: a(href="#") Thanks to...
+                li: a(href="https://xania.org/201609/how-compiler-explorer-runs-on-amazon") How it works
+                li: a(href="mailto:matt@godbolt.org") Contact the author
+                li: a(href="https://xania.org/MattGodbolt" rel="author") About the author
+
+    #root
+
+    include templates.pug
+
+    .gl_keep.template
+      .urls
+        .input-group.urls-container
+          .input-group-btn
+            .btn-group.btn-group-sm
+              button.btn.btn-sm.dropdown-toggle(
+              data-toggle="dropdown" type="button" aria-haspopup="true" aria-expanded="false")
+                span.current Short
+                span.caret
+              ul.dropdown-menu.sources
+                if gapiKey
+                  li: a(href="#" data-bind="Short") Short
+                li: a(href="#" data-bind="Full") Full
+                li: a(href="#" data-bind="Embed") Embed
+                li: a(href="#" data-bind="Embed (RO)") Embed (read only)
+          input.form-control.input-sm.permalink(
+          type="text" placeholder="Loading" readonly size="1024")
+          span.input-group-btn
+            button.btn.btn-sm.clippy(
+            type="button" data-clipboard-target=".popover .permalink"
+            title="Copy to clipboard")
+              img.clippy(
+              src=root + "assets/clippy.svg" width="13px"
+              alt="Copy to clipboard")
+      .lang
+        case language
+          when "C++": include example.cpp
+          when "Rust": include example.rs
+          when "Go": include example.go
+          when "D": include example.d
+
+    include popups.pug

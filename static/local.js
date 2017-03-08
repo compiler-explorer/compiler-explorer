@@ -23,14 +23,43 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-define({
-    load: function (name, req, onLoad, config) {
-        if (config.isBuild) return onLoad(null);  // optimizer build
+define(function (require) {
+    "use strict";
+    var options = require('./options');
+    var prefix = options.localStoragePrefix || '';
 
-        req(['jquery'], function ($) {
-            $.ajax({type: "GET", url: name}).done(function (response) {
-                onLoad(response);
-            });
-        });
+    function get(key, ifNotPresent) {
+        var result;
+        try {
+            result = window.localStorage.getItem(prefix + key);
+        } catch (e) {
+            // Swallow up any security exceptions...
+        }
+        if (result === null) return ifNotPresent;
+        return result;
     }
+
+    function set(key, value) {
+        try {
+            window.localStorage.setItem(prefix + key, value);
+            return true;
+        } catch (e) {
+            // Swallow up any security exceptions...
+        }
+        return false;
+    }
+
+    function remove(key) {
+        try {
+            window.localStorage.removeItem(prefix + key);
+        } catch (e) {
+            // Swallow up any security exceptions...
+        }
+    }
+
+    return {
+        set: set,
+        get: get,
+        remove: remove
+    };
 });

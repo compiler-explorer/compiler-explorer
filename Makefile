@@ -79,13 +79,8 @@ dist: prereqs
 	$(NODE) ./node_modules/requirejs/bin/r.js -o app.build.js
 	# Move all assets to a versioned directory
 	mkdir -p out/dist/v/$(HASH)
-	# main.js
 	mv out/dist/main.js* out/dist/v/$(HASH)/
-	sed -i -e 's!data-main="main"!data-main="v/'"$(HASH)"'/main"'! out/dist/*.html
-	# explorer.css
 	mv out/dist/explorer.css out/dist/v/$(HASH)/
-	sed -i -e 's!href="explorer.css"!href="v/'"$(HASH)"'/explorer.css"'! out/dist/*.html
-	# any actual assets
 	mv out/dist/assets/ out/dist/v/$(HASH)/
 	# copy any external references into the directory too
 	cp -r $(shell pwd)/out/dist/ext out/dist/v/$(HASH)/ext
@@ -97,8 +92,6 @@ dist: prereqs
 	    --source-map-url require.js.map \
 	    --source-map-root //v/$(HASH)/ext/requirejs \
 	    --prefix 6
-	# rewrite any src refs
-	sed -i -e 's!src="!src="v/'"$(HASH)"'/'! out/dist/*.html
 
 c-preload:
 	$(MAKE) -C c-preload

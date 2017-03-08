@@ -27,25 +27,17 @@ define(function (require) {
     "use strict";
     var $ = require('jquery');
     var _ = require('underscore');
-    var Alert = require('alert');
+    var Alert = require('./alert');
+    var local = require('./local');
 
-    function safeGetLocalFiles() {
-        try {
-            var files = window.localStorage.getItem('files');
-            if (files) return JSON.parse(files);
-        }
-        catch (e) {
-        }
-        return {};
+    function getLocalFiles() {
+        return JSON.parse(local.get('files', "{}"));
     }
 
-    function safeSetLocalFile(name, file) {
-        try {
-            var files = safeGetLocalFiles();
-            files[name] = file;
-            window.localStorage.setItem('files', JSON.stringify(files));
-        } catch (e) {
-        }
+    function setLocalFile(name, file) {
+        var files = getLocalFiles();
+        files[name] = file;
+        local.set('files', JSON.stringify(files));
     }
 
     function LoadSave() {
@@ -61,7 +53,7 @@ define(function (require) {
     }
 
     LoadSave.prototype.populateBuiltins = function () {
-        $.getJSON('/source/builtin/list', _.bind(function (list) {
+        $.getJSON('source/builtin/list', _.bind(function (list) {
             this.populate(
                 this.modal.find('.examples'),
                 _.map(list, _.bind(function (elem) {
@@ -77,7 +69,7 @@ define(function (require) {
     LoadSave.prototype.populateLocalStorage = function () {
         this.populate(
             this.modal.find('.local-storage'),
-            _.map(safeGetLocalFiles(), _.bind(function (data, name) {
+            _.map(getLocalFiles(), _.bind(function (data, name) {
                 return {
                     name: name,
                     load: _.bind(function () {
@@ -127,9 +119,9 @@ define(function (require) {
             return;
         }
         var done = _.bind(function () {
-            safeSetLocalFile(name, this.editorText);
+            setLocalFile(name, this.editorText);
         }, this);
-        if (safeGetLocalFiles()[name] !== undefined) {
+        if (getLocalFiles()[name] !== undefined) {
             this.modal.modal('hide');
             this.alert.ask(
                 "Replace current?",
@@ -143,7 +135,7 @@ define(function (require) {
 
     LoadSave.prototype.doLoad = function (urlpart) {
         // TODO: handle errors. consider promises...
-        $.getJSON('/source/builtin/load/' + urlpart, _.bind(function (response) {
+        $.getJSON('source/builtin/load/' + urlpart, _.bind(function (response) {
             this.onLoad(response.file);
         }, this));
         this.modal.modal('hide');
