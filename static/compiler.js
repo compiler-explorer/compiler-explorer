@@ -104,8 +104,8 @@ define(function (require) {
         });
 
         this.outputEditor.addAction({
-            id: 'viewcode',
-            label: 'View code',
+            id: 'viewsource',
+            label: 'View source',
             keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.F10],
             keybindingContext: null,
             contextMenuGroupId: 'navigation',
@@ -117,10 +117,12 @@ define(function (require) {
         });
 
         this.outputEditor.onMouseMove(function (e) {
-            if (self.settings.hoverShowSource === true && e.target.position !== null) {
-                var desiredLine = e.target.position.lineNumber - 1;
-                self.eventHub.emit('editorSelectLine', self.sourceEditorId, self.assembly[desiredLine].source);
-            }
+            setTimeout(function() {
+                if (self.settings.hoverShowSource === true && e.target.position !== null) {
+                    var desiredLine = e.target.position.lineNumber - 1;
+                    self.eventHub.emit('editorSelectLine', self.sourceEditorId, self.assembly[desiredLine].source);
+                }
+            }, 250);
         });
 
         this.fontScale = new FontScale(this.domRoot, state, this.outputEditor);
@@ -503,18 +505,19 @@ define(function (require) {
         }
     };
 
-    Compiler.prototype.onCompilerSelectLine = function (id, lineNum) {
+    Compiler.prototype.onCompilerSelectLine = function (id, lineNums) {
         if (id === this.id) {
-            this.decorations = this.outputEditor.deltaDecorations(this.decorations, 
-                lineNum == -1 ? [] : [
-                {
-                    range: new monaco.Range(lineNum,1,lineNum,1),
+            var ranges = [];
+            _.each(lineNums, function (line) {
+                ranges.push({
+                    range: new monaco.Range(line,1,line,1),
                     options: {
                         isWholeLine: true,
-                        glyphMarginClassName: 'glyph-margin-linked-code'
+                        linesDecorationsClassName: 'linked-code-decoration'
                     }
-                }
-            ]);
+                });
+            })
+            this.decorations = this.outputEditor.deltaDecorations(this.decorations, ranges);
         }
     };
 

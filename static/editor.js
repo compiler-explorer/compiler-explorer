@@ -94,14 +94,14 @@ define(function (require) {
         function tryCompilerSelectLine(thisLineNumber) {
             var desiredLine = thisLineNumber;
             var i = 0;
-            var targetLine = -1;
+            var targetLines = [];
             _.each(self.asmByCompiler[self.lastCompilerIDResponse], function (asm) {
                 i++;
-                if (targetLine == -1 && asm.source == desiredLine) {
-                    targetLine = i;
+                if (asm.source == desiredLine) {
+                    targetLines.push(i);
                 }
             });
-            self.eventHub.emit('compilerSelectLine', self.lastCompilerIDResponse, targetLine);
+            self.eventHub.emit('compilerSelectLine', self.lastCompilerIDResponse, targetLines);
         }
 
         this.editor.addAction({
@@ -117,8 +117,12 @@ define(function (require) {
         });
 
         this.editor.onMouseMove(function (e) {
-            if (self.settings.hoverShowSource === true && e.target.position !== null)
-                tryCompilerSelectLine(e.target.position.lineNumber);
+        	setTimeout(function() {
+        		if (self.settings.hoverShowSource === true && e.target.position !== null)
+        		{
+        			tryCompilerSelectLine(e.target.position.lineNumber)
+        		}}, 250
+			);
         });
 
         this.fontScale = new FontScale(this.domRoot, state, this.editor);
@@ -315,16 +319,15 @@ define(function (require) {
     Editor.prototype.onEditorSelectLine = function (id, lineNum) {
         if (id === this.id) {
             this.decorations = this.editor.deltaDecorations(this.decorations, 
-                lineNum == -1 ? [] : [
+                lineNum === -1 || lineNum === null ? [] : [
                 {
                     range: new monaco.Range(lineNum,1,lineNum,1),
                     options: {
                         isWholeLine: true,
-                        glyphMarginClassName: 'glyph-margin-linked-code'
+                        linesDecorationsClassName: 'linked-code-decoration'
                     }
                 }
             ]);
-            // this.editor.setSelection({positionColumn: 0, positionLineNumber: lineNum + 1, selectionStartColumn: 0, selectionStartLineNumber: lineNum});
         }
     };
 

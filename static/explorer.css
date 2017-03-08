@@ -147,6 +147,8 @@ pre.content {
     overflow-y: auto;
 }
 
-.glyph-margin-linked-code {
-    background: red;
+.linked-code-decoration {
+    background: lightblue;
+    width: 5px !important;
+    left: 3px;
 }
