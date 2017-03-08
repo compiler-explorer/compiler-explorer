@@ -52,7 +52,7 @@ var opts = nopt({
     'propDebug': [Boolean],
     'debug': [Boolean],
     'static': [String],
-    'archivedVersions': [String]
+    'archivedVersions': [String],
 });
 
 if (opts.debug) logger.level = 'debug';
@@ -66,6 +66,9 @@ var port = opts.port || 10240;
 var staticDir = opts.static || 'static';
 var archivedVersions = opts.archivedVersions;
 var gitReleaseName = child_process.execSync('git rev-parse HEAD').toString().trim();
+var versionedRootPrefix = "";
+if (opts.static && fs.existsSync(opts.static + '/v/' + gitReleaseName))
+    versionedRootPrefix = "v/" + gitReleaseName + "/";
 
 var propHierarchy = _.flatten([
     'defaults',
@@ -151,34 +154,43 @@ function ClientOptionsHandler(fileSources) {
     });
     // sort source file alphabetically
     sources = sources.sort(compareOn("name"));
-    var text = "";
+    var languages = _.compact(_.map(gccProps("languages", '').split(':'), function (thing) {
+        if (!thing) return null;
+        var splat = thing.split("=");
+        return {language: splat[0], url: splat[1]};
+    }));
+    var options = {
+        googleAnalyticsAccount: gccProps('clientGoogleAnalyticsAccount', 'UA-55180-6'),
+        googleAnalyticsEnabled: gccProps('clientGoogleAnalyticsEnabled', false),
+        sharingEnabled: gccProps('clientSharingEnabled', true),
+        githubEnabled: gccProps('clientGitHubRibbonEnabled', true),
+        gapiKey: gccProps('googleApiKey', ''),
+        googleShortLinkRewrite: gccProps('googleShortLinkRewrite', '').split('|'),
+        defaultSource: gccProps('defaultSource', ''),
+        language: language,
+        compilers: [],
+        sourceExtension: compilerProps('compileFilename').split('.', 2)[1],
+        defaultCompiler: compilerProps('defaultCompiler', ''),
+        compileOptions: compilerProps("options"),
+        supportsBinary: !!compilerProps("supportsBinary"),
+        languages: languages,
+        sources: sources,
+        raven: gccProps('ravenUrl', ''),
+        release: gitReleaseName,
+        environment: env,
+        localStoragePrefix: gccProps('localStoragePrefix')
+    };
     this.setCompilers = function (compilers) {
-        var options = {
-            googleAnalyticsAccount: gccProps('clientGoogleAnalyticsAccount', 'UA-55180-6'),
-            googleAnalyticsEnabled: gccProps('clientGoogleAnalyticsEnabled', false),
-            sharingEnabled: gccProps('clientSharingEnabled', true),
-            githubEnabled: gccProps('clientGitHubRibbonEnabled', true),
-            gapiKey: gccProps('googleApiKey', ''),
-            googleShortLinkRewrite: gccProps('googleShortLinkRewrite', '').split('|'),
-            defaultSource: gccProps('defaultSource', ''),
-            language: language,
-            compilers: compilers,
-            sourceExtension: compilerProps('compileFilename').split('.', 2)[1],
-            defaultCompiler: compilerProps('defaultCompiler', ''),
-            compileOptions: compilerProps("options"),
-            supportsBinary: !!compilerProps("supportsBinary"),
-            sources: sources,
-            raven: gccProps('ravenUrl', ''),
-            release: gitReleaseName,
-            environment: env
-        };
-        text = JSON.stringify(options);
+        options.compilers = compilers;
     };
     this.setCompilers([]);
     this.handler = function getClientOptions(req, res) {
         res.set('Content-Type', 'application/json');
         res.set('Cache-Control', 'public, max-age=' + staticMaxAgeSecs);
-        res.end(text);
+        res.end(JSON.stringify(options));
+    };
+    this.get = function () {
+        return options;
     };
 }
 
@@ -446,15 +458,6 @@ function shortUrlHandler(req, res, next) {
     });
 }
 
-// TODO: write the info here directly instead of redirecting...
-function embeddedHandler(req, res, next) {
-    res.writeHead(301, {
-        Location: 'embed.html',
-        'Cache-Control': 'public'
-    });
-    res.end();
-}
-
 findCompilers()
     .then(function (compilers) {
         var prevCompilers;
@@ -494,10 +497,33 @@ findCompilers()
         logger.info("  serving static files from '" + staticDir + "'");
         logger.info("  git release " + gitReleaseName);
 
+        function renderConfig(extra) {
+            var options = _.extend(extra, clientOptionsHandler.get());
+            options.compilerExplorerOptions = JSON.stringify(options);
+            options.root = versionedRootPrefix;
+            return options;
+        }
+
+        // TODO: res.setHeader('Cache-Control', '')
+        // TODO: same for /
+        // Disable 'view cache' ? app.disable('view cache'); ... or confirm that only the view is compiled
+        // See: https://expressjs.com/en/advanced/best-practice-performance.html too (set production?)
+        var embeddedHandler = function (req, res) {
+            res.render('embed', renderConfig({embedded: true}));
+        };
         webServer
             .set('trust proxy', true)
+            .set('view engine', 'pug')
             .use(morgan('combined', {stream: logger.stream}))
             .use(compression())
+            .get('/', function (req, res) {
+                res.render('index', renderConfig({embedded: false}));
+            })
+            .get('/e', embeddedHandler)
+            .get('/embed.html', embeddedHandler) // legacy. not a 301 to prevent any redirect loops between old e links and embed.html
+            .get('/embed-ro', function (req, res) {
+                res.render('embed', renderConfig({embedded: true, readOnly: true}));
+            })
             .use(sFavicon(staticDir + '/favicon.ico'))
             .use('/v', express.static(staticDir + '/v', {maxAge: Infinity, index: false}))
             .use(express.static(staticDir, {maxAge: staticMaxAgeSecs * 1000}));
@@ -519,7 +545,6 @@ findCompilers()
             .use('/source', getSource)
             .use('/api', apiHandler.handler)
             .use('/g', shortUrlHandler)
-            .use('/e', embeddedHandler)
             .post('/compile', compileHandler.handler);
         logger.info("=======================================");
 

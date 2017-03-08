@@ -64,16 +64,30 @@ define(function (require) {
     var Hub = require('hub');
     var Raven = require('raven-js');
     var settings = require('./settings');
+    var local = require('./local');
+
+    function setupSettings(eventHub) {
+        var currentSettings = JSON.parse(local.get('settings', '{}'));
+
+        function onChange(settings) {
+            currentSettings = settings;
+            local.set('settings', JSON.stringify(settings));
+            eventHub.emit('settingsChange', settings);
+        }
+
+        eventHub.on('requestSettings', function () {
+            eventHub.emit('settingsChange', currentSettings);
+        });
+
+        settings($('#settings'), currentSettings, onChange);
+    }
 
     function start() {
         analytics.initialise();
-        sharing.initialise();
 
         var options = require('options');
-        $('.language-name').text(options.language);
 
-        var safeLang = options.language.toLowerCase().replace(/[^a-z_]+/g, '');
-        var defaultSrc = $('.template .lang.' + safeLang).text().trim();
+        var defaultSrc = $('.template .lang').text().trim();
         var defaultConfig = {
             settings: {showPopoutIcon: false},
             content: [{type: 'row', content: [Components.getEditor(1), Components.getCompiler(1)]}]
@@ -94,12 +108,7 @@ define(function (require) {
             }
 
             if (!config) {
-                var savedState = null;
-                try {
-                    savedState = window.localStorage.getItem('gl');
-                } catch (e) {
-                    // Some browsers in secure modes can throw exceptions here...
-                }
+                var savedState = local.get('gl', null);
                 config = savedState !== null ? JSON.parse(savedState) : defaultConfig;
             }
         } else {
@@ -109,9 +118,9 @@ define(function (require) {
                         showMaximiseIcon: false,
                         showCloseIcon: false,
                         hasHeaders: false
-                    },
-                    content: sharing.contentFromEmbedded(window.location.hash.substr(1))
-                });
+                    }
+                },
+                sharing.configFromEmbedded(window.location.hash.substr(1)));
         }
 
         var root = $("#root");
@@ -130,14 +139,9 @@ define(function (require) {
             var config = layout.toConfig();
             // Only preserve state in localStorage in non-embedded mode.
             if (!options.embedded) {
-                var state = JSON.stringify(config);
-                try {
-                    window.localStorage.setItem('gl', state);
-                } catch (e) {
-                    // Some browsers in secure modes may throw
-                }
+                local.set('gl', JSON.stringify(config));
             } else {
-                $('a.link').attr('href', '/#' + url.serialiseState(config));
+                $('a.link').attr('href', '#' + url.serialiseState(config));
             }
         });
 
@@ -152,19 +156,7 @@ define(function (require) {
 
         new clipboard('.btn.clippy');
 
-        settings($('#settings'), function () {
-            try {
-                return JSON.parse(window.localStorage.getItem('settings'));
-            } catch (e) {
-                return {};
-            }
-        }(), function (settings) {
-            try {
-                window.localStorage.setItem('settings', JSON.stringify(settings));
-            } catch (e) {
-            }
-            layout.eventHub.emit('settingsChange', settings);
-        });
+        setupSettings(layout.eventHub);
 
         sharing.initShareButton($('#share'), layout);
 
@@ -183,7 +175,7 @@ define(function (require) {
         });
 
         $('#ui-reset').click(function () {
-            window.localStorage.removeItem('gl');
+            local.remove('gl');
             window.location.reload();
         });
     }
