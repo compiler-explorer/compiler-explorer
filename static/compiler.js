@@ -514,7 +514,7 @@ define(function (require) {
                         linesDecorationsClassName: 'linked-code-decoration'
                     }
                 });
-            })
+            });
             this.decorations = this.outputEditor.deltaDecorations(this.decorations, ranges);
         }
     };
