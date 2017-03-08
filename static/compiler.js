@@ -73,6 +73,8 @@ define(function (require) {
         this.nextRequest = null;
         this.settings = {};
 
+        this.decorations = [];
+
         this.domRoot.find(".compiler-picker").selectize({
             sortField: 'name',
             valueField: 'id',
@@ -97,12 +99,13 @@ define(function (require) {
         this.outputEditor = monaco.editor.create(this.domRoot.find(".monaco-placeholder")[0], {
             scrollBeyondLastLine: false,
             readOnly: true,
-            language: 'asm'
+            language: 'asm',
+            glyphMargin: true
         });
 
         this.outputEditor.addAction({
-            id: 'viewcode',
-            label: 'View code',
+            id: 'viewsource',
+            label: 'View source',
             keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.F10],
             keybindingContext: null,
             contextMenuGroupId: 'navigation',
@@ -114,10 +117,12 @@ define(function (require) {
         });
 
         this.outputEditor.onMouseMove(function (e) {
-            if (self.settings.hoverShowSource === true) {
-                var desiredLine = e.target.position.lineNumber - 1;
-                self.eventHub.emit('editorSelectLine', self.sourceEditorId, self.assembly[desiredLine].source);
-            }
+            setTimeout(function() {
+                if (self.settings.hoverShowSource === true && e.target.position !== null) {
+                    var desiredLine = e.target.position.lineNumber - 1;
+                    self.eventHub.emit('editorSelectLine', self.sourceEditorId, self.assembly[desiredLine].source);
+                }
+            }, 250);
         });
 
         this.fontScale = new FontScale(this.domRoot, state, this.outputEditor);
@@ -500,10 +505,19 @@ define(function (require) {
         }
     };
 
-    Compiler.prototype.onCompilerSelectLine = function (id, lineNum) {
-        if (id === this.id && lineNum !== null) {
-            this.outputEditor.setSelection({positionColumn: 0, positionLineNumber: lineNum + 1, selectionStartColumn: 0,
-                    selectionStartLineNumber: lineNum});
+    Compiler.prototype.onCompilerSelectLine = function (id, lineNums) {
+        if (id === this.id) {
+            var ranges = [];
+            _.each(lineNums, function (line) {
+                ranges.push({
+                    range: new monaco.Range(line,1,line,1),
+                    options: {
+                        isWholeLine: true,
+                        linesDecorationsClassName: 'linked-code-decoration'
+                    }
+                });
+            })
+            this.decorations = this.outputEditor.deltaDecorations(this.decorations, ranges);
         }
     };
 
