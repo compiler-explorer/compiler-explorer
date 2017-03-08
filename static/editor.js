@@ -33,6 +33,7 @@ define(function (require) {
     var Sharing = require('sharing');
     var Components = require('components');
     var monaco = require('monaco');
+    var options = require('options');
     require('./d-mode');
     require('./rust-mode');
 
@@ -46,6 +47,7 @@ define(function (require) {
         this.domRoot.html($('#codeEditor').html());
         this.eventHub = hub.createEventHub();
         this.settings = {};
+        this.ourCompilers = {};
 
         this.widgetsByCompiler = {};
         this.asmByCompiler = {};
@@ -75,10 +77,12 @@ define(function (require) {
         }
 
         var root = this.domRoot.find(".monaco-placeholder");
+        var legacyReadOnly = state.options && !!state.options.readOnly;
         this.editor = monaco.editor.create(root[0], {
             value: state.source || defaultSrc || "",
             scrollBeyondLastLine: false,
             language: cmMode,
+            readOnly: !!options.readOnly || legacyReadOnly,
             glyphMargin: true
         });
 
@@ -101,7 +105,7 @@ define(function (require) {
                     targetLines.push(i);
                 }
             });
-            self.eventHub.emit('compilerSelectLine', self.lastCompilerIDResponse, targetLines);
+            self.eventHub.emit('compilerSetDecorations', self.lastCompilerIDResponse, targetLines);
         }
 
         this.editor.addAction({
@@ -116,13 +120,15 @@ define(function (require) {
             }
         });
 
+        this.mouseMoveThrottledFunction = _.throttle(function(e) {
+        	if (self.settings.hoverShowSource === true && e.target.position !== null) {
+        		tryCompilerSelectLine(e.target.position.lineNumber)
+        	}}, 
+        	250
+		);
+
         this.editor.onMouseMove(function (e) {
-        	setTimeout(function() {
-        		if (self.settings.hoverShowSource === true && e.target.position !== null)
-        		{
-        			tryCompilerSelectLine(e.target.position.lineNumber)
-        		}}, 250
-			);
+        	self.mouseMoveThrottledFunction(e);
         });
 
         this.fontScale = new FontScale(this.domRoot, state, this.editor);
@@ -147,7 +153,7 @@ define(function (require) {
         // }, this));
 
         function layout() {
-            var topBarHeight = self.domRoot.find(".top-bar").outerHeight(true);
+            var topBarHeight = self.domRoot.find(".top-bar").outerHeight(true) || 0;
             self.editor.layout({width: self.domRoot.width(), height: self.domRoot.height() - topBarHeight});
         }
 
@@ -180,8 +186,9 @@ define(function (require) {
         this.eventHub.on('compiling', this.onCompiling, this);
         this.eventHub.on('compileResult', this.onCompileResponse, this);
         this.eventHub.on('selectLine', this.onSelectLine, this);
-        this.eventHub.on('editorSelectLine', this.onEditorSelectLine, this);
+        this.eventHub.on('editorSetDecoration', this.onEditorSetDecoration, this);
         this.eventHub.on('settingsChange', this.onSettingsChange, this);
+        this.eventHub.emit('requestSettings');
 
         // NB a new compilerConfig needs to be created every time; else the state is shared
         // between all compilers created this way. That leads to some nasty-to-find state
@@ -243,6 +250,10 @@ define(function (require) {
             }
         }
 
+        if (before.hoverShowSource && !after.hoverShowSource) {
+        	this.onEditorSetDecoration(this.id, -1);
+        }
+
         this.numberUsedLines();
     };
 
@@ -269,7 +280,16 @@ define(function (require) {
         this.eventHub.emit('colours', this.id, colours, this.settings.colourScheme);
     };
 
+    Editor.prototype.onCompilerOpen = function (compilerId, editorId) {
+        if (editorId === this.id) {
+            // On any compiler open, rebroadcast our state in case they need to know it.
+            this.maybeEmitChange(true);
+            this.ourCompilers[compilerId] = true;
+        }
+    };
+
     Editor.prototype.onCompilerClose = function (compilerId) {
+        if (!this.ourCompilers[compilerId]) return;
         monaco.editor.setModelMarkers(this.editor.getModel(), compilerId, []);
         delete this.widgetsByCompiler[compilerId];
         delete this.asmByCompiler[compilerId];
@@ -277,16 +297,13 @@ define(function (require) {
         this.numberUsedLines();
     };
 
-    Editor.prototype.onCompilerOpen = function () {
-        // On any compiler open, rebroadcast our state in case they need to know it.
-        this.maybeEmitChange(true);
-    };
-
     Editor.prototype.onCompiling = function (compilerId) {
+        if (!this.ourCompilers[compilerId]) return;
         this.busyCompilers[compilerId] = true;
     };
 
     Editor.prototype.onCompileResponse = function (compilerId, compiler, result) {
+        if (!this.ourCompilers[compilerId]) return;
         this.busyCompilers[compilerId] = false;
         var output = (result.stdout || []).concat(result.stderr || []);
         var widgets = _.compact(_.map(output, function (obj) {
@@ -316,7 +333,7 @@ define(function (require) {
         }
     };
 
-    Editor.prototype.onEditorSelectLine = function (id, lineNum) {
+    Editor.prototype.onEditorSetDecoration = function (id, lineNum) {
         if (id === this.id) {
             this.decorations = this.editor.deltaDecorations(this.decorations, 
                 lineNum === -1 || lineNum === null ? [] : [

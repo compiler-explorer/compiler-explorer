@@ -112,17 +112,15 @@ define(function (require) {
             contextMenuOrder: 1.5,
             run: function(ed) {
                 var desiredLine = ed.getPosition().lineNumber - 1;
-                self.eventHub.emit('editorSelectLine', self.sourceEditorId, self.assembly[desiredLine].source);
-            }
-        });
+                self.eventHub.emit('editorSetDecoration', self.sourceEditorId, self.assembly[desiredLine].source);
+            
+}        });
 
         this.outputEditor.onMouseMove(function (e) {
-            setTimeout(function() {
-                if (self.settings.hoverShowSource === true && e.target.position !== null) {
-                    var desiredLine = e.target.position.lineNumber - 1;
-                    self.eventHub.emit('editorSelectLine', self.sourceEditorId, self.assembly[desiredLine].source);
-                }
-            }, 250);
+            if (self.settings.hoverShowSource === true && e.target.position !== null) {
+                var desiredLine = e.target.position.lineNumber - 1;
+                self.eventHub.emit('editorSetDecoration', self.sourceEditorId, self.assembly[desiredLine].source);
+            }
         });
 
         this.fontScale = new FontScale(this.domRoot, state, this.outputEditor);
@@ -140,7 +138,7 @@ define(function (require) {
         container.on('resize', this.resize, this);
         container.on('shown', this.resize, this);
         container.on('open', function () {
-            self.eventHub.emit('compilerOpen', self.id);
+            self.eventHub.emit('compilerOpen', self.id, self.sourceEditorId);
             self.updateFontScale();
         });
         this.eventHub.on('editorChange', this.onEditorChange, this);
@@ -148,7 +146,7 @@ define(function (require) {
         this.eventHub.on('colours', this.onColours, this);
         this.eventHub.on('resendCompilation', this.onResendCompilation, this);
         this.eventHub.on('findCompilers', this.sendCompiler, this);
-        this.eventHub.on('compilerSelectLine', this.onCompilerSelectLine, this);
+        this.eventHub.on('compilerSetDecorations', this.onCompilerSetDecorations, this);
         this.eventHub.on('settingsChange', this.onSettingsChange, this);
         this.sendCompiler();
         this.updateCompilerName();
@@ -245,7 +243,7 @@ define(function (require) {
         }, this), 500);
         $.ajax({
             type: 'POST',
-            url: '/api/compiler/' + encodeURIComponent(request.compiler) + '/compile',
+            url: 'api/compiler/' + encodeURIComponent(request.compiler) + '/compile',
             dataType: 'json',
             contentType: 'application/json',
             data: jsonRequest,
@@ -466,8 +464,8 @@ define(function (require) {
     Compiler.prototype.currentState = function () {
         var state = {
             compiler: this.compiler ? this.compiler.id : "",
+            source: this.sourceEditorId,
             options: this.options,
-            source: this.editor,
             filters: this.filters.get()  // NB must *not* be effective filters
         };
         this.fontScale.addState(state);
@@ -505,7 +503,7 @@ define(function (require) {
         }
     };
 
-    Compiler.prototype.onCompilerSelectLine = function (id, lineNums) {
+    Compiler.prototype.onCompilerSetDecorations = function (id, lineNums) {
         if (id === this.id) {
             var ranges = [];
             _.each(lineNums, function (line) {
@@ -522,7 +520,11 @@ define(function (require) {
     };
 
     Compiler.prototype.onSettingsChange = function (newSettings) {
+        var lastHoverShowSource = this.settings.hoverShowSource;
         this.settings = _.clone(newSettings);
+        if (!lastHoverShowSource && this.settings.hoverShowSource) {
+            this.onCompilerSetDecorations(this.id, []);
+        }
     };
 
     return {
