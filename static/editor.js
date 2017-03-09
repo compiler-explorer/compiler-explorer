@@ -96,16 +96,15 @@ define(function (require) {
         });
 
         function tryCompilerSelectLine(thisLineNumber) {
-            var desiredLine = thisLineNumber;
-            var i = 0;
-            var targetLines = [];
-            _.each(self.asmByCompiler[self.lastCompilerIDResponse], function (asm) {
-                i++;
-                if (asm.source == desiredLine) {
-                    targetLines.push(i);
-                }
-            });
-            self.eventHub.emit('compilerSetDecorations', self.lastCompilerIDResponse, targetLines);
+        	_.each(self.asmByCompiler, function (asms, compilerId) {
+            	var targetLines = [];
+            	_.each(asms, function (asmLine, i) {
+	                if (asmLine.source == thisLineNumber) {
+	                    targetLines.push(i+1);
+	                }
+            	});
+            	self.eventHub.emit('compilerSetDecorations', compilerId, targetLines);
+        	});
         }
 
         this.editor.addAction({
@@ -340,7 +339,6 @@ define(function (require) {
                 {
                     range: new monaco.Range(lineNum,1,lineNum,1),
                     options: {
-                        isWholeLine: true,
                         linesDecorationsClassName: 'linked-code-decoration'
                     }
                 }
