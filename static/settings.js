@@ -78,7 +78,7 @@ define(function (require) {
 
     function setupSettings(root, settings, onChange) {
         settings = settings || {};
-
+      
         var settingsObjs = [];
 
         function onUiChange() {
@@ -116,6 +116,7 @@ define(function (require) {
                 return (x / 1000.0).toFixed(2) + "s";
             }
         });
+        add(root.find('.hoverSource'), 'hoverShowSource', true, Checkbox);
 
         onSettingsChange(settings);
         onChange(settings);

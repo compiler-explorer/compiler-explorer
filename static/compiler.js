@@ -71,6 +71,9 @@ define(function (require) {
         this.lastResult = null;
         this.pendingRequestSentAt = 0;
         this.nextRequest = null;
+        this.settings = {};
+
+        this.decorations = [];
 
         this.domRoot.find(".compiler-picker").selectize({
             sortField: 'name',
@@ -96,7 +99,28 @@ define(function (require) {
         this.outputEditor = monaco.editor.create(this.domRoot.find(".monaco-placeholder")[0], {
             scrollBeyondLastLine: false,
             readOnly: true,
-            language: 'asm'
+            language: 'asm',
+            glyphMargin: true
+        });
+
+        this.outputEditor.addAction({
+            id: 'viewsource',
+            label: 'View source',
+            keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.F10],
+            keybindingContext: null,
+            contextMenuGroupId: 'navigation',
+            contextMenuOrder: 1.5,
+            run: function(ed) {
+                var desiredLine = ed.getPosition().lineNumber - 1;
+                self.eventHub.emit('editorSetDecoration', self.sourceEditorId, self.assembly[desiredLine].source);
+            
+}        });
+
+        this.outputEditor.onMouseMove(function (e) {
+            if (self.settings.hoverShowSource === true && e.target.position !== null) {
+                var desiredLine = e.target.position.lineNumber - 1;
+                self.eventHub.emit('editorSetDecoration', self.sourceEditorId, self.assembly[desiredLine].source);
+            }
         });
 
         this.fontScale = new FontScale(this.domRoot, state, this.outputEditor);
@@ -122,6 +146,8 @@ define(function (require) {
         this.eventHub.on('colours', this.onColours, this);
         this.eventHub.on('resendCompilation', this.onResendCompilation, this);
         this.eventHub.on('findCompilers', this.sendCompiler, this);
+        this.eventHub.on('compilerSetDecorations', this.onCompilerSetDecorations, this);
+        this.eventHub.on('settingsChange', this.onSettingsChange, this);
         this.sendCompiler();
         this.updateCompilerName();
         this.updateButtons();
@@ -474,6 +500,30 @@ define(function (require) {
     Compiler.prototype.onResendCompilation = function (id) {
         if (id == this.id && this.lastResult) {
             this.eventHub.emit('compileResult', this.id, this.compiler, this.lastResult);
+        }
+    };
+
+    Compiler.prototype.onCompilerSetDecorations = function (id, lineNums) {
+        if (id === this.id) {
+            var ranges = [];
+            _.each(lineNums, function (line) {
+                ranges.push({
+                    range: new monaco.Range(line,1,line,1),
+                    options: {
+                        isWholeLine: true,
+                        linesDecorationsClassName: 'linked-code-decoration'
+                    }
+                });
+            });
+            this.decorations = this.outputEditor.deltaDecorations(this.decorations, ranges);
+        }
+    };
+
+    Compiler.prototype.onSettingsChange = function (newSettings) {
+        var lastHoverShowSource = this.settings.hoverShowSource;
+        this.settings = _.clone(newSettings);
+        if (!lastHoverShowSource && this.settings.hoverShowSource) {
+            this.onCompilerSetDecorations(this.id, []);
         }
     };
 

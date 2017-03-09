@@ -146,3 +146,9 @@ pre.content {
     max-height: 8em;
     overflow-y: auto;
 }
+
+.linked-code-decoration {
+    background: lightblue;
+    width: 5px !important;
+    left: 3px;
+}

@@ -53,6 +53,9 @@ define(function (require) {
         this.asmByCompiler = {};
         this.busyCompilers = {};
         this.colours = [];
+        this.lastCompilerIDResponse = -1;
+
+        this.decorations = [];
 
         var cmMode;
         switch (lang.toLowerCase()) {
@@ -79,7 +82,8 @@ define(function (require) {
             value: state.source || defaultSrc || "",
             scrollBeyondLastLine: false,
             language: cmMode,
-            readOnly: !!options.readOnly || legacyReadOnly
+            readOnly: !!options.readOnly || legacyReadOnly,
+            glyphMargin: true
         });
 
         this.editor.addAction({
@@ -89,6 +93,42 @@ define(function (require) {
             run: _.bind(function () {
                 this.maybeEmitChange();
             }, this)
+        });
+
+        function tryCompilerSelectLine(thisLineNumber) {
+            var desiredLine = thisLineNumber;
+            var i = 0;
+            var targetLines = [];
+            _.each(self.asmByCompiler[self.lastCompilerIDResponse], function (asm) {
+                i++;
+                if (asm.source == desiredLine) {
+                    targetLines.push(i);
+                }
+            });
+            self.eventHub.emit('compilerSetDecorations', self.lastCompilerIDResponse, targetLines);
+        }
+
+        this.editor.addAction({
+            id: 'viewasm',
+            label: 'View assembly',
+            keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.F10],
+            keybindingContext: null,
+            contextMenuGroupId: 'navigation',
+            contextMenuOrder: 1.5,
+            run: function(ed) {
+                tryCompilerSelectLine(ed.getPosition().lineNumber);
+            }
+        });
+
+        this.mouseMoveThrottledFunction = _.throttle(function(e) {
+        	if (self.settings.hoverShowSource === true && e.target.position !== null) {
+        		tryCompilerSelectLine(e.target.position.lineNumber);
+        	}}, 
+        	250
+		);
+
+        this.editor.onMouseMove(function (e) {
+        	self.mouseMoveThrottledFunction(e);
         });
 
         this.fontScale = new FontScale(this.domRoot, state, this.editor);
@@ -146,7 +186,7 @@ define(function (require) {
         this.eventHub.on('compiling', this.onCompiling, this);
         this.eventHub.on('compileResult', this.onCompileResponse, this);
         this.eventHub.on('selectLine', this.onSelectLine, this);
-
+        this.eventHub.on('editorSetDecoration', this.onEditorSetDecoration, this);
         this.eventHub.on('settingsChange', this.onSettingsChange, this);
         this.eventHub.emit('requestSettings');
 
@@ -208,6 +248,10 @@ define(function (require) {
             } else {
                 this.debouncedEmitChange = _.noop;
             }
+        }
+
+        if (before.hoverShowSource && !after.hoverShowSource) {
+        	this.onEditorSetDecoration(this.id, -1);
         }
 
         this.numberUsedLines();
@@ -279,12 +323,28 @@ define(function (require) {
         }, this));
         monaco.editor.setModelMarkers(this.editor.getModel(), compilerId, widgets);
         this.asmByCompiler[compilerId] = result.asm;
+        this.lastCompilerIDResponse = compilerId;
         this.numberUsedLines();
     };
 
     Editor.prototype.onSelectLine = function (id, lineNum) {
         if (id === this.id) {
             this.editor.setSelection({line: lineNum - 1, ch: 0}, {line: lineNum, ch: 0});
+        }
+    };
+
+    Editor.prototype.onEditorSetDecoration = function (id, lineNum) {
+        if (id === this.id) {
+            this.decorations = this.editor.deltaDecorations(this.decorations, 
+                lineNum === -1 || lineNum === null ? [] : [
+                {
+                    range: new monaco.Range(lineNum,1,lineNum,1),
+                    options: {
+                        isWholeLine: true,
+                        linesDecorationsClassName: 'linked-code-decoration'
+                    }
+                }
+            ]);
         }
     };
 
