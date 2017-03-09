@@ -116,7 +116,7 @@ define(function (require) {
                 return (x / 1000.0).toFixed(2) + "s";
             }
         });
-        add(root.find('.hoverSource'), 'hoverShowSource', true, Checkbox);
+        add(root.find('.hoverShowSource'), 'hoverShowSource', true, Checkbox);
 
         onSettingsChange(settings);
         onChange(settings);
