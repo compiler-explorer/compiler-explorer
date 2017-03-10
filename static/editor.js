@@ -96,15 +96,15 @@ define(function (require) {
         });
 
         function tryCompilerSelectLine(thisLineNumber) {
-        	_.each(self.asmByCompiler, function (asms, compilerId) {
-            	var targetLines = [];
-            	_.each(asms, function (asmLine, i) {
-	                if (asmLine.source == thisLineNumber) {
-	                    targetLines.push(i+1);
-	                }
-            	});
-            	self.eventHub.emit('compilerSetDecorations', compilerId, targetLines);
-        	});
+            _.each(self.asmByCompiler, function (asms, compilerId) {
+                var targetLines = [];
+                _.each(asms, function (asmLine, i) {
+                    if (asmLine.source == thisLineNumber) {
+                        targetLines.push(i + 1);
+                    }
+                });
+                self.eventHub.emit('compilerSetDecorations', compilerId, targetLines);
+            });
         }
 
         this.editor.addAction({
@@ -114,20 +114,21 @@ define(function (require) {
             keybindingContext: null,
             contextMenuGroupId: 'navigation',
             contextMenuOrder: 1.5,
-            run: function(ed) {
+            run: function (ed) {
                 tryCompilerSelectLine(ed.getPosition().lineNumber);
             }
         });
 
-        this.mouseMoveThrottledFunction = _.throttle(function(e) {
-        	if (self.settings.hoverShowSource === true && e.target.position !== null) {
-        		tryCompilerSelectLine(e.target.position.lineNumber);
-        	}}, 
-        	250
-		);
+        this.mouseMoveThrottledFunction = _.throttle(function (e) {
+                if (self.settings.hoverShowSource === true && e.target.position !== null) {
+                    tryCompilerSelectLine(e.target.position.lineNumber);
+                }
+            },
+            250
+        );
 
         this.editor.onMouseMove(function (e) {
-        	self.mouseMoveThrottledFunction(e);
+            self.mouseMoveThrottledFunction(e);
         });
 
         this.fontScale = new FontScale(this.domRoot, state, this.editor);
@@ -250,7 +251,7 @@ define(function (require) {
         }
 
         if (before.hoverShowSource && !after.hoverShowSource) {
-        	this.onEditorSetDecoration(this.id, -1);
+            this.onEditorSetDecoration(this.id, -1);
         }
 
         this.numberUsedLines();
@@ -334,15 +335,15 @@ define(function (require) {
 
     Editor.prototype.onEditorSetDecoration = function (id, lineNum) {
         if (id === this.id) {
-            this.decorations = this.editor.deltaDecorations(this.decorations, 
+            this.decorations = this.editor.deltaDecorations(this.decorations,
                 lineNum === -1 || lineNum === null ? [] : [
-                {
-                    range: new monaco.Range(lineNum,1,lineNum,1),
-                    options: {
-                        linesDecorationsClassName: 'linked-code-decoration'
-                    }
-                }
-            ]);
+                        {
+                            range: new monaco.Range(lineNum, 1, lineNum, 1),
+                            options: {
+                                linesDecorationsClassName: 'linked-code-decoration'
+                            }
+                        }
+                    ]);
         }
     };
 

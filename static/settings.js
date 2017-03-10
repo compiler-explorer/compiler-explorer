@@ -78,7 +78,7 @@ define(function (require) {
 
     function setupSettings(root, settings, onChange) {
         settings = settings || {};
-      
+
         var settingsObjs = [];
 
         function onUiChange() {

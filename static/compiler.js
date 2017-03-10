@@ -110,11 +110,11 @@ define(function (require) {
             keybindingContext: null,
             contextMenuGroupId: 'navigation',
             contextMenuOrder: 1.5,
-            run: function(ed) {
+            run: function (ed) {
                 var desiredLine = ed.getPosition().lineNumber - 1;
                 self.eventHub.emit('editorSetDecoration', self.sourceEditorId, self.assembly[desiredLine].source);
-            
-}        });
+            }
+        });
 
         this.outputEditor.onMouseMove(function (e) {
             if (self.settings.hoverShowSource === true && e.target.position !== null) {
@@ -281,7 +281,7 @@ define(function (require) {
         var decorations = [];
         _.each(this.assembly, _.bind(function (obj, line) {
             var address = obj.address ? obj.address.toString(16) : "";
-        //     var div = $("<div class='address cm-number'>" + address + "</div>");
+            //     var div = $("<div class='address cm-number'>" + address + "</div>");
             addrToAddrDiv[address] = {div: "moo", line: line};
         }, this));
 
@@ -508,7 +508,7 @@ define(function (require) {
             var ranges = [];
             _.each(lineNums, function (line) {
                 ranges.push({
-                    range: new monaco.Range(line,1,line,1),
+                    range: new monaco.Range(line, 1, line, 1),
                     options: {
                         linesDecorationsClassName: 'linked-code-decoration'
                     }
