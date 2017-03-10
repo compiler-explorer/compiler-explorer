@@ -148,6 +148,7 @@ define(function (require) {
         this.eventHub.on('findCompilers', this.sendCompiler, this);
         this.eventHub.on('compilerSetDecorations', this.onCompilerSetDecorations, this);
         this.eventHub.on('settingsChange', this.onSettingsChange, this);
+        this.eventHub.emit('requestSettings');
         this.sendCompiler();
         this.updateCompilerName();
         this.updateButtons();
