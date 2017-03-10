@@ -116,6 +116,39 @@ define(function (require) {
             }
         });
 
+        this.outputEditor.addAction({
+            id: 'viewasmdoc',
+            label: 'View asm doc',
+            keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.F9],
+            keybindingContext: null,
+            contextMenuGroupId: 'help',
+            contextMenuOrder: 1.5,
+            run: function (ed) {
+                // .getTargetAtClientPoint(ed.getPosition().column, ed.getPosition().lineNumber); not useful. We always return null (Not a model?)
+                var token = "";
+                var targetLine = ed.getValue().split('\n')[ed.getPosition().lineNumber-1];
+                var l = ed.getPosition().column;
+                var r = l;
+                while (l > 1) {
+                    l--;
+                    if (targetLine[l] === ' ' || targetLine[l] === '$')
+                        break;
+                    token = targetLine[l] + token;
+                }
+
+                while (r < targetLine.length) {
+                    if (targetLine[r] === ' ' || targetLine[r] === '$')
+                        break;
+                    token = token + targetLine[r];
+                    r++;
+                }
+
+                window.open("http://www.felixcloutier.com/x86/" + token.toUpperCase() + ".html");
+            }
+        });
+
+
+
         this.outputEditor.onMouseMove(function (e) {
             if (self.settings.hoverShowSource === true && e.target.position !== null) {
                 var desiredLine = e.target.position.lineNumber - 1;
