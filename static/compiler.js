@@ -504,13 +504,12 @@ define(function (require) {
     };
 
     Compiler.prototype.onCompilerSetDecorations = function (id, lineNums) {
-        if (id === this.id) {
+        if (id == this.id) {
             var ranges = [];
             _.each(lineNums, function (line) {
                 ranges.push({
                     range: new monaco.Range(line,1,line,1),
                     options: {
-                        isWholeLine: true,
                         linesDecorationsClassName: 'linked-code-decoration'
                     }
                 });
