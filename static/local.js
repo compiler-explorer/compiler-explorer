@@ -34,6 +34,7 @@ define(function (require) {
             result = window.localStorage.getItem(prefix + key);
         } catch (e) {
             // Swallow up any security exceptions...
+            return ifNotPresent;
         }
         if (result === null) return ifNotPresent;
         return result;
