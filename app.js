@@ -104,6 +104,11 @@ function compilerProps(property, defaultValue) {
     return gccProps(property, defaultValue); // gccProps comes from lib/compile-handler.js
 }
 var staticMaxAgeSecs = gccProps('staticMaxAgeSecs', 0);
+function staticHeaders(res) {
+    if (staticMaxAgeSecs) {
+        res.setHeader('Cache-Control', 'public, max-age=' + staticMaxAgeSecs + ', must-revalidate');
+    }
+}
 
 var awsProps = props.propsFor("aws");
 var awsPoller = null;
@@ -186,7 +191,7 @@ function ClientOptionsHandler(fileSources) {
     this.setCompilers([]);
     this.handler = function getClientOptions(req, res) {
         res.set('Content-Type', 'application/json');
-        res.set('Cache-Control', 'public, max-age=' + staticMaxAgeSecs);
+        staticHeaders(res);
         res.end(JSON.stringify(options));
     };
     this.get = function () {
@@ -212,7 +217,7 @@ function getSource(req, res, next) {
         return;
     }
     action.apply(handler, bits.slice(3).concat(function (err, response) {
-        res.set('Cache-Control', 'public, max-age=' + staticMaxAgeSecs);
+        staticHeaders(res);
         if (err) {
             res.end(JSON.stringify({err: err}));
         } else {
@@ -504,24 +509,24 @@ findCompilers()
             return options;
         }
 
-        // TODO: res.setHeader('Cache-Control', '')
-        // TODO: same for /
-        // Disable 'view cache' ? app.disable('view cache'); ... or confirm that only the view is compiled
-        // See: https://expressjs.com/en/advanced/best-practice-performance.html too (set production?)
         var embeddedHandler = function (req, res) {
+            staticHeaders(res);
             res.render('embed', renderConfig({embedded: true}));
         };
         webServer
             .set('trust proxy', true)
             .set('view engine', 'pug')
+            .set('view cache', true)
             .use(morgan('combined', {stream: logger.stream}))
             .use(compression())
             .get('/', function (req, res) {
+                staticHeaders(res);
                 res.render('index', renderConfig({embedded: false}));
             })
             .get('/e', embeddedHandler)
             .get('/embed.html', embeddedHandler) // legacy. not a 301 to prevent any redirect loops between old e links and embed.html
             .get('/embed-ro', function (req, res) {
+                staticHeaders(res);
                 res.render('embed', renderConfig({embedded: true, readOnly: true}));
             })
             .use(sFavicon(staticDir + '/favicon.ico'))
