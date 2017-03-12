@@ -105,6 +105,10 @@ define(function (require) {
             if (config) {
                 // replace anything in the default config with that from the hash
                 config = _.extend(defaultConfig, config);
+                if (window.history.pushState)
+                    window.history.pushState({}, null, '/#');
+                else
+                    window.location.hash = '';
             }
 
             if (!config) {
