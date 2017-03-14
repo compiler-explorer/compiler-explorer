@@ -117,9 +117,12 @@ define(function (require) {
         });
 
         this.outputEditor.onMouseMove(function (e) {
-            if (self.settings.hoverShowSource === true && e.target.position !== null) {
+            if (self.settings.hoverShowSource === true && e.target != null && e.target.position != null && self.assembly != null) {
                 var desiredLine = e.target.position.lineNumber - 1;
-                self.eventHub.emit('editorSetDecoration', self.sourceEditorId, self.assembly[desiredLine].source);
+                if (self.assembly[desiredLine] != null) {
+                    // We check that we actually have something to show at this point!
+                    self.eventHub.emit('editorSetDecoration', self.sourceEditorId, self.assembly[desiredLine].source);
+                }
             }
         });
 
