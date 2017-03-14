@@ -120,7 +120,7 @@ define(function (require) {
         });
 
         this.mouseMoveThrottledFunction = _.throttle(function (e) {
-                if (self.settings.hoverShowSource === true && e.target.position !== null) {
+                if (e !== null && e.target !== null && self.settings.hoverShowSource === true && e.target.position !== null) {
                     tryCompilerSelectLine(e.target.position.lineNumber);
                 }
             },
