@@ -123,9 +123,9 @@ define(function (require) {
 
         this.outputEditor.onMouseMove(function (e) {
             if (e === null || e.target === null || e.target.position === null) return;
-            if (self.settings.hoverShowSource === true && !self.assembly) {
+            if (self.settings.hoverShowSource === true && self.assembly) {
                 var desiredLine = e.target.position.lineNumber - 1;
-                if (!self.assembly[desiredLine]) {
+                if (self.assembly[desiredLine]) {
                     // We check that we actually have something to show at this point!
                     self.eventHub.emit('editorSetDecoration', self.sourceEditorId, self.assembly[desiredLine].source);
                 }
