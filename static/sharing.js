@@ -123,7 +123,7 @@ define(function (require) {
         $(document).on('click.editable', function (e) {
             var target = $(e.target);
             if (!target.is(getLink) && getLink.has(target).length === 0 && target.closest('.popover').length === 0 &&
-             $('#alert').has(target).length === 0)
+                $('#alert').has(target).length === 0)
                 getLink.popover("hide");
         });
     }
