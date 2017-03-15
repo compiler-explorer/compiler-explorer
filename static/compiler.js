@@ -35,6 +35,8 @@ define(function (require) {
     var Components = require('components');
     var LruCache = require('lru-cache');
     var monaco = require('monaco');
+    var asmDocs = require('asm-docs').tokens;
+    var Alert = require('alert');
     require('asm-mode');
 
     require('selectize');
@@ -129,7 +131,7 @@ define(function (require) {
             contextMenuGroupId: 'help',
             contextMenuOrder: 1.5,
             run: function (ed) {
-                // .getTargetAtClientPoint(ed.getPosition().column, ed.getPosition().lineNumber); not useful. We always return null (Not a model?)
+                // .getTargetAtClientPoint(ed.getPosition().column, ed.getPosition().lineNumber); not useful. We always returns null (Not a model?)
                 var token = "";
                 var targetLine = ed.getValue().split('\n')[ed.getPosition().lineNumber-1];
                 var l = ed.getPosition().column;
@@ -147,8 +149,13 @@ define(function (require) {
                     token = token + targetLine[r];
                     r++;
                 }
-
-                window.open("http://www.felixcloutier.com/x86/" + token.toUpperCase() + ".html");
+                token = token.toUpperCase();
+                var asmHelp = asmDocs[token];
+                if (asmHelp) {
+                    new Alert().alert(token + " help", asmHelp +
+                     '<br><br>For more information, visit <a href="http://www.felixcloutier.com/x86/' + token +'.html" target="_blank">the ' +
+                     token + ' documentation<img src="assets/external_link.png" width="16px" height="16px" alt="Opens in a new window"/></a>.');
+                }
             }
         });
 
