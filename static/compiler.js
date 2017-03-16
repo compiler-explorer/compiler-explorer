@@ -73,12 +73,8 @@ define(function (require) {
         this.nextRequest = null;
         this.settings = {};
 
-        this.decorations = [];
-        this.rawDecorations = [];
-        this.rawDecorations.push({
-            range: new monaco.Range(0, 1, 0, 1),
-            options: {}
-        });
+        this.decorations = {};
+        this.prevDecorations = [];
 
         this.domRoot.find(".compiler-picker").selectize({
             sortField: 'name',
@@ -504,20 +500,22 @@ define(function (require) {
         }
     };
 
+    Compiler.prototype.updateDecorations = function () {
+        this.prevDecorations = this.outputEditor.deltaDecorations(
+            this.prevDecorations, _.flatten(_.values(this.decorations), true));
+    };
+
     Compiler.prototype.onCompilerSetDecorations = function (id, lineNums) {
         if (id == this.id) {
-            var ranges = [];
-            ranges.push(this.rawDecorations[0]);
-            _.each(lineNums, function (line) {
-                ranges.push({
+            this.decorations.linkedCode = _.map(lineNums, function (line) {
+                return {
                     range: new monaco.Range(line, 1, line, 1),
                     options: {
                         linesDecorationsClassName: 'linked-code-decoration'
                     }
-                });
+                };
             });
-            this.decorations = this.outputEditor.deltaDecorations(this.decorations, ranges);
-            this.rawDecorations = ranges;
+            this.updateDecorations();
         }
     };
 
@@ -529,12 +527,14 @@ define(function (require) {
         }
     };
 
-    var hexLike = /^([$]|0x)([0-9a-fA-F]+)$/;
+    var hexLike = /^(#?[$]|0x)([0-9a-fA-F]+)$/;
+    var decimalLike = /^(#?)([0-9]+)$/;
 
     function getToolTip(value) {
         var match = hexLike.exec(value);
-        if (match) return parseInt(match[2], 16).toString();
-        if ($.isNumeric(value)) return '0x' + parseInt(value).toString(16);
+        if (match) return value + ' = ' + parseInt(match[2], 16).toString();
+        match = decimalLike.exec(value);
+        if (match) return value + ' = 0x' + parseInt(match[2]).toString(16);
         return null;
     }
 
@@ -549,11 +549,11 @@ define(function (require) {
         }
         var numericToolTip = e.target.element ? getToolTip(e.target.element.textContent) : null;
         if (numericToolTip) {
-            this.rawDecorations[0] = {
+            this.decorations.numericToolTip = {
                 range: e.target.range,
-                options: {isWholeLine: false, hoverMessage: [numericToolTip]}
+                options: {isWholeLine: false, hoverMessage: ['`' + numericToolTip + '`']}
             };
-            this.decorations = this.outputEditor.deltaDecorations(this.decorations, this.rawDecorations);
+            this.updateDecorations();
         }
     };
 
