@@ -37,7 +37,7 @@ define(function (require) {
             // C# style strings
             escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
 
-            registers: /%?\b(r[0-9]+|([er]?(a[xhl]|c[xhl]|d[xhl]|sp|bp|ip|sil?|dil?))|[xyz]mm[0-9]+|sp|fp|lr)\b/,
+            registers: /%?\b(r[0-9]+[dbw]?|([er]?(a[xhl]|c[xhl]|d[xhl]|cs|fs|ds|ss|sp|bp|ip|sil?|dil?))|[xyz]mm[0-9]+|sp|fp|lr)\b/,
 
             intelOperators: /PTR|(D|Q|[XYZ]MM)?WORD/,
 
@@ -81,7 +81,7 @@ define(function (require) {
                     [/#-?\d+/, 'number'],
 
                     // operators
-                    [/[-+,*\/!]/, 'operator'],
+                    [/[-+,*\/!:]/, 'operator'],
 
                     // strings
                     [/"([^"\\]|\\.)*$/, 'string.invalid'],  // non-terminated string
@@ -117,8 +117,7 @@ define(function (require) {
                     [/[ \t\r\n]+/, 'white'],
                     [/\/\*/, 'comment', '@comment'],
                     [/\/\/.*$/, 'comment'],
-                    [/#.*$/, 'comment'],
-                    [/@.*$/, 'comment']
+                    [/[#;\\@].*$/, 'comment']
                 ]
             }
         };
