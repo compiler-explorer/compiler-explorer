@@ -37,7 +37,7 @@ define(function (require) {
             // C# style strings
             escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
 
-            registers: /%?\b(r[0-9]+|([er]?(ax|cx|dx|sp|bp|si|di))|[xyz]mm[0-9]+|sp|fp|lr)\b/,
+            registers: /%?\b(r[0-9]+|([er]?(a[xhl]|c[xhl]|d[xhl]|sp|bp|ip|sil?|dil?))|[xyz]mm[0-9]+|sp|fp|lr)\b/,
 
             intelOperators: /PTR|(D|Q|[XYZ]MM)?WORD/,
 
@@ -54,7 +54,7 @@ define(function (require) {
                     // Constant definition
                     [/^[.a-zA-Z0-9_$][^=]*=/, {token: 'type.identifier', next: '@rest'}],
                     // opcode
-                    [/[a-zA-Z]+/, {token: 'keyword', next: '@rest'}],
+                    [/[.a-zA-Z_][.a-zA-Z_0-9]*/, {token: 'keyword', next: '@rest'}],
 
                     // whitespace
                     {include: '@whitespace'}
@@ -84,7 +84,7 @@ define(function (require) {
                     [/[-+,*\/!]/, 'operator'],
 
                     // strings
-                    [/"([^"\\]|\\.)*$/, 'string.invalid'],  // non-teminated string
+                    [/"([^"\\]|\\.)*$/, 'string.invalid'],  // non-terminated string
                     [/"/, {token: 'string.quote', bracket: '@open', next: '@string'}],
 
                     // characters
@@ -93,7 +93,7 @@ define(function (require) {
                     [/'/, 'string.invalid'],
 
                     // Assume anything else is a label reference
-                    [/[.?_$a-zA-Z][.?_$a-zA-Z0-9]*/, 'type.identifier'],
+                    [/[.?_$a-zA-Z@][.?_$a-zA-Z0-9@]*/, 'type.identifier'],
 
                     // whitespace
                     {include: '@whitespace'}
