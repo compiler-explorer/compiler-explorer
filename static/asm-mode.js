@@ -31,9 +31,6 @@ define(function (require) {
             // Set defaultToken to invalid to see what you do not tokenize yet
             defaultToken: 'invalid',
 
-            // we include these common regular expressions
-            symbols: /[=><!~?:&|+\-*\/\^%]+/,
-
             // C# style strings
             escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
 
@@ -46,7 +43,7 @@ define(function (require) {
                     // Error document
                     [/^<.*>$/, {token: 'annotation'}],
                     // Label definition
-                    [/^[.a-zA-Z0-9_$][^:]*:/, {token: 'type.identifier', next: '@rest'}],
+                    [/^[.a-zA-Z0-9_$].*:/, {token: 'type.identifier', next: '@rest'}],
                     // Label definition (ARM style)
                     [/^\s*[|][^|]*[|]/, {token: 'type.identifier', next: '@rest'}],
                     // Label defintion (CL style)
@@ -66,9 +63,8 @@ define(function (require) {
 
                     [/@registers/, 'variable.predefined'],
                     [/@intelOperators/, 'annotation'],
-                    // delimiters and operators
-                    [/[{}()\[\]]/, '@brackets'],
-                    [/[<>](?!@symbols)/, '@brackets'],
+                    // brackets
+                    [/[{}<>()\[\]]/, '@brackets'],
 
                     // ARM-style label reference
                     [/[|][^|]*[|]*/, 'type.identifier'],
@@ -81,7 +77,7 @@ define(function (require) {
                     [/#-?\d+/, 'number'],
 
                     // operators
-                    [/[-+,*\/!:]/, 'operator'],
+                    [/[-+,*\/!:&]/, 'operator'],
 
                     // strings
                     [/"([^"\\]|\\.)*$/, 'string.invalid'],  // non-terminated string
@@ -93,7 +89,7 @@ define(function (require) {
                     [/'/, 'string.invalid'],
 
                     // Assume anything else is a label reference
-                    [/[.?_$a-zA-Z@][.?_$a-zA-Z0-9@]*/, 'type.identifier'],
+                    [/%?[.?_$a-zA-Z@][.?_$a-zA-Z0-9@]*/, 'type.identifier'],
 
                     // whitespace
                     {include: '@whitespace'}
