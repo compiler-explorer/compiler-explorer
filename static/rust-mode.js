@@ -88,6 +88,9 @@ define(function (require) {
                         }
                     }],
 
+                    [/#!\[[^]*\]/, 'annotation'],
+                    [/#!.*$/, 'annotation.invalid'],
+
                     // numbers
                     [/\d*\.\d+([eE][\-+]?\d+)?[fFdD]?/, 'number.float'],
                     [/0[xX][0-9a-fA-F_]*[0-9a-fA-F][Ll]?/, 'number.hex'],
