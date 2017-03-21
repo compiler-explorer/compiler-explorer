@@ -106,7 +106,7 @@ define(function (require) {
 
         this.outputEditor.addAction({
             id: 'viewsource',
-            label: 'View source',
+            label: 'Highlight source',
             keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.F10],
             keybindingContext: null,
             contextMenuGroupId: 'navigation',
