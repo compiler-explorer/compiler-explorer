@@ -34,6 +34,7 @@ define(function (require) {
     var Components = require('components');
     var monaco = require('monaco');
     var options = require('options');
+    var formatting = require('formatting');
     require('./d-mode');
     require('./rust-mode');
 
@@ -56,6 +57,8 @@ define(function (require) {
         this.lastCompilerIDResponse = -1;
 
         this.decorations = [];
+
+        this.sourceOnFormat = "";
 
         var cmMode;
         switch (lang.toLowerCase()) {
@@ -119,6 +122,21 @@ define(function (require) {
             contextMenuOrder: 1.5,
             run: function (ed) {
                 tryCompilerSelectLine(ed.getPosition().lineNumber);
+            }
+        });
+
+        this.editor.addAction({
+            id: 'clang-format',
+            label: 'Format text',
+            keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.F9],
+            keybindingContext: null,
+            contextMenuGroupId: 'help',
+            contextMenuOrder: 1.5,
+            run: function (ed) {
+                self.sourceOnFormat = self.getSource();
+                var newText = formatting.clangFormat(self.sourceOnFormat);
+                self.setSource(newText);
+                self.numberUsedLines();
             }
         });
 
@@ -229,6 +247,10 @@ define(function (require) {
 
     Editor.prototype.getSource = function () {
         return this.editor.getModel().getValue();
+    };
+
+     Editor.prototype.setSource = function (text) {
+        return this.editor.getModel().setValue(text);
     };
 
     Editor.prototype.onSettingsChange = function (newSettings) {

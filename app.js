@@ -41,6 +41,7 @@ var nopt = require('nopt'),
     aws = require('./lib/aws'),
     _ = require('underscore-node'),
     logger = require('./lib/logger').logger;
+    //formatting = require('./static/formatting');
 
 // Parse arguments from command line 'node ./app.js args...'
 var opts = nopt({
@@ -419,6 +420,7 @@ function ApiHandler(compileHandler) {
             }).join("\n"));
         }
     }, this));
+    this.handler.post('/clang-format', /*this.formatting.cppHandler*/function (req, res) {res.end();});
     this.handler.param('compiler', _.bind(function (req, res, next, compilerName) {
         req.compiler = compilerName;
         next();
