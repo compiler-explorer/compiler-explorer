@@ -46,7 +46,7 @@ define(function (require) {
                     [/^[.a-zA-Z0-9_$].*:/, {token: 'type.identifier', next: '@rest'}],
                     // Label definition (ARM style)
                     [/^\s*[|][^|]*[|]/, {token: 'type.identifier', next: '@rest'}],
-                    // Label defintion (CL style)
+                    // Label definition (CL style)
                     [/^\s*[.a-zA-Z0-9_$|]*\s*(PROC|ENDP)/, {token: 'type.identifier', next: '@rest'}],
                     // Constant definition
                     [/^[.a-zA-Z0-9_$][^=]*=/, {token: 'type.identifier', next: '@rest'}],
