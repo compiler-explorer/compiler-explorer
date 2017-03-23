@@ -28,26 +28,28 @@ define(function (require) {
     var _ = require('underscore');
     var EventEmitter = require('events');
 
+    function FontSizeDropdown(elem, interval, scale, isFontStr) {
+        elem.empty();
+        var factor = isFontStr ? 10 : 14;
+        for (var i = interval[0]; i <= interval[1]; i += 0.1) {
+            elem.append($('<option value="' + i + '">' + Math.round(i * factor * 2) / 2 + "</option>"));
+        }
+        elem.val(scale);
+        return elem;
+    }
+
     function FontScale(domRoot, state, fontSelectorOrEditor) {
         EventEmitter.call(this);
         this.domRoot = domRoot;
         this.scale = state.fontScale || 1.0;
         this.fontSelectorOrEditor = fontSelectorOrEditor;
         this.apply();
+        this.dropDown = FontSizeDropdown(this.domRoot.find('.change-font-size'), [0.3, 3], this.scale,
+         typeof(this.fontSelectorOrEditor) === "string");
 
-        this.domRoot.find('.increase-font-size').click(_.bind(function () {
-            this.scale += 0.1;
-            this.apply();
-            this.emit('change');
-        }, this));
-        this.domRoot.find('.decrease-font-size').click(_.bind(function () {
-            if (this.scale <= 0.3) return;
-            this.scale -= 0.1;
-            this.apply();
-            this.emit('change');
-        }, this));
-        this.domRoot.find('.reset-font-size').click(_.bind(function () {
-            this.scale = 1.0;
+        
+        this.dropDown.change(_.bind(function () {
+            this.scale = this.dropDown.val();
             this.apply();
             this.emit('change');
         }, this));
