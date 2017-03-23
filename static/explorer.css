@@ -6,7 +6,9 @@
 @import url("colours.css");
 
 /* TEMP HACK: https://github.com/Microsoft/monaco-editor/issues/349 */
-.quick-open-tree .row { margin-left: 0; }
+.quick-open-tree .row {
+    margin-left: 0;
+}
 
 .navbar {
     border-radius: 0;
@@ -145,4 +147,10 @@ pre.content {
 .small-v-scrollable {
     max-height: 8em;
     overflow-y: auto;
+}
+
+.linked-code-decoration {
+    background: lightblue;
+    width: 5px !important;
+    left: 3px;
 }

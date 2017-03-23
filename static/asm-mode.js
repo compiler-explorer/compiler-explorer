@@ -31,13 +31,10 @@ define(function (require) {
             // Set defaultToken to invalid to see what you do not tokenize yet
             defaultToken: 'invalid',
 
-            // we include these common regular expressions
-            symbols: /[=><!~?:&|+\-*\/\^%]+/,
-
             // C# style strings
             escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
 
-            registers: /%?\b(r[0-9]+|([er]?(ax|cx|dx|sp|bp|si|di))|[xyz]mm[0-9]+|sp|fp|lr)\b/,
+            registers: /%?\b(r[0-9]+[dbw]?|([er]?(a[xhl]|c[xhl]|d[xhl]|cs|fs|ds|ss|sp|bp|ip|sil?|dil?))|[xyz]mm[0-9]+|sp|fp|lr)\b/,
 
             intelOperators: /PTR|(D|Q|[XYZ]MM)?WORD/,
 
@@ -46,15 +43,15 @@ define(function (require) {
                     // Error document
                     [/^<.*>$/, {token: 'annotation'}],
                     // Label definition
-                    [/^[.a-zA-Z0-9_$][^:]*:/, {token: 'type.identifier', next: '@rest'}],
+                    [/^[.a-zA-Z0-9_$].*:/, {token: 'type.identifier', next: '@rest'}],
                     // Label definition (ARM style)
                     [/^\s*[|][^|]*[|]/, {token: 'type.identifier', next: '@rest'}],
-                    // Label defintion (CL style)
+                    // Label definition (CL style)
                     [/^\s*[.a-zA-Z0-9_$|]*\s*(PROC|ENDP)/, {token: 'type.identifier', next: '@rest'}],
                     // Constant definition
                     [/^[.a-zA-Z0-9_$][^=]*=/, {token: 'type.identifier', next: '@rest'}],
                     // opcode
-                    [/[a-zA-Z]+/, {token: 'keyword', next: '@rest'}],
+                    [/[.a-zA-Z_][.a-zA-Z_0-9]*/, {token: 'keyword', next: '@rest'}],
 
                     // whitespace
                     {include: '@whitespace'}
@@ -66,9 +63,8 @@ define(function (require) {
 
                     [/@registers/, 'variable.predefined'],
                     [/@intelOperators/, 'annotation'],
-                    // delimiters and operators
-                    [/[{}()\[\]]/, '@brackets'],
-                    [/[<>](?!@symbols)/, '@brackets'],
+                    // brackets
+                    [/[{}<>()\[\]]/, '@brackets'],
 
                     // ARM-style label reference
                     [/[|][^|]*[|]*/, 'type.identifier'],
@@ -81,10 +77,10 @@ define(function (require) {
                     [/#-?\d+/, 'number'],
 
                     // operators
-                    [/[-+,*\/!]/, 'operator'],
+                    [/[-+,*\/!:&]/, 'operator'],
 
                     // strings
-                    [/"([^"\\]|\\.)*$/, 'string.invalid'],  // non-teminated string
+                    [/"([^"\\]|\\.)*$/, 'string.invalid'],  // non-terminated string
                     [/"/, {token: 'string.quote', bracket: '@open', next: '@string'}],
 
                     // characters
@@ -93,7 +89,7 @@ define(function (require) {
                     [/'/, 'string.invalid'],
 
                     // Assume anything else is a label reference
-                    [/[.?_$a-zA-Z][.?_$a-zA-Z0-9]*/, 'type.identifier'],
+                    [/%?[.?_$a-zA-Z@][.?_$a-zA-Z0-9@]*/, 'type.identifier'],
 
                     // whitespace
                     {include: '@whitespace'}
@@ -117,8 +113,7 @@ define(function (require) {
                     [/[ \t\r\n]+/, 'white'],
                     [/\/\*/, 'comment', '@comment'],
                     [/\/\/.*$/, 'comment'],
-                    [/#.*$/, 'comment'],
-                    [/@.*$/, 'comment']
+                    [/[#;\\@].*$/, 'comment']
                 ]
             }
         };

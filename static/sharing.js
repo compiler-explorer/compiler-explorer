@@ -32,23 +32,34 @@ define(function (require) {
     var Components = require('components');
     var url = require('url');
 
-    function contentFromEmbedded(embeddedUrl) {
-        var params = url.unrisonify(embeddedUrl);
-        var filters = _.chain((params.filters || "").split(','))
-            .map(function (o) {
-                return [o, true];
-            })
-            .object()
-            .value();
-        return [
-            {
-                type: 'row',
+    function configFromEmbedded(embeddedUrl) {
+        // Old-style link?
+        var params;
+        try {
+            params = url.unrisonify(embeddedUrl);
+        } catch (e) {
+        }
+        if (params && params.source && params.compiler) {
+            var filters = _.chain((params.filters || "").split(','))
+                .map(function (o) {
+                    return [o, true];
+                })
+                .object()
+                .value();
+            return {
                 content: [
-                    Components.getEditorWith(1, params.source, filters),
-                    Components.getCompilerWith(1, filters, params.options, params.compiler)
+                    {
+                        type: 'row',
+                        content: [
+                            Components.getEditorWith(1, params.source, filters),
+                            Components.getCompilerWith(1, filters, params.options, params.compiler)
+                        ]
+                    }
                 ]
-            }
-        ];
+            };
+        } else {
+            return url.deserialiseState(embeddedUrl);
+        }
     }
 
     function getItemsByComponent(layout, component) {
@@ -57,34 +68,11 @@ define(function (require) {
         });
     }
 
-    function getEmbeddedUrl(layout) {
-        var source = "";
-        var filters = {};
-        var compilerName = "";
-        var options = "";
-        _.each(getItemsByComponent(layout, Components.getEditor().componentName),
-            function (editor) {
-                var state = editor.config.componentState;
-                source = state.source;
-                filters = _.extend(filters, state.options);
-            });
-        _.each(getItemsByComponent(layout, Components.getCompiler().componentName),
-            function (compiler) {
-                var state = compiler.config.componentState;
-                compilerName = state.compiler;
-                options = state.options;
-                filters = _.extend(filters, state.filters);
-            });
-        if (!filters.compileOnChange)
-            filters.readOnly = true;
+    function getEmbeddedUrl(layout, readOnly) {
         var location = window.location.origin + window.location.pathname;
         if (location[location.length - 1] !== '/') location += '/';
-        return location + 'e#' + url.risonify({
-                filters: _.keys(filters).join(","),
-                source: source,
-                compiler: compilerName,
-                options: options
-            });
+        var path = readOnly ? 'embed-ro#' : 'e#';
+        return location + path + url.serialiseState(layout.toConfig());
     }
 
     function initShareButton(getLink, layout) {
@@ -130,11 +118,12 @@ define(function (require) {
             }
         });
 
-        // Dismiss on any click that isn't either in the opening element, or inside
-        // the popover.
+        // Dismiss on any click that isn't either in the opening element, inside
+        // the popover or on any alert
         $(document).on('click.editable', function (e) {
             var target = $(e.target);
-            if (!target.is(getLink) && getLink.has(target).length === 0 && target.closest('.popover').length === 0)
+            if (!target.is(getLink) && getLink.has(target).length === 0 && target.closest('.popover').length === 0 &&
+                $('#alert').has(target).length === 0)
                 getLink.popover("hide");
         });
     }
@@ -146,7 +135,8 @@ define(function (require) {
     function getLinks(layout, done) {
         var result = {
             Full: permalink(layout),
-            Embed: '<iframe width="800px" height="200px" src="' + getEmbeddedUrl(layout) + '"></iframe>'
+            Embed: '<iframe width="800px" height="200px" src="' + getEmbeddedUrl(layout, false) + '"></iframe>',
+            'Embed (RO)': '<iframe width="800px" height="200px" src="' + getEmbeddedUrl(layout, true) + '"></iframe>'
         };
         if (!options.gapiKey) {
             done(result);
@@ -158,18 +148,8 @@ define(function (require) {
         }
     }
 
-    function initialise() {
-        if (!options.sharingEnabled)
-            $('.if-share-enabled').remove();
-        if (!options.githubEnabled)
-            $('.if-github-enabled').remove();
-        if (!options.gapiKey)
-            $('.get-short-link').remove();
-    }
-
     return {
-        initialise: initialise,
         initShareButton: initShareButton,
-        contentFromEmbedded: contentFromEmbedded
+        configFromEmbedded: configFromEmbedded
     };
 });

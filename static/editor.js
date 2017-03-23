@@ -33,6 +33,7 @@ define(function (require) {
     var Sharing = require('sharing');
     var Components = require('components');
     var monaco = require('monaco');
+    var options = require('options');
     require('./d-mode');
     require('./rust-mode');
 
@@ -52,6 +53,9 @@ define(function (require) {
         this.asmByCompiler = {};
         this.busyCompilers = {};
         this.colours = [];
+        this.lastCompilerIDResponse = -1;
+
+        this.decorations = [];
 
         var cmMode;
         switch (lang.toLowerCase()) {
@@ -73,19 +77,61 @@ define(function (require) {
         }
 
         var root = this.domRoot.find(".monaco-placeholder");
+        var legacyReadOnly = state.options && !!state.options.readOnly;
         this.editor = monaco.editor.create(root[0], {
             value: state.source || defaultSrc || "",
             scrollBeyondLastLine: false,
-            language: cmMode
+            language: cmMode,
+            readOnly: !!options.readOnly || legacyReadOnly,
+            glyphMargin: true
         });
 
         this.editor.addAction({
             id: 'compile',
             label: 'Compile',
             keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter],
+            keybindingContext: null,
+            contextMenuGroupId: 'navigation',
+            contextMenuOrder: 1.5,
             run: _.bind(function () {
                 this.maybeEmitChange();
             }, this)
+        });
+
+        function tryCompilerSelectLine(thisLineNumber) {
+            _.each(self.asmByCompiler, function (asms, compilerId) {
+                var targetLines = [];
+                _.each(asms, function (asmLine, i) {
+                    if (asmLine.source == thisLineNumber) {
+                        targetLines.push(i + 1);
+                    }
+                });
+                self.eventHub.emit('compilerSetDecorations', compilerId, targetLines);
+            });
+        }
+
+        this.editor.addAction({
+            id: 'viewasm',
+            label: 'Highlight assembly',
+            keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.F10],
+            keybindingContext: null,
+            contextMenuGroupId: 'navigation',
+            contextMenuOrder: 1.5,
+            run: function (ed) {
+                tryCompilerSelectLine(ed.getPosition().lineNumber);
+            }
+        });
+
+        this.mouseMoveThrottledFunction = _.throttle(function (e) {
+                if (e !== null && e.target !== null && self.settings.hoverShowSource === true && e.target.position !== null) {
+                    tryCompilerSelectLine(e.target.position.lineNumber);
+                }
+            },
+            250
+        );
+
+        this.editor.onMouseMove(function (e) {
+            self.mouseMoveThrottledFunction(e);
         });
 
         this.fontScale = new FontScale(this.domRoot, state, this.editor);
@@ -143,7 +189,7 @@ define(function (require) {
         this.eventHub.on('compiling', this.onCompiling, this);
         this.eventHub.on('compileResult', this.onCompileResponse, this);
         this.eventHub.on('selectLine', this.onSelectLine, this);
-
+        this.eventHub.on('editorSetDecoration', this.onEditorSetDecoration, this);
         this.eventHub.on('settingsChange', this.onSettingsChange, this);
         this.eventHub.emit('requestSettings');
 
@@ -205,6 +251,10 @@ define(function (require) {
             } else {
                 this.debouncedEmitChange = _.noop;
             }
+        }
+
+        if (before.hoverShowSource && !after.hoverShowSource) {
+            this.onEditorSetDecoration(this.id, -1);
         }
 
         this.numberUsedLines();
@@ -276,12 +326,27 @@ define(function (require) {
         }, this));
         monaco.editor.setModelMarkers(this.editor.getModel(), compilerId, widgets);
         this.asmByCompiler[compilerId] = result.asm;
+        this.lastCompilerIDResponse = compilerId;
         this.numberUsedLines();
     };
 
     Editor.prototype.onSelectLine = function (id, lineNum) {
         if (id === this.id) {
             this.editor.setSelection({line: lineNum - 1, ch: 0}, {line: lineNum, ch: 0});
+        }
+    };
+
+    Editor.prototype.onEditorSetDecoration = function (id, lineNum) {
+        if (id === this.id) {
+            this.decorations = this.editor.deltaDecorations(this.decorations,
+                lineNum === -1 || lineNum === null ? [] : [
+                        {
+                            range: new monaco.Range(lineNum, 1, lineNum, 1),
+                            options: {
+                                linesDecorationsClassName: 'linked-code-decoration'
+                            }
+                        }
+                    ]);
         }
     };
 

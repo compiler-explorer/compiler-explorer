@@ -71,6 +71,10 @@ define(function (require) {
         this.lastResult = null;
         this.pendingRequestSentAt = 0;
         this.nextRequest = null;
+        this.settings = {};
+
+        this.decorations = {};
+        this.prevDecorations = [];
 
         this.domRoot.find(".compiler-picker").selectize({
             sortField: 'name',
@@ -96,8 +100,24 @@ define(function (require) {
         this.outputEditor = monaco.editor.create(this.domRoot.find(".monaco-placeholder")[0], {
             scrollBeyondLastLine: false,
             readOnly: true,
-            language: 'asm'
+            language: 'asm',
+            glyphMargin: true
         });
+
+        this.outputEditor.addAction({
+            id: 'viewsource',
+            label: 'Highlight source',
+            keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.F10],
+            keybindingContext: null,
+            contextMenuGroupId: 'navigation',
+            contextMenuOrder: 1.5,
+            run: function (ed) {
+                var desiredLine = ed.getPosition().lineNumber - 1;
+                self.eventHub.emit('editorSetDecoration', self.sourceEditorId, self.assembly[desiredLine].source);
+            }
+        });
+
+        this.outputEditor.onMouseMove(_.throttle(_.bind(this.onMouseMove, this)), 250);
 
         this.fontScale = new FontScale(this.domRoot, state, this.outputEditor);
         this.fontScale.on('change', _.bind(function () {
@@ -122,6 +142,9 @@ define(function (require) {
         this.eventHub.on('colours', this.onColours, this);
         this.eventHub.on('resendCompilation', this.onResendCompilation, this);
         this.eventHub.on('findCompilers', this.sendCompiler, this);
+        this.eventHub.on('compilerSetDecorations', this.onCompilerSetDecorations, this);
+        this.eventHub.on('settingsChange', this.onSettingsChange, this);
+        this.eventHub.emit('requestSettings');
         this.sendCompiler();
         this.updateCompilerName();
         this.updateButtons();
@@ -255,7 +278,7 @@ define(function (require) {
         var decorations = [];
         _.each(this.assembly, _.bind(function (obj, line) {
             var address = obj.address ? obj.address.toString(16) : "";
-        //     var div = $("<div class='address cm-number'>" + address + "</div>");
+            //     var div = $("<div class='address cm-number'>" + address + "</div>");
             addrToAddrDiv[address] = {div: "moo", line: line};
         }, this));
 
@@ -474,6 +497,63 @@ define(function (require) {
     Compiler.prototype.onResendCompilation = function (id) {
         if (id == this.id && this.lastResult) {
             this.eventHub.emit('compileResult', this.id, this.compiler, this.lastResult);
+        }
+    };
+
+    Compiler.prototype.updateDecorations = function () {
+        this.prevDecorations = this.outputEditor.deltaDecorations(
+            this.prevDecorations, _.flatten(_.values(this.decorations), true));
+    };
+
+    Compiler.prototype.onCompilerSetDecorations = function (id, lineNums) {
+        if (id == this.id) {
+            this.decorations.linkedCode = _.map(lineNums, function (line) {
+                return {
+                    range: new monaco.Range(line, 1, line, 1),
+                    options: {
+                        linesDecorationsClassName: 'linked-code-decoration'
+                    }
+                };
+            });
+            this.updateDecorations();
+        }
+    };
+
+    Compiler.prototype.onSettingsChange = function (newSettings) {
+        var lastHoverShowSource = this.settings.hoverShowSource;
+        this.settings = _.clone(newSettings);
+        if (!lastHoverShowSource && this.settings.hoverShowSource) {
+            this.onCompilerSetDecorations(this.id, []);
+        }
+    };
+
+    var hexLike = /^(#?[$]|0x)([0-9a-fA-F]+)$/;
+    var decimalLike = /^(#?)([0-9]+)$/;
+
+    function getToolTip(value) {
+        var match = hexLike.exec(value);
+        if (match) return value + ' = ' + parseInt(match[2], 16).toString();
+        match = decimalLike.exec(value);
+        if (match) return value + ' = 0x' + parseInt(match[2]).toString(16);
+        return null;
+    }
+
+    Compiler.prototype.onMouseMove = function (e) {
+        if (e === null || e.target === null || e.target.position === null) return;
+        if (this.settings.hoverShowSource === true && this.assembly) {
+            var desiredLine = e.target.position.lineNumber - 1;
+            if (this.assembly[desiredLine]) {
+                // We check that we actually have something to show at this point!
+                this.eventHub.emit('editorSetDecoration', this.sourceEditorId, this.assembly[desiredLine].source);
+            }
+        }
+        var numericToolTip = e.target.element ? getToolTip(e.target.element.textContent) : null;
+        if (numericToolTip) {
+            this.decorations.numericToolTip = {
+                range: e.target.range,
+                options: {isWholeLine: false, hoverMessage: ['`' + numericToolTip + '`']}
+            };
+            this.updateDecorations();
         }
     };
 

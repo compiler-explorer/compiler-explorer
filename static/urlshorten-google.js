@@ -26,6 +26,7 @@
 define(function (require) {
     "use strict";
     var options = require('options');
+    var Alert = require('alert');
 
     function googleJSClientLoaded() {
         gapi.client.setApiKey(options.gapiKey);
@@ -51,6 +52,7 @@ define(function (require) {
             }
             done(id);
         }, function () {
+            new Alert().alert('Could not shorten your URL', 'The current url probaly exceeds the Google Url Shortener length limits.');
             done(url);
         });
     }

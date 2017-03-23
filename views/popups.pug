@@ -1,0 +1,89 @@
+#load-save.modal.fade.gl_keep(tabindex="-1" role="dialog")
+  .modal-dialog
+    .modal-content
+      .modal-header
+        button.close(type="button" data-dismiss="modal" aria-hidden="true") &times;
+        h3.modal-title Load and save editor text
+      .modal-body
+        div
+          ul.nav.nav-tabs(role="tablist")
+            li.active(role="presentation"): a(href="#load-examples" role="tab" data-toggle="tab") Examples
+            li(role="presentation"): a(href="#load-browser-local" role="tab" data-toggle="tab") Browser-local storage
+            li(role="presentation"): a(href="#load-file-system" role="tab" data-toggle="tab") File system
+          div.tab-content
+            #load-examples.tab-pane.active(role="tabpanel")
+              h4 Load from examples:
+              ul.examples.small-v-scrollable
+                li.template: a(href="#")
+            #load-browser-local.tab-pane(role="tabpanel")
+              h4 Load from browser-local storage:
+              ul.local-storage.small-v-scrollable
+                li.template: a(href="#")
+              .form-group
+                input.save-name(type="text" size="20")
+                button.btn.save-button(type="button") Save to browser-local storage
+            #load-file-system.tab-pane(role="tabpanel")
+              label.btn.btn-default.btn-file Load from a local file
+                // TODO: should really make the accept: per-language
+                input.local-file(style="display:none" type="file" accept=".cpp,.cxx,.c,.h,.hpp,.hxx")
+      .modal-footer
+        button.btn.btn-default(type="button" data-dismiss="modal") Close
+
+#alert.modal.fade.gl_keep(tabindex="-1" role="dialog")
+  .modal-dialog
+    .modal-content
+      .modal-header
+        button.close(type="button" data-dismiss="modal" aria-hidden="true") &times;
+        h3.modal-title Something alert worthy
+      .modal-body
+      .modal-footer
+        button.btn.btn-default(type="button" data-dismiss="modal") Close
+
+#yes-no.modal.fade.gl_keep(tabindex="-1" role="dialog")
+  .modal-dialog
+    .modal-content
+      .modal-header
+        button.close(type="button" data-dismiss="modal" aria-hidden="true") &times;
+        h3.modal-title Well, do you or not?
+      .modal-body
+      .modal-footer
+        button.btn.no(type="button" data-dismiss="modal") No
+        button.btn.yes(type="button" data-dismiss="modal") Yes
+
+#settings.modal.fade.gl_keep(tabindex="-1" role="dialog")
+  .modal-dialog
+    .modal-content
+      .modal-header
+        button.close(type="button" data-dismiss="modal" aria-hidden="true") &times;
+        h3.modal-title Compiler Explorer Settings
+      .modal-body
+        div
+          | These settings control how Compiler Explorer acts for you. They are not
+          | preserved as part of shared URLs, and are persisted locally using browser
+          | local storage.
+          h4 Editor
+          .form-group(role="group")
+            .form-control.checkbox
+              label
+                input.autoCloseBrackets(type="checkbox")
+                | Automatically insert matching brackets and parentheses
+            .form-control Delay before compiling:&nbsp;
+              b Disabled
+              .slider.slider-horizontal.delay
+              b 3s
+            .form-control.checkbox
+              label
+                input.hoverShowSource(type="checkbox")
+                | Highlight linked code lines on hover
+          h4 Compilation
+            .form-group(role="group")
+              .form-control.checkbox
+                label
+                  input.colourise(type="checkbox")
+                  | Colourise lines so one can see how the source maps to the output
+              .form-control
+                label
+                  | Colour scheme:
+                  select.colourScheme
+      .modal-footer
+        button.btn.btn-default(type="button" data-dismiss="modal") Close
