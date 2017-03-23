@@ -108,6 +108,11 @@ define(function (require) {
             _.map(colour.schemes, function (scheme) {
                 return {label: scheme.name, desc: scheme.desc};
             }));
+        var formats = ["Google", "LLVM", "Mozilla", "Chromium"];
+        add(root.find('.formatBased'), 'formatBased', formats[0], Select,
+            _.map(formats, function (format) {
+                return {label: format, desc: format};
+            }));
         add(root.find('.slider'), 'delayAfterChange', 750, Slider, {
             max: 3000,
             step: 250,

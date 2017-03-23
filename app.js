@@ -41,7 +41,6 @@ var nopt = require('nopt'),
     aws = require('./lib/aws'),
     _ = require('underscore-node'),
     logger = require('./lib/logger').logger;
-    //formatting = require('./static/formatting');
 
 // Parse arguments from command line 'node ./app.js args...'
 var opts = nopt({
@@ -420,7 +419,30 @@ function ApiHandler(compileHandler) {
             }).join("\n"));
         }
     }, this));
-    this.handler.post('/clang-format', /*this.formatting.cppHandler*/function (req, res) {res.end();});
+     // ---- this whole thing should be in a separate file etc, proof of concept only
+    // TODO: we'll need something smarter than this; URLs are long-lived and we nede
+    // to think about it; languages...formatters...etc.maybe something like:
+    var exec = require('./lib/exec');
+    this.handler.post('/format/clang-format-3.8', function (req, res) {
+        var response = {};
+        res.setHeader('Content-Type', 'application/json');
+        var style = "-style=" + req.body.style || "Google";
+        exec.execute('/usr/bin/clang-format-3.8', [style], {
+            input: req.body.source,
+        }).then(function (result) {
+            response["exit"] = result.code;
+            if (result.code === 0) {
+                response["answer"] = result.stdout
+            } else {
+                response["answer"] = "Clang did not succeed";
+            }
+            res.end(JSON.stringify(response));
+        }).catch(function (ex) {
+            response["exit"] = -1;
+            response["answer"] = "Exception thrown";
+            res.end(JSON.stringify(response));
+        });
+    });
     this.handler.param('compiler', _.bind(function (req, res, next, compilerName) {
         req.compiler = compilerName;
         next();

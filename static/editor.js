@@ -34,7 +34,6 @@ define(function (require) {
     var Components = require('components');
     var monaco = require('monaco');
     var options = require('options');
-    var formatting = require('formatting');
     require('./d-mode');
     require('./rust-mode');
 
@@ -134,9 +133,26 @@ define(function (require) {
             contextMenuOrder: 1.5,
             run: function (ed) {
                 self.sourceOnFormat = self.getSource();
-                var newText = formatting.clangFormat(self.sourceOnFormat);
-                self.setSource(newText);
-                self.numberUsedLines();
+                $.ajax({
+                    type: 'POST',
+                    url: 'api/format/clang-format-3.8',
+                    dataType: 'json',  // Expected
+                    contentType: 'application/json',  // Sent
+                    data: JSON.stringify({"source": self.sourceOnFormat,
+                            "style": self.settings.formatBased}),
+                    success: _.bind(function (result) {
+                        if (result["exit"] == 0) {
+                            self.setSource(result["answer"]);
+                            self.numberUsedLines();
+                        } else {
+                            
+                        }
+                    }, this),
+                    error: _.bind(function (xhr, e_status, error) {
+                        
+                    }, this),
+                    cache: false
+                });
             }
         });
 

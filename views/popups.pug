@@ -62,19 +62,19 @@
           | preserved as part of shared URLs, and are persisted locally using browser
           | local storage.
           h4 Editor
-          .form-group(role="group")
-            .form-control.checkbox
-              label
-                input.autoCloseBrackets(type="checkbox")
-                | Automatically insert matching brackets and parentheses
-            .form-control Delay before compiling:&nbsp;
-              b Disabled
-              .slider.slider-horizontal.delay
-              b 3s
-            .form-control.checkbox
-              label
-                input.hoverShowSource(type="checkbox")
-                | Highlight linked code lines on hover
+            .form-group(role="group")
+              .form-control.checkbox
+                label
+                  input.autoCloseBrackets(type="checkbox")
+                  | Automatically insert matching brackets and parentheses
+              .form-control Delay before compiling:&nbsp;
+                b Disabled
+                .slider.slider-horizontal.delay
+                b 3s
+              .form-control.checkbox
+                label
+                  input.hoverShowSource(type="checkbox")
+                  | Highlight linked code lines on hover
           h4 Compilation
             .form-group(role="group")
               .form-control.checkbox
@@ -85,5 +85,14 @@
                 label
                   | Colour scheme:
                   select.colourScheme
+      if language == "C++"
+        div
+          | From here, you can control how the code formatter works
+          h4 Basic Configuration
+            .form-group(role="group")
+              .form-control
+                label
+                  | Format based on:
+                  select.formatBased
       .modal-footer
         button.btn.btn-default(type="button" data-dismiss="modal") Close
