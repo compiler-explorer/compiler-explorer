@@ -28,35 +28,48 @@ define(function (require) {
     var _ = require('underscore');
     var EventEmitter = require('events');
 
+    function makeFontSizeDropdown(elem, interval, obj) {
+        var factor = obj.isFontOfStr ? 10 : 14;
+        var step = 0.05;
+        var found = false;
+
+        var clickHandle = function() {
+            // Toggle off the selection of the others
+            elem.children().removeClass('font-option-active');
+            // Toggle us on
+            $(this).addClass("font-option-active");
+            // Send the data
+            obj.scale = $(this).data("value");
+            obj.apply();
+            obj.emit('change');
+        };
+
+        for (var i = interval[0]; i <= interval[1]; i += step) {
+            step *= 1.2;
+            var newElementStr = '<li data-value="' + i + '" class="font-option'; 
+            if (!found && (i === obj.scale || Math.floor(i) == obj.scale)) {
+                found = true;
+                newElementStr += ' font-option-active';
+            }
+            newElementStr += '">' + Math.round(i * factor) + '</li>';
+            elem.append($(newElementStr).click(clickHandle));
+        }
+    }
+
     function FontScale(domRoot, state, fontSelectorOrEditor) {
         EventEmitter.call(this);
         this.domRoot = domRoot;
         this.scale = state.fontScale || 1.0;
         this.fontSelectorOrEditor = fontSelectorOrEditor;
+        this.isFontOfStr = typeof(this.fontSelectorOrEditor) === "string";
         this.apply();
-
-        this.domRoot.find('.increase-font-size').click(_.bind(function () {
-            this.scale += 0.1;
-            this.apply();
-            this.emit('change');
-        }, this));
-        this.domRoot.find('.decrease-font-size').click(_.bind(function () {
-            if (this.scale <= 0.3) return;
-            this.scale -= 0.1;
-            this.apply();
-            this.emit('change');
-        }, this));
-        this.domRoot.find('.reset-font-size').click(_.bind(function () {
-            this.scale = 1.0;
-            this.apply();
-            this.emit('change');
-        }, this));
+        makeFontSizeDropdown(this.domRoot.find('.font-size-list'), [0.3, 3], this);
     }
 
     _.extend(FontScale.prototype, EventEmitter.prototype);
 
     FontScale.prototype.apply = function () {
-        if (typeof(this.fontSelectorOrEditor) === "string") {
+        if (this.isFontOfStr) {
             this.domRoot.find(this.fontSelectorOrEditor).css('font-size', (10 * this.scale) + "pt");
         } else {
             this.fontSelectorOrEditor.updateOptions({

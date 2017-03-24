@@ -154,3 +154,19 @@ pre.content {
     width: 5px !important;
     left: 3px;
 }
+
+.font-option {
+    background: white;
+}
+
+.font-option:hover {
+    background: lightblue;
+}
+
+.font-option-active {
+    background: #226699!important;
+}
+
+.font-option-active:hover {
+    background: #4477AA!important;
+}
