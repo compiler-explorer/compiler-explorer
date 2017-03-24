@@ -32,6 +32,18 @@ define(function (require) {
         var factor = obj.isFontOfStr ? 10 : 14;
         var step = 0.05;
         var found = false;
+
+        var clickHandle = function() {
+            // Toggle off the selection of the others
+            elem.children().removeClass('font-option-active');
+            // Toggle us on
+            $(this).addClass("font-option-active");
+            // Send the data
+            obj.scale = $(this).data("value");
+            obj.apply();
+            obj.emit('change');
+        };
+
         for (var i = interval[0]; i <= interval[1]; i += step) {
             step *= 1.2;
             var newElementStr = '<li data-value="' + i + '" class="font-option'; 
@@ -40,17 +52,7 @@ define(function (require) {
                 newElementStr += ' font-option-active';
             }
             newElementStr += '">' + Math.round(i * factor) + '</li>';
-            elem.append($(newElementStr).click(function() {
-                    // Toggle off the selection of the others
-                    elem.children().removeClass('font-option-active');
-                    // Toggle us on
-                    $(this).addClass("font-option-active");
-                    // Send the data
-                    obj.scale = $(this).data("value");
-                    obj.apply();
-                    obj.emit('change');
-                })
-            );
+            elem.append($(newElementStr).click(clickHandle));
         }
     }
 
