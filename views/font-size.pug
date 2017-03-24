@@ -1,2 +1,5 @@
-.btn-group.btn-group-sm
-  select.btn.btn-default.btn-sm.change-font-size(title="Change font size")
+.btn-group.btn-group-sm.dropdown
+	button.btn.btn-default.btn-sm(title="Change font size", data-toggle="dropdown")
+		span.glyphicon.glyphicon-sm.glyphicon-font
+		span.caret
+	ul.dropdown-menu.font-size-list
