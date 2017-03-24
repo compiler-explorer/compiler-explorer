@@ -133,17 +133,20 @@ define(function (require) {
             contextMenuOrder: 1.5,
             run: function (ed) {
                 self.sourceOnFormat = self.getSource();
+                var position = ed.getPosition();
                 $.ajax({
                     type: 'POST',
                     url: 'api/format/clang-format-3.8',
                     dataType: 'json',  // Expected
                     contentType: 'application/json',  // Sent
                     data: JSON.stringify({"source": self.sourceOnFormat,
-                            "style": self.settings.formatBased}),
+                            "base": self.settings.formatBase,
+                            "overrides": self.settings.formatOverrides}),
                     success: _.bind(function (result) {
                         if (result["exit"] == 0) {
                             self.setSource(result["answer"]);
                             self.numberUsedLines();
+                            self.editor.setPosition(position);
                         } else {
                             
                         }

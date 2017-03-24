@@ -424,10 +424,24 @@ function ApiHandler(compileHandler) {
     // to think about it; languages...formatters...etc.maybe something like:
     var exec = require('./lib/exec');
     this.handler.post('/format/clang-format-3.8', function (req, res) {
-        var response = {};
         res.setHeader('Content-Type', 'application/json');
-        var style = "-style=" + req.body.style || "Google";
-        exec.execute('/usr/bin/clang-format-3.8', [style], {
+        var style = "";
+        if (req.body.base && req.body.base !== "None") {
+            if (req.body.overrides) {
+                style = "{BasedOnStyle: " + req.body.base + "," + req.body.overrides + "}";
+            } else {
+                style = req.body.base;
+            }
+        } else {
+            if (req.body.overrides) {
+                style = "{" + req.body.overrides + "}";
+            } else {
+                style = "Google";
+            }
+        }
+        var response = {};
+        response["style"] = style;
+        exec.execute('/usr/bin/clang-format-3.8', ["-style=" + style], {
             input: req.body.source,
         }).then(function (result) {
             response["exit"] = result.code;

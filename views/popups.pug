@@ -85,14 +85,18 @@
                 label
                   | Colour scheme:
                   select.colourScheme
-      if language == "C++"
+        if language == "C++"
         div
           | From here, you can control how the code formatter works
           h4 Basic Configuration
             .form-group(role="group")
               .form-control
                 label
-                  | Format based on:
-                  select.formatBased
+                  | Format based on
+                  select.formatBase
+              .form-control
+                label
+                  | Override style (key: value, ...)
+                textarea.formatOverrides
       .modal-footer
         button.btn.btn-default(type="button" data-dismiss="modal") Close

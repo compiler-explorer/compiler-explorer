@@ -40,6 +40,16 @@ define(function (require) {
         this.control.putUi(this.elem, value);
     };
 
+    function TextAreaInput() {
+    }
+
+    TextAreaInput.prototype.getUi = function (elem) {
+        return elem.val();
+    };
+    TextAreaInput.prototype.putUi = function (elem, value) {
+        elem.val(value);
+    };
+
     function Checkbox() {
     }
 
@@ -108,11 +118,6 @@ define(function (require) {
             _.map(colour.schemes, function (scheme) {
                 return {label: scheme.name, desc: scheme.desc};
             }));
-        var formats = ["Google", "LLVM", "Mozilla", "Chromium"];
-        add(root.find('.formatBased'), 'formatBased', formats[0], Select,
-            _.map(formats, function (format) {
-                return {label: format, desc: format};
-            }));
         add(root.find('.slider'), 'delayAfterChange', 750, Slider, {
             max: 3000,
             step: 250,
@@ -122,6 +127,13 @@ define(function (require) {
             }
         });
         add(root.find('.hoverShowSource'), 'hoverShowSource', true, Checkbox);
+
+        var formats = ["Google", "LLVM", "Mozilla", "Chromium", "WebKit", "None"];
+        add(root.find('.formatBase'), 'formatBase', formats[0], Select,
+            _.map(formats, function (format) {
+                return {label: format, desc: format};
+            }));
+        add(root.find('.formatOverrides'), 'formatOverrides', "", TextAreaInput);
 
         onSettingsChange(settings);
         onChange(settings);
