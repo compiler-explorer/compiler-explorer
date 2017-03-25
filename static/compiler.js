@@ -127,7 +127,7 @@ define(function (require) {
             contextMenuGroupId: 'help',
             contextMenuOrder: 1.5,
             run: function (ed) {
-                // .getTargetAtClientPoint(ed.getPosition().column, ed.getPosition().lineNumber); not useful. We always returns null (Not a model?)
+                // .getTargetAtClientPoint(ed.getPosition().column, ed.getPosition().lineNumber); not useful. It always returns null (Not a model?)
                 var token = "";
                 var targetLine = ed.getValue().split('\n')[ed.getPosition().lineNumber-1];
                 var l = ed.getPosition().column;
