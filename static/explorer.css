@@ -210,3 +210,18 @@ pre.content {
         transform: rotate(359deg);
     }
 }
+.font-option {
+    background: white;
+}
+
+.font-option:hover {
+    background: lightblue;
+}
+
+.font-option-active {
+    background: #226699!important;
+}
+
+.font-option-active:hover {
+    background: #4477AA!important;
+}
