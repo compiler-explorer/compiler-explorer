@@ -75,12 +75,8 @@ define(function (require) {
         this.nextRequest = null;
         this.settings = {};
 
-        this.decorations = [];
-        this.rawDecorations = [];
-        this.rawDecorations.push({
-            range: new monaco.Range(0, 1, 0, 1),
-            options: {}
-        });
+        this.decorations = {};
+        this.prevDecorations = [];
 
         this.domRoot.find(".compiler-picker").selectize({
             sortField: 'name',
@@ -112,7 +108,7 @@ define(function (require) {
 
         this.outputEditor.addAction({
             id: 'viewsource',
-            label: 'View source',
+            label: 'Highlight source',
             keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.F10],
             keybindingContext: null,
             contextMenuGroupId: 'navigation',
@@ -159,38 +155,7 @@ define(function (require) {
             }
         });
 
-
-
-        this.outputEditor.onMouseMove(function (e) {
-            if (e === null || e.target === null || e.target.position === null) return;
-            if (self.settings.hoverShowSource === true && self.assembly) {
-                var desiredLine = e.target.position.lineNumber - 1;
-                if (self.assembly[desiredLine]) {
-                    // We check that we actually have something to show at this point!
-                    self.eventHub.emit('editorSetDecoration', self.sourceEditorId, self.assembly[desiredLine].source);
-                }
-            }
-            if (e.target.element !== null && $.isNumeric(e.target.element.textContent)) {
-                var elementContent = e.target.element.textContent;
-                self.rawDecorations[0] = {
-                    range: e.target.range,
-                    options: {
-                        isWholeLine: false,
-                        hoverMessage: [
-                            parseInt(elementContent,16).toString(16) === elementContent.toLowerCase() ? // Is Hex?
-                                '0x' + parseInt(elementContent).toString(16)
-                            :
-                            (parseInt(elementContent,10) === elementContent ? // Is Decimal
-                                parseInt(elementContent).toString(10) 
-                            : // Else ... Show both
-                            ('0x' + parseInt(elementContent, 16).toString() + ' (' + parseInt(elementContent, 10).toString() + ')'))
-                            
-                        ]
-                    }
-                };
-                self.decorations = self.outputEditor.deltaDecorations(self.decorations, self.rawDecorations);
-            }
-        });
+        this.outputEditor.onMouseMove(_.throttle(_.bind(this.onMouseMove, this)), 250);
 
         this.fontScale = new FontScale(this.domRoot, state, this.outputEditor);
         this.fontScale.on('change', _.bind(function () {
@@ -573,20 +538,22 @@ define(function (require) {
         }
     };
 
+    Compiler.prototype.updateDecorations = function () {
+        this.prevDecorations = this.outputEditor.deltaDecorations(
+            this.prevDecorations, _.flatten(_.values(this.decorations), true));
+    };
+
     Compiler.prototype.onCompilerSetDecorations = function (id, lineNums) {
         if (id == this.id) {
-            var ranges = [];
-            ranges.push(this.rawDecorations[0]);
-            _.each(lineNums, function (line) {
-                ranges.push({
+            this.decorations.linkedCode = _.map(lineNums, function (line) {
+                return {
                     range: new monaco.Range(line, 1, line, 1),
                     options: {
                         linesDecorationsClassName: 'linked-code-decoration'
                     }
-                });
+                };
             });
-            this.decorations = this.outputEditor.deltaDecorations(this.decorations, ranges);
-            this.rawDecorations = ranges;
+            this.updateDecorations();
         }
     };
 
@@ -595,6 +562,36 @@ define(function (require) {
         this.settings = _.clone(newSettings);
         if (!lastHoverShowSource && this.settings.hoverShowSource) {
             this.onCompilerSetDecorations(this.id, []);
+        }
+    };
+
+    var hexLike = /^(#?[$]|0x)([0-9a-fA-F]+)$/;
+    var decimalLike = /^(#?)([0-9]+)$/;
+
+    function getToolTip(value) {
+        var match = hexLike.exec(value);
+        if (match) return value + ' = ' + parseInt(match[2], 16).toString();
+        match = decimalLike.exec(value);
+        if (match) return value + ' = 0x' + parseInt(match[2]).toString(16);
+        return null;
+    }
+
+    Compiler.prototype.onMouseMove = function (e) {
+        if (e === null || e.target === null || e.target.position === null) return;
+        if (this.settings.hoverShowSource === true && this.assembly) {
+            var desiredLine = e.target.position.lineNumber - 1;
+            if (this.assembly[desiredLine]) {
+                // We check that we actually have something to show at this point!
+                this.eventHub.emit('editorSetDecoration', this.sourceEditorId, this.assembly[desiredLine].source);
+            }
+        }
+        var numericToolTip = e.target.element ? getToolTip(e.target.element.textContent) : null;
+        if (numericToolTip) {
+            this.decorations.numericToolTip = {
+                range: e.target.range,
+                options: {isWholeLine: false, hoverMessage: ['`' + numericToolTip + '`']}
+            };
+            this.updateDecorations();
         }
     };
 

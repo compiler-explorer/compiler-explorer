@@ -90,6 +90,9 @@ define(function (require) {
             id: 'compile',
             label: 'Compile',
             keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter],
+            keybindingContext: null,
+            contextMenuGroupId: 'navigation',
+            contextMenuOrder: 1.5,
             run: _.bind(function () {
                 this.maybeEmitChange();
             }, this)
@@ -109,7 +112,7 @@ define(function (require) {
 
         this.editor.addAction({
             id: 'viewasm',
-            label: 'View assembly',
+            label: 'Highlight assembly',
             keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.F10],
             keybindingContext: null,
             contextMenuGroupId: 'navigation',

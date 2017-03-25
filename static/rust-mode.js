@@ -58,7 +58,6 @@ define(function (require) {
                 '^=', '%=', '<<=', '>>=', '>>>='
             ],
 
-            // we include these common regular expressions
             symbols: /[=><!~?:&|+\-*\/\^%]+/,
             escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
 
@@ -87,6 +86,9 @@ define(function (require) {
                             '@default': ''
                         }
                     }],
+
+                    [/#!\[[^]*\]/, 'annotation'],
+                    [/#!.*$/, 'annotation.invalid'],
 
                     // numbers
                     [/\d*\.\d+([eE][\-+]?\d+)?[fFdD]?/, 'number.float'],
