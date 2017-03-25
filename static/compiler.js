@@ -148,8 +148,8 @@ define(function (require) {
                 token = token.toUpperCase();
                 var asmHelp = asmDocs[token];
                 if (asmHelp) {
-                    new Alert().alert(token + " help", asmHelp +
-                     '<br><br>For more information, visit <a href="http://www.felixcloutier.com/x86/' + token +'.html" target="_blank">the ' +
+                    new Alert().alert(token + " help", asmHelp.html +
+                     '<br><br>For more information, visit <a href="http://www.felixcloutier.com/x86/' + asmHelp.url +'" target="_blank">the ' +
                      token + ' documentation<img src="assets/external_link.png" width="16px" height="16px" alt="Opens in a new window"/></a>.');
                 }
             }
