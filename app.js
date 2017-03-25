@@ -446,7 +446,7 @@ function ApiHandler(compileHandler) {
         }).then(function (result) {
             response.exit = result.code;
             if (result.code === 0) {
-                response.answer = result.stdout
+                response.answer = result.stdout;
             } else {
                 response.answer = "Clang did not succeed";
             }

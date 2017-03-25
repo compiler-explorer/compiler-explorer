@@ -147,7 +147,7 @@ define(function (require) {
                                 "base": self.settings.formatBase,
                                 "overrides": self.settings.formatOverrides}),
                         success: _.bind(function (result) {
-                            if (result.exit == 0) {
+                            if (result.exit === 0) {
                                 if (self.sourceOnFormat === self.getSource()) {
                                     self.setSource(result.answer);
                                 } else {
