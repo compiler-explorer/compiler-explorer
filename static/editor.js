@@ -136,7 +136,7 @@ define(function (require) {
                 run: function (ed) {
                     self.sourceOnFormat = self.getSource();
                     var position = ed.getPosition();
-                    self.handleThinkingGear(true, "Formatting your code. If you change anything in the meanwhile, you will have to choose what to do.")
+                    self.handleThinkingGear(true, "Formatting your code. If you change anything in the meanwhile, you will have to choose what to do.");
                     // Let the user know we're formmating and that if it changes anything, we will ask what to do.
                     $.ajax({
                         type: 'POST',
@@ -147,13 +147,13 @@ define(function (require) {
                                 "base": self.settings.formatBase,
                                 "overrides": self.settings.formatOverrides}),
                         success: _.bind(function (result) {
-                            if (result["exit"] == 0) {
+                            if (result.exit == 0) {
                                 if (self.sourceOnFormat === self.getSource()) {
-                                    self.setSource(result["answer"]);
+                                    self.setSource(result.answer);
                                 } else {
                                     new Alert().ask("Changes were made to the code",
                                                     "Changes were made to the code while it was being formatted. What should be done?",
-                                                    {"yes": function() {self.setSource(result["answer"]);}, "no": function () {}},
+                                                    {"yes": function() {self.setSource(result.answer);}, "no": function () {}},
                                                     {"yes": "Overwrite my changes", "no": "Keep my changes"});                        
                                 }
                                 self.numberUsedLines();
@@ -419,7 +419,7 @@ define(function (require) {
                 .removeClass("gly-spin")
                 .hide();
         }
-    }
+    };
 
     return {
         Editor: Editor

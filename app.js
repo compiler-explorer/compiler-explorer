@@ -440,20 +440,21 @@ function ApiHandler(compileHandler) {
             }
         }
         var response = {};
-        response["style"] = style;
+        response.style = style;
         exec.execute('/usr/bin/clang-format-3.8', ["-style=" + style], {
             input: req.body.source,
         }).then(function (result) {
-            response["exit"] = result.code;
+            response.exit = result.code;
             if (result.code === 0) {
-                response["answer"] = result.stdout
+                response.answer = result.stdout
             } else {
-                response["answer"] = "Clang did not succeed";
+                response.answer = "Clang did not succeed";
             }
             res.end(JSON.stringify(response));
         }).catch(function (ex) {
-            response["exit"] = -1;
-            response["answer"] = "Exception thrown";
+            response.exit = -1;
+            response.thrown = true;
+            response.answer = "Exception thrown";
             res.end(JSON.stringify(response));
         });
     });

@@ -50,11 +50,13 @@ define(function (require) {
         this.noHandler = handlers.no;
         modal.find('.modal-title').html(title);
         modal.find('.modal-body').html(question);
-        if (customTexts.yes) {
-            modal.find('.yes').text(customTexts.yes);
-        }
-        if (customTexts.no) {
-            modal.find('.no').text(customTexts.no);
+        if (customTexts) {
+            if (customTexts.yes) {
+                modal.find('.yes').text(customTexts.yes);
+            }
+            if (customTexts.no) {
+                modal.find('.no').text(customTexts.no);
+            }
         }
         modal.modal();
     };
