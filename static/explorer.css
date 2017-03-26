@@ -55,7 +55,31 @@
 }
 
 .diff-picker {
+    max-width: 20em;
     width: 20em;
+}
+
+.diff-picker .compiler {
+    font-weight: bold;
+}
+
+.diff-picker .options {
+    padding-left: 0.5em;
+    font-size: small;
+}
+
+.diff-picker .meta {
+    text-align: right;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    font-size: x-small;
+}
+
+.diff-picker .meta li {
+    padding: 0;
+    display: inline;
+    margin: 0 10px 0 0;
 }
 
 input.options {
@@ -164,9 +188,9 @@ pre.content {
 }
 
 .font-option-active {
-    background: #226699!important;
+    background: #226699 !important;
 }
 
 .font-option-active:hover {
-    background: #4477AA!important;
+    background: #4477AA !important;
 }

@@ -443,7 +443,7 @@ define(function (require) {
     };
 
     Compiler.prototype.sendCompiler = function () {
-        this.eventHub.emit('compiler', this.id, this.compiler, this.options);
+        this.eventHub.emit('compiler', this.id, this.compiler, this.options, this.sourceEditorId);
     };
 
     Compiler.prototype.onEditorClose = function (editor) {
@@ -490,7 +490,7 @@ define(function (require) {
     Compiler.prototype.updateCompilerName = function () {
         var compilerName = this.compiler ? this.compiler.name : "no compiler set";
         var compilerVersion = this.compiler ? this.compiler.version : "";
-        this.container.setTitle("#" + this.sourceEditorId + " with " + compilerName);
+        this.container.setTitle(compilerName + " (Editor #" + this.sourceEditorId + ", Compiler #" + this.id + ")");
         this.domRoot.find(".full-compiler-name").text(compilerVersion);
     };
 

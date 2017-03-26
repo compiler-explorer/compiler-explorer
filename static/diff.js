@@ -72,7 +72,18 @@ define(function (require) {
             labelField: 'name',
             searchField: ['name'],
             options: [],
-            items: []
+            items: [],
+            render: {
+                option: function (item, escape) {
+                    return '<div>' +
+                        '<span class="compiler">' + escape(item.compiler.name) + '</span>' +
+                        '<span class="options">' + escape(item.options) + '</span>' +
+                        '<ul class="meta">' +
+                        '<li class="editor">Editor #' + escape(item.editorId) + '</li>' +
+                        '<li class="compilerId">Compiler #' + escape(item.id) + '</li>' +
+                        '</ul></div>';
+                }
+            }
         }).on('change', function () {
             var compiler = self.compilers[$(this).val()];
             if (!compiler) return;
@@ -83,9 +94,7 @@ define(function (require) {
                 self.rhs.compiler = compiler;
                 self.rhs.id = compiler.id;
             }
-            self.eventHub.emit('resendCompilation', compiler.id);
-            self.updateCompilerNames();
-            self.updateState();
+            self.onDiffSelect(compiler.id);
         });
         this.selectize = {lhs: selectize[0].selectize, rhs: selectize[1].selectize};
 
@@ -119,6 +128,12 @@ define(function (require) {
         });
     };
 
+    Diff.prototype.onDiffSelect = function (id) {
+        this.eventHub.emit('resendCompilation', id);
+        this.updateCompilerNames();
+        this.updateState();
+    };
+
     Diff.prototype.onCompileResult = function (id, compiler, result) {
         // both sides must be updated, don't be tempted to rewrite this as
         // var changes = lhs.update() || rhs.update();
@@ -129,10 +144,31 @@ define(function (require) {
         }
     };
 
-    Diff.prototype.onCompiler = function (id, compiler, options) {
+    Diff.prototype.onCompiler = function (id, compiler, options, editorId) {
         if (!compiler) return;
         options = options || "";
-        this.compilers[id] = {id: id, name: compiler.name + " " + options};
+        var name = compiler.name + " " + options;
+        // TODO: selectize doesn't play nicely with CSS tricks for truncation; this is the best I can do
+        // There's a plugin at: http://www.benbybenjacobs.com/blog/2014/04/09/no-wrap-plugin-for-selectize-dot-js
+        // but it doesn't look easy to integrate.
+        var maxLength = 30;
+        if (name.length > maxLength - 3) name = name.substr(0, maxLength - 3) + "...";
+        this.compilers[id] = {
+            id: id,
+            name: name,
+            options: options,
+            editorId: editorId,
+            compiler: compiler
+        };
+        if (!this.lhs.id) {
+            this.lhs.compiler = this.compilers[id];
+            this.lhs.id = id;
+            this.onDiffSelect(id);
+        } else if (!this.rhs.id) {
+            this.rhs.compiler = this.compilers[id];
+            this.rhs.id = id;
+            this.onDiffSelect(id);
+        }
         this.updateCompilers();
     };
 
