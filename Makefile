@@ -72,7 +72,7 @@ clean:
 	$(MAKE) -C c-preload clean
 
 run: prereqs
-	$(NODE) ./node_modules/.bin/supervisor -w app.js,lib,etc/config -e 'js|node|properties' --exec $(NODE) -- ./app.js --language $(LANG) $(EXTRA_ARGS)
+	$(NODE) ./node_modules/.bin/supervisor -w app.js,lib,etc/config -e 'js|node|properties|pug' --exec $(NODE) -- ./app.js --language $(LANG) $(EXTRA_ARGS)
 
 HASH := $(shell git rev-parse HEAD)
 dist: prereqs
