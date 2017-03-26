@@ -107,6 +107,7 @@ define(function (require) {
 
         this.container.on('destroy', function () {
             this.eventHub.unsubscribe();
+            this.outputEditor.dispose();
         }, this);
         container.on('resize', this.resize, this);
         container.on('shown', this.resize, this);

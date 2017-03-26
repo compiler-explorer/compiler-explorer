@@ -130,6 +130,7 @@ define(function (require) {
         container.on('destroy', function () {
             self.eventHub.unsubscribe();
             self.eventHub.emit('compilerClose', self.id);
+            self.outputEditor.dispose();
         }, this);
         container.on('resize', this.resize, this);
         container.on('shown', this.resize, this);
@@ -448,7 +449,11 @@ define(function (require) {
 
     Compiler.prototype.onEditorClose = function (editor) {
         if (editor === this.sourceEditorId) {
-            this.container.close();
+            // We can't immediately close as an outer loop somewhere in GoldenLayout is iterating over
+            // the hierarchy. We can't modify while it's being iterated over.
+            _.defer(function (self) {
+                self.container.close();
+            }, this);
         }
     };
 
