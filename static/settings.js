@@ -124,8 +124,13 @@ define(function (require) {
         });
         add(root.find('.hoverShowSource'), 'hoverShowSource', true, Checkbox);
 
-        onSettingsChange(settings);
-        onChange(settings);
+        function setSettings(settings) {
+            onSettingsChange(settings);
+            onChange(settings);
+        }
+
+        setSettings(settings);
+        return setSettings;
     }
 
     return setupSettings;

@@ -98,6 +98,18 @@ define(function (require) {
             }, this)
         });
 
+        this.editor.addAction({
+            id: 'toggleCompileOnChange',
+            label: 'Toggle compile on change',
+            keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.Enter],
+            keybindingContext: null,
+            run: _.bind(function () {
+                this.eventHub.emit('modifySettings', {
+                    compileOnChange: !this.settings.compileOnChange
+                });
+            }, this)
+        });
+
         function tryCompilerSelectLine(thisLineNumber) {
             _.each(self.asmByCompiler, function (asms, compilerId) {
                 var targetLines = [];

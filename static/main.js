@@ -79,7 +79,10 @@ define(function (require) {
             eventHub.emit('settingsChange', currentSettings);
         });
 
-        settings($('#settings'), currentSettings, onChange);
+        var setSettings = settings($('#settings'), currentSettings, onChange);
+        eventHub.on('modifySettings', function (newSettings) {
+            setSettings(_.extend(currentSettings, newSettings));
+        });
     }
 
     function start() {
