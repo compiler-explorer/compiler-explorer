@@ -195,18 +195,31 @@ pre.content {
     background: #4477AA !important;
 }
 
-.notification {
+#notifications {
     max-width: 33%;
-    padding: 5px;
-    border-radius: 5px;
-    background-color: cornflowerblue;
     position: fixed;
     bottom: 3px;
     right: 5px;
+}
+
+.notification {
+    padding: 5px;
+    border-radius: 5px;
+    background-color: cornflowerblue;
     color: black;
 }
 
 .notification-error {
     background-color: indianred;
     color: white;
+}
+
+.notification-on {
+    background-color: green;
+    color: black;
+}
+
+.notification-off {
+    background-color: gray;
+    color: black;
 }

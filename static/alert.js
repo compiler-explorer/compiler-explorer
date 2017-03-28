@@ -57,17 +57,27 @@ define(function (require) {
     };
 
     // We append elements so in a near future we can stack sucesive notifications
-    Alert.prototype.notify = function (body, hideTime, alertClass) {
+    Alert.prototype.notify = function (body, options) {
         var modal = $('#notifications');
         if (!modal) return;
         var newElement = $('<div class="alert notification" tabindex="-1" role="dialog"><button type="button" class="close" data-dismiss="alert">&times;</button><span id="msg">' + body + '</span></div>');
-        newElement.addClass(alertClass);
+        if (options) {
+            if (options.group) {
+                modal.find('[data-group="' + options.group + '"]').remove();
+                newElement.attr('data-group', options.group);
+            }
+            if (options.alertClass) {
+                newElement.addClass(options.alertClass);
+            }
+        }
         modal.append(newElement);
-        setTimeout(function () {
-            newElement.fadeOut('slow', function() {
-                newElement.remove();
-            });
-        }, hideTime || 5000);
+        if (!options.neverDissmiss) {
+            setTimeout(function () {
+                newElement.fadeOut('slow', function() {
+                    newElement.remove();
+                });
+            }, options.hideTime || 5000);
+        }
     };
 
     Alert.prototype.onYesNoHide = function (evt) {
