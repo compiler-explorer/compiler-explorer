@@ -170,3 +170,19 @@ pre.content {
 .font-option-active:hover {
     background: #4477AA!important;
 }
+
+.notification {
+    max-width: 33%;
+    padding: 5px;
+    border-radius: 5px;
+    background-color: cornflowerblue;
+    position: fixed;
+    bottom: 3px;
+    right: 5px;
+    color: black;
+}
+
+.notification-error {
+    background-color: indianred;
+    color: white;
+}

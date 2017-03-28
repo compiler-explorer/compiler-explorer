@@ -134,12 +134,14 @@ define(function (require) {
                 var asmHelp = asmDocs[token];
                 if (asmHelp) {
                     new Alert().alert(token + " help", asmHelp.html +
-                     '<br><br>For more information, visit <a href="http://www.felixcloutier.com/x86/' + asmHelp.url +'" target="_blank">the ' +
-                     token + ' documentation<img src="assets/external_link.png" width="16px" height="16px" alt="Opens in a new window"/></a>.',
+                     '<br><br>For more information, visit <a href="http://www.felixcloutier.com/x86/' + asmHelp.url +'" target="_blank" rel="noopener noreferrer">the ' +
+                     token + ' documentation <img src="assets/external_link.png" width="16px" height="16px" alt="Opens in a new window"/></a>.',
                      function() {
                         ed.focus();
                         ed.setPosition(pos);
                     });
+                } else {
+                    new Alert().notify('This token was not found in the documentation.', 3000, 'notification-error');
                 }
             }
         });
@@ -593,7 +595,7 @@ define(function (require) {
         if (asmToolTip) {
             this.decorations.asmToolTip = {
                 range: e.target.range,
-                options: {isWholeLine: false, hoverMessage: [asmToolTip]}
+                options: {isWholeLine: false, hoverMessage: [asmToolTip + " More information available in the context menu."]}
             };
             this.updateDecorations();
         }
