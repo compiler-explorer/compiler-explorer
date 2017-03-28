@@ -37,11 +37,14 @@ define(function (require) {
         }, this));
     }
 
-    Alert.prototype.alert = function (title, body) {
+    Alert.prototype.alert = function (title, body, onClose) {
         var modal = $('#alert');
         modal.find('.modal-title').html(title);
         modal.find('.modal-body').html(body);
         modal.modal();
+        if (onClose) {
+            modal.on('hidden.bs.modal', onClose);
+        }
     };
 
     Alert.prototype.ask = function (title, question, handlers) {
