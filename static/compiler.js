@@ -566,7 +566,7 @@ define(function (require) {
     }
 
     function getAsmToolTip(token) {
-        var asmDoc = asmDocs[token.toUpperCase()]
+        var asmDoc = asmDocs[token.toUpperCase()];
         return asmDoc ? asmDoc.tooltip : null;
     }
 
