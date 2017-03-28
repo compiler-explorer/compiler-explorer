@@ -590,14 +590,15 @@ define(function (require) {
             };
             this.updateDecorations();
         }
-
-        var asmToolTip = currentWord && currentWord.word ? getAsmToolTip(currentWord.word) : null;
-        if (asmToolTip) {
-            this.decorations.asmToolTip = {
-                range: e.target.range,
-                options: {isWholeLine: false, hoverMessage: [asmToolTip + " More information available in the context menu."]}
-            };
-            this.updateDecorations();
+        if (this.settings.hoverShowAsmDoc === true) {
+            var asmToolTip = currentWord && currentWord.word ? getAsmToolTip(currentWord.word) : null;
+            if (asmToolTip) {
+                this.decorations.asmToolTip = {
+                    range: e.target.range,
+                    options: {isWholeLine: false, hoverMessage: [asmToolTip + " More information available in the context menu."]}
+                };
+                this.updateDecorations();
+            }
         }
     };
 
