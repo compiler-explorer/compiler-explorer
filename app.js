@@ -516,7 +516,6 @@ findCompilers()
         webServer
             .set('trust proxy', true)
             .set('view engine', 'pug')
-            .set('view cache', true)
             .use(morgan('combined', {stream: logger.stream}))
             .use(compression())
             .get('/', function (req, res) {
