@@ -71,12 +71,12 @@ define(function (require) {
             }
         }
         modal.append(newElement);
-        if (!options.neverDismiss) {
+        if (!options || !options.neverDismiss) {
             setTimeout(function () {
                 newElement.fadeOut('slow', function() {
                     newElement.remove();
                 });
-            }, options.hideTime || 5000);
+            }, options && options.hideTime ? options.hideTime : 5000);
         }
     };
 
