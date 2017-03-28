@@ -65,6 +65,7 @@ define(function (require) {
     var Raven = require('raven-js');
     var settings = require('./settings');
     var local = require('./local');
+    var Alert = require('./alert');
 
     function setupSettings(eventHub) {
         var currentSettings = JSON.parse(local.get('settings', '{}'));
@@ -180,6 +181,11 @@ define(function (require) {
         $('#ui-reset').click(function () {
             local.remove('gl');
             window.location.reload();
+        });
+        $('#thanks-to').click(function () {
+            $.get('thanks.html', function (result) {
+                new Alert().alert("Special thanks to", $(result));
+            });
         });
     }
 
