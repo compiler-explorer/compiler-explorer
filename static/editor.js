@@ -111,7 +111,8 @@ define(function (require) {
                 new Alert().notify('Compile on code change has been toggled ' + (this.settings.compileOnChange ? 'ON' : 'OFF'), {
                     "hideTime": 3000,
                     "alertClass": this.settings.compileOnChange ? "notification-on" : "notification-off",
-                    "group": "togglecompile"
+                    "group": "togglecompile",
+                    "neverDismiss": false
                 });
             }, this)
         });

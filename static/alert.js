@@ -71,7 +71,7 @@ define(function (require) {
             }
         }
         modal.append(newElement);
-        if (!options.neverDissmiss) {
+        if (!options.neverDismiss) {
             setTimeout(function () {
                 newElement.fadeOut('slow', function() {
                     newElement.remove();
