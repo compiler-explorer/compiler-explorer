@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>FCMOVcc—Floating-Point Conditional Move </title></head>
+<body>
+<h1>FCMOV<em>cc</em>—Floating-Point Conditional Move</h1>
+<table>
+<tr>
+<th>Opcode*</th>
+<th>Instruction</th>
+<th>64-Bit Mode</th>
+<th>Compat/Leg Mode*</th>
+<th>Description</th></tr>
+<tr>
+<td>DA C0+i</td>
+<td>FCMOVB ST(0), ST(i)</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move if below (CF=1).</td></tr>
+<tr>
+<td>DA C8+i</td>
+<td>FCMOVE ST(0), ST(i)</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move if equal (ZF=1).</td></tr>
+<tr>
+<td>DA D0+i</td>
+<td>FCMOVBE ST(0), ST(i)</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move if below or equal (CF=1 or ZF=1).</td></tr>
+<tr>
+<td>DA D8+i</td>
+<td>FCMOVU ST(0), ST(i)</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move if unordered (PF=1).</td></tr>
+<tr>
+<td>DB C0+i</td>
+<td>FCMOVNB ST(0), ST(i)</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move if not below (CF=0).</td></tr>
+<tr>
+<td>DB C8+i</td>
+<td>FCMOVNE ST(0), ST(i)</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move if not equal (ZF=0).</td></tr>
+<tr>
+<td>DB D0+i</td>
+<td>FCMOVNBE ST(0), ST(i)</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move if not below or equal (CF=0 and ZF=0).</td></tr>
+<tr>
+<td>DB D8+i</td>
+<td>FCMOVNU ST(0), ST(i)</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move if not unordered (PF=0).</td></tr></table>
+<p><strong>NOTES:</strong></p>
+<p>*</p>
+<p>See IA-32 Architecture Compatibility section below.</p>
+<h2>Description</h2>
+<p>Tests the status flags in the EFLAGS register and moves the source operand (second operand) to the destination operand (first operand) if the given test condition is true. The condition for each mnemonic os given in the Descrip-tion column above and in Chapter 8 in the <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 1</em>. The source operand is always in the ST(i) register and the destination operand is always ST(0).</p>
+<p>The FCMOV<em>cc</em> instructions are useful for optimizing small IF constructions. They also help eliminate branching over-head for IF operations and the possibility of branch mispredictions by the processor.</p>
+<p>A processor may not support the FCMOV<em>cc</em> instructions. Software can check if the FCMOV<em>cc</em> instructions are supported by checking the processor’s feature information with the CPUID instruction (see “COMISS—Compare Scalar Ordered Single-Precision Floating-Point Values and Set EFLAGS” in this chapter). If both the CMOV and FPU feature bits are set, the FCMOV<em>cc</em> instructions are supported.</p>
+<p>This instruction’s operation is the same in non-64-bit modes and 64-bit mode.</p>
+<h2>IA-32 Architecture Compatibility</h2>
+<p>The FCMOVcc instructions were introduced to the IA-32 Architecture in the P6 family processors and are not avail-able in earlier IA-32 processors.</p>
+<h2>Operation</h2>
+<pre>IF condition TRUE
+    THEN ST(0) ← ST(i);
+FI;</pre>
+<h2>FPU Flags Affected</h2>
+<table class="exception-table">
+<tr>
+<td>C1</td>
+<td>Set to 0 if stack underflow occurred.</td></tr>
+<tr>
+<td>C0, C2, C3</td>
+<td>Undefined.</td></tr></table>
+<h2>Floating-Point Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#IS</td>
+<td>Stack underflow occurred.</td></tr></table>
+<h2>Integer Flags Affected</h2>
+<p>None.</p>
+<h2>Protected Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#NM</td>
+<td>CR0.EM[bit 2] or CR0.TS[bit 3] = 1.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Real-Address Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>Virtual-8086 Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>Compatibility Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>64-Bit Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p></body></html>

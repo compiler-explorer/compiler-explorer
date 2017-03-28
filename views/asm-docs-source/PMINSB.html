@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>PMINSB — Minimum of Packed Signed Byte Integers </title></head>
+<body>
+<h1>PMINSB — Minimum of Packed Signed Byte Integers</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32 bit Mode Support</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>66 0F 38 38 /r PMINSB<em> xmm1, xmm2/m128</em></td>
+<td>RM</td>
+<td>V/V</td>
+<td>SSE4_1</td>
+<td>Compare packed signed byte integers in <em>xmm1</em> and <em>xmm2/m128</em> and store packed minimum values in <em>xmm1</em>.</td></tr>
+<tr>
+<td>VEX.NDS.128.66.0F38.WIG 38 /r VPMINSB <em>xmm1, xmm2, xmm3/m128</em></td>
+<td>RVM</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Compare packed signed byte integers in <em>xmm2 </em>and <em>xmm3/m128</em> and store packed minimum values in <em>xmm1</em>.</td></tr>
+<tr>
+<td>VEX.NDS.256.66.0F38.WIG 38 /r VPMINSB <em>ymm1, ymm2, ymm3/m256</em></td>
+<td>RVM</td>
+<td>V/V</td>
+<td>AVX2</td>
+<td>Compare packed signed byte integers in <em>ymm2</em> and<em> ymm3/m256 </em>and store packed minimum values in <em>ymm1</em>.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RM</td>
+<td>ModRM:reg (r, w)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td></tr>
+<tr>
+<td>RVM</td>
+<td>ModRM:reg (w)</td>
+<td>VEX.vvvv (r)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Compares packed signed byte integers in the destination operand (first operand) and the source operand (second operand), and returns the minimum for each packed value in the destination operand.</p>
+<p>128-bit Legacy SSE version: The first source and destination operands are XMM registers. The second source operand is an XMM register or a 128-bit memory location. Bits (VLMAX-1:128) of the corresponding YMM destina-tion register remain unchanged.</p>
+<p>VEX.128 encoded version: The first source and destination operands are XMM registers. The second source operand is an XMM register or a 128-bit memory location. Bits (VLMAX-1:128) of the destination YMM register are zeroed.</p>
+<p>VEX.256 encoded version: The second source operand can be an YMM register or a 256-bit memory location. The first source and destination operands are YMM registers.</p>
+<p>Note: VEX.L must be 0, otherwise the instruction will #UD.</p>
+<h2>Operation</h2>
+<pre>IF (DEST[7:0] &lt; SRC[7:0])
+    THEN DEST[7:0] ← DEST[7:0];
+    ELSE DEST[7:0] ← SRC[7:0]; FI;
+IF (DEST[15:8] &lt; SRC[15:8])
+    THEN DEST[15:8] ← DEST[15:8];
+    ELSE DEST[15:8] ← SRC[15:8]; FI;
+IF (DEST[23:16] &lt; SRC[23:16])
+    THEN DEST[23:16] ← DEST[23:16];
+    ELSE DEST[23:16] ← SRC[23:16]; FI;
+IF (DEST[31:24] &lt; SRC[31:24])
+    THEN DEST[31:24] ← DEST[31:24];
+    ELSE DEST[31:24] ← SRC[31:24]; FI;
+IF (DEST[39:32] &lt; SRC[39:32])
+    THEN DEST[39:32] ← DEST[39:32];
+    ELSE DEST[39:32] ← SRC[39:32]; FI;
+IF (DEST[47:40] &lt; SRC[47:40])
+    THEN DEST[47:40] ← DEST[47:40];
+    ELSE DEST[47:40] ← SRC[47:40]; FI;
+IF (DEST[55:48] &lt; SRC[55:48])
+    THEN DEST[55:48] ← DEST[55:48];
+    ELSE DEST[55:48] ← SRC[55:48]; FI;
+IF (DEST[63:56] &lt; SRC[63:56])
+    THEN DEST[63:56] ← DEST[63:56];
+    ELSE DEST[63:56] ← SRC[63:56]; FI;
+IF (DEST[71:64] &lt; SRC[71:64])
+    THEN DEST[71:64] ← DEST[71:64];
+    ELSE DEST[71:64] ← SRC[71:64]; FI;
+IF (DEST[79:72] &lt; SRC[79:72])
+    THEN DEST[79:72] ← DEST[79:72];
+    ELSE DEST[79:72] ← SRC[79:72]; FI;
+IF (DEST[87:80] &lt; SRC[87:80])
+    THEN DEST[87:80] ← DEST[87:80];
+    ELSE DEST[87:80] ← SRC[87:80]; FI;
+IF (DEST[95:88] &lt; SRC[95:88])
+    THEN DEST[95:88] ← DEST[95:88];
+    ELSE DEST[95:88] ← SRC[95:88]; FI;
+IF (DEST[103:96] &lt; SRC[103:96])
+    THEN DEST[103:96] ← DEST[103:96];
+    ELSE DEST[103:96] ← SRC[103:96]; FI;
+IF (DEST[111:104] &lt; SRC[111:104])
+    THEN DEST[111:104] ← DEST[111:104];
+    ELSE DEST[111:104] ← SRC[111:104]; FI;
+IF (DEST[119:112] &lt; SRC[119:112])
+    THEN DEST[119:112] ← DEST[119:112];
+    ELSE DEST[119:112] ← SRC[119:112]; FI;
+IF (DEST[127:120] &lt; SRC[127:120])
+    THEN DEST[127:120] ← DEST[127:120];
+    ELSE DEST[127:120] ← SRC[127:120]; FI;</pre>
+<p><strong>VPMINSB (VEX.128 encoded version)</strong></p>
+<pre>    IF SRC1[7:0] &lt; SRC2[7:0] THEN
+         DEST[7:0] ← SRC1[7:0];
+    ELSE
+         DEST[7:0] ← SRC2[7:0]; FI;
+    (* Repeat operation for 2nd through 15th bytes in source and destination operands *)
+    IF SRC1[127:120] &lt; SRC2[127:120] THEN
+         DEST[127:120] ← SRC1[127:120];
+    ELSE
+         DEST[127:120] ← SRC2[127:120]; FI;
+DEST[VLMAX-1:128] ← 0</pre>
+<p><strong>VPMINSB (VEX.256 encoded version)</strong></p>
+<pre>    IF SRC1[7:0] &lt; SRC2[7:0] THEN
+         DEST[7:0] ← SRC1[7:0];
+    ELSE
+         DEST[15:0] ← SRC2[7:0]; FI;
+    (* Repeat operation for 2nd through 31st bytes in source and destination operands *)
+    IF SRC1[255:248] &lt; SRC2[255:248] THEN
+         DEST[255:248] ← SRC1[255:248];
+    ELSE
+         DEST[255:248] ← SRC2[255:248]; FI;</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>(V)PMINSB:</p>
+<p>__m128i _mm_min_epi8 ( __m128i a, __m128i b);</p>
+<p>VPMINSB:</p>
+<p>__m256i _mm256_min_epi8 ( __m256i a, __m256i b);</p>
+<h2>Flags Affected</h2>
+<p>None.</p>
+<h2>SIMD Floating-Point Exceptions</h2>
+<p>None.</p>
+<h2>Other Exceptions</h2>
+<p>See Exceptions Type 4; additionally</p>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>If VEX.L = 1.</td></tr></table></body></html>

@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>MOVBE—Move Data After Swapping Bytes </title></head>
+<body>
+<h1>MOVBE—Move Data After Swapping Bytes</h1>
+<table>
+<tr>
+<th>Opcode</th>
+<th>Instruction</th>
+<th>Op/En</th>
+<th>64-Bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>0F 38 F0 /<em>r</em></td>
+<td>MOVBE <em>r16, </em>m16</td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Reverse byte order in <em>m16 and move to r16.</em></td></tr>
+<tr>
+<td>0F 38 F0 /<em>r</em></td>
+<td>MOVBE <em>r32, </em>m32</td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Reverse byte order in <em>m32 and move to r32.</em></td></tr>
+<tr>
+<td>REX.W + 0F 38 F0 /<em>r</em></td>
+<td>MOVBE <em>r64, </em>m64</td>
+<td>RM</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Reverse byte order in <em>m64 and move to r64</em>.</td></tr>
+<tr>
+<td>0F 38 F1 /<em>r</em></td>
+<td>MOVBE <em>m16, </em>r16</td>
+<td>MR</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Reverse byte order in <em>r16 and move to m16.</em></td></tr>
+<tr>
+<td>0F 38 F1 /<em>r</em></td>
+<td>MOVBE <em>m32, </em>r32</td>
+<td>MR</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Reverse byte order in <em>r32 and move to m32.</em></td></tr>
+<tr>
+<td>REX.W + 0F 38 F1 /<em>r</em></td>
+<td>MOVBE <em>m64, </em>r64</td>
+<td>MR</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Reverse byte order in <em>r64 and move to m64</em>.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RM</td>
+<td>ModRM:reg (w)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td></tr>
+<tr>
+<td>MR</td>
+<td>ModRM:r/m (w)</td>
+<td>ModRM:reg (r)</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Performs a byte swap operation on the data copied from the second operand (source operand) and store the result in the first operand (destination operand). The source operand can be a general-purpose register, or memory loca-tion; the destination register can be a general-purpose register, or a memory location; however, both operands can not be registers, and only one operand can be a memory location. Both operands must be the same size, which can be a word, a doubleword or quadword.</p>
+<p>The MOVBE instruction is provided for swapping the bytes on a read from memory or on a write to memory; thus providing support for converting little-endian values to big-endian format and vice versa.</p>
+<p>In 64-bit mode, the instruction's default operation size is 32 bits. Use of the REX.R prefix permits access to addi-tional registers (R8-R15). Use of the REX.W prefix promotes operation to 64 bits. See the summary chart at the beginning of this section for encoding data and limits.</p>
+<h2>Operation</h2>
+<pre>TEMP ← SRC
+IF ( OperandSize = 16)
+    THEN
+         DEST[7:0] ← TEMP[15:8];
+         DEST[15:8] ← TEMP[7:0];
+    ELES IF
+              ( OperandSize = 32)
+         DEST[7:0] ← TEMP[31:24];
+         DEST[15:8] ← TEMP[23:16];
+         DEST[23:16] ← TEMP[15:8];
+         DEST[31:23] ← TEMP[7:0];
+    ELSE IF ( OperandSize = 64)
+         DEST[7:0] ← TEMP[63:56];
+         DEST[15:8] ← TEMP[55:48];
+         DEST[23:16] ← TEMP[47:40];
+         DEST[31:24] ← TEMP[39:32];
+         DEST[39:32] ← TEMP[31:24];
+         DEST[47:40] ← TEMP[23:16];
+         DEST[55:48] ← TEMP[15:8];
+         DEST[63:56] ← TEMP[7:0];
+FI;</pre>
+<h2>Flags Affected</h2>
+<p>None.</p>
+<h2>Protected Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>
+<p>If the destination operand is in a non-writable segment.</p>
+<p>If a memory operand effective address is outside the CS, DS, ES, FS, or GS segment limit.</p>
+<p>If the DS, ES, FS, or GS register contains a NULL segment selector.</p></td></tr>
+<tr>
+<td>#SS(0)</td>
+<td>If a memory operand effective address is outside the SS segment limit.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and an unaligned memory reference is made while the current privilege level is 3.</td></tr>
+<tr>
+<td>#UD</td>
+<td>
+<p>If CPUID.01H:ECX.MOVBE[bit 22] = 0.</p>
+<p>If the LOCK prefix is used.</p>
+<p>If REP (F3H) prefix is used.</p></td></tr></table>
+<h2>Real-Address Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP</td>
+<td>If a memory operand effective address is outside the CS, DS, ES, FS, or GS segment limit.</td></tr>
+<tr>
+<td>#SS</td>
+<td>If a memory operand effective address is outside the SS segment limit.</td></tr>
+<tr>
+<td>#UD</td>
+<td>
+<p>If CPUID.01H:ECX.MOVBE[bit 22] = 0.</p>
+<p>If the LOCK prefix is used.</p>
+<p>If REP (F3H) prefix is used.</p></td></tr></table>
+<h2>Virtual-8086 Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>If a memory operand effective address is outside the CS, DS, ES, FS, or GS segment limit.</td></tr>
+<tr>
+<td>#SS(0)</td>
+<td>If a memory operand effective address is outside the SS segment limit.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and an unaligned memory reference is made while the current privilege level is 3.</td></tr>
+<tr>
+<td>#UD</td>
+<td>
+<p>If CPUID.01H:ECX.MOVBE[bit 22] = 0.</p>
+<p>If the LOCK prefix is used.</p>
+<p>If REP (F3H) prefix is used.</p>
+<p>If REPNE (F2H) prefix is used and CPUID.01H:ECX.SSE4_2[bit 20] = 0.</p></td></tr></table>
+<h2>Compatibility Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>64-Bit Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>If the memory address is in a non-canonical form.</td></tr>
+<tr>
+<td>#SS(0)</td>
+<td>If the stack address is in a non-canonical form.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and an unaligned memory reference is made while the current privilege level is 3.</td></tr>
+<tr>
+<td>#UD</td>
+<td>
+<p>If CPUID.01H:ECX.MOVBE[bit 22] = 0.</p>
+<p>If the LOCK prefix is used.</p>
+<p>If REP (F3H) prefix is used.</p></td></tr></table></body></html>

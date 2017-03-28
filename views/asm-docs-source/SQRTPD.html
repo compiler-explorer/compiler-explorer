@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>SQRTPD—Compute Square Roots of Packed Double-Precision Floating-Point Values </title></head>
+<body>
+<h1>SQRTPD—Compute Square Roots of Packed Double-Precision Floating-Point Values</h1>
+<table>
+<tr>
+<th>Opcode*/Instruction</th>
+<th>Op/En</th>
+<th>64/32 bit Mode Support</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>
+<p>66 0F 51 /<em>r</em></p>
+<p>SQRTPD <em>xmm1</em>,<em> xmm2/m128</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>SSE2</td>
+<td>Computes square roots of the packed double-precision floating-point values in <em>xmm2/m128 </em>and stores the results in <em>xmm1</em>.</td></tr>
+<tr>
+<td>
+<p>VEX.128.66.0F.WIG 51 /r</p>
+<p>VSQRTPD <em>xmm1, xmm2/m128</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Computes Square Roots of the packed double-precision floating-point values in <em>xmm2/m128 </em>and stores the result in <em>xmm1</em>.</td></tr>
+<tr>
+<td>
+<p>VEX.256.66.0F.WIG 51/r</p>
+<p>VSQRTPD <em>ymm1, ymm2/m256</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Computes Square Roots of the packed double-precision floating-point values in <em>ymm2/m256 </em>and stores the result in <em>ymm1</em>.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RM</td>
+<td>ModRM:reg (w)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Performs a SIMD computation of the square roots of the two packed double-precision floating-point values in the source operand (second operand) stores the packed double-precision floating-point results in the destination operand. The source operand can be an XMM register or a 128-bit memory location. The destination operand is an XMM register. See Figure 11-3 in the <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 1</em>, for an illustration of a SIMD double-precision floating-point operation.</p>
+<p>In 64-bit mode, using a REX prefix in the form of REX.R permits this instruction to access additional registers (XMM8-XMM15).</p>
+<p>128-bit Legacy SSE version: The second source can be an XMM register or 128-bit memory location. The destina-tion is not distinct from the first source XMM register and the upper bits (VLMAX-1:128) of the corresponding YMM register destination are unmodified.</p>
+<p>VEX.128 encoded version: the source operand second source operand or a 128-bit memory location. The destina-tion operand is an XMM register. The upper bits (VLMAX-1:128) of the corresponding YMM register destination are zeroed.</p>
+<p>VEX.256 encoded version: The source operand is a YMM register or a 256-bit memory location. The destination operand is a YMM register.</p>
+<p>Note: In VEX-encoded versions, VEX.vvvv is reserved and must be 1111b otherwise instructions will #UD.</p>
+<h2>Operation</h2>
+<p><strong>SQRTPD (128-bit Legacy SSE version)</strong></p>
+<pre>DEST[63:0] ← SQRT(SRC[63:0])
+DEST[127:64] ← SQRT(SRC[127:64])
+DEST[VLMAX-1:128] (Unmodified)</pre>
+<p><strong>VSQRTPD (VEX.128 encoded version)</strong></p>
+<pre>DEST[63:0] ← SQRT(SRC[63:0])
+DEST[127:64] ← SQRT(SRC[127:64])
+DEST[VLMAX-1:128] ← 0</pre>
+<p><strong>VSQRTPD (VEX.256 encoded version)</strong></p>
+<pre>DEST[63:0] ← SQRT(SRC[63:0])
+DEST[127:64] ← SQRT(SRC[127:64])
+DEST[191:128] ← SQRT(SRC[191:128])
+DEST[255:192] ← SQRT(SRC[255:192])</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>SQRTPD:</p>
+<p>__m128d _mm_sqrt_pd (m128d a)</p>
+<p>SQRTPD:</p>
+<p> __m256d _mm256_sqrt_pd (__m256d a);</p>
+<h2>SIMD Floating-Point Exceptions</h2>
+<p>Invalid, Precision, Denormal.</p>
+<h2>Other Exceptions</h2>
+<p>See Exceptions Type 2; additionally</p>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>If VEX.vvvv ≠ 1111B.</td></tr></table></body></html>

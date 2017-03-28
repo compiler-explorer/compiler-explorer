@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>ADDPS—Add Packed Single-Precision Floating-Point Values </title></head>
+<body>
+<h1>ADDPS—Add Packed Single-Precision Floating-Point Values</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32-bit Mode</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>
+<p>0F 58 /r</p>
+<p>ADDPS <em>xmm1</em>,<em> xmm2/m128</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>SSE</td>
+<td>Add packed single-precision floating-point values from <em>xmm2/m128</em> to <em>xmm1</em> and stores result in xmm1.</td></tr>
+<tr>
+<td>
+<p>VEX.NDS.128.0F.WIG 58 /r</p>
+<p>VADDPS xmm1,xmm2, xmm3/m128</p></td>
+<td>RVM</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Add packed single-precision floating-point values from xmm3/mem to xmm2 and stores result in xmm1.</td></tr>
+<tr>
+<td>
+<p>VEX.NDS.256.0F.WIG 58 /r</p>
+<p>VADDPS ymm1, ymm2, ymm3/m256</p></td>
+<td>RVM</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Add packed single-precision floating-point values from ymm3/mem to ymm2 and stores result in ymm1.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RM</td>
+<td>ModRM:reg (r, w)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td></tr>
+<tr>
+<td>RVM</td>
+<td>ModRM:reg (w)</td>
+<td>VEX.vvvv (r)</td>
+<td>ModRM:r/m (r))</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Performs a SIMD add of the four packed single-precision floating-point values from the source operand (second operand) and the destination operand (first operand), and stores the packed single-precision floating-point results in the destination operand.</p>
+<p>In 64-bit mode, using a REX prefix in the form of REX.R permits this instruction to access additional registers (XMM8-XMM15).</p>
+<p>128-bit Legacy SSE version: The second source can be an XMM register or an 128-bit memory location. The desti-nation is not distinct from the first source XMM register and the upper bits (VLMAX-1:128) of the corresponding YMM register destination are unmodified. See Chapter 10 in the <em>Intel® 64 and IA-32 Architectures Software Devel-oper’s Manual, Volume 1</em>, for an overview of SIMD single-precision floating-point operation.</p>
+<p>VEX.128 encoded version: the first source operand is an XMM register or 128-bit memory location. The destination operand is an XMM register. The upper bits (VLMAX-1:128) of the corresponding YMM register destination are zeroed.</p>
+<p>VEX.256 encoded version: The first source operand is a YMM register. The second source operand can be a YMM register or a 256-bit memory location. The destination operand is a YMM register.</p>
+<h2>Operation</h2>
+<p><strong>ADDPS (128-bit Legacy SSE version)</strong></p>
+<pre>DEST[31:0] ← DEST[31:0] + SRC[31:0];
+DEST[63:32] ← DEST[63:32] + SRC[63:32];
+DEST[95:64] ← DEST[95:64] + SRC[95:64];
+DEST[127:96] ← DEST[127:96] + SRC[127:96];
+DEST[VLMAX-1:128] (Unmodified)</pre>
+<p><strong>VADDPS (VEX.128 encoded version)</strong></p>
+<pre>DEST[31:0] ← SRC1[31:0] + SRC2[31:0]
+DEST[63:32] ← SRC1[63:32] + SRC2[63:32]
+DEST[95:64] ← SRC1[95:64] + SRC2[95:64]
+DEST[127:96] ← SRC1[127:96] + SRC2[127:96]
+DEST[VLMAX-1:128] ← 0</pre>
+<p><strong>VADDPS (VEX.256 encoded version)</strong></p>
+<pre>DEST[31:0] ← SRC1[31:0] + SRC2[31:0]
+DEST[63:32] ← SRC1[63:32] + SRC2[63:32]
+DEST[95:64] ← SRC1[95:64] + SRC2[95:64]
+DEST[127:96] ← SRC1[127:96] + SRC2[127:96]
+DEST[159:128] ← SRC1[159:128] + SRC2[159:128]
+DEST[191:160]← SRC1[191:160] + SRC2[191:160]
+DEST[223:192] ← SRC1[223:192] + SRC2[223:192]
+DEST[255:224] ← SRC1[255:224] + SRC2[255:224]</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>ADDPS:</p>
+<p>__m128 _mm_add_ps(__m128 a, __m128 b)</p>
+<p>VADDPS:</p>
+<p>__m256 _mm256_add_ps (__m256 a, __m256 b)</p>
+<h2>SIMD Floating-Point Exceptions</h2>
+<p>Overflow, Underflow, Invalid, Precision, Denormal.</p>
+<h2>Other Exceptions</h2>
+<p>See Exceptions Type 2.</p></body></html>

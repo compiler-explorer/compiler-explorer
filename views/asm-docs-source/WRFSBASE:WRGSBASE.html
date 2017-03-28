@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>WRFSBASE/WRGSBASE—Write FS/GS Segment Base </title></head>
+<body>
+<h1>WRFSBASE/WRGSBASE—Write FS/GS Segment Base</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32-bit Mode</th>
+<th>CPUID Fea-ture Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>F3 0F AE /2 WRFSBASE <em>r32</em></td>
+<td>M</td>
+<td>V/I</td>
+<td>FSGSBASE</td>
+<td>Load the FS base address with the 32-bit value in the source register.</td></tr>
+<tr>
+<td>REX.W + F3 0F AE /2 WRFSBASE <em>r64</em></td>
+<td>M</td>
+<td>V/I</td>
+<td>FSGSBASE</td>
+<td>Load the FS base address with the 64-bit value in the source register.</td></tr>
+<tr>
+<td>F3 0F AE /3 WRGSBASE <em>r32</em></td>
+<td>M</td>
+<td>V/I</td>
+<td>FSGSBASE</td>
+<td>Load the GS base address with the 32-bit value in the source register.</td></tr>
+<tr>
+<td>REX.W + F3 0F AE /3 WRGSBASE <em>r64</em></td>
+<td>M</td>
+<td>V/I</td>
+<td>FSGSBASE</td>
+<td>Load the GS base address with the 64-bit value in the source register.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>M</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Loads the FS or GS segment base address with the general-purpose register indicated by the modR/M:r/m field.</p>
+<p>The source operand may be either a 32-bit or a 64-bit general-purpose register. The REX.W prefix indicates the operand size is 64 bits. If no REX.W prefix is used, the operand size is 32 bits; the upper 32 bits of the source register are ignored and upper 32 bits of the base address (for FS or GS) are cleared.</p>
+<p>This instruction is supported only in 64-bit mode.</p>
+<h2>Operation</h2>
+<pre>FS/GS segment base address ← SRC;</pre>
+<h2>Flags Affected</h2>
+<p>None</p>
+<h2>C/C++ Compiler Intrinsic Equivalent</h2>
+<p>WRFSBASE:</p>
+<p> void _writefsbase_u32( unsigned int );</p>
+<p>WRFSBASE:</p>
+<p> _writefsbase_u64( unsigned __int64 );</p>
+<p>WRGSBASE:</p>
+<p> void _writegsbase_u32( unsigned int );</p>
+<p>WRGSBASE:</p>
+<p> _writegsbase_u64( unsigned __int64 );</p>
+<h2>Protected Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>The WRFSBASE and WRGSBASE instructions are not recognized in protected mode.</td></tr></table>
+<h2>Real-Address Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>The WRFSBASE and WRGSBASE instructions are not recognized in real-address mode.</td></tr></table>
+<h2>Virtual-8086 Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>The WRFSBASE and WRGSBASE instructions are not recognized in virtual-8086 mode.</td></tr></table>
+<h2>Compatibility Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>The WRFSBASE and WRGSBASE instructions are not recognized in compatibility mode.</td></tr></table>
+<h2>64-Bit Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>
+<p>If the LOCK prefix is used.</p>
+<p>If CR4.FSGSBASE[bit 16] = 0.</p>
+<p>If CPUID.07H.0H:EBX.FSGSBASE[bit 0] = 0</p></td></tr>
+<tr>
+<td>#GP(0)</td>
+<td>If the source register contains a non-canonical address.</td></tr></table></body></html>

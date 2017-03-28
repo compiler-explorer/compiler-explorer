@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>LDMXCSR—Load MXCSR Register </title></head>
+<body>
+<h1>LDMXCSR—Load MXCSR Register</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32-bit Mode</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>
+<p>0F,AE,/2</p>
+<p>LDMXCSR <em>m32</em></p></td>
+<td>M</td>
+<td>V/V</td>
+<td>SSE</td>
+<td>Load MXCSR register from <em>m32</em>.</td></tr>
+<tr>
+<td>
+<p>VEX.LZ.0F.WIG AE /2</p>
+<p>VLDMXCSR <em>m32</em></p></td>
+<td>M</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Load MXCSR register from <em>m32.</em></td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>M</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Loads the source operand into the MXCSR control/status register. The source operand is a 32-bit memory location. See “MXCSR Control and Status Register” in Chapter 10, of the <em>Intel® 64 and IA-32 Architectures Software Devel-oper’s Manual, Volume 1</em>, for a description of the MXCSR register and its contents.</p>
+<p>The LDMXCSR instruction is typically used in conjunction with the (V)STMXCSR instruction, which stores the contents of the MXCSR register in memory.</p>
+<p>The default MXCSR value at reset is 1F80H.</p>
+<p>If a (V)LDMXCSR instruction clears a SIMD floating-point exception mask bit and sets the corresponding exception flag bit, a SIMD floating-point exception will not be immediately generated. The exception will be generated only upon the execution of the next instruction that meets both conditions below:</p>
+<p>This instruction’s operation is the same in non-64-bit modes and 64-bit mode.</p>
+<p>If VLDMXCSR is encoded with VEX.L= 1, an attempt to execute the instruction encoded with VEX.L= 1 will cause an #UD exception.</p>
+<p>Note: In VEX-encoded versions, VEX.vvvv is reserved and must be 1111b, otherwise instructions will #UD.</p>
+<h2>Operation</h2>
+<pre>MXCSR ← m32;</pre>
+<h2>C/C++ Compiler Intrinsic Equivalent</h2>
+<p>_mm_setcsr(unsigned int i)</p>
+<h2>Numeric Exceptions</h2>
+<p>None.</p>
+<h2>Other Exceptions</h2>
+<p>See Exceptions Type 5; additionally</p>
+<table class="exception-table">
+<tr>
+<td>#GP</td>
+<td>For an attempt to set reserved bits in MXCSR.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If VEX.vvvv ≠ 1111B.</td></tr></table></body></html>

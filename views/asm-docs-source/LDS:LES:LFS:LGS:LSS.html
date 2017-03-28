@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>LDS/LES/LFS/LGS/LSS—Load Far Pointer </title></head>
+<body>
+<h1>LDS/LES/LFS/LGS/LSS—Load Far Pointer</h1>
+<table>
+<tr>
+<th>Opcode</th>
+<th>Instruction</th>
+<th>Op/En</th>
+<th>64-Bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>C5 /<em>r</em></td>
+<td>LDS <em>r16,m16:16</em></td>
+<td>RM</td>
+<td>Invalid</td>
+<td>Valid</td>
+<td>Load DS:<em>r16</em> with far pointer from memory.</td></tr>
+<tr>
+<td>C5 /<em>r</em></td>
+<td>LDS <em>r32,m16:32</em></td>
+<td>RM</td>
+<td>Invalid</td>
+<td>Valid</td>
+<td>Load DS:<em>r32</em> with far pointer from memory.</td></tr>
+<tr>
+<td>0F B2 /<em>r</em></td>
+<td>LSS <em>r16,m16:16</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Load SS:<em>r16</em> with far pointer from memory.</td></tr>
+<tr>
+<td>0F B2 /<em>r</em></td>
+<td>LSS <em>r32,m16:32</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Load SS:<em>r32</em> with far pointer from memory.</td></tr>
+<tr>
+<td>REX + 0F B2 /<em>r</em></td>
+<td>LSS <em>r64,m16:64</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Load SS:<em>r64</em> with far pointer from memory.</td></tr>
+<tr>
+<td>C4 /<em>r</em></td>
+<td>LES <em>r16,m16:16</em></td>
+<td>RM</td>
+<td>Invalid</td>
+<td>Valid</td>
+<td>Load ES:<em>r16</em> with far pointer from memory.</td></tr>
+<tr>
+<td>C4 /<em>r</em></td>
+<td>LES <em>r32,m16:32</em></td>
+<td>RM</td>
+<td>Invalid</td>
+<td>Valid</td>
+<td>Load ES:<em>r32</em> with far pointer from memory.</td></tr>
+<tr>
+<td>0F B4 /<em>r</em></td>
+<td>LFS <em>r16,m16:16</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Load FS:<em>r16</em> with far pointer from memory.</td></tr>
+<tr>
+<td>0F B4 /<em>r</em></td>
+<td>LFS <em>r32,m16:32</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Load FS:<em>r32</em> with far pointer from memory.</td></tr>
+<tr>
+<td>REX + 0F B4 /<em>r</em></td>
+<td>LFS <em>r64,m16:64</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Load FS:<em>r64</em> with far pointer from memory.</td></tr>
+<tr>
+<td>0F B5 /<em>r</em></td>
+<td>LGS <em>r16,m16:16</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Load GS:<em>r16</em> with far pointer from memory.</td></tr>
+<tr>
+<td>0F B5 /<em>r</em></td>
+<td>LGS <em>r32,m16:32</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Load GS:<em>r32</em> with far pointer from memory.</td></tr>
+<tr>
+<td>REX + 0F B5 /<em>r</em></td>
+<td>LGS <em>r64,m16:64</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Load GS:<em>r64</em> with far pointer from memory.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RM</td>
+<td>ModRM:reg (w)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Loads a far pointer (segment selector and offset) from the second operand (source operand) into a segment register and the first operand (destination operand). The source operand specifies a 48-bit or a 32-bit pointer in memory depending on the current setting of the operand-size attribute (32 bits or 16 bits, respectively). The instruction opcode and the destination operand specify a segment register/general-purpose register pair. The 16-bit segment selector from the source operand is loaded into the segment register specified with the opcode (DS, SS, ES, FS, or GS). The 32-bit or 16-bit offset is loaded into the register specified with the destination operand.</p>
+<p>If one of these instructions is executed in protected mode, additional information from the segment descriptor pointed to by the segment selector in the source operand is loaded in the hidden part of the selected segment register.</p>
+<p>Also in protected mode, a NULL selector (values 0000 through 0003) can be loaded into DS, ES, FS, or GS registers without causing a protection exception. (Any subsequent reference to a segment whose corresponding segment register is loaded with a NULL selector, causes a general-protection exception (#GP) and no memory reference to the segment occurs.)</p>
+<p>In 64-bit mode, the instruction’s default operation size is 32 bits. Using a REX prefix in the form of REX.W promotes operation to specify a source operand referencing an 80-bit pointer (16-bit selector, 64-bit offset) in memory. Using a REX prefix in the form of REX.R permits access to additional registers (R8-R15). See the summary chart at the beginning of this section for encoding data and limits.</p>
+<h2>Operation</h2>
+<pre>64-BIT_MODE
+    IF SS is loaded
+         THEN
+              IF SegmentSelector = NULL and ( (RPL = 3) or
+                         (RPL ≠ 3 and RPL ≠ CPL) )
+                    THEN #GP(0);
+              ELSE IF descriptor is in non-canonical space
+                    THEN #GP(0); FI;
+              ELSE IF Segment selector index is not within descriptor table limits
+                         or segment selector RPL ≠ CPL
+                         or access rights indicate nonwritable data segment
+                         or DPL ≠ CPL
+                    THEN #GP(selector); FI;
+              ELSE IF Segment marked not present
+                    THEN #SS(selector); FI;
+              FI;
+              SS ← SegmentSelector(SRC);
+              SS ← SegmentDescriptor([SRC]);
+    ELSE IF attempt to load DS, or ES
+         THEN #UD;
+    ELSE IF FS, or GS is loaded with non-NULL segment selector
+         THEN IF Segment selector index is not within descriptor table limits
+              or access rights indicate segment neither data nor readable code segment
+              or segment is data or nonconforming-code segment
+              and ( RPL &gt; DPL or CPL &gt; DPL)
+                    THEN #GP(selector); FI;
+              ELSE IF Segment marked not present
+                    THEN #NP(selector); FI;
+              FI;
+              SegmentRegister ← SegmentSelector(SRC) ;
+              SegmentRegister ← SegmentDescriptor([SRC]);
+         FI;
+    ELSE IF FS, or GS is loaded with a NULL selector:
+         THEN
+              SegmentRegister ← NULLSelector;
+              SegmentRegister(DescriptorValidBit) ← 0; FI; (* Hidden flag;
+                    not accessible by software *)
+    FI;
+    DEST ← Offset(SRC);
+PREOTECTED MODE OR COMPATIBILITY MODE;
+    IF SS is loaded
+         THEN
+              IF SegementSelector = NULL
+                    THEN #GP(0);
+              ELSE IF Segment selector index is not within descriptor table limits
+                         or segment selector RPL ≠ CPL
+                         or access rights indicate nonwritable data segment
+                         or DPL ≠ CPL
+                    THEN #GP(selector); FI;
+              ELSE IF Segment marked not present
+                    THEN #SS(selector); FI;
+              FI;
+              SS ← SegmentSelector(SRC);
+              SS ← SegmentDescriptor([SRC]);
+    ELSE IF DS, ES, FS, or GS is loaded with non-NULL segment selector
+         THEN IF Segment selector index is not within descriptor table limits
+              or access rights indicate segment neither data nor readable code segment
+              or segment is data or nonconforming-code segment
+              and (RPL &gt; DPL or CPL &gt; DPL)
+                    THEN #GP(selector); FI;
+              ELSE IF Segment marked not present
+                    THEN #NP(selector); FI;
+              FI;
+              SegmentRegister ← SegmentSelector(SRC) AND RPL;
+              SegmentRegister ← SegmentDescriptor([SRC]);
+         FI;
+    ELSE IF DS, ES, FS, or GS is loaded with a NULL selector:
+         THEN
+              SegmentRegister ← NULLSelector;
+              SegmentRegister(DescriptorValidBit) ← 0; FI; (* Hidden flag;
+                    not accessible by software *)
+    FI;
+    DEST ← Offset(SRC);
+Real-Address or Virtual-8086 Mode
+    SegmentRegister ← SegmentSelector(SRC); FI;
+    DEST ← Offset(SRC);</pre>
+<h2>Flags Affected</h2>
+<p>None.</p>
+<h2>Protected Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>
+<p>If source operand is not a memory location.</p>
+<p>If the LOCK prefix is used.</p></td></tr>
+<tr>
+<td>#GP(0)</td>
+<td>
+<p>If a NULL selector is loaded into the SS register.</p>
+<p>If a memory operand effective address is outside the CS, DS, ES, FS, or GS segment limit.</p>
+<p>If the DS, ES, FS, or GS register is used to access memory and it contains a NULL segment selector.</p></td></tr>
+<tr>
+<td>#GP(selector)</td>
+<td>
+<p>If the SS register is being loaded and any of the following is true: the segment selector index is not within the descriptor table limits, the segment selector RPL is not equal to CPL, the segment is a non-writable data segment, or DPL is not equal to CPL.</p>
+<p>If the DS, ES, FS, or GS register is being loaded with a non-NULL segment selector and any of the following is true: the segment selector index is not within descriptor table limits, the segment is neither a data nor a readable code segment, or the segment is a data or noncon-forming-code segment and both RPL and CPL are greater than DPL.</p></td></tr>
+<tr>
+<td>#SS(0)</td>
+<td>If a memory operand effective address is outside the SS segment limit.</td></tr>
+<tr>
+<td>#SS(selector)</td>
+<td>If the SS register is being loaded and the segment is marked not present.</td></tr>
+<tr>
+<td>#NP(selector)</td>
+<td>If DS, ES, FS, or GS register is being loaded with a non-NULL segment selector and the segment is marked not present.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and an unaligned memory reference is made while the current privilege level is 3.</td></tr></table>
+<h2>Real-Address Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP</td>
+<td>If a memory operand effective address is outside the CS, DS, ES, FS, or GS segment limit.</td></tr>
+<tr>
+<td>#SS</td>
+<td>If a memory operand effective address is outside the SS segment limit.</td></tr>
+<tr>
+<td>#UD</td>
+<td>
+<p>If source operand is not a memory location.</p>
+<p>If the LOCK prefix is used.</p></td></tr></table>
+<h2>Virtual-8086 Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>
+<p>If source operand is not a memory location.</p>
+<p>If the LOCK prefix is used.</p></td></tr>
+<tr>
+<td>#GP(0)</td>
+<td>If a memory operand effective address is outside the CS, DS, ES, FS, or GS segment limit.</td></tr>
+<tr>
+<td>#SS(0)</td>
+<td>If a memory operand effective address is outside the SS segment limit.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and an unaligned memory reference is made.</td></tr></table>
+<h2>Compatibility Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>64-Bit Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>
+<p>If the memory address is in a non-canonical form.</p>
+<p>If a NULL selector is attempted to be loaded into the SS register in compatibility mode.</p>
+<p>If a NULL selector is attempted to be loaded into the SS register in CPL3 and 64-bit mode.</p>
+<p>If a NULL selector is attempted to be loaded into the SS register in non-CPL3 and 64-bit mode where its RPL is not equal to CPL.</p></td></tr>
+<tr>
+<td>#GP(Selector)</td>
+<td>
+<p>If the FS, or GS register is being loaded with a non-NULL segment selector and any of the following is true: the segment selector index is not within descriptor table limits, the memory address of the descriptor is non-canonical, the segment is neither a data nor a readable code segment, or the segment is a data or nonconforming-code segment and both RPL and CPL are greater than DPL.</p>
+<p>If the SS register is being loaded and any of the following is true: the segment selector index is not within the descriptor table limits, the memory address of the descriptor is non-canonical, the segment selector RPL is not equal to CPL, the segment is a nonwritable data segment, or DPL is not equal to CPL.</p></td></tr>
+<tr>
+<td>#SS(0)</td>
+<td>If a memory operand effective address is non-canonical</td></tr>
+<tr>
+<td>#SS(Selector)</td>
+<td>If the SS register is being loaded and the segment is marked not present.</td></tr>
+<tr>
+<td>#NP(selector)</td>
+<td>If FS, or GS register is being loaded with a non-NULL segment selector and the segment is marked not present.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and an unaligned memory reference is made while the current privilege level is 3.</td></tr>
+<tr>
+<td>#UD</td>
+<td>
+<p>If source operand is not a memory location.</p>
+<p>If the LOCK prefix is used.</p></td></tr></table></body></html>

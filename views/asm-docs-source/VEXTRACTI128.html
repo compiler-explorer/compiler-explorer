@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>VEXTRACTI128 — Extract packed Integer Values </title></head>
+<body>
+<h1>VEXTRACTI128 — Extract packed Integer Values</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32-bit Mode</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>
+<p>VEX.256.66.0F3A.W0 39 /r ib</p>
+<p>VEXTRACTI128 <em>xmm1/m128, ymm2, imm8</em></p></td>
+<td>RMI</td>
+<td>V/V</td>
+<td>AVX2</td>
+<td>Extract 128 bits of integer data from <em>ymm2</em> and store results in <em>xmm1/mem</em>.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RMI</td>
+<td>ModRM:r/m (w)</td>
+<td>ModRM:reg (r)</td>
+<td>Imm8</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Extracts 128-bits of packed integer values from the source operand (second operand) at a 128-bit offset from imm8[0] into the destination operand (first operand). The destination may be either an XMM register or a 128-bit memory location.</p>
+<p>VEX.vvvv is reserved and must be 1111b otherwise instructions will #UD.</p>
+<p>The high 7 bits of the immediate are ignored.</p>
+<p>An attempt to execute VEXTRACTI128 encoded with VEX.L= 0 will cause an #UD exception.</p>
+<h2>Operation</h2>
+<p><strong>VEXTRACTI128 (memory destination form)</strong></p>
+<pre>CASE (imm8[0]) OF
+    0: DEST[127:0] ← SRC1[127:0]
+    1: DEST[127:0] ← SRC1[255:128]
+ESAC.</pre>
+<p><strong>VEXTRACTI128 (register destination form)</strong></p>
+<pre>CASE (imm8[0]) OF
+    0: DEST[127:0] ← SRC1[127:0]
+    1: DEST[127:0] ← SRC1[255:128]
+ESAC.
+DEST[VLMAX-1:128] ← 0</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>VEXTRACTI128:</p>
+<p> __m128i _mm256_extracti128_si256(__m256i a, int offset);</p>
+<h2>SIMD Floating-Point Exceptions</h2>
+<p>None</p>
+<h2>Other Exceptions</h2>
+<p>See Exceptions Type 6; additionally</p>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>
+<p>IF VEX.L = 0,</p>
+<p>If VEX.W = 1.</p></td></tr></table></body></html>

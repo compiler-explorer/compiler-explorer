@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>AAM—ASCII Adjust AX After Multiply </title></head>
+<body>
+<h1>AAM—ASCII Adjust AX After Multiply</h1>
+<table>
+<tr>
+<th>Opcode</th>
+<th>Instruction</th>
+<th>Op/En</th>
+<th>64-bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>D4 0A</td>
+<td>AAM</td>
+<td>NP</td>
+<td>Invalid</td>
+<td>Valid</td>
+<td>ASCII adjust AX after multiply.</td></tr>
+<tr>
+<td>D4 <em>ib</em></td>
+<td>AAM imm8</td>
+<td>NP</td>
+<td>Invalid</td>
+<td>Valid</td>
+<td>Adjust AX after multiply to number base <em>imm8.</em></td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>NP</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Adjusts the result of the multiplication of two unpacked BCD values to create a pair of unpacked (base 10) BCD values. The AX register is the implied source and destination operand for this instruction. The AAM instruction is only useful when it follows an MUL instruction that multiplies (binary multiplication) two unpacked BCD values and stores a word result in the AX register. The AAM instruction then adjusts the contents of the AX register to contain the correct 2-digit unpacked (base 10) BCD result.</p>
+<p>The generalized version of this instruction allows adjustment of the contents of the AX to create two unpacked digits of any number base (see the “Operation” section below). Here, the <em>imm8</em> byte is set to the selected number base (for example, 08H for octal, 0AH for decimal, or 0CH for base 12 numbers). The AAM mnemonic is interpreted by all assemblers to mean adjust to ASCII (base 10) values. To adjust to values in another number base, the instruction must be hand coded in machine code (D4 <em>imm8</em>).</p>
+<p>This instruction executes as described in compatibility mode and legacy mode. It is not valid in 64-bit mode.</p>
+<h2>Operation</h2>
+<pre>IF 64-Bit Mode
+    THEN
+         #UD;
+    ELSE
+         tempAL ← AL;
+         AH ← tempAL / <em>imm8</em>; (* <em>imm8</em> is set to 0AH for the AAM mnemonic *)
+         AL ← tempAL MOD <em>imm8</em>;
+FI;</pre>
+<p>The immediate value (<em>imm8</em>) is taken from the second byte of the instruction.</p>
+<h2>Flags Affected</h2>
+<p>The SF, ZF, and PF flags are set according to the resulting binary value in the AL register. The OF, AF, and CF flags are undefined.</p>
+<h2>Protected Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#DE</td>
+<td>If an immediate value of 0 is used.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Real-Address Mode Exceptions</h2>
+<p>Same exceptions as protected mode.</p>
+<h2>Virtual-8086 Mode Exceptions</h2>
+<p>Same exceptions as protected mode.</p>
+<h2>Compatibility Mode Exceptions</h2>
+<p>Same exceptions as protected mode.</p>
+<h2>64-Bit Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>If in 64-bit mode.</td></tr></table></body></html>

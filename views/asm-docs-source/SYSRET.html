@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>SYSRET—Return From Fast System Call </title></head>
+<body>
+<h1>SYSRET—Return From Fast System Call</h1>
+<table>
+<tr>
+<th>Opcode</th>
+<th>Instruction</th>
+<th>Op/En</th>
+<th>64-Bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>0F 07</td>
+<td>SYSRET</td>
+<td>NP</td>
+<td>Valid</td>
+<td>Invalid</td>
+<td>Return to compatibility mode from fast system call</td></tr>
+<tr>
+<td>REX.W + 0F 07</td>
+<td>SYSRET</td>
+<td>NP</td>
+<td>Valid</td>
+<td>Invalid</td>
+<td>Return to 64-bit mode from fast system call</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>NP</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>SYSRET is a companion instruction to the SYSCALL instruction. It returns from an OS system-call handler to user code at privilege level 3. It does so by loading RIP from RCX and loading RFLAGS from R11.<sup>1</sup> With a 64-bit operand size, SYSRET remains in 64-bit mode; otherwise, it enters compatibility mode and only the low 32 bits of the regis-ters are loaded.</p>
+<p>SYSRET loads the CS and SS selectors with values derived from bits 63:48 of the IA32_STAR MSR. However, the CS and SS descriptor caches are <strong>not</strong> loaded from the descriptors (in GDT or LDT) referenced by those selectors. Instead, the descriptor caches are loaded with fixed values. See the Operation section for details. It is the respon-sibility of OS software to ensure that the descriptors (in GDT or LDT) referenced by those selector values corre-spond to the fixed values loaded into the descriptor caches; the SYSRET instruction does not ensure this correspondence.</p>
+<p>The SYSRET instruction does not modify the stack pointer (ESP or RSP). For that reason, it is necessary for software to switch to the user stack. The OS may load the user stack pointer (if it was saved after SYSCALL) before executing SYSRET; alternatively, user code may load the stack pointer (if it was saved before SYSCALL) after receiving control from SYSRET.</p>
+<p>If the OS loads the stack pointer before executing SYSRET, it must ensure that the handler of any interrupt or exception delivered between restoring the stack pointer and successful execution of SYSRET is not invoked with the user stack. It can do so using approaches such as the following:</p>
+<p>— Confirming that the value of RCX is canonical before executing SYSRET.</p>
+<p>— Using paging to ensure that the SYSCALL instruction will never save a non-canonical value into RCX.</p>
+<p>— Using the IST mechanism for gate 13 (#GP) in the IDT.</p>
+<h2>Operation</h2>
+<pre>IF (CS.L ≠ 1 ) or (IA32_EFER.LMA ≠ 1) or (IA32_EFER.SCE ≠ 1) (* Not in 64-Bit Mode or SYSCALL/SYSRET not enabled in IA32_EFER *)
+    THEN #UD; FI;
+IF (CPL ≠ 0) OR (RCX is not canonical) THEN #GP(0); FI;
+1.
+    Regardless of the value of R11, the RF and VM flags are always 0 in RFLAGS after execution of SYSRET. In addition, all reserved bits in RFLAGS retain the fixed values.
+IF (operand size is 64-bit)
+    THEN (* Return to 64-Bit Mode *)
+         RIP ← RCX;
+    ELSE (* Return to Compatibility Mode *)
+         RIP ← ECX;
+FI;
+RFLAGS ← (R11 &amp; 3C7FD7H) | 2;
+                                                    (* Clear RF, VM, reserved bits; set bit 2 *)
+IF (operand size is 64-bit)
+    THEN CS.Selector ← IA32_STAR[63:48]+16;
+    ELSE CS.Selector ← IA32_STAR[63:48];
+FI;
+CS.Selector ← CS.Selector OR 3;
+                                                    (* RPL forced to 3 *)
+(* Set rest of CS to a fixed value *)
+CS.Base ← 0;
+                                                    (* Flat segment *)
+CS.Limit ← FFFFFH;
+                                                    (* With 4-KByte granularity, implies a 4-GByte limit *)
+CS.Type ← 11;
+                                                    (* Execute/read code, accessed *)
+CS.S ← 1;
+CS.DPL ← 3;
+CS.P ← 1;
+IF (operand size is 64-bit)
+    THEN (* Return to 64-Bit Mode *)
+         CS.L ← 1;
+                                                    (* 64-bit code segment *)
+         CS.D ← 0;
+                                                    (* Required if CS.L = 1 *)
+    ELSE (* Return to Compatibility Mode *)
+         CS.L ← 0;
+                                                    (* Compatibility mode *)
+         CS.D ← 1;
+                                                    (* 32-bit code segment *)
+FI;
+CS.G ← 1;
+                                                    (* 4-KByte granularity *)
+CPL ← 0;
+SS.Selector ← (IA32_STAR[63:48]+8) OR 3;
+                                                    (* RPL forced to 3 *)
+(* Set rest of SS to a fixed value *)
+SS.Base ← 0;
+                                                    (* Flat segment *)
+SS.Limit ← FFFFFH;
+                                                    (* With 4-KByte granularity, implies a 4-GByte limit *)
+SS.Type ← 3;
+                                                    (* Read/write data, accessed *)
+SS.S ← 1;
+SS.DPL ← 3;
+SS.P ← 1;
+SS.B ← 1;
+                                                    (* 32-bit stack segment*)
+SS.G ← 1;
+                                                    (* 4-KByte granularity *)</pre>
+<h2>Flags Affected</h2>
+<p>All.</p>
+<h2>Protected Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>The SYSRET instruction is not recognized in protected mode.</td></tr></table>
+<h2>Real-Address Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>The SYSRET instruction is not recognized in real-address mode.</td></tr></table>
+<h2>Virtual-8086 Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>The SYSRET instruction is not recognized in virtual-8086 mode.</td></tr></table>
+<h2>Compatibility Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>The SYSRET instruction is not recognized in compatibility mode.</td></tr></table>
+<h2>64-Bit Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>
+<p>If IA32_EFER.SCE = 0.</p>
+<p>If the LOCK prefix is used.</p></td></tr>
+<tr>
+<td>#GP(0)</td>
+<td>
+<p>If CPL ≠ 0.</p>
+<p>If RCX contains a non-canonical address.</p></td></tr></table></body></html>

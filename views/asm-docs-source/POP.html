@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>POP—Pop a Value from the Stack </title></head>
+<body>
+<h1>POP—Pop a Value from the Stack</h1>
+<table>
+<tr>
+<th>Opcode</th>
+<th>Instruction</th>
+<th>Op/En</th>
+<th>64-Bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>8F /0</td>
+<td>POP r/<em>m16</em></td>
+<td>M</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Pop top of stack into <em>m16</em>; increment stack pointer.</td></tr>
+<tr>
+<td>8F /0</td>
+<td>POP r/<em>m32</em></td>
+<td>M</td>
+<td>N.E.</td>
+<td>Valid</td>
+<td>Pop top of stack into <em>m32</em>; increment stack pointer.</td></tr>
+<tr>
+<td>8F /0</td>
+<td>POP r/<em>m64</em></td>
+<td>M</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Pop top of stack into <em>m64</em>; increment stack pointer. Cannot encode 32-bit operand size.</td></tr>
+<tr>
+<td>58+ <em>rw</em></td>
+<td>POP <em>r16</em></td>
+<td>O</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Pop top of stack into <em>r16</em>; increment stack pointer.</td></tr>
+<tr>
+<td>58+ <em>rd</em></td>
+<td>POP <em>r32</em></td>
+<td>O</td>
+<td>N.E.</td>
+<td>Valid</td>
+<td>Pop top of stack into <em>r32</em>; increment stack pointer.</td></tr>
+<tr>
+<td>58+ <em>rd</em></td>
+<td>POP <em>r64</em></td>
+<td>O</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Pop top of stack into <em>r64</em>; increment stack pointer. Cannot encode 32-bit operand size.</td></tr>
+<tr>
+<td>1F</td>
+<td>POP DS</td>
+<td>NP</td>
+<td>Invalid</td>
+<td>Valid</td>
+<td>Pop top of stack into DS; increment stack pointer.</td></tr>
+<tr>
+<td>07</td>
+<td>POP ES</td>
+<td>NP</td>
+<td>Invalid</td>
+<td>Valid</td>
+<td>Pop top of stack into ES; increment stack pointer.</td></tr>
+<tr>
+<td>17</td>
+<td>POP SS</td>
+<td>NP</td>
+<td>Invalid</td>
+<td>Valid</td>
+<td>Pop top of stack into SS; increment stack pointer.</td></tr>
+<tr>
+<td>0F A1</td>
+<td>POP FS</td>
+<td>NP</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Pop top of stack into FS; increment stack pointer by 16 bits.</td></tr>
+<tr>
+<td>0F A1</td>
+<td>POP FS</td>
+<td>NP</td>
+<td>N.E.</td>
+<td>Valid</td>
+<td>Pop top of stack into FS; increment stack pointer by 32 bits.</td></tr>
+<tr>
+<td>0F A1</td>
+<td>POP FS</td>
+<td>NP</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Pop top of stack into FS; increment stack pointer by 64 bits.</td></tr>
+<tr>
+<td>0F A9</td>
+<td>POP GS</td>
+<td>NP</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Pop top of stack into GS; increment stack pointer by 16 bits.</td></tr>
+<tr>
+<td>0F A9</td>
+<td>POP GS</td>
+<td>NP</td>
+<td>N.E.</td>
+<td>Valid</td>
+<td>Pop top of stack into GS; increment stack pointer by 32 bits.</td></tr>
+<tr>
+<td>0F A9</td>
+<td>POP GS</td>
+<td>NP</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Pop top of stack into GS; increment stack pointer by 64 bits.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>M</td>
+<td>ModRM:r/m (w)</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td></tr>
+<tr>
+<td>O</td>
+<td>opcode + rd (w)</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td></tr>
+<tr>
+<td>NP</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Loads the value from the top of the stack to the location specified with the destination operand (or explicit opcode) and then increments the stack pointer. The destination operand can be a general-purpose register, memory loca-tion, or segment register.</p>
+<p>Address and operand sizes are determined and used as follows:</p>
+<p>The address size is used only when writing to a destination operand in memory.</p>
+<p>The operand size (16, 32, or 64 bits) determines the amount by which the stack pointer is incremented (2, 4 or 8).</p>
+<p>The stack-address size determines the width of the stack pointer when reading from the stack in memory and when incrementing the stack pointer. (As stated above, the amount by which the stack pointer is incremented is determined by the operand size.)</p>
+<p>If the destination operand is one of the segment registers DS, ES, FS, GS, or SS, the value loaded into the register must be a valid segment selector. In protected mode, popping a segment selector into a segment register automat-ically causes the descriptor information associated with that segment selector to be loaded into the hidden (shadow) part of the segment register and causes the selector and the descriptor information to be validated (see the “Operation” section below).</p>
+<p>A NULL value (0000-0003) may be popped into the DS, ES, FS, or GS register without causing a general protection fault. However, any subsequent attempt to reference a segment whose corresponding segment register is loaded with a NULL value causes a general protection exception (#GP). In this situation, no memory reference occurs and the saved value of the segment register is NULL.</p>
+<p>The POP instruction cannot pop a value into the CS register. To load the CS register from the stack, use the RET instruction.</p>
+<p>If the ESP register is used as a base register for addressing a destination operand in memory, the POP instruction computes the effective address of the operand after it increments the ESP register. For the case of a 16-bit stack where ESP wraps to 0H as a result of the POP instruction, the resulting location of the memory write is processor-family-specific.</p>
+<p>The POP ESP instruction increments the stack pointer (ESP) before data at the old top of stack is written into the destination.</p>
+<p>A POP SS instruction inhibits all interrupts, including the NMI interrupt, until after execution of the next instruction. This action allows sequential execution of POP SS and MOV ESP, EBP instructions without the danger of having an invalid stack during an interrupt<sup>1</sup>. However, use of the LSS instruction is the preferred method of loading the SS and ESP registers.</p>
+<p>In 64-bit mode, using a REX prefix in the form of REX.R permits access to additional registers (R8-R15). When in 64-bit mode, POPs using 32-bit operands are not encodable and POPs to DS, ES, SS are not valid. See the summary chart at the beginning of this section for encoding data and limits.</p>
+<h2>Operation</h2>
+<pre>IF StackAddrSize = 32
+    THEN
+         IF OperandSize = 32
+              THEN
+                    DEST ← SS:ESP; (* Copy a doubleword *)
+                    ESP ← ESP + 4;
+              ELSE (* OperandSize = 16*)
+                    DEST ← SS:ESP; (* Copy a word *)
+1.
+    If a code instruction breakpoint (for debug) is placed on an instruction located immediately after a POP SS instruction, the breakpoint may not be triggered. However, in a sequence of instructions that POP the SS register, only the first instruction in the sequence is guaranteed to delay an interrupt.
+    In the following sequence, interrupts may be recognized before POP ESP executes:
+    POP SS POP SS POP ESP
+                    ESP ← ESP + 2;
+         FI;
+    ELSE IF StackAddrSize = 64
+         THEN
+              IF OperandSize = 64
+                    THEN
+                         DEST ← SS:RSP; (* Copy quadword *)
+                         RSP ← RSP + 8;
+                    ELSE (* OperandSize = 16*)
+                         DEST ← SS:RSP; (* Copy a word *)
+                         RSP ← RSP + 2;
+              FI;
+         FI;
+    ELSE StackAddrSize = 16
+         THEN
+              IF OperandSize = 16
+                    THEN
+                         DEST ← SS:SP; (* Copy a word *)
+                         SP ← SP + 2;
+                    ELSE (* OperandSize = 32 *)
+                         DEST ← SS:SP; (* Copy a doubleword *)
+                         SP ← SP + 4;
+              FI;
+FI;</pre>
+<p>Loading a segment register while in protected mode results in special actions, as described in the following listing. These checks are performed on the segment selector and the segment descriptor it points to.</p>
+<pre>64-BIT_MODE
+IF FS, or GS is loaded with non-NULL selector;
+    THEN
+         IF segment selector index is outside descriptor table limits
+              OR segment is not a data or readable code segment
+              OR ((segment is a data or nonconforming code segment)
+                    AND (both RPL and CPL &gt; DPL))
+                         THEN #GP(selector);
+              IF segment not marked present
+                    THEN #NP(selector);
+         ELSE
+              SegmentRegister ← segment selector;
+              SegmentRegister ← segment descriptor;
+         FI;
+FI;
+IF FS, or GS is loaded with a NULL selector;
+         THEN
+              SegmentRegister ← segment selector;
+              SegmentRegister ← segment descriptor;
+FI;
+PREOTECTED MODE OR COMPATIBILITY MODE;
+IF SS is loaded;
+    THEN
+         IF segment selector is NULL
+              THEN #GP(0);
+         FI;
+         IF segment selector index is outside descriptor table limits
+              or segment selector's RPL ≠ CPL
+              or segment is not a writable data segment
+              or DPL ≠ CPL
+                    THEN #GP(selector);
+         FI;
+         IF segment not marked present
+              THEN #SS(selector);
+              ELSE
+                    SS ← segment selector;
+                    SS ← segment descriptor;
+         FI;
+FI;
+IF DS, ES, FS, or GS is loaded with non-NULL selector;
+    THEN
+         IF segment selector index is outside descriptor table limits
+              or segment is not a data or readable code segment
+              or ((segment is a data or nonconforming code segment)
+              and (both RPL and CPL &gt; DPL))
+                    THEN #GP(selector);
+         FI;
+         IF segment not marked present
+              THEN #NP(selector);
+              ELSE
+                    SegmentRegister ← segment selector;
+                    SegmentRegister ← segment descriptor;
+          FI;
+FI;
+IF DS, ES, FS, or GS is loaded with a NULL selector
+    THEN
+         SegmentRegister ← segment selector;
+         SegmentRegister ← segment descriptor;
+FI;</pre>
+<h2>Flags Affected</h2>
+<p>None.</p>
+<h2>Protected Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>
+<p>If attempt is made to load SS register with NULL segment selector.</p>
+<p>If the destination operand is in a non-writable segment.</p>
+<p>If a memory operand effective address is outside the CS, DS, ES, FS, or GS segment limit.</p>
+<p>If the DS, ES, FS, or GS register is used to access memory and it contains a NULL segment selector.</p></td></tr>
+<tr>
+<td>#GP(selector)</td>
+<td>
+<p>If segment selector index is outside descriptor table limits.</p>
+<p>If the SS register is being loaded and the segment selector's RPL and the segment descriptor’s DPL are not equal to the CPL.</p>
+<p>If the SS register is being loaded and the segment pointed to is a non-writable data segment.</p>
+<p>If the DS, ES, FS, or GS register is being loaded and the segment pointed to is not a data or readable code segment.</p>
+<p>If the DS, ES, FS, or GS register is being loaded and the segment pointed to is a data or nonconforming code segment, but both the RPL and the CPL are greater than the DPL.</p></td></tr>
+<tr>
+<td>#SS(0)</td>
+<td>
+<p>If the current top of stack is not within the stack segment.</p>
+<p>If a memory operand effective address is outside the SS segment limit.</p></td></tr>
+<tr>
+<td>#SS(selector)</td>
+<td>If the SS register is being loaded and the segment pointed to is marked not present.</td></tr>
+<tr>
+<td>#NP</td>
+<td>If the DS, ES, FS, or GS register is being loaded and the segment pointed to is marked not present.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If an unaligned memory reference is made while the current privilege level is 3 and alignment checking is enabled.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Real-Address Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP</td>
+<td>If a memory operand effective address is outside the CS, DS, ES, FS, or GS segment limit.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Virtual-8086 Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>If a memory operand effective address is outside the CS, DS, ES, FS, or GS segment limit.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If an unaligned memory reference is made while alignment checking is enabled.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Compatibility Mode Exceptions</h2>
+<p>Same as for protected mode exceptions.</p>
+<h2>64-Bit Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>If the memory address is in a non-canonical form.</td></tr>
+<tr>
+<td>#SS(U)</td>
+<td>If the stack address is in a non-canonical form.</td></tr>
+<tr>
+<td>#GP(selector)</td>
+<td>
+<p>If the descriptor is outside the descriptor table limit.</p>
+<p>If the FS or GS register is being loaded and the segment pointed to is not a data or readable code segment.</p>
+<p>If the FS or GS register is being loaded and the segment pointed to is a data or nonconforming code segment, but both the RPL and the CPL are greater than the DPL.</p></td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If an unaligned memory reference is made while alignment checking is enabled.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#NP</td>
+<td>If the FS or GS register is being loaded and the segment pointed to is marked not present.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table></body></html>

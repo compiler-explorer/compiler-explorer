@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>FYL2X—Compute y ∗ log2x </title></head>
+<body>
+<h1>FYL2X—Compute y ∗ log<sub>2</sub>x</h1>
+<table>
+<tr>
+<th>Opcode</th>
+<th>Instruction</th>
+<th>64-Bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>D9 F1</td>
+<td>FYL2X</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Replace ST(1) with (ST(1) ∗ log<sub>2</sub>ST(0)) and pop the register stack.</td></tr></table>
+<h2>Description</h2>
+<p>Computes (ST(1) ∗ log<sub>2</sub> (ST(0))), stores the result in resister ST(1), and pops the FPU register stack. The source operand in ST(0) must be a non-zero positive number.</p>
+<p>The following table shows the results obtained when taking the log of various classes of numbers, assuming that neither overflow nor underflow occurs.</p>
+<h3>Table 3-58.  FYL2X Results</h3>
+<table>
+<tr>
+<td colspan="2"></td>
+<td colspan="2"></td>
+<td colspan="2"></td>
+<td colspan="2"></td>
+<td colspan="2"></td>
+<th colspan="2">ST(0)</th>
+<td colspan="2"></td>
+<td colspan="2"></td>
+<td colspan="2"></td>
+<td colspan="2"></td></tr>
+<tr>
+<td colspan="2"></td>
+<td colspan="2"></td>
+<td colspan="2">− ∞</td>
+<td colspan="2">− F</td>
+<td colspan="2">±0</td>
+<td colspan="2">+0&lt;+F&lt;+1</td>
+<td colspan="2">+ 1</td>
+<td colspan="2">+ F &gt; + 1</td>
+<td colspan="2">+ ∞</td>
+<td colspan="2">NaN</td></tr>
+<tr>
+<td colspan="2"></td>
+<td colspan="2">− ∞</td>
+<td colspan="2">*</td>
+<td colspan="2">*</td>
+<td colspan="2">+ ∞</td>
+<td colspan="2">+ ∞</td>
+<td colspan="2">*</td>
+<td colspan="2">− ∞</td>
+<td colspan="2">− ∞</td>
+<td colspan="2">NaN</td></tr>
+<tr>
+<th colspan="2">ST(1)</th>
+<td colspan="2">− F</td>
+<td colspan="2">*</td>
+<td colspan="2">*</td>
+<td colspan="2">**</td>
+<td colspan="2">+ F</td>
+<td colspan="2">− 0</td>
+<td colspan="2">− F</td>
+<td colspan="2">− ∞</td>
+<td colspan="2">NaN</td></tr>
+<tr>
+<td colspan="2"></td>
+<td colspan="2">− 0</td>
+<td colspan="2">*</td>
+<td colspan="2">*</td>
+<td colspan="2">*</td>
+<td colspan="2">+ 0</td>
+<td colspan="2">− 0</td>
+<td colspan="2">− 0</td>
+<td colspan="2">*</td>
+<td colspan="2">NaN</td></tr>
+<tr>
+<td colspan="2"></td>
+<td colspan="2">+ 0</td>
+<td colspan="2">*</td>
+<td colspan="2">*</td>
+<td colspan="2">*</td>
+<td colspan="2">− 0</td>
+<td colspan="2">+ 0</td>
+<td colspan="2">+ 0</td>
+<td colspan="2">*</td>
+<td colspan="2">NaN</td></tr>
+<tr>
+<td colspan="2"></td>
+<td colspan="2">+ F</td>
+<td colspan="2">*</td>
+<td colspan="2">*</td>
+<td colspan="2">**</td>
+<td colspan="2">− F</td>
+<td colspan="2">+ 0</td>
+<td colspan="2">+ F</td>
+<td colspan="2">+ ∞</td>
+<td colspan="2">NaN</td></tr>
+<tr>
+<td colspan="2"></td>
+<td colspan="2">+ ∞</td>
+<td colspan="2">*</td>
+<td colspan="2">*</td>
+<td colspan="2">− ∞</td>
+<td colspan="2">− ∞</td>
+<td colspan="2">*</td>
+<td colspan="2">+ ∞</td>
+<td colspan="2">+ ∞</td>
+<td colspan="2">NaN</td></tr>
+<tr>
+<td colspan="2"></td>
+<td colspan="2">NaN</td>
+<td colspan="2">NaN</td>
+<td colspan="2">NaN</td>
+<td colspan="2">NaN</td>
+<td colspan="2">NaN</td>
+<td colspan="2">NaN</td>
+<td colspan="2">NaN</td>
+<td colspan="2">NaN</td>
+<td colspan="2">NaN</td></tr></table>
+<p><strong>NOTES:</strong></p>
+<p>F Means finite floating-point value.</p>
+<p>*</p>
+<p>Indicates floating-point invalid-operation (#IA) exception.</p>
+<p>** Indicates floating-point zero-divide (#Z) exception.</p>
+<p>If the divide-by-zero exception is masked and register ST(0) contains ±0, the instruction returns ∞ with a sign that is the opposite of the sign of the source operand in register ST(1).</p>
+<p>The FYL2X instruction is designed with a built-in multiplication to optimize the calculation of logarithms with an arbitrary positive base (b):</p>
+<p>log<sub>b</sub>x ← (log<sub>2</sub>b)<sup>–1</sup> ∗ log<sub>2</sub>x</p>
+<p>This instruction’s operation is the same in non-64-bit modes and 64-bit mode.</p>
+<h2>Operation</h2>
+<pre>ST(1) ← ST(1) ∗ log<sub>2</sub>ST(0);
+PopRegisterStack;</pre>
+<h2>FPU Flags Affected</h2>
+<table class="exception-table">
+<tr>
+<td>C1</td>
+<td>
+<p>Set to 0 if stack underflow occurred.</p>
+<p>Set if result was rounded up; cleared otherwise.</p></td></tr>
+<tr>
+<td>C0, C2, C3</td>
+<td>Undefined.</td></tr></table>
+<h2>Floating-Point Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#IS</td>
+<td>Stack underflow occurred.</td></tr>
+<tr>
+<td>#IA</td>
+<td>
+<p>Either operand is an SNaN or unsupported format.</p>
+<p>Source operand in register ST(0) is a negative finite value (not -0).</p></td></tr></table>
+<p>#Z</p>
+<p>Source operand in register ST(0) is ±0.</p>
+<p>#D</p>
+<p>Source operand is a denormal value.</p>
+<p>#U</p>
+<p>Result is too small for destination format.</p>
+<p>#O</p>
+<p>Result is too large for destination format.</p>
+<p>#P</p>
+<p>Value cannot be represented exactly in destination format.</p>
+<h2>Protected Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#NM</td>
+<td>CR0.EM[bit 2] or CR0.TS[bit 3] = 1.</td></tr>
+<tr>
+<td>#MF</td>
+<td>If there is a pending x87 FPU exception.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Real-Address Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>Virtual-8086 Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>Compatibility Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>64-Bit Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p></body></html>

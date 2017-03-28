@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>MUL—Unsigned Multiply </title></head>
+<body>
+<h1>MUL—Unsigned Multiply</h1>
+<table>
+<tr>
+<th>Opcode</th>
+<th>Instruction</th>
+<th>Op/En</th>
+<th>64-Bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>F6 /4</td>
+<td>MUL <em>r/m8</em></td>
+<td>M</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Unsigned multiply (AX ← AL ∗ <em>r/m8</em>).</td></tr>
+<tr>
+<td>REX + F6 /4</td>
+<td>MUL <em>r/m8</em><sup>*</sup></td>
+<td>M</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Unsigned multiply (AX ← AL ∗ <em>r/m8</em>).</td></tr>
+<tr>
+<td>F7 /4</td>
+<td>MUL <em>r/m16</em></td>
+<td>M</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Unsigned multiply (DX:AX ← AX ∗ <em>r/m16</em>).</td></tr>
+<tr>
+<td>F7 /4</td>
+<td>MUL <em>r/m32</em></td>
+<td>M</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Unsigned multiply (EDX:EAX ← EAX ∗ <em>r/m32</em>).</td></tr>
+<tr>
+<td>REX.W + F7 /4</td>
+<td>MUL <em>r/m64</em></td>
+<td>M</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Unsigned multiply (RDX:RAX ← RAX ∗ <em>r/m64).</em></td></tr></table>
+<p><strong>NOTES:</strong></p>
+<p>*</p>
+<p>In 64-bit mode, r/m8 can not be encoded to access the following byte registers if a REX prefix is used: AH, BH, CH, DH.</p>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>M</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Performs an unsigned multiplication of the first operand (destination operand) and the second operand (source operand) and stores the result in the destination operand. The destination operand is an implied operand located in register AL, AX or EAX (depending on the size of the operand); the source operand is located in a general-purpose register or a memory location. The action of this instruction and the location of the result depends on the opcode and the operand size as shown in Table 3-66.</p>
+<p>The result is stored in register AX, register pair DX:AX, or register pair EDX:EAX (depending on the operand size), with the high-order bits of the product contained in register AH, DX, or EDX, respectively. If the high-order bits of the product are 0, the CF and OF flags are cleared; otherwise, the flags are set.</p>
+<p>In 64-bit mode, the instruction’s default operation size is 32 bits. Use of the REX.R prefix permits access to addi-tional registers (R8-R15). Use of the REX.W prefix promotes operation to 64 bits.</p>
+<p>See the summary chart at the beginning of this section for encoding data and limits.</p>
+<h3>Table 3-66.  MUL Results</h3>
+<table>
+<tr>
+<th>Operand Size</th>
+<th>Source 1</th>
+<th>Source 2</th>
+<th>Destination</th></tr>
+<tr>
+<td>Byte</td>
+<td>AL</td>
+<td>r/m8</td>
+<td>AX</td></tr>
+<tr>
+<td>Word</td>
+<td>AX</td>
+<td>r/m16</td>
+<td>DX:AX</td></tr>
+<tr>
+<td>Doubleword</td>
+<td>EAX</td>
+<td>r/m32</td>
+<td>EDX:EAX</td></tr>
+<tr>
+<td>Quadword</td>
+<td>RAX</td>
+<td>r/m64</td>
+<td>RDX:RAX</td></tr></table>
+<h2>Operation</h2>
+<pre>IF (Byte operation)
+    THEN
+         AX ← AL ∗ SRC;
+    ELSE (* Word or doubleword operation *)
+         IF OperandSize = 16
+              THEN
+                    DX:AX ← AX ∗ SRC;
+              ELSE IF OperandSize = 32
+                    THEN EDX:EAX ← EAX ∗ SRC; FI;
+              ELSE (* OperandSize = 64 *)
+                    RDX:RAX ← RAX ∗ SRC;
+         FI;
+FI;</pre>
+<h2>Flags Affected</h2>
+<p>The OF and CF flags are set to 0 if the upper half of the result is 0; otherwise, they are set to 1. The SF, ZF, AF, and PF flags are undefined.</p>
+<h2>Protected Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>
+<p>If a memory operand effective address is outside the CS, DS, ES, FS, or GS segment limit.</p>
+<p>If the DS, ES, FS, or GS register contains a NULL segment selector.</p></td></tr>
+<tr>
+<td>#SS(0)</td>
+<td>If a memory operand effective address is outside the SS segment limit.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and an unaligned memory reference is made while the current privilege level is 3.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Real-Address Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP</td>
+<td>If a memory operand effective address is outside the CS, DS, ES, FS, or GS segment limit.</td></tr>
+<tr>
+<td>#SS</td>
+<td>If a memory operand effective address is outside the SS segment limit.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Virtual-8086 Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>If a memory operand effective address is outside the CS, DS, ES, FS, or GS segment limit.</td></tr>
+<tr>
+<td>#SS(0)</td>
+<td>If a memory operand effective address is outside the SS segment limit.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and an unaligned memory reference is made.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Compatibility Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>64-Bit Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#SS(0)</td>
+<td>If a memory address referencing the SS segment is in a non-canonical form.</td></tr>
+<tr>
+<td>#GP(0)</td>
+<td>If the memory address is in a non-canonical form.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and an unaligned memory reference is made while the current privilege level is 3.</td></tr></table></body></html>

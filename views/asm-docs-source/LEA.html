@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>LEA—Load Effective Address </title></head>
+<body>
+<h1>LEA—Load Effective Address</h1>
+<table>
+<tr>
+<th>Opcode</th>
+<th>Instruction</th>
+<th>Op/En</th>
+<th>64-Bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>8D /<em>r</em></td>
+<td>LEA <em>r16,m</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Store effective address for <em>m</em> in register <em>r16.</em></td></tr>
+<tr>
+<td>8D /<em>r</em></td>
+<td>LEA <em>r32,m</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Store effective address for <em>m</em> in register <em>r32.</em></td></tr>
+<tr>
+<td>REX.W + 8D /<em>r</em></td>
+<td>LEA <em>r64,m</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Store effective address for <em>m</em> in register <em>r64.</em></td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RM</td>
+<td>ModRM:reg (w)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Computes the effective address of the second operand (the source operand) and stores it in the first operand (destination operand). The source operand is a memory address (offset part) specified with one of the processors addressing modes; the destination operand is a general-purpose register. The address-size and operand-size attri-butes affect the action performed by this instruction, as shown in the following table. The operand-size attribute of the instruction is determined by the chosen register; the address-size attribute is determined by the attribute of the code segment.</p>
+<h3>Table 3-63.  Non-64-bit Mode LEA Operation with Address and Operand Size Attributes</h3>
+<table>
+<tr>
+<th>Operand Size</th>
+<th>Address Size</th>
+<th>Action Performed</th></tr>
+<tr>
+<td>16</td>
+<td>16</td>
+<td>16-bit effective address is calculated and stored in requested 16-bit register destination.</td></tr>
+<tr>
+<td>16</td>
+<td>32</td>
+<td>32-bit effective address is calculated. The lower 16 bits of the address are stored in the requested 16-bit register destination.</td></tr>
+<tr>
+<td>32</td>
+<td>16</td>
+<td>16-bit effective address is calculated. The 16-bit address is zero-extended and stored in the requested 32-bit register destination.</td></tr>
+<tr>
+<td>32</td>
+<td>32</td>
+<td>32-bit effective address is calculated and stored in the requested 32-bit register destination.</td></tr></table>
+<p>Different assemblers may use different algorithms based on the size attribute and symbolic reference of the source operand.</p>
+<p>In 64-bit mode, the instruction’s destination operand is governed by operand size attribute, the default operand size is 32 bits. Address calculation is governed by address size attribute, the default address size is 64-bits. In 64-bit mode, address size of 16 bits is not encodable. See Table 3-64.</p>
+<h3>Table 3-64.  64-bit Mode LEA Operation with Address and Operand Size Attributes</h3>
+<table>
+<tr>
+<th>Operand Size</th>
+<th>Address Size</th>
+<th>Action Performed</th></tr>
+<tr>
+<td>16</td>
+<td>32</td>
+<td>32-bit effective address is calculated (using 67H prefix). The lower 16 bits of the address are stored in the requested 16-bit register destination (using 66H prefix).</td></tr>
+<tr>
+<td>16</td>
+<td>64</td>
+<td>64-bit effective address is calculated (default address size). The lower 16 bits of the address are stored in the requested 16-bit register destination (using 66H prefix).</td></tr>
+<tr>
+<td>32</td>
+<td>32</td>
+<td>32-bit effective address is calculated (using 67H prefix) and stored in the requested 32-bit register destination.</td></tr>
+<tr>
+<td>32</td>
+<td>64</td>
+<td>64-bit effective address is calculated (default address size) and the lower 32 bits of the address are stored in the requested 32-bit register destination.</td></tr>
+<tr>
+<td>64</td>
+<td>32</td>
+<td>32-bit effective address is calculated (using 67H prefix), zero-extended to 64-bits, and stored in the requested 64-bit register destination (using REX.W).</td></tr>
+<tr>
+<td>64</td>
+<td>64</td>
+<td>64-bit effective address is calculated (default address size) and all 64-bits of the address are stored in the requested 64-bit register destination (using REX.W).</td></tr></table>
+<h2>Operation</h2>
+<pre>IF OperandSize = 16 and AddressSize = 16
+    THEN
+         DEST<em> </em>← EffectiveAddress(SRC); (* 16-bit address *)
+    ELSE IF OperandSize = 16 and AddressSize = 32
+         THEN
+              temp ← EffectiveAddress(SRC); (* 32-bit address *)
+              DEST ← temp[0:15]; (* 16-bit address *)
+         FI;
+    ELSE IF OperandSize = 32 and AddressSize = 16
+         THEN
+              temp ← EffectiveAddress(SRC); (* 16-bit address *)
+              DEST ← ZeroExtend(temp); (* 32-bit address *)
+         FI;
+    ELSE IF OperandSize = 32 and AddressSize = 32
+         THEN
+              DEST<em> </em>← EffectiveAddress(SRC); (* 32-bit address *)
+         FI;
+    ELSE IF OperandSize = 16 and AddressSize = 64
+         THEN
+              temp ← EffectiveAddress(SRC); (* 64-bit address *)
+              DEST ← temp[0:15]; (* 16-bit address *)
+         FI;
+    ELSE IF OperandSize = 32 and AddressSize = 64
+         THEN
+              temp ← EffectiveAddress(SRC); (* 64-bit address *)
+              DEST ← temp[0:31]; (* 16-bit address *)
+         FI;
+    ELSE IF OperandSize = 64 and AddressSize = 64
+         THEN
+              DEST<em> </em>← EffectiveAddress(SRC); (* 64-bit address *)
+         FI;
+FI;</pre>
+<h2>Flags Affected</h2>
+<p>None.</p>
+<h2>Protected Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>
+<p>If source operand is not a memory location.</p>
+<p>If the LOCK prefix is used.</p></td></tr></table>
+<h2>Real-Address Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>Virtual-8086 Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>Compatibility Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>64-Bit Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p></body></html>

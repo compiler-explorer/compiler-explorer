@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>HSUBPD—Packed Double-FP Horizontal Subtract </title></head>
+<body>
+<h1>HSUBPD—Packed Double-FP Horizontal Subtract</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32-bit Mode</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>
+<p>66 0F 7D /<em>r</em></p>
+<p>HSUBPD <em>xmm1,</em> <em>xmm2/m128</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>SSE3</td>
+<td>Horizontal subtract packed double-precision floating-point values from <em>xmm2/m128</em> to <em>xmm1</em>.</td></tr>
+<tr>
+<td>VEX.NDS.128.66.0F.WIG 7D /r VHSUBPD xmm1,xmm2, xmm3/m128</td>
+<td>RVM</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Horizontal subtract packed double-precision floating-point values from xmm2 and xmm3/mem.</td></tr>
+<tr>
+<td>VEX.NDS.256.66.0F.WIG 7D /r VHSUBPD ymm1, ymm2, ymm3/m256</td>
+<td>RVM</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Horizontal subtract packed double-precision floating-point values from ymm2 and ymm3/mem.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RM</td>
+<td>ModRM:reg (r, w)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td></tr>
+<tr>
+<td>RVM</td>
+<td>ModRM:reg (w)</td>
+<td>VEX.vvvv (r)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>The HSUBPD instruction subtracts horizontally the packed DP FP numbers of both operands.</p>
+<p>Subtracts the double-precision floating-point value in the high quadword of the destination operand from the low quadword of the destination operand and stores the result in the low quadword of the destination operand.</p>
+<p>Subtracts the double-precision floating-point value in the high quadword of the source operand from the low quad-word of the source operand and stores the result in the high quadword of the destination operand.</p>
+<p>In 64-bit mode, use of the REX.R prefix permits this instruction to access additional registers (XMM8-XMM15).</p>
+<p>See Figure 3-19 for HSUBPD; see Figure 3-20 for VHSUBPD.</p>
+<svg width="501.93" viewBox="135.360000 291927.540000 334.620000 206.940000" height="310.41">
+<text y="291944.578446" x="242.085" style="font-size:7.774700pt" lengthAdjust="spacingAndGlyphs" textLength="102.8126328">HSUBPD xmm1, xmm2/m128</text>
+<text y="291964.512746" x="429.8883" style="font-size:7.774700pt" lengthAdjust="spacingAndGlyphs" textLength="21.1627334">xmm2</text>
+<text y="291969.177746" x="213.8383" style="font-size:7.774700pt" lengthAdjust="spacingAndGlyphs" textLength="28.0977658">[127:64]</text>
+<text y="291969.177746" x="349.3623" style="font-size:7.774700pt" lengthAdjust="spacingAndGlyphs" textLength="19.4522994">[63:0]</text>
+<text y="291973.842446" x="429.8883" style="font-size:7.774700pt" lengthAdjust="spacingAndGlyphs" textLength="21.6058913">/m128</text>
+<text y="292016.190446" x="429.8883" style="font-size:7.774700pt" lengthAdjust="spacingAndGlyphs" textLength="21.1627334">xmm1</text>
+<text y="292016.190746" x="213.8383" style="font-size:7.774700pt" lengthAdjust="spacingAndGlyphs" textLength="28.0977658">[127:64]</text>
+<text y="292016.190746" x="349.3623" style="font-size:7.774700pt" lengthAdjust="spacingAndGlyphs" textLength="19.4522994">[63:0]</text>
+<text y="292068.378446" x="429.8887" style="font-size:7.774700pt" lengthAdjust="spacingAndGlyphs" textLength="24.1948664">Result:</text>
+<text y="292068.378846" x="194.4013" style="font-size:7.774700pt" lengthAdjust="spacingAndGlyphs" textLength="66.9712658">xmm2/m128[63:0] -</text>
+<text y="292073.043646" x="310.6925" style="font-size:7.774700pt" lengthAdjust="spacingAndGlyphs" textLength="96.7872403">xmm1[63:0] - xmm1[127:64]</text>
+<text y="292077.708046" x="429.8887" style="font-size:7.774700pt" lengthAdjust="spacingAndGlyphs" textLength="21.1627334">xmm1</text>
+<text y="292077.708446" x="192.4576" style="font-size:7.774700pt" lengthAdjust="spacingAndGlyphs" textLength="70.8663905">xmm2/m128[127:64]</text>
+<text y="292096.015746" x="213.8484" style="font-size:7.774700pt" lengthAdjust="spacingAndGlyphs" textLength="28.0977658">[127:64]</text>
+<text y="292096.015746" x="353.74479686" style="font-size:7.774700pt" lengthAdjust="spacingAndGlyphs" textLength="19.4522994">[63:0]</text>
+<text y="292126.064858" x="439.8024" style="font-size:5.831000pt" lengthAdjust="spacingAndGlyphs" textLength="25.603921">OM15995</text>
+<rect y="291928.219" x="136.052" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="179.305" width="327.998"></rect>
+<rect y="291928.218" x="136.052" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="179.305" width="327.998"></rect>
+<rect y="291953.364" x="293.491" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="26.24" width="131.199"></rect>
+<rect y="291953.365" x="293.491" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="26.24" width="131.199"></rect>
+<rect y="291953.364" x="162.291" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="26.24" width="131.199"></rect>
+<rect y="291953.365" x="162.291" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="26.24" width="131.199"></rect>
+<rect y="292000.378" x="293.491" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="26.24" width="131.199"></rect>
+<rect y="292000.378" x="162.291" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="26.24" width="131.199"></rect>
+<rect y="292057.23" x="162.291" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="26.24" width="131.199"></rect>
+<rect y="292057.231" x="162.291" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="26.24" width="131.199"></rect>
+<rect y="292057.23" x="293.491" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="26.24" width="131.199"></rect>
+<rect y="292057.231" x="293.491" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="26.24" width="131.199"></rect>
+<rect y="292000.377" x="293.491" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="26.24" width="131.199"></rect>
+<rect y="292000.377" x="162.291" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="26.24" width="131.199"></rect></svg>
+<h3>Figure 3-19.  HSUBPD—Packed Double-FP Horizontal Subtract</h3>
+<p>X3</p>
+<p>X2</p>
+<p>X1</p>
+<p>X0</p>
+<p>SRC1</p>
+<p>Y3</p>
+<p>Y2</p>
+<p>Y1</p>
+<p>Y0</p>
+<p>SRC2</p>
+<p>DEST</p>
+<p>Y2 - Y3</p>
+<p>X2 - X3</p>
+<p>Y0 - Y1</p>
+<p>X0 - X1</p>
+<h3>Figure 3-20.  VHSUBPD operation</h3>
+<p>128-bit Legacy SSE version: The second source can be an XMM register or an 128-bit memory location. The desti-nation is not distinct from the first source XMM register and the upper bits (VLMAX-1:128) of the corresponding YMM register destination are unmodified.</p>
+<p>VEX.128 encoded version: the first source operand is an XMM register or 128-bit memory location. The destination operand is an XMM register. The upper bits (VLMAX-1:128) of the corresponding YMM register destination are zeroed.</p>
+<p>VEX.256 encoded version: The first source operand is a YMM register. The second source operand can be a YMM register or a 256-bit memory location. The destination operand is a YMM register.</p>
+<h2>Operation</h2>
+<p><strong>HSUBPD (128-bit Legacy SSE version)</strong></p>
+<pre>DEST[63:0] ← SRC1[63:0] - SRC1[127:64]
+DEST[127:64] ← SRC2[63:0] - SRC2[127:64]
+DEST[VLMAX-1:128] (Unmodified)</pre>
+<p><strong>VHSUBPD (VEX.128 encoded version)</strong></p>
+<pre>DEST[63:0] ← SRC1[63:0] - SRC1[127:64]
+DEST[127:64] ← SRC2[63:0] - SRC2[127:64]
+DEST[VLMAX-1:128] ← 0</pre>
+<p><strong>VHSUBPD (VEX.256 encoded version)</strong></p>
+<pre>DEST[63:0] ← SRC1[63:0] - SRC1[127:64]
+DEST[127:64] ← SRC2[63:0] - SRC2[127:64]
+DEST[191:128] ← SRC1[191:128] - SRC1[255:192]
+DEST[255:192] ← SRC2[191:128] - SRC2[255:192]</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>HSUBPD:</p>
+<p>__m128d _mm_hsub_pd(__m128d a, __m128d b)</p>
+<p>VHSUBPD:</p>
+<p>__m256d _mm256_hsub_pd (__m256d a, __m256d b);</p>
+<h2>Exceptions</h2>
+<p>When the source operand is a memory operand, the operand must be aligned on a 16-byte boundary or a general-protection exception (#GP) will be generated.</p>
+<h2>Numeric Exceptions</h2>
+<p>Overflow, Underflow, Invalid, Precision, Denormal.</p>
+<h2>Other Exceptions</h2>
+<p>See Exceptions Type 2.</p></body></html>

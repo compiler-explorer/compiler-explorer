@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>ARPL—Adjust RPL Field of Segment Selector </title></head>
+<body>
+<h1>ARPL—Adjust RPL Field of Segment Selector</h1>
+<table>
+<tr>
+<th>Opcode</th>
+<th>Instruction</th>
+<th>Op/En</th>
+<th>64-bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>63 /<em>r</em></td>
+<td>ARPL <em>r/m16, r16</em></td>
+<td>NP</td>
+<td>N. E.</td>
+<td>Valid</td>
+<td>Adjust RPL of <em>r/m16</em> to not less than RPL of <em>r16.</em></td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>NP</td>
+<td>ModRM:r/m (w)</td>
+<td>ModRM:reg (r)</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Compares the RPL fields of two segment selectors. The first operand (the destination operand) contains one segment selector and the second operand (source operand) contains the other. (The RPL field is located in bits 0 and 1 of each operand.) If the RPL field of the destination operand is less than the RPL field of the source operand, the ZF flag is set and the RPL field of the destination operand is increased to match that of the source operand. Otherwise, the ZF flag is cleared and no change is made to the destination operand. (The destination operand can be a word register or a memory location; the source operand must be a word register.)</p>
+<p>The ARPL instruction is provided for use by operating-system procedures (however, it can also be used by applica-tions). It is generally used to adjust the RPL of a segment selector that has been passed to the operating system by an application program to match the privilege level of the application program. Here the segment selector passed to the operating system is placed in the destination operand and segment selector for the application program’s code segment is placed in the source operand. (The RPL field in the source operand represents the priv-ilege level of the application program.) Execution of the ARPL instruction then ensures that the RPL of the segment selector received by the operating system is no lower (does not have a higher privilege) than the privilege level of the application program (the segment selector for the application program’s code segment can be read from the stack following a procedure call).</p>
+<p>This instruction executes as described in compatibility mode and legacy mode. It is not encodable in 64-bit mode.</p>
+<p>See “Checking Caller Access Privileges” in Chapter 3, “Protected-Mode Memory Management,” of the <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 3A</em>, for more information about the use of this instruc-tion.</p>
+<h2>Operation</h2>
+<pre>IF 64-BIT MODE
+    THEN
+         See MOVSXD;
+    ELSE
+         IF DEST[RPL) &lt; SRC[RPL)
+              THEN
+                    ZF ← 1;
+                    DEST[RPL) ← SRC[RPL);
+              ELSE
+                    ZF ← 0;
+         FI;
+FI;</pre>
+<h2>Flags Affected</h2>
+<p>The ZF flag is set to 1 if the RPL field of the destination operand is less than that of the source operand; otherwise, it is set to 0.</p>
+<h2>Protected Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>
+<p>If the destination is located in a non-writable segment.</p>
+<p>If a memory operand effective address is outside the CS, DS, ES, FS, or GS segment limit.</p>
+<p>If the DS, ES, FS, or GS register is used to access memory and it contains a NULL segment selector.</p></td></tr>
+<tr>
+<td>#SS(0)</td>
+<td>If a memory operand effective address is outside the SS segment limit.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and an unaligned memory reference is made while the current privilege level is 3.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Real-Address Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>
+<p>The ARPL instruction is not recognized in real-address mode.</p>
+<p>If the LOCK prefix is used.</p></td></tr></table>
+<h2>Virtual-8086 Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>
+<p>The ARPL instruction is not recognized in virtual-8086 mode.</p>
+<p>If the LOCK prefix is used.</p></td></tr></table>
+<h2>Compatibility Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>64-Bit Mode Exceptions</h2>
+<p>Not applicable.</p></body></html>

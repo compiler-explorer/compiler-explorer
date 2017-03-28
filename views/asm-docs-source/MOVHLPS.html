@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>MOVHLPS— Move Packed Single-Precision Floating-Point Values High to Low </title></head>
+<body>
+<h1>MOVHLPS— Move Packed Single-Precision Floating-Point Values High to Low</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32-bit Mode</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>
+<p>0F 12 /<em>r</em></p>
+<p>MOVHLPS<em> xmm1, xmm2</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>SSE</td>
+<td>Move two packed single-precision floating-point values from high quadword of <em>xmm2</em> to low quadword of <em>xmm1</em>.</td></tr>
+<tr>
+<td>
+<p>VEX.NDS.128.0F.WIG 12 /r</p>
+<p>VMOVHLPS <em>xmm1, xmm2, xmm3</em></p></td>
+<td>RVM</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Merge two packed single-precision floating-point values from high quadword of <em>xmm3 </em>and low quadword of <em>xmm2</em>.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RM</td>
+<td>ModRM:reg (w)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td></tr>
+<tr>
+<td>RVM</td>
+<td>ModRM:reg (w)</td>
+<td>VEX.vvvv (r)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>This instruction cannot be used for memory to register moves.</p>
+<p><strong>128-bit two-argument form:</strong></p>
+<p>Moves two packed single-precision floating-point values from the high quadword of the second XMM argument (second operand) to the low quadword of the first XMM register (first argument). The high quadword of the desti-nation operand is left unchanged. Bits (VLMAX-1:64) of the corresponding YMM destination register are unmodi-fied.</p>
+<p><strong>128-bit three-argument form</strong></p>
+<p>Moves two packed single-precision floating-point values from the high quadword of the third XMM argument (third operand) to the low quadword of the destination (first operand). Copies the high quadword from the second XMM argument (second operand) to the high quadword of the destination (first operand). Bits (VLMAX-1:128) of the destination YMM register are zeroed.</p>
+<p>In 64-bit mode, use of the REX.R prefix permits this instruction to access additional registers (XMM8-XMM15).</p>
+<p>If VMOVHLPS is encoded with VEX.L= 1, an attempt to execute the instruction encoded with VEX.L= 1 will cause an #UD exception.</p>
+<h2>Operation</h2>
+<p><strong>MOVHLPS (128-bit two-argument form)</strong></p>
+<pre>DEST[63:0] ← SRC[127:64]
+DEST[VLMAX-1:64] (Unmodified)</pre>
+<p><strong>VMOVHLPS (128-bit three-argument form)</strong></p>
+<pre>DEST[63:0] ← SRC2[127:64]
+DEST[127:64] ← SRC1[127:64]
+DEST[VLMAX-1:128] ← 0</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>MOVHLPS:</p>
+<p>__m128 _mm_movehl_ps(__m128 a, __m128 b)</p>
+<h2>SIMD Floating-Point Exceptions</h2>
+<p>None.</p>
+<h2>Other Exceptions</h2>
+<p>See Exceptions Type 7; additionally</p>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>If VEX.L= 1.</td></tr></table></body></html>

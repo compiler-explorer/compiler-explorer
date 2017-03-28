@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>PREFETCHh—Prefetch Data Into Caches </title></head>
+<body>
+<h1>PREFETCH<em>h</em>—Prefetch Data Into Caches</h1>
+<table>
+<tr>
+<th>Opcode</th>
+<th>Instruction</th>
+<th>Op/En</th>
+<th>64-Bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>0F 18 /1</td>
+<td>PREFETCHT0 <em>m8</em></td>
+<td>M</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move data from <em>m8</em> closer to the processor using T0 hint.</td></tr>
+<tr>
+<td>0F 18 /2</td>
+<td>PREFETCHT1 <em>m8</em></td>
+<td>M</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move data from <em>m8</em> closer to the processor using T1 hint.</td></tr>
+<tr>
+<td>0F 18 /3</td>
+<td>PREFETCHT2 <em>m8</em></td>
+<td>M</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move data from <em>m8</em> closer to the processor using T2 hint.</td></tr>
+<tr>
+<td>0F 18 /0</td>
+<td>PREFETCHNTA <em>m8</em></td>
+<td>M</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move data from <em>m8</em> closer to the processor using NTA hint.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>M</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Fetches the line of data from memory that contains the byte specified with the source operand to a location in the cache hierarchy specified by a locality hint:</p>
+<p>— Pentium III processor—1st- or 2nd-level cache.</p>
+<p>— Pentium 4 and Intel Xeon processors—2nd-level cache.</p>
+<p>— Pentium III processor—2nd-level cache.</p>
+<p>— Pentium 4 and Intel Xeon processors—2nd-level cache.</p>
+<p>— Pentium III processor—2nd-level cache.</p>
+<p>— Pentium 4 and Intel Xeon processors—2nd-level cache.</p>
+<p>— Pentium III processor—1st-level cache</p>
+<p>— Pentium 4 and Intel Xeon processors—2nd-level cache</p>
+<p>The source operand is a byte memory location. (The locality hints are encoded into the machine level instruction using bits 3 through 5 of the ModR/M byte.)</p>
+<p>If the line selected is already present in the cache hierarchy at a level closer to the processor, no data movement occurs. Prefetches from uncacheable or WC memory are ignored.</p>
+<p>The PREFETCH<em>h</em> instruction is merely a hint and does not affect program behavior. If executed, this instruction moves data closer to the processor in anticipation of future use.</p>
+<p>The implementation of prefetch locality hints is implementation-dependent, and can be overloaded or ignored by a processor implementation. The amount of data prefetched is also processor implementation-dependent. It will, however, be a minimum of 32 bytes.</p>
+<p>It should be noted that processors are free to speculatively fetch and cache data from system memory regions that are assigned a memory-type that permits speculative reads (that is, the WB, WC, and WT memory types). A PREFETCH<em>h</em> instruction is considered a hint to this speculative behavior. Because this speculative fetching can occur at any time and is not tied to instruction execution, a PREFETCH<em>h</em> instruction is not ordered with respect to the fence instructions (MFENCE, SFENCE, and LFENCE) or locked memory references. A PREFETCH<em>h</em> instruction is also</p>
+<p>unordered with respect to CLFLUSH instructions, other PREFETCH<em>h </em>instructions, or any other general instruction. It is ordered with respect to serializing instructions such as CPUID, WRMSR, OUT, and MOV CR.</p>
+<p>This instruction’s operation is the same in non-64-bit modes and 64-bit mode.</p>
+<h2>Operation</h2>
+<pre>FETCH (m8);</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>void _mm_prefetch(char *p, int i)</p>
+<p>The argument “*p” gives the address of the byte (and corresponding cache line) to be prefetched. The value “i” gives a constant (_MM_HINT_T0, _MM_HINT_T1, _MM_HINT_T2, or _MM_HINT_NTA) that specifies the type of prefetch operation to be performed.</p>
+<h2>Numeric Exceptions</h2>
+<p>None.</p>
+<h2>Exceptions (All Operating Modes)</h2>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table></body></html>

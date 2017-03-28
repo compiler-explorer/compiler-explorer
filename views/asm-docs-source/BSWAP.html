@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>BSWAP—Byte Swap </title></head>
+<body>
+<h1>BSWAP—Byte Swap</h1>
+<table>
+<tr>
+<th>Opcode</th>
+<th>Instruction</th>
+<th>Op/En</th>
+<th>64-bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>0F C8+<em>rd</em></td>
+<td>BSWAP <em>r32</em></td>
+<td>O</td>
+<td>Valid*</td>
+<td>Valid</td>
+<td>Reverses the byte order of a 32-bit register.</td></tr>
+<tr>
+<td>REX.W + 0F C8+<em>rd</em></td>
+<td>BSWAP <em>r64</em></td>
+<td>O</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Reverses the byte order of a 64-bit register.</td></tr></table>
+<p><strong>NOTES:</strong></p>
+<p>*</p>
+<p>See IA-32 Architecture Compatibility section below.</p>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>O</td>
+<td>opcode + rd (r, w)</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Reverses the byte order of a 32-bit or 64-bit (destination) register. This instruction is provided for converting little-endian values to big-endian format and vice versa. To swap bytes in a word value (16-bit register), use the XCHG instruction. When the BSWAP instruction references a 16-bit register, the result is undefined.</p>
+<p>In 64-bit mode, the instruction’s default operation size is 32 bits. Using a REX prefix in the form of REX.R permits access to additional registers (R8-R15). Using a REX prefix in the form of REX.W promotes operation to 64 bits. See the summary chart at the beginning of this section for encoding data and limits.</p>
+<h2>IA-32 Architecture Legacy Compatibility</h2>
+<p>The BSWAP instruction is not supported on IA-32 processors earlier than the Intel486™ processor family. For compatibility with this instruction, software should include functionally equivalent code for execution on Intel processors earlier than the Intel486 processor family.</p>
+<h2>Operation</h2>
+<pre>TEMP ← DEST
+IF 64-bit mode AND OperandSize = 64
+    THEN
+         DEST[7:0] ← TEMP[63:56];
+         DEST[15:8] ← TEMP[55:48];
+         DEST[23:16] ← TEMP[47:40];
+         DEST[31:24] ← TEMP[39:32];
+         DEST[39:32] ← TEMP[31:24];
+         DEST[47:40] ← TEMP[23:16];
+         DEST[55:48] ← TEMP[15:8];
+         DEST[63:56] ← TEMP[7:0];
+    ELSE
+         DEST[7:0] ← TEMP[31:24];
+         DEST[15:8] ← TEMP[23:16];
+         DEST[23:16] ← TEMP[15:8];
+         DEST[31:24] ← TEMP[7:0];
+FI;</pre>
+<h2>Flags Affected</h2>
+<p>None.</p>
+<h2>Exceptions (All Operating Modes)</h2>
+<p>#UD</p>
+<p>If the LOCK prefix is used.</p></body></html>

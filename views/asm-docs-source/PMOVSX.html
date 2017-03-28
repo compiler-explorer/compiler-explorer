@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>PMOVSX — Packed Move with Sign Extend </title></head>
+<body>
+<h1>PMOVSX — Packed Move with Sign Extend</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32 bit Mode Support</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>66 0f 38 20 /r PMOVSXBW <em>xmm1, xmm2/m64</em></td>
+<td>RM</td>
+<td>V/V</td>
+<td>SSE4_1</td>
+<td>Sign extend 8 packed signed 8-bit integers in the low 8 bytes of <em>xmm2/m64</em> to 8 packed signed 16-bit integers in <em>xmm1.</em></td></tr>
+<tr>
+<td>66 0f 38 21 /r PMOVSXBD <em>xmm1, xmm2/m32</em></td>
+<td>RM</td>
+<td>V/V</td>
+<td>SSE4_1</td>
+<td>Sign extend 4 packed signed 8-bit integers in the low 4 bytes of <em>xmm2/m32</em> to 4 packed signed 32-bit integers in <em>xmm1.</em></td></tr>
+<tr>
+<td>
+<p>66 0f 38 22 /r</p>
+<p>PMOVSXBQ <em>xmm1, xmm2/m16</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>SSE4_1</td>
+<td>Sign extend 2 packed signed 8-bit integers in the low 2 bytes of <em>xmm2/m16</em> to 2 packed signed 64-bit integers in <em>xmm1</em>.</td></tr>
+<tr>
+<td>66 0f 38 23 /r PMOVSXWD<em> xmm1, xmm2/m64</em></td>
+<td>RM</td>
+<td>V/V</td>
+<td>SSE4_1</td>
+<td>Sign extend 4 packed signed 16-bit integers in the low 8 bytes of <em>xmm2/m64</em> to 4 packed signed 32-bit integers in <em>xmm1</em>.</td></tr>
+<tr>
+<td>66 0f 38 24 /r PMOVSXWQ <em>xmm1, xmm2/m32</em></td>
+<td>RM</td>
+<td>V/V</td>
+<td>SSE4_1</td>
+<td>Sign extend 2 packed signed 16-bit integers in the low 4 bytes of <em>xmm2/m32</em> to 2 packed signed 64-bit integers in <em>xmm1</em>.</td></tr>
+<tr>
+<td>66 0f 38 25 /r PMOVSXDQ<em> xmm1, xmm2/m64</em></td>
+<td>RM</td>
+<td>V/V</td>
+<td>SSE4_1</td>
+<td>Sign extend 2 packed signed 32-bit integers in the low 8 bytes of <em>xmm2/m64</em> to 2 packed signed 64-bit integers in <em>xmm1</em>.</td></tr>
+<tr>
+<td>VEX.128.66.0F38.WIG 20 /r VPMOVSXBW <em>xmm1, xmm2/m64</em></td>
+<td>RM</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Sign extend 8 packed 8-bit integers in the low 8 bytes of <em>xmm2/m64</em> to 8 packed 16-bit integers in <em>xmm1</em>.</td></tr>
+<tr>
+<td>VEX.128.66.0F38.WIG 21 /r VPMOVSXBD <em>xmm1, xmm2/m32</em></td>
+<td>RM</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Sign extend 4 packed 8-bit integers in the low 4 bytes of <em>xmm2/m32</em> to 4 packed 32-bit integers in <em>xmm1</em>.</td></tr>
+<tr>
+<td>VEX.128.66.0F38.WIG 22 /r VPMOVSXBQ <em>xmm1, xmm2/m16</em></td>
+<td>RM</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Sign extend 2 packed 8-bit integers in the low 2 bytes of <em>xmm2/m16</em> to 2 packed 64-bit integers in <em>xmm1</em>.</td></tr>
+<tr>
+<td>VEX.128.66.0F38.WIG 23 /r VPMOVSXWD <em>xmm1, xmm2/m64</em></td>
+<td>RM</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Sign extend 4 packed 16-bit integers in the low 8 bytes of <em>xmm2/m64</em> to 4 packed 32-bit integers in <em>xmm1</em>.</td></tr>
+<tr>
+<td>VEX.128.66.0F38.WIG 24 /r VPMOVSXWQ <em>xmm1, xmm2/m32</em></td>
+<td>RM</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Sign extend 2 packed 16-bit integers in the low 4 bytes of <em>xmm2/m32</em> to 2 packed 64-bit integers in <em>xmm1</em>.</td></tr>
+<tr>
+<td>VEX.128.66.0F38.WIG 25 /r VPMOVSXDQ <em>xmm1, xmm2/m64</em></td>
+<td>RM</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Sign extend 2 packed 32-bit integers in the low 8 bytes of <em>xmm2/m64 </em>to 2 packed 64-bit integers in <em>xmm1</em>.</td></tr>
+<tr>
+<td>VEX.256.66.0F38.WIG 20 /r VPMOVSXBW <em>ymm1, xmm2/m128</em></td>
+<td>RM</td>
+<td>V/V</td>
+<td>AVX2</td>
+<td>Sign extend 16 packed 8-bit integers in <em>xmm2/m128 </em>to 16 packed 16-bit integers in <em>ymm1</em>.</td></tr>
+<tr>
+<td>VEX.256.66.0F38.WIG 21 /r VPMOVSXBD <em>ymm1, xmm2/m64</em></td>
+<td>RM</td>
+<td>V/V</td>
+<td>AVX2</td>
+<td>Sign extend 8 packed 8-bit integers in the low 8 bytes of <em>xmm2/m64</em> to 8 packed 32-bit integers in <em>ymm1</em>.</td></tr>
+<tr>
+<td>VEX.256.66.0F38.WIG 22 /r VPMOVSXBQ <em>ymm1, xmm2/m32</em></td>
+<td>RM</td>
+<td>V/V</td>
+<td>AVX2</td>
+<td>Sign extend 4 packed 8-bit integers in the low 4 bytes of <em>xmm2/m32</em> to 4 packed 64-bit integers in <em>ymm1</em>.</td></tr>
+<tr>
+<td>VEX.256.66.0F38.WIG 23 /r VPMOVSXWD <em>ymm1, xmm2/m128</em></td>
+<td>RM</td>
+<td>V/V</td>
+<td>AVX2</td>
+<td>Sign extend 8 packed 16-bit integers in the low 16 bytes of <em>xmm2/m128</em> to 8 packed 32-bit integers in<em> ymm1</em>.</td></tr></table>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32 bit Mode Support</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>VEX.256.66.0F38.WIG 24 /r VPMOVSXWQ <em>ymm1, xmm2/m64</em></td>
+<td>RM</td>
+<td>V/V</td>
+<td>AVX2</td>
+<td>Sign extend 4 packed 16-bit integers in the low 8 bytes of <em>xmm2/m64</em> to 4 packed 64-bit integers in <em>ymm1</em>.</td></tr>
+<tr>
+<td>VEX.256.66.0F38.WIG 25 /r VPMOVSXDQ <em>ymm1, xmm2/m128</em></td>
+<td>RM</td>
+<td>V/V</td>
+<td>AVX2</td>
+<td>Sign extend 4 packed 32-bit integers in the low 16 bytes of <em>xmm2/m128 </em>to 4 packed 64-bit integers in <em>ymm1</em>.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RM</td>
+<td>ModRM:reg (w)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Sign-extend the low byte/word/dword values in each word/dword/qword element of the source operand (second operand) to word/dword/qword integers and stored as packed data in the destination operand (first operand).</p>
+<p>128-bit Legacy SSE version: Bits (VLMAX-1:128) of the corresponding YMM destination register remain unchanged.</p>
+<p>VEX.128 encoded version: Bits (VLMAX-1:128) of the destination YMM register are zeroed.</p>
+<p>VEX.256 encoded version: The destination register is YMM Register.</p>
+<p>Note: VEX.vvvv is reserved and must be 1111b, VEX.L must be 0, otherwise the instruction will #UD.</p>
+<h2>Operation</h2>
+<p><strong>PMOVSXBW</strong></p>
+<pre>    DEST[15:0] ← SignExtend(SRC[7:0]);
+    DEST[31:16] ← SignExtend(SRC[15:8]);
+    DEST[47:32] ← SignExtend(SRC[23:16]);
+    DEST[63:48] ← SignExtend(SRC[31:24]);
+    DEST[79:64] ← SignExtend(SRC[39:32]);
+    DEST[95:80] ← SignExtend(SRC[47:40]);
+    DEST[111:96] ← SignExtend(SRC[55:48]);
+    DEST[127:112] ← SignExtend(SRC[63:56]);</pre>
+<p><strong>PMOVSXBD</strong></p>
+<pre>    DEST[31:0] ← SignExtend(SRC[7:0]);
+    DEST[63:32] ← SignExtend(SRC[15:8]);
+    DEST[95:64] ← SignExtend(SRC[23:16]);
+    DEST[127:96] ← SignExtend(SRC[31:24]);</pre>
+<p><strong>PMOVSXBQ</strong></p>
+<pre>    DEST[63:0] ← SignExtend(SRC[7:0]);
+    DEST[127:64] ← SignExtend(SRC[15:8]);</pre>
+<p><strong>PMOVSXWD</strong></p>
+<pre>    DEST[31:0] ← SignExtend(SRC[15:0]);
+    DEST[63:32] ← SignExtend(SRC[31:16]);
+    DEST[95:64] ← SignExtend(SRC[47:32]);
+    DEST[127:96] ← SignExtend(SRC[63:48]);</pre>
+<p><strong>PMOVSXWQ</strong></p>
+<pre>    DEST[63:0] ← SignExtend(SRC[15:0]);
+    DEST[127:64] ← SignExtend(SRC[31:16]);</pre>
+<p><strong>PMOVSXDQ</strong></p>
+<pre>    DEST[63:0] ← SignExtend(SRC[31:0]);
+    DEST[127:64] ← SignExtend(SRC[63:32]);</pre>
+<p><strong>VPMOVSXBW (VEX.128 encoded version)</strong></p>
+<pre>Packed_Sign_Extend_BYTE_to_WORD()
+DEST[VLMAX-1:128] ← 0</pre>
+<p><strong>VPMOVSXBD (VEX.128 encoded version)</strong></p>
+<pre>Packed_Sign_Extend_BYTE_to_DWORD()
+DEST[VLMAX-1:128] ← 0</pre>
+<p><strong>VPMOVSXBQ (VEX.128 encoded version)</strong></p>
+<pre>Packed_Sign_Extend_BYTE_to_QWORD()
+DEST[VLMAX-1:128] ← 0</pre>
+<p><strong>VPMOVSXWD (VEX.128 encoded version)</strong></p>
+<pre>Packed_Sign_Extend_WORD_to_DWORD()
+DEST[VLMAX-1:128] ← 0</pre>
+<p><strong>VPMOVSXWQ (VEX.128 encoded version)</strong></p>
+<pre>Packed_Sign_Extend_WORD_to_QWORD()
+DEST[VLMAX-1:128] ← 0</pre>
+<p><strong>VPMOVSXDQ (VEX.128 encoded version)</strong></p>
+<pre>Packed_Sign_Extend_DWORD_to_QWORD()
+DEST[VLMAX-1:128] ← 0</pre>
+<p><strong>VPMOVSXBW (VEX.256 encoded version)</strong></p>
+<pre>Packed_Sign_Extend_BYTE_to_WORD(DEST[127:0], SRC[63:0])
+Packed_Sign_Extend_BYTE_to_WORD(DEST[255:128], SRC[127:64])</pre>
+<p><strong>VPMOVSXBD (VEX.256 encoded version)</strong></p>
+<pre>Packed_Sign_Extend_BYTE_to_DWORD(DEST[127:0], SRC[31:0])
+Packed_Sign_Extend_BYTE_to_DWORD(DEST[255:128], SRC[63:32])</pre>
+<p><strong>VPMOVSXBQ (VEX.256 encoded version)</strong></p>
+<pre>Packed_Sign_Extend_BYTE_to_QWORD(DEST[127:0], SRC[15:0])
+Packed_Sign_Extend_BYTE_to_QWORD(DEST[255:128], SRC[31:16])</pre>
+<p><strong>VPMOVSXWD (VEX.256 encoded version)</strong></p>
+<pre>Packed_Sign_Extend_WORD_to_DWORD(DEST[127:0], SRC[63:0])
+Packed_Sign_Extend_WORD_to_DWORD(DEST[255:128], SRC[127:64])</pre>
+<p><strong>VPMOVSXWQ (VEX.256 encoded version)</strong></p>
+<pre>Packed_Sign_Extend_WORD_to_QWORD(DEST[127:0], SRC[31:0])
+Packed_Sign_Extend_WORD_to_QWORD(DEST[255:128], SRC[63:32])</pre>
+<p><strong>VPMOVSXDQ (VEX.256 encoded version)</strong></p>
+<pre>Packed_Sign_Extend_DWORD_to_QWORD(DEST[127:0], SRC[63:0])
+Packed_Sign_Extend_DWORD_to_QWORD(DEST[255:128], SRC[127:64])</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>(V)PMOVSXBW:</p>
+<p>__m128i _mm_ cvtepi8_epi16 ( __m128i a);</p>
+<p>VPMOVSXBW:</p>
+<p>__m256i _mm256_cvtepi8_epi16 ( __m128i a);</p>
+<p>(V)PMOVSXBD:</p>
+<p>__m128i _mm_ cvtepi8_epi32 ( __m128i a);</p>
+<p>VPMOVSXBD:</p>
+<p>__m256i _mm256_cvtepi8_epi32 ( __m128i a);</p>
+<p>(V)PMOVSXBQ:</p>
+<p>__m128i _mm_ cvtepi8_epi64 ( __m128i a);</p>
+<p>VPMOVSXBQ:</p>
+<p>__m256i _mm256_cvtepi8_epi64 ( __m128i a);</p>
+<p>(V)PMOVSXWD:</p>
+<p>__m128i _mm_ cvtepi16_epi32 ( __m128i a);</p>
+<p>VPMOVSXWD:</p>
+<p>__m256i _mm256_cvtepi16_epi32 ( __m128i a);</p>
+<p>(V)PMOVSXWQ:</p>
+<p>__m128i _mm_ cvtepi16_epi64 ( __m128i a);</p>
+<p>VPMOVSXWQ:</p>
+<p>__m256i _mm256_cvtepi16_epi64 ( __m128i a);</p>
+<p>(V)PMOVSXDQ:</p>
+<p>__m128i _mm_ cvtepi32_epi64 ( __m128i a);</p>
+<p>VPMOVSXDQ:</p>
+<p>__m256i _mm256_cvtepi32_epi64 ( __m128i a);</p>
+<h2>Flags Affected</h2>
+<p>None.</p>
+<h2>SIMD Floating-Point Exceptions</h2>
+<p>None.</p>
+<h2>Other Exceptions</h2>
+<p>See Exceptions Type 5; additionally</p>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>
+<p>If VEX.L = 1.</p>
+<p>If VEX.vvvv ≠ 1111B.</p></td></tr></table></body></html>

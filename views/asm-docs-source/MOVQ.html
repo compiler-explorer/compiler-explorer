@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>MOVQ—Move Quadword </title></head>
+<body>
+<h1>MOVQ—Move Quadword</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32-bit Mode</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>
+<p>0F 6F /<em>r</em></p>
+<p>MOVQ <em>mm, mm/m64</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>MMX</td>
+<td>Move quadword from <em>mm/m64</em> to <em>mm</em>.</td></tr>
+<tr>
+<td>
+<p>0F 7F /<em>r</em></p>
+<p>MOVQ <em>mm/m64, mm</em></p></td>
+<td>MR</td>
+<td>V/V</td>
+<td>MMX</td>
+<td>Move quadword from <em>mm</em> to <em>mm/m64</em>.</td></tr>
+<tr>
+<td>
+<p>F3 0F 7E /r</p>
+<p>MOVQ <em>xmm1</em>, <em>xmm2/m64</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>SSE2</td>
+<td>Move quadword from <em>xmm2/mem64</em> to <em>xmm1</em>.</td></tr>
+<tr>
+<td>
+<p>VEX.128.F3.0F.WIG 7E /r</p>
+<p>VMOVQ <em>xmm1, xmm2</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Move quadword from <em>xmm2</em> to <em>xmm1</em>.</td></tr>
+<tr>
+<td>
+<p>VEX.128.F3.0F.WIG 7E /r</p>
+<p>VMOVQ <em>xmm1, m64</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Load quadword from <em>m64</em> to <em>xmm1</em>.</td></tr>
+<tr>
+<td>
+<p>66 0F D6 /r</p>
+<p>MOVQ <em>xmm2/m64</em>, <em>xmm1</em></p></td>
+<td>MR</td>
+<td>V/V</td>
+<td>SSE2</td>
+<td>Move quadword from <em>xmm1</em> to <em>xmm2/mem64</em>.</td></tr>
+<tr>
+<td>
+<p>VEX.128.66.0F.WIG D6 /r</p>
+<p>VMOVQ <em>xmm1/m64, xmm2</em></p></td>
+<td>MR</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Move quadword from <em>xmm2</em> register to <em>xmm1/m64</em>.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RM</td>
+<td>ModRM:reg (w)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td></tr>
+<tr>
+<td>MR</td>
+<td>ModRM:r/m (w)</td>
+<td>ModRM:reg (r)</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Copies a quadword from the source operand (second operand) to the destination operand (first operand). The source and destination operands can be MMX technology registers, XMM registers, or 64-bit memory locations. This instruction can be used to move a quadword between two MMX technology registers or between an MMX tech-nology register and a 64-bit memory location, or to move data between two XMM registers or between an XMM register and a 64-bit memory location. The instruction cannot be used to transfer data between memory locations.</p>
+<p>When the source operand is an XMM register, the low quadword is moved; when the destination operand is an XMM register, the quadword is stored to the low quadword of the register, and the high quadword is cleared to all 0s.</p>
+<p>In 64-bit mode, use of the REX prefix in the form of REX.R permits this instruction to access additional registers (XMM8-XMM15).</p>
+<p>Note: In VEX.128.66.0F D6 instruction version, VEX.vvvv and VEX.L=1 are reserved and the former must be 1111b otherwise instructions will #UD.</p>
+<p>Note: In VEX.128.F3.0F 7E version, VEX.vvvv and VEX.L=1 are reserved and the former must be 1111b, otherwise instructions will #UD.</p>
+<h2>Operation</h2>
+<pre>MOVQ instruction when operating on MMX technology registers and memory locations:
+    DEST ← SRC;
+MOVQ instruction when source and destination operands are XMM registers:
+    DEST[63:0] ← SRC[63:0];
+    DEST[127:64] ← 0000000000000000H;
+MOVQ instruction when source operand is XMM register and destination
+operand is memory location:
+    DEST ← SRC[63:0];
+MOVQ instruction when source operand is memory location and destination
+operand is XMM register:
+    DEST[63:0] ← SRC;
+    DEST[127:64] ← 0000000000000000H;
+VMOVQ (VEX.NDS.128.F3.0F 7E) with XMM register source and destination:
+DEST[63:0] ← SRC[63:0]
+DEST[VLMAX-1:64] ← 0
+VMOVQ (VEX.128.66.0F D6) with XMM register source and destination:
+DEST[63:0] ← SRC[63:0]
+DEST[VLMAX-1:64] ← 0
+VMOVQ (7E) with memory source:
+DEST[63:0] ← SRC[63:0]
+DEST[VLMAX-1:64] ← 0
+VMOVQ (D6) with memory dest:
+DEST[63:0] ← SRC2[63:0]</pre>
+<h2>Flags Affected</h2>
+<p>None.</p>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>MOVQ:</p>
+<p>m128i _mm_mov_epi64(__m128i a)</p>
+<h2>SIMD Floating-Point Exceptions</h2>
+<p>None.</p>
+<h2>Other Exceptions</h2>
+<p>See Table 22-8, “Exception Conditions for Legacy SIMD/MMX Instructions without FP Exception,” in the <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 3B</em>.</p></body></html>

@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>PABSB/PABSW/PABSD — Packed Absolute Value </title></head>
+<body>
+<h1>PABSB/PABSW/PABSD — Packed Absolute Value</h1>
+<table>
+<tr>
+<th>Description</th>
+<th>CPUID Feature Flag</th>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32 bit Mode Support</th></tr>
+<tr>
+<td>Compute the absolute value of bytes in <em>mm2/m64</em> and store UNSIGNED result in <em>mm1</em>.</td>
+<td>SSSE3</td>
+<td>
+<p>0F 38 1C /r<sup>1</sup></p>
+<p>PABSB <em>mm1, mm2/m64</em></p></td>
+<td>RM</td>
+<td>V/V</td></tr>
+<tr>
+<td>Compute the absolute value of bytes in <em>xmm2/m128</em> and store UNSIGNED result in <em>xmm1</em>.</td>
+<td>SSSE3</td>
+<td>
+<p>66 0F 38 1C /r</p>
+<p>PABSB <em>xmm1, xmm2/m128</em></p></td>
+<td>RM</td>
+<td>V/V</td></tr>
+<tr>
+<td>Compute the absolute value of 16-bit integers in <em>mm2/m64</em> and store UNSIGNED result in <em>mm1</em>.</td>
+<td>SSSE3</td>
+<td>
+<p>0F 38 1D /r<sup>1</sup></p>
+<p>PABSW <em>mm1, mm2/m64</em></p></td>
+<td>RM</td>
+<td>V/V</td></tr>
+<tr>
+<td>Compute the absolute value of 16-bit integers in <em>xmm2/m128</em> and store UNSIGNED result in <em>xmm1</em>.</td>
+<td>SSSE3</td>
+<td>
+<p>66 0F 38 1D /r</p>
+<p>PABSW <em>xmm1, xmm2/m128</em></p></td>
+<td>RM</td>
+<td>V/V</td></tr>
+<tr>
+<td>Compute the absolute value of 32-bit integers in <em>mm2/m64</em> and store UNSIGNED result in <em>mm1</em>.</td>
+<td>SSSE3</td>
+<td>
+<p>0F 38 1E /r<sup>1</sup></p>
+<p>PABSD <em>mm1, mm2/m64</em></p></td>
+<td>RM</td>
+<td>V/V</td></tr>
+<tr>
+<td>Compute the absolute value of 32-bit integers in <em>xmm2/m128</em> and store UNSIGNED result in <em>xmm1.</em></td>
+<td>SSSE3</td>
+<td>
+<p>66 0F 38 1E /r</p>
+<p>PABSD <em>xmm1, xmm2/m128</em></p></td>
+<td>RM</td>
+<td>V/V</td></tr>
+<tr>
+<td>Compute the absolute value of bytes in <em>xmm2/m128 </em>and store UNSIGNED result in <em>xmm1</em>.</td>
+<td>AVX</td>
+<td>
+<p>VEX.128.66.0F38.WIG 1C /r</p>
+<p>VPABSB <em>xmm1, xmm2/m128</em></p></td>
+<td>RM</td>
+<td>V/V</td></tr>
+<tr>
+<td>Compute the absolute value of 16- bit integers in <em>xmm2/m128</em> and store UNSIGNED result in <em>xmm1</em>.</td>
+<td>AVX</td>
+<td>
+<p>VEX.128.66.0F38.WIG 1D /r</p>
+<p>VPABSW <em>xmm1, xmm2/m128</em></p></td>
+<td>RM</td>
+<td>V/V</td></tr>
+<tr>
+<td>Compute the absolute value of 32- bit integers in <em>xmm2/m128</em> and store UNSIGNED result in<em> xmm1</em>.</td>
+<td>AVX</td>
+<td>
+<p>VEX.128.66.0F38.WIG 1E /r</p>
+<p>VPABSD <em>xmm1, xmm2/m128</em></p></td>
+<td>RM</td>
+<td>V/V</td></tr>
+<tr>
+<td>Compute the absolute value of bytes in <em>ymm2/m256</em> and store UNSIGNED result in <em>ymm1</em>.</td>
+<td>AVX2</td>
+<td>VEX.256.66.0F38.WIG 1C /r VPABSB <em>ymm1, ymm2/m256</em></td>
+<td>RM</td>
+<td>V/V</td></tr>
+<tr>
+<td>Compute the absolute value of 16-bit integers in <em>ymm2/m256</em> and store UNSIGNED result in <em>ymm1</em>.</td>
+<td>AVX2</td>
+<td>
+<p>VEX.256.66.0F38.WIG 1D /r</p>
+<p>VPABSW <em>ymm1, ymm2/m256</em></p></td>
+<td>RM</td>
+<td>V/V</td></tr>
+<tr>
+<td>Compute the absolute value of 32-bit integers in <em>ymm2/m256</em> and store UNSIGNED result in <em>ymm1</em>.</td>
+<td>AVX2</td>
+<td>
+<p>VEX.256.66.0F38.WIG 1E /r</p>
+<p>VPABSD <em>ymm1, ymm2/m256</em></p></td>
+<td>RM</td>
+<td>V/V</td></tr></table>
+<p>NOTES:</p>
+<p>1. See note in Section 2.4, “Instruction Exception Specification” in the <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 2A</em> and Section 22.25.3, “Exception Conditions of Legacy SIMD Instructions Operating on MMX Registers” in the <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 3A</em>.</p>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RM</td>
+<td>ModRM:reg (w)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>(V)PABSB/W/D computes the absolute value of each data element of the source operand (the second operand) and stores the UNSIGNED results in the destination operand (the first operand). (V)PABSB operates on signed bytes, (V)PABSW operates on 16-bit words, and (V)PABSD operates on signed 32-bit integers. The source operand can be an MMX register or a 64-bit memory location, or it can be an XMM register, a YMM register, a 128-bit memory loca-tion, or a 256-bit memory location. The destination operand can be an MMX, an XMM or a YMM register. Both oper-ands can be MMX registers or XMM registers. When the source operand is a 128-bit memory operand, the operand must be aligned on a 16byte boundary or a general-protection exception (#GP) will be generated.</p>
+<p>In 64-bit mode, use the REX prefix to access additional registers.</p>
+<p>128-bit Legacy SSE version: The source operand can be an XMM register or a 128-bit memory location. The desti-nation is not distinct from the first source XMM register and the upper bits (VLMAX-1:128) of the corresponding YMM register destination are unmodified.</p>
+<p>VEX.128 encoded version: The source operand is an XMM register or 128-bit memory location. The destination operand is an XMM register. The upper bits (VLMAX-1:128) of the corresponding YMM register destination are zeroed.</p>
+<p>VEX.256 encoded version: The first source operand is a YMM register or a 256-bit memory location. The destination operand is a YMM register.</p>
+<p>Note: VEX.vvvv is reserved and must be 1111b, VEX.L must be 0; otherwise instructions will #UD.</p>
+<h2>Operation</h2>
+<p><strong>PABSB (with 64 bit operands)</strong></p>
+<pre>    Unsigned DEST[7:0] ← ABS(SRC[7:0])
+    Repeat operation for 2nd through 7th bytes
+    Unsigned DEST[63:56] ← ABS(SRC[63:56])</pre>
+<p><strong>PABSB (with 128 bit operands)</strong></p>
+<pre>    Unsigned DEST[7:0] ← ABS(SRC[7:.0])
+    Repeat operation for 2nd through 15th bytes
+    Unsigned DEST[127:120] ← ABS(SRC[127:120])</pre>
+<p><strong>PABSW (with 64 bit operands)</strong></p>
+<pre>    Unsigned DEST[15:0] ← ABS(SRC[15:0])
+    Repeat operation for 2nd through 3rd 16-bit words
+    Unsigned DEST[63:48] ← ABS(SRC[63:48])</pre>
+<p><strong>PABSW (with 128 bit operands)</strong></p>
+<pre>    Unsigned DEST[15:0] ← ABS(SRC[15:0])
+    Repeat operation for 2nd through 7th 16-bit words
+    Unsigned DEST[127:112] ← ABS(SRC[127:112])</pre>
+<p><strong>PABSD (with 64 bit operands)</strong></p>
+<pre>    Unsigned DEST[31:0] ← ABS(SRC[31:0])
+    Unsigned DEST[63:32] ← ABS(SRC[63:32])</pre>
+<p><strong>PABSD (with 128 bit operands)</strong></p>
+<pre>    Unsigned DEST[31:0] ← ABS(SRC[31:0])
+    Repeat operation for 2nd through 3rd 32-bit double words
+    Unsigned DEST[127:96] ← ABS(SRC[127:96])</pre>
+<p><strong>PABSB (128-bit Legacy SSE version)</strong></p>
+<pre>    DEST[127:0] ← BYTE_ABS(SRC)
+    DEST[VLMAX-1:128] (Unmodified)</pre>
+<p><strong>VPABSB (VEX.128 encoded version)</strong></p>
+<pre>    DEST[127:0] ← BYTE_ABS(SRC)
+    DEST[VLMAX-1:128] ← 0</pre>
+<p><strong>VPABSB (VEX.256 encoded version)</strong></p>
+<pre>    Unsigned DEST[7:0]← ABS(SRC[7:.0])
+    Repeat operation for 2nd through 31st bytes
+    Unsigned DEST[255:248] ← ABS(SRC[255:248])</pre>
+<p><strong>PABSW (128-bit Legacy SSE version)</strong></p>
+<pre>    DEST[127:0] ← WORD_ABS(SRC)
+    DEST[VLMAX-1:128] (Unmodified)</pre>
+<p><strong>VPABSW (VEX.128 encoded version)</strong></p>
+<pre>    DEST[127:0] ← WORD_ABS(SRC)
+    DEST[VLMAX-1:128] ← 0</pre>
+<p><strong>VPABSW (VEX.256 encoded version)</strong></p>
+<pre>    Unsigned DEST[15:0]← ABS(SRC[15:0])
+    Repeat operation for 2nd through 15th 16-bit words
+    Unsigned DEST[255:240] ← ABS(SRC[255:240])</pre>
+<p><strong>PABSD (128-bit Legacy SSE version)</strong></p>
+<pre>    DEST[127:0] ← DWORD_ABS(SRC)
+    DEST[VLMAX-1:128] (Unmodified)</pre>
+<p><strong>VPABSD (VEX.128 encoded version)</strong></p>
+<pre>    DEST[127:0] ← DWORD_ABS(SRC)
+    DEST[VLMAX-1:128] ← 0</pre>
+<p><strong>VPABSD (VEX.256 encoded version)</strong></p>
+<pre>    Unsigned DEST[31:0] ← ABS(SRC[31:0])
+    Repeat operation for 2nd through 7th 32-bit double words
+    Unsigned DEST[255:224] ← ABS(SRC[255:224])</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalents</h2>
+<p>PABSB:</p>
+<p> __m64 _mm_abs_pi8 (__m64 a)</p>
+<p>(V)PABSB:</p>
+<p> __m128i _mm_abs_epi8 (__m128i a)</p>
+<p>VPABSB:</p>
+<p>__m256i _mm256_abs_epi8 (__m256i a)</p>
+<p>PABSW:</p>
+<p> __m64 _mm_abs_pi16 (__m64 a)</p>
+<p>(V)PABSW:</p>
+<p> __m128i _mm_abs_epi16 (__m128i a)</p>
+<p>VPABSW:</p>
+<p>__m256i _mm256_abs_epi16 (__m256i a)</p>
+<p>PABSD:</p>
+<p> __m64 _mm_abs_pi32 (__m64 a)</p>
+<p>(V)PABSD:</p>
+<p> __m128i _mm_abs_epi32 (__m128i a)</p>
+<p>VPABSD:</p>
+<p>__m256i _mm256_abs_epi32 (__m256i a)</p>
+<h2>SIMD Floating-Point Exceptions</h2>
+<p>None.</p>
+<h2>Other Exceptions</h2>
+<p>See Exceptions Type 4; additionally</p>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>
+<p>If VEX.L = 1.</p>
+<p>If VEX.vvvv ≠ 1111B.</p></td></tr></table></body></html>

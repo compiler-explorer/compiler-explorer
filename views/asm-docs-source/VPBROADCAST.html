@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>VPBROADCAST—Broadcast Integer Data </title></head>
+<body>
+<h1>VPBROADCAST—Broadcast Integer Data</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32 -bit Mode</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>
+<p>VEX.128.66.0F38.W0 78 /r</p>
+<p>VPBROADCASTB <em>xmm1, xmm2/m8</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>AVX2</td>
+<td>Broadcast a byte integer in the source operand to six-teen locations in <em>xmm1</em>.</td></tr>
+<tr>
+<td>
+<p>VEX.256.66.0F38.W0 78 /r</p>
+<p>VPBROADCASTB <em>ymm1, xmm2/m8</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>AVX2</td>
+<td>Broadcast a byte integer in the source operand to thirty-two locations in <em>ymm1</em>.</td></tr>
+<tr>
+<td>
+<p>VEX.128.66.0F38.W0 79 /r</p>
+<p>VPBROADCASTW <em>xmm1, xmm2/m16</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>AVX2</td>
+<td>Broadcast a word integer in the source operand to eight locations in <em>xmm1</em>.</td></tr>
+<tr>
+<td>
+<p>VEX.256.66.0F38.W0 79 /r</p>
+<p>VPBROADCASTW <em>ymm1, xmm2/m16</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>AVX2</td>
+<td>Broadcast a word integer in the source operand to six-teen locations in <em>ymm1</em>.</td></tr>
+<tr>
+<td>
+<p>VEX.128.66.0F38.W0 58 /r</p>
+<p>VPBROADCASTD <em>xmm1, xmm2/m32</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>AVX2</td>
+<td>Broadcast a dword integer in the source operand to four locations in <em>xmm1</em>.</td></tr>
+<tr>
+<td>
+<p>VEX.256.66.0F38.W0 58 /r</p>
+<p>VPBROADCASTD <em>ymm1, xmm2/m32</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>AVX2</td>
+<td>Broadcast a dword integer in the source operand to eight locations in <em>ymm1</em>.</td></tr>
+<tr>
+<td>
+<p>VEX.128.66.0F38.W0 59 /r</p>
+<p>VPBROADCASTQ <em>xmm1, xmm2/m64</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>AVX2</td>
+<td>Broadcast a qword element in mem to two locations in <em>xmm1</em>.</td></tr>
+<tr>
+<td>
+<p>VEX.256.66.0F38.W0 59 /r</p>
+<p>VPBROADCASTQ <em>ymm1, xmm2/m64</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>AVX2</td>
+<td>Broadcast a qword element in mem to four locations in <em>ymm1</em>.</td></tr>
+<tr>
+<td>
+<p>VEX.256.66.0F38.W0 5A /r</p>
+<p>VBROADCASTI128 <em>ymm1, m128</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>AVX2</td>
+<td>Broadcast 128 bits of integer data in mem to low and high 128-bits in <em>ymm1</em>.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RM</td>
+<td>ModRM:reg (w)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Load integer data from the source operand (second operand) and broadcast to all elements of the destination operand (first operand).</p>
+<p>The destination operand is a YMM register. The source operand is 8-bit, 16-bit 32-bit, 64-bit memory location or the low 8-bit, 16-bit 32-bit, 64-bit data in an XMM register. VPBROADCASTB/D/W/Q also support XMM register as the source operand.</p>
+<p>VBROADCASTI128: The destination operand is a YMM register. The source operand is 128-bit memory location. Register source encodings for VBROADCASTI128 are reserved and will #UD.</p>
+<p>VPBROADCASTB/W/D/Q is supported in both 128-bit and 256-bit wide versions.</p>
+<p>VBROADCASTI128 is only supported as a 256-bit wide version.</p>
+<p>Note: In VEX-encoded versions, VEX.vvvv is reserved and must be 1111b otherwise instructions will #UD. Attempts to execute any VPBROADCAST* instruction with VEX.W = 1 will cause #UD. If VBROADCASTI128 is encoded with VEX.L= 0, an attempt to execute the instruction encoded with VEX.L= 0 will cause an #UD exception.</p>
+<p>X0</p>
+<p>m32</p>
+<p>DEST</p>
+<p>X0</p>
+<p>X0</p>
+<p>X0</p>
+<p>X0</p>
+<p>X0</p>
+<p>X0</p>
+<p>X0</p>
+<p>X0</p>
+<h3>Figure 4-33.  VPBROADCASTD Operation (VEX.256 encoded version)</h3>
+<p>X0</p>
+<p>m32</p>
+<p>DEST</p>
+<p>0</p>
+<p>0</p>
+<p>0</p>
+<p>0</p>
+<p>X0</p>
+<p>X0</p>
+<p>X0</p>
+<p>X0</p>
+<h3>Figure 4-34.  VPBROADCASTD Operation (128-bit version)</h3>
+<p>m64</p>
+<p>X0</p>
+<p>DEST</p>
+<p>X0</p>
+<p>X0</p>
+<p>X0</p>
+<p>X0</p>
+<h3>Figure 4-35.  VPBROADCASTQ Operation</h3>
+<p>m128i</p>
+<p>X0</p>
+<svg width="445.499985" viewBox="145.860000 876124.379980 296.999990 13.500030" height="20.250045">
+<rect y="876124.38" x="145.86" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="13.5" width="148.5"></rect>
+<text y="876134.1135" x="206.64" style="font-size:7.500000pt" lengthAdjust="spacingAndGlyphs" textLength="9.15">X0</text></svg>
+<p>DEST</p>
+<p>X0</p>
+<h3>Figure 4-36.  VBROADCASTI128 Operation</h3>
+<h2>Operation</h2>
+<p><strong>VPBROADCASTB (VEX.128 encoded version)</strong></p>
+<pre>temp ← SRC[7:0]
+FOR j ← 0 TO 15
+DEST[7+j*8: j*8] ← temp
+ENDFOR
+DEST[VLMAX-1:128] ← 0</pre>
+<p><strong>VPBROADCASTB (VEX.256 encoded version)</strong></p>
+<pre>temp ← SRC[7:0]
+FOR j ← 0 TO 31
+DEST[7+j*8: j*8] ← temp
+ENDFOR</pre>
+<p><strong>VPBROADCASTW (VEX.128 encoded version)</strong></p>
+<pre>temp ← SRC[15:0]
+FOR j ← 0 TO 7
+DEST[15+j*16: j*16] ← temp
+ENDFOR
+DEST[VLMAX-1:128] ← 0</pre>
+<p><strong>VPBROADCASTW (VEX.256 encoded version)</strong></p>
+<pre>temp ← SRC[15:0]
+FOR j ← 0 TO 15
+DEST[15+j*16: j*16] ← temp
+ENDFOR</pre>
+<p><strong>VPBROADCASTD (128 bit version)</strong></p>
+<pre>temp ← SRC[31:0]
+FOR j ← 0 TO 3
+DEST[31+j*32: j*32] ← temp
+ENDFOR
+DEST[VLMAX-1:128] ← 0</pre>
+<p><strong>VPBROADCASTD (VEX.256 encoded version)</strong></p>
+<pre>temp ← SRC[31:0]
+FOR j ← 0 TO 7
+DEST[31+j*32: j*32] ← temp
+ENDFOR</pre>
+<p><strong>VPBROADCASTQ (VEX.128 encoded version)</strong></p>
+<pre>temp ← SRC[63:0]
+DEST[63:0] ← temp
+DEST[127:64] ← temp
+DEST[VLMAX-1:128] ← 0</pre>
+<p><strong>VPBROADCASTQ (VEX.256 encoded version)</strong></p>
+<pre>temp ← SRC[63:0]
+DEST[63:0] ← temp
+DEST[127:64] ← temp
+DEST[191:128] ← temp
+DEST[255:192] ← temp</pre>
+<p><strong>VBROADCASTI128</strong></p>
+<pre>temp ← SRC[127:0]
+DEST[127:0] ← temp
+DEST[VLMAX-1:128] ← temp</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>VPBROADCASTB:</p>
+<p>__m256i _mm256_broadcastb_epi8(__m128i );</p>
+<p>VPBROADCASTW:</p>
+<p>__m256i _mm256_broadcastw_epi16(__m128i );</p>
+<p>VPBROADCASTD:</p>
+<p>__m256i _mm256_broadcastd_epi32(__m128i );</p>
+<p>VPBROADCASTQ:</p>
+<p>__m256i _mm256_broadcastq_epi64(__m128i );</p>
+<p>VPBROADCASTB:</p>
+<p>__m128i _mm_broadcastb_epi8(__m128i );</p>
+<p>VPBROADCASTW:</p>
+<p>__m128i _mm_broadcastw_epi16(__m128i );</p>
+<p>VPBROADCASTD:</p>
+<p>__m128i _mm_broadcastd_epi32(__m128i );</p>
+<p>VPBROADCASTQ:</p>
+<p>__m128i _mm_broadcastq_epi64(__m128i );</p>
+<p>VBROADCASTI128:</p>
+<p> __m256i _mm256_broadcastsi128_si256(__m128i );</p>
+<h2>SIMD Floating-Point Exceptions</h2>
+<p>None</p>
+<h2>Other Exceptions</h2>
+<p>See Exceptions Type 6; additionally</p>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>
+<p>If VEX.W = 1,</p>
+<p>If VEX.L = 0 for VBROADCASTI128.</p></td></tr></table></body></html>

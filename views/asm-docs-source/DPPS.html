@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>DPPS — Dot Product of Packed Single Precision Floating-Point Values </title></head>
+<body>
+<h1>DPPS — Dot Product of Packed Single Precision Floating-Point Values</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32-bit Mode</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>
+<p>66 0F 3A 40 /r ib</p>
+<p>DPPS<em> xmm1, xmm2/m128, imm8</em></p></td>
+<td>RMI</td>
+<td>V/V</td>
+<td>SSE4_1</td>
+<td>Selectively multiply packed SP floating-point values from <em>xmm1</em> with packed SP floating-point values from <em>xmm2</em>, add and selectively store the packed SP floating-point values or zero values to <em>xmm1</em>.</td></tr>
+<tr>
+<td>
+<p>VEX.NDS.128.66.0F3A.WIG 40 /r ib</p>
+<p>VDPPS xmm1,xmm2, xmm3/m128, imm8</p></td>
+<td>RVMI</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Multiply packed SP floating point values from xmm1 with packed SP floating point values from xmm2/mem selectively add and store to xmm1.</td></tr>
+<tr>
+<td>
+<p>VEX.NDS.256.66.0F3A.WIG 40 /r ib</p>
+<p>VDPPS ymm1, ymm2, ymm3/m256, imm8</p></td>
+<td>RVMI</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Multiply packed single-precision floating-point values from ymm2 with packed SP floating point values from ymm3/mem, selectively add pairs of elements and store to ymm1.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RMI</td>
+<td>ModRM:reg (r, w)</td>
+<td>ModRM:r/m (r)</td>
+<td>imm8</td>
+<td>NA</td></tr>
+<tr>
+<td>RVMI</td>
+<td>ModRM:reg (w)</td>
+<td>VEX.vvvv (r)</td>
+<td>ModRM:r/m (r)</td>
+<td>imm8</td></tr></table>
+<h2>Description</h2>
+<p>Conditionally multiplies the packed single precision floating-point values in the destination operand (first operand) with the packed single-precision floats in the source (second operand) depending on a mask extracted from the high 4 bits of the immediate byte (third operand). If a condition mask bit in Imm8[7:4] is zero, the corresponding multiplication is replaced by a value of 0.0 in the manner described by Section 12.8.4 of <em>Intel® 64 and IA-32 Archi-tectures Software Developer’s Manual, Volume 1</em>.</p>
+<p>The four resulting single-precision values are summed into an intermediate result. The intermediate result is condi-tionally broadcasted to the destination using a broadcast mask specified by bits [3:0] of the immediate byte.</p>
+<p>If a broadcast mask bit is "1", the intermediate result is copied to the corresponding dword element in the destina-tion operand. If a broadcast mask bit is zero, the corresponding element in the destination is set to zero.</p>
+<p>DPPS follows the NaN forwarding rules stated in the Software Developer’s Manual, vol. 1, table 4.7. These rules do not cover horizontal prioritization of NaNs. Horizontal propagation of NaNs to the destination and the positioning of those NaNs in the destination is implementation dependent. NaNs on the input sources or computationally gener-ated NaNs will have at least one NaN propagated to the destination.</p>
+<p>128-bit Legacy SSE version: The second source can be an XMM register or an 128-bit memory location. The desti-nation is not distinct from the first source XMM register and the upper bits (VLMAX-1:128) of the corresponding YMM register destination are unmodified.</p>
+<p>VEX.128 encoded version: the first source operand is an XMM register or 128-bit memory location. The destination operand is an XMM register. The upper bits (VLMAX-1:128) of the corresponding YMM register destination are zeroed.</p>
+<p>VEX.256 encoded version: The first source operand is a YMM register. The second source operand can be a YMM register or a 256-bit memory location. The destination operand is a YMM register.</p>
+<h2>Operation</h2>
+<p><strong>DP_primitive (SRC1, SRC2)</strong></p>
+<pre>IF (imm8[4] = 1)
+    THEN Temp1[31:0] ← DEST[31:0] * SRC[31:0]; // update SIMD exception flags
+    ELSE Temp1[31:0] ← +0.0; FI;
+IF (imm8[5] = 1)
+    THEN Temp1[63:32] ← DEST[63:32] * SRC[63:32]; // update SIMD exception flags
+    ELSE Temp1[63:32] ← +0.0; FI;
+IF (imm8[6] = 1)
+    THEN Temp1[95:64] ← DEST[95:64] * SRC[95:64]; // update SIMD exception flags
+    ELSE Temp1[95:64] ← +0.0; FI;
+IF (imm8[7] = 1)
+    THEN Temp1[127:96] ← DEST[127:96] * SRC[127:96]; // update SIMD exception flags
+    ELSE Temp1[127:96] ← +0.0; FI;
+Temp2[31:0] ← Temp1[31:0] + Temp1[63:32]; // update SIMD exception flags
+/* if unmasked exception reported, execute exception handler*/
+Temp3[31:0] ← Temp1[95:64] + Temp1[127:96]; // update SIMD exception flags
+/* if unmasked exception reported, execute exception handler*/
+Temp4[31:0] ← Temp2[31:0] + Temp3[31:0]; // update SIMD exception flags
+/* if unmasked exception reported, execute exception handler*/
+IF (imm8[0] = 1)
+    THEN DEST[31:0] ← Temp4[31:0];
+    ELSE DEST[31:0] ← +0.0; FI;
+IF (imm8[1] = 1)
+    THEN DEST[63:32] ← Temp4[31:0];
+    ELSE DEST[63:32] ← +0.0; FI;
+IF (imm8[2] = 1)
+    THEN DEST[95:64] ← Temp4[31:0];
+    ELSE DEST[95:64] ← +0.0; FI;
+IF (imm8[3] = 1)
+    THEN DEST[127:96] ← Temp4[31:0];
+    ELSE DEST[127:96] ← +0.0; FI;</pre>
+<p><strong>DPPS (128-bit Legacy SSE version)</strong></p>
+<pre>DEST[127:0]←DP_Primitive(SRC1[127:0], SRC2[127:0]);
+DEST[VLMAX-1:128] (Unmodified)</pre>
+<p><strong>VDPPS (VEX.128 encoded version)</strong></p>
+<pre>DEST[127:0]←DP_Primitive(SRC1[127:0], SRC2[127:0]);
+DEST[VLMAX-1:128] ← 0</pre>
+<p><strong>VDPPS (VEX.256 encoded version)</strong></p>
+<pre>DEST[127:0]←DP_Primitive(SRC1[127:0], SRC2[127:0]);
+DEST[255:128]←DP_Primitive(SRC1[255:128], SRC2[255:128]);</pre>
+<h2>Flags Affected</h2>
+<p>None</p>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>(V)DPPS:</p>
+<p>__m128 _mm_dp_ps ( __m128 a, __m128 b, const int mask);</p>
+<p>VDPPS:</p>
+<p>__m256 _mm256_dp_ps ( __m256 a, __m256 b, const int mask);</p>
+<h2>SIMD Floating-Point Exceptions</h2>
+<p>Overflow, Underflow, Invalid, Precision, Denormal</p>
+<p>Exceptions are determined separately for each add and multiply operation, in the order of their execution. Unmasked exceptions will leave the destination operands unchanged.</p>
+<h2>Other Exceptions</h2>
+<p>See Exceptions Type 2.</p></body></html>

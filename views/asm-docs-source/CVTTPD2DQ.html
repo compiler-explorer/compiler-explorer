@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>CVTTPD2DQ—Convert with Truncation Packed Double-Precision FP Values to Packed Dword Integers </title></head>
+<body>
+<h1>CVTTPD2DQ—Convert with Truncation Packed Double-Precision FP Values to Packed Dword Integers</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32-bit Mode</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>
+<p>66 0F E6 /r</p>
+<p>CVTTPD2DQ <em>xmm1</em>, <em>xmm2/m128</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>SSE2</td>
+<td>Convert two packed double-precision floating-point values from<em> xmm2/m128</em> to two packed signed doubleword integers in <em>xmm1</em> using truncation.</td></tr>
+<tr>
+<td>
+<p>VEX.128.66.0F.WIG E6 /r</p>
+<p>VCVTTPD2DQ xmm1, xmm2/m128</p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Convert two packed double-precision floating-point values in xmm2/mem to two signed doubleword integers in xmm1 using truncation.</td></tr>
+<tr>
+<td>
+<p>VEX.256.66.0F.WIG E6 /r</p>
+<p>VCVTTPD2DQ xmm1, ymm2/m256</p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Convert four packed double-precision floating-point values in ymm2/mem to four signed doubleword integers in xmm1 using truncation.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RM</td>
+<td>ModRM:reg (w)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Converts two or four packed double-precision floating-point values in the source operand (second operand) to two or four packed signed doubleword integers in the destination operand (first operand).</p>
+<p>When a conversion is inexact, a truncated (round toward zero) value is returned.If a converted result is larger than the maximum signed doubleword integer, the floating-point invalid exception is raised, and if this exception is masked, the indefinite integer value (80000000H) is returned.</p>
+<p>In 64-bit mode, use of the REX.R prefix permits this instruction to access additional registers (XMM8-XMM15).</p>
+<p>128-bit Legacy SSE version: The source operand is an XMM register or 128- bit memory location. The destination operation is an XMM register. The upper bits (VLMAX-1:128) of the corresponding YMM register destination are unmodified.</p>
+<p>VEX.128 encoded version: The source operand is an XMM register or 128- bit memory location. The destination operation is a YMM register. The upper bits (VLMAX-1:128) of the corresponding YMM register destination are zeroed.</p>
+<p>VEX.256 encoded version: The source operand is a YMM register or 256- bit memory location. The destination operation is an XMM register. The upper bits (255:128) of the corresponding YMM register destination are zeroed.</p>
+<p>Note: In VEX-encoded versions, VEX.vvvv is reserved and must be 1111b, otherwise instructions will #UD.</p>
+<svg width="445.4999775" viewBox="133.320005 163270.439980 296.999985 13.500030" height="20.250045">
+<rect y="163270.44" x="207.6" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="13.5" width="74.22"></rect>
+<rect y="163270.44" x="281.82" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="13.5" width="74.28"></rect>
+<text y="163278.5535" x="241.32" style="font-size:7.500000pt" lengthAdjust="spacingAndGlyphs" textLength="9.15">X2</text>
+<text y="163278.5535" x="315.66" style="font-size:8.291500pt" lengthAdjust="spacingAndGlyphs" textLength="10.12972555">X1</text></svg>
+<p>SRC</p>
+<p>X3</p>
+<p>X0</p>
+<p>DEST</p>
+<p>0</p>
+<p>X3</p>
+<p>X2</p>
+<p>X1</p>
+<p>X0</p>
+<h3>Figure 3-14.  VCVTTPD2DQ (VEX.256 encoded version)</h3>
+<h2>Operation</h2>
+<p><strong>CVTTPD2DQ (128-bit Legacy SSE version)</strong></p>
+<pre>DEST[31:0] ← Convert_Double_Precision_Floating_Point_To_Integer_Truncate(SRC[63:0])
+DEST[63:32] ← Convert_Double_Precision_Floating_Point_To_Integer_Truncate(SRC[127:64])
+DEST[127:64] ← 0
+DEST[VLMAX-1:128] (unmodified)</pre>
+<p><strong>VCVTTPD2DQ (VEX.128 encoded version)</strong></p>
+<pre>DEST[31:0] ← Convert_Double_Precision_Floating_Point_To_Integer_Truncate(SRC[63:0])
+DEST[63:32] ← Convert_Double_Precision_Floating_Point_To_Integer_Truncate(SRC[127:64])
+DEST[VLMAX-1:64] ← 0</pre>
+<p><strong>VCVTTPD2DQ (VEX.256 encoded version)</strong></p>
+<pre>DEST[31:0] ← Convert_Double_Precision_Floating_Point_To_Integer_Truncate(SRC[63:0])
+DEST[63:32] ← Convert_Double_Precision_Floating_Point_To_Integer_Truncate(SRC[127:64])
+DEST[95:64] ← Convert_Double_Precision_Floating_Point_To_Integer_Truncate(SRC[191:128])
+DEST[127:96] ← Convert_Double_Precision_Floating_Point_To_Integer_Truncate(SRC[255:192)
+DEST[255:128]← 0</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>CVTTPD2DQ:</p>
+<p> __m128i _mm_cvttpd_epi32(__m128d a)</p>
+<p>VCVTTPD2DQ:</p>
+<p>__m128i _mm256_cvttpd_epi32 (__m256d src)</p>
+<h2>SIMD Floating-Point Exceptions</h2>
+<p>Invalid, Precision.</p>
+<h2>Other Exceptions</h2>
+<p>See Exceptions Type 2; additionally</p>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>If VEX.vvvv ≠ 1111B.</td></tr></table></body></html>

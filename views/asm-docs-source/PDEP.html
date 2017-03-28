@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>PDEP — Parallel Bits Deposit </title></head>
+<body>
+<h1>PDEP — Parallel Bits Deposit</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32 -bit Mode</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>
+<p>VEX.NDS.LZ.F2.0F38.W0 F5 /r</p>
+<p>PDEP <em>r32a, r32b, r/m32</em></p></td>
+<td>RVM</td>
+<td>V/V</td>
+<td>BMI2</td>
+<td>Parallel deposit of bits from <em>r32b</em> using mask in <em>r/m32</em>, result is writ-ten to <em>r32a</em>.</td></tr>
+<tr>
+<td>
+<p>VEX.NDS.LZ.F2.0F38.W1 F5 /r</p>
+<p>PDEP <em>r64a, r64b, r/m64</em></p></td>
+<td>RVM</td>
+<td>V/N.E.</td>
+<td>BMI2</td>
+<td>Parallel deposit of bits from <em>r64b</em> using mask in <em>r/m64</em>, result is writ-ten to <em>r64a.</em></td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RVM</td>
+<td>ModRM:reg (w)</td>
+<td>VEX.vvvv (r)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>PDEP uses a mask in the second source operand (the third operand) to transfer/scatter contiguous low order bits in the first source operand (the second operand) into the destination (the first operand). PDEP takes the low bits from the first source operand and deposit them in the destination operand at the corresponding bit locations that are set in the second source operand (mask). All other bits (bits not set in mask) in destination are set to zero.</p>
+<p>SRC1</p>
+<p>S<sub>31 </sub>S<sub>30 </sub>S<sub>29 </sub>S<sub>28 </sub>S<sub>27</sub></p>
+<p>S<sub>7</sub></p>
+<p>S<sub>6</sub></p>
+<p>S<sub>5</sub></p>
+<p>S<sub>4</sub></p>
+<p>S<sub>3</sub></p>
+<p>S<sub>2</sub></p>
+<p>S<sub>1</sub></p>
+<p>S<sub>0</sub></p>
+<p>SRC2</p>
+<p>0</p>
+<p>0</p>
+<p>0</p>
+<p>1</p>
+<p>0</p>
+<p>1</p>
+<p>0</p>
+<p>1</p>
+<p>0</p>
+<p>0</p>
+<p>1</p>
+<p>0</p>
+<p>0</p>
+<p>(mask)</p>
+<p>DEST</p>
+<p>0</p>
+<p>0</p>
+<p>0</p>
+<p>0</p>
+<p>0</p>
+<p>0</p>
+<p>0</p>
+<p>0</p>
+<p>0</p>
+<p>S<sub>1</sub></p>
+<p>S<sub>0</sub></p>
+<p>S<sub>3</sub></p>
+<p>S<sub>2</sub></p>
+<p>bit 0</p>
+<p>bit 31</p>
+<h3>Figure 4-4.  PDEP Example</h3>
+<p>This instruction is not supported in real mode and virtual-8086 mode. The operand size is always 32 bits if not in 64-bit mode. In 64-bit mode operand size 64 requires VEX.W1. VEX.W1 is ignored in non-64-bit modes. An attempt to execute this instruction with VEX.L not equal to 0 will cause #UD.</p>
+<h2>Operation</h2>
+<pre>TEMP ← SRC1;
+MASK ← SRC2;
+DEST ← 0 ;
+m← 0, k← 0;
+DO WHILE m&lt; OperandSize
+         IF MASK[ m] = 1 THEN
+              DEST[ m] ← TEMP[ k];
+              k ← k+ 1;
+         FI
+         m ← m+ 1;
+OD</pre>
+<h2>Flags Affected</h2>
+<p>None.</p>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>PDEP:</p>
+<p>unsigned __int32 _pdep_u32(unsigned __int32 src, unsigned __int32 mask);</p>
+<p>PDEP:</p>
+<p>unsigned __int64 _pdep_u64(unsigned __int64 src, unsigned __int32 mask);</p>
+<h2>SIMD Floating-Point Exceptions</h2>
+<p>None</p>
+<h2>Other Exceptions</h2>
+<p>See Section 2.5.1, “Exception Conditions for VEX-Encoded GPR Instructions”, Table 2-29; additionally</p>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>If VEX.W = 1.</td></tr></table></body></html>

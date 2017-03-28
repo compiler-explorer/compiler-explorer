@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>MASKMOVDQU—Store Selected Bytes of Double Quadword </title></head>
+<body>
+<h1>MASKMOVDQU—Store Selected Bytes of Double Quadword</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32-bit Mode</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>
+<p>66 0F F7 /<em>r</em></p>
+<p>MASKMOVDQU <em>xmm1</em>, <em>xmm2</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>SSE2</td>
+<td>Selectively write bytes from <em>xmm1</em> to memory location using the byte mask in <em>xmm2</em>. The default memory location is specified by DS:DI/EDI/RDI.</td></tr>
+<tr>
+<td>
+<p>VEX.128.66.0F.WIG F7 /r</p>
+<p>VMASKMOVDQU <em>xmm1, xmm2</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Selectively write bytes from <em>xmm1</em> to memory location using the byte mask in <em>xmm2</em>. The default memory location is specified by DS:DI/EDI/RDI.</td></tr></table>
+<h3>Instruction Operand Encoding<sup>1</sup></h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RM</td>
+<td>ModRM:reg (r)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Stores selected bytes from the source operand (first operand) into an 128-bit memory location. The mask operand (second operand) selects which bytes from the source operand are written to memory. The source and mask oper-ands are XMM registers. The memory location specified by the effective address in the DI/EDI/RDI register (the default segment register is DS, but this may be overridden with a segment-override prefix). The memory location does not need to be aligned on a natural boundary. (The size of the store address depends on the address-size attribute.)</p>
+<p>The most significant bit in each byte of the mask operand determines whether the corresponding byte in the source operand is written to the corresponding byte location in memory: 0 indicates no write and 1 indicates write.</p>
+<p>The MASKMOVDQU instruction generates a non-temporal hint to the processor to minimize cache pollution. The non-temporal hint is implemented by using a write combining (WC) memory type protocol (see “Caching of Temporal vs. Non-Temporal Data” in Chapter 10, of the <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 1</em>). Because the WC protocol uses a weakly-ordered memory consistency model, a fencing opera-tion implemented with the SFENCE or MFENCE instruction should be used in conjunction with MASKMOVDQU instructions if multiple processors might use different memory types to read/write the destination memory loca-tions.</p>
+<p>Behavior with a mask of all 0s is as follows:</p>
+<p>The MASKMOVDQU instruction can be used to improve performance of algorithms that need to merge data on a byte-by-byte basis. MASKMOVDQU should not cause a read for ownership; doing so generates unnecessary band-width since data is to be written directly using the byte-mask without allocating old data prior to the store.</p>
+<p>In 64-bit mode, use of the REX.R prefix permits this instruction to access additional registers (XMM8-XMM15).</p>
+<p>Note: In VEX-encoded versions, VEX.vvvv is reserved and must be 1111b otherwise instructions will #UD.</p>
+<p>If VMASKMOVDQU is encoded with VEX.L= 1, an attempt to execute the instruction encoded with VEX.L= 1 will cause an #UD exception.</p>
+<p>1.ModRM.MOD = 011B required</p>
+<h2>Operation</h2>
+<pre>IF (MASK[7] = 1)
+    THEN DEST[DI/EDI] ← SRC[7:0] ELSE (* Memory location unchanged *); FI;
+IF (MASK[15] = 1)
+    THEN DEST[DI/EDI +1] ← SRC[15:8] ELSE (* Memory location unchanged *); FI;
+    (* Repeat operation for 3rd through 14th bytes in source operand *)
+IF (MASK[127] = 1)
+    THEN DEST[DI/EDI +15] ← SRC[127:120] ELSE (* Memory location unchanged *); FI;</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>void _mm_maskmoveu_si128(__m128i d, __m128i n, char * p)</p>
+<h2>Other Exceptions</h2>
+<p>See Exceptions Type 4; additionally</p>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>
+<p>If VEX.L= 1</p>
+<p>If VEX.vvvv ≠ 1111B.</p></td></tr></table></body></html>

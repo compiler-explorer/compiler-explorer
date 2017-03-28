@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>BLSI — Extract Lowest Set Isolated Bit </title></head>
+<body>
+<h1>BLSI — Extract Lowest Set Isolated Bit</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32 -bit Mode</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>
+<p>VEX.NDD.LZ.0F38.W0 F3 /3</p>
+<p>BLSI r32, r/m32</p></td>
+<td>VM</td>
+<td>V/V</td>
+<td>BMI1</td>
+<td>Extract lowest set bit from r/m32 and set that bit in r32.</td></tr>
+<tr>
+<td>
+<p>VEX.NDD.LZ.0F38.W1 F3 /3</p>
+<p>BLSI r64, r/m64</p></td>
+<td>VM</td>
+<td>V/N.E.</td>
+<td>BMI1</td>
+<td>Extract lowest set bit from r/m64, and set that bit in r64.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>VM</td>
+<td>VEX.vvvv (w)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Extracts the lowest set bit from the source operand and set the corresponding bit in the destination register. All other bits in the destination operand are zeroed. If no bits are set in the source operand, BLSI sets all the bits in the destination to 0 and sets ZF and CF.</p>
+<p>This instruction is not supported in real mode and virtual-8086 mode. The operand size is always 32 bits if not in 64-bit mode. In 64-bit mode operand size 64 requires VEX.W1. VEX.W1 is ignored in non-64-bit modes. An attempt to execute this instruction with VEX.L not equal to 0 will cause #UD.</p>
+<h2>Operation</h2>
+<pre>temp ← (-SRC) bitwiseAND (SRC);
+SF ← temp[OperandSize -1];
+ZF ← (temp = 0);
+IF SRC = 0
+    CF ← 0;
+ELSE
+    CF ← 1;
+FI
+DEST ← temp;</pre>
+<h2>Flags Affected</h2>
+<p>ZF and SF are updated based on the result. CF is set if the source is not zero. OF flags are cleared. AF and PF flags are undefined.</p>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>BLSI:</p>
+<p>unsigned __int32 _blsi_u32(unsigned __int32 src);</p>
+<p>BLSI:</p>
+<p>unsigned __int64 _blsi_u64(unsigned __int64 src);</p>
+<h2>SIMD Floating-Point Exceptions</h2>
+<p>None</p>
+<h2>Other Exceptions</h2>
+<p>See Section 2.5.1, “Exception Conditions for VEX-Encoded GPR Instructions”, Table 2-29; additionally</p>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>If VEX.W = 1.</td></tr></table></body></html>

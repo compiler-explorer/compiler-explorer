@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>BLSR — Reset Lowest Set Bit </title></head>
+<body>
+<h1>BLSR — Reset Lowest Set Bit</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32 -bit Mode</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>
+<p>VEX.NDD.LZ.0F38.W0 F3 /1</p>
+<p>BLSR r32, r/m32</p></td>
+<td>VM</td>
+<td>V/V</td>
+<td>BMI1</td>
+<td>Reset lowest set bit of r/m32, keep all other bits of r/m32 and write result to r32.</td></tr>
+<tr>
+<td>
+<p>VEX.NDD.LZ.0F38.W1 F3 /1</p>
+<p>BLSR r64, r/m64</p></td>
+<td>VM</td>
+<td>V/N.E.</td>
+<td>BMI1</td>
+<td>Reset lowest set bit of r/m64, keep all other bits of r/m64 and write result to r64.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>VM</td>
+<td>VEX.vvvv (w)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Copies all bits from the source operand to the destination operand and resets (=0) the bit position in the destina-tion operand that corresponds to the lowest set bit of the source operand. If the source operand is zero BLSR sets CF.</p>
+<p>This instruction is not supported in real mode and virtual-8086 mode. The operand size is always 32 bits if not in 64-bit mode. In 64-bit mode operand size 64 requires VEX.W1. VEX.W1 is ignored in non-64-bit modes. An attempt to execute this instruction with VEX.L not equal to 0 will cause #UD.</p>
+<h2>Operation</h2>
+<pre>temp ← (SRC-1) bitwiseAND ( SRC );
+SF ← temp[OperandSize -1];
+ZF ← (temp = 0);
+IF SRC = 0
+    CF ← 1;
+ELSE
+    CF ← 0;
+FI
+DEST ← temp;</pre>
+<h2>Flags Affected</h2>
+<p>ZF and SF flags are updated based on the result. CF is set if the source is zero. OF flag is cleared. AF and PF flags are undefined.</p>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>BLSR:</p>
+<p>unsigned __int32 _blsr_u32(unsigned __int32 src);</p>
+<p>BLSR:</p>
+<p>unsigned __int64 _blsr_u64(unsigned __int64 src);</p>
+<h2>SIMD Floating-Point Exceptions</h2>
+<p>None</p>
+<h2>Other Exceptions</h2>
+<p>See Section 2.5.1, “Exception Conditions for VEX-Encoded GPR Instructions”, Table 2-29; additionally</p>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>If VEX.W = 1.</td></tr></table></body></html>

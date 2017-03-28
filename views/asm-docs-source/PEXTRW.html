@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>PEXTRW—Extract Word </title></head>
+<body>
+<h1>PEXTRW—Extract Word</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32 bit Mode Support</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>
+<p>0F C5 /<em>r</em> ib<sup>1</sup></p>
+<p>PEXTRW <em>reg</em>, <em>mm</em>, <em>imm8</em></p></td>
+<td>RMI</td>
+<td>V/V</td>
+<td>SSE</td>
+<td>Extract the word specified by <em>imm8</em> from <em>mm </em>and move it to <em>reg</em>, bits 15-0. The upper bits of r32 or r64 is zeroed.</td></tr>
+<tr>
+<td>
+<p>66 0F C5 /<em>r</em> ib</p>
+<p>PEXTRW <em>reg</em>, <em>xmm</em>, <em>imm8</em></p></td>
+<td>RMI</td>
+<td>V/V</td>
+<td>SSE2</td>
+<td>Extract the word specified by <em>imm8</em> from <em>xmm </em>and move it to <em>reg</em>, bits 15-0. The upper bits of r32 or r64 is zeroed.</td></tr>
+<tr>
+<td>66 0F 3A 15 /r ib PEXTRW <em>reg/m16, xmm, imm8</em></td>
+<td>MRI</td>
+<td>V/V</td>
+<td>SSE4_1</td>
+<td>Extract the word specified by <em>imm8</em> from <em>xmm </em>and copy it to lowest 16 bits of <em>reg or m16</em>. Zero-extend the result in the destination, r32 or r64.</td></tr>
+<tr>
+<td>VEX.128.66.0F.W0 C5 /r ib VPEXTRW <em>reg, xmm1, imm8</em></td>
+<td>RMI</td>
+<td>V<sup>2</sup>/V</td>
+<td>AVX</td>
+<td>Extract the word specified by <em>imm8</em> from <em>xmm1</em> and move it to reg, bits 15:0. Zero-extend the result. The upper bits of r64/r32 is filled with zeros.</td></tr>
+<tr>
+<td>VEX.128.66.0F3A.W0 15 /r ib VPEXTRW <em>reg/m16, xmm2, imm8</em></td>
+<td>MRI</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Extract a word integer value from<em> xmm2</em> at the source word offset specified by <em>imm8</em> into <em>reg </em>or <em>m16</em>. The upper bits of r64/r32 is filled with zeros.</td></tr></table>
+<p>NOTES:</p>
+<p>1. See note in Section 2.4, “Instruction Exception Specification” in the <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 2A</em> and Section 22.25.3, “Exception Conditions of Legacy SIMD Instructions Operating on MMX Registers” in the <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 3A</em>.</p>
+<p>2. In 64-bit mode, VEX.W1 is ignored for VPEXTRW (similar to legacy REX.W=1 prefix in PEXTRW).</p>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RMI</td>
+<td>ModRM:reg (w)</td>
+<td>ModRM:r/m (r)</td>
+<td>imm8</td>
+<td>NA</td></tr>
+<tr>
+<td>MRI</td>
+<td>ModRM:r/m (w)</td>
+<td>ModRM:reg (r)</td>
+<td>imm8</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Copies the word in the source operand (second operand) specified by the count operand (third operand) to the destination operand (first operand). The source operand can be an MMX technology register or an XMM register. The destination operand can be the low word of a general-purpose register or a 16-bit memory address. The count operand is an 8-bit immediate. When specifying a word location in an MMX technology register, the 2 least-signifi-cant bits of the count operand specify the location; for an XMM register, the 3 least-significant bits specify the loca-tion. The content of the destination register above bit 16 is cleared (set to all 0s).</p>
+<p>In 64-bit mode, using a REX prefix in the form of REX.R permits this instruction to access additional registers (XMM8-XMM15, R8-15). If the destination operand is a general-purpose register, the default operand size is 64-bits in 64-bit mode.</p>
+<p>Note: In VEX.128 encoded versions, VEX.vvvv is reserved and must be 1111b, VEX.L must be 0, otherwise the instruction will #UD. If the destination operand is a register, the default operand size in 64-bit mode for VPEXTRW is 64 bits, the bits above the least significant byte/word/dword data are filled with zeros.</p>
+<h2>Operation</h2>
+<pre>IF (DEST = Mem16)
+THEN
+    SEL ← COUNT[2:0];
+    TEMP ← (Src &gt;&gt; SEL*16) AND FFFFH;
+    Mem16 ← TEMP[15:0];
+ELSE IF (64-Bit Mode and destination is a general-purpose register)
+    THEN
+         FOR (PEXTRW instruction with 64-bit source operand)
+            {
+              SEL ← COUNT[1:0];
+              TEMP ← (SRC &gt;&gt; (SEL ∗ 16)) AND FFFFH;
+              r64[15:0] ← TEMP[15:0];
+              r64[63:16] ← ZERO_FILL; };
+         FOR (PEXTRW instruction with 128-bit source operand)
+            {
+              SEL ← COUNT[2:0];
+              TEMP ← (SRC &gt;&gt; (SEL ∗ 16)) AND FFFFH;
+              r64[15:0] ← TEMP[15:0];
+              r64[63:16] ← ZERO_FILL; }
+    ELSE
+         FOR (PEXTRW instruction with 64-bit source operand)
+           {
+              SEL ← COUNT[1:0];
+              TEMP ← (SRC &gt;&gt; (SEL ∗ 16)) AND FFFFH;
+              r32[15:0] ← TEMP[15:0];
+              r32[31:16] ← ZERO_FILL; };
+         FOR (PEXTRW instruction with 128-bit source operand)
+           {
+              SEL ← COUNT[2:0];
+              TEMP ← (SRC &gt;&gt; (SEL ∗ 16)) AND FFFFH;
+              r32[15:0] ← TEMP[15:0];
+              r32[31:16] ← ZERO_FILL; };
+    FI;
+FI;</pre>
+<p><strong>(V)PEXTRW ( dest=m16)</strong></p>
+<pre>SRC_Offset ← Imm8[2:0]
+Mem16 ← (Src &gt;&gt; Src_Offset*16)</pre>
+<p><strong>(V)PEXTRW ( dest=reg)</strong></p>
+<pre>IF (64-Bit Mode )
+THEN
+    SRC_Offset ← Imm8[2:0]
+    DEST[15:0] ← ((Src &gt;&gt; Src_Offset*16) AND 0FFFFh)
+    DEST[63:16] ←(cid:3)ZERO_FILL;
+ELSE
+    SRC_Offset ← Imm8[2:0]
+    DEST[15:0] ← ((Src &gt;&gt; Src_Offset*16) AND 0FFFFh)
+    DEST[31:16] ←(cid:3)ZERO_FILL;
+FI</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>PEXTRW:</p>
+<p>int _mm_extract_pi16 (__m64 a, int n)</p>
+<p>PEXTRW:</p>
+<p>int _mm_extract_epi16 ( __m128i a, int imm)</p>
+<h2>Flags Affected</h2>
+<p>None.</p>
+<h2>Numeric Exceptions</h2>
+<p>None.</p>
+<h2>Other Exceptions</h2>
+<p>See Exceptions Type 5; additionally</p>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>
+<p>If VEX.L = 1.</p>
+<p>If VEX.vvvv ≠ 1111B.</p></td></tr></table></body></html>

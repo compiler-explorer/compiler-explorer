@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>CBW/CWDE/CDQE—Convert Byte to Word/Convert Word to Doubleword/Convert Doubleword to Quadword </title></head>
+<body>
+<h1>CBW/CWDE/CDQE—Convert Byte to Word/Convert Word to Doubleword/Convert Doubleword to Quadword</h1>
+<table>
+<tr>
+<th>Opcode</th>
+<th>Instruction</th>
+<th>Op/En</th>
+<th>64-bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>98</td>
+<td>CBW</td>
+<td>NP</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>AX ← sign-extend of AL.</td></tr>
+<tr>
+<td>98</td>
+<td>CWDE</td>
+<td>NP</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>EAX ← sign-extend of AX.</td></tr>
+<tr>
+<td>REX.W + 98</td>
+<td>CDQE</td>
+<td>NP</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>RAX ← sign-extend of EAX.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>NP</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Double the size of the source operand by means of sign extension. The CBW (convert byte to word) instruction copies the sign (bit 7) in the source operand into every bit in the AH register. The CWDE (convert word to double-word) instruction copies the sign (bit 15) of the word in the AX register into the high 16 bits of the EAX register.</p>
+<p>CBW and CWDE reference the same opcode. The CBW instruction is intended for use when the operand-size attri-bute is 16; CWDE is intended for use when the operand-size attribute is 32. Some assemblers may force the operand size. Others may treat these two mnemonics as synonyms (CBW/CWDE) and use the setting of the operand-size attribute to determine the size of values to be converted.</p>
+<p>In 64-bit mode, the default operation size is the size of the destination register. Use of the REX.W prefix promotes this instruction (CDQE when promoted) to operate on 64-bit operands. In which case, CDQE copies the sign (bit 31) of the doubleword in the EAX register into the high 32 bits of RAX.</p>
+<h2>Operation</h2>
+<pre>IF OperandSize = 16 (* Instruction = CBW *)
+    THEN
+         AX ← SignExtend(AL);
+    ELSE IF (OperandSize = 32, Instruction = CWDE)
+         EAX ← SignExtend(AX); FI;
+    ELSE (* 64-Bit Mode, OperandSize = 64, Instruction = CDQE*)
+         RAX ← SignExtend(EAX);
+FI;</pre>
+<h2>Flags Affected</h2>
+<p>None.</p>
+<h2>Exceptions (All Operating Modes)</h2>
+<p>#UD</p>
+<p>If the LOCK prefix is used.</p></body></html>

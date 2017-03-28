@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>LFENCE—Load Fence </title></head>
+<body>
+<h1>LFENCE—Load Fence</h1>
+<table>
+<tr>
+<th>Opcode</th>
+<th>Instruction</th>
+<th>Op/En</th>
+<th>64-Bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>0F AE E8</td>
+<td>LFENCE</td>
+<td>NP</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Serializes load operations.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>NP</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Performs a serializing operation on all load-from-memory instructions that were issued prior the LFENCE instruc-tion. Specifically, LFENCE does not execute until all prior instructions have completed locally, and no later instruc-tion begins execution until LFENCE completes. In particular, an instruction that loads from memory and that precedes an LFENCE receives data from memory prior to completion of the LFENCE. (An LFENCE that follows an instruction that stores to memory might complete <strong>before</strong> the data being stored have become globally visible.) Instructions following an LFENCE may be fetched from memory before the LFENCE, but they will not execute until the LFENCE completes.</p>
+<p>Weakly ordered memory types can be used to achieve higher processor performance through such techniques as out-of-order issue and speculative reads. The degree to which a consumer of data recognizes or knows that the data is weakly ordered varies among applications and may be unknown to the producer of this data. The LFENCE instruction provides a performance-efficient way of ensuring load ordering between routines that produce weakly-ordered results and routines that consume that data.</p>
+<p>Processors are free to fetch and cache data speculatively from regions of system memory that use the WB, WC, and WT memory types. This speculative fetching can occur at any time and is not tied to instruction execution. Thus, it is not ordered with respect to executions of the LFENCE instruction; data can be brought into the caches specula-tively just before, during, or after the execution of an LFENCE instruction.</p>
+<p>This instruction’s operation is the same in non-64-bit modes and 64-bit mode.</p>
+<p>Specification of the instruction's opcode above indicates a ModR/M byte of E8. For this instruction, the processor ignores the r/m field of the ModR/M byte. Thus, LFENCE is encoded by any opcode of the form 0F AE Ex, where x is in the range 8-F.</p>
+<h2>Operation</h2>
+<pre>Wait_On_Following_Instructions_Until(preceding_instructions_complete);</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>void _mm_lfence(void)</p>
+<h2>Exceptions (All Modes of Operation)</h2>
+<p>#UD</p>
+<p>If CPUID.01H:EDX.SSE2[bit 26] = 0.</p>
+<p>If the LOCK prefix is used.</p></body></html>

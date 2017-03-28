@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>PUNPCKLBW/PUNPCKLWD/PUNPCKLDQ/PUNPCKLQDQ—Unpack Low Data </title></head>
+<body>
+<h1>PUNPCKLBW/PUNPCKLWD/PUNPCKLDQ/PUNPCKLQDQ—Unpack Low Data</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32 bit Mode Support</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>
+<p>0F 60 /<em>r</em><sup>1</sup></p>
+<p>PUNPCKLBW <em>mm, mm/m32</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>MMX</td>
+<td>Interleave low-order bytes from <em>mm</em> and <em>mm/m32</em> into <em>mm</em>.</td></tr>
+<tr>
+<td>
+<p>66 0F 60 /<em>r</em></p>
+<p>PUNPCKLBW <em>xmm1</em>,<em> xmm2/m128</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>SSE2</td>
+<td>Interleave low-order bytes from <em>xmm1</em> and <em>xmm2/m128</em> into <em>xmm1</em>.</td></tr>
+<tr>
+<td>
+<p>0F 61 /<em>r</em><sup>1</sup></p>
+<p>PUNPCKLWD <em>mm, mm/m32</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>MMX</td>
+<td>Interleave low-order words from <em>mm</em> and <em>mm/m32</em> into <em>mm</em>.</td></tr>
+<tr>
+<td>
+<p>66 0F 61 /<em>r</em></p>
+<p>PUNPCKLWD <em>xmm1</em>,<em> xmm2/m128</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>SSE2</td>
+<td>Interleave low-order words from <em>xmm1</em> and <em>xmm2/m128</em> into <em>xmm1</em>.</td></tr>
+<tr>
+<td>
+<p>0F 62 /<em>r</em><sup>1</sup></p>
+<p>PUNPCKLDQ <em>mm, mm/m32</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>MMX</td>
+<td>Interleave low-order doublewords from <em>mm </em>and <em>mm/m32</em> into <em>mm</em>.</td></tr>
+<tr>
+<td>
+<p>66 0F 62 /<em>r</em></p>
+<p>PUNPCKLDQ <em>xmm1</em>,<em> xmm2/m128</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>SSE2</td>
+<td>Interleave low-order doublewords from <em>xmm1 </em>and<em> xmm2/m128</em> into xmm1.</td></tr>
+<tr>
+<td>
+<p>66 0F 6C /<em>r</em></p>
+<p>PUNPCKLQDQ <em>xmm1</em>,<em> xmm2/m128</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>SSE2</td>
+<td>Interleave low-order quadword from <em>xmm1 </em>and <em>xmm2/m128</em> into <em>xmm1</em> register.</td></tr>
+<tr>
+<td>
+<p>VEX.NDS.128.66.0F.WIG 60/r</p>
+<p>VPUNPCKLBW <em>xmm1,xmm2, xmm3/m128</em></p></td>
+<td>RVM</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Interleave low-order bytes from <em>xmm2</em> and <em>xmm3/m128</em> into <em>xmm1</em>.</td></tr>
+<tr>
+<td>
+<p>VEX.NDS.128.66.0F.WIG 61/r</p>
+<p>VPUNPCKLWD <em>xmm1,xmm2, xmm3/m128</em></p></td>
+<td>RVM</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Interleave low-order words from <em>xmm2</em> and <em>xmm3/m128 </em>into<em> xmm1</em>.</td></tr>
+<tr>
+<td>
+<p>VEX.NDS.128.66.0F.WIG 62/r</p>
+<p>VPUNPCKLDQ <em>xmm1, xmm2, xmm3/m128</em></p></td>
+<td>RVM</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Interleave low-order doublewords from <em>xmm2 </em>and <em>xmm3/m128</em> into <em>xmm1</em>.</td></tr>
+<tr>
+<td>
+<p>VEX.NDS.128.66.0F.WIG 6C/r</p>
+<p>VPUNPCKLQDQ <em>xmm1, xmm2, xmm3/m128</em></p></td>
+<td>RVM</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Interleave low-order quadword from <em>xmm2 </em>and <em>xmm3/m128</em> into <em>xmm1</em> register.</td></tr>
+<tr>
+<td>
+<p>VEX.NDS.256.66.0F.WIG 60 /r</p>
+<p>VPUNPCKLBW <em>ymm1, ymm2, ymm3/m256</em></p></td>
+<td>RVM</td>
+<td>V/V</td>
+<td>AVX2</td>
+<td>Interleave low-order bytes from <em>ymm2</em> and <em>ymm3/m256</em> into <em>ymm1</em> register.</td></tr>
+<tr>
+<td>
+<p>VEX.NDS.256.66.0F.WIG 61 /r</p>
+<p>VPUNPCKLWD <em>ymm1, ymm2, ymm3/m256</em></p></td>
+<td>RVM</td>
+<td>V/V</td>
+<td>AVX2</td>
+<td>Interleave low-order words from <em>ymm2</em> and <em>ymm3/m256</em> into <em>ymm1</em> register.</td></tr>
+<tr>
+<td>
+<p>VEX.NDS.256.66.0F.WIG 62 /r</p>
+<p>VPUNPCKLDQ<em> ymm1, ymm2, ymm3/m256</em></p></td>
+<td>RVM</td>
+<td>V/V</td>
+<td>AVX2</td>
+<td>Interleave low-order doublewords from <em>ymm2 </em>and <em>ymm3/m256</em> into <em>ymm1</em> register.</td></tr>
+<tr>
+<td>
+<p>VEX.NDS.256.66.0F.WIG 6C /r</p>
+<p>VPUNPCKLQDQ <em>ymm1, ymm2, ymm3/m256</em></p></td>
+<td>RVM</td>
+<td>V/V</td>
+<td>AVX2</td>
+<td>Interleave low-order quadword from <em>ymm2 </em>and <em>ymm3/m256</em> into <em>ymm1</em> register.</td></tr></table>
+<p>NOTES:</p>
+<p>1. See note in Section 2.4, “Instruction Exception Specification” in the <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 2A</em> and Section 22.25.3, “Exception Conditions of Legacy SIMD Instructions Operating on MMX Registers” in the <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 3A</em>.</p>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RM</td>
+<td>ModRM:reg (r, w)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td></tr>
+<tr>
+<td>RVM</td>
+<td>ModRM:reg (w)</td>
+<td>VEX.vvvv (r)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Unpacks and interleaves the low-order data elements (bytes, words, doublewords, and quadwords) of the destina-tion operand (first operand) and source operand (second operand) into the destination operand. (Figure 4-18 shows the unpack operation for bytes in 64-bit operands.). The high-order data elements are ignored.</p>
+<svg width="568.799985" viewBox="112.380000 672538.020010 379.199990 99.360000" height="149.04">
+<text y="672560.507684" x="128.5213" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="16.920792">SRC</text>
+<text y="672560.867584" x="456.3613" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="21.320964">DEST</text>
+<text y="672623.387684" x="255.3012" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="21.320964">DEST</text>
+<rect y="672612.3" x="278.88" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="144.0"></rect>
+<rect y="672549.6" x="310.08" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="144.0"></rect>
+<rect y="672549.66" x="147.84" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="144.0"></rect>
+<path style="stroke:black" d="M263.880000,672567.600000 L263.700000,672567.540000 L263.520000,672567.960000 L263.700000,672568.020000 "></path>
+<path style="stroke:black" d="M263.880000,672567.600000 L263.700000,672568.020000 L352.140000,672609.240000 L352.320000,672608.820000 "></path>
+<path style="stroke:black" d="M426.840000,672568.080000 L427.020000,672567.960000 L426.720000,672567.600000 L426.540000,672567.720000 "></path>
+<path style="stroke:black" d="M445.020000,672568.080000 L445.140000,672567.900000 L444.780000,672567.600000 L444.660000,672567.780000 "></path>
+<path style="stroke:black" d="M281.580000,672567.720000 L281.400000,672567.660000 L281.220000,672568.080000 L281.400000,672568.140000 "></path>
+<path style="stroke:black" d="M281.580000,672567.720000 L281.400000,672568.140000 L388.860000,672609.720000 L389.040000,672609.300000 "></path>
+<path style="stroke:black" d="M426.840000,672568.080000 L426.540000,672567.720000 L383.460000,672606.900000 L383.760000,672607.260000 "></path>
+<path style="stroke:black" d="M445.020000,672568.080000 L444.660000,672567.780000 L417.060000,672605.880000 L417.420000,672606.180000 "></path>
+<path style="stroke:black" d="M246.780000,672568.140000 L246.600000,672568.020000 L246.360000,672568.440000 L246.540000,672568.560000 "></path>
+<path style="stroke:black" d="M229.680000,672568.260000 L229.500000,672568.140000 L229.200000,672568.500000 L229.380000,672568.620000 "></path>
+<path style="stroke:black" d="M246.780000,672568.140000 L246.540000,672568.560000 L316.500000,672609.180000 L316.740000,672608.760000 "></path>
+<path style="stroke:black" d="M389.280000,672568.680000 L389.460000,672568.560000 L389.220000,672568.140000 L389.040000,672568.260000 "></path>
+<path style="stroke:black" d="M408.000000,672568.680000 L408.180000,672568.560000 L407.940000,672568.140000 L407.760000,672568.260000 "></path>
+<path style="stroke:black" d="M229.680000,672568.260000 L229.380000,672568.620000 L281.100000,672607.800000 L281.400000,672607.440000 "></path>
+<path style="stroke:black" d="M389.280000,672568.680000 L389.040000,672568.260000 L312.240000,672608.520000 L312.480000,672608.940000 "></path>
+<path style="stroke:black" d="M408.000000,672568.680000 L407.760000,672568.260000 L347.760000,672607.860000 L348.000000,672608.280000 "></path>
+<path style="stroke:black" d="M416.760000,672606.420000 L418.320000,672606.840000 L419.340000,672607.080000 L418.500000,672607.740000 L414.060000,672611.220000 L412.680000,672612.300000 L413.280000,672610.680000 L415.200000,672605.400000 L415.560000,672604.380000 L416.100000,672605.220000 L416.160000,672605.700000 L414.240000,672610.980000 L413.280000,672610.680000 L413.460000,672610.440000 L417.900000,672606.960000 L418.500000,672607.740000 L418.080000,672607.800000 L416.520000,672607.380000 "></path>
+<path style="stroke:black" d="M383.040000,672607.320000 L385.440000,672608.520000 L384.420000,672609.000000 L379.440000,672611.520000 L377.940000,672612.240000 L378.780000,672610.800000 L381.720000,672606.000000 L382.320000,672605.100000 L382.680000,672606.060000 L382.620000,672606.540000 L379.680000,672611.340000 L378.780000,672610.800000 L379.020000,672610.620000 L384.000000,672608.100000 L384.420000,672609.000000 L384.000000,672609.000000 L382.560000,672608.280000 "></path>
+<path style="stroke:black" d="M416.100000,672605.220000 L417.060000,672606.600000 L416.520000,672607.380000 L416.340000,672607.320000 L416.220000,672607.200000 L415.260000,672605.820000 "></path>
+<path style="stroke:black" d="M281.580000,672608.100000 L282.060000,672606.540000 L282.360000,672605.520000 L282.960000,672606.360000 L286.320000,672610.860000 L287.400000,672612.300000 L285.780000,672611.640000 L280.560000,672609.600000 L279.540000,672609.240000 L280.380000,672608.700000 L280.860000,672608.640000 L286.080000,672610.680000 L285.780000,672611.640000 L285.540000,672611.460000 L282.180000,672606.960000 L282.960000,672606.360000 L283.020000,672606.780000 L282.540000,672608.340000 "></path>
+<path style="stroke:black" d="M416.640000,672606.900000 L418.200000,672607.320000 L413.760000,672610.800000 L415.680000,672605.520000 "></path>
+<path style="stroke:black" d="M347.280000,672608.160000 L348.600000,672609.180000 L349.440000,672609.780000 L348.420000,672610.080000 L343.080000,672611.700000 L341.340000,672612.300000 L342.540000,672610.920000 L346.200000,672606.720000 L346.920000,672605.880000 L347.100000,672606.900000 L346.980000,672607.380000 L343.320000,672611.580000 L342.540000,672610.920000 L342.780000,672610.740000 L348.120000,672609.120000 L348.420000,672610.080000 L348.000000,672610.020000 L346.680000,672609.000000 "></path>
+<path style="stroke:black" d="M417.420000,672606.120000 L417.060000,672605.880000 L416.460000,672606.780000 L416.820000,672607.020000 "></path>
+<path style="stroke:black" d="M417.420000,672606.180000 L417.300000,672606.360000 L416.940000,672606.060000 L417.060000,672605.880000 "></path>
+<path style="stroke:black" d="M382.680000,672606.060000 L383.280000,672607.620000 L382.560000,672608.280000 L382.380000,672608.160000 L382.320000,672607.980000 L381.720000,672606.420000 "></path>
+<path style="stroke:black" d="M382.800000,672607.800000 L384.240000,672608.520000 L379.260000,672611.040000 L382.200000,672606.240000 "></path>
+<path style="stroke:black" d="M311.820000,672608.820000 L313.020000,672609.900000 L313.800000,672610.560000 L312.720000,672610.740000 L307.260000,672611.880000 L305.580000,672612.240000 L306.840000,672611.040000 L310.860000,672607.200000 L311.580000,672606.480000 L311.700000,672607.500000 L311.520000,672607.920000 L307.500000,672611.760000 L306.840000,672611.040000 L307.080000,672610.920000 L312.540000,672609.780000 L312.720000,672610.740000 L312.300000,672610.620000 L311.100000,672609.540000 "></path>
+<path style="stroke:black" d="M282.060000,672608.220000 L282.540000,672606.660000 L285.900000,672611.160000 L280.680000,672609.120000 "></path>
+<path style="stroke:black" d="M352.620000,672609.360000 L352.740000,672607.740000 L352.860000,672606.720000 L353.640000,672607.440000 L357.840000,672611.100000 L359.100000,672612.240000 L357.420000,672612.000000 L351.900000,672611.160000 L350.880000,672610.980000 L351.600000,672610.260000 L352.080000,672610.140000 L357.600000,672610.980000 L357.420000,672612.000000 L357.180000,672611.820000 L352.980000,672608.160000 L353.640000,672607.440000 L353.820000,672607.860000 L353.700000,672609.480000 "></path>
+<path style="stroke:black" d="M317.040000,672609.420000 L317.340000,672607.800000 L317.460000,672606.780000 L318.240000,672607.560000 L322.080000,672611.580000 L323.280000,672612.840000 L321.600000,672612.360000 L316.200000,672610.980000 L315.120000,672610.740000 L315.960000,672610.080000 L316.380000,672610.020000 L321.780000,672611.400000 L321.600000,672612.360000 L321.300000,672612.240000 L317.460000,672608.220000 L318.240000,672607.560000 L318.300000,672607.920000 L318.000000,672609.540000 "></path>
+<path style="stroke:black" d="M347.100000,672606.900000 L347.460000,672608.460000 L346.680000,672609.000000 L346.500000,672608.880000 L346.500000,672608.700000 L346.140000,672607.140000 "></path>
+<path style="stroke:black" d="M383.760000,672607.260000 L383.400000,672606.900000 L382.620000,672607.620000 L382.980000,672607.980000 "></path>
+<path style="stroke:black" d="M383.760000,672607.260000 L383.580000,672607.380000 L383.280000,672607.020000 L383.460000,672606.900000 "></path>
+<path style="stroke:black" d="M346.980000,672608.580000 L348.300000,672609.600000 L342.960000,672611.220000 L346.620000,672607.020000 "></path>
+<path style="stroke:black" d="M389.400000,672609.840000 L389.400000,672607.140000 L390.300000,672607.860000 L394.800000,672611.220000 L396.120000,672612.240000 L394.440000,672612.120000 L388.860000,672611.640000 L387.780000,672611.520000 L388.500000,672610.740000 L388.920000,672610.620000 L394.500000,672611.100000 L394.440000,672612.120000 L394.140000,672612.000000 L389.640000,672608.640000 L390.300000,672607.860000 L390.480000,672608.220000 L390.480000,672609.840000 "></path>
+<path style="stroke:black" d="M281.340000,672607.440000 L281.100000,672607.800000 L281.940000,672608.400000 L282.180000,672608.040000 "></path>
+<path style="stroke:black" d="M281.400000,672607.440000 L281.580000,672607.560000 L281.280000,672607.920000 L281.100000,672607.800000 "></path>
+<path style="stroke:black" d="M311.700000,672607.500000 L311.940000,672609.120000 L311.100000,672609.540000 L310.980000,672609.420000 L310.980000,672609.240000 L310.740000,672607.620000 "></path>
+<path style="stroke:black" d="M311.460000,672609.180000 L312.660000,672610.260000 L307.200000,672611.400000 L311.220000,672607.560000 "></path>
+<path style="stroke:black" d="M280.380000,672608.700000 L281.760000,672607.800000 L282.540000,672608.340000 L282.480000,672608.520000 L282.360000,672608.640000 L280.980000,672609.540000 "></path>
+<path style="stroke:black" d="M353.160000,672609.420000 L353.280000,672607.800000 L357.480000,672611.460000 L351.960000,672610.620000 "></path>
+<path style="stroke:black" d="M317.520000,672609.480000 L317.820000,672607.860000 L321.660000,672611.880000 L316.260000,672610.500000 "></path>
+<path style="stroke:black" d="M348.000000,672608.220000 L347.760000,672607.860000 L346.860000,672608.400000 L347.100000,672608.760000 "></path>
+<path style="stroke:black" d="M348.000000,672608.280000 L347.820000,672608.400000 L347.580000,672607.980000 L347.760000,672607.860000 "></path>
+<path style="stroke:black" d="M389.940000,672609.840000 L389.940000,672608.220000 L394.440000,672611.580000 L388.860000,672611.100000 "></path>
+<path style="stroke:black" d="M312.480000,672608.940000 L312.240000,672608.460000 L311.340000,672608.940000 L311.580000,672609.420000 "></path>
+<path style="stroke:black" d="M312.480000,672608.940000 L312.300000,672609.060000 L312.060000,672608.640000 L312.240000,672608.520000 "></path>
+<path style="stroke:black" d="M316.740000,672608.760000 L316.500000,672609.120000 L317.400000,672609.660000 L317.640000,672609.300000 "></path>
+<path style="stroke:black" d="M316.740000,672608.760000 L316.920000,672608.880000 L316.680000,672609.300000 L316.500000,672609.180000 "></path>
+<path style="stroke:black" d="M352.320000,672608.760000 L352.080000,672609.240000 L353.040000,672609.660000 L353.280000,672609.180000 "></path>
+<path style="stroke:black" d="M352.320000,672608.820000 L352.500000,672608.880000 L352.320000,672609.300000 L352.140000,672609.240000 "></path>
+<path style="stroke:black" d="M315.960000,672610.080000 L317.220000,672609.060000 L318.000000,672609.540000 L318.000000,672609.780000 L317.820000,672609.900000 L316.560000,672610.920000 "></path>
+<path style="stroke:black" d="M351.600000,672610.260000 L352.800000,672609.060000 L353.700000,672609.480000 L353.640000,672609.660000 L352.320000,672610.980000 "></path>
+<path style="stroke:black" d="M388.980000,672609.240000 L388.860000,672609.720000 L389.880000,672610.080000 L390.000000,672609.600000 "></path>
+<path style="stroke:black" d="M389.040000,672609.300000 L389.220000,672609.360000 L389.040000,672609.780000 L388.860000,672609.720000 "></path>
+<path style="stroke:black" d="M388.500000,672610.740000 L389.580000,672609.480000 L390.480000,672609.840000 L390.420000,672610.020000 L390.300000,672610.200000 L389.220000,672611.460000 "></path>
+<text y="672623.147484" x="283.1402" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.777096">Y3</text>
+<text y="672623.147484" x="300.8403" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.717246">X3</text>
+<text y="672623.147484" x="318.478832" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.777096">Y2</text>
+<text y="672623.147484" x="337.256232" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.781086">X2</text>
+<text y="672623.147484" x="354.296264" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.777096">Y1</text>
+<text y="672623.147484" x="372.539004" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.781086">X1</text>
+<text y="672623.147484" x="389.52" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.777096">Y0</text>
+<text y="672623.147484" x="408.84" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.777096">X0</text>
+<text y="672560.807684" x="314.8815" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.717246">X7</text>
+<text y="672560.807684" x="331.977852" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.781086">X6</text>
+<text y="672560.807684" x="351.244764" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.717246">X5</text>
+<text y="672560.807684" x="368.2812" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.777096">X4</text>
+<text y="672560.867584" x="386.1604" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.777096">X3</text>
+<text y="672560.867584" x="403.256752" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.777096">X2</text>
+<text y="672560.867584" x="422.515684" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.777096">X1</text>
+<text y="672560.867584" x="439.5602" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.777096">X0</text>
+<text y="672561.467684" x="151.9817" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.717246">Y7</text>
+<text y="672561.467684" x="169.078052" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.781086">Y6</text>
+<text y="672561.467684" x="188.344964" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.717246">Y5</text>
+<text y="672561.467684" x="205.3815" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.777096">Y4</text>
+<text y="672562.067784" x="223.8009" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.777096">Y3</text>
+<text y="672562.067784" x="240.897252" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.777096">Y2</text>
+<text y="672562.067784" x="260.156184" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.713256">Y1</text>
+<text y="672562.067784" x="277.2007" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.777096">Y0</text></svg>
+<h3>Figure 4-18.  PUNPCKLBW Instruction Operation Using 64-bit Operands</h3>
+<p>31</p>
+<p>0</p>
+<p>255</p>
+<p>255</p>
+<p>31</p>
+<p>0</p>
+<table class="exception-table">
+<tr>
+<td>X7</td>
+<td>X6</td>
+<td>X5</td>
+<td>X4</td>
+<td>X3</td>
+<td>X2</td>
+<td>X1</td>
+<td>X0</td></tr></table>
+<table class="exception-table">
+<tr>
+<td>Y7</td>
+<td>Y6</td>
+<td>Y5</td>
+<td>Y4</td>
+<td>Y3</td>
+<td>Y2</td>
+<td>Y1</td>
+<td>Y0</td></tr></table>
+<p>SRC</p>
+<p>255</p>
+<p>0</p>
+<table class="exception-table">
+<tr>
+<td>Y5</td>
+<td>X5</td>
+<td>Y4</td>
+<td>X4</td>
+<td>Y1</td>
+<td>X1</td>
+<td>Y0</td>
+<td>X0</td></tr></table>
+<p>DEST</p>
+<h3>Figure 4-19.  256-bit VPUNPCKLDQ Instruction Operation</h3>
+<p>When the source data comes from a 128-bit memory operand, an implementation may fetch only the appropriate 64 bits; however, alignment to a 16-byte boundary and normal segment checking will still be enforced.</p>
+<p>The (V)PUNPCKLBW instruction interleaves the low-order bytes of the source and destination operands, the (V)PUNPCKLWD instruction interleaves the low-order words of the source and destination operands, the (V)PUNPCKLDQ instruction interleaves the low-order doubleword (or doublewords) of the source and destination operands, and the (V)PUNPCKLQDQ instruction interleaves the low-order quadwords of the source and destination operands.</p>
+<p>These instructions can be used to convert bytes to words, words to doublewords, doublewords to quadwords, and quadwords to double quadwords, respectively, by placing all 0s in the source operand. Here, if the source operand contains all 0s, the result (stored in the destination operand) contains zero extensions of the high-order data elements from the original value in the destination operand. For example, with the (V)PUNPCKLBW instruction the high-order bytes are zero extended (that is, unpacked into unsigned word integers), and with the (V)PUNPCKLWD instruction, the high-order words are zero extended (unpacked into unsigned doubleword integers).</p>
+<p>In 64-bit mode, using a REX prefix in the form of REX.R permits this instruction to access additional registers (XMM8-XMM15).</p>
+<p>Legacy SSE versions: The source operand can be an MMX technology register or a 32-bit memory location. The destination operand is an MMX technology register.</p>
+<p>128-bit Legacy SSE versions: The second source operand is an XMM register or a 128-bit memory location. The first source operand and destination operands are XMM registers. Bits (VLMAX-1:128) of the corresponding YMM destination register remain unchanged.</p>
+<p>VEX.128 encoded versions: The second source operand is an XMM register or a 128-bit memory location. The first source operand and destination operands are XMM registers. Bits (VLMAX-1:128) of the destination YMM register are zeroed.</p>
+<p>VEX.256 encoded version: The second source operand is an YMM register or a 256-bit memory location. The first source operand and destination operands are YMM registers.</p>
+<p>Note: VEX.L must be 0, otherwise instructions will #UD.</p>
+<h2>Operation</h2>
+<p><strong>PUNPCKLBW instruction with 64-bit operands:</strong></p>
+<pre>    DEST[63:56] ← SRC[31:24];
+    DEST[55:48] ← DEST[31:24];
+    DEST[47:40] ← SRC[23:16];
+    DEST[39:32] ← DEST[23:16];
+    DEST[31:24] ← SRC[15:8];
+    DEST[23:16] ← DEST[15:8];
+    DEST[15:8] ← SRC[7:0];
+    DEST[7:0] ← DEST[7:0];</pre>
+<p><strong>PUNPCKLWD instruction with 64-bit operands:</strong></p>
+<pre>    DEST[63:48] ← SRC[31:16];
+    DEST[47:32] ← DEST[31:16];
+    DEST[31:16] ← SRC[15:0];
+    DEST[15:0] ← DEST[15:0];</pre>
+<p><strong>PUNPCKLDQ instruction with 64-bit operands:</strong></p>
+<pre>    DEST[63:32] ← SRC[31:0];
+    DEST[31:0] ← DEST[31:0];</pre>
+<p><strong>PUNPCKLBW instruction with 128-bit operands:</strong></p>
+<pre>    DEST[7:0]← DEST[7:0];
+    DEST[15:8]  ← SRC[7:0];
+    DEST[23:16] ← DEST[15:8];
+    DEST[31:24] ← SRC[15:8];
+    DEST[39:32] ← DEST[23:16];
+    DEST[47:40] ← SRC[23:16];
+    DEST[55:48] ← DEST[31:24];
+    DEST[63:56] ← SRC[31:24];
+    DEST[71:64] ← DEST[39:32];
+    DEST[79:72] ← SRC[39:32];
+    DEST[87:80] ← DEST[47:40];
+    DEST[95:88] ← SRC[47:40];
+    DEST[103:96]  ← DEST[55:48];
+    DEST[111:104] ← SRC[55:48];
+    DEST[119:112] ← DEST[63:56];
+    DEST[127:120] ← SRC[63:56];</pre>
+<p><strong>PUNPCKLWD instruction with 128-bit operands:</strong></p>
+<pre>    DEST[15:0]  ← DEST[15:0];
+    DEST[31:16] ← SRC[15:0];
+    DEST[47:32] ← DEST[31:16];
+    DEST[63:48] ← SRC[31:16];
+    DEST[79:64] ← DEST[47:32];
+    DEST[95:80] ← SRC[47:32];
+    DEST[111:96]  ← DEST[63:48];
+    DEST[127:112] ← SRC[63:48];</pre>
+<p><strong>PUNPCKLDQ instruction with 128-bit operands:</strong></p>
+<pre>    DEST[31:0] ← DEST[31:0];
+    DEST[63:32]  ← SRC[31:0];
+    DEST[95:64]  ← DEST[63:32];
+    DEST[127:96] ← SRC[63:32];</pre>
+<p><strong>PUNPCKLQDQ</strong></p>
+<pre>    DEST[63:0] ← DEST[63:0];
+    DEST[127:64] ← SRC[63:0];</pre>
+<p><strong>INTERLEAVE_BYTES_256b (SRC1, SRC2)</strong></p>
+<pre>DEST[7:0] ← SRC1[7:0]
+DEST[15:8] ← SRC2[7:0]
+DEST[23:16] ← SRC1[15:8]
+DEST[31:24] ← SRC2[15:8]
+DEST[39:32] ← SRC1[23:16]
+DEST[47:40] ← SRC2[23:16]
+DEST[55:48] ← SRC1[31:24]
+DEST[63:56] ←SRC2[31:24]
+DEST[71:64] ← SRC1[39:32]
+DEST[79:72] ← SRC2[39:32]
+DEST[87:80] ← SRC1[47:40]
+DEST[95:88] ← SRC2[47:40]
+DEST[103:96] ← SRC1[55:48]
+DEST[111:104] ← SRC2[55:48]
+DEST[119:112] ← SRC1[63:56]
+DEST[127:120] ← SRC2[63:56]
+DEST[135:128] ← SRC1[135:128]
+DEST[143:136] ← SRC2[135:128]
+DEST[151:144] ← SRC1[143:136]
+DEST[159:152] ← SRC2[143:136]
+DEST[167:160] ← SRC1[151:144]
+DEST[175:168] ← SRC2[151:144]
+DEST[183:176] ← SRC1[159:152]
+DEST[191:184] ←SRC2[159:152]
+DEST[199:192] ← SRC1[167:160]
+DEST[207:200] ← SRC2[167:160]
+DEST[215:208] ← SRC1[175:168]
+DEST[223:216] ← SRC2[175:168]
+DEST[231:224] ← SRC1[183:176]
+DEST[239:232] ← SRC2[183:176]
+DEST[247:240] ← SRC1[191:184]
+DEST[255:248] ← SRC2[191:184]</pre>
+<p><strong>INTERLEAVE_BYTES (SRC1, SRC2)</strong></p>
+<pre>DEST[7:0] ← SRC1[7:0]
+DEST[15:8] ← SRC2[7:0]
+DEST[23:16] ← SRC2[15:8]
+DEST[31:24] ← SRC2[15:8]
+DEST[39:32] ← SRC1[23:16]
+DEST[47:40] ← SRC2[23:16]
+DEST[55:48] ← SRC1[31:24]
+DEST[63:56] ←SRC2[31:24]
+DEST[71:64] ← SRC1[39:32]
+DEST[79:72] ← SRC2[39:32]
+DEST[87:80] ← SRC1[47:40]
+DEST[95:88] ← SRC2[47:40]
+DEST[103:96] ← SRC1[55:48]
+DEST[111:104] ← SRC2[55:48]
+DEST[119:112] ← SRC1[63:56]
+DEST[127:120] ← SRC2[63:56]</pre>
+<p><strong>INTERLEAVE_WORDS_256b(SRC1, SRC2)</strong></p>
+<pre>DEST[15:0] ← SRC1[15:0]
+DEST[31:16] ← SRC2[15:0]
+DEST[47:32] ← SRC1[31:16]
+DEST[63:48] ← SRC2[31:16]
+DEST[79:64] ← SRC1[47:32]
+DEST[95:80] ← SRC2[47:32]
+DEST[111:96] ← SRC1[63:48]
+DEST[127:112] ← SRC2[63:48]
+DEST[143:128] ← SRC1[143:128]
+DEST[159:144] ← SRC2[143:128]
+DEST[175:160] ← SRC1[159:144]
+DEST[191:176] ← SRC2[159:144]
+DEST[207:192] ← SRC1[175:160]
+DEST[223:208] ← SRC2[175:160]
+DEST[239:224] ← SRC1[191:176]
+DEST[255:240] ← SRC2[191:176]</pre>
+<p><strong>INTERLEAVE_WORDS (SRC1, SRC2)</strong></p>
+<pre>DEST[15:0] ← SRC1[15:0]
+DEST[31:16] ← SRC2[15:0]
+DEST[47:32] ← SRC1[31:16]
+DEST[63:48] ← SRC2[31:16]
+DEST[79:64] ← SRC1[47:32]
+DEST[95:80] ← SRC2[47:32]
+DEST[111:96] ← SRC1[63:48]
+DEST[127:112] ← SRC2[63:48]</pre>
+<p><strong>INTERLEAVE_DWORDS_256b(SRC1, SRC2)</strong></p>
+<pre>DEST[31:0] ← SRC1[31:0]
+DEST[63:32] ← SRC2[31:0]
+DEST[95:64] ← SRC1[63:32]
+DEST[127:96] ← SRC2[63:32]
+DEST[159:128] ← SRC1[159:128]
+DEST[191:160] ← SRC2[159:128]
+DEST[223:192] ← SRC1[191:160]
+DEST[255:224] ← SRC2[191:160]</pre>
+<p><strong>INTERLEAVE_DWORDS(SRC1, SRC2)</strong></p>
+<pre>DEST[31:0] ← SRC1[31:0]
+DEST[63:32] ← SRC2[31:0]
+DEST[95:64] ← SRC1[63:32]
+DEST[127:96] ← SRC2[63:32]</pre>
+<p><strong>INTERLEAVE_QWORDS_256b(SRC1, SRC2)</strong></p>
+<pre>DEST[63:0] ← SRC1[63:0]
+DEST[127:64] ← SRC2[63:0]
+DEST[191:128] ← SRC1[191:128]
+DEST[255:192] ← SRC2[191:128]</pre>
+<p><strong>INTERLEAVE_QWORDS(SRC1, SRC2)</strong></p>
+<pre>DEST[63:0] ← SRC1[63:0]
+DEST[127:64] ← SRC2[63:0]</pre>
+<p><strong>PUNPCKLBW (128-bit Legacy SSE Version)</strong></p>
+<pre>DEST[127:0] ← INTERLEAVE_BYTES(DEST, SRC)
+DEST[255:127] (Unmodified)</pre>
+<p><strong>VPUNPCKLBW (VEX.128 encoded instruction)</strong></p>
+<pre>DEST[127:0] ← INTERLEAVE_BYTES(SRC1, SRC2)
+DEST[VLMAX-1:128] ← 0</pre>
+<p><strong>VPUNPCKLBW (VEX.256 encoded instruction)</strong></p>
+<pre>DEST[255:0] ← INTERLEAVE_BYTES_128b(SRC1, SRC2)</pre>
+<p><strong>PUNPCKLWD (128-bit Legacy SSE Version)</strong></p>
+<pre>DEST[127:0] ← INTERLEAVE_WORDS(DEST, SRC)
+DEST[255:127] (Unmodified)</pre>
+<p><strong>VPUNPCKLWD (VEX.128 encoded instruction)</strong></p>
+<pre>DEST[127:0] ← INTERLEAVE_WORDS(SRC1, SRC2)
+DEST[VLMAX-1:128] ← 0</pre>
+<p><strong>VPUNPCKLWD (VEX.256 encoded instruction)</strong></p>
+<pre>DEST[255:0] ← INTERLEAVE_WORDS(SRC1, SRC2)</pre>
+<p><strong>PUNPCKLDQ (128-bit Legacy SSE Version)</strong></p>
+<pre>DEST[127:0] ← INTERLEAVE_DWORDS(DEST, SRC)
+DEST[255:127] (Unmodified)</pre>
+<p><strong>VPUNPCKLDQ (VEX.128 encoded instruction)</strong></p>
+<pre>DEST[127:0] ← INTERLEAVE_DWORDS(SRC1, SRC2)
+DEST[VLMAX-1:128] ← 0</pre>
+<p><strong>VPUNPCKLDQ (VEX.256 encoded instruction)</strong></p>
+<pre>DEST[255:0] ← INTERLEAVE_DWORDS(SRC1, SRC2)</pre>
+<p><strong>PUNPCKLQDQ (128-bit Legacy SSE Version)</strong></p>
+<pre>DEST[127:0] ← INTERLEAVE_QWORDS(DEST, SRC)
+DEST[255:127] (Unmodified)</pre>
+<p><strong>VPUNPCKLQDQ (VEX.128 encoded instruction)</strong></p>
+<pre>DEST[127:0] ← INTERLEAVE_QWORDS(SRC1, SRC2)
+DEST[VLMAX-1:128] ← 0</pre>
+<p><strong>VPUNPCKLQDQ (VEX.256 encoded instruction)</strong></p>
+<pre>DEST[255:0] ← INTERLEAVE_QWORDS(SRC1, SRC2)</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalents</h2>
+<p>PUNPCKLBW:</p>
+<p>__m64 _mm_unpacklo_pi8 (__m64 m1, __m64 m2)</p>
+<p>(V)PUNPCKLBW:</p>
+<p>__m128i _mm_unpacklo_epi8 (__m128i m1, __m128i m2)</p>
+<p>VPUNPCKLBW:</p>
+<p>__m256i _mm256_unpacklo_epi8 (__m256i m1, __m256i m2)</p>
+<p>PUNPCKLWD:</p>
+<p>__m64 _mm_unpacklo_pi16 (__m64 m1, __m64 m2)</p>
+<p>(V)PUNPCKLWD:</p>
+<p>__m128i _mm_unpacklo_epi16 (__m128i m1, __m128i m2)</p>
+<p>VPUNPCKLWD:</p>
+<p>__m256i _mm256_unpacklo_epi16 (__m256i m1, __m256i m2)</p>
+<p>PUNPCKLDQ:</p>
+<p>__m64 _mm_unpacklo_pi32 (__m64 m1, __m64 m2)</p>
+<p>(V)PUNPCKLDQ:</p>
+<p>__m128i _mm_unpacklo_epi32 (__m128i m1, __m128i m2)</p>
+<p>VPUNPCKLDQ:</p>
+<p>__m256i _mm256_unpacklo_epi32 (__m256i m1, __m256i m2)</p>
+<p>(V)PUNPCKLQDQ:</p>
+<p>__m128i _mm_unpacklo_epi64 (__m128i m1, __m128i m2)</p>
+<p>VPUNPCKLQDQ:</p>
+<p>__m256i _mm256_unpacklo_epi64 (__m256i m1, __m256i m2)</p>
+<h2>Flags Affected</h2>
+<p>None.</p>
+<h2>Numeric Exceptions</h2>
+<p>None.</p>
+<h2>Other Exceptions</h2>
+<p>See Exceptions Type 4; additionally</p>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>If VEX.L = 1.</td></tr></table></body></html>

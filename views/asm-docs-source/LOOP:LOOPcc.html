@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>LOOP/LOOPcc—Loop According to ECX Counter </title></head>
+<body>
+<h1>LOOP/LOOP<em>cc</em>—Loop According to ECX Counter</h1>
+<table>
+<tr>
+<th>Opcode</th>
+<th>Instruction</th>
+<th>Op/En</th>
+<th>64-Bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>E2 <em>cb</em></td>
+<td>LOOP <em>rel8</em></td>
+<td>D</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Decrement count; jump short if count ≠ 0.</td></tr>
+<tr>
+<td>E1 <em>cb</em></td>
+<td>LOOPE <em>rel8</em></td>
+<td>D</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Decrement count; jump short if count ≠ 0 and ZF = 1.</td></tr>
+<tr>
+<td>E0 <em>cb</em></td>
+<td>LOOPNE <em>rel8</em></td>
+<td>D</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Decrement count; jump short if count ≠ 0 and ZF = 0.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>D</td>
+<td>Offset</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Performs a loop operation using the RCX, ECX or CX register as a counter (depending on whether address size is 64 bits, 32 bits, or 16 bits). Note that the LOOP instruction ignores REX.W; but 64-bit address size can be over-ridden using a 67H prefix.</p>
+<p>Each time the LOOP instruction is executed, the count register is decremented, then checked for 0. If the count is 0, the loop is terminated and program execution continues with the instruction following the LOOP instruction. If the count is not zero, a near jump is performed to the destination (target) operand, which is presumably the instruction at the beginning of the loop.</p>
+<p>The target instruction is specified with a relative offset (a signed offset relative to the current value of the instruc-tion pointer in the IP/EIP/RIP register). This offset is generally specified as a label in assembly code, but at the machine code level, it is encoded as a signed, 8-bit immediate value, which is added to the instruction pointer. Offsets of –128 to +127 are allowed with this instruction.</p>
+<p>Some forms of the loop instruction (LOOP<em>cc</em>) also accept the ZF flag as a condition for terminating the loop before the count reaches zero. With these forms of the instruction, a condition code (<em>cc</em>) is associated with each instruc-tion to indicate the condition being tested for. Here, the LOOP<em>cc</em> instruction itself does not affect the state of the ZF flag; the ZF flag is changed by other instructions in the loop.</p>
+<h2>Operation</h2>
+<pre>IF (AddressSize = 32)
+    THEN Count is ECX;
+ELSE IF (AddressSize = 64)
+    Count is RCX;
+ELSE Count is CX;
+FI;
+Count ← Count – 1;
+IF Instruction is not LOOP
+    THEN
+         IF (Instruction ← LOOPE) or (Instruction ← LOOPZ)
+              THEN IF (ZF = 1) and (Count ≠ 0)
+                         THEN BranchCond ← 1;
+                         ELSE BranchCond ← 0;
+                    FI;
+              ELSE (Instruction = LOOPNE) or (Instruction = LOOPNZ)
+                    IF (ZF = 0 ) and (Count ≠ 0)
+                         THEN BranchCond ← 1;
+                         ELSE BranchCond ← 0;
+                    FI;
+         FI;
+    ELSE (* Instruction = LOOP *)
+         IF (Count ≠ 0)
+              THEN BranchCond ← 1;
+              ELSE BranchCond ← 0;
+         FI;
+FI;
+IF BranchCond = 1
+    THEN
+         IF OperandSize = 32
+              THEN EIP ← EIP + SignExtend(DEST);
+              ELSE IF OperandSize = 64
+                    THEN RIP ← RIP + SignExtend(DEST);
+                    FI;
+              ELSE IF OperandSize = 16
+                    THEN EIP ← EIP AND 0000FFFFH;
+                    FI;
+         FI;
+         IF OperandSize = (32 or 64)
+              THEN IF (R/E)IP &lt; CS.Base or (R/E)IP &gt; CS.Limit
+                    #GP; FI;
+                    FI;
+         FI;
+    ELSE
+         Terminate loop and continue program execution at (R/E)IP;
+FI;</pre>
+<h2>Flags Affected</h2>
+<p>None.</p>
+<h2>Protected Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>If the offset being jumped to is beyond the limits of the CS segment.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Real-Address Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP</td>
+<td>If the offset being jumped to is beyond the limits of the CS segment or is outside of the effec-tive address space from 0 to FFFFH. This condition can occur if a 32-bit address size override prefix is used.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Virtual-8086 Mode Exceptions</h2>
+<p>Same exceptions as in real address mode.</p>
+<h2>Compatibility Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>64-Bit Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>If the offset being jumped to is in a non-canonical form.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table></body></html>

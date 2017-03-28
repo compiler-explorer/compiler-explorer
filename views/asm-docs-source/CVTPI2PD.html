@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>CVTPI2PD—Convert Packed Dword Integers to Packed Double-Precision FP Values </title></head>
+<body>
+<h1>CVTPI2PD—Convert Packed Dword Integers to Packed Double-Precision FP Values</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64-Bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>
+<p>66 0F 2A /<em>r</em></p>
+<p>CVTPI2PD <em>xmm</em>, <em>mm/m64*</em></p></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Convert two packed signed doubleword integers from <em>mm/mem64</em> to two packed double-precision floating-point values in <em>xmm</em>.</td></tr></table>
+<p><strong>NOTES: *Operation is different for different operand sets; see the Description section.</strong></p>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RM</td>
+<td>ModRM:reg (w)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Converts two packed signed doubleword integers in the source operand (second operand) to two packed double-precision floating-point values in the destination operand (first operand).</p>
+<p>The source operand can be an MMX technology register or a 64-bit memory location. The destination operand is an XMM register. In addition, depending on the operand configuration:</p>
+<p>In 64-bit mode, use of the REX.R prefix permits this instruction to access additional registers (XMM8-XMM15).</p>
+<h2>Operation</h2>
+<pre>DEST[63:0] ← Convert_Integer_To_Double_Precision_Floating_Point(SRC[31:0]);
+DEST[127:64] ← Convert_Integer_To_Double_Precision_Floating_Point(SRC[63:32]);</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>CVTPI2PD:</p>
+<p>__m128d _mm_cvtpi32_pd(__m64 a)</p>
+<h2>SIMD Floating-Point Exceptions</h2>
+<p>None.</p>
+<h2>Other Exceptions</h2>
+<p>See Table 22-6, “Exception Conditions for Legacy SIMD/MMX Instructions with XMM and without FP Exception,” in the <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 3B</em>.</p></body></html>

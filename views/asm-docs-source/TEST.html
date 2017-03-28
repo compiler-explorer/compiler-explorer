@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>TEST—Logical Compare </title></head>
+<body>
+<h1>TEST—Logical Compare</h1>
+<table>
+<tr>
+<th>Opcode</th>
+<th>Instruction</th>
+<th>Op/En</th>
+<th>64-Bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>A8 <em>ib</em></td>
+<td>TEST AL, i<em>mm8</em></td>
+<td>I</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>AND <em>imm8</em> with AL; set SF, ZF, PF according to result.</td></tr>
+<tr>
+<td>A9 <em>iw</em></td>
+<td>TEST AX, i<em>mm16</em></td>
+<td>I</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>AND <em>imm16</em> with AX; set SF, ZF, PF according to result.</td></tr>
+<tr>
+<td>A9 <em>id</em></td>
+<td>TEST EAX, i<em>mm32</em></td>
+<td>I</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>AND <em>imm32</em> with EAX; set SF, ZF, PF according to result.</td></tr>
+<tr>
+<td>REX.W + A9 <em>id</em></td>
+<td>TEST RAX, i<em>mm32</em></td>
+<td>I</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>AND <em>imm32 </em>sign-extended to 64-bits with RAX; set SF, ZF, PF according to result.</td></tr>
+<tr>
+<td>F6 /0 <em>ib</em></td>
+<td>TEST <em>r/m8, imm8</em></td>
+<td>MI</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>AND <em>imm8</em> with <em>r/m8</em>; set SF, ZF, PF according to result.</td></tr>
+<tr>
+<td>REX + F6 /0 <em>ib</em></td>
+<td>TEST <em>r/m8*, imm8</em></td>
+<td>MI</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>AND <em>imm8</em> with <em>r/m8</em>; set SF, ZF, PF according to result.</td></tr>
+<tr>
+<td>F7 /0 <em>iw</em></td>
+<td>TEST <em>r/m16, imm16</em></td>
+<td>MI</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>AND <em>imm16</em> with <em>r/m16</em>; set SF, ZF, PF according to result.</td></tr>
+<tr>
+<td>F7 /0 <em>id</em></td>
+<td>TEST <em>r/m32, imm32</em></td>
+<td>MI</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>AND <em>imm32</em> with <em>r/m32</em>; set SF, ZF, PF according to result.</td></tr>
+<tr>
+<td>REX.W + F7 /0 <em>id</em></td>
+<td>TEST <em>r/m64, imm32</em></td>
+<td>MI</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>AND <em>imm32 </em>sign-extended to 64-bits with <em>r/m64</em>; set SF, ZF, PF according to result.</td></tr>
+<tr>
+<td>84 /<em>r</em></td>
+<td>TEST <em>r/m8, r8</em></td>
+<td>MR</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>AND <em>r8</em> with <em>r/m8</em>; set SF, ZF, PF according to result.</td></tr>
+<tr>
+<td>REX + 84 /<em>r</em></td>
+<td>TEST <em>r/m8*, r8*</em></td>
+<td>MR</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>AND <em>r8</em> with <em>r/m8</em>; set SF, ZF, PF according to result.</td></tr>
+<tr>
+<td>85 /<em>r</em></td>
+<td>TEST <em>r/m16, r16</em></td>
+<td>MR</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>AND <em>r16</em> with <em>r/m16</em>; set SF, ZF, PF according to result.</td></tr>
+<tr>
+<td>85 /<em>r</em></td>
+<td>TEST <em>r/m32, r32</em></td>
+<td>MR</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>AND <em>r32</em> with <em>r/m32</em>; set SF, ZF, PF according to result.</td></tr>
+<tr>
+<td>REX.W + 85 /<em>r</em></td>
+<td>TEST <em>r/m64, r64</em></td>
+<td>MR</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>AND <em>r64</em> with <em>r/m64</em>; set SF, ZF, PF according to result.</td></tr></table>
+<p><strong>NOTES:</strong></p>
+<p>*</p>
+<p>In 64-bit mode, r/m8 can not be encoded to access the following byte registers if a REX prefix is used: AH, BH, CH, DH.</p>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>I</td>
+<td>AL/AX/EAX/RAX</td>
+<td>imm8/16/32</td>
+<td>NA</td>
+<td>NA</td></tr>
+<tr>
+<td>MI</td>
+<td>ModRM:r/m (r)</td>
+<td>imm8/16/32</td>
+<td>NA</td>
+<td>NA</td></tr>
+<tr>
+<td>MR</td>
+<td>ModRM:r/m (r)</td>
+<td>ModRM:reg (r)</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Computes the bit-wise logical AND of first operand (source 1 operand) and the second operand (source 2 operand) and sets the SF, ZF, and PF status flags according to the result. The result is then discarded.</p>
+<p>In 64-bit mode, using a REX prefix in the form of REX.R permits access to additional registers (R8-R15). Using a REX prefix in the form of REX.W promotes operation to 64 bits. See the summary chart at the beginning of this section for encoding data and limits.</p>
+<h2>Operation</h2>
+<pre>TEMP ← SRC1 AND SRC2;
+SF ← MSB(TEMP);
+IF TEMP = 0
+    THEN ZF ← 1;
+    ELSE ZF ← 0;
+FI:
+PF ← BitwiseXNOR(TEMP[0:7]);
+CF ← 0;
+OF ← 0;
+(* AF is undefined *)</pre>
+<h2>Flags Affected</h2>
+<p>The OF and CF flags are set to 0. The SF, ZF, and PF flags are set according to the result (see the “Operation” section above). The state of the AF flag is undefined.</p>
+<h2>Protected Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>
+<p>If a memory operand effective address is outside the CS, DS, ES, FS, or GS segment limit.</p>
+<p>If the DS, ES, FS, or GS register contains a NULL segment selector.</p></td></tr>
+<tr>
+<td>#SS(0)</td>
+<td>If a memory operand effective address is outside the SS segment limit.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and an unaligned memory reference is made while the current privilege level is 3.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Real-Address Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP</td>
+<td>If a memory operand effective address is outside the CS, DS, ES, FS, or GS segment limit.</td></tr>
+<tr>
+<td>#SS</td>
+<td>If a memory operand effective address is outside the SS segment limit.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Virtual-8086 Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>If a memory operand effective address is outside the CS, DS, ES, FS, or GS segment limit.</td></tr>
+<tr>
+<td>#SS(0)</td>
+<td>If a memory operand effective address is outside the SS segment limit.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and an unaligned memory reference is made.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Compatibility Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>64-Bit Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#SS(0)</td>
+<td>If a memory address referencing the SS segment is in a non-canonical form.</td></tr>
+<tr>
+<td>#GP(0)</td>
+<td>If the memory address is in a non-canonical form.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and an unaligned memory reference is made while the current privilege level is 3.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table></body></html>

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>ADDSS—Add Scalar Single-Precision Floating-Point Values </title></head>
+<body>
+<h1>ADDSS—Add Scalar Single-Precision Floating-Point Values</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32-bit Mode</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>
+<p>F3 0F 58 /r</p>
+<p>ADDSS <em>xmm1</em>,<em> xmm2/m32</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>SSE</td>
+<td>Add the low single-precision floating-point value from <em>xmm2/m32</em> to <em>xmm1</em>.</td></tr>
+<tr>
+<td>
+<p>VEX.NDS.LIG.F3.0F.WIG 58 /r</p>
+<p>VADDSS xmm1,xmm2, xmm3/m32</p></td>
+<td>RVM</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Add the low single-precision floating-point value from xmm3/mem to xmm2 and store the result in xmm1.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RM</td>
+<td>ModRM:reg (r, w)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td></tr>
+<tr>
+<td>RVM</td>
+<td>ModRM:reg (w)</td>
+<td>VEX.vvvv (r)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Adds the low single-precision floating-point values from the source operand (second operand) and the destination operand (first operand), and stores the single-precision floating-point result in the destination operand.</p>
+<p>The source operand can be an XMM register or a 32-bit memory location. The destination operand is an XMM register. See Chapter 10 in the <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 1</em>, for an overview of a scalar single-precision floating-point operation.</p>
+<p>In 64-bit mode, using a REX prefix in the form of REX.R permits this instruction to access additional registers (XMM8-XMM15).</p>
+<p>128-bit Legacy SSE version: Bits (VLMAX-1:32) of the corresponding YMM destination register remain unchanged.</p>
+<p>VEX.128 encoded version: Bits (127:32) of the XMM register destination are copied from corresponding bits in the first source operand. Bits (VLMAX-1:128) of the destination YMM register are zeroed.</p>
+<h2>Operation</h2>
+<p><strong>ADDSS DEST, SRC (128-bit Legacy SSE version)</strong></p>
+<pre>DEST[31:0] ← DEST[31:0] + SRC[31:0];
+DEST[VLMAX-1:32] (Unmodified)</pre>
+<p><strong>VADDSS DEST, SRC1, SRC2 (VEX.128 encoded version)</strong></p>
+<pre>DEST[31:0] ← SRC1[31:0] + SRC2[31:0]
+DEST[127:32] ← SRC1[127:32]
+DEST[VLMAX-1:128] ← 0</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>ADDSS:</p>
+<p>__m128 _mm_add_ss(__m128 a, __m128 b)</p>
+<h2>SIMD Floating-Point Exceptions</h2>
+<p>Overflow, Underflow, Invalid, Precision, Denormal.</p>
+<h2>Other Exceptions</h2>
+<p>See Exceptions Type 3.</p></body></html>

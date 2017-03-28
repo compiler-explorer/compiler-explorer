@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>CMPXCHG8B/CMPXCHG16B—Compare and Exchange Bytes </title></head>
+<body>
+<h1>CMPXCHG8B/CMPXCHG16B—Compare and Exchange Bytes</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64-Bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>
+<p>0F C7 /<em>1 m64</em></p>
+<p>CMPXCHG8B <em>m64</em></p></td>
+<td>M</td>
+<td>Valid</td>
+<td>Valid*</td>
+<td>Compare EDX:EAX with <em>m64</em>. If equal, set ZF and load ECX:EBX into<em> m64</em>. Else, clear ZF and load <em>m64</em> into EDX:EAX.</td></tr>
+<tr>
+<td>
+<p>REX.W + 0F C7 /<em>1 m128</em></p>
+<p>CMPXCHG16B <em>m128</em></p></td>
+<td>M</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Compare RDX:RAX with <em>m128</em>. If equal, set ZF and load RCX:RBX into<em> m128</em>. Else, clear ZF and load <em>m128</em> into RDX:RAX.</td></tr></table>
+<p><strong>NOTES: *See IA-32 Architecture Compatibility section below.</strong></p>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>M</td>
+<td>ModRM:r/m (r, w)</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Compares the 64-bit value in EDX:EAX (or 128-bit value in RDX:RAX if operand size is 128 bits) with the operand (destination operand). If the values are equal, the 64-bit value in ECX:EBX (or 128-bit value in RCX:RBX) is stored in the destination operand. Otherwise, the value in the destination operand is loaded into EDX:EAX (or RDX:RAX). The destination operand is an 8-byte memory location (or 16-byte memory location if operand size is 128 bits). For the EDX:EAX and ECX:EBX register pairs, EDX and ECX contain the high-order 32 bits and EAX and EBX contain the low-order 32 bits of a 64-bit value. For the RDX:RAX and RCX:RBX register pairs, RDX and RCX contain the high-order 64 bits and RAX and RBX contain the low-order 64bits of a 128-bit value.</p>
+<p>This instruction can be used with a LOCK prefix to allow the instruction to be executed atomically. To simplify the interface to the processor’s bus, the destination operand receives a write cycle without regard to the result of the comparison. The destination operand is written back if the comparison fails; otherwise, the source operand is written into the destination. (The processor never produces a locked read without also producing a locked write.)</p>
+<p>In 64-bit mode, default operation size is 64 bits. Use of the REX.W prefix promotes operation to 128 bits. Note that CMPXCHG16B requires that the destination (memory) operand be 16-byte aligned. See the summary chart at the beginning of this section for encoding data and limits. For information on the CPUID flag that indicates CMPXCHG16B, see page 3-175.</p>
+<h2>IA-32 Architecture Compatibility</h2>
+<p>This instruction encoding is not supported on Intel processors earlier than the Pentium processors.</p>
+<h2>Operation</h2>
+<pre>IF (64-Bit Mode and OperandSize = 64)
+    THEN
+         TEMP128 ← DEST
+         IF (RDX:RAX = TEMP128)
+              THEN
+                    ZF ← 1;
+                    DEST ← RCX:RBX;
+              ELSE
+                    ZF ← 0;
+                    RDX:RAX ← TEMP128;
+                    DEST ← TEMP128;
+                    FI;
+         FI
+    ELSE
+         TEMP64 ← DEST;
+         IF (EDX:EAX = TEMP64)
+              THEN
+                    ZF ← 1;
+                    DEST ← ECX:EBX;
+              ELSE
+                    ZF ← 0;
+                    EDX:EAX ← TEMP64;
+                    DEST ← TEMP64;
+                    FI;
+         FI;
+FI;</pre>
+<h2>Flags Affected</h2>
+<p>The ZF flag is set if the destination operand and EDX:EAX are equal; otherwise it is cleared. The CF, PF, AF, SF, and OF flags are unaffected.</p>
+<h2>Protected Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>If the destination is not a memory operand.</td></tr>
+<tr>
+<td>#GP(0)</td>
+<td>
+<p>If the destination is located in a non-writable segment.</p>
+<p>If a memory operand effective address is outside the CS, DS, ES, FS, or GS segment limit.</p>
+<p>If the DS, ES, FS, or GS register contains a NULL segment selector.</p></td></tr>
+<tr>
+<td>#SS(0)</td>
+<td>If a memory operand effective address is outside the SS segment limit.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and an unaligned memory reference is made while the current privilege level is 3.</td></tr></table>
+<h2>Real-Address Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>If the destination operand is not a memory location.</td></tr>
+<tr>
+<td>#GP</td>
+<td>If a memory operand effective address is outside the CS, DS, ES, FS, or GS segment limit.</td></tr>
+<tr>
+<td>#SS</td>
+<td>If a memory operand effective address is outside the SS segment limit.</td></tr></table>
+<h2>Virtual-8086 Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>If the destination operand is not a memory location.</td></tr>
+<tr>
+<td>#GP(0)</td>
+<td>If a memory operand effective address is outside the CS, DS, ES, FS, or GS segment limit.</td></tr>
+<tr>
+<td>#SS(0)</td>
+<td>If a memory operand effective address is outside the SS segment limit.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and an unaligned memory reference is made.</td></tr></table>
+<h2>Compatibility Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>64-Bit Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#SS(0)</td>
+<td>If a memory address referencing the SS segment is in a non-canonical form.</td></tr>
+<tr>
+<td>#GP(0)</td>
+<td>
+<p>If the memory address is in a non-canonical form.</p>
+<p>If memory operand for CMPXCHG16B is not aligned on a 16-byte boundary.</p>
+<p>If CPUID.01H:ECX.CMPXCHG16B[bit 13] = 0.</p></td></tr>
+<tr>
+<td>#UD</td>
+<td>If the destination operand is not a memory location.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and an unaligned memory reference is made while the current privilege level is 3.</td></tr></table></body></html>

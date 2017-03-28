@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>PAVGB/PAVGW—Average Packed Integers </title></head>
+<body>
+<h1>PAVGB/PAVGW—Average Packed Integers</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32 bit Mode Support</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>
+<p>0F E0 /<em>r</em><sup>1</sup></p>
+<p>PAVGB <em>mm1, mm2/m64</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>SSE</td>
+<td>Average packed unsigned byte integers from <em>mm2/m64</em> and <em>mm1</em> with rounding.</td></tr>
+<tr>
+<td>
+<p>66 0F E0, /<em>r</em></p>
+<p>PAVGB <em>xmm1</em>, <em>xmm2/m128</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>SSE2</td>
+<td>Average packed unsigned byte integers from <em>xmm2/m128</em> and <em>xmm1</em> with rounding.</td></tr>
+<tr>
+<td>
+<p>0F E3 /<em>r</em><sup>1</sup></p>
+<p>PAVGW <em>mm1, mm2/m64</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>SSE</td>
+<td>Average packed unsigned word integers from mm2/m64 and <em>mm1</em> with rounding.</td></tr>
+<tr>
+<td>
+<p>66 0F E3 /<em>r</em></p>
+<p>PAVGW <em>xmm1</em>, <em>xmm2/m128</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>SSE2</td>
+<td>Average packed unsigned word integers from <em>xmm2/m128</em> and <em>xmm1</em> with rounding.</td></tr>
+<tr>
+<td>
+<p>VEX.NDS.128.66.0F.WIG E0 /r</p>
+<p>VPAVGB <em>xmm1, xmm2, xmm3/m128</em></p></td>
+<td>RVM</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Average packed unsigned byte integers from <em>xmm3/m128</em> and <em>xmm2</em> with rounding.</td></tr>
+<tr>
+<td>
+<p>VEX.NDS.128.66.0F.WIG E3 /r</p>
+<p>VPAVGW <em>xmm1, xmm2, xmm3/m128</em></p></td>
+<td>RVM</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Average packed unsigned word integers from <em>xmm3/m128</em> and <em>xmm2</em> with rounding.</td></tr>
+<tr>
+<td>
+<p>VEX.NDS.256.66.0F.WIG E0 /r</p>
+<p>VPAVGB <em>ymm1</em>, <em>ymm2, ymm3/m256</em></p></td>
+<td>RVM</td>
+<td>V/V</td>
+<td>AVX2</td>
+<td>Average packed unsigned byte integers from ymm2, and <em>ymm3/m256</em> with rounding and store to <em>ymm1</em>.</td></tr>
+<tr>
+<td>
+<p>VEX.NDS.256.66.0F.WIG E3 /r</p>
+<p>VPAVGW <em>ymm1</em>, <em>ymm2, ymm3/m256</em></p></td>
+<td>RVM</td>
+<td>V/V</td>
+<td>AVX2</td>
+<td>Average packed unsigned word integers from <em>ymm2</em>, <em>ymm3/m256</em> with rounding to <em>ymm1</em>.</td></tr></table>
+<p>NOTES:</p>
+<p>1. See note in Section 2.4, “Instruction Exception Specification” in the <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 2A</em> and Section 22.25.3, “Exception Conditions of Legacy SIMD Instructions Operating on MMX Registers” in the <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 3A</em>.</p>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RM</td>
+<td>ModRM:reg (r, w)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td></tr>
+<tr>
+<td>RVM</td>
+<td>ModRM:reg (w)</td>
+<td>VEX.vvvv (r)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Performs a SIMD average of the packed unsigned integers from the source operand (second operand) and the destination operand (first operand), and stores the results in the destination operand. For each corresponding pair of data elements in the first and second operands, the elements are added together, a 1 is added to the temporary sum, and that result is shifted right one bit position.</p>
+<p>The (V)PAVGB instruction operates on packed unsigned bytes and the (V)PAVGW instruction operates on packed unsigned words.</p>
+<p>In 64-bit mode, using a REX prefix in the form of REX.R permits this instruction to access additional registers (XMM8-XMM15).</p>
+<p>Legacy SSE instructions: The source operand can be an MMX technology register or a 64-bit memory location. The destination operand can be an MMX technology register.</p>
+<p>128-bit Legacy SSE version: The first source operand is an XMM register. The second operand can be an XMM register or a 128-bit memory location. The destination is not distinct from the first source XMM register and the upper bits (VLMAX-1:128) of the corresponding YMM register destination are unmodified.</p>
+<p>VEX.128 encoded version: The first source operand is an XMM register. The second source operand is an XMM register or 128-bit memory location. The destination operand is an XMM register. The upper bits (VLMAX-1:128) of the corresponding YMM register destination are zeroed.</p>
+<p>VEX.256 encoded version: The first source operand is a YMM register. The second source operand is a YMM register or a 256-bit memory location. The destination operand is a YMM register.</p>
+<h2>Operation</h2>
+<p><strong>PAVGB (with 64-bit operands)</strong></p>
+<pre>    DEST[7:0] ← (SRC[7:0] + DEST[7:0] + 1) &gt;&gt; 1; (* Temp sum before shifting is 9 bits *)
+    (* Repeat operation performed for bytes 2 through 6 *)
+    DEST[63:56] ← (SRC[63:56] + DEST[63:56] + 1) &gt;&gt; 1;</pre>
+<p><strong>PAVGW (with 64-bit operands)</strong></p>
+<pre>    DEST[15:0] ← (SRC[15:0] + DEST[15:0] + 1) &gt;&gt; 1; (* Temp sum before shifting is 17 bits *)
+    (* Repeat operation performed for words 2 and 3 *)
+    DEST[63:48] ← (SRC[63:48] + DEST[63:48] + 1) &gt;&gt; 1;</pre>
+<p><strong>PAVGB (with 128-bit operands)</strong></p>
+<pre>    DEST[7:0] ← (SRC[7:0] + DEST[7:0] + 1) &gt;&gt; 1; (* Temp sum before shifting is 9 bits *)
+    (* Repeat operation performed for bytes 2 through 14 *)
+    DEST[127:120] ← (SRC[127:120] + DEST[127:120] + 1) &gt;&gt; 1;</pre>
+<p><strong>PAVGW (with 128-bit operands)</strong></p>
+<pre>    DEST[15:0] ← (SRC[15:0] + DEST[15:0] + 1) &gt;&gt; 1; (* Temp sum before shifting is 17 bits *)
+    (* Repeat operation performed for words 2 through 6 *)
+    DEST[127:112] ← (SRC[127:112] + DEST[127:112] + 1) &gt;&gt; 1;</pre>
+<p><strong>VPAVGB (VEX.128 encoded version)</strong></p>
+<pre>    DEST[7:0] ← (SRC1[7:0] + SRC2[7:0] + 1) &gt;&gt; 1;
+    (* Repeat operation performed for bytes 2 through 15 *)
+    DEST[127:120] ← (SRC1[127:120] + SRC2[127:120] + 1) &gt;&gt; 1
+    DEST[VLMAX-1:128] ← 0</pre>
+<p><strong>VPAVGW (VEX.128 encoded version)</strong></p>
+<pre>    DEST[15:0] ← (SRC1[15:0] + SRC2[15:0] + 1) &gt;&gt; 1;
+    (* Repeat operation performed for 16-bit words 2 through 7 *)
+    DEST[127:112] ← (SRC1[127:112] + SRC2[127:112] + 1) &gt;&gt; 1
+    DEST[VLMAX-1:128] ← 0</pre>
+<p><strong>VPAVGB (VEX.256 encoded instruction)</strong></p>
+<pre>    DEST[7:0] ← (SRC1[7:0] + SRC2[7:0] + 1) &gt;&gt; 1; (* Temp sum before shifting is 9 bits *)
+    (* Repeat operation performed for bytes 2 through 31)
+    DEST[255:248] ← (SRC1[255:248] + SRC2[255:248] + 1) &gt;&gt; 1;</pre>
+<p><strong>VPAVGW (VEX.256 encoded instruction)</strong></p>
+<pre>    DEST[15:0] ← (SRC1[15:0] + SRC2[15:0] + 1) &gt;&gt; 1; (* Temp sum before shifting is 17 bits *)
+    (* Repeat operation performed for words 2 through 15)
+    DEST[255:14]) ← (SRC1[255:240] + SRC2[255:240] + 1) &gt;&gt; 1;</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>PAVGB:</p>
+<p> __m64 _mm_avg_pu8 (__m64 a, __m64 b)</p>
+<p>PAVGW:</p>
+<p> __m64 _mm_avg_pu16 (__m64 a, __m64 b)</p>
+<p>(V)PAVGB:</p>
+<p> __m128i _mm_avg_epu8 ( __m128i a, __m128i b)</p>
+<p>(V)PAVGW:</p>
+<p> __m128i _mm_avg_epu16 ( __m128i a, __m128i b)</p>
+<p>VPAVGB:</p>
+<p>__m256i _mm256_avg_epu8 ( __m256i a, __m256i b)</p>
+<p>VPAVGW:</p>
+<p>__m256i _mm256_avg_epu16 ( __m256i a, __m256i b)</p>
+<h2>Flags Affected</h2>
+<p>None.</p>
+<h2>Numeric Exceptions</h2>
+<p>None.</p>
+<h2>Other Exceptions</h2>
+<p>See Exceptions Type 4; additionally</p>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>If VEX.L = 1.</td></tr></table></body></html>

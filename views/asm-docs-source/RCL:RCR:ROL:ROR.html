@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>RCL/RCR/ROL/ROR-—Rotate </title></head>
+<body>
+<h1>RCL/RCR/ROL/ROR-—Rotate</h1>
+<table>
+<tr>
+<th>Opcode**</th>
+<th>Instruction</th>
+<th>Op/En</th>
+<th>64-Bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>D0 /2</td>
+<td>RCL <em>r/m8</em>, 1</td>
+<td>M1</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Rotate 9 bits (CF, <em>r/m8</em>) left once.</td></tr>
+<tr>
+<td>REX + D0 /2</td>
+<td>RCL <em>r/m8*</em>, 1</td>
+<td>M1</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Rotate 9 bits (CF, <em>r/m8</em>) left once.</td></tr>
+<tr>
+<td>D2 /2</td>
+<td>RCL <em>r/m8</em>, CL</td>
+<td>MC</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Rotate 9 bits (CF, <em>r/m8</em>) left CL times.</td></tr>
+<tr>
+<td>REX + D2 /2</td>
+<td>RCL <em>r/m8*</em>, CL</td>
+<td>MC</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Rotate 9 bits (CF, <em>r/m8</em>) left CL times.</td></tr>
+<tr>
+<td>C0 /2 <em>ib</em></td>
+<td>RCL <em>r/m8, imm8</em></td>
+<td>MI</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Rotate 9 bits (CF, <em>r/m8</em>) left <em>imm8</em> times.</td></tr>
+<tr>
+<td>REX + C0 /2 <em>ib</em></td>
+<td>RCL <em>r/m8*, imm8</em></td>
+<td>MI</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Rotate 9 bits (CF, <em>r/m8</em>) left <em>imm8</em> times.</td></tr>
+<tr>
+<td>D1 /2</td>
+<td>RCL <em>r/m16</em>, 1</td>
+<td>M1</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Rotate 17 bits (CF, <em>r/m16</em>) left once.</td></tr>
+<tr>
+<td>D3 /2</td>
+<td>RCL <em>r/m16</em>, CL</td>
+<td>MC</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Rotate 17 bits (CF, <em>r/m16</em>) left CL times.</td></tr>
+<tr>
+<td>C1 /2 <em>ib</em></td>
+<td>RCL <em>r/m16, imm8</em></td>
+<td>MI</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Rotate 17 bits (CF, <em>r/m16</em>) left <em>imm8</em> times.</td></tr>
+<tr>
+<td>D1 /2</td>
+<td>RCL <em>r/m32</em>, 1</td>
+<td>M1</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Rotate 33 bits (CF, <em>r/m32</em>) left once.</td></tr>
+<tr>
+<td>REX.W + D1 /2</td>
+<td>RCL <em>r/m64</em>, 1</td>
+<td>M1</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Rotate 65 bits (CF, <em>r/m64</em>) left once. Uses a 6 bit count.</td></tr>
+<tr>
+<td>D3 /2</td>
+<td>RCL <em>r/m32</em>, CL</td>
+<td>MC</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Rotate 33 bits (CF, <em>r/m32</em>) left CL times.</td></tr>
+<tr>
+<td>REX.W + D3 /2</td>
+<td>RCL <em>r/m64</em>, CL</td>
+<td>MC</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Rotate 65 bits (CF, <em>r/m64</em>) left CL times. Uses a 6 bit count.</td></tr>
+<tr>
+<td>C1 /2 <em>ib</em></td>
+<td>RCL <em>r/m32, imm8</em></td>
+<td>MI</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Rotate 33 bits (CF, <em>r/m32</em>) left <em>imm8</em> times.</td></tr>
+<tr>
+<td>REX.W + C1 /2 <em>ib</em></td>
+<td>RCL <em>r/m64, imm8</em></td>
+<td>MI</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Rotate 65 bits (CF, <em>r/m64</em>) left <em>imm8</em> times. Uses a 6 bit count.</td></tr>
+<tr>
+<td>D0 /3</td>
+<td>RCR <em>r/m8</em>, 1</td>
+<td>M1</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Rotate 9 bits (CF, <em>r/m8</em>) right once.</td></tr>
+<tr>
+<td>REX + D0 /3</td>
+<td>RCR <em>r/m8*</em>, 1</td>
+<td>M1</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Rotate 9 bits (CF, <em>r/m8</em>) right once.</td></tr>
+<tr>
+<td>D2 /3</td>
+<td>RCR <em>r/m8</em>, CL</td>
+<td>MC</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Rotate 9 bits (CF, <em>r/m8</em>) right CL times.</td></tr>
+<tr>
+<td>REX + D2 /3</td>
+<td>RCR <em>r/m8*</em>, CL</td>
+<td>MC</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Rotate 9 bits (CF, <em>r/m8</em>) right CL times.</td></tr>
+<tr>
+<td>C0 /3 <em>ib</em></td>
+<td>RCR <em>r/m8, imm8</em></td>
+<td>MI</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Rotate 9 bits (CF, <em>r/m8</em>) right <em>imm8</em> times.</td></tr>
+<tr>
+<td>REX + C0 /3 <em>ib</em></td>
+<td>RCR <em>r/m8*, imm8</em></td>
+<td>MI</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Rotate 9 bits (CF, <em>r/m8</em>) right <em>imm8</em> times.</td></tr>
+<tr>
+<td>D1 /3</td>
+<td>RCR <em>r/m16</em>, 1</td>
+<td>M1</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Rotate 17 bits (CF, <em>r/m16</em>) right once.</td></tr>
+<tr>
+<td>D3 /3</td>
+<td>RCR <em>r/m16</em>, CL</td>
+<td>MC</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Rotate 17 bits (CF, <em>r/m16</em>) right CL times.</td></tr>
+<tr>
+<td>C1 /3 <em>ib</em></td>
+<td>RCR <em>r/m16, imm8</em></td>
+<td>MI</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Rotate 17 bits (CF, <em>r/m16</em>) right <em>imm8</em> times.</td></tr>
+<tr>
+<td>D1 /3</td>
+<td>RCR <em>r/m32</em>, 1</td>
+<td>M1</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Rotate 33 bits (CF, <em>r/m32</em>) right once. Uses a 6 bit count.</td></tr>
+<tr>
+<td>REX.W + D1 /3</td>
+<td>RCR <em>r/m64</em>, 1</td>
+<td>M1</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Rotate 65 bits (CF, <em>r/m64</em>) right once. Uses a 6 bit count.</td></tr>
+<tr>
+<td>D3 /3</td>
+<td>RCR <em>r/m32</em>, CL</td>
+<td>MC</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Rotate 33 bits (CF, <em>r/m32</em>) right CL times.</td></tr>
+<tr>
+<td>REX.W + D3 /3</td>
+<td>RCR <em>r/m64</em>, CL</td>
+<td>MC</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Rotate 65 bits (CF, <em>r/m64</em>) right CL times. Uses a 6 bit count.</td></tr>
+<tr>
+<td>C1 /3 <em>ib</em></td>
+<td>RCR <em>r/m32, imm8</em></td>
+<td>MI</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Rotate 33 bits (CF, <em>r/m32</em>) right <em>imm8</em> times.</td></tr>
+<tr>
+<td>REX.W + C1 /3 <em>ib</em></td>
+<td>RCR <em>r/m64, imm8</em></td>
+<td>MI</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Rotate 65 bits (CF, <em>r/m64</em>) right <em>imm8</em> times. Uses a 6 bit count.</td></tr>
+<tr>
+<td>D0 /0</td>
+<td>ROL <em>r/m8</em>, 1</td>
+<td>M1</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Rotate 8 bits <em>r/m8</em> left once.</td></tr>
+<tr>
+<td>REX + D0 /0</td>
+<td>ROL <em>r/m8*</em>, 1</td>
+<td>M1</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Rotate 8 bits <em>r/m8</em> left once</td></tr>
+<tr>
+<td>D2 /0</td>
+<td>ROL <em>r/m8</em>, CL</td>
+<td>MC</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Rotate 8 bits <em>r/m8</em> left CL times.</td></tr>
+<tr>
+<td>REX + D2 /0</td>
+<td>ROL <em>r/m8*</em>, CL</td>
+<td>MC</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Rotate 8 bits <em>r/m8</em> left CL times.</td></tr>
+<tr>
+<td>C0 /0 <em>ib</em></td>
+<td>ROL <em>r/m8, imm8</em></td>
+<td>MI</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Rotate 8 bits <em>r/m8</em> left <em>imm8</em> times.</td></tr></table>
+<table>
+<tr>
+<th>Opcode**</th>
+<th>Instruction</th>
+<th>Op/En</th>
+<th>64-Bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>REX + C0 /0 <em>ib</em></td>
+<td>ROL <em>r/m8*, imm8</em></td>
+<td>MI</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Rotate 8 bits <em>r/m8</em> left <em>imm8</em> times.</td></tr>
+<tr>
+<td>D1 /0</td>
+<td>ROL <em>r/m16</em>, 1</td>
+<td>M1</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Rotate 16 bits <em>r/m16</em> left once.</td></tr>
+<tr>
+<td>D3 /0</td>
+<td>ROL <em>r/m16</em>, CL</td>
+<td>MC</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Rotate 16 bits <em>r/m16</em> left CL times.</td></tr>
+<tr>
+<td>C1 /0 <em>ib</em></td>
+<td>ROL <em>r/m16, imm8</em></td>
+<td>MI</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Rotate 16 bits <em>r/m16</em> left <em>imm8</em> times.</td></tr>
+<tr>
+<td>D1 /0</td>
+<td>ROL <em>r/m32</em>, 1</td>
+<td>M1</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Rotate 32 bits <em>r/m32</em> left once.</td></tr>
+<tr>
+<td>REX.W + D1 /0</td>
+<td>ROL <em>r/m64</em>, 1</td>
+<td>M1</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Rotate 64 bits <em>r/m64</em> left once. Uses a 6 bit count.</td></tr>
+<tr>
+<td>D3 /0</td>
+<td>ROL <em>r/m32</em>, CL</td>
+<td>MC</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Rotate 32 bits <em>r/m32</em> left CL times.</td></tr>
+<tr>
+<td>REX.W + D3 /0</td>
+<td>ROL <em>r/m64</em>, CL</td>
+<td>MC</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Rotate 64 bits <em>r/m64</em> left CL times. Uses a 6 bit count.</td></tr>
+<tr>
+<td>C1 /0 <em>ib</em></td>
+<td>ROL <em>r/m32, imm8</em></td>
+<td>MI</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Rotate 32 bits <em>r/m32</em> left <em>imm8</em> times.</td></tr>
+<tr>
+<td>REX.W + C1 /0 <em>ib</em></td>
+<td>ROL <em>r/m64, imm8</em></td>
+<td>MI</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Rotate 64 bits <em>r/m64</em> left <em>imm8</em> times. Uses a 6 bit count.</td></tr>
+<tr>
+<td>D0 /1</td>
+<td>ROR <em>r/m8</em>, 1</td>
+<td>M1</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Rotate 8 bits <em>r/m8</em> right once.</td></tr>
+<tr>
+<td>REX + D0 /1</td>
+<td>ROR <em>r/m8*</em>, 1</td>
+<td>M1</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Rotate 8 bits <em>r/m8</em> right once.</td></tr>
+<tr>
+<td>D2 /1</td>
+<td>ROR <em>r/m8</em>, CL</td>
+<td>MC</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Rotate 8 bits <em>r/m8</em> right CL times.</td></tr>
+<tr>
+<td>REX + D2 /1</td>
+<td>ROR <em>r/m8*</em>, CL</td>
+<td>MC</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Rotate 8 bits <em>r/m8</em> right CL times.</td></tr>
+<tr>
+<td>C0 /1 <em>ib</em></td>
+<td>ROR <em>r/m8, imm8</em></td>
+<td>MI</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Rotate 8 bits <em>r/m16</em> right <em>imm8</em> times.</td></tr>
+<tr>
+<td>REX + C0 /1 <em>ib</em></td>
+<td>ROR <em>r/m8*, imm8</em></td>
+<td>MI</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Rotate 8 bits <em>r/m16</em> right <em>imm8</em> times.</td></tr>
+<tr>
+<td>D1 /1</td>
+<td>ROR <em>r/m16</em>, 1</td>
+<td>M1</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Rotate 16 bits <em>r/m16</em> right once.</td></tr>
+<tr>
+<td>D3 /1</td>
+<td>ROR <em>r/m16</em>, CL</td>
+<td>MC</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Rotate 16 bits <em>r/m16</em> right CL times.</td></tr>
+<tr>
+<td>C1 /1 <em>ib</em></td>
+<td>ROR <em>r/m16, imm8</em></td>
+<td>MI</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Rotate 16 bits <em>r/m16</em> right <em>imm8</em> times.</td></tr>
+<tr>
+<td>D1 /1</td>
+<td>ROR <em>r/m32</em>, 1</td>
+<td>M1</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Rotate 32 bits <em>r/m32</em> right once.</td></tr>
+<tr>
+<td>REX.W + D1 /1</td>
+<td>ROR <em>r/m64</em>, 1</td>
+<td>M1</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Rotate 64 bits <em>r/m64</em> right once. Uses a 6 bit count.</td></tr>
+<tr>
+<td>D3 /1</td>
+<td>ROR <em>r/m32</em>, CL</td>
+<td>MC</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Rotate 32 bits <em>r/m32</em> right CL times.</td></tr>
+<tr>
+<td>REX.W + D3 /1</td>
+<td>ROR <em>r/m64</em>, CL</td>
+<td>MC</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Rotate 64 bits <em>r/m64</em> right CL times. Uses a 6 bit count.</td></tr>
+<tr>
+<td>C1 /1 <em>ib</em></td>
+<td>ROR <em>r/m32, imm8</em></td>
+<td>MI</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Rotate 32 bits <em>r/m32</em> right <em>imm8</em> times.</td></tr>
+<tr>
+<td>REX.W + C1 /1 <em>ib</em></td>
+<td>ROR <em>r/m64, imm8</em></td>
+<td>MI</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Rotate 64 bits <em>r/m64</em> right <em>imm8</em> times. Uses a 6 bit count.</td></tr></table>
+<p><strong>NOTES:</strong></p>
+<p>*</p>
+<p>In 64-bit mode, r/m8 can not be encoded to access the following byte registers if a REX prefix is used: AH, BH, CH, DH.</p>
+<p>** See IA-32 Architecture Compatibility section below.</p>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>M1</td>
+<td>ModRM:r/m (w)</td>
+<td>1</td>
+<td>NA</td>
+<td>NA</td></tr>
+<tr>
+<td>MC</td>
+<td>ModRM:r/m (w)</td>
+<td>CL</td>
+<td>NA</td>
+<td>NA</td></tr>
+<tr>
+<td>MI</td>
+<td>ModRM:r/m (w)</td>
+<td>imm8</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Shifts (rotates) the bits of the first operand (destination operand) the number of bit positions specified in the second operand (count operand) and stores the result in the destination operand. The destination operand can be a register or a memory location; the count operand is an unsigned integer that can be an immediate or a value in the CL register. In legacy and compatibility mode, the processor restricts the count to a number between 0 and 31 by masking all the bits in the count operand except the 5 least-significant bits.</p>
+<p>The rotate left (ROL) and rotate through carry left (RCL) instructions shift all the bits toward more-significant bit positions, except for the most-significant bit, which is rotated to the least-significant bit location. The rotate right (ROR) and rotate through carry right (RCR) instructions shift all the bits toward less significant bit positions, except for the least-significant bit, which is rotated to the most-significant bit location.</p>
+<p>The RCL and RCR instructions include the CF flag in the rotation. The RCL instruction shifts the CF flag into the least-significant bit and shifts the most-significant bit into the CF flag. The RCR instruction shifts the CF flag into the most-significant bit and shifts the least-significant bit into the CF flag. For the ROL and ROR instructions, the orig-inal value of the CF flag is not a part of the result, but the CF flag receives a copy of the bit that was shifted from one end to the other.</p>
+<p>The OF flag is defined only for the 1-bit rotates; it is undefined in all other cases (except RCL and RCR instructions only: a zero-bit rotate does nothing, that is affects no flags). For left rotates, the OF flag is set to the exclusive OR of the CF bit (after the rotate) and the most-significant bit of the result. For right rotates, the OF flag is set to the exclusive OR of the two most-significant bits of the result.</p>
+<p>In 64-bit mode, using a REX prefix in the form of REX.R permits access to additional registers (R8-R15). Use of REX.W promotes the first operand to 64 bits and causes the count operand to become a 6-bit counter.</p>
+<h2>IA-32 Architecture Compatibility</h2>
+<p>The 8086 does not mask the rotation count. However, all other IA-32 processors (starting with the Intel 286 processor) do mask the rotation count to 5 bits, resulting in a maximum count of 31. This masking is done in all operating modes (including the virtual-8086 mode) to reduce the maximum execution time of the instructions.</p>
+<h2>Operation</h2>
+<pre>(* RCL and RCR instructions *)
+SIZE ← OperandSize;
+CASE (determine count) OF
+    SIZE ← 8:
+                    tempCOUNT ← (COUNT AND 1FH) MOD 9;
+    SIZE ← 16:
+                    tempCOUNT ← (COUNT AND 1FH) MOD 17;
+    SIZE ← 32:
+                    tempCOUNT ← COUNT AND 1FH;
+    SIZE ← 64:
+                    tempCOUNT ← COUNT AND 3FH;
+ESAC;
+(* RCL instruction operation *)
+WHILE (tempCOUNT ≠ 0)
+    DO
+         tempCF ← MSB(DEST);
+         DEST ← (DEST<em> </em>∗ 2) + CF;
+         CF ← tempCF;
+         tempCOUNT ← tempCOUNT – 1;
+    OD;
+ELIHW;
+IF COUNT = 1
+    THEN OF ← MSB(DEST) XOR CF;
+    ELSE OF is undefined;
+FI;
+(* RCR instruction operation *)
+IF COUNT = 1
+    THEN OF ← MSB(DEST) XOR CF;
+    ELSE OF is undefined;
+FI;
+WHILE (tempCOUNT ≠ 0)
+    DO
+         tempCF ← LSB(SRC);
+         DEST<em> </em>← (DEST / 2) + (CF * 2<sup>SIZE</sup>);
+         CF ← tempCF;
+         tempCOUNT ← tempCOUNT – 1;
+    OD;
+(* ROL and ROR instructions *)
+IF OperandSize = 64
+    THEN COUNTMASK = 3FH;
+    ELSE COUNTMASK = 1FH;
+FI;
+(* ROL instruction operation *)
+tempCOUNT ← (COUNT &amp; COUNTMASK) MOD SIZE
+WHILE (tempCOUNT ≠ 0)
+    DO
+         tempCF ← MSB(DEST);
+         DEST ← (DEST<em> </em>∗ 2) + tempCF;
+         tempCOUNT ← tempCOUNT – 1;
+    OD;
+ELIHW;
+CF ← LSB(DEST);
+IF (COUNT &amp; COUNTMASK) = 1
+    THEN OF ← MSB(DEST) XOR CF;
+    ELSE OF is undefined;
+FI;
+(* ROR instruction operation *)
+tempCOUNT ← (COUNT &amp; COUNTMASK) MOD SIZE
+WHILE (tempCOUNT ≠ 0)
+    DO
+         tempCF ← LSB(SRC);
+         DEST<em> </em>← (DEST / 2) + (tempCF ∗ 2<sup>SIZE</sup>);
+         tempCOUNT ← tempCOUNT – 1;
+    OD;
+ELIHW;
+CF ← MSB(DEST);
+IF (COUNT &amp; COUNTMASK) = 1
+    THEN OF ← MSB(DEST) XOR MSB − 1(DEST);
+    ELSE OF is undefined;
+FI;</pre>
+<h2>Flags Affected</h2>
+<p>The CF flag contains the value of the bit shifted into it. The OF flag is affected only for single-bit rotates (see “Description” above); it is undefined for multi-bit rotates. The SF, ZF, AF, and PF flags are not affected.</p>
+<h2>Protected Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>
+<p>If the source operand is located in a non-writable segment.</p>
+<p>If a memory operand effective address is outside the CS, DS, ES, FS, or GS segment limit.</p>
+<p>If the DS, ES, FS, or GS register contains a NULL segment selector.</p></td></tr>
+<tr>
+<td>#SS(0)</td>
+<td>If a memory operand effective address is outside the SS segment limit.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and an unaligned memory reference is made while the current privilege level is 3.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Real-Address Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP</td>
+<td>If a memory operand effective address is outside the CS, DS, ES, FS, or GS segment limit.</td></tr>
+<tr>
+<td>#SS</td>
+<td>If a memory operand effective address is outside the SS segment limit.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Virtual-8086 Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>If a memory operand effective address is outside the CS, DS, ES, FS, or GS segment limit.</td></tr>
+<tr>
+<td>#SS(0)</td>
+<td>If a memory operand effective address is outside the SS segment limit.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and an unaligned memory reference is made.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Compatibility Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>64-Bit Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#SS(0)</td>
+<td>If a memory address referencing the SS segment is in a non-canonical form.</td></tr>
+<tr>
+<td>#GP(0)</td>
+<td>
+<p>If the source operand is located in a nonwritable segment.</p>
+<p>If the memory address is in a non-canonical form.</p></td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and an unaligned memory reference is made while the current privilege level is 3.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table></body></html>

@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>LSL—Load Segment Limit </title></head>
+<body>
+<h1>LSL—Load Segment Limit</h1>
+<table>
+<tr>
+<th>Opcode</th>
+<th>Instruction</th>
+<th>Op/En</th>
+<th>64-Bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>0F 03 /<em>r</em></td>
+<td>LSL <em>r16, r16/m16</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Load:<em> r16 </em>← segment limit, selector<em> r16/m16.</em></td></tr>
+<tr>
+<td>0F 03 /<em>r</em></td>
+<td>LSL<em> r32, r32/m16</em><sup>*</sup></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Load: <em>r32 </em>←<em> </em>segment limit, selector <em>r32/m16.</em></td></tr>
+<tr>
+<td>REX.W + 0F 03 /<em>r</em></td>
+<td>LSL<em> r64, r32/m16</em><sup>*</sup></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Load: <em>r64 </em>←<em> </em>segment limit, selector <em>r32/m16</em></td></tr></table>
+<p><strong>NOTES:</strong></p>
+<p>*</p>
+<p>For all loads (regardless of destination sizing), only bits 16-0 are used. Other bits are ignored.</p>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RM</td>
+<td>ModRM:reg (w)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Loads the unscrambled segment limit from the segment descriptor specified with the second operand (source operand) into the first operand (destination operand) and sets the ZF flag in the EFLAGS register. The source operand (which can be a register or a memory location) contains the segment selector for the segment descriptor being accessed. The destination operand is a general-purpose register.</p>
+<p>The processor performs access checks as part of the loading process. Once loaded in the destination register, soft-ware can compare the segment limit with the offset of a pointer.</p>
+<p>The segment limit is a 20-bit value contained in bytes 0 and 1 and in the first 4 bits of byte 6 of the segment descriptor. If the descriptor has a byte granular segment limit (the granularity flag is set to 0), the destination operand is loaded with a byte granular value (byte limit). If the descriptor has a page granular segment limit (the granularity flag is set to 1), the LSL instruction will translate the page granular limit (page limit) into a byte limit before loading it into the destination operand. The translation is performed by shifting the 20-bit “raw” limit left 12 bits and filling the low-order 12 bits with 1s.</p>
+<p>When the operand size is 32 bits, the 32-bit byte limit is stored in the destination operand. When the operand size is 16 bits, a valid 32-bit limit is computed; however, the upper 16 bits are truncated and only the low-order 16 bits are loaded into the destination operand.</p>
+<p>This instruction performs the following checks before it loads the segment limit into the destination register:</p>
+<p>If the segment descriptor cannot be accessed or is an invalid type for the instruction, the ZF flag is cleared and no value is loaded in the destination operand.</p>
+<h3>Table 3-65.  Segment and Gate Descriptor Types</h3>
+<table>
+<tr>
+<th>Type</th>
+<th>Protected Mode</th>
+<td></td>
+<th>IA-32e Mode</th>
+<td></td></tr>
+<tr>
+<td></td>
+<th>Name</th>
+<th>Valid</th>
+<th>Name</th>
+<th>Valid</th></tr>
+<tr>
+<td>
+<p>0</p>
+<p>1</p>
+<p>2</p>
+<p>3</p>
+<p>4</p>
+<p>5</p>
+<p>6</p>
+<p>7</p>
+<p>8</p>
+<p>9</p>
+<p>A</p>
+<p>B</p>
+<p>C</p>
+<p>D</p>
+<p>E</p>
+<p>F</p></td>
+<td>
+<p>Reserved</p>
+<p>Available 16-bit TSS</p>
+<p>LDT</p>
+<p>Busy 16-bit TSS</p>
+<p>16-bit call gate</p>
+<p>16-bit/32-bit task gate</p>
+<p>16-bit interrupt gate</p>
+<p>16-bit trap gate</p>
+<p>Reserved</p>
+<p>Available 32-bit TSS</p>
+<p>Reserved</p>
+<p>Busy 32-bit TSS</p>
+<p>32-bit call gate</p>
+<p>Reserved</p>
+<p>32-bit interrupt gate</p>
+<p>32-bit trap gate</p></td>
+<td>
+<p>No</p>
+<p>Yes</p>
+<p>Yes</p>
+<p>Yes</p>
+<p>No</p>
+<p>No</p>
+<p>No</p>
+<p>No</p>
+<p>No</p>
+<p>Yes</p>
+<p>No</p>
+<p>Yes</p>
+<p>No</p>
+<p>No</p>
+<p>No</p>
+<p>No</p></td>
+<td>
+<p>Upper 8 byte of a 16-Byte descriptor</p>
+<p>Reserved</p>
+<p>LDT</p>
+<p>Reserved</p>
+<p>Reserved</p>
+<p>Reserved</p>
+<p>Reserved</p>
+<p>Reserved</p>
+<p>Reserved</p>
+<p>64-bit TSS</p>
+<p>Reserved</p>
+<p>Busy 64-bit TSS</p>
+<p>64-bit call gate</p>
+<p>Reserved</p>
+<p>64-bit interrupt gate</p>
+<p>64-bit trap gate</p></td>
+<td>
+<p>Yes</p>
+<p>No</p>
+<p>Yes</p>
+<p>No</p>
+<p>No</p>
+<p>No</p>
+<p>No</p>
+<p>No</p>
+<p>No</p>
+<p>Yes</p>
+<p>No</p>
+<p>Yes</p>
+<p>No</p>
+<p>No</p>
+<p>No</p>
+<p>No</p></td></tr></table>
+<h2>Operation</h2>
+<pre>IF SRC(Offset) &gt; descriptor table limit
+    THEN ZF ← 0; FI;
+Read segment descriptor;
+IF SegmentDescriptor(Type) ≠ conforming code segment
+and (CPL &gt; DPL) OR (RPL &gt; DPL)
+or Segment type is not valid for instruction
+         THEN
+              ZF ← 0;
+         ELSE
+              temp ← SegmentLimit([SRC]);
+              IF (G ← 1)
+                    THEN temp ← ShiftLeft(12, temp) OR 00000FFFH;
+              ELSE IF OperandSize = 32
+                    THEN DEST ← temp; FI;
+              ELSE IF OperandSize = 64 (* REX.W used *)
+                    THEN DEST (* Zero-extended *) ← temp; FI;
+              ELSE (* OperandSize = 16 *)
+                    DEST ← temp AND FFFFH;
+              FI;
+FI;</pre>
+<h2>Flags Affected</h2>
+<p>The ZF flag is set to 1 if the segment limit is loaded successfully; otherwise, it is set to 0.</p>
+<h2>Protected Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>
+<p>If a memory operand effective address is outside the CS, DS, ES, FS, or GS segment limit.</p>
+<p>If the DS, ES, FS, or GS register is used to access memory and it contains a NULL segment selector.</p></td></tr>
+<tr>
+<td>#SS(0)</td>
+<td>If a memory operand effective address is outside the SS segment limit.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and the memory operand effective address is unaligned while the current privilege level is 3.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Real-Address Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>The LSL instruction cannot be executed in real-address mode.</td></tr></table>
+<h2>Virtual-8086 Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>The LSL instruction cannot be executed in virtual-8086 mode.</td></tr></table>
+<h2>Compatibility Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>64-Bit Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#SS(0)</td>
+<td>If the memory operand effective address referencing the SS segment is in a non-canonical form.</td></tr>
+<tr>
+<td>#GP(0)</td>
+<td>If the memory operand effective address is in a non-canonical form.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and the memory operand effective address is unaligned while the current privilege level is 3.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table></body></html>

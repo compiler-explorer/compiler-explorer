@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>INVLPG—Invalidate TLB Entries </title></head>
+<body>
+<h1>INVLPG—Invalidate TLB Entries</h1>
+<table>
+<tr>
+<th>Opcode</th>
+<th>Instruction</th>
+<th>Op/En</th>
+<th>64-Bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>0F 01/7</td>
+<td>INVLPG <em>m</em></td>
+<td>M</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Invalidate TLB entries for page containing <em>m.</em></td></tr></table>
+<p><strong>NOTES:</strong></p>
+<p>*</p>
+<p>See the IA-32 Architecture Compatibility section below.</p>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>M</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Invalidates any translation lookaside buffer (TLB) entries specified with the source operand. The source operand is a memory address. The processor determines the page that contains that address and flushes all TLB entries for that page.<sup>1</sup></p>
+<p>The INVLPG instruction is a privileged instruction. When the processor is running in protected mode, the CPL must be 0 to execute this instruction.</p>
+<p>The INVLPG instruction normally flushes TLB entries only for the specified page; however, in some cases, it may flush more entries, even the entire TLB. The instruction is guaranteed to invalidates only TLB entries associated with the current PCID. (If PCIDs are disabled — CR4.PCIDE = 0 — the current PCID is 000H.) The instruction also invalidates any global TLB entries for the specified page, regardless of PCID.</p>
+<p>For more details on operations that flush the TLB, see “MOV—Move to/from Control Registers” and Section 4.10.4.1, “Operations that Invalidate TLBs and Paging-Structure Caches,” of the <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 3A</em>.</p>
+<p>This instruction’s operation is the same in all non-64-bit modes. It also operates the same in 64-bit mode, except if the memory address is in non-canonical form. In this case, INVLPG is the same as a NOP.</p>
+<h2>IA-32 Architecture Compatibility</h2>
+<p>The INVLPG instruction is implementation dependent, and its function may be implemented differently on different families of Intel 64 or IA-32 processors. This instruction is not supported on IA-32 processors earlier than the Intel486 processor.</p>
+<h2>Operation</h2>
+<pre>Invalidate(RelevantTLBEntries);
+Continue; (* Continue execution *)</pre>
+<h2>Flags Affected</h2>
+<p>None.</p>
+<h2>Protected Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>If the current privilege level is not 0.</td></tr>
+<tr>
+<td>#UD</td>
+<td>
+<p>Operand is a register.</p>
+<p>If the LOCK prefix is used.</p></td></tr></table>
+<p>1.</p>
+<table class="exception-table">
+<tr>
+<td>If the paging structures map the linear address using a page larger than 4 KBytes and there are multiple TLB entries for that page</td></tr>
+<tr>
+<td>(see Section 4.10.2.3, “Details of TLB Use,” in the <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 3A</em>), the</td></tr>
+<tr>
+<td>instruction invalidates all of them.</td></tr></table>
+<h2>Real-Address Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>
+<p>Operand is a register.</p>
+<p>If the LOCK prefix is used.</p></td></tr></table>
+<h2>Virtual-8086 Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>The INVLPG instruction cannot be executed at the virtual-8086 mode.</td></tr></table>
+<h2>64-Bit Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>If the current privilege level is not 0.</td></tr>
+<tr>
+<td>#UD</td>
+<td>
+<p>Operand is a register.</p>
+<p>If the LOCK prefix is used.</p></td></tr></table></body></html>

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>MOVSHDUP—Move Packed Single-FP High and Duplicate </title></head>
+<body>
+<h1>MOVSHDUP—Move Packed Single-FP High and Duplicate</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32-bit Mode</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>
+<p>F3 0F 16 /<em>r</em></p>
+<p>MOVSHDUP <em>xmm1</em>, <em>xmm2/m128</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>SSE3</td>
+<td>Move two single-precision floating-point values from the higher 32-bit operand of each qword in <em>xmm2/m128</em> to <em>xmm1</em> and duplicate each 32-bit operand to the lower 32-bits of each qword.</td></tr>
+<tr>
+<td>
+<p>VEX.128.F3.0F.WIG 16 /r</p>
+<p>VMOVSHDUP <em>xmm1, xmm2/m128</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Move odd index single-precision floating-point values from <em>xmm2/mem</em> and duplicate each element into <em>xmm1</em>.</td></tr>
+<tr>
+<td>
+<p>VEX.256.F3.0F.WIG 16 /r</p>
+<p>VMOVSHDUP<em> ymm1, ymm2/m256</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Move odd index single-precision floating-point values from <em>ymm2/mem</em> and duplicate each element into <em>ymm1</em>.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RM</td>
+<td>ModRM:reg (w)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>The linear address corresponds to the address of the least-significant byte of the referenced memory data. When a memory address is indicated, the 16 bytes of data at memory location m128 are loaded and the single-precision elements in positions 1 and 3 are duplicated. When the register-register form of this operation is used, the same operation is performed but with data coming from the 128-bit source register. See Figure 3-25.</p>
+<svg width="560.88" viewBox="117.660000 439987.500000 373.920000 166.740000" height="250.11">
+<text y="440005.422533" x="223.0967" style="font-size:8.160200pt" lengthAdjust="spacingAndGlyphs" textLength="120.9096834">MOVSHDUP xmm1, xmm2/m128</text>
+<text y="440026.346133" x="444.2234" style="font-size:8.160200pt" lengthAdjust="spacingAndGlyphs" textLength="24.4806">xmm2/</text>
+<text y="440031.241533" x="151.8219" style="font-size:8.160200pt" lengthAdjust="spacingAndGlyphs" textLength="29.4909628">[127:96]</text>
+<text y="440031.241533" x="232.129" style="font-size:8.160200pt" lengthAdjust="spacingAndGlyphs" textLength="24.9538916">[95:64]</text>
+<text y="440031.241533" x="310.1614" style="font-size:8.160200pt" lengthAdjust="spacingAndGlyphs" textLength="24.9538916">[63:32]</text>
+<text y="440031.241533" x="390.4582" style="font-size:8.160200pt" lengthAdjust="spacingAndGlyphs" textLength="20.4168204">[31:0]</text>
+<text y="440036.138333" x="444.2234" style="font-size:8.160200pt" lengthAdjust="spacingAndGlyphs" textLength="20.4086602">m128</text>
+<text y="440076.535933" x="143.825" style="font-size:7.418400pt" lengthAdjust="spacingAndGlyphs" textLength="47.0029824">xmm1[127:96]</text>
+<text y="440076.535933" x="223.8464" style="font-size:7.418400pt" lengthAdjust="spacingAndGlyphs" textLength="42.878352">xmm1[95:64]</text>
+<text y="440076.535933" x="301.8787" style="font-size:7.418400pt" lengthAdjust="spacingAndGlyphs" textLength="42.878352">xmm1[63:32]</text>
+<text y="440076.535933" x="381.9103" style="font-size:7.418400pt" lengthAdjust="spacingAndGlyphs" textLength="38.7537216">xmm1[31:0]</text>
+<text y="440081.427433" x="444.2234" style="font-size:8.160200pt" lengthAdjust="spacingAndGlyphs" textLength="32.9508876">RESULT:</text>
+<text y="440086.328133" x="144.825" style="font-size:7.418400pt" lengthAdjust="spacingAndGlyphs" textLength="44.9406672">xmm2/</text>
+<text y="440086.328133" x="223.8568" style="font-size:7.418400pt" lengthAdjust="spacingAndGlyphs" textLength="42.878352">xmm2/</text>
+<text y="440086.328133" x="302.8883" style="font-size:7.418400pt" lengthAdjust="spacingAndGlyphs" textLength="40.8160368">xmm2/</text>
+<text y="440086.328133" x="382.9103" style="font-size:7.418400pt" lengthAdjust="spacingAndGlyphs" textLength="36.6914064">xmm2/</text>
+<text y="440091.219733" x="444.2234" style="font-size:8.160200pt" lengthAdjust="spacingAndGlyphs" textLength="22.2120644">xmm1</text>
+<text y="440096.120433" x="144.6106" style="font-size:7.418400pt" lengthAdjust="spacingAndGlyphs" textLength="45.363516">m128[127:96]</text>
+<text y="440096.120433" x="222.6431" style="font-size:7.418400pt" lengthAdjust="spacingAndGlyphs" textLength="45.363516">m128[127:96]</text>
+<text y="440096.120433" x="302.674" style="font-size:7.418400pt" lengthAdjust="spacingAndGlyphs" textLength="41.2388856">m128[63:32]</text>
+<text y="440096.120433" x="380.707" style="font-size:7.418400pt" lengthAdjust="spacingAndGlyphs" textLength="41.2388856">m128[63:32]</text>
+<text y="440114.960333" x="151.8325" style="font-size:8.160200pt" lengthAdjust="spacingAndGlyphs" textLength="29.4909628">[127:96]</text>
+<text y="440114.960333" x="232.13947626" style="font-size:8.160200pt" lengthAdjust="spacingAndGlyphs" textLength="24.9538916">[95:64]</text>
+<text y="440114.960333" x="310.17138876" style="font-size:8.160200pt" lengthAdjust="spacingAndGlyphs" textLength="24.9538916">[63:32]</text>
+<text y="440114.960333" x="390.46775676" style="font-size:8.160200pt" lengthAdjust="spacingAndGlyphs" textLength="20.4168204">[31:0]</text>
+<text y="440145.415673" x="459.5796" style="font-size:6.120100pt" lengthAdjust="spacingAndGlyphs" textLength="26.8733591">OM15998</text>
+<rect y="439988.251" x="118.375" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="142.294" width="367.211"></rect>
+<rect y="439988.251" x="118.375" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="142.294" width="367.211"></rect>
+<rect y="440014.644" x="361.653" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="27.541" width="78.032"></rect>
+<rect y="440014.644" x="283.62" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="27.541" width="78.032"></rect>
+<rect y="440014.644" x="127.555" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="27.541" width="78.032"></rect>
+<rect y="440014.644" x="205.588" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="27.541" width="78.032"></rect>
+<rect y="440063.988" x="361.653" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="39.016" width="78.032"></rect>
+<rect y="440063.988" x="283.62" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="39.016" width="78.032"></rect>
+<rect y="440063.988" x="127.555" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="39.016" width="78.032"></rect>
+<rect y="440063.988" x="205.588" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="39.016" width="78.032"></rect>
+<rect y="440014.644" x="361.653" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="27.541" width="78.032"></rect>
+<rect y="440014.644" x="283.62" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="27.541" width="78.032"></rect>
+<rect y="440014.644" x="127.555" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="27.541" width="78.032"></rect>
+<rect y="440014.644" x="205.588" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="27.541" width="78.032"></rect>
+<rect y="440063.988" x="361.653" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="39.016" width="78.032"></rect>
+<rect y="440063.988" x="283.62" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="39.016" width="78.032"></rect>
+<rect y="440063.988" x="127.555" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="39.016" width="78.032"></rect>
+<rect y="440063.988" x="205.588" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="39.016" width="78.032"></rect></svg>
+<h3>Figure 3-25.  MOVSHDUP—Move Packed Single-FP High and Duplicate</h3>
+<p>In 64-bit mode, use of the REX prefix in the form of REX.R permits this instruction to access additional registers (XMM8-XMM15).</p>
+<p>128-bit Legacy SSE version: Bits (VLMAX-1:128) of the corresponding YMM destination register remain unchanged.</p>
+<p>VEX.128 encoded version: Bits (VLMAX-1:128) of the destination YMM register are zeroed.</p>
+<p>Note: In VEX-encoded versions, VEX.vvvv is reserved and must be 1111b otherwise instructions will #UD.</p>
+<h2>Operation</h2>
+<p><strong>MOVSHDUP (128-bit Legacy SSE version)</strong></p>
+<pre>DEST[31:0] ← SRC[63:32]
+DEST[63:32] ← SRC[63:32]
+DEST[95:64] ← SRC[127:96]
+DEST[127:96] ← SRC[127:96]
+DEST[VLMAX-1:128] (Unmodified)</pre>
+<p><strong>VMOVSHDUP (VEX.128 encoded version)</strong></p>
+<pre>DEST[31:0] ← SRC[63:32]
+DEST[63:32] ← SRC[63:32]
+DEST[95:64] ← SRC[127:96]
+DEST[127:96] ← SRC[127:96]
+DEST[VLMAX-1:128] ← 0</pre>
+<p><strong>VMOVSHDUP (VEX.256 encoded version)</strong></p>
+<pre>DEST[31:0] ← SRC[63:32]
+DEST[63:32] ← SRC[63:32]
+DEST[95:64] ← SRC[127:96]
+DEST[127:96] ← SRC[127:96]
+DEST[159:128] ← SRC[191:160]
+DEST[191:160] ← SRC[191:160]
+DEST[223:192] ← SRC[255:224]
+DEST[255:224] ← SRC[255:224]</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>(V)MOVSHDUP:</p>
+<p>__m128 _mm_movehdup_ps(__m128 a)</p>
+<p>VMOVSHDUP:</p>
+<p> __m256 _mm256_movehdup_ps (__m256 a);</p>
+<h2>Exceptions</h2>
+<p>General protection exception if not aligned on 16-byte boundary, regardless of segment.</p>
+<h2>Numeric Exceptions</h2>
+<p>None</p>
+<h2>Other Exceptions</h2>
+<p>See Exceptions Type 2.</p></body></html>

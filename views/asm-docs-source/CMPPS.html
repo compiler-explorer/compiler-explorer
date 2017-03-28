@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>CMPPS—Compare Packed Single-Precision Floating-Point Values </title></head>
+<body>
+<h1>CMPPS—Compare Packed Single-Precision Floating-Point Values</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32-bit Mode</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>
+<p>0F C2 /<em>r</em> ib</p>
+<p>CMPPS <em>xmm1, xmm2/m128, imm8</em></p></td>
+<td>RMI</td>
+<td>V/V</td>
+<td>SSE</td>
+<td>Compare packed single-precision floating-point values in <em>xmm2/mem </em>and <em>xmm1</em> using <em>imm8</em> as comparison predicate.</td></tr>
+<tr>
+<td>
+<p>VEX.NDS.128.0F.WIG C2 /r ib</p>
+<p>VCMPPS xmm1, xmm2, xmm3/m128, imm8</p></td>
+<td>RVMI</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Compare packed single-precision floating-point values in xmm3/m128 and xmm2 using bits 4:0 of imm8 as a comparison predicate.</td></tr>
+<tr>
+<td>
+<p>VEX.NDS.256.0F.WIG C2 /r ib</p>
+<p>VCMPPS ymm1, ymm2, ymm3/m256, imm8</p></td>
+<td>RVMI</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Compare packed single-precision floating-point values in ymm3/m256 and ymm2 using bits 4:0 of imm8 as a comparison predicate.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RMI</td>
+<td>ModRM:reg (r, w)</td>
+<td>ModRM:r/m (r)</td>
+<td>imm8</td>
+<td>NA</td></tr>
+<tr>
+<td>RVMI</td>
+<td>ModRM:reg (w)</td>
+<td>VEX.vvvv (r)</td>
+<td>ModRM:r/m (r)</td>
+<td>imm8</td></tr></table>
+<h2>Description</h2>
+<p>Performs a SIMD compare of the packed single-precision floating-point values in the source operand (second operand) and the destination operand (first operand) and returns the results of the comparison to the destination operand. The comparison predicate operand (third operand) specifies the type of comparison performed on each of the pairs of packed values. The result of each comparison is a doubleword mask of all 1s (comparison true) or all 0s (comparison false). The sign of zero is ignored for comparisons, so that –0.0 is equal to +0.0.</p>
+<p>128-bit Legacy SSE version: The first source and destination operand (first operand) is an XMM register. The second source operand (second operand) can be an XMM register or 128-bit memory location. The comparison predicate operand is an 8-bit immediate, bits 2:0 of the immediate define the type of comparison to be performed (see Table 3-7). Bits 7:3 of the immediate is reserved. Bits (VLMAX-1:128) of the corresponding YMM destination register remain unchanged. Four comparisons are performed with results written to bits 127:0 of the destination operand.</p>
+<p>The unordered relationship is true when at least one of the two source operands being compared is a NaN; the ordered relationship is true when neither source operand is a NaN.</p>
+<p>A subsequent computational instruction that uses the mask result in the destination operand as an input operand will not generate a fault, because a mask of all 0s corresponds to a floating-point value of +0.0 and a mask of all 1s corresponds to a QNaN.</p>
+<p>Note that processors with “CPUID.1H:ECX.AVX =0” do not implement the “greater-than”, “greater-than-or-equal”, “not-greater than”, and “not-greater-than-or-equal relations” predicates. These comparisons can be made either by using the inverse relationship (that is, use the “not-less-than-or-equal” to make a “greater-than” comparison) or by using software emulation. When using software emulation, the program must swap the operands (copying registers when necessary to protect the data that will now be in the destination), and then perform the compare using a different predicate. The predicate to be used for these emulations is listed in Table 3-7 under the heading Emulation.</p>
+<p>Compilers and assemblers may implement the following two-operand pseudo-ops in addition to the three-operand CMPPS instruction, for processors with “CPUID.1H:ECX.AVX =0”. See Table 3-11. Compiler should treat reserved Imm8 values as illegal syntax.</p>
+<p>In 64-bit mode, use of the REX.R prefix permits this instruction to access additional registers (XMM8-XMM15).</p>
+<h3>Table 3-11.  Pseudo-Ops and CMPPS</h3>
+<table>
+<tr>
+<th>Pseudo-Op</th>
+<th>Implementation</th></tr>
+<tr>
+<td>CMPEQPS <em>xmm1, xmm2</em></td>
+<td>CMPPS <em>xmm1, xmm2, 0</em></td></tr>
+<tr>
+<td>CMPLTPS<em> xmm1, xmm2</em></td>
+<td>CMPPS <em>xmm1, xmm2, 1</em></td></tr>
+<tr>
+<td>CMPLEPS <em>xmm1, xmm2</em></td>
+<td>CMPPS <em>xmm1, xmm2, 2</em></td></tr>
+<tr>
+<td>CMPUNORDPS <em>xmm1, xmm2</em></td>
+<td>CMPPS <em>xmm1, xmm2, 3</em></td></tr>
+<tr>
+<td>CMPNEQPS <em>xmm1, xmm2</em></td>
+<td>CMPPS <em>xmm1, xmm2, 4</em></td></tr>
+<tr>
+<td>CMPNLTPS <em>xmm1, xmm2</em></td>
+<td>CMPPS <em>xmm1, xmm2, 5</em></td></tr>
+<tr>
+<td>CMPNLEPS<em> xmm1, xmm2</em></td>
+<td>CMPPS<em> xmm1, xmm2, 6</em></td></tr>
+<tr>
+<td>CMPORDPS <em>xmm1, xmm2</em></td>
+<td>CMPPS <em>xmm1, xmm2, 7</em></td></tr></table>
+<p>The greater-than relations not implemented by processor require more than one instruction to emulate in software and therefore should not be implemented as pseudo-ops. (For these, the programmer should reverse the operands of the corresponding less than relations and use move instructions to ensure that the mask is moved to the correct destination register and that the source operand is left intact.)</p>
+<p><strong>Enhanced Comparison Predicate for VEX-Encoded VCMPPS</strong></p>
+<p>VEX.128 encoded version: The first source operand (second operand) is an XMM register. The second source operand (third operand) can be an XMM register or a 128-bit memory location. Bits (VLMAX-1:128) of the destina-tion YMM register are zeroed. Four comparisons are performed with results written to bits 127:0 of the destination operand.</p>
+<p>VEX.256 encoded version: The first source operand (second operand) is a YMM register. The second source operand (third operand) can be a YMM register or a 256-bit memory location. The destination operand (first operand) is a YMM register. Eight comparisons are performed with results written to the destination operand.</p>
+<p>The comparison predicate operand is an 8-bit immediate:</p>
+<p>Processors with “CPUID.1H:ECX.AVX =1” implement the full complement of 32 predicates shown in Table 3-9, soft-ware emulation is no longer needed. Compilers and assemblers may implement the following three-operand pseudo-ops in addition to the four-operand VCMPPS instruction. See Table 3-12, where the notation of reg1 and reg2 represent either XMM registers or YMM registers. Compiler should treat reserved Imm8 values as illegal syntax. Alternately, intrinsics can map the pseudo-ops to pre-defined constants to support a simpler intrinsic inter-face.</p>
+<h3>Table 3-12.  Pseudo-Op and VCMPPS Implementation</h3>
+<p>:</p>
+<table>
+<tr>
+<th>Pseudo-Op</th>
+<th>CMPPS Implementation</th></tr>
+<tr>
+<td>VCMPEQPS r<em>eg1, reg2, reg3</em></td>
+<td>VCMPPS r<em>eg1, reg2, reg3, 0</em></td></tr>
+<tr>
+<td>VCMPLTPS r<em>eg1, reg2, reg3</em></td>
+<td>VCMPPS r<em>eg1, reg2, reg3, 1</em></td></tr>
+<tr>
+<td>VCMPLEPS r<em>eg1, reg2, reg3</em></td>
+<td>VCMPPS r<em>eg1, reg2, reg3, 2</em></td></tr>
+<tr>
+<td>VCMPUNORDPS r<em>eg1, reg2, reg3</em></td>
+<td>VCMPPS r<em>eg1, reg2, reg3, 3</em></td></tr>
+<tr>
+<td>VCMPNEQPS r<em>eg1, reg2, reg3</em></td>
+<td>VCMPPS r<em>eg1, reg2, reg3, 4</em></td></tr>
+<tr>
+<td>VCMPNLTPS r<em>eg1, reg2, reg3</em></td>
+<td>VCMPPS r<em>eg1, reg2, reg3, 5</em></td></tr>
+<tr>
+<td>VCMPNLEPS r<em>eg1, reg2, reg3</em></td>
+<td>VCMPPS r<em>eg1, reg2, reg3, 6</em></td></tr>
+<tr>
+<td>VCMPORDPS r<em>eg1, reg2, reg3</em></td>
+<td>VCMPPS r<em>eg1, reg2, reg3, 7</em></td></tr>
+<tr>
+<td>VCMPEQ_UQPS r<em>eg1, reg2, reg3</em></td>
+<td>VCMPPS r<em>eg1, reg2, reg3, 8</em></td></tr>
+<tr>
+<td>VCMPNGEPS r<em>eg1, reg2, reg3</em></td>
+<td>VCMPPS r<em>eg1, reg2, reg3, 9</em></td></tr>
+<tr>
+<td>VCMPNGTPS r<em>eg1, reg2, reg3</em></td>
+<td>VCMPPS r<em>eg1, reg2, reg3, 0AH</em></td></tr>
+<tr>
+<td>VCMPFALSEPS r<em>eg1, reg2, reg3</em></td>
+<td>VCMPPS r<em>eg1, reg2, reg3, 0BH</em></td></tr></table>
+<h3>Table 3-12.  Pseudo-Op and VCMPPS Implementation</h3>
+<table>
+<tr>
+<th>Pseudo-Op</th>
+<th>CMPPS Implementation</th></tr>
+<tr>
+<td>VCMPNEQ_OQPS r<em>eg1, reg2, reg3</em></td>
+<td>VCMPPS r<em>eg1, reg2, reg3, 0CH</em></td></tr>
+<tr>
+<td>VCMPGEPS r<em>eg1, reg2, reg3</em></td>
+<td>VCMPPS r<em>eg1, reg2, reg3, 0DH</em></td></tr>
+<tr>
+<td>VCMPGTPS r<em>eg1, reg2, reg3</em></td>
+<td>VCMPPS r<em>eg1, reg2, reg3, 0EH</em></td></tr>
+<tr>
+<td>VCMPTRUEPS r<em>eg1, reg2, reg3</em></td>
+<td>VCMPPS r<em>eg1, reg2, reg3, 0FH</em></td></tr>
+<tr>
+<td>VCMPEQ_OSPS r<em>eg1, reg2, reg3</em></td>
+<td>VCMPPS r<em>eg1, reg2, reg3, 10H</em></td></tr>
+<tr>
+<td>VCMPLT_OQPS r<em>eg1, reg2, reg3</em></td>
+<td>VCMPPS r<em>eg1, reg2, reg3, 11H</em></td></tr>
+<tr>
+<td>VCMPLE_OQPS r<em>eg1, reg2, reg3</em></td>
+<td>VCMPPS r<em>eg1, reg2, reg3, 12H</em></td></tr>
+<tr>
+<td>VCMPUNORD_SPS r<em>eg1, reg2, reg3</em></td>
+<td>VCMPPS r<em>eg1, reg2, reg3, 13H</em></td></tr>
+<tr>
+<td>VCMPNEQ_USPS r<em>eg1, reg2, reg3</em></td>
+<td>VCMPPS r<em>eg1, reg2, reg3, 14H</em></td></tr>
+<tr>
+<td>VCMPNLT_UQPS r<em>eg1, reg2, reg3</em></td>
+<td>VCMPPS r<em>eg1, reg2, reg3, 15H</em></td></tr>
+<tr>
+<td>VCMPNLE_UQPS r<em>eg1, reg2, reg3</em></td>
+<td>VCMPPS r<em>eg1, reg2, reg3, 16H</em></td></tr>
+<tr>
+<td>VCMPORD_SPS r<em>eg1, reg2, reg3</em></td>
+<td>VCMPPS r<em>eg1, reg2, reg3, 17H</em></td></tr>
+<tr>
+<td>VCMPEQ_USPS r<em>eg1, reg2, reg3</em></td>
+<td>VCMPPS r<em>eg1, reg2, reg3, 18H</em></td></tr>
+<tr>
+<td>VCMPNGE_UQPS r<em>eg1, reg2, reg3</em></td>
+<td>VCMPPS r<em>eg1, reg2, reg3, 19H</em></td></tr>
+<tr>
+<td>VCMPNGT_UQPS r<em>eg1, reg2, reg3</em></td>
+<td>VCMPPS r<em>eg1, reg2, reg3, 1AH</em></td></tr>
+<tr>
+<td>VCMPFALSE_OSPS r<em>eg1, reg2, reg3</em></td>
+<td>VCMPPS r<em>eg1, reg2, reg3, 1BH</em></td></tr>
+<tr>
+<td>VCMPNEQ_OSPS r<em>eg1, reg2, reg3</em></td>
+<td>VCMPPS r<em>eg1, reg2, reg3, 1CH</em></td></tr>
+<tr>
+<td>VCMPGE_OQPS r<em>eg1, reg2, reg3</em></td>
+<td>VCMPPS r<em>eg1, reg2, reg3, 1DH</em></td></tr>
+<tr>
+<td>VCMPGT_OQPS r<em>eg1, reg2, reg3</em></td>
+<td>VCMPPS r<em>eg1, reg2, reg3, 1EH</em></td></tr>
+<tr>
+<td>VCMPTRUE_USPS r<em>eg1, reg2, reg3</em></td>
+<td>VCMPPS r<em>eg1, reg2, reg3, 1FH</em></td></tr></table>
+<h2>Operation</h2>
+<pre>CASE (COMPARISON PREDICATE) OF</pre>
+<p>0: OP3 ← EQ_OQ; OP5 ← EQ_OQ; 1: OP3 ← LT_OS; OP5 ← LT_OS; 2: OP3 ← LE_OS; OP5 ← LE_OS; 3: OP3 ← UNORD_Q; OP5 ← UNORD_Q; 4: OP3 ← NEQ_UQ; OP5 ← NEQ_UQ; 5: OP3 ← NLT_US; OP5 ← NLT_US; 6: OP3 ← NLE_US; OP5 ← NLE_US; 7: OP3 ← ORD_Q; OP5 ← ORD_Q; 8: OP5 ← EQ_UQ; 9: OP5 ← NGE_US; 10: OP5 ← NGT_US; 11: OP5 ← FALSE_OQ; 12: OP5 ← NEQ_OQ; 13: OP5 ← GE_OS; 14: OP5 ← GT_OS; 15: OP5 ← TRUE_UQ; 16: OP5 ← EQ_OS; 17: OP5 ← LT_OQ; 18: OP5 ← LE_OQ; 19: OP5 ← UNORD_S; 20: OP5 ← NEQ_US;</p>
+<p>21: OP5 ← NLT_UQ; 22: OP5 ← NLE_UQ; 23: OP5 ← ORD_S; 24: OP5 ← EQ_US; 25: OP5 ← NGE_UQ; 26: OP5 ← NGT_UQ; 27: OP5 ← FALSE_OS; 28: OP5 ← NEQ_OS; 29: OP5 ← GE_OQ; 30: OP5 ← GT_OQ; 31: OP5 ← TRUE_US; DEFAULT: Reserved</p>
+<pre>EASC;</pre>
+<p><strong>CMPPS (128-bit Legacy SSE version)</strong></p>
+<pre>CMP0 ← SRC1[31:0] OP3 SRC2[31:0];
+CMP1 ← SRC1[63:32] OP3 SRC2[63:32];
+CMP2 ← SRC1[95:64] OP3 SRC2[95:64];
+CMP3 ← SRC1[127:96] OP3 SRC2[127:96];
+IF CMP0 = TRUE
+    THEN DEST[31:0] ←FFFFFFFFH;
+    ELSE DEST[31:0] ← 000000000H; FI;
+IF CMP1 = TRUE
+    THEN DEST[63:32] ← FFFFFFFFH;
+    ELSE DEST[63:32] ← 000000000H; FI;
+IF CMP2 = TRUE
+    THEN DEST[95:64] ← FFFFFFFFH;
+    ELSE DEST[95:64] ← 000000000H; FI;
+IF CMP3 = TRUE
+    THEN DEST[127:96] ← FFFFFFFFH;
+    ELSE DEST[127:96] ←000000000H; FI;
+DEST[VLMAX-1:128] (Unmodified)</pre>
+<p><strong>VCMPPS (VEX.128 encoded version)</strong></p>
+<pre>CMP0 ← SRC1[31:0] OP5 SRC2[31:0];
+CMP1 ← SRC1[63:32] OP5 SRC2[63:32];
+CMP2 ← SRC1[95:64] OP5 SRC2[95:64];
+CMP3 ← SRC1[127:96] OP5 SRC2[127:96];
+IF CMP0 = TRUE
+    THEN DEST[31:0] ←FFFFFFFFH;
+    ELSE DEST[31:0] ← 000000000H; FI;
+IF CMP1 = TRUE
+    THEN DEST[63:32] ← FFFFFFFFH;
+    ELSE DEST[63:32] ← 000000000H; FI;
+IF CMP2 = TRUE
+    THEN DEST[95:64] ← FFFFFFFFH;
+    ELSE DEST[95:64] ← 000000000H; FI;
+IF CMP3 = TRUE
+    THEN DEST[127:96] ← FFFFFFFFH;
+    ELSE DEST[127:96] ←000000000H; FI;
+DEST[VLMAX-1:128] ← 0</pre>
+<p><strong>VCMPPS (VEX.256 encoded version)</strong></p>
+<pre>CMP0 ← SRC1[31:0] OP5 SRC2[31:0];
+CMP1 ← SRC1[63:32] OP5 SRC2[63:32];
+CMP2 ← SRC1[95:64] OP5 SRC2[95:64];
+CMP3 ← SRC1[127:96] OP5 SRC2[127:96];
+CMP4 ← SRC1[159:128] OP5 SRC2[159:128];
+CMP5 ← SRC1[191:160] OP5 SRC2[191:160];
+CMP6 ← SRC1[223:192] OP5 SRC2[223:192];
+CMP7 ← SRC1[255:224] OP5 SRC2[255:224];
+IF CMP0 = TRUE
+    THEN DEST[31:0] ←FFFFFFFFH;
+    ELSE DEST[31:0] ← 000000000H; FI;
+IF CMP1 = TRUE
+    THEN DEST[63:32] ← FFFFFFFFH;
+    ELSE DEST[63:32] ←000000000H; FI;
+IF CMP2 = TRUE
+    THEN DEST[95:64] ← FFFFFFFFH;
+    ELSE DEST[95:64] ← 000000000H; FI;
+IF CMP3 = TRUE
+    THEN DEST[127:96] ← FFFFFFFFH;
+    ELSE DEST[127:96] ← 000000000H; FI;
+IF CMP4 = TRUE
+    THEN DEST[159:128] ← FFFFFFFFH;
+    ELSE DEST[159:128] ← 000000000H; FI;
+IF CMP5 = TRUE
+    THEN DEST[191:160] ← FFFFFFFFH;
+    ELSE DEST[191:160] ← 000000000H; FI;
+IF CMP6 = TRUE
+    THEN DEST[223:192] ← FFFFFFFFH;
+    ELSE DEST[223:192] ←000000000H; FI;
+IF CMP7 = TRUE
+    THEN DEST[255:224] ← FFFFFFFFH;
+    ELSE DEST[255:224] ← 000000000H; FI;</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalents</h2>
+<p>CMPPS for equality:</p>
+<p> __m128 _mm_cmpeq_ps(__m128 a, __m128 b)</p>
+<p>CMPPS for less-than:</p>
+<p>__m128 _mm_cmplt_ps(__m128 a, __m128 b)</p>
+<p>CMPPS for less-than-or-equal:</p>
+<p>__m128 _mm_cmple_ps(__m128 a, __m128 b)</p>
+<p>CMPPS for greater-than:  __m128 _mm_cmpgt_ps(__m128 a, __m128 b)</p>
+<p>CMPPS for greater-than-or-equal:</p>
+<p>__m128 _mm_cmpge_ps(__m128 a, __m128 b)</p>
+<p>CMPPS for inequality:</p>
+<p>__m128 _mm_cmpneq_ps(__m128 a, __m128 b)</p>
+<p>CMPPS for not-less-than:</p>
+<p>__m128 _mm_cmpnlt_ps(__m128 a, __m128 b)</p>
+<p>CMPPS for not-greater-than:</p>
+<p>__m128 _mm_cmpngt_ps(__m128 a, __m128 b)</p>
+<p>CMPPS for not-greater-than-or-equal:</p>
+<p>__m128 _mm_cmpnge_ps(__m128 a, __m128 b)</p>
+<p>CMPPS for ordered:</p>
+<p>__m128 _mm_cmpord_ps(__m128 a, __m128 b)</p>
+<p>CMPPS for unordered:</p>
+<p>__m128 _mm_cmpunord_ps(__m128 a, __m128 b)</p>
+<p>CMPPS for not-less-than-or-equal:</p>
+<p>__m128 _mm_cmpnle_ps(__m128 a, __m128 b)</p>
+<p>VCMPPS:</p>
+<p>__m256 _mm256_cmp_ps(__m256 a, __m256 b, const int imm)</p>
+<p>VCMPPS:</p>
+<p>__m128 _mm_cmp_ps(__m128 a, __m128 b, const int imm)</p>
+<h2>SIMD Floating-Point Exceptions</h2>
+<p>Invalid if SNaN operand and invalid if QNaN and predicate as listed in above table, Denormal.</p>
+<h2>Other Exceptions</h2>
+<p>See Exceptions Type 2.</p></body></html>

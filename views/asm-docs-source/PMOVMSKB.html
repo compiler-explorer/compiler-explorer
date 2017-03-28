@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>PMOVMSKB—Move Byte Mask </title></head>
+<body>
+<h1>PMOVMSKB—Move Byte Mask</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32 bit Mode Support</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>
+<p>0F D7 /<em>r</em><sup>1</sup></p>
+<p>PMOVMSKB <em>reg</em>, <em>mm</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>SSE</td>
+<td>Move a byte mask of <em>mm</em> to <em>reg</em>. The upper bits of r32 or r64 are zeroed</td></tr>
+<tr>
+<td>
+<p>66 0F D7 /<em>r</em></p>
+<p>PMOVMSKB <em>reg</em>, <em>xmm</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>SSE2</td>
+<td>Move a byte mask of <em>xmm</em> to <em>reg</em>. The upper bits of r32 or r64 are zeroed</td></tr>
+<tr>
+<td>
+<p>VEX.128.66.0F.WIG D7 /r</p>
+<p>VPMOVMSKB <em>reg, xmm1</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Move a byte mask of<em> xmm1</em> to <em>reg</em>. The upper bits of r32 or r64 are filled with zeros.</td></tr>
+<tr>
+<td>
+<p>VEX.256.66.0F.WIG D7 /r</p>
+<p>VPMOVMSKB <em>reg, ymm1</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>AVX2</td>
+<td>Move a 32-bit mask of <em>ymm1</em> to <em>reg</em>. The upper bits of r64 are filled with zeros.</td></tr></table>
+<p>NOTES:</p>
+<p>1. See note in Section 2.4, “Instruction Exception Specification” in the <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 2A</em> and Section 22.25.3, “Exception Conditions of Legacy SIMD Instructions Operating on MMX Registers” in the <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 3A</em>.</p>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RM</td>
+<td>ModRM:reg (w)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Creates a mask made up of the most significant bit of each byte of the source operand (second operand) and stores the result in the low byte or word of the destination operand (first operand).</p>
+<p>The byte mask is 8 bits for 64-bit source operand, 16 bits for 128-bit source operand and 32 bits for 256-bit source operand. The destination operand is a general-purpose register.</p>
+<p>In 64-bit mode, the instruction can access additional registers (XMM8-XMM15, R8-R15) when used with a REX.R prefix. The default operand size is 64-bit in 64-bit mode.</p>
+<p>Legacy SSE version: The source operand is an MMX technology register.</p>
+<p>128-bit Legacy SSE version: The source operand is an XMM register.</p>
+<p>VEX.128 encoded version: The source operand is an XMM register.</p>
+<p>VEX.256 encoded version: The source operand is a YMM register.</p>
+<p>Note: VEX.vvvv is reserved and must be 1111b, VEX.L must be 0, otherwise the instruction will #UD.</p>
+<h2>Operation</h2>
+<p><strong>PMOVMSKB (with 64-bit source operand and r32)</strong></p>
+<pre>    r32[0] ← SRC[7];
+    r32[1] ← SRC[15];
+    (* Repeat operation for bytes 2 through 6 *)
+    r32[7] ← SRC[63];
+    r32[31:8] ← ZERO_FILL;
+(V)PMOVMSKB (with 128-bit source operand and r32)
+    r32[0] ← SRC[7];
+    r32[1] ← SRC[15];
+    (* Repeat operation for bytes 2 through 14 *)
+    r32[15] ← SRC[127];
+    r32[31:16] ← ZERO_FILL;</pre>
+<p><strong>VPMOVMSKB (with 256-bit source operand and r32)</strong></p>
+<pre>r32[0] ← SRC[7];
+r32[1] ← SRC[15];
+(* Repeat operation for bytes 3rd through 31*)
+r32[31] ← SRC[255];</pre>
+<p><strong>PMOVMSKB (with 64-bit source operand and r64)</strong></p>
+<pre>    r64[0] ← SRC[7];
+    r64[1] ← SRC[15];
+    (* Repeat operation for bytes 2 through 6 *)
+    r64[7] ← SRC[63];
+    r64[63:8] ← ZERO_FILL;</pre>
+<p><strong>(V)PMOVMSKB (with 128-bit source operand and r64)</strong></p>
+<pre>    r64[0] ← SRC[7];
+    r64[1] ← SRC[15];
+    (* Repeat operation for bytes 2 through 14 *)
+    r64[15] ← SRC[127];
+    r64[63:16] ← ZERO_FILL;</pre>
+<p><strong>VPMOVMSKB (with 256-bit source operand and r64)</strong></p>
+<pre>r64[0] ← SRC[7];
+r64[1] ← SRC[15];
+(* Repeat operation for bytes 2 through 31*)
+r64[31] ← SRC[255];
+r64[63:32] ← ZERO_FILL;</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>PMOVMSKB:</p>
+<p>int _mm_movemask_pi8(__m64 a)</p>
+<p>(V)PMOVMSKB:</p>
+<p>int _mm_movemask_epi8 ( __m128i a)</p>
+<p>VPMOVMSKB:</p>
+<p>int _mm256_movemask_epi8 ( __m256i a)</p>
+<h2>Flags Affected</h2>
+<p>None.</p>
+<h2>Numeric Exceptions</h2>
+<p>None.</p>
+<h2>Other Exceptions</h2>
+<p>See Exceptions Type 7; additionally</p>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>
+<p>If VEX.L = 1.</p>
+<p>If VEX.vvvv ≠ 1111B.</p></td></tr></table></body></html>

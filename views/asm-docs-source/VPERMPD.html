@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>VPERMPD — Permute Double-Precision Floating-Point Elements </title></head>
+<body>
+<h1>VPERMPD — Permute Double-Precision Floating-Point Elements</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32 -bit Mode</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>
+<p>VEX.256.66.0F3A.W1 01 /r ib</p>
+<p>VPERMPD <em>ymm1, ymm2/m256, imm8</em></p></td>
+<td>RMI</td>
+<td>V/V</td>
+<td>AVX2</td>
+<td>Permute double-precision floating-point elements in <em>ymm2/m256</em> using indexes in <em>imm8</em> and store the result in <em>ymm1</em>.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RMI</td>
+<td>ModRM:reg (w)</td>
+<td>ModRM:r/m (r)</td>
+<td>Imm8</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Use two-bit index values in the immediate byte to select a double-precision floating-point element in the source operand; the resultant data from the source operand is copied to the corresponding element of the destination operand in the order of the index field. Note that this instruction permits a qword in the source operand to be copied to multiple location in the destination operand.</p>
+<p>An attempt to execute VPERMPD encoded with VEX.L= 0 will cause an #UD exception.</p>
+<h2>Operation</h2>
+<p><strong>VPERMPD (VEX.256 encoded version)</strong></p>
+<pre>DEST[63:0] ← (SRC[255:0] &gt;&gt; (IMM8[1:0] * 64))[63:0];
+DEST[127:64] ← (SRC[255:0] &gt;&gt; (IMM8[3:2] * 64))[63:0];
+DEST[191:128] ← (SRC[255:0] &gt;&gt; (IMM8[5:4] * 64))[63:0];
+DEST[255:192] ← (SRC[255:0] &gt;&gt; (IMM8[7:6] * 64))[63:0];</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>VPERMPD: __m256d _mm256_permute4x64_pd(__m256d a, int control) ;</p>
+<h2>SIMD Floating-Point Exceptions</h2>
+<p>None</p>
+<h2>Other Exceptions</h2>
+<p>See Exceptions Type 4; additionally</p>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>If VEX.L = 0.</td></tr></table></body></html>

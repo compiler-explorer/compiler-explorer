@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>FDECSTP—Decrement Stack-Top Pointer </title></head>
+<body>
+<h1>FDECSTP—Decrement Stack-Top Pointer</h1>
+<table>
+<tr>
+<th>Opcode</th>
+<th>Instruction</th>
+<th>64-Bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>D9 F6</td>
+<td>FDECSTP</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Decrement TOP field in FPU status word.</td></tr></table>
+<h2>Description</h2>
+<p>Subtracts one from the TOP field of the FPU status word (decrements the top-of-stack pointer). If the TOP field contains a 0, it is set to 7. The effect of this instruction is to rotate the stack by one position. The contents of the FPU data registers and tag register are not affected.</p>
+<p>This instruction’s operation is the same in non-64-bit modes and 64-bit mode.</p>
+<h2>Operation</h2>
+<pre>IF TOP = 0
+    THEN TOP ← 7;
+    ELSE TOP ← TOP – 1;
+FI;</pre>
+<h2>FPU Flags Affected</h2>
+<p>The C1 flag is set to 0. The C0, C2, and C3 flags are undefined.</p>
+<h2>Floating-Point Exceptions</h2>
+<p>None.</p>
+<h2>Protected Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#NM</td>
+<td>CR0.EM[bit 2] or CR0.TS[bit 3] = 1.</td></tr>
+<tr>
+<td>#MF</td>
+<td>If there is a pending x87 FPU exception.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Real-Address Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>Virtual-8086 Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>Compatibility Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>64-Bit Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p></body></html>

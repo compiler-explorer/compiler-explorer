@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>UNPCKHPD—Unpack and Interleave High Packed Double-Precision Floating-Point Values </title></head>
+<body>
+<h1>UNPCKHPD—Unpack and Interleave High Packed Double-Precision Floating-Point Values</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32 bit Mode Support</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>
+<p>66 0F 15 /<em>r</em></p>
+<p>UNPCKHPD <em>xmm1</em>, <em>xmm2/m128</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>SSE2</td>
+<td>Unpacks and Interleaves double-precision floating-point values from high quadwords of <em>xmm1</em> and <em>xmm2/m128</em>.</td></tr>
+<tr>
+<td>
+<p>VEX.NDS.128.66.0F.WIG 15 /r</p>
+<p>VUNPCKHPD <em>xmm1,xmm2, xmm3/m128</em></p></td>
+<td>RVM</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Unpacks and Interleaves double precision floating-point values from high quadwords of <em>xmm2</em> and <em>xmm3/m128</em>.</td></tr>
+<tr>
+<td>
+<p>VEX.NDS.256.66.0F.WIG 15 /r</p>
+<p>VUNPCKHPD <em>ymm1,ymm2, ymm3/m256</em></p></td>
+<td>RVM</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Unpacks and Interleaves double precision floating-point values from high quadwords of <em>ymm2 </em>and <em>ymm3/m256</em>.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RM</td>
+<td>ModRM:reg (r, w)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td></tr>
+<tr>
+<td>RVM</td>
+<td>ModRM:reg (w)</td>
+<td>VEX.vvvv (r)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Performs an interleaved unpack of the high double-precision floating-point values from the source operand (second operand) and the destination operand (first operand). See Figure 4-23.</p>
+<svg width="568.799985" viewBox="111.840000 798713.039995 379.199990 150.300000" height="225.45">
+<text y="798741.527284" x="141.1794" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="21.320964">DEST</text>
+<text y="798785.867384" x="145.6195" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="16.860144">SRC</text>
+<text y="798847.847184" x="141.1794" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="21.320964">DEST</text>
+<rect y="798837.96" x="167.88" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="143.28"></rect>
+<rect y="798729.96" x="311.58" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="144.12"></rect>
+<rect y="798729.96" x="167.7" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="144.18"></rect>
+<rect y="798774.96" x="167.7" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="144.18"></rect>
+<rect y="798837.96" x="310.92" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="144.18"></rect>
+<rect y="798774.96" x="310.68" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="145.02"></rect>
+<path style="stroke:black" d="M167.700000,798729.719990 L167.700000,798730.200000 L312.120000,798730.200000 L312.120000,798729.719990 "></path>
+<path style="stroke:black" d="M311.580000,798729.719990 L311.580000,798730.200000 L455.940000,798730.200000 L455.940000,798729.719990 "></path>
+<path style="stroke:black" d="M167.460000,798729.720000 L167.460000,798747.960000 L167.940010,798747.960000 L167.940010,798729.720000 "></path>
+<path style="stroke:black" d="M311.340000,798729.720000 L311.340000,798747.960000 L311.820010,798747.960000 L311.820010,798729.720000 "></path>
+<path style="stroke:black" d="M311.640000,798729.960000 L311.640000,798748.200000 L312.119980,798748.200000 L312.119980,798729.960000 "></path>
+<path style="stroke:black" d="M455.460000,798729.960000 L455.460000,798748.200000 L455.940010,798748.200000 L455.940010,798729.960000 "></path>
+<path style="stroke:black" d="M167.460000,798747.719990 L167.460000,798748.200000 L311.880000,798748.200000 L311.880000,798747.719990 "></path>
+<path style="stroke:black" d="M311.340000,798747.719990 L311.340000,798748.200000 L455.700000,798748.200000 L455.700000,798747.719990 "></path>
+<path style="stroke:black" d="M167.700000,798774.719990 L167.700000,798775.200000 L312.120000,798775.200000 L312.120000,798774.719990 "></path>
+<path style="stroke:black" d="M310.680000,798774.719990 L310.680000,798775.200000 L455.940000,798775.200000 L455.940000,798774.719990 "></path>
+<path style="stroke:black" d="M167.460000,798774.720000 L167.460000,798792.960000 L167.940010,798792.960000 L167.940010,798774.720000 "></path>
+<path style="stroke:black" d="M310.440000,798774.720000 L310.440000,798792.960000 L310.920010,798792.960000 L310.920010,798774.720000 "></path>
+<path style="stroke:black" d="M311.640000,798774.960000 L311.640000,798793.200000 L312.119980,798793.200000 L312.119980,798774.960000 "></path>
+<path style="stroke:black" d="M455.460000,798774.960000 L455.460000,798793.200000 L455.940010,798793.200000 L455.940010,798774.960000 "></path>
+<path style="stroke:black" d="M239.220000,798792.480010 L239.220000,798792.720000 L239.700000,798792.720000 L239.700000,798792.480010 "></path>
+<path style="stroke:black" d="M167.460000,798792.719990 L167.460000,798793.200000 L311.880000,798793.200000 L311.880000,798792.719990 "></path>
+<path style="stroke:black" d="M310.440000,798792.719990 L310.440000,798793.200000 L455.700000,798793.200000 L455.700000,798792.719990 "></path>
+<path style="stroke:black" d="M239.220000,798792.720000 L239.220000,798830.640000 L239.700000,798830.640000 L239.700000,798792.720000 "></path>
+<path style="stroke:black" d="M239.220000,798830.400000 L239.220000,798831.540000 L239.700000,798831.540000 L239.700000,798830.400000 "></path>
+<path style="stroke:black" d="M167.880000,798837.719990 L167.880000,798838.200000 L311.400000,798838.200000 L311.400000,798837.719990 "></path>
+<path style="stroke:black" d="M310.920000,798837.719990 L310.920000,798838.200000 L455.340000,798838.200000 L455.340000,798837.719990 "></path>
+<path style="stroke:black" d="M167.640000,798837.720000 L167.640000,798855.960000 L168.120000,798855.960000 L168.120000,798837.720000 "></path>
+<path style="stroke:black" d="M310.680000,798837.720000 L310.680000,798855.960000 L311.160010,798855.960000 L311.160010,798837.720000 "></path>
+<path style="stroke:black" d="M310.920000,798837.960000 L310.920000,798856.200000 L311.399980,798856.200000 L311.399980,798837.960000 "></path>
+<path style="stroke:black" d="M454.860000,798837.960000 L454.860000,798856.200000 L455.339980,798856.200000 L455.339980,798837.960000 "></path>
+<path style="stroke:black" d="M167.640000,798855.719990 L167.640000,798856.200000 L311.160000,798856.200000 L311.160000,798855.719990 "></path>
+<path style="stroke:black" d="M310.680000,798855.719990 L310.680000,798856.200000 L455.100000,798856.200000 L455.100000,798855.719990 "></path>
+<text y="798850.007384" x="234.48" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.777096">Y1</text>
+<text y="798743.207584" x="380.4603" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.777096">X0</text>
+<text y="798742.307484" x="233.76" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.777096">X1</text>
+<text y="798788.207484" x="233.76" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.777096">Y1</text>
+<text y="798850.247584" x="377.2199" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.777096">X1</text>
+<text y="798788.207484" x="379.557792" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.777096">Y0</text></svg>
+<h3>Figure 4-23.  UNPCKHPD Instruction High Unpack and Interleave Operation</h3>
+<p>When unpacking from a memory operand, an implementation may fetch only the appropriate 64 bits; however, alignment to 16-byte boundary and normal segment checking will still be enforced.</p>
+<p>In 64-bit mode, using a REX prefix in the form of REX.R permits this instruction to access additional registers (XMM8-XMM15).</p>
+<p>128-bit Legacy SSE version: The second source can be an XMM register or an 128-bit memory location. The desti-nation is not distinct from the first source XMM register and the upper bits (VLMAX-1:128) of the corresponding YMM register destination are unmodified.</p>
+<p>VEX.128 encoded version: the first source operand is an XMM register or 128-bit memory location. The destination operand is an XMM register. The upper bits (VLMAX-1:128) of the corresponding YMM register destination are zeroed.</p>
+<h2>Operation</h2>
+<p><strong>UNPCKHPD (128-bit Legacy SSE version)</strong></p>
+<pre>DEST[63:0] ← SRC1[127:64]
+DEST[127:64] ← SRC2[127:64]
+DEST[VLMAX-1:128] (Unmodified)</pre>
+<p><strong>VUNPCKHPD (VEX.128 encoded version)</strong></p>
+<pre>DEST[63:0] ← SRC1[127:64]
+DEST[127:64] ← SRC2[127:64]
+DEST[VLMAX-1:128] ← 0</pre>
+<p><strong>VUNPCKHPD (VEX.256 encoded version)</strong></p>
+<pre>DEST[63:0] ← SRC1[127:64]
+DEST[127:64] ← SRC2[127:64]
+DEST[191:128]←SRC1[255:192]
+DEST[255:192]←SRC2[255:192]</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>UNPCKHPD:</p>
+<p>__m128d _mm_unpackhi_pd(__m128d a, __m128d b)</p>
+<p>UNPCKHPD:</p>
+<p>__m256d _mm256_unpackhi_pd(__m256d a, __m256d b)</p>
+<h2>SIMD Floating-Point Exceptions</h2>
+<p>None.</p>
+<h2>Other Exceptions</h2>
+<p>See Exceptions Type 4.</p></body></html>

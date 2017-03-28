@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>FBSTP—Store BCD Integer and Pop </title></head>
+<body>
+<h1>FBSTP—Store BCD Integer and Pop</h1>
+<table>
+<tr>
+<th>Opcode</th>
+<th>Instruction</th>
+<th>64-Bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>DF /6</td>
+<td>FBSTP m80bcd</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Store ST(0) in m80bcd and pop ST(0).</td></tr></table>
+<h2>Description</h2>
+<p>Converts the value in the ST(0) register to an 18-digit packed BCD integer, stores the result in the destination operand, and pops the register stack. If the source value is a non-integral value, it is rounded to an integer value, according to rounding mode specified by the RC field of the FPU control word. To pop the register stack, the processor marks the ST(0) register as empty and increments the stack pointer (TOP) by 1.</p>
+<p>The destination operand specifies the address where the first byte destination value is to be stored. The BCD value (including its sign bit) requires 10 bytes of space in memory.</p>
+<p>The following table shows the results obtained when storing various classes of numbers in packed BCD format.</p>
+<h3>Table 3-29.  FBSTP Results</h3>
+<table>
+<tr>
+<th>ST(0)</th>
+<th>DEST</th></tr>
+<tr>
+<td>− ∞ or Value Too Large for DEST Format</td>
+<td>*</td></tr>
+<tr>
+<td>F ≤ − 1</td>
+<td>− D</td></tr>
+<tr>
+<td>−1 &lt; F &lt; -0</td>
+<td>**</td></tr>
+<tr>
+<td>− 0</td>
+<td>− 0</td></tr>
+<tr>
+<td>+ 0</td>
+<td>+ 0</td></tr>
+<tr>
+<td>+ 0 &lt; F &lt; +1</td>
+<td>**</td></tr>
+<tr>
+<td>F ≥ +1</td>
+<td>+ D</td></tr>
+<tr>
+<td>+ ∞ or Value Too Large for DEST Format</td>
+<td>*</td></tr>
+<tr>
+<td>NaN</td>
+<td>*</td></tr></table>
+<p><strong>NOTES:</strong></p>
+<p>F Means finite floating-point value.</p>
+<p>D Means packed-BCD number.</p>
+<p>*</p>
+<p>Indicates floating-point invalid-operation (#IA) exception.</p>
+<p>** ±0 or ±1, depending on the rounding mode.</p>
+<p>If the converted value is too large for the destination format, or if the source operand is an ∞, SNaN, QNAN, or is in an unsupported format, an invalid-arithmetic-operand condition is signaled. If the invalid-operation exception is not masked, an invalid-arithmetic-operand exception (#IA) is generated and no value is stored in the destination operand. If the invalid-operation exception is masked, the packed BCD indefinite value is stored in memory.</p>
+<p>This instruction’s operation is the same in non-64-bit modes and 64-bit mode.</p>
+<h2>Operation</h2>
+<pre>DEST ← BCD(ST(0));
+PopRegisterStack;</pre>
+<h2>FPU Flags Affected</h2>
+<table class="exception-table">
+<tr>
+<td>C1</td>
+<td>
+<p>Set to 0 if stack underflow occurred.</p>
+<p>Set if result was rounded up; cleared otherwise.</p></td></tr>
+<tr>
+<td>C0, C2, C3</td>
+<td>Undefined.</td></tr></table>
+<h2>Floating-Point Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#IS</td>
+<td>Stack underflow occurred.</td></tr>
+<tr>
+<td>#IA</td>
+<td>
+<p>Converted value that exceeds 18 BCD digits in length.</p>
+<p>Source operand is an SNaN, QNaN, ±∞, or in an unsupported format.</p></td></tr></table>
+<p>#P</p>
+<p>Value cannot be represented exactly in destination format.</p>
+<h2>Protected Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>
+<p>If a segment register is being loaded with a segment selector that points to a non-writable segment.</p>
+<p>If a memory operand effective address is outside the CS, DS, ES, FS, or GS segment limit.</p>
+<p>If the DS, ES, FS, or GS register contains a NULL segment selector.</p></td></tr>
+<tr>
+<td>#SS(0)</td>
+<td>If a memory operand effective address is outside the SS segment limit.</td></tr>
+<tr>
+<td>#NM</td>
+<td>CR0.EM[bit 2] or CR0.TS[bit 3] = 1.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and an unaligned memory reference is made while the current privilege level is 3.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Real-Address Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP</td>
+<td>If a memory operand effective address is outside the CS, DS, ES, FS, or GS segment limit.</td></tr>
+<tr>
+<td>#SS</td>
+<td>If a memory operand effective address is outside the SS segment limit.</td></tr>
+<tr>
+<td>#NM</td>
+<td>CR0.EM[bit 2] or CR0.TS[bit 3] = 1.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Virtual-8086 Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>If a memory operand effective address is outside the CS, DS, ES, FS, or GS segment limit.</td></tr>
+<tr>
+<td>#SS(0)</td>
+<td>If a memory operand effective address is outside the SS segment limit.</td></tr>
+<tr>
+<td>#NM</td>
+<td>CR0.EM[bit 2] or CR0.TS[bit 3] = 1.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and an unaligned memory reference is made.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Compatibility Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>64-Bit Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#SS(0)</td>
+<td>If a memory address referencing the SS segment is in a non-canonical form.</td></tr>
+<tr>
+<td>#GP(0)</td>
+<td>If the memory address is in a non-canonical form.</td></tr>
+<tr>
+<td>#NM</td>
+<td>CR0.EM[bit 2] or CR0.TS[bit 3] = 1.</td></tr>
+<tr>
+<td>#MF</td>
+<td>If there is a pending x87 FPU exception.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and an unaligned memory reference is made while the current privilege level is 3.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table></body></html>

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>MOVNTPS—Store Packed Single-Precision Floating-Point Values Using Non-Temporal Hint </title></head>
+<body>
+<h1>MOVNTPS—Store Packed Single-Precision Floating-Point Values Using Non-Temporal Hint</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32-bit Mode</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>
+<p>0F 2B /<em>r</em></p>
+<p>MOVNTPS <em>m128</em>, <em>xmm</em></p></td>
+<td>MR</td>
+<td>V/V</td>
+<td>SSE</td>
+<td>Move packed single-precision floating-point values from <em>xmm</em> to <em>m128</em> using non-temporal hint.</td></tr>
+<tr>
+<td>
+<p>VEX.128.0F.WIG 2B /r</p>
+<p>VMOVNTPS <em>m128, xmm1</em></p></td>
+<td>MR</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Move packed single-precision values <em>xmm1</em> to <em>mem</em> using non-temporal hint.</td></tr>
+<tr>
+<td>
+<p>VEX.256.0F.WIG 2B /r</p>
+<p>VMOVNTPS <em>m256, ymm1</em></p></td>
+<td>MR</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Move packed single-precision values <em>ymm1</em> to <em>mem</em> using non-temporal hint.</td></tr></table>
+<h3>Instruction Operand Encoding<sup>1</sup></h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>MR</td>
+<td>ModRM:r/m (w)</td>
+<td>ModRM:reg (r)</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Moves the packed single-precision floating-point values in the source operand (second operand) to the destination operand (first operand) using a non-temporal hint to prevent caching of the data during the write to memory. The source operand is an XMM register or YMM register, which is assumed to contain packed single-precision, floating-pointing. The destination operand is a 128-bit or 256-bit memory location. The memory operand must be aligned on a 16-byte (128-bit version) or 32-byte (VEX.256 encoded version) boundary otherwise a general-protection exception (#GP) will be generated.</p>
+<p>The non-temporal hint is implemented by using a write combining (WC) memory type protocol when writing the data to memory. Using this protocol, the processor does not write the data into the cache hierarchy, nor does it fetch the corresponding cache line from memory into the cache hierarchy. The memory type of the region being written to can override the non-temporal hint, if the memory address specified for the non-temporal store is in an uncacheable (UC) or write protected (WP) memory region. For more information on non-temporal stores, see “Caching of Temporal vs. Non-Temporal Data” in Chapter 10 in the <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 1</em>.</p>
+<p>Because the WC protocol uses a weakly-ordered memory consistency model, a fencing operation implemented with the SFENCE or MFENCE instruction should be used in conjunction with MOVNTPS instructions if multiple processors might use different memory types to read/write the destination memory locations.</p>
+<p>In 64-bit mode, use of the REX.R prefix permits this instruction to access additional registers (XMM8-XMM15).</p>
+<p>Note: In VEX-encoded versions, VEX.vvvv is reserved and must be 1111b otherwise instructions will #UD.</p>
+<h2>Operation</h2>
+<pre>DEST ← SRC;</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>MOVNTDQ:</p>
+<p>void _mm_stream_ps(float * p, __m128 a)</p>
+<p>VMOVNTPS:</p>
+<p> void _mm256_stream_ps (float * p, __m256 a);</p>
+<h2>SIMD Floating-Point Exceptions</h2>
+<p>None.</p>
+<p>1.</p>
+<p>ModRM.MOD = 011B is not permitted</p>
+<h2>Other Exceptions</h2>
+<p>See Exceptions Type 1.SSE; additionally</p>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>If VEX.vvvv ≠ 1111B.</td></tr></table></body></html>

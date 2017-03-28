@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>PSUBUSB/PSUBUSW—Subtract Packed Unsigned Integers with Unsigned Saturation </title></head>
+<body>
+<h1>PSUBUSB/PSUBUSW—Subtract Packed Unsigned Integers with Unsigned Saturation</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32 bit Mode Support</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>
+<p>0F D8 /<em>r</em><sup>1</sup></p>
+<p>PSUBUSB <em>mm, mm/m64</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>MMX</td>
+<td>Subtract unsigned packed bytes in <em>mm/m64 </em>from unsigned packed bytes in <em>mm</em> and saturate result.</td></tr>
+<tr>
+<td>
+<p>66 0F D8 /<em>r</em></p>
+<p>PSUBUSB <em>xmm1</em>, <em>xmm2/m128</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>SSE2</td>
+<td>Subtract packed unsigned byte integers in <em>xmm2/m128</em> from packed unsigned byte integers in xmm1 and saturate result.</td></tr>
+<tr>
+<td>
+<p>0F D9 /<em>r</em><sup>1</sup></p>
+<p>PSUBUSW <em>mm, mm/m64</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>MMX</td>
+<td>Subtract unsigned packed words in <em>mm/m64 </em>from unsigned packed words in <em>mm </em>and saturate result.</td></tr>
+<tr>
+<td>
+<p>66 0F D9 /<em>r</em></p>
+<p>PSUBUSW <em>xmm1</em>, <em>xmm2/m128</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>SSE2</td>
+<td>Subtract packed unsigned word integers in <em>xmm2/m128</em> from packed unsigned word integers in <em>xmm1</em> and saturate result.</td></tr>
+<tr>
+<td>
+<p>VEX.NDS.128.66.0F.WIG D8 /r</p>
+<p>VPSUBUSB <em>xmm1, xmm2, xmm3/m128</em></p></td>
+<td>RVM</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Subtract packed unsigned byte integers in <em>xmm3/m128</em> from packed unsigned byte integers in <em>xmm2</em> and saturate result.</td></tr>
+<tr>
+<td>
+<p>VEX.NDS.128.66.0F.WIG D9 /r</p>
+<p>VPSUBUSW<em> xmm1, xmm2, xmm3/m128</em></p></td>
+<td>RVM</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Subtract packed unsigned word integers in <em>xmm3/m128</em> from packed unsigned word integers in <em>xmm2</em> and saturate result.</td></tr>
+<tr>
+<td>
+<p>VEX.NDS.256.66.0F.WIG D8 /r</p>
+<p>VPSUBUSB <em>ymm1, ymm2, ymm3/m256</em></p></td>
+<td>RVM</td>
+<td>V/V</td>
+<td>AVX2</td>
+<td>Subtract packed unsigned byte integers in <em>ymm3/m256</em> from packed unsigned byte integers in <em>ymm2</em> and saturate result.</td></tr>
+<tr>
+<td>
+<p>VEX.NDS.256.66.0F.WIG D9 /r</p>
+<p>VPSUBUSW <em>ymm1, ymm2, ymm3/m256</em></p></td>
+<td>RVM</td>
+<td>V/V</td>
+<td>AVX2</td>
+<td>Subtract packed unsigned word integers in <em>ymm3/m256</em> from packed unsigned word integers in <em>ymm2</em> and saturate result.</td></tr></table>
+<p>NOTES:</p>
+<p>1. See note in Section 2.4, “Instruction Exception Specification” in the <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 2A</em> and Section 22.25.3, “Exception Conditions of Legacy SIMD Instructions Operating on MMX Registers” in the <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 3A</em>.</p>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RM</td>
+<td>ModRM:reg (r, w)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td></tr>
+<tr>
+<td>RVM</td>
+<td>ModRM:reg (w)</td>
+<td>VEX.vvvv (r)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Performs a SIMD subtract of the packed unsigned integers of the source operand (second operand) from the packed unsigned integers of the destination operand (first operand), and stores the packed unsigned integer results in the destination operand. See Figure 9-4 in the <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 1</em>, for an illustration of a SIMD operation. Overflow is handled with unsigned saturation, as described in the following paragraphs.</p>
+<p>These instructions can operate on either 64-bit or 128-bit operands.</p>
+<p>The (V)PSUBUSB instruction subtracts packed unsigned byte integers. When an individual byte result is less than zero, the saturated value of 00H is written to the destination operand.</p>
+<p>The (V)PSUBUSW instruction subtracts packed unsigned word integers. When an individual word result is less than zero, the saturated value of 0000H is written to the destination operand.</p>
+<p>In 64-bit mode, using a REX prefix in the form of REX.R permits this instruction to access additional registers (XMM8-XMM15).</p>
+<p>Legacy SSE version: When operating on 64-bit operands, the destination operand must be an MMX technology register and the source operand can be either an MMX technology register or a 64-bit memory location.</p>
+<p>128-bit Legacy SSE version: The second source operand is an XMM register or a 128-bit memory location. The first source operand and destination operands are XMM registers. Bits (VLMAX-1:128) of the corresponding YMM desti-nation register remain unchanged.</p>
+<p>VEX.128 encoded version: The second source operand is an XMM register or a 128-bit memory location. The first source operand and destination operands are XMM registers. Bits (VLMAX-1:128) of the destination YMM register are zeroed.</p>
+<p>VEX.256 encoded version: The second source operand is an YMM register or a 256-bit memory location. The first source operand and destination operands are YMM registers.</p>
+<p>Note: VEX.L must be 0, otherwise instructions will #UD.</p>
+<h2>Operation</h2>
+<p><strong>PSUBUSB (with 64-bit operands)</strong></p>
+<pre>    DEST[7:0] ← SaturateToUnsignedByte (DEST[7:0] − SRC (7:0] );
+    (* Repeat add operation for 2nd through 7th bytes *)
+    DEST[63:56] ← SaturateToUnsignedByte (DEST[63:56] − SRC[63:56];</pre>
+<p><strong>PSUBUSB (with 128-bit operands)</strong></p>
+<pre>    DEST[7:0] ← SaturateToUnsignedByte (DEST[7:0] − SRC[7:0]);
+    (* Repeat add operation for 2nd through 14th bytes *)
+    DEST[127:120] ← SaturateToUnSignedByte (DEST[127:120] − SRC[127:120]);</pre>
+<p><strong>VPSUBUSB (VEX.128 encoded version)</strong></p>
+<pre>DEST[7:0] ← SaturateToUnsignedByte (SRC1[7:0] - SRC2[7:0]);
+(* Repeat subtract operation for 2nd through 14th bytes *)
+DEST[127:120] ← SaturateToUnsignedByte (SRC1[127:120] - SRC2[127:120]);
+DEST[VLMAX-1:128] ← 0</pre>
+<p><strong>VPSUBUSB (VEX.256 encoded version)</strong></p>
+<pre>DEST[7:0] ← SaturateToUnsignedByte (SRC1[7:0] - SRC2[7:0]);
+(* Repeat subtract operation for 2nd through 31st bytes *)
+DEST[255:148] ← SaturateToUnsignedByte (SRC1[255:248] - SRC2[255:248]);</pre>
+<p><strong>PSUBUSW (with 64-bit operands)</strong></p>
+<pre>    DEST[15:0] ← SaturateToUnsignedWord (DEST[15:0] − SRC[15:0] );
+    (* Repeat add operation for 2nd and 3rd words *)
+    DEST[63:48] ← SaturateToUnsignedWord (DEST[63:48] − SRC[63:48] );</pre>
+<p><strong>PSUBUSW (with 128-bit operands)</strong></p>
+<pre>    DEST[15:0]  ← SaturateToUnsignedWord (DEST[15:0] − SRC[15:0]);
+    (* Repeat add operation for 2nd through 7th words *)
+    DEST[127:112] ← SaturateToUnSignedWord (DEST[127:112] − SRC[127:112]);</pre>
+<p><strong>VPSUBUSW (VEX.128 encoded version)</strong></p>
+<pre>DEST[15:0] ← SaturateToUnsignedWord (SRC1[15:0] - SRC2[15:0]);
+(* Repeat subtract operation for 2nd through 7th words *)
+DEST[127:112] ← SaturateToUnsignedWord (SRC1[127:112] - SRC2[127:112]);
+DEST[VLMAX-1:128] ← 0</pre>
+<p><strong>VPSUBUSW (VEX.256 encoded version)</strong></p>
+<pre>DEST[15:0] ← SaturateToUnsignedWord (SRC1[15:0] - SRC2[15:0]);
+(* Repeat subtract operation for 2nd through 15th words *)
+DEST[255:240] ← SaturateToUnsignedWord (SRC1[255:240] - SRC2[255:240]);</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalents</h2>
+<p>PSUBUSB:</p>
+<p>__m64 _mm_subs_pu8(__m64 m1, __m64 m2)</p>
+<p>(V)PSUBUSB:</p>
+<p>__m128i _mm_subs_epu8(__m128i m1, __m128i m2)</p>
+<p>VPSUBUSB:</p>
+<p>__m256i _mm256_subs_epu8(__m256i m1, __m256i m2)</p>
+<p>PSUBUSW:</p>
+<p>__m64 _mm_subs_pu16(__m64 m1, __m64 m2)</p>
+<p>(V)PSUBUSW:</p>
+<p>__m128i _mm_subs_epu16(__m128i m1, __m128i m2)</p>
+<p>VPSUBUSW:</p>
+<p>__m256i _mm256_subs_epu16(__m256i m1, __m256i m2)</p>
+<h2>Flags Affected</h2>
+<p>None.</p>
+<h2>Numeric Exceptions</h2>
+<p>None.</p>
+<h2>Other Exceptions</h2>
+<p>See Exceptions Type 4; additionally</p>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>If VEX.L = 1.</td></tr></table></body></html>

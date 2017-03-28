@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>PACKSSWB/PACKSSDW—Pack with Signed Saturation </title></head>
+<body>
+<h1>PACKSSWB/PACKSSDW—Pack with Signed Saturation</h1>
+<table>
+<tr>
+<th>Description</th>
+<th>CPUID Feature Flag</th>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32 bit Mode Support</th></tr>
+<tr>
+<td>Converts 4 packed signed word integers from <em>mm1</em> and from <em>mm2/m64 </em>into 8 packed signed byte integers in <em>mm1 </em>using<em> </em>signed saturation<em>.</em></td>
+<td>MMX</td>
+<td>
+<p>0F 63 /r<sup>1</sup></p>
+<p>PACKSSWB <em>mm1, mm2/m64</em></p></td>
+<td>RM</td>
+<td>V/V</td></tr>
+<tr>
+<td>Converts 8 packed signed word integers from <em>xmm1</em> and from <em>xxm2/m128</em> into 16 packed signed byte integers in <em>xxm1 </em>using<em> </em>signed saturation.</td>
+<td>SSE2</td>
+<td>
+<p>66 0F 63 /<em>r</em></p>
+<p>PACKSSWB <em>xmm1, xmm2/m128</em></p></td>
+<td>RM</td>
+<td>V/V</td></tr>
+<tr>
+<td>Converts 2 packed signed doubleword integers from <em>mm1</em> and from <em>mm2/m64</em> into 4 packed signed word integers in <em>mm1 </em>using signed saturation.</td>
+<td>MMX</td>
+<td>
+<p>0F 6B /<em>r</em><sup>1</sup></p>
+<p>PACKSSDW <em>mm1, mm2/m64</em></p></td>
+<td>RM</td>
+<td>V/V</td></tr>
+<tr>
+<td>Converts 4 packed signed doubleword integers from <em>xmm1</em> and from <em>xxm2/m128 </em>into 8 packed signed word integers in <em>xxm1 </em>using<em> </em>signed saturation.</td>
+<td>SSE2</td>
+<td>
+<p>66 0F 6B /<em>r</em></p>
+<p>PACKSSDW <em>xmm1, xmm2/m128</em></p></td>
+<td>RM</td>
+<td>V/V</td></tr>
+<tr>
+<td>Converts 8 packed signed word integers from <em>xmm2</em> and from <em>xmm3/m128</em> into 16 packed signed byte integers in <em>xmm1</em> using signed saturation.</td>
+<td>AVX</td>
+<td>
+<p>VEX.NDS.128.66.0F.WIG 63 /r</p>
+<p>VPACKSSWB <em>xmm1,xmm2, xmm3/m128</em></p></td>
+<td>RVM</td>
+<td>V/V</td></tr>
+<tr>
+<td>Converts 4 packed signed doubleword integers from <em>xmm2 </em>and from <em>xmm3/m128 </em>into 8 packed signed word integers in<em> xmm1 </em>using signed saturation.</td>
+<td>AVX</td>
+<td>
+<p>VEX.NDS.128.66.0F.WIG 6B /r</p>
+<p>VPACKSSDW<em> xmm1,xmm2, xmm3/m128</em></p></td>
+<td>RVM</td>
+<td>V/V</td></tr>
+<tr>
+<td>Converts 16 packed signed word integers from <em>ymm2</em> and from <em>ymm3/m256</em> into 32 packed signed byte integers in <em>ymm1 </em>using signed saturation.</td>
+<td>AVX2</td>
+<td>
+<p>VEX.NDS.256.66.0F.WIG 63 /r</p>
+<p>VPACKSSWB <em>ymm1, ymm2, ymm3/m256</em></p></td>
+<td>RVM</td>
+<td>V/V</td></tr>
+<tr>
+<td>Converts 8 packed signed doubleword integers from <em>ymm2</em> and from <em>ymm3/m256 </em>into 16 packed signed word integers in <em>ymm1</em>using<em> </em>signed saturation.</td>
+<td>AVX2</td>
+<td>
+<p>VEX.NDS.256.66.0F.WIG 6B /r</p>
+<p>VPACKSSDW <em>ymm1, ymm2, ymm3/m256</em></p></td>
+<td>RVM</td>
+<td>V/V</td></tr></table>
+<p>NOTES:</p>
+<p>1. See note in Section 2.4, “Instruction Exception Specification” in the <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 2A</em> and Section 22.25.3, “Exception Conditions of Legacy SIMD Instructions Operating on MMX Registers” in the <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 3A</em>.</p>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RM</td>
+<td>ModRM:reg (r, w)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td></tr>
+<tr>
+<td>RVM</td>
+<td>ModRM:reg (w)</td>
+<td>VEX.vvvv (r)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Converts packed signed word integers into packed signed byte integers (PACKSSWB) or converts packed signed doubleword integers into packed signed word integers (PACKSSDW), using saturation to handle overflow condi-tions. See Figure 4-2 for an example of the packing operation.</p>
+<svg width="568.799985" viewBox="111.840000 484777.980010 379.199990 94.020000" height="141.03">
+<text y="484794.002844" x="225.06" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="36.415134">64-Bit SRC</text>
+<text y="484795.502244" x="335.0996" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="41.26458">64-Bit DEST</text>
+<text y="484865.187972" x="278.76" style="font-size:8.019600pt" lengthAdjust="spacingAndGlyphs" textLength="44.4045252">64-Bit DEST</text>
+<rect y="484798.56" x="210.9" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="72.0"></rect>
+<rect y="484838.04" x="262.44" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="72.0"></rect>
+<rect y="484799.52" x="319.08" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="72.0"></rect>
+<path style="stroke:black" d="M230.100000,484815.780000 L229.920000,484815.720000 L229.740000,484816.140000 L229.920000,484816.200000 "></path>
+<path style="stroke:black" d="M230.100000,484815.780000 L229.920000,484816.200000 L265.500000,484832.640000 L265.680000,484832.220000 "></path>
+<path style="stroke:black" d="M265.200000,484816.800000 L265.020000,484816.680000 L264.720000,484817.040000 L264.900000,484817.160000 "></path>
+<path style="stroke:black" d="M265.200000,484816.800000 L264.900000,484817.160000 L284.280000,484831.140000 L284.580000,484830.780000 "></path>
+<path style="stroke:black" d="M336.660000,484817.700000 L336.840000,484817.580000 L336.540000,484817.160000 L336.360000,484817.280000 "></path>
+<path style="stroke:black" d="M336.660000,484817.700000 L336.360000,484817.280000 L316.440000,484830.960000 L316.740000,484831.380000 "></path>
+<path style="stroke:black" d="M372.120000,484818.240000 L372.300000,484818.180000 L372.120000,484817.760000 L371.940000,484817.820000 "></path>
+<path style="stroke:black" d="M372.120000,484818.240000 L371.940000,484817.820000 L335.400000,484832.580000 L335.580000,484833.000000 "></path>
+<path style="stroke:black" d="M284.880000,484831.560000 L285.360000,484829.700000 L285.540000,484828.680000 L286.260000,484829.520000 L290.340000,484834.680000 L291.420000,484836.060000 L289.800000,484835.460000 L283.620000,484833.240000 L282.600000,484832.880000 L283.440000,484832.340000 L283.920000,484832.280000 L290.100000,484834.500000 L289.800000,484835.460000 L289.560000,484835.280000 L285.480000,484830.120000 L286.260000,484829.520000 L286.320000,484829.940000 L285.840000,484831.800000 "></path>
+<path style="stroke:black" d="M315.900000,484831.380000 L317.460000,484832.520000 L318.360000,484833.060000 L317.280000,484833.420000 L311.040000,484835.520000 L309.360000,484836.120000 L310.500000,484834.740000 L314.700000,484829.640000 L315.360000,484828.800000 L315.600000,484829.820000 L315.480000,484830.240000 L311.280000,484835.340000 L310.500000,484834.740000 L310.740000,484834.560000 L316.980000,484832.460000 L317.280000,484833.420000 L316.860000,484833.360000 L315.300000,484832.220000 "></path>
+<path style="stroke:black" d="M285.360000,484831.680000 L285.840000,484829.820000 L289.920000,484834.980000 L283.740000,484832.760000 "></path>
+<path style="stroke:black" d="M315.600000,484829.820000 L316.080000,484831.680000 L315.300000,484832.220000 L315.180000,484832.100000 L315.120000,484831.920000 L314.640000,484830.060000 "></path>
+<path style="stroke:black" d="M266.100000,484832.820000 L266.220000,484830.900000 L266.340000,484829.880000 L267.120000,484830.600000 L272.100000,484834.920000 L273.420000,484836.060000 L271.680000,484835.820000 L265.200000,484834.800000 L264.180000,484834.620000 L264.900000,484833.900000 L265.380000,484833.780000 L271.860000,484834.800000 L271.680000,484835.820000 L271.440000,484835.640000 L266.460000,484831.320000 L267.120000,484830.600000 L267.300000,484831.020000 L267.180000,484832.940000 "></path>
+<path style="stroke:black" d="M315.600000,484831.800000 L317.160000,484832.940000 L310.920000,484835.040000 L315.120000,484829.940000 "></path>
+<path style="stroke:black" d="M334.740000,484832.880000 L336.000000,484834.320000 L336.720000,484835.100000 L335.640000,484835.220000 L329.100000,484835.880000 L327.300000,484836.060000 L328.740000,484834.980000 L333.960000,484830.960000 L334.800000,484830.300000 L334.860000,484831.320000 L334.620000,484831.740000 L329.400000,484835.760000 L328.740000,484834.980000 L329.040000,484834.860000 L335.580000,484834.200000 L335.640000,484835.220000 L335.280000,484835.040000 L334.020000,484833.600000 "></path>
+<path style="stroke:black" d="M284.520000,484830.780000 L284.280000,484831.140000 L285.240000,484831.860000 L285.480000,484831.500000 "></path>
+<path style="stroke:black" d="M284.580000,484830.780000 L284.760000,484830.900000 L284.460000,484831.260000 L284.280000,484831.140000 "></path>
+<path style="stroke:black" d="M266.640000,484832.880000 L266.760000,484830.960000 L271.740000,484835.280000 L265.260000,484834.260000 "></path>
+<path style="stroke:black" d="M316.680000,484831.320000 L316.440000,484830.960000 L315.480000,484831.620000 L315.720000,484831.980000 "></path>
+<path style="stroke:black" d="M316.740000,484831.380000 L316.560000,484831.500000 L316.260000,484831.080000 L316.440000,484830.960000 "></path>
+<path style="stroke:black" d="M283.440000,484832.340000 L285.060000,484831.260000 L285.840000,484831.800000 L285.780000,484831.980000 L285.660000,484832.100000 L284.040000,484833.180000 "></path>
+<path style="stroke:black" d="M334.380000,484833.240000 L335.640000,484834.680000 L329.100000,484835.340000 L334.320000,484831.320000 "></path>
+<path style="stroke:black" d="M334.860000,484831.320000 L334.920000,484833.240000 L334.020000,484833.600000 L333.900000,484833.420000 L333.840000,484833.240000 L333.780000,484831.320000 "></path>
+<path style="stroke:black" d="M265.680000,484832.160000 L265.440000,484832.640000 L266.520000,484833.120000 L266.760000,484832.640000 "></path>
+<path style="stroke:black" d="M265.680000,484832.220000 L265.860000,484832.280000 L265.680000,484832.700000 L265.500000,484832.640000 "></path>
+<path style="stroke:black" d="M264.900000,484833.900000 L266.280000,484832.520000 L267.180000,484832.940000 L267.120000,484833.120000 L265.620000,484834.620000 "></path>
+<path style="stroke:black" d="M335.580000,484833.000000 L335.340000,484832.520000 L334.320000,484833.000000 L334.500000,484833.480000 "></path>
+<path style="stroke:black" d="M335.580000,484833.000000 L335.400000,484833.060000 L335.220000,484832.640000 L335.400000,484832.580000 "></path>
+<text y="484810.082844" x="261.6002" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.1895">C</text>
+<text y="484810.382844" x="227.22" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.9077">D</text>
+<text y="484849.322644" x="303.9002" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="6.093528">B’</text>
+<text y="484849.622644" x="286.4399" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.613132">C’</text>
+<text y="484849.862844" x="267.9" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="6.270684">D’</text>
+<text y="484850.102244" x="321.8999" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="6.091932">A’</text>
+<text y="484810.322844" x="333.06" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.71618">B</text>
+<text y="484811.582844" x="370.5596" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.97154">A</text></svg>
+<h3>Figure 4-2.  Operation of the PACKSSDW Instruction Using 64-bit Operands</h3>
+<p>The (V)PACKSSWB instruction converts 4, 8 or 16 signed word integers from the destination operand (first operand) and 4, 8 or 16 signed word integers from the source operand (second operand) into 8, 16 or 32 signed byte integers and stores the result in the destination operand. If a signed word integer value is beyond the range of a signed byte integer (that is, greater than 7FH for a positive integer or greater than 80H for a negative integer), the saturated signed byte integer value of 7FH or 80H, respectively, is stored in the destination.</p>
+<p>The (V)PACKSSDW instruction packs 2, 4 or 8 signed doublewords from the destination operand (first operand) and 2, 4 or 8 signed doublewords from the source operand (second operand) into 4, 8 or 16 signed words in the desti-nation operand (see Figure 4-2). If a signed doubleword integer value is beyond the range of a signed word (that is, greater than 7FFFH for a positive integer or greater than 8000H for a negative integer), the saturated signed word integer value of 7FFFH or 8000H, respectively, is stored into the destination.</p>
+<p>The (V)PACKSSWB and (V)PACKSSDW instructions operate on either 64-bit, 128-bit operands or 256-bit operands. When operating on 64-bit operands, the destination operand must be an MMX technology register and the source operand can be either an MMX technology register or a 64-bit memory location. In 64-bit mode, using a REX prefix in the form of REX.R permits this instruction to access additional registers (XMM8-XMM15).</p>
+<p>128-bit Legacy SSE version: The first source operand is an XMM register. The second operand can be an XMM register or a 128-bit memory location. The destination is not distinct from the first source XMM register and the upper bits (VLMAX-1:128) of the corresponding YMM register destination are unmodified.</p>
+<p>VEX.128 encoded version: The first source operand is an XMM register. The second source operand is an XMM register or 128-bit memory location. The destination operand is an XMM register. The upper bits (VLMAX-1:128) of the corresponding YMM register destination are zeroed.</p>
+<p>VEX.256 encoded version: The first source operand is a YMM register. The second source operand is a YMM register or a 256-bit memory location. The destination operand is a YMM register.</p>
+<p>Note: VEX.L must be 0, otherwise the instruction will #UD.</p>
+<h2>Operation</h2>
+<p><strong>PACKSSWB (with 64-bit operands)</strong></p>
+<pre>    DEST[7:0] ← SaturateSignedWordToSignedByte DEST[15:0];
+    DEST[15:8] ← SaturateSignedWordToSignedByte DEST[31:16];
+    DEST[23:16] ← SaturateSignedWordToSignedByte DEST[47:32];
+    DEST[31:24] ← SaturateSignedWordToSignedByte DEST[63:48];
+    DEST[39:32] ← SaturateSignedWordToSignedByte SRC[15:0];
+    DEST[47:40] ← SaturateSignedWordToSignedByte SRC[31:16];
+    DEST[55:48] ← SaturateSignedWordToSignedByte SRC[47:32];
+    DEST[63:56] ← SaturateSignedWordToSignedByte SRC[63:48];</pre>
+<p><strong>PACKSSDW (with 64-bit operands)</strong></p>
+<pre>    DEST[15:0] ← SaturateSignedDoublewordToSignedWord DEST[31:0];
+    DEST[31:16] ← SaturateSignedDoublewordToSignedWord DEST[63:32];
+    DEST[47:32] ← SaturateSignedDoublewordToSignedWord SRC[31:0];
+    DEST[63:48] ← SaturateSignedDoublewordToSignedWord SRC[63:32];</pre>
+<p><strong>PACKSSWB instruction (128-bit Legacy SSE version)</strong></p>
+<pre>    DEST[7:0]← SaturateSignedWordToSignedByte (DEST[15:0]);
+    DEST[15:8] ← SaturateSignedWordToSignedByte (DEST[31:16]);
+    DEST[23:16] ← SaturateSignedWordToSignedByte (DEST[47:32]);
+    DEST[31:24] ← SaturateSignedWordToSignedByte (DEST[63:48]);
+    DEST[39:32] ← SaturateSignedWordToSignedByte (DEST[79:64]);
+    DEST[47:40] ←SaturateSignedWordToSignedByte (DEST[95:80]);
+    DEST[55:48] ← SaturateSignedWordToSignedByte (DEST[111:96]);
+    DEST[63:56] ← SaturateSignedWordToSignedByte (DEST[127:112]);
+    DEST[71:64] ← SaturateSignedWordToSignedByte (SRC[15:0]);
+    DEST[79:72] ← SaturateSignedWordToSignedByte (SRC[31:16]);
+    DEST[87:80] ← SaturateSignedWordToSignedByte (SRC[47:32]);
+    DEST[95:88] ← SaturateSignedWordToSignedByte (SRC[63:48]);
+    DEST[103:96] ← SaturateSignedWordToSignedByte (SRC[79:64]);
+    DEST[111:104] ← SaturateSignedWordToSignedByte (SRC[95:80]);
+    DEST[119:112] ← SaturateSignedWordToSignedByte (SRC[111:96]);
+    DEST[127:120] ← SaturateSignedWordToSignedByte (SRC[127:112]);</pre>
+<p><strong>PACKSSDW instruction (128-bit Legacy SSE version)</strong></p>
+<pre>    DEST[15:0] ← SaturateSignedDwordToSignedWord (DEST[31:0]);
+    DEST[31:16] ← SaturateSignedDwordToSignedWord (DEST[63:32]);
+    DEST[47:32] ← SaturateSignedDwordToSignedWord (DEST[95:64]);
+    DEST[63:48] ← SaturateSignedDwordToSignedWord (DEST[127:96]);
+    DEST[79:64] ← SaturateSignedDwordToSignedWord (SRC[31:0]);
+    DEST[95:80] ← SaturateSignedDwordToSignedWord (SRC[63:32]);
+    DEST[111:96] ← SaturateSignedDwordToSignedWord (SRC[95:64]);
+    DEST[127:112] ← SaturateSignedDwordToSignedWord (SRC[127:96]);</pre>
+<p><strong>VPACKSSWB instruction (VEX.128 encoded version)</strong></p>
+<pre>    DEST[7:0]← SaturateSignedWordToSignedByte (SRC1[15:0]);
+    DEST[15:8] ← SaturateSignedWordToSignedByte (SRC1[31:16]);
+    DEST[23:16] ← SaturateSignedWordToSignedByte (SRC1[47:32]);
+    DEST[31:24] ← SaturateSignedWordToSignedByte (SRC1[63:48]);
+    DEST[39:32] ← SaturateSignedWordToSignedByte (SRC1[79:64]);
+    DEST[47:40] ← SaturateSignedWordToSignedByte (SRC1[95:80]);
+    DEST[55:48] ← SaturateSignedWordToSignedByte (SRC1[111:96]);
+    DEST[63:56] ← SaturateSignedWordToSignedByte (SRC1[127:112]);
+    DEST[71:64] ← SaturateSignedWordToSignedByte (SRC2[15:0]);
+    DEST[79:72] ← SaturateSignedWordToSignedByte (SRC2[31:16]);
+    DEST[87:80] ← SaturateSignedWordToSignedByte (SRC2[47:32]);
+    DEST[95:88] ← SaturateSignedWordToSignedByte (SRC2[63:48]);
+    DEST[103:96] ← SaturateSignedWordToSignedByte (SRC2[79:64]);
+    DEST[111:104] ← SaturateSignedWordToSignedByte (SRC2[95:80]);
+    DEST[119:112] ← SaturateSignedWordToSignedByte (SRC2[111:96]);
+    DEST[127:120] ← SaturateSignedWordToSignedByte (SRC2[127:112]);
+    DEST[VLMAX-1:128]← 0;</pre>
+<p><strong>VPACKSSDW instruction (VEX.128 encoded version)</strong></p>
+<pre>    DEST[15:0] ← SaturateSignedDwordToSignedWord (SRC1[31:0]);
+    DEST[31:16] ← SaturateSignedDwordToSignedWord (SRC1[63:32]);
+    DEST[47:32] ← SaturateSignedDwordToSignedWord (SRC1[95:64]);
+    DEST[63:48] ← SaturateSignedDwordToSignedWord (SRC1[127:96]);
+    DEST[79:64] ← SaturateSignedDwordToSignedWord (SRC2[31:0]);
+    DEST[95:80] ← SaturateSignedDwordToSignedWord (SRC2[63:32]);
+    DEST[111:96] ← SaturateSignedDwordToSignedWord (SRC2[95:64]);
+    DEST[127:112] ← SaturateSignedDwordToSignedWord (SRC2[127:96]);
+    DEST[VLMAX-1:128]← 0;</pre>
+<p><strong>VPACKSSWB instruction (VEX.256 encoded version)</strong></p>
+<pre>    DEST[7:0]← SaturateSignedWordToSignedByte (SRC1[15:0]);
+    DEST[15:8] ← SaturateSignedWordToSignedByte (SRC1[31:16]);
+    DEST[23:16] ← SaturateSignedWordToSignedByte (SRC1[47:32]);
+    DEST[31:24] ← SaturateSignedWordToSignedByte (SRC1[63:48]);
+    DEST[39:32] ← SaturateSignedWordToSignedByte (SRC1[79:64]);
+    DEST[47:40] ← SaturateSignedWordToSignedByte (SRC1[95:80]);
+    DEST[55:48] ← SaturateSignedWordToSignedByte (SRC1[111:96]);
+    DEST[63:56] ← SaturateSignedWordToSignedByte (SRC1[127:112]);
+    DEST[71:64] ← SaturateSignedWordToSignedByte (SRC2[15:0]);
+    DEST[79:72] ← SaturateSignedWordToSignedByte (SRC2[31:16]);
+    DEST[87:80] ← SaturateSignedWordToSignedByte (SRC2[47:32]);
+    DEST[95:88] ← SaturateSignedWordToSignedByte (SRC2[63:48]);
+    DEST[103:96] ← SaturateSignedWordToSignedByte (SRC2[79:64]);
+    DEST[111:104] ← SaturateSignedWordToSignedByte (SRC2[95:80]);
+    DEST[119:112] ← SaturateSignedWordToSignedByte (SRC2[111:96]);
+    DEST[127:120] ← SaturateSignedWordToSignedByte (SRC2[127:112]);
+    DEST[135:128]← SaturateSignedWordToSignedByte (SRC1[143:128]);
+    DEST[143:136] ← SaturateSignedWordToSignedByte (SRC1[159:144]);
+    DEST[151:144] ← SaturateSignedWordToSignedByte (SRC1[175:160]);
+    DEST[159:152] ← SaturateSignedWordToSignedByte (SRC1[191:176]);
+    DEST[167:160] ← SaturateSignedWordToSignedByte (SRC1[207:192]);
+    DEST[175:168] ← SaturateSignedWordToSignedByte (SRC1[223:208]);
+    DEST[183:176] ← SaturateSignedWordToSignedByte (SRC1[239:224]);
+    DEST[191:184] ← SaturateSignedWordToSignedByte (SRC1[255:240]);
+    DEST[199:192] ← SaturateSignedWordToSignedByte (SRC2[143:128]);
+    DEST[207:200] ← SaturateSignedWordToSignedByte (SRC2[159:144]);
+    DEST[215:208] ← SaturateSignedWordToSignedByte (SRC2[175:160]);
+    DEST[223:216] ← SaturateSignedWordToSignedByte (SRC2[191:176]);
+    DEST[231:224] ← SaturateSignedWordToSignedByte (SRC2[207:192]);
+    DEST[239:232] ← SaturateSignedWordToSignedByte (SRC2[223:208]);
+    DEST[247:240] ← SaturateSignedWordToSignedByte (SRC2[239:224]);
+    DEST[255:248] ← SaturateSignedWordToSignedByte (SRC2[255:240]);</pre>
+<p><strong>VPACKSSDW instruction (VEX.256 encoded version)</strong></p>
+<pre>    DEST[15:0] ← SaturateSignedDwordToSignedWord (SRC1[31:0]);
+    DEST[31:16] ← SaturateSignedDwordToSignedWord (SRC1[63:32]);
+    DEST[47:32] ← SaturateSignedDwordToSignedWord (SRC1[95:64]);
+    DEST[63:48] ← SaturateSignedDwordToSignedWord (SRC1[127:96]);
+    DEST[79:64] ← SaturateSignedDwordToSignedWord (SRC2[31:0]);
+    DEST[95:80] ← SaturateSignedDwordToSignedWord (SRC2[63:32]);
+    DEST[111:96] ← SaturateSignedDwordToSignedWord (SRC2[95:64]);
+    DEST[127:112] ← SaturateSignedDwordToSignedWord (SRC2[127:96]);
+    DEST[143:128] ← SaturateSignedDwordToSignedWord (SRC1[159:128]);
+    DEST[159:144] ← SaturateSignedDwordToSignedWord (SRC1[191:160]);
+    DEST[175:160] ← SaturateSignedDwordToSignedWord (SRC1[223:192]);
+    DEST[191:176] ← SaturateSignedDwordToSignedWord (SRC1[255:224]);
+    DEST[207:192] ← SaturateSignedDwordToSignedWord (SRC2[159:128]);
+    DEST[223:208] ← SaturateSignedDwordToSignedWord (SRC2[191:160]);
+    DEST[239:224] ← SaturateSignedDwordToSignedWord (SRC2[223:192]);
+    DEST[255:240] ← SaturateSignedDwordToSignedWord (SRC2[255:224]);</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalents</h2>
+<p>PACKSSWB:</p>
+<p> __m64 _mm_packs_pi16(__m64 m1, __m64 m2)</p>
+<p>(V)PACKSSWB:</p>
+<p> __m128i _mm_packs_epi16(__m128i m1, __m128i m2)</p>
+<p>VPACKSSWB:</p>
+<p>__m256i _mm256_packs_epi16(__m256i m1, __m256i m2)</p>
+<p>PACKSSDW:</p>
+<p>__m64 _mm_packs_pi32 (__m64 m1, __m64 m2)</p>
+<p>(V)PACKSSDW:</p>
+<p> __m128i _mm_packs_epi32(__m128i m1, __m128i m2)</p>
+<p>VPACKSSDW:</p>
+<p>__m256i _mm256_packs_epi32(__m256i m1, __m256i m2)</p>
+<h2>Flags Affected</h2>
+<p>None.</p>
+<h2>SIMD Floating-Point Exceptions</h2>
+<p>None.</p>
+<h2>Other Exceptions</h2>
+<p>See Exceptions Type 4; additionally</p>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>If VEX.L = 1.</td></tr></table></body></html>

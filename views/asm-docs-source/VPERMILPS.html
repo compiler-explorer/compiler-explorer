@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>VPERMILPS — Permute Single-Precision Floating-Point Values </title></head>
+<body>
+<h1>VPERMILPS — Permute Single-Precision Floating-Point Values</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32 bit Mode Support</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>VEX.NDS.128.66.0F38.W0 0C /r VPERMILPS <em>xmm1, xmm2, xmm3/m128</em></td>
+<td>RVM</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Permute single-precision floating-point values in <em>xmm2</em> using controls from <em>xmm3/mem</em> and store result in <em>xmm1</em>.</td></tr>
+<tr>
+<td>VEX.128.66.0F3A.W0 04 /r ib VPERMILPS <em>xmm1, xmm2/m128, imm8</em></td>
+<td>RMI</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Permute single-precision floating-point values in <em>xmm2/mem</em> using controls from <em>imm8</em> and store result in <em>xmm1</em>.</td></tr>
+<tr>
+<td>VEX.NDS.256.66.0F38.W0 0C /r VPERMILPS <em>ymm1, ymm2, ymm3/m256</em></td>
+<td>RVM</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Permute single-precision floating-point values in <em>ymm2</em> using controls from <em>ymm3/mem</em> and store result in <em>ymm1</em>.</td></tr>
+<tr>
+<td>VEX.256.66.0F3A.W0 04 /r ib VPERMILPS <em>ymm1, ymm2/m256, imm8</em></td>
+<td>RMI</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Permute single-precision floating-point values in <em>ymm2/mem</em> using controls from <em>imm8</em> and store result in <em>ymm1</em>.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RVM</td>
+<td>ModRM:reg (w)</td>
+<td>VEX.vvvv (r)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td></tr>
+<tr>
+<td>RMI</td>
+<td>ModRM:reg (w)</td>
+<td>ModRM:r/m (r)</td>
+<td>imm8</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>(variable control version)</p>
+<p>Permute single-precision floating-point values in the first source operand (second operand) using 8-bit control fields in the low bytes of corresponding elements the shuffle control (third operand) and store results in the desti-nation operand (first operand). The first source operand is a YMM register, the second source operand is a YMM register or a 256-bit memory location, and the destination operand is a YMM register.</p>
+<svg width="445.5900075" viewBox="136.080000 885148.199995 297.060005 13.500015" height="20.2500225002">
+<rect y="885148.2" x="136.08" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="13.5" width="37.14"></rect>
+<rect y="885148.2" x="173.22" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="13.5" width="37.14"></rect>
+<rect y="885148.2" x="210.36" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="13.5" width="37.14"></rect>
+<rect y="885148.2" x="247.5" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="13.5" width="37.08"></rect>
+<rect y="885148.2" x="284.58" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="13.5" width="37.14"></rect>
+<rect y="885148.2" x="321.72" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="13.5" width="37.14"></rect>
+<rect y="885148.2" x="358.86" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="13.5" width="37.14"></rect>
+<rect y="885148.2" x="396.0" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="13.5" width="37.14"></rect>
+<text y="885156.3134" x="147.18" style="font-size:7.500000pt" lengthAdjust="spacingAndGlyphs" textLength="9.15">X7</text>
+<text y="885156.3134" x="184.32" style="font-size:7.500000pt" lengthAdjust="spacingAndGlyphs" textLength="9.21">X6</text>
+<text y="885156.3134" x="221.46" style="font-size:7.500000pt" lengthAdjust="spacingAndGlyphs" textLength="9.15">X5</text>
+<text y="885156.3134" x="258.54" style="font-size:7.500000pt" lengthAdjust="spacingAndGlyphs" textLength="9.15">X4</text>
+<text y="885156.3134" x="295.68" style="font-size:7.500000pt" lengthAdjust="spacingAndGlyphs" textLength="9.15">X3</text>
+<text y="885156.3134" x="332.82" style="font-size:7.500000pt" lengthAdjust="spacingAndGlyphs" textLength="9.21">X2</text>
+<text y="885156.3134" x="369.96" style="font-size:7.500000pt" lengthAdjust="spacingAndGlyphs" textLength="9.21">X1</text>
+<text y="885156.3134" x="407.1" style="font-size:7.500000pt" lengthAdjust="spacingAndGlyphs" textLength="9.15">X0</text></svg>
+<p>SRC1</p>
+<p>DEST</p>
+<p>X7 .. X4</p>
+<p>X7 .. X4</p>
+<p>X7 .. X4</p>
+<p>X7 .. X4</p>
+<p>X3 ..X0</p>
+<p>X3 ..X0</p>
+<p>X3 .. X0</p>
+<p>X3 .. X0</p>
+<h3>Figure 4-40.  VPERMILPS Operation</h3>
+<p>There is one control byte per destination single-precision element. Each control byte is aligned with the low 8 bits of the corresponding single-precision destination element. Each control byte contains a 2-bit select field (see Figure 4-41) that determines which of the source elements are selected. Source elements are restricted to lie in the same source 128-bit region as the destination.</p>
+<p>Bit</p>
+<p>31</p>
+<p>226</p>
+<p>225 224</p>
+<p>63</p>
+<p>34</p>
+<p>33 32</p>
+<p>1</p>
+<p>0</p>
+<p>255</p>
+<p><strong>. . .</strong></p>
+<svg width="160.155" viewBox="125.220000 885569.819980 106.770000 36.000030" height="54.000045">
+<rect y="885569.82" x="125.22" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="36.0" width="82.98"></rect>
+<rect y="885569.82" x="209.76" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="36.0" width="22.2"></rect>
+<text y="885590.8836" x="152.7" style="font-size:9.129800pt" lengthAdjust="spacingAndGlyphs" textLength="27.53730276">ignored</text>
+<text y="885591.3635" x="216.48" style="font-size:9.129800pt" lengthAdjust="spacingAndGlyphs" textLength="9.97704544">sel</text></svg>
+<p>ignored</p>
+<p>ignored</p>
+<p>sel</p>
+<p>sel</p>
+<p>Control Field 7</p>
+<p>Control Field 2</p>
+<p>Control Field 1</p>
+<h3>Figure 4-41.  VPERMILPS Shuffle Control</h3>
+<p>(immediate control version)</p>
+<p>Permute single-precision floating-point values in the first source operand (second operand) using four 2-bit control fields in the 8-bit immediate and store results in the destination operand (first operand). The source operand is a YMM register or 256-bit memory location and the destination operand is a YMM register. This is similar to a wider version of PSHUFD, just operating on single-precision floating-point values.</p>
+<p>Note: For the VEX.128.66.0F3A 04 instruction version, VEX.vvvv is reserved and must be 1111b otherwise instruc-tion will #UD.</p>
+<p>Note: For the VEX.256.66.0F3A 04 instruction version, VEX.vvvv is reserved and must be 1111b otherwise instruc-tion will #UD.</p>
+<h2>Operation</h2>
+<pre>Select4(SRC, control) {
+CASE (control[1:0]) OF
+    0:
+         TMP ← SRC[31:0];
+    1:
+         TMP ← SRC[63:32];
+    2:
+         TMP ← SRC[95:64];
+    3:
+         TMP ← SRC[127:96];
+ESAC;
+RETURN TMP
+}</pre>
+<p><strong>VPERMILPS (256-bit immediate version)</strong></p>
+<pre>DEST[31:0] ← Select4(SRC1[127:0], imm8[1:0]);
+DEST[63:32] ← Select4(SRC1[127:0], imm8[3:2]);
+DEST[95:64] ← Select4(SRC1[127:0], imm8[5:4]);
+DEST[127:96] ← Select4(SRC1[127:0], imm8[7:6]);
+DEST[159:128] ← Select4(SRC1[255:128], imm8[1:0]);
+DEST[191:160] ← Select4(SRC1[255:128], imm8[3:2]);
+DEST[223:192] ← Select4(SRC1[255:128], imm8[5:4]);
+DEST[255:224] ← Select4(SRC1[255:128], imm8[7:6]);</pre>
+<p><strong>VPERMILPS (128-bit immediate version)</strong></p>
+<pre>DEST[31:0] ← Select4(SRC1[127:0], imm8[1:0]);
+DEST[63:32] ← Select4(SRC1[127:0], imm8[3:2]);
+DEST[95:64] ← Select4(SRC1[127:0], imm8[5:4]);
+DEST[127:96] ← Select4(SRC1[127:0], imm8[7:6]);
+DEST[VLMAX-1:128] ← 0</pre>
+<p><strong>VPERMILPS (256-bit variable version)</strong></p>
+<pre>DEST[31:0] ← Select4(SRC1[127:0], SRC2[1:0]);
+DEST[63:32] ← Select4(SRC1[127:0], SRC2[33:32]);
+DEST[95:64] ← Select4(SRC1[127:0], SRC2[65:64]);
+DEST[127:96] ← Select4(SRC1[127:0], SRC2[97:96]);
+DEST[159:128] ← Select4(SRC1[255:128], SRC2[129:128]);
+DEST[191:160] ← Select4(SRC1[255:128], SRC2[161:160]);
+DEST[223:192] ← Select4(SRC1[255:128], SRC2[193:192]);
+DEST[255:224] ← Select4(SRC1[255:128], SRC2[225:224]);</pre>
+<p><strong>VPERMILPS (128-bit variable version)</strong></p>
+<pre>DEST[31:0] ← Select4(SRC1[127:0], SRC2[1:0]);
+DEST[63:32] ← Select4(SRC1[127:0], SRC2[33:32]);
+DEST[95:64] ← Select4(SRC1[127:0], SRC2[65:64]);
+DEST[127:96] ← Select4(SRC1[127:0], SRC2[97:96]);
+DEST[VLMAX-1:128] ← 0</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>VPERM1LPS:</p>
+<p> __m128 _mm_permute_ps (__m128 a, int control);</p>
+<p>VPERM1LPS:</p>
+<p> __m256 _mm256_permute_ps (__m256 a, int control);</p>
+<p>VPERM1LPS:</p>
+<p> __m128 _mm_permutevar_ps (__m128 a, __m128i control);</p>
+<p>VPERM1LPS:</p>
+<p> __m256 _mm256_permutevar_ps (__m256 a, __m256i control);</p>
+<h2>SIMD Floating-Point Exceptions</h2>
+<p>None.</p>
+<h2>Other Exceptions</h2>
+<p>See Exceptions Type 6; additionally</p>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>If VEX.W = 1.</td></tr></table></body></html>

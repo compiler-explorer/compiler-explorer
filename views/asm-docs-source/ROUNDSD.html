@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>ROUNDSD — Round Scalar Double Precision Floating-Point Values </title></head>
+<body>
+<h1>ROUNDSD — Round Scalar Double Precision Floating-Point Values</h1>
+<table>
+<tr>
+<th>Opcode*/Instruction</th>
+<th>Op/En</th>
+<th>64/32 bit Mode Support</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>66 0F 3A 0B /r ib ROUNDSD <em>xmm1, xmm2/m64, imm8</em></td>
+<td>RMI</td>
+<td>V/V</td>
+<td>SSE4_1</td>
+<td>Round the low packed double precision floating-point value in <em>xmm2/m64</em> and place the result in <em>xmm1.</em> The rounding mode is determined by <em>imm8</em>.</td></tr>
+<tr>
+<td>VEX.NDS.LIG.66.0F3A.WIG 0B /r ib VROUNDSD <em>xmm1, xmm2, xmm3/m64, imm8</em></td>
+<td>RVMI</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Round the low packed double precision floating-point value in <em>xmm3/m64</em> and place the result in <em>xmm1</em>. The rounding mode is determined by<em> imm8</em>. Upper packed double precision floating-point value (bits[127:64]) from <em>xmm2</em> is copied to <em>xmm1</em>[127:64].</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RMI</td>
+<td>ModRM:reg (w)</td>
+<td>ModRM:r/m (r)</td>
+<td>imm8</td>
+<td>NA</td></tr>
+<tr>
+<td>RVMI</td>
+<td>ModRM:reg (w)</td>
+<td>VEX.vvvv (r)</td>
+<td>ModRM:r/m (r)</td>
+<td>imm8</td></tr></table>
+<h2>Description</h2>
+<p>Round the DP FP value in the lower qword of the source operand (second operand) using the rounding mode spec-ified in the immediate operand (third operand) and place the result in the destination operand (first operand). The rounding process rounds a double-precision floating-point input to an integer value and returns the integer result as a double precision floating-point value in the lowest position. The upper double precision floating-point value in the destination is retained.</p>
+<p>The immediate operand specifies control fields for the rounding operation, three bit fields are defined and shown in Figure 4-20. Bit 3 of the immediate byte controls processor behavior for a precision exception, bit 2 selects the source of rounding mode control. Bits 1:0 specify a non-sticky rounding-mode value (Table 4-15 lists the encoded values for rounding-mode field).</p>
+<p>The Precision Floating-Point Exception is signaled according to the immediate operand. If any source operand is an SNaN then it will be converted to a QNaN. If DAZ is set to ‘1 then denormals will be converted to zero before rounding.</p>
+<p>128-bit Legacy SSE version: The first source operand and the destination operand are the same. Bits (VLMAX-1:64) of the corresponding YMM destination register remain unchanged.</p>
+<p>VEX.128 encoded version: Bits (VLMAX-1:128) of the destination YMM register are zeroed.</p>
+<h2>Operation</h2>
+<pre>IF (imm[2] = ‘1)
+    THEN
+              // rounding mode is determined by MXCSR.RC
+         DEST[63:0] ← ConvertDPFPToInteger_M(SRC[63:0]);
+    ELSE
+              // rounding mode is determined by IMM8.RC
+         DEST[63:0] ← ConvertDPFPToInteger_Imm(SRC[63:0]);
+FI;
+DEST[127:63] remains unchanged ;</pre>
+<p><strong>ROUNDSD (128-bit Legacy SSE version)</strong></p>
+<pre>DEST[63:0] ← RoundToInteger(SRC[63:0], ROUND_CONTROL)
+DEST[VLMAX-1:64] (Unmodified)</pre>
+<p><strong>VROUNDSD (VEX.128 encoded version)</strong></p>
+<pre>DEST[63:0] ← RoundToInteger(SRC2[63:0], ROUND_CONTROL)
+DEST[127:64] ← SRC1[127:64]
+DEST[VLMAX-1:128] ← 0</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>ROUNDSD:</p>
+<p>__m128d mm_round_sd(__m128d dst, __m128d s1, int iRoundMode); __m128d mm_floor_sd(__m128d dst, __m128d s1); __m128d mm_ceil_sd(__m128d dst, __m128d s1);</p>
+<h2>SIMD Floating-Point Exceptions</h2>
+<p>Invalid (signaled only if SRC = SNaN)</p>
+<p>Precision (signaled only if imm[3] = ‘0; if imm[3] = ‘1, then the Precision Mask in the MXSCSR is ignored and preci-sion exception is not signaled.)</p>
+<p>Note that Denormal is not signaled by ROUNDSD.</p>
+<h2>Other Exceptions</h2>
+<p>See Exceptions Type 3.</p></body></html>

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>PCLMULQDQ - Carry-Less Multiplication Quadword </title></head>
+<body>
+<h1>PCLMULQDQ - Carry-Less Multiplication Quadword</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32 bit Mode Support</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>66 0F 3A 44 /r ib PCLMULQDQ <em>xmm1, xmm2/m128, imm8</em></td>
+<td>RMI</td>
+<td>V/V</td>
+<td>PCLMUL-QDQ</td>
+<td>Carry-less multiplication of one quadword of xmm1 by one quadword of <em>xmm2/m128</em>, stores the 128-bit result in <em>xmm1</em>. The imme-diate is used to determine which quadwords of <em>xmm1</em> and <em>xmm2/m128</em> should be used.</td></tr>
+<tr>
+<td>VEX.NDS.128.66.0F3A.WIG 44 /r ib VPCLMULQDQ <em>xmm1, xmm2, xmm3/m128, imm8</em></td>
+<td>RVMI</td>
+<td>V/V</td>
+<td>Both PCL-MULQDQ and AVX flags</td>
+<td>Carry-less multiplication of one quadword of <em>xmm2</em> by one quadword of <em>xmm3/m128</em>, stores the 128-bit result in <em>xmm1</em>. The imme-diate is used to determine which quadwords of <em>xmm2</em> and <em>xmm3/m128</em> should be used.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand2</td>
+<td>Operand3</td>
+<td>Operand4</td></tr>
+<tr>
+<td>RMI</td>
+<td>ModRM:reg (r, w)</td>
+<td>ModRM:r/m (r)</td>
+<td>imm8</td>
+<td>NA</td></tr>
+<tr>
+<td>RVMI</td>
+<td>ModRM:reg (w)</td>
+<td>VEX.vvvv (r)</td>
+<td>ModRM:r/m (r)</td>
+<td>imm8</td></tr></table>
+<h2>Description</h2>
+<p>Performs a carry-less multiplication of two quadwords, selected from the first source and second source operand according to the value of the immediate byte. Bits 4 and 0 are used to select which 64-bit half of each operand to use according to Table 4-10, other bits of the immediate byte are ignored.</p>
+<h3>Table 4-10.  PCLMULQDQ Quadword Selection of Immediate Byte</h3>
+<table>
+<tr>
+<th>Imm[4]</th>
+<th>Imm[0]</th>
+<th>PCLMULQDQ Operation</th></tr>
+<tr>
+<td>0</td>
+<td>0</td>
+<td>CL_MUL( SRC2<sup>1</sup>[63:0], SRC1[63:0] )</td></tr>
+<tr>
+<td>0</td>
+<td>1</td>
+<td>CL_MUL( SRC2[63:0], SRC1[127:64] )</td></tr>
+<tr>
+<td>1</td>
+<td>0</td>
+<td>CL_MUL( SRC2[127:64], SRC1[63:0] )</td></tr>
+<tr>
+<td>1</td>
+<td>1</td>
+<td>CL_MUL( SRC2[127:64], SRC1[127:64] )</td></tr></table>
+<p><strong>NOTES:</strong></p>
+<p>1. SRC2 denotes the second source operand, which can be a register or memory; SRC1 denotes the first source and destination oper-</p>
+<p>and.</p>
+<p> The first source operand and the destination operand are the same and must be an XMM register. The second source operand can be an XMM register or a 128-bit memory location. Bits (VLMAX-1:128) of the corresponding YMM destination register remain unchanged.</p>
+<p>Compilers and assemblers may implement the following pseudo-op syntax to simply programming and emit the required encoding for Imm8.</p>
+<h3>Table 4-11.  Pseudo-Op and PCLMULQDQ Implementation</h3>
+<table>
+<tr>
+<th>Pseudo-Op</th>
+<th>Imm8 Encoding</th></tr>
+<tr>
+<th>PCLMULLQLQDQ<em> xmm1, xmm2</em></th>
+<th>0000_0000B</th></tr>
+<tr>
+<th>PCLMULHQLQDQ<em> xmm1, xmm2</em></th>
+<th>0000_0001B</th></tr>
+<tr>
+<th>PCLMULLQHDQ<em> xmm1, xmm2</em></th>
+<th>0001_0000B</th></tr>
+<tr>
+<th>PCLMULHQHDQ<em> xmm1, xmm2</em></th>
+<th>0001_0001B</th></tr></table>
+<h2>Operation</h2>
+<p><strong>PCLMULQDQ</strong></p>
+<pre>IF (Imm8[0] = 0 )
+    THEN
+         TEMP1 ← SRC1 [63:0];
+    ELSE
+         TEMP1 ← SRC1 [127:64];
+FI
+IF (Imm8[4] = 0 )
+    THEN
+         TEMP2 ← SRC2 [63:0];
+    ELSE
+         TEMP2 ← SRC2 [127:64];
+FI
+For i = 0 to 63 {
+    TmpB [ i ] ← (TEMP1[ 0 ] and TEMP2[ i ]);
+    For j = 1 to i {
+         TmpB [ i ] ← TmpB [ i ] xor (TEMP1[ j ] and TEMP2[ i - j ])
+    }
+    DEST[ i ] ← TmpB[ i ];
+}
+For i = 64 to 126 {
+    TmpB [ i ] ← 0;
+    For j = i - 63 to 63 {
+         TmpB [ i ] ← TmpB [ i ] xor (TEMP1[ j ] and TEMP2[ i - j ])
+    }
+    DEST[ i ] ← TmpB[ i ];
+}
+DEST[127] ← 0;
+DEST[VLMAX-1:128] (Unmodified)</pre>
+<p><strong>VPCLMULQDQ</strong></p>
+<pre>IF (Imm8[0] = 0 )
+    THEN
+         TEMP1 ← SRC1 [63:0];
+    ELSE
+         TEMP1 ← SRC1 [127:64];
+FI
+IF (Imm8[4] = 0 )
+    THEN
+         TEMP2 ← SRC2 [63:0];
+    ELSE
+         TEMP2 ← SRC2 [127:64];
+FI
+For i = 0 to 63 {
+    TmpB [ i ] ← (TEMP1[ 0 ] and TEMP2[ i ]);
+    For j = 1 to i {
+         TmpB [i] ← TmpB [i] xor (TEMP1[ j ] and TEMP2[ i - j ])
+    }
+    DEST[i] ← TmpB[i];
+}
+For i = 64 to 126 {
+    TmpB [ i ] ← 0;
+    For j = i - 63 to 63 {
+         TmpB [i] ← TmpB [i] xor (TEMP1[ j ] and TEMP2[ i - j ])
+    }
+    DEST[i] ← TmpB[i];
+}
+DEST[VLMAX-1:127] ← 0;</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>(V)PCLMULQDQ:</p>
+<p> __m128i  _mm_clmulepi64_si128 (__m128i, __m128i, const int)</p>
+<h2>SIMD Floating-Point Exceptions</h2>
+<p>None.</p>
+<h2>Other Exceptions</h2>
+<p>See Exceptions Type 4.</p></body></html>

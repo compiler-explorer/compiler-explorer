@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>VPSRAVD — Variable Bit Shift Right Arithmetic </title></head>
+<body>
+<h1>VPSRAVD — Variable Bit Shift Right Arithmetic</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32 -bit Mode</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>
+<p>VEX.NDS.128.66.0F38.W0 46 /r</p>
+<p>VPSRAVD <em>xmm1, xmm2, xmm3/m128</em></p></td>
+<td>RVM</td>
+<td>V/V</td>
+<td>AVX2</td>
+<td>Shift bits in doublewords in <em>xmm2</em> right by amount speci-fied in the corresponding element of <em>xmm3/m128</em> while shifting in the sign bits.</td></tr>
+<tr>
+<td>
+<p>VEX.NDS.256.66.0F38.W0 46 /r</p>
+<p>VPSRAVD <em>ymm1, ymm2, ymm3/m256</em></p></td>
+<td>RVM</td>
+<td>V/V</td>
+<td>AVX2</td>
+<td>Shift bits in doublewords in <em>ymm2</em> right by amount speci-fied in the corresponding element of <em>ymm3/m256</em> while shifting in the sign bits.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RVM</td>
+<td>ModRM:reg (w)</td>
+<td>VEX.vvvv</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Shifts the bits in the individual doubleword data elements in the first source operand to the right by the count value of respective data elements in the second source operand. As the bits in each data element are shifted right, the empty high-order bits are filled with the sign bit of the source element.</p>
+<p>The count values are specified individually in each data element of the second source operand. If the unsigned integer value specified in the respective data element of the second source operand is greater than 31, then the destination data element are filled with the corresponding sign bit of the source element.</p>
+<p>VEX.128 encoded version: The destination and first source operands are XMM registers. The count operand can be either an XMM register or a 128-bit memory location. Bits (VLMAX-1:128) of the corresponding YMM register are zeroed.</p>
+<p>VEX.256 encoded version: The destination and first source operands are YMM registers. The count operand can be either an YMM register or a 256-bit memory location.</p>
+<h2>Operation</h2>
+<p><strong>VPSRAVD (VEX.128 version)</strong></p>
+<pre>COUNT_0 ← SRC2[31: 0]
+    (* Repeat Each COUNT_i for the 2nd through 4th dwords of SRC2*)
+COUNT_3 ← SRC2[127 : 112];
+IF COUNT_0 &lt; 32 THEN
+    DEST[31:0] ← SignExtend(SRC1[31:0] &gt;&gt; COUNT_0);
+ELSE
+    For (i = 0 to 31) DEST[i + 0] ← (SRC1[31] );
+FI;
+    (* Repeat shift operation for 2nd through 4th dwords *)
+IF COUNT_3 &lt; 32 THEN
+    DEST[127:96] ← SignExtend(SRC1[127:96] &gt;&gt; COUNT_3);
+ELSE
+    For (i = 0 to 31) DEST[i + 96] ← (SRC1[127] );
+FI;
+DEST[VLMAX-1:128] ← 0;</pre>
+<p><strong>VPSRAVD (VEX.256 version)</strong></p>
+<pre>COUNT_0 ← SRC2[31 : 0];
+    (* Repeat Each COUNT_i for the 2nd through 7th dwords of SRC2*)
+COUNT_7 ← SRC2[255 : 224];
+IF COUNT_0 &lt; 32 THEN
+    DEST[31:0] ← SignExtend(SRC1[31:0] &gt;&gt; COUNT_0);
+ELSE
+    For (i = 0 to 31) DEST[i + 0] ← (SRC1[31] );
+FI;
+    (* Repeat shift operation for 2nd through 7th dwords *)
+IF COUNT_7 &lt; 32 THEN
+    DEST[255:224] ← SignExtend(SRC1[255:224] &gt;&gt; COUNT_7);
+ELSE
+    For (i = 0 to 31) DEST[i + 224] ← (SRC1[255] );
+FI;</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>VPSRAVD: __m256i _mm256_srav_epi32 (__m256i m, __m256i count)</p>
+<p>VPSRAVD: __m128i _mm_srav_epi32 (__m128i m, __m128i count)</p>
+<h2>SIMD Floating-Point Exceptions</h2>
+<p>None</p>
+<h2>Other Exceptions</h2>
+<p>See Exceptions Type 4; additionally</p>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>If VEX.W = 1.</td></tr></table></body></html>

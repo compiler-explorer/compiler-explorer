@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>MOVNTI—Store Doubleword Using Non-Temporal Hint </title></head>
+<body>
+<h1>MOVNTI—Store Doubleword Using Non-Temporal Hint</h1>
+<table>
+<tr>
+<th>Opcode</th>
+<th>Instruction</th>
+<th>Op/En</th>
+<th>64-Bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>0F C3 /<em>r</em></td>
+<td>MOVNTI <em>m32</em>, <em>r32</em></td>
+<td>MR</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move doubleword from <em>r32</em> to <em>m32</em> using non-temporal hint.</td></tr>
+<tr>
+<td>REX.W + 0F C3 /<em>r</em></td>
+<td>MOVNTI <em>m64,</em> <em>r64</em></td>
+<td>MR</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Move quadword from <em>r64</em> to <em>m64</em> using non-temporal hint.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>MR</td>
+<td>ModRM:r/m (w)</td>
+<td>ModRM:reg (r)</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Moves the doubleword integer in the source operand (second operand) to the destination operand (first operand) using a non-temporal hint to minimize cache pollution during the write to memory. The source operand is a general-purpose register. The destination operand is a 32-bit memory location.</p>
+<p>The non-temporal hint is implemented by using a write combining (WC) memory type protocol when writing the data to memory. Using this protocol, the processor does not write the data into the cache hierarchy, nor does it fetch the corresponding cache line from memory into the cache hierarchy. The memory type of the region being written to can override the non-temporal hint, if the memory address specified for the non-temporal store is in an uncacheable (UC) or write protected (WP) memory region. For more information on non-temporal stores, see “Caching of Temporal vs. Non-Temporal Data” in Chapter 10 in the <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 1</em>.</p>
+<p>Because the WC protocol uses a weakly-ordered memory consistency model, a fencing operation implemented with the SFENCE or MFENCE instruction should be used in conjunction with MOVNTI instructions if multiple proces-sors might use different memory types to read/write the destination memory locations.</p>
+<p>In 64-bit mode, the instruction’s default operation size is 32 bits. Use of the REX.R prefix permits access to addi-tional registers (R8-R15). Use of the REX.W prefix promotes operation to 64 bits. See the summary chart at the beginning of this section for encoding data and limits.</p>
+<h2>Operation</h2>
+<pre>DEST ← SRC;</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>MOVNTI:</p>
+<p>void _mm_stream_si32 (int *p, int a)</p>
+<p>MOVNTI:</p>
+<p>void _mm_stream_si64(__int64 *p, __int64 a)</p>
+<h2>SIMD Floating-Point Exceptions</h2>
+<p>None.</p>
+<h2>Protected Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>For an illegal memory operand effective address in the CS, DS, ES, FS or GS segments.</td></tr>
+<tr>
+<td>#SS(0)</td>
+<td>For an illegal address in the SS segment.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>For a page fault.</td></tr>
+<tr>
+<td>#UD</td>
+<td>
+<p>If CPUID.01H:EDX.SSE2[bit 26] = 0.</p>
+<p>If the LOCK prefix is used.</p></td></tr></table>
+<h2>Real-Address Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP</td>
+<td>If any part of the operand lies outside the effective address space from 0 to FFFFH.</td></tr>
+<tr>
+<td>#UD</td>
+<td>
+<p>If CPUID.01H:EDX.SSE2[bit 26] = 0.</p>
+<p>If the LOCK prefix is used.</p></td></tr></table>
+<h2>Virtual-8086 Mode Exceptions</h2>
+<p>Same exceptions as in real address mode.</p>
+<table class="exception-table">
+<tr>
+<td>#PF(fault-code)</td>
+<td>For a page fault.</td></tr></table>
+<h2>Compatibility Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>64-Bit Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#SS(0)</td>
+<td>If a memory address referencing the SS segment is in a non-canonical form.</td></tr>
+<tr>
+<td>#GP(0)</td>
+<td>If the memory address is in a non-canonical form.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>For a page fault.</td></tr>
+<tr>
+<td>#UD</td>
+<td>
+<p>If CPUID.01H:EDX.SSE2[bit 26] = 0.</p>
+<p>If the LOCK prefix is used.</p></td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and an unaligned memory reference is made while the current privilege level is 3.</td></tr></table></body></html>

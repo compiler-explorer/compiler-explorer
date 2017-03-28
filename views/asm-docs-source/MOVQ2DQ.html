@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>MOVQ2DQ—Move Quadword from MMX Technology to XMM Register </title></head>
+<body>
+<h1>MOVQ2DQ—Move Quadword from MMX Technology to XMM Register</h1>
+<table>
+<tr>
+<th>Opcode</th>
+<th>Instruction</th>
+<th>Op/En</th>
+<th>64-Bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>F3 0F D6 /r</td>
+<td>MOVQ2DQ <em>xmm</em>, <em>mm</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move quadword from <em>mmx</em> to low quadword of <em>xmm</em>.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RM</td>
+<td>ModRM:reg (w)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Moves the quadword from the source operand (second operand) to the low quadword of the destination operand (first operand). The source operand is an MMX technology register and the destination operand is an XMM register.</p>
+<p>This instruction causes a transition from x87 FPU to MMX technology operation (that is, the x87 FPU top-of-stack pointer is set to 0 and the x87 FPU tag word is set to all 0s [valid]). If this instruction is executed while an x87 FPU floating-point exception is pending, the exception is handled before the MOVQ2DQ instruction is executed.</p>
+<p>In 64-bit mode, use of the REX.R prefix permits this instruction to access additional registers (XMM8-XMM15).</p>
+<h2>Operation</h2>
+<pre>DEST[63:0] ← SRC[63:0];
+DEST[127:64] ← 00000000000000000H;</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>MOVQ2DQ:</p>
+<p>__128i _mm_movpi64_pi64 ( __m64 a)</p>
+<h2>SIMD Floating-Point Exceptions</h2>
+<p>None.</p>
+<h2>Protected Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#NM</td>
+<td>If CR0.TS[bit 3] = 1.</td></tr>
+<tr>
+<td>#UD</td>
+<td>
+<p>If CR0.EM[bit 2] = 1.</p>
+<p>If CR4.OSFXSR[bit 9] = 0.</p>
+<p>If CPUID.01H:EDX.SSE2[bit 26] = 0.</p>
+<p>If the LOCK prefix is used.</p></td></tr>
+<tr>
+<td>#MF</td>
+<td>If there is a pending x87 FPU exception.</td></tr></table>
+<h2>Real-Address Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>Virtual-8086 Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>Compatibility Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>64-Bit Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p></body></html>

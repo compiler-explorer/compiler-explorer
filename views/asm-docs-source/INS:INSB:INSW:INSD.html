@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>INS/INSB/INSW/INSD—Input from Port to String </title></head>
+<body>
+<h1>INS/INSB/INSW/INSD—Input from Port to String</h1>
+<table>
+<tr>
+<th>Opcode</th>
+<th>Instruction</th>
+<th>Op/En</th>
+<th>64-Bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>6C</td>
+<td>INS <em>m8</em>, DX</td>
+<td>NP</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Input byte from I/O port specified in DX into memory location specified in ES:(E)DI or RDI.*</td></tr>
+<tr>
+<td>6D</td>
+<td>INS <em>m16</em>, DX</td>
+<td>NP</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Input word from I/O port specified in DX into memory location specified in ES:(E)DI or RDI.<sup>1</sup></td></tr>
+<tr>
+<td>6D</td>
+<td>INS <em>m32</em>, DX</td>
+<td>NP</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Input doubleword from I/O port specified in DX into memory location specified in ES:(E)DI or RDI.<sup>1</sup></td></tr>
+<tr>
+<td>6C</td>
+<td>INSB</td>
+<td>NP</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Input byte from I/O port specified in DX into memory location specified with ES:(E)DI or RDI.<sup>1</sup></td></tr>
+<tr>
+<td>6D</td>
+<td>INSW</td>
+<td>NP</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Input word from I/O port specified in DX into memory location specified in ES:(E)DI or RDI.<sup>1</sup></td></tr>
+<tr>
+<td>6D</td>
+<td>INSD</td>
+<td>NP</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Input doubleword from I/O port specified in DX into memory location specified in ES:(E)DI or RDI.<sup>1</sup></td></tr></table>
+<p><strong>NOTES:</strong></p>
+<p>*</p>
+<p>In 64-bit mode, only 64-bit (RDI) and 32-bit (EDI) address sizes are supported. In non-64-bit mode, only 32-bit (EDI) and 16-bit (DI) address sizes are supported.</p>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>NP</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Copies the data from the I/O port specified with the source operand (second operand) to the destination operand (first operand). The source operand is an I/O port address (from 0 to 65,535) that is read from the DX register. The destination operand is a memory location, the address of which is read from either the ES:DI, ES:EDI or the RDI registers (depending on the address-size attribute of the instruction, 16, 32 or 64, respectively). (The ES segment cannot be overridden with a segment override prefix.) The size of the I/O port being accessed (that is, the size of the source and destination operands) is determined by the opcode for an 8-bit I/O port or by the operand-size attri-bute of the instruction for a 16- or 32-bit I/O port.</p>
+<p>At the assembly-code level, two forms of this instruction are allowed: the “explicit-operands” form and the “no-operands” form. The explicit-operands form (specified with the INS mnemonic) allows the source and destination operands to be specified explicitly. Here, the source operand must be “DX,” and the destination operand should be a symbol that indicates the size of the I/O port and the destination address. This explicit-operands form is provided to allow documentation; however, note that the documentation provided by this form can be misleading. That is, the destination operand symbol must specify the correct <strong>type</strong> (size) of the operand (byte, word, or doubleword), but it does not have to specify the correct <strong>location</strong>. The location is always specified by the ES:(E)DI registers, which must be loaded correctly before the INS instruction is executed.</p>
+<p>The no-operands form provides “short forms” of the byte, word, and doubleword versions of the INS instructions. Here also DX is assumed by the processor to be the source operand and ES:(E)DI is assumed to be the destination operand. The size of the I/O port is specified with the choice of mnemonic: INSB (byte), INSW (word), or INSD (doubleword).</p>
+<p>After the byte, word, or doubleword is transfer from the I/O port to the memory location, the DI/EDI/RDI register is incremented or decremented automatically according to the setting of the DF flag in the EFLAGS register. (If the DF flag is 0, the (E)DI register is incremented; if the DF flag is 1, the (E)DI register is decremented.) The (E)DI register is incremented or decremented by 1 for byte operations, by 2 for word operations, or by 4 for doubleword operations.</p>
+<p>The INS, INSB, INSW, and INSD instructions can be preceded by the REP prefix for block input of ECX bytes, words, or doublewords. See “REP/REPE/REPZ /REPNE/REPNZ—Repeat String Operation Prefix” in Chapter 4 of the <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 2B</em>, for a description of the REP prefix.</p>
+<p>These instructions are only useful for accessing I/O ports located in the processor’s I/O address space. See Chapter 16, “Input/Output,” in the <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 1</em>, for more information on accessing I/O ports in the I/O address space.</p>
+<p>In 64-bit mode, default address size is 64 bits, 32 bit address size is supported using the prefix 67H. The address of the memory destination is specified by RDI or EDI. 16-bit address size is not supported in 64-bit mode. The operand size is not promoted.</p>
+<h2>Operation</h2>
+<pre>IF ((PE = 1) and ((CPL &gt; IOPL) or (VM = 1)))
+    THEN (* Protected mode with CPL &gt; IOPL or virtual-8086 mode *)
+         IF (Any I/O Permission Bit for I/O port being accessed = 1)
+              THEN (* I/O operation is not allowed *)
+                    #GP(0);
+              ELSE (* I/O operation is allowed *)
+                    DEST ← SRC; (* Read from I/O port *)
+         FI;
+    ELSE (Real Mode or Protected Mode with CPL IOPL *)
+         DEST ← SRC; (* Read from I/O port *)
+FI;
+Non-64-bit Mode:
+IF (Byte transfer)
+    THEN IF DF = 0
+         THEN (E)DI ← (E)DI + 1;
+         ELSE (E)DI ← (E)DI – 1; FI;
+    ELSE IF (Word transfer)
+         THEN IF DF = 0
+              THEN (E)DI ← (E)DI + 2;
+              ELSE (E)DI ← (E)DI – 2; FI;
+         ELSE (* Doubleword transfer *)
+              THEN IF DF = 0
+                    THEN (E)DI ← (E)DI + 4;
+                    ELSE (E)DI ← (E)DI – 4; FI;
+         FI;
+FI;
+FI64-bit Mode:
+IF (Byte transfer)
+    THEN IF DF = 0
+         THEN (E|R)DI ← (E|R)DI + 1;
+         ELSE (E|R)DI ← (E|R)DI – 1; FI;
+    ELSE IF (Word transfer)
+         THEN IF DF = 0
+              THEN (E)DI ← (E)DI + 2;
+              ELSE (E)DI ← (E)DI – 2; FI;
+         ELSE (* Doubleword transfer *)
+              THEN IF DF = 0
+                    THEN (E|R)DI ← (E|R)DI + 4;
+                    ELSE (E|R)DI ← (E|R)DI – 4; FI;
+         FI;
+FI;</pre>
+<h2>Flags Affected</h2>
+<p>None.</p>
+<h2>Protected Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>
+<p>If the CPL is greater than (has less privilege) the I/O privilege level (IOPL) and any of the corresponding I/O permission bits in TSS for the I/O port being accessed is 1.</p>
+<p>If the destination is located in a non-writable segment.</p>
+<p>If an illegal memory operand effective address in the ES segments is given.</p></td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and an unaligned memory reference is made while the current privilege level is 3.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Real-Address Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP</td>
+<td>If a memory operand effective address is outside the CS, DS, ES, FS, or GS segment limit.</td></tr>
+<tr>
+<td>#SS</td>
+<td>If a memory operand effective address is outside the SS segment limit.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Virtual-8086 Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>If any of the I/O permission bits in the TSS for the I/O port being accessed is 1.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and an unaligned memory reference is made.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Compatibility Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>64-Bit Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#SS(0)</td>
+<td>If a memory address referencing the SS segment is in a non-canonical form.</td></tr>
+<tr>
+<td>#GP(0)</td>
+<td>
+<p>If the CPL is greater than (has less privilege) the I/O privilege level (IOPL) and any of the corresponding I/O permission bits in TSS for the I/O port being accessed is 1.</p>
+<p>If the memory address is in a non-canonical form.</p></td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and an unaligned memory reference is made while the current privilege level is 3.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table></body></html>

@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>STI—Set Interrupt Flag </title></head>
+<body>
+<h1>STI—Set Interrupt Flag</h1>
+<table>
+<tr>
+<th>Opcode</th>
+<th>Instruction</th>
+<th>Op/En</th>
+<th>64-Bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>FB</td>
+<td>STI</td>
+<td>NP</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Set interrupt flag; external, maskable interrupts enabled at the end of the next instruction.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>NP</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>If protected-mode virtual interrupts are not enabled, STI sets the interrupt flag (IF) in the EFLAGS register. After the IF flag is set, the processor begins responding to external, maskable interrupts after the next instruction is executed. The delayed effect of this instruction is provided to allow interrupts to be enabled just before returning from a procedure (or subroutine). For instance, if an STI instruction is followed by an RET instruction, the RET instruction is allowed to execute before external interrupts are recognized<sup>1</sup>. If the STI instruction is followed by a CLI instruction (which clears the IF flag), the effect of the STI instruction is negated.</p>
+<p>The IF flag and the STI and CLI instructions do not prohibit the generation of exceptions and NMI interrupts. NMI interrupts (and SMIs) may be blocked for one macroinstruction following an STI.</p>
+<p>When protected-mode virtual interrupts are enabled, CPL is 3, and IOPL is less than 3; STI sets the VIF flag in the EFLAGS register, leaving IF unaffected.</p>
+<p>Table 4-16 indicates the action of the STI instruction depending on the processor’s mode of operation and the CPL/IOPL settings of the running program or procedure.</p>
+<p>Operation is the same in all modes.</p>
+<h3>Table 4-16.  Decision Table for STI Results</h3>
+<table>
+<tr>
+<th>CR0.PE</th>
+<th>EFLAGS.VM</th>
+<th>EFLAGS.IOPL</th>
+<th>CS.CPL</th>
+<th>CR4.PVI</th>
+<th>EFLAGS.VIP</th>
+<th>CR4.VME</th>
+<th>STI Result</th></tr>
+<tr>
+<td>0</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+<th>IF = 1</th></tr>
+<tr>
+<td>1</td>
+<td>0</td>
+<td>≥ CPL</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+<th>IF = 1</th></tr>
+<tr>
+<td>1</td>
+<td>0</td>
+<td>&lt; CPL</td>
+<td>3</td>
+<td>1</td>
+<td>X</td>
+<td>X</td>
+<th>VIF = 1</th></tr>
+<tr>
+<td>1</td>
+<td>0</td>
+<td>&lt; CPL</td>
+<td>&lt; 3</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+<th>GP Fault</th></tr>
+<tr>
+<td>1</td>
+<td>0</td>
+<td>&lt; CPL</td>
+<td>X</td>
+<td>0</td>
+<td>X</td>
+<td>X</td>
+<th>GP Fault</th></tr>
+<tr>
+<td>1</td>
+<td>0</td>
+<td>&lt; CPL</td>
+<td>X</td>
+<td>X</td>
+<td>1</td>
+<td>X</td>
+<th>GP Fault</th></tr>
+<tr>
+<td>1</td>
+<td>1</td>
+<td>3</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+<th>IF = 1</th></tr>
+<tr>
+<td>1</td>
+<td>1</td>
+<td>&lt; 3</td>
+<td>X</td>
+<td>X</td>
+<td>0</td>
+<td>1</td>
+<th>VIF = 1</th></tr>
+<tr>
+<td>1</td>
+<td>1</td>
+<td>&lt; 3</td>
+<td>X</td>
+<td>X</td>
+<td>1</td>
+<td>X</td>
+<th>GP Fault</th></tr>
+<tr>
+<td>1</td>
+<td>1</td>
+<td>&lt; 3</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+<td>0</td>
+<th>GP Fault</th></tr></table>
+<p><strong>NOTES:</strong></p>
+<p>X = This setting has no impact.</p>
+<p>1.</p>
+<p>The STI instruction delays recognition of interrupts only if it is executed with EFLAGS.IF = 0. In a sequence of STI instructions, only the first instruction in the sequence is guaranteed to delay interrupts.</p>
+<p>In the following instruction sequence, interrupts may be recognized before RET executes: STI STI RET</p>
+<h2>Operation</h2>
+<pre>IF PE = 0  (* Executing in real-address mode *)
+    THEN
+         IF ← 1; (* Set Interrupt Flag *)
+    ELSE  (* Executing in protected mode or virtual-8086 mode *)
+         IF VM = 0  (* Executing in protected mode*)
+              THEN
+                    IF IOPL ≥ CPL
+                         THEN
+                              IF ← 1;  (* Set Interrupt Flag *)
+                    ELSE
+                         IF (IOPL &lt; CPL) and (CPL = 3) and (PVI = 1)
+                              THEN
+                                    VIF ← 1;  (* Set Virtual Interrupt Flag *)
+                              ELSE
+                                    #GP(0);
+                         FI;
+                    FI;
+              ELSE  (* Executing in Virtual-8086 mode *)
+                    IF IOPL = 3
+                         THEN
+                              IF ← 1;  (* Set Interrupt Flag *)
+                    ELSE
+                         IF ((IOPL &lt; 3) and (VIP = 0) and (VME = 1))
+                              THEN
+                                    VIF ← 1;  (* Set Virtual Interrupt Flag *)
+                         ELSE
+                              #GP(0); (* Trap to virtual-8086 monitor *)
+                         FI;)
+                    FI;
+         FI;
+FI;</pre>
+<h2>Flags Affected</h2>
+<p>The IF flag is set to 1; or the VIF flag is set to 1. Other flags are unaffected.</p>
+<h2>Protected Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>If the CPL is greater (has less privilege) than the IOPL of the current program or procedure.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Real-Address Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Virtual-8086 Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>Compatibility Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>64-Bit Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p></body></html>

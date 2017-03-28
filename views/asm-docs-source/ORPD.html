@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>ORPD—Bitwise Logical OR of Double-Precision Floating-Point Values </title></head>
+<body>
+<h1>ORPD—Bitwise Logical OR of Double-Precision Floating-Point Values</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32 bit Mode Support</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>
+<p>66 0F 56 /<em>r</em></p>
+<p>ORPD <em>xmm1</em>, <em>xmm2/m128</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>SSE2</td>
+<td>Bitwise OR of <em>xmm2/m128</em> and <em>xmm1</em>.</td></tr>
+<tr>
+<td>VEX.NDS.128.66.0F.WIG 56 /r VORPD <em>xmm1,xmm2, xmm3/m128</em></td>
+<td>RVM</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Return the bitwise logical OR of packed double-precision floating-point values in <em>xmm2</em> and <em>xmm3/mem</em>.</td></tr>
+<tr>
+<td>
+<p>VEX.NDS.256.66.0F.WIG 56 /r</p>
+<p>VORPD <em>ymm1, ymm2, ymm3/m256</em></p></td>
+<td>RVM</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Return the bitwise logical OR of packed double-precision floating-point values in <em>ymm2</em> and <em>ymm3/mem</em>.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RM</td>
+<td>ModRM:reg (r, w)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td></tr>
+<tr>
+<td>RVM</td>
+<td>ModRM:reg (w)</td>
+<td>VEX.vvvv (r)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Performs a bitwise logical OR of the two or four packed double-precision floating-point values from the first source operand and the second source operand, and stores the result in the destination operand</p>
+<p>In 64-bit mode, using a REX prefix in the form of REX.R permits this instruction to access additional registers (XMM8-XMM15).</p>
+<p>128-bit Legacy SSE version: The second source can be an XMM register or an 128-bit memory location. The desti-nation is not distinct from the first source XMM register and the upper bits (VLMAX-1:128) of the corresponding YMM register destination are unmodified.</p>
+<p>VEX.128 encoded version: the first source operand is an XMM register or 128-bit memory location. The destination operand is an XMM register. The upper bits (VLMAX-1:128) of the destination YMM register destination are zeroed.</p>
+<p>VEX.256 encoded version: The first source operand is a YMM register. The second source operand can be a YMM register or a 256-bit memory location. The destination operand is a YMM register.</p>
+<p>Note: If VORPD is encoded with VEX.L= 1, an attempt to execute the instruction encoded with VEX.L= 1 will cause an #UD exception.</p>
+<h2>Operation</h2>
+<p><strong>ORPD (128-bit Legacy SSE version)</strong></p>
+<pre>DEST[63:0] ← DEST[63:0] BITWISE OR SRC[63:0]
+DEST[127:64] ← DEST[127:64] BITWISE OR SRC[127:64]
+DEST[VLMAX-1:128] (Unmodified)</pre>
+<p><strong>VORPD (VEX.128 encoded version)</strong></p>
+<pre>DEST[63:0] ← SRC1[63:0] BITWISE OR SRC2[63:0]
+DEST[127:64] ← SRC1[127:64] BITWISE OR SRC2[127:64]
+DEST[VLMAX-1:128] ← 0</pre>
+<p><strong>VORPD (VEX.256 encoded version)</strong></p>
+<pre>DEST[63:0] ← SRC1[63:0] BITWISE OR SRC2[63:0]
+DEST[127:64] ← SRC1[127:64] BITWISE OR SRC2[127:64]
+DEST[191:128] ← SRC1[191:128] BITWISE OR SRC2[191:128]
+DEST[255:192] ← SRC1[255:192] BITWISE OR SRC2[255:192]</pre>
+<h2>Intel<em><sup>® </sup></em>C/C++ Compiler Intrinsic Equivalent</h2>
+<p>ORPD:</p>
+<p>__m128d _mm_or_pd(__m128d a, __m128d b);</p>
+<p>VORPD:</p>
+<p> __m256d _mm256_or_pd (__m256d a, __m256d b);</p>
+<h2>SIMD Floating-Point Exceptions</h2>
+<p>None.</p>
+<h2>Other Exceptions</h2>
+<p>See Exceptions Type 4; additionally</p>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>If VEX.L = 1.</td></tr></table></body></html>

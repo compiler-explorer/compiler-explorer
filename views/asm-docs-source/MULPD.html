@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>MULPD—Multiply Packed Double-Precision Floating-Point Values </title></head>
+<body>
+<h1>MULPD—Multiply Packed Double-Precision Floating-Point Values</h1>
+<table>
+<tr>
+<th>Description</th>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32-bit Mode</th>
+<th>CPUID Feature Flag</th></tr>
+<tr>
+<td>Multiply packed double-precision floating-point values in <em>xmm2/m128</em> by <em>xmm1</em>.</td>
+<td>
+<p>66 0F 59 /<em>r</em></p>
+<p>MULPD <em>xmm1</em>,<em> xmm2/m128</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>SSE2</td></tr>
+<tr>
+<td>Multiply packed double-precision floating-point values from <em>xmm3/mem</em> to<em> xmm2</em> and stores result in <em>xmm1</em>.</td>
+<td>
+<p>VEX.NDS.128.66.0F.WIG 59 /r</p>
+<p>VMULPD <em>xmm1,xmm2, xmm3/m128</em></p></td>
+<td>RVM</td>
+<td>V/V</td>
+<td>AVX</td></tr>
+<tr>
+<td>Multiply packed double-precision floating-point values from <em>ymm3/mem</em> to <em>ymm2</em> and stores result in<em> ymm1</em>.</td>
+<td>VEX.NDS.256.66.0F.WIG 59 /r VMULPD <em>ymm1, ymm2, ymm3/m256</em></td>
+<td>RVM</td>
+<td>V/V</td>
+<td>AVX</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RM</td>
+<td>ModRM:reg (r, w)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td></tr>
+<tr>
+<td>RVM</td>
+<td>ModRM:reg (w)</td>
+<td>VEX.vvvv (r)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Performs a SIMD multiply of the two or four packed double-precision floating-point values from the source operand (second operand) and the destination operand (first operand), and stores the packed double-precision floating-point results in the destination operand. The source operand can be an XMM register or a 128-bit memory location. The destination operand is an XMM register. See Figure 11-3 in the <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 1</em>, for an illustration of a SIMD double-precision floating-point operation.</p>
+<p>In 64-bit mode, use of the REX.R prefix permits this instruction to access additional registers (XMM8-XMM15).</p>
+<p>128-bit Legacy SSE version: The second source can be an XMM register or an 128-bit memory location. The desti-nation is not distinct from the first source XMM register and the upper bits (VLMAX-1:128) of the corresponding YMM register destination are unmodified.</p>
+<p>VEX.128 encoded version: the first source operand is an XMM register or 128-bit memory location. The destination operand is an XMM register. The upper bits (VLMAX-1:128) of the destination YMM register destination are zeroed.</p>
+<p>VEX.256 encoded version: The first source operand is a YMM register. The second source operand can be a YMM register or a 256-bit memory location. The destination operand is a YMM register.</p>
+<h2>Operation</h2>
+<p><strong>MULPD (128-bit Legacy SSE version)</strong></p>
+<pre>DEST[63:0] ← DEST[63:0] * SRC[63:0]
+DEST[127:64] ← DEST[127:64] * SRC[127:64]
+DEST[VLMAX-1:128] (Unmodified)</pre>
+<p><strong>VMULPD (VEX.128 encoded version)</strong></p>
+<pre>DEST[63:0] ← SRC1[63:0] * SRC2[63:0]
+DEST[127:64] ← SRC1[127:64] * SRC2[127:64]
+DEST[VLMAX-1:128] ← 0</pre>
+<p><strong>VMULPD (VEX.256 encoded version)</strong></p>
+<pre>DEST[63:0] ← SRC1[63:0] * SRC2[63:0]
+DEST[127:64] ← SRC1[127:64] * SRC2[127:64]
+DEST[191:128] ← SRC1[191:128] * SRC2[191:128]
+DEST[255:192] ← SRC1[255:192] * SRC2[255:192]</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>MULPD:</p>
+<p>__m128d _mm_mul_pd (m128d a, m128d b)</p>
+<p>VMULPD:</p>
+<p> __m256d _mm256_mul_pd (__m256d a, __m256d b);</p>
+<h2>SIMD Floating-Point Exceptions</h2>
+<p>Overflow, Underflow, Invalid, Precision, Denormal.</p>
+<h2>Other Exceptions</h2>
+<p>See Exceptions Type 2</p></body></html>

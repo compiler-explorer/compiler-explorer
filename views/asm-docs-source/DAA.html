@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>DAA—Decimal Adjust AL after Addition </title></head>
+<body>
+<h1>DAA—Decimal Adjust AL after Addition</h1>
+<table>
+<tr>
+<th>Opcode</th>
+<th>Instruction</th>
+<th>Op/En</th>
+<th>64-Bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>27</td>
+<td>DAA</td>
+<td>NP</td>
+<td>Invalid</td>
+<td>Valid</td>
+<td>Decimal adjust AL after addition.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>NP</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Adjusts the sum of two packed BCD values to create a packed BCD result. The AL register is the implied source and destination operand. The DAA instruction is only useful when it follows an ADD instruction that adds (binary addi-tion) two 2-digit, packed BCD values and stores a byte result in the AL register. The DAA instruction then adjusts the contents of the AL register to contain the correct 2-digit, packed BCD result. If a decimal carry is detected, the CF and AF flags are set accordingly.</p>
+<p>This instruction executes as described above in compatibility mode and legacy mode. It is not valid in 64-bit mode.</p>
+<h2>Operation</h2>
+<pre>IF 64-Bit Mode
+    THEN
+         #UD;
+    ELSE
+         old_AL ← AL;
+         old_CF ← CF;
+         CF ← 0;
+         IF (((AL AND 0FH) &gt; 9) or AF = 1)
+               THEN
+                     AL ← AL + 6;
+                     CF ← old_CF or (Carry from AL ← AL + 6);
+                     AF ← 1;
+               ELSE
+                     AF ← 0;
+         FI;
+         IF ((old_AL &gt; 99H) or (old_CF = 1))
+              THEN
+                     AL ← AL + 60H;
+                     CF ← 1;
+              ELSE
+                     CF ← 0;
+         FI;
+FI;</pre>
+<h2>Example</h2>
+<p>ADD</p>
+<p>AL, BL</p>
+<p>Before: AL=79H BL=35H EFLAGS(OSZAPC)=XXXXXX</p>
+<p>After: AL=AEH BL=35H EFLAGS(0SZAPC)=110000</p>
+<p>DAA</p>
+<p>Before: AL=AEH BL=35H EFLAGS(OSZAPC)=110000</p>
+<p>After: AL=14H BL=35H EFLAGS(0SZAPC)=X00111</p>
+<p>DAA</p>
+<p>Before: AL=2EH BL=35H EFLAGS(OSZAPC)=110000</p>
+<p>After: AL=34H BL=35H EFLAGS(0SZAPC)=X00101</p>
+<h2>Flags Affected</h2>
+<p>The CF and AF flags are set if the adjustment of the value results in a decimal carry in either digit of the result (see the “Operation” section above). The SF, ZF, and PF flags are set according to the result. The OF flag is undefined.</p>
+<h2>Protected Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Real-Address Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Virtual-8086 Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Compatibility Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>64-Bit Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>If in 64-bit mode.</td></tr></table></body></html>

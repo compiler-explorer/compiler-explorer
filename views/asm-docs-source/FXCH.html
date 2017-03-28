@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>FXCH—Exchange Register Contents </title></head>
+<body>
+<h1>FXCH—Exchange Register Contents</h1>
+<table>
+<tr>
+<th>Opcode</th>
+<th>Instruction</th>
+<th>64-Bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>D9 C8+i</td>
+<td>FXCH ST(i)</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Exchange the contents of ST(0) and ST(i).</td></tr>
+<tr>
+<td>D9 C9</td>
+<td>FXCH</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Exchange the contents of ST(0) and ST(1).</td></tr></table>
+<h2>Description</h2>
+<p>Exchanges the contents of registers ST(0) and ST(i). If no source operand is specified, the contents of ST(0) and ST(1) are exchanged.</p>
+<p>This instruction provides a simple means of moving values in the FPU register stack to the top of the stack [ST(0)], so that they can be operated on by those floating-point instructions that can only operate on values in ST(0). For example, the following instruction sequence takes the square root of the third register from the top of the register stack:</p>
+<p>FXCH ST(3);</p>
+<p>FSQRT;</p>
+<p>FXCH ST(3);</p>
+<p>This instruction’s operation is the same in non-64-bit modes and 64-bit mode.</p>
+<h2>Operation</h2>
+<pre>IF (Number-of-operands) is 1
+    THEN
+         temp ← ST(0);
+         ST(0) ← SRC;
+         SRC ← temp;
+    ELSE
+         temp ← ST(0);
+         ST(0) ← ST(1);
+         ST(1) ← temp;
+FI;</pre>
+<h2>FPU Flags Affected</h2>
+<table class="exception-table">
+<tr>
+<td>C1</td>
+<td>Set to 0.</td></tr>
+<tr>
+<td>C0, C2, C3</td>
+<td>Undefined.</td></tr></table>
+<h2>Floating-Point Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#IS</td>
+<td>Stack underflow occurred.</td></tr></table>
+<h2>Protected Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#NM</td>
+<td>CR0.EM[bit 2] or CR0.TS[bit 3] = 1.</td></tr>
+<tr>
+<td>#MF</td>
+<td>If there is a pending x87 FPU exception.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Real-Address Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>Virtual-8086 Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>Compatibility Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>64-Bit Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p></body></html>

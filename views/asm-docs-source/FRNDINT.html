@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>FRNDINT—Round to Integer </title></head>
+<body>
+<h1>FRNDINT—Round to Integer</h1>
+<table>
+<tr>
+<th>Opcode</th>
+<th>Instruction</th>
+<th>64-Bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>D9 FC</td>
+<td>FRNDINT</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Round ST(0) to an integer.</td></tr></table>
+<h2>Description</h2>
+<p>Rounds the source value in the ST(0) register to the nearest integral value, depending on the current rounding mode (setting of the RC field of the FPU control word), and stores the result in ST(0).</p>
+<p>If the source value is ∞, the value is not changed. If the source value is not an integral value, the floating-point inexact-result exception (#P) is generated.</p>
+<p>This instruction’s operation is the same in non-64-bit modes and 64-bit mode.</p>
+<h2>Operation</h2>
+<pre>ST(0) ← RoundToIntegralValue(ST(0));</pre>
+<h2>FPU Flags Affected</h2>
+<table class="exception-table">
+<tr>
+<td>C1</td>
+<td>
+<p>Set to 0 if stack underflow occurred.</p>
+<p>Set if result was rounded up; cleared otherwise.</p></td></tr>
+<tr>
+<td>C0, C2, C3</td>
+<td>Undefined.</td></tr></table>
+<h2>Floating-Point Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#IS</td>
+<td>Stack underflow occurred.</td></tr>
+<tr>
+<td>#IA</td>
+<td>Source operand is an SNaN value or unsupported format.</td></tr></table>
+<p>#D</p>
+<p>Source operand is a denormal value.</p>
+<p>#P</p>
+<p>Source operand is not an integral value.</p>
+<h2>Protected Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#NM</td>
+<td>CR0.EM[bit 2] or CR0.TS[bit 3] = 1.</td></tr>
+<tr>
+<td>#MF</td>
+<td>If there is a pending x87 FPU exception.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Real-Address Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>Virtual-8086 Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>Compatibility Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>64-Bit Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p></body></html>

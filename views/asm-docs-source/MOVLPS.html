@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>MOVLPS—Move Low Packed Single-Precision Floating-Point Values </title></head>
+<body>
+<h1>MOVLPS—Move Low Packed Single-Precision Floating-Point Values</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32-bit Mode</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>
+<p>0F 12 /<em>r</em></p>
+<p>MOVLPS <em>xmm</em>, <em>m64</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>SSE</td>
+<td>Move two packed single-precision floating-point values from <em>m64</em> to low quadword of <em>xmm</em>.</td></tr>
+<tr>
+<td>
+<p>0F 13 /<em>r</em></p>
+<p>MOVLPS <em>m64</em>, <em>xmm</em></p></td>
+<td>MR</td>
+<td>V/V</td>
+<td>SSE</td>
+<td>Move two packed single-precision floating-point values from low quadword of <em>xmm</em> to <em>m64</em>.</td></tr>
+<tr>
+<td>
+<p>VEX.NDS.128.0F.WIG 12 /r</p>
+<p>VMOVLPS <em>xmm2, xmm1, m64</em></p></td>
+<td>RVM</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Merge two packed single-precision floating-point values from <em>m64 </em>and the high quadword of <em>xmm1</em>.</td></tr>
+<tr>
+<td>
+<p>VEX.128.0F.WIG 13/r</p>
+<p>VMOVLPS <em>m64, xmm1</em></p></td>
+<td>MR</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Move two packed single-precision floating-point values from low quadword of <em>xmm1</em> to <em>m64</em>.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RM</td>
+<td>ModRM:reg (r, w)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td></tr>
+<tr>
+<td>MR</td>
+<td>ModRM:r/m (w)</td>
+<td>ModRM:reg (r)</td>
+<td>NA</td>
+<td>NA</td></tr>
+<tr>
+<td>RVM</td>
+<td>ModRM:reg (w)</td>
+<td>VEX.vvvv (r)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>This instruction cannot be used for register to register or memory to memory moves.</p>
+<p><strong>128-bit Legacy SSE load:</strong></p>
+<p>Moves two packed single-precision floating-point values from the source 64-bit memory operand and stores them in the low 64-bits of the destination XMM register. The upper 64bits of the XMM register are preserved. The upper 128-bits of the corresponding YMM destination register are preserved.</p>
+<p>In 64-bit mode, use of the REX.R prefix permits this instruction to access additional registers (XMM8-XMM15).</p>
+<p><strong>VEX.128 encoded load:</strong></p>
+<p>Loads two packed single-precision floating-point values from the source 64-bit memory operand (third operand), merges them with the upper 64-bits of the first source XMM register (second operand), and stores them in the low 128-bits of the destination XMM register (first operand). The upper 128-bits of the destination YMM register are zeroed.</p>
+<p><strong>128-bit store:</strong></p>
+<p>Loads two packed single-precision floating-point values from the low 64-bits of the XMM register source (second operand) to the 64-bit memory location (first operand).</p>
+<p>Note: VMOVLPS (store) (VEX.128.0F 13 /r) is legal and has the same behavior as the existing 0F 13 store. For VMOVLPS (store) (VEX.128.0F 13 /r) instruction version, VEX.vvvv is reserved and must be 1111b otherwise instruction will #UD.</p>
+<p>If VMOVLPS is encoded with VEX.L= 1, an attempt to execute the instruction encoded with VEX.L= 1 will cause an #UD exception.</p>
+<h2>Operation</h2>
+<p><strong>MOVLPS (128-bit Legacy SSE load)</strong></p>
+<pre>DEST[63:0] ← SRC[63:0]
+DEST[VLMAX-1:64] (Unmodified)</pre>
+<p><strong>VMOVLPS (VEX.128 encoded load)</strong></p>
+<pre>DEST[63:0] ← SRC2[63:0]
+DEST[127:64] ← SRC1[127:64]
+DEST[VLMAX-1:128] ← 0</pre>
+<p><strong>VMOVLPS (store)</strong></p>
+<pre>DEST[63:0] ← SRC[63:0]</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>MOVLPS:</p>
+<p>__m128 _mm_loadl_pi ( __m128 a, __m64 *p)</p>
+<p>MOVLPS:</p>
+<p>void _mm_storel_pi (__m64 *p, __m128 a)</p>
+<h2>SIMD Floating-Point Exceptions</h2>
+<p>None.</p>
+<h2>Other Exceptions</h2>
+<p>See Exceptions Type 5; additionally</p>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>
+<p>If VEX.L= 1.</p>
+<p>If VEX.vvvv ≠ 1111B.</p></td></tr></table></body></html>

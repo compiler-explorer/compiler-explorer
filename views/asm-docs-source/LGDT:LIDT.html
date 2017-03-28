@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>LGDT/LIDT—Load Global/Interrupt Descriptor Table Register </title></head>
+<body>
+<h1>LGDT/LIDT—Load Global/Interrupt Descriptor Table Register</h1>
+<table>
+<tr>
+<th>Opcode</th>
+<th>Instruction</th>
+<th>Op/En</th>
+<th>64-Bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>0F 01 /2</td>
+<td>LGDT <em>m16&amp;32</em></td>
+<td>M</td>
+<td>N.E.</td>
+<td>Valid</td>
+<td>Load <em>m</em> into GDTR.</td></tr>
+<tr>
+<td>0F 01 /3</td>
+<td>LIDT <em>m16&amp;32</em></td>
+<td>M</td>
+<td>N.E.</td>
+<td>Valid</td>
+<td>Load <em>m</em> into IDTR.</td></tr>
+<tr>
+<td>0F 01 /2</td>
+<td>LGDT <em>m16&amp;64</em></td>
+<td>M</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Load <em>m</em> into GDTR.</td></tr>
+<tr>
+<td>0F 01 /3</td>
+<td>LIDT <em>m16&amp;64</em></td>
+<td>M</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Load <em>m</em> into IDTR.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>M</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Loads the values in the source operand into the global descriptor table register (GDTR) or the interrupt descriptor table register (IDTR). The source operand specifies a 6-byte memory location that contains the base address (a linear address) and the limit (size of table in bytes) of the global descriptor table (GDT) or the interrupt descriptor table (IDT). If operand-size attribute is 32 bits, a 16-bit limit (lower 2 bytes of the 6-byte data operand) and a 32-bit base address (upper 4 bytes of the data operand) are loaded into the register. If the operand-size attribute is 16 bits, a 16-bit limit (lower 2 bytes) and a 24-bit base address (third, fourth, and fifth byte) are loaded. Here, the high-order byte of the operand is not used and the high-order byte of the base address in the GDTR or IDTR is filled with zeros.</p>
+<p>The LGDT and LIDT instructions are used only in operating-system software; they are not used in application programs. They are the only instructions that directly load a linear address (that is, not a segment-relative address) and a limit in protected mode. They are commonly executed in real-address mode to allow processor initialization prior to switching to protected mode.</p>
+<p>In 64-bit mode, the instruction’s operand size is fixed at 8+2 bytes (an 8-byte base and a 2-byte limit). See the summary chart at the beginning of this section for encoding data and limits.</p>
+<p>See “SGDT—Store Global Descriptor Table Register” in Chapter 4, <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 2B</em>, for information on storing the contents of the GDTR and IDTR.</p>
+<h2>Operation</h2>
+<pre>IF Instruction is LIDT
+    THEN
+         IF OperandSize = 16
+              THEN
+                    IDTR(Limit) ← SRC[0:15];
+                    IDTR(Base) ← SRC[16:47] AND 00FFFFFFH;
+              ELSE IF 32-bit Operand Size
+                    THEN
+                         IDTR(Limit) ← SRC[0:15];
+                         IDTR(Base) ← SRC[16:47];
+                    FI;
+              ELSE IF 64-bit Operand Size (* In 64-Bit Mode *)
+                    THEN
+                         IDTR(Limit) ← SRC[0:15];
+                         IDTR(Base) ← SRC[16:79];
+                    FI;
+         FI;
+    ELSE (* Instruction is LGDT *)
+         IF OperandSize = 16
+              THEN
+                    GDTR(Limit) ← SRC[0:15];
+                    GDTR(Base) ← SRC[16:47] AND 00FFFFFFH;
+              ELSE IF 32-bit Operand Size
+                    THEN
+                         GDTR(Limit) ← SRC[0:15];
+                         GDTR(Base) ← SRC[16:47];
+                    FI;
+              ELSE IF 64-bit Operand Size (* In 64-Bit Mode *)
+                    THEN
+                         GDTR(Limit) ← SRC[0:15];
+                         GDTR(Base) ← SRC[16:79];
+                    FI;
+         FI;
+FI;</pre>
+<h2>Flags Affected</h2>
+<p>None.</p>
+<h2>Protected Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>
+<p>If source operand is not a memory location.</p>
+<p>If the LOCK prefix is used.</p></td></tr>
+<tr>
+<td>#GP(0)</td>
+<td>
+<p>If the current privilege level is not 0.</p>
+<p>If a memory operand effective address is outside the CS, DS, ES, FS, or GS segment limit.</p>
+<p>If the DS, ES, FS, or GS register is used to access memory and it contains a NULL segment selector.</p></td></tr>
+<tr>
+<td>#SS(0)</td>
+<td>If a memory operand effective address is outside the SS segment limit.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr></table>
+<h2>Real-Address Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>
+<p>If source operand is not a memory location.</p>
+<p>If the LOCK prefix is used.</p></td></tr>
+<tr>
+<td>#GP</td>
+<td>If a memory operand effective address is outside the CS, DS, ES, FS, or GS segment limit.</td></tr>
+<tr>
+<td>#SS</td>
+<td>If a memory operand effective address is outside the SS segment limit.</td></tr></table>
+<h2>Virtual-8086 Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>
+<p>If source operand is not a memory location.</p>
+<p>If the LOCK prefix is used.</p></td></tr>
+<tr>
+<td>#GP(0)</td>
+<td>The LGDT and LIDT instructions are not recognized in virtual-8086 mode.</td></tr>
+<tr>
+<td>#GP</td>
+<td>If the current privilege level is not 0.</td></tr></table>
+<h2>Compatibility Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>64-Bit Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#SS(0)</td>
+<td>If a memory address referencing the SS segment is in a non-canonical form.</td></tr>
+<tr>
+<td>#GP(0)</td>
+<td>
+<p>If the current privilege level is not 0.</p>
+<p>If the memory address is in a non-canonical form.</p></td></tr>
+<tr>
+<td>#UD</td>
+<td>
+<p>If source operand is not a memory location.</p>
+<p>If the LOCK prefix is used.</p></td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr></table></body></html>

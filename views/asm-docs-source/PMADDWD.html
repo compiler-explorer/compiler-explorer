@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>PMADDWD—Multiply and Add Packed Integers </title></head>
+<body>
+<h1>PMADDWD—Multiply and Add Packed Integers</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32 bit Mode Support</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>
+<p>0F F5 /<em>r</em><sup>1</sup></p>
+<p>PMADDWD <em>mm, mm/m64</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>MMX</td>
+<td>Multiply the packed words in <em>mm</em> by the packed words in <em>mm/m64</em>, add adjacent doubleword results, and store in <em>mm</em>.</td></tr>
+<tr>
+<td>
+<p>66 0F F5 /<em>r</em></p>
+<p>PMADDWD <em>xmm1</em>, <em>xmm2/m128</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>SSE2</td>
+<td>Multiply the packed word integers in <em>xmm1</em> by the packed word integers in <em>xmm2/m128</em>, add adjacent doubleword results, and store in <em>xmm1</em>.</td></tr>
+<tr>
+<td>
+<p>VEX.NDS.128.66.0F.WIG F5 /r</p>
+<p>VPMADDWD <em>xmm1, xmm2, xmm3/m128</em></p></td>
+<td>RVM</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Multiply the packed word integers in <em>xmm2</em> by the packed word integers in <em>xmm3/m128</em>, add adjacent doubleword results, and store in <em>xmm1</em>.</td></tr>
+<tr>
+<td>
+<p>VEX.NDS.256.66.0F.WIG F5 /r</p>
+<p>VPMADDWD <em>ymm1, ymm2, ymm3/m256</em></p></td>
+<td>RVM</td>
+<td>V/V</td>
+<td>AVX2</td>
+<td>Multiply the packed word integers in <em>ymm2</em> by the packed word integers in <em>ymm3/m256</em>, add adjacent doubleword results, and store in <em>ymm1</em>.</td></tr></table>
+<p>NOTES:</p>
+<p>1. See note in Section 2.4, “Instruction Exception Specification” in the <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 2A</em> and Section 22.25.3, “Exception Conditions of Legacy SIMD Instructions Operating on MMX Registers” in the <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 3A</em>.</p>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RM</td>
+<td>ModRM:reg (r, w)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td></tr>
+<tr>
+<td>RVM</td>
+<td>ModRM:reg (w)</td>
+<td>VEX.vvvv (r)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Multiplies the individual signed words of the destination operand (first operand) by the corresponding signed words of the source operand (second operand), producing temporary signed, doubleword results. The adjacent double-word results are then summed and stored in the destination operand. For example, the corresponding low-order words (15-0) and (31-16) in the source and destination operands are multiplied by one another and the double-word results are added together and stored in the low doubleword of the destination register (31-0). The same operation is performed on the other pairs of adjacent words. (Figure 4-7 shows this operation when using 64-bit operands).</p>
+<p>The (V)PMADDWD instruction wraps around only in one situation: when the 2 pairs of words being operated on in a group are all 8000H. In this case, the result wraps around to 80000000H.</p>
+<p>In 64-bit mode, using a REX prefix in the form of REX.R permits this instruction to access additional registers (XMM8-XMM15).</p>
+<p>Legacy SSE version: The first source and destination operands are MMX registers. The second source operand is an MMX register or a 64-bit memory location.</p>
+<p>128-bit Legacy SSE version: The first source and destination operands are XMM registers. The second source operand is an XMM register or a 128-bit memory location. Bits (VLMAX-1:128) of the corresponding YMM destina-tion register remain unchanged.</p>
+<p>VEX.128 encoded version: The first source and destination operands are XMM registers. The second source operand is an XMM register or a 128-bit memory location. Bits (VLMAX-1:128) of the destination YMM register are zeroed.</p>
+<p>VEX.256 encoded version: The second source operand can be an YMM register or a 256-bit memory location. The first source and destination operands are YMM registers.</p>
+<p>Note: VEX.L must be 0, otherwise the instruction will #UD.</p>
+<svg width="568.799985" viewBox="112.380000 558478.020010 379.199990 121.560000" height="182.34">
+<text y="558498.887584" x="202.0803" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="16.860144">SRC</text>
+<text y="558525.707484" x="202.0803" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="21.320964">DEST</text>
+<text y="558556.067484" x="143.8205" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="22.235472">TEMP</text>
+<text y="558581.027284" x="203.16" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="21.320964">DEST</text>
+<rect y="558488.58" x="240.78" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="36.36"></rect>
+<rect y="558488.58" x="313.56" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="36.36"></rect>
+<rect y="558488.58" x="349.92" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="36.36"></rect>
+<rect y="558514.8" x="277.14" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="36.36"></rect>
+<rect y="558514.8" x="313.5" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="36.36"></rect>
+<rect y="558514.8" x="349.86" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="36.36"></rect>
+<rect y="558514.8" x="240.72" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="36.42"></rect>
+<rect y="558488.58" x="277.14" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="36.42"></rect>
+<rect y="558544.62" x="169.74" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="72.0"></rect>
+<rect y="558544.62" x="241.74" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="72.0"></rect>
+<rect y="558544.62" x="385.8" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="72.0"></rect>
+<rect y="558544.62" x="313.74" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="72.06"></rect>
+<rect y="558572.7" x="241.62" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="72.3"></rect>
+<rect y="558572.7" x="313.8" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="73.32"></rect>
+<path style="stroke:black" d="M241.380000,558572.460000 L241.380000,558590.700000 L241.860010,558590.700000 L241.860010,558572.460000 "></path>
+<path style="stroke:black" d="M313.560000,558572.460000 L313.560000,558590.700000 L314.040010,558590.700000 L314.040010,558572.460000 "></path>
+<path style="stroke:black" d="M241.620000,558572.460020 L241.620000,558572.940000 L314.160000,558572.940000 L314.160000,558572.460020 "></path>
+<path style="stroke:black" d="M313.800000,558572.460020 L313.800000,558572.940000 L387.360000,558572.940000 L387.360000,558572.460020 "></path>
+<path style="stroke:black" d="M313.680000,558572.700000 L313.680000,558590.940000 L314.160010,558590.940000 L314.160010,558572.700000 "></path>
+<path style="stroke:black" d="M386.880000,558572.700000 L386.880000,558590.940000 L387.360010,558590.940000 L387.360010,558572.700000 "></path>
+<path style="stroke:black" d="M241.380000,558590.460020 L241.380000,558590.940000 L313.920000,558590.940000 L313.920000,558590.460020 "></path>
+<path style="stroke:black" d="M313.560000,558590.460020 L313.560000,558590.940000 L387.120000,558590.940000 L387.120000,558590.460020 "></path>
+<text y="558499.547484" x="252.3" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.777096">X3</text>
+<text y="558499.547484" x="324.900444" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.777096">X1</text>
+<text y="558499.547484" x="361.316376" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.777096">X0</text>
+<text y="558526.847484" x="291.058032" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.777096">Y2</text>
+<text y="558526.847484" x="328.080444" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.777096">Y1</text>
+<text y="558526.847484" x="364.496376" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.777096">Y0</text>
+<text y="558526.847484" x="255.48" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.777096">Y3</text>
+<text y="558499.547484" x="287.878032" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.777096">X2</text>
+<text y="558555.287784" x="192.9599" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="28.020224">X3 ∗ Y3</text>
+<text y="558555.287784" x="266.106226" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="28.006618">X2 ∗ Y2</text>
+<text y="558555.287784" x="408.416776" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="28.016168">X0 ∗ Y0</text>
+<text y="558555.287784" x="339.418496" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="27.953948">X1 ∗ Y1</text>
+<text y="558584.447484" x="246.48" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="66.5293">(X3∗Y3) + (X2∗Y2)</text>
+<text y="558584.147484" x="318.3" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="66.556432">(X1∗Y1) + (X0∗Y0)</text></svg>
+<h3>Figure 4-7.  PMADDWD Execution Model Using 64-bit Operands</h3>
+<h2>Operation</h2>
+<p><strong>PMADDWD (with 64-bit operands)</strong></p>
+<pre>    DEST[31:0] ← (DEST[15:0] ∗ SRC[15:0]) + (DEST[31:16] ∗ SRC[31:16]);
+    DEST[63:32] ← (DEST[47:32] ∗ SRC[47:32]) + (DEST[63:48] ∗ SRC[63:48]);</pre>
+<p><strong>PMADDWD (with 128-bit operands)</strong></p>
+<pre>    DEST[31:0] ← (DEST[15:0] ∗ SRC[15:0]) + (DEST[31:16] ∗ SRC[31:16]);
+    DEST[63:32] ← (DEST[47:32] ∗ SRC[47:32]) + (DEST[63:48] ∗ SRC[63:48]);
+    DEST[95:64] ← (DEST[79:64] ∗ SRC[79:64]) + (DEST[95:80] ∗ SRC[95:80]);
+    DEST[127:96] ← (DEST[111:96] ∗ SRC[111:96]) + (DEST[127:112] ∗ SRC[127:112]);</pre>
+<p><strong>VPMADDWD (VEX.128 encoded version)</strong></p>
+<pre>DEST[31:0] ← (SRC1[15:0] * SRC2[15:0]) + (SRC1[31:16] * SRC2[31:16])
+DEST[63:32] ← (SRC1[47:32] * SRC2[47:32]) + (SRC1[63:48] * SRC2[63:48])
+DEST[95:64] ← (SRC1[79:64] * SRC2[79:64]) + (SRC1[95:80] * SRC2[95:80])
+DEST[127:96] ← (SRC1[111:96] * SRC2[111:96]) + (SRC1[127:112] * SRC2[127:112])
+DEST[VLMAX-1:128] ← 0</pre>
+<p><strong>VPMADDWD (VEX.256 encoded version)</strong></p>
+<pre>DEST[31:0] ← (SRC1[15:0] * SRC2[15:0]) + (SRC1[31:16] * SRC2[31:16])
+DEST[63:32] ← (SRC1[47:32] * SRC2[47:32]) + (SRC1[63:48] * SRC2[63:48])
+DEST[95:64] ← (SRC1[79:64] * SRC2[79:64]) + (SRC1[95:80] * SRC2[95:80])
+DEST[127:96] ← (SRC1[111:96] * SRC2[111:96]) + (SRC1[127:112] * SRC2[127:112])
+DEST[159:128] ← (SRC1[143:128] * SRC2[143:128]) + (SRC1[159:144] * SRC2[159:144])
+DEST[191:160] ← (SRC1[175:160] * SRC2[175:160]) + (SRC1[191:176] * SRC2[191:176])
+DEST[223:192] ← (SRC1[207:192] * SRC2[207:192]) + (SRC1[223:208] * SRC2[223:208])
+DEST[255:224] ← (SRC1[239:224] * SRC2[239:224]) + (SRC1[255:240] * SRC2[255:240])</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>PMADDWD:</p>
+<p>__m64 _mm_madd_pi16(__m64 m1, __m64 m2)</p>
+<p>(V)PMADDWD:</p>
+<p>__m128i _mm_madd_epi16 ( __m128i a, __m128i b)</p>
+<p>VPMADDWD:</p>
+<p>__m256i _mm256_madd_epi16 ( __m256i a, __m256i b)</p>
+<h2>Flags Affected</h2>
+<p>None.</p>
+<h2>Numeric Exceptions</h2>
+<p>None.</p>
+<h2>Other Exceptions</h2>
+<p>See Exceptions Type 4; additionally</p>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>If VEX.L = 1.</td></tr></table></body></html>

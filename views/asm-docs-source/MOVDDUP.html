@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>MOVDDUP—Move One Double-FP and Duplicate </title></head>
+<body>
+<h1>MOVDDUP—Move One Double-FP and Duplicate</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32-bit Mode</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>
+<p>F2 0F 12 /<em>r</em></p>
+<p>MOVDDUP <em>xmm1</em>, <em>xmm2/m64</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>SSE3</td>
+<td>Move one double-precision floating-point value from the lower 64-bit operand in <em>xmm2/m64</em> to <em>xmm1</em> and duplicate.</td></tr>
+<tr>
+<td>
+<p>VEX.128.F2.0F.WIG 12 /r</p>
+<p>VMOVDDUP <em>xmm1, xmm2/m64</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Move double-precision floating-point values from <em>xmm2/mem</em> and duplicate into <em>xmm1</em>.</td></tr>
+<tr>
+<td>
+<p>VEX.256.F2.0F.WIG 12 /r</p>
+<p>VMOVDDUP <em>ymm1, ymm2/m256</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Move even index double-precision floating-point values from <em>ymm2/mem</em> and duplicate each element into <em>ymm1</em>.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RM</td>
+<td>ModRM:reg (w)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>The linear address corresponds to the address of the least-significant byte of the referenced memory data. When a memory address is indicated, the 8 bytes of data at memory location m64 are loaded. When the register-register form of this operation is used, the lower half of the 128-bit source register is duplicated and copied into the 128-bit destination register. See Figure 3-24.</p>
+<svg width="550.17" viewBox="117.060000 405902.640000 366.780000 152.400000" height="228.6">
+<text y="405920.170114" x="220.8613" style="font-size:8.000300pt" lengthAdjust="spacingAndGlyphs" textLength="108.7560782">MOVDDUP xmm1, xmm2/m64</text>
+<text y="405945.483114" x="423.3145" style="font-size:8.000300pt" lengthAdjust="spacingAndGlyphs" textLength="39.5614835">xmm2/m64</text>
+<text y="405945.483614" x="337.3015" style="font-size:8.000300pt" lengthAdjust="spacingAndGlyphs" textLength="20.0167506">[63:0]</text>
+<text y="405989.059914" x="423.3145" style="font-size:8.000300pt" lengthAdjust="spacingAndGlyphs" textLength="32.3052114">RESULT:</text>
+<text y="405993.860614" x="139.2831" style="font-size:8.000300pt" lengthAdjust="spacingAndGlyphs" textLength="128.0608021">xmm1[127:64]        xmm2/m64[63:0]</text>
+<text y="405993.860614" x="287.7295" style="font-size:8.000300pt" lengthAdjust="spacingAndGlyphs" textLength="119.1644685">xmm1[63:0]        xmm2/m64[63:0]</text>
+<text y="405998.660314" x="423.3145" style="font-size:8.000300pt" lengthAdjust="spacingAndGlyphs" textLength="21.7768166">xmm1</text>
+<text y="406017.511414" x="188.8553" style="font-size:8.000300pt" lengthAdjust="spacingAndGlyphs" textLength="28.9130842">[127:64]</text>
+<text y="406017.511414" x="337.31126689" style="font-size:8.000300pt" lengthAdjust="spacingAndGlyphs" textLength="20.0167506">[63:0]</text>
+<text y="406046.419809" x="452.7704" style="font-size:6.000200pt" lengthAdjust="spacingAndGlyphs" textLength="26.3468782">OM15997</text>
+<rect y="405903.336" x="117.802" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="126.005" width="360.015"></rect>
+<rect y="405903.336" x="117.802" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="126.005" width="360.015"></rect>
+<rect y="405929.212" x="275.309" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="27.001" width="144.006"></rect>
+<rect y="405977.589" x="131.303" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="27.001" width="144.006"></rect>
+<rect y="405977.589" x="275.309" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="27.001" width="144.006"></rect>
+<rect y="405929.212" x="275.309" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="27.001" width="144.006"></rect>
+<rect y="405977.589" x="131.303" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="27.001" width="144.006"></rect>
+<rect y="405977.589" x="275.309" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="27.001" width="144.006"></rect></svg>
+<h3>Figure 3-24.  MOVDDUP—Move One Double-FP and Duplicate</h3>
+<p>In 64-bit mode, use of the REX.R prefix permits this instruction to access additional registers (XMM8-XMM15).</p>
+<h2>Operation</h2>
+<pre>IF (Source = m64)
+    THEN
+         (* Load instruction *)
+         xmm1[63:0] = m64;
+         xmm1[127:64] = m64;
+    ELSE
+         (* Move instruction *)
+         xmm1[63:0] = xmm2[63:0];
+         xmm1[127:64] = xmm2[63:0];
+FI;</pre>
+<p><strong>MOVDDUP (128-bit Legacy SSE version)</strong></p>
+<pre>DEST[63:0] ← SRC[63:0]
+DEST[127:64] ← SRC[63:0]
+DEST[VLMAX-1:128] (Unmodified)</pre>
+<p><strong>VMOVDDUP (VEX.128 encoded version)</strong></p>
+<pre>DEST[63:0] ← SRC[63:0]
+DEST[127:64] ← SRC[63:0]
+DEST[VLMAX-1:128] ← 0</pre>
+<p><strong>VMOVDDUP (VEX.256 encoded version)</strong></p>
+<pre>DEST[63:0] ← SRC[63:0]
+DEST[127:64] ← SRC[63:0]
+DEST[191:128] ← SRC[191:128]
+DEST[255:192] ← SRC[191:128]</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>MOVDDUP:</p>
+<p>__m128d _mm_movedup_pd(__m128d a)</p>
+<p>MOVDDUP:</p>
+<p>__m128d _mm_loaddup_pd(double const * dp)</p>
+<h2>SIMD Floating-Point Exceptions</h2>
+<p>None</p>
+<h2>Other Exceptions</h2>
+<p>See Exceptions Type 5; additionally</p>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>If VEX.vvvv ≠ 1111B.</td></tr></table></body></html>

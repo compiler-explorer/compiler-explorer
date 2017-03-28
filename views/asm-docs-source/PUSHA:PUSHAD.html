@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>PUSHA/PUSHAD—Push All General-Purpose Registers </title></head>
+<body>
+<h1>PUSHA/PUSHAD—Push All General-Purpose Registers</h1>
+<table>
+<tr>
+<th>Opcode</th>
+<th>Instruction</th>
+<th>Op/En</th>
+<th>64-Bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>60</td>
+<td>PUSHA</td>
+<td>NP</td>
+<td>Invalid</td>
+<td>Valid</td>
+<td>Push AX, CX, DX, BX, original SP, BP, SI, and DI.</td></tr>
+<tr>
+<td>60</td>
+<td>PUSHAD</td>
+<td>NP</td>
+<td>Invalid</td>
+<td>Valid</td>
+<td>Push EAX, ECX, EDX, EBX, original ESP, EBP, ESI, and EDI.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>NP</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Pushes the contents of the general-purpose registers onto the stack. The registers are stored on the stack in the following order: EAX, ECX, EDX, EBX, ESP (original value), EBP, ESI, and EDI (if the current operand-size attribute is 32) and AX, CX, DX, BX, SP (original value), BP, SI, and DI (if the operand-size attribute is 16). These instruc-tions perform the reverse operation of the POPA/POPAD instructions. The value pushed for the ESP or SP register is its value before prior to pushing the first register (see the “Operation” section below).</p>
+<p>The PUSHA (push all) and PUSHAD (push all double) mnemonics reference the same opcode. The PUSHA instruc-tion is intended for use when the operand-size attribute is 16 and the PUSHAD instruction for when the operand-size attribute is 32. Some assemblers may force the operand size to 16 when PUSHA is used and to 32 when PUSHAD is used. Others may treat these mnemonics as synonyms (PUSHA/PUSHAD) and use the current setting of the operand-size attribute to determine the size of values to be pushed from the stack, regardless of the mnemonic used.</p>
+<p>In the real-address mode, if the ESP or SP register is 1, 3, or 5 when PUSHA/PUSHAD executes: an #SS exception is generated but not delivered (the stack error reported prevents #SS delivery). Next, the processor generates a #DF exception and enters a shutdown state as described in the #DF discussion in Chapter 6 of the <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 3A</em>.</p>
+<p>This instruction executes as described in compatibility mode and legacy mode. It is not valid in 64-bit mode.</p>
+<h2>Operation</h2>
+<pre>IF 64-bit Mode
+    THEN #UD
+FI;
+IF OperandSize = 32 (* PUSHAD instruction *)
+    THEN
+         Temp ← (ESP);
+         Push(EAX);
+         Push(ECX);
+         Push(EDX);
+         Push(EBX);
+         Push(Temp);
+         Push(EBP);
+         Push(ESI);
+         Push(EDI);
+    ELSE (* OperandSize = 16, PUSHA instruction *)
+         Temp ← (SP);
+         Push(AX);
+         Push(CX);
+         Push(DX);
+         Push(BX);
+         Push(Temp);
+         Push(BP);
+         Push(SI);
+         Push(DI);
+FI;</pre>
+<h2>Flags Affected</h2>
+<p>None.</p>
+<h2>Protected Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#SS(0)</td>
+<td>If the starting or ending stack address is outside the stack segment limit.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If an unaligned memory reference is made while the current privilege level is 3 and alignment checking is enabled.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Real-Address Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP</td>
+<td>If the ESP or SP register contains 7, 9, 11, 13, or 15.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Virtual-8086 Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>If the ESP or SP register contains 7, 9, 11, 13, or 15.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If an unaligned memory reference is made while alignment checking is enabled.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Compatibility Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>64-Bit Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>If in 64-bit mode.</td></tr></table></body></html>

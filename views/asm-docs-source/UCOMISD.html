@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>UCOMISD—Unordered Compare Scalar Double-Precision Floating-Point Values and Set EFLAGS </title></head>
+<body>
+<h1>UCOMISD—Unordered Compare Scalar Double-Precision Floating-Point Values and Set EFLAGS</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32 bit Mode Support</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>
+<p>66 0F 2E /<em>r</em></p>
+<p>UCOMISD <em>xmm1</em>, <em>xmm2/m64</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>SSE2</td>
+<td>Compares (unordered) the low double-precision floating-point values in <em>xmm1</em> and <em>xmm2/m64</em> and set the EFLAGS accordingly.</td></tr>
+<tr>
+<td>
+<p>VEX.LIG.66.0F.WIG 2E /r</p>
+<p>VUCOMISD <em>xmm1, xmm2/m64</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Compare low double precision floating-point values in <em>xmm1</em> and <em>xmm2/mem64</em> and set the EFLAGS flags accordingly.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RM</td>
+<td>ModRM:reg (r)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Performs an unordered compare of the double-precision floating-point values in the low quadwords of source operand 1 (first operand) and source operand 2 (second operand), and sets the ZF, PF, and CF flags in the EFLAGS register according to the result (unordered, greater than, less than, or equal). The OF, SF and AF flags in the EFLAGS register are set to 0. The unordered result is returned if either source operand is a NaN (QNaN or SNaN). The sign of zero is ignored for comparisons, so that –0.0 is equal to +0.0.</p>
+<p>Source operand 1 is an XMM register; source operand 2 can be an XMM register or a 64 bit memory location.</p>
+<p>The UCOMISD instruction differs from the COMISD instruction in that it signals a SIMD floating-point invalid oper-ation exception (#I) only when a source operand is an SNaN. The COMISD instruction signals an invalid operation exception if a source operand is either a QNaN or an SNaN.</p>
+<p>The EFLAGS register is not updated if an unmasked SIMD floating-point exception is generated.</p>
+<p>In 64-bit mode, using a REX prefix in the form of REX.R permits this instruction to access additional registers (XMM8-XMM15).</p>
+<p>Note: In VEX-encoded versions, VEX.vvvv is reserved and must be 1111b, otherwise instructions will #UD.</p>
+<h2>Operation</h2>
+<pre>RESULT ← UnorderedCompare(SRC1[63:0] &lt; &gt; SRC2[63:0]) {
+(* Set EFLAGS *)
+CASE (RESULT) OF
+    UNORDERED:
+                              ZF, PF, CF ← 111;
+    GREATER_THAN:
+                              ZF, PF, CF ← 000;
+    LESS_THAN:
+                              ZF, PF, CF ← 001;
+    EQUAL:
+                              ZF, PF, CF ← 100;
+ESAC;
+OF, AF, SF ← 0;</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>int _mm_ucomieq_sd(__m128d a, __m128d b)</p>
+<p>int _mm_ucomilt_sd(__m128d a, __m128d b)</p>
+<p>int _mm_ucomile_sd(__m128d a, __m128d b)</p>
+<p>int _mm_ucomigt_sd(__m128d a, __m128d b)</p>
+<p>int _mm_ucomige_sd(__m128d a, __m128d b)</p>
+<p>int _mm_ucomineq_sd(__m128d a, __m128d b)</p>
+<h2>SIMD Floating-Point Exceptions</h2>
+<p>Invalid (if SNaN operands), Denormal.</p>
+<h2>Other Exceptions</h2>
+<p>See Exceptions Type 3; additionally</p>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>If VEX.vvvv ≠ 1111B.</td></tr></table></body></html>

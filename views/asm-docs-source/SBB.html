@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>SBB—Integer Subtraction with Borrow </title></head>
+<body>
+<h1>SBB—Integer Subtraction with Borrow</h1>
+<table>
+<tr>
+<th>Opcode</th>
+<th>Instruction</th>
+<th>Op/En</th>
+<th>64-Bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>1C <em>ib</em></td>
+<td>SBB AL, <em>imm8</em></td>
+<td>I</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Subtract with borrow <em>imm8</em> from AL.</td></tr>
+<tr>
+<td>1D <em>iw</em></td>
+<td>SBB AX,<em> imm16</em></td>
+<td>I</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Subtract with borrow <em>imm16</em> from AX.</td></tr>
+<tr>
+<td>1D <em>id</em></td>
+<td>SBB EAX, <em>imm32</em></td>
+<td>I</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Subtract with borrow <em>imm32</em> from EAX.</td></tr>
+<tr>
+<td>REX.W + 1D <em>id</em></td>
+<td>SBB RAX, <em>imm32</em></td>
+<td>I</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Subtract with borrow sign-extended <em>imm.32 to 64-bits</em> from RAX.</td></tr>
+<tr>
+<td>80 /3 <em>ib</em></td>
+<td>SBB <em>r/m8, imm8</em></td>
+<td>MI</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Subtract with borrow <em>imm8</em> from <em>r/m8.</em></td></tr>
+<tr>
+<td>REX + 80 /3 <em>ib</em></td>
+<td>SBB <em>r/m8*, imm8</em></td>
+<td>MI</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Subtract with borrow <em>imm8</em> from <em>r/m8.</em></td></tr>
+<tr>
+<td>81 /3 <em>iw</em></td>
+<td>SBB <em>r/m16, imm16</em></td>
+<td>MI</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Subtract with borrow <em>imm16</em> from <em>r/m16.</em></td></tr>
+<tr>
+<td>81 /3 <em>id</em></td>
+<td>SBB <em>r/m32, imm32</em></td>
+<td>MI</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Subtract with borrow <em>imm32</em> from <em>r/m32.</em></td></tr>
+<tr>
+<td>REX.W + 81 /3 <em>id</em></td>
+<td>SBB <em>r/m64, imm32</em></td>
+<td>MI</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Subtract with borrow sign-extended <em>imm32 to 64-bits</em> from <em>r/m64.</em></td></tr>
+<tr>
+<td>83 /3 <em>ib</em></td>
+<td>SBB <em>r/m16, imm8</em></td>
+<td>MI</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Subtract with borrow sign-extended <em>imm8 </em>from <em>r/m16.</em></td></tr>
+<tr>
+<td>83 /3 <em>ib</em></td>
+<td>SBB <em>r/m32, imm8</em></td>
+<td>MI</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Subtract with borrow sign-extended <em>imm8 </em>from <em>r/m32.</em></td></tr>
+<tr>
+<td>REX.W + 83 /3 <em>ib</em></td>
+<td>SBB <em>r/m64, imm8</em></td>
+<td>MI</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Subtract with borrow sign-extended <em>imm8 </em>from <em>r/m64.</em></td></tr>
+<tr>
+<td>18 /<em>r</em></td>
+<td>SBB <em>r/m8, r8</em></td>
+<td>MR</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Subtract with borrow <em>r8</em> from <em>r/m8.</em></td></tr>
+<tr>
+<td>REX + 18 /<em>r</em></td>
+<td>SBB <em>r/m8*, r8</em></td>
+<td>MR</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Subtract with borrow <em>r8</em> from <em>r/m8.</em></td></tr>
+<tr>
+<td>19 /<em>r</em></td>
+<td>SBB <em>r/m16, r16</em></td>
+<td>MR</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Subtract with borrow <em>r16</em> from <em>r/m16.</em></td></tr>
+<tr>
+<td>19 /<em>r</em></td>
+<td>SBB <em>r/m32, r32</em></td>
+<td>MR</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Subtract with borrow <em>r32</em> from <em>r/m32.</em></td></tr>
+<tr>
+<td>REX.W + 19 /<em>r</em></td>
+<td>SBB <em>r/m64, r64</em></td>
+<td>MR</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Subtract with borrow <em>r64</em> from <em>r/m64.</em></td></tr>
+<tr>
+<td>1A /<em>r</em></td>
+<td>SBB<em> r8, r/m8</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Subtract with borrow<em> r/m8</em> from <em>r8.</em></td></tr>
+<tr>
+<td>REX + 1A /<em>r</em></td>
+<td>SBB<em> r8*, r/m8*</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Subtract with borrow<em> r/m8</em> from <em>r8.</em></td></tr>
+<tr>
+<td>1B /<em>r</em></td>
+<td>SBB <em>r16, r/m16</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Subtract with borrow<em> r/m16</em> from <em>r16.</em></td></tr>
+<tr>
+<td>1B /<em>r</em></td>
+<td>SBB<em> r32, r/m32</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Subtract with borrow <em>r/m32</em> from <em>r32.</em></td></tr>
+<tr>
+<td>REX.W + 1B /<em>r</em></td>
+<td>SBB<em> r64, r/m64</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Subtract with borrow <em>r/m64</em> from <em>r64.</em></td></tr></table>
+<p><strong>NOTES:</strong></p>
+<p>*</p>
+<p>In 64-bit mode, r/m8 can not be encoded to access the following byte registers if a REX prefix is used: AH, BH, CH, DH.</p>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>I</td>
+<td>AL/AX/EAX/RAX</td>
+<td>imm8/16/32</td>
+<td>NA</td>
+<td>NA</td></tr>
+<tr>
+<td>MI</td>
+<td>ModRM:r/m (w)</td>
+<td>imm8/16/32</td>
+<td>NA</td>
+<td>NA</td></tr>
+<tr>
+<td>MR</td>
+<td>ModRM:r/m (w)</td>
+<td>ModRM:reg (r)</td>
+<td>NA</td>
+<td>NA</td></tr>
+<tr>
+<td>RM</td>
+<td>ModRM:reg (w)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Adds the source operand (second operand) and the carry (CF) flag, and subtracts the result from the destination operand (first operand). The result of the subtraction is stored in the destination operand. The destination operand can be a register or a memory location; the source operand can be an immediate, a register, or a memory location. (However, two memory operands cannot be used in one instruction.) The state of the CF flag represents a borrow from a previous subtraction.</p>
+<p>When an immediate value is used as an operand, it is sign-extended to the length of the destination operand format.</p>
+<p>The SBB instruction does not distinguish between signed or unsigned operands. Instead, the processor evaluates the result for both data types and sets the OF and CF flags to indicate a borrow in the signed or unsigned result, respectively. The SF flag indicates the sign of the signed result.</p>
+<p>The SBB instruction is usually executed as part of a multibyte or multiword subtraction in which a SUB instruction is followed by a SBB instruction.</p>
+<p>This instruction can be used with a LOCK prefix to allow the instruction to be executed atomically.</p>
+<p>In 64-bit mode, the instruction’s default operation size is 32 bits. Using a REX prefix in the form of REX.R permits access to additional registers (R8-R15). Using a REX prefix in the form of REX.W promotes operation to 64 bits. See the summary chart at the beginning of this section for encoding data and limits.</p>
+<h2>Operation</h2>
+<pre>DEST ← (DEST – (SRC + CF));</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>SBB:</p>
+<p>extern unsigned char _subborrow_u8(unsigned char c_in, unsigned char src1, unsigned char src2, unsigned char *diff_out);</p>
+<p>SBB:</p>
+<p>extern unsigned char _subborrow_u16(unsigned char c_in, unsigned short src1, unsigned short src2, unsigned short</p>
+<p>*diff_out);</p>
+<p>SBB:</p>
+<p>extern unsigned char _subborrow_u32(unsigned char c_in, unsigned int src1, unsigned char int, unsigned int *diff_out);</p>
+<p>SBB:</p>
+<p>extern unsigned char _subborrow_u64(unsigned char c_in, unsigned __int64 src1, unsigned __int64 src2, unsigned</p>
+<p>__int64 *diff_out);</p>
+<h2>Flags Affected</h2>
+<p>The OF, SF, ZF, AF, PF, and CF flags are set according to the result.</p>
+<h2>Protected Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>
+<p>If the destination is located in a non-writable segment.</p>
+<p>If a memory operand effective address is outside the CS, DS, ES, FS, or GS segment limit.</p>
+<p>If the DS, ES, FS, or GS register contains a NULL segment selector.</p></td></tr>
+<tr>
+<td>#SS(0)</td>
+<td>If a memory operand effective address is outside the SS segment limit.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and an unaligned memory reference is made while the current privilege level is 3.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used but the destination is not a memory operand.</td></tr></table>
+<h2>Real-Address Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP</td>
+<td>If a memory operand effective address is outside the CS, DS, ES, FS, or GS segment limit.</td></tr>
+<tr>
+<td>#SS</td>
+<td>If a memory operand effective address is outside the SS segment limit.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used but the destination is not a memory operand.</td></tr></table>
+<h2>Virtual-8086 Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>If a memory operand effective address is outside the CS, DS, ES, FS, or GS segment limit.</td></tr>
+<tr>
+<td>#SS(0)</td>
+<td>If a memory operand effective address is outside the SS segment limit.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and an unaligned memory reference is made.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used but the destination is not a memory operand.</td></tr></table>
+<h2>Compatibility Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>64-Bit Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#SS(0)</td>
+<td>If a memory address referencing the SS segment is in a non-canonical form.</td></tr>
+<tr>
+<td>#GP(0)</td>
+<td>If the memory address is in a non-canonical form.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and an unaligned memory reference is made while the current privilege level is 3.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used but the destination is not a memory operand.</td></tr></table></body></html>

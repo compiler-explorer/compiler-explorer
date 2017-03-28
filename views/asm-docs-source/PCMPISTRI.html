@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>PCMPISTRI — Packed Compare Implicit Length Strings, Return Index </title></head>
+<body>
+<h1>PCMPISTRI — Packed Compare Implicit Length Strings, Return Index</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32 bit Mode Support</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>66 0F 3A 63<em> /r imm8 </em>PCMPISTRI <em>xmm1, xmm2/m128, imm8</em></td>
+<td>RM</td>
+<td>V/V</td>
+<td>SSE4_2</td>
+<td>Perform a packed comparison of string data with implicit lengths, generating an index, and storing the result in ECX.</td></tr>
+<tr>
+<td>VEX.128.66.0F3A.WIG 63 /r ib VPCMPISTRI <em>xmm1, xmm2/m128, imm8</em></td>
+<td>RM</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Perform a packed comparison of string data with implicit lengths, generating an index, and storing the result in ECX.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RM</td>
+<td>ModRM:reg (r)</td>
+<td>ModRM:r/m (r)</td>
+<td>imm8</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>The instruction compares data from two strings based on the encoded value in the Imm8 Control Byte (see Section 4.1, “Imm8 Control Byte Operation for PCMPESTRI / PCMPESTRM / PCMPISTRI / PCMPISTRM”), and generates an index stored to ECX.</p>
+<p>Each string is represented by a single value.  The value is an xmm (or possibly m128 for the second operand) which contains the data elements of the string (byte or word data).  Each input byte/word is augmented with a valid/invalid tag.  A byte/word is considered valid only if it has a lower index than the least significant null byte/word.  (The least significant null byte/word is also considered invalid.)</p>
+<p>The comparison and aggregation operations are performed according to the encoded value of Imm8 bit fields (see Section 4.1). The index of the first (or last, according to imm8[6]) set bit of IntRes2 is returned in ECX. If no bits are set in IntRes2, ECX is set to 16 (8).</p>
+<p>Note that the Arithmetic Flags are written in a non-standard manner in order to supply the most relevant informa-tion:</p>
+<p>CFlag – Reset if IntRes2 is equal to zero, set otherwise</p>
+<p>ZFlag – Set if any byte/word of xmm2/mem128 is null, reset otherwise</p>
+<p>SFlag – Set if any byte/word of xmm1 is null, reset otherwise</p>
+<p>OFlag –IntRes2[0]</p>
+<p>AFlag – Reset</p>
+<p>PFlag – Reset</p>
+<p>Note: In VEX.128 encoded version, VEX.vvvv is reserved and must be 1111b, VEX.L must be 0, otherwise the instruction will #UD.</p>
+<h2>Effective Operand Size</h2>
+<table>
+<tr>
+<th>Operating mode/size</th>
+<th>Operand1</th>
+<th>Operand 2</th>
+<th>Result</th></tr>
+<tr>
+<td>16 bit</td>
+<td>xmm</td>
+<td>xmm/m128</td>
+<td>ECX</td></tr>
+<tr>
+<td>32 bit</td>
+<td>xmm</td>
+<td>xmm/m128</td>
+<td>ECX</td></tr>
+<tr>
+<td>64 bit</td>
+<td>xmm</td>
+<td>xmm/m128</td>
+<td>ECX</td></tr>
+<tr>
+<td>64 bit + REX.W</td>
+<td>xmm</td>
+<td>xmm/m128</td>
+<td>RCX</td></tr></table>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent For Returning Index</h2>
+<p>int     _mm_cmpistri (__m128i a, __m128i b, const int mode);</p>
+<h2>Intel C/C++ Compiler Intrinsics For Reading EFlag Results</h2>
+<p>int     _mm_cmpistra (__m128i a, __m128i b, const int mode);</p>
+<p>int     _mm_cmpistrc (__m128i a, __m128i b, const int mode);</p>
+<p>int     _mm_cmpistro (__m128i a, __m128i b, const int mode);</p>
+<p>int     _mm_cmpistrs (__m128i a, __m128i b, const int mode);</p>
+<p>int     _mm_cmpistrz (__m128i a, __m128i b, const int mode);</p>
+<h2>SIMD Floating-Point Exceptions</h2>
+<p>None.</p>
+<h2>Other Exceptions</h2>
+<p>See Exceptions Type 4; additionally, this instruction does not cause #GP if the memory operand is not aligned to 16 Byte boundary, and</p>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>
+<p>If VEX.L = 1.</p>
+<p>If VEX.vvvv ≠ 1111B.</p></td></tr></table></body></html>

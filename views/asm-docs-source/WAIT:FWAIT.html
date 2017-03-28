@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>WAIT/FWAIT—Wait </title></head>
+<body>
+<h1>WAIT/FWAIT—Wait</h1>
+<table>
+<tr>
+<th>Opcode</th>
+<th>Instruction</th>
+<th>Op/En</th>
+<th>64-Bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>9B</td>
+<td>WAIT</td>
+<td>NP</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Check pending unmasked floating-point exceptions.</td></tr>
+<tr>
+<td>9B</td>
+<td>FWAIT</td>
+<td>NP</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Check pending unmasked floating-point exceptions.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>NP</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Causes the processor to check for and handle pending, unmasked, floating-point exceptions before proceeding. (FWAIT is an alternate mnemonic for WAIT.)</p>
+<p>This instruction is useful for synchronizing exceptions in critical sections of code. Coding a WAIT instruction after a floating-point instruction ensures that any unmasked floating-point exceptions the instruction may raise are handled before the processor can modify the instruction’s results. See the section titled “Floating-Point Exception Synchronization” in Chapter 8 of the <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 1</em>, for more information on using the WAIT/FWAIT instruction.</p>
+<p>This instruction’s operation is the same in non-64-bit modes and 64-bit mode.</p>
+<h2>Operation</h2>
+<pre>CheckForPendingUnmaskedFloatingPointExceptions;</pre>
+<h2>FPU Flags Affected</h2>
+<p>The C0, C1, C2, and C3 flags are undefined.</p>
+<h2>Floating-Point Exceptions</h2>
+<p>None.</p>
+<h2>Protected Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#NM</td>
+<td>If CR0.MP[bit 1] = 1 and CR0.TS[bit 3] = 1.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Real-Address Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>Virtual-8086 Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>Compatibility Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>64-Bit Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p></body></html>

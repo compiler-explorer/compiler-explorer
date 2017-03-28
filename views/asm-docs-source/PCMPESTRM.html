@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>PCMPESTRM — Packed Compare Explicit Length Strings, Return Mask </title></head>
+<body>
+<h1>PCMPESTRM — Packed Compare Explicit Length Strings, Return Mask</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32 bit Mode Support</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>66 0F 3A 60 /r imm8 PCMPESTRM <em>xmm1, xmm2/m128, imm8</em></td>
+<td>RMI</td>
+<td>V/V</td>
+<td>SSE4_2</td>
+<td>Perform a packed comparison of string data with explicit lengths, generating a mask, and storing the result in <em>XMM0</em></td></tr>
+<tr>
+<td>VEX.128.66.0F3A.WIG 60 /r ib VPCMPESTRM <em>xmm1, xmm2/m128, imm8</em></td>
+<td>RMI</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Perform a packed comparison of string data with explicit lengths, generating a mask, and storing the result in <em>XMM0</em>.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RMI</td>
+<td>ModRM:reg (r)</td>
+<td>ModRM:r/m (r)</td>
+<td>imm8</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>The instruction compares data from two string fragments based on the encoded value in the imm8 contol byte (see Section 4.1, “Imm8 Control Byte Operation for PCMPESTRI / PCMPESTRM / PCMPISTRI / PCMPISTRM”), and gener-ates a mask stored to XMM0.</p>
+<p>Each string fragment is represented by two values. The first value is an xmm (or possibly m128 for the second operand) which contains the data elements of the string (byte or word data). The second value is stored in an input length register. The input length register is EAX/RAX (for xmm1) or EDX/RDX (for xmm2/m128). The length repre-sents the number of bytes/words which are valid for the respective xmm/m128 data.</p>
+<p>The length of each input is interpreted as being the absolute-value of the value in the length register. The absolute-value computation saturates to 16 (for bytes) and 8 (for words), based on the value of imm8[bit3] when the value in the length register is greater than 16 (8) or less than -16 (-8).</p>
+<p>The comparison and aggregation operations are performed according to the encoded value of Imm8 bit fields (see Section 4.1). As defined by imm8[6], IntRes2 is then either stored to the least significant bits of XMM0 (zero extended to 128 bits) or expanded into a byte/word-mask and then stored to XMM0.</p>
+<p>Note that the Arithmetic Flags are written in a non-standard manner in order to supply the most relevant informa-tion:</p>
+<p>CFlag – Reset if IntRes2 is equal to zero, set otherwise</p>
+<p>ZFlag – Set if absolute-value of EDX is &lt; 16 (8), reset otherwise</p>
+<p>SFlag – Set if absolute-value of EAX is &lt; 16 (8), reset otherwise</p>
+<p>OFlag –IntRes2[0]</p>
+<p>AFlag – Reset</p>
+<p>PFlag – Reset</p>
+<p>Note: In VEX.128 encoded versions, bits (VLMAX-1:128) of XMM0 are zeroed. VEX.vvvv is reserved and must be 1111b, VEX.L must be 0, otherwise the instruction will #UD.</p>
+<h2>Effective Operand Size</h2>
+<table>
+<tr>
+<th>Operating mode/size</th>
+<th>Operand1</th>
+<th>Operand 2</th>
+<th>Length1</th>
+<th>Length2</th>
+<th>Result</th></tr>
+<tr>
+<td>16 bit</td>
+<td>xmm</td>
+<td>xmm/m128</td>
+<td>EAX</td>
+<td>EDX</td>
+<td>XMM0</td></tr>
+<tr>
+<td>32 bit</td>
+<td>xmm</td>
+<td>xmm/m128</td>
+<td>EAX</td>
+<td>EDX</td>
+<td>XMM0</td></tr>
+<tr>
+<td>64 bit</td>
+<td>xmm</td>
+<td>xmm/m128</td>
+<td>EAX</td>
+<td>EDX</td>
+<td>XMM0</td></tr>
+<tr>
+<td>64 bit + REX.W</td>
+<td>xmm</td>
+<td>xmm/m128</td>
+<td>RAX</td>
+<td>RDX</td>
+<td>XMM0</td></tr></table>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent For Returning Mask</h2>
+<p>__m128i _mm_cmpestrm (__m128i a, int la, __m128i b, int lb, const int mode);</p>
+<h2>Intel C/C++ Compiler Intrinsics For Reading EFlag Results</h2>
+<p>int     _mm_cmpestra (__m128i a, int la, __m128i b, int lb, const int mode);</p>
+<p>int     _mm_cmpestrc (__m128i a, int la, __m128i b, int lb, const int mode);</p>
+<p>int     _mm_cmpestro (__m128i a, int la, __m128i b, int lb, const int mode);</p>
+<p>int     _mm_cmpestrs (__m128i a, int la, __m128i b, int lb, const int mode);</p>
+<p>int     _mm_cmpestrz (__m128i a, int la, __m128i b, int lb, const int mode);</p>
+<h2>SIMD Floating-Point Exceptions</h2>
+<p>None.</p>
+<h2>Other Exceptions</h2>
+<p>See Exceptions Type 4; additionally, this instruction does not cause #GP if the memory operand is not aligned to 16 Byte boundary, and</p>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>
+<p>If VEX.L = 1.</p>
+<p>If VEX.vvvv ≠ 1111B.</p></td></tr></table></body></html>

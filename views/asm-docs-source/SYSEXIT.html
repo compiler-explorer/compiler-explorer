@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>SYSEXIT—Fast Return from Fast System Call </title></head>
+<body>
+<h1>SYSEXIT—Fast Return from Fast System Call</h1>
+<table>
+<tr>
+<th>Opcode</th>
+<th>Instruction</th>
+<th>Op/En</th>
+<th>64-Bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>0F 35</td>
+<td>SYSEXIT</td>
+<td>NP</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Fast return to privilege level 3 user code.</td></tr>
+<tr>
+<td>REX.W + 0F 35</td>
+<td>SYSEXIT</td>
+<td>NP</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Fast return to 64-bit mode privilege level 3 user code.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>NP</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Executes a fast return to privilege level 3 user code. SYSEXIT is a companion instruction to the SYSENTER instruc-tion. The instruction is optimized to provide the maximum performance for returns from system procedures executing at protections levels 0 to user procedures executing at protection level 3. It must be executed from code executing at privilege level 0.</p>
+<p>With a 64-bit operand size, SYSEXIT remains in 64-bit mode; otherwise, it either enters compatibility mode (if the logical processor is in IA-32e mode) or remains in protected mode (if it is not).</p>
+<p>Prior to executing SYSEXIT, software must specify the privilege level 3 code segment and code entry point, and the privilege level 3 stack segment and stack pointer by writing values into the following MSR and general-purpose registers:</p>
+<p>The IA32_SYSENTER_CS MSR can be read from and written to using RDMSR and WRMSR.</p>
+<p>While SYSEXIT loads the CS and SS selectors with values derived from the IA32_SYSENTER_CS MSR, the CS and SS descriptor caches are <strong>not</strong> loaded from the descriptors (in GDT or LDT) referenced by those selectors. Instead, the descriptor caches are loaded with fixed values. See the Operation section for details. It is the responsibility of OS software to ensure that the descriptors (in GDT or LDT) referenced by those selector values correspond to the fixed values loaded into the descriptor caches; the SYSEXIT instruction does not ensure this correspondence.</p>
+<p>The SYSEXIT instruction can be invoked from all operating modes except real-address mode and virtual-8086 mode.</p>
+<p>The SYSENTER and SYSEXIT instructions were introduced into the IA-32 architecture in the Pentium II processor. The availability of these instructions on a processor is indicated with the SYSENTER/SYSEXIT present (SEP) feature flag returned to the EDX register by the CPUID instruction. An operating system that qualifies the SEP flag must also qualify the processor family and model to ensure that the SYSENTER/SYSEXIT instructions are actually present. For example:</p>
+<p>IF CPUID SEP bit is set</p>
+<p>THEN IF (Family = 6) and (Model &lt; 3) and (Stepping &lt; 3)</p>
+<p>THEN</p>
+<p>SYSENTER/SYSEXIT_Not_Supported; FI;</p>
+<p>ELSE</p>
+<p>SYSENTER/SYSEXIT_Supported; FI;</p>
+<p>FI;</p>
+<p>When the CPUID instruction is executed on the Pentium Pro processor (model 1), the processor returns a the SEP flag as set, but does not support the SYSENTER/SYSEXIT instructions.</p>
+<h2>Operation</h2>
+<pre>IF IA32_SYSENTER_CS[15:2] = 0 OR CR0.PE = 0 OR CPL ≠ 0 THEN #GP(0); FI;
+IF operand size is 64-bit
+    THEN
+              (* Return to 64-bit mode *)
+         RSP ← RCX;
+         RIP ← RDX;
+    ELSE
+              (* Return to protected mode or compatibility mode *)
+         RSP ← ECX;
+         RIP ← EDX;
+FI;
+IF operand size is 64-bit
+                                                    (* Operating system provides CS; RPL forced to 3 *)
+    THEN CS.Selector ← IA32_SYSENTER_CS[15:0] + 32;
+    ELSE CS.Selector ← IA32_SYSENTER_CS[15:0] + 16;
+FI;
+CS.Selector ← CS.Selector OR 3;
+                                                    (* RPL forced to 3 *)
+(* Set rest of CS to a fixed value *)
+CS.Base ← 0;
+                                                    (* Flat segment *)
+CS.Limit ← FFFFFH;
+                                                    (* With 4-KByte granularity, implies a 4-GByte limit *)
+CS.Type ← 11;
+                                                    (* Execute/read code, accessed *)
+CS.S ← 1;
+CS.DPL ← 3;
+CS.P ← 1;
+IF operand size is 64-bit
+    THEN
+              (* return to 64-bit mode *)
+         CS.L ← 1;
+                                                    (* 64-bit code segment *)
+         CS.D ← 0;
+                                                    (* Required if CS.L = 1 *)
+    ELSE
+              (* return to protected mode or compatibility mode *)
+         CS.L ← 0;
+         CS.D ← 1;
+                                                    (* 32-bit code segment*)
+FI;
+CS.G ← 1;
+                                                    (* 4-KByte granularity *)
+CPL ← 3;
+SS.Selector ← CS.Selector + 8;
+                                                    (* SS just above CS *)
+(* Set rest of SS to a fixed value *)
+SS.Base ← 0;
+                                                    (* Flat segment *)
+SS.Limit ← FFFFFH;
+                                                    (* With 4-KByte granularity, implies a 4-GByte limit *)
+SS.Type ← 3;
+                                                    (* Read/write data, accessed *)
+SS.S ← 1;
+SS.DPL ← 3;
+SS.P ← 1;
+SS.B ← 1;
+                                                    (* 32-bit stack segment*)
+SS.G ← 1;
+                                                    (* 4-KByte granularity *)</pre>
+<h2>Flags Affected</h2>
+<p>None.</p>
+<h2>Protected Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>
+<p>If IA32_SYSENTER_CS[15:2] = 0.</p>
+<p>If CPL ≠ 0.</p></td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Real-Address Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP</td>
+<td>The SYSEXIT instruction is not recognized in real-address mode.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Virtual-8086 Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>The SYSEXIT instruction is not recognized in virtual-8086 mode.</td></tr></table>
+<h2>Compatibility Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>64-Bit Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>
+<p>If IA32_SYSENTER_CS = 0.</p>
+<p>If CPL ≠ 0.</p>
+<p>If RCX or RDX contains a non-canonical address.</p></td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table></body></html>

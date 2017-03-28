@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>Jcc—Jump if Condition Is Met </title></head>
+<body>
+<h1>J<em>cc</em>—Jump if Condition Is Met</h1>
+<table>
+<tr>
+<th>Opcode</th>
+<th>Instruction</th>
+<th>Op/En</th>
+<th>64-Bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>77 <em>cb</em></td>
+<td>JA <em>rel8</em></td>
+<td>D</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Jump short if above (CF=0 and ZF=0).</td></tr>
+<tr>
+<td>73 <em>cb</em></td>
+<td>JAE <em>rel8</em></td>
+<td>D</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Jump short if above or equal (CF=0).</td></tr>
+<tr>
+<td>72 <em>cb</em></td>
+<td>JB <em>rel8</em></td>
+<td>D</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Jump short if below (CF=1).</td></tr>
+<tr>
+<td>76 <em>cb</em></td>
+<td>JBE <em>rel8</em></td>
+<td>D</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Jump short if below or equal (CF=1 or ZF=1).</td></tr>
+<tr>
+<td>72 <em>cb</em></td>
+<td>JC <em>rel8</em></td>
+<td>D</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Jump short if carry (CF=1).</td></tr>
+<tr>
+<td>E3 <em>cb</em></td>
+<td>JCXZ <em>rel8</em></td>
+<td>D</td>
+<td>N.E.</td>
+<td>Valid</td>
+<td>Jump short if CX register is 0.</td></tr>
+<tr>
+<td>E3 <em>cb</em></td>
+<td>JECXZ <em>rel8</em></td>
+<td>D</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Jump short if ECX register is 0.</td></tr>
+<tr>
+<td>E3 <em>cb</em></td>
+<td>JRCXZ <em>rel8</em></td>
+<td>D</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Jump short if RCX register is 0.</td></tr>
+<tr>
+<td>74 <em>cb</em></td>
+<td>JE <em>rel8</em></td>
+<td>D</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Jump short if equal (ZF=1).</td></tr>
+<tr>
+<td>7F <em>cb</em></td>
+<td>JG <em>rel8</em></td>
+<td>D</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Jump short if greater (ZF=0 and SF=OF).</td></tr>
+<tr>
+<td>7D <em>cb</em></td>
+<td>JGE <em>rel8</em></td>
+<td>D</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Jump short if greater or equal (SF=OF).</td></tr>
+<tr>
+<td>7C <em>cb</em></td>
+<td>JL <em>rel8</em></td>
+<td>D</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Jump short if less (SF≠ OF).</td></tr>
+<tr>
+<td>7E <em>cb</em></td>
+<td>JLE <em>rel8</em></td>
+<td>D</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Jump short if less or equal (ZF=1 or SF≠ OF).</td></tr>
+<tr>
+<td>76 <em>cb</em></td>
+<td>JNA <em>rel8</em></td>
+<td>D</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Jump short if not above (CF=1 or ZF=1).</td></tr>
+<tr>
+<td>72 <em>cb</em></td>
+<td>JNAE <em>rel8</em></td>
+<td>D</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Jump short if not above or equal (CF=1).</td></tr>
+<tr>
+<td>73 <em>cb</em></td>
+<td>JNB <em>rel8</em></td>
+<td>D</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Jump short if not below (CF=0).</td></tr>
+<tr>
+<td>77 <em>cb</em></td>
+<td>JNBE <em>rel8</em></td>
+<td>D</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Jump short if not below or equal (CF=0 and ZF=0).</td></tr>
+<tr>
+<td>73 <em>cb</em></td>
+<td>JNC <em>rel8</em></td>
+<td>D</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Jump short if not carry (CF=0).</td></tr>
+<tr>
+<td>75 <em>cb</em></td>
+<td>JNE <em>rel8</em></td>
+<td>D</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Jump short if not equal (ZF=0).</td></tr>
+<tr>
+<td>7E <em>cb</em></td>
+<td>JNG <em>rel8</em></td>
+<td>D</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Jump short if not greater (ZF=1 or SF≠ OF).</td></tr>
+<tr>
+<td>7C <em>cb</em></td>
+<td>JNGE <em>rel8</em></td>
+<td>D</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Jump short if not greater or equal (SF≠ OF).</td></tr>
+<tr>
+<td>7D <em>cb</em></td>
+<td>JNL <em>rel8</em></td>
+<td>D</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Jump short if not less (SF=OF).</td></tr>
+<tr>
+<td>7F <em>cb</em></td>
+<td>JNLE <em>rel8</em></td>
+<td>D</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Jump short if not less or equal (ZF=0 and SF=OF).</td></tr>
+<tr>
+<td>71 <em>cb</em></td>
+<td>JNO <em>rel8</em></td>
+<td>D</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Jump short if not overflow (OF=0).</td></tr>
+<tr>
+<td>7B <em>cb</em></td>
+<td>JNP <em>rel8</em></td>
+<td>D</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Jump short if not parity (PF=0).</td></tr>
+<tr>
+<td>79 <em>cb</em></td>
+<td>JNS <em>rel8</em></td>
+<td>D</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Jump short if not sign (SF=0).</td></tr>
+<tr>
+<td>75 <em>cb</em></td>
+<td>JNZ <em>rel8</em></td>
+<td>D</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Jump short if not zero (ZF=0).</td></tr>
+<tr>
+<td>70 <em>cb</em></td>
+<td>JO <em>rel8</em></td>
+<td>D</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Jump short if overflow (OF=1).</td></tr>
+<tr>
+<td>7A <em>cb</em></td>
+<td>JP <em>rel8</em></td>
+<td>D</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Jump short if parity (PF=1).</td></tr>
+<tr>
+<td>7A <em>cb</em></td>
+<td>JPE <em>rel8</em></td>
+<td>D</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Jump short if parity even (PF=1).</td></tr>
+<tr>
+<td>7B <em>cb</em></td>
+<td>JPO <em>rel8</em></td>
+<td>D</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Jump short if parity odd (PF=0).</td></tr>
+<tr>
+<td>78 <em>cb</em></td>
+<td>JS <em>rel8</em></td>
+<td>D</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Jump short if sign (SF=1).</td></tr>
+<tr>
+<td>74 <em>cb</em></td>
+<td>JZ <em>rel8</em></td>
+<td>D</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Jump short if zero (ZF ← 1).</td></tr>
+<tr>
+<td>0F 87 <em>cw</em></td>
+<td>JA <em>rel16</em></td>
+<td>D</td>
+<td>N.S.</td>
+<td>Valid</td>
+<td>Jump near if above (CF=0 and ZF=0). Not supported in 64-bit mode.</td></tr>
+<tr>
+<td>0F 87 <em>cd</em></td>
+<td>JA <em>rel32</em></td>
+<td>D</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Jump near if above (CF=0 and ZF=0).</td></tr>
+<tr>
+<td>0F 83 <em>cw</em></td>
+<td>JAE <em>rel16</em></td>
+<td>D</td>
+<td>N.S.</td>
+<td>Valid</td>
+<td>Jump near if above or equal (CF=0). Not supported in 64-bit mode.</td></tr></table>
+<table>
+<tr>
+<td>
+<p><strong>Opcode</strong></p>
+<p><strong>Instruction</strong></p>
+<p><strong>Op/</strong></p>
+<p><strong>64-Bit</strong></p>
+<p><strong>Compat/</strong></p>
+<p><strong>Description</strong></p>
+<p><strong>En</strong></p>
+<p><strong>Mode</strong></p>
+<p><strong>Leg Mode</strong></p></td></tr>
+<tr>
+<td>
+<p>0F 83 <em>cd</em></p>
+<p>JAE <em>rel32</em></p>
+<p>D</p>
+<p>Valid</p>
+<p>Valid</p>
+<p>Jump near if above or equal (CF=0).</p>
+<p>0F 82 <em>cw</em></p>
+<p>JB <em>rel16</em></p>
+<p>D</p>
+<p>N.S.</p>
+<p>Valid</p>
+<p>Jump near if below (CF=1). Not supported in 64-bit mode.</p>
+<p>0F 82 <em>cd</em></p>
+<p>JB <em>rel32</em></p>
+<p>D</p>
+<p>Valid</p>
+<p>Valid</p>
+<p>Jump near if below (CF=1).</p>
+<p>0F 86 <em>cw</em></p>
+<p>JBE <em>rel16</em></p>
+<p>D</p>
+<p>N.S.</p>
+<p>Valid</p>
+<p>Jump near if below or equal (CF=1 or ZF=1). Not supported in 64-bit mode.</p>
+<p>0F 86 <em>cd</em></p>
+<p>JBE <em>rel32</em></p>
+<p>D</p>
+<p>Valid</p>
+<p>Valid</p>
+<p>Jump near if below or equal (CF=1 or ZF=1).</p>
+<p>0F 82 <em>cw</em></p>
+<p>JC <em>rel16</em></p>
+<p>D</p>
+<p>N.S.</p>
+<p>Valid</p>
+<p>Jump near if carry (CF=1). Not supported in 64-bit mode.</p>
+<p>0F 82 <em>cd</em></p>
+<p>JC <em>rel32</em></p>
+<p>D</p>
+<p>Valid</p>
+<p>Valid</p>
+<p>Jump near if carry (CF=1).</p>
+<p>0F 84 <em>cw</em></p>
+<p>JE <em>rel16</em></p>
+<p>D</p>
+<p>N.S.</p>
+<p>Valid</p>
+<p>Jump near if equal (ZF=1). Not supported in 64-bit mode.</p>
+<p>0F 84 <em>cd</em></p>
+<p>JE <em>rel32</em></p>
+<p>D</p>
+<p>Valid</p>
+<p>Valid</p>
+<p>Jump near if equal (ZF=1).</p>
+<p>0F 84 <em>cw</em></p>
+<p>JZ <em>rel16</em></p>
+<p>D</p>
+<p>N.S.</p>
+<p>Valid</p>
+<p>Jump near if 0 (ZF=1). Not supported in 64-bit mode.</p>
+<p>0F 84 <em>cd</em></p>
+<p>JZ <em>rel32</em></p>
+<p>D</p>
+<p>Valid</p>
+<p>Valid</p>
+<p>Jump near if 0 (ZF=1).</p>
+<p>0F 8F <em>cw</em></p>
+<p>JG <em>rel16</em></p>
+<p>D</p>
+<p>N.S.</p>
+<p>Valid</p>
+<p>Jump near if greater (ZF=0 and SF=OF). Not supported in 64-bit mode.</p>
+<p>0F 8F <em>cd</em></p>
+<p>JG <em>rel32</em></p>
+<p>D</p>
+<p>Valid</p>
+<p>Valid</p>
+<p>Jump near if greater (ZF=0 and SF=OF).</p>
+<p>0F 8D <em>cw</em></p>
+<p>JGE <em>rel16</em></p>
+<p>D</p>
+<p>N.S.</p>
+<p>Valid</p>
+<p>Jump near if greater or equal (SF=OF). Not supported in 64-bit mode.</p>
+<p>0F 8D <em>cd</em></p>
+<p>JGE <em>rel32</em></p>
+<p>D</p>
+<p>Valid</p>
+<p>Valid</p>
+<p>Jump near if greater or equal (SF=OF).</p>
+<p>0F 8C <em>cw</em></p>
+<p>JL <em>rel16</em></p>
+<p>D</p>
+<p>N.S.</p>
+<p>Valid</p>
+<p>Jump near if less (SF≠ OF). Not supported in 64-bit mode.</p>
+<p>0F 8C <em>cd</em></p>
+<p>JL <em>rel32</em></p>
+<p>D</p>
+<p>Valid</p>
+<p>Valid</p>
+<p>Jump near if less (SF≠ OF).</p>
+<p>0F 8E <em>cw</em></p>
+<p>JLE <em>rel16</em></p>
+<p>D</p>
+<p>N.S.</p>
+<p>Valid</p>
+<p>Jump near if less or equal (ZF=1 or SF≠ OF). Not supported in 64-bit mode.</p>
+<p>0F 8E <em>cd</em></p>
+<p>JLE <em>rel32</em></p>
+<p>D</p>
+<p>Valid</p>
+<p>Valid</p>
+<p>Jump near if less or equal (ZF=1 or SF≠ OF).</p>
+<p>0F 86 <em>cw</em></p>
+<p>JNA <em>rel16</em></p>
+<p>D</p>
+<p>N.S.</p>
+<p>Valid</p>
+<p>Jump near if not above (CF=1 or ZF=1). Not supported in 64-bit mode.</p>
+<p>0F 86 <em>cd</em></p>
+<p>JNA <em>rel32</em></p>
+<p>D</p>
+<p>Valid</p>
+<p>Valid</p>
+<p>Jump near if not above (CF=1 or ZF=1).</p>
+<p>0F 82 <em>cw</em></p>
+<p>JNAE <em>rel16</em></p>
+<p>D</p>
+<p>N.S.</p>
+<p>Valid</p>
+<p>Jump near if not above or equal (CF=1). Not supported in 64-bit mode.</p>
+<p>0F 82 <em>cd</em></p>
+<p>JNAE <em>rel32</em></p>
+<p>D</p>
+<p>Valid</p>
+<p>Valid</p>
+<p>Jump near if not above or equal (CF=1).</p>
+<p>0F 83 <em>cw</em></p>
+<p>JNB <em>rel16</em></p>
+<p>D</p>
+<p>N.S.</p>
+<p>Valid</p>
+<p>Jump near if not below (CF=0). Not supported in 64-bit mode.</p>
+<p>0F 83 <em>cd</em></p>
+<p>JNB <em>rel32</em></p>
+<p>D</p>
+<p>Valid</p>
+<p>Valid</p>
+<p>Jump near if not below (CF=0).</p>
+<p>0F 87 <em>cw</em></p>
+<p>JNBE <em>rel16</em></p>
+<p>D</p>
+<p>N.S.</p>
+<p>Valid</p>
+<p>Jump near if not below or equal (CF=0 and ZF=0). Not supported in 64-bit mode.</p>
+<p>0F 87 <em>cd</em></p>
+<p>JNBE <em>rel32</em></p>
+<p>D</p>
+<p>Valid</p>
+<p>Valid</p>
+<p>Jump near if not below or equal (CF=0 and ZF=0).</p>
+<p>0F 83 <em>cw</em></p>
+<p>JNC <em>rel16</em></p>
+<p>D</p>
+<p>N.S.</p>
+<p>Valid</p>
+<p>Jump near if not carry (CF=0). Not supported in 64-bit mode.</p>
+<p>0F 83 <em>cd</em></p>
+<p>JNC <em>rel32</em></p>
+<p>D</p>
+<p>Valid</p>
+<p>Valid</p>
+<p>Jump near if not carry (CF=0).</p></td></tr></table>
+<table>
+<tr>
+<td>
+<p><strong>Opcode</strong></p>
+<p><strong>Instruction</strong></p>
+<p><strong>Op/</strong></p>
+<p><strong>64-Bit</strong></p>
+<p><strong>Compat/</strong></p>
+<p><strong>Description</strong></p>
+<p><strong>En</strong></p>
+<p><strong>Mode</strong></p>
+<p><strong>Leg Mode</strong></p></td></tr>
+<tr>
+<td>
+<p>0F 85 <em>cw</em></p>
+<p>JNE <em>rel16</em></p>
+<p>D</p>
+<p>N.S.</p>
+<p>Valid</p>
+<p>Jump near if not equal (ZF=0). Not supported in 64-bit mode.</p>
+<p>0F 85 <em>cd</em></p>
+<p>JNE <em>rel32</em></p>
+<p>D</p>
+<p>Valid</p>
+<p>Valid</p>
+<p>Jump near if not equal (ZF=0).</p>
+<p>0F 8E <em>cw</em></p>
+<p>JNG <em>rel16</em></p>
+<p>D</p>
+<p>N.S.</p>
+<p>Valid</p>
+<p>Jump near if not greater (ZF=1 or SF≠ OF). Not supported in 64-bit mode.</p>
+<p>0F 8E <em>cd</em></p>
+<p>JNG <em>rel32</em></p>
+<p>D</p>
+<p>Valid</p>
+<p>Valid</p>
+<p>Jump near if not greater (ZF=1 or SF≠ OF).</p>
+<p>0F 8C <em>cw</em></p>
+<p>JNGE <em>rel16</em></p>
+<p>D</p>
+<p>N.S.</p>
+<p>Valid</p>
+<p>Jump near if not greater or equal (SF≠ OF). Not supported in 64-bit mode.</p>
+<p>0F 8C <em>cd</em></p>
+<p>JNGE <em>rel32</em></p>
+<p>D</p>
+<p>Valid</p>
+<p>Valid</p>
+<p>Jump near if not greater or equal (SF≠ OF).</p>
+<p>0F 8D <em>cw</em></p>
+<p>JNL <em>rel16</em></p>
+<p>D</p>
+<p>N.S.</p>
+<p>Valid</p>
+<p>Jump near if not less (SF=OF). Not supported in 64-bit mode.</p>
+<p>0F 8D <em>cd</em></p>
+<p>JNL <em>rel32</em></p>
+<p>D</p>
+<p>Valid</p>
+<p>Valid</p>
+<p>Jump near if not less (SF=OF).</p>
+<p>0F 8F <em>cw</em></p>
+<p>JNLE <em>rel16</em></p>
+<p>D</p>
+<p>N.S.</p>
+<p>Valid</p>
+<p>Jump near if not less or equal (ZF=0 and SF=OF). Not supported in 64-bit mode.</p>
+<p>0F 8F <em>cd</em></p>
+<p>JNLE <em>rel32</em></p>
+<p>D</p>
+<p>Valid</p>
+<p>Valid</p>
+<p>Jump near if not less or equal (ZF=0 and SF=OF).</p>
+<p>0F 81 <em>cw</em></p>
+<p>JNO <em>rel16</em></p>
+<p>D</p>
+<p>N.S.</p>
+<p>Valid</p>
+<p>Jump near if not overflow (OF=0). Not supported in 64-bit mode.</p>
+<p>0F 81 <em>cd</em></p>
+<p>JNO <em>rel32</em></p>
+<p>D</p>
+<p>Valid</p>
+<p>Valid</p>
+<p>Jump near if not overflow (OF=0).</p>
+<p>0F 8B <em>cw</em></p>
+<p>JNP <em>rel16</em></p>
+<p>D</p>
+<p>N.S.</p>
+<p>Valid</p>
+<p>Jump near if not parity (PF=0). Not supported in 64-bit mode.</p>
+<p>0F 8B <em>cd</em></p>
+<p>JNP <em>rel32</em></p>
+<p>D</p>
+<p>Valid</p>
+<p>Valid</p>
+<p>Jump near if not parity (PF=0).</p>
+<p>0F 89 <em>cw</em></p>
+<p>JNS <em>rel16</em></p>
+<p>D</p>
+<p>N.S.</p>
+<p>Valid</p>
+<p>Jump near if not sign (SF=0). Not supported in 64-bit mode.</p>
+<p>0F 89 <em>cd</em></p>
+<p>JNS <em>rel32</em></p>
+<p>D</p>
+<p>Valid</p>
+<p>Valid</p>
+<p>Jump near if not sign (SF=0).</p>
+<p>0F 85 <em>cw</em></p>
+<p>JNZ <em>rel16</em></p>
+<p>D</p>
+<p>N.S.</p>
+<p>Valid</p>
+<p>Jump near if not zero (ZF=0). Not supported in 64-bit mode.</p>
+<p>0F 85 <em>cd</em></p>
+<p>JNZ <em>rel32</em></p>
+<p>D</p>
+<p>Valid</p>
+<p>Valid</p>
+<p>Jump near if not zero (ZF=0).</p>
+<p>0F 80 <em>cw</em></p>
+<p>JO <em>rel16</em></p>
+<p>D</p>
+<p>N.S.</p>
+<p>Valid</p>
+<p>Jump near if overflow (OF=1). Not supported in 64-bit mode.</p>
+<p>0F 80 <em>cd</em></p>
+<p>JO <em>rel32</em></p>
+<p>D</p>
+<p>Valid</p>
+<p>Valid</p>
+<p>Jump near if overflow (OF=1).</p>
+<p>0F 8A <em>cw</em></p>
+<p>JP <em>rel16</em></p>
+<p>D</p>
+<p>N.S.</p>
+<p>Valid</p>
+<p>Jump near if parity (PF=1). Not supported in 64-bit mode.</p>
+<p>0F 8A <em>cd</em></p>
+<p>JP <em>rel32</em></p>
+<p>D</p>
+<p>Valid</p>
+<p>Valid</p>
+<p>Jump near if parity (PF=1).</p>
+<p>0F 8A <em>cw</em></p>
+<p>JPE <em>rel16</em></p>
+<p>D</p>
+<p>N.S.</p>
+<p>Valid</p>
+<p>Jump near if parity even (PF=1). Not supported in 64-bit mode.</p>
+<p>0F 8A <em>cd</em></p>
+<p>JPE <em>rel32</em></p>
+<p>D</p>
+<p>Valid</p>
+<p>Valid</p>
+<p>Jump near if parity even (PF=1).</p>
+<p>0F 8B <em>cw</em></p>
+<p>JPO <em>rel16</em></p>
+<p>D</p>
+<p>N.S.</p>
+<p>Valid</p>
+<p>Jump near if parity odd (PF=0). Not supported in 64-bit mode.</p>
+<p>0F 8B <em>cd</em></p>
+<p>JPO <em>rel32</em></p>
+<p>D</p>
+<p>Valid</p>
+<p>Valid</p>
+<p>Jump near if parity odd (PF=0).</p>
+<p>0F 88 <em>cw</em></p>
+<p>JS <em>rel16</em></p>
+<p>D</p>
+<p>N.S.</p>
+<p>Valid</p>
+<p>Jump near if sign (SF=1). Not supported in 64-bit mode.</p></td></tr></table>
+<table>
+<tr>
+<td>
+<p><strong>Opcode</strong></p>
+<p><strong>Instruction</strong></p>
+<p><strong>Op/</strong></p>
+<p><strong>64-Bit</strong></p>
+<p><strong>Compat/</strong></p>
+<p><strong>Description</strong></p>
+<p><strong>En</strong></p>
+<p><strong>Mode</strong></p>
+<p><strong>Leg Mode</strong></p></td></tr>
+<tr>
+<td>
+<p>0F 88 <em>cd</em></p>
+<p>JS <em>rel32</em></p>
+<p>D</p>
+<p>Valid</p>
+<p>Valid</p>
+<p>Jump near if sign (SF=1).</p>
+<p>0F 84 <em>cw</em></p>
+<p>JZ <em>rel16</em></p>
+<p>D</p>
+<p>N.S.</p>
+<p>Valid</p>
+<p>Jump near if 0 (ZF=1). Not supported in 64-bit mode.</p>
+<p>0F 84 <em>cd</em></p>
+<p>JZ <em>rel32</em></p>
+<p>D</p>
+<p>Valid</p>
+<p>Valid</p>
+<p>Jump near if 0 (ZF=1).</p></td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>D</td>
+<td>Offset</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Checks the state of one or more of the status flags in the EFLAGS register (CF, OF, PF, SF, and ZF) and, if the flags are in the specified state (condition), performs a jump to the target instruction specified by the destination operand. A condition code (<em>cc</em>) is associated with each instruction to indicate the condition being tested for. If the condition is not satisfied, the jump is not performed and execution continues with the instruction following the J<em>cc </em>instruction.</p>
+<p>The target instruction is specified with a relative offset (a signed offset relative to the current value of the instruc-tion pointer in the EIP register). A relative offset (<em>rel8</em>, <em>rel16,</em> or <em>rel32</em>) is generally specified as a label in assembly code, but at the machine code level, it is encoded as a signed, 8-bit or 32-bit immediate value, which is added to the instruction pointer. Instruction coding is most efficient for offsets of –128 to +127. If the operand-size attribute is 16, the upper two bytes of the EIP register are cleared, resulting in a maximum instruction pointer size of 16 bits.</p>
+<p>The conditions for each J<em>cc</em> mnemonic are given in the “Description” column of the table on the preceding page. The terms “less” and “greater” are used for comparisons of signed integers and the terms “above” and “below” are used for unsigned integers.</p>
+<p>Because a particular state of the status flags can sometimes be interpreted in two ways, two mnemonics are defined for some opcodes. For example, the JA (jump if above) instruction and the JNBE (jump if not below or equal) instruction are alternate mnemonics for the opcode 77H.</p>
+<p>The J<em>cc</em> instruction does not support far jumps (jumps to other code segments). When the target for the conditional jump is in a different segment, use the opposite condition from the condition being tested for the J<em>cc</em> instruction, and then access the target with an unconditional far jump (JMP instruction) to the other segment. For example, the following conditional far jump is illegal:</p>
+<p>JZ FARLABEL;</p>
+<p>To accomplish this far jump, use the following two instructions:</p>
+<p>JNZ BEYOND;</p>
+<p>JMP FARLABEL;</p>
+<p>BEYOND:</p>
+<p>The JRCXZ, JECXZ and JCXZ instructions differ from other J<em>cc</em> instructions because they do not check status flags. Instead, they check RCX, ECX or CX for 0. The register checked is determined by the address-size attribute. These instructions are useful when used at the beginning of a loop that terminates with a conditional loop instruction (such as LOOPNE). They can be used to prevent an instruction sequence from entering a loop when RCX, ECX or CX is 0. This would cause the loop to execute 2<sup>64</sup>, 2<sup>32</sup> or 64K times (not zero times).</p>
+<p>All conditional jumps are converted to code fetches of one or two cache lines, regardless of jump address or cache-ability.</p>
+<p>In 64-bit mode, operand size is fixed at 64 bits. JMP Short is RIP = RIP + 8-bit offset sign extended to 64 bits. JMP Near is RIP = RIP + 32-bit offset sign extended to 64-bits.</p>
+<h2>Operation</h2>
+<pre>IF condition
+    THEN
+         tempEIP ← EIP + SignExtend(DEST);
+         IF OperandSize = 16
+              THEN tempEIP ← tempEIP AND 0000FFFFH;
+         FI;
+    IF tempEIP is not within code segment limit
+         THEN #GP(0);
+         ELSE EIP ← tempEIP
+    FI;
+FI;</pre>
+<h2>Protected Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>If the offset being jumped to is beyond the limits of the CS segment.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Real-Address Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP</td>
+<td>If the offset being jumped to is beyond the limits of the CS segment or is outside of the effec-tive address space from 0 to FFFFH. This condition can occur if a 32-bit address size override prefix is used.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Virtual-8086 Mode Exceptions</h2>
+<p>Same exceptions as in real address mode.</p>
+<h2>Compatibility Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>64-Bit Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>If the memory address is in a non-canonical form.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table></body></html>

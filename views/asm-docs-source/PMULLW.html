@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>PMULLW—Multiply Packed Signed Integers and Store Low Result </title></head>
+<body>
+<h1>PMULLW—Multiply Packed Signed Integers and Store Low Result</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32 bit Mode Support</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>
+<p>0F D5 /<em>r</em><sup>1</sup></p>
+<p>PMULLW <em>mm, mm/m64</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>MMX</td>
+<td>Multiply the packed signed word integers in <em>mm1</em> register and <em>mm2/m64</em>, and store the low 16 bits of the results in <em>mm1</em>.</td></tr>
+<tr>
+<td>
+<p>66 0F D5 /<em>r</em></p>
+<p>PMULLW <em>xmm1</em>, <em>xmm2/m128</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>SSE2</td>
+<td>Multiply the packed signed word integers in <em>xmm1</em> and <em>xmm2/m128</em>, and store the low 16 bits of the results in <em>xmm1</em>.</td></tr>
+<tr>
+<td>
+<p>VEX.NDS.128.66.0F.WIG D5 /r</p>
+<p>VPMULLW <em>xmm1, xmm2, xmm3/m128</em></p></td>
+<td>RVM</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Multiply the packed dword signed integers in <em>xmm2</em> and <em>xmm3/m128</em> and store the low 32 bits of each product in <em>xmm1</em>.</td></tr>
+<tr>
+<td>
+<p>VEX.NDS.256.66.0F.WIG D5 /r</p>
+<p>VPMULLW <em>ymm1, ymm2, ymm3/m256</em></p></td>
+<td>RVM</td>
+<td>V/V</td>
+<td>AVX2</td>
+<td>Multiply the packed signed word integers in <em>ymm2</em> and <em>ymm3/m256</em>, and store the low 16 bits of the results in <em>ymm1</em>.</td></tr></table>
+<p>NOTES:</p>
+<p>1. See note in Section 2.4, “Instruction Exception Specification” in the <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 2A</em> and Section 22.25.3, “Exception Conditions of Legacy SIMD Instructions Operating on MMX Registers” in the <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 3A</em>.</p>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RM</td>
+<td>ModRM:reg (r, w)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td></tr>
+<tr>
+<td>RVM</td>
+<td>ModRM:reg (w)</td>
+<td>VEX.vvvv (r)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Performs a SIMD signed multiply of the packed signed word integers in the destination operand (first operand) and the source operand (second operand), and stores the low 16 bits of each intermediate 32-bit result in the destina-tion operand. (Figure 4-8 shows this operation when using 64-bit operands.)</p>
+<p>In 64-bit mode, using a REX prefix in the form of REX.R permits this instruction to access additional registers (XMM8-XMM15).</p>
+<p>Legacy SSE version: The source operand can be an MMX technology register or a 64-bit memory location. The destination operand is an MMX technology register.</p>
+<p>128-bit Legacy SSE version: The first source and destination operands are XMM registers. The second source operand is an XMM register or a 128-bit memory location. Bits (VLMAX-1:128) of the corresponding YMM destina-tion register remain unchanged.</p>
+<p>VEX.128 encoded version: The first source and destination operands are XMM registers. The second source operand is an XMM register or a 128-bit memory location. Bits (VLMAX-1:128) of the destination YMM register are zeroed. VEX.L must be 0, otherwise the instruction will #UD.</p>
+<p>VEX.256 encoded version: The second source operand can be an YMM register or a 256-bit memory location. The first source and destination operands are YMM registers.</p>
+<svg width="568.799985" viewBox="111.840000 603577.980010 379.199990 117.839970" height="176.759955">
+<text y="603598.907584" x="202.3212" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="16.860144">SRC</text>
+<text y="603625.667684" x="202.3212" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="21.320964">DEST</text>
+<text y="603656.087784" x="144.1198" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="22.189986">TEMP</text>
+<text y="603680.987384" x="203.4009" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="21.320964">DEST</text>
+<rect y="603588.6" x="241.08" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="36.36"></rect>
+<rect y="603588.6" x="277.44" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="36.36"></rect>
+<rect y="603588.6" x="313.8" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="36.36"></rect>
+<rect y="603671.04" x="277.38" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="36.36"></rect>
+<rect y="603671.04" x="313.74" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="36.36"></rect>
+<rect y="603671.04" x="240.96" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="36.42"></rect>
+<rect y="603588.6" x="350.16" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="36.42"></rect>
+<rect y="603671.04" x="350.1" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="36.42"></rect>
+<rect y="603644.64" x="242.04" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="72.0"></rect>
+<rect y="603644.64" x="170.04" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="72.0"></rect>
+<rect y="603644.64" x="314.04" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="72.0"></rect>
+<rect y="603644.64" x="386.04" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="72.0"></rect>
+<path style="stroke:black" d="M169.800000,603644.400000 L169.800000,603662.640000 L170.280010,603662.640000 L170.280010,603644.400000 "></path>
+<path style="stroke:black" d="M241.800000,603644.400000 L241.800000,603662.640000 L242.280000,603662.640000 L242.280000,603644.400000 "></path>
+<path style="stroke:black" d="M313.800000,603644.400000 L313.800000,603662.640000 L314.280010,603662.640000 L314.280010,603644.400000 "></path>
+<path style="stroke:black" d="M385.800000,603644.400000 L385.800000,603662.640000 L386.279980,603662.640000 L386.279980,603644.400000 "></path>
+<path style="stroke:black" d="M170.040000,603644.400020 L170.040000,603644.880000 L242.280000,603644.880000 L242.280000,603644.400020 "></path>
+<path style="stroke:black" d="M242.040000,603644.400020 L242.040000,603644.880000 L314.280000,603644.880000 L314.280000,603644.400020 "></path>
+<path style="stroke:black" d="M314.040000,603644.400020 L314.040000,603644.880000 L386.280000,603644.880000 L386.280000,603644.400020 "></path>
+<path style="stroke:black" d="M386.040000,603644.400020 L386.040000,603644.880000 L458.280000,603644.880000 L458.280000,603644.400020 "></path>
+<path style="stroke:black" d="M241.800000,603644.640000 L241.800000,603662.880000 L242.280000,603662.880000 L242.280000,603644.640000 "></path>
+<path style="stroke:black" d="M313.800000,603644.640000 L313.800000,603662.880000 L314.280010,603662.880000 L314.280010,603644.640000 "></path>
+<path style="stroke:black" d="M385.800000,603644.640000 L385.800000,603662.880000 L386.279980,603662.880000 L386.279980,603644.640000 "></path>
+<path style="stroke:black" d="M457.800000,603644.640000 L457.800000,603662.880000 L458.279980,603662.880000 L458.279980,603644.640000 "></path>
+<path style="stroke:black" d="M169.800000,603662.399960 L169.800000,603662.880000 L242.040000,603662.880000 L242.040000,603662.399960 "></path>
+<path style="stroke:black" d="M241.800000,603662.399960 L241.800000,603662.880000 L314.040000,603662.880000 L314.040000,603662.399960 "></path>
+<path style="stroke:black" d="M313.800000,603662.399960 L313.800000,603662.880000 L386.040000,603662.880000 L386.040000,603662.399960 "></path>
+<path style="stroke:black" d="M385.800000,603662.399960 L385.800000,603662.880000 L458.040000,603662.880000 L458.040000,603662.399960 "></path>
+<text y="603599.567484" x="252.6" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.777096">X3</text>
+<text y="603599.567484" x="288.122172" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.777096">X2</text>
+<text y="603599.567484" x="325.144584" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.777096">X1</text>
+<text y="603682.645488" x="281.97864" style="font-size:6.960000pt" lengthAdjust="spacingAndGlyphs" textLength="26.06868">Z2[15:0]</text>
+<text y="603682.645488" x="318.99192" style="font-size:6.960000pt" lengthAdjust="spacingAndGlyphs" textLength="26.06868">Z1[15:0]</text>
+<text y="603682.645488" x="246.42" style="font-size:6.960000pt" lengthAdjust="spacingAndGlyphs" textLength="25.99908">Z3[15:0]</text>
+<text y="603599.567484" x="361.624356" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.777096">X0</text>
+<text y="603682.645488" x="355.40664" style="font-size:6.960000pt" lengthAdjust="spacingAndGlyphs" textLength="26.00604">Z0[15:0]</text>
+<text y="603655.307784" x="254.947686" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="46.193038">Z2 = X2 ∗ Y2</text>
+<text y="603655.307784" x="181.8597" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="46.148304">Z3 = X3 ∗ Y3</text>
+<text y="603655.307784" x="328.259956" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="46.125208">Z1 = X1 ∗ Y1</text>
+<text y="603655.307784" x="397.251056" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="46.202588">Z0 = X0 ∗ Y0</text></svg>
+<svg width="218.2500075" viewBox="241.020000 603614.819980 145.500005 18.000030" height="27.000045">
+<rect y="603614.82" x="241.02" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="36.36"></rect>
+<rect y="603614.82" x="277.38" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="36.42"></rect>
+<rect y="603614.82" x="313.8" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="36.36"></rect>
+<rect y="603614.82" x="350.16" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="36.36"></rect>
+<text y="603626.867384" x="255.78" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.777096">Y3</text>
+<text y="603626.867384" x="291.302172" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.777096">Y2</text>
+<text y="603626.867384" x="328.324584" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.777096">Y1</text>
+<text y="603626.867384" x="364.804356" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.777096">Y0</text></svg>
+<h3>Figure 4-9.  PMULLU Instruction Operation Using 64-bit Operands</h3>
+<h2>Operation</h2>
+<p><strong>PMULLW (with 64-bit operands)</strong></p>
+<pre>    TEMP0[31:0] ←
+                         DEST[15:0] ∗ SRC[15:0]; (* Signed multiplication *)
+    TEMP1[31:0] ←
+                         DEST[31:16] ∗ SRC[31:16];
+    TEMP2[31:0] ←
+                         DEST[47:32] ∗ SRC[47:32];
+    TEMP3[31:0] ←
+                         DEST[63:48] ∗ SRC[63:48];
+    DEST[15:0] ←
+                         TEMP0[15:0];
+    DEST[31:16] ←
+                         TEMP1[15:0];
+    DEST[47:32] ←
+                         TEMP2[15:0];
+    DEST[63:48] ←
+                         TEMP3[15:0];</pre>
+<p><strong>PMULLW (with 128-bit operands)</strong></p>
+<pre>    TEMP0[31:0] ←
+                         DEST[15:0] ∗ SRC[15:0]; (* Signed multiplication *)
+    TEMP1[31:0] ←
+                         DEST[31:16] ∗ SRC[31:16];
+    TEMP2[31:0] ←
+                         DEST[47:32] ∗ SRC[47:32];
+    TEMP3[31:0] ←
+                         DEST[63:48] ∗ SRC[63:48];
+    TEMP4[31:0] ←
+                         DEST[79:64] ∗ SRC[79:64];
+    TEMP5[31:0] ←
+                         DEST[95:80] ∗ SRC[95:80];
+    TEMP6[31:0] ←
+                         DEST[111:96] ∗ SRC[111:96];
+    TEMP7[31:0] ←
+                         DEST[127:112] ∗ SRC[127:112];
+    DEST[15:0] ←
+                         TEMP0[15:0];
+    DEST[31:16] ←
+                         TEMP1[15:0];
+    DEST[47:32] ←
+                         TEMP2[15:0];
+    DEST[63:48] ←
+                         TEMP3[15:0];
+    DEST[79:64] ←
+                         TEMP4[15:0];
+    DEST[95:80] ←
+                         TEMP5[15:0];
+    DEST[111:96] ←  TEMP6[15:0];
+    DEST[127:112] ← TEMP7[15:0];</pre>
+<p><strong>VPMULLW (VEX.128 encoded version)</strong></p>
+<pre>Temp0[31:0] ← SRC1[15:0] * SRC2[15:0]
+Temp1[31:0] ← SRC1[31:16] * SRC2[31:16]
+Temp2[31:0] ← SRC1[47:32] * SRC2[47:32]
+Temp3[31:0] ← SRC1[63:48] * SRC2[63:48]
+Temp4[31:0] ← SRC1[79:64] * SRC2[79:64]
+Temp5[31:0] ← SRC1[95:80] * SRC2[95:80]
+Temp6[31:0] ← SRC1[111:96] * SRC2[111:96]
+Temp7[31:0] ← SRC1[127:112] * SRC2[127:112]
+DEST[15:0] ← Temp0[15:0]
+DEST[31:16] ← Temp1[15:0]
+DEST[47:32] ← Temp2[15:0]
+DEST[63:48] ← Temp3[15:0]
+DEST[79:64] ← Temp4[15:0]
+DEST[95:80] ← Temp5[15:0]
+DEST[111:96] ← Temp6[15:0]
+DEST[127:112] ← Temp7[15:0]
+DEST[VLMAX-1:128] ← 0</pre>
+<p><strong>VPMULLD (VEX.256 encoded version)</strong></p>
+<pre>Temp0[63:0] ← SRC1[31:0] * SRC2[31:0]
+Temp1[63:0] ← SRC1[63:32] * SRC2[63:32]
+Temp2[63:0] ← SRC1[95:64] * SRC2[95:64]
+Temp3[63:0] ← SRC1[127:96] * SRC2[127:96]
+Temp4[63:0] ← SRC1[159:128] * SRC2[159:128]
+Temp5[63:0] ← SRC1[191:160] * SRC2[191:160]
+Temp6[63:0] ← SRC1[223:192] * SRC2[223:192]
+Temp7[63:0] ← SRC1[255:224] * SRC2[255:224]
+DEST[31:0] ← Temp0[31:0]
+DEST[63:32] ← Temp1[31:0]
+DEST[95:64] ← Temp2[31:0]
+DEST[127:96] ← Temp3[31:0]
+DEST[159:128] ← Temp4[31:0]
+DEST[191:160] ← Temp5[31:0]
+DEST[223:192] ← Temp6[31:0]
+DEST[255:224] ← Temp7[31:0]</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>PMULLW:</p>
+<p> __m64 _mm_mullo_pi16(__m64 m1, __m64 m2)</p>
+<p>(V)PMULLW:</p>
+<p> __m128i _mm_mullo_epi16 ( __m128i a, __m128i b)</p>
+<p>VPMULLW:</p>
+<p>__m256i _mm256_mullo_epi16 ( __m256i a, __m256i b);</p>
+<h2>Flags Affected</h2>
+<p>None.</p>
+<h2>SIMD Floating-Point Exceptions</h2>
+<p>None.</p>
+<h2>Other Exceptions</h2>
+<p>See Exceptions Type 4; additionally</p>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>If VEX.L = 1.</td></tr></table></body></html>

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>AESIMC—Perform the AES InvMixColumn Transformation </title></head>
+<body>
+<h1>AESIMC—Perform the AES InvMixColumn Transformation</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32-bit Mode</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>66 0F 38 DB /r AESIMC xmm1, xmm2/m128</td>
+<td>RM</td>
+<td>V/V</td>
+<td>AES</td>
+<td>Perform the InvMixColumn transformation on a 128-bit round key from xmm2/m128 and store the result in xmm1.</td></tr>
+<tr>
+<td>VEX.128.66.0F38.WIG DB /r VAESIMC xmm1, xmm2/m128</td>
+<td>RM</td>
+<td>V/V</td>
+<td>Both AES and AVX flags</td>
+<td>Perform the InvMixColumn transformation on a 128-bit round key from xmm2/m128 and store the result in xmm1.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand2</td>
+<td>Operand3</td>
+<td>Operand4</td></tr>
+<tr>
+<td>RM</td>
+<td>ModRM:reg (w)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Perform the InvMixColumns transformation on the source operand and store the result in the destination operand. The destination operand is an XMM register. The source operand can be an XMM register or a 128-bit memory loca-tion.</p>
+<p>Note: the AESIMC instruction should be applied to the expanded AES round keys (except for the first and last round key) in order to prepare them for decryption using the “Equivalent Inverse Cipher” (defined in FIPS 197).</p>
+<p>128-bit Legacy SSE version: Bits (VLMAX-1:128) of the corresponding YMM destination register remain unchanged.</p>
+<p>VEX.128 encoded version: Bits (VLMAX-1:128) of the destination YMM register are zeroed.</p>
+<p>Note: In VEX-encoded versions, VEX.vvvv is reserved and must be 1111b, otherwise instructions will #UD.</p>
+<h2>Operation</h2>
+<p><strong>AESIMC</strong></p>
+<pre>DEST[127:0] ← InvMixColumns( SRC );
+DEST[VLMAX-1:128] (Unmodified)</pre>
+<p><strong>VAESIMC</strong></p>
+<pre>DEST[127:0] ← InvMixColumns( SRC );
+DEST[VLMAX-1:128] ← 0;</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>(V)AESIMC:</p>
+<p>__m128i _mm_aesimc (__m128i)</p>
+<h2>SIMD Floating-Point Exceptions</h2>
+<p>None</p>
+<h2>Other Exceptions</h2>
+<p>See Exceptions Type 4; additionally</p>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>If VEX.vvvv ≠ 1111B.</td></tr></table></body></html>

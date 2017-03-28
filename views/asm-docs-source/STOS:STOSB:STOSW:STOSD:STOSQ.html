@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>STOS/STOSB/STOSW/STOSD/STOSQ—Store String </title></head>
+<body>
+<h1>STOS/STOSB/STOSW/STOSD/STOSQ—Store String</h1>
+<table>
+<tr>
+<th>Opcode</th>
+<th>Instruction</th>
+<th>Op/En</th>
+<th>64-Bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>AA</td>
+<td>STOS <em>m8</em></td>
+<td>NA</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>For legacy mode, store AL at address ES:(E)DI; For 64-bit mode store AL at address RDI or EDI.</td></tr>
+<tr>
+<td>AB</td>
+<td>STOS <em>m16</em></td>
+<td>NA</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>For legacy mode, store AX at address ES:(E)DI; For 64-bit mode store AX at address RDI or EDI.</td></tr>
+<tr>
+<td>AB</td>
+<td>STOS <em>m32</em></td>
+<td>NA</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>For legacy mode, store EAX at address ES:(E)DI; For 64-bit mode store EAX at address RDI or EDI.</td></tr>
+<tr>
+<td>REX.W + AB</td>
+<td>STOS <em>m64</em></td>
+<td>NA</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Store RAX at address RDI or EDI.</td></tr>
+<tr>
+<td>AA</td>
+<td>STOSB</td>
+<td>NA</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>For legacy mode, store AL at address ES:(E)DI; For 64-bit mode store AL at address RDI or EDI.</td></tr>
+<tr>
+<td>AB</td>
+<td>STOSW</td>
+<td>NA</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>For legacy mode, store AX at address ES:(E)DI; For 64-bit mode store AX at address RDI or EDI.</td></tr>
+<tr>
+<td>AB</td>
+<td>STOSD</td>
+<td>NA</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>For legacy mode, store EAX at address ES:(E)DI; For 64-bit mode store EAX at address RDI or EDI.</td></tr>
+<tr>
+<td>REX.W + AB</td>
+<td>STOSQ</td>
+<td>NA</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Store RAX at address RDI or EDI.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>In non-64-bit and default 64-bit mode; stores a byte, word, or doubleword from the AL, AX, or EAX register (respectively) into the destination operand. The destination operand is a memory location, the address of which is read from either the ES:EDI or ES:DI register (depending on the address-size attribute of the instruction and the mode of operation). The ES segment cannot be overridden with a segment override prefix.</p>
+<p>At the assembly-code level, two forms of the instruction are allowed: the “explicit-operands” form and the “no-operands” form. The explicit-operands form (specified with the STOS mnemonic) allows the destination operand to be specified explicitly. Here, the destination operand should be a symbol that indicates the size and location of the destination value. The source operand is then automatically selected to match the size of the destination operand (the AL register for byte operands, AX for word operands, EAX for doubleword operands). The explicit-operands form is provided to allow documentation; however, note that the documentation provided by this form can be misleading. That is, the destination operand symbol must specify the correct <strong>type</strong> (size) of the operand (byte, word, or doubleword), but it does not have to specify the correct <strong>location</strong>. The location is always specified by the ES:(E)DI register. These must be loaded correctly before the store string instruction is executed.</p>
+<p>The no-operands form provides “short forms” of the byte, word, doubleword, and quadword versions of the STOS instructions. Here also ES:(E)DI is assumed to be the destination operand and AL, AX, or EAX is assumed to be the source operand. The size of the destination and source operands is selected by the mnemonic: STOSB (byte read from register AL), STOSW (word from AX), STOSD (doubleword from EAX).</p>
+<p>After the byte, word, or doubleword is transferred from the register to the memory location, the (E)DI register is incremented or decremented according to the setting of the DF flag in the EFLAGS register. If the DF flag is 0, the register is incremented; if the DF flag is 1, the register is decremented (the register is incremented or decremented by 1 for byte operations, by 2 for word operations, by 4 for doubleword operations).</p>
+<h3>NOTE</h3>
+<p>To improve performance, more recent processors support modifications to the processor’s operation during the string store operations initiated with STOS and STOSB. See Section 7.3.9.3 in the <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 1</em> for additional information on fast-string operation.</p>
+<p>In 64-bit mode, the default address size is 64 bits, 32-bit address size is supported using the prefix 67H. Using a REX prefix in the form of REX.W promotes operation on doubleword operand to 64 bits. The promoted no-operand mnemonic is STOSQ. STOSQ (and its explicit operands variant) store a quadword from the RAX register into the destination addressed by RDI or EDI. See the summary chart at the beginning of this section for encoding data and limits.</p>
+<p>The STOS, STOSB, STOSW, STOSD, STOSQ instructions can be preceded by the REP prefix for block loads of ECX bytes, words, or doublewords. More often, however, these instructions are used within a LOOP construct because data needs to be moved into the AL, AX, or EAX register before it can be stored. See “REP/REPE/REPZ /REPNE/REPNZ—Repeat String Operation Prefix” in this chapter for a description of the REP prefix.</p>
+<h2>Operation</h2>
+<pre>Non-64-bit Mode:
+IF (Byte store)
+    THEN
+         DEST ← AL;
+              THEN IF DF = 0
+                    THEN (E)DI ← (E)DI + 1;
+                    ELSE (E)DI ← (E)DI – 1;
+              FI;
+    ELSE IF (Word store)
+         THEN
+              DEST ← AX;
+                    THEN IF DF = 0
+                         THEN (E)DI ← (E)DI + 2;
+                         ELSE (E)DI ← (E)DI – 2;
+                    FI;
+         FI;
+    ELSE IF (Doubleword store)
+         THEN
+              DEST ← EAX;
+                    THEN IF DF = 0
+                         THEN (E)DI ← (E)DI + 4;
+                         ELSE (E)DI ← (E)DI – 4;
+                    FI;
+         FI;
+FI;
+64-bit Mode:
+IF (Byte store)
+    THEN
+         DEST ← AL;
+              THEN IF DF = 0
+                    THEN (R|E)DI ← (R|E)DI + 1;
+                    ELSE (R|E)DI ← (R|E)DI – 1;
+              FI;
+    ELSE IF (Word store)
+         THEN
+              DEST ← AX;
+                    THEN IF DF = 0
+                         THEN (R|E)DI ← (R|E)DI + 2;
+                         ELSE (R|E)DI ← (R|E)DI – 2;
+                    FI;
+         FI;
+    ELSE IF (Doubleword store)
+         THEN
+              DEST ← EAX;
+                    THEN IF DF = 0
+                         THEN (R|E)DI ← (R|E)DI + 4;
+                         ELSE (R|E)DI ← (R|E)DI – 4;
+                    FI;
+         FI;
+    ELSE IF (Quadword store using REX.W )
+         THEN
+              DEST ← RAX;
+                    THEN IF DF = 0
+                         THEN (R|E)DI ← (R|E)DI + 8;
+                         ELSE (R|E)DI ← (R|E)DI – 8;
+                    FI;
+         FI;
+FI;</pre>
+<h2>Flags Affected</h2>
+<p>None.</p>
+<h2>Protected Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>
+<p>If the destination is located in a non-writable segment.</p>
+<p>If a memory operand effective address is outside the limit of the ES segment.</p>
+<p>If the ES register contains a NULL segment selector.</p></td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and an unaligned memory reference is made while the current privilege level is 3.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Real-Address Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP</td>
+<td>If a memory operand effective address is outside the ES segment limit.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Virtual-8086 Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>If a memory operand effective address is outside the ES segment limit.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and an unaligned memory reference is made.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Compatibility Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>64-Bit Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>If the memory address is in a non-canonical form.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and an unaligned memory reference is made while the current privilege level is 3.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table></body></html>

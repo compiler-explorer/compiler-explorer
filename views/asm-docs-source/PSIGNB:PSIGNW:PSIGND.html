@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>PSIGNB/PSIGNW/PSIGND — Packed SIGN </title></head>
+<body>
+<h1>PSIGNB/PSIGNW/PSIGND — Packed SIGN</h1>
+<table>
+<tr>
+<th>Description</th>
+<th>CPUID Feature Flag</th>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32 bit Mode Support</th></tr>
+<tr>
+<td>Negate/zero/preserve packed byte integers in <em>mm1</em> depending on the corresponding sign in <em>mm2/m64.</em></td>
+<td>SSSE3</td>
+<td>
+<p>0F 38 08 /r<sup>1</sup></p>
+<p>PSIGNB <em>mm1, mm2/m64</em></p></td>
+<td>RM</td>
+<td>V/V</td></tr>
+<tr>
+<td>Negate/zero/preserve packed byte integers in <em>xmm1</em> depending on the corresponding sign in <em>xmm2/m128</em>.</td>
+<td>SSSE3</td>
+<td>
+<p>66 0F 38 08 /r</p>
+<p>PSIGNB <em>xmm1, xmm2/m128</em></p></td>
+<td>RM</td>
+<td>V/V</td></tr>
+<tr>
+<td>Negate/zero/preserve packed word integers in<em> mm1 </em>depending on the corresponding sign in <em>mm2/m128</em>.</td>
+<td>SSSE3</td>
+<td>
+<p>0F 38 09 /r<sup>1</sup></p>
+<p>PSIGNW <em>mm1, mm2/m64</em></p></td>
+<td>RM</td>
+<td>V/V</td></tr>
+<tr>
+<td>Negate/zero/preserve packed word integers in <em>xmm1</em> depending on the corresponding sign in <em>xmm2/m128</em>.</td>
+<td>SSSE3</td>
+<td>
+<p>66 0F 38 09 /r</p>
+<p>PSIGNW <em>xmm1, xmm2/m128</em></p></td>
+<td>RM</td>
+<td>V/V</td></tr>
+<tr>
+<td>Negate/zero/preserve packed doubleword integers in <em>mm1</em> depending on the corresponding sign in <em>mm2/m128</em>.</td>
+<td>SSSE3</td>
+<td>
+<p>0F 38 0A /r<sup>1</sup></p>
+<p>PSIGND <em>mm1, mm2/m64</em></p></td>
+<td>RM</td>
+<td>V/V</td></tr>
+<tr>
+<td>Negate/zero/preserve packed doubleword integers in <em>xmm1</em> depending on the corresponding sign in <em>xmm2/m128</em>.</td>
+<td>SSSE3</td>
+<td>
+<p>66 0F 38 0A /r</p>
+<p>PSIGND <em>xmm1, xmm2/m128</em></p></td>
+<td>RM</td>
+<td>V/V</td></tr>
+<tr>
+<td>Negate/zero/preserve packed byte integers in <em>xmm2 </em>depending on the corresponding sign in <em>xmm3/m128</em>.</td>
+<td>AVX</td>
+<td>
+<p>VEX.NDS.128.66.0F38.WIG 08 /r</p>
+<p>VPSIGNB <em>xmm1, xmm2, xmm3/m128</em></p></td>
+<td>RVM</td>
+<td>V/V</td></tr>
+<tr>
+<td>Negate/zero/preserve packed word integers in <em>xmm2</em> depending on the corresponding sign in <em>xmm3/m128</em>.</td>
+<td>AVX</td>
+<td>
+<p>VEX.NDS.128.66.0F38.WIG 09 /r</p>
+<p>VPSIGNW <em>xmm1, xmm2, xmm3/m128</em></p></td>
+<td>RVM</td>
+<td>V/V</td></tr>
+<tr>
+<td>Negate/zero/preserve packed doubleword integers in <em>xmm2</em> depending on the corresponding sign in <em>xmm3/m128</em>.</td>
+<td>AVX</td>
+<td>
+<p>VEX.NDS.128.66.0F38.WIG 0A /r</p>
+<p>VPSIGND <em>xmm1, xmm2, xmm3/m128</em></p></td>
+<td>RVM</td>
+<td>V/V</td></tr>
+<tr>
+<td>Negate packed byte integers in <em>ymm2</em> if the corresponding sign in <em>ymm3/m256</em> is less than zero.</td>
+<td>AVX2</td>
+<td>
+<p>VEX.NDS.256.66.0F38.WIG 08 /r</p>
+<p>VPSIGNB <em>ymm1, ymm2, ymm3/m256</em></p></td>
+<td>RVM</td>
+<td>V/V</td></tr>
+<tr>
+<td>Negate packed 16-bit integers in <em>ymm2</em> if the corresponding sign in <em>ymm3/m256</em> is less than zero.</td>
+<td>AVX2</td>
+<td>
+<p>VEX.NDS.256.66.0F38.WIG 09 /r</p>
+<p>VPSIGNW <em>ymm1, ymm2, ymm3/m256</em></p></td>
+<td>RVM</td>
+<td>V/V</td></tr>
+<tr>
+<td>Negate packed doubleword integers in <em>ymm2 </em>if the corresponding sign in <em>ymm3/m256</em> is less than zero.</td>
+<td>AVX2</td>
+<td>
+<p>VEX.NDS.256.66.0F38.WIG 0A /r</p>
+<p>VPSIGND<em> ymm1, ymm2, ymm3/m256</em></p></td>
+<td>RVM</td>
+<td>V/V</td></tr></table>
+<p>NOTES:</p>
+<p>1. See note in Section 2.4, “Instruction Exception Specification” in the <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 2A</em> and Section 22.25.3, “Exception Conditions of Legacy SIMD Instructions Operating on MMX Registers” in the <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 3A</em>.</p>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RM</td>
+<td>ModRM:reg (r, w)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td></tr>
+<tr>
+<td>RVM</td>
+<td>ModRM:reg (w)</td>
+<td>VEX.vvvv (r)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>(V)PSIGNB/(V)PSIGNW/(V)PSIGND negates each data element of the destination operand (the first operand) if the signed integer value of the corresponding data element in the source operand (the second operand) is less than zero. If the signed integer value of a data element in the source operand is positive, the corresponding data element in the destination operand is unchanged. If a data element in the source operand is zero, the corre-sponding data element in the destination operand is set to zero.</p>
+<p>(V)PSIGNB operates on signed bytes. (V)PSIGNW operates on 16-bit signed words. (V)PSIGND operates on signed 32-bit integers. When the source operand is a 128bit memory operand, the operand must be aligned on a 16-byte boundary or a general-protection exception (#GP) will be generated.</p>
+<p>Legacy SSE instructions: Both operands can be MMX registers. In 64-bit mode, use the REX prefix to access addi-tional registers.</p>
+<p>128-bit Legacy SSE version: The first source and destination operands are XMM registers. The second source operand is an XMM register or a 128-bit memory location. Bits (VLMAX-1:128) of the corresponding YMM destina-tion register remain unchanged.</p>
+<p>VEX.128 encoded version: The first source and destination operands are XMM registers. The second source operand is an XMM register or a 128-bit memory location. Bits (VLMAX-1:128) of the destination YMM register are zeroed. VEX.L must be 0, otherwise instructions will #UD.</p>
+<p>VEX.256 encoded version: The first source and destination operands are YMM registers. The second source operand is an YMM register or a 256-bit memory location.</p>
+<h2>Operation</h2>
+<p><strong>PSIGNB (with 64 bit operands)</strong></p>
+<pre>    IF (SRC[7:0] &lt; 0 )
+         DEST[7:0] ← Neg(DEST[7:0])
+    ELSEIF (SRC[7:0] = 0 )
+         DEST[7:0] ← 0
+    ELSEIF (SRC[7:0] &gt; 0 )
+         DEST[7:0] ← DEST[7:0]
+    Repeat operation for 2nd through 7th bytes
+    IF (SRC[63:56] &lt; 0 )
+         DEST[63:56] ← Neg(DEST[63:56])
+    ELSEIF (SRC[63:56] = 0 )
+         DEST[63:56] ← 0
+    ELSEIF (SRC[63:56] &gt; 0 )
+         DEST[63:56] ← DEST[63:56]</pre>
+<p><strong>PSIGNB (with 128 bit operands)</strong></p>
+<pre>    IF (SRC[7:0] &lt; 0 )
+         DEST[7:0] ← Neg(DEST[7:0])
+    ELSEIF (SRC[7:0] = 0 )
+         DEST[7:0] ← 0
+    ELSEIF (SRC[7:0] &gt; 0 )
+         DEST[7:0] ← DEST[7:0]
+    Repeat operation for 2nd through 15th bytes
+    IF (SRC[127:120] &lt; 0 )
+         DEST[127:120] ← Neg(DEST[127:120])
+    ELSEIF (SRC[127:120] = 0 )
+         DEST[127:120] ← 0
+    ELSEIF (SRC[127:120] &gt; 0 )
+         DEST[127:120] ← DEST[127:120]</pre>
+<p><strong>VPSIGNB (VEX.128 encoded version)</strong></p>
+<pre>DEST[127:0] ←BYTE_SIGN(SRC1, SRC2)
+DEST[VLMAX-1:128] ← 0</pre>
+<p><strong>VPSIGNB (VEX.256 encoded version)</strong></p>
+<pre>DEST[255:0] ←BYTE_SIGN_256b(SRC1, SRC2)</pre>
+<p><strong>PSIGNW (with 64 bit operands)</strong></p>
+<pre>    IF (SRC[15:0] &lt; 0 )
+         DEST[15:0] ← Neg(DEST[15:0])
+    ELSEIF (SRC[15:0] = 0 )
+         DEST[15:0] ← 0
+    ELSEIF (SRC[15:0] &gt; 0 )
+         DEST[15:0] ← DEST[15:0]
+Repeat operation for 2nd through 3rd words
+    IF (SRC[63:48] &lt; 0 )
+         DEST[63:48] ← Neg(DEST[63:48])
+    ELSEIF (SRC[63:48] = 0 )
+         DEST[63:48] ← 0
+    ELSEIF (SRC[63:48] &gt; 0 )
+         DEST[63:48] ← DEST[63:48]</pre>
+<p><strong>PSIGNW (with 128 bit operands)</strong></p>
+<pre>    IF (SRC[15:0] &lt; 0 )
+         DEST[15:0] ← Neg(DEST[15:0])
+    ELSEIF (SRC[15:0] = 0 )
+         DEST[15:0] ← 0
+    ELSEIF (SRC[15:0] &gt; 0 )
+         DEST[15:0] ← DEST[15:0]
+    Repeat operation for 2nd through 7th words
+    IF (SRC[127:112] &lt; 0 )
+         DEST[127:112] ← Neg(DEST[127:112])
+    ELSEIF (SRC[127:112] = 0 )
+         DEST[127:112] ← 0
+    ELSEIF (SRC[127:112] &gt; 0 )
+         DEST[127:112] ← DEST[127:112]</pre>
+<p><strong>VPSIGNW (VEX.128 encoded version)</strong></p>
+<pre>DEST[127:0] ←WORD_SIGN(SRC1, SRC2)
+DEST[VLMAX-1:128] ← 0</pre>
+<p><strong>VPSIGNW (VEX.256 encoded version)</strong></p>
+<pre>DEST[255:0] ←WORD_SIGN(SRC1, SRC2)</pre>
+<p><strong>PSIGND (with 64 bit operands)</strong></p>
+<pre>    IF (SRC[31:0] &lt; 0 )
+         DEST[31:0] ← Neg(DEST[31:0])
+    ELSEIF (SRC[31:0] = 0 )
+         DEST[31:0] ← 0
+    ELSEIF (SRC[31:0] &gt; 0 )
+         DEST[31:0] ← DEST[31:0]
+    IF (SRC[63:32] &lt; 0 )
+         DEST[63:32] ← Neg(DEST[63:32])
+    ELSEIF (SRC[63:32] = 0 )
+         DEST[63:32] ← 0
+    ELSEIF (SRC[63:32] &gt; 0 )
+         DEST[63:32] ← DEST[63:32]</pre>
+<p><strong>PSIGND (with 128 bit operands)</strong></p>
+<pre>    IF (SRC[31:0] &lt; 0 )
+         DEST[31:0] ← Neg(DEST[31:0])
+    ELSEIF (SRC[31:0] = 0 )
+         DEST[31:0] ← 0
+    ELSEIF (SRC[31:0] &gt; 0 )
+         DEST[31:0] ← DEST[31:0]
+    Repeat operation for 2nd through 3rd double words
+    IF (SRC[127:96] &lt; 0 )
+         DEST[127:96] ← Neg(DEST[127:96])
+    ELSEIF (SRC[127:96] = 0 )
+         DEST[127:96] ← 0
+    ELSEIF (SRC[127:96] &gt; 0 )
+         DEST[127:96] ← DEST[127:96]</pre>
+<p><strong>VPSIGND (VEX.128 encoded version)</strong></p>
+<pre>DEST[127:0] ←DWORD_SIGN(SRC1, SRC2)
+DEST[VLMAX-1:128] ← 0</pre>
+<p><strong>VPSIGND (VEX.256 encoded version)</strong></p>
+<pre>DEST[255:0] ←DWORD_SIGN(SRC1, SRC2)</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>PSIGNB:</p>
+<p> __m64 _mm_sign_pi8 (__m64 a, __m64 b)</p>
+<p>(V)PSIGNB:</p>
+<p> __m128i _mm_sign_epi8 (__m128i a, __m128i b)</p>
+<p>VPSIGNB:</p>
+<p>__m256i _mm256_sign_epi8 (__m256i a, __m256i b)</p>
+<p>PSIGNW:</p>
+<p> __m64 _mm_sign_pi16 (__m64 a, __m64 b)</p>
+<p>(V)PSIGNW:</p>
+<p> __m128i _mm_sign_epi16 (__m128i a, __m128i b)</p>
+<p>VPSIGNW:</p>
+<p>__m256i _mm256_sign_epi16 (__m256i a, __m256i b)</p>
+<p>PSIGND:</p>
+<p> __m64 _mm_sign_pi32 (__m64 a, __m64 b)</p>
+<p>(V)PSIGND:</p>
+<p> __m128i _mm_sign_epi32 (__m128i a, __m128i b)</p>
+<p>VPSIGND:</p>
+<p>__m256i _mm256_sign_epi32 (__m256i a, __m256i b)</p>
+<h2>SIMD Floating-Point Exceptions</h2>
+<p>None.</p>
+<h2>Other Exceptions</h2>
+<p>See Exceptions Type 4; additionally</p>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>If VEX.L = 1.</td></tr></table></body></html>

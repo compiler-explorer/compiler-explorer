@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>PSHUFB — Packed Shuffle Bytes </title></head>
+<body>
+<h1>PSHUFB — Packed Shuffle Bytes</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32 bit Mode Support</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>
+<p>0F 38 00 /r<sup>1</sup></p>
+<p>PSHUFB <em>mm1, mm2/m64</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>SSSE3</td>
+<td>Shuffle bytes in<em> mm1</em> according to contents of <em>mm2/m64</em>.</td></tr>
+<tr>
+<td>
+<p>66 0F 38 00 /r</p>
+<p>PSHUFB <em>xmm1, xmm2/m128</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>SSSE3</td>
+<td>Shuffle bytes in <em>xmm1</em> according to contents of <em>xmm2/m128</em>.</td></tr>
+<tr>
+<td>
+<p>VEX.NDS.128.66.0F38.WIG 00 /r</p>
+<p>VPSHUFB <em>xmm1, xmm2, xmm3/m128</em></p></td>
+<td>RVM</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Shuffle bytes in <em>xmm2 </em>according to contents of <em>xmm3/m128</em>.</td></tr>
+<tr>
+<td>
+<p>VEX.NDS.256.66.0F38.WIG 00 /r</p>
+<p>VPSHUFB <em>ymm1, ymm2, ymm3/m256</em></p></td>
+<td>RVM</td>
+<td>V/V</td>
+<td>AVX2</td>
+<td>Shuffle bytes in <em>ymm2</em> according to contents of <em>ymm3/m256</em>.</td></tr></table>
+<p>NOTES:</p>
+<p>1. See note in Section 2.4, “Instruction Exception Specification” in the <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 2A</em> and Section 22.25.3, “Exception Conditions of Legacy SIMD Instructions Operating on MMX Registers” in the <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 3A</em>.</p>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RM</td>
+<td>ModRM:reg (r, w)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td></tr>
+<tr>
+<td>RVM</td>
+<td>ModRM:reg (w)</td>
+<td>VEX.vvvv (r)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>PSHUFB performs in-place shuffles of bytes in the destination operand (the first operand) according to the shuffle control mask in the source operand (the second operand). The instruction permutes the data in the destination operand, leaving the shuffle mask unaffected. If the most significant bit (bit[7]) of each byte of the shuffle control mask is set, then constant zero is written in the result byte. Each byte in the shuffle control mask forms an index to permute the corresponding byte in the destination operand. The value of each index is the least significant 4 bits (128-bit operation) or 3 bits (64-bit operation) of the shuffle control byte. When the source operand is a 128-bit memory operand, the operand must be aligned on a 16-byte boundary or a general-protection exception (#GP) will be generated.</p>
+<p>In 64-bit mode, use the REX prefix to access additional registers.</p>
+<p>Legacy SSE version: Both operands can be MMX registers.</p>
+<p>128-bit Legacy SSE version: The first source operand and the destination operand are the same. Bits (VLMAX-1:128) of the corresponding YMM destination register remain unchanged.</p>
+<p>VEX.128 encoded version: The destination operand is the first operand, the first source operand is the second operand, the second source operand is the third operand. Bits (VLMAX-1:128) of the destination YMM register are zeroed.</p>
+<p>VEX.256 encoded version: Bits (255:128) of the destination YMM register stores the 16-byte shuffle result of the upper 16 bytes of the first source operand, using the upper 16-bytes of the second source operand as control mask. The value of each index is for the high 128-bit lane is the least significant 4 bits of the respective shuffle control byte. The index value selects a source data element within each 128-bit lane.</p>
+<p>Note: VEX.L must be 0, otherwise the instruction will #UD.</p>
+<h2>Operation</h2>
+<p><strong>PSHUFB (with 64 bit operands)</strong></p>
+<pre>    for i = 0 to 7 {
+         if (SRC[(i * 8)+7] = 1 ) then
+              DEST[(i*8)+7...(i*8)+0] ← 0;
+         else
+              index[2..0] ← SRC[(i*8)+2 .. (i*8)+0];
+              DEST[(i*8)+7...(i*8)+0] ← DEST[(index*8+7)..(index*8+0)];
+         endif;
+    }</pre>
+<p><strong>PSHUFB (with 128 bit operands)</strong></p>
+<pre>    for i = 0 to 15 {
+         if (SRC[(i * 8)+7] = 1 ) then
+              DEST[(i*8)+7..(i*8)+0] ← 0;
+          else
+              index[3..0] ← SRC[(i*8)+3 .. (i*8)+0]; DEST[(i*8)+7..(i*8)+0] ← DEST[(index*8+7)..(index*8+0)];
+         endif
+    }
+DEST[VLMAX-1:128] ← 0</pre>
+<p><strong>VPSHUFB (VEX.128 encoded version)</strong></p>
+<pre>for i = 0 to 15 {
+    if (SRC2[(i * 8)+7] = 1) then
+         DEST[(i*8)+7..(i*8)+0] ← 0;
+         else
+         index[3..0] ← SRC2[(i*8)+3 .. (i*8)+0];
+         DEST[(i*8)+7..(i*8)+0] ← SRC1[(index*8+7)..(index*8+0)];
+    endif
+}
+DEST[VLMAX-1:128] ← 0</pre>
+<p><strong>VPSHUFB (VEX.256 encoded version)</strong></p>
+<pre>for i = 0 to 15 {
+    if (SRC2[(i * 8)+7] == 1 ) then
+         DEST[(i*8)+7..(i*8)+0] ← 0;
+         else
+         index[3..0] ← SRC2[(i*8)+3 .. (i*8)+0];
+         DEST[(i*8)+7..(i*8)+0] ← SRC1[(index*8+7)..(index*8+0)];
+    endif
+    if (SRC2[128 + (i * 8)+7] == 1 ) then
+         DEST[128 + (i*8)+7..(i*8)+0] ← 0;
+         else
+         index[3..0] ← SRC2[128 + (i*8)+3 .. (i*8)+0];
+         DEST[128 + (i*8)+7..(i*8)+0] ← SRC1[128 + (index*8+7)..(index*8+0)];
+    endif
+}</pre>
+<svg width="574.9200075" viewBox="110.340000 628138.020010 383.280005 168.659970" height="252.989955">
+<rect y="628151.28" x="115.92" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="151.5" width="369.12"></rect>
+<path style="stroke:black" d="M121.257000,628159.112000 L119.049000,628161.320000 L121.257000,628163.528000 "></path>
+<path style="stroke:black" d="M119.049000,628161.320000 L122.449000,628161.320000 "></path>
+<path style="stroke:black" d="M481.893000,628169.256000 L119.052000,628169.256000 "></path>
+<path style="stroke:black" d="M119.050000,628169.257000 L119.050000,628194.202000 "></path>
+<path style="stroke:black" d="M164.404000,628169.257000 L164.404000,628194.202000 "></path>
+<path style="stroke:black" d="M209.759000,628169.257000 L209.759000,628194.202000 "></path>
+<path style="stroke:black" d="M255.115000,628169.257000 L255.115000,628194.202000 "></path>
+<path style="stroke:black" d="M300.471000,628169.257000 L300.471000,628194.202000 "></path>
+<path style="stroke:black" d="M345.826000,628169.257000 L345.826000,628194.202000 "></path>
+<path style="stroke:black" d="M391.182000,628169.257000 L391.182000,628194.202000 "></path>
+<path style="stroke:black" d="M436.536000,628169.257000 L436.536000,628194.202000 "></path>
+<path style="stroke:black" d="M481.892000,628169.257000 L481.892000,628194.202000 "></path>
+<path style="stroke:black" d="M481.893000,628194.201000 L119.052000,628194.201000 "></path>
+<path style="stroke:black" d="M481.895000,628208.942000 L119.054000,628208.942000 "></path>
+<path style="stroke:black" d="M119.052000,628208.943000 L119.052000,628233.888000 "></path>
+<path style="stroke:black" d="M164.406000,628208.943000 L164.406000,628233.888000 "></path>
+<path style="stroke:black" d="M209.761000,628208.943000 L209.761000,628233.888000 "></path>
+<path style="stroke:black" d="M255.117000,628208.943000 L255.117000,628233.888000 "></path>
+<path style="stroke:black" d="M300.473000,628208.943000 L300.473000,628233.888000 "></path>
+<path style="stroke:black" d="M345.828000,628208.943000 L345.828000,628233.888000 "></path>
+<path style="stroke:black" d="M391.184000,628208.943000 L391.184000,628233.888000 "></path>
+<path style="stroke:black" d="M436.538000,628208.943000 L436.538000,628233.888000 "></path>
+<path style="stroke:black" d="M481.894000,628208.943000 L481.894000,628233.888000 "></path>
+<path style="stroke:black" d="M413.860000,628233.885000 L336.168000,628259.441000 "></path>
+<path style="stroke:black" d="M481.895000,628233.887000 L119.054000,628233.887000 "></path>
+<path style="stroke:black" d="M182.544000,628262.236000 L141.727000,628233.891000 L141.727000,628253.308000 "></path>
+<path style="stroke:black" d="M431.837000,628256.700000 L432.061000,628256.516000 L459.214000,628233.891000 L375.308000,628262.236000 "></path>
+<path style="stroke:black" d="M459.217000,628262.235000 L457.935000,628234.960000 "></path>
+<path style="stroke:black" d="M458.574000,628248.632000 L458.971000,628259.416000 "></path>
+<path style="stroke:black" d="M404.690000,628252.309000 L385.636000,628258.746000 "></path>
+<path style="stroke:black" d="M169.615000,628253.258000 L179.106000,628258.865000 "></path>
+<path style="stroke:black" d="M144.703000,628253.308000 L141.727000,628262.236000 L138.751000,628253.308000 L144.703000,628253.308000 "></path>
+<path style="stroke:black" d="M433.949000,628258.817000 L425.161000,628262.184000 L430.170000,628254.218000 L433.949000,628258.817000 "></path>
+<path style="stroke:black" d="M386.589000,628261.566000 L377.178000,628261.604000 L384.683000,628255.927000 L386.589000,628261.566000 "></path>
+<path style="stroke:black" d="M337.099000,628262.268000 L327.688000,628262.230000 L335.239000,628256.613000 L337.099000,628262.268000 "></path>
+<path style="stroke:black" d="M180.229000,628256.964000 L184.809000,628262.235000 L177.983000,628260.766000 L180.229000,628256.964000 "></path>
+<path style="stroke:black" d="M461.177000,628259.335000 L459.213000,628266.036000 L456.763000,628259.497000 L461.177000,628259.335000 "></path>
+<path style="stroke:black" d="M481.897000,628262.234000 L119.056000,628262.234000 "></path>
+<path style="stroke:black" d="M119.054000,628262.235000 L119.054000,628287.180000 "></path>
+<path style="stroke:black" d="M164.408000,628262.235000 L164.408000,628287.180000 "></path>
+<path style="stroke:black" d="M209.763000,628262.235000 L209.763000,628287.180000 "></path>
+<path style="stroke:black" d="M255.119000,628262.235000 L255.119000,628287.180000 "></path>
+<path style="stroke:black" d="M300.475000,628262.235000 L300.475000,628287.180000 "></path>
+<path style="stroke:black" d="M345.830000,628262.235000 L345.830000,628287.180000 "></path>
+<path style="stroke:black" d="M391.186000,628262.235000 L391.186000,628287.180000 "></path>
+<path style="stroke:black" d="M436.540000,628262.235000 L436.540000,628287.180000 "></path>
+<path style="stroke:black" d="M481.896000,628262.235000 L481.896000,628287.180000 "></path>
+<path style="stroke:black" d="M119.048000,628263.370000 L120.179000,628264.502000 "></path>
+<path style="stroke:black" d="M481.897000,628287.180000 L119.056000,628287.180000 "></path>
+<path style="stroke:black" d="M121.257000,628295.179000 L119.049000,628297.387000 L121.257000,628299.595000 "></path>
+<path style="stroke:black" d="M119.049000,628297.387000 L122.449000,628297.387000 "></path>
+<path style="stroke:black" d="M479.685000,628301.860000 L481.893000,628299.652000 L479.685000,628297.444000 "></path>
+<path style="stroke:black" d="M481.893000,628299.652000 L479.061000,628299.652000 "></path>
+<text y="628164.091509" x="268.9046" style="font-size:8.000200pt" lengthAdjust="spacingAndGlyphs" textLength="17.7764444">MM2</text>
+<text y="628182.335209" x="140.3935" style="font-size:8.000200pt" lengthAdjust="spacingAndGlyphs" textLength="320.648016">07H         07H              FFH               80H               01H           00H               00H            00H</text>
+<text y="628204.508509" x="268.9046" style="font-size:8.000200pt" lengthAdjust="spacingAndGlyphs" textLength="17.7764444">MM1</text>
+<text y="628223.056209" x="140.3935" style="font-size:8.000200pt" lengthAdjust="spacingAndGlyphs" textLength="320.648016">04H         01H              07H               03H               02H           02H               FFH            01H</text>
+<text y="628259.741909" x="268.1206" style="font-size:8.000200pt" lengthAdjust="spacingAndGlyphs" textLength="17.7764444">MM1</text>
+<text y="628275.217509" x="142.6576" style="font-size:8.000200pt" lengthAdjust="spacingAndGlyphs" textLength="320.648016">04H         04H              00H               00H               FFH           01H               01H            01H</text></svg>
+<h3>Figure 4-11.  PSHUFB with 64-Bit Operands</h3>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>PSHUFB:</p>
+<p> __m64 _mm_shuffle_pi8 (__m64 a, __m64 b)</p>
+<p>(V)PSHUFB:</p>
+<p> __m128i _mm_shuffle_epi8 (__m128i a, __m128i b)</p>
+<p>VPSHUFB:</p>
+<p>__m256i _mm256_shuffle_epi8(__m256i a, __m256i b)</p>
+<h2>SIMD Floating-Point Exceptions</h2>
+<p>None.</p>
+<h2>Other Exceptions</h2>
+<p>See Exceptions Type 4; additionally</p>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>If VEX.L = 1.</td></tr></table></body></html>

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>INC—Increment by 1 </title></head>
+<body>
+<h1>INC—Increment by 1</h1>
+<table>
+<tr>
+<th>Opcode</th>
+<th>Instruction</th>
+<th>Op/En</th>
+<th>64-Bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>FE /0</td>
+<td>INC <em>r/m8</em></td>
+<td>M</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Increment <em>r/m</em> byte by 1.</td></tr>
+<tr>
+<td>REX + FE /0</td>
+<td>INC <em>r/m8</em><sup>*</sup></td>
+<td>M</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Increment <em>r/m</em> byte by 1.</td></tr>
+<tr>
+<td>FF /0</td>
+<td>INC <em>r/m16</em></td>
+<td>M</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Increment <em>r/m</em> word by 1.</td></tr>
+<tr>
+<td>FF /0</td>
+<td>INC <em>r/m32</em></td>
+<td>M</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Increment <em>r/m</em> doubleword by 1.</td></tr>
+<tr>
+<td>REX.W + FF /0</td>
+<td>INC <em>r/m64</em></td>
+<td>M</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Increment <em>r/m</em> quadword by 1.</td></tr>
+<tr>
+<td>40+ <em>rw<sup>**</sup></em></td>
+<td>INC <em>r16</em></td>
+<td>O</td>
+<td>N.E.</td>
+<td>Valid</td>
+<td>Increment word register by 1.</td></tr>
+<tr>
+<td>40+ <em>rd</em></td>
+<td>INC <em>r32</em></td>
+<td>O</td>
+<td>N.E.</td>
+<td>Valid</td>
+<td>Increment doubleword register by 1.</td></tr></table>
+<p><strong>NOTES:</strong></p>
+<p>*</p>
+<p>In 64-bit mode, r/m8 can not be encoded to access the following byte registers if a REX prefix is used: AH, BH, CH, DH.</p>
+<p>** 40H through 47H are REX prefixes in 64-bit mode.</p>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>M</td>
+<td>ModRM:r/m (r, w)</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td></tr>
+<tr>
+<td>O</td>
+<td>opcode + rd (r, w)</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Adds 1 to the destination operand, while preserving the state of the CF flag. The destination operand can be a register or a memory location. This instruction allows a loop counter to be updated without disturbing the CF flag. (Use a ADD instruction with an immediate operand of 1 to perform an increment operation that does updates the CF flag.)</p>
+<p>This instruction can be used with a LOCK prefix to allow the instruction to be executed atomically.</p>
+<p>In 64-bit mode, INC r16 and INC r32 are not encodable (because opcodes 40H through 47H are REX prefixes). Otherwise, the instruction’s 64-bit mode default operation size is 32 bits. Use of the REX.R prefix permits access to additional registers (R8-R15). Use of the REX.W prefix promotes operation to 64 bits.</p>
+<h2>Operation</h2>
+<pre>DEST ← DEST + 1;</pre>
+<h2>AFlags Affected</h2>
+<p>The CF flag is not affected. The OF, SF, ZF, AF, and PF flags are set according to the result.</p>
+<h2>Protected Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>
+<p>If the destination operand is located in a non-writable segment.</p>
+<p>If a memory operand effective address is outside the CS, DS, ES, FS, or GS segment limit.</p>
+<p>If the DS, ES, FS, or GS register is used to access memory and it contains a NULLsegment selector.</p></td></tr>
+<tr>
+<td>#SS(0)</td>
+<td>If a memory operand effective address is outside the SS segment limit.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and an unaligned memory reference is made while the current privilege level is 3.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used but the destination is not a memory operand.</td></tr></table>
+<h2>Real-Address Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP</td>
+<td>If a memory operand effective address is outside the CS, DS, ES, FS, or GS segment limit.</td></tr>
+<tr>
+<td>#SS</td>
+<td>If a memory operand effective address is outside the SS segment limit.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used but the destination is not a memory operand.</td></tr></table>
+<h2>Virtual-8086 Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>If a memory operand effective address is outside the CS, DS, ES, FS, or GS segment limit.</td></tr>
+<tr>
+<td>#SS(0)</td>
+<td>If a memory operand effective address is outside the SS segment limit.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and an unaligned memory reference is made.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used but the destination is not a memory operand.</td></tr></table>
+<h2>Compatibility Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>64-Bit Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#SS(0)</td>
+<td>If a memory address referencing the SS segment is in a non-canonical form.</td></tr>
+<tr>
+<td>#GP(0)</td>
+<td>If the memory address is in a non-canonical form.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and an unaligned memory reference is made while the current privilege level is 3.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used but the destination is not a memory operand.</td></tr></table></body></html>

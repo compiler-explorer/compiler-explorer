@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>SETcc—Set Byte on Condition </title></head>
+<body>
+<h1>SET<em>cc</em>—Set Byte on Condition</h1>
+<table>
+<tr>
+<th>Opcode</th>
+<th>Instruction</th>
+<th>Op/En</th>
+<th>64-Bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>0F 97</td>
+<td>SETA <em>r/m8</em></td>
+<td>M</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Set byte if above (CF=0 and ZF=0).</td></tr>
+<tr>
+<td>REX + 0F 97</td>
+<td>SETA <em>r/m8*</em></td>
+<td>M</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Set byte if above (CF=0 and ZF=0).</td></tr>
+<tr>
+<td>0F 93</td>
+<td>SETAE <em>r/m8</em></td>
+<td>M</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Set byte if above or equal (CF=0).</td></tr>
+<tr>
+<td>REX + 0F 93</td>
+<td>SETAE <em>r/m8*</em></td>
+<td>M</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Set byte if above or equal (CF=0).</td></tr>
+<tr>
+<td>0F 92</td>
+<td>SETB <em>r/m8</em></td>
+<td>M</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Set byte if below (CF=1).</td></tr>
+<tr>
+<td>REX + 0F 92</td>
+<td>SETB <em>r/m8*</em></td>
+<td>M</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Set byte if below (CF=1).</td></tr>
+<tr>
+<td>0F 96</td>
+<td>SETBE <em>r/m8</em></td>
+<td>M</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Set byte if below or equal (CF=1 or ZF=1).</td></tr>
+<tr>
+<td>REX + 0F 96</td>
+<td>SETBE <em>r/m8*</em></td>
+<td>M</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Set byte if below or equal (CF=1 or ZF=1).</td></tr>
+<tr>
+<td>0F 92</td>
+<td>SETC <em>r/m8</em></td>
+<td>M</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Set byte if carry (CF=1).</td></tr>
+<tr>
+<td>REX + 0F 92</td>
+<td>SETC <em>r/m8*</em></td>
+<td>M</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Set byte if carry (CF=1).</td></tr>
+<tr>
+<td>0F 94</td>
+<td>SETE <em>r/m8</em></td>
+<td>M</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Set byte if equal (ZF=1).</td></tr>
+<tr>
+<td>REX + 0F 94</td>
+<td>SETE <em>r/m8*</em></td>
+<td>M</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Set byte if equal (ZF=1).</td></tr>
+<tr>
+<td>0F 9F</td>
+<td>SETG <em>r/m8</em></td>
+<td>M</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Set byte if greater (ZF=0 and SF=OF).</td></tr>
+<tr>
+<td>REX + 0F 9F</td>
+<td>SETG <em>r/m8*</em></td>
+<td>M</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Set byte if greater (ZF=0 and SF=OF).</td></tr>
+<tr>
+<td>0F 9D</td>
+<td>SETGE <em>r/m8</em></td>
+<td>M</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Set byte if greater or equal (SF=OF).</td></tr>
+<tr>
+<td>REX + 0F 9D</td>
+<td>SETGE <em>r/m8*</em></td>
+<td>M</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Set byte if greater or equal (SF=OF).</td></tr>
+<tr>
+<td>0F 9C</td>
+<td>SETL <em>r/m8</em></td>
+<td>M</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Set byte if less (SF≠ OF).</td></tr>
+<tr>
+<td>REX + 0F 9C</td>
+<td>SETL <em>r/m8*</em></td>
+<td>M</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Set byte if less (SF≠ OF).</td></tr>
+<tr>
+<td>0F 9E</td>
+<td>SETLE <em>r/m8</em></td>
+<td>M</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Set byte if less or equal (ZF=1 or SF≠ OF).</td></tr>
+<tr>
+<td>REX + 0F 9E</td>
+<td>SETLE <em>r/m8*</em></td>
+<td>M</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Set byte if less or equal (ZF=1 or SF≠ OF).</td></tr>
+<tr>
+<td>0F 96</td>
+<td>SETNA <em>r/m8</em></td>
+<td>M</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Set byte if not above (CF=1 or ZF=1).</td></tr>
+<tr>
+<td>REX + 0F 96</td>
+<td>SETNA <em>r/m8*</em></td>
+<td>M</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Set byte if not above (CF=1 or ZF=1).</td></tr>
+<tr>
+<td>0F 92</td>
+<td>SETNAE <em>r/m8</em></td>
+<td>M</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Set byte if not above or equal (CF=1).</td></tr>
+<tr>
+<td>REX + 0F 92</td>
+<td>SETNAE <em>r/m8*</em></td>
+<td>M</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Set byte if not above or equal (CF=1).</td></tr>
+<tr>
+<td>0F 93</td>
+<td>SETNB <em>r/m8</em></td>
+<td>M</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Set byte if not below (CF=0).</td></tr>
+<tr>
+<td>REX + 0F 93</td>
+<td>SETNB <em>r/m8*</em></td>
+<td>M</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Set byte if not below (CF=0).</td></tr>
+<tr>
+<td>0F 97</td>
+<td>SETNBE <em>r/m8</em></td>
+<td>M</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Set byte if not below or equal (CF=0 and ZF=0).</td></tr>
+<tr>
+<td>REX + 0F 97</td>
+<td>SETNBE <em>r/m8*</em></td>
+<td>M</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Set byte if not below or equal (CF=0 and ZF=0).</td></tr>
+<tr>
+<td>0F 93</td>
+<td>SETNC <em>r/m8</em></td>
+<td>M</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Set byte if not carry (CF=0).</td></tr>
+<tr>
+<td>REX + 0F 93</td>
+<td>SETNC <em>r/m8*</em></td>
+<td>M</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Set byte if not carry (CF=0).</td></tr>
+<tr>
+<td>0F 95</td>
+<td>SETNE <em>r/m8</em></td>
+<td>M</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Set byte if not equal (ZF=0).</td></tr>
+<tr>
+<td>REX + 0F 95</td>
+<td>SETNE <em>r/m8*</em></td>
+<td>M</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Set byte if not equal (ZF=0).</td></tr>
+<tr>
+<td>0F 9E</td>
+<td>SETNG <em>r/m8</em></td>
+<td>M</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Set byte if not greater (ZF=1 or SF≠ OF)</td></tr>
+<tr>
+<td>REX + 0F 9E</td>
+<td>SETNG <em>r/m8*</em></td>
+<td>M</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Set byte if not greater (ZF=1 or SF≠ OF).</td></tr>
+<tr>
+<td>0F 9C</td>
+<td>SETNGE <em>r/m8</em></td>
+<td>M</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Set byte if not greater or equal (SF≠ OF).</td></tr>
+<tr>
+<td>REX + 0F 9C</td>
+<td>SETNGE <em>r/m8*</em></td>
+<td>M</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Set byte if not greater or equal (SF≠ OF).</td></tr>
+<tr>
+<td>0F 9D</td>
+<td>SETNL <em>r/m8</em></td>
+<td>M</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Set byte if not less (SF=OF).</td></tr>
+<tr>
+<td>REX + 0F 9D</td>
+<td>SETNL <em>r/m8*</em></td>
+<td>M</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Set byte if not less (SF=OF).</td></tr>
+<tr>
+<td>0F 9F</td>
+<td>SETNLE <em>r/m8</em></td>
+<td>M</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Set byte if not less or equal (ZF=0 and SF=OF).</td></tr></table>
+<table>
+<tr>
+<th>64-Bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th>
+<th>Opcode</th>
+<th>Instruction</th>
+<th>Op/En</th></tr>
+<tr>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Set byte if not less or equal (ZF=0 and SF=OF).</td>
+<td>REX + 0F 9F</td>
+<td>SETNLE <em>r/m8*</em></td>
+<td>M</td></tr>
+<tr>
+<td>Valid</td>
+<td>Valid</td>
+<td>Set byte if not overflow (OF=0).</td>
+<td>0F 91</td>
+<td>SETNO <em>r/m8</em></td>
+<td>M</td></tr>
+<tr>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Set byte if not overflow (OF=0).</td>
+<td>REX + 0F 91</td>
+<td>SETNO <em>r/m8*</em></td>
+<td>M</td></tr>
+<tr>
+<td>Valid</td>
+<td>Valid</td>
+<td>Set byte if not parity (PF=0).</td>
+<td>0F 9B</td>
+<td>SETNP <em>r/m8</em></td>
+<td>M</td></tr>
+<tr>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Set byte if not parity (PF=0).</td>
+<td>REX + 0F 9B</td>
+<td>SETNP <em>r/m8*</em></td>
+<td>M</td></tr>
+<tr>
+<td>Valid</td>
+<td>Valid</td>
+<td>Set byte if not sign (SF=0).</td>
+<td>0F 99</td>
+<td>SETNS <em>r/m8</em></td>
+<td>M</td></tr>
+<tr>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Set byte if not sign (SF=0).</td>
+<td>REX + 0F 99</td>
+<td>SETNS <em>r/m8*</em></td>
+<td>M</td></tr>
+<tr>
+<td>Valid</td>
+<td>Valid</td>
+<td>Set byte if not zero (ZF=0).</td>
+<td>0F 95</td>
+<td>SETNZ <em>r/m8</em></td>
+<td>M</td></tr>
+<tr>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Set byte if not zero (ZF=0).</td>
+<td>REX + 0F 95</td>
+<td>SETNZ <em>r/m8*</em></td>
+<td>M</td></tr>
+<tr>
+<td>Valid</td>
+<td>Valid</td>
+<td>Set byte if overflow (OF=1)</td>
+<td>0F 90</td>
+<td>SETO <em>r/m8</em></td>
+<td>M</td></tr>
+<tr>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Set byte if overflow (OF=1).</td>
+<td>REX + 0F 90</td>
+<td>SETO <em>r/m8*</em></td>
+<td>M</td></tr>
+<tr>
+<td>Valid</td>
+<td>Valid</td>
+<td>Set byte if parity (PF=1).</td>
+<td>0F 9A</td>
+<td>SETP <em>r/m8</em></td>
+<td>M</td></tr>
+<tr>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Set byte if parity (PF=1).</td>
+<td>REX + 0F 9A</td>
+<td>SETP <em>r/m8*</em></td>
+<td>M</td></tr>
+<tr>
+<td>Valid</td>
+<td>Valid</td>
+<td>Set byte if parity even (PF=1).</td>
+<td>0F 9A</td>
+<td>SETPE <em>r/m8</em></td>
+<td>M</td></tr>
+<tr>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Set byte if parity even (PF=1).</td>
+<td>REX + 0F 9A</td>
+<td>SETPE <em>r/m8*</em></td>
+<td>M</td></tr>
+<tr>
+<td>Valid</td>
+<td>Valid</td>
+<td>Set byte if parity odd (PF=0).</td>
+<td>0F 9B</td>
+<td>SETPO <em>r/m8</em></td>
+<td>M</td></tr>
+<tr>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Set byte if parity odd (PF=0).</td>
+<td>REX + 0F 9B</td>
+<td>SETPO <em>r/m8*</em></td>
+<td>M</td></tr>
+<tr>
+<td>Valid</td>
+<td>Valid</td>
+<td>Set byte if sign (SF=1).</td>
+<td>0F 98</td>
+<td>SETS <em>r/m8</em></td>
+<td>M</td></tr>
+<tr>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Set byte if sign (SF=1).</td>
+<td>REX + 0F 98</td>
+<td>SETS <em>r/m8*</em></td>
+<td>M</td></tr>
+<tr>
+<td>Valid</td>
+<td>Valid</td>
+<td>Set byte if zero (ZF=1).</td>
+<td>0F 94</td>
+<td>SETZ <em>r/m8</em></td>
+<td>M</td></tr>
+<tr>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Set byte if zero (ZF=1).</td>
+<td>REX + 0F 94</td>
+<td>SETZ <em>r/m8*</em></td>
+<td>M</td></tr></table>
+<p><strong>NOTES:</strong></p>
+<p>*</p>
+<p>In 64-bit mode, r/m8 can not be encoded to access the following byte registers if a REX prefix is used: AH, BH, CH, DH.</p>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>M</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Sets the destination operand to 0 or 1 depending on the settings of the status flags (CF, SF, OF, ZF, and PF) in the EFLAGS register. The destination operand points to a byte register or a byte in memory. The condition code suffix (<em>cc</em>) indicates the condition being tested for.</p>
+<p>The terms “above” and “below” are associated with the CF flag and refer to the relationship between two unsigned integer values. The terms “greater” and “less” are associated with the SF and OF flags and refer to the relationship between two signed integer values.</p>
+<p>Many of the SET<em>cc</em> instruction opcodes have alternate mnemonics. For example, SETG (set byte if greater) and SETNLE (set if not less or equal) have the same opcode and test for the same condition: ZF equals 0 and SF equals OF. These alternate mnemonics are provided to make code more intelligible. Appendix B, “EFLAGS Condition Codes,” in the <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 1</em>, shows the alternate mnemonics for various test conditions.</p>
+<p>Some languages represent a logical one as an integer with all bits set. This representation can be obtained by choosing the logically opposite condition for the SET<em>cc</em> instruction, then decrementing the result. For example, to test for overflow, use the SETNO instruction, then decrement the result.</p>
+<p>In IA-64 mode, the operand size is fixed at 8 bits. Use of REX prefix enable uniform addressing to additional byte registers. Otherwise, this instruction’s operation is the same as in legacy mode and compatibility mode.</p>
+<h2>Operation</h2>
+<pre>IF condition
+    THEN DEST<em> </em>← 1;
+    ELSE DEST<em> </em>← 0;
+FI;</pre>
+<h2>Flags Affected</h2>
+<p>None.</p>
+<h2>Protected Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>
+<p>If the destination is located in a non-writable segment.</p>
+<p>If a memory operand effective address is outside the CS, DS, ES, FS, or GS segment limit.</p>
+<p>If the DS, ES, FS, or GS register contains a NULL segment selector.</p></td></tr>
+<tr>
+<td>#SS(0)</td>
+<td>If a memory operand effective address is outside the SS segment limit.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Real-Address Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP</td>
+<td>If a memory operand effective address is outside the CS, DS, ES, FS, or GS segment limit.</td></tr>
+<tr>
+<td>#SS</td>
+<td>If a memory operand effective address is outside the SS segment limit.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Virtual-8086 Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>If a memory operand effective address is outside the CS, DS, ES, FS, or GS segment limit.</td></tr>
+<tr>
+<td>#SS(0)</td>
+<td>If a memory operand effective address is outside the SS segment limit.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Compatibility Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>64-Bit Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#SS(0)</td>
+<td>If a memory address referencing the SS segment is in a non-canonical form.</td></tr>
+<tr>
+<td>#GP(0)</td>
+<td>If the memory address is in a non-canonical form.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table></body></html>

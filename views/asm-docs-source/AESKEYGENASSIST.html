@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>AESKEYGENASSIST—AES Round Key Generation Assist </title></head>
+<body>
+<h1>AESKEYGENASSIST—AES Round Key Generation Assist</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32-bit Mode</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>66 0F 3A DF /r ib AESKEYGENASSIST xmm1, xmm2/m128, imm8</td>
+<td>RMI</td>
+<td>V/V</td>
+<td>AES</td>
+<td>Assist in AES round key generation using an 8 bits Round Constant (RCON) specified in the immediate byte, operating on 128 bits of data specified in xmm2/m128 and stores the result in xmm1.</td></tr>
+<tr>
+<td>VEX.128.66.0F3A.WIG DF /r ib VAESKEYGENASSIST xmm1, xmm2/m128, imm8</td>
+<td>RMI</td>
+<td>V/V</td>
+<td>Both AES and AVX flags</td>
+<td>Assist in AES round key generation using 8 bits Round Constant (RCON) specified in the immediate byte, operating on 128 bits of data specified in xmm2/m128 and stores the result in xmm1.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand2</td>
+<td>Operand3</td>
+<td>Operand4</td></tr>
+<tr>
+<td>RMI</td>
+<td>ModRM:reg (w)</td>
+<td>ModRM:r/m (r)</td>
+<td>imm8</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Assist in expanding the AES cipher key, by computing steps towards generating a round key for encryption, using 128-bit data specified in the source operand and an 8-bit round constant specified as an immediate, store the result in the destination operand.</p>
+<p>The destination operand is an XMM register. The source operand can be an XMM register or a 128-bit memory loca-tion.</p>
+<p>128-bit Legacy SSE version:Bits (VLMAX-1:128) of the corresponding YMM destination register remain unchanged.</p>
+<p>VEX.128 encoded version: Bits (VLMAX-1:128) of the destination YMM register are zeroed.</p>
+<p>Note: In VEX-encoded versions, VEX.vvvv is reserved and must be 1111b, otherwise instructions will #UD.</p>
+<h2>Operation</h2>
+<p><strong>AESKEYGENASSIST</strong></p>
+<pre>X3[31:0] ← SRC [127: 96];
+X2[31:0] ← SRC [95: 64];
+X1[31:0] ← SRC [63: 32];
+X0[31:0] ← SRC [31: 0];
+RCON[31:0] ← ZeroExtend(Imm8[7:0]);
+DEST[31:0] ← SubWord(X1);
+DEST[63:32 ] ← RotWord( SubWord(X1) ) XOR RCON;
+DEST[95:64] ← SubWord(X3);
+DEST[127:96] ← RotWord( SubWord(X3) ) XOR RCON;
+DEST[VLMAX-1:128] (Unmodified)</pre>
+<p><strong>VAESKEYGENASSIST</strong></p>
+<pre>X3[31:0] ← SRC [127: 96];
+X2[31:0] ← SRC [95: 64];
+X1[31:0] ← SRC [63: 32];
+X0[31:0] ← SRC [31: 0];
+RCON[31:0] ← ZeroExtend(Imm8[7:0]);
+DEST[31:0] ← SubWord(X1);
+DEST[63:32 ] ← RotWord( SubWord(X1) ) XOR RCON;
+DEST[95:64] ← SubWord(X3);
+DEST[127:96] ← RotWord( SubWord(X3) ) XOR RCON;
+DEST[VLMAX-1:128] ← 0;</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>(V)AESKEYGENASSIST:</p>
+<p>__m128i _mm_aesimc (__m128i, const int)</p>
+<h2>SIMD Floating-Point Exceptions</h2>
+<p>None</p>
+<h2>Other Exceptions</h2>
+<p>See Exceptions Type 4; additionally</p>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>If VEX.vvvv ≠ 1111B.</td></tr></table></body></html>

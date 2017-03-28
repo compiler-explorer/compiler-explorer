@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>MWAIT—Monitor Wait </title></head>
+<body>
+<h1>MWAIT—Monitor Wait</h1>
+<table>
+<tr>
+<th>Opcode</th>
+<th>Instruction</th>
+<th>Op/En</th>
+<th>64-Bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>0F 01 C9</td>
+<td>MWAIT</td>
+<td>NP</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>A hint that allow the processor to stop instruction execution and enter an implementation-dependent optimized state until occurrence of a class of events.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>NP</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>MWAIT instruction provides hints to allow the processor to enter an implementation-dependent optimized state. There are two principal targeted usages: address-range monitor and advanced power management. Both usages of MWAIT require the use of the MONITOR instruction.</p>
+<p>CPUID.01H:ECX.MONITOR[bit 3] indicates the availability of MONITOR and MWAIT in the processor. When set, MWAIT may be executed only at privilege level 0 (use at any other privilege level results in an invalid-opcode exception). The operating system or system BIOS may disable this instruction by using the IA32_MISC_ENABLE MSR; disabling MWAIT clears the CPUID feature flag and causes execution to generate an invalid-opcode excep-tion.</p>
+<p>This instruction’s operation is the same in non-64-bit modes and 64-bit mode.</p>
+<p>ECX specifies optional extensions for the MWAIT instruction. EAX may contain hints such as the preferred opti-mized state the processor should enter. The first processors to implement MWAIT supported only the zero value for EAX and ECX. Later processors allowed setting ECX[0] to enable masked interrupts as break events for MWAIT (see below). Software can use the CPUID instruction to determine the extensions and hints supported by the processor.</p>
+<h2>MWAIT for Address Range Monitoring</h2>
+<p>For address-range monitoring, the MWAIT instruction operates with the MONITOR instruction. The two instructions allow the definition of an address at which to wait (MONITOR) and a implementation-dependent-optimized opera-tion to commence at the wait address (MWAIT). The execution of MWAIT is a hint to the processor that it can enter an implementation-dependent-optimized state while waiting for an event or a store operation to the address range armed by MONITOR.</p>
+<p>The following cause the processor to exit the implementation-dependent-optimized state: a store to the address range armed by the MONITOR instruction, an NMI or SMI, a debug exception, a machine check exception, the BINIT# signal, the INIT# signal, and the RESET# signal. Other implementation-dependent events may also cause the processor to exit the implementation-dependent-optimized state.</p>
+<p>In addition, an external interrupt causes the processor to exit the implementation-dependent-optimized state either (1) if the interrupt would be delivered to software (e.g., as it would be if HLT had been executed instead of MWAIT); or (2) if ECX[0] = 1. Software can execute MWAIT with ECX[0] = 1 only if CPUID.05H:ECX[bit 1] = 1. (Implementation-specific conditions may result in an interrupt causing the processor to exit the implementation-dependent-optimized state even if interrupts are masked and ECX[0] = 0.)</p>
+<p>Following exit from the implementation-dependent-optimized state, control passes to the instruction following the MWAIT instruction. A pending interrupt that is not masked (including an NMI or an SMI) may be delivered before execution of that instruction. Unlike the HLT instruction, the MWAIT instruction does not support a restart at the MWAIT instruction following the handling of an SMI.</p>
+<p>If the preceding MONITOR instruction did not successfully arm an address range or if the MONITOR instruction has not been executed prior to executing MWAIT, then the processor will not enter the implementation-dependent-opti-mized state. Execution will resume at the instruction following the MWAIT.</p>
+<h2>MWAIT for Power Management</h2>
+<p>MWAIT accepts a hint and optional extension to the processor that it can enter a specified target C state while waiting for an event or a store operation to the address range armed by MONITOR. Support for MWAIT extensions for power management is indicated by CPUID.05H:ECX[bit 0] reporting 1.</p>
+<p>EAX and ECX are used to communicate the additional information to the MWAIT instruction, such as the kind of optimized state the processor should enter. ECX specifies optional extensions for the MWAIT instruction. EAX may contain hints such as the preferred optimized state the processor should enter. Implementation-specific conditions may cause a processor to ignore the hint and enter a different optimized state. Future processor implementations may implement several optimized “waiting” states and will select among those states based on the hint argument.</p>
+<p>Table 3-67 describes the meaning of ECX and EAX registers for MWAIT extensions.</p>
+<h3>Table 3-67.  MWAIT Extension Register (ECX)</h3>
+<table>
+<tr>
+<th>Bits</th>
+<th>Description</th></tr>
+<tr>
+<td>0</td>
+<td>Treat interrupts as break events even if masked (e.g., even if EFLAGS.IF=0). May be set only if CPUID.05H:ECX[bit 1] = 1.</td></tr>
+<tr>
+<td>31: 1</td>
+<td>Reserved</td></tr></table>
+<h3>Table 3-68.  MWAIT Hints Register (EAX)</h3>
+<table>
+<tr>
+<th>Bits</th>
+<th>Description</th></tr>
+<tr>
+<td>3 : 0</td>
+<td>Sub C-state within a C-state, indicated by bits [7:4]</td></tr>
+<tr>
+<td>7 : 4</td>
+<td>
+<p>Target C-state*</p>
+<p>Value of 0 means C1; 1 means C2 and so on</p>
+<p>Value of 01111B means C0</p>
+<p>Note: Target C states for MWAIT extensions are processor-specific C-states, not ACPI C-states</p></td></tr>
+<tr>
+<td>31: 8</td>
+<td>Reserved</td></tr></table>
+<p>Note that if MWAIT is used to enter any of the C-states that are numerically higher than C1, a store to the address range armed by the MONITOR instruction will cause the processor to exit MWAIT only if the store was originated by other processor agents. A store from non-processor agent might not cause the processor to exit MWAIT in such cases.</p>
+<p>For additional details of MWAIT extensions, see Chapter 14, “Power and Thermal Management,” of <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 3A</em>.</p>
+<h2>Operation</h2>
+<pre>(* MWAIT takes the argument in EAX as a hint extension and is architected to take the argument in ECX as an instruction extension MWAIT EAX, ECX *)
+{
+WHILE ( (“Monitor Hardware is in armed state”)) {
+    implementation_dependent_optimized_state(EAX, ECX); }
+Set the state of Monitor Hardware as triggered;
+}</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>MWAIT:</p>
+<p>void _mm_mwait(unsigned extensions, unsigned hints)</p>
+<h2>Example</h2>
+<p>MONITOR/MWAIT instruction pair must be coded in the same loop because execution of the MWAIT instruction will trigger the monitor hardware. It is not a proper usage to execute MONITOR once and then execute MWAIT in a loop. Setting up MONITOR without executing MWAIT has no adverse effects.</p>
+<p>Typically the MONITOR/MWAIT pair is used in a sequence, such as:</p>
+<p>EAX = Logical Address(Trigger)</p>
+<p>ECX = 0 (*Hints *)</p>
+<p>EDX = 0 (* Hints *)</p>
+<p>IF ( !trigger_store_happened) {</p>
+<p>MONITOR EAX, ECX, EDX</p>
+<p>IF ( !trigger_store_happened ) {</p>
+<p>MWAIT EAX, ECX</p>
+<p>}</p>
+<p>}</p>
+<p>The above code sequence makes sure that a triggering store does not happen between the first check of the trigger and the execution of the monitor instruction. Without the second check that triggering store would go un-noticed. Typical usage of MONITOR and MWAIT would have the above code sequence within a loop.</p>
+<h2>Numeric Exceptions</h2>
+<p>None</p>
+<h2>Protected Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>
+<p>If ECX[31:1] ≠ 0.</p>
+<p>If ECX[0] = 1 and CPUID.05H:ECX[bit 1] = 0.</p></td></tr>
+<tr>
+<td>#UD</td>
+<td>
+<p>If CPUID.01H:ECX.MONITOR[bit 3] = 0.</p>
+<p>If current privilege level is not 0.</p></td></tr></table>
+<h2>Real Address Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP</td>
+<td>
+<p>If ECX[31:1] ≠ 0.</p>
+<p>If ECX[0] = 1 and CPUID.05H:ECX[bit 1] = 0.</p></td></tr>
+<tr>
+<td>#UD</td>
+<td>If CPUID.01H:ECX.MONITOR[bit 3] = 0.</td></tr></table>
+<h2>Virtual 8086 Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>The MWAIT instruction is not recognized in virtual-8086 mode (even if CPUID.01H:ECX.MONITOR[bit 3] = 1).</td></tr></table>
+<h2>Compatibility Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>64-Bit Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>
+<p>If RCX[63:1] ≠ 0.</p>
+<p>If RCX[0] = 1 and CPUID.05H:ECX[bit 1] = 0.</p></td></tr>
+<tr>
+<td>#UD</td>
+<td>
+<p>If the current privilege level is not 0.</p>
+<p>If CPUID.01H:ECX.MONITOR[bit 3] = 0.</p></td></tr></table></body></html>

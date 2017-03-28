@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>FINIT/FNINIT—Initialize Floating-Point Unit </title></head>
+<body>
+<h1>FINIT/FNINIT—Initialize Floating-Point Unit</h1>
+<table>
+<tr>
+<th>Opcode</th>
+<th>Instruction</th>
+<th>64-Bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>9B DB E3</td>
+<td>FINIT</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Initialize FPU after checking for pending unmasked floating-point exceptions.</td></tr>
+<tr>
+<td>DB E3</td>
+<td>FNINIT<sup>*</sup></td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Initialize FPU without checking for pending unmasked floating-point exceptions.</td></tr></table>
+<p><strong>NOTES:</strong></p>
+<p>*</p>
+<p>See IA-32 Architecture Compatibility section below.</p>
+<h2>Description</h2>
+<p>Sets the FPU control, status, tag, instruction pointer, and data pointer registers to their default states. The FPU control word is set to 037FH (round to nearest, all exceptions masked, 64-bit precision). The status word is cleared (no exception flags set, TOP is set to 0). The data registers in the register stack are left unchanged, but they are all tagged as empty (11B). Both the instruction and data pointers are cleared.</p>
+<p>The FINIT instruction checks for and handles any pending unmasked floating-point exceptions before performing the initialization; the FNINIT instruction does not.</p>
+<p>The assembler issues two instructions for the FINIT instruction (an FWAIT instruction followed by an FNINIT instruction), and the processor executes each of these instructions in separately. If an exception is generated for either of these instructions, the save EIP points to the instruction that caused the exception.</p>
+<p>This instruction’s operation is the same in non-64-bit modes and 64-bit mode.</p>
+<h2>IA-32 Architecture Compatibility</h2>
+<p>When operating a Pentium or Intel486 processor in MS-DOS compatibility mode, it is possible (under unusual circumstances) for an FNINIT instruction to be interrupted prior to being executed to handle a pending FPU excep-tion. See the section titled “No-Wait FPU Instructions Can Get FPU Interrupt in Window” in Appendix D of the <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 1</em>, for a description of these circumstances. An FNINIT instruction cannot be interrupted in this way on a Pentium 4, Intel Xeon, or P6 family processor.</p>
+<p>In the Intel387 math coprocessor, the FINIT/FNINIT instruction does not clear the instruction and data pointers.</p>
+<p>This instruction affects only the x87 FPU. It does not affect the XMM and MXCSR registers.</p>
+<h2>Operation</h2>
+<pre>FPUControlWord ← 037FH;
+FPUStatusWord ← 0;
+FPUTagWord ← FFFFH;
+FPUDataPointer ← 0;
+FPUInstructionPointer ← 0;
+FPULastInstructionOpcode ← 0;</pre>
+<h2>FPU Flags Affected</h2>
+<p>C0, C1, C2, C3 set to 0.</p>
+<h2>Floating-Point Exceptions</h2>
+<p>None.</p>
+<h2>Protected Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#NM</td>
+<td>CR0.EM[bit 2] or CR0.TS[bit 3] = 1.</td></tr>
+<tr>
+<td>#MF</td>
+<td>If there is a pending x87 FPU exception.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Real-Address Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>Virtual-8086 Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>Compatibility Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>64-Bit Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p></body></html>

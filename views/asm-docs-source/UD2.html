@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>UD2—Undefined Instruction </title></head>
+<body>
+<h1>UD2—Undefined Instruction</h1>
+<table>
+<tr>
+<th>Opcode</th>
+<th>Instruction</th>
+<th>Op/En</th>
+<th>64-Bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>0F 0B</td>
+<td>UD2</td>
+<td>NP</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Raise invalid opcode exception.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>NP</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Generates an invalid opcode exception. This instruction is provided for software testing to explicitly generate an invalid opcode exception. The opcode for this instruction is reserved for this purpose.</p>
+<p>Other than raising the invalid opcode exception, this instruction has no effect on processor state or memory.</p>
+<p>Even though it is the execution of the UD2 instruction that causes the invalid opcode exception, the instruction pointer saved by delivery of the exception references the UD2 instruction (and not the following instruction).</p>
+<p>This instruction’s operation is the same in non-64-bit modes and 64-bit mode.</p>
+<h2>Operation</h2>
+<pre>#UD (* Generates invalid opcode exception *);</pre>
+<h2>Flags Affected</h2>
+<p>None.</p>
+<h2>Exceptions (All Operating Modes)</h2>
+<p>#UD</p>
+<p>Raises an invalid opcode exception in all operating modes.</p></body></html>

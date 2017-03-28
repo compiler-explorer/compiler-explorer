@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>PSADBW—Compute Sum of Absolute Differences </title></head>
+<body>
+<h1>PSADBW—Compute Sum of Absolute Differences</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32 bit Mode Support</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>
+<p>0F F6 /<em>r</em><sup>1</sup></p>
+<p>PSADBW <em>mm1, mm2/m64</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>SSE</td>
+<td>Computes the absolute differences of the packed unsigned byte integers from <em>mm2 /m64</em> and <em>mm1</em>; differences are then summed to produce an unsigned word integer result.</td></tr>
+<tr>
+<td>
+<p>66 0F F6 /<em>r</em></p>
+<p>PSADBW <em>xmm1</em>, <em>xmm2/m128</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>SSE2</td>
+<td>Computes the absolute differences of the packed unsigned byte integers from <em>xmm2 /m128</em> and <em>xmm1</em>; the 8 low differences and 8 high differences are then summed separately to produce two unsigned word integer results.</td></tr>
+<tr>
+<td>
+<p>VEX.NDS.128.66.0F.WIG F6 /r</p>
+<p>VPSADBW <em>xmm1, xmm2, xmm3/m128</em></p></td>
+<td>RVM</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Computes the absolute differences of the packed unsigned byte integers from <em>xmm3 /m128</em> and <em>xmm2</em>; the 8 low differences and 8 high differences are then summed separately to produce two unsigned word integer results.</td></tr>
+<tr>
+<td>
+<p>VEX.NDS.256.66.0F.WIG F6 /r</p>
+<p>VPSADBW<em> ymm1, ymm2, ymm3/m256</em></p></td>
+<td>RVM</td>
+<td>V/V</td>
+<td>AVX2</td>
+<td>Computes the absolute differences of the packed unsigned byte integers from <em>ymm3 /m256</em> and <em>ymm2</em>; then each consecutive 8 differences are summed separately to produce four unsigned word integer results.</td></tr></table>
+<p>NOTES:</p>
+<p>1. See note in Section 2.4, “Instruction Exception Specification” in the <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 2A</em> and Section 22.25.3, “Exception Conditions of Legacy SIMD Instructions Operating on MMX Registers” in the <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 3A</em>.</p>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RM</td>
+<td>ModRM:reg (r, w)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td></tr>
+<tr>
+<td>RVM</td>
+<td>ModRM:reg (w)</td>
+<td>VEX.vvvv (r)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Computes the absolute value of the difference of 8 unsigned byte integers from the source operand (second operand) and from the destination operand (first operand). These 8 differences are then summed to produce an unsigned word integer result that is stored in the destination operand. Figure 4-10 shows the operation of the PSADBW instruction when using 64-bit operands.</p>
+<p>When operating on 64-bit operands, the word integer result is stored in the low word of the destination operand, and the remaining bytes in the destination operand are cleared to all 0s.</p>
+<p>When operating on 128-bit operands, two packed results are computed. Here, the 8 low-order bytes of the source and destination operands are operated on to produce a word result that is stored in the low word of the destination operand, and the 8 high-order bytes are operated on to produce a word result that is stored in bits 64 through 79 of the destination operand. The remaining bytes of the destination operand are cleared.</p>
+<p>In 64-bit mode, using a REX prefix in the form of REX.R permits this instruction to access additional registers (XMM8-XMM15).</p>
+<p>Legacy SSE version: The source operand can be an MMX technology register or a 64-bit memory location. The destination operand is an MMX technology register.</p>
+<p>128-bit Legacy SSE version: The first source operand and destination register are XMM registers. The second source operand is an XMM register or a 128-bit memory location. Bits (VLMAX-1:128) of the corresponding YMM destination register remain unchanged.</p>
+<p>VEX.128 encoded version: The first source operand and destination register are XMM registers. The second source operand is an XMM register or a 128-bit memory location. Bits (VLMAX-1:128) of the destination YMM register are zeroed.</p>
+<p>VEX.256 encoded version: The first source operand and destination register are YMM registers. The second source operand is an YMM register or a 256-bit memory location.</p>
+<p>Note: VEX.L must be 0, otherwise the instruction will #UD.</p>
+<svg width="568.799985" viewBox="112.380000 625042.980010 379.199990 131.279985" height="196.9199775">
+<text y="625066.547284" x="148.44" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="16.860144">SRC</text>
+<text y="625067.087484" x="363.960612" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.777096">X2</text>
+<text y="625095.527384" x="143.9999" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="21.320964">DEST</text>
+<text y="625126.427584" x="143.0997" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="22.189986">TEMP</text>
+<text y="625158.167484" x="144.0" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="21.320964">DEST</text>
+<rect y="625086.3" x="313.56" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="17.34" width="36.36"></rect>
+<rect y="625086.3" x="386.34" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="17.34" width="36.36"></rect>
+<rect y="625086.3" x="422.7" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="17.34" width="36.36"></rect>
+<rect y="625086.3" x="349.92" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="17.34" width="36.42"></rect>
+<rect y="625055.76" x="168.48" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="36.36"></rect>
+<rect y="625055.76" x="204.84" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="36.36"></rect>
+<rect y="625085.7" x="240.66" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="36.36"></rect>
+<rect y="625114.62" x="168.42" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="36.36"></rect>
+<rect y="625114.62" x="204.78" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="36.36"></rect>
+<rect y="625055.76" x="241.2" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="36.36"></rect>
+<rect y="625055.7" x="314.16" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="36.36"></rect>
+<rect y="625055.7" x="386.88" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="36.36"></rect>
+<rect y="625085.7" x="167.88" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="36.36"></rect>
+<rect y="625085.7" x="277.02" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="36.36"></rect>
+<rect y="625114.62" x="241.2" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="36.36"></rect>
+<rect y="625114.62" x="277.56" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="36.36"></rect>
+<rect y="625114.62" x="314.1" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="36.36"></rect>
+<rect y="625114.62" x="386.88" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="36.36"></rect>
+<rect y="625114.62" x="423.24" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="36.36"></rect>
+<rect y="625148.34" x="205.14" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="36.36"></rect>
+<rect y="625148.34" x="241.5" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="36.36"></rect>
+<rect y="625148.34" x="277.86" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="36.36"></rect>
+<rect y="625148.34" x="350.82" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="36.36"></rect>
+<rect y="625148.34" x="168.72" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="36.42"></rect>
+<rect y="625055.76" x="277.56" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="36.42"></rect>
+<rect y="625055.7" x="423.24" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="36.42"></rect>
+<rect y="625085.7" x="204.24" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="36.42"></rect>
+<rect y="625114.62" x="350.46" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="36.42"></rect>
+<rect y="625148.34" x="314.4" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="36.42"></rect>
+<rect y="625148.34" x="387.18" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="71.22"></rect>
+<path style="stroke:black" d="M313.920000,625055.460000 L313.920000,625073.700000 L314.399980,625073.700000 L314.399980,625055.460000 "></path>
+<path style="stroke:black" d="M350.280000,625055.460000 L350.280000,625073.700000 L350.760010,625073.700000 L350.760010,625055.460000 "></path>
+<path style="stroke:black" d="M386.640000,625055.460000 L386.640000,625073.700000 L387.119980,625073.700000 L387.119980,625055.460000 "></path>
+<path style="stroke:black" d="M423.000000,625055.460000 L423.000000,625073.700000 L423.480010,625073.700000 L423.480010,625055.460000 "></path>
+<path style="stroke:black" d="M314.160000,625055.460020 L314.160000,625055.940000 L350.760000,625055.940000 L350.760000,625055.460020 "></path>
+<path style="stroke:black" d="M350.520000,625055.460020 L350.520000,625055.940000 L387.120000,625055.940000 L387.120000,625055.460020 "></path>
+<path style="stroke:black" d="M386.880000,625055.460020 L386.880000,625055.940000 L423.480000,625055.940000 L423.480000,625055.460020 "></path>
+<path style="stroke:black" d="M423.240000,625055.460020 L423.240000,625055.940000 L459.900000,625055.940000 L459.900000,625055.460020 "></path>
+<path style="stroke:black" d="M168.480000,625055.519960 L168.480000,625056.000000 L205.080000,625056.000000 L205.080000,625055.519960 "></path>
+<path style="stroke:black" d="M204.840000,625055.519960 L204.840000,625056.000000 L241.440000,625056.000000 L241.440000,625055.519960 "></path>
+<path style="stroke:black" d="M241.200000,625055.519960 L241.200000,625056.000000 L277.800000,625056.000000 L277.800000,625055.519960 "></path>
+<path style="stroke:black" d="M277.560000,625055.519960 L277.560000,625056.000000 L314.220000,625056.000000 L314.220000,625055.519960 "></path>
+<path style="stroke:black" d="M168.240000,625055.520000 L168.240000,625073.760000 L168.720010,625073.760000 L168.720010,625055.520000 "></path>
+<path style="stroke:black" d="M204.600000,625055.520000 L204.600000,625073.760000 L205.080010,625073.760000 L205.080010,625055.520000 "></path>
+<path style="stroke:black" d="M240.960000,625055.520000 L240.960000,625073.760000 L241.439980,625073.760000 L241.439980,625055.520000 "></path>
+<path style="stroke:black" d="M277.320000,625055.520000 L277.320000,625073.760000 L277.799980,625073.760000 L277.799980,625055.520000 "></path>
+<path style="stroke:black" d="M350.280000,625055.700000 L350.280000,625073.940000 L350.760010,625073.940000 L350.760010,625055.700000 "></path>
+<path style="stroke:black" d="M350.520000,625055.700000 L386.880000,625055.700000 L386.880000,625073.700000 L350.520000,625073.700000 "></path>
+<path style="stroke:black" d="M386.640000,625055.700000 L386.640000,625073.940000 L387.119980,625073.940000 L387.119980,625055.700000 "></path>
+<path style="stroke:black" d="M423.000000,625055.700000 L423.000000,625073.940000 L423.480010,625073.940000 L423.480010,625055.700000 "></path>
+<path style="stroke:black" d="M459.420000,625055.700000 L459.420000,625073.940000 L459.899980,625073.940000 L459.899980,625055.700000 "></path>
+<path style="stroke:black" d="M204.600000,625055.760000 L204.600000,625074.000000 L205.080010,625074.000000 L205.080010,625055.760000 "></path>
+<path style="stroke:black" d="M240.960000,625055.760000 L240.960000,625074.000000 L241.439980,625074.000000 L241.439980,625055.760000 "></path>
+<path style="stroke:black" d="M277.320000,625055.760000 L277.320000,625074.000000 L277.799980,625074.000000 L277.799980,625055.760000 "></path>
+<path style="stroke:black" d="M313.740000,625055.760000 L313.740000,625074.000000 L314.220010,625074.000000 L314.220010,625055.760000 "></path>
+<path style="stroke:black" d="M313.920000,625073.460020 L313.920000,625073.940000 L350.520000,625073.940000 L350.520000,625073.460020 "></path>
+<path style="stroke:black" d="M350.280000,625073.460020 L350.280000,625073.940000 L386.880000,625073.940000 L386.880000,625073.460020 "></path>
+<path style="stroke:black" d="M386.640000,625073.460020 L386.640000,625073.940000 L423.240000,625073.940000 L423.240000,625073.460020 "></path>
+<path style="stroke:black" d="M423.000000,625073.460020 L423.000000,625073.940000 L459.660000,625073.940000 L459.660000,625073.460020 "></path>
+<path style="stroke:black" d="M168.240000,625073.519960 L168.240000,625074.000000 L204.840000,625074.000000 L204.840000,625073.519960 "></path>
+<path style="stroke:black" d="M204.600000,625073.519960 L204.600000,625074.000000 L241.200000,625074.000000 L241.200000,625073.519960 "></path>
+<path style="stroke:black" d="M240.960000,625073.519960 L240.960000,625074.000000 L277.560000,625074.000000 L277.560000,625073.519960 "></path>
+<path style="stroke:black" d="M277.320000,625073.519960 L277.320000,625074.000000 L313.980000,625074.000000 L313.980000,625073.519960 "></path>
+<path style="stroke:black" d="M167.640000,625085.460000 L167.640000,625103.700000 L168.120000,625103.700000 L168.120000,625085.460000 "></path>
+<path style="stroke:black" d="M204.000000,625085.460000 L204.000000,625103.700000 L204.480000,625103.700000 L204.480000,625085.460000 "></path>
+<path style="stroke:black" d="M240.420000,625085.460000 L240.420000,625103.700000 L240.900010,625103.700000 L240.900010,625085.460000 "></path>
+<path style="stroke:black" d="M276.780000,625085.460000 L276.780000,625103.700000 L277.260010,625103.700000 L277.260010,625085.460000 "></path>
+<path style="stroke:black" d="M167.880000,625085.460020 L167.880000,625085.940000 L204.480000,625085.940000 L204.480000,625085.460020 "></path>
+<path style="stroke:black" d="M204.240000,625085.460020 L204.240000,625085.940000 L240.900000,625085.940000 L240.900000,625085.460020 "></path>
+<path style="stroke:black" d="M240.660000,625085.460020 L240.660000,625085.940000 L277.260000,625085.940000 L277.260000,625085.460020 "></path>
+<path style="stroke:black" d="M277.020000,625085.460020 L277.020000,625085.940000 L313.620000,625085.940000 L313.620000,625085.460020 "></path>
+<path style="stroke:black" d="M204.000000,625085.700000 L204.000000,625103.940000 L204.480000,625103.940000 L204.480000,625085.700000 "></path>
+<path style="stroke:black" d="M240.420000,625085.700000 L240.420000,625103.940000 L240.900010,625103.940000 L240.900010,625085.700000 "></path>
+<path style="stroke:black" d="M276.780000,625085.700000 L276.780000,625103.940000 L277.260010,625103.940000 L277.260010,625085.700000 "></path>
+<path style="stroke:black" d="M313.140000,625085.700000 L313.140000,625103.940000 L313.619980,625103.940000 L313.619980,625085.700000 "></path>
+<path style="stroke:black" d="M313.320000,625086.060000 L313.320000,625103.640000 L313.799980,625103.640000 L313.799980,625086.060000 "></path>
+<path style="stroke:black" d="M349.680000,625086.060000 L349.680000,625103.640000 L350.160010,625103.640000 L350.160010,625086.060000 "></path>
+<path style="stroke:black" d="M386.100000,625086.060000 L386.100000,625103.640000 L386.579980,625103.640000 L386.579980,625086.060000 "></path>
+<path style="stroke:black" d="M422.460000,625086.060000 L422.460000,625103.640000 L422.940010,625103.640000 L422.940010,625086.060000 "></path>
+<path style="stroke:black" d="M313.560000,625086.060020 L313.560000,625086.540000 L350.160000,625086.540000 L350.160000,625086.060020 "></path>
+<path style="stroke:black" d="M349.920000,625086.060020 L349.920000,625086.540000 L386.580000,625086.540000 L386.580000,625086.060020 "></path>
+<path style="stroke:black" d="M386.340000,625086.060020 L386.340000,625086.540000 L422.940000,625086.540000 L422.940000,625086.060020 "></path>
+<path style="stroke:black" d="M422.700000,625086.060020 L422.700000,625086.540000 L459.300000,625086.540000 L459.300000,625086.060020 "></path>
+<path style="stroke:black" d="M349.680000,625086.300000 L349.680000,625103.880000 L350.160010,625103.880000 L350.160010,625086.300000 "></path>
+<path style="stroke:black" d="M386.100000,625086.300000 L386.100000,625103.880000 L386.579980,625103.880000 L386.579980,625086.300000 "></path>
+<path style="stroke:black" d="M422.460000,625086.300000 L422.460000,625103.880000 L422.940010,625103.880000 L422.940010,625086.300000 "></path>
+<path style="stroke:black" d="M458.820000,625086.300000 L458.820000,625103.880000 L459.300010,625103.880000 L459.300010,625086.300000 "></path>
+<path style="stroke:black" d="M313.320000,625103.399960 L313.320000,625103.880000 L349.920000,625103.880000 L349.920000,625103.399960 "></path>
+<path style="stroke:black" d="M349.680000,625103.399960 L349.680000,625103.880000 L386.340000,625103.880000 L386.340000,625103.399960 "></path>
+<path style="stroke:black" d="M386.100000,625103.399960 L386.100000,625103.880000 L422.700000,625103.880000 L422.700000,625103.399960 "></path>
+<path style="stroke:black" d="M422.460000,625103.399960 L422.460000,625103.880000 L459.060000,625103.880000 L459.060000,625103.399960 "></path>
+<path style="stroke:black" d="M167.640000,625103.460020 L167.640000,625103.940000 L204.240000,625103.940000 L204.240000,625103.460020 "></path>
+<path style="stroke:black" d="M204.000000,625103.460020 L204.000000,625103.940000 L240.660000,625103.940000 L240.660000,625103.460020 "></path>
+<path style="stroke:black" d="M240.420000,625103.460020 L240.420000,625103.940000 L277.020000,625103.940000 L277.020000,625103.460020 "></path>
+<path style="stroke:black" d="M276.780000,625103.460020 L276.780000,625103.940000 L313.380000,625103.940000 L313.380000,625103.460020 "></path>
+<text y="625097.087484" x="325.68" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.717246">Y3</text>
+<text y="625097.087484" x="400.203624" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.781086">Y1</text>
+<text y="625097.087484" x="436.268436" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.781086">Y0</text>
+<text y="625097.087484" x="363.356772" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.781086">Y2</text>
+<text y="625067.087484" x="182.5202" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.777096">X7</text>
+<text y="625067.087484" x="217.38" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.777096">X6</text>
+<text y="625097.087484" x="253.2599" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.777096">Y5</text>
+<text y="625125.5748" x="170.76" style="font-size:6.000000pt" lengthAdjust="spacingAndGlyphs" textLength="32.304">ABS(X7:Y7)</text>
+<text y="625067.087484" x="253.8598" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.717246">X5</text>
+<text y="625067.087484" x="326.22" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.777096">X3</text>
+<text y="625067.087484" x="400.799484" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.777096">X1</text>
+<text y="625097.087484" x="181.9203" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.777096">Y7</text>
+<text y="625097.087484" x="291.84" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.777096">Y4</text>
+<text y="625125.5748" x="280.116" style="font-size:6.000000pt" lengthAdjust="spacingAndGlyphs" textLength="32.298">ABS(X4:Y4)</text>
+<text y="625125.5748" x="389.07" style="font-size:6.000000pt" lengthAdjust="spacingAndGlyphs" textLength="32.334">ABS(X1:Y1)</text>
+<text y="625125.5748" x="424.92" style="font-size:6.000000pt" lengthAdjust="spacingAndGlyphs" textLength="32.304">ABS(X0:Y0)</text>
+<text y="625159.727484" x="216.24" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="14.638512">00H</text>
+<text y="625159.727484" x="252.6599" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="14.695968">00H</text>
+<text y="625159.727484" x="291.2999" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="14.638512">00H</text>
+<text y="625159.727484" x="362.814228" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="14.638512">00H</text>
+<text y="625159.727484" x="181.3801" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="14.638512">00H</text>
+<text y="625067.087484" x="292.4399" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.777096">X4</text>
+<text y="625067.087484" x="436.856316" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.777096">X0</text>
+<text y="625097.087484" x="216.7801" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.777096">Y6</text>
+<text y="625159.727484" x="325.08" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="14.638512">00H</text>
+<text y="625158.1548" x="391.32" style="font-size:6.000000pt" lengthAdjust="spacingAndGlyphs" textLength="62.2782">SUM(TEMP7...TEMP0)</text></svg>
+<table>
+<tr>
+<td></td>
+<td></td>
+<td>ABS(X6:Y6) ABS(X5:Y5)</td>
+<td></td>
+<td></td>
+<td>ABS(X3:Y3) ABS(X2:Y2)</td>
+<td></td>
+<td></td></tr></table>
+<h3>Figure 4-10.  PSADBW Instruction Operation Using 64-bit Operands</h3>
+<h2>Operation</h2>
+<p><strong>PSADBW (when using 64-bit operands)</strong></p>
+<pre>    TEMP0 ← ABS(DEST[7:0] − SRC[7:0]);
+    (* Repeat operation for bytes 2 through 6 *)
+    TEMP7 ← ABS(DEST[63:56] − SRC[63:56]);
+    DEST[15:0] ← SUM(TEMP0:TEMP7);
+    DEST[63:16] ← 000000000000H;</pre>
+<p><strong>PSADBW (when using 128-bit operands)</strong></p>
+<pre>    TEMP0 ← ABS(DEST[7:0] − SRC[7:0]);
+    (* Repeat operation for bytes 2 through 14 *)
+    TEMP15 ← ABS(DEST[127:120] − SRC[127:120]);
+    DEST[15:0] ← SUM(TEMP0:TEMP7);
+    DEST[63:16] ← 000000000000H;
+    DEST[79:64] ← SUM(TEMP8:TEMP15);
+    DEST[127:80] ← 000000000000H;
+    DEST[VLMAX-1:128] (Unmodified)</pre>
+<p><strong>VPSADBW (VEX.128 encoded version)</strong></p>
+<pre>TEMP0 ← ABS(SRC1[7:0] - SRC2[7:0])
+(* Repeat operation for bytes 2 through 14 *)
+TEMP15 ← ABS(SRC1[127:120] - SRC2[127:120])
+DEST[15:0] ←SUM(TEMP0:TEMP7)
+DEST[63:16] ← 000000000000H
+DEST[79:64] ← SUM(TEMP8:TEMP15)
+DEST[127:80] ← 00000000000
+DEST[VLMAX-1:128] ← 0</pre>
+<p><strong>VPSADBW (VEX.256 encoded version)</strong></p>
+<pre>TEMP0 ← ABS(SRC1[7:0] - SRC2[7:0])
+(* Repeat operation for bytes 2 through 30*)
+TEMP31 ← ABS(SRC1[255:248] - SRC2[255:248])
+DEST[15:0] ←SUM(TEMP0:TEMP7)
+DEST[63:16] ← 000000000000H
+DEST[79:64] ← SUM(TEMP8:TEMP15)
+DEST[127:80] ← 00000000000H
+DEST[143:128] ←SUM(TEMP16:TEMP23)
+DEST[191:144] ← 000000000000H
+DEST[207:192] ← SUM(TEMP24:TEMP31)
+DEST[223:208] ← 00000000000H</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>PSADBW:</p>
+<p>__m64 _mm_sad_pu8(__m64 a,__m64 b)</p>
+<p>(V)PSADBW:</p>
+<p>__m128i _mm_sad_epu8(__m128i a, __m128i b)</p>
+<p>VPSADBW:</p>
+<p>__m256i _mm256_sad_epu8( __m256i a, __m256i b)</p>
+<h2>Flags Affected</h2>
+<p>None.</p>
+<h2>SIMD Floating-Point Exceptions</h2>
+<p>None.</p>
+<h2>Other Exceptions</h2>
+<p>See Exceptions Type 4; additionally</p>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>If VEX.L = 1.</td></tr></table></body></html>

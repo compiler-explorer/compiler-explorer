@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>PMULUDQ—Multiply Packed Unsigned Doubleword Integers </title></head>
+<body>
+<h1>PMULUDQ—Multiply Packed Unsigned Doubleword Integers</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32 bit Mode Support</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>
+<p>0F F4 /<em>r</em><sup>1</sup></p>
+<p>PMULUDQ <em>mm1</em>, <em>mm2/m64</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>SSE2</td>
+<td>Multiply unsigned doubleword integer in <em>mm1 </em>by unsigned doubleword integer in <em>mm2/m64</em>, and store the quadword result in <em>mm1</em>.</td></tr>
+<tr>
+<td>
+<p>66 0F F4 /<em>r</em></p>
+<p>PMULUDQ <em>xmm1</em>, <em>xmm2/m128</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>SSE2</td>
+<td>Multiply packed unsigned doubleword integers in <em>xmm1</em> by packed unsigned doubleword integers in <em>xmm2/m128</em>, and store the quadword results in <em>xmm1</em>.</td></tr>
+<tr>
+<td>
+<p>VEX.NDS.128.66.0F.WIG F4 /r</p>
+<p>VPMULUDQ <em>xmm1, xmm2, xmm3/m128</em></p></td>
+<td>RVM</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Multiply packed unsigned doubleword integers in <em>xmm2</em> by packed unsigned doubleword integers in <em>xmm3/m128</em>, and store the quadword results in <em>xmm1</em>.</td></tr>
+<tr>
+<td>
+<p>VEX.NDS.256.66.0F.WIG F4 /r</p>
+<p>VPMULUDQ <em>ymm1, ymm2, ymm3/m256</em></p></td>
+<td>RVM</td>
+<td>V/V</td>
+<td>AVX2</td>
+<td>Multiply packed unsigned doubleword integers in <em>ymm2</em> by packed unsigned doubleword integers in <em>ymm3/m256</em>, and store the quadword results in <em>ymm1</em>.</td></tr></table>
+<p>NOTES:</p>
+<p>1. See note in Section 2.4, “Instruction Exception Specification” in the <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 2A</em> and Section 22.25.3, “Exception Conditions of Legacy SIMD Instructions Operating on MMX Registers” in the <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 3A</em>.</p>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RM</td>
+<td>ModRM:reg (r, w)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td></tr>
+<tr>
+<td>RVM</td>
+<td>ModRM:reg (w)</td>
+<td>VEX.vvvv (r)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Multiplies the first operand (destination operand) by the second operand (source operand) and stores the result in the destination operand.</p>
+<p>In 64-bit mode, using a REX prefix in the form of REX.R permits this instruction to access additional registers (XMM8-XMM15).</p>
+<p>Legacy SSE version: The source operand can be an unsigned doubleword integer stored in the low doubleword of an MMX technology register or a 64-bit memory location. The destination operand can be an unsigned doubleword integer stored in the low doubleword an MMX technology register. The result is an unsigned quadword integer stored in the destination an MMX technology register. When a quadword result is too large to be represented in 64 bits (overflow), the result is wrapped around and the low 64 bits are written to the destination element (that is, the carry is ignored).</p>
+<p>For 64-bit memory operands, 64 bits are fetched from memory, but only the low doubleword is used in the compu-tation.</p>
+<p>128-bit Legacy SSE version: The second source operand is two packed unsigned doubleword integers stored in the first (low) and third doublewords of an XMM register or a 128-bit memory location. For 128-bit memory operands, 128 bits are fetched from memory, but only the first and third doublewords are used in the computation.The first source operand is two packed unsigned doubleword integers stored in the first and third doublewords of an XMM register. The destination contains two packed unsigned quadword integers stored in an XMM register. Bits (VLMAX-1:128) of the corresponding YMM destination register remain unchanged.</p>
+<p>VEX.128 encoded version: The second source operand is two packed unsigned doubleword integers stored in the first (low) and third doublewords of an XMM register or a 128-bit memory location. For 128-bit memory operands, 128 bits are fetched from memory, but only the first and third doublewords are used in the computation.The first</p>
+<p>source operand is two packed unsigned doubleword integers stored in the first and third doublewords of an XMM register. The destination contains two packed unsigned quadword integers stored in an XMM register. Bits (VLMAX-1:128) of the destination YMM register are zeroed.</p>
+<p>VEX.256 encoded version: The second source operand is four packed unsigned doubleword integers stored in the first (low), third, fifth and seventh doublewords of a YMM register or a 256-bit memory location. For 256-bit memory operands, 256 bits are fetched from memory, but only the first, third, fifth and seventh doublewords are used in the computation.The first source operand is four packed unsigned doubleword integers stored in the first, third, fifth and seventh doublewords of an YMM register. The destination contains four packed unaligned quadword integers stored in an YMM register.</p>
+<p>Note: VEX.L must be 0, otherwise the instruction will #UD.</p>
+<h2>Operation</h2>
+<p><strong>PMULUDQ (with 64-Bit operands)</strong></p>
+<pre>    DEST[63:0] ← DEST[31:0] ∗ SRC[31:0];</pre>
+<p><strong>PMULUDQ (with 128-Bit operands)</strong></p>
+<pre>    DEST[63:0] ← DEST[31:0] ∗ SRC[31:0];
+    DEST[127:64] ← DEST[95:64] ∗ SRC[95:64];</pre>
+<p><strong>VPMULUDQ (VEX.128 encoded version)</strong></p>
+<pre>DEST[63:0] ← SRC1[31:0] * SRC2[31:0]
+DEST[127:64] ← SRC1[95:64] * SRC2[95:64]
+DEST[VLMAX-1:128] ← 0</pre>
+<p><strong>VPMULUDQ (VEX.256 encoded version)</strong></p>
+<pre>DEST[63:0] ← SRC1[31:0] * SRC2[31:0]
+DEST[127:64] ← SRC1[95:64] * SRC2[95:64
+DEST[191:128] ← SRC1[159:128] * SRC2[159:128]
+DEST[255:192] ← SRC1[223:192] * SRC2[223:192]</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>PMULUDQ:</p>
+<p>__m64 _mm_mul_su32 (__m64 a, __m64 b)</p>
+<p>(V)PMULUDQ:</p>
+<p>__m128i _mm_mul_epu32 ( __m128i a, __m128i b)</p>
+<p>VPMULUDQ:</p>
+<p>__m256i _mm256_mul_epu32( __m256i a, __m256i b);</p>
+<h2>Flags Affected</h2>
+<p>None.</p>
+<h2>SIMD Floating-Point Exceptions</h2>
+<p>None.</p>
+<h2>Other Exceptions</h2>
+<p>See Exceptions Type 4; additionally</p>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>If VEX.L = 1.</td></tr></table></body></html>

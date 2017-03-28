@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>XBEGIN — Transactional Begin </title></head>
+<body>
+<h1>XBEGIN — Transactional Begin</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32bit Mode Support</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>
+<p>C7 F8</p>
+<p>XBEGIN rel16</p></td>
+<td>A</td>
+<td>V/V</td>
+<td>RTM</td>
+<td>Specifies the start of an RTM region. Provides a 16-bit relative offset to compute the address of the fallback instruction address at which execution resumes following an RTM abort.</td></tr>
+<tr>
+<td>
+<p>C7 F8</p>
+<p>XBEGIN rel32</p></td>
+<td>A</td>
+<td>V/V</td>
+<td>RTM</td>
+<td>Specifies the start of an RTM region. Provides a 32-bit relative offset to compute the address of the fallback instruction address at which execution resumes following an RTM abort.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand2</td>
+<td>Operand3</td>
+<td>Operand4</td></tr>
+<tr>
+<td>A</td>
+<td>Offset</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>The XBEGIN instruction specifies the start of an RTM code region. If the logical processor was not already in trans-actional execution, then the XBEGIN instruction causes the logical processor to transition into transactional execu-tion. The XBEGIN instruction that transitions the logical processor into transactional execution is referred to as the outermost XBEGIN instruction. The instruction also specifies a relative offset to compute the address of the fallback code path following a transactional abort.</p>
+<p>On an RTM abort, the logical processor discards all architectural register and memory updates performed during the RTM execution and restores architectural state to that corresponding to the outermost XBEGIN instruction. The fallback address following an abort is computed from the outermost XBEGIN instruction.</p>
+<h2>Operation</h2>
+<p><strong>XBEGIN</strong></p>
+<pre>IF RTM_NEST_COUNT &lt; MAX_RTM_NEST_COUNT
+    THEN
+         RTM_NEST_COUNT++
+         IF RTM_NEST_COUNT = 1 THEN
+              IF 64-bit Mode
+                    THEN
+                              fallbackRIP ← RIP + SignExtend64(IMM)
+                                              (* RIP is instruction following XBEGIN instruction *)
+                         ELSE
+                              fallbackEIP ← EIP + SignExtend32(IMM)
+                                              (* EIP is instruction following XBEGIN instruction *)
+              FI;
+              IF (64-bit mode)
+                    THEN IF (fallbackRIP is not canonical)
+                         THEN #GP(0)
+                    FI;
+                    ELSE IF (fallbackEIP outside code segment limit)
+                         THEN #GP(0)
+                    FI;
+              FI;
+              RTM_ACTIVE ← 1
+              Enter RTM Execution (* record register state, start tracking memory state*)
+         FI; (* RTM_NEST_COUNT = 1 *)
+    ELSE (* RTM_NEST_COUNT = MAX_RTM_NEST_COUNT *)
+         GOTO RTM_ABORT_PROCESSING
+FI;
+(* For any RTM abort condition encountered during RTM execution *)
+RTM_ABORT_PROCESSING:
+    Restore architectural register state
+    Discard memory updates performed in transaction
+    Update EAX with status
+    RTM_NEST_COUNT ← 0
+    RTM_ACTIVE ← 0
+    IF 64-bit mode
+         THEN
+              RIP ← fallbackRIP
+         ELSE
+              EIP ← fallbackEIP
+    FI;
+END</pre>
+<h2>Flags Affected</h2>
+<p>None</p>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>XBEGIN:</p>
+<p>unsigned int _xbegin( void );</p>
+<h2>SIMD Floating-Point Exceptions</h2>
+<p>None</p>
+<h2>Protected Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>
+<p>CPUID.(EAX=7, ECX=0):EBX.RTM[bit 11]=0.</p>
+<p>If LOCK prefix is used.</p></td></tr>
+<tr>
+<td>#GP(0)</td>
+<td>If the fallback address is outside the CS segment.</td></tr></table>
+<h2>Real-Address Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>If the fallback address is outside the address space 0000H and FFFFH.</td></tr>
+<tr>
+<td>#UD</td>
+<td>
+<p>CPUID.(EAX=7, ECX=0):EBX.RTM[bit 11]=0.</p>
+<p>If LOCK prefix is used.</p></td></tr></table>
+<h2>Virtual-8086 Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>If the fallback address is outside the address space 0000H and FFFFH.</td></tr>
+<tr>
+<td>#UD</td>
+<td>
+<p>CPUID.(EAX=7, ECX=0):EBX.RTM[bit 11]=0.</p>
+<p>If LOCK prefix is used.</p></td></tr></table>
+<h2>Compatibility Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>64-bit Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>
+<p>CPUID.(EAX=7, ECX=0):EBX.RTM[bit 11] = 0.</p>
+<p>If LOCK prefix is used.</p></td></tr>
+<tr>
+<td>#GP(0)</td>
+<td>If the fallback address is non-canonical.</td></tr></table></body></html>

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>LEAVE—High Level Procedure Exit </title></head>
+<body>
+<h1>LEAVE—High Level Procedure Exit</h1>
+<table>
+<tr>
+<th>Opcode</th>
+<th>Instruction</th>
+<th>Op/En</th>
+<th>64-Bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>C9</td>
+<td>LEAVE</td>
+<td>NP</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Set SP to BP, then pop BP.</td></tr>
+<tr>
+<td>C9</td>
+<td>LEAVE</td>
+<td>NP</td>
+<td>N.E.</td>
+<td>Valid</td>
+<td>Set ESP to EBP, then pop EBP.</td></tr>
+<tr>
+<td>C9</td>
+<td>LEAVE</td>
+<td>NP</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Set RSP to RBP, then pop RBP.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>NP</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Releases the stack frame set up by an earlier ENTER instruction. The LEAVE instruction copies the frame pointer (in the EBP register) into the stack pointer register (ESP), which releases the stack space allocated to the stack frame. The old frame pointer (the frame pointer for the calling procedure that was saved by the ENTER instruction) is then popped from the stack into the EBP register, restoring the calling procedure’s stack frame.</p>
+<p>A RET instruction is commonly executed following a LEAVE instruction to return program control to the calling procedure.</p>
+<p>See “Procedure Calls for Block-Structured Languages” in Chapter 7 of the <em>Intel® 64 and IA-32 Architectures Soft-ware Developer’s Manual, Volume 1</em>, for detailed information on the use of the ENTER and LEAVE instructions.</p>
+<p>In 64-bit mode, the instruction’s default operation size is 64 bits; 32-bit operation cannot be encoded. See the summary chart at the beginning of this section for encoding data and limits.</p>
+<h2>Operation</h2>
+<pre>IF StackAddressSize = 32
+    THEN
+         ESP ← EBP;
+    ELSE IF StackAddressSize = 64
+         THEN RSP ← RBP; FI;
+    ELSE IF StackAddressSize = 16
+         THEN SP ← BP; FI;
+FI;
+IF OperandSize = 32
+    THEN EBP ← Pop();
+    ELSE IF OperandSize = 64
+         THEN RBP ← Pop(); FI;
+    ELSE IF OperandSize = 16
+         THEN BP ← Pop(); FI;
+FI;</pre>
+<h2>Flags Affected</h2>
+<p>None.</p>
+<h2>Protected Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#SS(0)</td>
+<td>If the EBP register points to a location that is not within the limits of the current stack segment.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and an unaligned memory reference is made while the current privilege level is 3.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Real-Address Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP</td>
+<td>If the EBP register points to a location outside of the effective address space from 0 to FFFFH.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Virtual-8086 Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>If the EBP register points to a location outside of the effective address space from 0 to FFFFH.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and an unaligned memory reference is made.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Compatibility Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>64-Bit Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#SS(0)</td>
+<td>If the stack address is in a non-canonical form.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and an unaligned memory reference is made while the current privilege level is 3.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table></body></html>

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>F2XM1—Compute 2x–1 </title></head>
+<body>
+<h1>F2XM1—Compute 2<sup>x</sup>–1</h1>
+<table>
+<tr>
+<th>Opcode</th>
+<th>Instruction</th>
+<th>64-Bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>D9 F0</td>
+<td>F2XM1</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Replace ST(0) with (2<sup>ST(0)<sup> </sup>– 1).</sup></td></tr></table>
+<h2>Description</h2>
+<p>Computes the exponential value of 2 to the power of the source operand minus 1. The source operand is located in register ST(0) and the result is also stored in ST(0). The value of the source operand must lie in the range –1.0 to +1.0. If the source value is outside this range, the result is undefined.</p>
+<p>The following table shows the results obtained when computing the exponential value of various classes of numbers, assuming that neither overflow nor underflow occurs.</p>
+<h3>Table 3-26.  Results Obtained from F2XM1</h3>
+<table>
+<tr>
+<th>ST(0) SRC</th>
+<th>ST(0) DEST</th></tr>
+<tr>
+<td>− 1.0 to −0</td>
+<td>− 0.5 to − 0</td></tr>
+<tr>
+<td>− 0</td>
+<td>− 0</td></tr>
+<tr>
+<td>+ 0</td>
+<td>+ 0</td></tr>
+<tr>
+<td>+ 0 to +1.0</td>
+<td>+ 0 to 1.0</td></tr></table>
+<p>Values other than 2 can be exponentiated using the following formula:</p>
+<p>x<sup>y</sup> ← 2<sup>(y ∗ log<sub>2<sup>x)</sup></sub></sup></p>
+<p>This instruction’s operation is the same in non-64-bit modes and 64-bit mode.</p>
+<h2>Operation</h2>
+<pre>ST(0) ← (2<sup>ST(0)</sup> − 1);</pre>
+<h2>FPU Flags Affected</h2>
+<table class="exception-table">
+<tr>
+<td>C1</td>
+<td>
+<p>Set to 0 if stack underflow occurred.</p>
+<p>Set if result was rounded up; cleared otherwise.</p></td></tr>
+<tr>
+<td>C0, C2, C3</td>
+<td>Undefined.</td></tr></table>
+<h2>Floating-Point Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#IS</td>
+<td>Stack underflow occurred.</td></tr>
+<tr>
+<td>#IA</td>
+<td>Source operand is an SNaN value or unsupported format.</td></tr></table>
+<p>#D</p>
+<p>Source is a denormal value.</p>
+<p>#U</p>
+<p>Result is too small for destination format.</p>
+<p>#P</p>
+<p>Value cannot be represented exactly in destination format.</p>
+<h2>Protected Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#NM</td>
+<td>CR0.EM[bit 2] or CR0.TS[bit 3] = 1.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Real-Address Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>Virtual-8086 Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>Compatibility Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>64-Bit Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p></body></html>

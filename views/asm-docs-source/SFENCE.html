@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>SFENCE—Store Fence </title></head>
+<body>
+<h1>SFENCE—Store Fence</h1>
+<table>
+<tr>
+<th>Opcode*</th>
+<th>Instruction</th>
+<th>Op/En</th>
+<th>64-Bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>0F AE F8</td>
+<td>SFENCE</td>
+<td>NP</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Serializes store operations.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>NP</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Performs a serializing operation on all store-to-memory instructions that were issued prior the SFENCE instruction. This serializing operation guarantees that every store instruction that precedes the SFENCE instruction in program order becomes globally visible before any store instruction that follows the SFENCE instruction. The SFENCE instruction is ordered with respect to store instructions, other SFENCE instructions, any LFENCE and MFENCE instructions, and any serializing instructions (such as the CPUID instruction). It is not ordered with respect to load instructions.</p>
+<p>Weakly ordered memory types can be used to achieve higher processor performance through such techniques as out-of-order issue, write-combining, and write-collapsing. The degree to which a consumer of data recognizes or knows that the data is weakly ordered varies among applications and may be unknown to the producer of this data. The SFENCE instruction provides a performance-efficient way of ensuring store ordering between routines that produce weakly-ordered results and routines that consume this data.</p>
+<p>This instruction’s operation is the same in non-64-bit modes and 64-bit mode.</p>
+<p>Specification of the instruction's opcode above indicates a ModR/M byte of F8. For this instruction, the processor ignores the r/m field of the ModR/M byte. Thus, SFENCE is encoded by any opcode of the form 0F AE Fx, where x is in the range 8-F.</p>
+<h2>Operation</h2>
+<pre>Wait_On_Following_Stores_Until(preceding_stores_globally_visible);</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>void _mm_sfence(void)</p>
+<h2>Exceptions (All Operating Modes)</h2>
+<p>#UD</p>
+<p>If CPUID.01H:EDX.SSE[bit 25] = 0.</p>
+<p>If the LOCK prefix is used.</p></body></html>

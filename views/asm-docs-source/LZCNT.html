@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>LZCNT— Count the Number of Leading Zero Bits </title></head>
+<body>
+<h1>LZCNT— Count the Number of Leading Zero Bits</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32 -bit Mode</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>
+<p>F3 0F BD /r</p>
+<p>LZCNT r16, r/m16</p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>LZCNT</td>
+<td>Count the number of leading zero bits in r/m16, return result in r16.</td></tr>
+<tr>
+<td>
+<p>F3 0F BD /r</p>
+<p>LZCNT r32, r/m32</p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>LZCNT</td>
+<td>Count the number of leading zero bits in r/m32, return result in r32.</td></tr>
+<tr>
+<td>
+<p>REX.W + F3 0F BD /r</p>
+<p>LZCNT r64, r/m64</p></td>
+<td>RM</td>
+<td>V/N.E.</td>
+<td>LZCNT</td>
+<td>Count the number of leading zero bits in r/m64, return result in r64.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RM</td>
+<td>ModRM:reg (w)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Counts the number of leading most significant zero bits in a source operand (second operand) returning the result into a destination (first operand).</p>
+<p>LZCNT differs from BSR. For example, LZCNT will produce the operand size when the input operand is zero. It should be noted that on processors that do not support LZCNT, the instruction byte encoding is executed as BSR.</p>
+<p>In 64-bit mode 64-bit operand size requires REX.W=1.</p>
+<h2>Operation</h2>
+<pre>temp ← OperandSize - 1
+DEST ← 0
+WHILE (temp &gt;= 0) AND (Bit(SRC, temp) = 0)
+DO
+    temp ← temp - 1
+    DEST ← DEST+ 1
+OD
+IF DEST = OperandSize
+    CF ← 1
+ELSE
+    CF ← 0
+FI
+IF DEST = 0
+    ZF ← 1
+ELSE
+    ZF ← 0
+FI</pre>
+<h2>Flags Affected</h2>
+<p>ZF flag is set to 1 in case of zero output (most significant bit of the source is set), and to 0 otherwise, CF flag is set to 1 if input was zero and cleared otherwise. OF, SF, PF and AF flags are undefined.</p>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>LZCNT:</p>
+<p>unsigned __int32 _lzcnt_u32(unsigned __int32 src);</p>
+<p>LZCNT:</p>
+<p>unsigned __int64 _lzcnt_u64(unsigned __int64 src);</p>
+<h2>Protected Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>
+<p>For an illegal memory operand effective address in the CS, DS, ES, FS or GS segments.</p>
+<p>If the DS, ES, FS, or GS register is used to access memory and it contains a null segment selector.</p></td></tr>
+<tr>
+<td>#SS(0)</td>
+<td>For an illegal address in the SS segment.</td></tr>
+<tr>
+<td>#PF (fault-code)</td>
+<td>For a page fault.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and an unaligned memory reference is made while the current privilege level is 3.</td></tr></table>
+<h2>Real-Address Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>If any part of the operand lies outside of the effective address space from 0 to 0FFFFH.</td></tr>
+<tr>
+<td>#SS(0)</td>
+<td>For an illegal address in the SS segment.</td></tr></table>
+<h2>Virtual 8086 Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>If any part of the operand lies outside of the effective address space from 0 to 0FFFFH.</td></tr>
+<tr>
+<td>#SS(0)</td>
+<td>For an illegal address in the SS segment.</td></tr>
+<tr>
+<td>#PF (fault-code)</td>
+<td>For a page fault.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and an unaligned memory reference is made while the current privilege level is 3.</td></tr></table>
+<h2>Compatibility Mode Exceptions</h2>
+<p>Same exceptions as in Protected Mode.</p>
+<h2>64-Bit Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>If the memory address is in a non-canonical form.</td></tr>
+<tr>
+<td>#SS(0)</td>
+<td>If a memory address referencing the SS segment is in a non-canonical form.</td></tr>
+<tr>
+<td>#PF (fault-code)</td>
+<td>For a page fault.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and an unaligned memory reference is made while the current privilege level is 3.</td></tr></table></body></html>

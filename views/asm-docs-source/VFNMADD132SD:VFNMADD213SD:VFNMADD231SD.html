@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>VFNMADD132SD/VFNMADD213SD/VFNMADD231SD — Fused Negative Multiply-Add of Scalar Double-Precision Floating-Point Values </title></head>
+<body>
+<h1>VFNMADD132SD/VFNMADD213SD/VFNMADD231SD — Fused Negative Multiply-Add of Scalar Double-Precision Floating-Point Values</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32 -bit Mode</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>
+<p>VEX.DDS.LIG.128.66.0F38.W1 9D /r</p>
+<p>VFNMADD132SD <em>xmm0, xmm1, xmm2/m64</em></p></td>
+<td>A</td>
+<td>V/V</td>
+<td>FMA</td>
+<td>Multiply scalar double-precision floating-point value from <em>xmm0</em> and <em>xmm2/mem</em>, negate the multiplica-tion result and add to <em>xmm1</em> and put result in <em>xmm0</em>.</td></tr>
+<tr>
+<td>
+<p>VEX.DDS.LIG.128.66.0F38.W1 AD /r</p>
+<p>VFNMADD213SD <em>xmm0, xmm1, xmm2/m64</em></p></td>
+<td>A</td>
+<td>V/V</td>
+<td>FMA</td>
+<td>Multiply scalar double-precision floating-point value from <em>xmm0</em> and <em>xmm1</em>, negate the multiplication result and add to <em>xmm2/mem</em> and put result in <em>xmm0</em>.</td></tr>
+<tr>
+<td>
+<p>VEX.DDS.LIG.128.66.0F38.W1 BD /r</p>
+<p>VFNMADD231SD <em>xmm0, xmm1, xmm2/m64</em></p></td>
+<td>A</td>
+<td>V/V</td>
+<td>FMA</td>
+<td>Multiply scalar double-precision floating-point value from <em>xmm1</em> and <em>xmm2/mem</em>, negate the multiplica-tion result and add to <em>xmm0</em> and put result in <em>xmm0.</em></td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>A</td>
+<td>ModRM:reg (r, w)</td>
+<td>VEX.vvvv (r)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>VFNMADD132SD: Multiplies the low packed double-precision floating-point value from the first source operand to the low packed double-precision floating-point value in the third source operand, adds the negated infinite preci-sion intermediate result to the low packed double-precision floating-point values in the second source operand, performs rounding and stores the resulting packed double-precision floating-point value to the destination operand (first source operand).</p>
+<p>VFNMADD213SD: Multiplies the low packed double-precision floating-point value from the second source operand to the low packed double-precision floating-point value in the first source operand, adds the negated infinite preci-sion intermediate result to the low packed double-precision floating-point value in the third source operand, performs rounding and stores the resulting packed double-precision floating-point value to the destination operand (first source operand).</p>
+<p>VFNMADD231SD: Multiplies the low packed double-precision floating-point value from the second source to the low packed double-precision floating-point value in the third source operand, adds the negated infinite precision intermediate result to the low packed double-precision floating-point value in the first source operand, performs rounding and stores the resulting packed double-precision floating-point value to the destination operand (first source operand).</p>
+<p>VEX.128 encoded version: The destination operand (also first source operand) is a XMM register and encoded in reg_field. The second source operand is a XMM register and encoded in VEX.vvvv. The third source operand is a XMM register or a 64-bit memory location and encoded in rm_field. The upper bits ([VLMAX-1:128]) of the YMM destination register are zeroed.</p>
+<p>Compiler tools may optionally support a complementary mnemonic for each instruction mnemonic listed in the opcode/instruction column of the summary table. The behavior of the complementary mnemonic in situations involving NANs are governed by the definition of the instruction mnemonic defined in the opcode/instruction column. See also Section 14.5.1, “FMA Instruction Operand Order and Arithmetic Behavior” in the <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 1</em>.</p>
+<h2>Operation</h2>
+<p>In the operations below, "+", "-", and "*" symbols represent addition, subtraction, and multiplication operations with infinite precision inputs and outputs (no rounding).</p>
+<p><strong>VFNMADD132SD DEST, SRC2, SRC3</strong></p>
+<pre>DEST[63:0] ← RoundFPControl_MXCSR(- (DEST[63:0]*SRC3[63:0]) + SRC2[63:0])
+DEST[127:64] ← DEST[127:64]
+DEST[VLMAX-1:128] ← 0</pre>
+<p><strong>VFNMADD213SD DEST, SRC2, SRC3</strong></p>
+<pre>DEST[63:0] ← RoundFPControl_MXCSR(- (SRC2[63:0]*DEST[63:0]) + SRC3[63:0])
+DEST[127:64] ← DEST[127:64]
+DEST[VLMAX-1:128] ← 0</pre>
+<p><strong>VFNMADD231SD DEST, SRC2, SRC3</strong></p>
+<pre>DEST[63:0] ← RoundFPControl_MXCSR(- (SRC2[63:0]*SRC3[63:0]) + DEST[63:0])
+DEST[127:64] ← DEST[127:64]
+DEST[VLMAX-1:128] ← 0</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>VFNMADD132SD: __m128d _mm_fnmadd_sd (__m128d a, __m128d b, __m128d c);</p>
+<p>VFNMADD213SD: __m128d _mm_fnmadd_sd (__m128d a, __m128d b, __m128d c);</p>
+<p>VFNMADD231SD: __m128d _mm_fnmadd_sd (__m128d a, __m128d b, __m128d c);</p>
+<h2>SIMD Floating-Point Exceptions</h2>
+<p>Overflow, Underflow, Invalid, Precision, Denormal</p>
+<h2>Other Exceptions</h2>
+<p>See Exceptions Type 3</p></body></html>

@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>FICOM/FICOMP—Compare Integer </title></head>
+<body>
+<h1>FICOM/FICOMP—Compare Integer</h1>
+<table>
+<tr>
+<th>Opcode</th>
+<th>Instruction</th>
+<th>64-Bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>DE /2</td>
+<td>FICOM <em>m16int</em></td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Compare ST(0) with <em>m16int.</em></td></tr>
+<tr>
+<td>DA /2</td>
+<td>FICOM <em>m32int</em></td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Compare ST(0) with <em>m32int.</em></td></tr>
+<tr>
+<td>DE /3</td>
+<td>FICOMP <em>m16int</em></td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Compare ST(0) with <em>m16int</em> and pop stack register.</td></tr>
+<tr>
+<td>DA /3</td>
+<td>FICOMP <em>m32int</em></td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Compare ST(0) with <em>m32int</em> and pop stack register.</td></tr></table>
+<h2>Description</h2>
+<p>Compares the value in ST(0) with an integer source operand and sets the condition code flags C0, C2, and C3 in the FPU status word according to the results (see table below). The integer value is converted to double extended-precision floating-point format before the comparison is made.</p>
+<h3>Table 3-36.  FICOM/FICOMP Results</h3>
+<table>
+<tr>
+<th>Condition</th>
+<th>C3</th>
+<th>C2</th>
+<th>C0</th></tr>
+<tr>
+<td>ST(0) &gt; SRC</td>
+<td>0</td>
+<td>0</td>
+<td>0</td></tr>
+<tr>
+<td>ST(0) &lt; SRC</td>
+<td>0</td>
+<td>0</td>
+<td>1</td></tr>
+<tr>
+<td>ST(0) = SRC</td>
+<td>1</td>
+<td>0</td>
+<td>0</td></tr>
+<tr>
+<td>Unordered</td>
+<td>1</td>
+<td>1</td>
+<td>1</td></tr></table>
+<p>These instructions perform an “unordered comparison.” An unordered comparison also checks the class of the numbers being compared (see “FXAM—Examine ModR/M” in this chapter). If either operand is a NaN or is in an undefined format, the condition flags are set to “unordered.”</p>
+<p>The sign of zero is ignored, so that –0.0 ← +0.0.</p>
+<p>The FICOMP instructions pop the register stack following the comparison. To pop the register stack, the processor marks the ST(0) register empty and increments the stack pointer (TOP) by 1.</p>
+<p>This instruction’s operation is the same in non-64-bit modes and 64-bit mode.</p>
+<h2>Operation</h2>
+<pre>CASE (relation of operands) OF
+    ST(0) &gt; SRC:
+                         C3, C2, C0 ← 000;
+    ST(0) &lt; SRC:
+                         C3, C2, C0 ← 001;
+    ST(0) = SRC:
+                         C3, C2, C0 ← 100;
+    Unordered:
+                         C3, C2, C0 ← 111;
+ESAC;
+IF Instruction = FICOMP
+    THEN
+         PopRegisterStack;
+FI;</pre>
+<h2>FPU Flags Affected</h2>
+<table class="exception-table">
+<tr>
+<td>C1</td>
+<td>Set to 0.</td></tr>
+<tr>
+<td>C0, C2, C3</td>
+<td>See table on previous page.</td></tr></table>
+<h2>Floating-Point Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#IS</td>
+<td>Stack underflow occurred.</td></tr>
+<tr>
+<td>#IA</td>
+<td>One or both operands are NaN values or have unsupported formats.</td></tr></table>
+<p>#D</p>
+<p>One or both operands are denormal values.</p>
+<h2>Protected Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>
+<p>If a memory operand effective address is outside the CS, DS, ES, FS, or GS segment limit.</p>
+<p>If the DS, ES, FS, or GS register contains a NULL segment selector.</p></td></tr>
+<tr>
+<td>#SS(0)</td>
+<td>If a memory operand effective address is outside the SS segment limit.</td></tr>
+<tr>
+<td>#NM</td>
+<td>CR0.EM[bit 2] or CR0.TS[bit 3] = 1.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and an unaligned memory reference is made while the current privilege level is 3.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Real-Address Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP</td>
+<td>If a memory operand effective address is outside the CS, DS, ES, FS, or GS segment limit.</td></tr>
+<tr>
+<td>#SS</td>
+<td>If a memory operand effective address is outside the SS segment limit.</td></tr>
+<tr>
+<td>#NM</td>
+<td>CR0.EM[bit 2] or CR0.TS[bit 3] = 1.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Virtual-8086 Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>If a memory operand effective address is outside the CS, DS, ES, FS, or GS segment limit.</td></tr>
+<tr>
+<td>#SS(0)</td>
+<td>If a memory operand effective address is outside the SS segment limit.</td></tr>
+<tr>
+<td>#NM</td>
+<td>CR0.EM[bit 2] or CR0.TS[bit 3] = 1.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and an unaligned memory reference is made.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Compatibility Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>64-Bit Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#SS(0)</td>
+<td>If a memory address referencing the SS segment is in a non-canonical form.</td></tr>
+<tr>
+<td>#GP(0)</td>
+<td>If the memory address is in a non-canonical form.</td></tr>
+<tr>
+<td>#NM</td>
+<td>CR0.EM[bit 2] or CR0.TS[bit 3] = 1.</td></tr>
+<tr>
+<td>#MF</td>
+<td>If there is a pending x87 FPU exception.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and an unaligned memory reference is made while the current privilege level is 3.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table></body></html>

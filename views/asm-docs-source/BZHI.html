@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>BZHI — Zero High Bits Starting with Specified Bit Position </title></head>
+<body>
+<h1>BZHI — Zero High Bits Starting with Specified Bit Position</h1>
+<table>
+<tr>
+<td>
+<p><strong>Opcode/Instruction</strong></p>
+<p>VEX.NDS<sup>1</sup>.LZ.0F38.W0 F5 /r</p>
+<p>BZHI r32a, r/m32, r32b</p>
+<p>VEX.NDS<sup>1</sup>.LZ.0F38.W1 F5 /r</p>
+<p>BZHI r64a, r/m64, r64b</p></td>
+<td>
+<p><strong>Op/En</strong></p>
+<p>RMV</p>
+<p>RMV</p></td>
+<td>
+<p><strong>64/32 -bit Mode</strong></p>
+<p>V/V</p>
+<p>V/N.E.</p></td>
+<td>
+<p><strong>CPUID Feature Flag</strong></p>
+<p>BMI2</p>
+<p>BMI2</p></td>
+<td>
+<p><strong>Description</strong></p>
+<p>Zero bits in r/m32 starting with the position in r32b, write result to r32a.</p>
+<p>Zero bits in r/m64 starting with the position in r64b, write result to r64a.</p></td></tr></table>
+<p><strong>NOTES:</strong></p>
+<p>1. ModRM:r/m is used to encode the first source operand (second operand) and VEX.vvvv encodes the second source operand (third oper-</p>
+<p>and).</p>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RMV</td>
+<td>ModRM:reg (w)</td>
+<td>ModRM:r/m (r)</td>
+<td>VEX.vvvv (r)</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>BZHI copies the bits of the first source operand (the second operand) into the destination operand (the first operand) and clears the higher bits in the destination according to the INDEX value specified by the second source operand (the third operand). The INDEX is specified by bits 7:0 of the second source operand. The INDEX value is saturated at the value of OperandSize -1. CF is set, if the number contained in the 8 low bits of the third operand is greater than OperandSize -1.</p>
+<p>This instruction is not supported in real mode and virtual-8086 mode. The operand size is always 32 bits if not in 64-bit mode. In 64-bit mode operand size 64 requires VEX.W1. VEX.W1 is ignored in non-64-bit modes. An attempt to execute this instruction with VEX.L not equal to 0 will cause #UD.</p>
+<h2>Operation</h2>
+<pre>N ← SRC2[7:0]
+DEST ← SRC1
+IF (N &lt; OperandSize)
+    DEST[OperandSize-1:N] ← 0
+FI
+IF (N &gt; OperandSize - 1)
+    CF ← 1
+ELSE
+    CF ← 0
+FI</pre>
+<h2>Flags Affected</h2>
+<p>ZF, CF and SF flags are updated based on the result. OF flag is cleared. AF and PF flags are undefined.</p>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>BZHI:</p>
+<p>unsigned __int32 _bzhi_u32(unsigned __int32 src, unsigned __int32 index);</p>
+<p>BZHI:</p>
+<p>unsigned __int64 _bzhi_u64(unsigned __int64 src, unsigned __int32 index);</p>
+<h2>SIMD Floating-Point Exceptions</h2>
+<p>None</p>
+<h2>Other Exceptions</h2>
+<p>See Section 2.5.1, “Exception Conditions for VEX-Encoded GPR Instructions”, Table 2-29; additionally</p>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>If VEX.W = 1.</td></tr></table></body></html>

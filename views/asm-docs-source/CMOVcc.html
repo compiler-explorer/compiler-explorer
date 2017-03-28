@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>CMOVcc—Conditional Move </title></head>
+<body>
+<h1>CMOV<em>cc</em>—Conditional Move</h1>
+<table>
+<tr>
+<th>Opcode</th>
+<th>Instruction</th>
+<th>Op/En</th>
+<th>64-Bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>0F 47 <em>/r</em></td>
+<td>CMOVA <em>r16, r/m16</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move if above (CF=0 and ZF=0).</td></tr>
+<tr>
+<td>0F 47 <em>/r</em></td>
+<td>CMOVA <em>r32, r/m32</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move if above (CF=0 and ZF=0).</td></tr>
+<tr>
+<td>REX.W + 0F 47 <em>/r</em></td>
+<td>CMOVA <em>r64, r/m64</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Move if above (CF=0 and ZF=0).</td></tr>
+<tr>
+<td>0F 43 <em>/r</em></td>
+<td>CMOVAE <em>r16, r/m16</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move if above or equal (CF=0).</td></tr>
+<tr>
+<td>0F 43 <em>/r</em></td>
+<td>CMOVAE <em>r32, r/m32</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move if above or equal (CF=0).</td></tr>
+<tr>
+<td>REX.W + 0F 43 <em>/r</em></td>
+<td>CMOVAE <em>r64, r/m64</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Move if above or equal (CF=0).</td></tr>
+<tr>
+<td>0F 42 <em>/r</em></td>
+<td>CMOVB <em>r16, r/m16</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move if below (CF=1).</td></tr>
+<tr>
+<td>0F 42 <em>/r</em></td>
+<td>CMOVB <em>r32, r/m32</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move if below (CF=1).</td></tr>
+<tr>
+<td>REX.W + 0F 42 <em>/r</em></td>
+<td>CMOVB <em>r64, r/m64</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Move if below (CF=1).</td></tr>
+<tr>
+<td>0F 46 <em>/r</em></td>
+<td>CMOVBE <em>r16, r/m16</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move if below or equal (CF=1 or ZF=1).</td></tr>
+<tr>
+<td>0F 46 <em>/r</em></td>
+<td>CMOVBE <em>r32, r/m32</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move if below or equal (CF=1 or ZF=1).</td></tr>
+<tr>
+<td>REX.W + 0F 46 <em>/r</em></td>
+<td>CMOVBE <em>r64, r/m64</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Move if below or equal (CF=1 or ZF=1).</td></tr>
+<tr>
+<td>0F 42 <em>/r</em></td>
+<td>CMOVC <em>r16, r/m16</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move if carry (CF=1).</td></tr>
+<tr>
+<td>0F 42 <em>/r</em></td>
+<td>CMOVC <em>r32, r/m32</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move if carry (CF=1).</td></tr>
+<tr>
+<td>REX.W + 0F 42 <em>/r</em></td>
+<td>CMOVC <em>r64, r/m64</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Move if carry (CF=1).</td></tr>
+<tr>
+<td>0F 44 <em>/r</em></td>
+<td>CMOVE <em>r16, r/m16</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move if equal (ZF=1).</td></tr>
+<tr>
+<td>0F 44 <em>/r</em></td>
+<td>CMOVE <em>r32, r/m32</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move if equal (ZF=1).</td></tr>
+<tr>
+<td>REX.W + 0F 44 <em>/r</em></td>
+<td>CMOVE <em>r64, r/m64</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Move if equal (ZF=1).</td></tr>
+<tr>
+<td>0F 4F <em>/r</em></td>
+<td>CMOVG <em>r16, r/m16</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move if greater (ZF=0 and SF=OF).</td></tr>
+<tr>
+<td>0F 4F <em>/r</em></td>
+<td>CMOVG <em>r32, r/m32</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move if greater (ZF=0 and SF=OF).</td></tr>
+<tr>
+<td>REX.W + 0F 4F <em>/r</em></td>
+<td>CMOVG <em>r64, r/m64</em></td>
+<td>RM</td>
+<td>V/N.E.</td>
+<td>NA</td>
+<td>Move if greater (ZF=0 and SF=OF).</td></tr>
+<tr>
+<td>0F 4D <em>/r</em></td>
+<td>CMOVGE <em>r16, r/m16</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move if greater or equal (SF=OF).</td></tr>
+<tr>
+<td>0F 4D <em>/r</em></td>
+<td>CMOVGE <em>r32, r/m32</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move if greater or equal (SF=OF).</td></tr>
+<tr>
+<td>REX.W + 0F 4D <em>/r</em></td>
+<td>CMOVGE <em>r64, r/m64</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Move if greater or equal (SF=OF).</td></tr>
+<tr>
+<td>0F 4C <em>/r</em></td>
+<td>CMOVL <em>r16, r/m16</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move if less (SF≠ OF).</td></tr>
+<tr>
+<td>0F 4C <em>/r</em></td>
+<td>CMOVL <em>r32, r/m32</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move if less (SF≠ OF).</td></tr>
+<tr>
+<td>REX.W + 0F 4C <em>/r</em></td>
+<td>CMOVL <em>r64, r/m64</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Move if less (SF≠ OF).</td></tr>
+<tr>
+<td>0F 4E <em>/r</em></td>
+<td>CMOVLE <em>r16, r/m16</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move if less or equal (ZF=1 or SF≠ OF).</td></tr>
+<tr>
+<td>0F 4E <em>/r</em></td>
+<td>CMOVLE <em>r32, r/m32</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move if less or equal (ZF=1 or SF≠ OF).</td></tr>
+<tr>
+<td>REX.W + 0F 4E <em>/r</em></td>
+<td>CMOVLE <em>r64, r/m64</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Move if less or equal (ZF=1 or SF≠ OF).</td></tr>
+<tr>
+<td>0F 46 <em>/r</em></td>
+<td>CMOVNA <em>r16, r/m16</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move if not above (CF=1 or ZF=1).</td></tr>
+<tr>
+<td>0F 46 <em>/r</em></td>
+<td>CMOVNA <em>r32, r/m32</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move if not above (CF=1 or ZF=1).</td></tr>
+<tr>
+<td>REX.W + 0F 46 <em>/r</em></td>
+<td>CMOVNA <em>r64, r/m64</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Move if not above (CF=1 or ZF=1).</td></tr>
+<tr>
+<td>0F 42 <em>/r</em></td>
+<td>CMOVNAE <em>r16, r/m16</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move if not above or equal (CF=1).</td></tr>
+<tr>
+<td>0F 42 <em>/r</em></td>
+<td>CMOVNAE <em>r32, r/m32</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move if not above or equal (CF=1).</td></tr>
+<tr>
+<td>REX.W + 0F 42 <em>/r</em></td>
+<td>CMOVNAE <em>r64, r/m64</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Move if not above or equal (CF=1).</td></tr>
+<tr>
+<td>0F 43 <em>/r</em></td>
+<td>CMOVNB <em>r16, r/m16</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move if not below (CF=0).</td></tr>
+<tr>
+<td>0F 43 <em>/r</em></td>
+<td>CMOVNB <em>r32, r/m32</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move if not below (CF=0).</td></tr>
+<tr>
+<td>REX.W + 0F 43 <em>/r</em></td>
+<td>CMOVNB <em>r64, r/m64</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Move if not below (CF=0).</td></tr>
+<tr>
+<td>0F 47 <em>/r</em></td>
+<td>CMOVNBE <em>r16, r/m16</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move if not below or equal (CF=0 and ZF=0).</td></tr></table>
+<table>
+<tr>
+<th>Opcode</th>
+<th>Instruction</th>
+<th>Op/En</th>
+<th>64-Bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>0F 47 <em>/r</em></td>
+<td>CMOVNBE <em>r32, r/m32</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move if not below or equal (CF=0 and ZF=0).</td></tr>
+<tr>
+<td>REX.W + 0F 47 <em>/r</em></td>
+<td>CMOVNBE <em>r64, r/m64</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Move if not below or equal (CF=0 and ZF=0).</td></tr>
+<tr>
+<td>0F 43 <em>/r</em></td>
+<td>CMOVNC <em>r16, r/m16</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move if not carry (CF=0).</td></tr>
+<tr>
+<td>0F 43 <em>/r</em></td>
+<td>CMOVNC <em>r32, r/m32</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move if not carry (CF=0).</td></tr>
+<tr>
+<td>REX.W + 0F 43 <em>/r</em></td>
+<td>CMOVNC <em>r64, r/m64</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Move if not carry (CF=0).</td></tr>
+<tr>
+<td>0F 45 <em>/r</em></td>
+<td>CMOVNE <em>r16, r/m16</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move if not equal (ZF=0).</td></tr>
+<tr>
+<td>0F 45 <em>/r</em></td>
+<td>CMOVNE <em>r32, r/m32</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move if not equal (ZF=0).</td></tr>
+<tr>
+<td>REX.W + 0F 45 <em>/r</em></td>
+<td>CMOVNE <em>r64, r/m64</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Move if not equal (ZF=0).</td></tr>
+<tr>
+<td>0F 4E <em>/r</em></td>
+<td>CMOVNG <em>r16, r/m16</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move if not greater (ZF=1 or SF≠ OF).</td></tr>
+<tr>
+<td>0F 4E <em>/r</em></td>
+<td>CMOVNG <em>r32, r/m32</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move if not greater (ZF=1 or SF≠ OF).</td></tr>
+<tr>
+<td>REX.W + 0F 4E <em>/r</em></td>
+<td>CMOVNG <em>r64, r/m64</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Move if not greater (ZF=1 or SF≠ OF).</td></tr>
+<tr>
+<td>0F 4C <em>/r</em></td>
+<td>CMOVNGE <em>r16, r/m16</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move if not greater or equal (SF≠ OF).</td></tr>
+<tr>
+<td>0F 4C <em>/r</em></td>
+<td>CMOVNGE <em>r32, r/m32</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move if not greater or equal (SF≠ OF).</td></tr>
+<tr>
+<td>REX.W + 0F 4C <em>/r</em></td>
+<td>CMOVNGE <em>r64, r/m64</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Move if not greater or equal (SF≠ OF).</td></tr>
+<tr>
+<td>0F 4D <em>/r</em></td>
+<td>CMOVNL <em>r16, r/m16</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move if not less (SF=OF).</td></tr>
+<tr>
+<td>0F 4D <em>/r</em></td>
+<td>CMOVNL <em>r32, r/m32</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move if not less (SF=OF).</td></tr>
+<tr>
+<td>REX.W + 0F 4D <em>/r</em></td>
+<td>CMOVNL <em>r64, r/m64</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Move if not less (SF=OF).</td></tr>
+<tr>
+<td>0F 4F <em>/r</em></td>
+<td>CMOVNLE <em>r16, r/m16</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move if not less or equal (ZF=0 and SF=OF).</td></tr>
+<tr>
+<td>0F 4F <em>/r</em></td>
+<td>CMOVNLE <em>r32, r/m32</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move if not less or equal (ZF=0 and SF=OF).</td></tr>
+<tr>
+<td>REX.W + 0F 4F <em>/r</em></td>
+<td>CMOVNLE <em>r64, r/m64</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Move if not less or equal (ZF=0 and SF=OF).</td></tr>
+<tr>
+<td>0F 41 <em>/r</em></td>
+<td>CMOVNO <em>r16, r/m16</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move if not overflow (OF=0).</td></tr>
+<tr>
+<td>0F 41 <em>/r</em></td>
+<td>CMOVNO <em>r32, r/m32</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move if not overflow (OF=0).</td></tr>
+<tr>
+<td>REX.W + 0F 41 <em>/r</em></td>
+<td>CMOVNO <em>r64, r/m64</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Move if not overflow (OF=0).</td></tr>
+<tr>
+<td>0F 4B <em>/r</em></td>
+<td>CMOVNP <em>r16, r/m16</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move if not parity (PF=0).</td></tr>
+<tr>
+<td>0F 4B <em>/r</em></td>
+<td>CMOVNP <em>r32, r/m32</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move if not parity (PF=0).</td></tr>
+<tr>
+<td>REX.W + 0F 4B <em>/r</em></td>
+<td>CMOVNP <em>r64, r/m64</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Move if not parity (PF=0).</td></tr>
+<tr>
+<td>0F 49 <em>/r</em></td>
+<td>CMOVNS <em>r16, r/m16</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move if not sign (SF=0).</td></tr>
+<tr>
+<td>0F 49 <em>/r</em></td>
+<td>CMOVNS <em>r32, r/m32</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move if not sign (SF=0).</td></tr>
+<tr>
+<td>REX.W + 0F 49 <em>/r</em></td>
+<td>CMOVNS <em>r64, r/m64</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Move if not sign (SF=0).</td></tr>
+<tr>
+<td>0F 45 <em>/r</em></td>
+<td>CMOVNZ <em>r16, r/m16</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move if not zero (ZF=0).</td></tr>
+<tr>
+<td>0F 45 <em>/r</em></td>
+<td>CMOVNZ <em>r32, r/m32</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move if not zero (ZF=0).</td></tr>
+<tr>
+<td>REX.W + 0F 45 <em>/r</em></td>
+<td>CMOVNZ <em>r64, r/m64</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Move if not zero (ZF=0).</td></tr>
+<tr>
+<td>0F 40 <em>/r</em></td>
+<td>CMOVO <em>r16, r/m16</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move if overflow (OF=1).</td></tr>
+<tr>
+<td>0F 40 <em>/r</em></td>
+<td>CMOVO <em>r32, r/m32</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move if overflow (OF=1).</td></tr>
+<tr>
+<td>REX.W + 0F 40 <em>/r</em></td>
+<td>CMOVO <em>r64, r/m64</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Move if overflow (OF=1).</td></tr>
+<tr>
+<td>0F 4A <em>/r</em></td>
+<td>CMOVP <em>r16, r/m16</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move if parity (PF=1).</td></tr>
+<tr>
+<td>0F 4A <em>/r</em></td>
+<td>CMOVP <em>r32, r/m32</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move if parity (PF=1).</td></tr>
+<tr>
+<td>REX.W + 0F 4A <em>/r</em></td>
+<td>CMOVP <em>r64, r/m64</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Move if parity (PF=1).</td></tr>
+<tr>
+<td>0F 4A <em>/r</em></td>
+<td>CMOVPE <em>r16, r/m16</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move if parity even (PF=1).</td></tr>
+<tr>
+<td>0F 4A <em>/r</em></td>
+<td>CMOVPE <em>r32, r/m32</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move if parity even (PF=1).</td></tr>
+<tr>
+<td>REX.W + 0F 4A <em>/r</em></td>
+<td>CMOVPE <em>r64, r/m64</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Move if parity even (PF=1).</td></tr></table>
+<table>
+<tr>
+<th>Opcode</th>
+<th>Instruction</th>
+<th>Op/En</th>
+<th>64-Bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>0F 4B <em>/r</em></td>
+<td>CMOVPO <em>r16, r/m16</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move if parity odd (PF=0).</td></tr>
+<tr>
+<td>0F 4B <em>/r</em></td>
+<td>CMOVPO <em>r32, r/m32</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move if parity odd (PF=0).</td></tr>
+<tr>
+<td>REX.W + 0F 4B <em>/r</em></td>
+<td>CMOVPO <em>r64, r/m64</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Move if parity odd (PF=0).</td></tr>
+<tr>
+<td>0F 48 <em>/r</em></td>
+<td>CMOVS <em>r16, r/m16</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move if sign (SF=1).</td></tr>
+<tr>
+<td>0F 48 <em>/r</em></td>
+<td>CMOVS <em>r32, r/m32</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move if sign (SF=1).</td></tr>
+<tr>
+<td>REX.W + 0F 48 <em>/r</em></td>
+<td>CMOVS <em>r64, r/m64</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Move if sign (SF=1).</td></tr>
+<tr>
+<td>0F 44 <em>/r</em></td>
+<td>CMOVZ <em>r16, r/m16</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move if zero (ZF=1).</td></tr>
+<tr>
+<td>0F 44 <em>/r</em></td>
+<td>CMOVZ <em>r32, r/m32</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move if zero (ZF=1).</td></tr>
+<tr>
+<td>REX.W + 0F 44 <em>/r</em></td>
+<td>CMOVZ <em>r64, r/m64</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Move if zero (ZF=1).</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RM</td>
+<td>ModRM:reg (r, w)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>The CMOV<em>cc</em> instructions check the state of one or more of the status flags in the EFLAGS register (CF, OF, PF, SF, and ZF) and perform a move operation if the flags are in a specified state (or condition). A condition code (<em>cc</em>) is associated with each instruction to indicate the condition being tested for. If the condition is not satisfied, a move is not performed and execution continues with the instruction following the CMOV<em>cc</em> instruction.</p>
+<p>These instructions can move 16-bit, 32-bit or 64-bit values from memory to a general-purpose register or from one general-purpose register to another. Conditional moves of 8-bit register operands are not supported.</p>
+<p>The condition for each CMOV<em>cc</em> mnemonic is given in the description column of the above table. The terms “less” and “greater” are used for comparisons of signed integers and the terms “above” and “below” are used for unsigned integers.</p>
+<p>Because a particular state of the status flags can sometimes be interpreted in two ways, two mnemonics are defined for some opcodes. For example, the CMOVA (conditional move if above) instruction and the CMOVNBE (conditional move if not below or equal) instruction are alternate mnemonics for the opcode 0F 47H.</p>
+<p>The CMOV<em>cc</em> instructions were introduced in P6 family processors; however, these instructions may not be supported by all IA-32 processors. Software can determine if the CMOV<em>cc</em> instructions are supported by checking the processor’s feature information with the CPUID instruction (see “CPUID—CPU Identification” in this chapter).</p>
+<p>In 64-bit mode, the instruction’s default operation size is 32 bits. Use of the REX.R prefix permits access to addi-tional registers (R8-R15). Use of the REX.W prefix promotes operation to 64 bits. See the summary chart at the beginning of this section for encoding data and limits.</p>
+<h2>Operation</h2>
+<pre>temp ← SRC
+IF condition TRUE
+    THEN
+         DEST ← temp;
+    FI;
+ELSE
+    IF (OperandSize = 32 and IA-32e mode active)
+         THEN
+              DEST[63:32] ← 0;
+    FI;
+FI;</pre>
+<h2>Flags Affected</h2>
+<p>None.</p>
+<h2>Protected Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>
+<p>If a memory operand effective address is outside the CS, DS, ES, FS, or GS segment limit.</p>
+<p>If the DS, ES, FS, or GS register contains a NULL segment selector.</p></td></tr>
+<tr>
+<td>#SS(0)</td>
+<td>If a memory operand effective address is outside the SS segment limit.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and an unaligned memory reference is made while the current privilege level is 3.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Real-Address Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP</td>
+<td>If a memory operand effective address is outside the CS, DS, ES, FS, or GS segment limit.</td></tr>
+<tr>
+<td>#SS</td>
+<td>If a memory operand effective address is outside the SS segment limit.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Virtual-8086 Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>If a memory operand effective address is outside the CS, DS, ES, FS, or GS segment limit.</td></tr>
+<tr>
+<td>#SS(0)</td>
+<td>If a memory operand effective address is outside the SS segment limit.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and an unaligned memory reference is made.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Compatibility Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>64-Bit Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#SS(0)</td>
+<td>If a memory address referencing the SS segment is in a non-canonical form.</td></tr>
+<tr>
+<td>#GP(0)</td>
+<td>If the memory address is in a non-canonical form.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and an unaligned memory reference is made while the current privilege level is 3.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table></body></html>

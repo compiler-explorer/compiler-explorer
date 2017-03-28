@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>FCLEX/FNCLEX—Clear Exceptions </title></head>
+<body>
+<h1>FCLEX/FNCLEX—Clear Exceptions</h1>
+<table>
+<tr>
+<th>Opcode*</th>
+<th>Instruction</th>
+<th>64-Bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>9B DB E2</td>
+<td>FCLEX</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Clear floating-point exception flags after checking for pending unmasked floating-point exceptions.</td></tr>
+<tr>
+<td>DB E2</td>
+<td>FNCLEX<sup>*</sup></td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Clear floating-point exception flags without checking for pending unmasked floating-point exceptions.</td></tr></table>
+<p><strong>NOTES:</strong></p>
+<p>*</p>
+<p>See IA-32 Architecture Compatibility section below.</p>
+<h2>Description</h2>
+<p>Clears the floating-point exception flags (PE, UE, OE, ZE, DE, and IE), the exception summary status flag (ES), the stack fault flag (SF), and the busy flag (B) in the FPU status word. The FCLEX instruction checks for and handles any pending unmasked floating-point exceptions before clearing the exception flags; the FNCLEX instruction does not.</p>
+<p>The assembler issues two instructions for the FCLEX instruction (an FWAIT instruction followed by an FNCLEX instruction), and the processor executes each of these instructions separately. If an exception is generated for either of these instructions, the save EIP points to the instruction that caused the exception.</p>
+<h2>IA-32 Architecture Compatibility</h2>
+<p>When operating a Pentium or Intel486 processor in MS-DOS* compatibility mode, it is possible (under unusual circumstances) for an FNCLEX instruction to be interrupted prior to being executed to handle a pending FPU excep-tion. See the section titled “No-Wait FPU Instructions Can Get FPU Interrupt in Window” in Appendix D of the <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 1</em>, for a description of these circumstances. An FNCLEX instruction cannot be interrupted in this way on a Pentium 4, Intel Xeon, or P6 family processor.</p>
+<p>This instruction affects only the x87 FPU floating-point exception flags. It does not affect the SIMD floating-point exception flags in the MXCRS register.</p>
+<p>This instruction’s operation is the same in non-64-bit modes and 64-bit mode.</p>
+<h2>Operation</h2>
+<table class="exception-table">
+<tr>
+<th>FPUStatusWord[0:7] ← 0;</th></tr>
+<tr>
+<th>FPUStatusWord[15] ← 0;</th></tr></table>
+<h2>FPU Flags Affected</h2>
+<p>The PE, UE, OE, ZE, DE, IE, ES, SF, and B flags in the FPU status word are cleared. The C0, C1, C2, and C3 flags are undefined.</p>
+<h2>Floating-Point Exceptions</h2>
+<p>None.</p>
+<h2>Protected Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#NM</td>
+<td>CR0.EM[bit 2] or CR0.TS[bit 3] = 1.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Real-Address Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>Virtual-8086 Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>Compatibility Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>64-Bit Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p></body></html>

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>FUCOM/FUCOMP/FUCOMPP—Unordered Compare Floating Point Values </title></head>
+<body>
+<h1>FUCOM/FUCOMP/FUCOMPP—Unordered Compare Floating Point Values</h1>
+<table>
+<tr>
+<th>Opcode</th>
+<th>Instruction</th>
+<th>64-Bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>DD E0+i</td>
+<td>FUCOM ST(i)</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Compare ST(0) with ST(i).</td></tr>
+<tr>
+<td>DD E1</td>
+<td>FUCOM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Compare ST(0) with ST(1).</td></tr>
+<tr>
+<td>DD E8+i</td>
+<td>FUCOMP ST(i)</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Compare ST(0) with ST(i) and pop register stack.</td></tr>
+<tr>
+<td>DD E9</td>
+<td>FUCOMP</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Compare ST(0) with ST(1) and pop register stack.</td></tr>
+<tr>
+<td>DA E9</td>
+<td>FUCOMPP</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Compare ST(0) with ST(1) and pop register stack twice.</td></tr></table>
+<h2>Description</h2>
+<p>Performs an unordered comparison of the contents of register ST(0) and ST(i) and sets condition code flags C0, C2, and C3 in the FPU status word according to the results (see the table below). If no operand is specified, the contents of registers ST(0) and ST(1) are compared. The sign of zero is ignored, so that –0.0 is equal to +0.0.</p>
+<h3>Table 3-51.  FUCOM/FUCOMP/FUCOMPP Results</h3>
+<table>
+<tr>
+<th>Comparison Results*</th>
+<th>C3</th>
+<th>C2</th>
+<th>C0</th></tr>
+<tr>
+<td>ST0 &gt; ST(i)</td>
+<td>0</td>
+<td>0</td>
+<td>0</td></tr>
+<tr>
+<td>ST0 &lt; ST(i)</td>
+<td>0</td>
+<td>0</td>
+<td>1</td></tr>
+<tr>
+<td>ST0 = ST(i)</td>
+<td>1</td>
+<td>0</td>
+<td>0</td></tr>
+<tr>
+<td>Unordered</td>
+<td>1</td>
+<td>1</td>
+<td>1</td></tr></table>
+<p><strong>NOTES:</strong></p>
+<p>*</p>
+<p>Flags not set if unmasked invalid-arithmetic-operand (#IA) exception is generated.</p>
+<p>An unordered comparison checks the class of the numbers being compared (see “FXAM—Examine ModR/M” in this chapter). The FUCOM/FUCOMP/FUCOMPP instructions perform the same operations as the FCOM/FCOMP/FCOMPP instructions. The only difference is that the FUCOM/FUCOMP/FUCOMPP instructions raise the invalid-arithmetic-operand exception (#IA) only when either or both operands are an SNaN or are in an unsupported format; QNaNs cause the condition code flags to be set to unordered, but do not cause an exception to be generated. The FCOM/FCOMP/FCOMPP instructions raise an invalid-operation exception when either or both of the operands are a NaN value of any kind or are in an unsupported format.</p>
+<p>As with the FCOM/FCOMP/FCOMPP instructions, if the operation results in an invalid-arithmetic-operand exception being raised, the condition code flags are set only if the exception is masked.</p>
+<p>The FUCOMP instruction pops the register stack following the comparison operation and the FUCOMPP instruction pops the register stack twice following the comparison operation. To pop the register stack, the processor marks the ST(0) register as empty and increments the stack pointer (TOP) by 1.</p>
+<p>This instruction’s operation is the same in non-64-bit modes and 64-bit mode.</p>
+<h2>Operation</h2>
+<pre>CASE (relation of operands) OF
+    ST &gt; SRC:
+                         C3, C2, C0 ← 000;
+    ST &lt; SRC:
+                         C3, C2, C0 ← 001;
+    ST = SRC:
+                         C3, C2, C0 ← 100;
+ESAC;
+IF ST(0) or SRC = QNaN, but not SNaN or unsupported format
+    THEN
+         C3, C2, C0 ← 111;
+    ELSE (* ST(0) or SRC is SNaN or unsupported format *)
+          #IA;
+         IF FPUControlWord.IM = 1
+              THEN
+                    C3, C2, C0 ← 111;
+         FI;
+FI;
+IF Instruction = FUCOMP
+    THEN
+         PopRegisterStack;
+FI;
+IF Instruction = FUCOMPP
+    THEN
+         PopRegisterStack;
+FI;</pre>
+<h2>FPU Flags Affected</h2>
+<table class="exception-table">
+<tr>
+<td>C1</td>
+<td>Set to 0 if stack underflow occurred.</td></tr>
+<tr>
+<td>C0, C2, C3</td>
+<td>See Table 3-51.</td></tr></table>
+<h2>Floating-Point Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#IS</td>
+<td>Stack underflow occurred.</td></tr>
+<tr>
+<td>#IA</td>
+<td>One or both operands are SNaN values or have unsupported formats. Detection of a QNaN value in and of itself does not raise an invalid-operand exception.</td></tr></table>
+<p>#D</p>
+<p>One or both operands are denormal values.</p>
+<h2>Protected Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#NM</td>
+<td>CR0.EM[bit 2] or CR0.TS[bit 3] = 1.</td></tr>
+<tr>
+<td>#MF</td>
+<td>If there is a pending x87 FPU exception.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Real-Address Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>Virtual-8086 Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>Compatibility Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>64-Bit Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p></body></html>

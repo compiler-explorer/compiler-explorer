@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>CLTS—Clear Task-Switched Flag in CR0 </title></head>
+<body>
+<h1>CLTS—Clear Task-Switched Flag in CR0</h1>
+<table>
+<tr>
+<th>Opcode</th>
+<th>Instruction</th>
+<th>Op/En</th>
+<th>64-bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>0F 06</td>
+<td>CLTS</td>
+<td>NP</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Clears TS flag in CR0.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>NP</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Clears the task-switched (TS) flag in the CR0 register. This instruction is intended for use in operating-system procedures. It is a privileged instruction that can only be executed at a CPL of 0. It is allowed to be executed in real-address mode to allow initialization for protected mode.</p>
+<p>The processor sets the TS flag every time a task switch occurs. The flag is used to synchronize the saving of FPU context in multitasking applications. See the description of the TS flag in the section titled “Control Registers” in Chapter 2 of the <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 3A</em>, for more information about this flag.</p>
+<p>CLTS operation is the same in non-64-bit modes and 64-bit mode.</p>
+<p>See Chapter 25, “VMX Non-Root Operation,” of the <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 3C</em>, for more information about the behavior of this instruction in VMX non-root operation.</p>
+<h2>Operation</h2>
+<pre>CR0.TS[bit 3] ← 0;</pre>
+<h2>Flags Affected</h2>
+<p>The TS flag in CR0 register is cleared.</p>
+<h2>Protected Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>If the current privilege level is not 0.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Real-Address Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Virtual-8086 Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>CLTS is not recognized in virtual-8086 mode.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Compatibility Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>64-Bit Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>If the CPL is greater than 0.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table></body></html>

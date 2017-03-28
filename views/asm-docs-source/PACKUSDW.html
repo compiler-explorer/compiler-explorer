@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>PACKUSDW — Pack with Unsigned Saturation </title></head>
+<body>
+<h1>PACKUSDW — Pack with Unsigned Saturation</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32 bit Mode Support</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>66 0F 38 2B /r PACKUSDW <em>xmm1, xmm2/m128</em></td>
+<td>RM</td>
+<td>V/V</td>
+<td>SSE4_1</td>
+<td>Convert 4 packed signed doubleword integers from <em>xmm1</em> and 4 packed signed doubleword integers from <em>xmm2/m128 </em>into 8 packed unsigned word integers in<em> xmm1</em> using unsigned saturation.</td></tr>
+<tr>
+<td>VEX.NDS.128.66.0F38.WIG 2B /r VPACKUSDW <em>xmm1, xmm2, xmm3/m128</em></td>
+<td>RVM</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Convert 4 packed signed doubleword integers from <em>xmm2</em> and 4 packed signed doubleword integers from <em>xmm3/m128</em> into 8 packed unsigned word integers in <em>xmm1</em> using unsigned saturation.</td></tr>
+<tr>
+<td>VEX.NDS.256.66.0F38.WIG 2B /r VPACKUSDW <em>ymm1, ymm2, ymm3/m256</em></td>
+<td>RVM</td>
+<td>V/V</td>
+<td>AVX2</td>
+<td>Convert 8 packed signed doubleword integers from <em>ymm2</em> and 8 packed signed doubleword integers from <em>ymm3/m128 </em>into 16 packed unsigned word integers in<em> ymm1</em> using unsigned saturation.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RM</td>
+<td>ModRM:reg (r, w)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td></tr>
+<tr>
+<td>RVM</td>
+<td>ModRM:reg (w)</td>
+<td>VEX.vvvv (r)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Converts packed signed doubleword integers into packed unsigned word integers using unsigned saturation to handle overflow conditions.  If the signed doubleword value is beyond the range of an unsigned word (that is, greater than FFFFH or less than 0000H), the saturated unsigned word integer value of FFFFH or 0000H, respec-tively, is stored in the destination.</p>
+<p>128-bit Legacy SSE version: The first source operand is an XMM register. The second operand can be an XMM register or a 128-bit memory location. The destination is not distinct from the first source XMM register and the upper bits (VLMAX-1:128) of the corresponding YMM register destination are unmodified.</p>
+<p>VEX.128 encoded version: The first source operand is an XMM register. The second source operand is an XMM register or 128-bit memory location. The destination operand is an XMM register. The upper bits (VLMAX-1:128) of the corresponding YMM register destination are zeroed.</p>
+<p>VEX.256 encoded version: The first source operand is a YMM register. The second source operand is a YMM register or a 256-bit memory location. The destination operand is a YMM register.</p>
+<p>Note: VEX.L must be 0, otherwise the instruction will #UD.</p>
+<h2>Operation</h2>
+<p><strong>PACKUSDW (Legacy SSE instruction)</strong></p>
+<pre>TMP[15:0] ← (DEST[31:0] &lt; 0) ? 0 : DEST[15:0];
+DEST[15:0] ← (DEST[31:0] &gt; FFFFH) ? FFFFH : TMP[15:0] ;
+TMP[31:16] ← (DEST[63:32] &lt; 0) ? 0 : DEST[47:32];
+DEST[31:16] ← (DEST[63:32] &gt; FFFFH) ? FFFFH : TMP[31:16] ;
+TMP[47:32] ← (DEST[95:64] &lt; 0) ? 0 : DEST[79:64];
+DEST[47:32] ← (DEST[95:64] &gt; FFFFH) ? FFFFH : TMP[47:32] ;
+TMP[63:48] ← (DEST[127:96] &lt; 0) ? 0 : DEST[111:96];
+DEST[63:48] ← (DEST[127:96] &gt; FFFFH) ? FFFFH : TMP[63:48] ;
+TMP[79:64] ← (SRC[31:0] &lt; 0) ? 0 : SRC[15:0];
+DEST[63:48] ← (SRC[31:0] &gt; FFFFH) ? FFFFH : TMP[79:64] ;
+TMP[95:80] ← (SRC[63:32] &lt; 0) ? 0 : SRC[47:32];
+DEST[95:80] ← (SRC[63:32] &gt; FFFFH) ? FFFFH : TMP[95:80] ;
+TMP[111:96] ← (SRC[95:64] &lt; 0) ? 0 : SRC[79:64];
+DEST[111:96] ← (SRC[95:64] &gt; FFFFH) ? FFFFH : TMP[111:96] ;
+TMP[127:112] ← (SRC[127:96] &lt; 0) ? 0 : SRC[111:96];
+DEST[127:112] ← (SRC[127:96] &gt; FFFFH) ? FFFFH : TMP[127:112] ;</pre>
+<p><strong>PACKUSDW (VEX.128 encoded version)</strong></p>
+<pre>TMP[15:0] ← (SRC1[31:0] &lt; 0) ? 0 : SRC1[15:0];
+DEST[15:0] ← (SRC1[31:0] &gt; FFFFH) ? FFFFH : TMP[15:0] ;
+TMP[31:16] ← (SRC1[63:32] &lt; 0) ? 0 : SRC1[47:32];
+DEST[31:16] ← (SRC1[63:32] &gt; FFFFH) ? FFFFH : TMP[31:16] ;
+TMP[47:32] ← (SRC1[95:64] &lt; 0) ? 0 : SRC1[79:64];
+DEST[47:32] ← (SRC1[95:64] &gt; FFFFH) ? FFFFH : TMP[47:32] ;
+TMP[63:48] ← (SRC1[127:96] &lt; 0) ? 0 : SRC1[111:96];
+DEST[63:48] ← (SRC1[127:96] &gt; FFFFH) ? FFFFH : TMP[63:48] ;
+TMP[79:64] ← (SRC2[31:0] &lt; 0) ? 0 : SRC2[15:0];
+DEST[63:48] ← (SRC2[31:0] &gt; FFFFH) ? FFFFH : TMP[79:64] ;
+TMP[95:80] ← (SRC2[63:32] &lt; 0) ? 0 : SRC2[47:32];
+DEST[95:80] ← (SRC2[63:32] &gt; FFFFH) ? FFFFH : TMP[95:80] ;
+TMP[111:96] ← (SRC2[95:64] &lt; 0) ? 0 : SRC2[79:64];
+DEST[111:96] ← (SRC2[95:64] &gt; FFFFH) ? FFFFH : TMP[111:96] ;
+TMP[127:112] ← (SRC2[127:96] &lt; 0) ? 0 : SRC2[111:96];
+DEST[127:112] ← (SRC2[127:96] &gt; FFFFH) ? FFFFH : TMP[127:112];
+DEST[VLMAX-1:128] ← 0;</pre>
+<p><strong>VPACKUSDW (VEX.256 encoded version)</strong></p>
+<pre>TMP[15:0] ← (SRC1[31:0] &lt; 0) ? 0 : SRC1[15:0];
+DEST[15:0] ← (SRC1[31:0] &gt; FFFFH) ? FFFFH : TMP[15:0] ;
+TMP[31:16] ← (SRC1[63:32] &lt; 0) ? 0 : SRC1[47:32];
+DEST[31:16] ← (SRC1[63:32] &gt; FFFFH) ? FFFFH : TMP[31:16] ;
+TMP[47:32] ← (SRC1[95:64] &lt; 0) ? 0 : SRC1[79:64];
+DEST[47:32] ← (SRC1[95:64] &gt; FFFFH) ? FFFFH : TMP[47:32] ;
+TMP[63:48] ← (SRC1[127:96] &lt; 0) ? 0 : SRC1[111:96];
+DEST[63:48] ← (SRC1[127:96] &gt; FFFFH) ? FFFFH : TMP[63:48] ;
+TMP[79:64] ← (SRC2[31:0] &lt; 0) ? 0 : SRC2[15:0];
+DEST[63:48] ← (SRC2[31:0] &gt; FFFFH) ? FFFFH : TMP[79:64] ;
+TMP[95:80] ← (SRC2[63:32] &lt; 0) ? 0 : SRC2[47:32];
+DEST[95:80] ← (SRC2[63:32] &gt; FFFFH) ? FFFFH : TMP[95:80] ;
+TMP[111:96] ← (SRC2[95:64] &lt; 0) ? 0 : SRC2[79:64];
+DEST[111:96] ← (SRC2[95:64] &gt; FFFFH) ? FFFFH : TMP[111:96] ;
+TMP[127:112] ← (SRC2[127:96] &lt; 0) ? 0 : SRC2[111:96];
+DEST[128:112] ← (SRC2[127:96] &gt; FFFFH) ? FFFFH : TMP[127:112] ;
+TMP[143:128] ← (SRC1[159:128] &lt; 0) ? 0 : SRC1[143:128];
+DEST[143:128] ← (SRC1[159:128] &gt; FFFFH) ? FFFFH : TMP[143:128] ;
+TMP[159:144] ← (SRC1[191:160] &lt; 0) ? 0 : SRC1[175:160];
+DEST[159:144] ← (SRC1[191:160] &gt; FFFFH) ? FFFFH : TMP[159:144] ;
+TMP[175:160] ← (SRC1[223:192] &lt; 0) ? 0 : SRC1[207:192];
+DEST[175:160] ← (SRC1[223:192] &gt; FFFFH) ? FFFFH : TMP[175:160] ;
+TMP[191:176] ← (SRC1[255:224] &lt; 0) ? 0 : SRC1[239:224];
+DEST[191:176] ← (SRC1[255:224] &gt; FFFFH) ? FFFFH : TMP[191:176] ;
+TMP[207:192] ← (SRC2[159:128] &lt; 0) ? 0 : SRC2[143:128];
+DEST[207:192] ← (SRC2[159:128] &gt; FFFFH) ? FFFFH : TMP[207:192] ;
+TMP[223:208] ← (SRC2[191:160] &lt; 0) ? 0 : SRC2[175:160];
+DEST[223:208] ← (SRC2[191:160] &gt; FFFFH) ? FFFFH : TMP[223:208] ;
+TMP[239:224] ← (SRC2[223:192] &lt; 0) ? 0 : SRC2[207:192];
+DEST[239:224] ← (SRC2[223:192] &gt; FFFFH) ? FFFFH : TMP[239:224] ;
+TMP[255:240] ← (SRC2[255:224] &lt; 0) ? 0 : SRC2[239:224];
+DEST[255:240] ← (SRC2[255:224] &gt; FFFFH) ? FFFFH : TMP[255:240] ;</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>(V)PACKUSDW: __m128i _mm_packus_epi32(__m128i m1, __m128i m2);</p>
+<p>VPACKUSDW:</p>
+<p>__m256i _mm256_packus_epi32(__m256i m1, __m256i m2);</p>
+<h2>Flags Affected</h2>
+<p>None.</p>
+<h2>SIMD Exceptions</h2>
+<p>None.</p>
+<h2>Other Exceptions</h2>
+<p>See Exceptions Type 4; additionally</p>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>If VEX.L = 1.</td></tr></table></body></html>

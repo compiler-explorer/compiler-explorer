@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>REP/REPE/REPZ/REPNE/REPNZ—Repeat String Operation Prefix </title></head>
+<body>
+<h1>REP/REPE/REPZ/REPNE/REPNZ—Repeat String Operation Prefix</h1>
+<table>
+<tr>
+<th>Opcode</th>
+<th>Instruction</th>
+<th>Op/En</th>
+<th>64-Bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>F3 6C</td>
+<td>REP INS <em>m8</em>, DX</td>
+<td>NP</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Input (E)CX bytes from port DX into ES:[(E)DI].</td></tr>
+<tr>
+<td>F3 6C</td>
+<td>REP INS <em>m8</em>, DX</td>
+<td>NP</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Input RCX bytes from port DX into [RDI].</td></tr>
+<tr>
+<td>F3 6D</td>
+<td>REP INS <em>m16</em>, DX</td>
+<td>NP</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Input (E)CX words from port DX into ES:[(E)DI.]</td></tr>
+<tr>
+<td>F3 6D</td>
+<td>REP INS <em>m32</em>, DX</td>
+<td>NP</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Input (E)CX doublewords from port DX into ES:[(E)DI].</td></tr>
+<tr>
+<td>F3 6D</td>
+<td>REP INS <em>r/m32</em>, DX</td>
+<td>NP</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Input RCX default size from port DX into [RDI].</td></tr>
+<tr>
+<td>F3 A4</td>
+<td>REP MOVS <em>m8, m8</em></td>
+<td>NP</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move (E)CX bytes from DS:[(E)SI] to ES:[(E)DI].</td></tr>
+<tr>
+<td>F3 REX.W A4</td>
+<td>REP MOVS <em>m8, m8</em></td>
+<td>NP</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Move RCX bytes from [RSI] to [RDI].</td></tr>
+<tr>
+<td>F3 A5</td>
+<td>REP MOVS <em>m16, m16</em></td>
+<td>NP</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move (E)CX words from DS:[(E)SI] to ES:[(E)DI].</td></tr>
+<tr>
+<td>F3 A5</td>
+<td>REP MOVS <em>m32, m32</em></td>
+<td>NP</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Move (E)CX doublewords from DS:[(E)SI] to ES:[(E)DI].</td></tr>
+<tr>
+<td>F3 REX.W A5</td>
+<td>REP MOVS <em>m64, m64</em></td>
+<td>NP</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Move RCX quadwords from [RSI] to [RDI].</td></tr>
+<tr>
+<td>F3 6E</td>
+<td>REP OUTS DX, <em>r/m8</em></td>
+<td>NP</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Output (E)CX bytes from DS:[(E)SI] to port DX.</td></tr>
+<tr>
+<td>F3 REX.W 6E</td>
+<td>REP OUTS DX, <em>r/m8*</em></td>
+<td>NP</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Output RCX bytes from [RSI] to port DX.</td></tr>
+<tr>
+<td>F3 6F</td>
+<td>REP OUTS DX, <em>r/m16</em></td>
+<td>NP</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Output (E)CX words from DS:[(E)SI] to port DX.</td></tr>
+<tr>
+<td>F3 6F</td>
+<td>REP OUTS DX, <em>r/m32</em></td>
+<td>NP</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Output (E)CX doublewords from DS:[(E)SI] to port DX.</td></tr>
+<tr>
+<td>F3 REX.W 6F</td>
+<td>REP OUTS DX, <em>r/m32</em></td>
+<td>NP</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Output RCX default size from [RSI] to port DX.</td></tr>
+<tr>
+<td>F3 AC</td>
+<td>REP LODS AL</td>
+<td>NP</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Load (E)CX bytes from DS:[(E)SI] to AL.</td></tr>
+<tr>
+<td>F3 REX.W AC</td>
+<td>REP LODS AL</td>
+<td>NP</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Load RCX bytes from [RSI] to AL.</td></tr>
+<tr>
+<td>F3 AD</td>
+<td>REP LODS AX</td>
+<td>NP</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Load (E)CX words from DS:[(E)SI] to AX.</td></tr>
+<tr>
+<td>F3 AD</td>
+<td>REP LODS EAX</td>
+<td>NP</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Load (E)CX doublewords from DS:[(E)SI] to EAX.</td></tr>
+<tr>
+<td>F3 REX.W AD</td>
+<td>REP LODS RAX</td>
+<td>NP</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Load RCX quadwords from [RSI] to RAX.</td></tr>
+<tr>
+<td>F3 AA</td>
+<td>REP STOS <em>m8</em></td>
+<td>NP</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Fill (E)CX bytes at ES:[(E)DI] with AL.</td></tr>
+<tr>
+<td>F3 REX.W AA</td>
+<td>REP STOS <em>m8</em></td>
+<td>NP</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Fill RCX bytes at [RDI] with AL.</td></tr>
+<tr>
+<td>F3 AB</td>
+<td>REP STOS <em>m16</em></td>
+<td>NP</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Fill (E)CX words at ES:[(E)DI] with AX.</td></tr>
+<tr>
+<td>F3 AB</td>
+<td>REP STOS <em>m32</em></td>
+<td>NP</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Fill (E)CX doublewords at ES:[(E)DI] with EAX.</td></tr>
+<tr>
+<td>F3 REX.W AB</td>
+<td>REP STOS <em>m64</em></td>
+<td>NP</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Fill RCX quadwords at [RDI] with RAX.</td></tr>
+<tr>
+<td>F3 A6</td>
+<td>REPE CMPS <em>m8, m8</em></td>
+<td>NP</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Find nonmatching bytes in ES:[(E)DI] and DS:[(E)SI].</td></tr>
+<tr>
+<td>F3 REX.W A6</td>
+<td>REPE CMPS <em>m8, m8</em></td>
+<td>NP</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Find non-matching bytes in [RDI] and [RSI].</td></tr>
+<tr>
+<td>F3 A7</td>
+<td>REPE CMPS <em>m16, m16</em></td>
+<td>NP</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Find nonmatching words in ES:[(E)DI] and DS:[(E)SI].</td></tr>
+<tr>
+<td>F3 A7</td>
+<td>REPE CMPS <em>m32, m32</em></td>
+<td>NP</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Find nonmatching doublewords in ES:[(E)DI] and DS:[(E)SI].</td></tr>
+<tr>
+<td>F3 REX.W A7</td>
+<td>REPE CMPS <em>m64, m64</em></td>
+<td>NP</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Find non-matching quadwords in [RDI] and [RSI].</td></tr>
+<tr>
+<td>F3 AE</td>
+<td>REPE SCAS <em>m8</em></td>
+<td>NP</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Find non-AL byte starting at ES:[(E)DI].</td></tr>
+<tr>
+<td>F3 REX.W AE</td>
+<td>REPE SCAS <em>m8</em></td>
+<td>NP</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Find non-AL byte starting at [RDI].</td></tr>
+<tr>
+<td>F3 AF</td>
+<td>REPE SCAS <em>m16</em></td>
+<td>NP</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Find non-AX word starting at ES:[(E)DI].</td></tr>
+<tr>
+<td>F3 AF</td>
+<td>REPE SCAS <em>m32</em></td>
+<td>NP</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Find non-EAX doubleword starting at ES:[(E)DI].</td></tr></table>
+<table>
+<tr>
+<th>Opcode</th>
+<th>Instruction</th>
+<th>Op/En</th>
+<th>64-Bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>F3 REX.W AF</td>
+<td>REPE SCAS <em>m64</em></td>
+<td>NP</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Find non-RAX quadword starting at [RDI].</td></tr>
+<tr>
+<td>F2 A6</td>
+<td>REPNE CMPS <em>m8, m8</em></td>
+<td>NP</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Find matching bytes in ES:[(E)DI] and DS:[(E)SI].</td></tr>
+<tr>
+<td>F2 REX.W A6</td>
+<td>REPNE CMPS <em>m8, m8</em></td>
+<td>NP</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Find matching bytes in [RDI] and [RSI].</td></tr>
+<tr>
+<td>F2 A7</td>
+<td>REPNE CMPS <em>m16, m16</em></td>
+<td>NP</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Find matching words in ES:[(E)DI] and DS:[(E)SI].</td></tr>
+<tr>
+<td>F2 A7</td>
+<td>REPNE CMPS <em>m32, m32</em></td>
+<td>NP</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Find matching doublewords in ES:[(E)DI] and DS:[(E)SI].</td></tr>
+<tr>
+<td>F2 REX.W A7</td>
+<td>REPNE CMPS <em>m64, m64</em></td>
+<td>NP</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Find matching doublewords in [RDI] and [RSI].</td></tr>
+<tr>
+<td>F2 AE</td>
+<td>REPNE SCAS <em>m8</em></td>
+<td>NP</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Find AL, starting at ES:[(E)DI].</td></tr>
+<tr>
+<td>F2 REX.W AE</td>
+<td>REPNE SCAS <em>m8</em></td>
+<td>NP</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Find AL, starting at [RDI].</td></tr>
+<tr>
+<td>F2 AF</td>
+<td>REPNE SCAS <em>m16</em></td>
+<td>NP</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Find AX, starting at ES:[(E)DI].</td></tr>
+<tr>
+<td>F2 AF</td>
+<td>REPNE SCAS <em>m32</em></td>
+<td>NP</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Find EAX, starting at ES:[(E)DI].</td></tr>
+<tr>
+<td>F2 REX.W AF</td>
+<td>REPNE SCAS <em>m64</em></td>
+<td>NP</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Find RAX, starting at [RDI].</td></tr></table>
+<p><strong>NOTES:</strong></p>
+<p>*</p>
+<p>In 64-bit mode, r/m8 can not be encoded to access the following byte registers if a REX prefix is used: AH, BH, CH, DH.</p>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>NP</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Repeats a string instruction the number of times specified in the count register or until the indicated condition of the ZF flag is no longer met. The REP (repeat), REPE (repeat while equal), REPNE (repeat while not equal), REPZ (repeat while zero), and REPNZ (repeat while not zero) mnemonics are prefixes that can be added to one of the string instructions. The REP prefix can be added to the INS, OUTS, MOVS, LODS, and STOS instructions, and the REPE, REPNE, REPZ, and REPNZ prefixes can be added to the CMPS and SCAS instructions. (The REPZ and REPNZ prefixes are synonymous forms of the REPE and REPNE prefixes, respectively.) The F3H prefix is defined for the following instructions and undefined for the rest:</p>
+<p>The REP prefixes apply only to one string instruction at a time. To repeat a block of instructions, use the LOOP instruction or another looping construct. All of these repeat prefixes cause the associated instruction to be repeated until the count in register is decremented to 0. See Table 4-14.</p>
+<h3>Table 4-14.  Repeat Prefixes</h3>
+<table>
+<tr>
+<th>Repeat Prefix</th>
+<th>Termination Condition 1*</th>
+<th>Termination Condition 2</th></tr>
+<tr>
+<td>
+<p>REP</p>
+<p>REPE/REPZ</p>
+<p>REPNE/REPNZ</p></td>
+<td>
+<p>RCX or (E)CX = 0</p>
+<p>RCX or (E)CX = 0</p>
+<p>RCX or (E)CX = 0</p></td>
+<td>
+<p>None</p>
+<p>ZF = 0</p>
+<p>ZF = 1</p></td></tr></table>
+<p><strong>NOTES:</strong></p>
+<p>*</p>
+<p>Count register is CX, ECX or RCX by default, depending on attributes of the operating modes.</p>
+<p>The REPE, REPNE, REPZ, and REPNZ prefixes also check the state of the ZF flag after each iteration and terminate the repeat loop if the ZF flag is not in the specified state. When both termination conditions are tested, the cause of a repeat termination can be determined either by testing the count register with a JECXZ instruction or by testing the ZF flag (with a JZ, JNZ, or JNE instruction).</p>
+<p>When the REPE/REPZ and REPNE/REPNZ prefixes are used, the ZF flag does not require initialization because both the CMPS and SCAS instructions affect the ZF flag according to the results of the comparisons they make.</p>
+<p>A repeating string operation can be suspended by an exception or interrupt. When this happens, the state of the registers is preserved to allow the string operation to be resumed upon a return from the exception or interrupt handler. The source and destination registers point to the next string elements to be operated on, the EIP register points to the string instruction, and the ECX register has the value it held following the last successful iteration of the instruction. This mechanism allows long string operations to proceed without affecting the interrupt response time of the system.</p>
+<p>When a fault occurs during the execution of a CMPS or SCAS instruction that is prefixed with REPE or REPNE, the EFLAGS value is restored to the state prior to the execution of the instruction. Since the SCAS and CMPS instruc-tions do not use EFLAGS as an input, the processor can resume the instruction after the page fault handler.</p>
+<p>Use the REP INS and REP OUTS instructions with caution. Not all I/O ports can handle the rate at which these instructions execute. Note that a REP STOS instruction is the fastest way to initialize a large block of memory.</p>
+<p>In 64-bit mode, the operand size of the count register is associated with the address size attribute. Thus the default count register is RCX; REX.W has no effect on the address size and the count register. In 64-bit mode, if 67H is used to override address size attribute, the count register is ECX and any implicit source/destination operand will use the corresponding 32-bit index register. See the summary chart at the beginning of this section for encoding data and limits.</p>
+<h2>Operation</h2>
+<pre>IF AddressSize = 16
+    THEN
+        Use CX for CountReg;
+        Implicit Source/Dest operand for memory use of SI/DI;
+    ELSE IF AddressSize = 64
+        THEN Use RCX for CountReg;
+        Implicit Source/Dest operand for memory use of RSI/RDI;
+    ELSE
+        Use ECX for CountReg;
+        Implicit Source/Dest operand for memory use of ESI/EDI;
+FI;
+WHILE CountReg ≠ 0
+    DO
+         Service pending interrupts (if any);
+         Execute associated string instruction;
+         CountReg ← (CountReg – 1);
+         IF CountReg = 0
+              THEN exit WHILE loop; FI;
+         IF (Repeat prefix is REPZ or REPE) and (ZF = 0)
+         or (Repeat prefix is REPNZ or REPNE) and (ZF = 1)
+              THEN exit WHILE loop; FI;
+    OD;</pre>
+<h2>Flags Affected</h2>
+<p>None; however, the CMPS and SCAS instructions do set the status flags in the EFLAGS register.</p>
+<h2>Exceptions (All Operating Modes)</h2>
+<p>Exceptions may be generated by an instruction associated with the prefix.</p>
+<h2>64-Bit Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>If the memory address is in a non-canonical form.</td></tr></table></body></html>

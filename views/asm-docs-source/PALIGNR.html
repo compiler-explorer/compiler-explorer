@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>PALIGNR — Packed Align Right </title></head>
+<body>
+<h1>PALIGNR — Packed Align Right</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32 bit Mode Support</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>
+<p>0F 3A 0F /r ib<sup>1</sup></p>
+<p>PALIGNR <em>mm1, mm2/m64, imm8</em></p></td>
+<td>RMI</td>
+<td>V/V</td>
+<td>SSSE3</td>
+<td>Concatenate destination and source operands, extract byte-aligned result shifted to the right by constant value in <em>imm8</em> into <em>mm1</em>.</td></tr>
+<tr>
+<td>
+<p>66 0F 3A 0F /r ib</p>
+<p>PALIGNR <em>xmm1, xmm2/m128, imm8</em></p></td>
+<td>RMI</td>
+<td>V/V</td>
+<td>SSSE3</td>
+<td>Concatenate destination and source operands, extract byte-aligned result shifted to the right by constant value in <em>imm8</em> into <em>xmm1.</em></td></tr>
+<tr>
+<td>
+<p>VEX.NDS.128.66.0F3A.WIG 0F /r ib</p>
+<p>VPALIGNR <em>xmm1, xmm2, xmm3/m128, imm8</em></p></td>
+<td>RVMI</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Concatenate <em>xmm2 </em>and <em>xmm3/m128</em>, extract byte aligned result shifted to the right by constant value in<em> imm8 </em>and result is stored in <em>xmm1</em>.</td></tr>
+<tr>
+<td>
+<p>VEX.NDS.256.66.0F3A.WIG 0F /r ib</p>
+<p>VPALIGNR <em>ymm1, ymm2, ymm3/m256, imm8</em></p></td>
+<td>RVMI</td>
+<td>V/V</td>
+<td>AVX2</td>
+<td>Concatenate pairs of 16 bytes in ymm2 and <em>ymm3/m256</em> into 32-byte intermediate result, extract byte-aligned, 16-byte result shifted to the right by constant values in <em>imm8</em> from each intermediate result, and two 16-byte results are stored in <em>ymm1</em>.</td></tr></table>
+<p>NOTES:</p>
+<p>1. See note in Section 2.4, “Instruction Exception Specification” in the <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 2A</em> and Section 22.25.3, “Exception Conditions of Legacy SIMD Instructions Operating on MMX Registers” in the <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 3A</em>.</p>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RMI</td>
+<td>ModRM:reg (r, w)</td>
+<td>ModRM:r/m (r)</td>
+<td>imm8</td>
+<td>NA</td></tr>
+<tr>
+<td>RVMI</td>
+<td>ModRM:reg (w)</td>
+<td>VEX.vvvv (r)</td>
+<td>ModRM:r/m (r)</td>
+<td>imm8</td></tr></table>
+<h2>Description</h2>
+<p>(V)PALIGNR concatenates the destination operand (the first operand) and the source operand (the second operand) into an intermediate composite, shifts the composite at byte granularity to the right by a constant imme-diate, and extracts the right-aligned result into the destination. The first and the second operands can be an MMX, XMM or a YMM register. The immediate value is considered unsigned. Immediate shift counts larger than the 2L (i.e. 32 for 128-bit operands, or 16 for 64-bit operands) produce a zero result. Both operands can be MMX regis-ters, XMM registers or YMM registers. When the source operand is a 128-bit memory operand, the operand must be aligned on a 16-byte boundary or a general-protection exception (#GP) will be generated.</p>
+<p>In 64-bit mode, use the REX prefix to access additional registers.</p>
+<p>128-bit Legacy SSE version: Bits (VLMAX-1:128) of the corresponding YMM destination register remain unchanged.</p>
+<p>VEX.128 encoded version: The first source operand is an XMM register. The second source operand is an XMM register or 128-bit memory location. The destination operand is an XMM register. The upper bits (VLMAX-1:128) of the corresponding YMM register destination are zeroed.</p>
+<p>VEX.256 encoded version: The first source operand is a YMM register and contains two 16-byte blocks. The second source operand is a YMM register or a 256-bit memory location containing two 16-byte block. The destination operand is a YMM register and contain two 16-byte results. The imm8[7:0] is the common shift count used for the two lower 16-byte block sources and the two upper 16-byte block sources. The low 16-byte block of the two source</p>
+<p>operands produce the low 16-byte result of the destination operand, the high 16-byte block of the two source oper-ands produce the high 16-byte result of the destination operand.</p>
+<p>Concatenation is done with 128-bit data in the first and second source operand for both 128-bit and 256-bit instructions. The high 128-bits of the intermediate composite 256-bit result came from the 128-bit data from the first source operand; the low 128-bits of the intermediate result came from the 128-bit data of the second source operand.</p>
+<p>Note: VEX.L must be 0, otherwise the instruction will #UD.</p>
+<p>0</p>
+<p>127</p>
+<p>0</p>
+<p>127</p>
+<p>SRC1</p>
+<p>SRC2</p>
+<p>Imm8[7:0]*8</p>
+<p>255</p>
+<p>128</p>
+<p>128</p>
+<p>255</p>
+<p>SRC1</p>
+<p>SRC2</p>
+<p>Imm8[7:0]*8</p>
+<p>127</p>
+<p>0</p>
+<p>128</p>
+<p>255</p>
+<p>DEST</p>
+<p>DEST</p>
+<h3>Figure 4-3.  256-bit VPALIGN Instruction Operation</h3>
+<h2>Operation</h2>
+<p><strong>PALIGNR (with 64-bit operands)</strong></p>
+<pre>    temp1[127:0] = CONCATENATE(DEST,SRC)&gt;&gt;(imm8*8)
+    DEST[63:0] = temp1[63:0]</pre>
+<p><strong>PALIGNR (with 128-bit operands)</strong></p>
+<pre>temp1[255:0] ← ((DEST[127:0] &lt;&lt; 128) OR SRC[127:0])&gt;&gt;(imm8*8);
+DEST[127:0] ← temp1[127:0]
+DEST[VLMAX-1:128] (Unmodified)</pre>
+<p><strong>VPALIGNR (VEX.128 encoded version)</strong></p>
+<pre>temp1[255:0] ← ((SRC1[127:0] &lt;&lt; 128) OR SRC2[127:0])&gt;&gt;(imm8*8);
+DEST[127:0] ← temp1[127:0]
+DEST[VLMAX-1:128] ← 0</pre>
+<p><strong>VPALIGNR (VEX.256 encoded version)</strong></p>
+<pre>temp1[255:0] ← ((SRC1[127:0] &lt;&lt; 128) OR SRC2[127:0])&gt;&gt;(imm8[7:0]*8);
+DEST[127:0] ← temp1[127:0]
+temp1[255:0] ← ((SRC1[255:128] &lt;&lt; 128) OR SRC2[255:128])&gt;&gt;(imm8[7:0]*8);
+DEST[255:128] ← temp1[127:0]</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalents</h2>
+<p>PALIGNR:</p>
+<p> __m64 _mm_alignr_pi8 (__m64 a, __m64 b, int n)</p>
+<p>(V)PALIGNR:</p>
+<p> __m128i _mm_alignr_epi8 (__m128i a, __m128i b, int n)</p>
+<p>VPALIGNR:</p>
+<p> __m256i _mm256_alignr_epi8 (__m256i a, __m256i b, const int n)</p>
+<h2>SIMD Floating-Point Exceptions</h2>
+<p>None.</p>
+<h2>Other Exceptions</h2>
+<p>See Exceptions Type 4; additionally</p>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>If VEX.L = 1.</td></tr></table></body></html>

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>MOVUPS—Move Unaligned Packed Single-Precision Floating-Point Values </title></head>
+<body>
+<h1>MOVUPS—Move Unaligned Packed Single-Precision Floating-Point Values</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32-bit Mode</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>
+<p>0F 10 /<em>r</em></p>
+<p>MOVUPS <em>xmm1, xmm2/m128</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>SSE</td>
+<td>Move packed single-precision floating-point values from <em>xmm2/m128</em> to <em>xmm1</em>.</td></tr>
+<tr>
+<td>
+<p>VEX.128.0F.WIG 10 /r</p>
+<p>VMOVUPS <em>xmm1, xmm2/m128</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Move unaligned packed single-precision floating-point from <em>xmm2/mem</em> to <em>xmm1</em>.</td></tr>
+<tr>
+<td>
+<p>VEX.256.0F.WIG 10 /r</p>
+<p>VMOVUPS <em>ymm1, ymm2/m256</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Move unaligned packed single-precision floating-point from <em>ymm2/mem</em> to <em>ymm1</em>.</td></tr>
+<tr>
+<td>
+<p>0F 11 /<em>r</em></p>
+<p>MOVUPS <em>xmm2/m128, xmm1</em></p></td>
+<td>MR</td>
+<td>V/V</td>
+<td>SSE</td>
+<td>Move packed single-precision floating-point values from <em>xmm1</em> to <em>xmm2/m128</em>.</td></tr>
+<tr>
+<td>
+<p>VEX.128.0F.WIG 11 /r</p>
+<p>VMOVUPS <em>xmm2/m128, xmm1</em></p></td>
+<td>MR</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Move unaligned packed single-precision floating-point from <em>xmm1</em> to <em>xmm2/mem</em>.</td></tr>
+<tr>
+<td>
+<p>VEX.256.0F.WIG 11 /r</p>
+<p>VMOVUPS <em>ymm2/m256, ymm1</em></p></td>
+<td>MR</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Move unaligned packed single-precision floating-point from <em>ymm1</em> to <em>ymm2/mem</em>.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RM</td>
+<td>ModRM:reg (w)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td></tr>
+<tr>
+<td>MR</td>
+<td>ModRM:r/m (w)</td>
+<td>ModRM:reg (r)</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>128-bit versions: Moves a double quadword containing four packed single-precision floating-point values from the source operand (second operand) to the destination operand (first operand). This instruction can be used to load an XMM register from a 128-bit memory location, store the contents of an XMM register into a 128-bit memory location, or move data between two XMM registers.</p>
+<p>In 64-bit mode, use of the REX.R prefix permits this instruction to access additional registers (XMM8-XMM15).</p>
+<p>128-bit Legacy SSE version: Bits (VLMAX-1:128) of the corresponding YMM destination register remain unchanged.</p>
+<p>When the source or destination operand is a memory operand, the operand may be unaligned on a 16-byte boundary without causing a general-protection exception (#GP) to be generated.<sup>1</sup></p>
+<p>To move packed single-precision floating-point values to and from memory locations that are known to be aligned on 16-byte boundaries, use the MOVAPS instruction.</p>
+<p>While executing in 16-bit addressing mode, a linear address for a 128-bit data access that overlaps the end of a 16-bit segment is not allowed and is defined as reserved behavior. A specific processor implementation may or may not generate a general-protection exception (#GP) in this situation, and the address that spans the end of the segment may or may not wrap around to the beginning of the segment.</p>
+<p>VEX.128 encoded version: Bits (VLMAX-1:128) of the destination YMM register are zeroed.</p>
+<p>VEX.256 encoded version: Moves 256 bits of packed single-precision floating-point values from the source operand (second operand) to the destination operand (first operand). This instruction can be used to load a YMM register from a 256-bit memory location, to store the contents of a YMM register into a 256-bit memory location, or to move data between two YMM registers.</p>
+<p>Note: In VEX-encoded versions, VEX.vvvv is reserved and must be 1111b otherwise instructions will #UD.</p>
+<p>1.</p>
+<p>If alignment checking is enabled (CR0.AM = 1, RFLAGS.AC = 1, and CPL = 3), an alignment-check exception (#AC) may or may not be generated (depending on processor implementation) when the operand is not aligned on an 8-byte boundary.</p>
+<h2>Operation</h2>
+<p><strong>MOVUPS (128-bit load and register-copy form Legacy SSE version)</strong></p>
+<pre>DEST[127:0] ← SRC[127:0]
+DEST[VLMAX-1:128] (Unmodified)</pre>
+<p><strong>(V)MOVUPS (128-bit store form)</strong></p>
+<pre>DEST[127:0] ← SRC[127:0]</pre>
+<p><strong>VMOVUPS (VEX.128 encoded load-form)</strong></p>
+<pre>DEST[127:0] ← SRC[127:0]
+DEST[VLMAX-1:128] ← 0</pre>
+<p><strong>VMOVUPS (VEX.256 encoded version)</strong></p>
+<pre>DEST[255:0] ← SRC[255:0]</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>MOVUPS:</p>
+<p>__m128 _mm_loadu_ps(double * p)</p>
+<p>MOVUPS:</p>
+<p>void _mm_storeu_ps(double *p, __m128 a)</p>
+<p>VMOVUPS:</p>
+<p> __m256 _mm256_loadu_ps (__m256 * p);</p>
+<p>VMOVUPS:</p>
+<p> _mm256_storeu_ps(_m256 *p, __m256 a);</p>
+<h2>SIMD Floating-Point Exceptions</h2>
+<p>None.</p>
+<h2>Other Exceptions</h2>
+<p>See Exceptions Type 4</p>
+<p>Note treatment of #AC varies; additionally</p>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>If VEX.vvvv ≠ 1111B.</td></tr></table></body></html>

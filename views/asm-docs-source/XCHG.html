@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>XCHG—Exchange Register/Memory with Register </title></head>
+<body>
+<h1>XCHG—Exchange Register/Memory with Register</h1>
+<table>
+<tr>
+<th>Opcode</th>
+<th>Instruction</th>
+<th>Op/En</th>
+<th>64-Bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>90+<em>rw</em></td>
+<td>XCHG AX,<em> r16</em></td>
+<td>O</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Exchange <em>r16</em> with AX.</td></tr>
+<tr>
+<td>90+<em>rw</em></td>
+<td>XCHG <em>r16</em>, AX</td>
+<td>O</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Exchange AX with <em>r16.</em></td></tr>
+<tr>
+<td>90+<em>rd</em></td>
+<td>XCHG EAX, <em>r32</em></td>
+<td>O</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Exchange <em>r32</em> with EAX.</td></tr>
+<tr>
+<td>REX.W + 90+<em>rd</em></td>
+<td>XCHG RAX, <em>r64</em></td>
+<td>O</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Exchange <em>r64</em> with RAX.</td></tr>
+<tr>
+<td>90+<em>rd</em></td>
+<td>XCHG <em>r32</em>, EAX</td>
+<td>O</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Exchange EAX with <em>r32.</em></td></tr>
+<tr>
+<td>REX.W + 90+<em>rd</em></td>
+<td>XCHG <em>r64</em>, RAX</td>
+<td>O</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Exchange RAX with <em>r64.</em></td></tr>
+<tr>
+<td>86 /<em>r</em></td>
+<td>XCHG <em>r/m8, r8</em></td>
+<td>MR</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Exchange <em>r8</em> (byte register) with byte from <em>r/m8.</em></td></tr>
+<tr>
+<td>REX + 86 /<em>r</em></td>
+<td>XCHG <em>r/m8*, r8*</em></td>
+<td>MR</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Exchange <em>r8</em> (byte register) with byte from <em>r/m8.</em></td></tr>
+<tr>
+<td>86 /<em>r</em></td>
+<td>XCHG <em>r8, r/m8</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Exchange byte from <em>r/m8</em> with <em>r8</em> (byte register).</td></tr>
+<tr>
+<td>REX + 86 /<em>r</em></td>
+<td>XCHG <em>r8*, r/m8*</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Exchange byte from <em>r/m8</em> with <em>r8</em> (byte register).</td></tr>
+<tr>
+<td>87 /<em>r</em></td>
+<td>XCHG <em>r/m16, r16</em></td>
+<td>MR</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Exchange <em>r16</em> with word from<em> r/m16.</em></td></tr>
+<tr>
+<td>87 /<em>r</em></td>
+<td>XCHG <em>r16, r/m16</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Exchange word from<em> r/m16 </em>with <em>r16.</em></td></tr>
+<tr>
+<td>87 /<em>r</em></td>
+<td>XCHG <em>r/m32, r32</em></td>
+<td>MR</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Exchange <em>r32</em> with doubleword from <em>r/m32.</em></td></tr>
+<tr>
+<td>REX.W + 87 /<em>r</em></td>
+<td>XCHG <em>r/m64, r64</em></td>
+<td>MR</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Exchange <em>r64</em> with quadword from <em>r/m64.</em></td></tr>
+<tr>
+<td>87 /<em>r</em></td>
+<td>XCHG <em>r32, r/m32</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Exchange doubleword from<em> r/m32</em> with <em>r32.</em></td></tr>
+<tr>
+<td>REX.W + 87 /<em>r</em></td>
+<td>XCHG <em>r64, r/m64</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Exchange quadword from<em> r/m64</em> with <em>r64.</em></td></tr></table>
+<p><strong>NOTES:</strong></p>
+<p>*</p>
+<p>In 64-bit mode, r/m8 can not be encoded to access the following byte registers if a REX prefix is used: AH, BH, CH, DH.</p>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>O</td>
+<td>AX/EAX/RAX (r, w)</td>
+<td>opcode + rd (r, w)</td>
+<td>NA</td>
+<td>NA</td></tr>
+<tr>
+<td>O</td>
+<td>opcode + rd (r, w)</td>
+<td>AX/EAX/RAX (r, w)</td>
+<td>NA</td>
+<td>NA</td></tr>
+<tr>
+<td>MR</td>
+<td>ModRM:r/m (r, w)</td>
+<td>ModRM:reg (r)</td>
+<td>NA</td>
+<td>NA</td></tr>
+<tr>
+<td>RM</td>
+<td>ModRM:reg (w)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Exchanges the contents of the destination (first) and source (second) operands. The operands can be two general-purpose registers or a register and a memory location. If a memory operand is referenced, the processor’s locking protocol is automatically implemented for the duration of the exchange operation, regardless of the presence or absence of the LOCK prefix or of the value of the IOPL. (See the LOCK prefix description in this chapter for more information on the locking protocol.)</p>
+<p>This instruction is useful for implementing semaphores or similar data structures for process synchronization. (See “Bus Locking” in Chapter 8 of the <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 3A</em>, for more information on bus locking.)</p>
+<p>The XCHG instruction can also be used instead of the BSWAP instruction for 16-bit operands.</p>
+<p>In 64-bit mode, the instruction’s default operation size is 32 bits. Using a REX prefix in the form of REX.R permits access to additional registers (R8-R15). Using a REX prefix in the form of REX.W promotes operation to 64 bits. See the summary chart at the beginning of this section for encoding data and limits.</p>
+<h2>Operation</h2>
+<pre>TEMP ← DEST;
+DEST ← SRC;
+SRC ← TEMP;</pre>
+<h2>Flags Affected</h2>
+<p>None.</p>
+<h2>Protected Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>
+<p>If either operand is in a non-writable segment.</p>
+<p>If a memory operand effective address is outside the CS, DS, ES, FS, or GS segment limit.</p>
+<p>If the DS, ES, FS, or GS register contains a NULL segment selector.</p></td></tr>
+<tr>
+<td>#SS(0)</td>
+<td>If a memory operand effective address is outside the SS segment limit.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and an unaligned memory reference is made while the current privilege level is 3.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used but the destination is not a memory operand.</td></tr></table>
+<h2>Real-Address Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP</td>
+<td>If a memory operand effective address is outside the CS, DS, ES, FS, or GS segment limit.</td></tr>
+<tr>
+<td>#SS</td>
+<td>If a memory operand effective address is outside the SS segment limit.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used but the destination is not a memory operand.</td></tr></table>
+<h2>Virtual-8086 Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>If a memory operand effective address is outside the CS, DS, ES, FS, or GS segment limit.</td></tr>
+<tr>
+<td>#SS(0)</td>
+<td>If a memory operand effective address is outside the SS segment limit.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and an unaligned memory reference is made.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used but the destination is not a memory operand.</td></tr></table>
+<h2>Compatibility Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>64-Bit Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#SS(0)</td>
+<td>If a memory address referencing the SS segment is in a non-canonical form.</td></tr>
+<tr>
+<td>#GP(0)</td>
+<td>If the memory address is in a non-canonical form.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and an unaligned memory reference is made while the current privilege level is 3.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used but the destination is not a memory operand.</td></tr></table></body></html>

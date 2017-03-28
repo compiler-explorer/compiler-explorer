@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>VCVTPH2PS—Convert 16-bit FP Values to Single-Precision FP Values </title></head>
+<body>
+<h1>VCVTPH2PS—Convert 16-bit FP Values to Single-Precision FP Values</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32-bit Mode</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>
+<p>VEX.256.66.0F38.W0 13 /r</p>
+<p>VCVTPH2PS <em>ymm1, xmm2/m128</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>F16C</td>
+<td>Convert eight packed half precision (16-bit) floating-point values in <em>xmm2/m128</em> to packed single-precision floating-point value in <em>ymm1</em>.</td></tr>
+<tr>
+<td>
+<p>VEX.128.66.0F38.W0 13 /r</p>
+<p>VCVTPH2PS <em>xmm1, xmm2/m64</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>F16C</td>
+<td>Convert four packed half precision (16-bit) floating-point values in <em>xmm2/m64 </em>to packed single-precision floating-point value in <em>xmm1</em>.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RM</td>
+<td>ModRM:reg (w)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Converts four/eight packed half precision (16-bits) floating-point values in the low-order 64/128 bits of an XMM/YMM register or 64/128-bit memory location to four/eight packed single-precision floating-point values and writes the converted values into the destination XMM/YMM register.</p>
+<p>If case of a denormal operand, the correct normal result is returned. MXCSR.DAZ is ignored and is treated as if it 0. No denormal exception is reported on MXCSR.</p>
+<p>128-bit version: The source operand is a XMM register or 64-bit memory location. The destination operand is a XMM register. The upper bits (VLMAX-1:128) of the corresponding destination YMM register are zeroed.</p>
+<p>256-bit version: The source operand is a XMM register or 128-bit memory location. The destination operand is a YMM register.</p>
+<p> The diagram below illustrates how data is converted from four packed half precision (in 64 bits) to four single precision (in 128 bits) FP values. Note: VEX.vvvv is reserved (must be 1111b).</p>
+<svg width="594.089985" viewBox="103.440000 808295.999995 396.059990 129.840000" height="194.76">
+<text y="808320.081671" x="194.2797" style="font-size:6.687400pt" lengthAdjust="spacingAndGlyphs" textLength="41.63642114">VCVTPH2PS xmm1, xmm2/mem64,  imm8</text>
+<text y="808329.442171" x="114.6608" style="font-size:6.687400pt" lengthAdjust="spacingAndGlyphs" textLength="68.36796516">127                              96</text>
+<text y="808329.442171" x="194.2803" style="font-size:6.687400pt" lengthAdjust="spacingAndGlyphs" textLength="67.9473277">95                                64</text>
+<text y="808329.442171" x="273.8998" style="font-size:6.687400pt" lengthAdjust="spacingAndGlyphs" textLength="33.10530496">63           48</text>
+<text y="808329.442171" x="313.6798" style="font-size:6.687400pt" lengthAdjust="spacingAndGlyphs" textLength="33.16549156">47           32</text>
+<text y="808329.442171" x="353.52" style="font-size:6.687400pt" lengthAdjust="spacingAndGlyphs" textLength="33.10530496">31           16</text>
+<text y="808329.442171" x="393.3" style="font-size:6.687400pt" lengthAdjust="spacingAndGlyphs" textLength="32.7448541">15             0</text>
+<text y="808338.801871" x="443.039" style="font-size:6.687400pt" lengthAdjust="spacingAndGlyphs" textLength="41.8865299">xmm2/mem64</text>
+<text y="808338.802171" x="285.06" style="font-size:6.687400pt" lengthAdjust="spacingAndGlyphs" textLength="12.83847052">VH3</text>
+<text y="808338.802171" x="324.9" style="font-size:6.687400pt" lengthAdjust="spacingAndGlyphs" textLength="12.83847052">VH2</text>
+<text y="808338.802171" x="364.68" style="font-size:6.687400pt" lengthAdjust="spacingAndGlyphs" textLength="12.83847052">VH1</text>
+<text y="808338.802171" x="404.46" style="font-size:6.687400pt" lengthAdjust="spacingAndGlyphs" textLength="12.89865712">VH0</text>
+<text y="808371.502171" x="359.28" style="font-size:6.687400pt" lengthAdjust="spacingAndGlyphs" textLength="21.767487">convert</text>
+<text y="808371.502171" x="399.12" style="font-size:6.687400pt" lengthAdjust="spacingAndGlyphs" textLength="21.7073004">convert</text>
+<text y="808380.862171" x="140.4" style="font-size:6.687400pt" lengthAdjust="spacingAndGlyphs" textLength="21.7073004">convert</text>
+<text y="808380.862171" x="219.96" style="font-size:6.687400pt" lengthAdjust="spacingAndGlyphs" textLength="21.76481204">convert</text>
+<text y="808404.261971" x="114.6608" style="font-size:6.687400pt" lengthAdjust="spacingAndGlyphs" textLength="68.36796516">127                              96</text>
+<text y="808404.261971" x="194.2803" style="font-size:6.687400pt" lengthAdjust="spacingAndGlyphs" textLength="67.9473277">95                                64</text>
+<text y="808404.261971" x="273.8998" style="font-size:6.687400pt" lengthAdjust="spacingAndGlyphs" textLength="67.9473277">63                                32</text>
+<text y="808404.261971" x="353.5193" style="font-size:6.687400pt" lengthAdjust="spacingAndGlyphs" textLength="67.52669024">31                                  0</text>
+<text y="808413.622071" x="145.8" style="font-size:6.687400pt" lengthAdjust="spacingAndGlyphs" textLength="12.83847052">VS3</text>
+<text y="808413.622071" x="225.36" style="font-size:6.687400pt" lengthAdjust="spacingAndGlyphs" textLength="12.83847052">VS2</text>
+<text y="808413.622071" x="304.98" style="font-size:6.687400pt" lengthAdjust="spacingAndGlyphs" textLength="12.83847052">VS1</text>
+<text y="808413.622071" x="384.6" style="font-size:6.687400pt" lengthAdjust="spacingAndGlyphs" textLength="12.83847052">VS0</text>
+<text y="808413.622171" x="443.039" style="font-size:6.687400pt" lengthAdjust="spacingAndGlyphs" textLength="17.8185773">xmm1</text>
+<rect y="808374.78" x="217.62" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="9.29999999993" width="28.32"></rect>
+<rect y="808374.78" x="138.0" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="9.29999999993" width="28.32"></rect>
+<rect y="808365.42" x="396.72" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="9.35999999999" width="28.32"></rect>
+<rect y="808365.42" x="356.88" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="9.35999999999" width="28.38"></rect>
+<rect y="808332.661008" x="311.3883122" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="9.35997864499" width="39.7784346"></rect>
+<rect y="808332.661008" x="351.1667468" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="9.35997864499" width="39.7784346"></rect>
+<rect y="808332.66" x="311.4" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="9.35999999999" width="39.78"></rect>
+<rect y="808332.66" x="351.18" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="9.35999999999" width="39.78"></rect>
+<rect y="808332.661008" x="390.9451814" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="9.35997864499" width="39.8384182"></rect>
+<rect y="808332.661008" x="271.549894" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="9.35997864499" width="39.8384182"></rect>
+<rect y="808332.66" x="390.96" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="9.35999999999" width="39.84"></rect>
+<rect y="808332.66" x="271.56" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="9.35999999999" width="39.84"></rect>
+<rect y="808332.661008" x="191.9930248" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="9.35997864499" width="79.5568692"></rect>
+<rect y="808407.48089" x="191.9930248" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="9.35997864499" width="79.5568692"></rect>
+<rect y="808332.66" x="192.0" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="9.35999999999" width="79.56"></rect>
+<rect y="808407.48" x="192.0" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="9.35999999999" width="79.56"></rect>
+<rect y="808332.661008" x="112.376172" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="9.35997864499" width="79.6168528"></rect>
+<rect y="808407.48089" x="351.1667468" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="9.35997864499" width="79.6168528"></rect>
+<rect y="808407.48089" x="271.549894" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="9.35997864499" width="79.6168528"></rect>
+<rect y="808407.48089" x="112.376172" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="9.35997864499" width="79.6168528"></rect>
+<rect y="808332.66" x="112.38" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="9.35999999999" width="79.62"></rect>
+<rect y="808407.48" x="351.18" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="9.35999999999" width="79.62"></rect>
+<rect y="808407.48" x="271.56" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="9.35999999999" width="79.62"></rect>
+<rect y="808407.48" x="112.38" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="9.35999999999" width="79.62"></rect></svg>
+<h3>Figure 4-31.  VCVTPH2PS (128-bit Version)</h3>
+<h2>Operation</h2>
+<pre>vCvt_h2s(SRC1[15:0])
+{
+RETURN Cvt_Half_Precision_To_Single_Precision(SRC1[15:0]);
+}</pre>
+<p><strong>VCVTPH2PS (VEX.256 encoded version)</strong></p>
+<pre>DEST[31:0] ←vCvt_h2s(SRC1[15:0]);
+DEST[63:32] ←vCvt_h2s(SRC1[31:16]);
+DEST[95:64] ←vCvt_h2s(SRC1[47:32]);
+DEST[127:96] ←vCvt_h2s(SRC1[63:48]);
+DEST[159:128] ←vCvt_h2s(SRC1[79:64]);
+DEST[191:160] ←vCvt_h2s(SRC1[95:80]);
+DEST[223:192] ←vCvt_h2s(SRC1[111:96]);
+DEST[255:224] ←vCvt_h2s(SRC1[127:112]);</pre>
+<p><strong>VCVTPH2PS (VEX.128 encoded version)</strong></p>
+<pre>DEST[31:0] ←vCvt_h2s(SRC1[15:0]);
+DEST[63:32] ←vCvt_h2s(SRC1[31:16]);
+DEST[95:64] ←vCvt_h2s(SRC1[47:32]);
+DEST[127:96] ←vCvt_h2s(SRC1[63:48]);
+DEST[VLMAX-1:128] ←0</pre>
+<h2>Flags Affected</h2>
+<p>None</p>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>__m128 _mm_cvtph_ps ( __m128i m1);</p>
+<p>__m256 _mm256_cvtph_ps ( __m128i m1)</p>
+<h2>SIMD Floating-Point Exceptions</h2>
+<p>Invalid</p>
+<h2>Other Exceptions</h2>
+<p>Exceptions Type 11 (do not report #AC); additionally</p>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>If VEX.W=1.</td></tr></table></body></html>

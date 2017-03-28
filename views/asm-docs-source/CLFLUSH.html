@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>CLFLUSH—Flush Cache Line </title></head>
+<body>
+<h1>CLFLUSH—Flush Cache Line</h1>
+<table>
+<tr>
+<th>Opcode</th>
+<th>Instruction</th>
+<th>Op/En</th>
+<th>64-bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>0F AE /7</td>
+<td>CLFLUSH <em>m8</em></td>
+<td>M</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Flushes cache line containing <em>m8</em>.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>M</td>
+<td>ModRM:r/m (w)</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Invalidates the cache line that contains the linear address specified with the source operand from all levels of the processor cache hierarchy (data and instruction). The invalidation is broadcast throughout the cache coherence domain. If, at any level of the cache hierarchy, the line is inconsistent with memory (dirty) it is written to memory before invalidation. The source operand is a byte memory location.</p>
+<p>The availability of CLFLUSH is indicated by the presence of the CPUID feature flag CLFSH (bit 19 of the EDX register, see “CPUID—CPU Identification” in this chapter). The aligned cache line size affected is also indicated with the CPUID instruction (bits 8 through 15 of the EBX register when the initial value in the EAX register is 1).</p>
+<p>The memory attribute of the page containing the affected line has no effect on the behavior of this instruction. It should be noted that processors are free to speculatively fetch and cache data from system memory regions assigned a memory-type allowing for speculative reads (such as, the WB, WC, and WT memory types). PREFETCH<em>h </em>instructions can be used to provide the processor with hints for this speculative behavior. Because this speculative fetching can occur at any time and is not tied to instruction execution, the CLFLUSH instruction is not ordered with respect to PREFETCH<em>h</em> instructions or any of the speculative fetching mechanisms (that is, data can be specula-tively loaded into a cache line just before, during, or after the execution of a CLFLUSH instruction that references the cache line).</p>
+<p>CLFLUSH is only ordered by the MFENCE instruction. It is not guaranteed to be ordered by any other fencing or seri-alizing instructions or by another CLFLUSH instruction. For example, software can use an MFENCE instruction to ensure that previous stores are included in the write-back.</p>
+<p>The CLFLUSH instruction can be used at all privilege levels and is subject to all permission checking and faults asso-ciated with a byte load (and in addition, a CLFLUSH instruction is allowed to flush a linear address in an execute-only segment). Like a load, the CLFLUSH instruction sets the A bit but not the D bit in the page tables.</p>
+<p>The CLFLUSH instruction was introduced with the SSE2 extensions; however, because it has its own CPUID feature flag, it can be implemented in IA-32 processors that do not include the SSE2 extensions. Also, detecting the pres-ence of the SSE2 extensions with the CPUID instruction does not guarantee that the CLFLUSH instruction is imple-mented in the processor.</p>
+<p>CLFLUSH operation is the same in non-64-bit modes and 64-bit mode.</p>
+<h2>Operation</h2>
+<pre>Flush_Cache_Line(SRC);</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalents</h2>
+<p>CLFLUSH:</p>
+<p>void _mm_clflush(void const *p)</p>
+<h2>Protected Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>For an illegal memory operand effective address in the CS, DS, ES, FS or GS segments.</td></tr>
+<tr>
+<td>#SS(0)</td>
+<td>For an illegal address in the SS segment.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>For a page fault.</td></tr>
+<tr>
+<td>#UD</td>
+<td>
+<p>If CPUID.01H:EDX.CLFSH[bit 19] = 0.</p>
+<p>If the LOCK prefix is used.</p>
+<p>If instruction prefix is 66H, F2H or F3H.</p></td></tr></table>
+<h2>Real-Address Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP</td>
+<td>If any part of the operand lies outside the effective address space from 0 to FFFFH.</td></tr>
+<tr>
+<td>#UD</td>
+<td>
+<p>If CPUID.01H:EDX.CLFSH[bit 19] = 0.</p>
+<p>If the LOCK prefix is used.</p>
+<p>If instruction prefix is 66H, F2H or F3H.</p></td></tr></table>
+<h2>Virtual-8086 Mode Exceptions</h2>
+<p>Same exceptions as in real address mode.</p>
+<table class="exception-table">
+<tr>
+<td>#PF(fault-code)</td>
+<td>For a page fault.</td></tr></table>
+<h2>Compatibility Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>64-Bit Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#SS(0)</td>
+<td>If a memory address referencing the SS segment is in a non-canonical form.</td></tr>
+<tr>
+<td>#GP(0)</td>
+<td>If the memory address is in a non-canonical form.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>For a page fault.</td></tr>
+<tr>
+<td>#UD</td>
+<td>
+<p>If CPUID.01H:EDX.CLFSH[bit 19] = 0.</p>
+<p>If the LOCK prefix is used.</p>
+<p>If instruction prefix is 66H, F2H or F3H.</p></td></tr></table></body></html>

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>STMXCSR—Store MXCSR Register State </title></head>
+<body>
+<h1>STMXCSR—Store MXCSR Register State</h1>
+<table>
+<tr>
+<th>Opcode*/Instruction</th>
+<th>Op/En</th>
+<th>64/32 bit Mode Support</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>
+<p>0F AE /3</p>
+<p>STMXCSR <em>m32</em></p></td>
+<td>M</td>
+<td>V/V</td>
+<td>SSE</td>
+<td>Store contents of MXCSR register to <em>m32</em>.</td></tr>
+<tr>
+<td>
+<p>VEX.LZ.0F.WIG AE /3</p>
+<p>VSTMXCSR <em>m32</em></p></td>
+<td>M</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Store contents of MXCSR register to <em>m32</em>.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>M</td>
+<td>ModRM:r/m (w)</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Stores the contents of the MXCSR control and status register to the destination operand. The destination operand is a 32-bit memory location. The reserved bits in the MXCSR register are stored as 0s.</p>
+<p>This instruction’s operation is the same in non-64-bit modes and 64-bit mode.</p>
+<p>VEX.L must be 0, otherwise instructions will #UD.</p>
+<p>Note: In VEX-encoded versions, VEX.vvvv is reserved and must be 1111b, otherwise instructions will #UD.</p>
+<h2>Operation</h2>
+<pre>m32 ← MXCSR;</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>_mm_getcsr(void)</p>
+<h2>SIMD Floating-Point Exceptions</h2>
+<p>None.</p>
+<h2>Other Exceptions</h2>
+<p>See Exceptions Type 5; additionally</p>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>
+<p>If VEX.L= 1,</p>
+<p>If VEX.vvvv ≠ 1111B.</p></td></tr></table></body></html>

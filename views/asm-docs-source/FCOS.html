@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>FCOS—Cosine </title></head>
+<body>
+<h1>FCOS—Cosine</h1>
+<table>
+<tr>
+<th>Opcode</th>
+<th>Instruction</th>
+<th>64-Bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>D9 FF</td>
+<td>FCOS</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Replace ST(0) with its cosine.</td></tr></table>
+<h2>Description</h2>
+<p>Computes the cosine of the source operand in register ST(0) and stores the result in ST(0). The source operand must be given in radians and must be within the range −2<sup>63</sup> to +2<sup>63</sup>. The following table shows the results obtained when taking the cosine of various classes of numbers.</p>
+<h3>Table 3-33.  FCOS Results</h3>
+<table>
+<tr>
+<th>ST(0) SRC</th>
+<th>ST(0) DEST</th></tr>
+<tr>
+<td>− ∞</td>
+<td>*</td></tr>
+<tr>
+<td>− F</td>
+<td>−1 to +1</td></tr>
+<tr>
+<td>− 0</td>
+<td>+ 1</td></tr>
+<tr>
+<td>+ 0</td>
+<td>+ 1</td></tr>
+<tr>
+<td>+ F</td>
+<td>− 1 to + 1</td></tr>
+<tr>
+<td>+ ∞</td>
+<td>*</td></tr>
+<tr>
+<td>NaN</td>
+<td>NaN</td></tr></table>
+<p><strong>NOTES:</strong></p>
+<p>F Means finite floating-point value.</p>
+<p>*</p>
+<p>Indicates floating-point invalid-arithmetic-operand (#IA) exception.</p>
+<p>If the source operand is outside the acceptable range, the C2 flag in the FPU status word is set, and the value in register ST(0) remains unchanged. The instruction does not raise an exception when the source operand is out of range. It is up to the program to check the C2 flag for out-of-range conditions. Source values outside the range − 2<sup>63</sup> to +2<sup>63</sup> can be reduced to the range of the instruction by subtracting an appropriate integer multiple of 2π or by using the FPREM instruction with a divisor of 2π. See the section titled “Pi” in Chapter 8 of the <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 1</em>, for a discussion of the proper value to use for π in performing such reductions.</p>
+<p>This instruction’s operation is the same in non-64-bit modes and 64-bit mode.</p>
+<h2>Operation</h2>
+<pre>IF |ST(0)| &lt; 2<sup>63</sup>
+THEN
+    C2 ← 0;
+    ST(0) ← cosine(ST(0));
+ELSE (* Source operand is out-of-range *)
+    C2 ← 1;
+FI;</pre>
+<h2>FPU Flags Affected</h2>
+<table class="exception-table">
+<tr>
+<td>C1</td>
+<td>
+<p>Set to 0 if stack underflow occurred.</p>
+<p>Set if result was rounded up; cleared otherwise.</p>
+<p>Undefined if C2 is 1.</p></td></tr>
+<tr>
+<td>C2</td>
+<td>Set to 1 if outside range (−2<sup>63</sup> &lt; source operand &lt; +2<sup>63</sup>); otherwise, set to 0.</td></tr>
+<tr>
+<td>C0, C3</td>
+<td>Undefined.</td></tr></table>
+<h2>Floating-Point Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#IS</td>
+<td>Stack underflow occurred.</td></tr>
+<tr>
+<td>#IA</td>
+<td>Source operand is an SNaN value, ∞, or unsupported format.</td></tr></table>
+<p>#D</p>
+<p>Source is a denormal value.</p>
+<p>#P</p>
+<p>Value cannot be represented exactly in destination format.</p>
+<h2>Protected Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#NM</td>
+<td>CR0.EM[bit 2] or CR0.TS[bit 3] = 1.</td></tr>
+<tr>
+<td>#MF</td>
+<td>If there is a pending x87 FPU exception.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Real-Address Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>Virtual-8086 Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>Compatibility Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>64-Bit Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p></body></html>

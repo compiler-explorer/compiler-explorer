@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>ENTER—Make Stack Frame for Procedure Parameters </title></head>
+<body>
+<h1>ENTER—Make Stack Frame for Procedure Parameters</h1>
+<table>
+<tr>
+<th>Opcode</th>
+<th>Instruction</th>
+<th>Op/En</th>
+<th>64-Bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>C8 <em>iw</em> 00</td>
+<td>ENTER <em>imm16</em>, 0</td>
+<td>II</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Create a stack frame for a procedure.</td></tr>
+<tr>
+<td>C8 <em>iw </em>01</td>
+<td>ENTER <em>imm16</em>,1</td>
+<td>II</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Create a nested stack frame for a procedure.</td></tr>
+<tr>
+<td>C8 <em>iw </em>ib</td>
+<td>ENTER <em>imm16, imm8</em></td>
+<td>II</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Create a nested stack frame for a procedure.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>II</td>
+<td>iw</td>
+<td>imm8</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Creates a stack frame for a procedure. The first operand (size operand) specifies the size of the stack frame (that is, the number of bytes of dynamic storage allocated on the stack for the procedure). The second operand (nesting level operand) gives the lexical nesting level (0 to 31) of the procedure. The nesting level determines the number of stack frame pointers that are copied into the “display area” of the new stack frame from the preceding frame. Both of these operands are immediate values.</p>
+<p>The stack-size attribute determines whether the BP (16 bits), EBP (32 bits), or RBP (64 bits) register specifies the current frame pointer and whether SP (16 bits), ESP (32 bits), or RSP (64 bits) specifies the stack pointer. In 64-bit mode, stack-size attribute is always 64-bits.</p>
+<p>The ENTER and companion LEAVE instructions are provided to support block structured languages. The ENTER instruction (when used) is typically the first instruction in a procedure and is used to set up a new stack frame for a procedure. The LEAVE instruction is then used at the end of the procedure (just before the RET instruction) to release the stack frame.</p>
+<p>If the nesting level is 0, the processor pushes the frame pointer from the BP/EBP/RBP register onto the stack, copies the current stack pointer from the SP/ESP/RSP register into the BP/EBP/RBP register, and loads the SP/ESP/RSP register with the current stack-pointer value minus the value in the size operand. For nesting levels of 1 or greater, the processor pushes additional frame pointers on the stack before adjusting the stack pointer. These additional frame pointers provide the called procedure with access points to other nested frames on the stack. See “Procedure Calls for Block-Structured Languages” in Chapter 6 of the <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 1</em>, for more information about the actions of the ENTER instruction.</p>
+<p>The ENTER instruction causes a page fault whenever a write using the final value of the stack pointer (within the current stack segment) would do so.</p>
+<p>In 64-bit mode, default operation size is 64 bits; 32-bit operation size cannot be encoded.</p>
+<h2>Operation</h2>
+<pre>NestingLevel ← NestingLevel MOD 32
+IF 64-Bit Mode (StackSize = 64)
+    THEN
+         Push(RBP);
+         FrameTemp ← RSP;
+    ELSE IF StackSize = 32
+         THEN
+              Push(EBP);
+              FrameTemp ← ESP; FI;
+    ELSE (* StackSize = 16 *)
+              Push(BP);
+              FrameTemp ← SP;
+FI;
+IF NestingLevel = 0
+    THEN GOTO CONTINUE;
+FI;
+IF (NestingLevel &gt; 1)
+    THEN FOR i ← 1 to (NestingLevel - 1)
+         DO
+              IF 64-Bit Mode (StackSize = 64)
+                    THEN
+                         RBP ← RBP - 8;
+                         Push([RBP]); (* Quadword push *)
+                    ELSE IF OperandSize = 32
+                         THEN
+                              IF StackSize = 32
+                                    EBP ← EBP - 4;
+                                    Push([EBP]); (* Doubleword push *)
+                              ELSE (* StackSize = 16 *)
+                                    BP ← BP - 4;
+                                    Push([BP]); (* Doubleword push *)
+                              FI;
+                         FI;
+                    ELSE (* OperandSize = 16 *)
+                         IF StackSize = 32
+                              THEN
+                                    EBP ← EBP - 2;
+                                    Push([EBP]); (* Word push *)
+                              ELSE (* StackSize = 16 *)
+                                    BP ← BP - 2;
+                                    Push([BP]); (* Word push *)
+                         FI;
+                    FI;
+    OD;
+FI;
+IF 64-Bit Mode (StackSize = 64)
+    THEN
+         Push(FrameTemp); (* Quadword push *)
+    ELSE IF OperandSize = 32
+         THEN
+              Push(FrameTemp); FI; (* Doubleword push *)
+    ELSE (* OperandSize = 16 *)
+              Push(FrameTemp); (* Word push *)
+FI;
+CONTINUE:
+IF 64-Bit Mode (StackSize = 64)
+    THEN
+              RBP ← FrameTemp;
+              RSP ← RSP − Size;
+    ELSE IF StackSize = 32
+         THEN
+              EBP ← FrameTemp;
+              ESP ← ESP − Size; FI;
+    ELSE (* StackSize = 16 *)
+              BP ← FrameTemp;
+              SP ← SP − Size;
+FI;
+END;</pre>
+<h2>Flags Affected</h2>
+<p>None.</p>
+<h2>Protected Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#SS(0)</td>
+<td>If the new value of the SP or ESP register is outside the stack segment limit.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs or if a write using the final value of the stack pointer (within the current stack segment) would cause a page fault.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Real-Address Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#SS</td>
+<td>If the new value of the SP or ESP register is outside the stack segment limit.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Virtual-8086 Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#SS(0)</td>
+<td>If the new value of the SP or ESP register is outside the stack segment limit.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs or if a write using the final value of the stack pointer (within the current stack segment) would cause a page fault.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Compatibility Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>64-Bit Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#SS(0)</td>
+<td>If the stack address is in a non-canonical form.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs or if a write using the final value of the stack pointer (within the current stack segment) would cause a page fault.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table></body></html>

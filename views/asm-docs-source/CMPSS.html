@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>CMPSS—Compare Scalar Single-Precision Floating-Point Values </title></head>
+<body>
+<h1>CMPSS—Compare Scalar Single-Precision Floating-Point Values</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32-bit Mode</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>
+<p>F3 0F C2 /<em>r ib</em></p>
+<p>CMPSS <em>xmm1, xmm2/m32, imm8</em></p></td>
+<td>RMI</td>
+<td>V/V</td>
+<td>SSE</td>
+<td>Compare low single-precision floating-point value in <em>xmm2/m32</em> and <em>xmm1</em> using <em>imm8</em> as comparison predicate.</td></tr>
+<tr>
+<td>
+<p>VEX.NDS.LIG.F3.0F.WIG C2 /r ib</p>
+<p>VCMPSS xmm1, xmm2, xmm3/m32, imm8</p></td>
+<td>RVMI</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Compare low single precision floating-point value in xmm3/m32 and xmm2 using bits 4:0 of imm8 as comparison predicate.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RMI</td>
+<td>ModRM:reg (r, w)</td>
+<td>ModRM:r/m (r)</td>
+<td>imm8</td>
+<td>NA</td></tr>
+<tr>
+<td>RVMI</td>
+<td>ModRM:reg (w)</td>
+<td>VEX.vvvv (r)</td>
+<td>ModRM:r/m (r)</td>
+<td>imm8</td></tr></table>
+<h2>Description</h2>
+<p>Compares the low single-precision floating-point values in the source operand (second operand) and the destina-tion operand (first operand) and returns the results of the comparison to the destination operand. The comparison predicate operand (third operand) specifies the type of comparison performed. The comparison result is a double-word mask of all 1s (comparison true) or all 0s (comparison false). The sign of zero is ignored for comparisons, so that –0.0 is equal to +0.0.</p>
+<p>128-bit Legacy SSE version: The first source and destination operand (first operand) is an XMM register. The second source operand (second operand) can be an XMM register or 64-bit memory location. The comparison pred-icate operand is an 8-bit immediate, bits 2:0 of the immediate define the type of comparison to be performed (see Table 3-7). Bits 7:3 of the immediate is reserved. Bits (VLMAX-1:32) of the corresponding YMM destination register remain unchanged.</p>
+<p>The unordered relationship is true when at least one of the two source operands being compared is a NaN; the ordered relationship is true when neither source operand is a NaN</p>
+<p>A subsequent computational instruction that uses the mask result in the destination operand as an input operand will not generate a fault, since a mask of all 0s corresponds to a floating-point value of +0.0 and a mask of all 1s corresponds to a QNaN.</p>
+<p>Note that processors with “CPUID.1H:ECX.AVX =0” do not implement the “greater-than”, “greater-than-or-equal”, “not-greater than”, and “not-greater-than-or-equal relations” predicates. These comparisons can be made either by using the inverse relationship (that is, use the “not-less-than-or-equal” to make a “greater-than” comparison) or by using software emulation. When using software emulation, the program must swap the operands (copying registers when necessary to protect the data that will now be in the destination operand), and then perform the compare using a different predicate. The predicate to be used for these emulations is listed in Table 3-7 under the heading Emulation.</p>
+<p>Compilers and assemblers may implement the following two-operand pseudo-ops in addition to the three-operand CMPSS instruction, for processors with “CPUID.1H:ECX.AVX =0”. See Table 3-15. Compiler should treat reserved Imm8 values as illegal syntax.</p>
+<h3>Table 3-15.  Pseudo-Ops and CMPSS</h3>
+<table>
+<tr>
+<th>Pseudo-Op</th>
+<th>CMPSS Implementation</th></tr>
+<tr>
+<td>CMPEQSS <em>xmm1, xmm2</em></td>
+<td>CMPSS<em> xmm1, xmm2, 0</em></td></tr>
+<tr>
+<td>CMPLTSS <em>xmm1, xmm2</em></td>
+<td>CMPSS <em>xmm1, xmm2, 1</em></td></tr>
+<tr>
+<td>CMPLESS <em>xmm1, xmm2</em></td>
+<td>CMPSS <em>xmm1, xmm2, 2</em></td></tr>
+<tr>
+<td>CMPUNORDSS<em> xmm1, xmm2</em></td>
+<td>CMPSS <em>xmm1, xmm2, 3</em></td></tr>
+<tr>
+<td>CMPNEQSS<em> xmm1, xmm2</em></td>
+<td>CMPSS <em>xmm1, xmm2, 4</em></td></tr>
+<tr>
+<td>CMPNLTSS <em>xmm1, xmm2</em></td>
+<td>CMPSS <em>xmm1, xmm2, 5</em></td></tr>
+<tr>
+<td>CMPNLESS<em> xmm1, xmm2</em></td>
+<td>CMPSS <em>xmm1, xmm2, 6</em></td></tr>
+<tr>
+<td>CMPORDSS <em>xmm1, xmm2</em></td>
+<td>CMPSS <em>xmm1, xmm2, 7</em></td></tr></table>
+<p>The greater-than relations not implemented in the processor require more than one instruction to emulate in soft-ware and therefore should not be implemented as pseudo-ops. (For these, the programmer should reverse the operands of the corresponding less than relations and use move instructions to ensure that the mask is moved to the correct destination register and that the source operand is left intact.)</p>
+<p>In 64-bit mode, use of the REX.R prefix permits this instruction to access additional registers (XMM8-XMM15).</p>
+<p><strong>Enhanced Comparison Predicate for VEX-Encoded VCMPSD</strong></p>
+<p>VEX.128 encoded version: The first source operand (second operand) is an XMM register. The second source operand (third operand) can be an XMM register or a 32-bit memory location. Bits (VLMAX-1:128) of the destina-tion YMM register are zeroed. The comparison predicate operand is an 8-bit immediate:</p>
+<p>Processors with “CPUID.1H:ECX.AVX =1” implement the full complement of 32 predicates shown in Table 3-9, soft-ware emulation is no longer needed. Compilers and assemblers may implement the following three-operand pseudo-ops in addition to the four-operand VCMPSS instruction. See Table 3-16, where the notations of reg1 reg2, and reg3 represent either XMM registers or YMM registers. Compiler should treat reserved Imm8 values as illegal syntax. Alternately, intrinsics can map the pseudo-ops to pre-defined constants to support a simpler intrinsic inter-face.</p>
+<h3>Table 3-16.  Pseudo-Op and VCMPSS Implementation</h3>
+<p>:</p>
+<table>
+<tr>
+<th>Pseudo-Op</th>
+<th>CMPSS Implementation</th></tr>
+<tr>
+<td>VCMPEQSS r<em>eg1, reg2, reg3</em></td>
+<td>VCMPSS r<em>eg1, reg2, reg3, 0</em></td></tr>
+<tr>
+<td>VCMPLTSS r<em>eg1, reg2, reg3</em></td>
+<td>VCMPSS r<em>eg1, reg2, reg3, 1</em></td></tr>
+<tr>
+<td>VCMPLESS r<em>eg1, reg2, reg3</em></td>
+<td>VCMPSS r<em>eg1, reg2, reg3, 2</em></td></tr>
+<tr>
+<td>VCMPUNORDSS r<em>eg1, reg2, reg3</em></td>
+<td>VCMPSS r<em>eg1, reg2, reg3, 3</em></td></tr>
+<tr>
+<td>VCMPNEQSS r<em>eg1, reg2, reg3</em></td>
+<td>VCMPSS r<em>eg1, reg2, reg3, 4</em></td></tr>
+<tr>
+<td>VCMPNLTSS r<em>eg1, reg2, reg3</em></td>
+<td>VCMPSS r<em>eg1, reg2, reg3, 5</em></td></tr>
+<tr>
+<td>VCMPNLESS r<em>eg1, reg2, reg3</em></td>
+<td>VCMPSS r<em>eg1, reg2, reg3, 6</em></td></tr>
+<tr>
+<td>VCMPORDSS r<em>eg1, reg2, reg3</em></td>
+<td>VCMPSS r<em>eg1, reg2, reg3, 7</em></td></tr>
+<tr>
+<td>VCMPEQ_UQSS r<em>eg1, reg2, reg3</em></td>
+<td>VCMPSS r<em>eg1, reg2, reg3, 8</em></td></tr>
+<tr>
+<td>VCMPNGESS r<em>eg1, reg2, reg3</em></td>
+<td>VCMPSS r<em>eg1, reg2, reg3, 9</em></td></tr>
+<tr>
+<td>VCMPNGTSS r<em>eg1, reg2, reg3</em></td>
+<td>VCMPSS r<em>eg1, reg2, reg3, 0AH</em></td></tr>
+<tr>
+<td>VCMPFALSESS r<em>eg1, reg2, reg3</em></td>
+<td>VCMPSS r<em>eg1, reg2, reg3, 0BH</em></td></tr>
+<tr>
+<td>VCMPNEQ_OQSS r<em>eg1, reg2, reg3</em></td>
+<td>VCMPSS r<em>eg1, reg2, reg3, 0CH</em></td></tr>
+<tr>
+<td>VCMPGESS r<em>eg1, reg2, reg3</em></td>
+<td>VCMPSS r<em>eg1, reg2, reg3, 0DH</em></td></tr>
+<tr>
+<td>VCMPGTSS r<em>eg1, reg2, reg3</em></td>
+<td>VCMPSS r<em>eg1, reg2, reg3, 0EH</em></td></tr></table>
+<h3>Table 3-16.  Pseudo-Op and VCMPSS Implementation (Contd.)</h3>
+<table>
+<tr>
+<th>Pseudo-Op</th>
+<th>CMPSS Implementation</th></tr>
+<tr>
+<td>VCMPTRUESS r<em>eg1, reg2, reg3</em></td>
+<td>VCMPSS r<em>eg1, reg2, reg3, 0FH</em></td></tr>
+<tr>
+<td>VCMPEQ_OSSS r<em>eg1, reg2, reg3</em></td>
+<td>VCMPSS r<em>eg1, reg2, reg3, 10H</em></td></tr>
+<tr>
+<td>VCMPLT_OQSS r<em>eg1, reg2, reg3</em></td>
+<td>VCMPSS r<em>eg1, reg2, reg3, 11H</em></td></tr>
+<tr>
+<td>VCMPLE_OQSS r<em>eg1, reg2, reg3</em></td>
+<td>VCMPSS r<em>eg1, reg2, reg3, 12H</em></td></tr>
+<tr>
+<td>VCMPUNORD_SSS r<em>eg1, reg2, reg3</em></td>
+<td>VCMPSS r<em>eg1, reg2, reg3, 13H</em></td></tr>
+<tr>
+<td>VCMPNEQ_USSS r<em>eg1, reg2, reg3</em></td>
+<td>VCMPSS r<em>eg1, reg2, reg3, 14H</em></td></tr>
+<tr>
+<td>VCMPNLT_UQSS r<em>eg1, reg2, reg3</em></td>
+<td>VCMPSS r<em>eg1, reg2, reg3, 15H</em></td></tr>
+<tr>
+<td>VCMPNLE_UQSS r<em>eg1, reg2, reg3</em></td>
+<td>VCMPSS r<em>eg1, reg2, reg3, 16H</em></td></tr>
+<tr>
+<td>VCMPORD_SSS r<em>eg1, reg2, reg3</em></td>
+<td>VCMPSS r<em>eg1, reg2, reg3, 17H</em></td></tr>
+<tr>
+<td>VCMPEQ_USSS r<em>eg1, reg2, reg3</em></td>
+<td>VCMPSS r<em>eg1, reg2, reg3, 18H</em></td></tr>
+<tr>
+<td>VCMPNGE_UQSS r<em>eg1, reg2, reg3</em></td>
+<td>VCMPSS r<em>eg1, reg2, reg3, 19H</em></td></tr>
+<tr>
+<td>VCMPNGT_UQSS r<em>eg1, reg2, reg3</em></td>
+<td>VCMPSS r<em>eg1, reg2, reg3, 1AH</em></td></tr>
+<tr>
+<td>VCMPFALSE_OSSS r<em>eg1, reg2, reg3</em></td>
+<td>VCMPSS r<em>eg1, reg2, reg3, 1BH</em></td></tr>
+<tr>
+<td>VCMPNEQ_OSSS r<em>eg1, reg2, reg3</em></td>
+<td>VCMPSS r<em>eg1, reg2, reg3, 1CH</em></td></tr>
+<tr>
+<td>VCMPGE_OQSS r<em>eg1, reg2, reg3</em></td>
+<td>VCMPSS r<em>eg1, reg2, reg3, 1DH</em></td></tr>
+<tr>
+<td>VCMPGT_OQSS r<em>eg1, reg2, reg3</em></td>
+<td>VCMPSS r<em>eg1, reg2, reg3, 1EH</em></td></tr>
+<tr>
+<td>VCMPTRUE_USSS r<em>eg1, reg2, reg3</em></td>
+<td>VCMPSS r<em>eg1, reg2, reg3, 1FH</em></td></tr></table>
+<h2>Operation</h2>
+<pre>CASE (COMPARISON PREDICATE) OF</pre>
+<p>0: OP3 ← EQ_OQ; OP5 ← EQ_OQ; 1: OP3 ← LT_OS; OP5 ← LT_OS; 2: OP3 ← LE_OS; OP5 ← LE_OS; 3: OP3 ← UNORD_Q; OP5 ← UNORD_Q; 4: OP3 ← NEQ_UQ; OP5 ← NEQ_UQ; 5: OP3 ← NLT_US; OP5 ← NLT_US; 6: OP3 ← NLE_US; OP5 ← NLE_US; 7: OP3 ← ORD_Q; OP5 ← ORD_Q; 8: OP5 ← EQ_UQ; 9: OP5 ← NGE_US; 10: OP5 ← NGT_US; 11: OP5 ← FALSE_OQ; 12: OP5 ← NEQ_OQ; 13: OP5 ← GE_OS; 14: OP5 ← GT_OS; 15: OP5 ← TRUE_UQ; 16: OP5 ← EQ_OS; 17: OP5 ← LT_OQ; 18: OP5 ← LE_OQ; 19: OP5 ← UNORD_S; 20: OP5 ← NEQ_US; 21: OP5 ← NLT_UQ; 22: OP5 ← NLE_UQ; 23: OP5 ← ORD_S; 24: OP5 ← EQ_US;</p>
+<p>25: OP5 ← NGE_UQ; 26: OP5 ← NGT_UQ; 27: OP5 ← FALSE_OS; 28: OP5 ← NEQ_OS; 29: OP5 ← GE_OQ; 30: OP5 ← GT_OQ; 31: OP5 ← TRUE_US; DEFAULT: Reserved</p>
+<p>ESAC;</p>
+<p><strong>CMPSS (128-bit Legacy SSE version)</strong></p>
+<pre>CMP0 ← DEST[31:0] OP3 SRC[31:0];
+IF CMP0 = TRUE
+THEN DEST[31:0] ← FFFFFFFFH;
+ELSE DEST[31:0] ← 00000000H; FI;
+DEST[VLMAX-1:32] (Unmodified)</pre>
+<p><strong>VCMPSS (VEX.128 encoded version)</strong></p>
+<pre>CMP0 ← SRC1[31:0] OP5 SRC2[31:0];
+IF CMP0 = TRUE
+THEN DEST[31:0] ← FFFFFFFFH;
+ELSE DEST[31:0] ← 00000000H; FI;
+DEST[127:32] ← SRC1[127:32]
+DEST[VLMAX-1:128] ← 0</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalents</h2>
+<p>CMPSS for equality:</p>
+<p>__m128 _mm_cmpeq_ss(__m128 a, __m128 b)</p>
+<p>CMPSS for less-than:</p>
+<p>__m128 _mm_cmplt_ss(__m128 a, __m128 b)</p>
+<p>CMPSS for less-than-or-equal:</p>
+<p>__m128 _mm_cmple_ss(__m128 a, __m128 b)</p>
+<p>CMPSS for greater-than:</p>
+<p>__m128 _mm_cmpgt_ss(__m128 a, __m128 b)</p>
+<p>CMPSS for greater-than-or-equal:</p>
+<p>__m128 _mm_cmpge_ss(__m128 a, __m128 b)</p>
+<p>CMPSS for inequality:</p>
+<p>__m128 _mm_cmpneq_ss(__m128 a, __m128 b)</p>
+<p>CMPSS for not-less-than:</p>
+<p>__m128 _mm_cmpnlt_ss(__m128 a, __m128 b)</p>
+<p>CMPSS for not-greater-than:</p>
+<p>__m128 _mm_cmpngt_ss(__m128 a, __m128 b)</p>
+<p>CMPSS for not-greater-than-or-equal:</p>
+<p>__m128 _mm_cmpnge_ss(__m128 a, __m128 b)</p>
+<p>CMPSS for ordered:</p>
+<p>__m128 _mm_cmpord_ss(__m128 a, __m128 b)</p>
+<p>CMPSS for unordered:</p>
+<p>__m128 _mm_cmpunord_ss(__m128 a, __m128 b)</p>
+<p>CMPSS for not-less-than-or-equal:</p>
+<p>__m128 _mm_cmpnle_ss(__m128 a, __m128 b)</p>
+<p>VCMPSS:</p>
+<p>__m128 _mm_cmp_ss(__m128 a, __m128 b, const int imm)</p>
+<h2>SIMD Floating-Point Exceptions</h2>
+<p>Invalid if SNaN operand, Invalid if QNaN and predicate as listed in above table, Denormal.</p>
+<h2>Other Exceptions</h2>
+<p>See Exceptions Type 3.</p></body></html>

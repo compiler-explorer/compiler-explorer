@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>POPF/POPFD/POPFQ—Pop Stack into EFLAGS Register </title></head>
+<body>
+<h1>POPF/POPFD/POPFQ—Pop Stack into EFLAGS Register</h1>
+<table>
+<tr>
+<th>Opcode</th>
+<th>Instruction</th>
+<th>Op/En</th>
+<th>64-Bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>9D</td>
+<td>POPF</td>
+<td>NP</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Pop top of stack into lower 16 bits of EFLAGS.</td></tr>
+<tr>
+<td>9D</td>
+<td>POPFD</td>
+<td>NP</td>
+<td>N.E.</td>
+<td>Valid</td>
+<td>Pop top of stack into EFLAGS.</td></tr>
+<tr>
+<td>9D</td>
+<td>POPFQ</td>
+<td>NP</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Pop top of stack and zero-extend into RFLAGS.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>NP</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Pops a doubleword (POPFD) from the top of the stack (if the current operand-size attribute is 32) and stores the value in the EFLAGS register, or pops a word from the top of the stack (if the operand-size attribute is 16) and stores it in the lower 16 bits of the EFLAGS register (that is, the FLAGS register). These instructions reverse the operation of the PUSHF/PUSHFD instructions.</p>
+<p>The POPF (pop flags) and POPFD (pop flags double) mnemonics reference the same opcode. The POPF instruction is intended for use when the operand-size attribute is 16; the POPFD instruction is intended for use when the operand-size attribute is 32. Some assemblers may force the operand size to 16 for POPF and to 32 for POPFD. Others may treat the mnemonics as synonyms (POPF/POPFD) and use the setting of the operand-size attribute to determine the size of values to pop from the stack.</p>
+<p>The effect of POPF/POPFD on the EFLAGS register changes, depending on the mode of operation. See the Table 4-12 and key below for details.</p>
+<p>When operating in protected, compatibility, or 64-bit mode at privilege level 0 (or in real-address mode, the equiv-alent to privilege level 0), all non-reserved flags in the EFLAGS register except RF<sup>1</sup>, VIP, VIF, and VM may be modi-fied. VIP, VIF and VM remain unaffected.</p>
+<p>When operating in protected, compatibility, or 64-bit mode with a privilege level greater than 0, but less than or equal to IOPL, all flags can be modified except the IOPL field and RF<sup>1</sup>, IF, VIP, VIF, and VM; these remain unaf-fected. The AC and ID flags can only be modified if the operand-size attribute is 32. The interrupt flag (IF) is altered only when executing at a level at least as privileged as the IOPL. If a POPF/POPFD instruction is executed with insufficient privilege, an exception does not occur but privileged bits do not change.</p>
+<p>When operating in virtual-8086 mode (EFLAGS.VM = 1) without the virtual-8086 mode extensions (CR4.VME = 0), the POPF/POPFD instructions can be used only if IOPL = 3; otherwise, a general-protection exception (#GP) occurs. If the virtual-8086 mode extensions are enabled (CR4.VME = 1), POPF (but not POPFD) can be executed in virtual-8086 mode with IOPL &lt; 3.</p>
+<p>In 64-bit mode, use REX.W to pop the top of stack to RFLAGS. The mnemonic assigned is POPFQ (note that the 32-bit operand is not encodable). POPFQ pops 64 bits from the stack, loads the lower 32 bits into RFLAGS, and zero extends the upper bits of RFLAGS.</p>
+<p>See Chapter 3 of the <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 1</em>, for more informa-tion about the EFLAGS registers.</p>
+<p>1.</p>
+<p>RF is always zero after the execution of POPF. This is because POPF, like all instructions, clears RF as it begins to execute.</p>
+<h3>Table 4-12.  Effect of POPF/POPFD on the EFLAGS Register</h3>
+<svg width="770.76" viewBox="45.119990 614673.000010 513.840000 300.000000" height="450.0">
+<text y="614683.11282" x="351.0596" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="19.043472">Flags</text>
+<text y="614693.13252" x="64.56" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="19.580526">Mode</text>
+<text y="614693.13252" x="108.175488" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="30.391032">Operand</text>
+<text y="614693.13252" x="147.9598" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="13.248396">CPL</text>
+<text y="614693.13252" x="171.004444" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="16.309524">IOPL</text>
+<rect y="614718.0" x="192.24" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.8"></rect>
+<rect y="614718.0" x="212.04" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="20.4"></rect>
+<rect y="614718.0" x="232.44" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="21.0"></rect>
+<rect y="614718.0" x="253.44" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="18.84"></rect>
+<rect y="614718.0" x="272.28" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.98"></rect>
+<rect y="614718.0" x="311.1" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.2"></rect>
+<rect y="614718.0" x="330.3" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="30.6"></rect>
+<rect y="614718.0" x="360.9" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.8"></rect>
+<rect y="614718.0" x="380.7" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.8"></rect>
+<rect y="614718.0" x="400.5" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="18.0"></rect>
+<rect y="614718.0" x="418.5" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="18.3"></rect>
+<rect y="614718.0" x="436.8" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="17.7"></rect>
+<rect y="614718.0" x="454.5" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="17.4"></rect>
+<rect y="614718.0" x="471.9" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="18.6"></rect>
+<rect y="614718.0" x="490.5" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.8"></rect>
+<rect y="614718.0" x="510.3" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="18.6"></rect>
+<rect y="614733.0" x="192.24" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="19.98" width="19.8"></rect>
+<rect y="614733.0" x="212.04" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="19.98" width="20.4"></rect>
+<rect y="614733.0" x="232.44" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="19.98" width="21.0"></rect>
+<rect y="614733.0" x="253.44" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="19.98" width="18.84"></rect>
+<rect y="614733.0" x="272.28" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="19.98" width="19.98"></rect>
+<rect y="614733.0" x="311.1" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="19.98" width="19.2"></rect>
+<rect y="614733.0" x="330.3" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="19.98" width="30.6"></rect>
+<rect y="614733.0" x="360.9" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="19.98" width="19.8"></rect>
+<rect y="614733.0" x="380.7" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="19.98" width="19.8"></rect>
+<rect y="614733.0" x="400.5" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="19.98" width="18.0"></rect>
+<rect y="614733.0" x="418.5" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="19.98" width="18.3"></rect>
+<rect y="614733.0" x="436.8" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="19.98" width="17.7"></rect>
+<rect y="614733.0" x="454.5" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="19.98" width="17.4"></rect>
+<rect y="614733.0" x="471.9" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="19.98" width="18.6"></rect>
+<rect y="614733.0" x="490.5" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="19.98" width="19.8"></rect>
+<rect y="614733.0" x="510.3" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="19.98" width="18.6"></rect>
+<rect y="614752.98" x="192.24" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.8"></rect>
+<rect y="614752.98" x="212.04" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="20.4"></rect>
+<rect y="614752.98" x="232.44" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="21.0"></rect>
+<rect y="614752.98" x="253.44" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="18.84"></rect>
+<rect y="614752.98" x="272.28" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.98"></rect>
+<rect y="614752.98" x="311.1" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.2"></rect>
+<rect y="614752.98" x="330.3" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="30.6"></rect>
+<rect y="614752.98" x="360.9" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.8"></rect>
+<rect y="614752.98" x="380.7" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.8"></rect>
+<rect y="614752.98" x="400.5" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="18.0"></rect>
+<rect y="614752.98" x="418.5" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="18.3"></rect>
+<rect y="614752.98" x="436.8" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="17.7"></rect>
+<rect y="614752.98" x="454.5" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="17.4"></rect>
+<rect y="614752.98" x="471.9" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="18.6"></rect>
+<rect y="614752.98" x="490.5" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.8"></rect>
+<rect y="614752.98" x="510.3" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="18.6"></rect>
+<rect y="614767.98" x="192.24" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.8"></rect>
+<rect y="614767.98" x="212.04" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="20.4"></rect>
+<rect y="614767.98" x="232.44" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="21.0"></rect>
+<rect y="614767.98" x="253.44" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="18.84"></rect>
+<rect y="614767.98" x="272.28" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.98"></rect>
+<rect y="614767.98" x="311.1" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.2"></rect>
+<rect y="614767.98" x="330.3" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="30.6"></rect>
+<rect y="614767.98" x="360.9" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.8"></rect>
+<rect y="614767.98" x="380.7" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.8"></rect>
+<rect y="614767.98" x="400.5" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="18.0"></rect>
+<rect y="614767.98" x="418.5" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="18.3"></rect>
+<rect y="614767.98" x="436.8" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="17.7"></rect>
+<rect y="614767.98" x="454.5" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="17.4"></rect>
+<rect y="614767.98" x="471.9" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="18.6"></rect>
+<rect y="614767.98" x="490.5" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.8"></rect>
+<rect y="614767.98" x="510.3" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="18.6"></rect>
+<rect y="614782.98" x="192.24" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.8"></rect>
+<rect y="614782.98" x="212.04" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="20.4"></rect>
+<rect y="614782.98" x="232.44" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="21.0"></rect>
+<rect y="614782.98" x="253.44" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="18.84"></rect>
+<rect y="614782.98" x="272.28" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.98"></rect>
+<rect y="614782.98" x="311.1" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.2"></rect>
+<rect y="614782.98" x="330.3" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="30.6"></rect>
+<rect y="614782.98" x="360.9" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.8"></rect>
+<rect y="614782.98" x="380.7" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.8"></rect>
+<rect y="614782.98" x="400.5" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="18.0"></rect>
+<rect y="614782.98" x="418.5" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="18.3"></rect>
+<rect y="614782.98" x="436.8" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="17.7"></rect>
+<rect y="614782.98" x="454.5" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="17.4"></rect>
+<rect y="614782.98" x="471.9" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="18.6"></rect>
+<rect y="614782.98" x="490.5" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.8"></rect>
+<rect y="614782.98" x="510.3" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="18.6"></rect>
+<rect y="614797.98" x="192.24" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.8"></rect>
+<rect y="614797.98" x="212.04" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="20.4"></rect>
+<rect y="614797.98" x="232.44" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="21.0"></rect>
+<rect y="614797.98" x="253.44" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="18.84"></rect>
+<rect y="614797.98" x="272.28" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.98"></rect>
+<rect y="614797.98" x="311.1" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.2"></rect>
+<rect y="614797.98" x="330.3" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="30.6"></rect>
+<rect y="614797.98" x="360.9" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.8"></rect>
+<rect y="614797.98" x="380.7" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.8"></rect>
+<rect y="614797.98" x="400.5" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="18.0"></rect>
+<rect y="614797.98" x="418.5" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="18.3"></rect>
+<rect y="614797.98" x="436.8" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="17.7"></rect>
+<rect y="614797.98" x="454.5" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="17.4"></rect>
+<rect y="614797.98" x="471.9" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="18.6"></rect>
+<rect y="614797.98" x="490.5" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.8"></rect>
+<rect y="614797.98" x="510.3" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="18.6"></rect>
+<rect y="614812.98" x="192.24" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.8"></rect>
+<rect y="614812.98" x="212.04" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="20.4"></rect>
+<rect y="614812.98" x="232.44" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="21.0"></rect>
+<rect y="614812.98" x="253.44" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="18.84"></rect>
+<rect y="614812.98" x="272.28" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.98"></rect>
+<rect y="614812.98" x="311.1" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.2"></rect>
+<rect y="614812.98" x="330.3" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="30.6"></rect>
+<rect y="614812.98" x="360.9" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.8"></rect>
+<rect y="614812.98" x="380.7" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.8"></rect>
+<rect y="614812.98" x="400.5" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="18.0"></rect>
+<rect y="614812.98" x="418.5" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="18.3"></rect>
+<rect y="614812.98" x="436.8" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="17.7"></rect>
+<rect y="614812.98" x="454.5" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="17.4"></rect>
+<rect y="614812.98" x="471.9" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="18.6"></rect>
+<rect y="614812.98" x="490.5" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.8"></rect>
+<rect y="614812.98" x="510.3" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="18.6"></rect>
+<rect y="614827.98" x="192.24" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.8"></rect>
+<rect y="614827.98" x="212.04" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="20.4"></rect>
+<rect y="614827.98" x="232.44" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="21.0"></rect>
+<rect y="614827.98" x="253.44" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="18.84"></rect>
+<rect y="614827.98" x="272.28" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.98"></rect>
+<rect y="614827.98" x="311.1" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.2"></rect>
+<rect y="614827.98" x="330.3" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="30.6"></rect>
+<rect y="614827.98" x="360.9" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.8"></rect>
+<rect y="614827.98" x="380.7" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.8"></rect>
+<rect y="614827.98" x="400.5" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="18.0"></rect>
+<rect y="614827.98" x="418.5" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="18.3"></rect>
+<rect y="614827.98" x="436.8" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="17.7"></rect>
+<rect y="614827.98" x="454.5" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="17.4"></rect>
+<rect y="614827.98" x="471.9" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="18.6"></rect>
+<rect y="614827.98" x="490.5" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.8"></rect>
+<rect y="614827.98" x="510.3" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="18.6"></rect>
+<rect y="614842.98" x="103.62" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="39.54"></rect>
+<rect y="614842.98" x="143.16" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="22.86"></rect>
+<rect y="614842.98" x="166.02" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="26.22"></rect>
+<rect y="614842.98" x="192.24" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.8"></rect>
+<rect y="614842.98" x="212.04" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="20.4"></rect>
+<rect y="614842.98" x="232.44" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="21.0"></rect>
+<rect y="614842.98" x="253.44" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="18.84"></rect>
+<rect y="614842.98" x="272.28" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.98"></rect>
+<rect y="614842.98" x="292.26" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="18.84"></rect>
+<rect y="614842.98" x="311.1" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.2"></rect>
+<rect y="614842.98" x="330.3" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="30.6"></rect>
+<rect y="614842.98" x="360.9" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.8"></rect>
+<rect y="614842.98" x="380.7" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.8"></rect>
+<rect y="614842.98" x="400.5" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="18.0"></rect>
+<rect y="614842.98" x="418.5" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="18.3"></rect>
+<rect y="614842.98" x="436.8" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="17.7"></rect>
+<rect y="614842.98" x="454.5" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="17.4"></rect>
+<rect y="614842.98" x="471.9" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="18.6"></rect>
+<rect y="614842.98" x="490.5" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.8"></rect>
+<rect y="614842.98" x="510.3" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="18.6"></rect>
+<rect y="614857.98" x="192.24" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0600000001" width="19.8"></rect>
+<rect y="614857.98" x="212.04" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0600000001" width="20.4"></rect>
+<rect y="614857.98" x="232.44" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0600000001" width="21.0"></rect>
+<rect y="614857.98" x="253.44" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0600000001" width="18.84"></rect>
+<rect y="614857.98" x="272.28" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0600000001" width="19.98"></rect>
+<rect y="614857.98" x="311.1" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0600000001" width="19.2"></rect>
+<rect y="614857.98" x="330.3" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0600000001" width="30.6"></rect>
+<rect y="614857.98" x="360.9" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0600000001" width="19.8"></rect>
+<rect y="614857.98" x="380.7" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0600000001" width="19.8"></rect>
+<rect y="614857.98" x="400.5" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0600000001" width="18.0"></rect>
+<rect y="614857.98" x="418.5" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0600000001" width="18.3"></rect>
+<rect y="614857.98" x="436.8" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0600000001" width="17.7"></rect>
+<rect y="614857.98" x="454.5" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0600000001" width="17.4"></rect>
+<rect y="614857.98" x="471.9" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0600000001" width="18.6"></rect>
+<rect y="614857.98" x="490.5" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0600000001" width="19.8"></rect>
+<rect y="614857.98" x="510.3" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0600000001" width="18.6"></rect>
+<rect y="614873.04" x="103.62" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="39.54"></rect>
+<rect y="614873.04" x="143.16" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="22.86"></rect>
+<rect y="614873.04" x="166.02" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="26.22"></rect>
+<rect y="614873.04" x="192.24" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.8"></rect>
+<rect y="614873.04" x="212.04" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="20.4"></rect>
+<rect y="614873.04" x="232.44" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="21.0"></rect>
+<rect y="614873.04" x="253.44" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="18.84"></rect>
+<rect y="614873.04" x="272.28" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.98"></rect>
+<rect y="614873.04" x="292.26" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="18.84"></rect>
+<rect y="614873.04" x="311.1" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.2"></rect>
+<rect y="614873.04" x="330.3" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="30.6"></rect>
+<rect y="614873.04" x="360.9" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.8"></rect>
+<rect y="614873.04" x="380.7" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.8"></rect>
+<rect y="614873.04" x="400.5" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="18.0"></rect>
+<rect y="614873.04" x="418.5" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="18.3"></rect>
+<rect y="614873.04" x="436.8" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="17.7"></rect>
+<rect y="614873.04" x="454.5" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="17.4"></rect>
+<rect y="614873.04" x="471.9" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="18.6"></rect>
+<rect y="614873.04" x="490.5" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.8"></rect>
+<rect y="614873.04" x="510.3" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="18.6"></rect>
+<rect y="614888.04" x="192.24" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.8"></rect>
+<rect y="614888.04" x="212.04" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="20.4"></rect>
+<rect y="614888.04" x="232.44" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="21.0"></rect>
+<rect y="614888.04" x="253.44" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="18.84"></rect>
+<rect y="614888.04" x="272.28" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.98"></rect>
+<rect y="614888.04" x="311.1" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.2"></rect>
+<rect y="614888.04" x="330.3" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="30.6"></rect>
+<rect y="614888.04" x="360.9" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.8"></rect>
+<rect y="614888.04" x="380.7" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.8"></rect>
+<rect y="614888.04" x="400.5" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="18.0"></rect>
+<rect y="614888.04" x="418.5" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="18.3"></rect>
+<rect y="614888.04" x="436.8" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="17.7"></rect>
+<rect y="614888.04" x="454.5" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="17.4"></rect>
+<rect y="614888.04" x="471.9" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="18.6"></rect>
+<rect y="614888.04" x="490.5" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.8"></rect>
+<rect y="614888.04" x="510.3" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="18.6"></rect>
+<rect y="614903.04" x="192.24" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="24.96" width="19.8"></rect>
+<rect y="614903.04" x="212.04" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="24.96" width="20.4"></rect>
+<rect y="614903.04" x="232.44" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="24.96" width="21.0"></rect>
+<rect y="614903.04" x="253.44" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="24.96" width="18.84"></rect>
+<rect y="614903.04" x="272.28" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="24.96" width="19.98"></rect>
+<rect y="614903.04" x="311.1" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="24.96" width="19.2"></rect>
+<rect y="614903.04" x="330.3" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="24.96" width="30.6"></rect>
+<rect y="614903.04" x="360.9" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="24.96" width="19.8"></rect>
+<rect y="614903.04" x="380.7" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="24.96" width="19.8"></rect>
+<rect y="614903.04" x="400.5" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="24.96" width="18.0"></rect>
+<rect y="614903.04" x="418.5" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="24.96" width="18.3"></rect>
+<rect y="614903.04" x="436.8" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="24.96" width="17.7"></rect>
+<rect y="614903.04" x="454.5" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="24.96" width="17.4"></rect>
+<rect y="614903.04" x="471.9" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="24.96" width="18.6"></rect>
+<rect y="614903.04" x="490.5" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="24.96" width="19.8"></rect>
+<rect y="614903.04" x="510.3" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="24.96" width="18.6"></rect>
+<rect y="614928.0" x="192.24" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.8"></rect>
+<rect y="614928.0" x="212.04" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="20.4"></rect>
+<rect y="614928.0" x="232.44" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="21.0"></rect>
+<rect y="614928.0" x="253.44" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="18.84"></rect>
+<rect y="614928.0" x="272.28" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.98"></rect>
+<rect y="614928.0" x="311.1" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.2"></rect>
+<rect y="614928.0" x="330.3" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="30.6"></rect>
+<rect y="614928.0" x="360.9" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.8"></rect>
+<rect y="614928.0" x="380.7" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.8"></rect>
+<rect y="614928.0" x="400.5" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="18.0"></rect>
+<rect y="614928.0" x="418.5" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="18.3"></rect>
+<rect y="614928.0" x="436.8" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="17.7"></rect>
+<rect y="614928.0" x="454.5" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="17.4"></rect>
+<rect y="614928.0" x="471.9" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="18.6"></rect>
+<rect y="614928.0" x="490.5" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.8"></rect>
+<rect y="614928.0" x="510.3" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="18.6"></rect>
+<rect y="614943.0" x="103.62" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="39.54"></rect>
+<rect y="614943.0" x="143.16" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="22.86"></rect>
+<rect y="614943.0" x="166.02" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="26.22"></rect>
+<rect y="614943.0" x="192.24" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.8"></rect>
+<rect y="614943.0" x="212.04" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="20.4"></rect>
+<rect y="614943.0" x="232.44" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="21.0"></rect>
+<rect y="614943.0" x="253.44" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="18.84"></rect>
+<rect y="614943.0" x="272.28" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.98"></rect>
+<rect y="614943.0" x="292.26" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="18.84"></rect>
+<rect y="614943.0" x="311.1" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.2"></rect>
+<rect y="614943.0" x="330.3" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="30.6"></rect>
+<rect y="614943.0" x="360.9" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.8"></rect>
+<rect y="614943.0" x="380.7" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.8"></rect>
+<rect y="614943.0" x="400.5" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="18.0"></rect>
+<rect y="614943.0" x="418.5" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="18.3"></rect>
+<rect y="614943.0" x="436.8" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="17.7"></rect>
+<rect y="614943.0" x="454.5" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="17.4"></rect>
+<rect y="614943.0" x="471.9" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="18.6"></rect>
+<rect y="614943.0" x="490.5" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.8"></rect>
+<rect y="614943.0" x="510.3" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="18.6"></rect>
+<rect y="614958.0" x="192.24" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.8"></rect>
+<rect y="614958.0" x="212.04" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="20.4"></rect>
+<rect y="614958.0" x="232.44" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="21.0"></rect>
+<rect y="614958.0" x="253.44" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="18.84"></rect>
+<rect y="614958.0" x="272.28" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.98"></rect>
+<rect y="614958.0" x="311.1" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.2"></rect>
+<rect y="614958.0" x="330.3" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="30.6"></rect>
+<rect y="614958.0" x="360.9" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.8"></rect>
+<rect y="614958.0" x="380.7" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.8"></rect>
+<rect y="614958.0" x="400.5" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="18.0"></rect>
+<rect y="614958.0" x="418.5" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="18.3"></rect>
+<rect y="614958.0" x="436.8" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="17.7"></rect>
+<rect y="614958.0" x="454.5" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="17.4"></rect>
+<rect y="614958.0" x="471.9" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="18.6"></rect>
+<rect y="614958.0" x="490.5" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="19.8"></rect>
+<rect y="614958.0" x="510.3" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.0" width="18.6"></rect>
+<text y="614728.142744" x="199.56" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.187">N</text>
+<text y="614728.142744" x="219.66" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.187">N</text>
+<text y="614728.142744" x="240.36" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.187">N</text>
+<text y="614728.142744" x="260.28" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.187">N</text>
+<text y="614728.142744" x="279.66" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.187">N</text>
+<text y="614728.142744" x="318.54" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614728.142744" x="343.44" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614728.142744" x="368.64" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614728.142744" x="388.44" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614728.142744" x="407.4" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614728.142744" x="425.52" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614728.142744" x="443.52" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614728.142744" x="461.1" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614728.142744" x="479.1" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614728.142744" x="498.2999" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614728.142744" x="517.4999" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614743.142744" x="200.04" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614743.142744" x="219.66" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.187">N</text>
+<text y="614743.142744" x="240.36" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.187">N</text>
+<text y="614743.142744" x="260.76" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614743.142744" x="279.66" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.187">N</text>
+<text y="614743.142744" x="318.54" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614743.142744" x="343.44" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614743.142744" x="368.64" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614743.142744" x="388.44" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614743.142744" x="407.4" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614743.142744" x="425.52" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614743.142744" x="443.52" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614743.142744" x="461.1" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614743.142744" x="479.1" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614743.142744" x="498.2999" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614743.142744" x="517.4999" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614763.182844" x="199.56" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.187">N</text>
+<text y="614763.182844" x="219.66" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.187">N</text>
+<text y="614763.182844" x="240.36" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.187">N</text>
+<text y="614763.182844" x="260.28" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.187">N</text>
+<text y="614763.182844" x="279.66" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.187">N</text>
+<text y="614763.182844" x="318.54" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614763.182844" x="343.44" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614763.182844" x="368.64" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614763.182844" x="388.44" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614763.182844" x="407.4" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614763.182844" x="425.52" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614763.182844" x="443.52" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614763.182844" x="461.1" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614763.182844" x="479.1" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614763.182844" x="498.2999" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614763.182844" x="517.4999" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614778.182844" x="199.56" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.187">N</text>
+<text y="614778.182844" x="219.66" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.187">N</text>
+<text y="614778.182844" x="240.36" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.187">N</text>
+<text y="614778.182844" x="260.28" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.187">N</text>
+<text y="614778.182844" x="279.66" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.187">N</text>
+<text y="614778.182844" x="318.54" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614778.182844" x="342.96" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.187">N</text>
+<text y="614778.182844" x="368.64" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614778.182844" x="388.44" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614778.182844" x="406.92" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.187">N</text>
+<text y="614778.182844" x="425.52" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614778.182844" x="443.52" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614778.182844" x="461.1" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614778.182844" x="479.1" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614778.182844" x="498.2999" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614778.182844" x="517.4999" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614793.182844" x="199.56" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.187">N</text>
+<text y="614793.182844" x="219.66" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.187">N</text>
+<text y="614793.182844" x="240.36" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.187">N</text>
+<text y="614793.182844" x="260.28" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.187">N</text>
+<text y="614793.182844" x="279.66" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.187">N</text>
+<text y="614793.182844" x="318.54" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614793.182844" x="342.96" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.187">N</text>
+<text y="614793.182844" x="368.64" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614793.182844" x="388.44" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614793.182844" x="407.4" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614793.182844" x="425.52" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614793.182844" x="443.52" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614793.182844" x="461.1" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614793.182844" x="479.1" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614793.182844" x="498.2999" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614793.182844" x="517.4999" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614808.182844" x="200.04" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614808.182844" x="219.66" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.187">N</text>
+<text y="614808.182844" x="240.36" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.187">N</text>
+<text y="614808.182844" x="260.76" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614808.182844" x="279.66" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.187">N</text>
+<text y="614808.182844" x="318.54" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614808.182844" x="343.44" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614808.182844" x="368.64" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614808.182844" x="388.44" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614808.182844" x="407.4" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614808.182844" x="425.52" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614808.182844" x="443.52" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614808.182844" x="461.1" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614808.182844" x="479.1" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614808.182844" x="498.2999" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614808.182844" x="517.4999" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614823.182844" x="200.04" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614823.182844" x="219.66" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.187">N</text>
+<text y="614823.182844" x="240.36" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.187">N</text>
+<text y="614823.182844" x="260.76" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614823.182844" x="279.66" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.187">N</text>
+<text y="614823.182844" x="318.54" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614823.182844" x="342.96" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.187">N</text>
+<text y="614823.182844" x="368.64" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614823.182844" x="388.44" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614823.182844" x="406.92" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.187">N</text>
+<text y="614823.182844" x="425.52" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614823.182844" x="443.52" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614823.182844" x="461.1" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614823.182844" x="479.1" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614823.182844" x="498.2999" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614823.182844" x="517.4999" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614838.182844" x="200.04" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614838.182844" x="219.66" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.187">N</text>
+<text y="614838.182844" x="240.36" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.187">N</text>
+<text y="614838.182844" x="260.76" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614838.182844" x="279.66" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.187">N</text>
+<text y="614838.182844" x="318.54" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614838.182844" x="342.96" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.187">N</text>
+<text y="614838.182844" x="368.64" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614838.182844" x="388.44" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614838.182844" x="407.4" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614838.182844" x="425.52" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614838.182844" x="443.52" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614838.182844" x="461.1" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614838.182844" x="479.1" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614838.182844" x="498.2999" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614838.182844" x="517.4999" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614853.182844" x="118.74" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.34857">16</text>
+<text y="614853.182844" x="152.28" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.6683">3</text>
+<text y="614853.182844" x="173.22" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="11.869452">0-2</text>
+<text y="614853.182844" x="199.62" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.01942">X</text>
+<text y="614853.182844" x="219.72" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.01942">X</text>
+<text y="614853.182844" x="240.42" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.01942">X</text>
+<text y="614853.182844" x="260.34" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.01942">X</text>
+<text y="614853.182844" x="279.78" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.01942">X</text>
+<text y="614853.182844" x="299.16" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.01942">X</text>
+<text y="614853.182844" x="318.18" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.01942">X</text>
+<text y="614853.182844" x="343.08" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.01942">X</text>
+<text y="614853.182844" x="368.28" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.01942">X</text>
+<text y="614853.182844" x="388.08" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.01942">X</text>
+<text y="614853.182844" x="406.98" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.01942">X</text>
+<text y="614853.182844" x="425.16" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.01942">X</text>
+<text y="614853.182844" x="443.16" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.01942">X</text>
+<text y="614853.182844" x="460.68" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.01942">X</text>
+<text y="614853.182844" x="478.68" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.01942">X</text>
+<text y="614853.182844" x="497.8799" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.01942">X</text>
+<text y="614853.182844" x="517.08" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.01942">X</text>
+<text y="614868.182844" x="199.56" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.187">N</text>
+<text y="614868.182844" x="219.66" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.187">N</text>
+<text y="614868.182844" x="240.36" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.187">N</text>
+<text y="614868.182844" x="260.28" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.187">N</text>
+<text y="614868.182844" x="279.66" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.187">N</text>
+<text y="614868.182844" x="318.54" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614868.182844" x="342.96" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.187">N</text>
+<text y="614868.182844" x="368.64" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614868.182844" x="388.44" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614868.182844" x="407.4" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614868.182844" x="425.52" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614868.182844" x="443.52" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614868.182844" x="461.1" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614868.182844" x="479.1" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614868.182844" x="498.2999" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614868.182844" x="517.4999" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614883.182844" x="118.74" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.34857">32</text>
+<text y="614883.182844" x="152.28" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.6683">3</text>
+<text y="614883.182844" x="173.22" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="11.869452">0-2</text>
+<text y="614883.182844" x="199.62" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.01942">X</text>
+<text y="614883.182844" x="219.72" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.01942">X</text>
+<text y="614883.182844" x="240.42" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.01942">X</text>
+<text y="614883.182844" x="260.34" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.01942">X</text>
+<text y="614883.182844" x="279.78" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.01942">X</text>
+<text y="614883.182844" x="299.16" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.01942">X</text>
+<text y="614883.182844" x="318.18" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.01942">X</text>
+<text y="614883.182844" x="343.08" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.01942">X</text>
+<text y="614883.182844" x="368.28" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.01942">X</text>
+<text y="614883.182844" x="388.08" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.01942">X</text>
+<text y="614883.182844" x="406.98" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.01942">X</text>
+<text y="614883.182844" x="425.16" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.01942">X</text>
+<text y="614883.182844" x="443.16" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.01942">X</text>
+<text y="614883.182844" x="460.68" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.01942">X</text>
+<text y="614883.182844" x="478.68" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.01942">X</text>
+<text y="614883.182844" x="497.8799" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.01942">X</text>
+<text y="614883.182844" x="517.08" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.01942">X</text>
+<text y="614898.182844" x="200.04" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614898.182844" x="219.66" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.187">N</text>
+<text y="614898.182844" x="240.36" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.187">N</text>
+<text y="614898.182844" x="260.76" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614898.182844" x="279.66" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.187">N</text>
+<text y="614898.182844" x="318.54" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614898.182844" x="342.96" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.187">N</text>
+<text y="614898.182844" x="368.64" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614898.182844" x="388.44" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614898.182844" x="407.4" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614898.182844" x="425.52" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614898.182844" x="443.52" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614898.182844" x="461.1" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614898.182844" x="479.1" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614898.182844" x="498.2999" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614898.182844" x="517.4999" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614913.182844" x="198.18" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="7.937706">N/</text>
+<text y="614923.142644" x="199.6204" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.01942">X</text>
+<text y="614913.182844" x="218.28" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="7.937706">N/</text>
+<text y="614923.142644" x="219.7204" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.01942">X</text>
+<text y="614913.182844" x="237.0" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="11.89818">SV/</text>
+<text y="614923.142644" x="240.4202" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.01942">X</text>
+<text y="614913.182844" x="258.9" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="7.937706">N/</text>
+<text y="614923.142644" x="260.3404" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.01942">X</text>
+<text y="614913.182844" x="278.28" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="7.997556">N/</text>
+<text y="614923.142644" x="279.7802" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.01942">X</text>
+<text y="614913.182844" x="317.16" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="7.039158">S/</text>
+<text y="614923.142644" x="318.1798" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.01942">X</text>
+<text y="614913.182844" x="339.06" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="12.994632">N/X</text>
+<text y="614913.182844" x="367.26" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="7.039158">S/</text>
+<text y="614923.142644" x="368.2798" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.01942">X</text>
+<text y="614913.182844" x="387.06" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="7.039158">S/</text>
+<text y="614923.142644" x="388.0798" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.01942">X</text>
+<text y="614913.182844" x="405.48" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="7.997556">N/</text>
+<text y="614923.142644" x="406.9802" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.01942">X</text>
+<text y="614913.182844" x="424.14" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="7.039158">S/</text>
+<text y="614923.142644" x="425.1598" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.01942">X</text>
+<text y="614913.182844" x="442.14" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="7.039158">S/</text>
+<text y="614923.142644" x="443.1598" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.01942">X</text>
+<text y="614913.182844" x="459.72" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="6.979308">S/</text>
+<text y="614923.142644" x="460.68" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.01942">X</text>
+<text y="614913.182844" x="477.72" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="6.979308">S/</text>
+<text y="614923.142644" x="478.68" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.01942">X</text>
+<text y="614913.182844" x="496.92" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="6.979308">S/</text>
+<text y="614923.142644" x="497.88" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.01942">X</text>
+<text y="614913.182844" x="516.1199" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="7.039158">S/</text>
+<text y="614923.142644" x="517.0799" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.01942">X</text>
+<text y="614938.142844" x="199.56" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.187">N</text>
+<text y="614938.142844" x="219.66" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.187">N</text>
+<text y="614938.142844" x="240.36" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.187">N</text>
+<text y="614938.142844" x="260.28" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.187">N</text>
+<text y="614938.142844" x="279.66" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.187">N</text>
+<text y="614938.142844" x="318.54" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614938.142844" x="342.96" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.187">N</text>
+<text y="614938.142844" x="368.64" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614938.142844" x="388.44" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614938.142844" x="407.4" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614938.142844" x="425.52" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614938.142844" x="443.52" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614938.142844" x="461.1" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614938.142844" x="479.1" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614938.142844" x="498.2999" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614938.142844" x="517.4999" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614953.142844" x="118.74" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.34857">32</text>
+<text y="614953.142844" x="152.28" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.6683">3</text>
+<text y="614953.142844" x="173.22" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="11.869452">0-2</text>
+<text y="614953.142844" x="199.62" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.01942">X</text>
+<text y="614953.142844" x="219.72" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.01942">X</text>
+<text y="614953.142844" x="240.42" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.01942">X</text>
+<text y="614953.142844" x="260.34" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.01942">X</text>
+<text y="614953.142844" x="279.78" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.01942">X</text>
+<text y="614953.142844" x="299.16" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.01942">X</text>
+<text y="614953.142844" x="318.18" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.01942">X</text>
+<text y="614953.142844" x="343.08" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.01942">X</text>
+<text y="614953.142844" x="368.28" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.01942">X</text>
+<text y="614953.142844" x="388.08" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.01942">X</text>
+<text y="614953.142844" x="406.98" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.01942">X</text>
+<text y="614953.142844" x="425.16" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.01942">X</text>
+<text y="614953.142844" x="443.16" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.01942">X</text>
+<text y="614953.142844" x="460.68" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.01942">X</text>
+<text y="614953.142844" x="478.68" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.01942">X</text>
+<text y="614953.142844" x="497.8799" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.01942">X</text>
+<text y="614953.142844" x="517.08" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.01942">X</text>
+<text y="614968.142844" x="200.04" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614968.142844" x="219.66" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.187">N</text>
+<text y="614968.142844" x="240.36" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.187">N</text>
+<text y="614968.142844" x="260.76" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614968.142844" x="279.66" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.187">N</text>
+<text y="614968.142844" x="318.54" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614968.142844" x="342.96" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="5.187">N</text>
+<text y="614968.142844" x="368.64" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614968.142844" x="388.44" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614968.142844" x="407.4" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614968.142844" x="425.52" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614968.142844" x="443.52" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614968.142844" x="461.1" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614968.142844" x="479.1" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614968.142844" x="498.2999" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text>
+<text y="614968.142844" x="517.4999" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="4.23738">S</text></svg>
+<p><strong>Notes</strong></p>
+<p><strong>21</strong></p>
+<p><strong>20</strong></p>
+<p><strong>19</strong></p>
+<p><strong>18</strong></p>
+<p><strong>17</strong></p>
+<p><strong>16</strong></p>
+<p><strong>14</strong></p>
+<p><strong>13:12</strong></p>
+<p><strong>11</strong></p>
+<p><strong>10</strong></p>
+<p><strong>9</strong></p>
+<p><strong>8</strong></p>
+<p><strong>7</strong></p>
+<p><strong>6</strong></p>
+<p><strong>4</strong></p>
+<p><strong>2</strong></p>
+<p><strong>0</strong></p>
+<p><strong>Size</strong></p>
+<p><strong>ID</strong></p>
+<p><strong>VIP</strong></p>
+<p><strong>VIF</strong></p>
+<p><strong>AC</strong></p>
+<p><strong>VM</strong></p>
+<p><strong>RF</strong></p>
+<p><strong>NT</strong></p>
+<p><strong>IOPL</strong></p>
+<p><strong>OF</strong></p>
+<p><strong>DF</strong></p>
+<p><strong>IF</strong></p>
+<p><strong>TF</strong></p>
+<p><strong>SF</strong></p>
+<p><strong>ZF</strong></p>
+<p><strong>AF</strong></p>
+<p><strong>PF</strong></p>
+<p><strong>CF</strong></p>
+<p><strong>Real-Address</strong></p>
+<p>16</p>
+<p>0</p>
+<p>0-3</p>
+<p>0</p>
+<p><strong>Mode (CR0.PE</strong></p>
+<p>32</p>
+<p>0</p>
+<p>0-3</p>
+<p>0</p>
+<p><strong>= 0)</strong></p>
+<p><strong>Protected,</strong></p>
+<p>16</p>
+<p>0</p>
+<p>0-3</p>
+<p>0</p>
+<p><strong>Compatibility,</strong></p>
+<p>16</p>
+<p>1-3</p>
+<p>&lt;CPL</p>
+<p>0</p>
+<p><strong>and 64-Bit</strong></p>
+<p><strong>Modes</strong></p>
+<p>16</p>
+<p>1-3</p>
+<p>≥CPL</p>
+<p>0</p>
+<p>32, 64</p>
+<p>0</p>
+<p>0-3</p>
+<p>0</p>
+<p><strong>(CR0.PE = 1, EFLAGS.VM =</strong></p>
+<p>32, 64</p>
+<p>1-3</p>
+<p>&lt;CPL</p>
+<p>0</p>
+<p><strong>0)</strong></p>
+<p>32, 64</p>
+<p>1-3</p>
+<p>≥CPL</p>
+<p>0</p>
+<p>1</p>
+<p><strong>Virtual-8086 (CR0.PE = 1,</strong></p>
+<p>16</p>
+<p>3</p>
+<p>3</p>
+<p>0</p>
+<p><strong>EFLAGS.VM =</strong></p>
+<p>1</p>
+<p><strong>1,</strong></p>
+<p><strong>CR4.VME = 0)</strong></p>
+<p>32</p>
+<p>3</p>
+<p>3</p>
+<p>0</p>
+<p>2</p>
+<p><strong>VME</strong></p>
+<p>16</p>
+<p>3</p>
+<p>0-2</p>
+<p>0/</p>
+<p><strong>(CR0.PE = 1,</strong></p>
+<p>X</p>
+<p><strong>EFLAGS.VM =</strong></p>
+<p>16</p>
+<p>3</p>
+<p>3</p>
+<p>0</p>
+<p><strong>1,</strong></p>
+<p>1</p>
+<p><strong>CR4.VME = 1)</strong></p>
+<p>32</p>
+<p>3</p>
+<p>3</p>
+<p>0</p>
+<p><strong>NOTES:</strong></p>
+<p>1. #GP fault - no flag update</p>
+<p>2. #GP fault with no flag update if VIP=1 in EFLAGS register and IF=1 in FLAGS value on stack</p>
+<svg width="416.7900225" viewBox="45.119990 615030.419995 277.860015 96.000000" height="144.0">
+<text y="615041.166" x="176.52" style="font-size:9.000000pt" lengthAdjust="spacingAndGlyphs" textLength="15.1236">Key</text>
+<rect y="615046.38" x="45.12" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="16.02" width="58.5"></rect>
+<text y="615057.2202" x="107.6397" style="font-size:9.000000pt" lengthAdjust="spacingAndGlyphs" textLength="74.4759">Updated from stack</text>
+<rect y="615062.4" x="45.12" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="16.02" width="58.5"></rect>
+<text y="615073.1802" x="107.6397" style="font-size:9.000000pt" lengthAdjust="spacingAndGlyphs" textLength="178.479">Updated from IF (bit 9) in FLAGS value on stack</text>
+<rect y="615078.42" x="45.12" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="15.96" width="58.5"></rect>
+<text y="615089.2002" x="107.64" style="font-size:9.000000pt" lengthAdjust="spacingAndGlyphs" textLength="71.5752">No change in value</text>
+<rect y="615094.38" x="45.12" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="16.02" width="58.5"></rect>
+<text y="615105.2202" x="107.64" style="font-size:9.000000pt" lengthAdjust="spacingAndGlyphs" textLength="70.839">No EFLAGS update</text>
+<text y="615121.1457" x="71.64" style="font-size:9.000000pt" lengthAdjust="spacingAndGlyphs" textLength="5.535">0</text>
+<text y="615121.1799" x="107.64" style="font-size:9.000000pt" lengthAdjust="spacingAndGlyphs" textLength="59.04">Value is cleared</text>
+<text y="615057.186" x="71.88" style="font-size:9.000000pt" lengthAdjust="spacingAndGlyphs" textLength="5.013">S</text>
+<text y="615073.146" x="69.0" style="font-size:9.000000pt" lengthAdjust="spacingAndGlyphs" textLength="10.7685">SV</text>
+<text y="615089.166" x="71.28" style="font-size:9.000000pt" lengthAdjust="spacingAndGlyphs" textLength="6.21">N</text>
+<text y="615105.186" x="71.46" style="font-size:9.000000pt" lengthAdjust="spacingAndGlyphs" textLength="5.796">X</text></svg>
+<h2>Operation</h2>
+<pre>IF VM = 0 (* Not in Virtual-8086 Mode *)
+    THEN IF CPL = 0
+         THEN
+              IF OperandSize = 32;
+                    THEN
+                         EFLAGS ← Pop(); (* 32-bit pop *)
+                         (* All non-reserved flags except RF, VIP, VIF, and VM can be modified; VIP, VIF, VM, and all reserved bits are unaffected. RF is cleared. *)
+                    ELSE IF (Operandsize = 64)
+                         RFLAGS = Pop(); (* 64-bit pop *)
+                         (* All non-reserved flags except RF, VIP, VIF, and VM can be modified;
+                         VIP, VIF, VM, and all reserved bits are unaffected. RF is cleared. *)
+                    ELSE (* OperandSize = 16 *)
+                         EFLAGS[15:0] ← Pop(); (* 16-bit pop *)
+                         (* All non-reserved flags can be modified. *)
+              FI;
+         ELSE (* CPL &gt; 0 *)
+              IF OperandSize = 32
+                    THEN
+                         IF CPL &gt; IOPL
+                              THEN
+                                    EFLAGS ← Pop(); (* 32-bit pop *)
+                                    (* All non-reserved bits except IF, IOPL, VIP, VIF, VM and RF can be modified;
+                                    IF, IOPL, VIP, VIF, VM and all reserved bits are unaffected; RF is cleared. *)
+                              ELSE
+                                    EFLAGS ← Pop(); (* 32-bit pop *)
+                                    (* All non-reserved bits except IOPL, VIP, VIF, VM and RF can be modified;
+                                    IOPL, VIP, VIF, VM and all reserved bits are unaffected; RF is cleared. *)
+                         FI;
+                    ELSE IF (Operandsize = 64)
+                         IF CPL &gt; IOPL
+                              THEN
+                                    RFLAGS ← Pop(); (* 64-bit pop *)
+                                    (* All non-reserved bits except IF, IOPL, VIP, VIF, VM and RF can be modified;
+                                    IF, IOPL, VIP, VIF, VM and all reserved bits are unaffected; RF is cleared. *)
+                              ELSE
+                                    RFLAGS ← Pop(); (* 64-bit pop *)
+                                    (* All non-reserved bits except IOPL, VIP, VIF, VM and RF can be modified;
+                                    IOPL, VIP, VIF, VM and all reserved bits are unaffected; RF is cleared. *)
+                         FI;
+                    ELSE (* OperandSize = 16 *)
+                         EFLAGS[15:0] ← Pop(); (* 16-bit pop *)
+                         (* All non-reserved bits except IOPL can be modified; IOPL and all reserved bits are unaffected. *)
+              FI;
+         FI;
+    ELSE IF CR4.VME = 1 (* In Virtual-8086 Mode with VME Enabled *)
+         IF IOPL = 3
+              THEN IF OperandSize = 32
+                    THEN
+                         EFLAGS ← Pop();
+                         (* All non-reserved bits except IOPL, VIP, VIF, VM, and RF can be modified;
+                         VIP, VIF, VM, IOPL and all reserved bits are unaffected. RF is cleared. *)
+                    ELSE
+                         EFLAGS[15:0] ← Pop(); FI;
+                         (* All non-reserved bits except IOPL can be modified;
+                         IOPL and all reserved bits are unaffected. *)
+              FI;
+         ELSE (* IOPL &lt; 3 *)
+              IF (Operandsize = 32)
+                    THEN
+                         #GP(0);  (* Trap to virtual-8086 monitor. *)
+                    ELSE (* Operandsize = 16 *)
+                         tempFLAGS ← Pop();
+                         IF EFLAGS.VIP = 1 AND tempFLAGS[9] = 1
+                              THEN #GP(0);
+                              ELSE
+                                    EFLAGS.VIF ← tempFLAGS[9];
+                                    EFLAGS[15:0] ← tempFLAGS;
+                              (* All non-reserved bits except IOPL and IF can be modified;
+                              IOPL, IF, and all reserved bits are unaffected. *)
+                    FI;
+              FI;
+         FI;
+    ELSE  (* In Virtual-8086 Mode *)
+         IF IOPL = 3
+              THEN IF OperandSize = 32
+                    THEN
+                         EFLAGS ← Pop();
+                         (* All non-reserved bits except IOPL, VIP, VIF, VM, and RF can be modified;
+                         VIP, VIF, VM, IOPL and all reserved bits are unaffected. RF is cleared. *)
+                    ELSE
+                         EFLAGS[15:0] ← Pop(); FI;
+                         (* All non-reserved bits except IOPL can be modified;
+                         IOPL and all reserved bits are unaffected. *)
+         ELSE (* IOPL &lt; 3 *)
+              #GP(0);  (* Trap to virtual-8086 monitor. *)
+         FI;
+    FI;
+FI;</pre>
+<h2>Flags Affected</h2>
+<p>All flags may be affected; see the Operation section for details.</p>
+<h2>Protected Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#SS(0)</td>
+<td>If the top of stack is not within the stack segment.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If an unaligned memory reference is made while the current privilege level is 3 and alignment checking is enabled.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Real-Address Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#SS</td>
+<td>If the top of stack is not within the stack segment.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Virtual-8086 Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>
+<p>If the I/O privilege level is less than 3.</p>
+<p>If an attempt is made to execute the POPF/POPFD instruction with an operand-size override prefix.</p></td></tr>
+<tr>
+<td>#SS(0)</td>
+<td>If the top of stack is not within the stack segment.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If an unaligned memory reference is made while alignment checking is enabled.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Compatibility Mode Exceptions</h2>
+<p>Same as for protected mode exceptions.</p>
+<h2>64-Bit Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>If the memory address is in a non-canonical form.</td></tr>
+<tr>
+<td>#SS(0)</td>
+<td>If the stack address is in a non-canonical form.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and an unaligned memory reference is made while the current privilege level is 3.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table></body></html>

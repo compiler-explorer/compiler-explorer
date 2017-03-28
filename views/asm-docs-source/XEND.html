@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>XEND — Transactional End </title></head>
+<body>
+<h1>XEND — Transactional End</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32bit Mode Support</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>
+<p>0F 01 D5</p>
+<p>XEND</p></td>
+<td>A</td>
+<td>V/V</td>
+<td>RTM</td>
+<td>Specifies the end of an RTM code region.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand2</td>
+<td>Operand3</td>
+<td>Operand4</td></tr>
+<tr>
+<td>A</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>The instruction marks the end of an RTM code region. If this corresponds to the outermost scope (that is, including this XEND instruction, the number of XBEGIN instructions is the same as number of XEND instructions), the logical processor will attempt to commit the logical processor state atomically. If the commit fails, the logical processor will rollback all architectural register and memory updates performed during the RTM execution. The logical processor will resume execution at the fallback address computed from the outermost XBEGIN instruction. The EAX register is updated to reflect RTM abort information.</p>
+<p>XEND executed outside a transactional region will cause a #GP (General Protection Fault).</p>
+<h2>Operation</h2>
+<p><strong>XEND</strong></p>
+<pre>IF (RTM_ACTIVE = 0) THEN
+    SIGNAL #GP
+ELSE
+    RTM_NEST_COUNT--
+    IF (RTM_NEST_COUNT = 0) THEN
+         Try to commit transaction
+         IF fail to commit transactional execution
+              THEN
+                    GOTO RTM_ABORT_PROCESSING;
+              ELSE (* commit success *)
+                    RTM_ACTIVE ← 0
+         FI;
+    FI;
+FI;
+(* For any RTM abort condition encountered during RTM execution *)
+RTM_ABORT_PROCESSING:
+    Restore architectural register state
+    Discard memory updates performed in transaction
+    Update EAX with status
+    RTM_NEST_COUNT ← 0
+    RTM_ACTIVE ← 0
+    IF 64-bit Mode
+         THEN
+              RIP ← fallbackRIP
+         ELSE
+              EIP ← fallbackEIP
+    FI;
+END</pre>
+<h2>Flags Affected</h2>
+<p>None</p>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>XEND:</p>
+<p>void _xend( void );</p>
+<h2>SIMD Floating-Point Exceptions</h2>
+<p>None</p>
+<h2>Other Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>
+<p>CPUID.(EAX=7, ECX=0):EBX.RTM[bit 11] = 0.</p>
+<p>If LOCK or 66H or F2H or F3H prefix is used.</p></td></tr>
+<tr>
+<td>#GP(0)</td>
+<td>If RTM_ACTIVE = 0.</td></tr></table></body></html>

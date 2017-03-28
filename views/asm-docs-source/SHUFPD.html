@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>SHUFPD—Shuffle Packed Double-Precision Floating-Point Values </title></head>
+<body>
+<h1>SHUFPD—Shuffle Packed Double-Precision Floating-Point Values</h1>
+<table>
+<tr>
+<th>Opcode*/Instruction</th>
+<th>Op/En</th>
+<th>64/32 bit Mode Support</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>
+<p>66 0F C6 /<em>r</em> ib</p>
+<p>SHUFPD <em>xmm1</em>, <em>xmm2/m128</em>, <em>imm8</em></p></td>
+<td>RMI</td>
+<td>V/V</td>
+<td>SSE2</td>
+<td>Shuffle packed double-precision floating-point values selected by <em>imm8</em> from <em>xmm1 </em>and <em>xmm2/m128</em> to <em>xmm1</em>.</td></tr>
+<tr>
+<td>
+<p>VEX.NDS.128.66.0F.WIG C6 /r ib</p>
+<p>VSHUFPD <em>xmm1, xmm2, xmm3/m128, imm8</em></p></td>
+<td>RVMI</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Shuffle Packed double-precision floating-point values selected by <em>imm8</em> from <em>xmm2 </em>and <em>xmm3/mem</em>.</td></tr>
+<tr>
+<td>
+<p>VEX.NDS.256.66.0F.WIG C6 /r ib</p>
+<p>VSHUFPD <em>ymm1, ymm2, ymm3/m256, imm8</em></p></td>
+<td>RVMI</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Shuffle Packed double-precision floating-point values selected by<em> imm8</em> from <em>ymm2 </em>and <em>ymm3/mem</em>.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RMI</td>
+<td>ModRM:reg (r, w)</td>
+<td>ModRM:r/m (r)</td>
+<td>imm8</td>
+<td>NA</td></tr>
+<tr>
+<td>RVMI</td>
+<td>ModRM:reg (w)</td>
+<td>VEX.vvvv (r)</td>
+<td>ModRM:r/m (r)</td>
+<td>imm8</td></tr></table>
+<h2>Description</h2>
+<p>Moves either of the two packed double-precision floating-point values from destination operand (first operand) into the low quadword of the destination operand; moves either of the two packed double-precision floating-point values from the source operand into to the high quadword of the destination operand (see Figure 4-21). The select operand (third operand) determines which values are moved to the destination operand.</p>
+<p>In 64-bit mode, using a REX prefix in the form of REX.R permits this instruction to access additional registers (XMM8-XMM15).</p>
+<p>128-bit Legacy SSE version: The source can be an XMM register or an 128-bit memory location. The destination is not distinct from the first source XMM register and the upper bits (VLMAX-1:128) of the corresponding YMM register destination are unmodified.</p>
+<p>VEX.128 encoded version: the first source operand is an XMM register or 128-bit memory location. The destination operand is an XMM register. The upper bits (VLMAX-1:128) of the corresponding YMM register destination are zeroed.</p>
+<p>VEX.256 encoded version: The first source operand is a YMM register. The second source operand can be a YMM register or a 256-bit memory location. The destination operand is a YMM register.</p>
+<svg width="568.799985" viewBox="111.840000 751342.020010 379.199990 146.999985" height="220.4999775">
+<text y="751367.927684" x="143.2201" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="21.320964">DEST</text>
+<text y="751411.427484" x="147.72" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="16.860144">SRC</text>
+<text y="751474.907584" x="143.2201" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="21.320964">DEST</text>
+<rect y="751463.7" x="315.6" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="141.0"></rect>
+<rect y="751355.7" x="315.6" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="141.66"></rect>
+<rect y="751400.7" x="315.6" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="141.66"></rect>
+<rect y="751355.7" x="169.26" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="146.34"></rect>
+<rect y="751400.7" x="169.26" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="146.34"></rect>
+<rect y="751463.7" x="168.6" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="147.0"></rect>
+<path style="stroke:black" d="M169.020000,751355.460000 L169.020000,751373.700000 L169.500010,751373.700000 L169.500010,751355.460000 "></path>
+<path style="stroke:black" d="M169.260000,751355.460000 L169.260000,751355.940000 L315.840000,751355.940000 L315.840000,751355.460000 "></path>
+<path style="stroke:black" d="M315.360000,751355.460000 L315.360000,751373.700000 L315.839980,751373.700000 L315.839980,751355.460000 "></path>
+<path style="stroke:black" d="M315.600000,751355.460000 L315.600000,751355.940000 L457.500000,751355.940000 L457.500000,751355.460000 "></path>
+<path style="stroke:black" d="M315.360000,751355.700000 L315.360000,751373.940000 L315.839980,751373.940000 L315.839980,751355.700000 "></path>
+<path style="stroke:black" d="M457.020000,751355.700000 L457.020000,751373.940000 L457.500010,751373.940000 L457.500010,751355.700000 "></path>
+<path style="stroke:black" d="M169.020000,751373.460000 L169.020000,751373.940000 L315.600000,751373.940000 L315.600000,751373.460000 "></path>
+<path style="stroke:black" d="M315.360000,751373.460000 L315.360000,751373.940000 L457.260000,751373.940000 L457.260000,751373.460000 "></path>
+<path style="stroke:black" d="M169.020000,751400.460000 L169.020000,751418.700000 L169.500010,751418.700000 L169.500010,751400.460000 "></path>
+<path style="stroke:black" d="M169.260000,751400.460000 L169.260000,751400.940000 L315.840000,751400.940000 L315.840000,751400.460000 "></path>
+<path style="stroke:black" d="M315.360000,751400.460000 L315.360000,751418.700000 L315.839980,751418.700000 L315.839980,751400.460000 "></path>
+<path style="stroke:black" d="M315.600000,751400.460000 L315.600000,751400.940000 L457.500000,751400.940000 L457.500000,751400.460000 "></path>
+<path style="stroke:black" d="M315.360000,751400.700000 L315.360000,751418.940000 L315.839980,751418.940000 L315.839980,751400.700000 "></path>
+<path style="stroke:black" d="M457.020000,751400.700000 L457.020000,751418.940000 L457.500010,751418.940000 L457.500010,751400.700000 "></path>
+<path style="stroke:black" d="M169.020000,751418.459990 L169.020000,751418.940000 L315.600000,751418.940000 L315.600000,751418.459990 "></path>
+<path style="stroke:black" d="M315.360000,751418.459990 L315.360000,751418.940000 L457.260000,751418.940000 L457.260000,751418.459990 "></path>
+<text y="751475.567184" x="369.78" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="31.089282">X1 or X0</text>
+<text y="751364.387384" x="378.602172" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.777096">X0</text>
+<text y="751409.387384" x="378.602172" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.777096">Y0</text>
+<text y="751364.387384" x="231.36" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.777096">X1</text>
+<text y="751409.387384" x="231.36" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.777096">Y1</text>
+<text y="751474.847384" x="224.22" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="31.123596">Y1 or Y0</text></svg>
+<h3>Figure 4-21.  SHUFPD Shuffle Operation</h3>
+<p>The source operand can be an XMM register or a 128-bit memory location. The destination operand is an XMM register. The select operand is an 8-bit immediate: bit 0 selects which value is moved from the destination operand to the result (where 0 selects the low quadword and 1 selects the high quadword) and bit 1 selects which value is moved from the source operand to the result. Bits 2 through 7 of the select operand are reserved and must be set to 0.</p>
+<h2>Operation</h2>
+<pre>IF SELECT[0] = 0
+    THEN DEST[63:0]  ← DEST[63:0];
+    ELSE DEST[63:0]  ← DEST[127:64]; FI;
+IF SELECT[1] = 0
+    THEN DEST[127:64]  ← SRC[63:0];
+    ELSE DEST[127:64]  ← SRC[127:64]; FI;</pre>
+<p><strong>SHUFPD (128-bit Legacy SSE version)</strong></p>
+<pre>IF IMM0[0] = 0
+    THEN DEST[63:0] ← SRC1[63:0]
+    ELSE DEST[63:0] ← SRC1[127:64] FI;
+IF IMM0[1] = 0
+    THEN DEST[127:64] ← SRC2[63:0]
+    ELSE DEST[127:64] ← SRC2[127:64] FI;
+DEST[VLMAX-1:128] (Unmodified)</pre>
+<p><strong>VSHUFPD (VEX.128 encoded version)</strong></p>
+<pre>IF IMM0[0] = 0
+    THEN DEST[63:0] ← SRC1[63:0]
+    ELSE DEST[63:0] ← SRC1[127:64] FI;
+IF IMM0[1] = 0
+    THEN DEST[127:64] ← SRC2[63:0]
+    ELSE DEST[127:64] ← SRC2[127:64] FI;
+DEST[VLMAX-1:128] ← 0</pre>
+<p><strong>VSHUFPD (VEX.256 encoded version)</strong></p>
+<pre>IF IMM0[0] = 0
+    THEN DEST[63:0] ← SRC1[63:0]
+    ELSE DEST[63:0] ← SRC1[127:64] FI;
+IF IMM0[1] = 0
+    THEN DEST[127:64] ← SRC2[63:0]
+    ELSE DEST[127:64] ← SRC2[127:64] FI;
+IF IMM0[2] = 0
+    THEN DEST[191:128] ← SRC1[191:128]
+    ELSE DEST[191:128] ← SRC1[255:192] FI;
+IF IMM0[3] = 0
+    THEN DEST[255:192] ← SRC2[191:128]
+    ELSE DEST[255:192] ← SRC2[255:192] FI;</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>SHUFPD:</p>
+<p>__m128d _mm_shuffle_pd(__m128d a, __m128d b, unsigned int imm8)</p>
+<p>VSHUFPD:</p>
+<p> __m256d _mm256_shuffle_pd (__m256d a, __m256d b, const int select);</p>
+<h2>SIMD Floating-Point Exceptions</h2>
+<p>None.</p>
+<h2>Other Exceptions</h2>
+<p>See Exceptions Type 4.</p></body></html>

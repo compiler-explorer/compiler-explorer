@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>CVTPI2PS—Convert Packed Dword Integers to Packed Single-Precision FP Values </title></head>
+<body>
+<h1>CVTPI2PS—Convert Packed Dword Integers to Packed Single-Precision FP Values</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64-Bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>
+<p>0F 2A /<em>r</em></p>
+<p>CVTPI2PS <em>xmm</em>, <em>mm</em>/<em>m64</em></p></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Convert two signed doubleword integers from <em>mm</em>/<em>m64</em> to two single-precision floating-point values in <em>xmm</em>.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RM</td>
+<td>ModRM:reg (w)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Converts two packed signed doubleword integers in the source operand (second operand) to two packed single-precision floating-point values in the destination operand (first operand).</p>
+<p>The source operand can be an MMX technology register or a 64-bit memory location. The destination operand is an XMM register. The results are stored in the low quadword of the destination operand, and the high quadword remains unchanged. When a conversion is inexact, the value returned is rounded according to the rounding control bits in the MXCSR register.</p>
+<p>This instruction causes a transition from x87 FPU to MMX technology operation (that is, the x87 FPU top-of-stack pointer is set to 0 and the x87 FPU tag word is set to all 0s [valid]). If this instruction is executed while an x87 FPU floating-point exception is pending, the exception is handled before the CVTPI2PS instruction is executed.</p>
+<p>In 64-bit mode, use of the REX.R prefix permits this instruction to access additional registers (XMM8-XMM15).</p>
+<h2>Operation</h2>
+<pre>DEST[31:0] ← Convert_Integer_To_Single_Precision_Floating_Point(SRC[31:0]);
+DEST[63:32] ← Convert_Integer_To_Single_Precision_Floating_Point(SRC[63:32]);
+(* High quadword of destination unchanged *)</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>CVTPI2PS:</p>
+<p>__m128 _mm_cvtpi32_ps(__m128 a, __m64 b)</p>
+<h2>SIMD Floating-Point Exceptions</h2>
+<p>Precision.</p>
+<h2>Other Exceptions</h2>
+<p>See Table 22-5, “Exception Conditions for Legacy SIMD/MMX Instructions with XMM and FP Exception,” in the <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 3B</em>.</p></body></html>

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>VINSERTI128 — Insert Packed Integer Values </title></head>
+<body>
+<h1>VINSERTI128 — Insert Packed Integer Values</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32 -bit Mode</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>
+<p>VEX.NDS.256.66.0F3A.W0 38 /r ib</p>
+<p>VINSERTI128 <em>ymm1, ymm2, xmm3/m128, imm8</em></p></td>
+<td>RVMI</td>
+<td>V/V</td>
+<td>AVX2</td>
+<td>Insert 128-bits of integer data from <em>xmm3/mem </em>and the remaining values from <em>ymm2</em> into <em>ymm1.</em></td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RVMI</td>
+<td>ModRM:reg (w)</td>
+<td>VEX.vvvv</td>
+<td>ModRM:r/m (r)</td>
+<td>Imm8</td></tr></table>
+<h2>Description</h2>
+<p>Performs an insertion of 128-bits of packed integer data from the second source operand (third operand) into an the destination operand (first operand) at a 128-bit offset from imm8[0]. The remaining portions of the destination are written by the corresponding fields of the first source operand (second operand). The second source operand can be either an XMM register or a 128-bit memory location.</p>
+<p>The high 7 bits of the immediate are ignored.</p>
+<p>VEX.L must be 1; an attempt to execute this instruction with VEX.L=0 will cause #UD.</p>
+<h2>Operation</h2>
+<p><strong>VINSERTI128</strong></p>
+<pre>TEMP[255:0] ← SRC1[255:0]
+CASE (imm8[0]) OF
+    0: TEMP[127:0] ←SRC2[127:0]
+    1: TEMP[255:128] ← SRC2[127:0]
+ESAC
+DEST ←TEMP</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>VINSERTI128: __m256i _mm256_inserti128_si256 (__m256i a, __m128i b, int offset);</p>
+<h2>SIMD Floating-Point Exceptions</h2>
+<p>None</p>
+<h2>Other Exceptions</h2>
+<p>See Exceptions Type 6; additionally</p>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>
+<p>If VEX.L = 0,</p>
+<p>If VEX.W = 1.</p></td></tr></table></body></html>

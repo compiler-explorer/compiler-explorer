@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>AESDEC—Perform One Round of an AES Decryption Flow </title></head>
+<body>
+<h1>AESDEC—Perform One Round of an AES Decryption Flow</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32-bit Mode</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>66 0F 38 DE /r AESDEC xmm1, xmm2/m128</td>
+<td>RM</td>
+<td>V/V</td>
+<td>AES</td>
+<td>Perform one round of an AES decryption flow, using the Equivalent Inverse Cipher, operating on a 128-bit data (state) from xmm1 with a 128-bit round key from xmm2/m128.</td></tr>
+<tr>
+<td>VEX.NDS.128.66.0F38.WIG DE /r VAESDEC xmm1, xmm2, xmm3/m128</td>
+<td>RVM</td>
+<td>V/V</td>
+<td>Both AES and AVX flags</td>
+<td>Perform one round of an AES decryption flow, using the Equivalent Inverse Cipher, operating on a 128-bit data (state) from xmm2 with a 128-bit round key from xmm3/m128; store the result in xmm1.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand2</td>
+<td>Operand3</td>
+<td>Operand4</td></tr>
+<tr>
+<td>RM</td>
+<td>ModRM:reg (r, w)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td></tr>
+<tr>
+<td>RVM</td>
+<td>ModRM:reg (w)</td>
+<td>VEX.vvvv (r)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>This instruction performs a single round of the AES decryption flow using the Equivalent Inverse Cipher, with the round key from the second source operand, operating on a 128-bit data (state) from the first source operand, and store the result in the destination operand.</p>
+<p>Use the AESDEC instruction for all but the last decryption round. For the last decryption round, use the AESDEC-CLAST instruction.</p>
+<p>128-bit Legacy SSE version: The first source operand and the destination operand are the same and must be an XMM register. The second source operand can be an XMM register or a 128-bit memory location. Bits (VLMAX-1:128) of the corresponding YMM destination register remain unchanged.</p>
+<p>VEX.128 encoded version: The first source operand and the destination operand are XMM registers. The second source operand can be an XMM register or a 128-bit memory location. Bits (VLMAX-1:128) of the destination YMM register are zeroed.</p>
+<h2>Operation</h2>
+<p><strong>AESDEC</strong></p>
+<pre>STATE ← SRC1;
+RoundKey ← SRC2;
+STATE ← InvShiftRows( STATE );
+STATE ← InvSubBytes( STATE );
+STATE ← InvMixColumns( STATE );
+DEST[127:0] ← STATE XOR RoundKey;
+DEST[VLMAX-1:128] (Unmodified)</pre>
+<p><strong>VAESDEC</strong></p>
+<pre>STATE ← SRC1;
+RoundKey ← SRC2;
+STATE ← InvShiftRows( STATE );
+STATE ← InvSubBytes( STATE );
+STATE ← InvMixColumns( STATE );
+DEST[127:0] ← STATE XOR RoundKey;
+DEST[VLMAX-1:128] ← 0</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>(V)AESDEC:</p>
+<p>__m128i _mm_aesdec (__m128i, __m128i)</p>
+<h2>SIMD Floating-Point Exceptions</h2>
+<p>None</p>
+<h2>Other Exceptions</h2>
+<p>See Exceptions Type 4.</p></body></html>

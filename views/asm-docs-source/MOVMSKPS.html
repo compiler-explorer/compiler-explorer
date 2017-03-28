@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>MOVMSKPS—Extract Packed Single-Precision Floating-Point Sign Mask </title></head>
+<body>
+<h1>MOVMSKPS—Extract Packed Single-Precision Floating-Point Sign Mask</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32-bit Mode</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>
+<p>0F 50 /<em>r</em></p>
+<p>MOVMSKPS <em>reg</em>, <em>xmm</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>SSE</td>
+<td>Extract 4-bit sign mask from <em>xmm </em>and store in <em>reg</em>. The upper bits of <em>r32</em> or <em>r64</em> are filled with zeros.</td></tr>
+<tr>
+<td>
+<p>VEX.128.0F.WIG 50 /r</p>
+<p>VMOVMSKPS <em>reg, xmm2</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Extract 4-bit sign mask from <em>xmm2</em> and store in reg. The upper bits of <em>r32</em> or <em>r64</em> are zeroed.</td></tr>
+<tr>
+<td>
+<p>VEX.256.0F.WIG 50 /r</p>
+<p>VMOVMSKPS <em>reg, ymm2</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Extract 8-bit sign mask from ymm2 and store in reg. The upper bits of <em>r32</em> or <em>r64</em> are zeroed.</td></tr></table>
+<h3>Instruction Operand Encoding<sup>1</sup></h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RM</td>
+<td>ModRM:reg (w)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Extracts the sign bits from the packed single-precision floating-point values in the source operand (second operand), formats them into a 4- or 8-bit mask, and stores the mask in the destination operand (first operand). The source operand is an XMM or YMM register, and the destination operand is a general-purpose register. The mask is stored in the 4 or 8 low-order bits of the destination operand. The upper bits of the destination operand beyond the mask are filled with zeros.</p>
+<p>In 64-bit mode, the instruction can access additional registers (XMM8-XMM15, R8-R15) when used with a REX.R prefix. The default operand size is 64-bit in 64-bit mode.</p>
+<p>128-bit versions: The source operand is a YMM register. The destination operand is a general purpose register.</p>
+<p>VEX.256 encoded version: The source operand is a YMM register. The destination operand is a general purpose register.</p>
+<p>Note: In VEX-encoded versions, VEX.vvvv is reserved and must be 1111b, otherwise instructions will #UD.</p>
+<h2>Operation</h2>
+<pre>DEST[0] ← SRC[31];
+DEST[1] ← SRC[63];
+DEST[2] ← SRC[95];
+DEST[3] ← SRC[127];
+IF DEST = r32
+    THEN DEST[31:4] ← ZeroExtend;
+    ELSE DEST[63:4] ← ZeroExtend;
+FI;</pre>
+<p>1.</p>
+<pre>    ModRM.MOD = 011B required</pre>
+<p><strong>(V)MOVMSKPS (128-bit version)</strong></p>
+<pre>DEST[0] ← SRC[31]
+DEST[1] ← SRC[63]
+DEST[2] ← SRC[95]
+DEST[3] ← SRC[127]
+IF DEST = r32
+    THEN DEST[31:4] ← 0;
+    ELSE DEST[63:4] ← 0;
+FI</pre>
+<p><strong>VMOVMSKPS (VEX.256 encoded version)</strong></p>
+<pre>DEST[0] ← SRC[31]
+DEST[1] ← SRC[63]
+DEST[2] ← SRC[95]
+DEST[3] ← SRC[127]
+DEST[4] ← SRC[159]
+DEST[5] ← SRC[191]
+DEST[6] ← SRC[223]
+DEST[7] ← SRC[255]
+IF DEST = r32
+    THEN DEST[31:8] ← 0;
+    ELSE DEST[63:8] ← 0;
+FI</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>int _mm_movemask_ps(__m128 a)</p>
+<p>int _mm256_movemask_ps(__m256 a)</p>
+<h2>SIMD Floating-Point Exceptions</h2>
+<p>None.</p>
+<h2>Other Exceptions</h2>
+<p>See Exceptions Type 7; additionally</p>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>If VEX.vvvv ≠ 1111B.</td></tr></table></body></html>

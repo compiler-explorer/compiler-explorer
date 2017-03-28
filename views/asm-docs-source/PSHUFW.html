@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>PSHUFW—Shuffle Packed Words </title></head>
+<body>
+<h1>PSHUFW—Shuffle Packed Words</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64-Bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>
+<p>0F 70 /<em>r</em> ib</p>
+<p>PSHUFW <em>mm1, mm2/m64, imm8</em></p></td>
+<td>RMI</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Shuffle the words in <em>mm2/m64</em> based on the encoding in <em>imm8</em> and store the result in <em>mm1</em>.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RMI</td>
+<td>ModRM:reg (w)</td>
+<td>ModRM:r/m (r)</td>
+<td>imm8</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Copies words from the source operand (second operand) and inserts them in the destination operand (first operand) at word locations selected with the order operand (third operand). This operation is similar to the opera-tion used by the PSHUFD instruction, which is illustrated in Figure 4-12. For the PSHUFW instruction, each 2-bit field in the order operand selects the contents of one word location in the destination operand. The encodings of the order operand fields select words from the source operand to be copied to the destination operand.</p>
+<p>The source operand can be an MMX technology register or a 64-bit memory location. The destination operand is an MMX technology register. The order operand is an 8-bit immediate. Note that this instruction permits a word in the source operand to be copied to more than one word location in the destination operand.</p>
+<p>In 64-bit mode, using a REX prefix in the form of REX.R permits this instruction to access additional registers (XMM8-XMM15).</p>
+<h2>Operation</h2>
+<pre>DEST[15:0] ← (SRC &gt;&gt; (ORDER[1:0] * 16))[15:0];
+DEST[31:16] ← (SRC &gt;&gt; (ORDER[3:2] * 16))[15:0];
+DEST[47:32] ← (SRC &gt;&gt; (ORDER[5:4] * 16))[15:0];
+DEST[63:48] ← (SRC &gt;&gt; (ORDER[7:6] * 16))[15:0];</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>PSHUFW:</p>
+<p>__m64 _mm_shuffle_pi16(__m64 a, int n)</p>
+<h2>Flags Affected</h2>
+<p>None.</p>
+<h2>Numeric Exceptions</h2>
+<p>None.</p>
+<h2>Other Exceptions</h2>
+<p>See Table 22-7, “Exception Conditions for SIMD/MMX Instructions with Memory Reference,” in the <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 3A</em>.</p></body></html>

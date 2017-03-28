@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>MINPD—Return Minimum Packed Double-Precision Floating-Point Values </title></head>
+<body>
+<h1>MINPD—Return Minimum Packed Double-Precision Floating-Point Values</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32-bit Mode</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>
+<p>66 0F 5D /<em>r</em></p>
+<p>MINPD <em>xmm1</em>, <em>xmm2/m128</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>SSE2</td>
+<td>Return the minimum double-precision floating-point values between <em>xmm2/m128 </em>and <em>xmm1</em>.</td></tr>
+<tr>
+<td>
+<p>VEX.NDS.128.66.0F.WIG 5D /r</p>
+<p>VMINPD <em>xmm1,xmm2, xmm3/m128</em></p></td>
+<td>RVM</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Return the minimum double-precision floating-point values between <em>xmm2</em> and <em>xmm3/mem</em>.</td></tr>
+<tr>
+<td>
+<p>VEX.NDS.256.66.0F.WIG 5D /r</p>
+<p>VMINPD <em>ymm1, ymm2, ymm3/m256</em></p></td>
+<td>RVM</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Return the minimum packed double-precision floating-point values between <em>ymm2</em> and <em>ymm3/mem</em>.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RM</td>
+<td>ModRM:reg (r, w)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td></tr>
+<tr>
+<td>RVM</td>
+<td>ModRM:reg (w)</td>
+<td>VEX.vvvv (r)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Performs an SIMD compare of the packed double-precision floating-point values in the first source operand and the second source operand and returns the minimum value for each pair of values to the destination operand.</p>
+<p>If the values being compared are both 0.0s (of either sign), the value in the second operand (source operand) is returned. If a value in the second operand is an SNaN, that SNaN is forwarded unchanged to the destination (that is, a QNaN version of the SNaN is not returned).</p>
+<p>If only one value is a NaN (SNaN or QNaN) for this instruction, the second operand (source operand), either a NaN or a valid floating-point value, is written to the result. If instead of this behavior, it is required that the NaN source operand (from either the first or second operand) be returned, the action of MINPD can be emulated using a sequence of instructions, such as, a comparison followed by AND, ANDN and OR.</p>
+<p>In 64-bit mode, use of the REX.R prefix permits this instruction to access additional registers (XMM8-XMM15).</p>
+<p>128-bit Legacy SSE version: The second source can be an XMM register or an 128-bit memory location. The desti-nation is not distinct from the first source XMM register and the upper bits (VLMAX-1:128) of the corresponding YMM register destination are unmodified.</p>
+<p>VEX.128 encoded version: the first source operand is an XMM register or 128-bit memory location. The destination operand is an XMM register. The upper bits (VLMAX-1:128) of the corresponding YMM register destination are zeroed.</p>
+<h2>Operation</h2>
+<p><strong>MIN(SRC1, SRC2)</strong></p>
+<pre>{
+    IF ((SRC1 = 0.0) and (SRC2 = 0.0)) THEN DEST ← SRC2;
+         ELSE IF (SRC1 = SNaN) THEN DEST ← SRC2; FI;
+         ELSE IF (SRC2 = SNaN) THEN DEST ← SRC2; FI;
+         ELSE IF (SRC1 &lt; SRC2) THEN DEST ← SRC1;
+         ELSE DEST ← SRC2;
+    FI;
+}</pre>
+<p><strong>MINPD (128-bit Legacy SSE version)</strong></p>
+<pre>DEST[63:0] ← MIN(SRC1[63:0], SRC2[63:0])
+DEST[127:64] ← MIN(SRC1[127:64], SRC2[127:64])
+DEST[VLMAX-1:128] (Unmodified)</pre>
+<p><strong>VMINPD (VEX.128 encoded version)</strong></p>
+<pre>DEST[63:0] ← MIN(SRC1[63:0], SRC2[63:0])
+DEST[127:64] ← MIN(SRC1[127:64], SRC2[127:64])
+DEST[VLMAX-1:128] ← 0</pre>
+<p><strong>VMINPD (VEX.256 encoded version)</strong></p>
+<pre>DEST[63:0] ← MIN(SRC1[63:0], SRC2[63:0])
+DEST[127:64] ← MIN(SRC1[127:64], SRC2[127:64])
+DEST[191:128] ← MIN(SRC1[191:128], SRC2[191:128])
+DEST[255:192] ← MIN(SRC1[255:192], SRC2[255:192])</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>MINPD:</p>
+<p> __m128d _mm_min_pd(__m128d a, __m128d b);</p>
+<p>VMINPD:</p>
+<p>__m256d _mm256_min_pd (__m256d a, __m256d b);</p>
+<h2>SIMD Floating-Point Exceptions</h2>
+<p>Invalid (including QNaN source operand), Denormal.</p>
+<h2>Other Exceptions</h2>
+<p>See Exceptions Type 2.</p></body></html>

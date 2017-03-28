@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>PUSH—Push Word, Doubleword or Quadword Onto the Stack </title></head>
+<body>
+<h1>PUSH—Push Word, Doubleword or Quadword Onto the Stack</h1>
+<table>
+<tr>
+<th>Opcode*</th>
+<th>Instruction</th>
+<th>Op/En</th>
+<th>64-Bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>FF /6</td>
+<td>PUSH <em>r/m16</em></td>
+<td>M</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Push <em>r/m16.</em></td></tr>
+<tr>
+<td>FF /6</td>
+<td>PUSH <em>r/m32</em></td>
+<td>M</td>
+<td>N.E.</td>
+<td>Valid</td>
+<td>Push <em>r/m32.</em></td></tr>
+<tr>
+<td>FF /6</td>
+<td>PUSH <em>r/m64</em></td>
+<td>M</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Push <em>r/m64.</em></td></tr>
+<tr>
+<td>50+<em>rw</em></td>
+<td>PUSH <em>r16</em></td>
+<td>O</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Push <em>r16.</em></td></tr>
+<tr>
+<td>50+<em>rd</em></td>
+<td>PUSH <em>r32</em></td>
+<td>O</td>
+<td>N.E.</td>
+<td>Valid</td>
+<td>Push <em>r32.</em></td></tr>
+<tr>
+<td>50+<em>rd</em></td>
+<td>PUSH <em>r64</em></td>
+<td>O</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Push <em>r64.</em></td></tr>
+<tr>
+<td>6A ib</td>
+<td>PUSH <em>imm8</em></td>
+<td>I</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Push <em>imm8.</em></td></tr>
+<tr>
+<td>68 iw</td>
+<td>PUSH <em>imm16</em></td>
+<td>I</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Push <em>imm16.</em></td></tr>
+<tr>
+<td>68 id</td>
+<td>PUSH <em>imm32</em></td>
+<td>I</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Push <em>imm32.</em></td></tr>
+<tr>
+<td>0E</td>
+<td>PUSH CS</td>
+<td>NP</td>
+<td>Invalid</td>
+<td>Valid</td>
+<td>Push CS.</td></tr>
+<tr>
+<td>16</td>
+<td>PUSH SS</td>
+<td>NP</td>
+<td>Invalid</td>
+<td>Valid</td>
+<td>Push SS.</td></tr>
+<tr>
+<td>1E</td>
+<td>PUSH DS</td>
+<td>NP</td>
+<td>Invalid</td>
+<td>Valid</td>
+<td>Push DS.</td></tr>
+<tr>
+<td>06</td>
+<td>PUSH ES</td>
+<td>NP</td>
+<td>Invalid</td>
+<td>Valid</td>
+<td>Push ES.</td></tr>
+<tr>
+<td>0F A0</td>
+<td>PUSH FS</td>
+<td>NP</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Push FS.</td></tr>
+<tr>
+<td>0F A8</td>
+<td>PUSH GS</td>
+<td>NP</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Push GS.</td></tr></table>
+<p><strong>NOTES:</strong></p>
+<p>*</p>
+<p>See IA-32 Architecture Compatibility section below.</p>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>M</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td></tr>
+<tr>
+<td>O</td>
+<td>opcode + rd (r)</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td></tr>
+<tr>
+<td>I</td>
+<td>imm8/16/32</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td></tr>
+<tr>
+<td>NP</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Decrements the stack pointer and then stores the source operand on the top of the stack. Address and operand sizes are determined and used as follows:</p>
+<p>The address size is used only when referencing a source operand in memory.</p>
+<p>The operand size (16, 32, or 64 bits) determines the amount by which the stack pointer is decremented (2, 4 or 8).</p>
+<p>If the source operand is an immediate of size less than the operand size, a sign-extended value is pushed on the  stack.  If  the  source  operand  is  a  segment  register  (16  bits)  and  the  operand  size  is  64-bits,  a  zero-extended value is pushed on the stack; if the operand size is 32-bits, either a zero-extended value is pushed on the stack or the segment selector is written on the stack using a 16-bit move. For the last case, all recent Core and Atom processors perform a 16-bit move, leaving the upper portion of the stack location unmodified.</p>
+<p>The stack-address size determines the width of the stack pointer when writing to the stack in memory and when  decrementing</p>
+<p>the  stack  pointer.  (As  stated  above,</p>
+<p>the  amount  by  which</p>
+<p>the  stack  pointer</p>
+<p>is</p>
+<p>decremented is determined by the operand size.)</p>
+<p>If the operand size is less than the stack-address size, the PUSH instruction may result in a misaligned stack pointer (a stack pointer that is not aligned on a doubleword or quadword boundary).</p>
+<p>The PUSH ESP instruction pushes the value of the ESP register as it existed before the instruction was executed. If a PUSH instruction uses a memory operand in which the ESP register is used for computing the operand address, the address of the operand is computed before the ESP register is decremented.</p>
+<p>If the ESP or SP register is 1 when the PUSH instruction is executed in real-address mode, a stack-fault exception (#SS) is generated (because the limit of the stack segment is violated). Its delivery encounters a second stack-fault exception (for the same reason), causing generation of a double-fault exception (#DF). Delivery of the double-fault exception encounters a third stack-fault exception, and the logical processor enters shutdown mode. See the discussion of the double-fault exception in Chapter 6 of the <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 3A</em>.</p>
+<h2>IA-32 Architecture Compatibility</h2>
+<p>For IA-32 processors from the Intel 286 on, the PUSH ESP instruction pushes the value of the ESP register as it existed before the instruction was executed. (This is also true for Intel 64 architecture, real-address and virtual-8086 modes of IA-32 architecture.) For the Intel<em><sup>®</sup></em> 8086 processor, the PUSH SP instruction pushes the new value of the SP register (that is the value after it has been decremented by 2).</p>
+<h2>Operation</h2>
+<pre>(* See Description section for possible sign-extension or zero-extension of source operand and for *)
+(* a case in which the size of the memory store may be smaller than the instruction’s operand size *)
+IF StackAddrSize = 64
+    THEN
+         IF OperandSize = 64
+              THEN
+                    RSP ← RSP – 8;
+                    Memory[SS:RSP] ← SRC;
+                                                              (* push quadword *)
+         ELSE IF OperandSize = 32
+              THEN
+                    RSP ← RSP – 4;
+                    Memory[SS:RSP] ← SRC;
+                                                              (* push dword *)
+              ELSE (* OperandSize = 16 *)
+                    RSP ← RSP – 2;
+                    Memory[SS:RSP] ← SRC;
+                                                              (* push word *)
+         FI;
+ELSE IF StackAddrSize = 32
+    THEN
+         IF OperandSize = 64
+              THEN
+                    ESP ← ESP – 8;
+                    Memory[SS:ESP] ← SRC;
+                                                              (* push quadword *)
+         ELSE IF OperandSize = 32
+              THEN
+                    ESP ← ESP – 4;
+                    Memory[SS:ESP] ← SRC;
+                                                              (* push dword *)
+              ELSE (* OperandSize = 16 *)
+                    ESP ← ESP – 2;
+                    Memory[SS:ESP] ← SRC;
+                                                              (* push word *)
+         FI;
+    ELSE (* StackAddrSize = 16 *)
+         IF OperandSize = 32
+              THEN
+                    SP ← SP – 4;
+                    Memory[SS:SP] ← SRC;
+                                                              (* push dword *)
+              ELSE (* OperandSize = 16 *)
+                    SP ← SP – 2;
+                    Memory[SS:SP] ← SRC;
+                                                              (* push word *)
+         FI;
+FI;</pre>
+<h2>Flags Affected</h2>
+<p>None.</p>
+<h2>Protected Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>
+<p>If a memory operand effective address is outside the CS, DS, ES, FS, or GS segment limit.</p>
+<p>If the DS, ES, FS, or GS register is used to access memory and it contains a NULL segment selector.</p></td></tr>
+<tr>
+<td>#SS(0)</td>
+<td>If a memory operand effective address is outside the SS segment limit.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and an unaligned memory reference is made while the current privilege level is 3.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Real-Address Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP</td>
+<td>If a memory operand effective address is outside the CS, DS, ES, FS, or GS segment limit.</td></tr>
+<tr>
+<td>#SS</td>
+<td>
+<p>If a memory operand effective address is outside the SS segment limit.</p>
+<p>If the new value of the SP or ESP register is outside the stack segment limit.</p></td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Virtual-8086 Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>If a memory operand effective address is outside the CS, DS, ES, FS, or GS segment limit.</td></tr>
+<tr>
+<td>#SS(0)</td>
+<td>If a memory operand effective address is outside the SS segment limit.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and an unaligned memory reference is made.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Compatibility Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>64-Bit Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>If the memory address is in a non-canonical form.</td></tr>
+<tr>
+<td>#SS(0)</td>
+<td>If the stack address is in a non-canonical form.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and an unaligned memory reference is made while the current privilege level is 3.</td></tr>
+<tr>
+<td>#UD</td>
+<td>
+<p>If the LOCK prefix is used.</p>
+<p>If the PUSH is of CS, SS, DS, or ES.</p></td></tr></table></body></html>

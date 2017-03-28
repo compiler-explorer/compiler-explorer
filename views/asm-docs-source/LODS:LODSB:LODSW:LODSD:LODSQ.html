@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>LODS/LODSB/LODSW/LODSD/LODSQ—Load String </title></head>
+<body>
+<h1>LODS/LODSB/LODSW/LODSD/LODSQ—Load String</h1>
+<table>
+<tr>
+<th>Opcode</th>
+<th>Instruction</th>
+<th>Op/En</th>
+<th>64-Bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>AC</td>
+<td>LODS <em>m8</em></td>
+<td>NP</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>For legacy mode, Load byte at address DS:(E)SI into AL. For 64-bit mode load byte at address (R)SI into AL.</td></tr>
+<tr>
+<td>AD</td>
+<td>LODS <em>m16</em></td>
+<td>NP</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>For legacy mode, Load word at address DS:(E)SI into AX. For 64-bit mode load word at address (R)SI into AX.</td></tr>
+<tr>
+<td>AD</td>
+<td>LODS m32</td>
+<td>NP</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>For legacy mode, Load dword at address DS:(E)SI into EAX. For 64-bit mode load dword at address (R)SI into EAX.</td></tr>
+<tr>
+<td>REX.W + AD</td>
+<td>LODS <em>m64</em></td>
+<td>NP</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Load qword at address (R)SI into RAX.</td></tr>
+<tr>
+<td>AC</td>
+<td>LODSB</td>
+<td>NP</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>For legacy mode, Load byte at address DS:(E)SI into AL. For 64-bit mode load byte at address (R)SI into AL.</td></tr>
+<tr>
+<td>AD</td>
+<td>LODSW</td>
+<td>NP</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>For legacy mode, Load word at address DS:(E)SI into AX. For 64-bit mode load word at address (R)SI into AX.</td></tr>
+<tr>
+<td>AD</td>
+<td>LODSD</td>
+<td>NP</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>For legacy mode, Load dword at address DS:(E)SI into EAX. For 64-bit mode load dword at address (R)SI into EAX.</td></tr>
+<tr>
+<td>REX.W + AD</td>
+<td>LODSQ</td>
+<td>NP</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Load qword at address (R)SI into RAX.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>NP</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Loads a byte, word, or doubleword from the source operand into the AL, AX, or EAX register, respectively. The source operand is a memory location, the address of which is read from the DS:ESI or the DS:SI registers (depending on the address-size attribute of the instruction, 32 or 16, respectively). The DS segment may be over-ridden with a segment override prefix.</p>
+<p>At the assembly-code level, two forms of this instruction are allowed: the “explicit-operands” form and the “no-operands” form. The explicit-operands form (specified with the LODS mnemonic) allows the source operand to be specified explicitly. Here, the source operand should be a symbol that indicates the size and location of the source value. The destination operand is then automatically selected to match the size of the source operand (the AL register for byte operands, AX for word operands, and EAX for doubleword operands). This explicit-operands form is provided to allow documentation; however, note that the documentation provided by this form can be misleading. That is, the source operand symbol must specify the correct <strong>type</strong> (size) of the operand (byte, word, or doubleword), but it does not have to specify the correct <strong>location</strong>. The location is always specified by the DS:(E)SI registers, which must be loaded correctly before the load string instruction is executed.</p>
+<p>The no-operands form provides “short forms” of the byte, word, and doubleword versions of the LODS instructions. Here also DS:(E)SI is assumed to be the source operand and the AL, AX, or EAX register is assumed to be the desti-nation operand. The size of the source and destination operands is selected with the mnemonic: LODSB (byte loaded into register AL), LODSW (word loaded into AX), or LODSD (doubleword loaded into EAX).</p>
+<p>After the byte, word, or doubleword is transferred from the memory location into the AL, AX, or EAX register, the (E)SI register is incremented or decremented automatically according to the setting of the DF flag in the EFLAGS register. (If the DF flag is 0, the (E)SI register is incremented; if the DF flag is 1, the ESI register is decremented.) The (E)SI register is incremented or decremented by 1 for byte operations, by 2 for word operations, or by 4 for doubleword operations.</p>
+<p>In 64-bit mode, use of the REX.W prefix promotes operation to 64 bits. LODS/LODSQ load the quadword at address (R)SI into RAX. The (R)SI register is then incremented or decremented automatically according to the setting of the DF flag in the EFLAGS register.</p>
+<p>The LODS, LODSB, LODSW, and LODSD instructions can be preceded by the REP prefix for block loads of ECX bytes, words, or doublewords. More often, however, these instructions are used within a LOOP construct because further processing of the data moved into the register is  usually necessary before the next transfer can be made. See “REP/REPE/REPZ /REPNE/REPNZ—Repeat String Operation Prefix” in Chapter 4 of the <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 2B</em>, for a description of the REP prefix.</p>
+<h2>Operation</h2>
+<pre>IF AL ← SRC; (* Byte load *)
+    THEN AL ← SRC; (* Byte load *)
+         IF DF = 0
+              THEN (E)SI ← (E)SI + 1;
+              ELSE (E)SI ← (E)SI – 1;
+         FI;
+ELSE IF AX ← SRC; (* Word load *)
+    THEN IF DF = 0
+              THEN (E)SI ← (E)SI + 2;
+              ELSE (E)SI ← (E)SI – 2;
+         IF;
+    FI;
+ELSE IF EAX ← SRC; (* Doubleword load *)
+    THEN IF DF = 0
+              THEN (E)SI ← (E)SI + 4;
+              ELSE (E)SI ← (E)SI – 4;
+         FI;
+    FI;
+ELSE IF RAX ← SRC; (* Quadword load *)
+    THEN IF DF = 0
+              THEN (R)SI ← (R)SI + 8;
+              ELSE (R)SI ← (R)SI – 8;
+         FI;
+    FI;
+FI;</pre>
+<h2>Flags Affected</h2>
+<p>None.</p>
+<h2>Protected Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>
+<p>If a memory operand effective address is outside the CS, DS, ES, FS, or GS segment limit.</p>
+<p>If the DS, ES, FS, or GS register contains a NULL segment selector.</p></td></tr>
+<tr>
+<td>#SS(0)</td>
+<td>If a memory operand effective address is outside the SS segment limit.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and an unaligned memory reference is made while the current privilege level is 3.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Real-Address Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP</td>
+<td>If a memory operand effective address is outside the CS, DS, ES, FS, or GS segment limit.</td></tr>
+<tr>
+<td>#SS</td>
+<td>If a memory operand effective address is outside the SS segment limit.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Virtual-8086 Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>If a memory operand effective address is outside the CS, DS, ES, FS, or GS segment limit.</td></tr>
+<tr>
+<td>#SS(0)</td>
+<td>If a memory operand effective address is outside the SS segment limit.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and an unaligned memory reference is made.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Compatibility Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>64-Bit Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#SS(0)</td>
+<td>If a memory address referencing the SS segment is in a non-canonical form.</td></tr>
+<tr>
+<td>#GP(0)</td>
+<td>If the memory address is in a non-canonical form.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and an unaligned memory reference is made while the current privilege level is 3.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table></body></html>

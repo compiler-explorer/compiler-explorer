@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>CVTDQ2PD—Convert Packed Dword Integers to Packed Double-Precision FP Values </title></head>
+<body>
+<h1>CVTDQ2PD—Convert Packed Dword Integers to Packed Double-Precision FP Values</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32-bit Mode</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>
+<p>F3 0F E6</p>
+<p>CVTDQ2PD <em>xmm1</em>, <em>xmm2/m64</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>SSE2</td>
+<td>Convert two packed signed doubleword integers from <em>xmm2/m128</em> to two packed double-precision floating-point values in <em>xmm1</em>.</td></tr>
+<tr>
+<td>
+<p>VEX.128.F3.0F.WIG E6 /r</p>
+<p>VCVTDQ2PD xmm1, xmm2/m64</p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Convert two packed signed doubleword integers from xmm2/mem to two packed double-precision floating-point values in xmm1.</td></tr>
+<tr>
+<td>
+<p>VEX.256.F3.0F.WIG E6 /r</p>
+<p>VCVTDQ2PD ymm1, xmm2/m128</p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Convert four packed signed doubleword integers from xmm2/mem to four packed double-precision floating-point values in ymm1.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RM</td>
+<td>ModRM:reg (w)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Converts two packed signed doubleword integers in the source operand (second operand) to two packed double-precision floating-point values in the destination operand (first operand).</p>
+<p>In 64-bit mode, use of the REX.R prefix permits this instruction to access additional registers (XMM8-XMM15).</p>
+<p>128-bit Legacy SSE version: The source operand is an XMM register or 64- bit memory location. The destination operation is an XMM register. The upper bits (VLMAX-1:128) of the corresponding XMM register destination are unmodified.</p>
+<p>VEX.128 encoded version: The source operand is an XMM register or 64- bit memory location. The destination operation is an XMM register. The upper bits (VLMAX-1:128) of the corresponding YMM register destination are zeroed.</p>
+<p>VEX.256 encoded version: The source operand is a YMM register or 128- bit memory location. The destination operation is a YMM register.</p>
+<p>Note: In VEX-encoded versions, VEX.vvvv is reserved and must be 1111b, otherwise instructions will #UD.</p>
+<p>X3</p>
+<p>X2</p>
+<p>X1</p>
+<p>X0</p>
+<p>SRC</p>
+<p>X3</p>
+<p>X2</p>
+<p>X1</p>
+<p>X0</p>
+<p>DEST</p>
+<h3>Figure 3-10.  CVTDQ2PD (VEX.256 encoded version)</h3>
+<h2>Operation</h2>
+<p><strong>CVTDQ2PD (128-bit Legacy SSE version)</strong></p>
+<pre>DEST[63:0] ← Convert_Integer_To_Double_Precision_Floating_Point(SRC[31:0])
+DEST[127:64] ← Convert_Integer_To_Double_Precision_Floating_Point(SRC[63:32])
+DEST[VLMAX-1:128] (unmodified)</pre>
+<p><strong>VCVTDQ2PD (VEX.128 encoded version)</strong></p>
+<pre>DEST[63:0] ← Convert_Integer_To_Double_Precision_Floating_Point(SRC[31:0])
+DEST[127:64] ← Convert_Integer_To_Double_Precision_Floating_Point(SRC[63:32])
+DEST[VLMAX-1:128] ← 0</pre>
+<p><strong>VCVTDQ2PD (VEX.256 encoded version)</strong></p>
+<pre>DEST[63:0] ← Convert_Integer_To_Double_Precision_Floating_Point(SRC[31:0])
+DEST[127:64] ← Convert_Integer_To_Double_Precision_Floating_Point(SRC[63:32])
+DEST[191:128] ← Convert_Integer_To_Double_Precision_Floating_Point(SRC[95:64])
+DEST[255:192] ← Convert_Integer_To_Double_Precision_Floating_Point(SRC[127:96)</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>CVTDQ2PD:</p>
+<p>__m128d _mm_cvtepi32_pd(__m128i a)</p>
+<p>VCVTDQ2PD:</p>
+<p>__m256d _mm256_cvtepi32_pd (__m128i src)</p>
+<h2>SIMD Floating-Point Exceptions</h2>
+<p>None.</p>
+<h2>Other Exceptions</h2>
+<p>See Exceptions Type 5; additionally</p>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>If VEX.vvvv ≠ 1111B.</td></tr></table></body></html>

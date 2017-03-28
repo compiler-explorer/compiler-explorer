@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>XRSTORS—Restore Processor Extended States Supervisor </title></head>
+<body>
+<h1>XRSTORS—Restore Processor Extended States Supervisor</h1>
+<table>
+<tr>
+<th>Opcode</th>
+<th>Instruction</th>
+<th>Op/En</th>
+<th>64-Bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>0F C7 /3</td>
+<td>XRSTORS <em>mem</em></td>
+<td>M</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Restore state components specified by EDX:EAX from <em>mem</em>.</td></tr>
+<tr>
+<td>REX.W+ 0F C7 /3</td>
+<td>XRSTORS64 <em>mem</em></td>
+<td>M</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Restore state components specified by EDX:EAX from <em>mem</em>.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>M</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Performs a full or partial restore of processor state components from the XSAVE area located at the memory address specified by the source operand. The implicit EDX:EAX register pair specifies a 64-bit instruction mask. The specific state components restored correspond to the bits set in the requested-feature bitmap (RFBM), which is the logical-AND of EDX:EAX and the logical-OR of XCR0 with the IA32_XSS MSR. XRSTORS may be executed only if CPL = 0.</p>
+<p>The format of the XSAVE area is detailed in Section 13.4, “XSAVE Area,” of <em>Intel® 64 and IA-32 Architectures Soft-ware Developer’s Manual, Volume 1</em>.</p>
+<p>Section 13.11, “Operation of XRSTORS,” of <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 1</em> provides a detailed description of the operation of the XRSTOR instruction. The following items provide a high-level outline:</p>
+<p>for which RFBM[<em>i</em>] = 0.</p>
+<p><em>i</em></p>
+<p>Use of a source operand not aligned to 64-byte boundary (for 64-bit and 32-bit modes) results in a general-protec-tion (#GP) exception. In 64-bit mode, the upper 32 bits of RDX and RAX are ignored.</p>
+<h2>Operation</h2>
+<pre>RFBM ← (XCR0 OR IA32_XSS) AND EDX:EAX;
+                                                              /* bitwise logical OR and AND */
+COMPMASK ← XCOMP_BV field from XSAVE header;
+RSTORMASK ← XSTATE_BV field from XSAVE header;
+IF in VMX non-root operation
+    THEN VMXNR ← 1;
+    ELSE VMXNR ← 0;
+FI;
+LAXA ← linear address of XSAVE area;
+If RFBM[0] = 1
+    THEN
+         IF RSTORMASK[0] = 1
+              THEN load x87 state from legacy region of XSAVE area;
+              ELSE initialize x87 state;
+         FI;
+FI;
+If RFBM[1] = 1
+    THEN
+         IF RSTORMASK[1] = 1
+              THEN load SSE state from legacy region of XSAVE area;
+              ELSE initialize SSE state;
+         FI;
+FI;
+If RFBM[2] = 1
+    THEN
+         IF RSTORMASK[2] = 1
+              THEN load AVX state from extended region (compacted format) of XSAVE area;
+              ELSE initialize AVX state;
+         FI;
+FI;
+XRSTOR_INFO ← (cid:162)CPL,VMXNR,LAXA,COMPMASK(cid:178);</pre>
+<h2>Flags Affected</h2>
+<p>None.</p>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>XRSTORS:</p>
+<p>void _xrstors( void * , unsigned __int64);</p>
+<p>XRSTORS64: void _xrstors64( void * , unsigned __int64);</p>
+<h2>Protected Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>
+<p>If CPL &gt; 0.</p>
+<p>If a memory operand effective address is outside the CS, DS, ES, FS, or GS segment limit.</p>
+<p>If a memory operand is not aligned on a 64-byte boundary, regardless of segment.</p>
+<p>If bit 63 of the XCOMP_BV field of the XSAVE header is 0.</p>
+<p>If a bit in XCR0 is 0 and the corresponding bit in the XCOMP_BV field of the XSAVE header is 1.</p>
+<p>If a bit in the XCOMP_BV field in the XSAVE header is 0 and the corresponding bit in the XSTATE_BV field is 1.</p>
+<p>If bytes 63:16 of the XSAVE header are not all zero.</p>
+<p>If attempting to write any reserved bits of the MXCSR register with 1.</p></td></tr>
+<tr>
+<td>#SS(0)</td>
+<td>If a memory operand effective address is outside the SS segment limit.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#NM</td>
+<td>If CR0.TS[bit 3] = 1.</td></tr>
+<tr>
+<td>#UD</td>
+<td>
+<p>If CPUID.01H:ECX.XSAVE[bit 26] = 0 or CPUID.(EAX=0DH,ECX=1):EAX.XSS[bit 3] = 0.</p>
+<p>If CR4.OSXSAVE[bit 18] = 0.</p>
+<p>If any of the LOCK, 66H, F3H or F2H prefixes is used.</p></td></tr>
+<tr>
+<td>#AC</td>
+<td>
+<p>If this exception is disabled a general protection exception (#GP) is signaled if the memory operand is not aligned on a 16-byte boundary, as described above. If the alignment check</p>
+<p>exception (#AC) is enabled (and the CPL is 3), signaling of #AC is not guaranteed and may vary with implementation, as follows. In all implementations where #AC is not signaled, a #GP is signaled in its place. In addition, the width of the alignment check may also vary with imple-mentation. For instance, for a given implementation, an alignment check exception might be signaled for a 2-byte misalignment, whereas a #GP might be signaled for all other misalign-ments (4-, 8-, or 16-byte misalignments).</p></td></tr></table>
+<h2>Real-Address Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP</td>
+<td>
+<p>If a memory operand is not aligned on a 64-byte boundary, regardless of segment.</p>
+<p>If any part of the operand lies outside the effective address space from 0 to FFFFH.</p>
+<p>If bit 63 of the XCOMP_BV field of the XSAVE header is 0.</p>
+<p>If a bit in XCR0 is 0 and the corresponding bit in the XCOMP_BV field of the XSAVE header is 1.</p>
+<p>If a bit in the XCOMP_BV field in the XSAVE header is 0 and the corresponding bit in the XSTATE_BV field is 1.</p>
+<p>If bytes 63:16 of the XSAVE header are not all zero.</p>
+<p>If attempting to write any reserved bits of the MXCSR register with 1.</p></td></tr>
+<tr>
+<td>#NM</td>
+<td>If CR0.TS[bit 3] = 1.</td></tr>
+<tr>
+<td>#UD</td>
+<td>
+<p>If CPUID.01H:ECX.XSAVE[bit 26] = 0 or CPUID.(EAX=0DH,ECX=1):EAX.XSS[bit 3] = 0.</p>
+<p>If CR4.OSXSAVE[bit 18] = 0.</p>
+<p>If any of the LOCK, 66H, F3H or F2H prefixes is used.</p></td></tr></table>
+<h2>Virtual-8086 Mode Exceptions</h2>
+<p>Same exceptions as in protected mode</p>
+<h2>Compatibility Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>64-Bit Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>
+<p>If CPL &gt; 0.</p>
+<p>If a memory address is in a non-canonical form.</p>
+<p>If a memory operand is not aligned on a 64-byte boundary, regardless of segment.</p>
+<p>If bit 63 of the XCOMP_BV field of the XSAVE header is 0.</p>
+<p>If a bit in XCR0 is 0 and the corresponding bit in the XCOMP_BV field of the XSAVE header is 1.</p>
+<p>If a bit in the XCOMP_BV field in the XSAVE header is 0 and the corresponding bit in the XSTATE_BV field is 1.</p>
+<p>If bytes 63:16 of the XSAVE header are not all zero.</p>
+<p>If attempting to write any reserved bits of the MXCSR register with 1.</p></td></tr>
+<tr>
+<td>#SS(0)</td>
+<td>If a memory address referencing the SS segment is in a non-canonical form.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#NM</td>
+<td>If CR0.TS[bit 3] = 1.</td></tr>
+<tr>
+<td>#UD</td>
+<td>
+<p>If CPUID.01H:ECX.XSAVE[bit 26] = 0 or CPUID.(EAX=0DH,ECX=1):EAX.XSS[bit 3] = 0.</p>
+<p>If CR4.OSXSAVE[bit 18] = 0.</p>
+<p>If any of the LOCK, 66H, F3H or F2H prefixes is used.</p></td></tr>
+<tr>
+<td>#AC</td>
+<td>
+<p>If this exception is disabled a general protection exception (#GP) is signaled if the memory operand is not aligned on a 16-byte boundary, as described above. If the alignment check exception (#AC) is enabled (and the CPL is 3), signaling of #AC is not guaranteed and may vary with implementation, as follows. In all implementations where #AC is not signaled, a general protection exception is signaled in its place. In addition, the width of the alignment check may also vary with implementation. For instance, for a given implementation, an align-ment check exception might be signaled for a 2-byte misalignment, whereas a general protec-</p>
+<p>tion exception might be signaled for all other misalignments (4-, 8-, or 16-byte misalignments).</p></td></tr></table></body></html>

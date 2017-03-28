@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>POPCNT — Return the Count of Number of Bits Set to 1 </title></head>
+<body>
+<h1>POPCNT — Return the Count of Number of Bits Set to 1</h1>
+<table>
+<tr>
+<th>Opcode</th>
+<th>Instruction</th>
+<th>Op/En</th>
+<th>64-Bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>F3  0F B8 /r</td>
+<td>POPCNT <em>r16, r/m16</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>POPCNT on <em>r/m16</em></td></tr>
+<tr>
+<td>F3  0F B8 /r</td>
+<td>POPCNT <em>r32, r/m32</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>POPCNT on <em>r/m32</em></td></tr>
+<tr>
+<td>F3 REX.W 0F B8 <em>/r</em></td>
+<td>POPCNT <em>r64, r/m64</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>POPCNT on <em>r/m64</em></td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RM</td>
+<td>ModRM:reg (w)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>This instruction calculates of number of bits set to 1 in the second operand (source) and returns the count in the first operand (a destination register).</p>
+<h2>Operation</h2>
+<pre>Count = 0;
+For (i=0; i &lt; OperandSize; i++)
+{
+         IF (SRC[ i] = 1) // i’th bit
+         THEN Count++; FI;
+}
+DEST ← Count;</pre>
+<h2>Flags Affected</h2>
+<p>OF, SF, ZF, AF, CF, PF are all cleared. ZF is set if SRC = 0, otherwise ZF is cleared.</p>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>POPCNT:</p>
+<p> int _mm_popcnt_u32(unsigned int a);</p>
+<p>POPCNT:</p>
+<p> int64_t _mm_popcnt_u64(unsigned __int64 a);</p>
+<h2>Protected Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>If a memory operand effective address is outside the CS, DS, ES, FS or GS segments.</td></tr>
+<tr>
+<td>#SS(0)</td>
+<td>If a memory operand effective address is outside the SS segment limit.</td></tr>
+<tr>
+<td>#PF (fault-code)</td>
+<td>For a page fault.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If an unaligned memory reference is made while the current privilege level is 3 and alignment checking is enabled.</td></tr>
+<tr>
+<td>#UD</td>
+<td>
+<p>If CPUID.01H:ECX.POPCNT [Bit 23] = 0.</p>
+<p>If LOCK prefix is used.</p></td></tr></table>
+<h2>Real-Address Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>If any part of the operand lies outside of the effective address space from 0 to 0FFFFH.</td></tr>
+<tr>
+<td>#SS(0)</td>
+<td>If a memory operand effective address is outside the SS segment limit.</td></tr>
+<tr>
+<td>#UD</td>
+<td>
+<p>If CPUID.01H:ECX.POPCNT [Bit 23] = 0.</p>
+<p>If LOCK prefix is used.</p></td></tr></table>
+<h2>Virtual 8086 Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>If any part of the operand lies outside of the effective address space from 0 to 0FFFFH.</td></tr>
+<tr>
+<td>#SS(0)</td>
+<td>If a memory operand effective address is outside the SS segment limit.</td></tr>
+<tr>
+<td>#PF (fault-code)</td>
+<td>For a page fault.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If an unaligned memory reference is made while alignment checking is enabled.</td></tr>
+<tr>
+<td>#UD</td>
+<td>
+<p>If CPUID.01H:ECX.POPCNT [Bit 23] = 0.</p>
+<p>If LOCK prefix is used.</p></td></tr></table>
+<h2>Compatibility Mode Exceptions</h2>
+<p>Same exceptions as in Protected Mode.</p>
+<h2>64-Bit Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>If the memory address is in a non-canonical form.</td></tr>
+<tr>
+<td>#SS(0)</td>
+<td>If a memory address referencing the SS segment is in a non-canonical form.</td></tr>
+<tr>
+<td>#PF (fault-code)</td>
+<td>For a page fault.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and an unaligned memory reference is made while the current privilege level is 3.</td></tr>
+<tr>
+<td>#UD</td>
+<td>
+<p>If CPUID.01H:ECX.POPCNT [Bit 23] = 0.</p>
+<p>If LOCK prefix is used.</p></td></tr></table></body></html>

@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>PSRLW/PSRLD/PSRLQ—Shift Packed Data Right Logical </title></head>
+<body>
+<h1>PSRLW/PSRLD/PSRLQ—Shift Packed Data Right Logical</h1>
+<p><strong>Description</strong></p>
+<p><strong>CPUID</strong></p>
+<p><strong>Opcode/</strong></p>
+<p><strong>Op/</strong></p>
+<p><strong>64/32 bit</strong></p>
+<p><strong>Feature</strong></p>
+<p><strong>Instruction</strong></p>
+<p><strong>En</strong></p>
+<p><strong>Mode</strong></p>
+<p><strong>Flag</strong></p>
+<p><strong>Support</strong></p>
+<p>0F D1 /<em>r</em><sup>1</sup></p>
+<p>RM</p>
+<p>V/V</p>
+<p>MMX</p>
+<p>Shift words in <em>mm</em> right by amount specified in <em>mm/m64</em> while shifting in 0s.</p>
+<p>PSRLW <em>mm, mm/m64</em></p>
+<p>66 0F D1 /<em>r</em></p>
+<p>RM</p>
+<p>V/V</p>
+<p>SSE2</p>
+<p>Shift words in <em>xmm1</em> right by amount specified in <em>xmm2/m128</em> while shifting in 0s.</p>
+<p>PSRLW <em>xmm1</em>, <em>xmm2/m128</em></p>
+<p>MI</p>
+<p>V/V</p>
+<p>MMX</p>
+<p>Shift words in <em>mm</em> right by <em>imm8</em> while shifting</p>
+<p>0F 71 /2 ib<sup>1</sup></p>
+<p>in 0s.</p>
+<p>PSRLW <em>mm, imm8</em></p>
+<p>66 0F 71 /2 ib</p>
+<p>MI</p>
+<p>V/V</p>
+<p>SSE2</p>
+<p>Shift words in <em>xmm1</em> right by <em>imm8</em> while shifting in 0s.</p>
+<p>PSRLW <em>xmm1</em>, <em>imm8</em></p>
+<p>RM</p>
+<p>V/V</p>
+<p>MMX</p>
+<p>Shift doublewords in <em>mm</em> right by amount</p>
+<p>0F D2 /<em>r</em><sup>1</sup></p>
+<p>specified in <em>mm/m64</em> while shifting in 0s.</p>
+<p>PSRLD <em>mm, mm/m64</em></p>
+<p>66 0F D2 /<em>r</em></p>
+<p>RM</p>
+<p>V/V</p>
+<p>SSE2</p>
+<p>Shift doublewords in <em>xmm1</em> right by amount specified in <em>xmm2 /m128</em> while shifting in 0s.</p>
+<p>PSRLD <em>xmm1</em>, <em>xmm2/m128</em></p>
+<p>0F 72 /2 ib<sup>1</sup></p>
+<p>MI</p>
+<p>V/V</p>
+<p>MMX</p>
+<p>Shift doublewords in <em>mm</em> right by <em>imm8</em> while shifting in 0s.</p>
+<p>PSRLD <em>mm, imm8</em></p>
+<p>66 0F 72 /2 ib</p>
+<p>MI</p>
+<p>V/V</p>
+<p>SSE2</p>
+<p>Shift doublewords in <em>xmm1</em> right by <em>imm8 </em>while shifting in 0s.</p>
+<p>PSRLD <em>xmm1</em>, imm8</p>
+<p>RM</p>
+<p>V/V</p>
+<p>MMX</p>
+<p>Shift <em>mm</em> right by amount specified in</p>
+<p>0F D3 /<em>r</em><sup>1</sup></p>
+<p><em>mm/m64</em> while shifting in 0s.</p>
+<p>PSRLQ <em>mm, mm/m64</em></p>
+<p>66 0F D3 /<em>r</em></p>
+<p>RM</p>
+<p>V/V</p>
+<p>SSE2</p>
+<p>Shift quadwords in <em>xmm1</em> right by amount specified in <em>xmm2/m128</em> while shifting in 0s.</p>
+<p>PSRLQ <em>xmm1</em>, <em>xmm2/m128</em></p>
+<p>MI</p>
+<p>V/V</p>
+<p>MMX</p>
+<p>Shift <em>mm</em> right by <em>imm8</em> while shifting in 0s.</p>
+<p>0F 73 /2 ib<sup>1</sup></p>
+<p>PSRLQ <em>mm, imm8</em></p>
+<p>66 0F 73 /2 ib</p>
+<p>MI</p>
+<p>V/V</p>
+<p>SSE2</p>
+<p>Shift quadwords in <em>xmm1</em> right by <em>imm8</em> while shifting in 0s.</p>
+<p>PSRLQ <em>xmm1</em>, <em>imm8</em></p>
+<p>VEX.NDS.128.66.0F.WIG D1 /r</p>
+<p>RVM</p>
+<p>V/V</p>
+<p>AVX</p>
+<p>Shift words in <em>xmm2</em> right by amount specified in <em>xmm3/m128</em> while shifting in 0s.</p>
+<p>VPSRLW <em>xmm1, xmm2, xmm3/m128</em></p>
+<p>VEX.NDD.128.66.0F.WIG 71 /2 ib</p>
+<p>VMI</p>
+<p>V/V</p>
+<p>AVX</p>
+<p>Shift words in <em>xmm2</em> right by <em>imm8</em> while shifting in 0s.</p>
+<p>VPSRLW <em>xmm1, xmm2, imm8</em></p>
+<p>VEX.NDS.128.66.0F.WIG D2 /r</p>
+<p>RVM</p>
+<p>V/V</p>
+<p>AVX</p>
+<p>Shift doublewords in <em>xmm2</em> right by amount specified in <em>xmm3/m128</em> while shifting in 0s.</p>
+<p>VPSRLD <em>xmm1, xmm2, xmm3/m128</em></p>
+<p>VEX.NDD.128.66.0F.WIG 72 /2 ib</p>
+<p>VMI</p>
+<p>V/V</p>
+<p>AVX</p>
+<p>Shift doublewords in <em>xmm2</em> right by <em>imm8 </em>while shifting in 0s.</p>
+<p>VPSRLD <em>xmm1, xmm2, imm8</em></p>
+<p>VEX.NDS.128.66.0F.WIG D3 /r</p>
+<p>RVM</p>
+<p>V/V</p>
+<p>AVX</p>
+<p>Shift quadwords in <em>xmm2</em> right by amount specified in <em>xmm3/m128</em> while shifting in 0s.</p>
+<p>VPSRLQ <em>xmm1, xmm2, xmm3/m128</em></p>
+<p>VEX.NDD.128.66.0F.WIG 73 /2 ib</p>
+<p>VMI</p>
+<p>V/V</p>
+<p>AVX</p>
+<p>Shift quadwords in <em>xmm2</em> right by <em>imm8</em> while shifting in 0s.</p>
+<p>VPSRLQ <em>xmm1, xmm2, imm8</em></p>
+<p>VEX.NDS.256.66.0F.WIG D1 /r</p>
+<p>RVM</p>
+<p>V/V</p>
+<p>AVX2</p>
+<p>Shift words in <em>ymm2</em> right by amount specified in <em>xmm3/m128</em> while shifting in 0s.</p>
+<p>VPSRLW <em>ymm1, ymm2, xmm3/m128</em></p>
+<p>VEX.NDD.256.66.0F.WIG 71 /2 ib</p>
+<p>VMI</p>
+<p>V/V</p>
+<p>AVX2</p>
+<p>Shift words in <em>ymm2</em> right by <em>imm8</em> while shifting in 0s.</p>
+<p>VPSRLW <em>ymm1, ymm2, imm8</em></p>
+<p>VEX.NDS.256.66.0F.WIG D2 /r</p>
+<p>RVM</p>
+<p>V/V</p>
+<p>AVX2</p>
+<p>Shift doublewords in <em>ymm2</em> right by amount specified in <em>xmm3/m128</em> while shifting in 0s.</p>
+<p>VPSRLD <em>ymm1, ymm2, xmm3/m128</em></p>
+<p>VEX.NDD.256.66.0F.WIG 72 /2 ib</p>
+<p>VMI</p>
+<p>V/V</p>
+<p>AVX2</p>
+<p>Shift doublewords in <em>ymm2</em> right by <em>imm8 </em>while shifting in 0s.</p>
+<p>VPSRLD <em>ymm1, ymm2, imm8</em></p>
+<p>VEX.NDS.256.66.0F.WIG D3 /r</p>
+<p>RVM</p>
+<p>V/V</p>
+<p>AVX2</p>
+<p>Shift quadwords in <em>ymm2</em> right by amount specified in <em>xmm3/m128</em> while shifting in 0s.</p>
+<p>VPSRLQ <em>ymm1, ymm2, xmm3/m128</em></p>
+<p>VEX.NDD.256.66.0F.WIG 73 /2 ib</p>
+<p>VMI</p>
+<p>V/V</p>
+<p>AVX2</p>
+<p>Shift quadwords in <em>ymm2</em> right by <em>imm8</em> while shifting in 0s.</p>
+<p>VPSRLQ <em>ymm1, ymm2, imm8</em></p>
+<p>NOTES:</p>
+<p>1. See note in Section 2.4, “Instruction Exception Specification” in the <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 2A</em> and Section 22.25.3, “Exception Conditions of Legacy SIMD Instructions Operating on MMX Registers” in the <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 3A</em>.</p>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RM</td>
+<td>ModRM:reg (r, w)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td></tr>
+<tr>
+<td>MI</td>
+<td>ModRM:r/m (r, w)</td>
+<td>imm8</td>
+<td>NA</td>
+<td>NA</td></tr>
+<tr>
+<td>RVM</td>
+<td>ModRM:reg (w)</td>
+<td>VEX.vvvv (r)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td></tr>
+<tr>
+<td>VMI</td>
+<td>VEX.vvvv (w)</td>
+<td>ModRM:r/m (r)</td>
+<td>imm8</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Shifts the bits in the individual data elements (words, doublewords, or quadword) in the destination operand (first operand) to the right by the number of bits specified in the count operand (second operand). As the bits in the data elements are shifted right, the empty high-order bits are cleared (set to 0). If the value specified by the count operand is greater than 15 (for words), 31 (for doublewords), or 63 (for a quadword), then the destination operand is set to all 0s. Figure 4-15 gives an example of shifting words in a 64-bit operand.</p>
+<p>Note that only the first 64-bits of a 128-bit count operand are checked to compute the count.</p>
+<svg width="568.799985" viewBox="112.380000 650696.999995 379.199990 88.140005" height="132.2100075">
+<text y="650715.827384" x="160.0799" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="31.008684">Pre-Shift</text>
+<text y="650724.107384" x="170.58" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="21.320964">DEST</text>
+<text y="650737.705488" x="159.0" style="font-size:6.960000pt" lengthAdjust="spacingAndGlyphs" textLength="31.41744">Shift Right</text>
+<text y="650744.965388" x="161.7" style="font-size:6.960000pt" lengthAdjust="spacingAndGlyphs" textLength="28.485888">with Zero</text>
+<text y="650752.765488" x="161.1599" style="font-size:6.960000pt" lengthAdjust="spacingAndGlyphs" textLength="29.386512">Extension</text>
+<text y="650768.687684" x="155.2201" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="34.539834">Post-Shift</text>
+<text y="650776.667384" x="169.56" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="21.315378">DEST</text>
+<rect y="650708.16" x="194.7" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="62.88"></rect>
+<rect y="650708.16" x="257.58" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="62.88"></rect>
+<rect y="650708.16" x="383.4" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="62.88"></rect>
+<rect y="650761.14" x="257.04" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="62.88"></rect>
+<rect y="650761.14" x="319.92" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="62.88"></rect>
+<rect y="650761.14" x="382.8" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="62.88"></rect>
+<rect y="650761.14" x="194.1" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="62.94"></rect>
+<rect y="650708.16" x="320.46" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="18.0" width="62.94"></rect>
+<path style="stroke:black" d="M194.460000,650707.920000 L194.460000,650726.160000 L194.939980,650726.160000 L194.939980,650707.920000 "></path>
+<path style="stroke:black" d="M257.340000,650707.920000 L257.340000,650726.160000 L257.820010,650726.160000 L257.820010,650707.920000 "></path>
+<path style="stroke:black" d="M320.220000,650707.920000 L320.220000,650726.160000 L320.700010,650726.160000 L320.700010,650707.920000 "></path>
+<path style="stroke:black" d="M383.160000,650707.920000 L383.160000,650726.160000 L383.640010,650726.160000 L383.640010,650707.920000 "></path>
+<path style="stroke:black" d="M194.700000,650707.920020 L194.700000,650708.400000 L257.820000,650708.400000 L257.820000,650707.920020 "></path>
+<path style="stroke:black" d="M257.580000,650707.920020 L257.580000,650708.400000 L320.700000,650708.400000 L320.700000,650707.920020 "></path>
+<path style="stroke:black" d="M320.460000,650707.920020 L320.460000,650708.400000 L383.640000,650708.400000 L383.640000,650707.920020 "></path>
+<path style="stroke:black" d="M383.400000,650707.920020 L383.400000,650708.400000 L446.520000,650708.400000 L446.520000,650707.920020 "></path>
+<path style="stroke:black" d="M257.340000,650708.160000 L257.340000,650726.400000 L257.820010,650726.400000 L257.820010,650708.160000 "></path>
+<path style="stroke:black" d="M320.220000,650708.160000 L320.220000,650726.400000 L320.700010,650726.400000 L320.700010,650708.160000 "></path>
+<path style="stroke:black" d="M383.160000,650708.160000 L383.160000,650726.400000 L383.640010,650726.400000 L383.640010,650708.160000 "></path>
+<path style="stroke:black" d="M446.040000,650708.160000 L446.040000,650726.400000 L446.519980,650726.400000 L446.519980,650708.160000 "></path>
+<path style="stroke:black" d="M194.460000,650725.919990 L194.460000,650726.400000 L257.580000,650726.400000 L257.580000,650725.919990 "></path>
+<path style="stroke:black" d="M257.340000,650725.919990 L257.340000,650726.400000 L320.460000,650726.400000 L320.460000,650725.919990 "></path>
+<path style="stroke:black" d="M320.220000,650725.919990 L320.220000,650726.400000 L383.400000,650726.400000 L383.400000,650725.919990 "></path>
+<path style="stroke:black" d="M383.160000,650725.919990 L383.160000,650726.400000 L446.280000,650726.400000 L446.280000,650725.919990 "></path>
+<path style="stroke:black" d="M276.360000,650726.280000 L276.360000,650741.220000 L276.839980,650741.220000 L276.839980,650726.280000 "></path>
+<path style="stroke:black" d="M212.640000,650726.340000 L212.640000,650741.280000 L213.120000,650741.280000 L213.120000,650726.340000 "></path>
+<path style="stroke:black" d="M394.800000,650726.400000 L394.800000,650741.340000 L395.279980,650741.340000 L395.279980,650726.400000 "></path>
+<path style="stroke:black" d="M333.120000,650726.820000 L333.120000,650741.760000 L333.600010,650741.760000 L333.600010,650726.820000 "></path>
+<path style="stroke:black" d="M276.600000,650740.739990 L276.600000,650741.220000 L302.580000,650741.220000 L302.580000,650740.739990 "></path>
+<path style="stroke:black" d="M212.880000,650740.800020 L212.880000,650741.280000 L238.860000,650741.280000 L238.860000,650740.800020 "></path>
+<path style="stroke:black" d="M395.040000,650740.860020 L395.040000,650741.340000 L421.020000,650741.340000 L421.020000,650740.860020 "></path>
+<path style="stroke:black" d="M302.100000,650740.980000 L302.100000,650753.940000 L302.579980,650753.940000 L302.579980,650740.980000 "></path>
+<path style="stroke:black" d="M238.380000,650741.040000 L238.380000,650753.940000 L238.860010,650753.940000 L238.860010,650741.040000 "></path>
+<path style="stroke:black" d="M420.540000,650741.100000 L420.540000,650754.000000 L421.019980,650754.000000 L421.019980,650741.100000 "></path>
+<path style="stroke:black" d="M333.360000,650741.279990 L333.360000,650741.760000 L359.280000,650741.760000 L359.280000,650741.279990 "></path>
+<path style="stroke:black" d="M358.800000,650741.520000 L358.800000,650754.420000 L359.279980,650754.420000 L359.279980,650741.520000 "></path>
+<path style="stroke:black" d="M238.440000,650754.300000 L239.940000,650753.700000 L240.900000,650753.280000 L239.100000,650759.760000 L238.620000,650761.440000 L238.140000,650759.760000 L236.580000,650754.360000 L236.280000,650753.340000 L237.240000,650753.700000 L237.540000,650754.060000 L239.100000,650759.460000 L238.140000,650759.760000 L238.140000,650759.460000 L239.640000,650754.060000 L240.600000,650754.360000 L240.300000,650754.660000 L238.800000,650755.260000 "></path>
+<path style="stroke:black" d="M302.160000,650754.240000 L303.660000,650753.700000 L304.620000,650753.280000 L304.320000,650754.360000 L302.820000,650759.700000 L302.340000,650761.320000 L301.860000,650759.700000 L300.300000,650754.360000 L300.000000,650753.340000 L300.960000,650753.700000 L301.260000,650754.060000 L302.820000,650759.400000 L301.860000,650759.700000 L301.860000,650759.400000 L303.360000,650754.060000 L304.320000,650754.360000 L304.020000,650754.660000 L302.520000,650755.200000 "></path>
+<path style="stroke:black" d="M420.600000,650754.300000 L422.160000,650753.760000 L423.120000,650753.400000 L422.820000,650754.420000 L421.260000,650759.820000 L420.780000,650761.500000 L420.300000,650759.820000 L418.740000,650754.420000 L418.440000,650753.400000 L419.400000,650753.760000 L419.700000,650754.120000 L421.260000,650759.520000 L420.300000,650759.820000 L420.300000,650759.520000 L421.860000,650754.120000 L422.820000,650754.420000 L422.520000,650754.720000 L420.960000,650755.260000 "></path>
+<path style="stroke:black" d="M237.240000,650753.700000 L238.800000,650754.300000 L238.800000,650755.260000 L238.620000,650755.320000 L238.440000,650755.260000 L236.880000,650754.660000 "></path>
+<path style="stroke:black" d="M238.380000,650753.700000 L238.380000,650754.780000 L238.860010,650754.780000 L238.860010,650753.700000 "></path>
+<path style="stroke:black" d="M300.960000,650753.700000 L302.520000,650754.240000 L302.520000,650755.200000 L302.340000,650755.260000 L302.160000,650755.200000 L300.600000,650754.660000 "></path>
+<path style="stroke:black" d="M302.100000,650753.700000 L302.100000,650754.720000 L302.579980,650754.720000 L302.579980,650753.700000 "></path>
+<path style="stroke:black" d="M419.400000,650753.760000 L420.960000,650754.300000 L420.960000,650755.260000 L420.780000,650755.320000 L420.600000,650755.260000 L419.040000,650754.720000 "></path>
+<path style="stroke:black" d="M420.540000,650753.760000 L420.540000,650754.780000 L421.019980,650754.780000 L421.019980,650753.760000 "></path>
+<path style="stroke:black" d="M358.860000,650754.780000 L360.420000,650754.180000 L361.380000,650753.820000 L361.080000,650754.840000 L359.520000,650760.240000 L359.040000,650761.980000 L358.560000,650760.240000 L357.060000,650754.840000 L356.760000,650753.820000 L357.720000,650754.180000 L358.020000,650754.540000 L359.520000,650759.940000 L358.560000,650760.240000 L358.560000,650759.940000 L360.120000,650754.540000 L361.080000,650754.840000 L360.780000,650755.140000 L359.220000,650755.740000 "></path>
+<path style="stroke:black" d="M238.620000,650754.780000 L240.120000,650754.180000 L238.620000,650759.580000 L237.060000,650754.180000 "></path>
+<path style="stroke:black" d="M302.340000,650754.720000 L303.840000,650754.180000 L302.340000,650759.520000 L300.780000,650754.180000 "></path>
+<path style="stroke:black" d="M357.720000,650754.180000 L359.220000,650754.780000 L359.220000,650755.740000 L359.040000,650755.800000 L358.860000,650755.740000 L357.360000,650755.140000 "></path>
+<path style="stroke:black" d="M358.800000,650754.180000 L358.800000,650755.260000 L359.279980,650755.260000 L359.279980,650754.180000 "></path>
+<path style="stroke:black" d="M420.780000,650754.780000 L422.340000,650754.240000 L420.780000,650759.640000 L419.220000,650754.240000 "></path>
+<path style="stroke:black" d="M359.040000,650755.260000 L360.600000,650754.660000 L359.040000,650760.060000 L357.540000,650754.660000 "></path>
+<path style="stroke:black" d="M193.860000,650760.900000 L193.860000,650779.140000 L194.340000,650779.140000 L194.340000,650760.900000 "></path>
+<path style="stroke:black" d="M256.800000,650760.900000 L256.800000,650779.140000 L257.280010,650779.140000 L257.280010,650760.900000 "></path>
+<path style="stroke:black" d="M319.680000,650760.900000 L319.680000,650779.140000 L320.160010,650779.140000 L320.160010,650760.900000 "></path>
+<path style="stroke:black" d="M382.560000,650760.900000 L382.560000,650779.140000 L383.040010,650779.140000 L383.040010,650760.900000 "></path>
+<path style="stroke:black" d="M194.100000,650760.900020 L194.100000,650761.380000 L257.280000,650761.380000 L257.280000,650760.900020 "></path>
+<path style="stroke:black" d="M257.040000,650760.900020 L257.040000,650761.380000 L320.160000,650761.380000 L320.160000,650760.900020 "></path>
+<path style="stroke:black" d="M319.920000,650760.900020 L319.920000,650761.380000 L383.040000,650761.380000 L383.040000,650760.900020 "></path>
+<path style="stroke:black" d="M382.800000,650760.900020 L382.800000,650761.380000 L445.920000,650761.380000 L445.920000,650760.900020 "></path>
+<path style="stroke:black" d="M256.800000,650761.140000 L256.800000,650779.380000 L257.280010,650779.380000 L257.280010,650761.140000 "></path>
+<path style="stroke:black" d="M319.680000,650761.140000 L319.680000,650779.380000 L320.160010,650779.380000 L320.160010,650761.140000 "></path>
+<path style="stroke:black" d="M382.560000,650761.140000 L382.560000,650779.380000 L383.040010,650779.380000 L383.040010,650761.140000 "></path>
+<path style="stroke:black" d="M445.440000,650761.140000 L445.440000,650779.380000 L445.920010,650779.380000 L445.920010,650761.140000 "></path>
+<path style="stroke:black" d="M193.860000,650778.900000 L193.860000,650779.380000 L257.040000,650779.380000 L257.040000,650778.900000 "></path>
+<path style="stroke:black" d="M256.800000,650778.900000 L256.800000,650779.380000 L319.920000,650779.380000 L319.920000,650778.900000 "></path>
+<path style="stroke:black" d="M319.680000,650778.900000 L319.680000,650779.380000 L382.800000,650779.380000 L382.800000,650778.900000 "></path>
+<path style="stroke:black" d="M382.560000,650778.900000 L382.560000,650779.380000 L445.680000,650779.380000 L445.680000,650778.900000 "></path>
+<text y="650719.907684" x="220.9198" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.777096">X3</text>
+<text y="650719.907684" x="284.635312" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.777096">X2</text>
+<text y="650719.907484" x="407.94" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.717246">X0</text>
+<text y="650773.667384" x="262.6801" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="53.59916">X2 &gt;&gt; COUNT</text>
+<text y="650773.667384" x="325.9199" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="53.5834">X1 &gt;&gt; COUNT</text>
+<text y="650773.667184" x="386.5201" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="11.997132">X0 &gt;&gt; COUNT</text>
+<text y="650773.667384" x="198.8998" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="53.65532">X3 &gt;&gt; COUNT</text>
+<text y="650719.907684" x="345.653584" style="font-size:7.980000pt" lengthAdjust="spacingAndGlyphs" textLength="9.777096">X1</text></svg>
+<h3>Figure 4-15.  PSRLW, PSRLD, and PSRLQ Instruction Operation Using 64-bit Operand</h3>
+<p>The (V)PSRLW instruction shifts each of the words in the destination operand to the right by the number of bits specified in the count operand; the (V)PSRLD instruction shifts each of the doublewords in the destination operand; and the PSRLQ instruction shifts the quadword (or quadwords) in the destination operand.</p>
+<p>In 64-bit mode, using a REX prefix in the form of REX.R permits this instruction to access additional registers (XMM8-XMM15).</p>
+<p>Legacy SSE instructions: The destination operand is an MMX technology register; the count operand can be either an MMX technology register or an 64-bit memory location.</p>
+<p>128-bit Legacy SSE version: The destination operand is an XMM register; the count operand can be either an XMM register or a 128-bit memory location, or an 8-bit immediate. If the count operand is a memory address, 128 bits</p>
+<p>are loaded but the upper 64 bits are ignored. Bits (VLMAX-1:128) of the corresponding YMM destination register remain unchanged.</p>
+<p>VEX.128 encoded version: The destination operand is an XMM register; the count operand can be either an XMM register or a 128-bit memory location, or an 8-bit immediate. If the count operand is a memory address, 128 bits are loaded but the upper 64 bits are ignored. Bits (VLMAX-1:128) of the destination YMM register are zeroed.</p>
+<p>VEX.256 encoded version: The destination and first source operands are YMM registers. The count operand can be either an YMM register or a 128-bit memory location or an 8-bit immediate.</p>
+<p>Note: For shifts with an immediate count (VEX.128.66.0F 71-73 /2), VEX.vvvv encodes the destination register, and VEX.B + ModRM.r/m encodes the source register. VEX.L must be 0, otherwise instructions will #UD.</p>
+<h2>Operation</h2>
+<p><strong>PSRLW (with 64-bit operand)</strong></p>
+<pre>    IF (COUNT &gt; 15)
+    THEN
+         DEST[64:0] ← 0000000000000000H
+    ELSE
+         DEST[15:0] ← ZeroExtend(DEST[15:0] &gt;&gt; COUNT);
+         (* Repeat shift operation for 2nd and 3rd words *)
+         DEST[63:48] ← ZeroExtend(DEST[63:48] &gt;&gt; COUNT);
+    FI;</pre>
+<p><strong>PSRLD (with 64-bit operand)</strong></p>
+<pre>    IF (COUNT &gt; 31)
+    THEN
+         DEST[64:0] ← 0000000000000000H
+    ELSE
+         DEST[31:0] ← ZeroExtend(DEST[31:0] &gt;&gt; COUNT);
+         DEST[63:32] ← ZeroExtend(DEST[63:32] &gt;&gt; COUNT);
+    FI;</pre>
+<p><strong>PSRLQ (with 64-bit operand)</strong></p>
+<pre>    IF (COUNT &gt; 63)
+    THEN
+         DEST[64:0] ← 0000000000000000H
+    ELSE
+         DEST ← ZeroExtend(DEST &gt;&gt; COUNT);
+    FI;</pre>
+<p><strong>PSRLW (with 128-bit operand)</strong></p>
+<pre>    COUNT ← COUNT_SOURCE[63:0];
+    IF (COUNT &gt; 15)
+    THEN
+         DEST[128:0] ← 00000000000000000000000000000000H
+    ELSE
+         DEST[15:0]  ← ZeroExtend(DEST[15:0] &gt;&gt; COUNT);
+         (* Repeat shift operation for 2nd through 7th words *)
+         DEST[127:112] ← ZeroExtend(DEST[127:112] &gt;&gt; COUNT);
+    FI;</pre>
+<p><strong>PSRLD (with 128-bit operand)</strong></p>
+<pre>    COUNT ← COUNT_SOURCE[63:0];
+    IF (COUNT &gt; 31)
+    THEN
+         DEST[128:0] ← 00000000000000000000000000000000H
+    ELSE
+         DEST[31:0]  ← ZeroExtend(DEST[31:0] &gt;&gt; COUNT);
+         (* Repeat shift operation for 2nd and 3rd doublewords *)
+         DEST[127:96] ← ZeroExtend(DEST[127:96] &gt;&gt; COUNT);
+    FI;</pre>
+<p><strong>PSRLQ (with 128-bit operand)</strong></p>
+<pre>    COUNT ← COUNT_SOURCE[63:0];
+    IF (COUNT &gt; 15)
+    THEN
+         DEST[128:0] ← 00000000000000000000000000000000H
+    ELSE
+         DEST[63:0]  ← ZeroExtend(DEST[63:0] &gt;&gt; COUNT);
+         DEST[127:64] ← ZeroExtend(DEST[127:64] &gt;&gt; COUNT);
+    FI;</pre>
+<p><strong>PSRLW (xmm, xmm, xmm/m128)</strong></p>
+<pre>DEST[127:0] ← LOGICAL_RIGHT_SHIFT_WORDS(DEST, SRC)
+DEST[VLMAX-1:128] (Unmodified)</pre>
+<p><strong>PSRLW (xmm, imm8)</strong></p>
+<pre>DEST[127:0] ← LOGICAL_RIGHT_SHIFT_WORDS(DEST, imm8)
+DEST[VLMAX-1:128] (Unmodified)</pre>
+<p><strong>VPSRLW (xmm, xmm, xmm/m128)</strong></p>
+<pre>DEST[127:0] ← LOGICAL_RIGHT_SHIFT_WORDS(SRC1, SRC2)
+DEST[VLMAX-1:128] ← 0</pre>
+<p><strong>VPSRLW (xmm, imm8)</strong></p>
+<pre>DEST[127:0] ← LOGICAL_RIGHT_SHIFT_WORDS(SRC1, imm8)
+DEST[VLMAX-1:128] ← 0</pre>
+<p><strong>PSRLD (xmm, xmm, xmm/m128)</strong></p>
+<pre>DEST[127:0] ← LOGICAL_RIGHT_SHIFT_DWORDS(DEST, SRC)
+DEST[VLMAX-1:128] (Unmodified)</pre>
+<p><strong>PSRLD (xmm, imm8)</strong></p>
+<pre>DEST[127:0] ← LOGICAL_RIGHT_SHIFT_DWORDS(DEST, imm8)
+DEST[VLMAX-1:128] (Unmodified)</pre>
+<p><strong>VPSRLD (xmm, xmm, xmm/m128)</strong></p>
+<pre>DEST[127:0] ← LOGICAL_RIGHT_SHIFT_DWORDS(SRC1, SRC2)
+DEST[VLMAX-1:128] ← 0</pre>
+<p><strong>VPSRLD (xmm, imm8)</strong></p>
+<pre>DEST[127:0] ← LOGICAL_RIGHT_SHIFT_DWORDS(SRC1, imm8)
+DEST[VLMAX-1:128] ← 0</pre>
+<p><strong>PSRLQ (xmm, xmm, xmm/m128)</strong></p>
+<pre>DEST[127:0] ← LOGICAL_RIGHT_SHIFT_QWORDS(DEST, SRC)
+DEST[VLMAX-1:128] (Unmodified)</pre>
+<p><strong>PSRLQ (xmm, imm8)</strong></p>
+<pre>DEST[127:0] ← LOGICAL_RIGHT_SHIFT_QWORDS(DEST, imm8)
+DEST[VLMAX-1:128] (Unmodified)</pre>
+<p><strong>VPSRLQ (xmm, xmm, xmm/m128)</strong></p>
+<pre>DEST[127:0] ← LOGICAL_RIGHT_SHIFT_QWORDS(SRC1, SRC2)
+DEST[VLMAX-1:128] ← 0</pre>
+<p><strong>VPSRLQ (xmm, imm8)</strong></p>
+<pre>DEST[127:0] ← LOGICAL_RIGHT_SHIFT_QWORDS(SRC1, imm8)
+DEST[VLMAX-1:128] ← 0</pre>
+<p><strong>VPSRLW (ymm, ymm, xmm/m128)</strong></p>
+<pre>DEST[255:0] ← LOGICAL_RIGHT_SHIFT_WORDS_256b(SRC1, SRC2)</pre>
+<p><strong>VPSRLW (ymm, imm8)</strong></p>
+<pre>DEST[255:0] ← LOGICAL_RIGHT_SHIFT_WORDS_256b(SRC1, imm8)</pre>
+<p><strong>VPSRLD (ymm, ymm, xmm/m128)</strong></p>
+<pre>DEST[255:0] ← LOGICAL_RIGHT_SHIFT_DWORDS_256b(SRC1, SRC2)</pre>
+<p><strong>VPSRLD (ymm, imm8)</strong></p>
+<pre>DEST[255:0] ← LOGICAL_RIGHT_SHIFT_DWORDS_256b(SRC1, imm8)</pre>
+<p><strong>VPSRLQ (ymm, ymm, xmm/m128)</strong></p>
+<pre>DEST[255:0] ← LOGICAL_RIGHT_SHIFT_QWORDS_256b(SRC1, SRC2)</pre>
+<p><strong>VPSRLQ (ymm, imm8)</strong></p>
+<pre>DEST[255:0] ← LOGICAL_RIGHT_SHIFT_QWORDS_256b(SRC1, imm8)</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalents</h2>
+<p>PSRLW:</p>
+<p>__m64 _mm_srli_pi16(__m64 m, int  count)</p>
+<p>PSRLW:</p>
+<p>__m64 _mm_srl_pi16 (__m64 m, __m64 count)</p>
+<p>(V)PSRLW:</p>
+<p>__m128i _mm_srli_epi16 (__m128i m, int count)</p>
+<p>(V)PSRLW:</p>
+<p>__m128i _mm_srl_epi16 (__m128i m, __m128i count)</p>
+<p>VPSRLW:</p>
+<p>__m256i _mm256_srli_epi16 (__m256i m, int count)</p>
+<p>VPSRLW:</p>
+<p>__m256i _mm256_srl_epi16 (__m256i m, __m128i count)</p>
+<p>PSRLD:</p>
+<p>__m64 _mm_srli_pi32 (__m64 m, int  count)</p>
+<p>PSRLD:</p>
+<p>__m64 _mm_srl_pi32 (__m64 m, __m64 count)</p>
+<p>(V)PSRLD:</p>
+<p>__m128i _mm_srli_epi32 (__m128i m, int  count)</p>
+<p>(V)PSRLD:</p>
+<p>__m128i _mm_srl_epi32 (__m128i m, __m128i count)</p>
+<p>VPSRLD:</p>
+<p>__m256i _mm256_srli_epi32 (__m256i m, int count)</p>
+<p>VPSRLD:</p>
+<p>__m256i _mm256_srl_epi32 (__m256i m, __m128i count)</p>
+<p>PSRLQ:</p>
+<p>__m64 _mm_srli_si64 (__m64 m, int  count)</p>
+<p>PSRLQ:</p>
+<p>__m64 _mm_srl_si64 (__m64 m, __m64 count)</p>
+<p>(V)PSRLQ:</p>
+<p>__m128i _mm_srli_epi64 (__m128i m, int  count)</p>
+<p>(V)PSRLQ:</p>
+<p>__m128i _mm_srl_epi64 (__m128i m, __m128i count)</p>
+<p>VPSRLQ:</p>
+<p>__m256i _mm256_srli_epi64 (__m256i m, int count)</p>
+<p>VPSRLQ:</p>
+<p>__m256i _mm256_srl_epi64 (__m256i m, __m128i count)</p>
+<h2>Flags Affected</h2>
+<p>None.</p>
+<h2>Numeric Exceptions</h2>
+<p>None.</p>
+<h2>Other Exceptions</h2>
+<p>See Exceptions Type 4 and 7 for non-VEX-encoded instructions; additionally</p>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>If VEX.L = 1.</td></tr></table></body></html>

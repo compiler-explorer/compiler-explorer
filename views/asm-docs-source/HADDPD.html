@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>HADDPD—Packed Double-FP Horizontal Add </title></head>
+<body>
+<h1>HADDPD—Packed Double-FP Horizontal Add</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32-bit Mode</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>
+<p>66 0F 7C /<em>r</em></p>
+<p>HADDPD <em>xmm1,</em> <em>xmm2/m128</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>SSE3</td>
+<td>Horizontal add packed double-precision floating-point values from <em>xmm2/m128</em> to <em>xmm1</em>.</td></tr>
+<tr>
+<td>
+<p>VEX.NDS.128.66.0F.WIG 7C /r</p>
+<p>VHADDPD xmm1,xmm2, xmm3/m128</p></td>
+<td>RVM</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Horizontal add packed double-precision floating-point values from xmm2 and xmm3/mem.</td></tr>
+<tr>
+<td>
+<p>VEX.NDS.256.66.0F.WIG 7C /r</p>
+<p>VHADDPD ymm1, ymm2, ymm3/m256</p></td>
+<td>RVM</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Horizontal add packed double-precision floating-point values from ymm2 and ymm3/mem.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RM</td>
+<td>ModRM:reg (r, w)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td></tr>
+<tr>
+<td>RVM</td>
+<td>ModRM:reg (w)</td>
+<td>VEX.vvvv (r)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Adds the double-precision floating-point values in the high and low quadwords of the destination operand and stores the result in the low quadword of the destination operand.</p>
+<p>Adds the double-precision floating-point values in the high and low quadwords of the source operand and stores the result in the high quadword of the destination operand.</p>
+<p>In 64-bit mode, use of the REX.R prefix permits this instruction to access additional registers (XMM8-XMM15).</p>
+<p>See Figure 3-15 for HADDPD; see Figure 3-16 for VHADDPD.</p>
+<svg width="507.42" viewBox="132.900000 286366.740000 338.280000 209.220000" height="313.83">
+<text y="286384.013472" x="240.5523" style="font-size:7.859300pt" lengthAdjust="spacingAndGlyphs" textLength="104.3636447">HADDPD xmm1, xmm2/m128</text>
+<text y="286404.164672" x="430.6153" style="font-size:7.859300pt" lengthAdjust="spacingAndGlyphs" textLength="21.3930146">xmm2</text>
+<text y="286408.880372" x="212.2145" style="font-size:7.859300pt" lengthAdjust="spacingAndGlyphs" textLength="28.4035102">[127:64]</text>
+<text y="286408.880372" x="349.2125" style="font-size:7.859300pt" lengthAdjust="spacingAndGlyphs" textLength="19.6639686">[63:0]</text>
+<text y="286413.595872" x="430.6153" style="font-size:7.859300pt" lengthAdjust="spacingAndGlyphs" textLength="21.8409947">/m128</text>
+<text y="286456.404672" x="212.2145" style="font-size:7.859300pt" lengthAdjust="spacingAndGlyphs" textLength="28.4035102">[127:64]</text>
+<text y="286456.404672" x="349.2125" style="font-size:7.859300pt" lengthAdjust="spacingAndGlyphs" textLength="19.6639686">[63:0]</text>
+<text y="286456.404672" x="430.6153" style="font-size:7.859300pt" lengthAdjust="spacingAndGlyphs" textLength="21.3930146">xmm1</text>
+<text y="286509.160172" x="191.5837" style="font-size:7.859300pt" lengthAdjust="spacingAndGlyphs" textLength="69.6726945">xmm2/m128[63:0] +</text>
+<text y="286509.160272" x="430.6158" style="font-size:7.859300pt" lengthAdjust="spacingAndGlyphs" textLength="24.4581416">Result:</text>
+<text y="286513.875772" x="309.1397" style="font-size:7.859300pt" lengthAdjust="spacingAndGlyphs" textLength="99.81311">xmm1[63:0] + xmm1[127:64]</text>
+<text y="286518.591372" x="190.6013" style="font-size:7.859300pt" lengthAdjust="spacingAndGlyphs" textLength="71.6375195">xmm2/m128[127:64]</text>
+<text y="286518.591372" x="430.6158" style="font-size:7.859300pt" lengthAdjust="spacingAndGlyphs" textLength="21.3930146">xmm1</text>
+<text y="286537.098572" x="212.2247" style="font-size:7.859300pt" lengthAdjust="spacingAndGlyphs" textLength="28.4035102">[127:64]</text>
+<text y="286537.098572" x="353.64337234" style="font-size:7.859300pt" lengthAdjust="spacingAndGlyphs" textLength="19.6639686">[63:0]</text>
+<text y="286567.4736" x="440.6362" style="font-size:5.894400pt" lengthAdjust="spacingAndGlyphs" textLength="25.8823104">OM15993</text>
+<rect y="286367.475" x="133.582" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="181.256" width="331.566"></rect>
+<rect y="286367.475" x="133.582" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="181.256" width="331.566"></rect>
+<rect y="286392.895" x="160.107" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="26.525" width="132.626"></rect>
+<rect y="286392.895" x="292.733" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="26.525" width="132.626"></rect>
+<rect y="286440.419" x="292.733" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="26.525" width="132.626"></rect>
+<rect y="286440.42" x="160.107" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="26.525" width="132.626"></rect>
+<rect y="286440.419" x="160.107" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="26.525" width="132.626"></rect>
+<rect y="286497.891" x="160.107" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="26.525" width="132.626"></rect>
+<rect y="286440.42" x="292.733" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="26.525" width="132.626"></rect>
+<rect y="286497.891" x="292.733" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="26.525" width="132.626"></rect>
+<rect y="286392.895" x="160.107" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="26.525" width="132.626"></rect>
+<rect y="286392.895" x="292.733" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="26.525" width="132.626"></rect>
+<rect y="286497.891" x="160.107" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="26.525" width="132.626"></rect>
+<rect y="286497.891" x="292.733" style="fill:rgba(0,0,0,0);stroke:rgb(0,0,0);stroke-width:1pt;" height="26.525" width="132.626"></rect></svg>
+<h3>Figure 3-15.  HADDPD—Packed Double-FP Horizontal Add</h3>
+<p>X3</p>
+<p>X2</p>
+<p>X1</p>
+<p>X0</p>
+<p>SRC1</p>
+<p>Y3</p>
+<p>Y2</p>
+<p>Y1</p>
+<p>Y0</p>
+<p>SRC2</p>
+<p>DEST</p>
+<p>Y2 + Y3</p>
+<p>X2 + X3</p>
+<p>Y0 + Y1</p>
+<p>X0 + X1</p>
+<h3>Figure 3-16.  VHADDPD operation</h3>
+<p>128-bit Legacy SSE version: The second source can be an XMM register or an 128-bit memory location. The desti-nation is not distinct from the first source XMM register and the upper bits (VLMAX-1:128) of the corresponding YMM register destination are unmodified.</p>
+<p>VEX.128 encoded version: the first source operand is an XMM register or 128-bit memory location. The destination operand is an XMM register. The upper bits (VLMAX-1:128) of the corresponding YMM register destination are zeroed.</p>
+<p>VEX.256 encoded version: The first source operand is a YMM register. The second source operand can be a YMM register or a 256-bit memory location. The destination operand is a YMM register.</p>
+<h2>Operation</h2>
+<p><strong>HADDPD (128-bit Legacy SSE version)</strong></p>
+<pre>DEST[63:0] ← SRC1[127:64] + SRC1[63:0]
+DEST[127:64] ← SRC2[127:64] + SRC2[63:0]
+DEST[VLMAX-1:128] (Unmodified)</pre>
+<p><strong>VHADDPD (VEX.128 encoded version)</strong></p>
+<pre>DEST[63:0] ← SRC1[127:64] + SRC1[63:0]
+DEST[127:64] ← SRC2[127:64] + SRC2[63:0]
+DEST[VLMAX-1:128] ← 0</pre>
+<p><strong>VHADDPD (VEX.256 encoded version)</strong></p>
+<pre>DEST[63:0] ← SRC1[127:64] + SRC1[63:0]
+DEST[127:64] ← SRC2[127:64] + SRC2[63:0]
+DEST[191:128] ← SRC1[255:192] + SRC1[191:128]
+DEST[255:192] ← SRC2[255:192] + SRC2[191:128]</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>VHADDPD:</p>
+<p>__m256d _mm256_hadd_pd (__m256d a, __m256d b);</p>
+<p>HADDPD:</p>
+<p>__m128d _mm_hadd_pd (__m128d a, __m128d b);</p>
+<h2>Exceptions</h2>
+<p>When the source operand is a memory operand, the operand must be aligned on a 16-byte boundary or a general-protection exception (#GP) will be generated.</p>
+<h2>Numeric Exceptions</h2>
+<p>Overflow, Underflow, Invalid, Precision, Denormal.</p>
+<h2>Other Exceptions</h2>
+<p>See Exceptions Type 2.</p></body></html>

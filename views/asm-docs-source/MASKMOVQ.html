@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>MASKMOVQ—Store Selected Bytes of Quadword </title></head>
+<body>
+<h1>MASKMOVQ—Store Selected Bytes of Quadword</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64-Bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>
+<p>0F F7 /<em>r</em></p>
+<p>MASKMOVQ <em>mm1</em>, <em>mm2</em></p></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Selectively write bytes from <em>mm1</em> to memory location using the byte mask in <em>mm2. </em>The default memory location is specified by DS:DI/EDI/RDI.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RM</td>
+<td>ModRM:reg (r)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Stores selected bytes from the source operand (first operand) into a 64-bit memory location. The mask operand (second operand) selects which bytes from the source operand are written to memory. The source and mask oper-ands are MMX technology registers. The memory location specified by the effective address in the DI/EDI/RDI register (the default segment register is DS, but this may be overridden with a segment-override prefix). The memory location does not need to be aligned on a natural boundary. (The size of the store address depends on the address-size attribute.)</p>
+<p>The most significant bit in each byte of the mask operand determines whether the corresponding byte in the source operand is written to the corresponding byte location in memory: 0 indicates no write and 1 indicates write.</p>
+<p>The MASKMOVQ instruction generates a non-temporal hint to the processor to minimize cache pollution. The non-temporal hint is implemented by using a write combining (WC) memory type protocol (see “Caching of Temporal vs. Non-Temporal Data” in Chapter 10, of the <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 1</em>). Because the WC protocol uses a weakly-ordered memory consistency model, a fencing operation imple-mented with the SFENCE or MFENCE instruction should be used in conjunction with MASKMOVQ instructions if multiple processors might use different memory types to read/write the destination memory locations.</p>
+<p>This instruction causes a transition from x87 FPU to MMX technology state (that is, the x87 FPU top-of-stack pointer is set to 0 and the x87 FPU tag word is set to all 0s [valid]).</p>
+<p>The behavior of the MASKMOVQ instruction with a mask of all 0s is as follows:</p>
+<p>The MASKMOVQ instruction can be used to improve performance for algorithms that need to merge data on a byte-by-byte basis. It should not cause a read for ownership; doing so generates unnecessary bandwidth since data is to be written directly using the byte-mask without allocating old data prior to the store.</p>
+<p>In 64-bit mode, the memory address is specified by DS:RDI.</p>
+<h2>Operation</h2>
+<pre>IF (MASK[7] = 1)
+    THEN DEST[DI/EDI] ← SRC[7:0] ELSE (* Memory location unchanged *); FI;
+IF (MASK[15] = 1)
+    THEN DEST[DI/EDI +1] ← SRC[15:8] ELSE (* Memory location unchanged *); FI;
+    (* Repeat operation for 3rd through 6th bytes in source operand *)
+IF (MASK[63] = 1)
+    THEN DEST[DI/EDI +15] ← SRC[63:56] ELSE (* Memory location unchanged *); FI;</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>void _mm_maskmove_si64(__m64d, __m64n, char * p)</p>
+<h2>Other Exceptions</h2>
+<p>See Table 22-8, “Exception Conditions for Legacy SIMD/MMX Instructions without FP Exception,” in the <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 3A</em>.</p></body></html>

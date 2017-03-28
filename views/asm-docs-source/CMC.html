@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>CMC—Complement Carry Flag </title></head>
+<body>
+<h1>CMC—Complement Carry Flag</h1>
+<table>
+<tr>
+<th>Opcode</th>
+<th>Instruction</th>
+<th>Op/En</th>
+<th>64-bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>F5</td>
+<td>CMC</td>
+<td>NP</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Complement CF flag.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>NP</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Complements the CF flag in the EFLAGS register. CMC operation is the same in non-64-bit modes and 64-bit mode.</p>
+<h2>Operation</h2>
+<pre>EFLAGS.CF[bit 0]← NOT EFLAGS.CF[bit 0];</pre>
+<h2>Flags Affected</h2>
+<p>The CF flag contains the complement of its original value. The OF, ZF, SF, AF, and PF flags are unaffected.</p>
+<h2>Exceptions (All Operating Modes)</h2>
+<p>#UD</p>
+<p>If the LOCK prefix is used.</p></body></html>

@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>VGATHERDPS/VGATHERQPS — Gather Packed SP FP values Using Signed Dword/Qword Indices </title></head>
+<body>
+<h1>VGATHERDPS/VGATHERQPS — Gather Packed SP FP values Using Signed Dword/Qword Indices</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32 -bit Mode</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>
+<p>VEX.DDS.128.66.0F38.W0 92 /r</p>
+<p>VGATHERDPS <em>xmm1, vm32x, xmm2</em></p></td>
+<td>RMV</td>
+<td>V/V</td>
+<td>AVX2</td>
+<td>Using dword indices specified in <em>vm32x</em>, gather single-preci-sion FP values from memory conditioned on mask specified by <em>xmm2</em>. Conditionally gathered elements are merged into <em>xmm1</em>.</td></tr>
+<tr>
+<td>
+<p>VEX.DDS.128.66.0F38.W0 93 /r</p>
+<p>VGATHERQPS <em>xmm1, vm64x, xmm2</em></p></td>
+<td>RMV</td>
+<td>V/V</td>
+<td>AVX2</td>
+<td>Using qword indices specified in <em>vm64x</em>, gather single-preci-sion FP values from memory conditioned on mask specified by <em>xmm2</em>. Conditionally gathered elements are merged into <em>xmm1</em>.</td></tr>
+<tr>
+<td>
+<p>VEX.DDS.256.66.0F38.W0 92 /r</p>
+<p>VGATHERDPS <em>ymm1, vm32y, ymm2</em></p></td>
+<td>RMV</td>
+<td>V/V</td>
+<td>AVX2</td>
+<td>Using dword indices specified in <em>vm32y</em>, gather single-preci-sion FP values from memory conditioned on mask specified by <em>ymm2</em>. Conditionally gathered elements are merged into <em>ymm1</em>.</td></tr>
+<tr>
+<td>
+<p>VEX.DDS.256.66.0F38.W0 93 /r</p>
+<p>VGATHERQPS<em> xmm1, vm64y, xmm2</em></p></td>
+<td>RMV</td>
+<td>V/V</td>
+<td>AVX2</td>
+<td>Using qword indices specified in <em>vm64y</em>, gather single-preci-sion FP values from memory conditioned on mask specified by <em>xmm2</em>. Conditionally gathered elements are merged into <em>xmm1</em>.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>A</td>
+<td>ModRM:reg (r,w)</td>
+<td>
+<p>BaseReg (R): VSIB:base,</p>
+<p>VectorReg(R): VSIB:index</p></td>
+<td>VEX.vvvv (r, w)</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>The instruction conditionally loads up to 4 or 8 single-precision floating-point values from memory addresses spec-ified by the memory operand (the second operand) and using dword indices. The memory operand uses the VSIB form of the SIB byte to specify a general purpose register operand as the common base, a vector register for an array of indices relative to the base and a constant scale factor.</p>
+<p>The mask operand (the third operand) specifies the conditional load operation from each memory address and the corresponding update of each data element of the destination operand (the first operand). Conditionality is speci-fied by the most significant bit of each data element of the mask register. If an element’s mask bit is not set, the corresponding element of the destination register is left unchanged. The width of data element in the destination register and mask register are identical. The entire mask register will be set to zero by this instruction unless the instruction causes an exception.</p>
+<p>Using qword indices, the instruction conditionally loads up to 2 or 4 single-precision floating-point values from the VSIB addressing memory operand, and updates the lower half of the destination register. The upper 128 or 256 bits of the destination register are zero’ed with qword indices.</p>
+<p>This instruction can be suspended by an exception if at least one element is already gathered (i.e., if the exception is triggered by an element other than the rightmost one with its mask bit set).  When this happens, the destination register and the mask operand are partially updated; those elements that have been gathered are placed into the destination register and have their mask bits set to zero.  If any traps or interrupts are pending from already gath-ered elements, they will be delivered in lieu of the exception; in this case, EFLAG.RF is set to one so an instruction breakpoint is not re-triggered when the instruction is continued.</p>
+<p>If the data size and index size are different, part of the destination register and part of the mask register do not correspond to any elements being gathered.  This instruction sets those parts to zero.  It may do this to one or both of those registers even if the instruction triggers an exception, and even if the instruction triggers the exception before gathering any elements.</p>
+<p>VEX.128 version: For dword indices, the instruction will gather four single-precision floating-point values.  For qword indices, the instruction will gather two values and zeroes the upper 64 bits of the destination.</p>
+<p>VEX.256 version: For dword indices, the instruction will gather eight single-precision floating-point values.  For qword indices, the instruction will gather four values and zeroes the upper 128 bits of the destination.</p>
+<p>Note that:</p>
+<h2>Operation</h2>
+<pre>DEST ← SRC1;
+BASE_ADDR: base register encoded in VSIB addressing;
+VINDEX: the vector index register encoded by VSIB addressing;
+SCALE: scale factor encoded by SIB:[7:6];
+DISP: optional 1, 4 byte displacement;
+MASK ← SRC3;</pre>
+<p><strong>VGATHERDPS (VEX.128 version)</strong></p>
+<pre>FOR j← 0 to 3
+    i ← j * 32;
+    IF MASK[31+i] THEN
+         MASK[i +31:i] ← FFFFFFFFH; // extend from most significant bit
+    ELSE
+         MASK[i +31:i] ← 0;
+    FI;
+ENDFOR
+MASK[VLMAX-1:128] ← 0;
+FOR j← 0 to 3
+    i ← j * 32;
+    DATA_ADDR ← BASE_ADDR + (SignExtend(VINDEX[i+31:i])*SCALE + DISP;
+    IF MASK[31+i] THEN
+         DEST[i +31:i] ← FETCH_32BITS(DATA_ADDR); // a fault exits the instruction
+    FI;
+    MASK[i +31:i] ← 0;
+ENDFOR
+DEST[VLMAX-1:128] ← 0;
+(non-masked elements of the mask register have the content of respective element  cleared)</pre>
+<p><strong>VGATHERQPS (VEX.128 version)</strong></p>
+<pre>FOR j← 0 to 3
+    i ← j * 32;
+    IF MASK[31+i] THEN
+         MASK[i +31:i] ← FFFFFFFFH; // extend from most significant bit
+    ELSE
+         MASK[i +31:i] ← 0;
+    FI;
+ENDFOR
+MASK[VLMAX-1:128] ← 0;
+FOR j← 0 to 1
+    k ← j * 64;
+    i ← j * 32;
+    DATA_ADDR ← BASE_ADDR + (SignExtend(VINDEX1[k+63:k])*SCALE + DISP;
+    IF MASK[31+i] THEN
+         DEST[i +31:i] ← FETCH_32BITS(DATA_ADDR); // a fault exits the instruction
+    FI;
+    MASK[i +31:i] ← 0;
+ENDFOR
+MASK[127:64] ← 0;
+DEST[VLMAX-1:64] ← 0;
+(non-masked elements of the mask register have the content of respective element  cleared)</pre>
+<p><strong>VGATHERDPS (VEX.256 version)</strong></p>
+<pre>FOR j← 0 to 7
+    i ← j * 32;
+    IF MASK[31+i] THEN
+         MASK[i +31:i] ← FFFFFFFFH; // extend from most significant bit
+    ELSE
+         MASK[i +31:i] ← 0;
+    FI;
+ENDFOR
+FOR j← 0 to 7
+    i ← j * 32;
+    DATA_ADDR ← BASE_ADDR + (SignExtend(VINDEX1[i+31:i])*SCALE + DISP;
+    IF MASK[31+i] THEN
+         DEST[i +31:i] ← FETCH_32BITS(DATA_ADDR); // a fault exits the instruction
+    FI;
+    MASK[i +31:i] ← 0;
+ENDFOR
+(non-masked elements of the mask register have the content of respective element  cleared)</pre>
+<p><strong>VGATHERQPS (VEX.256 version)</strong></p>
+<pre>FOR j← 0 to 7
+    i ← j * 32;
+    IF MASK[31+i] THEN
+         MASK[i +31:i] ← FFFFFFFFH; // extend from most significant bit
+    ELSE
+         MASK[i +31:i] ← 0;
+    FI;
+ENDFOR
+FOR j← 0 to 3
+    k ← j * 64;
+    i ← j * 32;
+    DATA_ADDR ← BASE_ADDR + (SignExtend(VINDEX1[k+63:k])*SCALE + DISP;
+    IF MASK[31+i] THEN
+         DEST[i +31:i] ← FETCH_32BITS(DATA_ADDR); // a fault exits the instruction
+    FI;
+    MASK[i +31:i] ← 0;
+ENDFOR
+MASK[VLMAX-1:128] ← 0;
+DEST[VLMAX-1:128] ← 0;
+(non-masked elements of the mask register have the content of respective element  cleared)</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>VGATHERDPS:</p>
+<p>__m128 _mm_i32gather_ps (float const * base, __m128i index, const int scale);</p>
+<p>VGATHERDPS:</p>
+<p>__m128 _mm_mask_i32gather_ps (__m128 src, float const * base, __m128i index, __m128 mask, const int scale);</p>
+<p>VGATHERDPS:</p>
+<p>__m256 _mm256_i32gather_ps (float const * base, __m256i index, const int scale);</p>
+<p>VGATHERDPS:</p>
+<p>__m256 _mm256_mask_i32gather_ps (__m256 src, float const * base, __m256i index, __m256 mask, const int</p>
+<p>scale);</p>
+<p>VGATHERQPS:</p>
+<p>__m128 _mm_i64gather_ps (float const * base, __m128i index, const int scale);</p>
+<p>VGATHERQPS:</p>
+<p>__m128 _mm_mask_i64gather_ps (__m128 src, float const * base, __m128i index, __m128 mask, const int scale);</p>
+<p>VGATHERQPS:</p>
+<p>__m128 _mm256_i64gather_ps (float const * base, __m256i index, const int scale);</p>
+<p>VGATHERQPS:</p>
+<p>__m128 _mm256_mask_i64gather_ps (__m128 src, float const * base, __m256i index, __m128 mask, const int</p>
+<p>scale);</p>
+<h2>SIMD Floating-Point Exceptions</h2>
+<p>None</p>
+<h2>Other Exceptions</h2>
+<p>See Exceptions Type 12</p></body></html>

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>XACQUIRE/XRELEASE — Hardware Lock Elision Prefix Hints </title></head>
+<body>
+<h1>XACQUIRE/XRELEASE — Hardware Lock Elision Prefix Hints</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>64/32bit Mode Support</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>
+<p>F2</p>
+<p>XACQUIRE</p></td>
+<td>V/V</td>
+<td>HLE<sup>1</sup></td>
+<td>A hint used with an “XACQUIRE-enabled“ instruction to start lock elision on the instruction memory operand address.</td></tr>
+<tr>
+<td>
+<p>F3</p>
+<p>XRELEASE</p></td>
+<td>V/V</td>
+<td>HLE</td>
+<td>A hint used with an “XRELEASE-enabled“ instruction to end lock elision on the instruction memory operand address.</td></tr></table>
+<p><strong>NOTES:</strong></p>
+<p>1. Software is not required to check the HLE feature flag to use XACQUIRE or XRELEASE, as they are treated as regular prefix if HLE</p>
+<p>feature flag reports 0.</p>
+<h2>Description</h2>
+<p>The XACQUIRE prefix is a hint to start lock elision on the memory address specified by the instruction and the XRELEASE prefix is a hint to end lock elision on the memory address specified by the instruction.</p>
+<p>The XACQUIRE prefix hint can only be used with the following instructions (these instructions are also referred to as XACQUIRE-enabled when used with the XACQUIRE prefix):</p>
+<p>The XRELEASE prefix hint can only be used with the following instructions (also referred to as XRELEASE-enabled when used with the XRELEASE prefix):</p>
+<p>The lock variables must satisfy the guidelines described in <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 1</em>, Section 15.3.3, for elision to be successful, otherwise an HLE abort may be signaled.</p>
+<p>If an encoded byte sequence that meets XACQUIRE/XRELEASE requirements includes both prefixes, then the HLE semantic is determined by the prefix byte that is placed closest to the instruction opcode. For example, an F3F2C6 will not be treated as a XRELEASE-enabled instruction since the F2H (XACQUIRE) is closest to the instruction opcode C6. Similarly, an F2F3F0 prefixed instruction will be treated as a XRELEASE-enabled instruction since F3H (XRELEASE) is closest to the instruction opcode.</p>
+<p><strong>Intel 64 and IA-32 Compatibility</strong></p>
+<p>The effect of the XACQUIRE/XRELEASE prefix hint is the same in non-64-bit modes and in 64-bit mode.</p>
+<p>For instructions that do not support the XACQUIRE hint, the presence of the F2H  prefix behaves the same way as prior hardware, according to</p>
+<p>For instructions that do not support the XRELEASE hint, the presence of the F3H prefix behaves the same way as in prior hardware, according to</p>
+<h2>Operation</h2>
+<p><strong>XACQUIRE</strong></p>
+<pre>IF XACQUIRE-enabled instruction
+    THEN
+         IF (HLE_NEST_COUNT &lt; MAX_HLE_NEST_COUNT) THEN
+              HLE_NEST_COUNT++
+              IF (HLE_NEST_COUNT = 1) THEN
+                    HLE_ACTIVE ← 1
+                    IF 64-bit mode
+                         THEN
+                              restartRIP ← instruction pointer of the XACQUIRE-enabled instruction
+                         ELSE
+                              restartEIP ← instruction pointer of the XACQUIRE-enabled instruction
+                    FI;
+                    Enter HLE Execution (* record register state, start tracking memory state *)
+              FI; (* HLE_NEST_COUNT = 1*)
+              IF ElisionBufferAvailable
+                    THEN
+                         Allocate elision buffer
+                         Record address and data for forwarding and commit checking
+                         Perform elision
+                    ELSE
+                         Perform lock acquire operation transactionally but without elision
+              FI;
+         ELSE (* HLE_NEST_COUNT = MAX_HLE_NEST_COUNT *)
+                    GOTO HLE_ABORT_PROCESSING
+         FI;
+    ELSE
+         Treat instruction as non-XACQUIRE F2H prefixed legacy instruction
+FI;</pre>
+<p><strong>XRELEASE</strong></p>
+<pre>IF XRELEASE-enabled instruction
+    THEN
+         IF (HLE_NEST_COUNT &gt; 0)
+              THEN
+                    HLE_NEST_COUNT--
+                    IF lock address matches in elision buffer THEN
+                         IF lock satisfies address and value requirements THEN
+                              Deallocate elision buffer
+                         ELSE
+                              GOTO HLE_ABORT_PROCESSING
+                         FI;
+                    FI;
+                    IF (HLE_NEST_COUNT = 0)
+                         THEN
+                              IF NoAllocatedElisionBuffer
+                                    THEN
+                                         Try to commit transactional execution
+                                         IF fail to commit transactional execution
+                                              THEN
+                                                    GOTO HLE_ABORT_PROCESSING;
+                                              ELSE (* commit success *)
+                                                    HLE_ACTIVE ← 0
+                                         FI;
+                                    ELSE
+                                         GOTO HLE_ABORT_PROCESSING
+                              FI;
+                    FI;
+         FI; (* HLE_NEST_COUNT &gt; 0 *)
+    ELSE
+         Treat instruction as non-XRELEASE F3H prefixed legacy instruction
+FI;
+(* For any HLE abort condition encountered during HLE execution *)
+HLE_ABORT_PROCESSING:
+    HLE_ACTIVE ← 0
+    HLE_NEST_COUNT ← 0
+    Restore architectural register state
+    Discard memory updates performed in transaction
+    Free any allocated lock elision buffers
+    IF 64-bit mode
+         THEN
+              RIP ← restartRIP
+         ELSE
+              EIP ← restartEIP
+    FI;
+    Execute and retire instruction at RIP (or EIP) and ignore any HLE hint
+END</pre>
+<h2>SIMD Floating-Point Exceptions</h2>
+<p>None</p>
+<h2>Other Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>If the use of prefix causes instruction length to exceed 15 bytes.</td></tr></table></body></html>

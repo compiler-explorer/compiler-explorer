@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>MOVD/MOVQ—Move Doubleword/Move Quadword </title></head>
+<body>
+<h1>MOVD/MOVQ—Move Doubleword/Move Quadword</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32-bit Mode</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>
+<p>0F 6E /<em>r</em></p>
+<p>MOVD <em>mm, r/m32</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>MMX</td>
+<td>Move doubleword from <em>r/m32</em> to <em>mm</em>.</td></tr>
+<tr>
+<td>
+<p>REX.W + 0F 6E /<em>r</em></p>
+<p>MOVQ <em>mm, r/m64</em></p></td>
+<td>RM</td>
+<td>V/N.E.</td>
+<td>MMX</td>
+<td>Move quadword from <em>r/m64</em> to <em>mm</em>.</td></tr>
+<tr>
+<td>
+<p>0F 7E /<em>r</em></p>
+<p>MOVD <em>r/m32, mm</em></p></td>
+<td>MR</td>
+<td>V/V</td>
+<td>MMX</td>
+<td>Move doubleword from <em>mm</em> to <em>r/m32</em>.</td></tr>
+<tr>
+<td>
+<p>REX.W + 0F 7E /<em>r</em></p>
+<p>MOVQ <em>r/m64, mm</em></p></td>
+<td>MR</td>
+<td>V/N.E.</td>
+<td>MMX</td>
+<td>Move quadword from <em>mm</em> to <em>r/m64</em>.</td></tr>
+<tr>
+<td>
+<p>VEX.128.66.0F.W0 6E /</p>
+<p>VMOVD <em>xmm1, r32/m32</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Move doubleword from <em>r/m32</em> to <em>xmm1</em>.</td></tr>
+<tr>
+<td>
+<p>VEX.128.66.0F.W1 6E /r</p>
+<p>VMOVQ <em>xmm1, r64/m64</em></p></td>
+<td>RM</td>
+<td>V/N.E.</td>
+<td>AVX</td>
+<td>Move quadword from <em>r/m64</em> to <em>xmm1</em>.</td></tr>
+<tr>
+<td>
+<p>66 0F 6E /<em>r</em></p>
+<p>MOVD <em>xmm</em>, <em>r/m32</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>SSE2</td>
+<td>Move doubleword from <em>r/m32</em> to <em>xmm</em>.</td></tr>
+<tr>
+<td>
+<p>66 REX.W 0F 6E /<em>r</em></p>
+<p>MOVQ <em>xmm</em>, <em>r/m64</em></p></td>
+<td>RM</td>
+<td>V/N.E.</td>
+<td>SSE2</td>
+<td>Move quadword from <em>r/m64</em> to <em>xmm</em>.</td></tr>
+<tr>
+<td>
+<p>66 0F 7E /<em>r</em></p>
+<p>MOVD <em>r/m32</em>, <em>xmm</em></p></td>
+<td>MR</td>
+<td>V/V</td>
+<td>SSE2</td>
+<td>Move doubleword from <em>xmm</em> register to <em>r/m32</em>.</td></tr>
+<tr>
+<td>
+<p> 66 REX.W 0F 7E /<em>r</em></p>
+<p>MOVQ <em>r/m64</em>, <em>xmm</em></p></td>
+<td>MR</td>
+<td>V/N.E.</td>
+<td>SSE2</td>
+<td>Move quadword from <em>xmm</em> register to <em>r/m64</em>.</td></tr>
+<tr>
+<td>
+<p>VEX.128.66.0F.W0 7E /r</p>
+<p>VMOVD <em>r32/m32, xmm1</em></p></td>
+<td>MR</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Move doubleword from <em>xmm1</em> register to <em>r/m32</em>.</td></tr>
+<tr>
+<td>
+<p>VEX.128.66.0F.W1 7E /r</p>
+<p>VMOVQ <em>r64/m64, xmm1</em></p></td>
+<td>MR</td>
+<td>V/N.E.</td>
+<td>AVX</td>
+<td>Move quadword from <em>xmm1</em> register to <em>r/m64</em>.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RM</td>
+<td>ModRM:reg (w)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td></tr>
+<tr>
+<td>MR</td>
+<td>ModRM:r/m (w)</td>
+<td>ModRM:reg (r)</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Copies a doubleword from the source operand (second operand) to the destination operand (first operand). The source and destination operands can be general-purpose registers, MMX technology registers, XMM registers, or 32-bit memory locations. This instruction can be used to move a doubleword to and from the low doubleword of an MMX technology register and a general-purpose register or a 32-bit memory location, or to and from the low doubleword of an XMM register and a general-purpose register or a 32-bit memory location. The instruction cannot be used to transfer data between MMX technology registers, between XMM registers, between general-purpose registers, or between memory locations.</p>
+<p>When the destination operand is an MMX technology register, the source operand is written to the low doubleword of the register, and the register is zero-extended to 64 bits. When the destination operand is an XMM register, the source operand is written to the low doubleword of the register, and the register is zero-extended to 128 bits.</p>
+<p>In 64-bit mode, the instruction’s default operation size is 32 bits. Use of the REX.R prefix permits access to addi-tional registers (R8-R15). Use of the REX.W prefix promotes operation to 64 bits. See the summary chart at the beginning of this section for encoding data and limits.</p>
+<h2>Operation</h2>
+<p><strong>MOVD (when destination operand is MMX technology register)</strong></p>
+<pre>    DEST[31:0] ← SRC;
+    DEST[63:32] ← 00000000H;</pre>
+<p><strong>MOVD (when destination operand is XMM register)</strong></p>
+<pre>    DEST[31:0] ← SRC;
+    DEST[127:32] ← 000000000000000000000000H;
+    DEST[VLMAX-1:128] (Unmodified)</pre>
+<p><strong>MOVD (when source operand is MMX technology or XMM register)</strong></p>
+<pre>    DEST ← SRC[31:0];</pre>
+<p><strong>VMOVD (VEX-encoded version when destination is an XMM register)</strong></p>
+<pre>    DEST[31:0] ← SRC[31:0]
+    DEST[VLMAX-1:32] ← 0</pre>
+<p><strong>MOVQ (when destination operand is XMM register)</strong></p>
+<pre>    DEST[63:0] ← SRC[63:0];
+    DEST[127:64] ← 0000000000000000H;
+    DEST[VLMAX-1:128] (Unmodified)</pre>
+<p><strong>MOVQ (when destination operand is r/m64)</strong></p>
+<pre>    DEST[63:0] ← SRC[63:0];</pre>
+<p><strong>MOVQ (when source operand is XMM register or r/m64)</strong></p>
+<pre>    DEST ← SRC[63:0];</pre>
+<p><strong>VMOVQ (VEX-encoded version when destination is an XMM register)</strong></p>
+<pre>    DEST[63:0] ← SRC[63:0]
+    DEST[VLMAX-1:64] ← 0</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>MOVD:</p>
+<p>__m64 _mm_cvtsi32_si64 (int i )</p>
+<p>MOVD:</p>
+<p>int _mm_cvtsi64_si32 ( __m64m )</p>
+<p>MOVD:</p>
+<p>__m128i _mm_cvtsi32_si128 (int a)</p>
+<p>MOVD:</p>
+<p>int _mm_cvtsi128_si32 ( __m128i a)</p>
+<p>MOVQ:</p>
+<p>__int64 _mm_cvtsi128_si64(__m128i);</p>
+<p>MOVQ:</p>
+<p>__m128i _mm_cvtsi64_si128(__int64);</p>
+<h2>Flags Affected</h2>
+<p>None.</p>
+<h2>SIMD Floating-Point Exceptions</h2>
+<p>None.</p>
+<h2>Other Exceptions</h2>
+<p>See Exceptions Type 5; additionally</p>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>
+<p>If VEX.L = 1.</p>
+<p>If VEX.vvvv ≠ 1111B.</p></td></tr></table></body></html>

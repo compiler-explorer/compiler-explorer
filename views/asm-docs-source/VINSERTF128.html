@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>VINSERTF128 — Insert Packed Floating-Point Values </title></head>
+<body>
+<h1>VINSERTF128 — Insert Packed Floating-Point Values</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32-bit Mode</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>
+<p>VEX.NDS.256.66.0F3A.W0 18 /r ib</p>
+<p>VINSERTF128 <em>ymm1, ymm2, xmm3/m128, imm8</em></p></td>
+<td>RVM</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Insert a single precision floating-point value selected by<em> imm8</em> from <em>xmm3/m128</em> into ymm2 at the specified destination element specified by<em> imm8</em> and zero out destination elements in <em>ymm1</em> as indicated in <em>imm8</em>.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RVM</td>
+<td>ModRM:reg (w)</td>
+<td>VEX.vvvv (r)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Performs an insertion of 128-bits of packed floating-point values from the second source operand (third operand) into an the destination operand (first operand) at an 128-bit offset from imm8[0]. The remaining portions of the destination are written by the corresponding fields of the first source operand (second operand). The second source operand can be either an XMM register or a 128-bit memory location.</p>
+<p>The high 7 bits of the immediate are ignored.</p>
+<h2>Operation</h2>
+<pre>TEMP[255:0] ← SRC1[255:0]
+CASE (imm8[0]) OF
+    0: TEMP[127:0] ← SRC2[127:0]
+    1: TEMP[255:128] ← SRC2[127:0]
+ESAC
+DEST ←TEMP</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>INSERTF128:</p>
+<p> __m256 _mm256_insertf128_ps (__m256 a, __m128 b, int offset);</p>
+<p>INSERTF128:</p>
+<p> __m256d _mm256_insertf128_pd (__m256d a, __m128d b, int offset);</p>
+<p>INSERTF128:</p>
+<p> __m256i _mm256_insertf128_si256 (__m256i a, __m128i b, int offset);</p>
+<h2>SIMD Floating-Point Exceptions</h2>
+<p>None</p>
+<h2>Other Exceptions</h2>
+<p>See Exceptions Type 6; additionally</p>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>If VEX.W = 1.</td></tr></table></body></html>

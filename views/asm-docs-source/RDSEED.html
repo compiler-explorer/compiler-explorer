@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>RDSEED—Read Random SEED </title></head>
+<body>
+<h1>RDSEED—Read Random SEED</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32 bit Mode Support</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>0F C7 /7 RDSEED r16</td>
+<td>M</td>
+<td>V/V</td>
+<td>RDSEED</td>
+<td>Read a 16-bit NIST SP800-90B &amp; C compliant random value and store in the destination register.</td></tr>
+<tr>
+<td>0F C7 /7 RDSEED r32</td>
+<td>M</td>
+<td>V/V</td>
+<td>RDSEED</td>
+<td>Read a 32-bit NIST SP800-90B &amp; C compliant random value and store in the destination register.</td></tr>
+<tr>
+<td>REX.W + 0F C7 /7 RDSEED r64</td>
+<td>M</td>
+<td>V/I</td>
+<td>RDSEED</td>
+<td>Read a 64-bit NIST SP800-90B &amp; C compliant random value and store in the destination register.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>M</td>
+<td>ModRM:r/m (w)</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Loads a hardware generated random value and store it in the destination register. The random value is generated from an Enhanced NRBG (Non Deterministic Random Bit Generator) that is compliant to NIST SP800-90B and NIST SP800-90C in the XOR construction mode. The size of the random value is determined by the destination register size and operating mode. The Carry Flag indicates whether a random value is available at the time the instruction is executed. CF=1 indicates that the data in the destination is valid. Otherwise CF=0 and the data in the destination operand will be returned as zeros for the specified width. All other flags are forced to 0 in either situation. Software must check the state of CF=1 for determining if a valid random seed value has been returned, otherwise it is expected to loop and retry execution of RDSEED (see Section 1.2).</p>
+<p>The RDSEED instruction is available at all privilege levels. The RDSEED instruction executes normally either inside or outside a transaction region.</p>
+<p>In 64-bit mode, the instruction's default operation size is 32 bits. Using a REX prefix in the form of REX.B permits access to additional registers (R8-R15). Using a REX prefix in the form of REX.W promotes operation to 64 bit oper-ands. See the summary chart at the beginning of this section for encoding data and limits.</p>
+<h2>Operation</h2>
+<pre>IF HW_NRND_GEN.ready = 1
+    THEN
+         CASE of
+              osize is 64: DEST[63:0] ← HW_NRND_GEN.data;
+              osize is 32: DEST[31:0] ← HW_NRND_GEN.data;
+              osize is 16: DEST[15:0] ← HW_NRND_GEN.data;
+         ESAC;
+         CF ← 1;
+    ELSE
+         CASE of
+              osize is 64: DEST[63:0] ← 0;
+              osize is 32: DEST[31:0] ← 0;
+              osize is 16: DEST[15:0] ← 0;
+         ESAC;
+         CF ← 0;
+FI;
+OF, SF, ZF, AF, PF ← 0;</pre>
+<h2>Flags Affected</h2>
+<p>The CF flag is set according to the result (see the "Operation" section above). The OF, SF, ZF, AF, and PF flags are set to 0.</p>
+<h2>C/C++ Compiler Intrinsic Equivalent</h2>
+<p>RDSEED int _rdseed16_step( unsigned short * );</p>
+<p>RDSEED int _rdseed32_step( unsigned int * );</p>
+<p>RDSEED int _rdseed64_step( unsigned __int64 *);</p>
+<h2>Protected Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>
+<p>If the LOCK prefix is used.</p>
+<p>If the F2H or F3H prefix is used.</p>
+<p>If CPUID.(EAX=07H, ECX=0H):EBX.RDSEED[bit 18] = 0.</p></td></tr></table>
+<h2>Real-Address Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>
+<p>If the LOCK prefix is used.</p>
+<p>If the F2H or F3H prefix is used.</p>
+<p>If CPUID.(EAX=07H, ECX=0H):EBX.RDSEED[bit 18] = 0.</p></td></tr></table>
+<h2>Virtual-8086 Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>
+<p>If the LOCK prefix is used.</p>
+<p>If the F2H or F3H prefix is used.</p>
+<p>If CPUID.(EAX=07H, ECX=0H):EBX.RDSEED[bit 18] = 0.</p></td></tr></table>
+<h2>Compatibility Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>
+<p>If the LOCK prefix is used.</p>
+<p>If the F2H or F3H prefix is used.</p>
+<p>If CPUID.(EAX=07H, ECX=0H):EBX.RDSEED[bit 18] = 0.</p></td></tr></table>
+<h2>64-Bit Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>
+<p>If the LOCK prefix is used.</p>
+<p>If the F2H or F3H prefix is used.</p>
+<p>If CPUID.(EAX=07H, ECX=0H):EBX.RDSEED[bit 18] = 0.</p></td></tr></table></body></html>

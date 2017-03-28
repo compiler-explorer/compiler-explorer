@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>BEXTR — Bit Field Extract </title></head>
+<body>
+<h1>BEXTR — Bit Field Extract</h1>
+<table>
+<tr>
+<td>
+<p><strong>Opcode/Instruction</strong></p>
+<p>VEX.NDS<sup>1</sup>.LZ.0F38.W0 F7 /r</p>
+<p>BEXTR r32a, r/m32, r32b</p>
+<p>VEX.NDS<sup>1</sup>.LZ.0F38.W1 F7 /r</p>
+<p>BEXTR r64a, r/m64, r64b</p></td>
+<td>
+<p><strong>Op/En</strong></p>
+<p>RMV</p>
+<p>RMV</p></td>
+<td>
+<p><strong>64/32 -bit Mode</strong></p>
+<p>V/V</p>
+<p>V/N.E.</p></td>
+<td>
+<p><strong>CPUID Feature Flag</strong></p>
+<p>BMI1</p>
+<p>BMI1</p></td>
+<td>
+<p><strong>Description</strong></p>
+<p>Contiguous bitwise extract from r/m32 using r32b as control; store result in r32a.</p>
+<p>Contiguous bitwise extract from r/m64 using r64b as control; store result in r64a</p></td></tr></table>
+<p><strong>NOTES:</strong></p>
+<p>1. ModRM:r/m is used to encode the first source operand (second operand) and VEX.vvvv encodes the second source operand (third oper-</p>
+<p>and).</p>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RMV</td>
+<td>ModRM:reg (w)</td>
+<td>ModRM:r/m (r)</td>
+<td>VEX.vvvv (r)</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Extracts contiguous bits from the first source operand (the second operand) using an index value and length value specified in the second source operand (the third operand). Bit 7:0 of the second source operand specifies the starting bit position of bit extraction. A START value exceeding the operand size will not extract any bits from the second source operand. Bit 15:8 of the second source operand specifies the maximum number of bits (LENGTH) beginning at the START position to extract. Only bit positions up to (OperandSize -1) of the first source operand are extracted. The extracted bits are written to the destination register, starting from the least significant bit. All higher order bits in the destination operand (starting at bit position LENGTH) are zeroed. The destination register is cleared if no bits are extracted.</p>
+<p>This instruction is not supported in real mode and virtual-8086 mode. The operand size is always 32 bits if not in 64-bit mode. In 64-bit mode operand size 64 requires VEX.W1. VEX.W1 is ignored in non-64-bit modes. An attempt to execute this instruction with VEX.L not equal to 0 will cause #UD.</p>
+<h2>Operation</h2>
+<pre>START ← SRC2[7:0];
+LEN ← SRC2[15:8];
+TEMP ← ZERO_EXTEND_TO_512 (SRC1 );
+DEST ← ZERO_EXTEND(TEMP[START+LEN -1: START]);
+ZF ← (DEST = 0);</pre>
+<h2>Flags Affected</h2>
+<p>ZF is updated based on the result. AF, SF, and PF are undefined. All other flags are cleared.</p>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>BEXTR:</p>
+<p>unsigned __int32 _bextr_u32(unsigned __int32 src, unsigned __int32 start. unsigned __int32 len);</p>
+<p>BEXTR:</p>
+<p>unsigned __int64 _bextr_u64(unsigned __int64 src, unsigned __int32 start. unsigned __int32 len);</p>
+<h2>SIMD Floating-Point Exceptions</h2>
+<p>None</p>
+<h2>Other Exceptions</h2>
+<p>See Section 2.5.1, “Exception Conditions for VEX-Encoded GPR Instructions”, Table 2-29; additionally</p>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>If VEX.W = 1.</td></tr></table></body></html>

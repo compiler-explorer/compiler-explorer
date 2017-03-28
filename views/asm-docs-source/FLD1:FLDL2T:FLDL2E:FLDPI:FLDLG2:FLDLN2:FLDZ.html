@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>FLD1/FLDL2T/FLDL2E/FLDPI/FLDLG2/FLDLN2/FLDZ—Load Constant </title></head>
+<body>
+<h1>FLD1/FLDL2T/FLDL2E/FLDPI/FLDLG2/FLDLN2/FLDZ—Load Constant</h1>
+<table>
+<tr>
+<th>Opcode*</th>
+<th>Instruction</th>
+<th>64-Bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>D9 E8</td>
+<td>FLD1</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Push +1.0 onto the FPU register stack.</td></tr>
+<tr>
+<td>D9 E9</td>
+<td>FLDL2T</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Push log<sub>2</sub>10 onto the FPU register stack.</td></tr>
+<tr>
+<td>D9 EA</td>
+<td>FLDL2E</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Push log<sub>2</sub>e onto the FPU register stack.</td></tr>
+<tr>
+<td>D9 EB</td>
+<td>FLDPI</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Push π onto the FPU register stack.</td></tr>
+<tr>
+<td>D9 EC</td>
+<td>FLDLG2</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Push log<sub>10</sub>2 onto the FPU register stack.</td></tr>
+<tr>
+<td>D9 ED</td>
+<td>FLDLN2</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Push log<sub>e</sub>2 onto the FPU register stack.</td></tr>
+<tr>
+<td>D9 EE</td>
+<td>FLDZ</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Push +0.0 onto the FPU register stack.</td></tr></table>
+<p><strong>NOTES:</strong></p>
+<p>*</p>
+<p>See IA-32 Architecture Compatibility section below.</p>
+<h2>Description</h2>
+<p>Push one of seven commonly used constants (in double extended-precision floating-point format) onto the FPU register stack. The constants that can be loaded with these instructions include +1.0, +0.0, log<sub>2</sub>10, log<sub>2</sub>e, π, log<sub>10</sub>2, and log<sub>e</sub>2. For each constant, an internal 66-bit constant is rounded (as specified by the RC field in the FPU control word) to double extended-precision floating-point format. The inexact-result exception (#P) is not generated as a result of the rounding, nor is the C1 flag set in the x87 FPU status word if the value is rounded up.</p>
+<p>See the section titled “Pi” in Chapter 8 of the <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 1</em>, for a description of the π constant.</p>
+<p>This instruction’s operation is the same in non-64-bit modes and 64-bit mode.</p>
+<h2>IA-32 Architecture Compatibility</h2>
+<p>When the RC field is set to round-to-nearest, the FPU produces the same constants that is produced by the Intel 8087 and Intel 287 math coprocessors.</p>
+<h2>Operation</h2>
+<pre>TOP ← TOP − 1;
+ST(0) ← CONSTANT;</pre>
+<h2>FPU Flags Affected</h2>
+<table class="exception-table">
+<tr>
+<td>C1</td>
+<td>Set to 1 if stack overflow occurred; otherwise, set to 0.</td></tr>
+<tr>
+<td>C0, C2, C3</td>
+<td>Undefined.</td></tr></table>
+<h2>Floating-Point Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#IS</td>
+<td>Stack overflow occurred.</td></tr></table>
+<h2>Protected Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#NM</td>
+<td>CR0.EM[bit 2] or CR0.TS[bit 3] = 1.</td></tr>
+<tr>
+<td>#MF</td>
+<td>If there is a pending x87 FPU exception.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Real-Address Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>Virtual-8086 Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>Virtual-8086 Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>Compatibility Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>64-Bit Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p></body></html>

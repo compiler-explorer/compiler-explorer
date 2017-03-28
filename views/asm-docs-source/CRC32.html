@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>CRC32 — Accumulate CRC32 Value </title></head>
+<body>
+<h1>CRC32 — Accumulate CRC32 Value</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64-Bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>
+<p>F2 0F 38 F0 <em>/r</em></p>
+<p>CRC32 <em>r32, r/m8</em></p></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Accumulate CRC32 on <em>r/m8</em>.</td></tr>
+<tr>
+<td>
+<p>F2 REX 0F 38 F0 <em>/r</em></p>
+<p>CRC32 <em>r32, r/m8*</em></p></td>
+<td>RM</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Accumulate CRC32 on <em>r/m8.</em></td></tr>
+<tr>
+<td>
+<p>F2 0F 38 F1 <em>/r</em></p>
+<p>CRC32 <em>r32, r/m16</em></p></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Accumulate CRC32 on <em>r/m16</em>.</td></tr>
+<tr>
+<td>
+<p>F2 0F 38 F1<em> /r</em></p>
+<p>CRC32 <em>r32, r/m32</em></p></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Accumulate CRC32 on <em>r/m32.</em></td></tr>
+<tr>
+<td>
+<p>F2 REX.W 0F 38 F0 <em>/r</em></p>
+<p>CRC32 <em>r64, r/m8</em></p></td>
+<td>RM</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Accumulate CRC32 on <em>r/m8.</em></td></tr>
+<tr>
+<td>
+<p>F2 REX.W 0F 38 F1 <em>/r</em></p>
+<p>CRC32 <em>r64, r/m64</em></p></td>
+<td>RM</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Accumulate CRC32 on <em>r/m64.</em></td></tr></table>
+<p><strong>NOTES: *In 64-bit mode, r/m8 can not be encoded to access the following byte registers if a REX prefix is used: AH, BH, CH, DH.</strong></p>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RM</td>
+<td>ModRM:reg (r, w)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Starting with an initial value in the first operand (destination operand), accumulates a CRC32 (polynomial 11EDC6F41H) value for the second operand (source operand) and stores the result in the destination operand. The source operand can be a register or a memory location. The destination operand must be an r32 or r64 register. If the destination is an r64 register, then the 32-bit result is stored in the least significant double word and 00000000H is stored in the most significant double word of the r64 register.</p>
+<p>The initial value supplied in the destination operand is a double word integer stored in the r32 register or the least significant double word of the r64 register. To incrementally accumulate a CRC32 value, software retains the result of the previous CRC32 operation in the destination operand, then executes the CRC32 instruction again with new input data in the source operand. Data contained in the source operand is processed in reflected bit order. This means that the most significant bit of the source operand is treated as the least significant bit of the quotient, and so on, for all the bits of the source operand. Likewise, the result of the CRC operation is stored in the destination operand in reflected bit order. This means that the most significant bit of the resulting CRC (bit 31) is stored in the least significant bit of the destination operand (bit 0), and so on, for all the bits of the CRC.</p>
+<h2>Operation</h2>
+<h2>Notes:</h2>
+<p>BIT_REFLECT64: DST[63-0] = SRC[0-63]</p>
+<p>BIT_REFLECT32: DST[31-0] = SRC[0-31]</p>
+<p>BIT_REFLECT16: DST[15-0] = SRC[0-15]</p>
+<p>BIT_REFLECT8: DST[7-0] = SRC[0-7]</p>
+<p>MOD2: Remainder from Polynomial division modulus 2</p>
+<p>CRC32 instruction for 64-bit source operand and 64-bit destination operand:</p>
+<p>TEMP1[63-0] ← BIT_REFLECT64 (SRC[63-0])</p>
+<p>TEMP2[31-0] ← BIT_REFLECT32 (DEST[31-0])</p>
+<p>TEMP3[95-0] ← TEMP1[63-0] « 32</p>
+<p>TEMP4[95-0] ← TEMP2[31-0] « 64</p>
+<p>TEMP5[95-0] ← TEMP3[95-0] XOR TEMP4[95-0]</p>
+<p>TEMP6[31-0] ← TEMP5[95-0] MOD2 11EDC6F41H</p>
+<p>DEST[31-0] ← BIT_REFLECT (TEMP6[31-0])</p>
+<p>DEST[63-32] ← 00000000H</p>
+<p>CRC32 instruction for 32-bit source operand and 32-bit destination operand:</p>
+<p>TEMP1[31-0] ← BIT_REFLECT32 (SRC[31-0])</p>
+<p>TEMP2[31-0] ← BIT_REFLECT32 (DEST[31-0])</p>
+<p>TEMP3[63-0] ← TEMP1[31-0] « 32</p>
+<p>TEMP4[63-0] ← TEMP2[31-0] « 32</p>
+<p>TEMP5[63-0] ← TEMP3[63-0] XOR TEMP4[63-0]</p>
+<p>TEMP6[31-0] ← TEMP5[63-0] MOD2 11EDC6F41H</p>
+<p>DEST[31-0] ← BIT_REFLECT (TEMP6[31-0])</p>
+<p>CRC32 instruction for 16-bit source operand and 32-bit destination operand:</p>
+<p>TEMP1[15-0] ← BIT_REFLECT16 (SRC[15-0])</p>
+<p>TEMP2[31-0] ← BIT_REFLECT32 (DEST[31-0])</p>
+<p>TEMP3[47-0] ← TEMP1[15-0] « 32</p>
+<p>TEMP4[47-0] ← TEMP2[31-0] « 16</p>
+<p>TEMP5[47-0] ← TEMP3[47-0] XOR TEMP4[47-0]</p>
+<p>TEMP6[31-0] ← TEMP5[47-0] MOD2 11EDC6F41H</p>
+<p>DEST[31-0] ← BIT_REFLECT (TEMP6[31-0])</p>
+<p>CRC32 instruction for 8-bit source operand and 64-bit destination operand:</p>
+<p>TEMP1[7-0] ← BIT_REFLECT8(SRC[7-0])</p>
+<p>TEMP2[31-0] ← BIT_REFLECT32 (DEST[31-0])</p>
+<p>TEMP3[39-0] ← TEMP1[7-0] « 32</p>
+<p>TEMP4[39-0] ← TEMP2[31-0] « 8</p>
+<p>TEMP5[39-0] ← TEMP3[39-0] XOR TEMP4[39-0]</p>
+<p>TEMP6[31-0] ← TEMP5[39-0] MOD2 11EDC6F41H</p>
+<p>DEST[31-0] ← BIT_REFLECT (TEMP6[31-0])</p>
+<p>DEST[63-32] ← 00000000H</p>
+<p>CRC32 instruction for 8-bit source operand and 32-bit destination operand:</p>
+<p>TEMP1[7-0] ← BIT_REFLECT8(SRC[7-0])</p>
+<p>TEMP2[31-0] ← BIT_REFLECT32 (DEST[31-0])</p>
+<p>TEMP3[39-0] ← TEMP1[7-0] « 32</p>
+<p>TEMP4[39-0] ← TEMP2[31-0] « 8</p>
+<p>TEMP5[39-0] ← TEMP3[39-0] XOR TEMP4[39-0]</p>
+<p>TEMP6[31-0] ← TEMP5[39-0] MOD2 11EDC6F41H</p>
+<p>DEST[31-0] ← BIT_REFLECT (TEMP6[31-0])</p>
+<h2>Flags Affected</h2>
+<p>None</p>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>unsigned int _mm_crc32_u8( unsigned int crc, unsigned char data )</p>
+<p>unsigned int _mm_crc32_u16( unsigned int crc, unsigned short data )</p>
+<p>unsigned int _mm_crc32_u32( unsigned int crc, unsigned int data )</p>
+<p>unsinged __int64 _mm_crc32_u64( unsinged __int64 crc, unsigned __int64 data )</p>
+<h2>SIMD Floating Point Exceptions</h2>
+<p>None</p>
+<h2>Protected Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>If a memory operand effective address is outside the CS, DS, ES, FS or GS segments.</td></tr>
+<tr>
+<td>#SS(0)</td>
+<td>If a memory operand effective address is outside the SS segment limit.</td></tr>
+<tr>
+<td>#PF (fault-code)</td>
+<td>For a page fault.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and an unaligned memory reference is made while the current privilege level is 3.</td></tr>
+<tr>
+<td>#UD</td>
+<td>
+<p>If CPUID.01H:ECX.SSE4_2 [Bit 20] = 0.</p>
+<p>If LOCK prefix is used.</p></td></tr></table>
+<h2>Real-Address Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>If any part of the operand lies outside of the effective address space from 0 to 0FFFFH.</td></tr>
+<tr>
+<td>#SS(0)</td>
+<td>If a memory operand effective address is outside the SS segment limit.</td></tr>
+<tr>
+<td>#UD</td>
+<td>
+<p>If CPUID.01H:ECX.SSE4_2 [Bit 20] = 0.</p>
+<p>If LOCK prefix is used.</p></td></tr></table>
+<h2>Virtual 8086 Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>If any part of the operand lies outside of the effective address space from 0 to 0FFFFH.</td></tr>
+<tr>
+<td>#SS(0)</td>
+<td>If a memory operand effective address is outside the SS segment limit.</td></tr>
+<tr>
+<td>#PF (fault-code)</td>
+<td>For a page fault.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and an unaligned memory reference is made.</td></tr>
+<tr>
+<td>#UD</td>
+<td>
+<p>If CPUID.01H:ECX.SSE4_2 [Bit 20] = 0.</p>
+<p>If LOCK prefix is used.</p></td></tr></table>
+<h2>Compatibility Mode Exceptions</h2>
+<p>Same exceptions as in Protected Mode.</p>
+<h2>64-Bit Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>If the memory address is in a non-canonical form.</td></tr>
+<tr>
+<td>#SS(0)</td>
+<td>If a memory address referencing the SS segment is in a non-canonical form.</td></tr>
+<tr>
+<td>#PF (fault-code)</td>
+<td>For a page fault.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and an unaligned memory reference is made while the current privilege level is 3.</td></tr>
+<tr>
+<td>#UD</td>
+<td>
+<p>If CPUID.01H:ECX.SSE4_2 [Bit 20] = 0.</p>
+<p>If LOCK prefix is used.</p></td></tr></table></body></html>

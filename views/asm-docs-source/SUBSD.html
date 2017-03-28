@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>SUBSD—Subtract Scalar Double-Precision Floating-Point Values </title></head>
+<body>
+<h1>SUBSD—Subtract Scalar Double-Precision Floating-Point Values</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32 bit Mode Support</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>
+<p>F2 0F 5C /<em>r</em></p>
+<p>SUBSD <em>xmm1</em>, <em>xmm2/m64</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>SSE2</td>
+<td>Subtracts the low double-precision floating-point values in <em>xmm2/mem64</em> from <em>xmm1</em>.</td></tr>
+<tr>
+<td>VEX.NDS.LIG.F2.0F.WIG 5C /r VSUBSD <em>xmm1,xmm2, xmm3/m64</em></td>
+<td>RVM</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Subtract the low double-precision floating-point value in <em>xmm3/mem</em> from <em>xmm2</em> and store the result in <em>xmm1</em>.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RM</td>
+<td>ModRM:reg (r, w)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td></tr>
+<tr>
+<td>RVM</td>
+<td>ModRM:reg (w)</td>
+<td>VEX.vvvv (r)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Subtracts the low double-precision floating-point value in the source operand (second operand) from the low double-precision floating-point value in the destination operand (first operand), and stores the double-precision floating-point result in the destination operand. The source operand can be an XMM register or a 64-bit memory location. The destination operand is an XMM register. The high quadword of the destination operand remains unchanged. See Figure 11-4 in the <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 1</em>, for an illustration of a scalar double-precision floating-point operation.</p>
+<p>In 64-bit mode, using a REX prefix in the form of REX.R permits this instruction to access additional registers (XMM8-XMM15).</p>
+<p>128-bit Legacy SSE version: The destination and first source operand are the same. Bits (VLMAX-1:64) of the corresponding YMM destination register remain unchanged.</p>
+<p>VEX.128 encoded version: Bits (127:64) of the XMM register destination are copied from corresponding bits in the first source operand. Bits (VLMAX-1:128) of the destination YMM register are zeroed.</p>
+<h2>Operation</h2>
+<p><strong>SUBSD (128-bit Legacy SSE version)</strong></p>
+<pre>DEST[63:0] ← DEST[63:0] - SRC[63:0]
+DEST[VLMAX-1:64] (Unmodified)</pre>
+<p><strong>VSUBSD (VEX.128 encoded version)</strong></p>
+<pre>DEST[63:0] ← SRC1[63:0] - SRC2[63:0]
+DEST[127:64] ← SRC1[127:64]
+DEST[VLMAX-1:128] ← 0</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>SUBSD:</p>
+<p>__m128d _mm_sub_sd (m128d a, m128d b)</p>
+<h2>SIMD Floating-Point Exceptions</h2>
+<p>Overflow, Underflow, Invalid, Precision, Denormal.</p>
+<h2>Other Exceptions</h2>
+<p>See Exceptions Type 3.</p></body></html>

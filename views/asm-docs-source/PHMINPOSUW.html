@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>PHMINPOSUW — Packed Horizontal Word Minimum </title></head>
+<body>
+<h1>PHMINPOSUW — Packed Horizontal Word Minimum</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32 bit Mode Support</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>66 0F 38 41 /r PHMINPOSUW <em>xmm1, xmm2/m128</em></td>
+<td>RM</td>
+<td>V/V</td>
+<td>SSE4_1</td>
+<td>Find the minimum unsigned word in <em>xmm2/m128 </em>and place its value in the low word of <em>xmm1 </em>and its index in the second-lowest word of <em>xmm1</em>.</td></tr>
+<tr>
+<td>VEX.128.66.0F38.WIG 41 /r VPHMINPOSUW <em>xmm1, xmm2/m128</em></td>
+<td>RM</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Find the minimum unsigned word in <em>xmm2/m128</em> and place its value in the low word of xmm1 and its index in the second-lowest word of <em>xmm1</em>.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RM</td>
+<td>ModRM:reg (w)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Determine the minimum unsigned word value in the source operand (second operand) and place the unsigned word in the low word (bits 0-15) of the destination operand (first operand).  The word index of the minimum value is stored in bits 16-18 of the destination operand.  The remaining upper bits of the destination are set to zero.</p>
+<p>128-bit Legacy SSE version: Bits (VLMAX-1:128) of the corresponding YMM destination register remain unchanged.</p>
+<p>VEX.128 encoded version: Bits (VLMAX-1:128) of the destination YMM register are zeroed. VEX.vvvv is reserved and must be 1111b, VEX.L must be 0, otherwise the instruction will #UD.</p>
+<h2>Operation</h2>
+<p><strong>PHMINPOSUW (128-bit Legacy SSE version)</strong></p>
+<pre>INDEX ← 0;
+MIN ← SRC[15:0]
+IF (SRC[31:16] &lt; MIN)
+    THEN INDEX ← 1;  MIN ← SRC[31:16]; FI;
+IF (SRC[47:32] &lt; MIN)
+    THEN INDEX ← 2;  MIN ← SRC[47:32]; FI;
+* Repeat operation for words 3 through 6
+IF (SRC[127:112] &lt; MIN)
+    THEN INDEX ← 7;  MIN ← SRC[127:112]; FI;
+DEST[15:0] ← MIN;
+DEST[18:16] ← INDEX;
+DEST[127:19] ← 0000000000000000000000000000H;</pre>
+<p><strong>VPHMINPOSUW (VEX.128 encoded version)</strong></p>
+<pre>INDEX ← 0
+MIN ← SRC[15:0]
+IF (SRC[31:16] &lt; MIN) THEN INDEX ← 1; MIN ← SRC[31:16]
+IF (SRC[47:32] &lt; MIN) THEN INDEX ← 2; MIN ← SRC[47:32]
+* Repeat operation for words 3 through 6
+IF (SRC[127:112] &lt; MIN) THEN INDEX ← 7; MIN ← SRC[127:112]
+DEST[15:0] ← MIN
+DEST[18:16] ← INDEX
+DEST[127:19] ← 0000000000000000000000000000H
+DEST[VLMAX-1:128] ← 0</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>PHMINPOSUW:</p>
+<p>__m128i _mm_minpos_epu16( __m128i packed_words);</p>
+<h2>Flags Affected</h2>
+<p>None.</p>
+<h2>SIMD Floating-Point Exceptions</h2>
+<p>None.</p>
+<h2>Other Exceptions</h2>
+<p>See Exceptions Type 4; additionally</p>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>
+<p>If VEX.L = 1.</p>
+<p>If VEX.vvvv ≠ 1111B.</p></td></tr></table></body></html>

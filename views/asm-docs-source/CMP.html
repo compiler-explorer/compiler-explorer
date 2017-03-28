@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>CMP—Compare Two Operands </title></head>
+<body>
+<h1>CMP—Compare Two Operands</h1>
+<table>
+<tr>
+<th>Opcode</th>
+<th>Instruction</th>
+<th>Op/En</th>
+<th>64-Bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>3C <em>ib</em></td>
+<td>CMP AL, <em>imm8</em></td>
+<td>I</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Compare <em>imm8</em> with AL.</td></tr>
+<tr>
+<td>3D <em>iw</em></td>
+<td>CMP AX, <em>imm16</em></td>
+<td>I</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Compare <em>imm16</em> with AX.</td></tr>
+<tr>
+<td>3D <em>id</em></td>
+<td>CMP EAX, <em>imm32</em></td>
+<td>I</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Compare <em>imm32</em> with EAX.</td></tr>
+<tr>
+<td>REX.W + 3D <em>id</em></td>
+<td>CMP RAX, <em>imm32</em></td>
+<td>I</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Compare <em>imm32 sign-extended to 64-bits </em>with RAX.</td></tr>
+<tr>
+<td>80 /7 <em>ib</em></td>
+<td>CMP <em>r/m8, imm8</em></td>
+<td>MI</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Compare <em>imm8</em> with <em>r/m8.</em></td></tr>
+<tr>
+<td>REX + 80 /7 <em>ib</em></td>
+<td>CMP <em>r/m8</em><sup>*</sup><em>, imm8</em></td>
+<td>MI</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Compare <em>imm8</em> with <em>r/m8.</em></td></tr>
+<tr>
+<td>81 /7 <em>iw</em></td>
+<td>CMP <em>r/m16, imm16</em></td>
+<td>MI</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Compare <em>imm16</em> with <em>r/m16.</em></td></tr>
+<tr>
+<td>81 /7 <em>id</em></td>
+<td>CMP <em>r/m32, imm32</em></td>
+<td>MI</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Compare <em>imm32</em> with <em>r/m32.</em></td></tr>
+<tr>
+<td>REX.W + 81 /7 <em>id</em></td>
+<td>CMP <em>r/m64, imm32</em></td>
+<td>MI</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Compare <em>imm32 sign-extended to 64-bits </em>with <em>r/m64.</em></td></tr>
+<tr>
+<td>83 /7 <em>ib</em></td>
+<td>CMP <em>r/m16, imm8</em></td>
+<td>MI</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Compare <em>imm8</em> with <em>r/m16.</em></td></tr>
+<tr>
+<td>83 /7 <em>ib</em></td>
+<td>CMP <em>r/m32, imm8</em></td>
+<td>MI</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Compare <em>imm8</em> with <em>r/m32.</em></td></tr>
+<tr>
+<td>REX.W + 83 /7 <em>ib</em></td>
+<td>CMP <em>r/m64, imm8</em></td>
+<td>MI</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Compare <em>imm8</em> with <em>r/m64.</em></td></tr>
+<tr>
+<td>38 /<em>r</em></td>
+<td>CMP <em>r/m8, r8</em></td>
+<td>MR</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Compare <em>r8</em> with <em>r/m8.</em></td></tr>
+<tr>
+<td>REX + 38 /<em>r</em></td>
+<td>CMP <em>r/m8</em><sup>*</sup><em>, r8</em><sup>*</sup></td>
+<td>MR</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Compare <em>r8</em> with <em>r/m8.</em></td></tr>
+<tr>
+<td>39 /<em>r</em></td>
+<td>CMP <em>r/m16, r16</em></td>
+<td>MR</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Compare <em>r16</em> with <em>r/m16.</em></td></tr>
+<tr>
+<td>39 /<em>r</em></td>
+<td>CMP <em>r/m32, r32</em></td>
+<td>MR</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Compare <em>r32</em> with <em>r/m32.</em></td></tr>
+<tr>
+<td>REX.W + 39 /<em>r</em></td>
+<td>CMP <em>r/m64,r64</em></td>
+<td>MR</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Compare <em>r64</em> with <em>r/m64.</em></td></tr>
+<tr>
+<td>3A /<em>r</em></td>
+<td>CMP <em>r8, r/m8</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Compare <em>r/m8</em> with <em>r8.</em></td></tr>
+<tr>
+<td>REX + 3A /<em>r</em></td>
+<td>CMP <em>r8</em><sup>*</sup><em>, r/m8</em><sup>*</sup></td>
+<td>RM</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Compare <em>r/m8 with</em> <em>r8.</em></td></tr>
+<tr>
+<td>3B /<em>r</em></td>
+<td>CMP <em>r16, r/m16</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Compare <em>r/m16</em> with <em>r16.</em></td></tr>
+<tr>
+<td>3B /<em>r</em></td>
+<td>CMP <em>r32, r/m32</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Compare <em>r/m32</em> with <em>r32.</em></td></tr>
+<tr>
+<td>REX.W + 3B /<em>r</em></td>
+<td>CMP <em>r64, r/m64</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Compare <em>r/m64</em> with <em>r64.</em></td></tr></table>
+<p><strong>NOTES:</strong></p>
+<p>*</p>
+<p>In 64-bit mode, r/m8 can not be encoded to access the following byte registers if a REX prefix is used: AH, BH, CH, DH.</p>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RM</td>
+<td>ModRM:reg (r, w)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td></tr>
+<tr>
+<td>MR</td>
+<td>ModRM:r/m (r, w)</td>
+<td>ModRM:reg (w)</td>
+<td>NA</td>
+<td>NA</td></tr>
+<tr>
+<td>MI</td>
+<td>ModRM:r/m (r, w)</td>
+<td>imm8</td>
+<td>NA</td>
+<td>NA</td></tr>
+<tr>
+<td>I</td>
+<td>AL/AX/EAX/RAX</td>
+<td>imm8</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Compares the first source operand with the second source operand and sets the status flags in the EFLAGS register according to the results. The comparison is performed by subtracting the second operand from the first operand and then setting the status flags in the same manner as the SUB instruction. When an immediate value is used as an operand, it is sign-extended to the length of the first operand.</p>
+<p>The condition codes used by the J<em>cc</em>, CMOV<em>cc</em>, and SET<em>cc</em> instructions are based on the results of a CMP instruction. Appendix B, “EFLAGS Condition Codes,” in the <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 1</em>, shows the relationship of the status flags and the condition codes.</p>
+<p>In 64-bit mode, the instruction’s default operation size is 32 bits. Use of the REX.R prefix permits access to addi-tional registers (R8-R15). Use of the REX.W prefix promotes operation to 64 bits. See the summary chart at the beginning of this section for encoding data and limits.</p>
+<h2>Operation</h2>
+<pre>temp ← SRC1 − SignExtend(SRC2);
+ModifyStatusFlags; (* Modify status flags in the same manner as the SUB instruction*)</pre>
+<h2>Flags Affected</h2>
+<p>The CF, OF, SF, ZF, AF, and PF flags are set according to the result.</p>
+<h2>Protected Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>
+<p>If a memory operand effective address is outside the CS, DS, ES, FS, or GS segment limit.</p>
+<p>If the DS, ES, FS, or GS register contains a NULL segment selector.</p></td></tr>
+<tr>
+<td>#SS(0)</td>
+<td>If a memory operand effective address is outside the SS segment limit.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and an unaligned memory reference is made while the current privilege level is 3.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Real-Address Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP</td>
+<td>If a memory operand effective address is outside the CS, DS, ES, FS, or GS segment limit.</td></tr>
+<tr>
+<td>#SS</td>
+<td>If a memory operand effective address is outside the SS segment limit.</td></tr></table>
+<h2>Virtual-8086 Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>If a memory operand effective address is outside the CS, DS, ES, FS, or GS segment limit.</td></tr>
+<tr>
+<td>#SS(0)</td>
+<td>If a memory operand effective address is outside the SS segment limit.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and an unaligned memory reference is made.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Compatibility Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>64-Bit Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#SS(0)</td>
+<td>If a memory address referencing the SS segment is in a non-canonical form.</td></tr>
+<tr>
+<td>#GP(0)</td>
+<td>If the memory address is in a non-canonical form.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and an unaligned memory reference is made while the current privilege level is 3.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table></body></html>

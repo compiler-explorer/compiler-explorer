@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>RSQRTPS—Compute Reciprocals of Square Roots of Packed Single-Precision Floating-Point Values </title></head>
+<body>
+<h1>RSQRTPS—Compute Reciprocals of Square Roots of Packed Single-Precision Floating-Point Values</h1>
+<table>
+<tr>
+<th>Opcode*/Instruction</th>
+<th>Op/En</th>
+<th>64/32 bit Mode Support</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>
+<p>0F 52 /<em>r</em></p>
+<p>RSQRTPS <em>xmm1</em>,<em> xmm2/m128</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>SSE</td>
+<td>Computes the approximate reciprocals of the square roots of the packed single-precision floating-point values in <em>xmm2/m128</em> and stores the results in <em>xmm1</em>.</td></tr>
+<tr>
+<td>
+<p>VEX.128.0F.WIG 52 /r</p>
+<p>VRSQRTPS <em>xmm1, xmm2/m128</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Computes the approximate reciprocals of the square roots of packed single-precision values in <em>xmm2/mem</em> and stores the results in <em>xmm1</em>.</td></tr>
+<tr>
+<td>
+<p>VEX.256.0F.WIG 52 /r</p>
+<p>VRSQRTPS <em>ymm1, ymm2/m256</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Computes the approximate reciprocals of the square roots of packed single-precision values in <em>ymm2/mem</em> and stores the results in <em>ymm1</em>.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RM</td>
+<td>ModRM:reg (w)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Performs a SIMD computation of the approximate reciprocals of the square roots of the four packed single-preci-sion floating-point values in the source operand (second operand) and stores the packed single-precision floating-point results in the destination operand. The source operand can be an XMM register or a 128-bit memory location. The destination operand is an XMM register. See Figure 10-5 in the <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 1</em>, for an illustration of a SIMD single-precision floating-point operation.</p>
+<p>The relative error for this approximation is:</p>
+<p>|Relative Error| ≤ 1.5 ∗ 2<sup>−12</sup></p>
+<p>The RSQRTPS instruction is not affected by the rounding control bits in the MXCSR register. When a source value is a 0.0, an ∞ of the sign of the source value is returned. A denormal source value is treated as a 0.0 (of the same sign). When a source value is a negative value (other than −0.0), a floating-point indefinite is returned. When a source value is an SNaN or QNaN, the SNaN is converted to a QNaN or the source QNaN is returned.</p>
+<p>In 64-bit mode, using a REX prefix in the form of REX.R permits this instruction to access additional registers (XMM8-XMM15).</p>
+<p>128-bit Legacy SSE version: The second source can be an XMM register or an 128-bit memory location. The desti-nation is not distinct from the first source XMM register and the upper bits (VLMAX-1:128) of the corresponding YMM register destination are unmodified.</p>
+<p>VEX.128 encoded version: the first source operand is an XMM register or 128-bit memory location. The destination operand is an XMM register. The upper bits (VLMAX-1:128) of the corresponding YMM register destination are zeroed.</p>
+<p>VEX.256 encoded version: The first source operand is a YMM register. The second source operand can be a YMM register or a 256-bit memory location. The destination operand is a YMM register.</p>
+<p>Note: In VEX-encoded versions, VEX.vvvv is reserved and must be 1111b, otherwise instructions will #UD.</p>
+<h2>Operation</h2>
+<p><strong>RSQRTPS (128-bit Legacy SSE version)</strong></p>
+<pre>DEST[31:0] ← APPROXIMATE(1/SQRT(SRC[31:0]))
+DEST[63:32] ← APPROXIMATE(1/SQRT(SRC1[63:32]))
+DEST[95:64] ← APPROXIMATE(1/SQRT(SRC1[95:64]))
+DEST[127:96] ← APPROXIMATE(1/SQRT(SRC2[127:96]))
+DEST[VLMAX-1:128] (Unmodified)</pre>
+<p><strong>VRSQRTPS (VEX.128 encoded version)</strong></p>
+<pre>DEST[31:0] ← APPROXIMATE(1/SQRT(SRC[31:0]))
+DEST[63:32] ← APPROXIMATE(1/SQRT(SRC1[63:32]))
+DEST[95:64] ← APPROXIMATE(1/SQRT(SRC1[95:64]))
+DEST[127:96] ← APPROXIMATE(1/SQRT(SRC2[127:96]))
+DEST[VLMAX-1:128] ← 0</pre>
+<p><strong>VRSQRTPS (VEX.256 encoded version)</strong></p>
+<pre>DEST[31:0] ← APPROXIMATE(1/SQRT(SRC[31:0]))
+DEST[63:32] ← APPROXIMATE(1/SQRT(SRC1[63:32]))
+DEST[95:64] ← APPROXIMATE(1/SQRT(SRC1[95:64]))
+DEST[127:96] ← APPROXIMATE(1/SQRT(SRC2[127:96]))
+DEST[159:128] ← APPROXIMATE(1/SQRT(SRC2[159:128]))
+DEST[191:160] ← APPROXIMATE(1/SQRT(SRC2[191:160]))
+DEST[223:192] ← APPROXIMATE(1/SQRT(SRC2[223:192]))
+DEST[255:224] ← APPROXIMATE(1/SQRT(SRC2[255:224]))</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>RSQRTPS:</p>
+<p>__m128 _mm_rsqrt_ps(__m128 a)</p>
+<p>RSQRTPS:</p>
+<p> __m256 _mm256_rsqrt_ps (__m256 a);</p>
+<h2>SIMD Floating-Point Exceptions</h2>
+<p>None.</p>
+<h2>Other Exceptions</h2>
+<p>See Exceptions Type 4; additionally</p>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>If VEX.vvvv ≠ 1111B.</td></tr></table></body></html>

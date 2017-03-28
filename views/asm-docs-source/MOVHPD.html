@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>MOVHPD—Move High Packed Double-Precision Floating-Point Value </title></head>
+<body>
+<h1>MOVHPD—Move High Packed Double-Precision Floating-Point Value</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32-bit Mode</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>
+<p>66 0F 16 /<em>r</em></p>
+<p>MOVHPD <em>xmm</em>, <em>m64</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>SSE2</td>
+<td>Move double-precision floating-point value from <em>m64</em> to high quadword of <em>xmm</em>.</td></tr>
+<tr>
+<td>
+<p>66 0F 17 /<em>r</em></p>
+<p>MOVHPD <em>m64</em>, <em>xmm</em></p></td>
+<td>MR</td>
+<td>V/V</td>
+<td>SSE2</td>
+<td>Move double-precision floating-point value from high quadword of <em>xmm</em> to <em>m64</em>.</td></tr>
+<tr>
+<td>
+<p>VEX.NDS.128.66.0F.WIG 16 /r</p>
+<p>VMOVHPD <em>xmm2, xmm1, m64</em></p></td>
+<td>RVM</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Merge double-precision floating-point value from <em>m64</em> and the low quadword of <em>xmm1</em>.</td></tr>
+<tr>
+<td>
+<p>VEX128.66.0F.WIG 17/r</p>
+<p>VMOVHPD <em>m64, xmm1</em></p></td>
+<td>MR</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Move double-precision floating-point values from high quadword of <em>xmm1</em> to <em>m64</em>.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RM</td>
+<td>ModRM:reg (r, w)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td></tr>
+<tr>
+<td>MR</td>
+<td>ModRM:r/m (w)</td>
+<td>ModRM:reg (r)</td>
+<td>NA</td>
+<td>NA</td></tr>
+<tr>
+<td>RVM</td>
+<td>ModRM:reg (w)</td>
+<td>VEX.vvvv (r)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>This instruction cannot be used for register to register or memory to memory moves.</p>
+<p><strong>128-bit Legacy SSE load:</strong></p>
+<p>Moves a double-precision floating-point value from the source 64-bit memory operand and stores it in the high 64-bits of the destination XMM register. The lower 64bits of the XMM register are preserved. The upper 128-bits of the corresponding YMM destination register are preserved.</p>
+<p>In 64-bit mode, use of the REX.R prefix permits this instruction to access additional registers (XMM8-XMM15).</p>
+<p><strong>VEX.128 encoded load:</strong></p>
+<p>Loads a double-precision floating-point value from the source 64-bit memory operand (third operand) and stores it in the upper 64-bits of the destination XMM register (first operand). The low 64-bits from second XMM register (second operand) are stored in the lower 64-bits of the destination. The upper 128-bits of the destination YMM register are zeroed.</p>
+<p><strong>128-bit store:</strong></p>
+<p>Stores a double-precision floating-point value from the high 64-bits of the XMM register source (second operand) to the 64-bit memory location (first operand).</p>
+<p>Note: VMOVHPD (store) (VEX.128.66.0F 17 /r) is legal and has the same behavior as the existing 66 0F 17 store. For VMOVHPD (store) (VEX.128.66.0F 17 /r) instruction version, VEX.vvvv is reserved and must be 1111b other-wise instruction will #UD.</p>
+<p>If VMOVHPD is encoded with VEX.L= 1, an attempt to execute the instruction encoded with VEX.L= 1 will cause an #UD exception.</p>
+<h2>Operation</h2>
+<p><strong>MOVHPD (128-bit Legacy SSE load)</strong></p>
+<pre>DEST[63:0] (Unmodified)
+DEST[127:64] ← SRC[63:0]
+DEST[VLMAX-1:128] (Unmodified)</pre>
+<p><strong>VMOVHPD (VEX.128 encoded load)</strong></p>
+<pre>DEST[63:0] ← SRC1[63:0]
+DEST[127:64] ← SRC2[63:0]
+DEST[VLMAX-1:128] ← 0</pre>
+<p><strong>VMOVHPD (store)</strong></p>
+<pre>DEST[63:0] ← SRC[127:64]</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>MOVHPD:</p>
+<p>__m128d _mm_loadh_pd ( __m128d a, double *p)</p>
+<p>MOVHPD:</p>
+<p>void _mm_storeh_pd (double *p, __m128d a)</p>
+<h2>SIMD Floating-Point Exceptions</h2>
+<p>None.</p>
+<h2>Other Exceptions</h2>
+<p>See Exceptions Type 5; additionally</p>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>If VEX.L= 1.</td></tr></table></body></html>

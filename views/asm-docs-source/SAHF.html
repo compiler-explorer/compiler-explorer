@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>SAHF—Store AH into Flags </title></head>
+<body>
+<h1>SAHF—Store AH into Flags</h1>
+<table>
+<tr>
+<th>Opcode*</th>
+<th>Instruction</th>
+<th>Op/En</th>
+<th>64-Bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>9E</td>
+<td>SAHF</td>
+<td>NP</td>
+<td>Invalid*</td>
+<td>Valid</td>
+<td>Loads SF, ZF, AF, PF, and CF from AH into EFLAGS register.</td></tr></table>
+<p><strong>NOTES: * Valid in specific steppings. See Description section.</strong></p>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>NP</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Loads the SF, ZF, AF, PF, and CF flags of the EFLAGS register with values from the corresponding bits in the AH register (bits 7, 6, 4, 2, and 0, respectively). Bits 1, 3, and 5 of register AH are ignored; the corresponding reserved bits (1, 3, and 5) in the EFLAGS register remain as shown in the “Operation” section below.</p>
+<p>This instruction executes as described above in compatibility mode and legacy mode. It is valid in 64-bit mode only if CPUID.80000001H:ECX.LAHF-SAHF[bit 0] = 1.</p>
+<h2>Operation</h2>
+<pre>IF IA-64 Mode
+    THEN
+         IF CPUID.80000001H.ECX[0] = 1;
+              THEN
+                    RFLAGS(SF:ZF:0:AF:0:PF:1:CF) ← AH;
+              ELSE
+                    #UD;
+         FI
+    ELSE
+         EFLAGS(SF:ZF:0:AF:0:PF:1:CF) ← AH;
+FI;</pre>
+<h2>Flags Affected</h2>
+<p>The SF, ZF, AF, PF, and CF flags are loaded with values from the AH register. Bits 1, 3, and 5 of the EFLAGS register are unaffected, with the values remaining 1, 0, and 0, respectively.</p>
+<h2>Protected Mode Exceptions</h2>
+<p>None.</p>
+<h2>Real-Address Mode Exceptions</h2>
+<p>None.</p>
+<h2>Virtual-8086 Mode Exceptions</h2>
+<p>None.</p>
+<h2>Compatibility Mode Exceptions</h2>
+<p>None.</p>
+<h2>64-Bit Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>
+<p>If CPUID.80000001H.ECX[0] = 0.</p>
+<p>If the LOCK prefix is used.</p></td></tr></table></body></html>

@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>FPREM—Partial Remainder </title></head>
+<body>
+<h1>FPREM—Partial Remainder</h1>
+<table>
+<tr>
+<th>Opcode</th>
+<th>Instruction</th>
+<th>64-Bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>D9 F8</td>
+<td>FPREM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Replace ST(0) with the remainder obtained from dividing ST(0) by ST(1).</td></tr></table>
+<h2>Description</h2>
+<p>Computes the remainder obtained from dividing the value in the ST(0) register (the dividend) by the value in the ST(1) register (the divisor or <strong>modulus</strong>), and stores the result in ST(0). The remainder represents the following value:</p>
+<p>Remainder ← ST(0) − (Q ∗ ST(1))</p>
+<p>Here, Q is an integer value that is obtained by truncating the floating-point number quotient of [ST(0) / ST(1)] toward zero. The sign of the remainder is the same as the sign of the dividend. The magnitude of the remainder is less than that of the modulus, unless a partial remainder was computed (as described below).</p>
+<p>This instruction produces an exact result; the inexact-result exception does not occur and the rounding control has no effect. The following table shows the results obtained when computing the remainder of various classes of numbers, assuming that underflow does not occur.</p>
+<h3>Table 3-41.  FPREM Results</h3>
+<table>
+<tr>
+<td colspan="2"></td>
+<td colspan="2"></td>
+<td colspan="2"></td>
+<td colspan="2"></td>
+<th colspan="2">ST(1)</th>
+<td colspan="2"></td>
+<td colspan="2"></td>
+<td colspan="2"></td>
+<td colspan="2"></td></tr>
+<tr>
+<td colspan="2"></td>
+<td colspan="2"></td>
+<td colspan="2">-∞</td>
+<td colspan="2">-F</td>
+<td colspan="2">-0</td>
+<td colspan="2">+0</td>
+<td colspan="2">+F</td>
+<td colspan="2">+∞</td>
+<td colspan="2">NaN</td></tr>
+<tr>
+<td colspan="2"></td>
+<td colspan="2">-∞</td>
+<td colspan="2">*</td>
+<td colspan="2">*</td>
+<td colspan="2">*</td>
+<td colspan="2">*</td>
+<td colspan="2">*</td>
+<td colspan="2">*</td>
+<td colspan="2">NaN</td></tr>
+<tr>
+<th colspan="2">ST(0)</th>
+<td colspan="2">-F</td>
+<td colspan="2">ST(0)</td>
+<td colspan="2">-F or -0</td>
+<td colspan="2">**</td>
+<td colspan="2">**</td>
+<td colspan="2">-F or -0</td>
+<td colspan="2">ST(0)</td>
+<td colspan="2">NaN</td></tr>
+<tr>
+<td colspan="2"></td>
+<td colspan="2">-0</td>
+<td colspan="2">-0</td>
+<td colspan="2">-0</td>
+<td colspan="2">*</td>
+<td colspan="2">*</td>
+<td colspan="2">-0</td>
+<td colspan="2">-0</td>
+<td colspan="2">NaN</td></tr>
+<tr>
+<td colspan="2"></td>
+<td colspan="2">+0</td>
+<td colspan="2">+0</td>
+<td colspan="2">+0</td>
+<td colspan="2">*</td>
+<td colspan="2">*</td>
+<td colspan="2">+0</td>
+<td colspan="2">+0</td>
+<td colspan="2">NaN</td></tr>
+<tr>
+<td colspan="2"></td>
+<td colspan="2">+F</td>
+<td colspan="2">ST(0)</td>
+<td colspan="2">+F or +0</td>
+<td colspan="2">**</td>
+<td colspan="2">**</td>
+<td colspan="2">+F or +0</td>
+<td colspan="2">ST(0)</td>
+<td colspan="2">NaN</td></tr>
+<tr>
+<td colspan="2"></td>
+<td colspan="2">+∞</td>
+<td colspan="2">*</td>
+<td colspan="2">*</td>
+<td colspan="2">*</td>
+<td colspan="2">*</td>
+<td colspan="2">*</td>
+<td colspan="2">*</td>
+<td colspan="2">NaN</td></tr>
+<tr>
+<td colspan="2"></td>
+<td colspan="2">NaN</td>
+<td colspan="2">NaN</td>
+<td colspan="2">NaN</td>
+<td colspan="2">NaN</td>
+<td colspan="2">NaN</td>
+<td colspan="2">NaN</td>
+<td colspan="2">NaN</td>
+<td colspan="2">NaN</td></tr></table>
+<p><strong>NOTES:</strong></p>
+<p>F Means finite floating-point value.</p>
+<p>*</p>
+<p>Indicates floating-point invalid-arithmetic-operand (#IA) exception.</p>
+<p>** Indicates floating-point zero-divide (#Z) exception.</p>
+<p>When the result is 0, its sign is the same as that of the dividend. When the modulus is ∞, the result is equal to the value in ST(0).</p>
+<p>The FPREM instruction does not compute the remainder specified in IEEE Std 754. The IEEE specified remainder can be computed with the FPREM1 instruction. The FPREM instruction is provided for compatibility with the Intel 8087 and Intel287 math coprocessors.</p>
+<p>The FPREM instruction gets its name “partial remainder” because of the way it computes the remainder. This instruction arrives at a remainder through iterative subtraction. It can, however, reduce the exponent of ST(0) by no more than 63 in one execution of the instruction. If the instruction succeeds in producing a remainder that is less than the modulus, the operation is complete and the C2 flag in the FPU status word is cleared. Otherwise, C2 is set, and the result in ST(0) is called the <strong>partial remainder</strong>. The exponent of the partial remainder will be less than the exponent of the original dividend by at least 32. Software can re-execute the instruction (using the partial remainder in ST(0) as the dividend) until C2 is cleared. (Note that while executing such a remainder-computation loop, a higher-priority interrupting routine that needs the FPU can force a context switch in-between the instruc-tions in the loop.)</p>
+<p>An important use of the FPREM instruction is to reduce the arguments of periodic functions. When reduction is complete, the instruction stores the three least-significant bits of the quotient in the C3, C1, and C0 flags of the FPU</p>
+<p>status word. This information is important in argument reduction for the tangent function (using a modulus of π/4), because it locates the original angle in the correct one of eight sectors of the unit circle.</p>
+<p>This instruction’s operation is the same in non-64-bit modes and 64-bit mode.</p>
+<h2>Operation</h2>
+<pre>D ← exponent(ST(0)) – exponent(ST(1));
+IF D &lt; 64
+    THEN
+         Q ← Integer(TruncateTowardZero(ST(0) / ST(1)));
+         ST(0) ← ST(0) – (ST(1) ∗ Q);
+         C2 ← 0;
+         C0, C3, C1 ← LeastSignificantBits(Q); (* Q2, Q1, Q0 *)
+    ELSE
+         C2 ← 1;
+         N ← An implementation-dependent number between 32 and 63;
+         QQ ← Integer(TruncateTowardZero((ST(0)  / ST(1)) / 2<sup>(D − N)</sup>));
+         ST(0) ← ST(0) – (ST(1) ∗ QQ ∗ 2<sup>(D − N)</sup>);
+FI;</pre>
+<h2>FPU Flags Affected</h2>
+<table class="exception-table">
+<tr>
+<td>C0</td>
+<td>Set to bit 2 (Q2) of the quotient.</td></tr>
+<tr>
+<td>C1</td>
+<td>Set to 0 if stack underflow occurred; otherwise, set to least significant bit of quotient (Q0).</td></tr>
+<tr>
+<td>C2</td>
+<td>Set to 0 if reduction complete; set to 1 if incomplete.</td></tr>
+<tr>
+<td>C3</td>
+<td>Set to bit 1 (Q1) of the quotient.</td></tr></table>
+<h2>Floating-Point Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#IS</td>
+<td>Stack underflow occurred.</td></tr>
+<tr>
+<td>#IA</td>
+<td>Source operand is an SNaN value, modulus is 0, dividend is ∞, or unsupported format.</td></tr></table>
+<p>#D</p>
+<p>Source operand is a denormal value.</p>
+<p>#U</p>
+<p>Result is too small for destination format.</p>
+<h2>Protected Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#NM</td>
+<td>CR0.EM[bit 2] or CR0.TS[bit 3] = 1.</td></tr>
+<tr>
+<td>#MF</td>
+<td>If there is a pending x87 FPU exception.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Real-Address Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>Virtual-8086 Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>Compatibility Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>64-Bit Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p></body></html>

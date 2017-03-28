@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>PSRLDQ—Shift Double Quadword Right Logical </title></head>
+<body>
+<h1>PSRLDQ—Shift Double Quadword Right Logical</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32 bit Mode Support</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>
+<p>66 0F 73 /3 ib</p>
+<p>PSRLDQ <em>xmm1</em>, <em>imm8</em></p></td>
+<td>MI</td>
+<td>V/V</td>
+<td>SSE2</td>
+<td>Shift <em>xmm1</em> right by <em>imm8</em> while shifting in 0s.</td></tr>
+<tr>
+<td>
+<p>VEX.NDD.128.66.0F.WIG 73 /3 ib</p>
+<p>VPSRLDQ <em>xmm1, xmm2, imm8</em></p></td>
+<td>VMI</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Shift <em>xmm2</em> right by<em> imm8</em> bytes while shifting in 0s.</td></tr>
+<tr>
+<td>
+<p>VEX.NDD.256.66.0F.WIG 73 /3 ib</p>
+<p>VPSRLDQ <em>ymm1, ymm2, imm8</em></p></td>
+<td>VMI</td>
+<td>V/V</td>
+<td>AVX2</td>
+<td>Shift <em>ymm1</em> right by<em> imm8</em> bytes while shifting in 0s.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>MI</td>
+<td>ModRM:r/m (r, w)</td>
+<td>imm8</td>
+<td>NA</td>
+<td>NA</td></tr>
+<tr>
+<td>VMI</td>
+<td>VEX.vvvv (w)</td>
+<td>ModRM:r/m (r)</td>
+<td>imm8</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Shifts the destination operand (first operand) to the right by the number of bytes specified in the count operand (second operand). The empty high-order bytes are cleared (set to all 0s). If the value specified by the count operand is greater than 15, the destination operand is set to all 0s. The count operand is an 8-bit immediate.</p>
+<p>In 64-bit mode, using a REX prefix in the form of REX.R permits this instruction to access additional registers (XMM8-XMM15).</p>
+<p>128-bit Legacy SSE version: The source and destination operands are the same. Bits (VLMAX-1:128) of the corre-sponding YMM destination register remain unchanged.</p>
+<p>VEX.128 encoded version: The source and destination operands are XMM registers. Bits (VLMAX-1:128) of the destination YMM register are zeroed.</p>
+<p>VEX.256 encoded version: The source operand is a YMM register. The destination operand is a YMM register. The count operand applies to both the low and high 128-bit lanes.</p>
+<p>Note: VEX.vvvv encodes the destination register, and VEX.B + ModRM.r/m encodes the source register. VEX.L must be 0, otherwise instructions will #UD.</p>
+<h2>Operation</h2>
+<p><strong>PSRLDQ(128-bit Legacy SSE version)</strong></p>
+<pre>TEMP ← COUNT
+IF (TEMP &gt; 15) THEN TEMP ← 16; FI
+DEST ← DEST &gt;&gt; (TEMP * 8)
+DEST[VLMAX-1:128] (Unmodified)</pre>
+<p><strong>VPSRLDQ (VEX.128 encoded version)</strong></p>
+<pre>TEMP ← COUNT
+IF (TEMP &gt; 15) THEN TEMP ← 16; FI
+DEST ← SRC &gt;&gt; (TEMP * 8)
+DEST[VLMAX-1:128] ← 0</pre>
+<p><strong>VPSRLDQ (VEX.256 encoded version)</strong></p>
+<pre>TEMP ← COUNT
+IF (TEMP &gt; 15) THEN TEMP ← 16; FI
+DEST[127:0] ← SRC[127:0] &gt;&gt; (TEMP * 8)
+DEST[255:128] ← SRC[255:128] &gt;&gt; (TEMP * 8)</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalents</h2>
+<p>(V)PSRLDQ:</p>
+<p>__m128i _mm_srli_si128 ( __m128i a, int imm)</p>
+<p>VPSRLDQ:</p>
+<p>__m256i _mm256_srli_si256 ( __m256i a, const int imm)</p>
+<h2>Flags Affected</h2>
+<p>None.</p>
+<h2>Numeric Exceptions</h2>
+<p>None.</p>
+<h2>Other Exceptions</h2>
+<p>See Exceptions Type 7; additionally</p>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>If VEX.L = 1.</td></tr></table></body></html>

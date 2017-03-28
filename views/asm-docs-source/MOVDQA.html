@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>MOVDQA—Move Aligned Double Quadword </title></head>
+<body>
+<h1>MOVDQA—Move Aligned Double Quadword</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32-bit Mode</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>
+<p>66 0F 6F /<em>r</em></p>
+<p>MOVDQA <em>xmm1</em>, <em>xmm2/m128</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>SSE2</td>
+<td>Move aligned double quadword from <em>xmm2/m128</em> to <em>xmm1</em>.</td></tr>
+<tr>
+<td>
+<p>66 0F 7F /<em>r</em></p>
+<p>MOVDQA <em>xmm2/m128</em>, <em>xmm1</em></p></td>
+<td>MR</td>
+<td>V/V</td>
+<td>SSE2</td>
+<td>Move aligned double quadword from <em>xmm1</em> to <em>xmm2/m128</em>.</td></tr>
+<tr>
+<td>
+<p>VEX.128.66.0F.WIG 6F /r</p>
+<p>VMOVDQA <em>xmm1, xmm2/m128</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Move aligned packed integer values from <em>xmm2/mem</em> to <em>xmm1</em>.</td></tr>
+<tr>
+<td>
+<p>VEX.128.66.0F.WIG 7F /r</p>
+<p>VMOVDQA <em>xmm2/m128, xmm1</em></p></td>
+<td>MR</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Move aligned packed integer values from <em>xmm1</em> to <em>xmm2/mem</em>.</td></tr>
+<tr>
+<td>
+<p>VEX.256.66.0F.WIG 6F /r</p>
+<p>VMOVDQA <em>ymm1, ymm2/m256</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Move aligned packed integer values from <em>ymm2/mem</em> to <em>ymm1</em>.</td></tr>
+<tr>
+<td>
+<p>VEX.256.66.0F.WIG 7F /r</p>
+<p>VMOVDQA <em>ymm2/m256, ymm1</em></p></td>
+<td>MR</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Move aligned packed integer values from <em>ymm1</em> to <em>ymm2/mem</em>.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RM</td>
+<td>ModRM:reg (w)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td></tr>
+<tr>
+<td>MR</td>
+<td>ModRM:r/m (w)</td>
+<td>ModRM:reg (r)</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>128-bit versions:</p>
+<p>Moves 128 bits of packed integer values from the source operand (second operand) to the destination operand (first operand). This instruction can be used to load an XMM register from a 128-bit memory location, to store the contents of an XMM register into a 128-bit memory location, or to move data between two XMM registers.</p>
+<p>When the source or destination operand is a memory operand, the operand must be aligned on a 16-byte boundary or a general-protection exception (#GP) will be generated. To move integer data to and from unaligned memory locations, use the VMOVDQU instruction.</p>
+<p>In 64-bit mode, use of the REX.R prefix permits this instruction to access additional registers (XMM8-XMM15).</p>
+<p>128-bit Legacy SSE version: Bits (VLMAX-1:128) of the corresponding YMM destination register remain unchanged.</p>
+<p>VEX.128 encoded version: Bits (VLMAX-1:128) of the destination YMM register are zeroed.</p>
+<p>VEX.256 encoded version:</p>
+<p>Moves 256 bits of packed integer values from the source operand (second operand) to the destination operand (first operand). This instruction can be used to load a YMM register from a 256-bit memory location, to store the contents of a YMM register into a 256-bit memory location, or to move data between two YMM registers.</p>
+<p>When the source or destination operand is a memory operand, the operand must be aligned on a 32-byte boundary or a general-protection exception (#GP) will be generated. To move integer data to and from unaligned memory locations, use the VMOVDQU instruction.</p>
+<p>Note: In VEX-encoded versions, VEX.vvvv is reserved and must be 1111b otherwise instructions will #UD.</p>
+<h2>Operation</h2>
+<p><strong>MOVDQA (128-bit load- and register- form Legacy SSE version)</strong></p>
+<pre>DEST[127:0] ← SRC[127:0]
+DEST[VLMAX-1:128] (Unmodified)
+(* #GP if SRC or DEST unaligned memory operand *)</pre>
+<p><strong>(V)MOVDQA (128-bit store forms)</strong></p>
+<pre>DEST[127:0] ← SRC[127:0]</pre>
+<p><strong>VMOVDQA (VEX.128 encoded version)</strong></p>
+<pre>DEST[127:0] ← SRC[127:0]
+DEST[VLMAX-1:128] ← 0</pre>
+<p><strong>VMOVDQA (VEX.256 encoded version)</strong></p>
+<pre>DEST[255:0] ← SRC[255:0]</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>MOVDQA:</p>
+<p>__m128i _mm_load_si128 ( __m128i *p)</p>
+<p>MOVDQA:</p>
+<p>void _mm_store_si128 ( __m128i *p, __m128i a)</p>
+<p>VMOVDQA:</p>
+<p>__m256i _mm256_load_si256 (__m256i * p);</p>
+<p>VMOVDQA:</p>
+<p>_mm256_store_si256(_m256i *p, __m256i a);</p>
+<h2>SIMD Floating-Point Exceptions</h2>
+<p>None.</p>
+<h2>Other Exceptions</h2>
+<p>See Exceptions Type 1.SSE2; additionally</p>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>If VEX.vvvv ≠ 1111B.</td></tr></table></body></html>

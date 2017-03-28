@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>CMPXCHG—Compare and Exchange </title></head>
+<body>
+<h1>CMPXCHG—Compare and Exchange</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64-Bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>
+<p>0F B0/<em>r</em></p>
+<p>CMPXCHG <em>r/m8, r8</em></p></td>
+<td>MR</td>
+<td>Valid</td>
+<td>Valid*</td>
+<td>Compare AL with <em>r/m8</em>. If equal, ZF is set and <em>r8</em> is loaded into <em>r/m8</em>. Else, clear ZF and load <em>r/m8</em> into AL.</td></tr>
+<tr>
+<td>
+<p>REX + 0F B0/<em>r</em></p>
+<p>CMPXCHG <em>r/m8**,r8</em></p></td>
+<td>MR</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Compare AL with <em>r/m8</em>. If equal, ZF is set and <em>r8</em> is loaded into <em>r/m8</em>. Else, clear ZF and load <em>r/m8</em> into AL.</td></tr>
+<tr>
+<td>
+<p>0F B1/<em>r</em></p>
+<p>CMPXCHG <em>r/m16, r16</em></p></td>
+<td>MR</td>
+<td>Valid</td>
+<td>Valid*</td>
+<td>Compare AX with <em>r/m16</em>. If equal, ZF is set and <em>r16</em> is loaded into <em>r/m16</em>. Else, clear ZF and load <em>r/m16</em> into AX.</td></tr>
+<tr>
+<td>
+<p>0F B1/<em>r</em></p>
+<p>CMPXCHG <em>r/m32, r32</em></p></td>
+<td>MR</td>
+<td>Valid</td>
+<td>Valid*</td>
+<td>Compare EAX with <em>r/m32</em>. If equal, ZF is set and <em>r32</em> is loaded into <em>r/m32</em>. Else, clear ZF and load <em>r/m32</em> into EAX.</td></tr>
+<tr>
+<td>
+<p>REX.W + 0F B1/<em>r</em></p>
+<p>CMPXCHG <em>r/m64, r64</em></p></td>
+<td>MR</td>
+<td>Valid</td>
+<td>N.E.</td>
+<td>Compare RAX with <em>r/m64</em>. If equal, ZF is set and <em>r64</em> is loaded into <em>r/m64</em>. Else, clear ZF and load <em>r/m64</em> into RAX.</td></tr></table>
+<p><strong>NOTES:</strong></p>
+<p>*</p>
+<p>See the IA-32 Architecture Compatibility section below.</p>
+<p>** In 64-bit mode,<em> r/m8</em> can not be encoded to access the following byte registers if a REX prefix is used: AH, BH, CH, DH.</p>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>MR</td>
+<td>ModRM:r/m (r, w)</td>
+<td>ModRM:reg (r)</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Compares the value in the AL, AX, EAX, or RAX register with the first operand (destination operand). If the two values are equal, the second operand (source operand) is loaded into the destination operand. Otherwise, the destination operand is loaded into the AL, AX, EAX or RAX register. RAX register is available only in 64-bit mode.</p>
+<p>This instruction can be used with a LOCK prefix to allow the instruction to be executed atomically. To simplify the interface to the processor’s bus, the destination operand receives a write cycle without regard to the result of the comparison. The destination operand is written back if the comparison fails; otherwise, the source operand is written into the destination. (The processor never produces a locked read without also producing a locked write.)</p>
+<p>In 64-bit mode, the instruction’s default operation size is 32 bits. Use of the REX.R prefix permits access to addi-tional registers (R8-R15). Use of the REX.W prefix promotes operation to 64 bits. See the summary chart at the beginning of this section for encoding data and limits.</p>
+<h2>IA-32 Architecture Compatibility</h2>
+<p>This instruction is not supported on Intel processors earlier than the Intel486 processors.</p>
+<h2>Operation</h2>
+<pre>(* Accumulator = AL, AX, EAX, or RAX depending on whether a byte, word, doubleword, or quadword comparison is being performed *)
+TEMP ← DEST
+IF accumulator = TEMP
+    THEN
+         ZF ← 1;
+         DEST ← SRC;
+    ELSE
+         ZF ← 0;
+         accumulator ← TEMP;
+         DEST ← TEMP;
+FI;</pre>
+<h2>Flags Affected</h2>
+<p>The ZF flag is set if the values in the destination operand and register AL, AX, or EAX are equal; otherwise it is cleared. The CF, PF, AF, SF, and OF flags are set according to the results of the comparison operation.</p>
+<h2>Protected Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>
+<p>If the destination is located in a non-writable segment.</p>
+<p>If a memory operand effective address is outside the CS, DS, ES, FS, or GS segment limit.</p>
+<p>If the DS, ES, FS, or GS register contains a NULL segment selector.</p></td></tr>
+<tr>
+<td>#SS(0)</td>
+<td>If a memory operand effective address is outside the SS segment limit.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and an unaligned memory reference is made while the current privilege level is 3.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used but the destination is not a memory operand.</td></tr></table>
+<h2>Real-Address Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP</td>
+<td>If a memory operand effective address is outside the CS, DS, ES, FS, or GS segment limit.</td></tr>
+<tr>
+<td>#SS</td>
+<td>If a memory operand effective address is outside the SS segment limit.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used but the destination is not a memory operand.</td></tr></table>
+<h2>Virtual-8086 Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>If a memory operand effective address is outside the CS, DS, ES, FS, or GS segment limit.</td></tr>
+<tr>
+<td>#SS(0)</td>
+<td>If a memory operand effective address is outside the SS segment limit.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and an unaligned memory reference is made.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used but the destination is not a memory operand.</td></tr></table>
+<h2>Compatibility Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>64-Bit Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#SS(0)</td>
+<td>If a memory address referencing the SS segment is in a non-canonical form.</td></tr>
+<tr>
+<td>#GP(0)</td>
+<td>If the memory address is in a non-canonical form.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and an unaligned memory reference is made while the current privilege level is 3.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used but the destination is not a memory operand.</td></tr></table></body></html>

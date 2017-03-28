@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>FISTTP—Store Integer with Truncation </title></head>
+<body>
+<h1>FISTTP—Store Integer with Truncation</h1>
+<table>
+<tr>
+<th>Opcode</th>
+<th>Instruction</th>
+<th>64-Bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>DF /1</td>
+<td>FISTTP <em>m16int</em></td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Store ST(0) in <em>m16int with truncation.</em></td></tr>
+<tr>
+<td>DB /1</td>
+<td>FISTTP <em>m32int</em></td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Store ST(0) in <em>m32int with truncation.</em></td></tr>
+<tr>
+<td>DD /1</td>
+<td>FISTTP <em>m64int</em></td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Store ST(0) in <em>m64int</em> with truncation.</td></tr></table>
+<h2>Description</h2>
+<p>FISTTP converts the value in ST into a signed integer using truncation (chop) as rounding mode, transfers the result to the destination, and pop ST. FISTTP accepts word, short integer, and long integer destinations.</p>
+<p>The following table shows the results obtained when storing various classes of numbers in integer format.</p>
+<h3>Table 3-38.  FISTTP Results</h3>
+<table>
+<tr>
+<th>ST(0)</th>
+<th>DEST</th></tr>
+<tr>
+<td>− ∞  or  Value Too Large for DEST Format</td>
+<td>*</td></tr>
+<tr>
+<td>F ≤  − 1</td>
+<td>− I</td></tr>
+<tr>
+<td>− 1 &lt; F &lt; + 1</td>
+<td>0</td></tr>
+<tr>
+<td>F Š + 1</td>
+<td>+ I</td></tr>
+<tr>
+<td>+ ∞  or Value Too Large for DEST Format</td>
+<td>*</td></tr>
+<tr>
+<td>NaN</td>
+<td>*</td></tr></table>
+<p><strong>NOTES:</strong></p>
+<p>F Means finite floating-point value.</p>
+<p>Ι</p>
+<p>Means integer.</p>
+<p>∗ Indicates floating-point invalid-operation (#IA) exception.</p>
+<p>This instruction’s operation is the same in non-64-bit modes and 64-bit mode.</p>
+<h2>Operation</h2>
+<pre>DEST ←  ST;
+pop ST;</pre>
+<h2>Flags Affected</h2>
+<p>C1 is cleared; C0, C2, C3 undefined.</p>
+<h2>Numeric Exceptions</h2>
+<p>Invalid, Stack Invalid (stack underflow), Precision.</p>
+<h2>Protected Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>
+<p>If the destination is in a nonwritable segment.</p>
+<p>For an illegal memory operand effective address in the CS, DS, ES, FS or GS segments.</p></td></tr>
+<tr>
+<td>#SS(0)</td>
+<td>For an illegal address in the SS segment.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>For a page fault.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and an unaligned memory reference is made while the current privilege level is 3.</td></tr>
+<tr>
+<td>#NM</td>
+<td>
+<p>If CR0.EM[bit 2] = 1.</p>
+<p>If CR0.TS[bit 3] = 1.</p></td></tr>
+<tr>
+<td>#UD</td>
+<td>
+<p>If CPUID.01H:ECX.SSE3[bit 0] = 0.</p>
+<p>If the LOCK prefix is used.</p></td></tr></table>
+<h2>Real Address Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>GP(0)</td>
+<td>If any part of the operand would lie outside of the effective address space from 0 to 0FFFFH.</td></tr>
+<tr>
+<td>#NM</td>
+<td>
+<p>If CR0.EM[bit 2] = 1.</p>
+<p>If CR0.TS[bit 3] = 1.</p></td></tr>
+<tr>
+<td>#UD</td>
+<td>
+<p>If CPUID.01H:ECX.SSE3[bit 0] = 0.</p>
+<p>If the LOCK prefix is used.</p></td></tr></table>
+<h2>Virtual 8086 Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>GP(0)</td>
+<td>If any part of the operand would lie outside of the effective address space from 0 to 0FFFFH.</td></tr>
+<tr>
+<td>#NM</td>
+<td>
+<p>If CR0.EM[bit 2] = 1.</p>
+<p>If CR0.TS[bit 3] = 1.</p></td></tr>
+<tr>
+<td>#UD</td>
+<td>
+<p>If CPUID.01H:ECX.SSE3[bit 0] = 0.</p>
+<p>If the LOCK prefix is used.</p></td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>For a page fault.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>For unaligned memory reference if the current privilege is 3.</td></tr></table>
+<h2>Compatibility Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>64-Bit Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#SS(0)</td>
+<td>If a memory address referencing the SS segment is in a non-canonical form.</td></tr>
+<tr>
+<td>#GP(0)</td>
+<td>If the memory address is in a non-canonical form.</td></tr>
+<tr>
+<td>#NM</td>
+<td>CR0.EM[bit 2] or CR0.TS[bit 3] = 1.</td></tr>
+<tr>
+<td>#MF</td>
+<td>If there is a pending x87 FPU exception.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>
+<p>If alignment checking is enabled and an unaligned memory reference is made while the current privilege level is 3.</p>
+<p>If the LOCK prefix is used.</p></td></tr></table></body></html>

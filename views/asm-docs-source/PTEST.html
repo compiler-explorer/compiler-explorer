@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>PTEST- Logical Compare </title></head>
+<body>
+<h1>PTEST- Logical Compare</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32 bit Mode Support</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>66 0F 38 17 /r PTEST <em>xmm1, xmm2/m128</em></td>
+<td>RM</td>
+<td>V/V</td>
+<td>SSE4_1</td>
+<td>Set ZF if <em>xmm2/m128</em> AND <em>xmm1 </em>result is all 0s. Set CF if <em>xmm2/m128</em> AND NOT <em>xmm1 </em>result is all 0s.</td></tr>
+<tr>
+<td>VEX.128.66.0F38.WIG 17 /r VPTEST <em>xmm1, xmm2/m128</em></td>
+<td>RM</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Set ZF and CF depending on bitwise AND and ANDN of sources.</td></tr>
+<tr>
+<td>VEX.256.66.0F38.WIG 17 /r VPTEST <em>ymm1, ymm2/m256</em></td>
+<td>RM</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Set ZF and CF depending on bitwise AND and ANDN of sources.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RM</td>
+<td>ModRM:reg (r)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>PTEST and VPTEST set the ZF flag if all bits in the result are 0 of the bitwise AND of the first source operand (first operand) and the second source operand (second operand). VPTEST sets the CF flag if all bits in the result are 0 of the bitwise AND of the second source operand (second operand) and the logical NOT of the destination operand.</p>
+<p>The first source register is specified by the ModR/M <em>reg</em> field.</p>
+<p>128-bit versions: The first source register is an XMM register. The second source register can be an XMM register or a 128-bit memory location. The destination register is not modified.</p>
+<p>VEX.256 encoded version: The first source register is a YMM register. The second source register can be a YMM register or a 256-bit memory location. The destination register is not modified.</p>
+<p>Note: In VEX-encoded versions, VEX.vvvv is reserved and must be 1111b, otherwise instructions will #UD.</p>
+<h2>Operation</h2>
+<p><strong>(V)PTEST (128-bit version)</strong></p>
+<pre>IF (SRC[127:0] BITWISE AND DEST[127:0] = 0)
+    THEN ZF ← 1;
+    ELSE ZF ← 0;
+IF (SRC[127:0] BITWISE AND NOT DEST[127:0] = 0)
+    THEN CF ← 1;
+    ELSE CF ← 0;
+DEST (unmodified)
+AF ← OF ← PF ← SF ← 0;</pre>
+<p><strong>VPTEST (VEX.256 encoded version)</strong></p>
+<pre>IF (SRC[255:0] BITWISE AND DEST[255:0] = 0) THEN ZF ← 1;
+    ELSE ZF ← 0;
+IF (SRC[255:0] BITWISE AND NOT DEST[255:0] = 0) THEN CF ← 1;
+    ELSE CF ← 0;
+DEST (unmodified)
+AF ← OF ← PF ← SF ← 0;</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p><strong>PTEST</strong></p>
+<p>int _mm_testz_si128 (__m128i s1, __m128i s2);</p>
+<p>int _mm_testc_si128 (__m128i s1, __m128i s2);</p>
+<p>int _mm_testnzc_si128 (__m128i s1, __m128i s2);</p>
+<p><strong>VPTEST</strong></p>
+<p>int _mm256_testz_si256 (__m256i s1, __m256i s2);</p>
+<p>int _mm256_testc_si256 (__m256i s1, __m256i s2);</p>
+<p>int _mm256_testnzc_si256 (__m256i s1, __m256i s2);</p>
+<p>int _mm_testz_si128 (__m128i s1, __m128i s2);</p>
+<p>int _mm_testc_si128 (__m128i s1, __m128i s2);</p>
+<p>int _mm_testnzc_si128 (__m128i s1, __m128i s2);</p>
+<h2>Flags Affected</h2>
+<p>The 0F, AF, PF, SF flags are cleared and the ZF, CF flags are set according to the operation.</p>
+<h2>SIMD Floating-Point Exceptions</h2>
+<p>None.</p>
+<h2>Other Exceptions</h2>
+<p>See Exceptions Type 4; additionally</p>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>If VEX.vvvv ≠ 1111B.</td></tr></table></body></html>

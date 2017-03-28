@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>VPERMD — Full Doublewords Element Permutation </title></head>
+<body>
+<h1>VPERMD — Full Doublewords Element Permutation</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32 -bit Mode</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>
+<p>VEX.NDS.256.66.0F38.W0 36 /r</p>
+<p>VPERMD <em>ymm1, ymm2, ymm3/m256</em></p></td>
+<td>RVM</td>
+<td>V/V</td>
+<td>AVX2</td>
+<td>Permute doublewords in <em>ymm3/m256 </em>using indexes in <em>ymm2</em> and store the result in <em>ymm1</em>.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RVM</td>
+<td>ModRM:reg (w)</td>
+<td>VEX.vvvv</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Use the index values in each dword element of the first source operand (the second operand) to select a dword element in the second source operand (the third operand), the resultant dword value from the second source operand is copied to the destination operand (the first operand) in the corresponding position of the index element. Note that this instruction permits a doubleword in the source operand to be copied to more than one doubleword location in the destination operand.</p>
+<p>An attempt to execute VPERMD encoded with VEX.L= 0 will cause an #UD exception.</p>
+<h2>Operation</h2>
+<p><strong>VPERMD (VEX.256 encoded version)</strong></p>
+<pre>DEST[31:0] ← (SRC2[255:0] &gt;&gt; (SRC1[2:0] * 32))[31:0];
+DEST[63:32] ← (SRC2[255:0] &gt;&gt; (SRC1[34:32] * 32))[31:0];
+DEST[95:64] ← (SRC2[255:0] &gt;&gt; (SRC1[66:64] * 32))[31:0];
+DEST[127:96] ← (SRC2[255:0] &gt;&gt; (SRC1[98:96] * 32))[31:0];
+DEST[159:128] ← (SRC2[255:0] &gt;&gt; (SRC1[130:128] * 32))[31:0];
+DEST[191:160] ← (SRC2[255:0] &gt;&gt; (SRC1[162:160] * 32))[31:0];
+DEST[223:192] ← (SRC2[255:0] &gt;&gt; (SRC1[194:192] * 32))[31:0];
+DEST[255:224] ← (SRC2[255:0] &gt;&gt; (SRC1[226:224] * 32))[31:0];</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>VPERMD: __m256i _mm256_permutevar8x32_epi32(__m256i a, __m256i offsets);</p>
+<h2>SIMD Floating-Point Exceptions</h2>
+<p>None</p>
+<h2>Other Exceptions</h2>
+<p>See Exceptions Type 4; additionally</p>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>
+<p>If VEX.L = 0 for VPERMD,</p>
+<p>If VEX.W = 1.</p></td></tr></table></body></html>

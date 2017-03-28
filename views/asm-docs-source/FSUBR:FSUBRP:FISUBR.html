@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>FSUBR/FSUBRP/FISUBR—Reverse Subtract </title></head>
+<body>
+<h1>FSUBR/FSUBRP/FISUBR—Reverse Subtract</h1>
+<table>
+<tr>
+<th>Opcode</th>
+<th>Instruction</th>
+<th>64-Bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>D8 /5</td>
+<td>FSUBR <em>m32fp</em></td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Subtract ST(0) from <em>m32fp</em> and store result in ST(0).</td></tr>
+<tr>
+<td>DC /5</td>
+<td>FSUBR <em>m64fp</em></td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Subtract ST(0) from <em>m64fp</em> and store result in ST(0).</td></tr>
+<tr>
+<td>D8 E8+i</td>
+<td>FSUBR ST(0), ST(i)</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Subtract ST(0) from ST(i) and store result in ST(0).</td></tr>
+<tr>
+<td>DC E0+i</td>
+<td>FSUBR ST(i), ST(0)</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Subtract ST(i) from ST(0) and store result in ST(i).</td></tr>
+<tr>
+<td>DE E0+i</td>
+<td>FSUBRP ST(i), ST(0)</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Subtract ST(i) from ST(0), store result in ST(i), and pop register stack.</td></tr>
+<tr>
+<td>DE E1</td>
+<td>FSUBRP</td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Subtract ST(1) from ST(0), store result in ST(1), and pop register stack.</td></tr>
+<tr>
+<td>DA /5</td>
+<td>FISUBR <em>m32int</em></td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Subtract ST(0) from <em>m32int</em> and store result in ST(0).</td></tr>
+<tr>
+<td>DE /5</td>
+<td>FISUBR <em>m16int</em></td>
+<td>Valid</td>
+<td>Valid</td>
+<td>Subtract ST(0) from <em>m16int</em> and store result in ST(0).</td></tr></table>
+<h2>Description</h2>
+<p>Subtracts the destination operand from the source operand and stores the difference in the destination location. The destination operand is always an FPU register; the source operand can be a register or a memory location. Source operands in memory can be in single-precision or double-precision floating-point format or in word or doubleword integer format.</p>
+<p>These instructions perform the reverse operations of the FSUB, FSUBP, and FISUB instructions. They are provided to support more efficient coding.</p>
+<p>The no-operand version of the instruction subtracts the contents of the ST(1) register from the ST(0) register and stores the result in ST(1). The one-operand version subtracts the contents of the ST(0) register from the contents of a memory location (either a floating-point or an integer value) and stores the result in ST(0). The two-operand version, subtracts the contents of the ST(i) register from the ST(0) register or vice versa.</p>
+<p>The FSUBRP instructions perform the additional operation of popping the FPU register stack following the subtrac-tion. To pop the register stack, the processor marks the ST(0) register as empty and increments the stack pointer (TOP) by 1. The no-operand version of the floating-point reverse subtract instructions always results in the register stack being popped. In some assemblers, the mnemonic for this instruction is FSUBR rather than FSUBRP.</p>
+<p>The FISUBR instructions convert an integer source operand to double extended-precision floating-point format before performing the subtraction.</p>
+<p>The following table shows the results obtained when subtracting various classes of numbers from one another, assuming that neither overflow nor underflow occurs. Here, the DEST value is subtracted from the SRC value (SRC − DEST = result).</p>
+<p>When the difference between two operands of like sign is 0, the result is +0, except for the round toward −∞ mode, in which case the result is −0. This instruction also guarantees that +0 − (−0) = +0, and that −0 − (+0) = −0. When the source operand is an integer 0, it is treated as a +0.</p>
+<p>When one operand is ∞, the result is ∞ of the expected sign. If both operands are ∞ of the same sign, an invalid-operation exception is generated.</p>
+<h3>Table 3-49.  FSUBR/FSUBRP/FISUBR Results</h3>
+<table>
+<tr>
+<td colspan="2"></td>
+<td colspan="2"></td>
+<td colspan="2"></td>
+<td colspan="2"></td>
+<th colspan="2">SRC</th>
+<td colspan="2"></td>
+<td colspan="2"></td>
+<td colspan="2"></td>
+<td colspan="2"></td></tr>
+<tr>
+<td colspan="2"></td>
+<td colspan="2"></td>
+<td colspan="2">− ∞</td>
+<td colspan="2">−F or −I</td>
+<td colspan="2">−0</td>
+<td colspan="2">+0</td>
+<td colspan="2">+F or +I</td>
+<td colspan="2">+ ∞</td>
+<td colspan="2">NaN</td></tr>
+<tr>
+<td colspan="2"></td>
+<td colspan="2">− ∞</td>
+<td colspan="2">*</td>
+<td colspan="2">+ ∞</td>
+<td colspan="2">+ ∞</td>
+<td colspan="2">+ ∞</td>
+<td colspan="2">+ ∞</td>
+<td colspan="2">+ ∞</td>
+<td colspan="2">NaN</td></tr>
+<tr>
+<td colspan="2"></td>
+<td colspan="2">− F</td>
+<td colspan="2">− ∞</td>
+<td colspan="2">±F or ±0</td>
+<td colspan="2">−DEST</td>
+<td colspan="2">−DEST</td>
+<td colspan="2">+ F</td>
+<td colspan="2">+ ∞</td>
+<td colspan="2">NaN</td></tr>
+<tr>
+<th colspan="2">DEST</th>
+<td colspan="2">− 0</td>
+<td colspan="2">− ∞</td>
+<td colspan="2">SRC</td>
+<td colspan="2">±0</td>
+<td colspan="2">+ 0</td>
+<td colspan="2">SRC</td>
+<td colspan="2">+ ∞</td>
+<td colspan="2">NaN</td></tr>
+<tr>
+<td colspan="2"></td>
+<td colspan="2">+ 0</td>
+<td colspan="2">− ∞</td>
+<td colspan="2">SRC</td>
+<td colspan="2">− 0</td>
+<td colspan="2">±0</td>
+<td colspan="2">SRC</td>
+<td colspan="2">+ ∞</td>
+<td colspan="2">NaN</td></tr>
+<tr>
+<td colspan="2"></td>
+<td colspan="2">+ F</td>
+<td colspan="2">− ∞</td>
+<td colspan="2">− F</td>
+<td colspan="2">−DEST</td>
+<td colspan="2">−DEST</td>
+<td colspan="2">±F or ±0</td>
+<td colspan="2">+ ∞</td>
+<td colspan="2">NaN</td></tr>
+<tr>
+<td colspan="2"></td>
+<td colspan="2">+ ∞</td>
+<td colspan="2">− ∞</td>
+<td colspan="2">− ∞</td>
+<td colspan="2">− ∞</td>
+<td colspan="2">− ∞</td>
+<td colspan="2">− ∞</td>
+<td colspan="2">*</td>
+<td colspan="2">NaN</td></tr>
+<tr>
+<td colspan="2"></td>
+<td colspan="2">NaN</td>
+<td colspan="2">NaN</td>
+<td colspan="2">NaN</td>
+<td colspan="2">NaN</td>
+<td colspan="2">NaN</td>
+<td colspan="2">NaN</td>
+<td colspan="2">NaN</td>
+<td colspan="2">NaN</td></tr></table>
+<p><strong>NOTES:</strong></p>
+<p>F Means finite floating-point value.</p>
+<p>I</p>
+<p>Means integer.</p>
+<p>*</p>
+<p>Indicates floating-point invalid-arithmetic-operand (#IA) exception.</p>
+<p>This instruction’s operation is the same in non-64-bit modes and 64-bit mode.</p>
+<h2>Operation</h2>
+<pre>IF Instruction = FISUBR
+    THEN
+         DEST ← ConvertToDoubleExtendedPrecisionFP(SRC) − DEST;
+    ELSE (* Source operand is floating-point value *)
+         DEST ← SRC − DEST; FI;
+IF Instruction = FSUBRP
+    THEN
+         PopRegisterStack; FI;</pre>
+<h2>FPU Flags Affected</h2>
+<table class="exception-table">
+<tr>
+<td>C1</td>
+<td>
+<p>Set to 0 if stack underflow occurred.</p>
+<p>Set if result was rounded up; cleared otherwise.</p></td></tr>
+<tr>
+<td>C0, C2, C3</td>
+<td>Undefined.</td></tr></table>
+<h2>Floating-Point Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#IS</td>
+<td>Stack underflow occurred.</td></tr>
+<tr>
+<td>#IA</td>
+<td>
+<p>Operand is an SNaN value or unsupported format.</p>
+<p>Operands are infinities of like sign.</p></td></tr></table>
+<p>#D</p>
+<p>Source operand is a denormal value.</p>
+<p>#U</p>
+<p>Result is too small for destination format.</p>
+<p>#O</p>
+<p>Result is too large for destination format.</p>
+<p>#P</p>
+<p>Value cannot be represented exactly in destination format.</p>
+<h2>Protected Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>
+<p>If a memory operand effective address is outside the CS, DS, ES, FS, or GS segment limit.</p>
+<p>If the DS, ES, FS, or GS register is used to access memory and it contains a NULL segment selector.</p></td></tr>
+<tr>
+<td>#SS(0)</td>
+<td>If a memory operand effective address is outside the SS segment limit.</td></tr>
+<tr>
+<td>#NM</td>
+<td>CR0.EM[bit 2] or CR0.TS[bit 3] = 1.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and an unaligned memory reference is made while the current privilege level is 3.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Real-Address Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP</td>
+<td>If a memory operand effective address is outside the CS, DS, ES, FS, or GS segment limit.</td></tr>
+<tr>
+<td>#SS</td>
+<td>If a memory operand effective address is outside the SS segment limit.</td></tr>
+<tr>
+<td>#NM</td>
+<td>CR0.EM[bit 2] or CR0.TS[bit 3] = 1.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Virtual-8086 Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>If a memory operand effective address is outside the CS, DS, ES, FS, or GS segment limit.</td></tr>
+<tr>
+<td>#SS(0)</td>
+<td>If a memory operand effective address is outside the SS segment limit.</td></tr>
+<tr>
+<td>#NM</td>
+<td>CR0.EM[bit 2] or CR0.TS[bit 3] = 1.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and an unaligned memory reference is made.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Compatibility Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>64-Bit Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#SS(0)</td>
+<td>If a memory address referencing the SS segment is in a non-canonical form.</td></tr>
+<tr>
+<td>#GP(0)</td>
+<td>If the memory address is in a non-canonical form.</td></tr>
+<tr>
+<td>#NM</td>
+<td>CR0.EM[bit 2] or CR0.TS[bit 3] = 1.</td></tr>
+<tr>
+<td>#MF</td>
+<td>If there is a pending x87 FPU exception.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and an unaligned memory reference is made while the current privilege level is 3.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table></body></html>

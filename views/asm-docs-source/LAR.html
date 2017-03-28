@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>LAR—Load Access Rights Byte </title></head>
+<body>
+<h1>LAR—Load Access Rights Byte</h1>
+<table>
+<tr>
+<th>Opcode</th>
+<th>Instruction</th>
+<th>Op/En</th>
+<th>64-Bit Mode</th>
+<th>Compat/Leg Mode</th>
+<th>Description</th></tr>
+<tr>
+<td>0F 02 /<em>r</em></td>
+<td>LAR <em>r16, r16/m16</em></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td><em>r16</em> ←<em> </em>access rights referenced by <em>r16/m16</em></td></tr>
+<tr>
+<td>0F 02 /<em>r</em></td>
+<td>LAR<em> reg, r32/m16</em><sup>1</sup></td>
+<td>RM</td>
+<td>Valid</td>
+<td>Valid</td>
+<td><em>reg </em>← access rights referenced by <em>r32/m16</em></td></tr></table>
+<p><strong>NOTES: 1. For all loads (regardless of source or destination sizing) only bits 16-0 are used. Other bits are ignored.</strong></p>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RM</td>
+<td>ModRM:reg (w)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Loads the access rights from the segment descriptor specified by the second operand (source operand) into the first operand (destination operand) and sets the ZF flag in the flag register. The source operand (which can be a register or a memory location) contains the segment selector for the segment descriptor being accessed. If the source operand is a memory address, only 16 bits of data are accessed. The destination operand is a general-purpose register.</p>
+<p>The processor performs access checks as part of the loading process. Once loaded in the destination register, soft-ware can perform additional checks on the access rights information.</p>
+<p>The access rights for a segment descriptor include fields located in the second doubleword (bytes 4–7) of the segment descriptor. The following fields are loaded by the LAR instruction:</p>
+<p>— Bits 19:16 are undefined.</p>
+<p>— Bit 20 returns the software-available bit in the descriptor.</p>
+<p>— Bit 21 returns the L flag.</p>
+<p>— Bit 22 returns the D/B flag.</p>
+<p>— Bit 23 returns the G flag.</p>
+<p>— Bits 31:24 are returned as 0.</p>
+<p>This instruction performs the following checks before it loads the access rights in the destination register:</p>
+<p>If the segment descriptor cannot be accessed or is an invalid type for the instruction, the ZF flag is cleared and no access rights are loaded in the destination operand.</p>
+<p>The LAR instruction can only be executed in protected mode and IA-32e mode.</p>
+<h3>Table 3-62.  Segment and Gate Types</h3>
+<table>
+<tr>
+<th>Type</th>
+<th>Protected Mode</th>
+<td></td>
+<th>IA-32e Mode</th>
+<td></td></tr>
+<tr>
+<td></td>
+<th>Name</th>
+<th>Valid</th>
+<th>Name</th>
+<th>Valid</th></tr>
+<tr>
+<td>
+<p>0</p>
+<p>1</p>
+<p>2</p>
+<p>3</p>
+<p>4</p>
+<p>5</p>
+<p>6</p>
+<p>7</p>
+<p>8</p>
+<p>9</p>
+<p>A</p>
+<p>B</p>
+<p>C</p>
+<p>D</p>
+<p>E</p>
+<p>F</p></td>
+<td>
+<p>Reserved</p>
+<p>Available 16-bit TSS</p>
+<p>LDT</p>
+<p>Busy 16-bit TSS</p>
+<p>16-bit call gate</p>
+<p>16-bit/32-bit task gate</p>
+<p>16-bit interrupt gate</p>
+<p>16-bit trap gate</p>
+<p>Reserved</p>
+<p>Available 32-bit TSS</p>
+<p>Reserved</p>
+<p>Busy 32-bit TSS</p>
+<p>32-bit call gate</p>
+<p>Reserved</p>
+<p>32-bit interrupt gate</p>
+<p>32-bit trap gate</p></td>
+<td>
+<p>No</p>
+<p>Yes</p>
+<p>Yes</p>
+<p>Yes</p>
+<p>Yes</p>
+<p>Yes</p>
+<p>No</p>
+<p>No</p>
+<p>No</p>
+<p>Yes</p>
+<p>No</p>
+<p>Yes</p>
+<p>Yes</p>
+<p>No</p>
+<p>No</p>
+<p>No</p></td>
+<td>
+<p>Reserved</p>
+<p>Reserved</p>
+<p>LDT</p>
+<p>Reserved</p>
+<p>Reserved</p>
+<p>Reserved</p>
+<p>Reserved</p>
+<p>Reserved</p>
+<p>Reserved</p>
+<p>Available 64-bit TSS</p>
+<p>Reserved</p>
+<p>Busy 64-bit TSS</p>
+<p>64-bit call gate</p>
+<p>Reserved</p>
+<p>64-bit interrupt gate</p>
+<p>64-bit trap gate</p></td>
+<td>
+<p>No</p>
+<p>No</p>
+<p>No</p>
+<p>No</p>
+<p>No</p>
+<p>No</p>
+<p>No</p>
+<p>No</p>
+<p>No</p>
+<p>Yes</p>
+<p>No</p>
+<p>Yes</p>
+<p>Yes</p>
+<p>No</p>
+<p>No</p>
+<p>No</p></td></tr></table>
+<h2>Operation</h2>
+<pre>IF Offset(SRC) &gt; descriptor table limit
+    THEN
+         ZF ← 0;
+    ELSE
+         SegmentDescriptor ← descriptor referenced by SRC;
+         IF SegmentDescriptor(Type) ≠ conforming code segment
+         and (CPL &gt; DPL) or (RPL &gt; DPL)
+         or SegmentDescriptor(Type) is not valid for instruction
+              THEN
+                    ZF ← 0;
+              ELSE
+                    DEST ← access rights from SegmentDescriptor as given in Description section;
+                    ZF ← 1;
+         FI;
+FI;</pre>
+<h2>Flags Affected</h2>
+<p>The ZF flag is set to 1 if the access rights are loaded successfully; otherwise, it is cleared to 0.</p>
+<h2>Protected Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#GP(0)</td>
+<td>
+<p>If a memory operand effective address is outside the CS, DS, ES, FS, or GS segment limit.</p>
+<p>If the DS, ES, FS, or GS register is used to access memory and it contains a NULL segment selector.</p></td></tr>
+<tr>
+<td>#SS(0)</td>
+<td>If a memory operand effective address is outside the SS segment limit.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and the memory operand effective address is unaligned while the current privilege level is 3.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table>
+<h2>Real-Address Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>The LAR instruction is not recognized in real-address mode.</td></tr></table>
+<h2>Virtual-8086 Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>The LAR instruction cannot be executed in virtual-8086 mode.</td></tr></table>
+<h2>Compatibility Mode Exceptions</h2>
+<p>Same exceptions as in protected mode.</p>
+<h2>64-Bit Mode Exceptions</h2>
+<table class="exception-table">
+<tr>
+<td>#SS(0)</td>
+<td>If the memory operand effective address referencing the SS segment is in a non-canonical form.</td></tr>
+<tr>
+<td>#GP(0)</td>
+<td>If the memory operand effective address is in a non-canonical form.</td></tr>
+<tr>
+<td>#PF(fault-code)</td>
+<td>If a page fault occurs.</td></tr>
+<tr>
+<td>#AC(0)</td>
+<td>If alignment checking is enabled and the memory operand effective address is unaligned while the current privilege level is 3.</td></tr>
+<tr>
+<td>#UD</td>
+<td>If the LOCK prefix is used.</td></tr></table></body></html>

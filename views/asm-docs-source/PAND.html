@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>PAND—Logical AND </title></head>
+<body>
+<h1>PAND—Logical AND</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32 bit Mode Support</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>
+<p>0F DB /<em>r</em><sup>1</sup></p>
+<p>PAND <em>mm, mm/m64</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>MMX</td>
+<td>Bitwise AND <em>mm/m64</em> and <em>mm</em>.</td></tr>
+<tr>
+<td>
+<p>66 0F DB /<em>r</em></p>
+<p>PAND <em>xmm1</em>,<em> xmm2/m128</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>SSE2</td>
+<td>Bitwise AND of <em>xmm2/m128</em> and <em>xmm1</em>.</td></tr>
+<tr>
+<td>
+<p>VEX.NDS.128.66.0F.WIG DB /r</p>
+<p>VPAND <em>xmm1, xmm2, xmm3/m128</em></p></td>
+<td>RVM</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Bitwise AND of <em>xmm3/m128 </em>and <em>xmm</em>.</td></tr>
+<tr>
+<td>
+<p>VEX.NDS.256.66.0F.WIG DB /r</p>
+<p>VPAND <em>ymm1, ymm2, ymm3/.m256</em></p></td>
+<td>RVM</td>
+<td>V/V</td>
+<td>AVX2</td>
+<td>Bitwise AND of <em>ymm2</em>, and <em>ymm3/m256</em> and store result in <em>ymm1</em>.</td></tr></table>
+<p>NOTES:</p>
+<p>1. See note in Section 2.4, “Instruction Exception Specification” in the <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 2A</em> and Section 22.25.3, “Exception Conditions of Legacy SIMD Instructions Operating on MMX Registers” in the <em>Intel® 64 and IA-32 Architectures Software Developer’s Manual, Volume 3A</em>.</p>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RM</td>
+<td>ModRM:reg (r, w)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td></tr>
+<tr>
+<td>RVM</td>
+<td>ModRM:reg (w)</td>
+<td>VEX.vvvv (r)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Performs a bitwise logical AND operation on the first source operand and second source operand and stores the result in the destination operand. Each bit of the result is set to 1 if the corresponding bits of the first and second operands are 1, otherwise it is set to 0.</p>
+<p>In 64-bit mode, using a REX prefix in the form of REX.R permits this instruction to access additional registers (XMM8-XMM15).</p>
+<p>Legacy SSE instructions: The source operand can be an MMX technology register or a 64-bit memory location. The destination operand can be an MMX technology register.</p>
+<p>128-bit Legacy SSE version: The first source operand is an XMM register. The second operand can be an XMM register or a 128-bit memory location. The destination is not distinct from the first source XMM register and the upper bits (VLMAX-1:128) of the corresponding YMM register destination are unmodified.</p>
+<p>VEX.128 encoded version: The first source operand is an XMM register. The second source operand is an XMM register or 128-bit memory location. The destination operand is an XMM register. The upper bits (VLMAX-1:128) of the corresponding YMM register destination are zeroed.</p>
+<p>VEX.256 encoded version: The first source operand is a YMM register. The second source operand is a YMM register or a 256-bit memory location. The destination operand is a YMM register.</p>
+<p>Note: VEX.L must be 0, otherwise the instruction will #UD.</p>
+<h2>Operation</h2>
+<p><strong>PAND (128-bit Legacy SSE version)</strong></p>
+<pre>DEST ← DEST AND SRC
+DEST[VLMAX-1:128] (Unmodified)</pre>
+<p><strong>VPAND (VEX.128 encoded version)</strong></p>
+<pre>DEST ← SRC1 AND SRC2
+DEST[VLMAX-1:128] ← 0</pre>
+<p><strong>VPAND (VEX.256 encoded instruction)</strong></p>
+<pre>DEST[255:0] ← (SRC1[255:0] AND SRC2[255:0])</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>PAND:</p>
+<p>__m64 _mm_and_si64 (__m64 m1, __m64 m2)</p>
+<p>(V)PAND:</p>
+<p>__m128i _mm_and_si128 ( __m128i a, __m128i b)</p>
+<p>VPAND:</p>
+<p>__m256i _mm256_and_si256 ( __m256i a, __m256i b)</p>
+<h2>Flags Affected</h2>
+<p>None.</p>
+<h2>Numeric Exceptions</h2>
+<p>None.</p>
+<h2>Other Exceptions</h2>
+<p>See Exceptions Type 4; additionally</p>
+<table class="exception-table">
+<tr>
+<td>#UD</td>
+<td>If VEX.L = 1.</td></tr></table></body></html>

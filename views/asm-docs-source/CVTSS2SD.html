@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+<link href="style.css" type="text/css" rel="stylesheet">
+<title>CVTSS2SD—Convert Scalar Single-Precision FP Value to Scalar Double-Precision FP Value </title></head>
+<body>
+<h1>CVTSS2SD—Convert Scalar Single-Precision FP Value to Scalar Double-Precision FP Value</h1>
+<table>
+<tr>
+<th>Opcode/Instruction</th>
+<th>Op/En</th>
+<th>64/32-bit Mode</th>
+<th>CPUID Feature Flag</th>
+<th>Description</th></tr>
+<tr>
+<td>
+<p>F3 0F 5A /<em>r</em></p>
+<p>CVTSS2SD <em>xmm1</em>, <em>xmm2/m32</em></p></td>
+<td>RM</td>
+<td>V/V</td>
+<td>SSE2</td>
+<td>Convert one single-precision floating-point value in <em>xmm2/m32 </em>to one double-precision floating-point value in <em>xmm1</em>.</td></tr>
+<tr>
+<td>
+<p>VEX.NDS.LIG.F3.0F.WIG 5A /r</p>
+<p>VCVTSS2SD xmm1, xmm2, xmm3/m32</p></td>
+<td>RVM</td>
+<td>V/V</td>
+<td>AVX</td>
+<td>Convert one single-precision floating-point value in xmm3/m32 to one double-precision floating-point value and merge with high bits of xmm2.</td></tr></table>
+<h3>Instruction Operand Encoding</h3>
+<table>
+<tr>
+<td>Op/En</td>
+<td>Operand 1</td>
+<td>Operand 2</td>
+<td>Operand 3</td>
+<td>Operand 4</td></tr>
+<tr>
+<td>RM</td>
+<td>ModRM:reg (w)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td>
+<td>NA</td></tr>
+<tr>
+<td>RVM</td>
+<td>ModRM:reg (w)</td>
+<td>VEX.vvvv (r)</td>
+<td>ModRM:r/m (r)</td>
+<td>NA</td></tr></table>
+<h2>Description</h2>
+<p>Converts a single-precision floating-point value in the source operand (second operand) to a double-precision floating-point value in the destination operand (first operand). The source operand can be an XMM register or a 32-bit memory location. The destination operand is an XMM register. When the source operand is an XMM register, the single-precision floating-point value is contained in the low doubleword of the register. The result is stored in the low quadword of the destination operand, and the high quadword is left unchanged.</p>
+<p>In 64-bit mode, use of the REX.R prefix permits this instruction to access additional registers (XMM8-XMM15).</p>
+<p>128-bit Legacy SSE version: The destination and first source operand are the same. Bits (VLMAX-1:64) of the corresponding YMM destination register remain unchanged.</p>
+<p>VEX.128 encoded version: Bits (127:64) of the XMM register destination are copied from corresponding bits in the first source operand. Bits (VLMAX-1:128) of the destination YMM register are zeroed.</p>
+<h2>Operation</h2>
+<p><strong>CVTSS2SD (128-bit Legacy SSE version)</strong></p>
+<pre>DEST[63:0] ← Convert_Single_Precision_To_Double_Precision_Floating_Point(SRC[31:0]);
+DEST[VLMAX-1:64] (Unmodified)</pre>
+<p><strong>VCVTSS2SD (VEX.128 encoded version)</strong></p>
+<pre>DEST[63:0] ← Convert_Single_Precision_To_Double_Precision_Floating_Point(SRC2[31:0])
+DEST[127:64] ← SRC1[127:64]
+DEST[VLMAX-1:128] ← 0</pre>
+<h2>Intel C/C++ Compiler Intrinsic Equivalent</h2>
+<p>CVTSS2SD:</p>
+<p>__m128d _mm_cvtss_sd(__m128d a, __m128 b)</p>
+<h2>SIMD Floating-Point Exceptions</h2>
+<p>Invalid, Denormal.</p>
+<h2>Other Exceptions</h2>
+<p>See Exceptions Type 3.</p></body></html>
