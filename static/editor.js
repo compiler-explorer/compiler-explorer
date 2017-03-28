@@ -242,8 +242,10 @@ define(function (require) {
         // * Turn off auto.
         // * edit code
         // * change compiler or compiler options (out of date code is used)
-        if (before.delayAfterChange !== after.delayAfterChange || !this.debouncedEmitChange) {
-            if (after.delayAfterChange) {
+        var bDac = before.compileOnChange ? before.delayAfterChange : 0;
+        var aDac = after.compileOnChange ? after.delayAfterChange : 0;
+        if (bDac !== aDac || !this.debouncedEmitChange) {
+            if (aDac) {
                 this.debouncedEmitChange = _.debounce(_.bind(function () {
                     this.maybeEmitChange();
                 }, this), after.delayAfterChange);

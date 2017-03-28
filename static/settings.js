@@ -108,11 +108,17 @@ define(function (require) {
             _.map(colour.schemes, function (scheme) {
                 return {label: scheme.name, desc: scheme.desc};
             }));
-        add(root.find('.slider'), 'delayAfterChange', 750, Slider, {
+        // Handle older settings
+        if (settings.delayAfterChange === 0) {
+            settings.delayAfterChange = 750;
+            settings.compileOnChange = false;
+        }
+        add(root.find('.compileOnChange'), 'compileOnChange', true, Checkbox);
+        add(root.find('.delay'), 'delayAfterChange', 750, Slider, {
             max: 3000,
             step: 250,
+            min: 250,
             formatter: function (x) {
-                if (x === 0) return "Disabled";
                 return (x / 1000.0).toFixed(2) + "s";
             }
         });
