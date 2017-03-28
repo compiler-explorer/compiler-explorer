@@ -98,6 +98,18 @@ define(function (require) {
             }, this)
         });
 
+        this.editor.addAction({
+            id: 'toggleCompileOnChange',
+            label: 'Toggle compile on change',
+            keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.Enter],
+            keybindingContext: null,
+            run: _.bind(function () {
+                this.eventHub.emit('modifySettings', {
+                    compileOnChange: !this.settings.compileOnChange
+                });
+            }, this)
+        });
+
         function tryCompilerSelectLine(thisLineNumber) {
             _.each(self.asmByCompiler, function (asms, compilerId) {
                 var targetLines = [];
@@ -242,8 +254,10 @@ define(function (require) {
         // * Turn off auto.
         // * edit code
         // * change compiler or compiler options (out of date code is used)
-        if (before.delayAfterChange !== after.delayAfterChange || !this.debouncedEmitChange) {
-            if (after.delayAfterChange) {
+        var bDac = before.compileOnChange ? before.delayAfterChange : 0;
+        var aDac = after.compileOnChange ? after.delayAfterChange : 0;
+        if (bDac !== aDac || !this.debouncedEmitChange) {
+            if (aDac) {
                 this.debouncedEmitChange = _.debounce(_.bind(function () {
                     this.maybeEmitChange();
                 }, this), after.delayAfterChange);

@@ -57,38 +57,44 @@
         button.close(type="button" data-dismiss="modal" aria-hidden="true") &times;
         h3.modal-title Compiler Explorer Settings
       .modal-body
-        div
+        .well.well-sm
           | These settings control how Compiler Explorer acts for you. They are not
           | preserved as part of shared URLs, and are persisted locally using browser
           | local storage.
+        .well.well-sm
           h4 Editor
           .form-group(role="group")
-            .form-control.checkbox
+            .checkbox
               label
                 input.autoCloseBrackets(type="checkbox")
                 | Automatically insert matching brackets and parentheses
-            .form-control Delay before compiling:&nbsp;
-              b Disabled
-              .slider.slider-horizontal.delay
-              b 3s
-            .form-control.checkbox
+            div
+              .checkbox
+                label
+                  input.compileOnChange(type="checkbox")
+                  | Compile automatically when source changes
+              div Delay before compiling:&nbsp;
+                b 0.25s&nbsp;
+                .slider.slider-horizontal.delay
+                b &nbsp;3s
+            .checkbox
               label
                 input.hoverShowSource(type="checkbox")
                 | Highlight linked code lines on hover
-            .form-control.checkbox
+            .checkbox
               label
                 input.hoverShowAsmDoc(type="checkbox")
                 | Show asm description on hover
+        .well.well-sm
           h4 Compilation
-            .form-group(role="group")
-              .form-control.checkbox
-                label
-                  input.colourise(type="checkbox")
-                  | Colourise lines so one can see how the source maps to the output
-              .form-control
-                label
-                  | Colour scheme:
-                  select.colourScheme
+          .form-group(role="group")
+            .checkbox
+              label
+                input.colourise(type="checkbox")
+                | Colourise lines to show how the source maps to the output
+            label
+              | Colour scheme:
+              select.colourScheme
       .modal-footer
         button.btn.btn-default(type="button" data-dismiss="modal") Close
 
