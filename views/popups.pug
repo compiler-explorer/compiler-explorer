@@ -57,46 +57,47 @@
         button.close(type="button" data-dismiss="modal" aria-hidden="true") &times;
         h3.modal-title Compiler Explorer Settings
       .modal-body
-        div
+        .well.well-sm
           | These settings control how Compiler Explorer acts for you. They are not
           | preserved as part of shared URLs, and are persisted locally using browser
           | local storage.
+        .well.well-sm
           h4 Editor
-            .form-group(role="group")
-              .form-control.checkbox
+          .form-group(role="group")
+            .checkbox
+              label
+                input.autoCloseBrackets(type="checkbox")
+                | Automatically insert matching brackets and parentheses
+            div
+              .checkbox
                 label
-                  input.autoCloseBrackets(type="checkbox")
-                  | Automatically insert matching brackets and parentheses
-              .form-control Delay before compiling:&nbsp;
-                b Disabled
+                  input.compileOnChange(type="checkbox")
+                  | Compile automatically when source changes
+              div Delay before compiling:&nbsp;
+                b 0.25s&nbsp;
                 .slider.slider-horizontal.delay
-                b 3s
-              .form-control.checkbox
-                label
-                  input.hoverShowSource(type="checkbox")
-                  | Highlight linked code lines on hover
+                b &nbsp;3s
+            .checkbox
+              label
+                input.hoverShowSource(type="checkbox")
+                | Highlight linked code lines on hover
+        .well.well-sm
           h4 Compilation
-            .form-group(role="group")
-              .form-control.checkbox
-                label
-                  input.colourise(type="checkbox")
-                  | Colourise lines so one can see how the source maps to the output
-              .form-control
-                label
-                  | Colour scheme:
-                  select.colourScheme
+          .form-group(role="group")
+            .checkbox
+              label
+                input.colourise(type="checkbox")
+                | Colourise lines to show how the source maps to the output
+            label
+              | Colour scheme:
+              select.colourScheme
         if language == "C++"
-        div
-          | From here, you can control how the code formatter works
-          h4 Basic Configuration
-            .form-group(role="group")
-              .form-control
-                label
-                  | Format based on
-                  select.formatBase
-              .form-control
-                label
-                  | Override style (key: value, ...)
-                textarea.formatOverrides
+        .well.well-sm 
+          h4 Formatting
+          .form-group(role="group")
+            div Format based on 
+              select.formatBase
+            div Override style settings ("key": "value", ...)
+              textarea.formatOverrides(placeholder='"key": "value", "key": "value", ...', style="width:100%;max-width:100%;min-width:100%", rows=2)
       .modal-footer
         button.btn.btn-default(type="button" data-dismiss="modal") Close
