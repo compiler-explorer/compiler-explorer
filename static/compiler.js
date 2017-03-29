@@ -130,18 +130,24 @@ define(function (require) {
                 var pos = ed.getPosition();
                 var word = ed.getModel().getWordAtPosition(pos);
                 if (!word || !word.word) return;
-                var token = word.word.toUpperCase();
-                var asmHelp = asmDocs[token];
+                var opcode = word.word.toUpperCase();
+                var asmHelp = asmDocs[opcode];
                 if (asmHelp) {
-                    new Alert().alert(token + " help", asmHelp.html +
+                    new Alert().alert(opcode + " help", asmHelp.html +
                      '<br><br>For more information, visit <a href="http://www.felixcloutier.com/x86/' + asmHelp.url +'" target="_blank" rel="noopener noreferrer">the ' +
-                     token + ' documentation <img src="assets/external_link.png" width="16px" height="16px" alt="Opens in a new window"/></a>.',
+                     opcode + ' documentation <img src="assets/external_link.png" width="16px" height="16px" alt="Opens in a new window"/></a>.',
                      function() {
                         ed.focus();
                         ed.setPosition(pos);
                     });
                 } else {
-                    new Alert().notify('This token was not found in the documentation.', 3000, 'notification-error');
+                    new Alert().notify('This opcode was not found in the documentation.',{
+                        "group": "noopcodeindocs",
+                        "noCollapse": false,
+                        "alertClass": "notification-error",
+                        "noAutoDissmis": false,
+                        "dissmisTime": 3000
+                    });
                 }
             }
         });

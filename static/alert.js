@@ -56,14 +56,22 @@ define(function (require) {
         modal.modal();
     };
 
-    // We append elements so in a near future we can stack sucesive notifications
+    /* Options parameter:
+     *  group: What group this notification is from. Sets data-group's value. Default: none
+     *  noCollapse: If set to true, other notifications with the same group will not be removed before sending this. (Note that this only has any effect if group is set). Default: false
+     *  alertClass: Space separated classes to give to the notification div element. Default: none
+     *  noAutoDissmis: If set to true, the notification will not fade out nor be removed automatically. Default: false (This element will be dissmised)
+     *  dissmisTime: If allowed by noAutoDissmis, controls how long the notification will be visible before being automatically removed. Default: 5000ms
+     */
     Alert.prototype.notify = function (body, options) {
         var modal = $('#notifications');
         if (!modal) return;
         var newElement = $('<div class="alert notification" tabindex="-1" role="dialog"><button type="button" class="close" data-dismiss="alert">&times;</button><span id="msg">' + body + '</span></div>');
         if (options) {
             if (options.group) {
-                modal.find('[data-group="' + options.group + '"]').remove();
+                if (options.noCollapse) {
+                    modal.find('[data-group="' + options.group + '"]').remove();
+                }
                 newElement.attr('data-group', options.group);
             }
             if (options.alertClass) {
@@ -71,12 +79,13 @@ define(function (require) {
             }
         }
         modal.append(newElement);
-        if (!options || !options.neverDismiss) {
+        if (!options || !options.noAutoDissmis) {
+            // Dissmis this after dissmisTime
             setTimeout(function () {
                 newElement.fadeOut('slow', function() {
                     newElement.remove();
                 });
-            }, options && options.hideTime ? options.hideTime : 5000);
+            }, options && options.dissmisTime ? options.dissmisTime : 5000);
         }
     };
 
