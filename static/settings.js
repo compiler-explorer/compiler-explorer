@@ -123,6 +123,7 @@ define(function (require) {
             }
         });
         add(root.find('.hoverShowSource'), 'hoverShowSource', true, Checkbox);
+        add(root.find('.hoverShowAsmDoc'), 'hoverShowAsmDoc', true, Checkbox);
 
         function setSettings(settings) {
             onSettingsChange(settings);

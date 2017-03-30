@@ -198,3 +198,32 @@ pre.content {
 .font-option-active:hover {
     background: #4477AA !important;
 }
+
+#notifications {
+    max-width: 33%;
+    position: fixed;
+    bottom: 3px;
+    right: 5px;
+}
+
+.notification {
+    padding: 5px;
+    border-radius: 5px;
+    background-color: cornflowerblue;
+    color: black;
+}
+
+.notification-error {
+    background-color: indianred;
+    color: white;
+}
+
+.notification-on {
+    background-color: green;
+    color: black;
+}
+
+.notification-off {
+    background-color: gray;
+    color: black;
+}

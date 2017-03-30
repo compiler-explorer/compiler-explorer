@@ -34,6 +34,7 @@ define(function (require) {
     var Components = require('components');
     var monaco = require('monaco');
     var options = require('options');
+    var Alert = require('alert');
     require('./d-mode');
     require('./rust-mode');
 
@@ -106,6 +107,13 @@ define(function (require) {
             run: _.bind(function () {
                 this.eventHub.emit('modifySettings', {
                     compileOnChange: !this.settings.compileOnChange
+                });
+                new Alert().notify('Compile on code change has been toggled ' + (this.settings.compileOnChange ? 'ON' : 'OFF'), {
+                    group: "togglecompile",
+                    noCollapse: false,
+                    alertClass: this.settings.compileOnChange ? "notification-on" : "notification-off",
+                    noAutoDismiss: false,
+                    dismissTime: 3000
                 });
             }, this)
         });

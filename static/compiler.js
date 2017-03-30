@@ -35,6 +35,8 @@ define(function (require) {
     var Components = require('components');
     var LruCache = require('lru-cache');
     var monaco = require('monaco');
+    var asmDocs = require('asm-docs').tokens;
+    var Alert = require('alert');
     require('asm-mode');
 
     require('selectize');
@@ -115,6 +117,16 @@ define(function (require) {
                 var desiredLine = ed.getPosition().lineNumber - 1;
                 self.eventHub.emit('editorSetDecoration', self.sourceEditorId, self.assembly[desiredLine].source);
             }
+        });
+
+        this.outputEditor.addAction({
+            id: 'viewasmdoc',
+            label: 'View asm doc',
+            keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.F8],
+            keybindingContext: null,
+            contextMenuGroupId: 'help',
+            contextMenuOrder: 1.5,
+            run: _.bind(this.onAsmToolTip, this)
         });
 
         this.outputEditor.onMouseMove(_.throttle(_.bind(this.onMouseMove, this)), 250);
@@ -535,12 +547,17 @@ define(function (require) {
     var hexLike = /^(#?[$]|0x)([0-9a-fA-F]+)$/;
     var decimalLike = /^(#?)([0-9]+)$/;
 
-    function getToolTip(value) {
+    function getNumericToolTip(value) {
         var match = hexLike.exec(value);
         if (match) return value + ' = ' + parseInt(match[2], 16).toString();
         match = decimalLike.exec(value);
         if (match) return value + ' = 0x' + parseInt(match[2]).toString(16);
         return null;
+    }
+
+    function getAsmToolTip(token) {
+        var asmDoc = asmDocs[token.toUpperCase()];
+        return asmDoc ? asmDoc.tooltip : null;
     }
 
     Compiler.prototype.onMouseMove = function (e) {
@@ -552,13 +569,50 @@ define(function (require) {
                 this.eventHub.emit('editorSetDecoration', this.sourceEditorId, this.assembly[desiredLine].source);
             }
         }
-        var numericToolTip = e.target.element ? getToolTip(e.target.element.textContent) : null;
+        var currentWord = this.outputEditor.getModel().getWordAtPosition(e.target.position);
+        var numericToolTip = currentWord && currentWord.word ? getNumericToolTip(currentWord.word) : null;
         if (numericToolTip) {
             this.decorations.numericToolTip = {
                 range: e.target.range,
                 options: {isWholeLine: false, hoverMessage: ['`' + numericToolTip + '`']}
             };
             this.updateDecorations();
+        }
+        if (this.settings.hoverShowAsmDoc === true) {
+            var asmToolTip = currentWord && currentWord.word ? getAsmToolTip(currentWord.word) : null;
+            if (asmToolTip) {
+                this.decorations.asmToolTip = {
+                    range: e.target.range,
+                    options: {isWholeLine: false, hoverMessage: [asmToolTip + " More information available in the context menu."]}
+                };
+                this.updateDecorations();
+            }
+        }
+    };
+
+    Compiler.prototype.onAsmToolTip = function (ed) {
+        var pos = ed.getPosition();
+        var word = ed.getModel().getWordAtPosition(pos);
+        if (!word || !word.word) return;
+        var opcode = word.word.toUpperCase();
+        var asmHelp = asmDocs[opcode];
+        if (asmHelp) {
+            new Alert().alert(opcode + " help", asmHelp.html +
+                '<br><br>For more information, visit <a href="http://www.felixcloutier.com/x86/' + asmHelp.url +'" target="_blank" rel="noopener noreferrer">the ' +
+                opcode + ' documentation <img src="assets/external_link.png" width="16px" height="16px" alt="Opens in a new window"/></a>.',
+                function() {
+                    ed.focus();
+                    ed.setPosition(pos);
+                }
+            );
+        } else {
+            new Alert().notify('This token was not found in the documentation.<br>Only <b>Intel x86</b> opcodes supported for now.',{
+                group: "notokenindocs",
+                noCollapse: false,
+                alertClass: "notification-error",
+                noAutoDismiss: false,
+                dismissTime: 3000
+            });
         }
     };
 

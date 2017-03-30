@@ -37,11 +37,15 @@ define(function (require) {
         }, this));
     }
 
-    Alert.prototype.alert = function (title, body) {
+    Alert.prototype.alert = function (title, body, onClose) {
         var modal = $('#alert');
         modal.find('.modal-title').html(title);
         modal.find('.modal-body').html(body);
         modal.modal();
+        if (onClose) {
+            modal.off('hidden.bs.modal');
+            modal.on('hidden.bs.modal', onClose);
+        }
     };
 
     Alert.prototype.ask = function (title, question, handlers) {
@@ -51,6 +55,39 @@ define(function (require) {
         modal.find('.modal-title').html(title);
         modal.find('.modal-body').html(question);
         modal.modal();
+    };
+
+    /* Options parameter:
+     *  group: What group this notification is from. Sets data-group's value. Default: none
+     *  noCollapse: If set to true, other notifications with the same group will not be removed before sending this. (Note that this only has any effect if group is set). Default: false
+     *  alertClass: Space separated classes to give to the notification div element. Default: none
+     *  noAutoDismiss: If set to true, the notification will not fade out nor be removed automatically. Default: false (This element will be dissmised)
+     *  dismissTime: If allowed by noAutoDismiss, controls how long the notification will be visible before being automatically removed. Default: 5000ms
+     */
+    Alert.prototype.notify = function (body, options) {
+        var modal = $('#notifications');
+        if (!modal) return;
+        var newElement = $('<div class="alert notification" tabindex="-1" role="dialog"><button type="button" class="close" data-dismiss="alert">&times;</button><span id="msg">' + body + '</span></div>');
+        if (options) {
+            if (options.group) {
+                if (!options.noCollapse) {
+                    modal.find('[data-group="' + options.group + '"]').remove();
+                }
+                newElement.attr('data-group', options.group);
+            }
+            if (options.alertClass) {
+                newElement.addClass(options.alertClass);
+            }
+        }
+        modal.append(newElement);
+        if (!options || !options.noAutoDismiss) {
+            // Dismiss this after dismissTime
+            setTimeout(function () {
+                newElement.fadeOut('slow', function() {
+                    newElement.remove();
+                });
+            }, options && options.dismissTime ? options.dismissTime : 5000);
+        }
     };
 
     Alert.prototype.onYesNoHide = function (evt) {
