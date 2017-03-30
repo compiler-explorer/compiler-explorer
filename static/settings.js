@@ -133,6 +133,7 @@ define(function (require) {
             }
         });
         add(root.find('.hoverShowSource'), 'hoverShowSource', true, Checkbox);
+        add(root.find('.hoverShowAsmDoc'), 'hoverShowAsmDoc', true, Checkbox);
 
         var formats = ["Google", "LLVM", "Mozilla", "Chromium", "WebKit", "None"];
         add(root.find('.formatBase'), 'formatBase', formats[0], Select,

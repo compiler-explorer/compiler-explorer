@@ -51,11 +51,8 @@ html(lang="en")
                       | &nbsp; Source on GitHub
                 li: a(href="https://github.com/mattgodbolt/compiler-explorer/wiki") Wiki
                 li: a(href="https://github.com/mattgodbolt/compiler-explorer/issues") Report an issue
-                li.divider
                 if sharingEnabled
-                  li: g:plusone(annotation="inline" width="150")
-                  li: a.twitter-share-button(href="https://twitter.com/share" data-via="mattgodbolt")
-                  li.divider
+                  li.tweet: a.twitter-share-button(href="https://twitter.com/share" data-via="mattgodbolt")
                 li#thanks-to: a(href="#") Thanks to...
                 li: a(href="https://xania.org/201609/how-compiler-explorer-runs-on-amazon") How it works
                 li: a(href="mailto:matt@godbolt.org") Contact the author
