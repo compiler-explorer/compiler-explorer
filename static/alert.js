@@ -72,7 +72,7 @@ define(function (require) {
         // Set defaults
         options.collapseSimilar = ("collapseSimilar" in options) ? options.collapseSimilar : true;  // Collapse similars by default
         options.autoDismiss = ("autoDismiss" in options) ? options.autoDismiss : true;  // autoDismiss by default
-        options.dismissTime = options.dismissTime ? max(1000, options.dismissTime) : 5000;  // Dismiss this after 5000ms by default
+        options.dismissTime = options.dismissTime ? Math.max(1000, options.dismissTime) : 5000;  // Dismiss this after 5000ms by default
         if (options.group) {
             if (options.collapseSimilar) {
                 // Only collapsing if a group has been specified
