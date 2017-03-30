@@ -52,7 +52,10 @@ define(function (require) {
             }
             done(id);
         }, function () {
-            new Alert().alert('Could not shorten your URL', 'The current url probaly exceeds the Google Url Shortener length limits.');
+            new Alert().notify("The URL could not be shortened. It probaly exceeds the Google URL Shortener length limits.", {
+                group: "urltoolong",
+                alertClass: "notification-error"
+            });
             done(url);
         });
     }
