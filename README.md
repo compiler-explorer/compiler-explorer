@@ -40,7 +40,8 @@ There's now a [Road map](Roadmap.md) that gives a little insight into future pla
 ### Credits
 
 Compiler Explorer is maintained by [Matt Godbolt](http://xania.org). Multiple compiler and difference view was
-implemented by [Gabriel Devillers](https://github.com/voxelf).
+implemented by [Gabriel Devillers](https://github.com/voxelf). [Rubén](https://github.com/RabsRincon)
+contributed the auto-highlight between editors.
 
 ### RESTful API
 

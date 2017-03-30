@@ -25,8 +25,6 @@
 
 define(function (require) {
     "use strict";
-    var options = require('./async-get!client-options.json');
-    options.embedded = window.location.pathname === "/embed.html";
-    return options;
+    return window.compilerExplorerOptions;
 });
 

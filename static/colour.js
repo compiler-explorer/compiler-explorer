@@ -27,27 +27,35 @@ define(function (require) {
     "use strict";
 
     var _ = require('underscore');
+    var monaco = require('monaco');
 
-    var NumRainbowColours = 12;
+    var schemes = [
+        {name: 'rainbow', desc: 'Rainbow 1', count: 12},
+        {name: 'rainbow2', desc: 'Rainbow 2', count: 12},
+        {name: 'earth', desc: 'Earth tones (colourblind safe)', count: 9},
+        {name: 'green-blue', desc: 'Greens and blues (colourblind safe)', count: 4}
+    ];
 
-    function clearBackground(editor) {
-        for (var i = 0; i < editor.lineCount(); ++i) {
-            editor.removeLineClass(i, "background", null);
+    function applyColours(editor, colours, schemeName, prevDecorations) {
+        var scheme = _.findWhere(schemes, {name: schemeName});
+        if (!scheme) {
+            scheme = schemes[0];
         }
-    }
-
-    function applyColours(editor, colours) {
-        editor.operation(function () {
-            clearBackground(editor);
-            _.each(colours, function (ordinal, line) {
-                editor.addLineClass(parseInt(line),
-                    "background", "rainbow-" + (ordinal % NumRainbowColours));
-            });
+        var newDecorations = _.map(colours, function (ordinal, line) {
+            line = parseInt(line) + 1;
+            return {
+                range: new monaco.Range(line, 1, line, 1),
+                options: {
+                    isWholeLine: true,
+                    className: scheme.name + "-" + (ordinal % scheme.count)
+                }
+            };
         });
+        return editor.deltaDecorations(prevDecorations, newDecorations);
     }
 
     return {
         applyColours: applyColours,
-        clearBackground: clearBackground
+        schemes: schemes
     };
 });

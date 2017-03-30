@@ -29,7 +29,6 @@ var nopt = require('nopt'),
     os = require('os'),
     props = require('./lib/properties'),
     CompileHandler = require('./lib/compile-handler').CompileHandler,
-    buildDiffHandler = require('./lib/diff').buildDiffHandler,
     express = require('express'),
     child_process = require('child_process'),
     path = require('path'),
@@ -53,7 +52,7 @@ var opts = nopt({
     'propDebug': [Boolean],
     'debug': [Boolean],
     'static': [String],
-    'archivedVersions': [String]
+    'archivedVersions': [String],
 });
 
 if (opts.debug) logger.level = 'debug';
@@ -67,6 +66,9 @@ var port = opts.port || 10240;
 var staticDir = opts.static || 'static';
 var archivedVersions = opts.archivedVersions;
 var gitReleaseName = child_process.execSync('git rev-parse HEAD').toString().trim();
+var versionedRootPrefix = "";
+if (opts.static && fs.existsSync(opts.static + '/v/' + gitReleaseName))
+    versionedRootPrefix = "v/" + gitReleaseName + "/";
 
 var propHierarchy = _.flatten([
     'defaults',
@@ -90,13 +92,6 @@ props.initialize(rootDir + '/config', propHierarchy);
 // in hidden object props.properties
 var gccProps = props.propsFor("compiler-explorer");
 
-// Read from gccexplorer's config the wdiff configuration
-// that will be used to configure lib/diff.js
-var wdiffConfig = {
-    wdiffExe: gccProps('wdiff', "wdiff"),
-    maxOutput: gccProps("max-diff-output", 100000)
-};
-
 // Instantiate a function to access records concerning the chosen language
 // in hidden object props.properties
 var compilerPropsFunc = props.propsFor(language.toLowerCase());
@@ -109,6 +104,11 @@ function compilerProps(property, defaultValue) {
     return gccProps(property, defaultValue); // gccProps comes from lib/compile-handler.js
 }
 var staticMaxAgeSecs = gccProps('staticMaxAgeSecs', 0);
+function staticHeaders(res) {
+    if (staticMaxAgeSecs) {
+        res.setHeader('Cache-Control', 'public, max-age=' + staticMaxAgeSecs + ', must-revalidate');
+    }
+}
 
 var awsProps = props.propsFor("aws");
 var awsPoller = null;
@@ -159,34 +159,43 @@ function ClientOptionsHandler(fileSources) {
     });
     // sort source file alphabetically
     sources = sources.sort(compareOn("name"));
-    var text = "";
+    var languages = _.compact(_.map(gccProps("languages", '').split(':'), function (thing) {
+        if (!thing) return null;
+        var splat = thing.split("=");
+        return {language: splat[0], url: splat[1]};
+    }));
+    var options = {
+        googleAnalyticsAccount: gccProps('clientGoogleAnalyticsAccount', 'UA-55180-6'),
+        googleAnalyticsEnabled: gccProps('clientGoogleAnalyticsEnabled', false),
+        sharingEnabled: gccProps('clientSharingEnabled', true),
+        githubEnabled: gccProps('clientGitHubRibbonEnabled', true),
+        gapiKey: gccProps('googleApiKey', ''),
+        googleShortLinkRewrite: gccProps('googleShortLinkRewrite', '').split('|'),
+        defaultSource: gccProps('defaultSource', ''),
+        language: language,
+        compilers: [],
+        sourceExtension: compilerProps('compileFilename').split('.', 2)[1],
+        defaultCompiler: compilerProps('defaultCompiler', ''),
+        compileOptions: compilerProps("options"),
+        supportsBinary: !!compilerProps("supportsBinary"),
+        languages: languages,
+        sources: sources,
+        raven: gccProps('ravenUrl', ''),
+        release: gitReleaseName,
+        environment: env,
+        localStoragePrefix: gccProps('localStoragePrefix')
+    };
     this.setCompilers = function (compilers) {
-        var options = {
-            googleAnalyticsAccount: gccProps('clientGoogleAnalyticsAccount', 'UA-55180-6'),
-            googleAnalyticsEnabled: gccProps('clientGoogleAnalyticsEnabled', false),
-            sharingEnabled: gccProps('clientSharingEnabled', true),
-            githubEnabled: gccProps('clientGitHubRibbonEnabled', true),
-            gapiKey: gccProps('googleApiKey', ''),
-            googleShortLinkRewrite: gccProps('googleShortLinkRewrite', '').split('|'),
-            defaultSource: gccProps('defaultSource', ''),
-            language: language,
-            compilers: compilers,
-            sourceExtension: compilerProps('compileFilename').split('.', 2)[1],
-            defaultCompiler: compilerProps('defaultCompiler', ''),
-            compileOptions: compilerProps("options"),
-            supportsBinary: !!compilerProps("supportsBinary"),
-            sources: sources,
-            raven: gccProps('ravenUrl', ''),
-            release: gitReleaseName,
-            environment: env
-        };
-        text = JSON.stringify(options);
+        options.compilers = compilers;
     };
     this.setCompilers([]);
     this.handler = function getClientOptions(req, res) {
         res.set('Content-Type', 'application/json');
-        res.set('Cache-Control', 'public, max-age=' + staticMaxAgeSecs);
-        res.end(text);
+        staticHeaders(res);
+        res.end(JSON.stringify(options));
+    };
+    this.get = function () {
+        return options;
     };
 }
 
@@ -208,7 +217,7 @@ function getSource(req, res, next) {
         return;
     }
     action.apply(handler, bits.slice(3).concat(function (err, response) {
-        res.set('Cache-Control', 'public, max-age=' + staticMaxAgeSecs);
+        staticHeaders(res);
         if (err) {
             res.end(JSON.stringify({err: err}));
         } else {
@@ -454,15 +463,6 @@ function shortUrlHandler(req, res, next) {
     });
 }
 
-// TODO: write the info here directly instead of redirecting...
-function embeddedHandler(req, res, next) {
-    res.writeHead(301, {
-        Location: 'embed.html',
-        'Cache-Control': 'public'
-    });
-    res.end();
-}
-
 findCompilers()
     .then(function (compilers) {
         var prevCompilers;
@@ -495,18 +495,39 @@ findCompilers()
             bodyParser = require('body-parser'),
             morgan = require('morgan'),
             compression = require('compression'),
-            restreamer = require('./lib/restreamer'),
-            diffHandler = buildDiffHandler(wdiffConfig);
+            restreamer = require('./lib/restreamer');
 
         logger.info("=======================================");
         logger.info("Listening on http://" + (hostname || 'localhost') + ":" + port + "/");
         logger.info("  serving static files from '" + staticDir + "'");
         logger.info("  git release " + gitReleaseName);
 
+        function renderConfig(extra) {
+            var options = _.extend(extra, clientOptionsHandler.get());
+            options.compilerExplorerOptions = JSON.stringify(options);
+            options.root = versionedRootPrefix;
+            return options;
+        }
+
+        var embeddedHandler = function (req, res) {
+            staticHeaders(res);
+            res.render('embed', renderConfig({embedded: true}));
+        };
         webServer
             .set('trust proxy', true)
+            .set('view engine', 'pug')
             .use(morgan('combined', {stream: logger.stream}))
             .use(compression())
+            .get('/', function (req, res) {
+                staticHeaders(res);
+                res.render('index', renderConfig({embedded: false}));
+            })
+            .get('/e', embeddedHandler)
+            .get('/embed.html', embeddedHandler) // legacy. not a 301 to prevent any redirect loops between old e links and embed.html
+            .get('/embed-ro', function (req, res) {
+                staticHeaders(res);
+                res.render('embed', renderConfig({embedded: true, readOnly: true}));
+            })
             .use(sFavicon(staticDir + '/favicon.ico'))
             .use('/v', express.static(staticDir + '/v', {maxAge: Infinity, index: false}))
             .use(express.static(staticDir, {maxAge: staticMaxAgeSecs * 1000}));
@@ -528,9 +549,7 @@ findCompilers()
             .use('/source', getSource)
             .use('/api', apiHandler.handler)
             .use('/g', shortUrlHandler)
-            .use('/e', embeddedHandler)
-            .post('/compile', compileHandler.handler)
-            .post('/diff', diffHandler);
+            .post('/compile', compileHandler.handler);
         logger.info("=======================================");
 
         webServer.on('error', function (err) {

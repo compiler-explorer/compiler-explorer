@@ -32,11 +32,33 @@ define(function (require) {
     var compiler = require('compiler');
     var output = require('output');
     var Components = require('components');
+    var diff = require('diff');
+
+    function Ids() {
+        this.used = {};
+    }
+
+    Ids.prototype.add = function (id) {
+        this.used[id] = true;
+    };
+    Ids.prototype.remove = function (id) {
+        delete this.used[id];
+    };
+    Ids.prototype.next = function () {
+        for (var i = 1; i < 100000; ++i) {
+            if (!this.used[i]) {
+                this.used[i] = true;
+                return i;
+            }
+        }
+        throw "Ran out of ids!?";
+    };
 
     function Hub(layout, defaultSrc) {
         this.layout = layout;
         this.defaultSrc = defaultSrc;
-        this.ids = {};
+        this.editorIds = new Ids();
+        this.compilerIds = new Ids();
 
         var self = this;
         layout.registerComponent(Components.getEditor().componentName,
@@ -51,25 +73,38 @@ define(function (require) {
             function (container, state) {
                 return self.outputFactory(container, state);
             });
-        var removeId = function (id) {
-            self.ids[id] = false;
-        };
-        layout.eventHub.on('editorClose', removeId);
-        layout.eventHub.on('compilerClose', removeId);
+        layout.registerComponent(diff.getComponent().componentName,
+            function (container, state) {
+                return self.diffFactory(container, state);
+            });
+
+        layout.eventHub.on('editorOpen', function (id) {
+            this.editorIds.add(id);
+        }, this);
+        layout.eventHub.on('editorClose', function (id) {
+            this.editorIds.remove(id);
+        }, this);
+        layout.eventHub.on('compilerOpen', function (id) {
+            this.compilerIds.add(id);
+        }, this);
+        layout.eventHub.on('compilerClose', function (id) {
+            this.compilerIds.remove(id);
+        }, this);
         layout.init();
     }
 
-    Hub.prototype.nextId = function () {
-        for (var i = 1; i < 100000; ++i) {
-            if (!this.ids[i]) {
-                this.ids[i] = true;
-                return i;
-            }
-        }
-        throw "Ran out of ids!?";
+    Hub.prototype.nextEditorId = function () {
+        return this.editorIds.next();
+    };
+    Hub.prototype.nextCompilerId = function () {
+        return this.compilerIds.next();
     };
 
     Hub.prototype.codeEditorFactory = function (container, state) {
+        // Ensure editors are closable: some older versions had 'isClosable' false.
+        // NB there doesn't seem to be a better way to do this than reach into the config and rely on the fact nothing
+        // has used it yet.
+        container.parent.config.isClosable = true;
         return new editor.Editor(this, state, container, options.language, this.defaultSrc);
     };
 
@@ -79,6 +114,9 @@ define(function (require) {
 
     Hub.prototype.outputFactory = function (container, state) {
         return new output.Output(this, container, state);
+    };
+    Hub.prototype.diffFactory = function (container, state) {
+        return new diff.Diff(this, container, state);
     };
 
     function WrappedEventHub(eventHub) {
@@ -109,6 +147,25 @@ define(function (require) {
             elem = elem.parent;
         }
         return elem;
+    };
+
+    Hub.prototype.addAtRoot = function (newElem) {
+        var rootFirstItem = this.layout.root.contentItems[0];
+        if (rootFirstItem) {
+            if (rootFirstItem.isRow || rootFirstItem.isColumn) {
+                rootFirstItem.addChild(newElem);
+            } else {
+                var newRow = this.layout.createContentItem({type: 'row'}, this.layout.root);
+                this.layout.root.replaceChild(rootFirstItem, newRow);
+                newRow.addChild(rootFirstItem);
+                newRow.addChild(newElem);
+            }
+        } else {
+            this.layout.root.addChild({
+                type: 'row',
+                content: [newElem]
+            });
+        }
     };
 
     return Hub;
