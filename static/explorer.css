@@ -32,7 +32,7 @@
     z-index: 100;
     position: absolute;
     bottom: 0.5em;
-    right: 0.5em;
+    right: 2.5em;
     display: inline-block;
     padding: 0.25em;
     font-size: x-small;
@@ -52,6 +52,10 @@
 
 .compiler-picker {
     min-width: 14em;
+}
+
+li.tweet {
+    padding: 3px 20px;
 }
 
 .diff-picker {

@@ -119,7 +119,6 @@ define(function (require) {
             }
 
             if (options.sharingEnabled) {
-                create_script_element('gp', 'https://apis.google.com/js/plusone.js');
                 create_script_element('twitter-wjs', '//platform.twitter.com/widgets.js');
             }
         });
