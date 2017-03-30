@@ -43,6 +43,7 @@ define(function (require) {
         modal.find('.modal-body').html(body);
         modal.modal();
         if (onClose) {
+            modal.off('hidden.bs.modal');
             modal.on('hidden.bs.modal', onClose);
         }
     };
@@ -60,8 +61,8 @@ define(function (require) {
      *  group: What group this notification is from. Sets data-group's value. Default: none
      *  noCollapse: If set to true, other notifications with the same group will not be removed before sending this. (Note that this only has any effect if group is set). Default: false
      *  alertClass: Space separated classes to give to the notification div element. Default: none
-     *  noAutoDissmis: If set to true, the notification will not fade out nor be removed automatically. Default: false (This element will be dissmised)
-     *  dissmisTime: If allowed by noAutoDissmis, controls how long the notification will be visible before being automatically removed. Default: 5000ms
+     *  noAutoDismiss: If set to true, the notification will not fade out nor be removed automatically. Default: false (This element will be dissmised)
+     *  dismissTime: If allowed by noAutoDismiss, controls how long the notification will be visible before being automatically removed. Default: 5000ms
      */
     Alert.prototype.notify = function (body, options) {
         var modal = $('#notifications');
@@ -69,7 +70,7 @@ define(function (require) {
         var newElement = $('<div class="alert notification" tabindex="-1" role="dialog"><button type="button" class="close" data-dismiss="alert">&times;</button><span id="msg">' + body + '</span></div>');
         if (options) {
             if (options.group) {
-                if (options.noCollapse) {
+                if (!options.noCollapse) {
                     modal.find('[data-group="' + options.group + '"]').remove();
                 }
                 newElement.attr('data-group', options.group);
@@ -79,13 +80,13 @@ define(function (require) {
             }
         }
         modal.append(newElement);
-        if (!options || !options.noAutoDissmis) {
-            // Dissmis this after dissmisTime
+        if (!options || !options.noAutoDismiss) {
+            // Dismiss this after dismissTime
             setTimeout(function () {
                 newElement.fadeOut('slow', function() {
                     newElement.remove();
                 });
-            }, options && options.dissmisTime ? options.dissmisTime : 5000);
+            }, options && options.dismissTime ? options.dismissTime : 5000);
         }
     };
 

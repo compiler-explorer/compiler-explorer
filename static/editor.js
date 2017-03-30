@@ -109,11 +109,11 @@ define(function (require) {
                     compileOnChange: !this.settings.compileOnChange
                 });
                 new Alert().notify('Compile on code change has been toggled ' + (this.settings.compileOnChange ? 'ON' : 'OFF'), {
-                    "group": "togglecompile",
-                    "noCollapse": false,
-                    "alertClass": this.settings.compileOnChange ? "notification-on" : "notification-off",
-                    "noAutoDissmis": false,
-                    "dissmisTime": 3000
+                    group: "togglecompile",
+                    noCollapse: false,
+                    alertClass: this.settings.compileOnChange ? "notification-on" : "notification-off",
+                    noAutoDismiss: false,
+                    dismissTime: 3000
                 });
             }, this)
         });

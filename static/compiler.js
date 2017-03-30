@@ -126,30 +126,7 @@ define(function (require) {
             keybindingContext: null,
             contextMenuGroupId: 'help',
             contextMenuOrder: 1.5,
-            run: function (ed) {
-                var pos = ed.getPosition();
-                var word = ed.getModel().getWordAtPosition(pos);
-                if (!word || !word.word) return;
-                var opcode = word.word.toUpperCase();
-                var asmHelp = asmDocs[opcode];
-                if (asmHelp) {
-                    new Alert().alert(opcode + " help", asmHelp.html +
-                     '<br><br>For more information, visit <a href="http://www.felixcloutier.com/x86/' + asmHelp.url +'" target="_blank" rel="noopener noreferrer">the ' +
-                     opcode + ' documentation <img src="assets/external_link.png" width="16px" height="16px" alt="Opens in a new window"/></a>.',
-                     function() {
-                        ed.focus();
-                        ed.setPosition(pos);
-                    });
-                } else {
-                    new Alert().notify('This opcode was not found in the documentation.',{
-                        "group": "noopcodeindocs",
-                        "noCollapse": false,
-                        "alertClass": "notification-error",
-                        "noAutoDissmis": false,
-                        "dissmisTime": 3000
-                    });
-                }
-            }
+            run: _.bind(this.onAsmToolTip, this)
         });
 
         this.outputEditor.onMouseMove(_.throttle(_.bind(this.onMouseMove, this)), 250);
@@ -610,6 +587,32 @@ define(function (require) {
                 };
                 this.updateDecorations();
             }
+        }
+    };
+
+    Compiler.prototype.onAsmToolTip = function (ed) {
+        var pos = ed.getPosition();
+        var word = ed.getModel().getWordAtPosition(pos);
+        if (!word || !word.word) return;
+        var opcode = word.word.toUpperCase();
+        var asmHelp = asmDocs[opcode];
+        if (asmHelp) {
+            new Alert().alert(opcode + " help", asmHelp.html +
+                '<br><br>For more information, visit <a href="http://www.felixcloutier.com/x86/' + asmHelp.url +'" target="_blank" rel="noopener noreferrer">the ' +
+                opcode + ' documentation <img src="assets/external_link.png" width="16px" height="16px" alt="Opens in a new window"/></a>.',
+                function() {
+                    ed.focus();
+                    ed.setPosition(pos);
+                }
+            );
+        } else {
+            new Alert().notify('This token was not found in the documentation.',{
+                group: "notokenindocs",
+                noCollapse: false,
+                alertClass: "notification-error",
+                noAutoDismiss: false,
+                dismissTime: 3000
+            });
         }
     };
 
