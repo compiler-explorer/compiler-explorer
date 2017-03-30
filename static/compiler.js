@@ -608,9 +608,7 @@ define(function (require) {
         } else {
             new Alert().notify('This token was not found in the documentation.<br>Only <b>Intel x86</b> opcodes supported for now.',{
                 group: "notokenindocs",
-                noCollapse: false,
                 alertClass: "notification-error",
-                noAutoDismiss: false,
                 dismissTime: 3000
             });
         }
