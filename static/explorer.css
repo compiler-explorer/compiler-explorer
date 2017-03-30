@@ -54,6 +54,10 @@
     min-width: 14em;
 }
 
+li.tweet {
+    padding: 3px 20px;
+}
+
 .diff-picker {
     max-width: 20em;
     width: 20em;
