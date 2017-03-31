@@ -616,7 +616,7 @@ define(function (require) {
         if (asmHelp) {
             new Alert().alert(opcode + " help", asmHelp.html +
                 '<br><br>For more information, visit <a href="http://www.felixcloutier.com/x86/' + asmHelp.url + '" target="_blank" rel="noopener noreferrer">the ' +
-                opcode + ' documentation <img src="assets/external_link.png" width="16px" height="16px" alt="Opens in a new window"/></a>.',
+                opcode + ' documentation <span class="glyphicon glyphicon-new-window" width="16px" height="16px" title="Opens in a new window"/></span></a>.',
                 function () {
                     ed.focus();
                     ed.setPosition(pos);
