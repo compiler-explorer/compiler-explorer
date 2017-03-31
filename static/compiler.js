@@ -555,8 +555,22 @@ define(function (require) {
         return null;
     }
 
+    var atAndTSuffixRemover = /^([A-Z]+)[BWLQ]$/;
+    function getAsmInfo(opcode) {
+        opcode = opcode.toUpperCase();
+        var info = asmDocs[opcode];
+        if (!info) {
+            // If the opcode ends with an AT&T suffix, try removing that and giving it another go.
+            // Ideally, we'd be smarter here, but this is a quick win.
+            var suffixRemoved = atAndTSuffixRemover.exec(opcode);
+            if (suffixRemoved)
+                info = asmDocs[suffixRemoved[1]];
+        }
+        return info;
+    }
+
     function getAsmToolTip(token) {
-        var asmDoc = asmDocs[token.toUpperCase()];
+        var asmDoc = getAsmInfo(token);
         return asmDoc ? asmDoc.tooltip : null;
     }
 
@@ -583,7 +597,10 @@ define(function (require) {
             if (asmToolTip) {
                 this.decorations.asmToolTip = {
                     range: e.target.range,
-                    options: {isWholeLine: false, hoverMessage: [asmToolTip + " More information available in the context menu."]}
+                    options: {
+                        isWholeLine: false,
+                        hoverMessage: [asmToolTip + " More information available in the context menu."]
+                    }
                 };
                 this.updateDecorations();
             }
@@ -595,18 +612,18 @@ define(function (require) {
         var word = ed.getModel().getWordAtPosition(pos);
         if (!word || !word.word) return;
         var opcode = word.word.toUpperCase();
-        var asmHelp = asmDocs[opcode];
+        var asmHelp = getAsmInfo(opcode);
         if (asmHelp) {
             new Alert().alert(opcode + " help", asmHelp.html +
-                '<br><br>For more information, visit <a href="http://www.felixcloutier.com/x86/' + asmHelp.url +'" target="_blank" rel="noopener noreferrer">the ' +
+                '<br><br>For more information, visit <a href="http://www.felixcloutier.com/x86/' + asmHelp.url + '" target="_blank" rel="noopener noreferrer">the ' +
                 opcode + ' documentation <img src="assets/external_link.png" width="16px" height="16px" alt="Opens in a new window"/></a>.',
-                function() {
+                function () {
                     ed.focus();
                     ed.setPosition(pos);
                 }
             );
         } else {
-            new Alert().notify('This token was not found in the documentation.<br>Only <b>Intel x86</b> opcodes supported for now.',{
+            new Alert().notify('This token was not found in the documentation.<br>Only <b>Intel x86</b> opcodes supported for now.', {
                 group: "notokenindocs",
                 alertClass: "notification-error",
                 dismissTime: 3000
