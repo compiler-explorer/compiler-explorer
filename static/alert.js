@@ -37,11 +37,15 @@ define(function (require) {
         }, this));
     }
 
-    Alert.prototype.alert = function (title, body) {
+    Alert.prototype.alert = function (title, body, onClose) {
         var modal = $('#alert');
         modal.find('.modal-title').html(title);
         modal.find('.modal-body').html(body);
         modal.modal();
+        if (onClose) {
+            modal.off('hidden.bs.modal');
+            modal.on('hidden.bs.modal', onClose);
+        }
     };
 
     Alert.prototype.ask = function (title, question, handlers) {
@@ -51,6 +55,42 @@ define(function (require) {
         modal.find('.modal-title').html(title);
         modal.find('.modal-body').html(question);
         modal.modal();
+    };
+
+    /* Options parameter:
+     *  group: What group this notification is from. Sets data-group's value. Default: none
+     *  collapseSimilar: If set to true, other notifications with the same group will be removed before sending this. (Note that this only has any effect if group is set). Default: true
+     *  alertClass: Space separated classes to give to the notification div element. Default: none
+     *  autoDismiss: If set to true, the notification will fade out and be removed automatically. Default: true
+     *  dismissTime: If allowed by autoDismiss, controls how long the notification will be visible before being automatically removed. Default: 5000ms. Min: 1000ms
+     */
+    Alert.prototype.notify = function (body, options) {
+        var container = $('#notifications');
+        if (!container) return;
+        var newElement = $('<div class="alert notification" tabindex="-1" role="dialog"><button type="button" class="close" data-dismiss="alert">&times;</button><span id="msg">' + body + '</span></div>');
+        if (!options) options = {};
+        // Set defaults
+        options.collapseSimilar = ("collapseSimilar" in options) ? options.collapseSimilar : true;  // Collapse similars by default
+        options.autoDismiss = ("autoDismiss" in options) ? options.autoDismiss : true;  // autoDismiss by default
+        options.dismissTime = options.dismissTime ? Math.max(1000, options.dismissTime) : 5000;  // Dismiss this after 5000ms by default
+        if (options.group) {
+            if (options.collapseSimilar) {
+                // Only collapsing if a group has been specified
+                container.find('[data-group="' + options.group + '"]').remove();
+            }
+            newElement.attr('data-group', options.group);  // Add the group to the data-group
+        }
+        if (options.alertClass) {  // If we want a custom class, apply it
+            newElement.addClass(options.alertClass);
+        }
+        if (options.autoDismiss) {  // Dismiss this after dismissTime
+            setTimeout(function () {
+                newElement.fadeOut('slow', function() {
+                    newElement.remove();
+                });
+            }, options.dismissTime);
+        }
+        container.append(newElement);  // Add the new notification to the container
     };
 
     Alert.prototype.onYesNoHide = function (evt) {

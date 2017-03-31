@@ -81,6 +81,10 @@
               label
                 input.hoverShowSource(type="checkbox")
                 | Highlight linked code lines on hover
+            .checkbox
+              label
+                input.hoverShowAsmDoc(type="checkbox")
+                | Show asm description on hover
         .well.well-sm
           h4 Compilation
           .form-group(role="group")
@@ -93,3 +97,5 @@
               select.colourScheme
       .modal-footer
         button.btn.btn-default(type="button" data-dismiss="modal") Close
+
+#notifications
