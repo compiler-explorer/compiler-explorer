@@ -95,6 +95,14 @@
             label
               | Colour scheme:
               select.colourScheme
+        if language == "C++"
+          .well.well-sm 
+            h4 Formatting
+            .form-group(role="group")
+              div Format based on 
+                select.formatBase
+              div Override style settings ("key": "value", ...)
+                textarea.formatOverrides(placeholder='"key": "value", "key": "value", ...', style="width:100%;max-width:100%;min-width:100%", rows=2)
       .modal-footer
         button.btn.btn-default(type="button" data-dismiss="modal") Close
 

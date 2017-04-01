@@ -40,6 +40,16 @@ define(function (require) {
         this.control.putUi(this.elem, value);
     };
 
+    function TextAreaInput() {
+    }
+
+    TextAreaInput.prototype.getUi = function (elem) {
+        return elem.val();
+    };
+    TextAreaInput.prototype.putUi = function (elem, value) {
+        elem.val(value);
+    };
+
     function Checkbox() {
     }
 
@@ -124,6 +134,13 @@ define(function (require) {
         });
         add(root.find('.hoverShowSource'), 'hoverShowSource', true, Checkbox);
         add(root.find('.hoverShowAsmDoc'), 'hoverShowAsmDoc', true, Checkbox);
+
+        var formats = ["Google", "LLVM", "Mozilla", "Chromium", "WebKit", "None"];
+        add(root.find('.formatBase'), 'formatBase', formats[0], Select,
+            _.map(formats, function (format) {
+                return {label: format, desc: format};
+            }));
+        add(root.find('.formatOverrides'), 'formatOverrides', "", TextAreaInput);
 
         function setSettings(settings) {
             onSettingsChange(settings);

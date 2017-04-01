@@ -419,6 +419,45 @@ function ApiHandler(compileHandler) {
             }).join("\n"));
         }
     }, this));
+     // ---- this whole thing should be in a separate file etc, proof of concept only
+    // TODO: we'll need something smarter than this; URLs are long-lived and we nede
+    // to think about it; languages...formatters...etc.maybe something like:
+    var exec = require('./lib/exec');
+    this.handler.post('/format/clang-format-3.8', function (req, res) {
+        res.setHeader('Content-Type', 'application/json');
+        var style = "";
+        if (req.body.base && req.body.base !== "None") {
+            if (req.body.overrides) {
+                style = "{BasedOnStyle: " + req.body.base + "," + req.body.overrides + "}";
+            } else {
+                style = req.body.base;
+            }
+        } else {
+            if (req.body.overrides) {
+                style = "{" + req.body.overrides + "}";
+            } else {
+                style = "Google";
+            }
+        }
+        var response = {};
+        response.style = style;
+        exec.execute('/usr/bin/clang-format-3.8', ["-style=" + style], {
+            input: req.body.source,
+        }).then(function (result) {
+            response.exit = result.code;
+            if (result.code === 0) {
+                response.answer = result.stdout;
+            } else {
+                response.answer = "Clang did not succeed";
+            }
+            res.end(JSON.stringify(response));
+        }).catch(function (ex) {
+            response.exit = -1;
+            response.thrown = true;
+            response.answer = "Exception thrown";
+            res.end(JSON.stringify(response));
+        });
+    });
     this.handler.param('compiler', _.bind(function (req, res, next, compilerName) {
         req.compiler = compilerName;
         next();

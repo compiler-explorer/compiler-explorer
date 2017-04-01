@@ -58,6 +58,8 @@ define(function (require) {
 
         this.decorations = [];
 
+        this.sourceOnFormat = "";
+
         var cmMode;
         switch (lang.toLowerCase()) {
             default:
@@ -140,6 +142,55 @@ define(function (require) {
                 tryCompilerSelectLine(ed.getPosition().lineNumber);
             }
         });
+
+        if (cmMode === "cpp") {
+            this.editor.addAction({
+                id: 'clang-format',
+                label: 'Format text',
+                keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.F9],
+                keybindingContext: null,
+                contextMenuGroupId: 'help',
+                contextMenuOrder: 1.5,
+                run: function (ed) {
+                    self.sourceOnFormat = self.getSource();
+                    var position = ed.getPosition();
+                    self.handleThinkingGear(true, "Formatting your code. If you change anything in the meanwhile, you will have to choose what to do.");
+                    // Let the user know we're formmating and that if it changes anything, we will ask what to do.
+                    $.ajax({
+                        type: 'POST',
+                        url: 'api/format/clang-format-3.8',
+                        dataType: 'json',  // Expected
+                        contentType: 'application/json',  // Sent
+                        data: JSON.stringify({"source": self.sourceOnFormat,
+                                "base": self.settings.formatBase,
+                                "overrides": self.settings.formatOverrides}),
+                        success: _.bind(function (result) {
+                            if (result.exit === 0) {
+                                if (self.sourceOnFormat === self.getSource()) {
+                                    self.setSource(result.answer);
+                                } else {
+                                    new Alert().ask("Changes were made to the code",
+                                                    "Changes were made to the code while it was being formatted. What should be done?",
+                                                    {"yes": function() {self.setSource(result.answer);}, "no": function () {}},
+                                                    {"yes": "Overwrite my changes", "no": "Keep my changes"});                        
+                                }
+                                self.numberUsedLines();
+                                self.editor.setPosition(position);
+                                self.handleThinkingGear(false);
+                            } else {
+                                // Ops
+                                self.handleThinkingGear(false);
+                            }
+                        }, this),
+                        error: _.bind(function (xhr, e_status, error) {
+                            // Hopefully we have not exploded!
+                            self.handleThinkingGear(false);
+                        }, this),
+                        cache: false
+                    });
+                }
+            });
+        }
 
         this.mouseMoveThrottledFunction = _.throttle(function (e) {
                 if (e !== null && e.target !== null && self.settings.hoverShowSource === true && e.target.position !== null) {
@@ -227,6 +278,8 @@ define(function (require) {
             insertPoint.addChild(compilerConfig());
         }, this));
 
+        this.domRoot.find('.thinking').hide().tooltip();
+
         this.updateState();
     }
 
@@ -248,6 +301,10 @@ define(function (require) {
 
     Editor.prototype.getSource = function () {
         return this.editor.getModel().getValue();
+    };
+
+     Editor.prototype.setSource = function (text) {
+        return this.editor.getModel().setValue(text);
     };
 
     Editor.prototype.onSettingsChange = function (newSettings) {
@@ -368,6 +425,19 @@ define(function (require) {
                             }
                         }
                     ]);
+        }
+    };
+
+    Editor.prototype.handleThinkingGear = function (doShow, tooltipText) {
+        if (doShow) {
+            this.domRoot.find('.thinking')
+                .attr("title", tooltipText || "")
+                .addClass("gly-spin")
+                .show();
+        } else {
+            this.domRoot.find('.thinking')
+                .removeClass("gly-spin")
+                .hide();
         }
     };
 
