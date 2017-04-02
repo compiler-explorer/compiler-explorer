@@ -60,7 +60,7 @@ Returns a list of compilers. In text form, there's a simple formatting of the ID
 description. In JSON, all the information is returned as an array of compilers, with the `id` key being the
 primary identifier of each compiler.
 
-#### `POST /api/<compiler-id>/compiler` - perform a compilation
+#### `POST /api/compiler/<compiler-id>/compile` - perform a compilation
 
 To specify a compilation request as a JSON document, post it as the appropriate type and send an object of
 the form: `{'source': 'source to compile', 'options': 'compiler flags', 'filters': {'filter': true}}`. The filters are an JSON object with true/false. If not supplied, defaults are used. If supplied, the filters are used
