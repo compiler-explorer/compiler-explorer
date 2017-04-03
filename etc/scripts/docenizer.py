@@ -8,9 +8,7 @@ parser.add_argument('-o', '--outputpath', type=str, help='Final path of the .js 
 
 args = parser.parse_args()
 with open(args.outputpath, 'w') as f:
-    f.write('define(function (require) {\n\
-    "use strict";\n\
-    var tokens = { \n')
+    f.write('var tokens = { \n')
     for root, dirs, files in os.walk(args.inputfolder):
         for file in files:
             if file.endswith(".html"):
@@ -37,7 +35,11 @@ with open(args.outputpath, 'w') as f:
                                 getDesc = True
     f.seek(-2, os.SEEK_END)
     f.truncate()
-    f.write('\n    };\n    return {\n\
-        tokens: tokens\n\
-    };\n\
-});')
+    f.write('\n};\n\
+        function getAsmOpcode(opcode) {\n\
+            return tokens[opcode.toUpperCase()];\n\
+        }\n\
+        \n\
+        module.exports = {\n\
+            getAsmOpcode: getAsmOpcode\n\
+        };\n')
