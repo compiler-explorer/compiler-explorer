@@ -40,7 +40,8 @@ var nopt = require('nopt'),
     Promise = require('promise'),
     aws = require('./lib/aws'),
     _ = require('underscore-node'),
-    logger = require('./lib/logger').logger;
+    logger = require('./lib/logger').logger,
+    asm_doc_api = require('./static/asm-docs-api');
 
 // Parse arguments from command line 'node ./app.js args...'
 var opts = nopt({
@@ -424,6 +425,7 @@ function ApiHandler(compileHandler) {
             }).join("\n"));
         }
     }, this));
+    this.handler.get('/asm/:opcode', asm_doc_api.asmDocsHandler);
     this.handler.param('compiler', _.bind(function (req, res, next, compilerName) {
         req.compiler = compilerName;
         next();
