@@ -84,7 +84,8 @@ define(function (require) {
             scrollBeyondLastLine: false,
             language: cmMode,
             readOnly: !!options.readOnly || legacyReadOnly,
-            glyphMargin: true
+            glyphMargin: true,
+            quickSuggestions: false
         });
 
         this.editor.addAction({

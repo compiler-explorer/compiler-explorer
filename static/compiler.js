@@ -103,7 +103,8 @@ define(function (require) {
             scrollBeyondLastLine: false,
             readOnly: true,
             language: 'asm',
-            glyphMargin: true
+            glyphMargin: true,
+            fixedOverflowWidgets: true
         });
 
         this.outputEditor.addAction({
