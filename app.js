@@ -405,6 +405,11 @@ function ApiHandler(compileHandler) {
         this.compilers = compilers;
     };
     this.handler = express.Router();
+    this.handler.use(function (req, res, next) {
+        res.header("Access-Control-Allow-Origin", "*");
+        res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+        next();
+    });
     this.handler.get('/compilers', _.bind(function (req, res, next) {
         if (req.accepts(['text', 'json']) == 'json') {
             res.set('Content-Type', 'application/json');
