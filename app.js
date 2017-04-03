@@ -40,7 +40,7 @@ var nopt = require('nopt'),
     Promise = require('promise'),
     aws = require('./lib/aws'),
     _ = require('underscore-node'),
-    logger = require('./lib/logger').logger
+    logger = require('./lib/logger').logger,
     asm_doc = require('./static/asm-docs');
 
 // Parse arguments from command line 'node ./app.js args...'
