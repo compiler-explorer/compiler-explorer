@@ -490,4 +490,4 @@ function getAsmOpcode(opcode) {
 
 module.exports = {
     getAsmOpcode: getAsmOpcode
-}
+};
