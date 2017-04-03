@@ -41,7 +41,7 @@ var nopt = require('nopt'),
     aws = require('./lib/aws'),
     _ = require('underscore-node'),
     logger = require('./lib/logger').logger,
-    asm_doc = require('./static/asm-docs');
+    asm_doc_api = require('./static/asm-docs-api');
 
 // Parse arguments from command line 'node ./app.js args...'
 var opts = nopt({
@@ -425,19 +425,7 @@ function ApiHandler(compileHandler) {
             }).join("\n"));
         }
     }, this));
-    this.handler.post('/asm', _.bind(function (req, res) {
-        res.set('Content-Type', 'application/json');
-        var info = asm_doc.getAsmOpcode(req.body.opcode);
-        if (!info) {
-            // If the opcode ends with an AT&T suffix, try removing that and giving it another go.
-            // Ideally, we'd be smarter here, but this is a quick win.
-            var atAndTSuffixRemover = /^([A-Z]+)[BWLQ]$/;
-            var suffixRemoved = atAndTSuffixRemover.exec(req.body.opcode);
-            if (suffixRemoved)
-                info = asm_doc.getAsmOpcode(suffixRemoved[1]);
-        }
-        res.end(JSON.stringify(info));
-    }, this));
+    this.handler.get('/asm/:opcode', asm_doc_api.asmDocsHandler);
     this.handler.param('compiler', _.bind(function (req, res, next, compilerName) {
         req.compiler = compilerName;
         next();

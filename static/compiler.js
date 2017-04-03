@@ -558,13 +558,10 @@ define(function (require) {
     var getAsmInfo = function (opcode) {
         var promise = new Promise(function(resolve, reject) {
             $.ajax({
-                type: 'POST',
-                url: 'api/asm',
+                type: 'GET',
+                url: 'api/asm/' + opcode ,
                 dataType: 'json',  // Expected,
-                data: JSON.stringify({
-                    "opcode": opcode,
-                }),
-                contentType: 'application/json',  // Sent
+                contentType: 'text/plain',  // Sent
                 success: function(result) {
                     resolve(result);
                 },
