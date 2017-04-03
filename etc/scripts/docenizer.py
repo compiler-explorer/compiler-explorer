@@ -37,7 +37,10 @@ with open(args.outputpath, 'w') as f:
     f.truncate()
     f.write('\n};\n\
         function getAsmOpcode(opcode) {\n\
-            return tokens[opcode.toUpperCase()];\n\
+            if (!opcode) return;\n\
+            var token = tokens[opcode.toUpperCase()];\n\
+            token.opcode = opcode;\n\
+            return token;\n\
         }\n\
         \n\
         module.exports = {\n\
