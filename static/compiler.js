@@ -636,7 +636,7 @@ define(function (require) {
                 });
             }
         );
-    }
+    };
 
     return {
         Compiler: Compiler
