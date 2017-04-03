@@ -616,7 +616,7 @@ define(function (require) {
         var pos = ed.getPosition();
         var word = ed.getModel().getWordAtPosition(pos);
         if (!word || !word.word) return;
-        var opcode = word.word;
+        var opcode = word.word.toUpperCase();
         getAsmInfo(opcode).then(_.bind(function(asmHelp) {
             if (asmHelp) {
                 new Alert().alert(opcode + " help", asmHelp.html +
