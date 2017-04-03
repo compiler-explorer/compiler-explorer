@@ -485,7 +485,9 @@ var tokens = {
 
 function getAsmOpcode(opcode) {
     if (!opcode) return;
-    return tokens[opcode.toUpperCase()];
+    var token = tokens[opcode.toUpperCase()];
+    token.opcode = opcode;
+    return token;
 }
 
 module.exports = {
