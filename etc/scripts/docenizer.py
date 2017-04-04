@@ -39,7 +39,7 @@ with open(args.outputpath, 'w') as f:
         function getAsmOpcode(opcode) {\n\
             if (!opcode) return;\n\
             var token = tokens[opcode.toUpperCase()];\n\
-            token.opcode = opcode;\n\
+            if (token) token.opcode = opcode;\n\
             return token;\n\
         }\n\
         \n\

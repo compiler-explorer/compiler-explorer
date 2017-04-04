@@ -558,17 +558,17 @@ define(function (require) {
     }
 
     var getAsmInfo = function (opcode) {
-        var promise = new Promise(function(resolve, reject) {
+        var promise = new Promise(function (resolve, reject) {
             $.ajax({
                 type: 'GET',
-                url: 'api/asm/' + opcode ,
+                url: 'api/asm/' + opcode,
                 dataType: 'json',  // Expected,
                 contentType: 'text/plain',  // Sent
-                success: function(result) {
+                success: function (result) {
                     resolve(result);
                 },
                 error: function (result) {
-                   reject(result);
+                    reject(result);
                 },
                 cache: true
             });
@@ -611,6 +611,14 @@ define(function (require) {
                 } else {
                     // Update to the new range if the words are the same...
                     this.decorations.asmToolTip.range = e.target.range;
+                getAsmInfo(currentWord.word).then(_.bind(function (response) {
+                    this.decorations.asmToolTip = {
+                        range: e.target.range,
+                        options: {
+                            isWholeLine: false,
+                            hoverMessage: [response.tooltip + " More information available in the context menu."]
+                        }
+                    };
                     this.updateDecorations();
                 }
             }
@@ -623,18 +631,18 @@ define(function (require) {
         var word = ed.getModel().getWordAtPosition(pos);
         if (!word || !word.word) return;
         var opcode = word.word.toUpperCase();
-        getAsmInfo(opcode).then(_.bind(function(asmHelp) {
-            if (asmHelp) {
-                new Alert().alert(opcode + " help", asmHelp.html +
-                    '<br><br>For more information, visit <a href="http://www.felixcloutier.com/x86/' + asmHelp.url + '" target="_blank" rel="noopener noreferrer">the ' +
-                    opcode + ' documentation <span class="glyphicon glyphicon-new-window" width="16px" height="16px" title="Opens in a new window"/></span></a>.',
-                    function () {
-                        ed.focus();
-                        ed.setPosition(pos);
-                    }
-                );
-            }
-        }), function(rejection) {
+        getAsmInfo(opcode).then(_.bind(function (asmHelp) {
+                if (asmHelp) {
+                    new Alert().alert(opcode + " help", asmHelp.html +
+                        '<br><br>For more information, visit <a href="http://www.felixcloutier.com/x86/' + asmHelp.url + '" target="_blank" rel="noopener noreferrer">the ' +
+                        opcode + ' documentation <span class="glyphicon glyphicon-new-window" width="16px" height="16px" title="Opens in a new window"/></span></a>.',
+                        function () {
+                            ed.focus();
+                            ed.setPosition(pos);
+                        }
+                    );
+                }
+            }), function (rejection) {
                 new Alert().notify('This token was not found in the documentation.<br>Only <i>most</i> <b>Intel x86</b> opcodes supported for now.', {
                     group: "notokenindocs",
                     alertClass: "notification-error",
