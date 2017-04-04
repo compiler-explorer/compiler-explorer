@@ -558,12 +558,12 @@ define(function (require) {
     var opcodeLike = /^[a-zA-Z][a-zA-Z0-9_.]+$/; // at least two characters
     var getAsmInfo = function (opcode) {
         if (!opcodeLike.exec(opcode)) {
-            return Promise.reject("Not an opcode");
+            return Promise.resolve(null);
         }
         var cacheName = "asm/" + opcode;
         var cached = Cache.get(cacheName);
         if (cached) {
-            return Promise.resolve(cached);
+            return Promise.resolve(cached.found ? cached.result : null);
         }
         var promise = new Promise(function (resolve, reject) {
             $.ajax({
@@ -573,7 +573,7 @@ define(function (require) {
                 contentType: 'text/plain',  // Sent
                 success: function (result) {
                     Cache.set(cacheName, result);
-                    resolve(result);
+                    resolve(result.found ? result.result : null);
                 },
                 error: function (result) {
                     reject(result);
@@ -606,14 +606,16 @@ define(function (require) {
 
             if (this.settings.hoverShowAsmDoc === true) {
                 getAsmInfo(currentWord.word).then(_.bind(function (response) {
-                    this.decorations.asmToolTip = {
-                        range: e.target.range,
-                        options: {
-                            isWholeLine: false,
-                            hoverMessage: [response.tooltip + " More information available in the context menu."]
-                        }
-                    };
-                    this.updateDecorations();
+                    if (response) {
+                        this.decorations.asmToolTip = {
+                            range: e.target.range,
+                            options: {
+                                isWholeLine: false,
+                                hoverMessage: [response.tooltip + " More information available in the context menu."]
+                            }
+                        };
+                        this.updateDecorations();
+                    }
                 }, this));
             }
         }
@@ -623,8 +625,7 @@ define(function (require) {
         var pos = ed.getPosition();
         var word = ed.getModel().getWordAtPosition(pos);
         if (!word || !word.word) return;
-        var opcode = word.word.toUpperCase();
-        getAsmInfo(opcode).then(_.bind(function (asmHelp) {
+        getAsmInfo(word.word).then(_.bind(function (asmHelp) {
                 if (asmHelp) {
                     new Alert().alert(opcode + " help", asmHelp.html +
                         '<br><br>For more information, visit <a href="http://www.felixcloutier.com/x86/' + asmHelp.url + '" target="_blank" rel="noopener noreferrer">the ' +
@@ -634,9 +635,15 @@ define(function (require) {
                             ed.setPosition(pos);
                         }
                     );
+                } else {
+                    new Alert().notify('This token was not found in the documentation.<br>Only <i>most</i> <b>Intel x86</b> opcodes supported for now.', {
+                        group: "notokenindocs",
+                        alertClass: "notification-error",
+                        dismissTime: 3000
+                    });
                 }
             }), function (rejection) {
-                new Alert().notify('This token was not found in the documentation.<br>Only <i>most</i> <b>Intel x86</b> opcodes supported for now.', {
+                new Alert().notify('There was an error fetching the documentation for this opcode (' + rejection + ').', {
                     group: "notokenindocs",
                     alertClass: "notification-error",
                     dismissTime: 3000
