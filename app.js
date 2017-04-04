@@ -24,24 +24,22 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 // POSSIBILITY OF SUCH DAMAGE.
 
-// load external and internal libraries (will load more internal binaries later)
+// Initialise options and properties. Don't load any handlers here; they
+// may need an initialised properties library.
 var nopt = require('nopt'),
     os = require('os'),
     props = require('./lib/properties'),
-    CompileHandler = require('./lib/compile-handler').CompileHandler,
-    express = require('express'),
     child_process = require('child_process'),
     path = require('path'),
     fs = require('fs-extra'),
     http = require('http'),
     https = require('https'),
     url = require('url'),
-    utils = require('./lib/utils'),
     Promise = require('promise'),
-    aws = require('./lib/aws'),
     _ = require('underscore-node'),
-    logger = require('./lib/logger').logger,
-    asm_doc_api = require('./lib/asm-docs-api');
+    utils = require('./lib/utils'),
+    express = require('express'),
+    logger = require('./lib/logger').logger;
 
 // Parse arguments from command line 'node ./app.js args...'
 var opts = nopt({
@@ -88,6 +86,11 @@ if (opts.propDebug) props.setDebug(true);
 
 // *All* files in config dir are parsed 
 props.initialize(rootDir + '/config', propHierarchy);
+
+// Now load up our libraries.
+var CompileHandler = require('./lib/compile-handler').CompileHandler,
+    aws = require('./lib/aws'),
+    asm_doc_api = require('./lib/asm-docs-api');
 
 // Instantiate a function to access records concerning "compiler-explorer" 
 // in hidden object props.properties
