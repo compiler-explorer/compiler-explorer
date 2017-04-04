@@ -77,8 +77,6 @@ define(function (require) {
         this.decorations = {};
         this.prevDecorations = [];
 
-        this.previousWord = "";
-
         this.domRoot.find(".compiler-picker").selectize({
             sortField: 'name',
             valueField: 'id',
@@ -597,25 +595,18 @@ define(function (require) {
             }
 
             if (this.settings.hoverShowAsmDoc === true) {
-                if (!this.previousWord || this.previousWord.word !== currentWord.word) {
-                    getAsmInfo(currentWord.word).then(_.bind(function(response) {
-                        this.decorations.asmToolTip = {
-                            range: e.target.range,
-                            options: {
-                                isWholeLine: false,
-                                hoverMessage: [response.tooltip + " More information available in the context menu."]
-                            }
-                        };
-                        this.updateDecorations();
-                    }, this));
-                } else {
-                    // Update to the new range if the words are the same...
-                    this.decorations.asmToolTip.range = e.target.range;
+                getAsmInfo(currentWord.word).then(_.bind(function(response) {
+                    this.decorations.asmToolTip = {
+                        range: e.target.range,
+                        options: {
+                            isWholeLine: false,
+                            hoverMessage: [response.tooltip + " More information available in the context menu."]
+                        }
+                    };
                     this.updateDecorations();
-                }
+                }, this));
             }
         }
-        this.previousWord = currentWord;
     };
 
     Compiler.prototype.onAsmToolTip = function (ed) {
