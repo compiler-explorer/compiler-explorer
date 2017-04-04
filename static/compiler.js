@@ -555,7 +555,16 @@ define(function (require) {
         return null;
     }
 
+    var opcodeLike = /^[a-zA-Z][a-zA-Z0-9_.]+$/; // at least two characters
     var getAsmInfo = function (opcode) {
+        if (!opcodeLike.exec(opcode)) {
+            return Promise.reject("Not an opcode");
+        }
+        var cacheName = "asm/" + opcode;
+        var cached = Cache.get(cacheName);
+        if (cached) {
+            return cached;
+        }
         var promise = new Promise(function (resolve, reject) {
             $.ajax({
                 type: 'GET',
@@ -563,6 +572,7 @@ define(function (require) {
                 dataType: 'json',  // Expected,
                 contentType: 'text/plain',  // Sent
                 success: function (result) {
+                    Cache.set(cacheName, result);
                     resolve(result);
                 },
                 error: function (result) {
@@ -595,7 +605,7 @@ define(function (require) {
             }
 
             if (this.settings.hoverShowAsmDoc === true) {
-                getAsmInfo(currentWord.word).then(_.bind(function(response) {
+                getAsmInfo(currentWord.word).then(_.bind(function (response) {
                     this.decorations.asmToolTip = {
                         range: e.target.range,
                         options: {
