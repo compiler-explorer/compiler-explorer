@@ -611,14 +611,6 @@ define(function (require) {
                 } else {
                     // Update to the new range if the words are the same...
                     this.decorations.asmToolTip.range = e.target.range;
-                getAsmInfo(currentWord.word).then(_.bind(function (response) {
-                    this.decorations.asmToolTip = {
-                        range: e.target.range,
-                        options: {
-                            isWholeLine: false,
-                            hoverMessage: [response.tooltip + " More information available in the context menu."]
-                        }
-                    };
                     this.updateDecorations();
                 }
             }
