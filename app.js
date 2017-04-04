@@ -41,7 +41,7 @@ var nopt = require('nopt'),
     aws = require('./lib/aws'),
     _ = require('underscore-node'),
     logger = require('./lib/logger').logger,
-    asm_doc_api = require('./static/asm-docs-api');
+    asm_doc_api = require('./lib/asm-docs-api');
 
 // Parse arguments from command line 'node ./app.js args...'
 var opts = nopt({
