@@ -563,7 +563,7 @@ define(function (require) {
         var cacheName = "asm/" + opcode;
         var cached = Cache.get(cacheName);
         if (cached) {
-            return cached;
+            return Promise.resolve(cached);
         }
         var promise = new Promise(function (resolve, reject) {
             $.ajax({
