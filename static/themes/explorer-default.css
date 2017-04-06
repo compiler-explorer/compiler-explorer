@@ -1,0 +1,10 @@
+@import url("../ext/golden-layout/src/css/goldenlayout-light-theme.css");
+
+.navbar-inverse {
+    background-color: #226;
+}
+
+.navbar-inverse .navbar-brand {
+    color: #ddd;
+    font-weight: bold;
+}
