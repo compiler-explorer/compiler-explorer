@@ -103,7 +103,8 @@ define(function (require) {
             readOnly: true,
             language: 'asm',
             glyphMargin: true,
-            fixedOverflowWidgets: true
+            fixedOverflowWidgets: true,
+            theme: this.settings.themeDark ? "vs-dark" : "vs"
         });
 
         this.outputEditor.addAction({
@@ -157,6 +158,7 @@ define(function (require) {
         this.eventHub.on('findCompilers', this.sendCompiler, this);
         this.eventHub.on('compilerSetDecorations', this.onCompilerSetDecorations, this);
         this.eventHub.on('settingsChange', this.onSettingsChange, this);
+        this.eventHub.on('themeChange', this.onThemeChange, this);
         this.eventHub.emit('requestSettings');
         this.sendCompiler();
         this.updateCompilerName();
@@ -537,9 +539,9 @@ define(function (require) {
     };
 
     Compiler.prototype.onSettingsChange = function (newSettings) {
-        var lastHoverShowSource = this.settings.hoverShowSource;
+        var before = this.settings;
         this.settings = _.clone(newSettings);
-        if (!lastHoverShowSource && this.settings.hoverShowSource) {
+        if (!before.lastHoverShowSource && this.settings.hoverShowSource) {
             this.onCompilerSetDecorations(this.id, []);
         }
     };
@@ -652,6 +654,11 @@ define(function (require) {
                 });
             }
         );
+    };
+
+    Compiler.prototype.onThemeChange = function (newTheme) {
+        if (this.outputEditor)
+            this.outputEditor.updateOptions({theme: newTheme.monaco});
     };
 
     return {

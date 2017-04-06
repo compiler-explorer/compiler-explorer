@@ -104,7 +104,7 @@ define(function (require) {
         this.eventHub.on('compileResult', this.onCompileResult, this);
         this.eventHub.on('compiler', this.onCompiler, this);
         this.eventHub.on('compilerClose', this.onCompilerClose, this);
-
+        this.eventHub.on('themeChange', this.onThemeChange, this);
         this.container.on('destroy', function () {
             this.eventHub.unsubscribe();
             this.outputEditor.dispose();
@@ -208,6 +208,16 @@ define(function (require) {
         this.fontScale.addState(state);
         this.container.setState(state);
     };
+
+    Diff.prototype.onCompilerClose = function (id) {
+        delete this.compilers[id];
+        this.updateCompilers();
+    };
+
+    Diff.prototype.onThemeChange = function (newTheme) {
+        if (this.outputEditor)
+            this.outputEditor.updateOptions({theme: newTheme.monaco});
+    }
 
     return {
         Diff: Diff,

@@ -26,6 +26,7 @@
 define(function (require) {
     var _ = require('underscore');
     var colour = require('./colour');
+    var themes = require('./themes').themes;
 
     function Setting(elem, name, Control, param) {
         this.elem = elem;
@@ -124,6 +125,11 @@ define(function (require) {
         });
         add(root.find('.hoverShowSource'), 'hoverShowSource', true, Checkbox);
         add(root.find('.hoverShowAsmDoc'), 'hoverShowAsmDoc', true, Checkbox);
+        add(root.find('.theme'), 'theme', themes.default.name, Select,
+            _.map(themes, function (theme) {
+                return {label: theme.id, desc: theme.name};
+            })
+        );
 
         function setSettings(settings) {
             onSettingsChange(settings);
@@ -135,5 +141,4 @@ define(function (require) {
     }
 
     return setupSettings;
-})
-;
+});
