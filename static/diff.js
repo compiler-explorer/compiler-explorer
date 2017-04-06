@@ -217,7 +217,7 @@ define(function (require) {
     Diff.prototype.onThemeChange = function (newTheme) {
         if (this.outputEditor)
             this.outputEditor.updateOptions({theme: newTheme.monaco});
-    }
+    };
 
     return {
         Diff: Diff,
