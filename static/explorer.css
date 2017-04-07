@@ -18,12 +18,7 @@
     min-width: 5em;
 }
 
-.navbar-inverse {
-    background-color: #226;
-}
-
 .navbar-inverse .navbar-brand {
-    color: #ddd;
     font-weight: bold;
 }
 
@@ -37,12 +32,7 @@
     font-size: x-small;
     font-weight: bold;
     text-align: center;
-    background-color: rgba(128, 128, 128, 0.5);
     border-radius: 5px;
-}
-
-.float-link:hover {
-    background-color: rgba(128, 128, 160, 0.5);
 }
 
 .template {
@@ -98,12 +88,6 @@ input.options {
     overflow: hidden;
 }
 
-.btn.active {
-    color: #fff !important;
-    border-color: #46b8da !important;
-    background-color: #5bc0de !important;
-}
-
 .address {
     width: 5em;
     font-size: smaller;
@@ -119,30 +103,11 @@ input.options {
 }
 
 .opcode {
-    color: #066;
     margin-right: 0.2em;
 }
 
-.opcode:nth-child(odd) {
-    color: #060;
-}
-
 .highlighted {
-    background-color: rgba(255, 0, 0, 0.2);
-    color: #0000b0;
     font-weight: bold;
-}
-
-.decrease-font-size span.glyphicon {
-    font-size: 70%;
-}
-
-.reset-font-size span.glyphicon {
-    font-size: 90%;
-}
-
-.increase-font-size span.glyphicon {
-    font-size: 110%;
 }
 
 .lm_splitter.lm_vertical .lm_drag_handle {
@@ -171,31 +136,14 @@ pre.content {
     font-style: italic;
 }
 
-.small-v-scrollable {
-    max-height: 8em;
-    overflow-y: auto;
-}
-
 .linked-code-decoration {
-    background: lightblue;
     width: 5px !important;
     left: 3px;
 }
 
-.font-option {
-    background: white;
-}
-
-.font-option:hover {
-    background: lightblue;
-}
-
-.font-option-active {
-    background: #226699 !important;
-}
-
-.font-option-active:hover {
-    background: #4477AA !important;
+.small-v-scrollable {
+    max-height: 8em;
+    overflow-y: auto;
 }
 
 #notifications {
@@ -208,21 +156,5 @@ pre.content {
 .notification {
     padding: 5px;
     border-radius: 5px;
-    background-color: cornflowerblue;
-    color: black;
-}
-
-.notification-error {
-    background-color: indianred;
-    color: white;
-}
-
-.notification-on {
-    background-color: green;
-    color: black;
-}
-
-.notification-off {
-    background-color: gray;
     color: black;
 }

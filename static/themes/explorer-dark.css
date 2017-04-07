@@ -5,6 +5,91 @@
 }
 
 .navbar-inverse .navbar-brand {
-    color: #ddd;
-    font-weight: bold;
+    color: #aaa!important;
+}
+
+.float-link {
+    background-color: rgba(128, 128, 128, 0.5)!important;
+}
+
+.float-link:hover {
+    background-color: rgba(128, 128, 160, 0.5);
+}
+
+.btn {
+    color: #fff !important;
+    border-color: #444 !important;
+    background-color: #222 !important;
+}
+
+.btn.active {
+    color: #eee !important;
+    border-color: #555 !important;
+    background-color: #666 !important;
+}
+
+.opcode {
+    color: #066 !important;
+}
+
+.opcode:nth-child(odd) {
+    color: #060;
+}
+
+.highlighted {
+    background-color: rgba(255, 0, 0, 0.2) !important;
+    color: #0000b0 !important;
+}
+
+.linked-code-decoration {
+    background: #555657!important;
+}
+
+.dropdown-menu {
+    color: #333;
+    background-color: #666;
+}
+
+.selectize-dropdown {
+    color: #aaa !important;
+    background-color: #666 !important;
+}
+
+.font-option {
+    background: #666;
+}
+
+.font-option:hover {
+    background: #887788;
+}
+
+.font-option-active {
+    background: #474747 !important;
+}
+
+.font-option-active:hover {
+    background: #595959 !important;
+}
+
+.notification {
+    background-color: gray;
+}
+
+.notification-error {
+    background-color: #aa3333 !important;
+    color: #000;
+}
+
+.notification-on {
+    background-color: #33aa33 !important;
+    color: black;
+}
+
+.notification-off {
+    background-color: #222 !important;
+    color: #fff;
+}
+
+.divider {
+    background-color: #111!important;
 }
