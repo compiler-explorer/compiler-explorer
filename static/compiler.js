@@ -630,7 +630,7 @@ define(function (require) {
             _.bind(function (asmHelp) {
                 if (asmHelp) {
                     new Alert().alert(opcode + " help", asmHelp.html +
-                        '<br><br>For more information, visit <a href="http://www.felixcloutier.com/x86/' + asmHelp.url + '" target="_blank" rel="noopener noreferrer">the ' +
+                        '<br><br>For more information, visit <a href="' + asmHelp.url + '" target="_blank" rel="noopener noreferrer">the ' +
                         opcode + ' documentation <span class="glyphicon glyphicon-new-window" width="16px" height="16px" title="Opens in a new window"/></span></a>.',
                         function () {
                             ed.focus();
