@@ -274,6 +274,7 @@ define(function (require) {
 
     Compiler.prototype.getBinaryForLine = function (line) {
         var obj = this.assembly[line - 1];
+        if (!obj) return '<div class="address">????</div><div class="opcodes"><span class="opcode">????</span></div>';
         var address = obj.address ? obj.address.toString(16) : "";
         var opcodes = '<div class="opcodes" title="' + (obj.opcodes || []).join(" ") + '">';
         _.each(obj.opcodes, function (op) {
