@@ -16,16 +16,23 @@
     background-color: rgba(128, 128, 160, 0.5);
 }
 
-/*.btn {
-    color:  !important;
-    border-color: !important;
-    background-color:  !important;
-}   USING DEFAULT BOOTSTRAP*/
+.btn {
+    color: #000 !important;
+    border-color: #fff !important;
+    background-color: #fff !important;
+}
+
+.btn:hover {
+    color: #000 !important;
+    border-color: #000 !important;
+    background-color: #fff !important;
+    text-decoration: underline !important;
+}
 
 .btn.active {
     color: #fff !important;
-    border-color: #46b8da !important;
-    background-color: #5bc0de !important;
+    border-color: #fff !important;
+    background-color: #000 !important;
 }
 
 .opcode {
@@ -48,6 +55,15 @@
 .dropdown-menu {
     color: #fff;
     background-color: #000;
+    border: 1px solid #fff !important;
+}
+
+.dropdown-menu a {
+    color: #fff !important;
+}
+
+.dropdown-menu a:hover {
+    color: #000 !important;
 }
 
 .selectize-dropdown {
@@ -56,7 +72,8 @@
 }
 
 .font-option {
-    background: white;
+    background: #000;
+    border: 1 px solid #fff !important;
 }
 
 .font-option:hover {
