@@ -10,6 +10,11 @@
     margin-left: 0;
 }
 
+/* TEMP HACK: https://github.com/Microsoft/monaco-editor/issues/408 */
+.monaco-editor .monaco-editor-hover {
+    animation: none !important;
+}
+
 .navbar {
     border-radius: 0;
     margin-bottom: 2px;
