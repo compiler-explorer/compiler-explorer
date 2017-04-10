@@ -42,7 +42,7 @@
 }
 
 .linked-code-decoration {
-    background: #555657!important;
+    background: #555657 !important;
 }
 
 .dropdown-menu {
@@ -92,4 +92,34 @@
 
 .divider {
     background-color: #111!important;
+}
+
+.modal-content {
+    color: #aaa !important;
+    background-color: #333 !important;
+    border: 1px solid #fff !important;
+}
+
+.modal-content .well {
+    background-color: #333 !important;
+}
+
+.modal-content select {
+    color: #aaa !important;
+    background-color: #333 !important;
+}
+
+.modal-content .close {
+    color: #aaa !important;
+    opacity: 0.8 !important;
+}
+
+pre.content {
+    color: #aaa !important;
+    background-color: #333 !important;
+}
+
+.bottom-bar {
+    color: #aaa !important;
+    background-color: #333 !important;
 }

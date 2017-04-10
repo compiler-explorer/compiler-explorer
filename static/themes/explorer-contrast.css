@@ -130,3 +130,13 @@
     color: #fff !important;
     opacity: 0.8 !important;
 }
+
+pre.content {
+    color: #fff !important;
+    background-color: #000 !important;
+}
+
+.bottom-bar {
+    color: #fff !important;
+    background-color: #000 !important;
+}
