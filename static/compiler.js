@@ -103,8 +103,7 @@ define(function (require) {
             readOnly: true,
             language: 'asm',
             glyphMargin: true,
-            fixedOverflowWidgets: true,
-            theme: this.settings.themeDark ? "vs-dark" : "vs"
+            fixedOverflowWidgets: true
         });
 
         this.outputEditor.addAction({

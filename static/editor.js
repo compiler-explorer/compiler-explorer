@@ -85,8 +85,7 @@ define(function (require) {
             language: cmMode,
             readOnly: !!options.readOnly || legacyReadOnly,
             glyphMargin: true,
-            quickSuggestions: false,
-            theme: this.settings.themeDark ? "vs-dark" : "vs"
+            quickSuggestions: false
         });
 
         this.editor.addAction({
