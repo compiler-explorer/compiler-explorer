@@ -152,3 +152,21 @@
 .green-blue-3 {
     background: rgba(51, 160, 44, 0.35) !important;
 }
+
+/* Gray shades */
+.gray-shade-0 {
+    background: rgba(22, 33, 22, 0.35) !important;
+}
+
+.gray-shade-1 {
+     background: rgba(99, 99, 99, 0.35) !important;
+}
+
+/* High contrast friendly */
+.high-contrast-0 {
+     background: rgba(5, 5, 255, 0.35) !important;
+}
+
+.high-contrast-1 {
+    background: rgba(5, 255, 5, 0.35) !important;
+}
