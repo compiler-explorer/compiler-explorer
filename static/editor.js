@@ -117,7 +117,7 @@ define(function (require) {
             }, this)
         });
 
-        function tryCompilerSelectLine(thisLineNumber) {
+        function tryCompilerSelectLine(thisLineNumber, reveal) {
             _.each(self.asmByCompiler, function (asms, compilerId) {
                 var targetLines = [];
                 _.each(asms, function (asmLine, i) {
@@ -125,25 +125,25 @@ define(function (require) {
                         targetLines.push(i + 1);
                     }
                 });
-                self.eventHub.emit('compilerSetDecorations', compilerId, targetLines);
+                self.eventHub.emit('compilerSetDecorations', compilerId, targetLines, reveal);
             });
         }
 
         this.editor.addAction({
             id: 'viewasm',
-            label: 'Highlight assembly',
+            label: 'Scroll to assembly',
             keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.F10],
             keybindingContext: null,
             contextMenuGroupId: 'navigation',
             contextMenuOrder: 1.5,
             run: function (ed) {
-                tryCompilerSelectLine(ed.getPosition().lineNumber);
+                tryCompilerSelectLine(ed.getPosition().lineNumber, true);
             }
         });
 
         this.mouseMoveThrottledFunction = _.throttle(function (e) {
                 if (e !== null && e.target !== null && self.settings.hoverShowSource === true && e.target.position !== null) {
-                    tryCompilerSelectLine(e.target.position.lineNumber);
+                    tryCompilerSelectLine(e.target.position.lineNumber, false);
                 }
             },
             250
@@ -275,7 +275,7 @@ define(function (require) {
         }
 
         if (before.hoverShowSource && !after.hoverShowSource) {
-            this.onEditorSetDecoration(this.id, -1);
+            this.onEditorSetDecoration(this.id, -1, false);
         }
 
         this.numberUsedLines();
@@ -357,8 +357,10 @@ define(function (require) {
         }
     };
 
-    Editor.prototype.onEditorSetDecoration = function (id, lineNum) {
+    Editor.prototype.onEditorSetDecoration = function (id, lineNum, reveal) {
         if (id === this.id) {
+            if (reveal)
+                this.editor.revealLineInCenter(lineNum);
             this.decorations = this.editor.deltaDecorations(this.decorations,
                 lineNum === -1 || lineNum === null ? [] : [
                         {
