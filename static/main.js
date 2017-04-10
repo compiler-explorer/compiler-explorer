@@ -78,7 +78,7 @@ define(function (require) {
         }
 
         new themer.Themer(eventHub);
-        themer.setupThemes();
+
         eventHub.on('requestSettings', function () {
             eventHub.emit('settingsChange', currentSettings);
         });
@@ -181,7 +181,7 @@ define(function (require) {
             return Components.getDiff();
         });
         setupAdd($('#add-editor'), function () {
-            return Components.getEditor();
+            return Components.getEditor();;
         });
 
         $('#ui-reset').click(function () {

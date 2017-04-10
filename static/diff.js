@@ -115,6 +115,7 @@ define(function (require) {
         this.eventHub.emit('resendCompilation', this.lhs.id);
         this.eventHub.emit('resendCompilation', this.rhs.id);
         this.eventHub.emit('findCompilers');
+        this.eventHub.emit('requestTheme');
 
         this.updateCompilerNames();
         this.updateCompilers();

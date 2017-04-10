@@ -213,6 +213,7 @@ define(function (require) {
         this.eventHub.on('settingsChange', this.onSettingsChange, this);
         this.eventHub.on('themeChange', this.onThemeChange, this);
         this.eventHub.emit('requestSettings');
+        this.eventHub.emit('requestTheme');
 
         // NB a new compilerConfig needs to be created every time; else the state is shared
         // between all compilers created this way. That leads to some nasty-to-find state

@@ -16,12 +16,6 @@
     background-color: rgba(128, 128, 160, 0.5);
 }
 
-/*.btn {
-    color:  !important;
-    border-color: !important;
-    background-color:  !important;
-}   USING DEFAULT*/
-
 .btn.active {
     color: #fff !important;
     border-color: #46b8da !important;
@@ -44,16 +38,6 @@
 .linked-code-decoration {
     background: lightblue !important;
 }
-
-/*.dropdown-menu {
-    color: ;
-    background-color: ;
-}  
-
-.selectize-dropdown {
-    color: !important;
-    background-color: !important;
-} USING DEFAULT*/
 
 .font-option {
     background: white;
@@ -89,7 +73,3 @@
     background-color: gray !important;
     color: black;
 }
-
-/*.divider {
-    background-color: !important;
-} USING DEFAULT*/

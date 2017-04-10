@@ -51,6 +51,14 @@ define(function (require) {
         this.currentTheme = null;
         this.eventHub = eventHub;
 
+        var head = $('head');
+        _.each(themes, function (theme) {
+            // Disable all by default
+            var newElement = $('<link rel="stylesheet" type="text/css" href="' + theme.path + '" data-is="theme" data-theme="' + theme.id + '">');
+            newElement.disabled = true;
+            head.append(newElement);
+        });
+
         this.eventHub.on('settingsChange', function (newSettings) {
             var newTheme = themes[newSettings.theme];
             if (!newTheme) return;
@@ -64,21 +72,14 @@ define(function (require) {
                 this.currentTheme = newTheme;
             }
         }, this);
-    }
 
-    function setup() {
-        var head = $('head');
-        _.each(themes, function (theme) {
-            // Disable all by default
-            var newElement = $('<link rel="stylesheet" type="text/css" href="' + theme.path + '" data-is="theme" data-theme="' + theme.id + '">');
-            newElement.disabled = true;
-            head.append(newElement);
-        });
+        this.eventHub.on('requestTheme', function () {
+            this.eventHub.emit('themeChange', this.currentTheme);
+        }, this);
     }
 
     return {
         themes: themes,
-        Themer: Themer,
-        setupThemes: setup
+        Themer: Themer
     };
 });

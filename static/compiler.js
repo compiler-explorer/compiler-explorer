@@ -160,6 +160,7 @@ define(function (require) {
         this.eventHub.on('settingsChange', this.onSettingsChange, this);
         this.eventHub.on('themeChange', this.onThemeChange, this);
         this.eventHub.emit('requestSettings');
+        this.eventHub.emit('requestTheme');
         this.sendCompiler();
         this.updateCompilerName();
         this.updateButtons();
