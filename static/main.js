@@ -181,7 +181,7 @@ define(function (require) {
             return Components.getDiff();
         });
         setupAdd($('#add-editor'), function () {
-            return Components.getEditor();;
+            return Components.getEditor();
         });
 
         $('#ui-reset').click(function () {
