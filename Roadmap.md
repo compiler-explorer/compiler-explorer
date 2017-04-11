@@ -2,7 +2,7 @@
 
 CE was started in 2012 to serve my needs at [my company](http:/drw.com) in terms of showing how
 C++ constructs translated to assembly code. It started out as a `tmux` session with `vi` running in one
-pane and `watch gcc -S foo.cc -o -` running in the other. Since those days it's now a public website
+panel and `watch gcc -S foo.cc -o -` running in the other. Since those days, it's now a public website
 serving the C++, Rust, Go and D communities and performs around 20,000 compilations per day.
 
 This document is an attempt to capture thoughts on the future direction of Compiler Explorer.
@@ -25,16 +25,13 @@ look at tweeted links rather than author content.
 
 The UI has a number of things that need improving:
 
-* Multiple editor windows
-* Saving and restoring from browser-local storage
-* Handling the loss of data if one has a work-in-progress CE window open and then clicks another CE link.
+- [X] Multiple editor windows
+- [ ] Saving and restoring from browser-local storage
+- [ ] Handling the loss of data if one has a work-in-progress CE window open and then clicks another CE link.
 
 ### Diff view
 
-A frequently requested feature is to be able to diff output. A large patch was provided by @Voxelf which
-helped spur on the development of the new UI, but the diff view he created has yet to be merged. There's
-a possibility that moving to the [Monaco](https://microsoft.github.io/monaco-editor/) editor will not only
-give a better editing experience, but also bring pretty much free diff windows out of the box.
+A frequently requested feature that arrived with the inclusion of the [Monaco](https://microsoft.github.io/monaco-editor/) editor.
 
 ### Execution support
 
@@ -64,17 +61,17 @@ Above all, the priority is to keep the main CE site up, stable and dependable. A
 added honestly in the order that is most useful and interesting to the primary developer (Matt Godbolt).
 
 ## Non-goals
-
 CE will remain ad-free, open-source and non-commercial. There's no plans at all to add "freemium" content.
 
 ## 2017 goals
 
 With all this in mind, the tentative goals for 2017 are:
 
-* Move to the Monaco editor
-  * Implement diff view
-* Come up with a decent secure solution for code execution
-* Design an API that can handle remote code execution and download needs
-* Implement remote execution UIs
+- [X] Move to the Monaco editor
+   
+   - [X] Implement diff view
+- [ ] Come up with a decent secure solution for code execution
+- [ ] Design an API that can handle remote code execution and download needs
+- [ ] Implement remote execution UIs
 
 These goals will be refined as time ticks on.
