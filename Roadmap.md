@@ -26,7 +26,7 @@ look at tweeted links rather than author content.
 The UI has a number of things that need improving:
 
 - [X] Multiple editor windows
-- [ ] Saving and restoring from browser-local storage
+- [X] Saving and restoring from browser-local storage
 - [ ] Handling the loss of data if one has a work-in-progress CE window open and then clicks another CE link.
 
 ### Diff view
@@ -68,7 +68,6 @@ CE will remain ad-free, open-source and non-commercial. There's no plans at all 
 With all this in mind, the tentative goals for 2017 are:
 
 - [X] Move to the Monaco editor
-   
    - [X] Implement diff view
 - [ ] Come up with a decent secure solution for code execution
 - [ ] Design an API that can handle remote code execution and download needs
