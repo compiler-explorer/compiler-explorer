@@ -130,6 +130,12 @@ define(function (require) {
             onChange(settings);
         }
 
+        add(root.find('.tabWidth'), 'tabWidth', 2, Select,
+            _.map([2, 4, 8], function (size) {
+                return {label: size, desc: size};
+            })
+        );
+
         setSettings(settings);
         return setSettings;
     }
