@@ -108,14 +108,14 @@ define(function (require) {
 
         this.outputEditor.addAction({
             id: 'viewsource',
-            label: 'Highlight source',
+            label: 'Scroll to source',
             keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.F10],
             keybindingContext: null,
             contextMenuGroupId: 'navigation',
             contextMenuOrder: 1.5,
             run: function (ed) {
                 var desiredLine = ed.getPosition().lineNumber - 1;
-                self.eventHub.emit('editorSetDecoration', self.sourceEditorId, self.assembly[desiredLine].source);
+                self.eventHub.emit('editorSetDecoration', self.sourceEditorId, self.assembly[desiredLine].source, true);
             }
         });
 
@@ -276,6 +276,7 @@ define(function (require) {
 
     Compiler.prototype.getBinaryForLine = function (line) {
         var obj = this.assembly[line - 1];
+        if (!obj) return '<div class="address">????</div><div class="opcodes"><span class="opcode">????</span></div>';
         var address = obj.address ? obj.address.toString(16) : "";
         var opcodes = '<div class="opcodes" title="' + (obj.opcodes || []).join(" ") + '">';
         _.each(obj.opcodes, function (op) {
@@ -524,8 +525,10 @@ define(function (require) {
             this.prevDecorations, _.flatten(_.values(this.decorations), true));
     };
 
-    Compiler.prototype.onCompilerSetDecorations = function (id, lineNums) {
+    Compiler.prototype.onCompilerSetDecorations = function (id, lineNums, revealLine) {
         if (id == this.id) {
+            if (revealLine)
+                this.outputEditor.revealLineInCenter(lineNums[0]);
             this.decorations.linkedCode = _.map(lineNums, function (line) {
                 return {
                     range: new monaco.Range(line, 1, line, 1),
@@ -592,7 +595,7 @@ define(function (require) {
             var desiredLine = e.target.position.lineNumber - 1;
             if (this.assembly[desiredLine]) {
                 // We check that we actually have something to show at this point!
-                this.eventHub.emit('editorSetDecoration', this.sourceEditorId, this.assembly[desiredLine].source);
+                this.eventHub.emit('editorSetDecoration', this.sourceEditorId, this.assembly[desiredLine].source, false);
             }
         }
         var currentWord = this.outputEditor.getModel().getWordAtPosition(e.target.position);
@@ -632,7 +635,7 @@ define(function (require) {
             _.bind(function (asmHelp) {
                 if (asmHelp) {
                     new Alert().alert(opcode + " help", asmHelp.html +
-                        '<br><br>For more information, visit <a href="http://www.felixcloutier.com/x86/' + asmHelp.url + '" target="_blank" rel="noopener noreferrer">the ' +
+                        '<br><br>For more information, visit <a href="' + asmHelp.url + '" target="_blank" rel="noopener noreferrer">the ' +
                         opcode + ' documentation <span class="glyphicon glyphicon-new-window" width="16px" height="16px" title="Opens in a new window"/></span></a>.',
                         function () {
                             ed.focus();
