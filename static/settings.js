@@ -127,7 +127,7 @@ define(function (require) {
         add(root.find('.hoverShowSource'), 'hoverShowSource', true, Checkbox);
         add(root.find('.hoverShowAsmDoc'), 'hoverShowAsmDoc', true, Checkbox);
         var themeSelect = root.find('.theme');
-        add(themeSelect, 'theme', themes.default.name, Select,
+        add(themeSelect, 'theme', themes.default.id, Select,
             _.map(themes, function (theme) {
                 return {label: theme.id, desc: theme.name};
             })
@@ -136,9 +136,9 @@ define(function (require) {
         function handleThemes() {
             if (!colourSchemeSelect || !themeSelect) return;
             var newTheme = themeSelect.val();
-            // Store the old scheme of the old theme
+            // Store the scheme of the old theme
             $.data(themeSelect, 'theme-' + $.data(themeSelect, 'last-theme'), colourSchemeSelect.val());
-            // Get the old value of the new theme
+            // Get the scheme of the new theme
             var newThemeStoredScheme =  $.data(themeSelect, 'theme-' + newTheme);
             var isStoredUsable = false;
             colourSchemeSelect.empty();
@@ -158,6 +158,7 @@ define(function (require) {
                 colourSchemeSelect.append($('<option value="' + colour.schemes[0].name + '">' + colour.schemes[0].desc + "</option>"));
                 colourSchemeSelect.val(colourSchemeSelect.first().val());
             }
+            colourSchemeSelect.trigger('change');
         }
 
         function setSettings(settings) {

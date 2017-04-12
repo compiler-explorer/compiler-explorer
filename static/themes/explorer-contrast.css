@@ -140,3 +140,8 @@ pre.content {
     color: #fff !important;
     background-color: #000 !important;
 }
+
+.bottom-bar button {
+    color: #000 !important;
+    background-color: #fff !important;
+}
