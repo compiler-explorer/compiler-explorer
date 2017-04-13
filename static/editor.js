@@ -247,6 +247,10 @@ define(function (require) {
         this.container.setState(state);
     };
 
+    Editor.prototype.setSource = function (newSource) {
+        this.editor.getModel().setValue(newSource);
+    };
+
     Editor.prototype.getSource = function () {
         return this.editor.getModel().getValue();
     };
@@ -256,7 +260,11 @@ define(function (require) {
         var after = newSettings;
         this.settings = _.clone(newSettings);
 
-        this.editor.updateOptions({autoClosingBrackets: this.settings.autoCloseBrackets});
+        this.editor.updateOptions({autoClosingBrackets: this.settings.autoCloseBrackets, tabSize: this.settings.tabWidth});
+        if (before.tabWidth !== after.tabWidth) {
+            this.editor.getModel().updateOptions({tabSize: this.settings.tabWidth});
+            // TODO: We could use an auto reindentation here, but currently there is no method on Monaco
+        }
 
         // TODO: bug when:
         // * Turn off auto.
