@@ -46,7 +46,8 @@ require.config({
         'lru-cache': {exports: 'LRUCache'},
         bootstrap: ['jquery'],
         'bootstrap-slider': ['bootstrap']
-    }
+    },
+    waitSeconds: 60
 });
 
 define(function (require) {
