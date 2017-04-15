@@ -158,3 +158,12 @@ pre.content {
     border-radius: 5px;
     color: black;
 }
+
+.font-size-list {
+    min-width: 30px !important;
+    width: auto;
+}
+
+.font-option {
+    text-align: center;
+}

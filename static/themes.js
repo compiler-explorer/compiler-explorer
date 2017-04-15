@@ -35,13 +35,13 @@ define(function (require) {
             monaco: "vs" // Optional field
         },
         dark: {
-            path: "./themes/explorer-dark.css",
+            path: "./themes/dark/theme-dark.css",
             id: "dark",
             name: "Dark",
             monaco: "vs-dark"
         },
         contrast: {
-            path: "./themes/explorer-contrast.css",
+            path: "./themes/contrast/theme-contrast.css",
             id: "contrast",
             name: "High contrast",
             monaco: "hc-black"

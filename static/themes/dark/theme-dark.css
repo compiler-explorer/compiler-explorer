@@ -1,31 +1,36 @@
-@import url("../ext/golden-layout/src/css/goldenlayout-dark-theme.css");
+@import url("../../ext/golden-layout/src/css/goldenlayout-dark-theme.css");
+@import url("bootstrap.dark.min.css");
 
 .navbar-inverse {
     background-color: #333;
 }
 
 .navbar-inverse .navbar-brand {
-    color: #aaa!important;
+    color: #aaa !important;
 }
 
 .float-link {
-    background-color: rgba(128, 128, 128, 0.5)!important;
+    background-color: rgba(128, 128, 128, 0.5) !important;
 }
 
 .float-link:hover {
     background-color: rgba(128, 128, 160, 0.5);
 }
 
-.btn {
-    color: #fff !important;
-    border-color: #444 !important;
-    background-color: #222 !important;
+button.btn.save-button {
+    background-color: #eee;
+    color: #000;
 }
 
-.btn.active {
-    color: #eee !important;
-    border-color: #555 !important;
-    background-color: #666 !important;
+button.btn.save-button:hover {
+    background-color: #ddd;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.125);
+    color: #000;
+}
+
+.modal-content .well {
+    border: 1px solid #474747;
+    border-radius: 3px;
 }
 
 .opcode {
@@ -45,18 +50,13 @@
     background: #555657 !important;
 }
 
-.dropdown-menu {
-    color: #333;
-    background-color: #666;
-}
-
 .selectize-dropdown {
     color: #aaa !important;
     background-color: #666 !important;
 }
 
 .font-option {
-    background: #666;
+    background: #303030;
 }
 
 .font-option:hover {
@@ -90,7 +90,7 @@
     color: #fff;
 }
 
-.divider {
+/*.divider {
     background-color: #111!important;
 }
 
@@ -118,8 +118,28 @@ pre.content {
     color: #aaa !important;
     background-color: #333 !important;
 }
+*/
 
 .bottom-bar {
     color: #aaa !important;
     background-color: #333 !important;
+}
+
+.filters button.btn {
+    color: #000;
+}
+
+.filters button.btn:not(.active):hover {
+    background-color: #eee;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.125);
+    border: 2px solid #eee;
+}
+
+.filters button.btn.active:hover {
+    background-color: #eee;
+    box-shadow: none;
+}
+
+select {
+    color: #000;
 }
