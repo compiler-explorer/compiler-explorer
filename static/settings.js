@@ -24,6 +24,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 define(function (require) {
+    var $ = require('jquery');
     var _ = require('underscore');
     var colour = require('./colour');
     var themes = require('./themes').themes;
@@ -134,7 +135,6 @@ define(function (require) {
         );
 
         function handleThemes() {
-            if (!colourSchemeSelect || !themeSelect) return;
             var newTheme = themeSelect.val();
             // Store the scheme of the old theme
             $.data(themeSelect, 'theme-' + $.data(themeSelect, 'last-theme'), colourSchemeSelect.val());
@@ -174,13 +174,11 @@ define(function (require) {
 
         setSettings(settings);
         handleThemes();
-        if (themeSelect && colourSchemeSelect) {
-            themeSelect.change(function () {
-                handleThemes();
-                $.data(themeSelect, 'last-theme', themeSelect.val());
-            });
+        themeSelect.change(function () {
+            handleThemes();
             $.data(themeSelect, 'last-theme', themeSelect.val());
-        }
+        });
+        $.data(themeSelect, 'last-theme', themeSelect.val());
         return setSettings;
     }
 

@@ -36,7 +36,7 @@ define(function (require) {
         {name: 'earth', desc: 'Earth tones (colourblind safe)', count: 9, themes: ['default']},
         {name: 'green-blue', desc: 'Greens and blues (colourblind safe)', count: 4, themes: ['default']},
         {name: 'gray-shade', desc: 'Gray shades', count: 2, themes: ['dark']},
-        {name: 'high-contrast', desc: 'High contrast firendly', count: 2, themes: ['contrast']}
+        {name: 'high-contrast', desc: 'High contrast friendly', count: 2, themes: ['contrast']}
     ];
 
     function applyColours(editor, colours, schemeName, prevDecorations) {

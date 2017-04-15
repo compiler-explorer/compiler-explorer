@@ -1,4 +1,4 @@
-// Copyright (c) 2012-2017, Matt Godbolt
+// Copyright (c) 2012-2017, Matt Godbolt & Rubén Rincón
 //
 // All rights reserved.
 //
