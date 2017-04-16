@@ -349,6 +349,7 @@ function findCompilers() {
             versionRe: props("versionRe"),
             compilerType: props("compilerType", ""),
             demangler: props("demangler", ""),
+            objdumper: props("objdumper", ""),
             intelAsm: props("intelAsm", ""),
             needsMulti: !!props("needsMulti", true),
             supportsBinary: !!props("supportsBinary", true),
