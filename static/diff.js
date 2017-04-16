@@ -210,11 +210,6 @@ define(function (require) {
         this.container.setState(state);
     };
 
-    Diff.prototype.onCompilerClose = function (id) {
-        delete this.compilers[id];
-        this.updateCompilers();
-    };
-
     Diff.prototype.onThemeChange = function (newTheme) {
         if (this.outputEditor)
             this.outputEditor.updateOptions({theme: newTheme.monaco});

@@ -54,7 +54,7 @@ define(function (require) {
         var head = $('head');
         _.each(themes, function (theme) {
             // Disable all by default
-            var newElement = $('<link rel="stylesheet" type="text/css" href="' + theme.path + '" data-is="theme" data-theme="' + theme.id + '">');
+            var newElement = $('<link rel="stylesheet" type="text/css" href="' + require.toUrl(theme.path) + '" data-is="theme" data-theme="' + theme.id + '">');
             newElement.disabled = true;
             head.append(newElement);
         });
