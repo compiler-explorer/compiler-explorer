@@ -2,7 +2,7 @@
 
 CE was started in 2012 to serve my needs at [my company](http:/drw.com) in terms of showing how
 C++ constructs translated to assembly code. It started out as a `tmux` session with `vi` running in one
-panel and `watch gcc -S foo.cc -o -` running in the other. Since those days, it's now a public website
+pane and `watch gcc -S foo.cc -o -` running in the other. Since those days, it's now a public website
 serving the C++, Rust, Go and D communities and performs around 20,000 compilations per day.
 
 This document is an attempt to capture thoughts on the future direction of Compiler Explorer.
