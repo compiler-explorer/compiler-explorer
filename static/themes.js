@@ -39,13 +39,14 @@ define(function (require) {
             id: "dark",
             name: "Dark",
             monaco: "vs-dark"
-        },
+        }
+        /* TODO: Work out a good high contrast style
         contrast: {
             path: "./themes/contrast/theme-contrast.css",
             id: "contrast",
             name: "High contrast",
             monaco: "hc-black"
-        }
+        }*/
     };
     function Themer(eventHub) {
         this.currentTheme = null;
