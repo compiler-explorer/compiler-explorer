@@ -4,6 +4,7 @@
 @import url("ext/selectize/dist/css/selectize.bootstrap2.css");
 @import url("ext/seiyria-bootstrap-slider/dist/css/bootstrap-slider.css");
 @import url("colours.css");
+@import url('https://fonts.googleapis.com/css?family=Fira+Mono');
 
 /* TEMP HACK: https://github.com/Microsoft/monaco-editor/issues/349 */
 .quick-open-tree .row {
