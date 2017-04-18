@@ -102,6 +102,7 @@ define(function (require) {
             scrollBeyondLastLine: false,
             readOnly: true,
             language: 'asm',
+            fontFamily: 'Fira Mono',
             glyphMargin: true,
             fixedOverflowWidgets: true
         });
