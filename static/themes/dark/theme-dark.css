@@ -2,11 +2,15 @@
 @import url("bootstrap.darkly.css");
 
 .navbar-inverse {
-    background-color: #333;
+    background-color: #333 !important;
 }
 
 .navbar-inverse .navbar-brand {
     color: #aaa !important;
+}
+
+.navbar-inverse li:hover {
+    color: #ccc !important;
 }
 
 .float-link {
@@ -14,18 +18,18 @@
 }
 
 .float-link:hover {
-    background-color: rgba(128, 128, 160, 0.5);
+    background-color: rgba(128, 128, 160, 0.5) !important;
 }
 
 button.btn.save-button {
-    background-color: #eee;
-    color: #000;
+    background-color: #464545 !important;
+    color: #ccc !important;
 }
 
 button.btn.save-button:hover {
-    background-color: #ddd;
-    box-shadow: inset 0 1px 3px rgba(0,0,0,0.125);
-    color: #000;
+    background-color: #464545 !important;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.125) !important;
+    color: #ccc !important;
 }
 
 .modal-content .well {
@@ -38,7 +42,7 @@ button.btn.save-button:hover {
 }
 
 .opcode:nth-child(odd) {
-    color: #060;
+    color: #060 !important;
 }
 
 .highlighted {
@@ -56,11 +60,11 @@ button.btn.save-button:hover {
 }
 
 .font-option {
-    background: #303030;
+    background: #303030 !important;
 }
 
 .font-option:hover {
-    background: #887788;
+    background: #887788 !important;
 }
 
 .font-option-active {
@@ -72,7 +76,7 @@ button.btn.save-button:hover {
 }
 
 .notification {
-    background-color: gray;
+    background-color: gray !important;
 }
 
 .notification-error {
@@ -101,20 +105,32 @@ pre.content {
 }
 
 .filters button.btn {
-    color: #000;
+    color: #000 !important;
+    background-color: #464545 !important;
+}
+
+.filters button.btn.active {
+    background-color: #464545 !important;
 }
 
 .filters button.btn:not(.active):hover {
-    background-color: #eee;
-    box-shadow: inset 0 1px 3px rgba(0,0,0,0.125);
-    border: 2px solid #eee;
+    background-color: #464545 !important;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.125) !important;
+    border: 2px solid #464545 !important;
+    color: #aaa !important;
 }
 
 .filters button.btn.active:hover {
-    background-color: #eee;
-    box-shadow: none;
+    color: #aaa !important;
+    background-color: #464545 !important;
+    box-shadow: inset 0 0.5px 1.5px rgba(0,0,0,0.125) !important;
 }
 
 select {
-    color: #000;
+    color: #000 !important;
+}
+
+input {
+    color: #eee !important;
+    background-color: #474747 !important;
 }
