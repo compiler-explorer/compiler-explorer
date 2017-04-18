@@ -83,6 +83,7 @@ define(function (require) {
             value: state.source || defaultSrc || "",
             scrollBeyondLastLine: false,
             language: cmMode,
+            fontFamily: 'Fira Mono',
             readOnly: !!options.readOnly || legacyReadOnly,
             glyphMargin: true,
             quickSuggestions: false,
