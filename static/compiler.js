@@ -76,6 +76,7 @@ define(function (require) {
 
         this.decorations = {};
         this.prevDecorations = [];
+        this.optButton = this.domRoot.find('.btn.view-optimization');
 
         this.domRoot.find(".compiler-picker").selectize({
             sortField: 'name',
@@ -192,13 +193,27 @@ define(function (require) {
                 componentState: self.currentState()
             };
         }
+        function createOptView() {
+            return Components.getOptViewWith(self.id, self.source, self.lastResult.optOutput);
+        }
+
 
         this.container.layoutManager.createDragSource(
             this.domRoot.find('.btn.add-compiler'), cloneComponent);
+            
         this.domRoot.find('.btn.add-compiler').click(_.bind(function () {
             var insertPoint = hub.findParentRowOrColumn(this.container) ||
                 this.container.layoutManager.root.contentItems[0];
             insertPoint.addChild(cloneComponent());
+        }, this));
+
+        this.container.layoutManager.createDragSource(
+            this.domRoot.optButton, createOptView.bind(this));
+
+        this.optButton.click(_.bind(function () {
+            var insertPoint = hub.findParentRowOrColumn(this.container) ||
+                this.container.layoutManager.root.contentItems[0];
+            insertPoint.addChild(createOptView());
         }, this));
 
         this.saveState();
@@ -385,6 +400,7 @@ define(function (require) {
         status.toggleClass('error', failed);
         status.toggleClass('warning', warns);
         status.parent().attr('title', allText);
+        this.optButton.toggleClass("hidden", !result.hasOptOutput);
         var compileTime = this.domRoot.find('.compile-time');
         if (cached) {
             compileTime.text("- cached");

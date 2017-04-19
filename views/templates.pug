@@ -34,6 +34,8 @@
         .btn-group.btn-group-sm
           button.btn.btn-default.btn-sm.add-compiler(title="Clone this compiler window (click or drag)")
             span.glyphicon.glyphicon-new-window
+          button.btn.btn-default.btn-sm.view-optimization.hidden(title="View the results from the optimizer")
+            span.glyphicon.glyphicon-scale
     .monaco-placeholder
     .bottom-bar
       if !embedded
@@ -54,3 +56,8 @@
           td: select.diff-picker.lhs(placeholder="Select compiler output...")
           td: select.diff-picker.rhs(placeholder="Select compiler output...")
     .monaco-placeholder
+  
+    #opt
+      .top-bar.btn-toolbar(role="toolbar")
+        include font-size.pug
+      .monaco-placeholder

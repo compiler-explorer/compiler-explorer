@@ -73,6 +73,13 @@ define(function (require) {
                 componentName: 'diff',
                 componentState: {}
             };
+        },
+        getOptViewWith: function (id, source, optimization) {
+            return {
+                type: 'component',
+                componentName: 'opt',
+                componentState: {id: id, source: source, optOutput: optimization}
+            };
         }
     };
 
