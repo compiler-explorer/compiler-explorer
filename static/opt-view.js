@@ -37,7 +37,7 @@ define(function (require) {
                 return {
                     range: new monaco.Range(1, 1, position.lineNumber, model.getLineMaxColumn(position.lineNumber)),
 				    contents: hoverContent[position.lineNumber]
-                }
+                };
             }
         }
     });
@@ -91,7 +91,7 @@ define(function (require) {
     };
     Opt.prototype.onEditorChange = function(id, source) {
         this.optEditor.setValue(source);
-    }
+    };
     Opt.prototype.onCompileResult = function (id, compiler, result) {
         if(result.hasOptOutput) {
             this.showOptResults(result.optOutput);
@@ -99,7 +99,7 @@ define(function (require) {
     };
     Opt.prototype.getDisplayableOpt = function (optResult) {
        return "**" + optResult.optType + "** - " + optResult.displayString;
-    }
+    };
     Opt.prototype.showOptResults = function(results) {
         var opt = [],
             hasPassed = false;
@@ -130,7 +130,7 @@ define(function (require) {
         }, this);
         
         this.optEditor.deltaDecorations([], opt);
-    }
+    };
 
 
     Opt.prototype.onCompiler = function (id, compiler, options, editorId) {
