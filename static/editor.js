@@ -119,6 +119,18 @@ define(function (require) {
             }, this)
         });
 
+        this.editor.addAction({
+            id: 'toggleColourisation',
+            label: 'Toggle colourisation',
+            keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.F1],
+            keybindingContext: null,
+            run: _.bind(function () {
+                this.eventHub.emit('modifySettings', {
+                    colouriseAsm: !this.settings.colouriseAsm
+                });
+            }, this)
+        });
+
         function tryCompilerSelectLine(thisLineNumber, reveal) {
             _.each(self.asmByCompiler, function (asms, compilerId) {
                 var targetLines = [];
