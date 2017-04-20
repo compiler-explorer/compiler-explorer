@@ -130,6 +130,18 @@ define(function (require) {
             run: _.bind(this.onAsmToolTip, this)
         });
 
+        this.outputEditor.addAction({
+            id: 'toggleColourisation',
+            label: 'Toggle colourisation',
+            keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.F1],
+            keybindingContext: null,
+            run: _.bind(function () {
+                this.eventHub.emit('modifySettings', {
+                    colouriseAsm: !this.settings.colouriseAsm
+                });
+            }, this)
+        });
+
         this.outputEditor.onMouseMove(_.throttle(_.bind(this.onMouseMove, this)), 250);
 
         this.fontScale = new FontScale(this.domRoot, state, this.outputEditor);
