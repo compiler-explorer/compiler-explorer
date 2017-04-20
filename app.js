@@ -180,7 +180,7 @@ function ClientOptionsHandler(fileSources) {
         compilers: [],
         sourceExtension: compilerProps('compileFilename').split('.', 2)[1],
         defaultCompiler: compilerProps('defaultCompiler', ''),
-        compileOptions: compilerProps("options"),
+        compileOptions: compilerProps('defaultOptions', ''),
         supportsBinary: !!compilerProps("supportsBinary"),
         languages: languages,
         sources: sources,
