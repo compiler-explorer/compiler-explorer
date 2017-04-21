@@ -459,7 +459,7 @@ define(function (require) {
         if(this.id == id) {
             this.optButton.prop('disabled', false);
         }
-    }
+    };
 
     Compiler.prototype.updateButtons = function () {
         if (!this.compiler) return;
@@ -541,9 +541,10 @@ define(function (require) {
             this.colours = colour.applyColours(this.outputEditor, asmColours, scheme, this.colours);
         }
     };
+
     Compiler.prototype.getCompilerName = function() {
         return this.compiler ? this.compiler.name : "no compiler set";
-    }
+    };
 
     Compiler.prototype.updateCompilerName = function () {
         var compilerName = this.getCompilerName();

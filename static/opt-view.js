@@ -106,7 +106,8 @@ define(function (require) {
     };
     Opt.prototype.setTitle = function () {
           this.container.setTitle(this._compilerName + " (Editor #" + this._editorid + ", Compiler #" + this._compilerid + ")");
-    }
+    };
+
     Opt.prototype.getDisplayableOpt = function (optResult) {
        return "**" + optResult.optType + "** - " + optResult.displayString;
     };
@@ -163,5 +164,5 @@ define(function (require) {
 
     return {
         Opt: Opt
-    }
+    };
 });
