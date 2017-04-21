@@ -171,6 +171,7 @@ define(function (require) {
         this.eventHub.on('findCompilers', this.sendCompiler, this);
         this.eventHub.on('compilerSetDecorations', this.onCompilerSetDecorations, this);
         this.eventHub.on('settingsChange', this.onSettingsChange, this);
+        this.eventHub.on('optViewClosed', this.onOptViewClosed, this);
         this.eventHub.emit('requestSettings');
         this.sendCompiler();
         this.updateCompilerName();
@@ -179,6 +180,7 @@ define(function (require) {
         var outputConfig = _.bind(function () {
             return Components.getOutput(this.id, this.sourceEditorId);
         }, this);
+
         this.container.layoutManager.createDragSource(this.domRoot.find(".status").parent(), outputConfig);
         this.domRoot.find(".status").parent().click(_.bind(function () {
             var insertPoint = hub.findParentRowOrColumn(this.container) ||
@@ -194,9 +196,8 @@ define(function (require) {
             };
         }
         function createOptView() {
-            return Components.getOptViewWith(self.id, self.source, self.lastResult.optOutput);
+            return Components.getOptViewWith(self.id, self.source, self.lastResult.optOutput, self.getCompilerName(), self.sourceEditorId);
         }
-
 
         this.container.layoutManager.createDragSource(
             this.domRoot.find('.btn.add-compiler'), cloneComponent);
@@ -214,6 +215,7 @@ define(function (require) {
             var insertPoint = hub.findParentRowOrColumn(this.container) ||
                 this.container.layoutManager.root.contentItems[0];
             insertPoint.addChild(createOptView());
+            this.optButton.prop("disabled", true);
         }, this));
 
         this.saveState();
@@ -400,7 +402,7 @@ define(function (require) {
         status.toggleClass('error', failed);
         status.toggleClass('warning', warns);
         status.parent().attr('title', allText);
-        this.optButton.toggleClass("hidden", !result.hasOptOutput);
+        this.optButton.prop("disabled", !result.hasOptOutput);
         var compileTime = this.domRoot.find('.compile-time');
         if (cached) {
             compileTime.text("- cached");
@@ -452,6 +454,12 @@ define(function (require) {
             }, this));
         }
     };
+
+    Compiler.prototype.onOptViewClosed = function(id) {
+        if(this.id == id) {
+            this.optButton.prop('disabled', false);
+        }
+    }
 
     Compiler.prototype.updateButtons = function () {
         if (!this.compiler) return;
@@ -533,9 +541,12 @@ define(function (require) {
             this.colours = colour.applyColours(this.outputEditor, asmColours, scheme, this.colours);
         }
     };
+    Compiler.prototype.getCompilerName = function() {
+        return this.compiler ? this.compiler.name : "no compiler set";
+    }
 
     Compiler.prototype.updateCompilerName = function () {
-        var compilerName = this.compiler ? this.compiler.name : "no compiler set";
+        var compilerName = this.getCompilerName();
         var compilerVersion = this.compiler ? this.compiler.version : "";
         this.container.setTitle(compilerName + " (Editor #" + this.sourceEditorId + ", Compiler #" + this.id + ")");
         this.domRoot.find(".full-compiler-name").text(compilerVersion);

@@ -78,7 +78,7 @@ define(function (require) {
             function (container, state) {
                 return self.diffFactory(container, state);
             });
-        layout.registerComponent(optView.getComponent().componentName,
+        layout.registerComponent(Components.getOptView().componentName,
             function (container, state) {
                 return self.optViewFactory(container, state);
             });
@@ -126,8 +126,7 @@ define(function (require) {
     Hub.prototype.optViewFactory = function (container, state) {
         return new optView.Opt(this, container, state);
     };
-
-
+    
     function WrappedEventHub(eventHub) {
         this.eventHub = eventHub;
         this.subscriptions = [];

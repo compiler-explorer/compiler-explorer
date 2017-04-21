@@ -51,6 +51,7 @@ define(function (require) {
         this.domRoot = container.getElement();
         this.domRoot.html($('#opt').html());
         this.compilers = {};
+        this._currentDecorations = [];
         this.optEditor = monaco.editor.create(this.domRoot.find(".monaco-placeholder")[0], {
             value: state.source || "",
             scrollBeyondLastLine: false,
@@ -60,7 +61,9 @@ define(function (require) {
             quickSuggestions: false,
             fixedOverflowWidgets: true
         });
-
+        this._compilerid = state.id;
+        this._compilerName = state.compilerName;
+        this._editorid = state.editorid;
         this.fontScale = new FontScale(this.domRoot, state, this.optEditor);
         this.fontScale.on('change', _.bind(this.updateState, this));
 
@@ -71,14 +74,17 @@ define(function (require) {
 
 
         this.container.on('destroy', function () {
+            this.eventHub.emit("optViewClosed", this._compilerid);
             this.eventHub.unsubscribe();
             this.optEditor.dispose();
         }, this);
+
         container.on('resize', this.resize, this);
         container.on('shown', this.resize, this);
         if(state && state.optOutput) {
               this.showOptResults(state.optOutput);
         }
+        this.setTitle();
     }
 
     // TODO: de-dupe with compiler etc
@@ -89,25 +95,31 @@ define(function (require) {
             height: this.domRoot.height() - topBarHeight
         });
     };
+
     Opt.prototype.onEditorChange = function(id, source) {
         this.optEditor.setValue(source);
     };
     Opt.prototype.onCompileResult = function (id, compiler, result) {
-        if(result.hasOptOutput) {
+        if(result.hasOptOutput && this._compilerid == id) {
             this.showOptResults(result.optOutput);
         }
     };
+    Opt.prototype.setTitle = function () {
+          this.container.setTitle(this._compilerName + " (Editor #" + this._editorid + ", Compiler #" + this._compilerid + ")");
+    }
     Opt.prototype.getDisplayableOpt = function (optResult) {
        return "**" + optResult.optType + "** - " + optResult.displayString;
     };
+    
     Opt.prototype.showOptResults = function(results) {
-        var opt = [],
-            hasPassed = false;
+        var opt = [];
 
         hoverContent = {};
+        
         results = _.groupBy(results, function(x) {
             return x.DebugLoc.Line;
         });
+
         _.mapObject(results, function(value, key) {
             var linenumber = Number(key);
             var className = value.reduce(function(acc, x) {
@@ -129,12 +141,16 @@ define(function (require) {
             }, this);
         }, this);
         
-        this.optEditor.deltaDecorations([], opt);
+        this._currentDecorations = this.optEditor.deltaDecorations(this._currentDecorations, opt);
     };
 
 
-    Opt.prototype.onCompiler = function (id, compiler, options, editorId) {
-    
+    Opt.prototype.onCompiler = function (id, compiler, options, editorid) {
+        if(id == this._compilerid) {
+            this._compilerName = compiler.name;
+            this._editorid = editorid;
+            this.setTitle();
+        }
     };
 
     Opt.prototype.onCompilerClose = function (id) {
@@ -146,13 +162,6 @@ define(function (require) {
     };
 
     return {
-        Opt: Opt,
-        getComponent: function (lhs, rhs) {
-            return {
-                type: 'component',
-                componentName: 'opt',
-                componentState: { },
-            };
-        }
-    };
+        Opt: Opt
+    }
 });
