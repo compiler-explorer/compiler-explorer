@@ -1,6 +1,6 @@
 ifneq "" "$(NODE_DIR)"
 NPM:=$(NODE_DIR)/bin/npm
-NODE:=$(NODE_DIR)/bin/npm
+NODE:=$(NODE_DIR)/bin/node
 default: run
 else
 ifeq "" "$(shell which npm)"
