@@ -73,6 +73,20 @@ define(function (require) {
                 componentName: 'diff',
                 componentState: {}
             };
+        },
+        getOptView: function() {
+            return {
+                type: 'component',
+                componentName: 'opt',
+                componentState: {}
+            };
+        },
+        getOptViewWith: function (id, source, optimization, compilerName, editorid) {
+            return {
+                type: 'component',
+                componentName: 'opt',
+                componentState: {id: id, source: source, optOutput: optimization, compilerName: compilerName, editorid: editorid}
+            };
         }
     };
 

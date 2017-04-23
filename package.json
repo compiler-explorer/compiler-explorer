@@ -18,6 +18,7 @@
   "dependencies": {
     "aws-sdk": "*",
     "body-parser": "1.14.x",
+    "compiler-opt-info": "0.0.4",
     "compression": "1.6.x",
     "express": "4.13.x",
     "fs-extra": "0.26.x",

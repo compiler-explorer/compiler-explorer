@@ -181,7 +181,6 @@ define(function (require) {
         setupAdd($('#add-editor'), function () {
             return Components.getEditor();
         });
-
         $('#ui-reset').click(function () {
             local.remove('gl');
             window.location.reload();
