@@ -38,8 +38,9 @@ require.config({
         'raven-js': 'ext/raven-js/dist/raven',
         'es6-promise': 'ext/es6-promise/es6-promise',
         'lru-cache': 'ext/lru-cache/lib/lru-cache',
-        'vs': "ext/monaco-editor/min/vs",
-        'bootstrap-slider': 'ext/seiyria-bootstrap-slider/dist/bootstrap-slider'
+        vs: "ext/monaco-editor/min/vs",
+        'bootstrap-slider': 'ext/seiyria-bootstrap-slider/dist/bootstrap-slider',
+        filesaver: '/ext/file-saver/FileSaver'
     },
     shim: {
         underscore: {exports: '_'},

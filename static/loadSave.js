@@ -29,7 +29,7 @@ define(function (require) {
     var _ = require('underscore');
     var Alert = require('./alert');
     var local = require('./local');
-    var FileSaver = require('./ext/file-saver/FileSaver');
+    var FileSaver = require('filesaver');
 
     function getLocalFiles() {
         return JSON.parse(local.get('files', "{}"));
@@ -46,7 +46,7 @@ define(function (require) {
         this.alert = new Alert();
         this.onLoad = _.identity;
         this.editorText = '';
-        this.extension;
+        this.extension = '.txt';
         this.modal.find('.local-file').change(_.bind(this.onLocalFile, this));
 
         this.modal.find('.save-button').click(_.bind(this.onSaveToBrowserStorage, this));
