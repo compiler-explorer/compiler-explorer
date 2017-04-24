@@ -59,21 +59,29 @@ define(function (require) {
         this.decorations = [];
 
         var cmMode;
+        // The first one is used as the default file extension when saving to local file.
+        // All of them are used as the contents of the accept attribute of the file input
+        var extensions = [];
         switch (lang.toLowerCase()) {
             default:
                 cmMode = "cpp";
+                extensions = ['.cpp', '.cxx', '.h', '.hpp', '.hxx'];
                 break;
             case "c":
                 cmMode = "cpp";
+                extensions = ['.cpp', '.cxx', '.h', '.hpp', '.hxx'];
                 break;
             case "rust":
                 cmMode = "rust";
+                extensions = ['.rs'];
                 break;
             case "d":
                 cmMode = "d";
+                extension = ['.d'];
                 break;
             case "go":
                 cmMode = "go";
+                extensions = ['.go'];
                 break;
         }
 
@@ -198,7 +206,7 @@ define(function (require) {
                 this.editor.setValue(text);
                 this.updateState();
                 this.maybeEmitChange();
-            }, this), this.getSource());
+            }, this), this.getSource(), extensions);
         }, this));
 
         container.on('resize', layout);

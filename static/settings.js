@@ -136,6 +136,7 @@ define(function (require) {
             })
         );
 
+
         setSettings(settings);
         return setSettings;
     }

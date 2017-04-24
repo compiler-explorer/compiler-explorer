@@ -29,6 +29,7 @@ define(function (require) {
     var _ = require('underscore');
     var Alert = require('./alert');
     var local = require('./local');
+    var FileSaver = require('./ext/file-saver/FileSaver');
 
     function getLocalFiles() {
         return JSON.parse(local.get('files', "{}"));
@@ -45,9 +46,11 @@ define(function (require) {
         this.alert = new Alert();
         this.onLoad = _.identity;
         this.editorText = '';
-
+        this.extension;
         this.modal.find('.local-file').change(_.bind(this.onLocalFile, this));
-        this.modal.find('.save-button').click(_.bind(this.onSave, this));
+
+        this.modal.find('.save-button').click(_.bind(this.onSaveToBrowserStorage, this));
+        this.modal.find('.save-file').click(_.bind(this.onSaveToFile, this));
 
         this.populateBuiltins();
     }
@@ -105,14 +108,19 @@ define(function (require) {
         this.modal.modal('hide');
     };
 
-    LoadSave.prototype.run = function (onLoad, editorText) {
+    LoadSave.prototype.run = function (onLoad, editorText, extensions) {
         this.populateLocalStorage();
         this.onLoad = onLoad;
         this.editorText = editorText;
+        // In case we don't send anything...
+        this.extension = extensions[0] || '.txt';
+        this.modal.find('.local-file').attr('accept', _.map(extensions, function (extension) {
+            return extension + ', ';
+        }, this));
         this.modal.modal();
     };
 
-    LoadSave.prototype.onSave = function () {
+    LoadSave.prototype.onSaveToBrowserStorage = function () {
         var name = this.modal.find('.save-name').val();
         if (!name) {
             this.alert.alert("Save name", "Invalid save name");
@@ -130,6 +138,18 @@ define(function (require) {
         } else {
             done();
             this.modal.modal('hide');
+        }
+    };
+
+    LoadSave.prototype.onSaveToFile = function () {
+        try {
+            saveAs(new Blob([this.editorText], {type: "text/plain;charset=utf-8"}), "Compiler Explorer Code" + this.extension);
+        } catch (e) {
+            new Alert().notify('Error while saving your code. Use the clipboard instead.', {
+                group: "savelocalerror",
+                alertClass: "notification-error",
+                dismissTime: 5000
+            });
         }
     };
 
