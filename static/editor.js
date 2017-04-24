@@ -396,7 +396,9 @@ define(function (require) {
                         {
                             range: new monaco.Range(lineNum, 1, lineNum, 1),
                             options: {
-                                linesDecorationsClassName: 'linked-code-decoration'
+                                isWholeLine: true,
+                                linesDecorationsClassName: 'linked-code-decoration-margin',
+                                inlineClassName: 'linked-code-decoration-inline'
                             }
                         }
                     ]);
