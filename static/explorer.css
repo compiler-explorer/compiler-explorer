@@ -9,9 +9,12 @@
     margin-left: 0;
 }
 
-/* TEMP HACK: https://github.com/Microsoft/monaco-editor/issues/408 */
-.monaco-editor .monaco-editor-hover {
-    animation: none !important;
+/*
+ * https://github.com/Microsoft/monaco-editor/issues/417
+ * Safari 10.1, fails inherit correct visibility from parent when we change the visibility of parent element from hidden to inherit, in this particular case.
+ */
+.monaco-editor-hover .monaco-scrollable-element {
+	visibility: visible;
 }
 
 .navbar {
@@ -171,4 +174,22 @@ pre.content {
 
 .font-option {
     text-align: center;
+}
+
+
+.opt-decoration {
+	width: 8px !important;
+	left: 3px;
+}
+
+.analysis,
+.mixed {
+    background: #fdfd96;
+}
+
+.passed {
+    background: #77dd77;
+}
+.missed {
+    background: #ff6961;
 }

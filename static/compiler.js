@@ -76,6 +76,7 @@ define(function (require) {
 
         this.decorations = {};
         this.prevDecorations = [];
+        this.optButton = this.domRoot.find('.btn.view-optimization');
 
         this.domRoot.find(".compiler-picker").selectize({
             sortField: 'name',
@@ -102,6 +103,7 @@ define(function (require) {
             scrollBeyondLastLine: false,
             readOnly: true,
             language: 'asm',
+            fontFamily: 'Fira Mono',
             glyphMargin: true,
             fixedOverflowWidgets: true
         });
@@ -127,6 +129,18 @@ define(function (require) {
             contextMenuGroupId: 'help',
             contextMenuOrder: 1.5,
             run: _.bind(this.onAsmToolTip, this)
+        });
+
+        this.outputEditor.addAction({
+            id: 'toggleColourisation',
+            label: 'Toggle colourisation',
+            keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.F1],
+            keybindingContext: null,
+            run: _.bind(function () {
+                this.eventHub.emit('modifySettings', {
+                    colouriseAsm: !this.settings.colouriseAsm
+                });
+            }, this)
         });
 
         this.outputEditor.onMouseMove(_.throttle(_.bind(this.onMouseMove, this)), 250);
@@ -158,6 +172,7 @@ define(function (require) {
         this.eventHub.on('compilerSetDecorations', this.onCompilerSetDecorations, this);
         this.eventHub.on('settingsChange', this.onSettingsChange, this);
         this.eventHub.on('themeChange', this.onThemeChange, this);
+        this.eventHub.on('optViewClosed', this.onOptViewClosed, this);
         this.eventHub.emit('requestSettings');
         this.eventHub.emit('requestTheme');
         this.sendCompiler();
@@ -167,6 +182,7 @@ define(function (require) {
         var outputConfig = _.bind(function () {
             return Components.getOutput(this.id, this.sourceEditorId);
         }, this);
+
         this.container.layoutManager.createDragSource(this.domRoot.find(".status").parent(), outputConfig);
         this.domRoot.find(".status").parent().click(_.bind(function () {
             var insertPoint = hub.findParentRowOrColumn(this.container) ||
@@ -181,13 +197,27 @@ define(function (require) {
                 componentState: self.currentState()
             };
         }
+        function createOptView() {
+            return Components.getOptViewWith(self.id, self.source, self.lastResult.optOutput, self.getCompilerName(), self.sourceEditorId);
+        }
 
         this.container.layoutManager.createDragSource(
             this.domRoot.find('.btn.add-compiler'), cloneComponent);
+            
         this.domRoot.find('.btn.add-compiler').click(_.bind(function () {
             var insertPoint = hub.findParentRowOrColumn(this.container) ||
                 this.container.layoutManager.root.contentItems[0];
             insertPoint.addChild(cloneComponent());
+        }, this));
+
+        this.container.layoutManager.createDragSource(
+            this.domRoot.optButton, createOptView.bind(this));
+
+        this.optButton.click(_.bind(function () {
+            var insertPoint = hub.findParentRowOrColumn(this.container) ||
+                this.container.layoutManager.root.contentItems[0];
+            insertPoint.addChild(createOptView());
+            this.optButton.prop("disabled", true);
         }, this));
 
         this.saveState();
@@ -374,6 +404,7 @@ define(function (require) {
         status.toggleClass('error', failed);
         status.toggleClass('warning', warns);
         status.parent().attr('title', allText);
+        this.optButton.prop("disabled", !result.hasOptOutput);
         var compileTime = this.domRoot.find('.compile-time');
         if (cached) {
             compileTime.text("- cached");
@@ -423,6 +454,12 @@ define(function (require) {
                 this.source = expanded;
                 this.compile();
             }, this));
+        }
+    };
+
+    Compiler.prototype.onOptViewClosed = function(id) {
+        if(this.id == id) {
+            this.optButton.prop('disabled', false);
         }
     };
 
@@ -507,8 +544,12 @@ define(function (require) {
         }
     };
 
+    Compiler.prototype.getCompilerName = function() {
+        return this.compiler ? this.compiler.name : "no compiler set";
+    };
+
     Compiler.prototype.updateCompilerName = function () {
-        var compilerName = this.compiler ? this.compiler.name : "no compiler set";
+        var compilerName = this.getCompilerName();
         var compilerVersion = this.compiler ? this.compiler.version : "";
         this.container.setTitle(compilerName + " (Editor #" + this.sourceEditorId + ", Compiler #" + this.id + ")");
         this.domRoot.find(".full-compiler-name").text(compilerVersion);
