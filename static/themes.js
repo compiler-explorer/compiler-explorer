@@ -53,23 +53,36 @@ define(function (require) {
         this.eventHub = eventHub;
 
         var head = $('head');
-        _.each(themes, function (theme) {
-            // Disable all by default
+
+        // Care with this, we could end up with a lot of the same themes!
+        function insertThemeStylesheet(theme, disabled) {
             var newElement = $('<link rel="stylesheet" type="text/css" href="' + require.toUrl(theme.path) + '" data-is="theme" data-theme="' + theme.id + '">');
-            newElement.disabled = true;
+            head.disabled = disabled || false;
             head.append(newElement);
-        });
+        }
+
+        // Always insert default.
+        insertThemeStylesheet(themes.default, false);
 
         this.eventHub.on('settingsChange', function (newSettings) {
             var newTheme = themes[newSettings.theme];
-            if (!newTheme) return;
+            if (!newTheme)
+                return;
             if (!newTheme.monaco)
                 newTheme.monaco = "vs";
             if (newTheme !== this.currentTheme) {
                 this.eventHub.emit('themeChange', newTheme);
+                var isAlreadyThere = false;
                 $('head').children('[data-is="theme"]').each(function (id, element) {
-                    element.disabled = $(element).data("theme") !== newTheme.id;
+                    var isNewTheme = $(element).data("theme") === newTheme.id;
+                    element.disabled = !isNewTheme;
+                    if (isNewTheme) {
+                        isAlreadyThere = true;
+                    }
                 });
+                if (!isAlreadyThere) {
+                    insertThemeStylesheet(newTheme, false);
+                }
                 this.currentTheme = newTheme;
             }
         }, this);
