@@ -144,14 +144,36 @@ pre.content {
     font-style: italic;
 }
 
-.linked-code-decoration {
-    width: 5px !important;
-    left: 3px;
-}
 
 .small-v-scrollable {
     max-height: 8em;
     overflow-y: auto;
+}
+
+.linked-code-decoration-margin {
+    background: lightblue;
+    width: 5px !important;
+    left: 3px;
+}
+
+.linked-code-decoration-inline {
+    font-weight: 600;
+}
+
+.font-option {
+    background: white;
+}
+
+.font-option:hover {
+    background: lightblue;
+}
+
+.font-option-active {
+    background: #226699 !important;
+}
+
+.font-option-active:hover {
+    background: #4477AA !important;
 }
 
 #notifications {
