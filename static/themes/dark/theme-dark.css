@@ -134,3 +134,15 @@ input {
     color: #eee !important;
     background-color: #474747 !important;
 }
+
+.analysis,
+.mixed {
+    background: #fdfd96 !important;
+}
+
+.passed {
+    background: #77dd77 !important;
+}
+.missed {
+    background: #ff6961 !important;
+}

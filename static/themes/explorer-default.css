@@ -5,11 +5,11 @@
 }
 
 .navbar-inverse .navbar-brand {
-    color: #ddd !important;
+    color: #ddd;
 }
 
 .float-link {
-    background-color: rgba(128, 128, 128, 0.5) !important;
+    background-color: rgba(128, 128, 128, 0.5);
 }
 
 .float-link:hover {
@@ -17,13 +17,13 @@
 }
 
 .btn.active {
-    color: #fff !important;
-    border-color: #46b8da !important;
-    background-color: #5bc0de !important;
+    color: #fff;
+    border-color: #46b8da;
+    background-color: #5bc0de;
 }
 
 .opcode {
-    color: #066 !important;
+    color: #066;
 }
 
 .opcode:nth-child(odd) {
@@ -31,12 +31,12 @@
 }
 
 .highlighted {
-    background-color: rgba(255, 0, 0, 0.2) !important;
-    color: #0000b0 !important;
+    background-color: rgba(255, 0, 0, 0.2);
+    color: #0000b0;
 }
 
 .linked-code-decoration {
-    background: lightblue !important;
+    background: lightblue;
 }
 
 .font-option {
@@ -48,11 +48,11 @@
 }
 
 .font-option-active {
-    background: #226699 !important;
+    background: #226699;
 }
 
 .font-option-active:hover {
-    background: #4477AA !important;
+    background: #4477AA;
 }
 
 .notification {
@@ -60,16 +60,29 @@
 }
 
 .notification-error {
-    background-color: indianred !important;
+    background-color: indianred;
     color: white;
 }
 
 .notification-on {
-    background-color: green !important;
+    background-color: green;
     color: black;
 }
 
 .notification-off {
-    background-color: gray !important;
+    background-color: gray;
     color: black;
 }
+
+.analysis,
+.mixed {
+    background: #fdfd96;
+}
+
+.passed {
+    background: #77dd77;
+}
+.missed {
+    background: #ff6961;
+}
+

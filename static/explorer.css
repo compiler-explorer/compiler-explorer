@@ -203,15 +203,3 @@ pre.content {
 	width: 8px !important;
 	left: 3px;
 }
-
-.analysis,
-.mixed {
-    background: #fdfd96;
-}
-
-.passed {
-    background: #77dd77;
-}
-.missed {
-    background: #ff6961;
-}
