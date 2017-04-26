@@ -408,7 +408,7 @@ define(function (require) {
         if (request.filters.binary) {
             this.outputEditor.updateOptions({
                 lineNumbers: _.bind(this.getBinaryForLine, this),
-                lineNumbersMinChars: 18
+                lineNumbersMinChars: 19
             });
         } else {
             this.outputEditor.updateOptions({
