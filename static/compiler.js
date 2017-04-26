@@ -147,7 +147,7 @@ define(function (require) {
 
         function clearEditorsLinkedLines() {
             self.eventHub.emit('editorSetDecoration', self.sourceEditorId, -1, false);
-        };
+        }
 
         this.outputEditor.onMouseMove(function (e) {
             self.mouseMoveThrottledFunction(e);

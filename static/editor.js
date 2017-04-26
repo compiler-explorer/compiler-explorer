@@ -397,6 +397,16 @@ define(function (require) {
             };
         }, this));
         monaco.editor.setModelMarkers(this.editor.getModel(), compilerId, widgets);
+        this.decorations.tags = _.map(widgets, function (tag) {
+            return {
+                range: new monaco.Range(tag.startLineNumber, tag.startColumn, tag.startLineNumber + 1, 1),
+                options: {
+                    isWholeLine: false,
+                    inlineClassName: "error-code"
+                }
+            };
+        }, this);
+        this.updateDecorations();
         this.asmByCompiler[compilerId] = result.asm;
         this.lastCompilerIDResponse = compilerId;
         this.numberUsedLines();
