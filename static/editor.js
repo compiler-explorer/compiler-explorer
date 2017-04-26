@@ -56,7 +56,10 @@ define(function (require) {
         this.colours = [];
         this.lastCompilerIDResponse = -1;
 
-        this.decorations = [];
+        this.decorations = {};
+        this.prevDecorations = [];
+
+        this.fadeTimeoutId = -1;
 
         var cmMode;
         // The first one is used as the default file extension when saving to local file.
@@ -139,7 +142,7 @@ define(function (require) {
             }, this)
         });
 
-        function tryCompilerSelectLine(thisLineNumber, reveal) {
+        function tryCompilerLinkLine(thisLineNumber, reveal) {
             _.each(self.asmByCompiler, function (asms, compilerId) {
                 var targetLines = [];
                 _.each(asms, function (asmLine, i) {
@@ -151,6 +154,12 @@ define(function (require) {
             });
         }
 
+        function clearCompilerLinkedLines() {
+            _.each(self.asmByCompiler, function (asms, compilerId) {
+                self.eventHub.emit('compilerSetDecorations', compilerId, -1, false);
+            });
+        }
+
         this.editor.addAction({
             id: 'viewasm',
             label: 'Scroll to assembly',
@@ -159,13 +168,20 @@ define(function (require) {
             contextMenuGroupId: 'navigation',
             contextMenuOrder: 1.5,
             run: function (ed) {
-                tryCompilerSelectLine(ed.getPosition().lineNumber, true);
+                tryCompilerLinkLine(ed.getPosition().lineNumber, true);
             }
+        });
+
+        this.editor.onMouseLeave(function (e) {
+            self.fadeTimeoutId = setTimeout(function () {
+                clearCompilerLinkedLines();
+                self.fadeTimeoutId = -1;
+            }, 5000);
         });
 
         this.mouseMoveThrottledFunction = _.throttle(function (e) {
                 if (e !== null && e.target !== null && self.settings.hoverShowSource === true && e.target.position !== null) {
-                    tryCompilerSelectLine(e.target.position.lineNumber, false);
+                    tryCompilerLinkLine(e.target.position.lineNumber, false);
                 }
             },
             250
@@ -173,6 +189,11 @@ define(function (require) {
 
         this.editor.onMouseMove(function (e) {
             self.mouseMoveThrottledFunction(e);
+            // This can't be throttled or we can clear a timeout where we're already outside
+            if (self.fadeTimeoutId !== -1) {
+                clearTimeout(self.fadeTimeoutId);
+                self.fadeTimeoutId = -1;
+            }
         });
 
         this.fontScale = new FontScale(this.domRoot, state, this.editor);
@@ -378,6 +399,16 @@ define(function (require) {
             };
         }, this));
         monaco.editor.setModelMarkers(this.editor.getModel(), compilerId, widgets);
+        this.decorations.tags = _.map(widgets, function (tag) {
+            return {
+                range: new monaco.Range(tag.startLineNumber, tag.startColumn, tag.startLineNumber + 1, 1),
+                options: {
+                    isWholeLine: false,
+                    inlineClassName: "error-code"
+                }
+            };
+        }, this);
+        this.updateDecorations();
         this.asmByCompiler[compilerId] = result.asm;
         this.lastCompilerIDResponse = compilerId;
         this.numberUsedLines();
@@ -393,23 +424,31 @@ define(function (require) {
         if (id === this.id) {
             if (reveal)
                 this.editor.revealLineInCenter(lineNum);
-            this.decorations = this.editor.deltaDecorations(this.decorations,
-                lineNum === -1 || lineNum === null ? [] : [
-                        {
-                            range: new monaco.Range(lineNum, 1, lineNum, 1),
-                            options: {
-                                isWholeLine: true,
-                                linesDecorationsClassName: 'linked-code-decoration-margin',
-                                inlineClassName: 'linked-code-decoration-inline'
-                            }
-                        }
-                    ]);
+            this.decorations.linkedCode = lineNum === -1 || lineNum === null ?
+             []
+            :
+             [
+                {
+                    range: new monaco.Range(lineNum, 1, lineNum, 1),
+                    options: {
+                        isWholeLine: true,
+                        linesDecorationsClassName: 'linked-code-decoration-margin',
+                        inlineClassName: 'linked-code-decoration-inline'
+                    }
+                }
+             ];
+            this.updateDecorations();
         }
     };
 
     Editor.prototype.onThemeChange = function (newTheme) {
         if (this.editor)
             this.editor.updateOptions({theme: newTheme.monaco});
+    };
+
+    Editor.prototype.updateDecorations = function () {
+        this.prevDecorations = this.editor.deltaDecorations(
+            this.prevDecorations, _.flatten(_.values(this.decorations), true));
     };
 
     return {
