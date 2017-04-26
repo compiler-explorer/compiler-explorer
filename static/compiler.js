@@ -78,6 +78,8 @@ define(function (require) {
         this.prevDecorations = [];
         this.optButton = this.domRoot.find('.btn.view-optimization');
 
+        this.linkedFadeTimeoutId = -1;
+
         this.domRoot.find(".compiler-picker").selectize({
             sortField: 'name',
             valueField: 'id',
@@ -143,7 +145,26 @@ define(function (require) {
             }, this)
         });
 
-        this.outputEditor.onMouseMove(_.throttle(_.bind(this.onMouseMove, this)), 250);
+        function clearEditorsLinkedLines() {
+            self.eventHub.emit('editorSetDecoration', self.sourceEditorId, -1, false);
+        };
+
+        this.outputEditor.onMouseMove(function (e) {
+            self.mouseMoveThrottledFunction(e);
+            if (self.linkedFadeTimeoutId !== -1) {
+                clearTimeout(self.linkedFadeTimeoutId);
+                self.linkedFadeTimeoutId = -1;
+            }
+        });
+
+        this.mouseMoveThrottledFunction = _.throttle(_.bind(this.onMouseMove, this), 250);
+
+        this.outputEditor.onMouseLeave(function (e) {
+            self.linkedFadeTimeoutId = setTimeout(function () {
+                clearEditorsLinkedLines();
+                self.linkedFadeTimeoutId = -1;
+            }, 5000);
+        });
 
         this.fontScale = new FontScale(this.domRoot, state, this.outputEditor);
         this.fontScale.on('change', _.bind(function () {
