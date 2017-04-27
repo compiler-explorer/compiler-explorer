@@ -51,18 +51,17 @@ define(function (require) {
     function Themer(eventHub) {
         this.currentTheme = null;
         this.eventHub = eventHub;
+        this.root = root;
 
-        var head = $('head');
-
-        // Care with this, we could end up with a lot of the same themes!
-        function insertThemeStylesheet(theme, disabled) {
-            var newElement = $('<link rel="stylesheet" type="text/css" href="' + require.toUrl(theme.path) + '" data-is="theme" data-theme="' + theme.id + '">');
-            head.disabled = disabled || false;
-            head.append(newElement);
+        function setTheme(theme) {
+            $.get(require.toUrl(theme.path), function (thing) {
+                $('#theme').html(thing);
+                eventHub.emit('themeChange', theme);
+            });
         }
 
         // Always insert default.
-        insertThemeStylesheet(themes.default, false);
+        setTheme(themes.default);
 
         this.eventHub.on('settingsChange', function (newSettings) {
             var newTheme = themes[newSettings.theme];
@@ -71,18 +70,7 @@ define(function (require) {
             if (!newTheme.monaco)
                 newTheme.monaco = "vs";
             if (newTheme !== this.currentTheme) {
-                this.eventHub.emit('themeChange', newTheme);
-                var isAlreadyThere = false;
-                $('head').children('[data-is="theme"]').each(function (id, element) {
-                    var isNewTheme = $(element).data("theme") === newTheme.id;
-                    element.disabled = !isNewTheme;
-                    if (isNewTheme) {
-                        isAlreadyThere = true;
-                    }
-                });
-                if (!isAlreadyThere) {
-                    insertThemeStylesheet(newTheme, false);
-                }
+                setTheme(newTheme);
                 this.currentTheme = newTheme;
             }
         }, this);

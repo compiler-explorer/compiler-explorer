@@ -218,6 +218,7 @@ define(function (require) {
                 componentState: self.currentState()
             };
         }
+
         function createOptView() {
             return Components.getOptViewWith(self.id, self.source, self.lastResult.optOutput, self.getCompilerName(), self.sourceEditorId);
         }
@@ -478,8 +479,8 @@ define(function (require) {
         }
     };
 
-    Compiler.prototype.onOptViewClosed = function(id) {
-        if(this.id == id) {
+    Compiler.prototype.onOptViewClosed = function (id) {
+        if (this.id == id) {
             this.optButton.prop('disabled', false);
         }
     };
@@ -565,7 +566,7 @@ define(function (require) {
         }
     };
 
-    Compiler.prototype.getCompilerName = function() {
+    Compiler.prototype.getCompilerName = function () {
         return this.compiler ? this.compiler.name : "no compiler set";
     };
 
@@ -726,6 +727,7 @@ define(function (require) {
     Compiler.prototype.onThemeChange = function (newTheme) {
         if (this.outputEditor)
             this.outputEditor.updateOptions({theme: newTheme.monaco});
+        this.resize(); // in case anything changes size in the header or footer
     };
 
     return {
