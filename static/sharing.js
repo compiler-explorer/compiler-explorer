@@ -62,12 +62,6 @@ define(function (require) {
         }
     }
 
-    function getItemsByComponent(layout, component) {
-        return layout.root.getItemsByFilter(function (o) {
-            return o.type === "component" && o.componentName === component;
-        });
-    }
-
     function getEmbeddedUrl(layout, readOnly) {
         var location = window.location.origin + window.location.pathname;
         if (location[location.length - 1] !== '/') location += '/';

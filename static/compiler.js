@@ -36,6 +36,7 @@ define(function (require) {
     var LruCache = require('lru-cache');
     var monaco = require('monaco');
     var Alert = require('alert');
+    var bigInt = require('big-integer');
     require('asm-mode');
 
     require('selectize');
@@ -209,7 +210,7 @@ define(function (require) {
         }, this));
 
         this.container.layoutManager.createDragSource(
-            this.domRoot.optButton, createOptView.bind(this));
+            this.optButton, createOptView.bind(this));
 
         this.optButton.click(_.bind(function () {
             var insertPoint = hub.findParentRowOrColumn(this.container) ||
@@ -593,9 +594,15 @@ define(function (require) {
 
     function getNumericToolTip(value) {
         var match = hexLike.exec(value);
-        if (match) return value + ' = ' + parseInt(match[2], 16).toString();
-        match = decimalLike.exec(value);
-        if (match) return value + ' = 0x' + parseInt(match[2]).toString(16);
+        if (match) 
+        {
+            return value + ' = ' + bigInt(match[2], 16).toString(10);
+        }
+        match = decimalLike.exec(value); 
+        if (match) {
+            return value + ' = 0x' +  bigInt(match[2]).toString(16).toUpperCase();
+        }
+        
         return null;
     }
 
