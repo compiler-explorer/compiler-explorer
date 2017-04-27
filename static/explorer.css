@@ -20,6 +20,7 @@
 .navbar {
     border-radius: 0;
     margin-bottom: 2px;
+    height: 50px; /* needed to override the darkly settings */
 }
 
 #lang-dropdown {
