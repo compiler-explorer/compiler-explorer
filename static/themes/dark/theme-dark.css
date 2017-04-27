@@ -54,6 +54,11 @@ button.btn.save-button:hover {
     background: #555657 !important;
 }
 
+.selectize-control.single .selectize-input {
+    color: #eee !important;
+    background: #666 linear-gradient(to bottom, #555, #222) !important;
+}
+
 .selectize-dropdown {
     color: #aaa !important;
     background-color: #666 !important;

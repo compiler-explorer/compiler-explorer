@@ -160,22 +160,6 @@ pre.content {
     font-weight: 600;
 }
 
-.font-option {
-    background: white;
-}
-
-.font-option:hover {
-    background: lightblue;
-}
-
-.font-option-active {
-    background: #226699 !important;
-}
-
-.font-option-active:hover {
-    background: #4477AA !important;
-}
-
 #notifications {
     max-width: 33%;
     position: fixed;
@@ -190,14 +174,13 @@ pre.content {
 }
 
 .font-size-list {
-    min-width: 30px !important;
+    min-width: 43px !important;
     width: auto;
 }
 
 .font-option {
     text-align: center;
 }
-
 
 .opt-decoration {
 	width: 8px !important;
