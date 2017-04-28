@@ -55,22 +55,22 @@ define(function (require) {
     "use strict";
     require('bootstrap');
     require('bootstrap-slider');
-    var analytics = require('analytics');
-    var sharing = require('sharing');
-    var _ = require('underscore');
-    var $ = require('jquery');
-    var GoldenLayout = require('goldenlayout');
-    var Components = require('components');
-    var url = require('url');
-    var clipboard = require('clipboard');
-    var Hub = require('hub');
-    var Raven = require('raven-js');
-    var settings = require('./settings');
-    var local = require('./local');
-    var Alert = require('./alert');
+    const analytics = require('analytics');
+    const sharing = require('sharing');
+    const _ = require('underscore');
+    const $ = require('jquery');
+    const GoldenLayout = require('goldenlayout');
+    const Components = require('components');
+    const url = require('url');
+    const clipboard = require('clipboard');
+    const Hub = require('hub');
+    const Raven = require('raven-js');
+    const settings = require('./settings');
+    const local = require('./local');
+    const Alert = require('./alert');
 
     function setupSettings(eventHub) {
-        var currentSettings = JSON.parse(local.get('settings', '{}'));
+        let currentSettings = JSON.parse(local.get('settings', '{}'));
 
         function onChange(settings) {
             currentSettings = settings;
@@ -82,7 +82,7 @@ define(function (require) {
             eventHub.emit('settingsChange', currentSettings);
         });
 
-        var setSettings = settings($('#settings'), currentSettings, onChange);
+        const setSettings = settings($('#settings'), currentSettings, onChange);
         eventHub.on('modifySettings', function (newSettings) {
             setSettings(_.extend(currentSettings, newSettings));
         });
@@ -91,10 +91,10 @@ define(function (require) {
     function start() {
         analytics.initialise();
 
-        var options = require('options');
+        const options = require('options');
 
-        var defaultSrc = $('.template .lang').text().trim();
-        var defaultConfig = {
+        const defaultSrc = $('.template .lang').text().trim();
+        const defaultConfig = {
             settings: {showPopoutIcon: false},
             content: [{type: 'row', content: [Components.getEditor(1), Components.getCompiler(1)]}]
         };
@@ -105,7 +105,7 @@ define(function (require) {
                 window.location.reload();
         });
 
-        var config;
+        let config;
         if (!options.embedded) {
             config = url.deserialiseState(window.location.hash.substr(1));
             if (config) {
@@ -114,7 +114,7 @@ define(function (require) {
             }
 
             if (!config) {
-                var savedState = local.get('gl', null);
+                const savedState = local.get('gl', null);
                 config = savedState !== null ? JSON.parse(savedState) : defaultConfig;
             }
         } else {
@@ -129,10 +129,10 @@ define(function (require) {
                 sharing.configFromEmbedded(window.location.hash.substr(1)));
         }
 
-        var root = $("#root");
+        const root = $("#root");
 
-        var layout;
-        var hub;
+        let layout;
+        let hub;
         try {
             layout = new GoldenLayout(config, root);
             hub = new Hub(layout, defaultSrc);
@@ -142,12 +142,12 @@ define(function (require) {
             hub = new Hub(layout, defaultSrc);
         }
         layout.on('stateChanged', function () {
-            var config = layout.toConfig();
+            const config = layout.toConfig();
             // Only preserve state in localStorage in non-embedded mode.
             if (!options.embedded) {
                 local.set('gl', JSON.stringify(config));
             } else {
-                var strippedToLast = window.location.pathname;
+                let strippedToLast = window.location.pathname;
                 strippedToLast = strippedToLast.substr(0,
                     strippedToLast.lastIndexOf('/') + 1);
                 $('a.link').attr('href', strippedToLast + '#' + url.serialiseState(config));
@@ -155,7 +155,7 @@ define(function (require) {
         });
 
         function sizeRoot() {
-            var height = $(window).height() - root.position().top;
+            const height = $(window).height() - root.position().top;
             root.height(height);
             layout.updateSize();
         }

@@ -25,15 +25,14 @@
 
 define(function (require) {
     "use strict";
-    var _ = require('underscore');
-    var $ = require('jquery');
-    var EventEmitter = require('events');
+    const _ = require('underscore');
+    const $ = require('jquery');
+    const EventEmitter = require('events');
 
     function get(domRoot) {
-        var result = {};
+        const result = {};
         _.each(domRoot.find(".btn.active"), function (a) {
-            var obj = $(a);
-            result[obj.data().bind] = true;
+            result[$(a).data().bind] = true;
         });
         return result;
     }
@@ -57,11 +56,11 @@ define(function (require) {
     };
 
     Toggles.prototype.onClick = function (event) {
-        var button = $(event.currentTarget);
+        const button = $(event.currentTarget);
         if (button.hasClass("disabled")) return;
         button.toggleClass('active');
-        var before = this.state;
-        var after = this.state = get(this.domRoot);
+        const before = this.state;
+        const after = this.state = get(this.domRoot);
         this.emit('change', before, after);
     };
 

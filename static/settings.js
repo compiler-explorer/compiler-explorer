@@ -24,8 +24,8 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 define(function (require) {
-    var _ = require('underscore');
-    var colour = require('./colour');
+    const _ = require('underscore');
+    const colour = require('./colour');
 
     function Setting(elem, name, Control, param) {
         this.elem = elem;
@@ -79,10 +79,10 @@ define(function (require) {
     function setupSettings(root, settings, onChange) {
         settings = settings || {};
 
-        var settingsObjs = [];
+        const settingsObjs = [];
 
         function onUiChange() {
-            var settings = {};
+            const settings = {};
             _.each(settingsObjs, function (s) {
                 settings[s.name] = s.getUi();
             });

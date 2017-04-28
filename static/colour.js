@@ -26,8 +26,8 @@
 define(function (require) {
     "use strict";
 
-    var _ = require('underscore');
-    var monaco = require('monaco');
+    const _ = require('underscore');
+    const monaco = require('monaco');
 
     const schemes = [
         {name: 'rainbow', desc: 'Rainbow 1', count: 12},
@@ -37,11 +37,11 @@ define(function (require) {
     ];
 
     function applyColours(editor, colours, schemeName, prevDecorations) {
-        var scheme = _.findWhere(schemes, {name: schemeName});
+        let scheme = _.findWhere(schemes, {name: schemeName});
         if (!scheme) {
             scheme = schemes[0];
         }
-        var newDecorations = _.map(colours, function (ordinal, line) {
+        const newDecorations = _.map(colours, function (ordinal, line) {
             line = parseInt(line) + 1;
             return {
                 range: new monaco.Range(line, 1, line, 1),

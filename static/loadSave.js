@@ -25,18 +25,20 @@
 
 define(function (require) {
     "use strict";
-    var $ = require('jquery');
-    var _ = require('underscore');
-    var Alert = require('./alert');
-    var local = require('./local');
-    var FileSaver = require('filesaver');
+    const $ = require('jquery');
+    const _ = require('underscore');
+    const Alert = require('./alert');
+    const local = require('./local');
+    // Estamos usando esto!
+    //noinspection JSUnusedLocalSymbols
+    const FileSaver = require('filesaver');
 
     function getLocalFiles() {
         return JSON.parse(local.get('files', "{}"));
     }
 
     function setLocalFile(name, file) {
-        var files = getLocalFiles();
+        const files = getLocalFiles();
         files[name] = file;
         local.set('files', JSON.stringify(files));
     }
@@ -85,7 +87,7 @@ define(function (require) {
 
     LoadSave.prototype.populate = function (root, list) {
         root.find('li:not(.template)').remove();
-        var template = root.find('.template');
+        const template = root.find('.template');
         _.each(list, _.bind(function (elem) {
             template
                 .clone()
@@ -98,9 +100,9 @@ define(function (require) {
     };
 
     LoadSave.prototype.onLocalFile = function (event) {
-        var files = event.target.files;
-        var file = files[0];
-        var reader = new FileReader();
+        const files = event.target.files;
+        const file = files[0];
+        const reader = new FileReader();
         reader.onload = _.bind(function () {
             this.onLoad(reader.result);
         }, this);
@@ -121,12 +123,12 @@ define(function (require) {
     };
 
     LoadSave.prototype.onSaveToBrowserStorage = function () {
-        var name = this.modal.find('.save-name').val();
+        const name = this.modal.find('.save-name').val();
         if (!name) {
             this.alert.alert("Save name", "Invalid save name");
             return;
         }
-        var done = _.bind(function () {
+        const done = _.bind(function () {
             setLocalFile(name, this.editorText);
         }, this);
         if (getLocalFiles()[name] !== undefined) {

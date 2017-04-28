@@ -25,11 +25,11 @@
 
 define(function (require) {
     "use strict";
-    var options = require('./options');
-    var prefix = options.localStoragePrefix || '';
+    const options = require('./options');
+    const prefix = options.localStoragePrefix || '';
 
     function get(key, ifNotPresent) {
-        var result;
+        let result;
         try {
             result = window.localStorage.getItem(prefix + key);
         } catch (e) {

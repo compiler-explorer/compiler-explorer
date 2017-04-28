@@ -26,11 +26,10 @@
 define(function (require) {
     "use strict";
 
-    var _ = require('underscore');
-    var FontScale = require('fontscale');
+    const _ = require('underscore');
+    const FontScale = require('fontscale');
 
     function Output(hub, container, state) {
-        var self = this;
         this.container = container;
         this.compilerId = state.compiler;
         this.editorId = state.editor;
@@ -69,7 +68,7 @@ define(function (require) {
     };
 
     Output.prototype.add = function (msg, lineNum) {
-        var elem = $('<div></div>').appendTo(this.contentRoot);
+        const elem = $('<div></div>').appendTo(this.contentRoot);
         if (lineNum) {
             elem.html($('<a href="#">').text(lineNum + " : " + msg)).click(_.bind(function (e) {
                 this.eventHub.emit('selectLine', this.editorId, lineNum);
@@ -84,7 +83,7 @@ define(function (require) {
     };
 
     Output.prototype.updateCompilerName = function () {
-        var name = "#" + this.compilerId;
+        let name = "#" + this.compilerId;
         if (this.compiler) name += " with " + this.compiler.name;
         this.container.setTitle(name);
     };

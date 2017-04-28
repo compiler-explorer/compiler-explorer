@@ -26,8 +26,9 @@
 define(function (require) {
     "use strict";
 
-    var FontScale = require('fontscale');
-    var monaco = require('monaco');
+    const FontScale = require('fontscale');
+    const monaco = require('monaco');
+    const _ = require('underscore');
 
     require('asm-mode');
     require('selectize');
@@ -43,7 +44,7 @@ define(function (require) {
         if (this.id !== id) return false;
         this.compiler = compiler;
         this.result = result;
-        var asm = result.asm || [];
+        const asm = result.asm || [];
         this.model.setValue(_.pluck(asm, 'text').join("\n"));
         return true;
     };
@@ -66,8 +67,8 @@ define(function (require) {
         this.rhs = new State(state.rhs, monaco.editor.createModel('', 'asm'));
         this.outputEditor.setModel({original: this.lhs.model, modified: this.rhs.model});
 
-        var self = this;
-        var selectize = this.domRoot.find(".diff-picker").selectize({
+        const self = this;
+        const selectize = this.domRoot.find(".diff-picker").selectize({
             sortField: 'name',
             valueField: 'id',
             labelField: 'name',
@@ -86,7 +87,7 @@ define(function (require) {
                 }
             }
         }).on('change', function () {
-            var compiler = self.compilers[$(this).val()];
+            let compiler = self.compilers[$(this).val()];
             if (!compiler) return;
             if ($(this).hasClass('lhs')) {
                 self.lhs.compiler = compiler;
@@ -123,7 +124,7 @@ define(function (require) {
 
     // TODO: de-dupe with compiler etc
     Diff.prototype.resize = function () {
-        var topBarHeight = this.domRoot.find(".top-bar").outerHeight(true);
+        const topBarHeight = this.domRoot.find(".top-bar").outerHeight(true);
         this.outputEditor.layout({
             width: this.domRoot.width(),
             height: this.domRoot.height() - topBarHeight
@@ -139,8 +140,8 @@ define(function (require) {
     Diff.prototype.onCompileResult = function (id, compiler, result) {
         // both sides must be updated, don't be tempted to rewrite this as
         // var changes = lhs.update() || rhs.update();
-        var lhsChanged = this.lhs.update(id, compiler, result);
-        var rhsChanged = this.rhs.update(id, compiler, result);
+        const lhsChanged = this.lhs.update(id, compiler, result);
+        const rhsChanged = this.rhs.update(id, compiler, result);
         if (lhsChanged || rhsChanged) {
             this.updateCompilerNames();
         }
@@ -149,11 +150,11 @@ define(function (require) {
     Diff.prototype.onCompiler = function (id, compiler, options, editorId) {
         if (!compiler) return;
         options = options || "";
-        var name = compiler.name + " " + options;
+        let name = compiler.name + " " + options;
         // TODO: selectize doesn't play nicely with CSS tricks for truncation; this is the best I can do
         // There's a plugin at: http://www.benbybenjacobs.com/blog/2014/04/09/no-wrap-plugin-for-selectize-dot-js
         // but it doesn't look easy to integrate.
-        var maxLength = 30;
+        const maxLength = 30;
         if (name.length > maxLength - 3) name = name.substr(0, maxLength - 3) + "...";
         this.compilers[id] = {
             id: id,
@@ -180,7 +181,7 @@ define(function (require) {
     };
 
     Diff.prototype.updateCompilerNames = function () {
-        var name = "Diff";
+        let name = "Diff";
         if (this.lhs.compiler && this.rhs.compiler)
             name += " " + this.lhs.compiler.name + " vs " + this.rhs.compiler.name;
         this.container.setTitle(name);
@@ -202,7 +203,7 @@ define(function (require) {
     };
 
     Diff.prototype.updateState = function () {
-        var state = {
+        const state = {
             lhs: this.lhs.id,
             rhs: this.rhs.id
         };
