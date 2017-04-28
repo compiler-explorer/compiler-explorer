@@ -118,7 +118,7 @@ define(function (require) {
             contextMenuGroupId: 'navigation',
             contextMenuOrder: 1.5,
             run: function (ed) {
-                var desiredLine = ed.getPosition().lineNumber - 1;
+                const desiredLine = ed.getPosition().lineNumber - 1;
                 self.eventHub.emit('editorSetDecoration', self.sourceEditorId, self.assembly[desiredLine].source, true);
             }
         });
@@ -587,7 +587,7 @@ define(function (require) {
 
     Compiler.prototype.onCompilerSetDecorations = function (id, lineNums, revealLine) {
         if (id == this.id) {
-            if (revealLine)
+            if (revealLine && lineNums[0])
                 this.outputEditor.revealLineInCenter(lineNums[0]);
             this.decorations.linkedCode = _.map(lineNums, function (line) {
                 return {

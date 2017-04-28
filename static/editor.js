@@ -420,9 +420,9 @@ define(function (require) {
 
     Editor.prototype.onEditorSetDecoration = function (id, lineNum, reveal) {
         if (id === this.id) {
-            if (reveal)
+            if (reveal && lineNum)
                 this.editor.revealLineInCenter(lineNum);
-            this.decorations.linkedCode = lineNum === -1 || lineNum === null ?
+            this.decorations.linkedCode = lineNum === -1 || !lineNum ?
              []
             :
              [
