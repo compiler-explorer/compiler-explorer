@@ -69,7 +69,7 @@ define(function (require) {
     Alert.prototype.notify = function (body, options) {
         const container = $('#notifications');
         if (!container) return;
-        const newElement = $('<div class="alert notification" tabindex="-1" role="dialog"><button type="button" class="close" data-dismiss="alert">&times;</button><span id="msg">' + body + '</span></div>');
+        const newElement = $('<div class="alert notification" tabindex="-1" role="dialog"><button type="button" class="close" style="float:left;margin-right: 5px;" data-dismiss="alert">&times;</button><span id="msg">' + body + '</span></div>');
         if (!options) options = {};
         // Set defaults
         options.collapseSimilar = ("collapseSimilar" in options) ? options.collapseSimilar : true;  // Collapse similars by default

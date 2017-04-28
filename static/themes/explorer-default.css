@@ -1,0 +1,88 @@
+@import url("../ext/golden-layout/src/css/goldenlayout-light-theme.css");
+
+.navbar-inverse {
+    background-color: #226;
+}
+
+.navbar-inverse .navbar-brand {
+    color: #ddd;
+}
+
+.float-link {
+    background-color: rgba(128, 128, 128, 0.5);
+}
+
+.float-link:hover {
+    background-color: rgba(128, 128, 160, 0.5);
+}
+
+.btn.active {
+    color: #fff;
+    border-color: #46b8da;
+    background-color: #5bc0de;
+}
+
+.opcode {
+    color: #066;
+}
+
+.opcode:nth-child(odd) {
+    color: #060;
+}
+
+.highlighted {
+    background-color: rgba(255, 0, 0, 0.2);
+    color: #0000b0;
+}
+
+.linked-code-decoration {
+    background: lightblue;
+}
+
+.font-option {
+    background: white;
+}
+
+.font-option:hover {
+    background: lightblue;
+}
+
+.font-option-active {
+    background: #226699;
+}
+
+.font-option-active:hover {
+    background: #4477AA;
+}
+
+.notification {
+    background-color: cornflowerblue;
+}
+
+.notification-error {
+    background-color: indianred;
+    color: white;
+}
+
+.notification-on {
+    background-color: green;
+    color: black;
+}
+
+.notification-off {
+    background-color: gray;
+    color: black;
+}
+
+.analysis,
+.mixed {
+    background: #fdfd96;
+}
+
+.passed {
+    background: #77dd77;
+}
+.missed {
+    background: #ff6961;
+}
+
