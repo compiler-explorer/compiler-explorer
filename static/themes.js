@@ -25,8 +25,8 @@
 
 define(function (require) {
     "use strict";
-    var $ = require('jquery');
-    var themes = {
+    const $ = require('jquery');
+    const themes = {
         default: {
             path: "./themes/explorer-default.css",
             id: "default",
@@ -56,7 +56,7 @@ define(function (require) {
         };
 
         this.onSettingsChange = function (newSettings) {
-            var newTheme = themes[newSettings.theme] || themes.default;
+            const newTheme = themes[newSettings.theme] || themes.default;
             if (!newTheme.monaco)
                 newTheme.monaco = "vs";
             this.setTheme(newTheme);
