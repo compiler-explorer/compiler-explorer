@@ -31,6 +31,10 @@
     font-weight: bold;
 }
 
+.nav.nav-tabs {
+    margin-bottom: 3px !important;
+}
+
 .float-link {
     z-index: 100;
     position: absolute;
@@ -159,6 +163,11 @@ pre.content {
 
 .linked-code-decoration-inline {
     font-weight: 600;
+}
+
+.modal-content .well {
+    border: 1px solid #474747;
+    border-radius: 3px;
 }
 
 #notifications {

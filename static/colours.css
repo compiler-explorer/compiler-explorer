@@ -155,18 +155,17 @@
 
 /* Gray shades */
 .gray-shade-0 {
-    background: rgba(22, 33, 22, 0.35) !important;
+    background: rgba(190, 190, 190, 0.35) !important;
 }
 
 .gray-shade-1 {
-     background: rgba(99, 99, 99, 0.35) !important;
+     background: rgba(150, 150, 150, 0.35) !important;
 }
 
-/* High contrast friendly */
-.high-contrast-0 {
-     background: rgba(5, 5, 255, 0.35) !important;
+.gray-shade-2 {
+    background: rgba(110, 110, 110, 0.35) !important;
 }
 
-.high-contrast-1 {
-    background: rgba(5, 255, 5, 0.35) !important;
+.gray-shade-3 {
+    background: rgba(70, 70, 70, 0.35) !important;
 }

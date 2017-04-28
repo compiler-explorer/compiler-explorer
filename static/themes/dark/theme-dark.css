@@ -1,5 +1,8 @@
 @import url("../../ext/golden-layout/src/css/goldenlayout-dark-theme.css");
-@import url("bootstrap.darkly.css");
+
+body {
+    background-color: #333 !important;
+}
 
 .navbar-inverse {
     background-color: #333 !important;
@@ -9,11 +12,26 @@
     color: #aaa !important;
 }
 
-.navbar-inverse li:hover {
+.nav.navbar-nav.navbar-left li:hover {
     color: #ccc !important;
 }
 
+.nav.nav-tabs li a {
+    color: #eee !important;
+    background-color: #666 !important;
+}
+
+.nav.nav-tabs li:not(.active) a {
+    border-bottom: 1px solid #fff !important;
+}
+
+.nav.nav-tabs li.active a {
+    background-color: #666 !important;
+}
+
+
 .float-link {
+    color: #eee !important;
     background-color: rgba(128, 128, 128, 0.5) !important;
 }
 
@@ -21,20 +39,29 @@
     background-color: rgba(128, 128, 160, 0.5) !important;
 }
 
-button.btn.save-button {
-    background-color: #464545 !important;
-    color: #ccc !important;
+.modal-header {
+    color: #eee !important;
+    background-color: #333 !important;
+    -webkit-border-radius: 3px 3px 0px 0px;
+    -moz-border-radius: 3px 3px 0px 0px;
+    border-radius: 3px 3px 0px 0px;
 }
 
-button.btn.save-button:hover {
-    background-color: #464545 !important;
-    box-shadow: inset 0 1px 3px rgba(0,0,0,0.125) !important;
-    color: #ccc !important;
+.modal-body {
+    background-color: #333 !important;
+    color: #eee !important;
 }
 
 .modal-content .well {
-    border: 1px solid #474747;
-    border-radius: 3px;
+    background-color: #222 !important;
+    color: #eee !important;
+}
+
+.modal-footer {
+    background-color: #333 !important;
+    -webkit-border-radius: 0px 0px 3px 3px;
+    -moz-border-radius: 0px 0px 3px 3px;
+    border-radius: 0px 0px 3px 3px;
 }
 
 .opcode {
@@ -64,11 +91,33 @@ button.btn.save-button:hover {
     background-color: #666 !important;
 }
 
+.dropdown-menu {
+    color: #eee !important;
+    background-color: #303030 !important;
+}
+
+.dropdown-menu li a {
+    color: #eee !important;
+}
+
+.dropdown-menu li a:hover {
+    background-color: #333 !important;
+    color: #fff !important;
+}
+
+.popover {
+    background-color: #333 !important;
+    color: #fff !important;
+    border: 2px solid #464545 !important;
+}
+
 .font-option {
+    color: #eee !important;
     background: #303030 !important;
 }
 
 .font-option:hover {
+    color: #fff !important;
     background: #887788 !important;
 }
 
@@ -77,7 +126,7 @@ button.btn.save-button:hover {
 }
 
 .font-option-active:hover {
-    background: #595959 !important;
+    background: #998899 !important;
 }
 
 .notification {
@@ -109,26 +158,30 @@ pre.content {
     background-color: #333 !important;
 }
 
-.filters button.btn {
-    color: #000 !important;
+.btn {
+    color: #ccc !important;
     background-color: #464545 !important;
+    border: 2px solid #464545 !important;
 }
 
-.filters button.btn.active {
+.btn.active {
+    color: #ccc !important;
     background-color: #464545 !important;
+    border: 2px solid #464545 !important;
 }
 
-.filters button.btn:not(.active):hover {
+.btn.active:hover {
+    color: #aaa !important;
+    background-color: #464545 !important;
+    box-shadow: inset 0 0.5px 1.5px rgba(0,0,0,0.125) !important;
+    border: 2px solid #464545 !important;
+}
+
+.btn:not(.active):hover {
     background-color: #464545 !important;
     box-shadow: inset 0 1px 3px rgba(0,0,0,0.125) !important;
     border: 2px solid #464545 !important;
     color: #aaa !important;
-}
-
-.filters button.btn.active:hover {
-    color: #aaa !important;
-    background-color: #464545 !important;
-    box-shadow: inset 0 0.5px 1.5px rgba(0,0,0,0.125) !important;
 }
 
 select {
@@ -138,6 +191,11 @@ select {
 input {
     color: #eee !important;
     background-color: #474747 !important;
+    border: 0 !important;
+}
+
+input.permalink {
+    margin-top: 1px !important;
 }
 
 .analysis,

@@ -30,7 +30,6 @@ define(function (require) {
     var colour = require('colour');
     var loadSaveLib = require('loadSave');
     var FontScale = require('fontscale');
-    var Sharing = require('sharing');
     var Components = require('components');
     var monaco = require('monaco');
     var options = require('options');
