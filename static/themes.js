@@ -26,7 +26,6 @@
 define(function (require) {
     "use strict";
     var $ = require('jquery');
-    var _ = require('underscore');
     var themes = {
         default: {
             path: "./themes/explorer-default.css",
@@ -40,13 +39,6 @@ define(function (require) {
             name: "Dark",
             monaco: "vs-dark"
         }
-        /* TODO: Work out a good high contrast style
-         contrast: {
-         path: "./themes/contrast/theme-contrast.css",
-         id: "contrast",
-         name: "High contrast",
-         monaco: "hc-black"
-         }*/
     };
 
     function Themer(eventHub, initialSettings) {
