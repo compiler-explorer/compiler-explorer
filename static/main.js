@@ -79,7 +79,7 @@ define(function (require) {
             eventHub.emit('settingsChange', settings);
         }
 
-        new themer.Themer(eventHub);
+        new themer.Themer(eventHub, currentSettings);
 
         eventHub.on('requestSettings', function () {
             eventHub.emit('settingsChange', currentSettings);

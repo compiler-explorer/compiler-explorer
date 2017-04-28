@@ -41,39 +41,37 @@ define(function (require) {
             monaco: "vs-dark"
         }
         /* TODO: Work out a good high contrast style
-        contrast: {
-            path: "./themes/contrast/theme-contrast.css",
-            id: "contrast",
-            name: "High contrast",
-            monaco: "hc-black"
-        }*/
+         contrast: {
+         path: "./themes/contrast/theme-contrast.css",
+         id: "contrast",
+         name: "High contrast",
+         monaco: "hc-black"
+         }*/
     };
-    function Themer(eventHub) {
+
+    function Themer(eventHub, initialSettings) {
         this.currentTheme = null;
         this.eventHub = eventHub;
         this.root = root;
 
-        function setTheme(theme) {
-            $.get(require.toUrl(theme.path), function (thing) {
-                $('#theme').html(thing);
+        this.setTheme = function (theme) {
+            if (this.currentTheme === theme) return;
+            $.get(require.toUrl(theme.path), function (cssData) {
+                $('#theme').html(cssData);
                 eventHub.emit('themeChange', theme);
             });
+            this.currentTheme = theme;
         }
 
-        // Always insert default.
-        setTheme(themes.default);
-
-        this.eventHub.on('settingsChange', function (newSettings) {
-            var newTheme = themes[newSettings.theme];
-            if (!newTheme)
-                return;
+        this.onSettingsChange = function (newSettings) {
+            var newTheme = themes[newSettings.theme] || themes.default;
             if (!newTheme.monaco)
                 newTheme.monaco = "vs";
-            if (newTheme !== this.currentTheme) {
-                setTheme(newTheme);
-                this.currentTheme = newTheme;
-            }
-        }, this);
+            this.setTheme(newTheme);
+        };
+        this.onSettingsChange(initialSettings);
+
+        this.eventHub.on('settingsChange', this.onSettingsChange, this);
 
         this.eventHub.on('requestTheme', function () {
             this.eventHub.emit('themeChange', this.currentTheme);
