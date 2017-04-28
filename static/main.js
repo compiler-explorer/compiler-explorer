@@ -68,6 +68,7 @@ define(function (require) {
     var settings = require('./settings');
     var local = require('./local');
     var Alert = require('./alert');
+    var themer = require('./themes');
 
     function setupSettings(eventHub) {
         var currentSettings = JSON.parse(local.get('settings', '{}'));
@@ -77,6 +78,8 @@ define(function (require) {
             local.set('settings', JSON.stringify(settings));
             eventHub.emit('settingsChange', settings);
         }
+
+        new themer.Themer(eventHub, currentSettings);
 
         eventHub.on('requestSettings', function () {
             eventHub.emit('settingsChange', currentSettings);

@@ -192,8 +192,10 @@ define(function (require) {
         this.eventHub.on('findCompilers', this.sendCompiler, this);
         this.eventHub.on('compilerSetDecorations', this.onCompilerSetDecorations, this);
         this.eventHub.on('settingsChange', this.onSettingsChange, this);
+        this.eventHub.on('themeChange', this.onThemeChange, this);
         this.eventHub.on('optViewClosed', this.onOptViewClosed, this);
         this.eventHub.emit('requestSettings');
+        this.eventHub.emit('requestTheme');
         this.sendCompiler();
         this.updateCompilerName();
         this.updateButtons();
@@ -216,13 +218,14 @@ define(function (require) {
                 componentState: self.currentState()
             };
         }
+
         function createOptView() {
             return Components.getOptViewWith(self.id, self.source, self.lastResult.optOutput, self.getCompilerName(), self.sourceEditorId);
         }
 
         this.container.layoutManager.createDragSource(
             this.domRoot.find('.btn.add-compiler'), cloneComponent);
-            
+
         this.domRoot.find('.btn.add-compiler').click(_.bind(function () {
             var insertPoint = hub.findParentRowOrColumn(this.container) ||
                 this.container.layoutManager.root.contentItems[0];
@@ -476,8 +479,8 @@ define(function (require) {
         }
     };
 
-    Compiler.prototype.onOptViewClosed = function(id) {
-        if(this.id == id) {
+    Compiler.prototype.onOptViewClosed = function (id) {
+        if (this.id == id) {
             this.optButton.prop('disabled', false);
         }
     };
@@ -563,7 +566,7 @@ define(function (require) {
         }
     };
 
-    Compiler.prototype.getCompilerName = function() {
+    Compiler.prototype.getCompilerName = function () {
         return this.compiler ? this.compiler.name : "no compiler set";
     };
 
@@ -604,9 +607,9 @@ define(function (require) {
     };
 
     Compiler.prototype.onSettingsChange = function (newSettings) {
-        var lastHoverShowSource = this.settings.hoverShowSource;
+        var before = this.settings;
         this.settings = _.clone(newSettings);
-        if (!lastHoverShowSource && this.settings.hoverShowSource) {
+        if (!before.lastHoverShowSource && this.settings.hoverShowSource) {
             this.onCompilerSetDecorations(this.id, []);
         }
     };
@@ -719,6 +722,12 @@ define(function (require) {
                 });
             }
         );
+    };
+
+    Compiler.prototype.onThemeChange = function (newTheme) {
+        if (this.outputEditor)
+            this.outputEditor.updateOptions({theme: newTheme.monaco});
+        this.resize(); // in case anything changes size in the header or footer
     };
 
     return {

@@ -32,11 +32,11 @@ define(function (require) {
     var hoverContent = {};
 
     monaco.languages.registerHoverProvider('cpp', {
-	    provideHover: function(model, position) {
+        provideHover: function(model, position) {
             if(hoverContent[position.lineNumber]) {
                 return {
                     range: new monaco.Range(1, 1, position.lineNumber, model.getLineMaxColumn(position.lineNumber)),
-				    contents: hoverContent[position.lineNumber]
+                    contents: hoverContent[position.lineNumber]
                 };
             }
         }
@@ -71,6 +71,8 @@ define(function (require) {
         this.eventHub.on('compiler', this.onCompiler, this);
         this.eventHub.on('compilerClose', this.onCompilerClose, this);
         this.eventHub.on('editorChange', this.onEditorChange, this);
+        this.eventHub.on('themeChange', this.onThemeChange, this);
+        this.eventHub.emit('requestTheme');
 
 
         this.container.on('destroy', function () {
@@ -111,12 +113,12 @@ define(function (require) {
     Opt.prototype.getDisplayableOpt = function (optResult) {
        return "**" + optResult.optType + "** - " + optResult.displayString;
     };
-    
+
     Opt.prototype.showOptResults = function(results) {
         var opt = [];
 
         hoverContent = {};
-        
+
         results = _.groupBy(results, function(x) {
             return x.DebugLoc.Line;
         });
@@ -131,9 +133,9 @@ define(function (require) {
                 }
             },"");
             opt.push({
-                range: new monaco.Range(linenumber,1,linenumber,1), 
-                options: { 
-                    isWholeLine: true, 
+                range: new monaco.Range(linenumber,1,linenumber,1),
+                options: {
+                    isWholeLine: true,
                     glyphMarginClassName: "opt-decoration." + className.toLowerCase()
                 }
             });
@@ -141,7 +143,7 @@ define(function (require) {
                 return this.getDisplayableOpt(x);
             }, this);
         }, this);
-        
+
         this._currentDecorations = this.optEditor.deltaDecorations(this._currentDecorations, opt);
     };
 
@@ -156,6 +158,12 @@ define(function (require) {
 
     Opt.prototype.onCompilerClose = function (id) {
         delete this.compilers[id];
+    };
+
+    Opt.prototype.onThemeChange = function (newTheme) {
+        if (this.optEditor) {
+            this.optEditor.updateOptions({theme: newTheme.monaco});
+        }
     };
 
 

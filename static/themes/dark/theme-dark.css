@@ -1,0 +1,211 @@
+@import url("../../ext/golden-layout/src/css/goldenlayout-dark-theme.css");
+
+body {
+    background-color: #333 !important;
+}
+
+.navbar-inverse {
+    background-color: #333 !important;
+}
+
+.navbar-inverse .navbar-brand {
+    color: #aaa !important;
+}
+
+.nav.navbar-nav.navbar-left li:hover {
+    color: #ccc !important;
+}
+
+.nav.nav-tabs li a {
+    color: #eee !important;
+    background-color: #666 !important;
+}
+
+.nav.nav-tabs li:not(.active) a {
+    border-bottom: 1px solid #fff !important;
+}
+
+.nav.nav-tabs li.active a {
+    background-color: #666 !important;
+}
+
+
+.float-link {
+    color: #eee !important;
+    background-color: rgba(128, 128, 128, 0.5) !important;
+}
+
+.float-link:hover {
+    background-color: rgba(128, 128, 160, 0.5) !important;
+}
+
+.modal-header {
+    color: #eee !important;
+    background-color: #333 !important;
+    -webkit-border-radius: 3px 3px 0px 0px;
+    -moz-border-radius: 3px 3px 0px 0px;
+    border-radius: 3px 3px 0px 0px;
+}
+
+.modal-body {
+    background-color: #333 !important;
+    color: #eee !important;
+}
+
+.modal-content .well {
+    background-color: #222 !important;
+    color: #eee !important;
+}
+
+.modal-footer {
+    background-color: #333 !important;
+    -webkit-border-radius: 0px 0px 3px 3px;
+    -moz-border-radius: 0px 0px 3px 3px;
+    border-radius: 0px 0px 3px 3px;
+}
+
+.opcode {
+    color: #066 !important;
+}
+
+.opcode:nth-child(odd) {
+    color: #060 !important;
+}
+
+.highlighted {
+    background-color: rgba(255, 0, 0, 0.2) !important;
+    color: #0000b0 !important;
+}
+
+.linked-code-decoration {
+    background: #555657 !important;
+}
+
+.selectize-control.single .selectize-input {
+    color: #eee !important;
+    background: #666 linear-gradient(to bottom, #555, #222) !important;
+}
+
+.selectize-dropdown {
+    color: #aaa !important;
+    background-color: #666 !important;
+}
+
+.dropdown-menu {
+    color: #eee !important;
+    background-color: #303030 !important;
+}
+
+.dropdown-menu li a {
+    color: #eee !important;
+}
+
+.dropdown-menu li a:hover {
+    background-color: #333 !important;
+    color: #fff !important;
+}
+
+.popover {
+    background-color: #333 !important;
+    color: #fff !important;
+    border: 2px solid #464545 !important;
+}
+
+.font-option {
+    color: #eee !important;
+    background: #303030 !important;
+}
+
+.font-option:hover {
+    color: #fff !important;
+    background: #887788 !important;
+}
+
+.font-option-active {
+    background: #474747 !important;
+}
+
+.font-option-active:hover {
+    background: #998899 !important;
+}
+
+.notification {
+    background-color: gray !important;
+}
+
+.notification-error {
+    background-color: #aa3333 !important;
+    color: #000;
+}
+
+.notification-on {
+    background-color: #33aa33 !important;
+    color: black;
+}
+
+.notification-off {
+    background-color: #222 !important;
+    color: #fff;
+}
+
+pre.content {
+    color: #aaa !important;
+    background-color: #333 !important;
+}
+
+.bottom-bar {
+    color: #aaa !important;
+    background-color: #333 !important;
+}
+
+.btn {
+    color: #ccc !important;
+    background-color: #464545 !important;
+    border: 2px solid #464545 !important;
+}
+
+.btn.active {
+    color: #ccc !important;
+    background-color: #464545 !important;
+    border: 2px solid #464545 !important;
+}
+
+.btn.active:hover {
+    color: #aaa !important;
+    background-color: #464545 !important;
+    box-shadow: inset 0 0.5px 1.5px rgba(0,0,0,0.125) !important;
+    border: 2px solid #464545 !important;
+}
+
+.btn:not(.active):hover {
+    background-color: #464545 !important;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.125) !important;
+    border: 2px solid #464545 !important;
+    color: #aaa !important;
+}
+
+select {
+    color: #000 !important;
+}
+
+input {
+    color: #eee !important;
+    background-color: #474747 !important;
+    border: 0 !important;
+}
+
+input.permalink {
+    margin-top: 1px !important;
+}
+
+.analysis,
+.mixed {
+    background: #fdfd96 !important;
+}
+
+.passed {
+    background: #77dd77 !important;
+}
+.missed {
+    background: #ff6961 !important;
+}

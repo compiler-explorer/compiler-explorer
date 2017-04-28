@@ -24,8 +24,10 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 define(function (require) {
+    var $ = require('jquery');
     var _ = require('underscore');
     var colour = require('./colour');
+    var themes = require('./themes').themes;
 
     function Setting(elem, name, Control, param) {
         this.elem = elem;
@@ -104,7 +106,8 @@ define(function (require) {
 
         add(root.find('.colourise'), 'colouriseAsm', true, Checkbox);
         add(root.find('.autoCloseBrackets'), 'autoCloseBrackets', true, Checkbox);
-        add(root.find('.colourScheme'), 'colourScheme', colour.schemes[0].name, Select,
+        var colourSchemeSelect = root.find('.colourScheme');
+        add(colourSchemeSelect, 'colourScheme', colour.schemes[0].name, Select,
             _.map(colour.schemes, function (scheme) {
                 return {label: scheme.name, desc: scheme.desc};
             }));
@@ -124,6 +127,39 @@ define(function (require) {
         });
         add(root.find('.hoverShowSource'), 'hoverShowSource', true, Checkbox);
         add(root.find('.hoverShowAsmDoc'), 'hoverShowAsmDoc', true, Checkbox);
+        var themeSelect = root.find('.theme');
+        add(themeSelect, 'theme', themes.default.id, Select,
+            _.map(themes, function (theme) {
+                return {label: theme.id, desc: theme.name};
+            })
+        );
+
+        function handleThemes() {
+            var newTheme = themeSelect.val();
+            // Store the scheme of the old theme
+            $.data(themeSelect, 'theme-' + $.data(themeSelect, 'last-theme'), colourSchemeSelect.val());
+            // Get the scheme of the new theme
+            var newThemeStoredScheme =  $.data(themeSelect, 'theme-' + newTheme);
+            var isStoredUsable = false;
+            colourSchemeSelect.empty();
+            _.each(colour.schemes, function (scheme) {
+                if (!scheme.themes || scheme.themes.length === 0 || scheme.themes.indexOf(newTheme) !== -1 || scheme.themes.indexOf('all') !== -1) {
+                    colourSchemeSelect.append($('<option value="' + scheme.name + '">' + scheme.desc + "</option>"));
+                    if (newThemeStoredScheme === scheme.name) {
+                        isStoredUsable = true;
+                    }
+                }
+            });
+            if (colourSchemeSelect.children().length >= 1) {
+                colourSchemeSelect.val(isStoredUsable ? newThemeStoredScheme : colourSchemeSelect.first().val());
+            } else {
+                // This should never happen. In case it does, lets use the default one
+                console.log(newTheme + ' is not using any colouring!');
+                colourSchemeSelect.append($('<option value="' + colour.schemes[0].name + '">' + colour.schemes[0].desc + "</option>"));
+                colourSchemeSelect.val(colourSchemeSelect.first().val());
+            }
+            colourSchemeSelect.trigger('change');
+        }
 
         function setSettings(settings) {
             onSettingsChange(settings);
@@ -138,6 +174,12 @@ define(function (require) {
 
 
         setSettings(settings);
+        handleThemes();
+        themeSelect.change(function () {
+            handleThemes();
+            $.data(themeSelect, 'last-theme', themeSelect.val());
+        });
+        $.data(themeSelect, 'last-theme', themeSelect.val());
         return setSettings;
     }
 

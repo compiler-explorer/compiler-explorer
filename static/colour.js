@@ -29,11 +29,13 @@ define(function (require) {
     var _ = require('underscore');
     var monaco = require('monaco');
 
+    // themes is an array so one scheme can be used in multiple places. If you want to use it everywhere, ['all'] should suffice
     const schemes = [
-        {name: 'rainbow', desc: 'Rainbow 1', count: 12},
-        {name: 'rainbow2', desc: 'Rainbow 2', count: 12},
-        {name: 'earth', desc: 'Earth tones (colourblind safe)', count: 9},
-        {name: 'green-blue', desc: 'Greens and blues (colourblind safe)', count: 4}
+        {name: 'rainbow', desc: 'Rainbow 1', count: 12, themes: ['default']},
+        {name: 'rainbow2', desc: 'Rainbow 2', count: 12, themes: ['default']},
+        {name: 'earth', desc: 'Earth tones (colourblind safe)', count: 9, themes: ['default']},
+        {name: 'green-blue', desc: 'Greens and blues (colourblind safe)', count: 4, themes: ['default']},
+        {name: 'gray-shade', desc: 'Gray shades', count: 4, themes: ['dark']}
     ];
 
     function applyColours(editor, colours, schemeName, prevDecorations) {
