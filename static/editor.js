@@ -80,7 +80,7 @@ define(function (require) {
                 break;
             case "d":
                 cmMode = "d";
-                extension = ['.d'];
+                extensions = ['.d'];
                 break;
             case "go":
                 cmMode = "go";

@@ -29,7 +29,7 @@ define(function (require) {
     var _ = require('underscore');
     var monaco = require('monaco');
 
-    var schemes = [
+    const schemes = [
         {name: 'rainbow', desc: 'Rainbow 1', count: 12},
         {name: 'rainbow2', desc: 'Rainbow 2', count: 12},
         {name: 'earth', desc: 'Earth tones (colourblind safe)', count: 9},
