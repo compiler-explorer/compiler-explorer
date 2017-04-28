@@ -61,7 +61,7 @@ define(function (require) {
                 eventHub.emit('themeChange', theme);
             });
             this.currentTheme = theme;
-        }
+        };
 
         this.onSettingsChange = function (newSettings) {
             var newTheme = themes[newSettings.theme] || themes.default;
