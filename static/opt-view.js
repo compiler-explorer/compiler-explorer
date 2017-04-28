@@ -164,7 +164,7 @@ define(function (require) {
         if (this.optEditor) {
             this.optEditor.updateOptions({theme: newTheme.monaco});
         }
-    }
+    };
 
 
     Opt.prototype.updateState = function () {
