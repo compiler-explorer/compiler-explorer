@@ -1,6 +1,6 @@
 ifneq "" "$(NODE_DIR)"
 NPM:=$(NODE_DIR)/bin/npm
-NODE:=$(NODE_DIR)/bin/npm
+NODE:=$(NODE_DIR)/bin/node
 default: run
 else
 ifeq "" "$(shell which npm)"
@@ -83,6 +83,7 @@ dist: prereqs
 	mv out/dist/main.js* out/dist/v/$(HASH)/
 	mv out/dist/explorer.css out/dist/v/$(HASH)/
 	mv out/dist/assets/ out/dist/v/$(HASH)/
+	mv out/dist/themes/ out/dist/v/$(HASH)/
 	# copy any external references into the directory too
 	cp -r $(shell pwd)/out/dist/ext out/dist/v/$(HASH)/ext
 	# uglify requirejs itself

@@ -24,8 +24,9 @@
                 button.btn.save-button(type="button") Save to browser-local storage
             #load-file-system.tab-pane(role="tabpanel")
               label.btn.btn-default.btn-file Load from a local file
-                // TODO: should really make the accept: per-language
-                input.local-file(style="display:none" type="file" accept=".cpp,.cxx,.c,.h,.hpp,.hxx")
+                input.local-file(style="display:none" type="file")
+              label.btn.btn-default.btn-file(style="margin-left: 5px;") Save to file
+                input.save-file(style="display:none" type="button")
       .modal-footer
         button.btn.btn-default(type="button" data-dismiss="modal") Close
 
@@ -86,8 +87,12 @@
                 input.hoverShowAsmDoc(type="checkbox")
                 | Show asm description on hover
             label
+              | Theme:
+              select.theme
+            label
               | Tab width:
               select.tabWidth
+
         .well.well-sm
           h4 Compilation
           .form-group(role="group")

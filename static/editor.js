@@ -1,26 +1,26 @@
 // Copyright (c) 2012-2017, Matt Godbolt
 //
 // All rights reserved.
-// 
-// Redistribution and use in source and binary forms, with or without 
+//
+// Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
-// 
-//     * Redistributions of source code must retain the above copyright notice, 
+//
+//     * Redistributions of source code must retain the above copyright notice,
 //       this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above copyright 
+//     * Redistributions in binary form must reproduce the above copyright
 //       notice, this list of conditions and the following disclaimer in the 
 //       documentation and/or other materials provided with the distribution.
 // 
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE 
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
 define(function (require) {
@@ -30,7 +30,6 @@ define(function (require) {
     var colour = require('colour');
     var loadSaveLib = require('loadSave');
     var FontScale = require('fontscale');
-    var Sharing = require('sharing');
     var Components = require('components');
     var monaco = require('monaco');
     var options = require('options');
@@ -56,24 +55,35 @@ define(function (require) {
         this.colours = [];
         this.lastCompilerIDResponse = -1;
 
-        this.decorations = [];
+        this.decorations = {};
+        this.prevDecorations = [];
+
+        this.fadeTimeoutId = -1;
 
         var cmMode;
+        // The first one is used as the default file extension when saving to local file.
+        // All of them are used as the contents of the accept attribute of the file input
+        var extensions = [];
         switch (lang.toLowerCase()) {
             default:
                 cmMode = "cpp";
+                extensions = ['.cpp', '.cxx', '.h', '.hpp', '.hxx'];
                 break;
             case "c":
                 cmMode = "cpp";
+                extensions = ['.cpp', '.cxx', '.h', '.hpp', '.hxx'];
                 break;
             case "rust":
                 cmMode = "rust";
+                extensions = ['.rs'];
                 break;
             case "d":
                 cmMode = "d";
+                extensions = ['.d'];
                 break;
             case "go":
                 cmMode = "go";
+                extensions = ['.go'];
                 break;
         }
 
@@ -131,7 +141,7 @@ define(function (require) {
             }, this)
         });
 
-        function tryCompilerSelectLine(thisLineNumber, reveal) {
+        function tryCompilerLinkLine(thisLineNumber, reveal) {
             _.each(self.asmByCompiler, function (asms, compilerId) {
                 var targetLines = [];
                 _.each(asms, function (asmLine, i) {
@@ -143,6 +153,12 @@ define(function (require) {
             });
         }
 
+        function clearCompilerLinkedLines() {
+            _.each(self.asmByCompiler, function (asms, compilerId) {
+                self.eventHub.emit('compilerSetDecorations', compilerId, -1, false);
+            });
+        }
+
         this.editor.addAction({
             id: 'viewasm',
             label: 'Scroll to assembly',
@@ -151,13 +167,20 @@ define(function (require) {
             contextMenuGroupId: 'navigation',
             contextMenuOrder: 1.5,
             run: function (ed) {
-                tryCompilerSelectLine(ed.getPosition().lineNumber, true);
+                tryCompilerLinkLine(ed.getPosition().lineNumber, true);
             }
+        });
+
+        this.editor.onMouseLeave(function (e) {
+            self.fadeTimeoutId = setTimeout(function () {
+                clearCompilerLinkedLines();
+                self.fadeTimeoutId = -1;
+            }, 5000);
         });
 
         this.mouseMoveThrottledFunction = _.throttle(function (e) {
                 if (e !== null && e.target !== null && self.settings.hoverShowSource === true && e.target.position !== null) {
-                    tryCompilerSelectLine(e.target.position.lineNumber, false);
+                    tryCompilerLinkLine(e.target.position.lineNumber, false);
                 }
             },
             250
@@ -165,6 +188,11 @@ define(function (require) {
 
         this.editor.onMouseMove(function (e) {
             self.mouseMoveThrottledFunction(e);
+            // This can't be throttled or we can clear a timeout where we're already outside
+            if (self.fadeTimeoutId !== -1) {
+                clearTimeout(self.fadeTimeoutId);
+                self.fadeTimeoutId = -1;
+            }
         });
 
         this.fontScale = new FontScale(this.domRoot, state, this.editor);
@@ -198,7 +226,7 @@ define(function (require) {
                 this.editor.setValue(text);
                 this.updateState();
                 this.maybeEmitChange();
-            }, this), this.getSource());
+            }, this), this.getSource(), extensions);
         }, this));
 
         container.on('resize', layout);
@@ -224,7 +252,9 @@ define(function (require) {
         this.eventHub.on('selectLine', this.onSelectLine, this);
         this.eventHub.on('editorSetDecoration', this.onEditorSetDecoration, this);
         this.eventHub.on('settingsChange', this.onSettingsChange, this);
+        this.eventHub.on('themeChange', this.onThemeChange, this);
         this.eventHub.emit('requestSettings');
+        this.eventHub.emit('requestTheme');
 
         // NB a new compilerConfig needs to be created every time; else the state is shared
         // between all compilers created this way. That leads to some nasty-to-find state
@@ -368,6 +398,16 @@ define(function (require) {
             };
         }, this));
         monaco.editor.setModelMarkers(this.editor.getModel(), compilerId, widgets);
+        this.decorations.tags = _.map(widgets, function (tag) {
+            return {
+                range: new monaco.Range(tag.startLineNumber, tag.startColumn, tag.startLineNumber + 1, 1),
+                options: {
+                    isWholeLine: false,
+                    inlineClassName: "error-code"
+                }
+            };
+        }, this);
+        this.updateDecorations();
         this.asmByCompiler[compilerId] = result.asm;
         this.lastCompilerIDResponse = compilerId;
         this.numberUsedLines();
@@ -381,18 +421,33 @@ define(function (require) {
 
     Editor.prototype.onEditorSetDecoration = function (id, lineNum, reveal) {
         if (id === this.id) {
-            if (reveal)
+            if (reveal && lineNum)
                 this.editor.revealLineInCenter(lineNum);
-            this.decorations = this.editor.deltaDecorations(this.decorations,
-                lineNum === -1 || lineNum === null ? [] : [
-                        {
-                            range: new monaco.Range(lineNum, 1, lineNum, 1),
-                            options: {
-                                linesDecorationsClassName: 'linked-code-decoration'
-                            }
-                        }
-                    ]);
+            this.decorations.linkedCode = lineNum === -1 || !lineNum ?
+             []
+            :
+             [
+                {
+                    range: new monaco.Range(lineNum, 1, lineNum, 1),
+                    options: {
+                        isWholeLine: true,
+                        linesDecorationsClassName: 'linked-code-decoration-margin',
+                        inlineClassName: 'linked-code-decoration-inline'
+                    }
+                }
+             ];
+            this.updateDecorations();
         }
+    };
+
+    Editor.prototype.onThemeChange = function (newTheme) {
+        if (this.editor)
+            this.editor.updateOptions({theme: newTheme.monaco});
+    };
+
+    Editor.prototype.updateDecorations = function () {
+        this.prevDecorations = this.editor.deltaDecorations(
+            this.prevDecorations, _.flatten(_.values(this.decorations), true));
     };
 
     return {

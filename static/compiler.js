@@ -79,6 +79,8 @@ define(function (require) {
         this.prevDecorations = [];
         this.optButton = this.domRoot.find('.btn.view-optimization');
 
+        this.linkedFadeTimeoutId = -1;
+
         this.domRoot.find(".compiler-picker").selectize({
             sortField: 'name',
             valueField: 'id',
@@ -117,7 +119,7 @@ define(function (require) {
             contextMenuGroupId: 'navigation',
             contextMenuOrder: 1.5,
             run: function (ed) {
-                var desiredLine = ed.getPosition().lineNumber - 1;
+                const desiredLine = ed.getPosition().lineNumber - 1;
                 self.eventHub.emit('editorSetDecoration', self.sourceEditorId, self.assembly[desiredLine].source, true);
             }
         });
@@ -144,7 +146,26 @@ define(function (require) {
             }, this)
         });
 
-        this.outputEditor.onMouseMove(_.throttle(_.bind(this.onMouseMove, this)), 250);
+        function clearEditorsLinkedLines() {
+            self.eventHub.emit('editorSetDecoration', self.sourceEditorId, -1, false);
+        }
+
+        this.outputEditor.onMouseMove(function (e) {
+            self.mouseMoveThrottledFunction(e);
+            if (self.linkedFadeTimeoutId !== -1) {
+                clearTimeout(self.linkedFadeTimeoutId);
+                self.linkedFadeTimeoutId = -1;
+            }
+        });
+
+        this.mouseMoveThrottledFunction = _.throttle(_.bind(this.onMouseMove, this), 250);
+
+        this.outputEditor.onMouseLeave(function (e) {
+            self.linkedFadeTimeoutId = setTimeout(function () {
+                clearEditorsLinkedLines();
+                self.linkedFadeTimeoutId = -1;
+            }, 5000);
+        });
 
         this.fontScale = new FontScale(this.domRoot, state, this.outputEditor);
         this.fontScale.on('change', _.bind(function () {
@@ -172,8 +193,10 @@ define(function (require) {
         this.eventHub.on('findCompilers', this.sendCompiler, this);
         this.eventHub.on('compilerSetDecorations', this.onCompilerSetDecorations, this);
         this.eventHub.on('settingsChange', this.onSettingsChange, this);
+        this.eventHub.on('themeChange', this.onThemeChange, this);
         this.eventHub.on('optViewClosed', this.onOptViewClosed, this);
         this.eventHub.emit('requestSettings');
+        this.eventHub.emit('requestTheme');
         this.sendCompiler();
         this.updateCompilerName();
         this.updateButtons();
@@ -196,13 +219,14 @@ define(function (require) {
                 componentState: self.currentState()
             };
         }
+
         function createOptView() {
             return Components.getOptViewWith(self.id, self.source, self.lastResult.optOutput, self.getCompilerName(), self.sourceEditorId);
         }
 
         this.container.layoutManager.createDragSource(
             this.domRoot.find('.btn.add-compiler'), cloneComponent);
-            
+
         this.domRoot.find('.btn.add-compiler').click(_.bind(function () {
             var insertPoint = hub.findParentRowOrColumn(this.container) ||
                 this.container.layoutManager.root.contentItems[0];
@@ -388,7 +412,7 @@ define(function (require) {
         if (request.filters.binary) {
             this.outputEditor.updateOptions({
                 lineNumbers: _.bind(this.getBinaryForLine, this),
-                lineNumbersMinChars: 18
+                lineNumbersMinChars: 19
             });
         } else {
             this.outputEditor.updateOptions({
@@ -456,8 +480,8 @@ define(function (require) {
         }
     };
 
-    Compiler.prototype.onOptViewClosed = function(id) {
-        if(this.id == id) {
+    Compiler.prototype.onOptViewClosed = function (id) {
+        if (this.id == id) {
             this.optButton.prop('disabled', false);
         }
     };
@@ -543,7 +567,7 @@ define(function (require) {
         }
     };
 
-    Compiler.prototype.getCompilerName = function() {
+    Compiler.prototype.getCompilerName = function () {
         return this.compiler ? this.compiler.name : "no compiler set";
     };
 
@@ -567,13 +591,15 @@ define(function (require) {
 
     Compiler.prototype.onCompilerSetDecorations = function (id, lineNums, revealLine) {
         if (id == this.id) {
-            if (revealLine)
+            if (revealLine && lineNums[0])
                 this.outputEditor.revealLineInCenter(lineNums[0]);
             this.decorations.linkedCode = _.map(lineNums, function (line) {
                 return {
                     range: new monaco.Range(line, 1, line, 1),
                     options: {
-                        linesDecorationsClassName: 'linked-code-decoration'
+                        isWholeLine: true,
+                        linesDecorationsClassName: 'linked-code-decoration-margin',
+                        inlineClassName: 'linked-code-decoration-inline'
                     }
                 };
             });
@@ -582,9 +608,9 @@ define(function (require) {
     };
 
     Compiler.prototype.onSettingsChange = function (newSettings) {
-        var lastHoverShowSource = this.settings.hoverShowSource;
+        var before = this.settings;
         this.settings = _.clone(newSettings);
-        if (!lastHoverShowSource && this.settings.hoverShowSource) {
+        if (!before.lastHoverShowSource && this.settings.hoverShowSource) {
             this.onCompilerSetDecorations(this.id, []);
         }
     };
@@ -703,6 +729,12 @@ define(function (require) {
                 });
             }
         );
+    };
+
+    Compiler.prototype.onThemeChange = function (newTheme) {
+        if (this.outputEditor)
+            this.outputEditor.updateOptions({theme: newTheme.monaco});
+        this.resize(); // in case anything changes size in the header or footer
     };
 
     return {
