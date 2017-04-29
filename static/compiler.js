@@ -620,8 +620,7 @@ define(function (require) {
 
     function getNumericToolTip(value) {
         var match = hexLike.exec(value);
-        if (match) 
-        {
+        if (match) {
             return value + ' = ' + bigInt(match[2], 16).toString(10);
         }
         match = decimalLike.exec(value); 
