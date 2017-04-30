@@ -23,6 +23,10 @@
     height: 50px; /* needed to override the darkly settings */
 }
 
+.beta .navbar-brand::after {
+    content: " (beta)"
+}
+
 #lang-dropdown {
     min-width: 5em;
 }
