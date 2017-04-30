@@ -29,6 +29,7 @@
     "es6-promise": "^4.0.5",
     "lru-cache": "2.7.3",
     "seiyria-bootstrap-slider": "9.7.x",
+    "big-integer": "https://github.com/peterolson/BigInteger.js.git#^1.6.22",
     "file-saver": "filesaver#^1.3.3"
   }
 }

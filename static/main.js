@@ -35,6 +35,7 @@ require.config({
         events: 'ext/eventEmitter/EventEmitter',
         lzstring: 'ext/lz-string/libs/lz-string',
         clipboard: 'ext/clipboard/dist/clipboard',
+        'big-integer': 'ext/big-integer/BigInteger.min',
         'raven-js': 'ext/raven-js/dist/raven',
         'es6-promise': 'ext/es6-promise/es6-promise',
         'lru-cache': 'ext/lru-cache/lib/lru-cache',
