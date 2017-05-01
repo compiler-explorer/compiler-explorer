@@ -30,7 +30,6 @@ define(function (require) {
     var FontScale = require('fontscale');
 
     function Output(hub, container, state) {
-        var self = this;
         this.container = container;
         this.compilerId = state.compiler;
         this.editorId = state.editor;

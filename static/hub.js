@@ -33,6 +33,7 @@ define(function (require) {
     var output = require('output');
     var Components = require('components');
     var diff = require('diff');
+    var optView = require('opt-view');
 
     function Ids() {
         this.used = {};
@@ -77,6 +78,10 @@ define(function (require) {
             function (container, state) {
                 return self.diffFactory(container, state);
             });
+        layout.registerComponent(Components.getOptView().componentName,
+            function (container, state) {
+                return self.optViewFactory(container, state);
+            });
 
         layout.eventHub.on('editorOpen', function (id) {
             this.editorIds.add(id);
@@ -118,7 +123,10 @@ define(function (require) {
     Hub.prototype.diffFactory = function (container, state) {
         return new diff.Diff(this, container, state);
     };
-
+    Hub.prototype.optViewFactory = function (container, state) {
+        return new optView.Opt(this, container, state);
+    };
+    
     function WrappedEventHub(eventHub) {
         this.eventHub = eventHub;
         this.subscriptions = [];
