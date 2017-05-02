@@ -133,6 +133,7 @@ define(function (require) {
                 return {label: theme.id, desc: theme.name};
             })
         );
+        add(root.find('.showQuickSuggestions'), 'showQuickSuggestions', false, Checkbox);
 
         function handleThemes() {
             var newTheme = themeSelect.val();
