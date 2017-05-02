@@ -26,14 +26,14 @@
 define(function (require) {
     "use strict";
 
-    var _ = require('underscore');
-    var options = require('options');
-    var editor = require('editor');
-    var compiler = require('compiler');
-    var output = require('output');
-    var Components = require('components');
-    var diff = require('diff');
-    var optView = require('opt-view');
+    const _ = require('underscore');
+    const options = require('options');
+    const editor = require('editor');
+    const compiler = require('compiler');
+    const output = require('output');
+    const Components = require('components');
+    const diff = require('diff');
+    const optView = require('opt-view');
 
     function Ids() {
         this.used = {};
@@ -46,7 +46,7 @@ define(function (require) {
         delete this.used[id];
     };
     Ids.prototype.next = function () {
-        for (var i = 1; i < 100000; ++i) {
+        for (let i = 1; i < 100000; ++i) {
             if (!this.used[i]) {
                 this.used[i] = true;
                 return i;
@@ -61,7 +61,7 @@ define(function (require) {
         this.editorIds = new Ids();
         this.compilerIds = new Ids();
 
-        var self = this;
+        const self = this;
         layout.registerComponent(Components.getEditor().componentName,
             function (container, state) {
                 return self.codeEditorFactory(container, state);
@@ -158,12 +158,12 @@ define(function (require) {
     };
 
     Hub.prototype.addAtRoot = function (newElem) {
-        var rootFirstItem = this.layout.root.contentItems[0];
+        const rootFirstItem = this.layout.root.contentItems[0];
         if (rootFirstItem) {
             if (rootFirstItem.isRow || rootFirstItem.isColumn) {
                 rootFirstItem.addChild(newElem);
             } else {
-                var newRow = this.layout.createContentItem({type: 'row'}, this.layout.root);
+                const newRow = this.layout.createContentItem({type: 'row'}, this.layout.root);
                 this.layout.root.replaceChild(rootFirstItem, newRow);
                 newRow.addChild(rootFirstItem);
                 newRow.addChild(newElem);

@@ -26,10 +26,11 @@
 define(function (require) {
     "use strict";
 
-    var FontScale = require('fontscale');
-    var monaco = require('monaco');
-    var options = require('options');
-    var hoverContent = {};
+    const FontScale = require('fontscale');
+    const monaco = require('monaco');
+    const options = require('options');
+    const _ = require('underscore');
+    let hoverContent = {};
 
     monaco.languages.registerHoverProvider('cpp', {
         provideHover: function(model, position) {
@@ -91,7 +92,7 @@ define(function (require) {
 
     // TODO: de-dupe with compiler etc
     Opt.prototype.resize = function () {
-        var topBarHeight = this.domRoot.find(".top-bar").outerHeight(true);
+        const topBarHeight = this.domRoot.find(".top-bar").outerHeight(true);
         this.optEditor.layout({
             width: this.domRoot.width(),
             height: this.domRoot.height() - topBarHeight
@@ -115,7 +116,7 @@ define(function (require) {
     };
 
     Opt.prototype.showOptResults = function(results) {
-        var opt = [];
+        const opt = [];
 
         hoverContent = {};
         results = _.filter(results, function(x) {
@@ -127,14 +128,14 @@ define(function (require) {
         });
 
         _.mapObject(results, function(value, key) {
-            var linenumber = Number(key);
-            var className = value.reduce(function(acc, x) {
-                if(acc && acc !== "Analysis" && x.optType !== acc) {
+            const linenumber = Number(key);
+            const className = value.reduce(function (acc, x) {
+                if (acc && acc !== "Analysis" && x.optType !== acc) {
                     return "Mixed";
                 } else {
                     return x.optType;
                 }
-            },"");
+            }, "");
             opt.push({
                 range: new monaco.Range(linenumber,1,linenumber,1),
                 options: {

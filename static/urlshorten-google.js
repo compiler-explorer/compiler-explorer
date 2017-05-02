@@ -25,8 +25,8 @@
 
 define(function (require) {
     "use strict";
-    var options = require('options');
-    var Alert = require('alert');
+    const options = require('options');
+    const Alert = require('alert');
 
     function googleJSClientLoaded() {
         gapi.client.setApiKey(options.gapiKey);
@@ -44,9 +44,9 @@ define(function (require) {
             $(document.body).append('<script src="https://apis.google.com/js/client.js?onload=googleJSClientLoaded">');
             return;
         }
-        var request = gapi.client.urlshortener.url.insert({resource: {longUrl: url}});
+        const request = gapi.client.urlshortener.url.insert({resource: {longUrl: url}});
         request.then(function (resp) {
-            var id = resp.result.id;
+            let id = resp.result.id;
             if (options.googleShortLinkRewrite.length === 2) {
                 id = id.replace(new RegExp(options.googleShortLinkRewrite[0]), options.googleShortLinkRewrite[1]);
             }

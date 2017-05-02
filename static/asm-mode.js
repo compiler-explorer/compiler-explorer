@@ -24,7 +24,7 @@
 
 define(function (require) {
     "use strict";
-    var monaco = require('monaco');
+    const monaco = require('monaco');
 
     function definition() {
         return {

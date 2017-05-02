@@ -25,22 +25,22 @@
 
 define(function (require) {
     "use strict";
-    var $ = require('jquery');
-    var _ = require('underscore');
-    var options = require('options');
-    var shortenURL = require('urlshorten-google');
-    var Components = require('components');
-    var url = require('url');
+    const $ = require('jquery');
+    const _ = require('underscore');
+    const options = require('options');
+    const shortenURL = require('urlshorten-google');
+    const Components = require('components');
+    const url = require('url');
 
     function configFromEmbedded(embeddedUrl) {
         // Old-style link?
-        var params;
+        let params;
         try {
             params = url.unrisonify(embeddedUrl);
         } catch (e) {
         }
         if (params && params.source && params.compiler) {
-            var filters = _.chain((params.filters || "").split(','))
+            const filters = _.chain((params.filters || "").split(','))
                 .map(function (o) {
                     return [o, true];
                 })
@@ -63,17 +63,17 @@ define(function (require) {
     }
 
     function getEmbeddedUrl(layout, readOnly) {
-        var location = window.location.origin + window.location.pathname;
+        let location = window.location.origin + window.location.pathname;
         if (location[location.length - 1] !== '/') location += '/';
-        var path = readOnly ? 'embed-ro#' : 'e#';
+        const path = readOnly ? 'embed-ro#' : 'e#';
         return location + path + url.serialiseState(layout.toConfig());
     }
 
     function initShareButton(getLink, layout) {
-        var html = $('.template .urls').html();
-        var currentBind = '';
+        const html = $('.template .urls').html();
+        let currentBind = '';
 
-        var title = getLink.attr('title'); // preserve before popover/tooltip breaks it
+        const title = getLink.attr('title'); // preserve before popover/tooltip breaks it
 
         getLink.popover({
             container: 'body',
@@ -84,8 +84,8 @@ define(function (require) {
         }).click(function () {
             getLink.popover('show');
         }).on('inserted.bs.popover', function () {
-            var root = $('.urls-container:visible');
-            var urls = {};
+            const root = $('.urls-container:visible');
+            let urls = {};
             if (!currentBind) currentBind = $(root.find('.sources a')[0]).data().bind;
 
             function update() {
@@ -115,7 +115,7 @@ define(function (require) {
         // Dismiss on any click that isn't either in the opening element, inside
         // the popover or on any alert
         $(document).on('click.editable', function (e) {
-            var target = $(e.target);
+            const target = $(e.target);
             if (!target.is(getLink) && getLink.has(target).length === 0 && target.closest('.popover').length === 0)
                 getLink.popover("hide");
         });
@@ -126,7 +126,7 @@ define(function (require) {
     }
 
     function getLinks(layout, done) {
-        var result = {
+        const result = {
             Full: permalink(layout),
             Embed: '<iframe width="800px" height="200px" src="' + getEmbeddedUrl(layout, false) + '"></iframe>',
             'Embed (RO)': '<iframe width="800px" height="200px" src="' + getEmbeddedUrl(layout, true) + '"></iframe>'

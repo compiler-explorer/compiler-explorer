@@ -25,15 +25,15 @@
 
 define(function (require) {
     "use strict";
-    var _ = require('underscore');
-    var EventEmitter = require('events');
+    const _ = require('underscore');
+    const EventEmitter = require('events');
 
     function makeFontSizeDropdown(elem, interval, obj) {
-        var factor = obj.isFontOfStr ? 10 : 14;
-        var step = 0.05;
-        var found = false;
+        const factor = obj.isFontOfStr ? 10 : 14;
+        let step = 0.05;
+        let found = false;
 
-        var clickHandle = function() {
+        const clickHandle = function () {
             // Toggle off the selection of the others
             elem.children().removeClass('font-option-active');
             // Toggle us on
@@ -44,9 +44,9 @@ define(function (require) {
             obj.emit('change');
         };
 
-        for (var i = interval[0]; i <= interval[1]; i += step) {
+        for (let i = interval[0]; i <= interval[1]; i += step) {
             step *= 1.2;
-            var newElementStr = '<li data-value="' + i + '" class="font-option'; 
+            let newElementStr = '<li data-value="' + i + '" class="font-option';
             if (!found && (i === obj.scale || Math.floor(i) == obj.scale)) {
                 found = true;
                 newElementStr += ' font-option-active';

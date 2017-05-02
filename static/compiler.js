@@ -25,30 +25,32 @@
 
 define(function (require) {
     "use strict";
-    var $ = require('jquery');
-    var _ = require('underscore');
-    var ga = require('analytics').ga;
-    var colour = require('colour');
-    var Toggles = require('toggles');
-    var FontScale = require('fontscale');
-    var Promise = require('es6-promise').Promise;
-    var Components = require('components');
-    var LruCache = require('lru-cache');
-    var monaco = require('monaco');
-    var Alert = require('alert');
-    var bigInt = require('big-integer');
+
+    const $ = require('jquery');
+    const _ = require('underscore');
+    const ga = require('analytics').ga;
+    const colour = require('colour');
+    const Toggles = require('toggles');
+    const FontScale = require('fontscale');
+    const Promise = require('es6-promise').Promise;
+    const Components = require('components');
+    const LruCache = require('lru-cache');
+    const monaco = require('monaco');
+    const Alert = require('alert');
+    const bigInt = require('big-integer');
+
     require('asm-mode');
 
     require('selectize');
 
-    var options = require('options');
-    var compilers = options.compilers;
-    var compilersById = {};
+    const options = require('options');
+    const compilers = options.compilers;
+    const compilersById = {};
     _.forEach(compilers, function (compiler) {
         compilersById[compiler.id] = compiler;
         if (compiler.alias) compilersById[compiler.alias] = compiler;
     });
-    var Cache = new LruCache({
+    const Cache = new LruCache({
         max: 200 * 1024,
         length: function (n) {
             return JSON.stringify(n).length;
@@ -56,7 +58,7 @@ define(function (require) {
     });
 
     function Compiler(hub, container, state) {
-        var self = this;
+        const self = this;
         this.container = container;
         this.eventHub = hub.createEventHub();
         this.domRoot = container.getElement();
@@ -91,7 +93,7 @@ define(function (require) {
         }).on('change', function () {
             self.onCompilerChange($(this).val());
         });
-        var optionsChange = _.debounce(function () {
+        const optionsChange = _.debounce(function () {
             self.onOptionsChange($(this).val());
         }, 800);
         this.domRoot.find(".options")
@@ -160,7 +162,7 @@ define(function (require) {
 
         this.mouseMoveThrottledFunction = _.throttle(_.bind(this.onMouseMove, this), 250);
 
-        this.outputEditor.onMouseLeave(function (e) {
+        this.outputEditor.onMouseLeave(function () {
             self.linkedFadeTimeoutId = setTimeout(function () {
                 clearEditorsLinkedLines();
                 self.linkedFadeTimeoutId = -1;
@@ -201,13 +203,13 @@ define(function (require) {
         this.updateCompilerName();
         this.updateButtons();
 
-        var outputConfig = _.bind(function () {
+        const outputConfig = _.bind(function () {
             return Components.getOutput(this.id, this.sourceEditorId);
         }, this);
 
         this.container.layoutManager.createDragSource(this.domRoot.find(".status").parent(), outputConfig);
         this.domRoot.find(".status").parent().click(_.bind(function () {
-            var insertPoint = hub.findParentRowOrColumn(this.container) ||
+            const insertPoint = hub.findParentRowOrColumn(this.container) ||
                 this.container.layoutManager.root.contentItems[0];
             insertPoint.addChild(outputConfig());
         }, this));
@@ -228,7 +230,7 @@ define(function (require) {
             this.domRoot.find('.btn.add-compiler'), cloneComponent);
 
         this.domRoot.find('.btn.add-compiler').click(_.bind(function () {
-            var insertPoint = hub.findParentRowOrColumn(this.container) ||
+            const insertPoint = hub.findParentRowOrColumn(this.container) ||
                 this.container.layoutManager.root.contentItems[0];
             insertPoint.addChild(cloneComponent());
         }, this));
@@ -237,7 +239,7 @@ define(function (require) {
             this.optButton, createOptView.bind(this));
 
         this.optButton.click(_.bind(function () {
-            var insertPoint = hub.findParentRowOrColumn(this.container) ||
+            const insertPoint = hub.findParentRowOrColumn(this.container) ||
                 this.container.layoutManager.root.contentItems[0];
             insertPoint.addChild(createOptView());
             this.optButton.prop("disabled", true);
@@ -250,8 +252,8 @@ define(function (require) {
     // Issue manifests if you make a window where one compiler is small enough that the buttons spill onto two lines:
     // reload the page and the bottom-bar is off the bottom until you scroll a tiny bit.
     Compiler.prototype.resize = function () {
-        var topBarHeight = this.domRoot.find(".top-bar").outerHeight(true);
-        var bottomBarHeight = this.domRoot.find(".bottom-bar").outerHeight(true);
+        const topBarHeight = this.domRoot.find(".top-bar").outerHeight(true);
+        const bottomBarHeight = this.domRoot.find(".bottom-bar").outerHeight(true);
         this.outputEditor.layout({
             width: this.domRoot.width(),
             height: this.domRoot.height() - topBarHeight - bottomBarHeight
@@ -262,7 +264,7 @@ define(function (require) {
     // mode etc).
     Compiler.prototype.getEffectiveFilters = function () {
         if (!this.compiler) return {};
-        var filters = this.filters.get();
+        const filters = this.filters.get();
         if (filters.binary && !this.compiler.supportsBinary) {
             delete filters.binary;
         }
@@ -270,7 +272,7 @@ define(function (require) {
     };
 
     Compiler.prototype.compile = function () {
-        var request = {
+        const request = {
             source: this.source || "",
             compiler: this.compiler ? this.compiler.id : "",
             options: this.options,
@@ -293,8 +295,8 @@ define(function (require) {
             return;
         }
         this.eventHub.emit('compiling', this.id, this.compiler);
-        var jsonRequest = JSON.stringify(request);
-        var cachedResult = Cache.get(jsonRequest);
+        const jsonRequest = JSON.stringify(request);
+        const cachedResult = Cache.get(jsonRequest);
         if (cachedResult) {
             this.onCompileResponse(request, cachedResult, true);
             return;
@@ -303,9 +305,9 @@ define(function (require) {
         this.pendingRequestSentAt = Date.now();
         // After a short delay, give the user some indication that we're working on their
         // compilation.
-        var progress = setTimeout(_.bind(function () {
+        const progress = setTimeout(_.bind(function () {
             this.setAssembly(fakeAsm("<Compiling...>"));
-        }, this), 500);
+        }, this), 100);
         $.ajax({
             type: 'POST',
             url: 'api/compiler/' + encodeURIComponent(request.compiler) + '/compile',
@@ -328,10 +330,10 @@ define(function (require) {
     };
 
     Compiler.prototype.getBinaryForLine = function (line) {
-        var obj = this.assembly[line - 1];
+        const obj = this.assembly[line - 1];
         if (!obj) return '<div class="address">????</div><div class="opcodes"><span class="opcode">????</span></div>';
-        var address = obj.address ? obj.address.toString(16) : "";
-        var opcodes = '<div class="opcodes" title="' + (obj.opcodes || []).join(" ") + '">';
+        const address = obj.address ? obj.address.toString(16) : "";
+        let opcodes = '<div class="opcodes" title="' + (obj.opcodes || []).join(" ") + '">';
         _.each(obj.opcodes, function (op) {
             opcodes += ('<span class="opcode">' + op + '</span>');
         });
@@ -343,10 +345,10 @@ define(function (require) {
     Compiler.prototype.setAssembly = function (assembly) {
         this.assembly = assembly;
         this.outputEditor.getModel().setValue(_.pluck(assembly, 'text').join("\n"));
-        var addrToAddrDiv = {};
-        var decorations = [];
+        const addrToAddrDiv = {};
+        const decorations = [];
         _.each(this.assembly, _.bind(function (obj, line) {
-            var address = obj.address ? obj.address.toString(16) : "";
+            const address = obj.address ? obj.address.toString(16) : "";
             //     var div = $("<div class='address cm-number'>" + address + "</div>");
             addrToAddrDiv[address] = {div: "moo", line: line};
         }, this));
@@ -354,11 +356,11 @@ define(function (require) {
         _.each(this.assembly, _.bind(function (obj, line) {
             if (obj.links) {
                 _.each(obj.links, _.bind(function (link) {
-                    var address = link.to.toString(16);
+                    const address = link.to.toString(16);
                     // var thing = $("<a href='#' class='cm-number'>" + address + "</a>");
                     // this.outputEditor.markText(
                     //     from, to, {replacedWith: thing[0], handleMouseEvents: false});
-                    var dest = addrToAddrDiv[address];
+                    const dest = addrToAddrDiv[address];
                     if (dest) {
                         decorations.push({
                             range: new monaco.Range(line, link.offset, line, link.offset + link.length),
@@ -392,8 +394,8 @@ define(function (require) {
 
     Compiler.prototype.onCompileResponse = function (request, result, cached) {
         this.lastResult = result;
-        var timeTaken = Math.max(0, Date.now() - this.pendingRequestSentAt);
-        var wasRealReply = this.pendingRequestSentAt > 0;
+        const timeTaken = Math.max(0, Date.now() - this.pendingRequestSentAt);
+        const wasRealReply = this.pendingRequestSentAt > 0;
         this.pendingRequestSentAt = 0;
         ga('send', {
             hitType: 'event',
@@ -420,15 +422,15 @@ define(function (require) {
                 lineNumbersMinChars: 5
             });
         }
-        var status = this.domRoot.find(".status");
-        var allText = _.pluck((result.stdout || []).concat(result.stderr | []), 'text').join("\n");
-        var failed = result.code !== 0;
-        var warns = !failed && !!allText;
+        const status = this.domRoot.find(".status");
+        const allText = _.pluck((result.stdout || []).concat(result.stderr | []), 'text').join("\n");
+        const failed = result.code !== 0;
+        const warns = !failed && !!allText;
         status.toggleClass('error', failed);
         status.toggleClass('warning', warns);
         status.parent().attr('title', allText);
         this.optButton.prop("disabled", !result.hasOptOutput);
-        var compileTime = this.domRoot.find('.compile-time');
+        const compileTime = this.domRoot.find('.compile-time');
         if (cached) {
             compileTime.text("- cached");
         } else if (wasRealReply) {
@@ -439,21 +441,21 @@ define(function (require) {
         this.eventHub.emit('compileResult', this.id, this.compiler, result);
 
         if (this.nextRequest) {
-            var next = this.nextRequest;
+            const next = this.nextRequest;
             this.nextRequest = null;
             this.sendCompile(next);
         }
     };
 
     Compiler.prototype.expand = function (source) {
-        var includeFind = /^\s*#include\s*["<](https?:\/\/[^>"]+)[>"]$/;
-        var lines = source.split("\n");
-        var promises = [];
+        const includeFind = /^\s*#include\s*["<](https?:\/\/[^>"]+)[>"]$/;
+        const lines = source.split("\n");
+        const promises = [];
         _.each(lines, function (line, lineNumZeroBased) {
-            var match = line.match(includeFind);
+            const match = line.match(includeFind);
             if (match) {
-                promises.push(new Promise(function (resolve, reject) {
-                    var req = $.get(match[1], function (data) {
+                promises.push(new Promise(function (resolve) {
+                    const req = $.get(match[1], function (data) {
                         data = '# 1 "' + match[1] + '"\n' + data + '\n\n# ' +
                             (lineNumZeroBased + 1) + ' "<stdin>"\n';
 
@@ -488,16 +490,16 @@ define(function (require) {
 
     Compiler.prototype.updateButtons = function () {
         if (!this.compiler) return;
-        var filters = this.getEffectiveFilters();
+        const filters = this.getEffectiveFilters();
         // We can support intel output if the compiler supports it, or if we're compiling
         // to binary (as we can disassemble it however we like).
-        var intelAsm = this.compiler.supportsIntel || filters.binary;
+        const intelAsm = this.compiler.supportsIntel || filters.binary;
         this.domRoot.find("[data-bind='intel']").toggleClass("disabled", !intelAsm);
         // Disable binary support on compilers that don't work with it.
         this.domRoot.find("[data-bind='binary']")
             .toggleClass("disabled", !this.compiler.supportsBinary);
         // Disable any of the options which don't make sense in binary mode.
-        var filtersDisabled = !!filters.binary && !this.compiler.supportsFiltersInBinary;
+        const filtersDisabled = !!filters.binary && !this.compiler.supportsFiltersInBinary;
         this.domRoot.find('.nonbinary').toggleClass("disabled", filtersDisabled);
     };
 
@@ -539,7 +541,7 @@ define(function (require) {
     };
 
     Compiler.prototype.currentState = function () {
-        var state = {
+        const state = {
             compiler: this.compiler ? this.compiler.id : "",
             source: this.sourceEditorId,
             options: this.options,
@@ -559,7 +561,7 @@ define(function (require) {
 
     Compiler.prototype.onColours = function (editor, colours, scheme) {
         if (editor == this.sourceEditorId) {
-            var asmColours = {};
+            const asmColours = {};
             _.each(this.assembly, function (x, index) {
                 if (x.source) asmColours[index] = colours[x.source - 1];
             });
@@ -572,8 +574,8 @@ define(function (require) {
     };
 
     Compiler.prototype.updateCompilerName = function () {
-        var compilerName = this.getCompilerName();
-        var compilerVersion = this.compiler ? this.compiler.version : "";
+        const compilerName = this.getCompilerName();
+        const compilerVersion = this.compiler ? this.compiler.version : "";
         this.container.setTitle(compilerName + " (Editor #" + this.sourceEditorId + ", Compiler #" + this.id + ")");
         this.domRoot.find(".full-compiler-name").text(compilerVersion);
     };
@@ -608,18 +610,18 @@ define(function (require) {
     };
 
     Compiler.prototype.onSettingsChange = function (newSettings) {
-        var before = this.settings;
+        const before = this.settings;
         this.settings = _.clone(newSettings);
         if (!before.lastHoverShowSource && this.settings.hoverShowSource) {
             this.onCompilerSetDecorations(this.id, []);
         }
     };
 
-    var hexLike = /^(#?[$]|0x)([0-9a-fA-F]+)$/;
-    var decimalLike = /^(#?)([0-9]+)$/;
+    const hexLike = /^(#?[$]|0x)([0-9a-fA-F]+)$/;
+    const decimalLike = /^(#?)([0-9]+)$/;
 
     function getNumericToolTip(value) {
-        var match = hexLike.exec(value);
+        let match = hexLike.exec(value);
         if (match) {
             return value + ' = ' + bigInt(match[2], 16).toString(10);
         }
@@ -627,21 +629,20 @@ define(function (require) {
         if (match) {
             return value + ' = 0x' +  bigInt(match[2]).toString(16).toUpperCase();
         }
-        
         return null;
     }
 
-    var opcodeLike = /^[a-zA-Z][a-zA-Z0-9_.]+$/; // at least two characters
-    var getAsmInfo = function (opcode) {
+    const opcodeLike = /^[a-zA-Z][a-zA-Z0-9_.]+$/; // at least two characters
+    const getAsmInfo = function (opcode) {
         if (!opcodeLike.exec(opcode)) {
             return Promise.resolve(null);
         }
-        var cacheName = "asm/" + opcode;
-        var cached = Cache.get(cacheName);
+        const cacheName = "asm/" + opcode;
+        const cached = Cache.get(cacheName);
         if (cached) {
             return Promise.resolve(cached.found ? cached.result : null);
         }
-        var promise = new Promise(function (resolve, reject) {
+        return new Promise(function (resolve, reject) {
             $.ajax({
                 type: 'GET',
                 url: 'api/asm/' + opcode,
@@ -657,21 +658,20 @@ define(function (require) {
                 cache: true
             });
         });
-        return promise;
     };
 
     Compiler.prototype.onMouseMove = function (e) {
         if (e === null || e.target === null || e.target.position === null) return;
         if (this.settings.hoverShowSource === true && this.assembly) {
-            var desiredLine = e.target.position.lineNumber - 1;
+            const desiredLine = e.target.position.lineNumber - 1;
             if (this.assembly[desiredLine]) {
                 // We check that we actually have something to show at this point!
                 this.eventHub.emit('editorSetDecoration', this.sourceEditorId, this.assembly[desiredLine].source, false);
             }
         }
-        var currentWord = this.outputEditor.getModel().getWordAtPosition(e.target.position);
+        const currentWord = this.outputEditor.getModel().getWordAtPosition(e.target.position);
         if (currentWord && currentWord.word) {
-            var numericToolTip = getNumericToolTip(currentWord.word);
+            const numericToolTip = getNumericToolTip(currentWord.word);
             if (numericToolTip) {
                 this.decorations.numericToolTip = {
                     range: e.target.range,
@@ -698,10 +698,10 @@ define(function (require) {
     };
 
     Compiler.prototype.onAsmToolTip = function (ed) {
-        var pos = ed.getPosition();
-        var word = ed.getModel().getWordAtPosition(pos);
+        const pos = ed.getPosition();
+        const word = ed.getModel().getWordAtPosition(pos);
         if (!word || !word.word) return;
-        var opcode = word.word.toUpperCase();
+        const opcode = word.word.toUpperCase();
         getAsmInfo(word.word).then(
             _.bind(function (asmHelp) {
                 if (asmHelp) {

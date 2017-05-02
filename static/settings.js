@@ -24,10 +24,10 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 define(function (require) {
-    var $ = require('jquery');
-    var _ = require('underscore');
-    var colour = require('./colour');
-    var themes = require('./themes').themes;
+    const $ = require('jquery');
+    const _ = require('underscore');
+    const colour = require('./colour');
+    const themes = require('./themes').themes;
 
     function Setting(elem, name, Control, param) {
         this.elem = elem;
@@ -81,10 +81,10 @@ define(function (require) {
     function setupSettings(root, settings, onChange) {
         settings = settings || {};
 
-        var settingsObjs = [];
+        const settingsObjs = [];
 
         function onUiChange() {
-            var settings = {};
+            const settings = {};
             _.each(settingsObjs, function (s) {
                 settings[s.name] = s.getUi();
             });
@@ -106,7 +106,7 @@ define(function (require) {
 
         add(root.find('.colourise'), 'colouriseAsm', true, Checkbox);
         add(root.find('.autoCloseBrackets'), 'autoCloseBrackets', true, Checkbox);
-        var colourSchemeSelect = root.find('.colourScheme');
+        const colourSchemeSelect = root.find('.colourScheme');
         add(colourSchemeSelect, 'colourScheme', colour.schemes[0].name, Select,
             _.map(colour.schemes, function (scheme) {
                 return {label: scheme.name, desc: scheme.desc};
@@ -127,7 +127,7 @@ define(function (require) {
         });
         add(root.find('.hoverShowSource'), 'hoverShowSource', true, Checkbox);
         add(root.find('.hoverShowAsmDoc'), 'hoverShowAsmDoc', true, Checkbox);
-        var themeSelect = root.find('.theme');
+        const themeSelect = root.find('.theme');
         add(themeSelect, 'theme', themes.default.id, Select,
             _.map(themes, function (theme) {
                 return {label: theme.id, desc: theme.name};
@@ -136,12 +136,12 @@ define(function (require) {
         add(root.find('.showQuickSuggestions'), 'showQuickSuggestions', false, Checkbox);
 
         function handleThemes() {
-            var newTheme = themeSelect.val();
+            const newTheme = themeSelect.val();
             // Store the scheme of the old theme
             $.data(themeSelect, 'theme-' + $.data(themeSelect, 'last-theme'), colourSchemeSelect.val());
             // Get the scheme of the new theme
-            var newThemeStoredScheme =  $.data(themeSelect, 'theme-' + newTheme);
-            var isStoredUsable = false;
+            const newThemeStoredScheme = $.data(themeSelect, 'theme-' + newTheme);
+            let isStoredUsable = false;
             colourSchemeSelect.empty();
             _.each(colour.schemes, function (scheme) {
                 if (!scheme.themes || scheme.themes.length === 0 || scheme.themes.indexOf(newTheme) !== -1 || scheme.themes.indexOf('all') !== -1) {

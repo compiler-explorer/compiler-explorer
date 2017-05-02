@@ -25,22 +25,23 @@
 
 define(function (require) {
     "use strict";
-    var _ = require('underscore');
-    var $ = require('jquery');
-    var colour = require('colour');
-    var loadSaveLib = require('loadSave');
-    var FontScale = require('fontscale');
-    var Components = require('components');
-    var monaco = require('monaco');
-    var options = require('options');
-    var Alert = require('alert');
+
+    const _ = require('underscore');
+    const $ = require('jquery');
+    const colour = require('colour');
+    const loadSaveLib = require('loadSave');
+    const FontScale = require('fontscale');
+    const Components = require('components');
+    const monaco = require('monaco');
+    const options = require('options');
+    const Alert = require('alert');
     require('./d-mode');
     require('./rust-mode');
 
-    var loadSave = new loadSaveLib.LoadSave();
+    const loadSave = new loadSaveLib.LoadSave();
 
     function Editor(hub, state, container, lang, defaultSrc) {
-        var self = this;
+        const self = this;
         this.id = state.id || hub.nextEditorId();
         this.container = container;
         this.domRoot = container.getElement();
@@ -60,10 +61,10 @@ define(function (require) {
 
         this.fadeTimeoutId = -1;
 
-        var cmMode;
+        let cmMode;
         // The first one is used as the default file extension when saving to local file.
         // All of them are used as the contents of the accept attribute of the file input
-        var extensions = [];
+        let extensions = [];
         switch (lang.toLowerCase()) {
             default:
                 cmMode = "cpp";
@@ -87,8 +88,8 @@ define(function (require) {
                 break;
         }
 
-        var root = this.domRoot.find(".monaco-placeholder");
-        var legacyReadOnly = state.options && !!state.options.readOnly;
+        const root = this.domRoot.find(".monaco-placeholder");
+        const legacyReadOnly = state.options && !!state.options.readOnly;
         this.editor = monaco.editor.create(root[0], {
             value: state.source || defaultSrc || "",
             scrollBeyondLastLine: false,
@@ -143,7 +144,7 @@ define(function (require) {
 
         function tryCompilerLinkLine(thisLineNumber, reveal) {
             _.each(self.asmByCompiler, function (asms, compilerId) {
-                var targetLines = [];
+                const targetLines = [];
                 _.each(asms, function (asmLine, i) {
                     if (asmLine.source == thisLineNumber) {
                         targetLines.push(i + 1);
@@ -171,7 +172,7 @@ define(function (require) {
             }
         });
 
-        this.editor.onMouseLeave(function (e) {
+        this.editor.onMouseLeave(function () {
             self.fadeTimeoutId = setTimeout(function () {
                 clearCompilerLinkedLines();
                 self.fadeTimeoutId = -1;
@@ -217,7 +218,7 @@ define(function (require) {
         // }, this));
 
         function layout() {
-            var topBarHeight = self.domRoot.find(".top-bar").outerHeight(true) || 0;
+            const topBarHeight = self.domRoot.find(".top-bar").outerHeight(true) || 0;
             self.editor.layout({width: self.domRoot.width(), height: self.domRoot.height() - topBarHeight});
         }
 
@@ -259,14 +260,14 @@ define(function (require) {
         // NB a new compilerConfig needs to be created every time; else the state is shared
         // between all compilers created this way. That leads to some nasty-to-find state
         // bugs e.g. https://github.com/mattgodbolt/compiler-explorer/issues/225
-        var compilerConfig = _.bind(function () {
+        const compilerConfig = _.bind(function () {
             return Components.getCompiler(this.id);
         }, this);
 
         this.container.layoutManager.createDragSource(
             this.domRoot.find('.btn.add-compiler'), compilerConfig());
         this.domRoot.find('.btn.add-compiler').click(_.bind(function () {
-            var insertPoint = hub.findParentRowOrColumn(this.container) ||
+            const insertPoint = hub.findParentRowOrColumn(this.container) ||
                 this.container.layoutManager.root.contentItems[0];
             insertPoint.addChild(compilerConfig());
         }, this));
@@ -275,14 +276,14 @@ define(function (require) {
     }
 
     Editor.prototype.maybeEmitChange = function (force) {
-        var source = this.getSource();
-        if (!force && source == this.lastChangeEmitted) return;
+        const source = this.getSource();
+        if (!force && source === this.lastChangeEmitted) return;
         this.lastChangeEmitted = source;
         this.eventHub.emit('editorChange', this.id, this.lastChangeEmitted);
     };
 
     Editor.prototype.updateState = function () {
-        var state = {
+        const state = {
             id: this.id,
             source: this.getSource()
         };
@@ -299,8 +300,8 @@ define(function (require) {
     };
 
     Editor.prototype.onSettingsChange = function (newSettings) {
-        var before = this.settings;
-        var after = newSettings;
+        const before = this.settings;
+        const after = newSettings;
         this.settings = _.clone(newSettings);
 
         this.editor.updateOptions({
@@ -313,8 +314,8 @@ define(function (require) {
         // * Turn off auto.
         // * edit code
         // * change compiler or compiler options (out of date code is used)
-        var bDac = before.compileOnChange ? before.delayAfterChange : 0;
-        var aDac = after.compileOnChange ? after.delayAfterChange : 0;
+        const bDac = before.compileOnChange ? before.delayAfterChange : 0;
+        const aDac = after.compileOnChange ? after.delayAfterChange : 0;
         if (bDac !== aDac || !this.debouncedEmitChange) {
             if (aDac) {
                 this.debouncedEmitChange = _.debounce(_.bind(function () {
@@ -334,7 +335,7 @@ define(function (require) {
     };
 
     Editor.prototype.numberUsedLines = function () {
-        var result = {};
+        const result = {};
         // First, note all lines used.
         _.each(this.asmByCompiler, function (asm) {
             _.each(asm, function (asmLine) {
@@ -342,7 +343,7 @@ define(function (require) {
             });
         });
         // Now assign an ordinal to each used line.
-        var ordinal = 0;
+        let ordinal = 0;
         _.each(result, function (v, k) {
             result[k] = ordinal++;
         });
@@ -381,10 +382,10 @@ define(function (require) {
     Editor.prototype.onCompileResponse = function (compilerId, compiler, result) {
         if (!this.ourCompilers[compilerId]) return;
         this.busyCompilers[compilerId] = false;
-        var output = (result.stdout || []).concat(result.stderr || []);
-        var widgets = _.compact(_.map(output, function (obj) {
+        const output = (result.stdout || []).concat(result.stderr || []);
+        const widgets = _.compact(_.map(output, function (obj) {
             if (!obj.tag) return;
-            var severity = 3; // error
+            let severity = 3; // error
             if (obj.tag.text.match(/^warning/)) severity = 2;
             if (obj.tag.text.match(/^note/)) severity = 1;
             return {

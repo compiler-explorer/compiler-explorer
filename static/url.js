@@ -25,25 +25,20 @@
 
 define(function (require) {
     "use strict";
-    var GoldenLayout = require('goldenlayout');
-    var rison = require('rison');
-    var $ = require('jquery');
-    var Components = require('components');
-    var lzstring = require('lzstring');
-    var _ = require('underscore');
+    const GoldenLayout = require('goldenlayout');
+    const rison = require('rison');
+    const $ = require('jquery');
+    const Components = require('components');
+    const lzstring = require('lzstring');
+    const _ = require('underscore');
 
     function convertOldState(state) {
-        var sc = state.compilers[0];
+        const sc = state.compilers[0];
         if (!sc) throw new Error("Unable to determine compiler from old state");
-        var content = [];
-        var source;
-        if (sc.sourcez) {
-            source = lzstring.decompressFromBase64(sc.sourcez);
-        } else {
-            source = sc.source;
-        }
-        var options = {compileOnChange: true, colouriseAsm: state.filterAsm.colouriseAsm};
-        var filters = _.clone(state.filterAsm);
+        const content = [];
+        const source = sc.source ? lzstring.decompressFromBase64(sc.sourcez) : sc.source;
+        const options = {compileOnChange: true, colouriseAsm: state.filterAsm.colouriseAsm};
+        const filters = _.clone(state.filterAsm);
         delete filters.colouriseAsm;
         content.push(Components.getEditorWith(1, source, options));
         content.push(Components.getCompilerWith(1, filters, sc.options, sc.compiler));
@@ -82,8 +77,8 @@ define(function (require) {
     }
 
     function deserialiseState(stateText) {
-        var state;
-        var exception;
+        let state;
+        let exception;
         try {
             state = unrisonify(stateText);
             if (state && state.z) {
@@ -105,11 +100,11 @@ define(function (require) {
     }
 
     function serialiseState(stateText) {
-        var ctx = GoldenLayout.minifyConfig({content: stateText.content});
+        const ctx = GoldenLayout.minifyConfig({content: stateText.content});
         ctx.version = 4;
-        var uncompressed = risonify(ctx);
-        var compressed = risonify({z: lzstring.compressToBase64(uncompressed)});
-        var MinimalSavings = 0.20;  // at least this ratio smaller
+        const uncompressed = risonify(ctx);
+        const compressed = risonify({z: lzstring.compressToBase64(uncompressed)});
+        const MinimalSavings = 0.20;  // at least this ratio smaller
         if (compressed.length < uncompressed.length * (1.0 - MinimalSavings)) {
             return compressed;
         } else {

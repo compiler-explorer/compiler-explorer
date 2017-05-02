@@ -1,4 +1,4 @@
-// Copyright (c) 2012-2017, Matt Godbolt
+// Copyright (c) 2012-2017, Matt Godbolt & Rubén Rincón
 //
 // All rights reserved.
 //
@@ -24,21 +24,23 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 define(function (require) {
-    var $ = require('jquery');
+    const $ = require('jquery');
+    const _ = require('underscore');
 
     function Alert() {
         this.yesHandler = null;
         this.noHandler = null;
-        $('#yes-no button.yes').click(_.bind(function () {
+        const yesNo = $('#yes-no');
+        yesNo.find('button.yes').click(_.bind(function () {
             if (this.yesHandler) this.yesHandler();
         }, this));
-        $('#yes-no button.no').click(_.bind(function () {
+        yesNo.find('button.no').click(_.bind(function () {
             if (this.noHandler) this.noHandler();
         }, this));
     }
 
     Alert.prototype.alert = function (title, body, onClose) {
-        var modal = $('#alert');
+        const modal = $('#alert');
         modal.find('.modal-title').html(title);
         modal.find('.modal-body').html(body);
         modal.modal();
@@ -49,7 +51,7 @@ define(function (require) {
     };
 
     Alert.prototype.ask = function (title, question, handlers) {
-        var modal = $('#yes-no');
+        const modal = $('#yes-no');
         this.yesHandler = handlers.yes;
         this.noHandler = handlers.no;
         modal.find('.modal-title').html(title);
@@ -65,9 +67,9 @@ define(function (require) {
      *  dismissTime: If allowed by autoDismiss, controls how long the notification will be visible before being automatically removed. Default: 5000ms. Min: 1000ms
      */
     Alert.prototype.notify = function (body, options) {
-        var container = $('#notifications');
+        const container = $('#notifications');
         if (!container) return;
-        var newElement = $('<div class="alert notification" tabindex="-1" role="dialog"><button type="button" class="close" style="float:left;margin-right: 5px;" data-dismiss="alert">&times;</button><span id="msg">' + body + '</span></div>');
+        const newElement = $('<div class="alert notification" tabindex="-1" role="dialog"><button type="button" class="close" style="float:left;margin-right: 5px;" data-dismiss="alert">&times;</button><span id="msg">' + body + '</span></div>');
         if (!options) options = {};
         // Set defaults
         options.collapseSimilar = ("collapseSimilar" in options) ? options.collapseSimilar : true;  // Collapse similars by default
@@ -91,10 +93,6 @@ define(function (require) {
             }, options.dismissTime);
         }
         container.append(newElement);  // Add the new notification to the container
-    };
-
-    Alert.prototype.onYesNoHide = function (evt) {
-        console.log(evt);
     };
 
     return Alert;

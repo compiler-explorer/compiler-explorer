@@ -25,9 +25,9 @@
 
 define(function (require) {
     "use strict";
-    var options = require('options');
-    var Raven = require('raven-js');
-    var $ = require('jquery');
+    const options = require('options');
+    const Raven = require('raven-js');
+    const $ = require('jquery');
 
     if (options.raven) {
         Raven.config(options.raven, {
@@ -36,7 +36,7 @@ define(function (require) {
         }).install();
     }
 
-    var gaProxy;
+    let gaProxy;
     if (options.googleAnalyticsEnabled) {
         (function (i, s, o, g, r, a, m) {
             i.GoogleAnalyticsObject = r;
@@ -56,10 +56,10 @@ define(function (require) {
             window.ga.apply(window.ga, arguments);
         };
         // fullstory stuff:
-        window['_fs_debug'] = false;
-        window['_fs_host'] = 'www.fullstory.com';
-        window['_fs_org'] = '2F4NV';
-        window['_fs_namespace'] = 'FS';
+        window._fs_debug = false;
+        window._fs_host = 'www.fullstory.com';
+        window._fs_org = '2F4NV';
+        window._fs_namespace = 'FS';
         (function (m, n, e, t, l, o, g, y) {
             if (e in m && m.console && m.console.log) {
                 m.console.log('FullStory namespace conflict. Please set window["_fs_namespace"].');
@@ -76,16 +76,16 @@ define(function (require) {
             y.parentNode.insertBefore(o, y);
             g.identify = function (i, v) {
                 g(l, {uid: i});
-                if (v) g(l, v)
+                if (v) g(l, v);
             };
             g.setUserVars = function (v) {
-                g(l, v)
+                g(l, v);
             };
             g.identifyAccount = function (i, v) {
                 o = 'account';
                 v = v || {};
                 v.acctId = i;
-                g(o, v)
+                g(o, v);
             };
             g.clearUserCookie = function (c, d, i) {
                 if (!c || document.cookie.match('fs_uid=[`;`]*`[`;`]*`[`;`]*`')) {
@@ -95,11 +95,11 @@ define(function (require) {
                             ';path=/;expires=' + new Date(0).toUTCString();
                         i = d.indexOf('.');
                         if (i < 0)break;
-                        d = d.slice(i + 1)
+                        d = d.slice(i + 1);
                     }
                 }
             };
-        })(window, document, window['_fs_namespace'], 'script', 'user');
+        })(window, document, window._fs_namespace, 'script', 'user');
     } else {
         gaProxy = function () {
         };
@@ -109,12 +109,12 @@ define(function (require) {
         if (options.embedded) return;
         $(function () {
             function create_script_element(id, url) {
-                var el = document.createElement('script');
+                const el = document.createElement('script');
                 el.type = 'text/javascript';
                 el.async = true;
                 el.id = id;
                 el.src = url;
-                var s = document.getElementsByTagName('script')[0];
+                const s = document.getElementsByTagName('script')[0];
                 s.parentNode.insertBefore(el, s);
             }
 
