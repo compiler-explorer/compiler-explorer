@@ -30,7 +30,7 @@ define(function (require) {
     var monaco = require('monaco');
 
     // themes is an array so one scheme can be used in multiple places. If you want to use it everywhere, ['all'] should suffice
-    const schemes = [
+    var schemes = [
         {name: 'rainbow', desc: 'Rainbow 1', count: 12, themes: ['default']},
         {name: 'rainbow2', desc: 'Rainbow 2', count: 12, themes: ['default']},
         {name: 'earth', desc: 'Earth tones (colourblind safe)', count: 9, themes: ['default']},
