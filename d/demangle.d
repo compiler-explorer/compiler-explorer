@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import std.stdio;
-import std.demangle;
+static import std.demangle;
 import std.regex;
 
 auto idRegex = ctRegex!("\\b_?_D[0-9a-zA-Z_]+\\b", "g");
@@ -32,7 +32,7 @@ void main() {
     string dem(Captures!(string) m) {
         if (m.hit[1] == '_') {
             // Could be a symbolname with double leading underscore
-            auto result = demangle(m.hit[1..$]);
+            auto result = std.demangle.demangle(m.hit[1..$]);
             if (result == m.hit[1..$])
             {
                 return m.hit;
@@ -44,7 +44,7 @@ void main() {
         }
         else
         {
-            return demangle(m.hit);
+            return std.demangle.demangle(m.hit);
         }
     }
 
