@@ -539,6 +539,14 @@ findCompilers()
                 staticHeaders(res);
                 res.render('embed', renderConfig({embedded: true, readOnly: true}));
             })
+            .get('/robots.txt', function (req, res) {
+                staticHeaders(res);
+                res.end('User-agent: *\nSitemap: https://godbolt.org/sitemap.xml');
+            })
+            .get('/sitemap.xml', function (req, res) {
+                staticHeaders(res);
+                res.render('sitemap');
+            })
             .use(sFavicon(staticDir + '/favicon.ico'))
             .use('/v', express.static(staticDir + '/v', {maxAge: Infinity, index: false}))
             .use(express.static(staticDir, {maxAge: staticMaxAgeSecs * 1000}));
