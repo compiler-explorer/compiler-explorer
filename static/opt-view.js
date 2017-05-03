@@ -126,7 +126,6 @@ define(function (require) {
             },"");
             var contents = _.map(value, this.getDisplayableOpt, this);
             opt.push({
-                // Infinity also works here as a column limit
                 range: new monaco.Range(linenumber,1,linenumber,this.optEditor.getModel().getLineMaxColumn(linenumber)),
                 options: {
                     isWholeLine: true,
