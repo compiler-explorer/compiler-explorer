@@ -29,6 +29,8 @@ define(function (require) {
     var _ = require('underscore');
     var Alert = require('./alert');
     var local = require('./local');
+    // We're using this one!
+    //noinspection JSUnusedLocalSymbols
     var FileSaver = require('filesaver');
 
     function getLocalFiles() {

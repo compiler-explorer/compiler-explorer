@@ -23,7 +23,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-define(function (require) {
+define(function () {
     "use strict";
     // here instead of in the editor.js and compiler.js etc to prevent circular dependencies.
     return {
