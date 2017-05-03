@@ -107,7 +107,6 @@ define(function (require) {
     Opt.prototype.showOptResults = function(results) {
         var opt = [];
 
-        hoverContent = {};
         results = _.filter(results, function(x) {
             return x.DebugLoc !== undefined;
         });
@@ -127,7 +126,8 @@ define(function (require) {
             },"");
             var contents = _.map(value, this.getDisplayableOpt, this);
             opt.push({
-                range: new monaco.Range(linenumber,1,linenumber,Infinity),
+                // Infinity also works here as a column limit
+                range: new monaco.Range(linenumber,1,linenumber,this.optEditor.getModel().getLineMaxColumn(linenumber)),
                 options: {
                     isWholeLine: true,
                     glyphMarginClassName: "opt-decoration." + className.toLowerCase(),
