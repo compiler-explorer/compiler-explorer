@@ -29,18 +29,6 @@ define(function (require) {
     var FontScale = require('fontscale');
     var monaco = require('monaco');
     var options = require('options');
-    var hoverContent = {};
-
-    monaco.languages.registerHoverProvider('cpp', {
-        provideHover: function(model, position) {
-            if(hoverContent[position.lineNumber]) {
-                return {
-                    range: new monaco.Range(1, 1, position.lineNumber, model.getLineMaxColumn(position.lineNumber)),
-                    contents: hoverContent[position.lineNumber]
-                };
-            }
-        }
-    });
 
     require('asm-mode');
     require('selectize');
@@ -61,6 +49,7 @@ define(function (require) {
             quickSuggestions: false,
             fixedOverflowWidgets: true
         });
+
         this._compilerid = state.id;
         this._compilerName = state.compilerName;
         this._editorid = state.editorid;
@@ -73,7 +62,6 @@ define(function (require) {
         this.eventHub.on('editorChange', this.onEditorChange, this);
         this.eventHub.on('themeChange', this.onThemeChange, this);
         this.eventHub.emit('requestTheme');
-
 
         this.container.on('destroy', function () {
             this.eventHub.emit("optViewClosed", this._compilerid);
@@ -99,7 +87,9 @@ define(function (require) {
     };
 
     Opt.prototype.onEditorChange = function(id, source) {
-        this.optEditor.setValue(source);
+        if (this._editorid == id) {
+            this.optEditor.setValue(source);
+        }
     };
     Opt.prototype.onCompileResult = function (id, compiler, result) {
         if(result.hasOptOutput && this._compilerid == id) {
@@ -107,7 +97,7 @@ define(function (require) {
         }
     };
     Opt.prototype.setTitle = function () {
-          this.container.setTitle(this._compilerName + " (Editor #" + this._editorid + ", Compiler #" + this._compilerid + ")");
+          this.container.setTitle(this._compilerName + " Opt Viewer (Editor #" + this._editorid + ", Compiler #" + this._compilerid + ")");
     };
 
     Opt.prototype.getDisplayableOpt = function (optResult) {
@@ -135,21 +125,20 @@ define(function (require) {
                     return x.optType;
                 }
             },"");
+            var contents = _.map(value, this.getDisplayableOpt, this);
             opt.push({
-                range: new monaco.Range(linenumber,1,linenumber,1),
+                range: new monaco.Range(linenumber,1,linenumber,Infinity),
                 options: {
                     isWholeLine: true,
-                    glyphMarginClassName: "opt-decoration." + className.toLowerCase()
+                    glyphMarginClassName: "opt-decoration." + className.toLowerCase(),
+                    hoverMessage: contents,
+                    glyphMarginHoverMessage: contents
                 }
             });
-            hoverContent[linenumber] = value.map(function(x) {
-                return this.getDisplayableOpt(x);
-            }, this);
         }, this);
 
         this._currentDecorations = this.optEditor.deltaDecorations(this._currentDecorations, opt);
     };
-
 
     Opt.prototype.onCompiler = function (id, compiler, options, editorid) {
         if(id == this._compilerid) {
