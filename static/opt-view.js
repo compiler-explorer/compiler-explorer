@@ -126,7 +126,7 @@ define(function (require) {
             },"");
             var contents = _.map(value, this.getDisplayableOpt, this);
             opt.push({
-                range: new monaco.Range(linenumber,1,linenumber,this.optEditor.getModel().getLineMaxColumn(linenumber)),
+                range: new monaco.Range(linenumber,1,linenumber,Infinity),
                 options: {
                     isWholeLine: true,
                     glyphMarginClassName: "opt-decoration." + className.toLowerCase(),
