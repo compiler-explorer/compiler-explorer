@@ -544,6 +544,7 @@ findCompilers()
             })
             .get('/sitemap.xml', function (req, res) {
                 staticHeaders(res);
+                res.set('Content-Type', 'application/xml');
                 res.render('sitemap');
             })
             .use(sFavicon(staticDir + '/favicon.ico'))
