@@ -91,10 +91,22 @@ If JSON is present in the request's `Accept` header, the compilation results are
 
 ```
 {
-    code: 0 if successful, else compiler return code,
-    stdout: [ { text: "Output", 
-                (optional) tag: {line: source line, text: "parsed error for that line"} } ],
-    stderr: (as above),
-    asm: [ { text: "assembly text", source: source line number or null if none } ]
+  code: 0 if successful, else compiler return code,
+  stdout: [
+            {
+              text: "Output",
+              (optional) tag: {
+                                line: source line,
+                                text: "parsed error for that line"
+                              }
+            }
+  ],
+  stderr: (as above),
+  asm: [
+         {
+           text: "assembly text",
+           source: source line number or null if none
+         }
+  ]
 }
 ```
