@@ -392,14 +392,16 @@ define(function (require) {
 
     Compiler.prototype.onCompileResponse = function (request, result, cached) {
         // Delete trailing empty lines
-        var cutCount = 0;
-        for (var i = result.asm.length - 1;i >= 0;i--) {
-            if (result.asm[i].text) {
-                break;
+        if ($.isArray(result.asm)) {
+            var cutCount = 0;
+            for (var i = result.asm.length - 1; i >= 0; i--) {
+                if (result.asm[i].text) {
+                    break;
+                }
+                cutCount++;
             }
-            cutCount++;
+            result.asm.splice(result.asm.length - cutCount, cutCount);
         }
-        result.asm.splice(result.asm.length - cutCount, cutCount);
         this.lastResult = result;
         var timeTaken = Math.max(0, Date.now() - this.pendingRequestSentAt);
         var wasRealReply = this.pendingRequestSentAt > 0;
