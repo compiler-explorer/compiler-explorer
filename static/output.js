@@ -60,6 +60,15 @@ define(function (require) {
 
         this.add("Compiler exited with result code " + result.code);
 
+        if (result.execResult) {
+            var elem = $('<div><hr></div>').appendTo(this.contentRoot);
+            this.add("Output from execution:");
+            _.each((result.execResult.stdout || []).concat(result.execResult.stderr || []), function (obj) {
+                this.add(obj.text, obj.line);
+            }, this);
+            this.add("User code exited with result code " + result.execResult.code);
+        }
+
         this.updateCompilerName();
     };
 

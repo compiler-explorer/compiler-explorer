@@ -303,11 +303,11 @@ define(function (require) {
         var after = newSettings;
         this.settings = _.clone(newSettings);
 
-        this.editor.updateOptions({autoClosingBrackets: this.settings.autoCloseBrackets, tabSize: this.settings.tabWidth});
-        if (before.tabWidth !== after.tabWidth) {
-            this.editor.getModel().updateOptions({tabSize: this.settings.tabWidth});
-            // TODO: We could use an auto reindentation here, but currently there is no method on Monaco
-        }
+        this.editor.updateOptions({
+            autoClosingBrackets: this.settings.autoCloseBrackets,
+            tabSize: this.settings.tabWidth,
+            quickSuggestions: this.settings.showQuickSuggestions
+        });
 
         // TODO: bug when:
         // * Turn off auto.

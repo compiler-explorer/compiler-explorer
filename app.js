@@ -124,14 +124,13 @@ function awsInstances() {
 // function to load internal binaries (i.e. lib/source/*.js)
 function loadSources() {
     var sourcesDir = "lib/sources";
-    var sources = fs.readdirSync(sourcesDir)
+    return fs.readdirSync(sourcesDir)
         .filter(function (file) {
             return file.match(/.*\.js$/);
         })
         .map(function (file) {
             return require("./" + path.join(sourcesDir, file));
         });
-    return sources;
 }
 
 // load effectively
@@ -168,6 +167,8 @@ function ClientOptionsHandler(fileSources) {
         var splat = thing.split("=");
         return {language: splat[0], url: splat[1]};
     }));
+    var supportsBinary = !!compilerProps("supportsBinary", true);
+    var supportsExecute = supportsBinary && !!compilerProps("supportsExecute", true);
     var options = {
         googleAnalyticsAccount: gccProps('clientGoogleAnalyticsAccount', 'UA-55180-6'),
         googleAnalyticsEnabled: gccProps('clientGoogleAnalyticsEnabled', false),
@@ -181,7 +182,8 @@ function ClientOptionsHandler(fileSources) {
         sourceExtension: compilerProps('compileFilename').split('.', 2)[1],
         defaultCompiler: compilerProps('defaultCompiler', ''),
         compileOptions: compilerProps('defaultOptions', ''),
-        supportsBinary: !!compilerProps("supportsBinary"),
+        supportsBinary: supportsBinary,
+        supportsExecute: supportsExecute,
         languages: languages,
         sources: sources,
         raven: gccProps('ravenUrl', ''),
@@ -212,9 +214,9 @@ function getSource(req, res, next) {
         return;
     }
     var action = bits[2];
-    if (action == "list") action = handler.list;
-    else if (action == "load") action = handler.load;
-    else if (action == "save") action = handler.save;
+    if (action === "list") action = handler.list;
+    else if (action === "load") action = handler.load;
+    else if (action === "save") action = handler.save;
     else action = null;
     if (action === null) {
         next();
@@ -264,7 +266,7 @@ function findCompilers() {
             var path = ndk + "/toolchains/" + v + "/prebuilt/linux-x86_64/bin/";
             if (fs.existsSync(path)) {
                 var cc = fs.readdirSync(path).filter(function (filename) {
-                    return filename.indexOf("g++") != -1;
+                    return filename.indexOf("g++") !== -1;
                 });
                 a[i] = path + cc[0];
             } else {
@@ -339,6 +341,8 @@ function findCompilers() {
             return parentProps(base + "." + name, parentProps(name, def));
         }
 
+        var supportsBinary = !!props("supportsBinary", true);
+        var supportsExecute = supportsBinary && !!props("supportsExecute", true);
         var compilerInfo = {
             id: name,
             exe: compilerProps(base + ".exe", name),
@@ -352,7 +356,8 @@ function findCompilers() {
             objdumper: props("objdumper", ""),
             intelAsm: props("intelAsm", ""),
             needsMulti: !!props("needsMulti", true),
-            supportsBinary: !!props("supportsBinary", true),
+            supportsBinary: supportsBinary,
+            supportsExecute: supportsExecute,
             postProcess: props("postProcess", "").split("|")
         };
         logger.info("Found compiler", compilerInfo);
@@ -379,7 +384,7 @@ function findCompilers() {
                 return recurseGetCompilers(compiler, props);
             }));
         }
-        if (name == "AWS") return fetchAws();
+        if (name === "AWS") return fetchAws();
         return Promise.resolve(compilerConfigFor(name, parentProps));
     }
 
@@ -415,8 +420,8 @@ function ApiHandler(compileHandler) {
         res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
         next();
     });
-    this.handler.get('/compilers', _.bind(function (req, res, next) {
-        if (req.accepts(['text', 'json']) == 'json') {
+    this.handler.get('/compilers', _.bind(function (req, res) {
+        if (req.accepts(['text', 'json']) === 'json') {
             res.set('Content-Type', 'application/json');
             res.end(JSON.stringify(this.compilers));
         } else {
@@ -449,7 +454,7 @@ function shortUrlHandler(req, res, next) {
             responseText += d;
         });
         response.on('end', function () {
-            if (response.statusCode != 200) {
+            if (response.statusCode !== 200) {
                 logger.error("Failed to resolve short URL " + bits[1] + " - got response " +
                     response.statusCode + " : " + responseText);
                 return next();
@@ -479,7 +484,7 @@ findCompilers()
         var prevCompilers;
 
         function onCompilerChange(compilers) {
-            if (JSON.stringify(prevCompilers) == JSON.stringify(compilers)) {
+            if (JSON.stringify(prevCompilers) === JSON.stringify(compilers)) {
                 return;
             }
             logger.info("Compilers:", compilers);
@@ -538,6 +543,15 @@ findCompilers()
             .get('/embed-ro', function (req, res) {
                 staticHeaders(res);
                 res.render('embed', renderConfig({embedded: true, readOnly: true}));
+            })
+            .get('/robots.txt', function (req, res) {
+                staticHeaders(res);
+                res.end('User-agent: *\nSitemap: https://godbolt.org/sitemap.xml');
+            })
+            .get('/sitemap.xml', function (req, res) {
+                staticHeaders(res);
+                res.set('Content-Type', 'application/xml');
+                res.render('sitemap');
             })
             .use(sFavicon(staticDir + '/favicon.ico'))
             .use('/v', express.static(staticDir + '/v', {maxAge: Infinity, index: false}))

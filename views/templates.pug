@@ -21,6 +21,8 @@
         // Make a dropdown? With more options? e.g. demangling etc
         button.btn.btn-sm(title="Compile to binary and disassemble the output" data-bind="binary")
           span 11010
+        button.btn.btn-sm(title="Execute the binary" data-bind="execute")
+          span ./a.out
         button.btn.btn-sm.active.nonbinary(title="Filter unused labels from the output" data-bind="labels")
           span .LX0:
         button.btn.btn-sm.active.nonbinary(title="Filter all assembler directives from the output" data-bind="directives")

@@ -1,4 +1,4 @@
-// Copyright (c) 2012-2017, Matt Godbolt
+// Copyright (c) 2012-2017, Matt Godbolt & Rubén Rincón
 //
 // All rights reserved.
 //
@@ -29,10 +29,11 @@ define(function (require) {
     function Alert() {
         this.yesHandler = null;
         this.noHandler = null;
-        $('#yes-no button.yes').click(_.bind(function () {
+        var yesNo = $('#yes-no');
+        yesNo.find('button.yes').click(_.bind(function () {
             if (this.yesHandler) this.yesHandler();
         }, this));
-        $('#yes-no button.no').click(_.bind(function () {
+        yesNo.find('button.no').click(_.bind(function () {
             if (this.noHandler) this.noHandler();
         }, this));
     }
@@ -91,10 +92,6 @@ define(function (require) {
             }, options.dismissTime);
         }
         container.append(newElement);  // Add the new notification to the container
-    };
-
-    Alert.prototype.onYesNoHide = function (evt) {
-        console.log(evt);
     };
 
     return Alert;

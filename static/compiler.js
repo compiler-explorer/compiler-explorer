@@ -101,6 +101,7 @@ define(function (require) {
 
         // Hide the binary option if the global options has it disabled.
         this.domRoot.find("[data-bind='binary']").toggle(options.supportsBinary);
+        this.domRoot.find("[data-bind='execute']").toggle(options.supportsExecute);
 
         this.outputEditor = monaco.editor.create(this.domRoot.find(".monaco-placeholder")[0], {
             scrollBeyondLastLine: false,
@@ -119,7 +120,7 @@ define(function (require) {
             contextMenuGroupId: 'navigation',
             contextMenuOrder: 1.5,
             run: function (ed) {
-                const desiredLine = ed.getPosition().lineNumber - 1;
+                var desiredLine = ed.getPosition().lineNumber - 1;
                 self.eventHub.emit('editorSetDecoration', self.sourceEditorId, self.assembly[desiredLine].source, true);
             }
         });
@@ -266,6 +267,9 @@ define(function (require) {
         if (filters.binary && !this.compiler.supportsBinary) {
             delete filters.binary;
         }
+        if (filters.exeute && !this.compiler.supportsExecute) {
+            delete filters.execute;
+        }
         return filters;
     };
 
@@ -391,6 +395,17 @@ define(function (require) {
     }
 
     Compiler.prototype.onCompileResponse = function (request, result, cached) {
+        // Delete trailing empty lines
+        if ($.isArray(result.asm)) {
+            var cutCount = 0;
+            for (var i = result.asm.length - 1; i >= 0; i--) {
+                if (result.asm[i].text) {
+                    break;
+                }
+                cutCount++;
+            }
+            result.asm.splice(result.asm.length - cutCount, cutCount);
+        }
         this.lastResult = result;
         var timeTaken = Math.max(0, Date.now() - this.pendingRequestSentAt);
         var wasRealReply = this.pendingRequestSentAt > 0;
@@ -496,6 +511,8 @@ define(function (require) {
         // Disable binary support on compilers that don't work with it.
         this.domRoot.find("[data-bind='binary']")
             .toggleClass("disabled", !this.compiler.supportsBinary);
+        this.domRoot.find("[data-bind='execute']")
+            .toggleClass("disabled", !this.compiler.supportsExecute);
         // Disable any of the options which don't make sense in binary mode.
         var filtersDisabled = !!filters.binary && !this.compiler.supportsFiltersInBinary;
         this.domRoot.find('.nonbinary').toggleClass("disabled", filtersDisabled);

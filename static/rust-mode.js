@@ -58,7 +58,7 @@ define(function (require) {
                 '^=', '%=', '<<=', '>>=', '>>>='
             ],
 
-            symbols: /[=><!~?:&|+\-*\/\^%]+/,
+            symbols: /[=><!~?:&|+\-*\/^%]+/,
             escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
 
             // The main tokenizer for our languages
@@ -72,7 +72,7 @@ define(function (require) {
                             '@default': 'identifier'
                         }
                     }],
-                    [/[A-Z][\w\$]*/, 'type.identifier'],  // to show class names nicely
+                    [/[A-Z][\w$]*/, 'type.identifier'],  // to show class names nicely
 
                     // whitespace
                     {include: '@whitespace'},
