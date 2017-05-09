@@ -167,6 +167,8 @@ function ClientOptionsHandler(fileSources) {
         var splat = thing.split("=");
         return {language: splat[0], url: splat[1]};
     }));
+    var supportsBinary = !!compilerProps("supportsBinary", true);
+    var supportsExecute = supportsBinary && !!compilerProps("supportsExecute", true);
     var options = {
         googleAnalyticsAccount: gccProps('clientGoogleAnalyticsAccount', 'UA-55180-6'),
         googleAnalyticsEnabled: gccProps('clientGoogleAnalyticsEnabled', false),
@@ -180,7 +182,8 @@ function ClientOptionsHandler(fileSources) {
         sourceExtension: compilerProps('compileFilename').split('.', 2)[1],
         defaultCompiler: compilerProps('defaultCompiler', ''),
         compileOptions: compilerProps('defaultOptions', ''),
-        supportsBinary: !!compilerProps("supportsBinary"),
+        supportsBinary: supportsBinary,
+        supportsExecute: supportsExecute,
         languages: languages,
         sources: sources,
         raven: gccProps('ravenUrl', ''),
@@ -338,6 +341,8 @@ function findCompilers() {
             return parentProps(base + "." + name, parentProps(name, def));
         }
 
+        var supportsBinary = !!props("supportsBinary", true);
+        var supportsExecute = supportsBinary && !!props("supportsExecute", true);
         var compilerInfo = {
             id: name,
             exe: compilerProps(base + ".exe", name),
@@ -351,7 +356,8 @@ function findCompilers() {
             objdumper: props("objdumper", ""),
             intelAsm: props("intelAsm", ""),
             needsMulti: !!props("needsMulti", true),
-            supportsBinary: !!props("supportsBinary", true),
+            supportsBinary: supportsBinary,
+            supportsExecute: supportsExecute,
             postProcess: props("postProcess", "").split("|")
         };
         logger.info("Found compiler", compilerInfo);
