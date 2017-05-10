@@ -99,14 +99,16 @@ If JSON is present in the request's `Accept` header, the compilation results are
                                 line: source line,
                                 text: "parsed error for that line"
                               }
-            }
+            },
+            ...
   ],
-  stderr: (as above),
+  stderr: (format is similar to that of stdout),
   asm: [
          {
            text: "assembly text",
            source: source line number or null if none
-         }
+         },
+         ...
   ]
 }
 ```
