@@ -704,7 +704,7 @@ define(function (require) {
                             range: e.target.range,
                             options: {
                                 isWholeLine: false,
-                                hoverMessage: [response.tooltip + " More information available in the context menu."]
+                                hoverMessage: [response.tooltip + "\n\nMore information available in the context menu."]
                             }
                         };
                         this.updateDecorations();
