@@ -89,24 +89,26 @@ foo():
 
 If JSON is present in the request's `Accept` header, the compilation results are of the form:
 
+Optional values are marked with a '**'
+
 ```
 {
   "code": 0 if successful, else compiler return code,
   "stdout": [
             {
-              text: "Output",
-              (optional) tag: {
-                                line: source line,
-                                text: "parsed error for that line"
-                              }
+              "text": Output,
+              ** "tag": {
+                          "line": Source line,
+                          "text": Parsed error for that line
+                 }
             },
             ...
   ],
   "stderr": (format is similar to that of stdout),
   "asm": [
          {
-           text: "assembly text",
-           source: source line number or null if none
+           "text": Assembly text,
+           "source": Source line number or null if none
          },
          ...
   ]
