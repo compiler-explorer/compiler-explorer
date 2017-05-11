@@ -113,16 +113,16 @@ Optional values are marked with a '**'
          ...
   ],
   ** "optOutput" : {
-                     "displayString" : String displayed in output
-                     "Pass" : [ Missed | Passed | Analysis ] (Specifies the type of optimisation output)
+                     "displayString" : String displayed in output,
+                     "Pass" : [ Missed | Passed | Analysis ] (Specifies the type of optimisation output),
                      "Name" : Name of the output (mostly represents the reason for the output),
                      "DebugLoc" : {
                         "File": Name of file,
                         "Line": Line number,
                         "Column": Column number in line
                      },
-                     "Function": Name of function for which optimisation output is provided
-                     "Args": Array of objects representing the arguments that the optimser used when trying to optimise.
+                     "Function": Name of function for which optimisation output is provided,
+                     "Args": Array of objects representing the arguments that the optimiser used when trying to optimise
      }
 }
 ```
