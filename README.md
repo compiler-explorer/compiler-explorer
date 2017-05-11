@@ -112,6 +112,7 @@ Optional values are marked with a '**'
          },
          ...
   ],
+  "okToCache": true if output could be locally cached else false,
   ** "optOutput" : {
                      "displayString" : String displayed in output,
                      "Pass" : [ Missed | Passed | Analysis ] (Specifies the type of optimisation output),
