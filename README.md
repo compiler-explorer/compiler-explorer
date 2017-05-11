@@ -113,11 +113,8 @@ Optional values are marked with a '**'
          ...
   ],
   ** "optOutput" : {
-                     "optType": [ Missed | Passed | Analysis ] (Specifies the type of optimisation output)
                      "displayString" : String displayed in output
-
-                     (LLVM specific)
-                     "Pass" : What pass of the optimiser generated this output,
+                     "Pass" : [ Missed | Passed | Analysis ] (Specifies the type of optimisation output)
                      "Name" : Name of the output (mostly represents the reason for the output),
                      "DebugLoc" : {
                         "File": Name of file,
