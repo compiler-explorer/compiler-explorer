@@ -91,8 +91,8 @@ If JSON is present in the request's `Accept` header, the compilation results are
 
 ```
 {
-  code: 0 if successful, else compiler return code,
-  stdout: [
+  "code": 0 if successful, else compiler return code,
+  "stdout": [
             {
               text: "Output",
               (optional) tag: {
@@ -102,8 +102,8 @@ If JSON is present in the request's `Accept` header, the compilation results are
             },
             ...
   ],
-  stderr: (format is similar to that of stdout),
-  asm: [
+  "stderr": (format is similar to that of stdout),
+  "asm": [
          {
            text: "assembly text",
            source: source line number or null if none
