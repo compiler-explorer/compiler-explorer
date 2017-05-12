@@ -18,7 +18,7 @@
   "dependencies": {
     "requirejs": "^2.3.2",
     "underscore": "^1.8.3",
-    "golden-layout": "^1.5.6",
+    "golden-layout": "^1.5.8",
     "jquery": "^3.1.1",
     "bootstrap": "^3.3.7",
     "selectize": "^0.12.2",
