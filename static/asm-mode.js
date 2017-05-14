@@ -43,13 +43,13 @@ define(function (require) {
                     // Error document
                     [/^<.*>$/, {token: 'annotation'}],
                     // Label definition
-                    [/^[.a-zA-Z0-9_$].*:/, {token: 'type.identifier', next: '@rest'}],
+                    [/^[.a-zA-Z0-9_$?@].*:/, {token: 'type.identifier', next: '@rest'}],
                     // Label definition (ARM style)
                     [/^\s*[|][^|]*[|]/, {token: 'type.identifier', next: '@rest'}],
                     // Label definition (CL style)
-                    [/^\s*[.a-zA-Z0-9_$|]*\s*(PROC|ENDP)/, {token: 'type.identifier', next: '@rest'}],
+                    [/^\s*[.a-zA-Z0-9_$|]*\s*(PROC|ENDP|DB|DD)/, {token: 'type.identifier', next: '@rest'}],
                     // Constant definition
-                    [/^[.a-zA-Z0-9_$][^=]*=/, {token: 'type.identifier', next: '@rest'}],
+                    [/^[.a-zA-Z0-9_$?@][^=]*=/, {token: 'type.identifier', next: '@rest'}],
                     // opcode
                     [/[.a-zA-Z_][.a-zA-Z_0-9]*/, {token: 'keyword', next: '@rest'}],
 
