@@ -89,12 +89,41 @@ foo():
 
 If JSON is present in the request's `Accept` header, the compilation results are of the form:
 
+Optional values are marked with a '**'
+
 ```
 {
-    code: 0 if successful, else compiler return code,
-    stdout: [ { text: "Output", 
-                (optional) tag: {line: source line, text: "parsed error for that line"} } ],
-    stderr: (as above),
-    asm: [ { text: "assembly text", source: source line number or null if none } ]
+  "code": 0 if successful, else compiler return code,
+  "stdout": [
+            {
+              "text": Output,
+              ** "tag": {
+                          "line": Source line,
+                          "text": Parsed error for that line
+                 }
+            },
+            ...
+  ],
+  "stderr": (format is similar to that of stdout),
+  "asm": [
+         {
+           "text": Assembly text,
+           "source": Source line number or null if none
+         },
+         ...
+  ],
+  "okToCache": true if output could be locally cached else false,
+  ** "optOutput" : {
+                     "displayString" : String displayed in output,
+                     "Pass" : [ Missed | Passed | Analysis ] (Specifies the type of optimisation output),
+                     "Name" : Name of the output (mostly represents the reason for the output),
+                     "DebugLoc" : {
+                        "File": Name of file,
+                        "Line": Line number,
+                        "Column": Column number in line
+                     },
+                     "Function": Name of function for which optimisation output is provided,
+                     "Args": Array of objects representing the arguments that the optimiser used when trying to optimise
+     }
 }
 ```

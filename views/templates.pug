@@ -7,7 +7,7 @@
           span.glyphicon.glyphicon-floppy-disk
         if !embedded
           button.btn.btn-default.btn-sm.add-compiler(title="Add a new compiler for this source (click or drag)")
-                  span.glyphicon.glyphicon-open
+            span.glyphicon.glyphicon-open
     .monaco-placeholder
 
   #compiler
@@ -58,8 +58,8 @@
           td: select.diff-picker.lhs(placeholder="Select compiler output...")
           td: select.diff-picker.rhs(placeholder="Select compiler output...")
     .monaco-placeholder
-  
-    #opt
-      .top-bar.btn-toolbar(role="toolbar")
-        include font-size.pug
-      .monaco-placeholder
+
+  #opt
+    .top-bar.btn-toolbar(role="toolbar")
+      include font-size.pug
+    .monaco-placeholder
