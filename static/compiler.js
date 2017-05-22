@@ -67,6 +67,7 @@ define(function (require) {
         this.compiler = compilersById[state.compiler] || compilersById[options.defaultCompiler];
         this.options = state.options || options.compileOptions;
         this.filters = new Toggles(this.domRoot.find(".filters"), state.filters);
+        this.unexpandedSource = "";
         this.source = "";
         this.assembly = [];
         this.colours = [];
@@ -222,7 +223,7 @@ define(function (require) {
         }
 
         function createOptView() {
-            return Components.getOptViewWith(self.id, self.source, self.lastResult.optOutput, self.getCompilerName(), self.sourceEditorId);
+            return Components.getOptViewWith(self.id, self.unexpandedSource, self.lastResult.optOutput, self.getCompilerName(), self.sourceEditorId);
         }
 
         this.container.layoutManager.createDragSource(
@@ -488,6 +489,7 @@ define(function (require) {
 
     Compiler.prototype.onEditorChange = function (editor, source) {
         if (editor === this.sourceEditorId) {
+            this.unexpandedSource = source;
             this.expand(source).then(_.bind(function (expanded) {
                 this.source = expanded;
                 this.compile();
