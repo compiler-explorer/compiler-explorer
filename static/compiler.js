@@ -635,16 +635,21 @@ define(function (require) {
     };
 
     var hexLike = /^(#?[$]|0x)([0-9a-fA-F]+)$/;
-    var decimalLike = /^(#?)([0-9]+)$/;
+    var hexLike2 = /^(#?)([0-9a-fA-F]+)H$/;
+    var decimalLike = /^(#?)(-?[0-9]+)$/;
 
     function getNumericToolTip(value) {
-        var match = hexLike.exec(value);
+        var match = hexLike.exec(value) || hexLike2.exec(value);
         if (match) {
             return value + ' = ' + bigInt(match[2], 16).toString(10);
         }
         match = decimalLike.exec(value); 
         if (match) {
-            return value + ' = 0x' +  bigInt(match[2]).toString(16).toUpperCase();
+            var asBig = bigInt(match[2]);
+            if (asBig.isNegative()) {
+                asBig = bigInt("ffffffffffffffff", 16).and(asBig);
+            }
+            return value + ' = 0x' + asBig.toString(16).toUpperCase();
         }
         
         return null;
@@ -690,7 +695,13 @@ define(function (require) {
         }
         var currentWord = this.outputEditor.getModel().getWordAtPosition(e.target.position);
         if (currentWord && currentWord.word) {
-            var numericToolTip = getNumericToolTip(currentWord.word);
+            var word = currentWord.word;
+            // Hacky workaround to check for negative numbers. c.f. https://github.com/mattgodbolt/compiler-explorer/issues/434
+            var lineContent = this.outputEditor.getModel().getLineContent(e.target.position.lineNumber);
+            if (lineContent[currentWord.startColumn - 2] === '-') {
+                word = '-' + word;
+            }
+            var numericToolTip = getNumericToolTip(word);
             if (numericToolTip) {
                 this.decorations.numericToolTip = {
                     range: e.target.range,
