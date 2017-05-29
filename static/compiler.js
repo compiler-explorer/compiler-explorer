@@ -632,6 +632,9 @@ define(function (require) {
         if (!before.lastHoverShowSource && this.settings.hoverShowSource) {
             this.onCompilerSetDecorations(this.id, []);
         }
+        this.outputEditor.updateOptions({
+            contextmenu: this.settings.useCustomContextMenu
+        });
     };
 
     var hexLike = /^(#?[$]|0x)([0-9a-fA-F]+)$/;
