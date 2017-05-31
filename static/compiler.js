@@ -198,6 +198,7 @@ define(function (require) {
         this.eventHub.on('settingsChange', this.onSettingsChange, this);
         this.eventHub.on('themeChange', this.onThemeChange, this);
         this.eventHub.on('optViewClosed', this.onOptViewClosed, this);
+        this.eventHub.on('astViewClosed', this.onAstViewClosed, this);        
         this.eventHub.emit('requestSettings');
         this.eventHub.emit('requestTheme');
         this.sendCompiler();
@@ -253,7 +254,9 @@ define(function (require) {
         this.astButton.click(_.bind(function () {
             var insertPoint = hub.findParentRowOrColumn(this.container) ||
                 this.container.layoutManager.root.contentItems[0];
+            this.produceAst = true;
             insertPoint.addChild(createAstView());
+            this.astButton.prop("disabled", true);            
         }, this));        
 
         this.saveState();
@@ -290,6 +293,7 @@ define(function (require) {
             source: this.source || "",
             compiler: this.compiler ? this.compiler.id : "",
             options: this.options,
+            backendOptions: { produceAst: this.produceAst },
             filters: this.getEffectiveFilters()
         };
 
@@ -517,7 +521,8 @@ define(function (require) {
     Compiler.prototype.onAstViewClosed = function (id) {
         if (this.id == id) {
             this.astButton.prop('disabled', false);
-        }
+            this.produceAst = false;
+        }        
     };    
 
     Compiler.prototype.updateButtons = function () {
@@ -535,6 +540,8 @@ define(function (require) {
         // Disable any of the options which don't make sense in binary mode.
         var filtersDisabled = !!filters.binary && !this.compiler.supportsFiltersInBinary;
         this.domRoot.find('.nonbinary').toggleClass("disabled", filtersDisabled);
+        // The AST printing functionality only works with Clang
+        this.astButton.prop("disabled", !this.compiler.name.includes('clang++'));
     };
 
     Compiler.prototype.onOptionsChange = function (options) {

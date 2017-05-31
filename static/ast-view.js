@@ -87,10 +87,8 @@ define(function (require) {
     };
 
     Ast.prototype.onEditorChange = function(id, source) {
-        if (this._editorid == id) {
-            //this.astEditor.setValue(source);
-        }
     };
+    
     Ast.prototype.onCompileResult = function (id, compiler, result) {
         if(result.hasAstOutput && this._compilerid == id) {
             this.showAstResults(result.astOutput);
