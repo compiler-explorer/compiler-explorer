@@ -79,6 +79,7 @@ define(function (require) {
         this.decorations = {};
         this.prevDecorations = [];
         this.optButton = this.domRoot.find('.btn.view-optimization');
+        this.astButton = this.domRoot.find('.btn.view-ast');        
 
         this.linkedFadeTimeoutId = -1;
 
@@ -226,6 +227,10 @@ define(function (require) {
             return Components.getOptViewWith(self.id, self.unexpandedSource, self.lastResult.optOutput, self.getCompilerName(), self.sourceEditorId);
         }
 
+        function createAstView() {
+            return Components.getAstViewWith(self.id, self.unexpandedSource, self.lastResult.astOutput, self.getCompilerName(), self.sourceEditorId);
+        }        
+
         this.container.layoutManager.createDragSource(
             this.domRoot.find('.btn.add-compiler'), cloneComponent);
 
@@ -244,6 +249,12 @@ define(function (require) {
             insertPoint.addChild(createOptView());
             this.optButton.prop("disabled", true);
         }, this));
+
+        this.astButton.click(_.bind(function () {
+            var insertPoint = hub.findParentRowOrColumn(this.container) ||
+                this.container.layoutManager.root.contentItems[0];
+            insertPoint.addChild(createAstView());
+        }, this));        
 
         this.saveState();
     }
@@ -502,6 +513,12 @@ define(function (require) {
             this.optButton.prop('disabled', false);
         }
     };
+
+    Compiler.prototype.onAstViewClosed = function (id) {
+        if (this.id == id) {
+            this.astButton.prop('disabled', false);
+        }
+    };    
 
     Compiler.prototype.updateButtons = function () {
         if (!this.compiler) return;
