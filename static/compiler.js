@@ -254,9 +254,11 @@ define(function (require) {
         this.astButton.click(_.bind(function () {
             var insertPoint = hub.findParentRowOrColumn(this.container) ||
                 this.container.layoutManager.root.contentItems[0];
-            this.produceAst = true;
+            this.produceAst = true;            
+
             insertPoint.addChild(createAstView());
-            this.astButton.prop("disabled", true);            
+            this.astButton.prop("disabled", true);
+            this.compile();
         }, this));        
 
         this.saveState();
