@@ -198,7 +198,8 @@ define(function (require) {
         this.eventHub.on('settingsChange', this.onSettingsChange, this);
         this.eventHub.on('themeChange', this.onThemeChange, this);
         this.eventHub.on('optViewClosed', this.onOptViewClosed, this);
-        this.eventHub.on('astViewClosed', this.onAstViewClosed, this);        
+        this.eventHub.on('astViewOpened', this.onAstViewOpened, this);
+        this.eventHub.on('astViewClosed', this.onAstViewClosed, this);
         this.eventHub.emit('requestSettings');
         this.eventHub.emit('requestTheme');
         this.sendCompiler();
@@ -254,10 +255,7 @@ define(function (require) {
         this.astButton.click(_.bind(function () {
             var insertPoint = hub.findParentRowOrColumn(this.container) ||
                 this.container.layoutManager.root.contentItems[0];
-            this.produceAst = true;            
-
             insertPoint.addChild(createAstView());
-            this.astButton.prop("disabled", true);
             this.compile();
         }, this));        
 
@@ -520,6 +518,13 @@ define(function (require) {
         }
     };
 
+    Compiler.prototype.onAstViewOpened = function (id) {
+        if (this.id == id) {
+            this.astButton.prop("disabled", true);
+            this.produceAst = true;
+        }
+    };
+    
     Compiler.prototype.onAstViewClosed = function (id) {
         if (this.id == id) {
             this.astButton.prop('disabled', false);

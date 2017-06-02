@@ -62,6 +62,7 @@ define(function (require) {
         this.eventHub.on('editorChange', this.onEditorChange, this);
         this.eventHub.on('themeChange', this.onThemeChange, this);
         this.eventHub.emit('requestTheme');
+        this.eventHub.emit('astViewOpened', this._compilerid);
 
         this.container.on('destroy', function () {
             this.eventHub.emit("astViewClosed", this._compilerid);
