@@ -95,11 +95,17 @@ define(function () {
                 componentState: {}
             };
         },
-        getAstViewWith: function (id, source, optimization, compilerName, editorid) {
+        getAstViewWith: function (id, source, astOutput, compilerName, editorid) {
             return {
                 type: 'component',
                 componentName: 'ast',
-                componentState: {id: id, source: source, optOutput: optimization, compilerName: compilerName, editorid: editorid}
+                componentState: {
+                    id: id,
+                    source: source,
+                    astOutput: astOutput,
+                    compilerName: compilerName,
+                    editorid: editorid
+                }
             };
         }        
     };
