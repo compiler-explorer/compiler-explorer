@@ -41,7 +41,7 @@ define(function (require) {
         this.compilers = {};
         this._currentDecorations = [];
         this.astEditor = monaco.editor.create(this.domRoot.find(".monaco-placeholder")[0], {
-            value: state.source || "",
+            value: "",
             scrollBeyondLastLine: false,
             language: 'cpp', //we only support cpp for now
             readOnly: true,
