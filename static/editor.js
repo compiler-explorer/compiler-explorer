@@ -306,7 +306,8 @@ define(function (require) {
         this.editor.updateOptions({
             autoClosingBrackets: this.settings.autoCloseBrackets,
             tabSize: this.settings.tabWidth,
-            quickSuggestions: this.settings.showQuickSuggestions
+            quickSuggestions: this.settings.showQuickSuggestions,
+            contextmenu: this.settings.useCustomContextMenu
         });
 
         // TODO: bug when:

@@ -67,6 +67,7 @@ define(function (require) {
         this.compiler = compilersById[state.compiler] || compilersById[options.defaultCompiler];
         this.options = state.options || options.compileOptions;
         this.filters = new Toggles(this.domRoot.find(".filters"), state.filters);
+        this.unexpandedSource = "";
         this.source = "";
         this.assembly = [];
         this.colours = [];
@@ -222,7 +223,7 @@ define(function (require) {
         }
 
         function createOptView() {
-            return Components.getOptViewWith(self.id, self.source, self.lastResult.optOutput, self.getCompilerName(), self.sourceEditorId);
+            return Components.getOptViewWith(self.id, self.unexpandedSource, self.lastResult.optOutput, self.getCompilerName(), self.sourceEditorId);
         }
 
         this.container.layoutManager.createDragSource(
@@ -488,6 +489,7 @@ define(function (require) {
 
     Compiler.prototype.onEditorChange = function (editor, source) {
         if (editor === this.sourceEditorId) {
+            this.unexpandedSource = source;
             this.expand(source).then(_.bind(function (expanded) {
                 this.source = expanded;
                 this.compile();
@@ -630,19 +632,27 @@ define(function (require) {
         if (!before.lastHoverShowSource && this.settings.hoverShowSource) {
             this.onCompilerSetDecorations(this.id, []);
         }
+        this.outputEditor.updateOptions({
+            contextmenu: this.settings.useCustomContextMenu
+        });
     };
 
     var hexLike = /^(#?[$]|0x)([0-9a-fA-F]+)$/;
-    var decimalLike = /^(#?)([0-9]+)$/;
+    var hexLike2 = /^(#?)([0-9a-fA-F]+)H$/;
+    var decimalLike = /^(#?)(-?[0-9]+)$/;
 
     function getNumericToolTip(value) {
-        var match = hexLike.exec(value);
+        var match = hexLike.exec(value) || hexLike2.exec(value);
         if (match) {
             return value + ' = ' + bigInt(match[2], 16).toString(10);
         }
         match = decimalLike.exec(value); 
         if (match) {
-            return value + ' = 0x' +  bigInt(match[2]).toString(16).toUpperCase();
+            var asBig = bigInt(match[2]);
+            if (asBig.isNegative()) {
+                asBig = bigInt("ffffffffffffffff", 16).and(asBig);
+            }
+            return value + ' = 0x' + asBig.toString(16).toUpperCase();
         }
         
         return null;
@@ -688,7 +698,13 @@ define(function (require) {
         }
         var currentWord = this.outputEditor.getModel().getWordAtPosition(e.target.position);
         if (currentWord && currentWord.word) {
-            var numericToolTip = getNumericToolTip(currentWord.word);
+            var word = currentWord.word;
+            // Hacky workaround to check for negative numbers. c.f. https://github.com/mattgodbolt/compiler-explorer/issues/434
+            var lineContent = this.outputEditor.getModel().getLineContent(e.target.position.lineNumber);
+            if (lineContent[currentWord.startColumn - 2] === '-') {
+                word = '-' + word;
+            }
+            var numericToolTip = getNumericToolTip(word);
             if (numericToolTip) {
                 this.decorations.numericToolTip = {
                     range: e.target.range,
