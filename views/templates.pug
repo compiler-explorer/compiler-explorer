@@ -38,6 +38,8 @@
             span.glyphicon.glyphicon-new-window
           button.btn.btn-default.btn-sm.view-optimization(title="Show optimization output (Clang only)" disabled=true)
             span.glyphicon.glyphicon-scale
+          button.btn.btn-default.btn-sm.view-ast(title="Show AST output (Clang only)")
+            span.glyphicon.glyphicon-tree-deciduous            
     .monaco-placeholder
     .bottom-bar
       if !embedded
@@ -60,6 +62,11 @@
     .monaco-placeholder
 
   #opt
+    .top-bar.btn-toolbar(role="toolbar")
+      include font-size.pug
+    .monaco-placeholder
+
+  #ast
     .top-bar.btn-toolbar(role="toolbar")
       include font-size.pug
     .monaco-placeholder
