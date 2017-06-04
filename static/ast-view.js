@@ -89,10 +89,13 @@ define(function (require) {
 
     Ast.prototype.onEditorChange = function(id, source) {
     };
-    
+
     Ast.prototype.onCompileResult = function (id, compiler, result) {
         if(result.hasAstOutput && this._compilerid == id) {
             this.showAstResults(result.astOutput);
+        }
+        else {
+            this.showAstResults("AST output is only supported in Clang >= 3.3");
         }
     };
     Ast.prototype.setTitle = function () {

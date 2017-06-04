@@ -291,12 +291,27 @@ define(function (require) {
         return filters;
     };
 
+    Compiler.prototype.couldSupportASTDump = function (options, version) {
+        var versionRegex = /version (\d.\d+)/;
+        var versionMatch = versionRegex.exec(version);
+
+        if (versionMatch) {
+            var versionNum = parseFloat(versionMatch[1]);
+            console.log(versionNum);
+            return version.toLowerCase().indexOf("clang") > -1 && versionNum >= 3.3;
+        }
+
+        return false;
+    };
+
+
     Compiler.prototype.compile = function () {
+        var shouldProduceAst = this.astViewOpen && this.couldSupportASTDump(this.options, this.compiler.version);
         var request = {
             source: this.source || "",
             compiler: this.compiler ? this.compiler.id : "",
             options: this.options,
-            backendOptions: { produceAst: this.produceAst },
+            backendOptions: { produceAst: shouldProduceAst },
             filters: this.getEffectiveFilters()
         };
 
@@ -524,14 +539,14 @@ define(function (require) {
     Compiler.prototype.onAstViewOpened = function (id) {
         if (this.id == id) {
             this.astButton.prop("disabled", true);
-            this.produceAst = true;
+            this.astViewOpen = true;
         }
     };
 
     Compiler.prototype.onAstViewClosed = function (id) {
         if (this.id == id) {
             this.astButton.prop('disabled', false);
-            this.produceAst = false;
+            this.astViewOpen = false;
         }
     };
 
@@ -550,8 +565,6 @@ define(function (require) {
         // Disable any of the options which don't make sense in binary mode.
         var filtersDisabled = !!filters.binary && !this.compiler.supportsFiltersInBinary;
         this.domRoot.find('.nonbinary').toggleClass("disabled", filtersDisabled);
-        // The AST printing functionality only works with Clang
-        this.astButton.prop("disabled", !this.compiler.name.includes('clang++'));
     };
 
     Compiler.prototype.onOptionsChange = function (options) {
