@@ -87,7 +87,27 @@ define(function () {
                 componentName: 'opt',
                 componentState: {id: id, source: source, optOutput: optimization, compilerName: compilerName, editorid: editorid}
             };
-        }
+        },
+        getAstView: function() {
+            return {
+                type: 'component',
+                componentName: 'ast',
+                componentState: {}
+            };
+        },
+        getAstViewWith: function (id, source, astOutput, compilerName, editorid) {
+            return {
+                type: 'component',
+                componentName: 'ast',
+                componentState: {
+                    id: id,
+                    source: source,
+                    astOutput: astOutput,
+                    compilerName: compilerName,
+                    editorid: editorid
+                }
+            };
+        }        
     };
 
 });
