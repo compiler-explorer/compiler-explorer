@@ -40,11 +40,13 @@ define(function (require) {
             'taskCount',
             'taskCount0',
             'taskCount1',
-            'taskCount3',
+            'taskCount2',
             'taskIndex',
             'taskIndex0',
             'taskIndex1',
             'taskIndex2',
+            'threadCount',
+            'threadIndex',
             'uniform',
             'varying'
         );
