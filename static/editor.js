@@ -36,6 +36,7 @@ define(function (require) {
     var Alert = require('alert');
     require('./d-mode');
     require('./rust-mode');
+    require('./ispc-mode');
 
     var loadSave = new loadSaveLib.LoadSave();
 
@@ -84,6 +85,10 @@ define(function (require) {
             case "go":
                 cmMode = "go";
                 extensions = ['.go'];
+                break;
+            case "ispc":
+                cmMode = "ispc";
+                extensions = ['.ispc'];
                 break;
         }
 
