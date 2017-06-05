@@ -291,22 +291,10 @@ define(function (require) {
         return filters;
     };
 
-    Compiler.prototype.couldSupportASTDump = function (options, version) {
-        var versionRegex = /version (\d.\d+)/;
-        var versionMatch = versionRegex.exec(version);
-
-        if (versionMatch) {
-            var versionNum = parseFloat(versionMatch[1]);
-            console.log(versionNum);
-            return version.toLowerCase().indexOf("clang") > -1 && versionNum >= 3.3;
-        }
-
-        return false;
-    };
 
 
     Compiler.prototype.compile = function () {
-        var shouldProduceAst = this.astViewOpen && this.couldSupportASTDump(this.options, this.compiler.version);
+        var shouldProduceAst = this.astViewOpen;
         var request = {
             source: this.source || "",
             compiler: this.compiler ? this.compiler.id : "",
