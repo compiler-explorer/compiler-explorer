@@ -7,13 +7,15 @@ Compiler Explorer
 Compiler Explorer is an interactive compiler. The left-hand pane shows editable C/C++/Rust/Go/D code. The right, the
 assembly output of having compiled the code with a given compiler and settings. Multiple compilers are supported, and
 the UI layout is configurable (the [Golden Layout](https://www.golden-layout.com/) library is used for this).
+There is also an ispc compiler for a C c variant, with extensions for SPMD.
 
-Try out one of the demo sites: [C++][cpp], [Rust][rust], [D][d] or [Go][go].
+Try out one of the demo sites: [C++][cpp], [Rust][rust], [D][d], [Go][go] or [ispc][ispc].
 
 [cpp]: https://gcc.godbolt.org/ "Compiler Explorer for C++"
 [rust]: https://rust.godbolt.org/ "Compiler Explorer for Rust"
 [d]: https://d.godbolt.org/ "Compiler Explorer for D"
 [go]: https://go.godbolt.org/ "Compiler Explorer for Go"
+[ispc]: https://ispc.godbolt.org/ "Compiler Explorer for ispc"
 
 You can support this [this project on Patreon](https://patreon.com/mattgodbolt).
 
