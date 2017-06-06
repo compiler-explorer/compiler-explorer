@@ -30,7 +30,6 @@ define(function (require) {
             'launch',
             'new',
             'operator',
-            'print',
             'programCount',
             'programIndex',
             'reference',
@@ -48,6 +47,7 @@ define(function (require) {
             'threadCount',
             'threadIndex',
             'uniform',
+            'unmasked',
             'varying'
         );
 
