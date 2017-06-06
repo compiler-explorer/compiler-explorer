@@ -41,8 +41,7 @@ endif
 
 NODE_MODULES=.npm-updated
 $(NODE_MODULES): package.json
-	$(NPM) install --only=production
-	$(NPM) install --only=dev
+	$(NPM) install
 	@touch $@
 
 BOWER_MODULES=.bower-updated
