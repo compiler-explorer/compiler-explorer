@@ -91,6 +91,11 @@ define(function (require) {
             options: compilers,
             items: this.compiler ? [this.compiler.id] : []
         }).on('change', function () {
+            ga('send', {
+                hitType: 'event',
+                eventCategory: 'SelectCompiler',
+                eventAction: request.compiler
+            });
             self.onCompilerChange($(this).val());
         });
         var optionsChange = _.debounce(function () {
@@ -292,14 +297,13 @@ define(function (require) {
     };
 
 
-
     Compiler.prototype.compile = function () {
         var shouldProduceAst = this.astViewOpen;
         var request = {
             source: this.source || "",
             compiler: this.compiler ? this.compiler.id : "",
             options: this.options,
-            backendOptions: { produceAst: shouldProduceAst },
+            backendOptions: {produceAst: shouldProduceAst},
             filters: this.getEffectiveFilters()
         };
 
