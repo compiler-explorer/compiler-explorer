@@ -94,7 +94,7 @@ define(function (require) {
             ga('send', {
                 hitType: 'event',
                 eventCategory: 'SelectCompiler',
-                eventAction: request.compiler
+                eventAction: $(this).val()
             });
             self.onCompilerChange($(this).val());
         });
