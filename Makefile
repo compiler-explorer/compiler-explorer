@@ -16,9 +16,9 @@ default: run
 endif
 endif
 
-.PHONY: clean run test run-amazon c-preload optional-d-support optional-rust-support
+.PHONY: clean run test run-amazon c-preload optional-haskell-support optional-d-support optional-rust-support
 .PHONY: dist lint prereqs node_modules bower_modules
-prereqs: optional-d-support optional-rust-support node_modules c-preload bower_modules
+prereqs: optional-haskell-support optional-d-support optional-rust-support node_modules c-preload bower_modules
 
 GDC?=gdc
 DMD?=dmd
@@ -28,6 +28,15 @@ optional-d-support:
 else
 optional-d-support:
 	@echo "D language support disabled"
+endif
+
+GHC?=ghc
+ifneq "" "$(shell which $(GHC))"
+optional-haskell-support:
+	$(MAKE) -C haskell
+else
+optional-haskell-support:
+	@echo "Haskell language support disabled"
 endif
 
 ifneq "" "$(shell which cargo)"
