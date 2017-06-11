@@ -37,6 +37,7 @@ define(function (require) {
     require('./d-mode');
     require('./rust-mode');
     require('./ispc-mode');
+    require('./haskell-mode');
 
     var loadSave = new loadSaveLib.LoadSave();
 
@@ -89,6 +90,10 @@ define(function (require) {
             case "ispc":
                 cmMode = "ispc";
                 extensions = ['.ispc'];
+                break;
+            case "haskell":
+                cmMode = "haskell";
+                extensions = ['.hs'];
                 break;
         }
 
