@@ -402,5 +402,5 @@ define(function (require) {
 
     monaco.languages.register({id: 'haskell'});
     // TODO: Currently not working. Here as a reminder
-    monaco.languages.setMonarchTokensProvider('haskell'/*, definition()*/);
+    /*monaco.languages.setMonarchTokensProvider('haskell', definition());*/
 });
