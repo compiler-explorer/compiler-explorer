@@ -67,7 +67,6 @@ define(function (require) {
         this.compiler = compilersById[state.compiler] || compilersById[options.defaultCompiler];
         this.options = state.options || options.compileOptions;
         this.filters = new Toggles(this.domRoot.find(".filters"), state.filters);
-        this.unexpandedSource = "";
         this.source = "";
         this.assembly = [];
         this.colours = [];
@@ -168,7 +167,7 @@ define(function (require) {
 
         this.mouseMoveThrottledFunction = _.throttle(_.bind(this.onMouseMove, this), 250);
 
-        this.outputEditor.onMouseLeave(function (e) {
+        this.outputEditor.onMouseLeave(function () {
             self.linkedFadeTimeoutId = setTimeout(function () {
                 clearEditorsLinkedLines();
                 self.linkedFadeTimeoutId = -1;
@@ -231,11 +230,11 @@ define(function (require) {
         }
 
         function createOptView() {
-            return Components.getOptViewWith(self.id, self.unexpandedSource, self.lastResult.optOutput, self.getCompilerName(), self.sourceEditorId);
+            return Components.getOptViewWith(self.id, self.source, self.lastResult.optOutput, self.getCompilerName(), self.sourceEditorId);
         }
 
         function createAstView() {
-            return Components.getAstViewWith(self.id, self.unexpandedSource, self.lastResult.astOutput, self.getCompilerName(), self.sourceEditorId);
+            return Components.getAstViewWith(self.id, self.source, self.lastResult.astOutput, self.getCompilerName(), self.sourceEditorId);
         }
 
         this.container.layoutManager.createDragSource(
@@ -299,20 +298,22 @@ define(function (require) {
 
     Compiler.prototype.compile = function () {
         var shouldProduceAst = this.astViewOpen;
-        var request = {
-            source: this.source || "",
-            compiler: this.compiler ? this.compiler.id : "",
-            options: this.options,
-            backendOptions: {produceAst: shouldProduceAst},
-            filters: this.getEffectiveFilters()
-        };
+        this.expand(this.source).then(_.bind(function (expanded) {
+            var request = {
+                source: expanded || "",
+                compiler: this.compiler ? this.compiler.id : "",
+                options: this.options,
+                backendOptions: {produceAst: shouldProduceAst},
+                filters: this.getEffectiveFilters()
+            };
 
-        if (!this.compiler) {
-            this.onCompileResponse(request, errorResult("<Please select a compiler>"), false);
-            return;
-        }
+            if (!this.compiler) {
+                this.onCompileResponse(request, errorResult("<Please select a compiler>"), false);
+            } else {
+                this.sendCompile(request);
+            }
+        }, this));
 
-        this.sendCompile(request);
     };
 
     Compiler.prototype.sendCompile = function (request) {
@@ -449,6 +450,7 @@ define(function (require) {
             timingVar: request.compiler,
             timingValue: timeTaken
         });
+
         this.setAssembly(result.asm || fakeAsm("<No output>"));
         if (request.filters.binary) {
             this.outputEditor.updateOptions({
@@ -462,7 +464,7 @@ define(function (require) {
             });
         }
         var status = this.domRoot.find(".status");
-        var allText = _.pluck((result.stdout || []).concat(result.stderr | []), 'text').join("\n");
+        var allText = _.pluck((result.stdout || []).concat(result.stderr || []), 'text').join("\n");
         var failed = result.code !== 0;
         var warns = !failed && !!allText;
         status.toggleClass('error', failed);
@@ -514,11 +516,8 @@ define(function (require) {
 
     Compiler.prototype.onEditorChange = function (editor, source) {
         if (editor === this.sourceEditorId) {
-            this.unexpandedSource = source;
-            this.expand(source).then(_.bind(function (expanded) {
-                this.source = expanded;
-                this.compile();
-            }, this));
+            this.source = source;
+            this.compile();
         }
     };
 
