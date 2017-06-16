@@ -263,6 +263,8 @@ define(function (require) {
         this.eventHub.on('editorSetDecoration', this.onEditorSetDecoration, this);
         this.eventHub.on('settingsChange', this.onSettingsChange, this);
         this.eventHub.on('themeChange', this.onThemeChange, this);
+        this.eventHub.on('conformanceViewOpen', this.onConformanceViewOpen, this);
+        this.eventHub.on('conformanceViewClose', this.onConformanceViewClose, this);
         this.eventHub.emit('requestSettings');
         this.eventHub.emit('requestTheme');
 
@@ -281,6 +283,20 @@ define(function (require) {
             var insertPoint = hub.findParentRowOrColumn(this.container) ||
                 this.container.layoutManager.root.contentItems[0];
             insertPoint.addChild(compilerConfig());
+        }, this));
+
+        var conformanceConfig = _.bind(function () {
+            return Components.getConformanceView(this.id, this.getSource());
+        }, this);
+
+        this.conformanceViewerButton = this.domRoot.find('.btn.conformance');
+
+        this.container.layoutManager.createDragSource(
+            this.conformanceViewerButton, conformanceConfig());
+        this.conformanceViewerButton.click(_.bind(function () {
+            var insertPoint = hub.findParentRowOrColumn(this.container) ||
+                this.container.layoutManager.root.contentItems[0];
+            insertPoint.addChild(conformanceConfig());
         }, this));
 
         this.updateState();
@@ -461,6 +477,18 @@ define(function (require) {
     Editor.prototype.updateDecorations = function () {
         this.prevDecorations = this.editor.deltaDecorations(
             this.prevDecorations, _.flatten(_.values(this.decorations), true));
+    };
+
+    Editor.prototype.onConformanceViewOpen = function(editorId) {
+        if (editorId == this.id) {
+            this.conformanceViewerButton.attr("disabled", true);
+        }
+    };
+
+    Editor.prototype.onConformanceViewClose = function(editorId) {
+        if (editorId == this.id) {
+            this.conformanceViewerButton.attr("disabled", false);
+        }
     };
 
     return {

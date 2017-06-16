@@ -8,6 +8,9 @@
         if !embedded
           button.btn.btn-default.btn-sm.add-compiler(title="Add a new compiler for this source (click or drag)")
             span.glyphicon.glyphicon-open
+      .btn-group.btn-group-sm
+        button.btn.btn-default.btn-sm.conformance(title="Add a new conformance view")
+          span.glyphicon.glyphicon-apple
     .monaco-placeholder
 
   #compiler
@@ -70,3 +73,12 @@
     .top-bar.btn-toolbar(role="toolbar")
       include font-size.pug
     .monaco-placeholder
+
+  #conformance
+    .top-bar.tn-toolbar(role="toolbar")
+      .btn-group.btn-group-sm
+        button.btn.btn-default.btn-sm.add-compiler(title="Add compiler")
+          span.glyphicon.glyphicon-plus-sign
+        button.btn.btn-default.btn-sm.compile(title="Compile")
+          span.glyphicon.glyphicon-wrench
+    table.compiler-list

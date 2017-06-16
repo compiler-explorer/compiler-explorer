@@ -316,26 +316,36 @@ define(function (require) {
 
     };
 
-    Compiler.prototype.sendCompile = function (request) {
-        if (this.pendingRequestSentAt) {
+    Compiler.prototype.sendCompile = function (request, onCompileResponse) {
+        if (!request.extras) {
+            request.extras = {
+                storeAsm: true,
+                emitCompilingEvent: true,
+                ignorePendingRequest: false
+            };
+        }
+        if (!onCompileResponse)
+            onCompileResponse = _.bind(this.onCompileResponse, this);
+        if (!request.extras.ignorePendingRequest && this.pendingRequestSentAt) {
             // If we have a request pending, then just store this request to do once the
             // previous request completes.
             this.nextRequest = request;
             return;
         }
-        this.eventHub.emit('compiling', this.id, this.compiler);
+        if (request.extras.emitCompilingEvent)
+            this.eventHub.emit('compiling', this.id, this.compiler);
         var jsonRequest = JSON.stringify(request);
         var cachedResult = Cache.get(jsonRequest);
         if (cachedResult) {
-            this.onCompileResponse(request, cachedResult, true);
+            onCompileResponse(request, cachedResult, true);
             return;
         }
-
         this.pendingRequestSentAt = Date.now();
         // After a short delay, give the user some indication that we're working on their
         // compilation.
         var progress = setTimeout(_.bind(function () {
-            this.setAssembly(fakeAsm("<Compiling...>"));
+            if (request.extras.storeAsm)
+                this.setAssembly(fakeAsm("<Compiling...>"));
         }, this), 500);
         $.ajax({
             type: 'POST',
@@ -348,11 +358,11 @@ define(function (require) {
                 if (result.okToCache) {
                     Cache.set(jsonRequest, result);
                 }
-                this.onCompileResponse(request, result, false);
+                onCompileResponse(request, result, false);
             }, this),
             error: _.bind(function (xhr, e_status, error) {
                 clearTimeout(progress);
-                this.onCompileResponse(request, errorResult("<Remote compilation failed: " + error + ">"), false);
+                onCompileResponse(request, errorResult("<Remote compilation failed: " + error + ">"), false);
             }, this),
             cache: false
         });
