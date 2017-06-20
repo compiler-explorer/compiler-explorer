@@ -226,7 +226,10 @@ define(function (require) {
                                 ignorePendingRequest: true
                             }
                         };
-                        Compiler.prototype.sendCompile(request);
+                        Compiler.prototype.sendCompile(request, _.bind(this.onCompileResponse, this), function(text) {
+                                return {asm: "", code: -1, stdout: "", stderr: text};
+                            }
+                        );
                     }
                 }
             }, this));
@@ -286,8 +289,7 @@ define(function (require) {
     };
 
     Conformance.prototype.resize = function () {
-        var topBarHeight = this.domRoot.find(".top-bar").outerHeight(true);
-        this.domRoot.find(".wrapper").css("height", this.domRoot.outerHeight(true) - topBarHeight);
+
     };
     
 

@@ -316,7 +316,7 @@ define(function (require) {
 
     };
 
-    Compiler.prototype.sendCompile = function (request) {
+    Compiler.prototype.sendCompile = function (request, onCompilerResponse, errorFn) {
         if (!request.extras) {
             request.extras = {
                 storeAsm: true,
@@ -324,6 +324,12 @@ define(function (require) {
                 ignorePendingRequest: false
             };
         }
+
+        if (!onCompilerResponse)
+            onCompilerResponse = _.bind(this.onCompileResponse, this);
+
+        if (!errorFn)
+            errorFn = errorResult;
 
         if (!request.extras.ignorePendingRequest && this.pendingRequestSentAt) {
             // If we have a request pending, then just store this request to do once the
@@ -336,7 +342,7 @@ define(function (require) {
         var jsonRequest = JSON.stringify(request);
         var cachedResult = Cache.get(jsonRequest);
         if (cachedResult) {
-            this.onCompileResponse(request, cachedResult, true);
+            onCompilerResponse(request, cachedResult, true);
             return;
         }
         this.pendingRequestSentAt = Date.now();
@@ -357,11 +363,11 @@ define(function (require) {
                 if (result.okToCache) {
                     Cache.set(jsonRequest, result);
                 }
-                this.onCompileResponse(request, result, false);
+                onCompilerResponse(request, result, false);
             }, this),
             error: _.bind(function (xhr, e_status, error) {
                 clearTimeout(progress);
-                this.onCompileResponse(request, errorResult("<Remote compilation failed: " + error + ">"), false);
+                onCompilerResponse(request, errorFn("<Remote compilation failed: " + error + ">"), false);
             }, this),
             cache: false
         });
