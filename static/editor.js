@@ -38,6 +38,7 @@ define(function (require) {
     require('./rust-mode');
     require('./ispc-mode');
     require('./haskell-mode');
+    require('./swift-mode');
 
     var loadSave = new loadSaveLib.LoadSave();
 
@@ -94,6 +95,10 @@ define(function (require) {
             case "haskell":
                 cmMode = "haskell";
                 extensions = ['.hs'];
+                break;
+            case "swift":
+                cmMode = "swift";
+                extensions = ['.swift'];
                 break;
         }
 
@@ -437,18 +442,18 @@ define(function (require) {
             if (reveal && lineNum)
                 this.editor.revealLineInCenter(lineNum);
             this.decorations.linkedCode = lineNum === -1 || !lineNum ?
-             []
-            :
-             [
-                {
-                    range: new monaco.Range(lineNum, 1, lineNum, 1),
-                    options: {
-                        isWholeLine: true,
-                        linesDecorationsClassName: 'linked-code-decoration-margin',
-                        inlineClassName: 'linked-code-decoration-inline'
+                []
+                :
+                [
+                    {
+                        range: new monaco.Range(lineNum, 1, lineNum, 1),
+                        options: {
+                            isWholeLine: true,
+                            linesDecorationsClassName: 'linked-code-decoration-margin',
+                            inlineClassName: 'linked-code-decoration-inline'
+                        }
                     }
-                }
-             ];
+                ];
             this.updateDecorations();
         }
     };
