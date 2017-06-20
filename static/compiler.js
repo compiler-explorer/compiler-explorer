@@ -34,6 +34,7 @@ define(function (require) {
     var Promise = require('es6-promise').Promise;
     var Components = require('components');
     var LruCache = require('lru-cache');
+    var options = require('options');
     var monaco = require('monaco');
     var Alert = require('alert');
     var bigInt = require('big-integer');
@@ -41,13 +42,13 @@ define(function (require) {
 
     require('selectize');
 
-    var options = require('options');
     var compilers = options.compilers;
     var compilersById = {};
     _.forEach(compilers, function (compiler) {
         compilersById[compiler.id] = compiler;
         if (compiler.alias) compilersById[compiler.alias] = compiler;
     });
+
     var Cache = new LruCache({
         max: 200 * 1024,
         length: function (n) {
@@ -297,13 +298,12 @@ define(function (require) {
 
 
     Compiler.prototype.compile = function () {
-        var shouldProduceAst = this.astViewOpen;
         this.expand(this.source).then(_.bind(function (expanded) {
             var request = {
                 source: expanded || "",
                 compiler: this.compiler ? this.compiler.id : "",
                 options: this.options,
-                backendOptions: {produceAst: shouldProduceAst},
+                backendOptions: {produceAst: this.astViewOpen},
                 filters: this.getEffectiveFilters()
             };
 
@@ -316,7 +316,7 @@ define(function (require) {
 
     };
 
-    Compiler.prototype.sendCompile = function (request, onCompileResponse) {
+    Compiler.prototype.sendCompile = function (request) {
         if (!request.extras) {
             request.extras = {
                 storeAsm: true,
@@ -324,8 +324,7 @@ define(function (require) {
                 ignorePendingRequest: false
             };
         }
-        if (!onCompileResponse)
-            onCompileResponse = _.bind(this.onCompileResponse, this);
+
         if (!request.extras.ignorePendingRequest && this.pendingRequestSentAt) {
             // If we have a request pending, then just store this request to do once the
             // previous request completes.
@@ -337,7 +336,7 @@ define(function (require) {
         var jsonRequest = JSON.stringify(request);
         var cachedResult = Cache.get(jsonRequest);
         if (cachedResult) {
-            onCompileResponse(request, cachedResult, true);
+            this.onCompileResponse(request, cachedResult, true);
             return;
         }
         this.pendingRequestSentAt = Date.now();
@@ -358,11 +357,11 @@ define(function (require) {
                 if (result.okToCache) {
                     Cache.set(jsonRequest, result);
                 }
-                onCompileResponse(request, result, false);
+                this.onCompileResponse(request, result, false);
             }, this),
             error: _.bind(function (xhr, e_status, error) {
                 clearTimeout(progress);
-                onCompileResponse(request, errorResult("<Remote compilation failed: " + error + ">"), false);
+                this.onCompileResponse(request, errorResult("<Remote compilation failed: " + error + ">"), false);
             }, this),
             cache: false
         });
@@ -716,7 +715,7 @@ define(function (require) {
         if (cached) {
             return Promise.resolve(cached.found ? cached.result : null);
         }
-        var promise = new Promise(function (resolve, reject) {
+        return new Promise(function (resolve, reject) {
             $.ajax({
                 type: 'GET',
                 url: 'api/asm/' + opcode,
@@ -732,7 +731,6 @@ define(function (require) {
                 cache: true
             });
         });
-        return promise;
     };
 
     Compiler.prototype.onMouseMove = function (e) {

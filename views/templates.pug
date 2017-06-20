@@ -82,3 +82,17 @@
         button.btn.btn-default.btn-sm.compile(title="Compile")
           span.glyphicon.glyphicon-wrench
     table.compiler-list
+
+  #compiler-selector
+    table
+      tr(class="compiler-row")
+        td
+          span(class="status")
+        td
+          select(class="compiler-picker" placeholder="Select a compiler...")
+        td
+          input(class="options form-control" type="text" size="256" placeholder="Compiler options...")
+        td
+          button(class="close" aria-label="Close")
+            span(aria-hidden="true")
+              | &times;

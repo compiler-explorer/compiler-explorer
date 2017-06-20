@@ -31,7 +31,7 @@ define(function (require) {
 
     require('selectize');
 
-    var Compiler = require('./compiler');
+    var Compiler = require('./compiler').Compiler;
 
     var compilers = options.compilers;
     var compilersById = {};
@@ -48,12 +48,11 @@ define(function (require) {
         this.selectorList = this.domRoot.find('.compiler-list');
         this.addCompilerButton = this.domRoot.find('.add-compiler');
         this.compileButton = this.domRoot.find('.compile');
+        this.selectorTemplate = $('#compiler-selector .compiler-row');
         this.editorId = state.editorid;
         this.source = state.source || "";
-        this.currentExpandedSource = "";
         this.nextSelectorId = 0;
-
-        this.maxCompilations = 6;
+        this.maxCompilations = options.cvCompilerCountMax || 6;
 
         this.status = {
             allowCompile: false,
@@ -69,6 +68,10 @@ define(function (require) {
             this.eventHub.emit("conformanceViewOpen", this.editorId);
         }, this);
 
+        this.container.on('resize', this.resize, this);
+
+        this.container.on('shown', this.resize, this);
+
         this.eventHub.on('editorChange', this.onEditorChange, this);
         this.eventHub.on('editorClose', this.onEditorClose, this);
 
@@ -78,7 +81,6 @@ define(function (require) {
         }, this));
 
         this.compileButton.on('click', _.bind(function() {
-            this.selectorList.find('.status').css("visibility", "hidden");
             this.compileAll();
         }, this));
 
@@ -122,60 +124,42 @@ define(function (require) {
         config.status.code = Number(config.status.code);
         config.cv = Number(config.cv);
 
-        var newSelector = $("<select>")
-            .attr("class", "compiler-picker")
-            .attr("placeholder", "Select a compiler...")
+        var newEntry = this.selectorTemplate.clone();
+
+        newEntry.attr("data-cv", config.cv);
+
+        var status = newEntry.find('.status')
             .attr("data-cv", config.cv)
             .on('change', _.bind(function() {
                 this.saveState();
             }, this));
 
-        var status = $("<span>");
-
-        var compilationOptions = $("<input>")
-            .attr("class", "options form-control")
-            .attr("type", "text")
-            .attr("size", "256")
-            .attr("placeholder", "Compiler options...")
+        newEntry.find('.options')
             .attr("data-cv", config.cv)
             .val(config.options);
 
-        this.selectorList.append($("<tr>")
+        newEntry.find('.close')
             .attr("data-cv", config.cv)
-            .append($("<td>")
-                .append(status)
-            ).append($("<td>")
-                .append(newSelector)
-            ).append($("<td>")
-                .append(compilationOptions)
-            ).append($("<td>")
-                .append($("<button>")
-                    .attr("class", "close")
-                    .attr("aria-label", "Close")
-                    .attr("data-cv", config.cv)
-                    .append($("<span>")
-                        .html("&times;")
-                        .attr("aria-hidden", "true")
-                    )
-                    .on("click", _.bind(function() {
-                        this.removeCompilerSelector(config.cv);
-                    }, this))
-                )
-            )
-        );
+            .on("click", _.bind(function() {
+                this.removeCompilerSelector(config.cv);
+            }, this));
 
-        newSelector.selectize({
-            sortField: 'name',
-            valueField: 'id',
-            labelField: 'name',
-            searchField: ['name'],
-            options: compilers,
-            items: config.compilerId ? [config.compilerId] : []
-        }).on('change', _.bind(function() {
-            // Hide the results button when a new compiler is selected
-            this.handleStatusIcon(status, {code: 0, text: ""});
-            this.saveState();
-        }, this));
+        this.selectorList.append(newEntry);
+
+        newEntry.find('.compiler-picker')
+            .attr("data-cv", config.cv)
+            .selectize({
+                sortField: 'name',
+                valueField: 'id',
+                labelField: 'name',
+                searchField: ['name'],
+                options: compilers,
+                items: config.compilerId ? [config.compilerId] : []
+            }).on('change', _.bind(function() {
+                // Hide the results button when a new compiler is selected
+                this.handleStatusIcon(status, {code: 0, text: ""});
+                this.saveState();
+            }, this));
 
         this.handleStatusIcon(status, config.status);
         this.handleToolbarUI();
@@ -192,31 +176,11 @@ define(function (require) {
         this.saveState();
     };
 
-    // TODO: Maybe use premises
-    Conformance.prototype.compile = function(selector) {
-        if (!selector) return;
-        var val = selector.val();
-        if (val) {
-            var cv = Number(selector.attr("data-cv"));
-            var request = {
-                source: this.currentExpandedSource || "",
-                compiler: val,
-                options: this.selectorList.find(".options[data-cv='" + cv + "']").val(),
-                backendOptions: {produceAst: false},
-                filters: {},
-                extras: {
-                    cv: cv,
-                    storeAsm: false,
-                    emitCompilingEvent: false,
-                    ignorePendingRequest: true
-                }
-            };
-            Compiler.Compiler.prototype.sendCompile(request, _.bind(this.onCompileResponse, this));
-        }
-    };
-
     Conformance.prototype.onEditorChange = function(editorId, newSource) {
-        if (editorId == this.editorId) this.source = newSource;
+        if (editorId == this.editorId) {
+            this.source = newSource;
+            this.compileAll();
+        }
     };
 
     Conformance.prototype.onEditorClose = function(editorId) {
@@ -240,19 +204,32 @@ define(function (require) {
     };
 
     Conformance.prototype.compileAll = function() {
-        Compiler.Compiler.prototype.expand(this.source).then(_.bind(function (expanded) {
-            this.currentExpandedSource = expanded;
-            // And trun off every icon
+        this.selectorList.find('.status').css("visibility", "hidden");
+        Compiler.prototype.expand(this.source).then(_.bind(function (expanded) {
             var compileCount = 0;
             _.each(this.selectorList.children(), _.bind(function(child) {
                 var picker = $(child).find('.compiler-picker');
                 if (picker && compileCount < this.maxCompilations) {
                     compileCount++;
-                    this.compile(picker);
+                    if (picker.val()) {
+                        var cv = Number(picker.attr("data-cv"));
+                        var request = {
+                            source: expanded || "",
+                            compiler: picker.val(),
+                            options: $(child).find(".options[data-cv='" + cv + "']").val(),
+                            backendOptions: {produceAst: false},
+                            filters: {},
+                            extras: {
+                                cv: cv,
+                                storeAsm: false,
+                                emitCompilingEvent: false,
+                                ignorePendingRequest: true
+                            }
+                        };
+                        Compiler.prototype.sendCompile(request);
+                    }
                 }
             }, this));
-            // Save the state
-            //this.saveState();
         }, this));
     };
 
@@ -307,6 +284,12 @@ define(function (require) {
     Conformance.prototype.saveState = function () {
         this.container.setState(this.currentState());
     };
+
+    Conformance.prototype.resize = function () {
+        var topBarHeight = this.domRoot.find(".top-bar").outerHeight(true);
+        this.domRoot.find(".wrapper").css("height", this.domRoot.outerHeight(true) - topBarHeight);
+    };
+    
 
     return {
         Conformance: Conformance
