@@ -18,7 +18,7 @@ define(function (require) {
             blockCommentStart: '/*',
             blockCommentEnd: '*/',
             // the default separators except `@`
-            wordDefinition: /(-?\d*\.\d\w*)|([^\`\~\!\#\$\%\^\&\*\(\)\-\=\+\[\{\]\}\\\|\;\:\'\"\,\.\<\>\/\?\s]+)/g,
+            wordDefinition: /(-?\d*\.\d\w*)|([^`~!#$%\^&*()\-=+\[{\]}\\|;:'",.<>\/?\s]+)/g,
             autoClosingPairs: [
                 ['"', '"'],
                 ['\'', '\''],
@@ -232,7 +232,7 @@ define(function (require) {
                     [/\/\/.*$/, 'comment'],
                 ],
             },
-        }
+        };
     }
 
     monaco.languages.register({id: 'swift'});
