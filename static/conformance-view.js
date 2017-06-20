@@ -47,7 +47,6 @@ define(function (require) {
         this.domRoot.html($('#conformance').html());
         this.selectorList = this.domRoot.find('.compiler-list');
         this.addCompilerButton = this.domRoot.find('.add-compiler');
-        this.compileButton = this.domRoot.find('.compile');
         this.selectorTemplate = $('#compiler-selector .compiler-row');
         this.editorId = state.editorid;
         this.source = state.source || "";
@@ -80,10 +79,6 @@ define(function (require) {
             this.saveState();
         }, this));
 
-        this.compileButton.on('click', _.bind(function() {
-            this.compileAll();
-        }, this));
-
         if (state.compilers) {
             _.each(state.compilers, _.bind(function (config) {
                 config.cv = this.nextSelectorId;
@@ -104,13 +99,6 @@ define(function (require) {
     Conformance.prototype.addCompilerSelector = function(config) {
         if (!config) {
             config = {
-                // Have we been compiled? If so, what is the result?
-                status: {
-                    // 0: Not compiled; 1: Ok; 2: Warnings; 3: Error
-                    code: 0,
-                    // If compiled, what the compiled output to stdout/err
-                    text: ""
-                },
                 // Code we have
                 cv: this.nextSelectorId,
                 // Compiler id which is being used
@@ -120,8 +108,7 @@ define(function (require) {
             };
             this.nextSelectorId++;
         }
-        
-        config.status.code = Number(config.status.code);
+
         config.cv = Number(config.cv);
 
         var newEntry = this.selectorTemplate.clone();
@@ -158,10 +145,11 @@ define(function (require) {
             }).on('change', _.bind(function() {
                 // Hide the results button when a new compiler is selected
                 this.handleStatusIcon(status, {code: 0, text: ""});
-                this.saveState();
+                // We could narrow the compilation to only this compiler!
+                this.compileAll();
+                // We're not saving state here. It's done after compiling
             }, this));
-
-        this.handleStatusIcon(status, config.status);
+        this.handleStatusIcon(status, {code: 0, text: ""});
         this.handleToolbarUI();
     };
 
@@ -204,11 +192,13 @@ define(function (require) {
     };
 
     Conformance.prototype.compileAll = function() {
+        // Hide previous status icons
         this.selectorList.find('.status').css("visibility", "hidden");
         Compiler.prototype.expand(this.source).then(_.bind(function (expanded) {
             var compileCount = 0;
             _.each(this.selectorList.children(), _.bind(function(child) {
                 var picker = $(child).find('.compiler-picker');
+                // We make sure we are not over our limit
                 if (picker && compileCount < this.maxCompilations) {
                     compileCount++;
                     if (picker.val()) {
@@ -226,6 +216,7 @@ define(function (require) {
                                 ignorePendingRequest: true
                             }
                         };
+                        // This error function ensures that the user will know we had a problem (As we don't save asm)
                         Compiler.prototype.sendCompile(request, _.bind(this.onCompileResponse, this), function(text) {
                                 return {asm: "", code: -1, stdout: "", stderr: text};
                             }
@@ -238,11 +229,9 @@ define(function (require) {
 
     Conformance.prototype.handleToolbarUI = function() {
         var compilerCount = this.selectorList.children().length;
-        this.status.allowCompile = compilerCount > 0;
-        this.status.allowAdd = compilerCount < this.maxCompilations;
 
-        this.compileButton.attr("disabled", !this.status.allowCompile);
-        this.addCompilerButton.attr("disabled", !this.status.allowAdd);
+        // Only allow new compilers if we allow for more
+        this.addCompilerButton.attr("disabled", compilerCount >= this.maxCompilations);
 
         this.setTitle(compilerCount);
     };
@@ -266,13 +255,6 @@ define(function (require) {
         _.each(this.selectorList.children(), _.bind(function(child) {
             var status = $(child).find('.status');
             state.compilers.push({
-                // Have we been compiled? If so, what is the result?
-                status: {
-                    // 0: Not compiled; 1: Ok; 2: Warnings; 3: Error
-                    code: Number(status.attr("data-status")),
-                    // If compiled, what the compiled output to stdout/err
-                    text: status.attr("title")
-                },
                 // Code we have
                 cv: $(child).attr("data-cv"),
                 // Compiler which is being used
