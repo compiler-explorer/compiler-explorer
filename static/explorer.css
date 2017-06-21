@@ -200,3 +200,8 @@ pre.content {
 	width: 8px !important;
 	left: 3px;
 }
+
+.compiler-list {
+    display: block;
+    overflow: auto;
+}

@@ -5,9 +5,12 @@
       .btn-group.btn-group-sm
         button.btn.btn-default.btn-sm.load-save(title="Load or save text")
           span.glyphicon.glyphicon-floppy-disk
-        if !embedded
+      if !embedded
+        .btn-group.btn-group-sm
           button.btn.btn-default.btn-sm.add-compiler(title="Add a new compiler for this source (click or drag)")
             span.glyphicon.glyphicon-open
+          button.btn.btn-default.btn-sm.conformance(title="Add a new conformance view")
+            span.glyphicon.glyphicon-list-alt
     .monaco-placeholder
 
   #compiler
@@ -70,3 +73,24 @@
     .top-bar.btn-toolbar(role="toolbar")
       include font-size.pug
     .monaco-placeholder
+
+  #conformance
+    .top-bar.tn-toolbar(role="toolbar")
+      .btn-group.btn-group-sm
+        button.btn.btn-default.btn-sm.add-compiler(title="Add compiler")
+          span.glyphicon.glyphicon-plus-sign
+    table.compiler-list
+
+  #compiler-selector
+    table
+      tr.compiler-row
+        td
+          span.status.glyphicon.glyphicon-signal
+        td
+          select.compiler-picker(placeholder="Select a compiler...")
+        td
+          input.options.form-control(type="text" size="256" placeholder="Compiler options...")
+        td
+          button.close(aria-label="Close")
+            span(aria-hidden="true")
+              | &times;

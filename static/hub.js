@@ -35,6 +35,7 @@ define(function (require) {
     var diff = require('diff');
     var optView = require('opt-view');
     var astView = require('ast-view');
+    var conformanceView = require('conformance-view');
 
     function Ids() {
         this.used = {};
@@ -87,6 +88,10 @@ define(function (require) {
             function (container, state) {
                 return self.astViewFactory(container, state);
             });
+        layout.registerComponent(Components.getConformanceView().componentName,
+            function (container, state) {
+                return self.confomanceFactory(container, state);
+            });
 
         layout.eventHub.on('editorOpen', function (id) {
             this.editorIds.add(id);
@@ -134,7 +139,9 @@ define(function (require) {
     Hub.prototype.astViewFactory = function (container, state) {
         return new astView.Ast(this, container, state);
     };
-
+    Hub.prototype.confomanceFactory = function (container, state) {
+        return new conformanceView.Conformance(this, container, state);
+    };
     
     function WrappedEventHub(eventHub) {
         this.eventHub = eventHub;

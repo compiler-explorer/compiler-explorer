@@ -189,7 +189,8 @@ function ClientOptionsHandler(fileSources) {
         raven: gccProps('ravenUrl', ''),
         release: gitReleaseName,
         environment: env,
-        localStoragePrefix: gccProps('localStoragePrefix')
+        localStoragePrefix: gccProps('localStoragePrefix'),
+        cvCompilerCountMax: gccProps('cvCompilerCountMax', 6)
     };
     this.setCompilers = function (compilers) {
         options.compilers = compilers;
