@@ -209,3 +209,7 @@ input.permalink {
 .missed {
     background: #ff6961 !important;
 }
+
+.conformance-warpper {
+    background-color: #1e1e1e !important;
+}
