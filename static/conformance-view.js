@@ -115,15 +115,16 @@ define(function (require) {
 
         newEntry.attr("data-cv", config.cv);
 
-        var status = newEntry.find('.status')
-            .attr("data-cv", config.cv)
-            .on('change', _.bind(function() {
-                this.saveState();
-            }, this));
+        var onOptionsChange = _.debounce(_.bind(function () {
+            this.saveState();
+            this.compileAll();
+        }, this), 800);
 
         newEntry.find('.options')
             .attr("data-cv", config.cv)
-            .val(config.options);
+            .val(config.options)
+            .on("click", onOptionsChange)
+            .on("keyup", onOptionsChange);
 
         newEntry.find('.close')
             .attr("data-cv", config.cv)
@@ -132,6 +133,8 @@ define(function (require) {
             }, this));
 
         this.selectorList.append(newEntry);
+
+        var status = newEntry.find('.status').attr("data-cv", config.cv);
 
         newEntry.find('.compiler-picker')
             .attr("data-cv", config.cv)
