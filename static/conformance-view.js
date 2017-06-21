@@ -271,7 +271,7 @@ define(function (require) {
     };
 
     Conformance.prototype.resize = function () {
-
+        this.selectorList.css("height", this.domRoot.height() - this.domRoot.find('.top-bar').outerHeight(true));
     };
     
 
