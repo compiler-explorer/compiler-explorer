@@ -36,6 +36,7 @@ define(function (require) {
     var optView = require('opt-view');
     var astView = require('ast-view');
     var conformanceView = require('conformance-view');
+    var CompilerService = require('compiler-service');
 
     function Ids() {
         this.used = {};
@@ -62,6 +63,7 @@ define(function (require) {
         this.defaultSrc = defaultSrc;
         this.editorIds = new Ids();
         this.compilerIds = new Ids();
+        this.compilerService = new CompilerService();
 
         var self = this;
         layout.registerComponent(Components.getEditor().componentName,

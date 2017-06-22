@@ -42,15 +42,8 @@ define(function (require) {
 
     require('selectize');
 
-    var compilers = options.compilers;
-    var compilersById = {};
-    _.forEach(compilers, function (compiler) {
-        compilersById[compiler.id] = compiler;
-        if (compiler.alias) compilersById[compiler.alias] = compiler;
-    });
-
-    var Cache = new LruCache({
-        max: 200 * 1024,
+    var OpcodeCache = new LruCache({
+        max: 64 * 1024,
         length: function (n) {
             return JSON.stringify(n).length;
         }
@@ -60,12 +53,14 @@ define(function (require) {
         var self = this;
         this.container = container;
         this.eventHub = hub.createEventHub();
+        this.compilerService = hub.compilerService;
         this.domRoot = container.getElement();
         this.domRoot.html($('#compiler').html());
 
         this.id = state.id || hub.nextCompilerId();
         this.sourceEditorId = state.source || 1;
-        this.compiler = compilersById[state.compiler] || compilersById[options.defaultCompiler];
+        this.compiler = this.compilerService.getCompilerById(state.compiler) ||
+            this.compilerService.getCompilerById(options.defaultCompiler);
         this.options = state.options || options.compileOptions;
         this.filters = new Toggles(this.domRoot.find(".filters"), state.filters);
         this.source = "";
@@ -88,7 +83,7 @@ define(function (require) {
             valueField: 'id',
             labelField: 'name',
             searchField: ['name'],
-            options: compilers,
+            options: options.compilers,
             items: this.compiler ? [this.compiler.id] : []
         }).on('change', function () {
             ga('send', {
@@ -298,7 +293,7 @@ define(function (require) {
 
 
     Compiler.prototype.compile = function () {
-        this.expand(this.source).then(_.bind(function (expanded) {
+        this.compilerService.expand(this.source).then(_.bind(function (expanded) {
             var request = {
                 source: expanded || "",
                 compiler: this.compiler ? this.compiler.id : "",
@@ -313,64 +308,37 @@ define(function (require) {
                 this.sendCompile(request);
             }
         }, this));
-
     };
 
     Compiler.prototype.sendCompile = function (request, onCompilerResponse, errorFn) {
-        if (!request.extras) {
-            request.extras = {
-                storeAsm: true,
-                emitCompilingEvent: true,
-                ignorePendingRequest: false
-            };
-        }
-
         if (!onCompilerResponse)
             onCompilerResponse = _.bind(this.onCompileResponse, this);
 
         if (!errorFn)
             errorFn = errorResult;
 
-        if (!request.extras.ignorePendingRequest && this.pendingRequestSentAt) {
+        if (this.pendingRequestSentAt) {
             // If we have a request pending, then just store this request to do once the
             // previous request completes.
             this.nextRequest = request;
             return;
         }
-        if (request.extras.emitCompilingEvent)
-            this.eventHub.emit('compiling', this.id, this.compiler);
-        var jsonRequest = JSON.stringify(request);
-        var cachedResult = Cache.get(jsonRequest);
-        if (cachedResult) {
-            onCompilerResponse(request, cachedResult, true);
-            return;
-        }
+        this.eventHub.emit('compiling', this.id, this.compiler);
         this.pendingRequestSentAt = Date.now();
         // After a short delay, give the user some indication that we're working on their
         // compilation.
         var progress = setTimeout(_.bind(function () {
-            if (request.extras.storeAsm)
-                this.setAssembly(fakeAsm("<Compiling...>"));
+            this.setAssembly(fakeAsm("<Compiling...>"));
         }, this), 500);
-        $.ajax({
-            type: 'POST',
-            url: 'api/compiler/' + encodeURIComponent(request.compiler) + '/compile',
-            dataType: 'json',
-            contentType: 'application/json',
-            data: jsonRequest,
-            success: _.bind(function (result) {
+        this.compilerService.submit(request)
+            .then(function (x) {
                 clearTimeout(progress);
-                if (result.okToCache) {
-                    Cache.set(jsonRequest, result);
-                }
-                onCompilerResponse(request, result, false);
-            }, this),
-            error: _.bind(function (xhr, e_status, error) {
+                onCompilerResponse(request, x.result, x.localCacheHit);
+            })
+            .catch(function (x) {
                 clearTimeout(progress);
-                onCompilerResponse(request, errorFn("<Remote compilation failed: " + error + ">"), false);
-            }, this),
-            cache: false
-        });
+                onCompilerResponse(request, errorFn("<Remote compilation failed: " + x.error + ">"), false);
+            });
     };
 
     Compiler.prototype.getBinaryForLine = function (line) {
@@ -503,32 +471,6 @@ define(function (require) {
         }
     };
 
-    Compiler.prototype.expand = function (source) {
-        var includeFind = /^\s*#include\s*["<](https?:\/\/[^>"]+)[>"]$/;
-        var lines = source.split("\n");
-        var promises = [];
-        _.each(lines, function (line, lineNumZeroBased) {
-            var match = line.match(includeFind);
-            if (match) {
-                promises.push(new Promise(function (resolve, reject) {
-                    var req = $.get(match[1], function (data) {
-                        data = '# 1 "' + match[1] + '"\n' + data + '\n\n# ' +
-                            (lineNumZeroBased + 1) + ' "<stdin>"\n';
-
-                        lines[lineNumZeroBased] = data;
-                        resolve();
-                    });
-                    req.fail(function () {
-                        resolve();
-                    });
-                }));
-            }
-        });
-        return Promise.all(promises).then(function () {
-            return lines.join("\n");
-        });
-    };
-
     Compiler.prototype.onEditorChange = function (editor, source) {
         if (editor === this.sourceEditorId) {
             this.source = source;
@@ -582,7 +524,7 @@ define(function (require) {
     };
 
     Compiler.prototype.onCompilerChange = function (value) {
-        this.compiler = compilersById[value];
+        this.compiler = this.compilerService.getCompilerById(value);
         this.saveState();
         this.compile();
         this.updateButtons();
@@ -717,7 +659,7 @@ define(function (require) {
             return Promise.resolve(null);
         }
         var cacheName = "asm/" + opcode;
-        var cached = Cache.get(cacheName);
+        var cached = OpcodeCache.get(cacheName);
         if (cached) {
             return Promise.resolve(cached.found ? cached.result : null);
         }
@@ -728,7 +670,7 @@ define(function (require) {
                 dataType: 'json',  // Expected,
                 contentType: 'text/plain',  // Sent
                 success: function (result) {
-                    Cache.set(cacheName, result);
+                    OpcodeCache.set(cacheName, result);
                     resolve(result.found ? result.result : null);
                 },
                 error: function (result) {
