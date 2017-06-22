@@ -42,7 +42,7 @@ There's now a [Road map](Roadmap.md) that gives a little insight into future pla
 
 ### Credits
 
-Compiler Explorer is maintained by [Matt Godbolt](http://xania.org) and [Rubén Rincón](https://github.com/RabsRincon).
+Compiler Explorer is maintained by [Matt Godbolt](http://xania.org), [Rubén Rincón](https://github.com/RabsRincon) and [Simon Brand](https://blog.tartanllama.xyz/).
 Multiple compiler and difference view initially implemented by [Gabriel Devillers](https://github.com/voxelf),
 while working for [Kalray](http://www.kalrayinc.com/). Clang optview output by [Jared Wyles](https://github.com/jaredwy).
 
