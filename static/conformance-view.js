@@ -135,7 +135,7 @@ define(function (require) {
                 valueField: 'id',
                 labelField: 'name',
                 searchField: ['name'],
-                options: compilers,
+                options: options.compilers,
                 items: config.compilerId ? [config.compilerId] : []
             })
             .on('change', _.bind(function () {
