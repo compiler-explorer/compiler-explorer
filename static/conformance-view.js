@@ -137,13 +137,14 @@ define(function (require) {
                 searchField: ['name'],
                 options: compilers,
                 items: config.compilerId ? [config.compilerId] : []
-            }).on('change', _.bind(function () {
-            // Hide the results button when a new compiler is selected
-            this.handleStatusIcon(status, {code: 0, text: ""});
-            // We could narrow the compilation to only this compiler!
-            this.compileAll();
-            // We're not saving state here. It's done after compiling
-        }, this));
+            })
+            .on('change', _.bind(function () {
+                // Hide the results button when a new compiler is selected
+                this.handleStatusIcon(status, {code: 0, text: ""});
+                // We could narrow the compilation to only this compiler!
+                this.compileAll();
+                // We're not saving state here. It's done after compiling
+            }, this));
         this.handleStatusIcon(status, {code: 0, text: ""});
         this.handleToolbarUI();
     };
