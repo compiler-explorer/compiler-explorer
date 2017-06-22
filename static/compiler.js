@@ -310,12 +310,8 @@ define(function (require) {
         }, this));
     };
 
-    Compiler.prototype.sendCompile = function (request, onCompilerResponse, errorFn) {
-        if (!onCompilerResponse)
-            onCompilerResponse = _.bind(this.onCompileResponse, this);
-
-        if (!errorFn)
-            errorFn = errorResult;
+    Compiler.prototype.sendCompile = function (request) {
+        var onCompilerResponse = _.bind(this.onCompileResponse, this);
 
         if (this.pendingRequestSentAt) {
             // If we have a request pending, then just store this request to do once the
@@ -337,7 +333,7 @@ define(function (require) {
             })
             .catch(function (x) {
                 clearTimeout(progress);
-                onCompilerResponse(request, errorFn("<Remote compilation failed: " + x.error + ">"), false);
+                onCompilerResponse(request, errorResult("<Remote compilation failed: " + x.error + ">"), false);
             });
     };
 
