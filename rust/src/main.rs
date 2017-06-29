@@ -10,12 +10,12 @@ use rustc_demangle::demangle;
 
 fn demangle_line(line: &str) -> String {
     lazy_static! {
-    static ref RE: Regex = Regex::new(r"[_a-zA-Z$][_a-zA-Z$0-9.]*").unwrap();
+        static ref RE: Regex = Regex::new(r"[_a-zA-Z$][_a-zA-Z$0-9.]*").unwrap();
     }
 
     RE.replace_all(line, |caps: &Captures| {
-        format!("{:#}", demangle(caps.at(0).unwrap()))
-    })
+        format!("{:#}", demangle(caps.get(0).unwrap().as_str()))
+    }).to_string()
 }
 
 #[cfg(test)]

@@ -41,7 +41,7 @@ endif
 
 ifneq "" "$(shell which cargo)"
 optional-rust-support:
-	cd rust && cargo build --release
+	cd rust && RUSTFLAGS="-C target-cpu=x86-64 -C target-feature=+sse,+sse2,+sse3,+sse4.1,+sse4.2" cargo build --release
 else
 optional-rust-support:
 	@echo "Rust language support disabled"
