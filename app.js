@@ -52,6 +52,7 @@ var opts = nopt({
     'debug': [Boolean],
     'static': [String],
     'archivedVersions': [String],
+    'noRemoteFetch': [Boolean]
 });
 
 if (opts.debug) logger.level = 'debug';
@@ -66,6 +67,8 @@ var staticDir = opts.static || 'static';
 var archivedVersions = opts.archivedVersions;
 var gitReleaseName = child_process.execSync('git rev-parse HEAD').toString().trim();
 var versionedRootPrefix = "";
+// Don't treat @ in paths as remote adresses
+var fetchCompilersFromRemote = !opts.noRemoteFetch;
 if (opts.static && fs.existsSync(opts.static + '/v/' + gitReleaseName))
     versionedRootPrefix = "v/" + gitReleaseName + "/";
 
@@ -366,7 +369,7 @@ function findCompilers() {
     }
 
     function recurseGetCompilers(name, parentProps) {
-        if (name.indexOf("@") !== -1) {
+        if (fetchCompilersFromRemote && name.indexOf("@") !== -1) {
             var bits = name.split("@");
             var host = bits[0];
             var port = parseInt(bits[1]);
