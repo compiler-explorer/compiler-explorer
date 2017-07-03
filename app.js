@@ -260,7 +260,6 @@ function retryPromise(promiseFunc, name, maxFails, retryMs) {
     });
 }
 
-
 function findCompilers() {
     var exes = compilerProps("compilers", "/usr/bin/g++").split(":");
     var ndk = compilerProps('androidNdk');
@@ -338,8 +337,21 @@ function findCompilers() {
         });
     }
 
+    function getTypeFromBin(exe) {
+        exe = exe.toLowerCase();
+        if(exe.indexOf("g++")) {
+            return "gcc";
+        } else if(exe.indexOf("clang")) {
+            return "clang";
+        }
+        //there is a lot of code around that makes this assumption.
+        //probably not the best thing to do :D
+        return "gcc";
+    }
+
     function compilerConfigFor(name, parentProps) {
-        var base = "compiler." + name;
+        const base = "compiler." + name,
+              exe = compilerProps(base + ".exe", name);
 
         function props(name, def) {
             return parentProps(base + "." + name, parentProps(name, def));
@@ -349,7 +361,7 @@ function findCompilers() {
         var supportsExecute = supportsBinary && !!props("supportsExecute", true);
         var compilerInfo = {
             id: name,
-            exe: compilerProps(base + ".exe", name),
+            exe: exe,
             name: props("name", name),
             alias: props("alias"),
             options: props("options"),
@@ -362,7 +374,8 @@ function findCompilers() {
             needsMulti: !!props("needsMulti", true),
             supportsBinary: supportsBinary,
             supportsExecute: supportsExecute,
-            postProcess: props("postProcess", "").split("|")
+            postProcess: props("postProcess", "").split("|"),
+            type: props("group", getTypeFromBin(exe))
         };
         logger.info("Found compiler", compilerInfo);
         return Promise.resolve(compilerInfo);
@@ -379,6 +392,9 @@ function findCompilers() {
             var groupName = name.substr(1);
 
             var props = function (name, def) {
+                if(name === "group") {
+                    return groupName;
+                }
                 return compilerProps("group." + groupName + "." + name, parentProps(name, def));
             };
 

@@ -41,7 +41,7 @@
     "bower": "*",
     "chai": "3.5.x",
     "jshint": "*",
-    "mocha": "3.1.x",
+    "mocha": "^3.3.0",
     "requirejs": "*",
     "supervisor": "*",
     "uglify-js": "*"

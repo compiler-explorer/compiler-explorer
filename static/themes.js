@@ -44,7 +44,6 @@ define(function (require) {
     function Themer(eventHub, initialSettings) {
         this.currentTheme = null;
         this.eventHub = eventHub;
-        this.root = root;
 
         this.setTheme = function (theme) {
             if (this.currentTheme === theme) return;
