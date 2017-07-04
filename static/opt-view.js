@@ -43,7 +43,7 @@ define(function (require) {
         this.optEditor = monaco.editor.create(this.domRoot.find(".monaco-placeholder")[0], {
             value: state.source || "",
             scrollBeyondLastLine: false,
-            language: 'cpp', //we only support cpp for now
+            language: 'cppp', //we only support cpp(p) for now
             readOnly: true,
             glyphMargin: true,
             quickSuggestions: false,

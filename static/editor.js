@@ -478,7 +478,7 @@ define(function (require) {
 
     Editor.prototype.onThemeChange = function (newTheme) {
         if (this.editor)
-            this.editor.updateOptions({theme: newTheme.monaco});
+            monaco.editor.setTheme(newTheme.monaco);
     };
 
     Editor.prototype.updateDecorations = function () {
