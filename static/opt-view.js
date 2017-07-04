@@ -61,6 +61,7 @@ define(function (require) {
         this.eventHub.on('compilerClose', this.onCompilerClose, this);
         this.eventHub.on('editorChange', this.onEditorChange, this);
         this.eventHub.on('settingsChange', this.onSettingsChange, this);
+        this.eventHub.on('resize', this.resize, this);
         this.container.on('destroy', function () {
             this.eventHub.emit("optViewClosed", this._compilerid);
             this.eventHub.unsubscribe();
