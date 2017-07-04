@@ -34,6 +34,7 @@ define(function (require) {
     var monaco = require('monaco');
     var options = require('options');
     var Alert = require('alert');
+    require('./cppp-mode');
     require('./d-mode');
     require('./rust-mode');
     require('./ispc-mode');
@@ -69,11 +70,12 @@ define(function (require) {
         var extensions = [];
         switch (lang.toLowerCase()) {
             default:
-                cmMode = "cpp";
+                cmMode = "cppp";
                 extensions = ['.cpp', '.cxx', '.h', '.hpp', '.hxx'];
                 break;
             case "c":
-                cmMode = "cpp";
+                // C Plus Plus Plus. C++ without invalid keywords!
+                cmMode = "cppp";
                 extensions = ['.cpp', '.cxx', '.h', '.hpp', '.hxx'];
                 break;
             case "rust":
