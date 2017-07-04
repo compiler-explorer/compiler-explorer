@@ -60,9 +60,6 @@ define(function (require) {
         this.eventHub.on('compiler', this.onCompiler, this);
         this.eventHub.on('compilerClose', this.onCompilerClose, this);
         this.eventHub.on('editorChange', this.onEditorChange, this);
-        this.eventHub.on('themeChange', this.onThemeChange, this);
-        this.eventHub.emit('requestTheme');
-
         this.container.on('destroy', function () {
             this.eventHub.emit("optViewClosed", this._compilerid);
             this.eventHub.unsubscribe();
@@ -151,10 +148,7 @@ define(function (require) {
         delete this.compilers[id];
     };
 
-    Opt.prototype.onThemeChange = function (newTheme) {
-        if (this.optEditor) {
-            this.optEditor.updateOptions({theme: newTheme.monaco});
-        }
+    Opt.prototype.updateState = function () {
     };
 
 

@@ -269,11 +269,9 @@ define(function (require) {
         this.eventHub.on('selectLine', this.onSelectLine, this);
         this.eventHub.on('editorSetDecoration', this.onEditorSetDecoration, this);
         this.eventHub.on('settingsChange', this.onSettingsChange, this);
-        this.eventHub.on('themeChange', this.onThemeChange, this);
         this.eventHub.on('conformanceViewOpen', this.onConformanceViewOpen, this);
         this.eventHub.on('conformanceViewClose', this.onConformanceViewClose, this);
         this.eventHub.emit('requestSettings');
-        this.eventHub.emit('requestTheme');
 
         // NB a new compilerConfig needs to be created every time; else the state is shared
         // between all compilers created this way. That leads to some nasty-to-find state
@@ -474,11 +472,6 @@ define(function (require) {
                 ];
             this.updateDecorations();
         }
-    };
-
-    Editor.prototype.onThemeChange = function (newTheme) {
-        if (this.editor)
-            monaco.editor.setTheme(newTheme.monaco);
     };
 
     Editor.prototype.updateDecorations = function () {

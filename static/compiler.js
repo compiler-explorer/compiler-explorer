@@ -196,12 +196,10 @@ define(function (require) {
         this.eventHub.on('findCompilers', this.sendCompiler, this);
         this.eventHub.on('compilerSetDecorations', this.onCompilerSetDecorations, this);
         this.eventHub.on('settingsChange', this.onSettingsChange, this);
-        this.eventHub.on('themeChange', this.onThemeChange, this);
         this.eventHub.on('optViewClosed', this.onOptViewClosed, this);
         this.eventHub.on('astViewOpened', this.onAstViewOpened, this);
         this.eventHub.on('astViewClosed', this.onAstViewClosed, this);
         this.eventHub.emit('requestSettings');
-        this.eventHub.emit('requestTheme');
         this.sendCompiler();
         this.updateCompilerName();
         this.updateButtons();
@@ -756,12 +754,6 @@ define(function (require) {
                 });
             }
         );
-    };
-
-    Compiler.prototype.onThemeChange = function (newTheme) {
-        if (this.outputEditor)
-            this.outputEditor.updateOptions({theme: newTheme.monaco});
-        this.resize(); // in case anything changes size in the header or footer
     };
 
     return {
