@@ -60,11 +60,13 @@ define(function (require) {
         this.eventHub.on('compiler', this.onCompiler, this);
         this.eventHub.on('compilerClose', this.onCompilerClose, this);
         this.eventHub.on('editorChange', this.onEditorChange, this);
+        this.eventHub.on('settingsChange', this.onSettingsChange, this);
         this.container.on('destroy', function () {
             this.eventHub.emit("optViewClosed", this._compilerid);
             this.eventHub.unsubscribe();
             this.optEditor.dispose();
         }, this);
+        this.eventHub.emit('requestSettings');
 
         container.on('resize', this.resize, this);
         container.on('shown', this.resize, this);
@@ -151,8 +153,13 @@ define(function (require) {
     Opt.prototype.updateState = function () {
     };
 
-
-    Opt.prototype.updateState = function () {
+    // TODO: For some reason, this does not trigger.
+    Opt.prototype.onSettingsChange = function(newSettings) {
+        this.optEditor.updateOptions({
+            minimap: {
+                enabled: newSettings.showMinimap
+            }
+        });
     };
 
     return {

@@ -624,7 +624,10 @@ define(function (require) {
             this.onCompilerSetDecorations(this.id, []);
         }
         this.outputEditor.updateOptions({
-            contextmenu: this.settings.useCustomContextMenu
+            contextmenu: this.settings.useCustomContextMenu,
+            minimap: {
+                enabled: this.settings.showMinimap
+            }
         });
     };
 

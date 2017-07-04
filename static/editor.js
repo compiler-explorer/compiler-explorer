@@ -340,7 +340,10 @@ define(function (require) {
             autoClosingBrackets: this.settings.autoCloseBrackets,
             tabSize: this.settings.tabWidth,
             quickSuggestions: this.settings.showQuickSuggestions,
-            contextmenu: this.settings.useCustomContextMenu
+            contextmenu: this.settings.useCustomContextMenu,
+            minimap: {
+                enabled: this.settings.showMinimap
+            }
         });
 
         // TODO: bug when:
