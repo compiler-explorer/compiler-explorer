@@ -34,6 +34,7 @@ define(function (require) {
     var monaco = require('monaco');
     var options = require('options');
     var Alert = require('alert');
+    require('./cppp-mode');
     require('./d-mode');
     require('./rust-mode');
     require('./ispc-mode');
@@ -69,11 +70,12 @@ define(function (require) {
         var extensions = [];
         switch (lang.toLowerCase()) {
             default:
-                cmMode = "cpp";
+                cmMode = "cppp";
                 extensions = ['.cpp', '.cxx', '.h', '.hpp', '.hxx'];
                 break;
             case "c":
-                cmMode = "cpp";
+                // C Plus Plus Plus. C++ without invalid keywords!
+                cmMode = "cppp";
                 extensions = ['.cpp', '.cxx', '.h', '.hpp', '.hxx'];
                 break;
             case "rust":
@@ -267,11 +269,10 @@ define(function (require) {
         this.eventHub.on('selectLine', this.onSelectLine, this);
         this.eventHub.on('editorSetDecoration', this.onEditorSetDecoration, this);
         this.eventHub.on('settingsChange', this.onSettingsChange, this);
-        this.eventHub.on('themeChange', this.onThemeChange, this);
         this.eventHub.on('conformanceViewOpen', this.onConformanceViewOpen, this);
         this.eventHub.on('conformanceViewClose', this.onConformanceViewClose, this);
+        this.eventHub.on('resize', layout, this);
         this.eventHub.emit('requestSettings');
-        this.eventHub.emit('requestTheme');
 
         // NB a new compilerConfig needs to be created every time; else the state is shared
         // between all compilers created this way. That leads to some nasty-to-find state
@@ -340,7 +341,10 @@ define(function (require) {
             autoClosingBrackets: this.settings.autoCloseBrackets,
             tabSize: this.settings.tabWidth,
             quickSuggestions: this.settings.showQuickSuggestions,
-            contextmenu: this.settings.useCustomContextMenu
+            contextmenu: this.settings.useCustomContextMenu,
+            minimap: {
+                enabled: this.settings.showMinimap
+            }
         });
 
         // TODO: bug when:
@@ -472,11 +476,6 @@ define(function (require) {
                 ];
             this.updateDecorations();
         }
-    };
-
-    Editor.prototype.onThemeChange = function (newTheme) {
-        if (this.editor)
-            this.editor.updateOptions({theme: newTheme.monaco});
     };
 
     Editor.prototype.updateDecorations = function () {

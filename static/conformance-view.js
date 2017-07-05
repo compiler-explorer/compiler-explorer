@@ -59,6 +59,7 @@ define(function (require) {
             this.eventHub.emit("conformanceViewOpen", this.editorId);
         }, this);
 
+        this.eventHub.on('resize', this.resize, this);
         this.container.on('resize', this.resize, this);
 
         this.container.on('shown', this.resize, this);

@@ -43,7 +43,7 @@ define(function (require) {
         this.optEditor = monaco.editor.create(this.domRoot.find(".monaco-placeholder")[0], {
             value: state.source || "",
             scrollBeyondLastLine: false,
-            language: 'cpp', //we only support cpp for now
+            language: 'cppp', //we only support cpp(p) for now
             readOnly: true,
             glyphMargin: true,
             quickSuggestions: false,
@@ -60,14 +60,14 @@ define(function (require) {
         this.eventHub.on('compiler', this.onCompiler, this);
         this.eventHub.on('compilerClose', this.onCompilerClose, this);
         this.eventHub.on('editorChange', this.onEditorChange, this);
-        this.eventHub.on('themeChange', this.onThemeChange, this);
-        this.eventHub.emit('requestTheme');
-
+        this.eventHub.on('settingsChange', this.onSettingsChange, this);
+        this.eventHub.on('resize', this.resize, this);
         this.container.on('destroy', function () {
             this.eventHub.emit("optViewClosed", this._compilerid);
             this.eventHub.unsubscribe();
             this.optEditor.dispose();
         }, this);
+        this.eventHub.emit('requestSettings');
 
         container.on('resize', this.resize, this);
         container.on('shown', this.resize, this);
@@ -153,14 +153,16 @@ define(function (require) {
         delete this.compilers[id];
     };
 
-    Opt.prototype.onThemeChange = function (newTheme) {
-        if (this.optEditor) {
-            this.optEditor.updateOptions({theme: newTheme.monaco});
-        }
+    Opt.prototype.updateState = function () {
     };
 
-
-    Opt.prototype.updateState = function () {
+    // TODO: For some reason, this does not trigger.
+    Opt.prototype.onSettingsChange = function(newSettings) {
+        this.optEditor.updateOptions({
+            minimap: {
+                enabled: newSettings.showMinimap
+            }
+        });
     };
 
     return {

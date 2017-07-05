@@ -135,6 +135,7 @@ define(function (require) {
         );
         add(root.find('.showQuickSuggestions'), 'showQuickSuggestions', false, Checkbox);
         add(root.find('.useCustomContextMenu'), 'useCustomContextMenu', true, Checkbox);
+        add(root.find('.showMinimap'), 'showMinimap', true, Checkbox);
 
         function handleThemes() {
             var newTheme = themeSelect.val();
