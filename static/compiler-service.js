@@ -115,7 +115,7 @@ define(function (require) {
             if (match) {
                 promises.push(new Promise(function (resolve, reject) {
                     var req = $.get(match[1], function (data) {
-                        data = '# 1 "' + match[1] + '"\n' + data + '\n\n# ' +
+                        data = '#line 1 "' + match[1] + '"\n' + data + '\n\n#line ' +
                             (lineNumZeroBased + 1) + ' "<stdin>"\n';
 
                         lines[lineNumZeroBased] = data;
