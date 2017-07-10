@@ -98,12 +98,13 @@
               label
                 input.showMinimap(type="checkbox")
                 | Show editor minimap
-            label
-              | Theme:
-              select.theme
-            label
-              | Tab width:
-              select.tabWidth
+            div
+              label
+                | Theme&nbsp;
+                select.theme
+              label
+                | &nbsp;Tab width&nbsp;
+                select.tabWidth
 
         .well.well-sm
           h4 Compilation
@@ -113,7 +114,7 @@
                 input.colourise(type="checkbox")
                 | Colourise lines to show how the source maps to the output
             label
-              | Colour scheme:
+              | Colour scheme&nbsp;
               select.colourScheme
       .modal-footer
         button.btn.btn-default(type="button" data-dismiss="modal") Close
