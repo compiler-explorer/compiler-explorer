@@ -70,7 +70,7 @@ define(function (require) {
         this.pendingRequestSentAt = 0;
         this.nextRequest = null;
         this.settings = {};
-
+        this.wantOptInfo = state.wantOptInfo;
         this.decorations = {};
         this.prevDecorations = [];
         this.optButton = this.domRoot.find('.btn.view-optimization');
@@ -96,7 +96,8 @@ define(function (require) {
         var optionsChange = _.debounce(function () {
             self.onOptionsChange($(this).val());
         }, 800);
-        this.domRoot.find(".options")
+        this.optionsField = this.domRoot.find(".options");
+        this.optionsField 
             .val(this.options)
             .on("change", optionsChange)
             .on("keyup", optionsChange);
@@ -199,6 +200,7 @@ define(function (require) {
         this.eventHub.on('optViewClosed', this.onOptViewClosed, this);
         this.eventHub.on('astViewOpened', this.onAstViewOpened, this);
         this.eventHub.on('astViewClosed', this.onAstViewClosed, this);
+        this.eventHub.on('optViewOpened', this.onOptViewOpened, this);
         this.eventHub.on('resize', this.resize, this);
         this.eventHub.emit('requestSettings');
         this.sendCompiler();
@@ -245,6 +247,7 @@ define(function (require) {
             this.optButton, createOptView.bind(this));
 
         this.optButton.click(_.bind(function () {
+            this.wantOptInfo = true;
             var insertPoint = hub.findParentRowOrColumn(this.container) ||
                 this.container.layoutManager.root.contentItems[0];
             insertPoint.addChild(createOptView());
@@ -292,15 +295,17 @@ define(function (require) {
 
 
     Compiler.prototype.compile = function () {
+        var options = {
+            userArguments: this.options,
+            compilerOptions: { produceAst: this.astViewOpen, produceOptInfo: this.wantOptInfo },
+            filters: this.getEffectiveFilters()
+        };
         this.compilerService.expand(this.source).then(_.bind(function (expanded) {
             var request = {
                 source: expanded || "",
                 compiler: this.compiler ? this.compiler.id : "",
-                options: this.options,
-                backendOptions: {produceAst: this.astViewOpen},
-                filters: this.getEffectiveFilters()
+                options: options
             };
-
             if (!this.compiler) {
                 this.onCompileResponse(request, errorResult("<Please select a compiler>"), false);
             } else {
@@ -421,7 +426,7 @@ define(function (require) {
             hitType: 'event',
             eventCategory: 'Compile',
             eventAction: request.compiler,
-            eventLabel: request.options,
+            eventLabel: request.options.userArguments,
             eventValue: cached ? 1 : 0
         });
         ga('send', {
@@ -432,7 +437,7 @@ define(function (require) {
         });
 
         this.setAssembly(result.asm || fakeAsm("<No output>"));
-        if (request.filters.binary) {
+        if (request.options.filters.binary) {
             this.outputEditor.updateOptions({
                 lineNumbers: _.bind(this.getBinaryForLine, this),
                 lineNumbersMinChars: 19
@@ -450,7 +455,6 @@ define(function (require) {
         status.toggleClass('error', failed);
         status.toggleClass('warning', warns);
         status.parent().attr('title', allText);
-        this.optButton.prop("disabled", !result.hasOptOutput);
         var compileTime = this.domRoot.find('.compile-time');
         if (cached) {
             compileTime.text("- cached");
@@ -477,7 +481,8 @@ define(function (require) {
 
     Compiler.prototype.onOptViewClosed = function (id) {
         if (this.id == id) {
-            this.optButton.prop('disabled', false);
+            this.wantOptInfo = false;
+            this.optButton.prop("disabled", false);
         }
     };
 
@@ -494,6 +499,12 @@ define(function (require) {
             this.astViewOpen = false;
         }
     };
+    Compiler.prototype.onOptViewOpened = function (id) {
+        if (this.id == id) {
+            this.optButton.prop("disabled", true);
+        }
+    };
+
 
     Compiler.prototype.updateButtons = function () {
         if (!this.compiler) return;
@@ -510,6 +521,7 @@ define(function (require) {
         // Disable any of the options which don't make sense in binary mode.
         var filtersDisabled = !!filters.binary && !this.compiler.supportsFiltersInBinary;
         this.domRoot.find('.nonbinary').toggleClass("disabled", filtersDisabled);
+        this.optButton.prop("disabled", !this.compiler.supportsOptOutput);
     };
 
     Compiler.prototype.onOptionsChange = function (options) {
@@ -554,7 +566,9 @@ define(function (require) {
             compiler: this.compiler ? this.compiler.id : "",
             source: this.sourceEditorId,
             options: this.options,
-            filters: this.filters.get()  // NB must *not* be effective filters
+            // NB must *not* be effective filters
+            filters: this.filters.get(),
+            wantOptInfo: this.wantOptInfo
         };
         this.fontScale.addState(state);
         return state;
