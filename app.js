@@ -337,21 +337,9 @@ function findCompilers() {
         });
     }
 
-    function getTypeFromBin(exe) {
-        exe = exe.toLowerCase();
-        if(exe.indexOf("g++")) {
-            return "gcc";
-        } else if(exe.indexOf("clang")) {
-            return "clang";
-        }
-        //there is a lot of code around that makes this assumption.
-        //probably not the best thing to do :D
-        return "gcc";
-    }
-
     function compilerConfigFor(name, parentProps) {
         const base = "compiler." + name,
-              exe = compilerProps(base + ".exe", name);
+            exe = compilerProps(base + ".exe", name);
 
         function props(name, def) {
             return parentProps(base + "." + name, parentProps(name, def));
@@ -374,8 +362,7 @@ function findCompilers() {
             needsMulti: !!props("needsMulti", true),
             supportsBinary: supportsBinary,
             supportsExecute: supportsExecute,
-            postProcess: props("postProcess", "").split("|"),
-            type: props("group", getTypeFromBin(exe))
+            postProcess: props("postProcess", "").split("|")
         };
         logger.info("Found compiler", compilerInfo);
         return Promise.resolve(compilerInfo);
@@ -392,7 +379,7 @@ function findCompilers() {
             var groupName = name.substr(1);
 
             var props = function (name, def) {
-                if(name === "group") {
+                if (name === "group") {
                     return groupName;
                 }
                 return compilerProps("group." + groupName + "." + name, parentProps(name, def));
