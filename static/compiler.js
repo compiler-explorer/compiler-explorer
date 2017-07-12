@@ -255,6 +255,7 @@ define(function (require) {
                 this.container.layoutManager.root.contentItems[0];
             insertPoint.addChild(createOptView());
             this.optButton.prop("disabled", true);
+            this.compile();
         }, this));
 
         this.container.layoutManager.createDragSource(
