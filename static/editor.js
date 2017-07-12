@@ -118,7 +118,9 @@ define(function (require) {
             minimap: {
                 maxColumn: 80
             },
-            lineNumbersMinChars: 3
+            lineNumbersMinChars: 3,
+            emptySelectionClipboard: true,
+            autoIndent: true,
         });
 
         this.editor.addAction({
