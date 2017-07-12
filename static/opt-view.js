@@ -39,6 +39,7 @@ define(function (require) {
         this.domRoot = container.getElement();
         this.domRoot.html($('#opt').html());
         this.compilers = {};
+        this.code = "";
         this._currentDecorations = [];
         this.optEditor = monaco.editor.create(this.domRoot.find(".monaco-placeholder")[0], {
             value: state.source || "",
@@ -76,7 +77,7 @@ define(function (require) {
         container.on('resize', this.resize, this);
         container.on('shown', this.resize, this);
         if(state && state.optOutput) {
-              this.showOptResults(state.optOutput);
+            this.showOptResults(state.optOutput);
         }
         this.setTitle();
         this.eventHub.emit("optViewOpened", this._compilerid);
@@ -93,6 +94,7 @@ define(function (require) {
 
     Opt.prototype.onEditorChange = function(id, source) {
         if (this._editorid == id) {
+            this.code = source;
             this.optEditor.setValue(source);
         }
     };
@@ -146,10 +148,17 @@ define(function (require) {
     };
 
     Opt.prototype.onCompiler = function (id, compiler, options, editorid) {
+        if(!compiler.supportsOptOutput) {
+            this.code = this.optEditor.getValue();
+            this.optEditor.setValue("<" +compiler.version +  " does not support the optimisation view>");
+            return;
+        }
+
         if(id == this._compilerid) {
             this._compilerName = compiler.name;
             this._editorid = editorid;
             this.setTitle();
+            this.optEditor.setValue(this.code);
         }
     };
 
