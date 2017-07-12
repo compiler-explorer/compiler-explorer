@@ -47,7 +47,11 @@ define(function (require) {
             readOnly: true,
             glyphMargin: true,
             quickSuggestions: false,
-            fixedOverflowWidgets: true
+            fixedOverflowWidgets: true,
+            minimap: {
+                maxColumn: 80
+            },
+            lineNumbersMinChars: 3
         });
 
         this._compilerid = state.id;

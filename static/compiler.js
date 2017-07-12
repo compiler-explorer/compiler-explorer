@@ -112,9 +112,12 @@ define(function (require) {
             language: 'asm',
             fontFamily: 'Fira Mono',
             glyphMargin: true,
-            fixedOverflowWidgets: true
+            fixedOverflowWidgets: true,
+            minimap: {
+                maxColumn: 80
+            },
+            lineNumbersMinChars: 3
         });
-
         this.outputEditor.addAction({
             id: 'viewsource',
             label: 'Scroll to source',
