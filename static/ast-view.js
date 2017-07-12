@@ -43,7 +43,7 @@ define(function (require) {
         this.astEditor = monaco.editor.create(this.domRoot.find(".monaco-placeholder")[0], {
             value: "",
             scrollBeyondLastLine: false,
-            language: 'cpp', //we only support cpp for now
+            language: 'cppp', //we only support cpp for now
             readOnly: true,
             glyphMargin: true,
             quickSuggestions: false,
@@ -60,10 +60,8 @@ define(function (require) {
         this.eventHub.on('compiler', this.onCompiler, this);
         this.eventHub.on('compilerClose', this.onCompilerClose, this);
         this.eventHub.on('editorChange', this.onEditorChange, this);
-        this.eventHub.on('themeChange', this.onThemeChange, this);
-        this.eventHub.emit('requestTheme');
+        this.eventHub.on('settingsChange', this.onSettingsChange, this);
         this.eventHub.emit('astViewOpened', this._compilerid);
-
         this.container.on('destroy', function () {
             this.eventHub.emit("astViewClosed", this._compilerid);
             this.eventHub.unsubscribe();
@@ -124,14 +122,16 @@ define(function (require) {
         delete this.compilers[id];
     };
 
-    Ast.prototype.onThemeChange = function (newTheme) {
-        if (this.astEditor) {
-            this.astEditor.updateOptions({theme: newTheme.monaco});
-        }
+    Ast.prototype.updateState = function () {
     };
 
-
-    Ast.prototype.updateState = function () {
+    // TODO: For some reason, this does not trigger.
+    Ast.prototype.onSettingsChange = function(newSettings) {
+        this.optEditor.updateOptions({
+            minimap: {
+                enabled: newSettings.showMinimap
+            }
+        });
     };
 
     return {
