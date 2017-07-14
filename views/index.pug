@@ -88,7 +88,11 @@ html(lang="en")
               alt="Copy to clipboard")
       .lang
         case language
-          when "C++": include example.cpp
+          when "C++"
+            if environment.indexOf("cppx") >= 0
+              include example.cppx
+            else
+              include example.cpp
           when "Rust": include example.rs
           when "Go": include example.go
           when "D": include example.d
