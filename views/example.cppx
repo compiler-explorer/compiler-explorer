@@ -1,14 +1,14 @@
-#include <cppx/meta>
-#include <cppx/compiler>
+#include &lt;cppx/meta&gt;
+#include &lt;cppx/compiler&gt;
 
 using namespace cppx::meta;
 
 $class basic_value {
    basic_value()                                   = default;
-   basic_value(const basic_value& that)            = default;
-   basic_value(basic_value&& that)                 = default;
-   basic_value& operator=(const basic_value& that) = default;
-   basic_value& operator=(basic_value&& that)      = default;
+   basic_value(const basic_value&amp; that)            = default;
+   basic_value(basic_value&amp;&amp; that)                 = default;
+   basic_value&amp; operator=(const basic_value&amp; that) = default;
+   basic_value&amp; operator=(basic_value&amp;&amp; that)      = default;
    constexpr {
       for... (auto f : $basic_value.member_variables())
           if (!f.has_access()) f.make_private();
