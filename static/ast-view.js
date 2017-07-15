@@ -129,9 +129,8 @@ define(function (require) {
     Ast.prototype.updateState = function () {
     };
 
-    // TODO: For some reason, this does not trigger.
     Ast.prototype.onSettingsChange = function(newSettings) {
-        this.optEditor.updateOptions({
+        this.astEditor.updateOptions({
             minimap: {
                 enabled: newSettings.showMinimap
             }

@@ -169,7 +169,6 @@ define(function (require) {
     Opt.prototype.updateState = function () {
     };
 
-    // TODO: For some reason, this does not trigger.
     Opt.prototype.onSettingsChange = function(newSettings) {
         this.optEditor.updateOptions({
             minimap: {
