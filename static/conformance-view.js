@@ -198,14 +198,17 @@ define(function (require) {
                 // We make sure we are not over our limit
                 if (picker && compileCount < this.maxCompilations) {
                     compileCount++;
+
                     if (picker.val()) {
                         var cv = Number(picker.attr("data-cv"));
                         var request = {
                             source: expanded || "",
                             compiler: picker.val(),
-                            options: $(child).find(".options[data-cv='" + cv + "']").val(),
-                            backendOptions: {produceAst: false},
-                            filters: {}
+                            options: {
+                                userArguments: $(child).find(".options[data-cv='" + cv + "']").val(),
+                                filters: {},
+                                compilerOptions: { produceAst: false, produceOptInfo: false }
+                            }
                         };
                         // This error function ensures that the user will know we had a problem (As we don't save asm)
                         this.compilerService.submit(request)
