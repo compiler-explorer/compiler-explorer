@@ -353,7 +353,7 @@ define(function (require) {
         _.each(obj.opcodes, function (op) {
             opcodes += ('<span class="opcode">' + op + '</span>');
         });
-        return '<div class="address">' + address + '</div>' + opcodes + '</div>';
+        return '<div class="binary-side"><div class="address">' + address + '</div>' + opcodes + '</div></div>';
     };
 
     // TODO: use ContentWidgets? OverlayWidgets?
@@ -444,12 +444,15 @@ define(function (require) {
         if (request.options.filters.binary) {
             this.outputEditor.updateOptions({
                 lineNumbers: _.bind(this.getBinaryForLine, this),
-                lineNumbersMinChars: 19
+                // Until something comes out of Microsoft/monaco-editor/issues/515, this gets clamped to ten
+                lineNumbersMinChars: 25,
+                glyphMargin: false
             });
         } else {
             this.outputEditor.updateOptions({
                 lineNumbers: true,
-                lineNumbersMinChars: 5
+                lineNumbersMinChars: 5,
+                glyphMargin: true
             });
         }
         var status = this.domRoot.find(".status");

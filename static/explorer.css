@@ -106,21 +106,22 @@ input.options {
 }
 
 .address {
-    width: 5em;
-    font-size: smaller;
-    text-align: left;
-    display: inline-block;
+    display: inline;
 }
 
 .opcodes {
-    width: 6em;
-    font-size: smaller;
-    text-align: left;
-    display: inline-block;
+    display: inline;
 }
 
 .opcode {
     margin-right: 0.2em;
+}
+
+.binary-side {
+    font-size: xx-small;
+    text-align: left;
+    float: left;
+    clear: none;
 }
 
 .highlighted {
