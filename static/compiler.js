@@ -758,7 +758,7 @@ define(function (require) {
                 if (asmHelp) {
                     new Alert().alert(opcode + " help", asmHelp.html +
                         '<br><br>For more information, visit <a href="' + asmHelp.url + '" target="_blank" rel="noopener noreferrer">the ' +
-                        opcode + ' documentation <span class="glyphicon glyphicon-new-window" width="16px" height="16px" title="Opens in a new window"/></span></a>.',
+                        opcode + ' documentation <sup><small class="glyphicon glyphicon-new-window" width="16px" height="16px" title="Opens in a new window"></small></sup></a>.',
                         function () {
                             ed.focus();
                             ed.setPosition(pos);
