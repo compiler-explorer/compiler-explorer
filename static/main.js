@@ -195,6 +195,11 @@ define(function (require) {
                 new Alert().alert("Special thanks to", $(result));
             });
         });
+        $('#changes').click(function () {
+            $.get('changelog.html', function (result) {
+                new Alert().alert("Changelog", $(result));
+            });
+        });
     }
 
     $(start);
