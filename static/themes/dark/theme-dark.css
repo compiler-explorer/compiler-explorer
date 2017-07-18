@@ -29,7 +29,6 @@ body {
     background-color: #666 !important;
 }
 
-
 .float-link {
     color: #eee !important;
     background-color: rgba(128, 128, 128, 0.5) !important;
@@ -173,13 +172,13 @@ pre.content {
 .btn.active:hover {
     color: #aaa !important;
     background-color: #464545 !important;
-    box-shadow: inset 0 0.5px 1.5px rgba(0,0,0,0.125) !important;
+    box-shadow: inset 0 0.5px 1.5px rgba(0, 0, 0, 0.125) !important;
     border: 2px solid #464545 !important;
 }
 
 .btn:not(.active):hover {
     background-color: #464545 !important;
-    box-shadow: inset 0 1px 3px rgba(0,0,0,0.125) !important;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.125) !important;
     border: 2px solid #464545 !important;
     color: #aaa !important;
 }
@@ -206,10 +205,11 @@ input.permalink {
 .passed {
     background: #77dd77 !important;
 }
+
 .missed {
     background: #ff6961 !important;
 }
 
-.conformance-warpper {
+.conformance-wrapper {
     background-color: #1e1e1e !important;
 }
