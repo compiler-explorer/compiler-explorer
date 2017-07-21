@@ -112,16 +112,23 @@ define(function (require) {
             language: cmMode,
             fontFamily: 'Fira Mono',
             readOnly: !!options.readOnly || legacyReadOnly,
-            glyphMargin: true,
+            glyphMargin: !options.embedded,
             quickSuggestions: false,
             fixedOverflowWidgets: true,
             minimap: {
                 maxColumn: 80
             },
-            lineNumbersMinChars: 3,
+            folding: true,
+            lineNumbersMinChars: options.embedded ? 1 : 3,
             emptySelectionClipboard: true,
             autoIndent: true,
         });
+
+        var startFolded = /^[/*#;]+\s*setup.*/;
+        if (state.source && state.source.match(startFolded)) {
+            var foldAction = this.editor.getAction('editor.fold');
+            foldAction.run();
+        }
 
         this.editor.addAction({
             id: 'compile',
@@ -349,7 +356,7 @@ define(function (require) {
             quickSuggestions: this.settings.showQuickSuggestions,
             contextmenu: this.settings.useCustomContextMenu,
             minimap: {
-                enabled: this.settings.showMinimap
+                enabled: this.settings.showMinimap && !options.embedded
             }
         });
 
@@ -489,13 +496,13 @@ define(function (require) {
             this.prevDecorations, _.flatten(_.values(this.decorations), true));
     };
 
-    Editor.prototype.onConformanceViewOpen = function(editorId) {
+    Editor.prototype.onConformanceViewOpen = function (editorId) {
         if (editorId == this.id) {
             this.conformanceViewerButton.attr("disabled", true);
         }
     };
 
-    Editor.prototype.onConformanceViewClose = function(editorId) {
+    Editor.prototype.onConformanceViewClose = function (editorId) {
         if (editorId == this.id) {
             this.conformanceViewerButton.attr("disabled", false);
         }

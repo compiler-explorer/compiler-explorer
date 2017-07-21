@@ -32,10 +32,14 @@
           span .text
         button.btn.btn-sm.active.nonbinary(title="Remove all lines which are only comments from the output" data-bind="commentOnly")
           span //
+        button.btn.btn-sm.active(title="Trim intra-line whitespace" data-bind="trim")
+          span \s+
         button.btn.btn-sm.active(title="Output disassembly in Intel syntax" data-bind="intel")
           span Intel
-      include font-size.pug
+        if embedded
+          include font-size.pug
       if !embedded
+        include font-size.pug
         .btn-group.btn-group-sm
           button.btn.btn-default.btn-sm.add-compiler(title="Clone this compiler window (click or drag)")
             span.glyphicon.glyphicon-new-window

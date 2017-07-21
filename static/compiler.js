@@ -111,12 +111,12 @@ define(function (require) {
             readOnly: true,
             language: 'asm',
             fontFamily: 'Fira Mono',
-            glyphMargin: true,
+            glyphMargin: !options.embedded,
             fixedOverflowWidgets: true,
             minimap: {
                 maxColumn: 80
             },
-            lineNumbersMinChars: 3
+            lineNumbersMinChars: options.embedded ? 1 : 5
         });
         this.outputEditor.addAction({
             id: 'viewsource',
@@ -451,7 +451,7 @@ define(function (require) {
         } else {
             this.outputEditor.updateOptions({
                 lineNumbers: true,
-                lineNumbersMinChars: 5,
+                lineNumbersMinChars: options.embedded ? 1 : 5,
                 glyphMargin: true
             });
         }
@@ -648,7 +648,7 @@ define(function (require) {
         this.outputEditor.updateOptions({
             contextmenu: this.settings.useCustomContextMenu,
             minimap: {
-                enabled: this.settings.showMinimap
+                enabled: this.settings.showMinimap && !options.embedded
             }
         });
     };
