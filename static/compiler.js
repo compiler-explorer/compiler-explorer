@@ -291,7 +291,7 @@ define(function (require) {
         if (filters.binary && !this.compiler.supportsBinary) {
             delete filters.binary;
         }
-        if (filters.exeute && !this.compiler.supportsExecute) {
+        if (filters.execute && !this.compiler.supportsExecute) {
             delete filters.execute;
         }
         return filters;
