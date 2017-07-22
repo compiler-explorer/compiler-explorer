@@ -66,7 +66,7 @@ define(function (require) {
         this.source = "";
         this.assembly = [];
         this.colours = [];
-        this.lastResult = null;
+        this.lastResult = {};
         this.pendingRequestSentAt = 0;
         this.nextRequest = null;
         this.settings = {};
@@ -611,7 +611,7 @@ define(function (require) {
     };
 
     Compiler.prototype.onResendCompilation = function (id) {
-        if (id == this.id && this.lastResult) {
+        if (id == this.id && !$.isEmptyObject(this.lastResult)) {
             this.eventHub.emit('compileResult', this.id, this.compiler, this.lastResult);
         }
     };
