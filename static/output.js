@@ -79,13 +79,18 @@ define(function (require) {
     Output.prototype.add = function (msg, lineNum) {
         var elem = $('<div></div>').appendTo(this.contentRoot);
         if (lineNum) {
-            elem.html($('<a href="#">').text(lineNum + " : " + msg)).click(_.bind(function (e) {
-                this.eventHub.emit('editorSetDecoration', this.editorId, lineNum, true);
-                // do not bring user to the top of index.html
-                // http://stackoverflow.com/questions/3252730
-                e.preventDefault();
-                return false;
-            }, this));
+            elem.html($('<a href="#">')
+                .text(lineNum + " : " + msg))
+                .click(_.bind(function (e) {
+                    this.eventHub.emit('editorSetDecoration', this.editorId, lineNum, true);
+                    // do not bring user to the top of index.html
+                    // http://stackoverflow.com/questions/3252730
+                    e.preventDefault();
+                    return false;
+                }, this))
+                .on('mouseover', _.bind(function() {
+                    this.eventHub.emit('editorSetDecoration', this.editorId, lineNum, false);
+                }, this));
         } else {
             elem.text(msg);
         }
