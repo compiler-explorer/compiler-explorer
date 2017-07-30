@@ -175,7 +175,8 @@ define(function (require) {
             _.each(self.asmByCompiler, function (asms, compilerId) {
                 var targetLines = [];
                 _.each(asms, function (asmLine, i) {
-                    if (asmLine.source == thisLineNumber) {
+                    if (asmLine.source && asmLine.source.file === null &&
+                        asmLine.source.line == thisLineNumber) {
                         targetLines.push(i + 1);
                     }
                 });
@@ -389,7 +390,10 @@ define(function (require) {
         // First, note all lines used.
         _.each(this.asmByCompiler, function (asm) {
             _.each(asm, function (asmLine) {
-                if (asmLine.source) result[asmLine.source - 1] = true;
+                // If the line has a source indicator, and the source indicator is null (i.e. the
+                // user's input file), then tag it as used.
+                if (asmLine.source && asmLine.source.file === null)
+                    result[asmLine.source.line - 1] = true;
             });
         });
         // Now assign an ordinal to each used line.

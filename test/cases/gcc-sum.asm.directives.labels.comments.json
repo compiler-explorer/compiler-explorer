@@ -5,27 +5,27 @@
   },
   {
     "text": "        pushq   %rbp",
-    "source": 1
+    "source": {"file": null, "line": 1}
   },
   {
     "text": "        movq    %rsp, %rbp",
-    "source": 1
+    "source": {"file": null, "line": 1}
   },
   {
     "text": "        movq    %rdi, -24(%rbp)",
-    "source": 1
+    "source": {"file": null, "line": 1}
   },
   {
     "text": "        movl    %esi, -28(%rbp)",
-    "source": 1
+    "source": {"file": null, "line": 1}
   },
   {
     "text": "        movl    $0, -8(%rbp)",
-    "source": 2
+    "source": {"file": null, "line": 2}
   },
   {
     "text": "        movl    $0, -4(%rbp)",
-    "source": 3
+    "source": {"file": null, "line": 3}
   },
   {
     "text": ".L3:",
@@ -33,51 +33,51 @@
   },
   {
     "text": "        movl    -4(%rbp), %eax",
-    "source": 3
+    "source": {"file": null, "line": 3}
   },
   {
     "text": "        cmpl    -28(%rbp), %eax",
-    "source": 3
+    "source": {"file": null, "line": 3}
   },
   {
     "text": "        jge     .L2",
-    "source": 3
+    "source": {"file": null, "line": 3}
   },
   {
     "text": "        movl    -4(%rbp), %eax",
-    "source": 4
+    "source": {"file": null, "line": 4}
   },
   {
     "text": "        cltq",
-    "source": 4
+    "source": {"file": null, "line": 4}
   },
   {
     "text": "        leaq    0(,%rax,4), %rdx",
-    "source": 4
+    "source": {"file": null, "line": 4}
   },
   {
     "text": "        movq    -24(%rbp), %rax",
-    "source": 4
+    "source": {"file": null, "line": 4}
   },
   {
     "text": "        addq    %rdx, %rax",
-    "source": 4
+    "source": {"file": null, "line": 4}
   },
   {
     "text": "        movl    (%rax), %eax",
-    "source": 4
+    "source": {"file": null, "line": 4}
   },
   {
     "text": "        addl    %eax, -8(%rbp)",
-    "source": 4
+    "source": {"file": null, "line": 4}
   },
   {
     "text": "        addl    $1, -4(%rbp)",
-    "source": 3
+    "source": {"file": null, "line": 3}
   },
   {
     "text": "        jmp     .L3",
-    "source": 3
+    "source": {"file": null, "line": 3}
   },
   {
     "text": ".L2:",
@@ -85,15 +85,15 @@
   },
   {
     "text": "        movl    -8(%rbp), %eax",
-    "source": 6
+    "source": {"file": null, "line": 6}
   },
   {
     "text": "        popq    %rbp",
-    "source": 7
+    "source": {"file": null, "line": 7}
   },
   {
     "text": "        ret",
-    "source": 7
+    "source": {"file": null, "line": 7}
   },
   {
     "text": "",

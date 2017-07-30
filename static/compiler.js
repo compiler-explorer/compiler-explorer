@@ -127,7 +127,14 @@ define(function (require) {
             contextMenuOrder: 1.5,
             run: function (ed) {
                 var desiredLine = ed.getPosition().lineNumber - 1;
-                self.eventHub.emit('editorSetDecoration', self.sourceEditorId, self.assembly[desiredLine].source, true);
+                var source = self.assembly[desiredLine].source;
+                if (source.file === null) {
+                    // a null file means it was the user's source
+                    self.eventHub.emit('editorSetDecoration', self.sourceEditorId, source.line, true);
+                } else {
+                    // TODO: some indication this asm statement came from elsewhere
+                    self.eventHub.emit('editorSetDecoration', self.sourceEditorId, -1, false);
+                }
             }
         });
 
@@ -593,7 +600,9 @@ define(function (require) {
         if (editor == this.sourceEditorId) {
             var asmColours = {};
             _.each(this.assembly, function (x, index) {
-                if (x.source) asmColours[index] = colours[x.source - 1];
+                if (x.source && x.source.file === null) {
+                    asmColours[index] = colours[x.source.line - 1];
+                }
             });
             this.colours = colour.applyColours(this.outputEditor, asmColours, scheme, this.colours);
         }

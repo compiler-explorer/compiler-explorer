@@ -112,7 +112,7 @@ Optional values are marked with a '**'
   "asm": [
          {
            "text": Assembly text,
-           "source": Source line number or null if none
+           "source": {file: null for user input, else path, line: number} or null if none
          },
          ...
   ],

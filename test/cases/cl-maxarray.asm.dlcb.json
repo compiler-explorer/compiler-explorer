@@ -11,7 +11,7 @@
       "08"
     ],
     "address": 0,
-    "source": 2,
+    "source": {"file": null, "line": 2},
     "text": "        lea      rax, QWORD PTR [rcx+8]"
   },
   {
@@ -21,7 +21,7 @@
       "d1"
     ],
     "address": 4,
-    "source": 2,
+    "source": {"file": null, "line": 2},
     "text": "        sub      rdx, rcx"
   },
   {
@@ -33,7 +33,7 @@
       "00"
     ],
     "address": 7,
-    "source": 2,
+    "source": {"file": null, "line": 2},
     "text": "        mov      ecx, 16384             ; 00004000H"
   },
   {
@@ -44,7 +44,7 @@
       "00"
     ],
     "address": 12,
-    "source": 2,
+    "source": {"file": null, "line": 2},
     "text": "        npad     4"
   },
   {
@@ -61,7 +61,7 @@
       "f8"
     ],
     "address": 16,
-    "source": 3,
+    "source": {"file": null, "line": 3},
     "text": "        movsd    xmm0, QWORD PTR [rdx+rax-8]"
   },
   {
@@ -73,7 +73,7 @@
       "f8"
     ],
     "address": 22,
-    "source": 3,
+    "source": {"file": null, "line": 3},
     "text": "        comisd   xmm0, QWORD PTR [rax-8]"
   },
   {
@@ -82,7 +82,7 @@
       "05"
     ],
     "address": 27,
-    "source": 3,
+    "source": {"file": null, "line": 3},
     "text": "        jbe      SHORT $LN10@maxArray"
   },
   {
@@ -94,7 +94,7 @@
       "f8"
     ],
     "address": 29,
-    "source": 3,
+    "source": {"file": null, "line": 3},
     "text": "        movsd    QWORD PTR [rax-8], xmm0"
   },
   {
@@ -110,7 +110,7 @@
       "02"
     ],
     "address": 34,
-    "source": 3,
+    "source": {"file": null, "line": 3},
     "text": "        movsd    xmm0, QWORD PTR [rdx+rax]"
   },
   {
@@ -121,7 +121,7 @@
       "00"
     ],
     "address": 39,
-    "source": 3,
+    "source": {"file": null, "line": 3},
     "text": "        comisd   xmm0, QWORD PTR [rax]"
   },
   {
@@ -130,7 +130,7 @@
       "04"
     ],
     "address": 43,
-    "source": 3,
+    "source": {"file": null, "line": 3},
     "text": "        jbe      SHORT $LN14@maxArray"
   },
   {
@@ -141,7 +141,7 @@
       "00"
     ],
     "address": 45,
-    "source": 3,
+    "source": {"file": null, "line": 3},
     "text": "        movsd    QWORD PTR [rax], xmm0"
   },
   {
@@ -158,7 +158,7 @@
       "08"
     ],
     "address": 49,
-    "source": 3,
+    "source": {"file": null, "line": 3},
     "text": "        movsd    xmm0, QWORD PTR [rdx+rax+8]"
   },
   {
@@ -170,7 +170,7 @@
       "08"
     ],
     "address": 55,
-    "source": 3,
+    "source": {"file": null, "line": 3},
     "text": "        comisd   xmm0, QWORD PTR [rax+8]"
   },
   {
@@ -179,7 +179,7 @@
       "05"
     ],
     "address": 60,
-    "source": 3,
+    "source": {"file": null, "line": 3},
     "text": "        jbe      SHORT $LN15@maxArray"
   },
   {
@@ -191,7 +191,7 @@
       "08"
     ],
     "address": 62,
-    "source": 3,
+    "source": {"file": null, "line": 3},
     "text": "        movsd    QWORD PTR [rax+8], xmm0"
   },
   {
@@ -208,7 +208,7 @@
       "10"
     ],
     "address": 67,
-    "source": 3,
+    "source": {"file": null, "line": 3},
     "text": "        movsd    xmm0, QWORD PTR [rdx+rax+16]"
   },
   {
@@ -220,7 +220,7 @@
       "10"
     ],
     "address": 73,
-    "source": 3,
+    "source": {"file": null, "line": 3},
     "text": "        comisd   xmm0, QWORD PTR [rax+16]"
   },
   {
@@ -229,7 +229,7 @@
       "05"
     ],
     "address": 78,
-    "source": 3,
+    "source": {"file": null, "line": 3},
     "text": "        jbe      SHORT $LN16@maxArray"
   },
   {
@@ -241,7 +241,7 @@
       "10"
     ],
     "address": 80,
-    "source": 3,
+    "source": {"file": null, "line": 3},
     "text": "        movsd    QWORD PTR [rax+16], xmm0"
   },
   {
@@ -256,7 +256,7 @@
       "20"
     ],
     "address": 85,
-    "source": 3,
+    "source": {"file": null, "line": 3},
     "text": "        add      rax, 32              ; 00000020H"
   },
   {
@@ -267,7 +267,7 @@
       "01"
     ],
     "address": 89,
-    "source": 2,
+    "source": {"file": null, "line": 2},
     "text": "        sub      rcx, 1"
   },
   {
@@ -276,7 +276,7 @@
       "b1"
     ],
     "address": 93,
-    "source": 2,
+    "source": {"file": null, "line": 2},
     "text": "        jne      SHORT $LL9@maxArray"
   },
   {
@@ -284,7 +284,7 @@
       "c3"
     ],
     "address": 95,
-    "source": 4,
+    "source": {"file": null, "line": 4},
     "text": "        ret      0"
   },
   {

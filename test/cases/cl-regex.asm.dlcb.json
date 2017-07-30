@@ -23,7 +23,7 @@
       "78"
     ],
     "address": 0,
-    "source": 5,
+    "source": {"file": null, "line": 5},
     "text": "        sub      rsp, 120   ; 00000078H"
   },
   {
@@ -37,7 +37,7 @@
       "00"
     ],
     "address": 4,
-    "source": 5,
+    "source": {"file": null, "line": 5},
     "text": "        mov      rax, QWORD PTR __security_cookie"
   },
   {
@@ -47,7 +47,7 @@
       "c4"
     ],
     "address": 11,
-    "source": 5,
+    "source": {"file": null, "line": 5},
     "text": "        xor      rax, rsp"
   },
   {
@@ -59,7 +59,7 @@
       "68"
     ],
     "address": 14,
-    "source": 5,
+    "source": {"file": null, "line": 5},
     "text": "        mov      QWORD PTR __$ArrayPad$[rsp], rax"
   },
   {
@@ -73,7 +73,7 @@
       "00"
     ],
     "address": 19,
-    "source": 6,
+    "source": {"file": null, "line": 6},
     "text": "        lea      rdx, OFFSET FLAT:$SG44257"
   },
   {
@@ -85,7 +85,7 @@
       "48"
     ],
     "address": 26,
-    "source": 6,
+    "source": {"file": null, "line": 6},
     "text": "        lea      rcx, QWORD PTR s$[rsp]"
   },
   {
@@ -97,7 +97,7 @@
       "00"
     ],
     "address": 31,
-    "source": 6,
+    "source": {"file": null, "line": 6},
     "text": "        call     std::basic_string<char,std::char_traits<char>,std::allocator<char> >::basic_string<char,std::char_traits<char>,std::allocator<char> >"
   },
   {
@@ -109,7 +109,7 @@
       "00"
     ],
     "address": 36,
-    "source": 9,
+    "source": {"file": null, "line": 9},
     "text": "        mov      edx, 256   ; 00000100H"
   },
   {
@@ -121,7 +121,7 @@
       "00"
     ],
     "address": 41,
-    "source": 9,
+    "source": {"file": null, "line": 9},
     "text": "        mov      ecx, 1"
   },
   {
@@ -133,7 +133,7 @@
       "00"
     ],
     "address": 46,
-    "source": 9,
+    "source": {"file": null, "line": 9},
     "text": "        call     std::regex_constants::operator|"
   },
   {
@@ -143,7 +143,7 @@
       "c0"
     ],
     "address": 51,
-    "source": 9,
+    "source": {"file": null, "line": 9},
     "text": "        mov      r8d, eax"
   },
   {
@@ -157,7 +157,7 @@
       "00"
     ],
     "address": 54,
-    "source": 9,
+    "source": {"file": null, "line": 9},
     "text": "        lea      rdx, OFFSET FLAT:$SG44258"
   },
   {
@@ -169,7 +169,7 @@
       "20"
     ],
     "address": 61,
-    "source": 9,
+    "source": {"file": null, "line": 9},
     "text": "        lea      rcx, QWORD PTR self_regex$[rsp]"
   },
   {
@@ -181,7 +181,7 @@
       "00"
     ],
     "address": 66,
-    "source": 9,
+    "source": {"file": null, "line": 9},
     "text": "        call     std::basic_regex<char,std::regex_traits<char> >::basic_regex<char,std::regex_traits<char> >"
   },
   {
@@ -193,7 +193,7 @@
       "20"
     ],
     "address": 71,
-    "source": 11,
+    "source": {"file": null, "line": 11},
     "text": "        lea      rcx, QWORD PTR self_regex$[rsp]"
   },
   {
@@ -205,7 +205,7 @@
       "00"
     ],
     "address": 76,
-    "source": 11,
+    "source": {"file": null, "line": 11},
     "text": "        call     std::basic_regex<char,std::regex_traits<char> >::~basic_regex<char,std::regex_traits<char> >"
   },
   {
@@ -217,7 +217,7 @@
       "48"
     ],
     "address": 81,
-    "source": 11,
+    "source": {"file": null, "line": 11},
     "text": "        lea      rcx, QWORD PTR s$[rsp]"
   },
   {
@@ -229,7 +229,7 @@
       "00"
     ],
     "address": 86,
-    "source": 11,
+    "source": {"file": null, "line": 11},
     "text": "        call     std::basic_string<char,std::char_traits<char>,std::allocator<char> >::~basic_string<char,std::char_traits<char>,std::allocator<char> >"
   },
   {
@@ -241,7 +241,7 @@
       "68"
     ],
     "address": 91,
-    "source": 11,
+    "source": {"file": null, "line": 11},
     "text": "        mov      rcx, QWORD PTR __$ArrayPad$[rsp]"
   },
   {
@@ -251,7 +251,7 @@
       "cc"
     ],
     "address": 96,
-    "source": 11,
+    "source": {"file": null, "line": 11},
     "text": "        xor      rcx, rsp"
   },
   {
@@ -263,7 +263,7 @@
       "00"
     ],
     "address": 99,
-    "source": 11,
+    "source": {"file": null, "line": 11},
     "text": "        call     __security_check_cookie"
   },
   {
@@ -274,7 +274,7 @@
       "78"
     ],
     "address": 104,
-    "source": 11,
+    "source": {"file": null, "line": 11},
     "text": "        add      rsp, 120   ; 00000078H"
   },
   {
@@ -282,7 +282,7 @@
       "c3"
     ],
     "address": 108,
-    "source": 11,
+    "source": {"file": null, "line": 11},
     "text": "        ret      0"
   },
   {
