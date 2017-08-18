@@ -6,3 +6,5 @@
 /out
 *.heapsnapshot
 etc/config/*.local.properties
+package-lock.json
+package.json

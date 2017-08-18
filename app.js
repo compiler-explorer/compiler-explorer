@@ -52,10 +52,24 @@ var opts = nopt({
     'debug': [Boolean],
     'static': [String],
     'archivedVersions': [String],
-    'noRemoteFetch': [Boolean]
+    'noRemoteFetch': [Boolean],
+    'tmpDir': [String]
 });
 
 if (opts.debug) logger.level = 'debug';
+
+// AP: Detect if we're running under Windows Subsystem for Linux. Temporary modification
+// of process.env is allowed: https://nodejs.org/api/process.html#process_process_env
+if (child_process.execSync('uname -a').toString().indexOf('Microsoft') > -1)
+    process.env.wsl = true;
+
+// AP: Allow setting of tmpDir (used in lib/base-compiler.js & lib/exec.js) through
+// opts. WSL requires a tmpDir as it can't see Linux volumes so set default to c:\tmp.
+if (opts.tmpDir)
+    process.env.tmpDir = opts.tmpDir;
+else if (process.env.wsl)
+    process.env.tmpDir = "/mnt/c/tmp";
+
 
 // Set default values for omitted arguments
 var rootDir = opts.rootDir || './etc';
