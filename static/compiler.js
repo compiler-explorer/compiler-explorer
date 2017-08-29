@@ -254,7 +254,11 @@ define(function (require) {
         }, this));
 
         this.container.layoutManager.createDragSource(
-            this.optButton, createOptView.bind(this));
+            this.optButton, function() {
+                this.wantOptInfo = true;
+                this.compile();
+                return createOptView.apply(this);
+            }.bind(this));
 
         this.optButton.click(_.bind(function () {
             this.wantOptInfo = true;
@@ -266,7 +270,10 @@ define(function (require) {
         }, this));
 
         this.container.layoutManager.createDragSource(
-            this.astButton, createAstView.bind(this));
+            this.astButton, function() {
+                this.compile();
+                return createAstView.apply(this);
+            });
 
         this.astButton.click(_.bind(function () {
             var insertPoint = hub.findParentRowOrColumn(this.container) ||
