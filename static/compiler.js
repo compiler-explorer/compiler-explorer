@@ -56,7 +56,6 @@ define(function (require) {
         this.compilerService = hub.compilerService;
         this.domRoot = container.getElement();
         this.domRoot.html($('#compiler').html());
-
         this.id = state.id || hub.nextCompilerId();
         this.sourceEditorId = state.source || 1;
         this.compiler = this.compilerService.getCompilerById(state.compiler) ||
@@ -70,6 +69,7 @@ define(function (require) {
         this.pendingRequestSentAt = 0;
         this.nextRequest = null;
         this.settings = {};
+        this.optViewOpen = false;
         this.wantOptInfo = state.wantOptInfo;
         this.decorations = {};
         this.prevDecorations = [];
@@ -254,7 +254,11 @@ define(function (require) {
         }, this));
 
         this.container.layoutManager.createDragSource(
-            this.optButton, createOptView.bind(this));
+            this.optButton, function() {
+                this.wantOptInfo = true;
+                this.compile();
+                return createOptView.apply(this);
+            }.bind(this));
 
         this.optButton.click(_.bind(function () {
             this.wantOptInfo = true;
@@ -266,7 +270,10 @@ define(function (require) {
         }, this));
 
         this.container.layoutManager.createDragSource(
-            this.astButton, createAstView.bind(this));
+            this.astButton, function() {
+                this.compile();
+                return createAstView.apply(this);
+            }.bind(this));
 
         this.astButton.click(_.bind(function () {
             var insertPoint = hub.findParentRowOrColumn(this.container) ||
@@ -496,7 +503,8 @@ define(function (require) {
     Compiler.prototype.onOptViewClosed = function (id) {
         if (this.id == id) {
             this.wantOptInfo = false;
-            this.optButton.prop("disabled", false);
+            this.optViewOpen = false;
+            this.optButton.prop("disabled", this.optViewOpen);
         }
     };
 
@@ -515,7 +523,9 @@ define(function (require) {
     };
     Compiler.prototype.onOptViewOpened = function (id) {
         if (this.id == id) {
-            this.optButton.prop("disabled", true);
+            this.optViewOpen = true;
+            this.wantOptInfo = true;
+            this.optButton.prop("disabled", this.optViewOpen);
         }
     };
 
@@ -535,7 +545,14 @@ define(function (require) {
         // Disable any of the options which don't make sense in binary mode.
         var filtersDisabled = !!filters.binary && !this.compiler.supportsFiltersInBinary;
         this.domRoot.find('.nonbinary').toggleClass("disabled", filtersDisabled);
-        this.optButton.prop("disabled", !this.compiler.supportsOptOutput);
+        // If its already open, we should turn the it off.
+        // The pane will update with error text
+        // Other wise we just disable the button.
+        if(!this.optViewOpen) {
+            this.optButton.prop("disabled", !this.compiler.supportsOptOutput);
+        } else {
+            this.optButton.prop("disabled", true);
+        }
     };
 
     Compiler.prototype.onOptionsChange = function (options) {
