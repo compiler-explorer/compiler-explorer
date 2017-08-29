@@ -273,7 +273,7 @@ define(function (require) {
             this.astButton, function() {
                 this.compile();
                 return createAstView.apply(this);
-            });
+            }.bind(this));
 
         this.astButton.click(_.bind(function () {
             var insertPoint = hub.findParentRowOrColumn(this.container) ||
