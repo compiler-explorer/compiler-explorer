@@ -22,7 +22,8 @@ prereqs: optional-haskell-support optional-d-support optional-rust-support node_
 
 GDC?=gdc
 DMD?=dmd
-ifneq "" "$(shell which $(GDC) 2>/dev/null || which $(DMD) 2>/dev/null)"
+LDC?=ldc2
+ifneq "" "$(shell which $(GDC) 2>/dev/null || which $(DMD) 2>/dev/null || which $(LDC) 2>/dev/null)"
 optional-d-support:
 	$(MAKE) -C d
 else
@@ -80,7 +81,7 @@ clean:
 	$(MAKE) -C c-preload clean
 
 run: prereqs
-	$(NODE) ./node_modules/.bin/supervisor -w app.js,lib,etc/config -e 'js|node|properties' --exec $(NODE) -- ./app.js --language $(LANG) $(EXTRA_ARGS)
+	$(NODE) ./node_modules/.bin/supervisor -w app.js,lib,etc/config -e 'js|node|properties' --exec $(NODE) $(NODE_ARGS) -- ./app.js --language $(LANG) $(EXTRA_ARGS)
 
 HASH := $(shell git rev-parse HEAD)
 dist: prereqs

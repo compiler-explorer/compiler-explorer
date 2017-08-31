@@ -43,7 +43,7 @@ define(function (require) {
         this.code = state.source || "";
         this._currentDecorations = [];
         this.optEditor = monaco.editor.create(this.domRoot.find(".monaco-placeholder")[0], {
-            value: state.source || "",
+            value: this.code,
             scrollBeyondLastLine: false,
             language: 'cppp', //we only support cpp(p) for now
             readOnly: true,
