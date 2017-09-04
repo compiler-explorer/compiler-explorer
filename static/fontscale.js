@@ -27,6 +27,7 @@ define(function (require) {
     "use strict";
     var _ = require('underscore');
     var EventEmitter = require('events');
+    var options = require('./options');
 
     function makeFontSizeDropdown(elem, interval, obj) {
         var factor = obj.isFontOfStr ? 10 : 14;
@@ -59,7 +60,7 @@ define(function (require) {
     function FontScale(domRoot, state, fontSelectorOrEditor) {
         EventEmitter.call(this);
         this.domRoot = domRoot;
-        this.scale = state.fontScale || 1.0;
+        this.scale = state.fontScale || options.defaultFontScale;
         this.fontSelectorOrEditor = fontSelectorOrEditor;
         this.isFontOfStr = typeof(this.fontSelectorOrEditor) === "string";
         this.apply();
