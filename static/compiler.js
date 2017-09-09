@@ -729,8 +729,7 @@ define(function (require) {
     };
 
     Compiler.prototype.onMouseMove = function (e) {
-        if (e === null || e.target === null || e.target.position === null ||
-            e.target.position.lineNumber > this.outputEditor.getModel().getLineCount()) return;
+        if (e === null || e.target === null || e.target.position === null) return;
         if (this.settings.hoverShowSource === true && this.assembly) {
             var desiredLine = e.target.position.lineNumber - 1;
             if (this.assembly[desiredLine]) {
@@ -757,7 +756,19 @@ define(function (require) {
                 this.updateDecorations();
             }
 
-            if (this.settings.hoverShowAsmDoc === true) {
+            var getTokensForLine = function(model, line) {
+                //Force line's state to be accurate
+                model.getLineTokens(line, /*inaccurateTokensAcceptable*/false);
+                // Get the tokenization state at the beginning of this line
+                var freshState = model._lines[line - 1].getState().clone();
+                // Get the human readable tokens on this line
+                return model._tokenizationSupport.tokenize(model.getLineContent(line), freshState, 0).tokens;
+            };
+
+            if (this.settings.hoverShowAsmDoc === true &&
+                _.some(getTokensForLine(this.outputEditor.getModel(), currentWord.range.startLineNumber), function(t) {
+                    return t.offset + 1 === currentWord.startColumn && t.type === "keyword.asm";
+                })) {
                 getAsmInfo(currentWord.word).then(_.bind(function (response) {
                     if (response) {
                         this.decorations.asmToolTip = {
