@@ -700,11 +700,8 @@ define(function (require) {
         return null;
     }
 
-    var opcodeLike = /^[a-zA-Z][a-zA-Z0-9_.]+$/; // at least two characters
+    
     var getAsmInfo = function (opcode) {
-        if (!opcodeLike.exec(opcode)) {
-            return Promise.resolve(null);
-        }
         var cacheName = "asm/" + opcode;
         var cached = OpcodeCache.get(cacheName);
         if (cached) {
