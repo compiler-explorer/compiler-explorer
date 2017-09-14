@@ -6,3 +6,4 @@
 /out
 *.heapsnapshot
 etc/config/*.local.properties
+/nbproject/private/

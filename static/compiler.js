@@ -70,11 +70,13 @@ define(function (require) {
         this.nextRequest = null;
         this.settings = {};
         this.optViewOpen = false;
+        this.cfgViewOpen = false;
         this.wantOptInfo = state.wantOptInfo;
         this.decorations = {};
         this.prevDecorations = [];
         this.optButton = this.domRoot.find('.btn.view-optimization');
         this.astButton = this.domRoot.find('.btn.view-ast');
+        this.cfgButton = this.domRoot.find('.btn.view-cfg'); 
 
         this.linkedFadeTimeoutId = -1;
 
@@ -211,6 +213,8 @@ define(function (require) {
         this.eventHub.on('astViewOpened', this.onAstViewOpened, this);
         this.eventHub.on('astViewClosed', this.onAstViewClosed, this);
         this.eventHub.on('optViewOpened', this.onOptViewOpened, this);
+        this.eventHub.on('cfgViewOpened', this.onCfgViewOpened, this);
+        this.eventHub.on('cfgViewClosed', this.onCfgViewClosed, this);
         this.eventHub.on('resize', this.resize, this);
         this.eventHub.emit('requestSettings');
         this.sendCompiler();
@@ -242,6 +246,10 @@ define(function (require) {
 
         function createAstView() {
             return Components.getAstViewWith(self.id, self.source, self.lastResult.astOutput, self.getCompilerName(), self.sourceEditorId);
+        }
+        
+        function createCfgView() {
+            return Components.getCfgViewWith(self.id, self.source, self.lastResult.astOutput, self.getCompilerName(), self.sourceEditorId);
         }
 
         this.container.layoutManager.createDragSource(
@@ -279,6 +287,13 @@ define(function (require) {
             var insertPoint = hub.findParentRowOrColumn(this.container) ||
                 this.container.layoutManager.root.contentItems[0];
             insertPoint.addChild(createAstView());
+            this.compile();
+        }, this));
+        
+        this.cfgButton.click(_.bind(function () {
+            var insertPoint = hub.findParentRowOrColumn(this.container) ||
+                this.container.layoutManager.root.contentItems[0];
+            insertPoint.addChild(createCfgView());
             this.compile();
         }, this));
 
@@ -526,6 +541,20 @@ define(function (require) {
             this.optViewOpen = true;
             this.wantOptInfo = true;
             this.optButton.prop("disabled", this.optViewOpen);
+        }
+    };
+    
+    Compiler.prototype.onCfgViewOpened = function (id) {
+        if (this.id == id) {
+            this.cfgButton.prop("disabled", true);
+            this.cfgViewOpen = true;
+        }
+    };
+
+    Compiler.prototype.onCfgViewClosed = function (id) {
+        if (this.id == id) {
+            this.cfgButton.prop('disabled', false);
+            this.cfgViewOpen = false;
         }
     };
 

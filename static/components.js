@@ -108,6 +108,26 @@ define(function () {
                 }
             };
         },
+        getCfgView: function() {
+            return {
+                type: 'component',
+                componentName: 'cfg',
+                componentState: {}
+            };
+        },
+        getCfgViewWith: function (id, source, cfgOutput, compilerName, editorid) {
+            return {
+                type: 'component',
+                componentName: 'cfg',
+                componentState: {
+                    id: id,
+                    source: source,
+                    astOutput: cfgOutput,
+                    compilerName: compilerName,
+                    editorid: editorid
+                }
+            };
+        },
         getConformanceView: function (editorid, source) {
             return {
                 type: 'component',
