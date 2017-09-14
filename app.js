@@ -193,7 +193,8 @@ function ClientOptionsHandler(fileSources) {
         release: gitReleaseName,
         environment: env,
         localStoragePrefix: gccProps('localStoragePrefix'),
-        cvCompilerCountMax: gccProps('cvCompilerCountMax', 6)
+        cvCompilerCountMax: gccProps('cvCompilerCountMax', 6),
+        defaultFontScale: gccProps('defaultFontScale', 1.0)
     };
     this.setCompilers = function (compilers) {
         options.compilers = compilers;
