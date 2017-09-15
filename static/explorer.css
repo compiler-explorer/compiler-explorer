@@ -60,6 +60,10 @@
     min-width: 14em;
 }
 
+.function-picker {
+    min-width: 14em;
+}
+
 li.tweet {
     padding: 3px 20px;
 }

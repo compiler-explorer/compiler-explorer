@@ -249,7 +249,7 @@ define(function (require) {
         }
         
         function createCfgView() {
-            return Components.getCfgViewWith(self.id, self.source, self.lastResult.astOutput, self.getCompilerName(), self.sourceEditorId);
+            return Components.getCfgViewWith(self.id, self.source, self.lastResult.cfg, self.getCompilerName(), self.sourceEditorId);
         }
 
         this.container.layoutManager.createDragSource(

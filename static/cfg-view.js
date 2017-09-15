@@ -38,25 +38,30 @@ define(function(require){
         this.eventHub = hub.createEventHub();
         this.domRoot = container.getElement();
         this.domRoot.html($('#cfg').html());
+        this.functions = state.cgf;
         this.compilers = {};
+        
         
         var opts = {
               autoResize: true,
+              height: '100%',
+              width: '100%',
               locale: 'en',
               edges: {
                 arrows: { to: {enabled: true}},
-                smooth: { enabled: false}
+                smooth: { enabled: true}
               },
               nodes: {
                   font: {'face': 'monospace', 'align': 'left'}
               },
               layout: {
+                improvedLayout:true,
                 "hierarchical": {
                   "enabled": true,
-                  "sortMethod": "directed",
+                  //"sortMethod": "directed",
                   "direction": "UD",
-                  nodeSpacing: 300,
-                  levelSeparation: 200
+                  nodeSpacing: 200,
+                  levelSeparation: 200,
                 }
               },
               physics:  {
@@ -66,14 +71,11 @@ define(function(require){
                 }
             };
         
-        this.cfgVisualiser = new vis.Network(this.domRoot.find(".graph-placeholder")[0], {'nodes':[{id:0, label:'0'}],'edges':[]}, opts); 
+        this.cfgVisualiser = new vis.Network(this.domRoot.find(".graph-placeholder")[0], {'nodes':[{id:0, label:'no ouput'}],'edges':[]}, opts); 
         
         this._compilerid = state.id;
         this._compilerName = state.compilerName;
         this._editorid = state.editorid;
-        
-        /*this.fontScale = new FontScale(this.domRoot, state, this.cfgVisualiser);
-        this.fontScale.on('change', _.bind(this.updateState, this));*/
         
         this.eventHub.on('compileResult', this.onCompileResult, this);
         this.eventHub.on('compiler', this.onCompiler, this);
@@ -83,6 +85,16 @@ define(function(require){
             this.eventHub.emit("cfgViewClosed", this._compilerid);
             this.eventHub.unsubscribe();
         }, this);
+        
+        /*this.domRoot.find(".function-picker").selectize({
+            sortField: 'name',
+            valueField: 'name',
+            labelField: 'name',
+            searchField: [],
+            options: [{name:"x"},{name:"y"}],
+            items: this.functions ? ["no function"] : ["no function"]
+        }).on('change', this.onFunctionChange);*/
+        this.setTitle();
    }
    
    Cfg.prototype.onCompileResult = function (id, compiler, result) {
@@ -116,6 +128,10 @@ define(function(require){
 
     Cfg.prototype.onCompilerClose = function (id) {
         delete this.compilers[id];
+    };
+    
+    Cfg.prototype.onFunctionChange = function () {
+        
     };
 
     Cfg.prototype.updateState = function () {
