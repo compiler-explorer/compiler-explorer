@@ -7,3 +7,4 @@
 *.heapsnapshot
 etc/config/*.local.properties
 /nbproject/private/
+/package-lock.json
