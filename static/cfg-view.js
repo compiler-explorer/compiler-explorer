@@ -41,6 +41,7 @@ define(function(require){
         this.domRoot = container.getElement();
         this.domRoot.html($('#cfg').html());
         this.functions = state.cfgResult;
+        this.defaultCfgOuput = {'nodes': [{id: 0, label: 'no ouput'}], 'edges': []};
         this. currentFunc = 0;
         this.compilers = {};
         
@@ -74,7 +75,8 @@ define(function(require){
                 }
             };
         
-        this.cfgVisualiser = new vis.Network(this.domRoot.find(".graph-placeholder")[0], {'nodes':[{id:0, label:'no ouput'}],'edges':[]}, opts); 
+        this.cfgVisualiser = new vis.Network(this.domRoot.find(".graph-placeholder")[0], 
+                                             this.defaultCfgOuput, opts);
         
         this._compilerid = state.id;
         this._compilerName = state.compilerName;
@@ -106,12 +108,15 @@ define(function(require){
    
    Cfg.prototype.onCompileResult = function (id, compiler, result) {
         if (this._compilerid == id) {
-            //if (result.hasCfg) {
+            if (result.cfg) {
                 this.showCfgResults({
                                      'nodes': result.cfg.n[this.currentFunc].nodes,
                                      'edges': result.cfg.e[this.currentFunc].edges
                                     });
-            //}
+           }
+           else {
+               this.showCfgResults(this.defaultCfgOuput);
+           }
 
         }
     };
