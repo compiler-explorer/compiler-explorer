@@ -300,6 +300,7 @@ define(function (require) {
             var insertPoint = hub.findParentRowOrColumn(this.container) ||
                 this.container.layoutManager.root.contentItems[0];
             insertPoint.addChild(createCfgView());
+            this.cfgButton.prop("disabled", true);
             this.compile();
         }, this));
 
@@ -557,10 +558,11 @@ define(function (require) {
         }
     };
 
-    Compiler.prototype.onCfgViewClosed = function (id) {
+    Compiler.prototype.onCfgViewClosed = function (id, network) {
         if (this.id == id) {
             this.cfgButton.prop('disabled', false);
             this.cfgViewOpen = false;
+            network.destroy();
         }
     };
 

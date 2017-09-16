@@ -41,6 +41,7 @@ define(function(require){
         this.domRoot = container.getElement();
         this.domRoot.html($('#cfg').html());
         this.functions = state.cfgResult;
+        this. currentFunc = 0;
         this.compilers = {};
         
         
@@ -84,7 +85,7 @@ define(function(require){
         this.eventHub.on('compilerClose', this.onCompilerClose, this);
         this.eventHub.emit('cfgViewOpened', this._compilerid);
         this.container.on('destroy', function () {
-            this.eventHub.emit("cfgViewClosed", this._compilerid);
+            this.eventHub.emit("cfgViewClosed", this._compilerid, this.cfgVisualiser);
             this.eventHub.unsubscribe();
         }, this);
         
@@ -96,7 +97,7 @@ define(function(require){
             labelField: 'name',
             searchField: ['name'],
             options: this.functions.n,
-            items: this.functions ? [this.functions.n[0].name] : []
+            items: this.functions ? [this.functions.n[this.currentFunc].name] : []
         }).on('change', function(event){
             self.onFunctionChange(self.functions, this.value);
         });
@@ -107,8 +108,8 @@ define(function(require){
         if (this._compilerid == id) {
             //if (result.hasCfg) {
                 this.showCfgResults({
-                                     'nodes': result.cfg.n[0].nodes,
-                                     'edges': result.cfg.e[0].edges
+                                     'nodes': result.cfg.n[this.currentFunc].nodes,
+                                     'edges': result.cfg.e[this.currentFunc].edges
                                     });
             //}
 
@@ -137,18 +138,19 @@ define(function(require){
     };
     
     Cfg.prototype.onFunctionChange = function (functions, name) {
-        var self = this;
+        
+        //this is stupid and must be changed before PR
         var nodes = $.grep(functions.n, function(e){
             return e.name == name;
         });
         
-        var edges = $.grep(functions.e, function(e){
-            return e.name == name;
-        });
+        this.currentFunc = $.inArray(nodes[0], functions.n);
+        
+        var edges = functions.e[this.currentFunc].edges;
 
         this.showCfgResults({
             'nodes': nodes[0].nodes,
-            'edges': edges[0].edges
+            'edges': edges
         });
       
     };
