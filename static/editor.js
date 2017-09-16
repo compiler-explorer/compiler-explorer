@@ -445,7 +445,7 @@ define(function (require) {
             return {
                 severity: severity,
                 message: obj.tag.text,
-                source: compiler.name,
+                source: compiler.name + ' #' + compilerId,
                 startLineNumber: obj.tag.line,
                 startColumn: obj.tag.column || 0,
                 endLineNumber: obj.tag.line,
