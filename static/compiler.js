@@ -290,6 +290,12 @@ define(function (require) {
             this.compile();
         }, this));
         
+        this.container.layoutManager.createDragSource(
+            this.cfgButton, function() {
+                this.compile();
+                return createCfgView.apply(this);
+            }.bind(this));
+        
         this.cfgButton.click(_.bind(function () {
             var insertPoint = hub.findParentRowOrColumn(this.container) ||
                 this.container.layoutManager.root.contentItems[0];

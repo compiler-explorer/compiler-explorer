@@ -32,13 +32,15 @@ define(function(require){
    
     require('asm-mode');
     require('selectize');
+    
+   
    
    function Cfg(hub, container, state){
         this.container = container;
         this.eventHub = hub.createEventHub();
         this.domRoot = container.getElement();
         this.domRoot.html($('#cfg').html());
-        this.functions = state.cgf;
+        this.functions = state.cfgResult;
         this.compilers = {};
         
         
@@ -58,7 +60,7 @@ define(function(require){
                 improvedLayout:true,
                 "hierarchical": {
                   "enabled": true,
-                  //"sortMethod": "directed",
+                  "sortMethod": "directed",
                   "direction": "UD",
                   nodeSpacing: 200,
                   levelSeparation: 200,
@@ -86,14 +88,18 @@ define(function(require){
             this.eventHub.unsubscribe();
         }, this);
         
-        /*this.domRoot.find(".function-picker").selectize({
+        var self = this;
+        
+        this.domRoot.find(".function-picker").selectize({
             sortField: 'name',
             valueField: 'name',
             labelField: 'name',
-            searchField: [],
-            options: [{name:"x"},{name:"y"}],
-            items: this.functions ? ["no function"] : ["no function"]
-        }).on('change', this.onFunctionChange);*/
+            searchField: ['name'],
+            options: this.functions.n,
+            items: this.functions ? [this.functions.n[0].name] : []
+        }).on('change', function(event){
+            self.onFunctionChange(self.functions, this.value);
+        });
         this.setTitle();
    }
    
@@ -101,8 +107,8 @@ define(function(require){
         if (this._compilerid == id) {
             //if (result.hasCfg) {
                 this.showCfgResults({
-                                     'nodes': new vis.DataSet(result.cfg.n[0]),
-                                     'edges': new vis.DataSet(result.cfg.e[0])
+                                     'nodes': result.cfg.n[0].nodes,
+                                     'edges': result.cfg.e[0].edges
                                     });
             //}
 
@@ -130,8 +136,21 @@ define(function(require){
         delete this.compilers[id];
     };
     
-    Cfg.prototype.onFunctionChange = function () {
+    Cfg.prototype.onFunctionChange = function (functions, name) {
+        var self = this;
+        var nodes = $.grep(functions.n, function(e){
+            return e.name == name;
+        });
         
+        var edges = $.grep(functions.e, function(e){
+            return e.name == name;
+        });
+
+        this.showCfgResults({
+            'nodes': nodes[0].nodes,
+            'edges': edges[0].edges
+        });
+      
     };
 
     Cfg.prototype.updateState = function () {

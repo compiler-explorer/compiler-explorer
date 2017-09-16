@@ -115,14 +115,14 @@ define(function () {
                 componentState: {}
             };
         },
-        getCfgViewWith: function (id, source, cfgOutput, compilerName, editorid) {
+        getCfgViewWith: function (id, source, cfg, compilerName, editorid) {
             return {
                 type: 'component',
                 componentName: 'cfg',
                 componentState: {
                     id: id,
                     source: source,
-                    astOutput: cfgOutput,
+                    cfgResult: cfg,
                     compilerName: compilerName,
                     editorid: editorid
                 }
