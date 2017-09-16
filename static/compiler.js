@@ -765,10 +765,10 @@ define(function (require) {
     Compiler.prototype.onMouseMove = function (e) {
         if (e === null || e.target === null || e.target.position === null) return;
         if (this.settings.hoverShowSource === true && this.assembly) {
-            var desiredLine = e.target.position.lineNumber - 1;
-            if (this.assembly[desiredLine]) {
+            var hoverAsm = this.assembly[e.target.position.lineNumber - 1];
+            if (hoverAsm && hoverAsm.source && !hoverAsm.source.file) {
                 // We check that we actually have something to show at this point!
-                this.eventHub.emit('editorSetDecoration', this.sourceEditorId, this.assembly[desiredLine].source, false);
+                this.eventHub.emit('editorSetDecoration', this.sourceEditorId, hoverAsm.source.line, false);
             }
         }
         var currentWord = this.outputEditor.getModel().getWordAtPosition(e.target.position);
@@ -794,9 +794,13 @@ define(function (require) {
                 //Force line's state to be accurate
                 model.getLineTokens(line, /*inaccurateTokensAcceptable*/false);
                 // Get the tokenization state at the beginning of this line
-                var freshState = model._lines[line - 1].getState().clone();
-                // Get the human readable tokens on this line
-                return model._tokenizationSupport.tokenize(model.getLineContent(line), freshState, 0).tokens;
+                var state = model._lines[line - 1].getState();
+                if (state) {
+                    var freshState = model._lines[line - 1].getState().clone();
+                    // Get the human readable tokens on this line
+                    return model._tokenizationSupport.tokenize(model.getLineContent(line), freshState, 0).tokens;
+                }
+                return [];
             };
 
             if (this.settings.hoverShowAsmDoc === true &&
