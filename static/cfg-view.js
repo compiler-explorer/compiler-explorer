@@ -48,15 +48,15 @@ define(function(require){
              
         this.compilers = {};
         
-        
+
         var opts = {
             autoResize: true,
-            height: '100%',
-            width: '100%',
+            height: '99%',
+            width: '99%',
             locale: 'en',
             edges: {
                 arrows: {to: {enabled: true}},
-                smooth: {enabled: true}
+                smooth: {enabled: false}
             },
             nodes: {
                 font: {'face': 'monospace', 'align': 'left'}
@@ -74,9 +74,18 @@ define(function(require){
             physics: {
                 hierarchicalRepulsion: {
                     nodeDistance: 300
+                },
+            },
+            interaction: {
+                navigationButtons: false,
+                keyboard: {
+                    enabled: true,
+                    speed: {x: 10, y: 10, zoom: 0.03},
+                    bindToWindow: false
                 }
-
             }
+
+
         };
         
         this.cfgVisualiser = new vis.Network(this.domRoot.find(".graph-placeholder")[0], 
