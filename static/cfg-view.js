@@ -41,39 +41,43 @@ define(function(require){
         this.domRoot = container.getElement();
         this.domRoot.html($('#cfg').html());
         this.functions = state.cfgResult;
-        this.defaultCfgOuput = {'nodes': [{id: 0, label: 'no ouput'}], 'edges': []};
-        this. currentFunc = 0;
+        this.defaultCfgOuput = {'nodes': [{id: 0, label: 'No Output'}], 'edges': []};
+        
+        this.fnNames = Object.keys(this.functions);
+        this. currentFunc = this.fnNames.length? this.fnNames[0]: "";
+             
         this.compilers = {};
         
         
         var opts = {
-              autoResize: true,
-              height: '100%',
-              width: '100%',
-              locale: 'en',
-              edges: {
-                arrows: { to: {enabled: true}},
-                smooth: { enabled: true}
-              },
-              nodes: {
-                  font: {'face': 'monospace', 'align': 'left'}
-              },
-              layout: {
-                improvedLayout:true,
+            autoResize: true,
+            height: '100%',
+            width: '100%',
+            locale: 'en',
+            edges: {
+                arrows: {to: {enabled: true}},
+                smooth: {enabled: true}
+            },
+            nodes: {
+                font: {'face': 'monospace', 'align': 'left'}
+            },
+            layout: {
+                improvedLayout: true,
                 "hierarchical": {
-                  "enabled": true,
-                  "sortMethod": "directed",
-                  "direction": "UD",
-                  nodeSpacing: 200,
-                  levelSeparation: 200,
+                    "enabled": true,
+                    "sortMethod": "directed",
+                    "direction": "UD",
+                    nodeSpacing: 200,
+                    levelSeparation: 200,
                 }
-              },
-              physics:  {
-                 hierarchicalRepulsion: {
-                   nodeDistance: 300
-                 }
+            },
+            physics: {
+                hierarchicalRepulsion: {
+                    nodeDistance: 300
                 }
-            };
+
+            }
+        };
         
         this.cfgVisualiser = new vis.Network(this.domRoot.find(".graph-placeholder")[0], 
                                              this.defaultCfgOuput, opts);
@@ -85,21 +89,33 @@ define(function(require){
         this.eventHub.on('compileResult', this.onCompileResult, this);
         this.eventHub.on('compiler', this.onCompiler, this);
         this.eventHub.on('compilerClose', this.onCompilerClose, this);
+        //this.eventHub.on('editorChange', this.onEditorChange, this);
         this.eventHub.emit('cfgViewOpened', this._compilerid);
         this.container.on('destroy', function () {
             this.eventHub.emit("cfgViewClosed", this._compilerid, this.cfgVisualiser);
             this.eventHub.unsubscribe();
         }, this);
         
+        var adaptStructure = function(names){
+            var options = [];
+            
+            for(var i = 0; i < names.length; ++i){
+                options.push({name:names[i]});
+            }
+            return options;
+        }
+        
+        
+        
         var self = this;
         
-        this.domRoot.find(".function-picker").selectize({
+        this.select = this.domRoot.find(".function-picker").selectize({
             sortField: 'name',
             valueField: 'name',
             labelField: 'name',
             searchField: ['name'],
-            options: this.functions.n,
-            items: this.functions ? [this.functions.n[this.currentFunc].name] : []
+            options: this.fnNames.length ? adaptStructure(this.fnNames) : [{name:"no functions"}],
+            items: this.fnNames.length ? [this.currentFunc] : [{name:"no functions"}]
         }).on('change', function(event){
             self.onFunctionChange(self.functions, this.value);
         });
@@ -108,15 +124,23 @@ define(function(require){
    
    Cfg.prototype.onCompileResult = function (id, compiler, result) {
         if (this._compilerid == id) {
-            if (result.cfg) {
+            if (result.supportCfg) {
+                this.functions = result.cfg;
                 this.showCfgResults({
-                                     'nodes': result.cfg.n[this.currentFunc].nodes,
-                                     'edges': result.cfg.e[this.currentFunc].edges
-                                    });
-           }
-           else {
-               this.showCfgResults(this.defaultCfgOuput);
-           }
+                    'nodes': this.functions[this.currentFunc].nodes,
+                    'edges': this.functions[this.currentFunc].edges
+                });
+                /*var control = this.domRoot.find(".function-picker")[0].selectize;
+                control.clearOptions();
+                var funcsList = this.functions ? this.functions.n : [{name:"no functions"}];
+                control.load(function (callback) {
+                    callback(funcsList);
+                });*/
+
+                
+            } else {
+                this.showCfgResults(this.defaultCfgOuput);
+            }
 
         }
     };
@@ -143,20 +167,16 @@ define(function(require){
     };
     
     Cfg.prototype.onFunctionChange = function (functions, name) {
-        
-        //this is stupid and must be changed before PR
-        var nodes = $.grep(functions.n, function(e){
-            return e.name == name;
-        });
-        
-        this.currentFunc = $.inArray(nodes[0], functions.n);
-        
-        var edges = functions.e[this.currentFunc].edges;
 
-        this.showCfgResults({
-            'nodes': nodes[0].nodes,
-            'edges': edges
-        });
+        if (functions[name]) {
+            this.showCfgResults({
+                'nodes': functions[name].nodes,
+                'edges': functions[name].edges
+            });
+        }
+
+        
+        //if(functions)
       
     };
 
