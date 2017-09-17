@@ -170,7 +170,7 @@ define(function(require){
     };
 
     Cfg.prototype.onCompiler = function (id, compiler, options, editorid) {
-        if(id == this._compilerid) {
+        if(id === this._compilerid) {
             this._compilerName = compiler.name;
             this._editorid = editorid;
             this.setTitle();
