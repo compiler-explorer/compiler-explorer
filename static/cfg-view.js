@@ -68,13 +68,13 @@ define(function(require){
                     "sortMethod": "directed",
                     "direction": "UD",
                     nodeSpacing: 200,
-                    levelSeparation: 200,
+                    levelSeparation: 200
                 }
             },
             physics: {
                 hierarchicalRepulsion: {
                     nodeDistance: 300
-                },
+                }
             },
             interaction: {
                 navigationButtons: false,
@@ -112,7 +112,7 @@ define(function(require){
                 options.push({name:names[i]});
             }
             return options;
-        }
+        };
         
         
         
@@ -132,7 +132,7 @@ define(function(require){
    }
    
    Cfg.prototype.onCompileResult = function (id, compiler, result) {
-        if (this._compilerid == id) {
+        if (this._compilerid === id) {
             if (result.supportCfg) {
                 this.functions = result.cfg;
                 this.fnNames = Object.keys(this.functions);
@@ -142,7 +142,7 @@ define(function(require){
                     'nodes': this.functions[this.currentFunc].nodes,
                     'edges': this.functions[this.currentFunc].edges
                 });
-                this.domRoot.find(".function-picker")[0].selectize.destroy();;
+                this.domRoot.find(".function-picker")[0].selectize.destroy();
                 this.select = this.domRoot.find(".function-picker").selectize({
                     sortField: 'name',
                     valueField: 'name',
@@ -189,9 +189,6 @@ define(function(require){
                 'edges': functions[name].edges
             });
         }
-
-        
-        //if(functions)
       
     };
 
