@@ -96,7 +96,7 @@ define(function(require){
             this.eventHub.unsubscribe();
         }, this);
         
-        var adaptStructure = function(names){
+        this.adaptStructure = function(names){
             var options = [];
             
             for(var i = 0; i < names.length; ++i){
@@ -114,7 +114,7 @@ define(function(require){
             valueField: 'name',
             labelField: 'name',
             searchField: ['name'],
-            options: this.fnNames.length ? adaptStructure(this.fnNames) : [{name:"no functions"}],
+            options: this.fnNames.length ? this.adaptStructure(this.fnNames) : [{name:"no functions"}],
             items: this.fnNames.length ? [this.currentFunc] : [{name:"no functions"}]
         }).on('change', function(event){
             self.onFunctionChange(self.functions, this.value);
@@ -126,16 +126,22 @@ define(function(require){
         if (this._compilerid == id) {
             if (result.supportCfg) {
                 this.functions = result.cfg;
+                this.fnNames = Object.keys(this.functions);
+                if(!this.fnNames.includes(this.currentFunc))
+                    this.currentFunc = this.fnNames[0];
                 this.showCfgResults({
                     'nodes': this.functions[this.currentFunc].nodes,
                     'edges': this.functions[this.currentFunc].edges
                 });
-                /*var control = this.domRoot.find(".function-picker")[0].selectize;
-                control.clearOptions();
-                var funcsList = this.functions ? this.functions.n : [{name:"no functions"}];
-                control.load(function (callback) {
-                    callback(funcsList);
-                });*/
+                this.domRoot.find(".function-picker")[0].selectize.destroy();;
+                this.select = this.domRoot.find(".function-picker").selectize({
+                    sortField: 'name',
+                    valueField: 'name',
+                    labelField: 'name',
+                    searchField: ['name'],
+                    options: this.fnNames.length ? this.adaptStructure(this.fnNames) : [{name: "no functions"}],
+                    items: this.fnNames.length ? [this.currentFunc] : [{name: "no functions"}]
+                });
 
                 
             } else {

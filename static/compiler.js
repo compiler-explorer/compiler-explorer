@@ -507,8 +507,9 @@ define(function (require) {
         } else {
             compileTime.text("");
         }
-        this.eventHub.emit('compileResult', this.id, this.compiler, result);
         this.compilerSupportCfg = result.supportCfg;
+        this.eventHub.emit('compileResult', this.id, this.compiler, result);
+        
 
         if (this.nextRequest) {
             var next = this.nextRequest;
