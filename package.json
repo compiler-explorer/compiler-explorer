@@ -28,7 +28,7 @@
     "morgan": "1.6.x",
     "nopt": "3.0.x",
     "promise": "7.0.x",
-    "promise-queue": "2.1.x",
+    "promise-queue": "2.2.3",
     "pug": "^2.0.0-beta11",
     "serve-favicon": "2.3.x",
     "shell-quote": "1.6.x",
