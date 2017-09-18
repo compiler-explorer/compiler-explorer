@@ -29,6 +29,7 @@ define(function(require){
    var FontScale = require('fontscale');
    var options = require('options');
    var vis = require('vis');
+   var _ = require('underscore');
    
     require('asm-mode');
     require('selectize');
@@ -39,6 +40,7 @@ define(function(require){
         this.container = container;
         this.eventHub = hub.createEventHub();
         this.domRoot = container.getElement();
+        
         this.domRoot.html($('#cfg').html());
         this.functions = state.cfgResult;
         this.defaultCfgOuput = {'nodes': [{id: 0, label: 'No Output'}], 'edges': []};
@@ -48,15 +50,15 @@ define(function(require){
              
         this.compilers = {};
         
-
-        var opts = {
+        
+        this.networkOpts = {
             autoResize: true,
             height: '99%',
             width: '99%',
             locale: 'en',
             edges: {
                 arrows: {to: {enabled: true}},
-                smooth: {enabled: false}
+                smooth: {enabled: true, type: 'straightCross'}
             },
             nodes: {
                 font: {'face': 'monospace', 'align': 'left'}
@@ -81,7 +83,7 @@ define(function(require){
                 keyboard: {
                     enabled: true,
                     speed: {x: 10, y: 10, zoom: 0.03},
-                    bindToWindow: false
+                    bindToWindow: true
                 }
             }
 
@@ -89,7 +91,13 @@ define(function(require){
         };
         
         this.cfgVisualiser = new vis.Network(this.domRoot.find(".graph-placeholder")[0], 
-                                             this.defaultCfgOuput, opts);
+                                             this.defaultCfgOuput, this.networkOpts);
+        
+        this.restButton = this.domRoot.find(".show-hide-btn")
+                .on('click', _.bind(function(event){
+                    this.networkOpts.interaction.navigationButtons = !this.networkOpts.interaction.navigationButtons;
+                    this.cfgVisualiser.setOptions(this.networkOpts);
+                }, this));
         
         this._compilerid = state.id;
         this._compilerName = state.compilerName;
@@ -128,6 +136,7 @@ define(function(require){
         }).on('change', function(event){
             self.onFunctionChange(self.functions, this.value);
         });
+        
         this.setTitle();
    }
    
@@ -143,6 +152,7 @@ define(function(require){
                     'edges': this.functions[this.currentFunc].edges
                 });
                 this.domRoot.find(".function-picker")[0].selectize.destroy();
+                var self = this;
                 this.select = this.domRoot.find(".function-picker").selectize({
                     sortField: 'name',
                     valueField: 'name',
@@ -150,6 +160,8 @@ define(function(require){
                     searchField: ['name'],
                     options: this.fnNames.length ? this.adaptStructure(this.fnNames) : [{name: "no functions"}],
                     items: this.fnNames.length ? [this.currentFunc] : [{name: "no functions"}]
+                }).on('change', function (event) {
+                    self.onFunctionChange(self.functions, this.value);
                 });
 
                 
