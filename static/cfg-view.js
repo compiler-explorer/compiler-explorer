@@ -45,7 +45,7 @@ define(function(require){
         this.functions = state.cfgResult;
         this.defaultCfgOuput = {'nodes': [{id: 0, label: 'No Output'}], 'edges': []};
         
-        this.fnNames = Object.keys(this.functions);
+        this.fnNames = this.functions? Object.keys(this.functions):  "no function";
         this. currentFunc = this.fnNames.length? this.fnNames[0]: "";
              
         this.compilers = {};
@@ -142,7 +142,7 @@ define(function(require){
    
    Cfg.prototype.onCompileResult = function (id, compiler, result) {
         if (this._compilerid === id) {
-            if (result.supportCfg) {
+            if (result.supportCfg && !$.isEmptyObject(result.cfg)) {
                 this.functions = result.cfg;
                 this.fnNames = Object.keys(this.functions);
                 if(!this.fnNames.includes(this.currentFunc))
@@ -151,23 +151,27 @@ define(function(require){
                     'nodes': this.functions[this.currentFunc].nodes,
                     'edges': this.functions[this.currentFunc].edges
                 });
-                this.domRoot.find(".function-picker")[0].selectize.destroy();
-                var self = this;
-                this.select = this.domRoot.find(".function-picker").selectize({
-                    sortField: 'name',
-                    valueField: 'name',
-                    labelField: 'name',
-                    searchField: ['name'],
-                    options: this.fnNames.length ? this.adaptStructure(this.fnNames) : [{name: "no functions"}],
-                    items: this.fnNames.length ? [this.currentFunc] : [{name: "no functions"}]
-                }).on('change', function (event) {
-                    self.onFunctionChange(self.functions, this.value);
-                });
+                
 
                 
             } else {
                 this.showCfgResults(this.defaultCfgOuput);
+                this.currentFunc = "";
+                this.fnNames = [];
             }
+            
+            this.domRoot.find(".function-picker")[0].selectize.destroy();
+            var self = this;
+            this.select = this.domRoot.find(".function-picker").selectize({
+                sortField: 'name',
+                valueField: 'name',
+                labelField: 'name',
+                searchField: ['name'],
+                options: this.fnNames.length ? this.adaptStructure(this.fnNames) : [],
+                items:  [this.currentFunc]
+            }).on('change', function (event) {
+                self.onFunctionChange(self.functions, this.value);
+            });
 
         }
     };
