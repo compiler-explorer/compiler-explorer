@@ -66,6 +66,7 @@ define(function (require) {
         this.eventHub.on('editorChange', this.onEditorChange, this);
         this.eventHub.on('settingsChange', this.onSettingsChange, this);
         this.eventHub.emit('astViewOpened', this._compilerid);
+        this.eventHub.emit('requestSettings');
         this.container.on('destroy', function () {
             this.eventHub.emit("astViewClosed", this._compilerid);
             this.eventHub.unsubscribe();
