@@ -50,7 +50,6 @@ define(function (require) {
     });
 
     function Compiler(hub, container, state) {
-        var self = this;
         this.container = container;
         this.eventHub = hub.createEventHub();
         this.compilerService = hub.compilerService;
@@ -78,6 +77,19 @@ define(function (require) {
         this.optButton = this.domRoot.find('.btn.view-optimization');
         this.astButton = this.domRoot.find('.btn.view-ast');
         this.cfgButton = this.domRoot.find('.btn.view-cfg'); 
+        this.libsButton = this.domRoot.find('.btn.show-libs');
+
+        this.availableLibs = $.extend(true, {}, options.libs);
+
+        _.each(state.libs, _.bind(function(lib) {
+            if (this.availableLibs[lib.name] && this.availableLibs[lib.name].versions &&
+                this.availableLibs[lib.name].versions[lib.ver]) {
+                this.availableLibs[lib.name].versions[lib.ver].used = true;
+            }
+        }, this));
+
+        if (Object.keys(this.availableLibs).length === 0) // Hide libs if there are none
+            this.domRoot.find('.show-libs').hide();
 
         this.linkedFadeTimeoutId = -1;
 
@@ -88,17 +100,18 @@ define(function (require) {
             searchField: ['name'],
             options: options.compilers,
             items: this.compiler ? [this.compiler.id] : []
-        }).on('change', function () {
+        }).on('change', _.bind(function (e) {
+            var val = $(e.target).val();
             ga('send', {
                 hitType: 'event',
                 eventCategory: 'SelectCompiler',
-                eventAction: $(this).val()
+                eventAction: val
             });
-            self.onCompilerChange($(this).val());
-        });
-        var optionsChange = _.debounce(function () {
-            self.onOptionsChange($(this).val());
-        }, 800);
+            this.onCompilerChange(val);
+        }, this));
+        var optionsChange = _.debounce(_.bind(function (e) {
+            this.onOptionsChange($(e.target).val());
+        }, this), 800);
         this.optionsField = this.domRoot.find(".options");
         this.optionsField 
             .val(this.options)
@@ -128,17 +141,17 @@ define(function (require) {
             keybindingContext: null,
             contextMenuGroupId: 'navigation',
             contextMenuOrder: 1.5,
-            run: function (ed) {
+            run: _.bind(function (ed) {
                 var desiredLine = ed.getPosition().lineNumber - 1;
-                var source = self.assembly[desiredLine].source;
+                var source = this.assembly[desiredLine].source;
                 if (source.file === null) {
                     // a null file means it was the user's source
-                    self.eventHub.emit('editorSetDecoration', self.sourceEditorId, source.line, true);
+                    this.eventHub.emit('editorSetDecoration', this.sourceEditorId, source.line, true);
                 } else {
                     // TODO: some indication this asm statement came from elsewhere
-                    self.eventHub.emit('editorSetDecoration', self.sourceEditorId, -1, false);
+                    this.eventHub.emit('editorSetDecoration', this.sourceEditorId, -1, false);
                 }
-            }
+            }, this)
         });
 
         this.outputEditor.addAction({
@@ -163,26 +176,26 @@ define(function (require) {
             }, this)
         });
 
-        function clearEditorsLinkedLines() {
-            self.eventHub.emit('editorSetDecoration', self.sourceEditorId, -1, false);
-        }
+        var clearEditorsLinkedLines = _.bind(function() {
+            this.eventHub.emit('editorSetDecoration', this.sourceEditorId, -1, false);
+        }, this);
 
-        this.outputEditor.onMouseMove(function (e) {
-            self.mouseMoveThrottledFunction(e);
-            if (self.linkedFadeTimeoutId !== -1) {
-                clearTimeout(self.linkedFadeTimeoutId);
-                self.linkedFadeTimeoutId = -1;
+        this.outputEditor.onMouseMove(_.bind(function (e) {
+            this.mouseMoveThrottledFunction(e);
+            if (this.linkedFadeTimeoutId !== -1) {
+                clearTimeout(this.linkedFadeTimeoutId);
+                this.linkedFadeTimeoutId = -1;
             }
-        });
+        }, this));
 
         this.mouseMoveThrottledFunction = _.throttle(_.bind(this.onMouseMove, this), 250);
 
-        this.outputEditor.onMouseLeave(function () {
-            self.linkedFadeTimeoutId = setTimeout(function () {
+        this.outputEditor.onMouseLeave(_.bind(function () {
+            this.linkedFadeTimeoutId = setTimeout(_.bind(function () {
                 clearEditorsLinkedLines();
-                self.linkedFadeTimeoutId = -1;
-            }, 5000);
-        });
+                this.linkedFadeTimeoutId = -1;
+            }, this), 5000);
+        },this));
 
         this.fontScale = new FontScale(this.domRoot, state, this.outputEditor);
         this.fontScale.on('change', _.bind(function () {
@@ -193,16 +206,16 @@ define(function (require) {
         this.filters.on('change', _.bind(this.onFilterChange, this));
 
         container.on('destroy', function () {
-            self.eventHub.unsubscribe();
-            self.eventHub.emit('compilerClose', self.id);
-            self.outputEditor.dispose();
+            this.eventHub.unsubscribe();
+            this.eventHub.emit('compilerClose', this.id);
+            this.outputEditor.dispose();
         }, this);
         container.on('resize', this.resize, this);
         container.on('shown', this.resize, this);
         container.on('open', function () {
-            self.eventHub.emit('compilerOpen', self.id, self.sourceEditorId);
-            self.updateFontScale();
-        });
+            this.eventHub.emit('compilerOpen', this.id, this.sourceEditorId);
+            this.updateFontScale();
+        }, this);
         this.eventHub.on('editorChange', this.onEditorChange, this);
         this.eventHub.on('editorClose', this.onEditorClose, this);
         this.eventHub.on('colours', this.onColours, this);
@@ -233,26 +246,26 @@ define(function (require) {
             insertPoint.addChild(outputConfig());
         }, this));
 
-        function cloneComponent() {
+        var cloneComponent = _.bind(function() {
             return {
                 type: 'component',
                 componentName: 'compiler',
-                componentState: self.currentState()
+                componentState: this.currentState()
             };
-        }
+        }, this);
 
-        function createOptView() {
-            return Components.getOptViewWith(self.id, self.source, self.lastResult.optOutput, self.getCompilerName(), self.sourceEditorId);
-        }
+        var createOptView = _.bind(function() {
+            return Components.getOptViewWith(this.id, this.source, this.lastResult.optOutput, this.getCompilerName(), this.sourceEditorId);
+        }, this);
 
-        function createAstView() {
-            return Components.getAstViewWith(self.id, self.source, self.lastResult.astOutput, self.getCompilerName(), self.sourceEditorId);
-        }
+        var createAstView = _.bind(function() {
+            return Components.getAstViewWith(this.id, this.source, this.lastResult.astOutput, this.getCompilerName(), this.sourceEditorId);
+        }, this);
         
-        function createCfgView() {
-            return Components.getCfgViewWith(self.id, self.source, self.lastResult.cfg, self.getCompilerName(), self.sourceEditorId);
-        }
-
+        var createCfgView = _.bind(function() {
+            return Components.getCfgViewWith(this.id, this.source, this.lastResult.cfg, this.getCompilerName(), this.sourceEditorId);
+        }, this);
+      
         this.container.layoutManager.createDragSource(
             this.domRoot.find('.btn.add-compiler'), cloneComponent);
 
@@ -305,6 +318,81 @@ define(function (require) {
             this.compile();
         }, this));
 
+
+        var updateLibsUsed = _.bind(function() {
+            var libsList = $('<ul></ul>');
+            var onChecked = _.bind(function(e) {
+                var elem = $(e.target);
+                if (elem.prop('checked')) {
+                    libsList.find('input[name=' + elem.prop('name') + ']').prop('checked', false);
+                    elem.prop('checked', true);
+                }
+                _.each(this.availableLibs[elem.prop('data-lib')].versions, function(version) {
+                    version.used = false;
+                });
+                this.availableLibs[elem.prop('data-lib')].versions[elem.prop('data-version')].used = elem.prop('checked');
+                this.saveState();
+                this.compile();
+            }, this);
+
+
+            libsList.addClass('lib-list');
+            _.each(this.availableLibs, function(lib, libKey) {
+                _.each(lib.versions, function(version, vKey) {
+                    var checkbox = $('<input type="checkbox">')
+                        .addClass('lib-checkbox')
+                        .prop('data-lib', libKey)
+                        .prop('data-version', vKey)
+                        .prop('data-path', version.path)
+                        .prop('checked', version.used)
+                        .prop('name', libKey)
+                        .on('change', onChecked);
+                    $('<li></li>')
+                        .addClass('lib-item')
+                        .appendTo(libsList)
+                        .append(checkbox)
+                        .append($('<label></label>')
+                            .addClass('lib-label')
+                            .text(lib.name + " " + version.version)
+                            .on('click', function() {
+                                $(this).parent().find('.lib-checkbox').trigger('click');
+                            })
+                        );
+                });
+                libsList.append($('<hr>').addClass('lib-separator'));
+            });
+            return libsList;
+        }, this);
+
+        this.libsButton.popover({
+            container: 'body',
+            content: updateLibsUsed(),
+            html: true,
+            placement: 'bottom',
+            trigger: 'manual'
+        }).click(_.bind(function () {
+            this.libsButton.popover('show');
+        }, this)).on('inserted.bs.popover', function (e) {
+            $(e.target).content = updateLibsUsed().html();
+        });
+
+        // Dismiss the popover on escape.
+        $(document).on('keyup.editable', _.bind(function (e) {
+            if (e.which === 27) {
+                this.libsButton.popover("hide");
+            }
+        }, this));
+
+        // Dismiss on any click that isn't either in the opening element, inside
+        // the popover or on any alert
+        $(document).on('click', _.bind(function (e) {
+            var elem = this.libsButton;
+            var target = $(e.target);
+            if (!target.is(elem) && elem.has(target).length === 0 && target.closest('.popover').length === 0) {
+                elem.popover("hide");
+            }
+        }, this));
+
         this.saveState();
     }
 
@@ -341,6 +429,12 @@ define(function (require) {
             compilerOptions: { produceAst: this.astViewOpen, produceOptInfo: this.wantOptInfo },
             filters: this.getEffectiveFilters()
         };
+        _.each(this.availableLibs, function(lib) {
+            _.each(lib.versions, function(version) {
+                if (version.used)
+                    options.userArguments+= " -I" + version.path;
+            });
+        });
         this.compilerService.expand(this.source).then(_.bind(function (expanded) {
             var request = {
                 source: expanded || "",
@@ -643,13 +737,22 @@ define(function (require) {
     };
 
     Compiler.prototype.currentState = function () {
+        var libs = [];
+        _.each(this.availableLibs, function(library, name) {
+            _.each(library.versions, function(version, ver) {
+                if (library.versions[ver].used) {
+                    libs.push({name, ver});
+                }
+            });
+        });
         var state = {
             compiler: this.compiler ? this.compiler.id : "",
             source: this.sourceEditorId,
             options: this.options,
             // NB must *not* be effective filters
             filters: this.filters.get(),
-            wantOptInfo: this.wantOptInfo
+            wantOptInfo: this.wantOptInfo,
+            libs: libs
         };
         this.fontScale.addState(state);
         return state;

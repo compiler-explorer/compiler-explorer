@@ -66,7 +66,10 @@ define(function (require) {
         this.compilerIds = new Ids();
         this.compilerService = new CompilerService();
 
+        // FIXME
+        // We can't avoid this self as _ is undefined at this point
         var self = this;
+
         layout.registerComponent(Components.getEditor().componentName,
             function (container, state) {
                 return self.codeEditorFactory(container, state);

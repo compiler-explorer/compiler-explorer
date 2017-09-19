@@ -35,6 +35,7 @@ define(function (require) {
         var found = false;
 
         var onWheelEvent = function(e) {
+            e.preventDefault();
             var selectedId = elem.find('.font-option-active').index();
             if (e.originalEvent.deltaY >= 0 && selectedId < elem.children().length - 1) {
                 selectedId++;

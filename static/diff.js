@@ -28,6 +28,7 @@ define(function (require) {
 
     var FontScale = require('fontscale');
     var monaco = require('monaco');
+    var _ = require('underscore');
 
     require('asm-mode');
     require('selectize');
@@ -66,7 +67,6 @@ define(function (require) {
         this.rhs = new State(state.rhs, monaco.editor.createModel('', 'asm'));
         this.outputEditor.setModel({original: this.lhs.model, modified: this.rhs.model});
 
-        var self = this;
         var selectize = this.domRoot.find(".diff-picker").selectize({
             sortField: 'name',
             valueField: 'id',
@@ -85,18 +85,19 @@ define(function (require) {
                         '</ul></div>';
                 }
             }
-        }).on('change', function () {
-            var compiler = self.compilers[$(this).val()];
+        }).on('change', _.bind(function (e) {
+            var target = $(e.target);
+            var compiler = this.compilers[target.val()];
             if (!compiler) return;
-            if ($(this).hasClass('lhs')) {
-                self.lhs.compiler = compiler;
-                self.lhs.id = compiler.id;
+            if (target.hasClass('lhs')) {
+                this.lhs.compiler = compiler;
+                this.lhs.id = compiler.id;
             } else {
-                self.rhs.compiler = compiler;
-                self.rhs.id = compiler.id;
+                this.rhs.compiler = compiler;
+                this.rhs.id = compiler.id;
             }
-            self.onDiffSelect(compiler.id);
-        });
+            this.onDiffSelect(compiler.id);
+        }, this));
         this.selectize = {lhs: selectize[0].selectize, rhs: selectize[1].selectize};
 
         this.fontScale = new FontScale(this.domRoot, state, this.outputEditor);
