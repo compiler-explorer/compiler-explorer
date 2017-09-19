@@ -337,7 +337,12 @@ define(function (require) {
 
 
             libsList.addClass('lib-list');
+            var firstLibGroup = true;
             _.each(this.availableLibs, function(lib, libKey) {
+                if (!firstLibGroup)
+                    libsList.append($('<hr>').addClass('lib-separator'));
+                else
+                    firstLibGroup = false;
                 _.each(lib.versions, function(version, vKey) {
                     var checkbox = $('<input type="checkbox">')
                         .addClass('lib-checkbox')
@@ -359,7 +364,6 @@ define(function (require) {
                             })
                         );
                 });
-                libsList.append($('<hr>').addClass('lib-separator'));
             });
             return libsList;
         }, this);
