@@ -50,7 +50,6 @@ define(function (require) {
     });
 
     function Compiler(hub, container, state) {
-        var self = this;
         this.container = container;
         this.eventHub = hub.createEventHub();
         this.compilerService = hub.compilerService;
@@ -98,17 +97,18 @@ define(function (require) {
             searchField: ['name'],
             options: options.compilers,
             items: this.compiler ? [this.compiler.id] : []
-        }).on('change', function () {
+        }).on('change', _.bind(function (e) {
+            var val = $(e.target).val();
             ga('send', {
                 hitType: 'event',
                 eventCategory: 'SelectCompiler',
-                eventAction: $(this).val()
+                eventAction: val
             });
-            self.onCompilerChange($(this).val());
-        });
-        var optionsChange = _.debounce(function () {
-            self.onOptionsChange($(this).val());
-        }, 800);
+            this.onCompilerChange(val);
+        }, this));
+        var optionsChange = _.debounce(_.bind(function (e) {
+            this.onOptionsChange($(e.target).val());
+        }, this), 800);
         this.optionsField = this.domRoot.find(".options");
         this.optionsField 
             .val(this.options)
@@ -138,17 +138,17 @@ define(function (require) {
             keybindingContext: null,
             contextMenuGroupId: 'navigation',
             contextMenuOrder: 1.5,
-            run: function (ed) {
+            run: _.bind(function (ed) {
                 var desiredLine = ed.getPosition().lineNumber - 1;
-                var source = self.assembly[desiredLine].source;
+                var source = this.assembly[desiredLine].source;
                 if (source.file === null) {
                     // a null file means it was the user's source
-                    self.eventHub.emit('editorSetDecoration', self.sourceEditorId, source.line, true);
+                    this.eventHub.emit('editorSetDecoration', this.sourceEditorId, source.line, true);
                 } else {
                     // TODO: some indication this asm statement came from elsewhere
-                    self.eventHub.emit('editorSetDecoration', self.sourceEditorId, -1, false);
+                    this.eventHub.emit('editorSetDecoration', this.sourceEditorId, -1, false);
                 }
-            }
+            }, this)
         });
 
         this.outputEditor.addAction({
@@ -173,26 +173,26 @@ define(function (require) {
             }, this)
         });
 
-        function clearEditorsLinkedLines() {
-            self.eventHub.emit('editorSetDecoration', self.sourceEditorId, -1, false);
-        }
+        var clearEditorsLinkedLines = _.bind(function() {
+            this.eventHub.emit('editorSetDecoration', this.sourceEditorId, -1, false);
+        }, this);
 
-        this.outputEditor.onMouseMove(function (e) {
-            self.mouseMoveThrottledFunction(e);
-            if (self.linkedFadeTimeoutId !== -1) {
-                clearTimeout(self.linkedFadeTimeoutId);
-                self.linkedFadeTimeoutId = -1;
+        this.outputEditor.onMouseMove(_.bind(function (e) {
+            this.mouseMoveThrottledFunction(e);
+            if (this.linkedFadeTimeoutId !== -1) {
+                clearTimeout(this.linkedFadeTimeoutId);
+                this.linkedFadeTimeoutId = -1;
             }
-        });
+        }, this));
 
         this.mouseMoveThrottledFunction = _.throttle(_.bind(this.onMouseMove, this), 250);
 
-        this.outputEditor.onMouseLeave(function () {
-            self.linkedFadeTimeoutId = setTimeout(function () {
+        this.outputEditor.onMouseLeave(_.bind(function () {
+            this.linkedFadeTimeoutId = setTimeout(_.bind(function () {
                 clearEditorsLinkedLines();
-                self.linkedFadeTimeoutId = -1;
-            }, 5000);
-        });
+                this.linkedFadeTimeoutId = -1;
+            }, this), 5000);
+        },this));
 
         this.fontScale = new FontScale(this.domRoot, state, this.outputEditor);
         this.fontScale.on('change', _.bind(function () {
@@ -203,16 +203,16 @@ define(function (require) {
         this.filters.on('change', _.bind(this.onFilterChange, this));
 
         container.on('destroy', function () {
-            self.eventHub.unsubscribe();
-            self.eventHub.emit('compilerClose', self.id);
-            self.outputEditor.dispose();
+            this.eventHub.unsubscribe();
+            this.eventHub.emit('compilerClose', this.id);
+            this.outputEditor.dispose();
         }, this);
         container.on('resize', this.resize, this);
         container.on('shown', this.resize, this);
         container.on('open', function () {
-            self.eventHub.emit('compilerOpen', self.id, self.sourceEditorId);
-            self.updateFontScale();
-        });
+            this.eventHub.emit('compilerOpen', this.id, this.sourceEditorId);
+            this.updateFontScale();
+        }, this);
         this.eventHub.on('editorChange', this.onEditorChange, this);
         this.eventHub.on('editorClose', this.onEditorClose, this);
         this.eventHub.on('colours', this.onColours, this);
@@ -241,21 +241,21 @@ define(function (require) {
             insertPoint.addChild(outputConfig());
         }, this));
 
-        function cloneComponent() {
+        var cloneComponent = _.bind(function() {
             return {
                 type: 'component',
                 componentName: 'compiler',
-                componentState: self.currentState()
+                componentState: this.currentState()
             };
-        }
+        }, this);
 
-        function createOptView() {
-            return Components.getOptViewWith(self.id, self.source, self.lastResult.optOutput, self.getCompilerName(), self.sourceEditorId);
-        }
+        var createOptView = _.bind(function() {
+            return Components.getOptViewWith(this.id, this.source, this.lastResult.optOutput, this.getCompilerName(), this.sourceEditorId);
+        }, this);
 
-        function createAstView() {
-            return Components.getAstViewWith(self.id, self.source, self.lastResult.astOutput, self.getCompilerName(), self.sourceEditorId);
-        }
+        var createAstView = _.bind(function() {
+            return Components.getAstViewWith(this.id, this.source, this.lastResult.astOutput, this.getCompilerName(), this.sourceEditorId);
+        }, this);
 
         this.container.layoutManager.createDragSource(
             this.domRoot.find('.btn.add-compiler'), cloneComponent);

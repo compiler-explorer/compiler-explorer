@@ -44,7 +44,6 @@ define(function (require) {
     var loadSave = new loadSaveLib.LoadSave();
 
     function Editor(hub, state, container, lang, defaultSrc) {
-        var self = this;
         this.id = state.id || hub.nextEditorId();
         this.container = container;
         this.domRoot = container.getElement();
@@ -171,8 +170,8 @@ define(function (require) {
             }, this)
         });
 
-        function tryCompilerLinkLine(thisLineNumber, reveal) {
-            _.each(self.asmByCompiler, function (asms, compilerId) {
+        var tryCompilerLinkLine = _.bind(function(thisLineNumber, reveal) {
+            _.each(this.asmByCompiler, _.bind(function (asms, compilerId) {
                 var targetLines = [];
                 _.each(asms, function (asmLine, i) {
                     if (asmLine.source && asmLine.source.file === null &&
@@ -180,15 +179,15 @@ define(function (require) {
                         targetLines.push(i + 1);
                     }
                 });
-                self.eventHub.emit('compilerSetDecorations', compilerId, targetLines, reveal);
-            });
-        }
+                this.eventHub.emit('compilerSetDecorations', compilerId, targetLines, reveal);
+            }, this));
+        }, this);
 
-        function clearCompilerLinkedLines() {
-            _.each(self.asmByCompiler, function (asms, compilerId) {
-                self.eventHub.emit('compilerSetDecorations', compilerId, -1, false);
-            });
-        }
+        var clearCompilerLinkedLines = _.bind(function() {
+            _.each(this.asmByCompiler, _.bind(function (asms, compilerId) {
+                this.eventHub.emit('compilerSetDecorations', compilerId, -1, false);
+            }, this));
+        }, this);
 
         this.editor.addAction({
             id: 'viewasm',
@@ -202,29 +201,30 @@ define(function (require) {
             }
         });
 
-        this.editor.onMouseLeave(function (e) {
-            self.fadeTimeoutId = setTimeout(function () {
+        this.editor.onMouseLeave(_.bind(function () {
+            this.fadeTimeoutId = setTimeout(_.bind(function () {
                 clearCompilerLinkedLines();
-                self.fadeTimeoutId = -1;
-            }, 5000);
-        });
+                this.fadeTimeoutId = -1;
+            }, this), 5000);
+        }, this));
 
-        this.mouseMoveThrottledFunction = _.throttle(function (e) {
-                if (e !== null && e.target !== null && self.settings.hoverShowSource === true && e.target.position !== null) {
+        this.mouseMoveThrottledFunction = _.throttle(_.bind(function (e) {
+                if (e !== null && e.target !== null && this.settings.hoverShowSource && e.target.position !== null) {
                     tryCompilerLinkLine(e.target.position.lineNumber, false);
                 }
             },
+            this),
             250
         );
 
-        this.editor.onMouseMove(function (e) {
-            self.mouseMoveThrottledFunction(e);
+        this.editor.onMouseMove(_.bind(function (e) {
+            this.mouseMoveThrottledFunction(e);
             // This can't be throttled or we can clear a timeout where we're already outside
-            if (self.fadeTimeoutId !== -1) {
-                clearTimeout(self.fadeTimeoutId);
-                self.fadeTimeoutId = -1;
+            if (this.fadeTimeoutId !== -1) {
+                clearTimeout(this.fadeTimeoutId);
+                this.fadeTimeoutId = -1;
             }
-        });
+        }, this));
 
         this.fontScale = new FontScale(this.domRoot, state, this.editor);
         this.fontScale.on('change', _.bind(this.updateState, this));
@@ -247,10 +247,10 @@ define(function (require) {
         //     this.debouncedEmitChange();
         // }, this));
 
-        function layout() {
-            var topBarHeight = self.domRoot.find(".top-bar").outerHeight(true) || 0;
-            self.editor.layout({width: self.domRoot.width(), height: self.domRoot.height() - topBarHeight});
-        }
+        var layout = _.bind(function() {
+            var topBarHeight = this.domRoot.find(".top-bar").outerHeight(true) || 0;
+            this.editor.layout({width: this.domRoot.width(), height: this.domRoot.height() - topBarHeight});
+        }, this);
 
         this.domRoot.find('.load-save').click(_.bind(function () {
             loadSave.run(_.bind(function (text) {
@@ -262,19 +262,19 @@ define(function (require) {
 
         container.on('resize', layout);
         container.on('shown', layout);
-        container.on('open', function () {
-            self.eventHub.emit('editorOpen', self.id);
-        });
-        container.on('destroy', function () {
-            self.eventHub.unsubscribe();
-            self.eventHub.emit('editorClose', self.id);
-            self.editor.dispose();
-        });
-        container.setTitle(lang + " source #" + self.id);
+        container.on('open', _.bind(function () {
+            this.eventHub.emit('editorOpen', this.id);
+        }, this));
+        container.on('destroy', _.bind(function () {
+            this.eventHub.unsubscribe();
+            this.eventHub.emit('editorClose', this.id);
+            this.editor.dispose();
+        }, this));
+        container.setTitle(lang + " source #" + this.id);
         this.container.layoutManager.on('initialised', function () {
             // Once initialized, let everyone know what text we have.
-            self.maybeEmitChange();
-        });
+            this.maybeEmitChange();
+        }, this);
 
         this.eventHub.on('compilerOpen', this.onCompilerOpen, this);
         this.eventHub.on('compilerClose', this.onCompilerClose, this);
