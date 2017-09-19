@@ -424,8 +424,11 @@ define(function (require) {
         };
         _.each(this.availableLibs, function(lib) {
             _.each(lib.versions, function(version) {
-                if (version.used)
-                    options.userArguments+= " -I" + version.path;
+                if (version.used) {
+                    _.each(version.path, function(path) {
+                        options.userArguments += " -I" + path;
+                    });
+                }
             });
         });
         this.compilerService.expand(this.source).then(_.bind(function (expanded) {
