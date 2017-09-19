@@ -142,7 +142,7 @@ define(function(require){
    
    Cfg.prototype.onCompileResult = function (id, compiler, result) {
         if (this._compilerid === id) {
-            if (result.supportCfg && !$.isEmptyObject(result.cfg)) {
+            if (result.supportsCfg && !$.isEmptyObject(result.cfg)) {
                 this.functions = result.cfg;
                 this.fnNames = Object.keys(this.functions);
                 if(!this.fnNames.includes(this.currentFunc))
@@ -206,9 +206,6 @@ define(function(require){
             });
         }
       
-    };
-
-    Cfg.prototype.updateState = function () {
     };
 
     return {

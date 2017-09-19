@@ -71,7 +71,7 @@ define(function (require) {
         this.optViewOpen = false;
         this.cfgViewOpen = false;
         this.wantOptInfo = state.wantOptInfo;
-        this.compilerSupportCfg = false;
+        this.compilerSupportsCfg = false;
         this.decorations = {};
         this.prevDecorations = [];
         this.optButton = this.domRoot.find('.btn.view-optimization');
@@ -605,7 +605,7 @@ define(function (require) {
         } else {
             compileTime.text("");
         }
-        this.compilerSupportCfg = result.supportCfg;
+        this.compilerSupportsCfg = result.supportsCfg;
         this.eventHub.emit('compileResult', this.id, this.compiler, result);
         this.updateButtons();
 
@@ -693,7 +693,7 @@ define(function (require) {
         }
         if (filters.commentOnly && filters.directives && filters.labels) {
             if (!this.cfgViewOpen) {
-                this.cfgButton.prop("disabled", !this.compilerSupportCfg);
+                this.cfgButton.prop("disabled", !this.compilerSupportsCfg);
             }else {
             this.cfgButton.prop("disabled", true);
         }
