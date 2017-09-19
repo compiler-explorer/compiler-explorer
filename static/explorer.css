@@ -154,6 +154,28 @@ pre.content {
     font-style: italic;
 }
 
+.lib-checkbox {
+    display: inline;
+}
+
+.lib-label {
+    display: inline;
+    padding: 5px 0 5px 5px;
+}
+
+.lib-list {
+    padding: 0;
+    text-align: left;
+}
+
+.lib-item {
+    list-style: none;
+}
+
+.lib-separator {
+    margin: 3px 0 3px 0;
+    padding: 0 2px 0 2px;
+}
 
 .small-v-scrollable {
     max-height: 8em;

@@ -75,6 +75,19 @@ define(function (require) {
         this.prevDecorations = [];
         this.optButton = this.domRoot.find('.btn.view-optimization');
         this.astButton = this.domRoot.find('.btn.view-ast');
+        this.libsButton = this.domRoot.find('.btn.show-libs');
+
+        this.availableLibs = $.extend(true, {}, options.libs);
+
+        _.each(state.libs, _.bind(function(lib) {
+            if (this.availableLibs[lib.name] && this.availableLibs[lib.name].versions &&
+                this.availableLibs[lib.name].versions[lib.ver]) {
+                this.availableLibs[lib.name].versions[lib.ver].used = true;
+            }
+        }, this));
+
+        if (Object.keys(this.availableLibs).length === 0) // Hide libs if there are none
+            this.domRoot.find('.show-libs').hide();
 
         this.linkedFadeTimeoutId = -1;
 
@@ -282,6 +295,81 @@ define(function (require) {
             this.compile();
         }, this));
 
+
+        var updateLibsUsed = _.bind(function() {
+            var libsList = $('<ul></ul>');
+            var onChecked = _.bind(function(e) {
+                var elem = $(e.target);
+                if (elem.prop('checked')) {
+                    libsList.find('input[name=' + elem.prop('name') + ']').prop('checked', false);
+                    elem.prop('checked', true);
+                }
+                _.each(this.availableLibs[elem.prop('data-lib')].versions, function(version) {
+                    version.used = false;
+                });
+                this.availableLibs[elem.prop('data-lib')].versions[elem.prop('data-version')].used = elem.prop('checked');
+                this.saveState();
+                this.compile();
+            }, this);
+
+
+            libsList.addClass('lib-list');
+            _.each(this.availableLibs, function(lib, libKey) {
+                _.each(lib.versions, function(version, vKey) {
+                    var checkbox = $('<input type="checkbox">')
+                        .addClass('lib-checkbox')
+                        .prop('data-lib', libKey)
+                        .prop('data-version', vKey)
+                        .prop('data-path', version.path)
+                        .prop('checked', version.used)
+                        .prop('name', libKey)
+                        .on('change', onChecked);
+                    $('<li></li>')
+                        .addClass('lib-item')
+                        .appendTo(libsList)
+                        .append(checkbox)
+                        .append($('<label></label>')
+                            .addClass('lib-label')
+                            .text(lib.name + " " + version.version)
+                            .on('click', function() {
+                                $(this).parent().find('.lib-checkbox').trigger('click');
+                            })
+                        );
+                });
+                libsList.append($('<hr>').addClass('lib-separator'));
+            });
+            return libsList;
+        }, this);
+
+        this.libsButton.popover({
+            container: 'body',
+            content: updateLibsUsed(),
+            html: true,
+            placement: 'bottom',
+            trigger: 'manual'
+        }).click(_.bind(function () {
+            this.libsButton.popover('show');
+        }, this)).on('inserted.bs.popover', function (e) {
+            $(e.target).content = updateLibsUsed().html();
+        });
+
+        // Dismiss the popover on escape.
+        $(document).on('keyup.editable', _.bind(function (e) {
+            if (e.which === 27) {
+                this.libsButton.popover("hide");
+            }
+        }, this));
+
+        // Dismiss on any click that isn't either in the opening element, inside
+        // the popover or on any alert
+        $(document).on('click', _.bind(function (e) {
+            var elem = this.libsButton;
+            var target = $(e.target);
+            if (!target.is(elem) && elem.has(target).length === 0 && target.closest('.popover').length === 0) {
+                elem.popover("hide");
+            }
+        }, this));
+
         this.saveState();
     }
 
@@ -318,6 +406,12 @@ define(function (require) {
             compilerOptions: { produceAst: this.astViewOpen, produceOptInfo: this.wantOptInfo },
             filters: this.getEffectiveFilters()
         };
+        _.each(this.availableLibs, function(lib) {
+            _.each(lib.versions, function(version) {
+                if (version.used)
+                    options.userArguments+= " -I" + version.path;
+            });
+        });
         this.compilerService.expand(this.source).then(_.bind(function (expanded) {
             var request = {
                 source: expanded || "",
@@ -593,13 +687,22 @@ define(function (require) {
     };
 
     Compiler.prototype.currentState = function () {
+        var libs = [];
+        _.each(this.availableLibs, function(library, name) {
+            _.each(library.versions, function(version, ver) {
+                if (library.versions[ver].used) {
+                    libs.push({name, ver});
+                }
+            });
+        });
         var state = {
             compiler: this.compiler ? this.compiler.id : "",
             source: this.sourceEditorId,
             options: this.options,
             // NB must *not* be effective filters
             filters: this.filters.get(),
-            wantOptInfo: this.wantOptInfo
+            wantOptInfo: this.wantOptInfo,
+            libs: libs
         };
         this.fontScale.addState(state);
         return state;
