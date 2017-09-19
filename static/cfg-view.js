@@ -95,7 +95,6 @@ define(function(require){
         
         this.eventHub.on('compileResult', this.onCompileResult, this);
         this.eventHub.on('compiler', this.onCompiler, this);
-        this.eventHub.on('compilerClose', this.onCompilerClose, this);
         //this.eventHub.on('editorChange', this.onEditorChange, this);
         this.eventHub.emit('cfgViewOpened', this._compilerid);
         this.container.on('destroy', function () {
@@ -145,7 +144,7 @@ define(function(require){
                 this.fnNames = [];
             }
             
-            this.domRoot.find(".function-picker")[0].selectize.destroy();
+            this.select[0].selectize.destroy();
             var self = this;//stays until investigation
             this.select = this.domRoot.find(".function-picker").selectize({
                 sortField: 'name',
@@ -177,9 +176,6 @@ define(function(require){
         }
     };
 
-    Cfg.prototype.onCompilerClose = function (id) {
-        delete this.compilers[id];
-    };
     
     Cfg.prototype.onFunctionChange = function (functions, name) {
 
