@@ -185,7 +185,15 @@ function ClientOptionsHandler(fileSources) {
                 _.each(listedVersions.split(':'), function (version) {
                     libs[lib].versions[version] = {};
                     libs[lib].versions[version].version = compilerProps("libs." + lib + '.versions.' + version + '.version');
-                    libs[lib].versions[version].path = compilerProps("libs." + lib + '.versions.' + version + '.path');
+                    libs[lib].versions[version].path = [];
+                    var listedIncludes = compilerProps("libs." + lib + '.versions.' + version + '.path');
+                    if (listedIncludes) {
+                        _.each(listedIncludes.split(':'), function(path) {
+                            libs[lib].versions[version].path.push(path);
+                        });
+                    } else {
+                        logger.warn("No paths found for " + lib + " version " + version);
+                    }
                 });
             } else {
                 logger.warn("No versions found for " + lib + " library");
