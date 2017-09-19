@@ -85,9 +85,6 @@ define(function (require) {
             }
         }, this));
 
-        if (Object.keys(this.availableLibs).length === 0) // Hide libs if there are none
-            this.domRoot.find('.show-libs').hide();
-
         this.linkedFadeTimeoutId = -1;
 
         this.domRoot.find(".compiler-picker").selectize({
@@ -297,6 +294,22 @@ define(function (require) {
 
 
         var updateLibsUsed = _.bind(function() {
+            if (Object.keys(this.availableLibs).length === 0) {
+                return $('<p></p>')
+                    .text("No libs configured for this language yet. ")
+                    .append($('<a></a>')
+                        .attr("target", "_blank")
+                        .attr("rel", "noopener noreferrer")
+                        .attr("href", "https://github.com/mattgodbolt/compiler-explorer/issues/new")
+                        .text("You can suggest us one at any time ")
+                        .append($('<sup></sup>')
+                            .addClass("glyphicon glyphicon-new-window")
+                            .width("16px")
+                            .height("16px")
+                            .attr("title", "Opens in a new window")
+                        )
+                );
+            }
             var libsList = $('<ul></ul>');
             var onChecked = _.bind(function(e) {
                 var elem = $(e.target);
@@ -325,7 +338,6 @@ define(function (require) {
                         .addClass('lib-checkbox')
                         .prop('data-lib', libKey)
                         .prop('data-version', vKey)
-                        .prop('data-path', version.path)
                         .prop('checked', version.used)
                         .prop('name', libKey)
                         .on('change', onChecked);
