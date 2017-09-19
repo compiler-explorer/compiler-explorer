@@ -33,23 +33,16 @@ define(function(require){
    
     require('asm-mode');
     require('selectize');
-    
-   
    
    function Cfg(hub, container, state){
         this.container = container;
         this.eventHub = hub.createEventHub();
         this.domRoot = container.getElement();
-        
         this.domRoot.html($('#cfg').html());
         this.functions = state.cfgResult;
         this.defaultCfgOuput = {'nodes': [{id: 0, label: 'No Output'}], 'edges': []};
-        
         this.fnNames = this.functions? Object.keys(this.functions):  "no function";
         this. currentFunc = this.fnNames.length? this.fnNames[0]: "";
-             
-        this.compilers = {};
-        
         
         this.networkOpts = {
             autoResize: true,
@@ -86,13 +79,10 @@ define(function(require){
                     bindToWindow: true
                 }
             }
-
-
         };
         
         this.cfgVisualiser = new vis.Network(this.domRoot.find(".graph-placeholder")[0], 
                                              this.defaultCfgOuput, this.networkOpts);
-        
         this.restButton = this.domRoot.find(".show-hide-btn")
                 .on('click', _.bind(function(event){
                     this.networkOpts.interaction.navigationButtons = !this.networkOpts.interaction.navigationButtons;
@@ -121,11 +111,8 @@ define(function(require){
             }
             return options;
         };
-        
-        
-        
+        //self stays until 
         var self = this;
-        
         this.select = this.domRoot.find(".function-picker").selectize({
             sortField: 'name',
             valueField: 'name',
@@ -145,14 +132,12 @@ define(function(require){
             if (result.supportsCfg && !$.isEmptyObject(result.cfg)) {
                 this.functions = result.cfg;
                 this.fnNames = Object.keys(this.functions);
-                if(!this.fnNames.includes(this.currentFunc))
+                if(this.fnNames.indexOf(this.currentFunc) === -1)
                     this.currentFunc = this.fnNames[0];
                 this.showCfgResults({
                     'nodes': this.functions[this.currentFunc].nodes,
                     'edges': this.functions[this.currentFunc].edges
                 });
-                
-
                 
             } else {
                 this.showCfgResults(this.defaultCfgOuput);
@@ -161,7 +146,7 @@ define(function(require){
             }
             
             this.domRoot.find(".function-picker")[0].selectize.destroy();
-            var self = this;
+            var self = this;//stays until investigation
             this.select = this.domRoot.find(".function-picker").selectize({
                 sortField: 'name',
                 valueField: 'name',
@@ -179,7 +164,6 @@ define(function(require){
    Cfg.prototype.setTitle = function () {
           this.container.setTitle(this._compilerName + " Graph Viewer (Editor #" + this._editorid + ", Compiler #" + this._compilerid + ")");
     };
-
 
     Cfg.prototype.showCfgResults = function(data) {
         this.cfgVisualiser.setData(data);
@@ -204,8 +188,7 @@ define(function(require){
                 'nodes': functions[name].nodes,
                 'edges': functions[name].edges
             });
-        }
-      
+        }      
     };
 
     return {
