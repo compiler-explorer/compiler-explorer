@@ -29,79 +29,79 @@
   },
   {
     "text": "        push r29",
-    "source": 1
+    "source": {"file": null, "line": 1}
   },
   {
     "text": "        push r28",
-    "source": 1
+    "source": {"file": null, "line": 1}
   },
   {
     "text": "        in r28,__SP_L__",
-    "source": 1
+    "source": {"file": null, "line": 1}
   },
   {
     "text": "        in r29,__SP_H__",
-    "source": 1
+    "source": {"file": null, "line": 1}
   },
   {
     "text": "        sbiw r28,8",
-    "source": 1
+    "source": {"file": null, "line": 1}
   },
   {
     "text": "        in __tmp_reg__,__SREG__",
-    "source": 1
+    "source": {"file": null, "line": 1}
   },
   {
     "text": "        cli",
-    "source": 1
+    "source": {"file": null, "line": 1}
   },
   {
     "text": "        out __SP_H__,r29",
-    "source": 1
+    "source": {"file": null, "line": 1}
   },
   {
     "text": "        out __SREG__,__tmp_reg__",
-    "source": 1
+    "source": {"file": null, "line": 1}
   },
   {
     "text": "        out __SP_L__,r28",
-    "source": 1
+    "source": {"file": null, "line": 1}
   },
   {
     "text": "        std Y+6,r25",
-    "source": 1
+    "source": {"file": null, "line": 1}
   },
   {
     "text": "        std Y+5,r24",
-    "source": 1
+    "source": {"file": null, "line": 1}
   },
   {
     "text": "        std Y+8,r23",
-    "source": 1
+    "source": {"file": null, "line": 1}
   },
   {
     "text": "        std Y+7,r22",
-    "source": 1
+    "source": {"file": null, "line": 1}
   },
   {
     "text": "        std Y+2,__zero_reg__",
-    "source": 2
+    "source": {"file": null, "line": 2}
   },
   {
     "text": "        std Y+1,__zero_reg__",
-    "source": 2
+    "source": {"file": null, "line": 2}
   },
   {
     "text": "        std Y+4,__zero_reg__",
-    "source": 3
+    "source": {"file": null, "line": 3}
   },
   {
     "text": "        std Y+3,__zero_reg__",
-    "source": 3
+    "source": {"file": null, "line": 3}
   },
   {
     "text": "        rjmp .L2",
-    "source": 3
+    "source": {"file": null, "line": 3}
   },
   {
     "text": ".L4:",
@@ -109,95 +109,95 @@
   },
   {
     "text": "        ldd r24,Y+3",
-    "source": 4
+    "source": {"file": null, "line": 4}
   },
   {
     "text": "        ldd r25,Y+4",
-    "source": 4
+    "source": {"file": null, "line": 4}
   },
   {
     "text": "        lsl r24",
-    "source": 4
+    "source": {"file": null, "line": 4}
   },
   {
     "text": "        rol r25",
-    "source": 4
+    "source": {"file": null, "line": 4}
   },
   {
     "text": "        ldd r18,Y+5",
-    "source": 4
+    "source": {"file": null, "line": 4}
   },
   {
     "text": "        ldd r19,Y+6",
-    "source": 4
+    "source": {"file": null, "line": 4}
   },
   {
     "text": "        add r24,r18",
-    "source": 4
+    "source": {"file": null, "line": 4}
   },
   {
     "text": "        adc r25,r19",
-    "source": 4
+    "source": {"file": null, "line": 4}
   },
   {
     "text": "        mov r30,r24",
-    "source": 4
+    "source": {"file": null, "line": 4}
   },
   {
     "text": "        mov r31,r25",
-    "source": 4
+    "source": {"file": null, "line": 4}
   },
   {
     "text": "        ld r24,Z",
-    "source": 4
+    "source": {"file": null, "line": 4}
   },
   {
     "text": "        ldd r25,Z+1",
-    "source": 4
+    "source": {"file": null, "line": 4}
   },
   {
     "text": "        ldd r18,Y+1",
-    "source": 4
+    "source": {"file": null, "line": 4}
   },
   {
     "text": "        ldd r19,Y+2",
-    "source": 4
+    "source": {"file": null, "line": 4}
   },
   {
     "text": "        add r24,r18",
-    "source": 4
+    "source": {"file": null, "line": 4}
   },
   {
     "text": "        adc r25,r19",
-    "source": 4
+    "source": {"file": null, "line": 4}
   },
   {
     "text": "        std Y+2,r25",
-    "source": 4
+    "source": {"file": null, "line": 4}
   },
   {
     "text": "        std Y+1,r24",
-    "source": 4
+    "source": {"file": null, "line": 4}
   },
   {
     "text": "        ldd r24,Y+3",
-    "source": 3
+    "source": {"file": null, "line": 3}
   },
   {
     "text": "        ldd r25,Y+4",
-    "source": 3
+    "source": {"file": null, "line": 3}
   },
   {
     "text": "        adiw r24,1",
-    "source": 3
+    "source": {"file": null, "line": 3}
   },
   {
     "text": "        std Y+4,r25",
-    "source": 3
+    "source": {"file": null, "line": 3}
   },
   {
     "text": "        std Y+3,r24",
-    "source": 3
+    "source": {"file": null, "line": 3}
   },
   {
     "text": ".L2:",
@@ -205,39 +205,39 @@
   },
   {
     "text": "        ldi r20,lo8(1)",
-    "source": 3
+    "source": {"file": null, "line": 3}
   },
   {
     "text": "        ldd r18,Y+3",
-    "source": 3
+    "source": {"file": null, "line": 3}
   },
   {
     "text": "        ldd r19,Y+4",
-    "source": 3
+    "source": {"file": null, "line": 3}
   },
   {
     "text": "        ldd r24,Y+7",
-    "source": 3
+    "source": {"file": null, "line": 3}
   },
   {
     "text": "        ldd r25,Y+8",
-    "source": 3
+    "source": {"file": null, "line": 3}
   },
   {
     "text": "        cp r18,r24",
-    "source": 3
+    "source": {"file": null, "line": 3}
   },
   {
     "text": "        cpc r19,r25",
-    "source": 3
+    "source": {"file": null, "line": 3}
   },
   {
     "text": "        brlt .L3",
-    "source": 3
+    "source": {"file": null, "line": 3}
   },
   {
     "text": "        ldi r20,lo8(0)",
-    "source": 3
+    "source": {"file": null, "line": 3}
   },
   {
     "text": ".L3:",
@@ -245,55 +245,55 @@
   },
   {
     "text": "        tst r20",
-    "source": 3
+    "source": {"file": null, "line": 3}
   },
   {
     "text": "        brne .L4",
-    "source": 3
+    "source": {"file": null, "line": 3}
   },
   {
     "text": "        ldd r24,Y+1",
-    "source": 6
+    "source": {"file": null, "line": 6}
   },
   {
     "text": "        ldd r25,Y+2",
-    "source": 6
+    "source": {"file": null, "line": 6}
   },
   {
     "text": "        adiw r28,8",
-    "source": 7
+    "source": {"file": null, "line": 7}
   },
   {
     "text": "        in __tmp_reg__,__SREG__",
-    "source": 7
+    "source": {"file": null, "line": 7}
   },
   {
     "text": "        cli",
-    "source": 7
+    "source": {"file": null, "line": 7}
   },
   {
     "text": "        out __SP_H__,r29",
-    "source": 7
+    "source": {"file": null, "line": 7}
   },
   {
     "text": "        out __SREG__,__tmp_reg__",
-    "source": 7
+    "source": {"file": null, "line": 7}
   },
   {
     "text": "        out __SP_L__,r28",
-    "source": 7
+    "source": {"file": null, "line": 7}
   },
   {
     "text": "        pop r28",
-    "source": 7
+    "source": {"file": null, "line": 7}
   },
   {
     "text": "        pop r29",
-    "source": 7
+    "source": {"file": null, "line": 7}
   },
   {
     "text": "        ret",
-    "source": 7
+    "source": {"file": null, "line": 7}
   },
   {
     "text": "",

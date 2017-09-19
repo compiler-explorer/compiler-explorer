@@ -10,13 +10,19 @@
       "b538"
     ],
     "address": 0,
-    "source": null,
+    "source": {
+      "file": null,
+      "line": 3
+    },
     "text": "        push        {r3-r5,lr}"
   },
   {
     "opcodes": [],
     "address": 2,
-    "source": null,
+    "source": {
+      "file": null,
+      "line": 3
+    },
     "text": "        |$M22|"
   },
   {
@@ -24,7 +30,10 @@
       "4605"
     ],
     "address": 2,
-    "source": null,
+    "source": {
+      "file": null,
+      "line": 3
+    },
     "text": "        mov         r5,r0"
   },
   {
@@ -32,7 +41,10 @@
       "2001"
     ],
     "address": 4,
-    "source": null,
+    "source": {
+      "file": null,
+      "line": 4
+    },
     "text": "        movs        r0,#1"
   },
   {
@@ -40,7 +52,10 @@
       "2400"
     ],
     "address": 6,
-    "source": null,
+    "source": {
+      "file": null,
+      "line": 5
+    },
     "text": "        movs        r4,#0"
   },
   {
@@ -49,7 +64,10 @@
       "5b90"
     ],
     "address": 8,
-    "source": null,
+    "source": {
+      "file": null,
+      "line": 5
+    },
     "text": "        vdup.32     q10,r5"
   },
   {
@@ -57,7 +75,10 @@
       "2900"
     ],
     "address": 12,
-    "source": null,
+    "source": {
+      "file": null,
+      "line": 5
+    },
     "text": "        cmp         r1,#0"
   },
   {
@@ -65,7 +86,10 @@
       "dd2b"
     ],
     "address": 14,
-    "source": null,
+    "source": {
+      "file": null,
+      "line": 5
+    },
     "text": "        ble         |$LN18@moose|"
   },
   {
@@ -73,7 +97,10 @@
       "2908"
     ],
     "address": 16,
-    "source": null,
+    "source": {
+      "file": null,
+      "line": 5
+    },
     "text": "        cmp         r1,#8"
   },
   {
@@ -81,7 +108,10 @@
       "d321"
     ],
     "address": 18,
-    "source": null,
+    "source": {
+      "file": null,
+      "line": 5
+    },
     "text": "        bcc         |$LN11@moose|"
   },
   {
@@ -89,7 +119,10 @@
       "108b"
     ],
     "address": 20,
-    "source": null,
+    "source": {
+      "file": null,
+      "line": 5
+    },
     "text": "        asrs        r3,r1,#2"
   },
   {
@@ -98,7 +131,10 @@
       "7353"
     ],
     "address": 22,
-    "source": null,
+    "source": {
+      "file": null,
+      "line": 5
+    },
     "text": "        add         r3,r1,r3,lsr #0x1D"
   },
   {
@@ -106,7 +142,10 @@
       "10db"
     ],
     "address": 26,
-    "source": null,
+    "source": {
+      "file": null,
+      "line": 5
+    },
     "text": "        asrs        r3,r3,#3"
   },
   {
@@ -115,7 +154,10 @@
       "03c3"
     ],
     "address": 28,
-    "source": null,
+    "source": {
+      "file": null,
+      "line": 5
+    },
     "text": "        sub         r3,r1,r3,lsl #3"
   },
   {
@@ -124,7 +166,10 @@
       "0e70"
     ],
     "address": 32,
-    "source": null,
+    "source": {
+      "file": null,
+      "line": 5
+    },
     "text": "        vmov.i64    q8,#0"
   },
   {
@@ -132,7 +177,10 @@
       "1acb"
     ],
     "address": 36,
-    "source": null,
+    "source": {
+      "file": null,
+      "line": 5
+    },
     "text": "        subs        r3,r1,r3"
   },
   {
@@ -141,7 +189,10 @@
       "21f0"
     ],
     "address": 38,
-    "source": null,
+    "source": {
+      "file": null,
+      "line": 5
+    },
     "text": "        vmov        q9,q8"
   },
   {
@@ -150,13 +201,19 @@
       "49f4"
     ],
     "address": 42,
-    "source": null,
+    "source": {
+      "file": null,
+      "line": 5
+    },
     "text": "        vmul.i32    q10,q10,q10"
   },
   {
     "opcodes": [],
     "address": 46,
-    "source": null,
+    "source": {
+      "file": null,
+      "line": 5
+    },
     "text": "        |$LL4@moose|"
   },
   {
@@ -164,7 +221,10 @@
       "3408"
     ],
     "address": 46,
-    "source": null,
+    "source": {
+      "file": null,
+      "line": 5
+    },
     "text": "        adds        r4,r4,#8"
   },
   {
@@ -172,7 +232,10 @@
       "429c"
     ],
     "address": 48,
-    "source": null,
+    "source": {
+      "file": null,
+      "line": 5
+    },
     "text": "        cmp         r4,r3"
   },
   {
@@ -181,7 +244,10 @@
       "08e0"
     ],
     "address": 50,
-    "source": null,
+    "source": {
+      "file": null,
+      "line": 5
+    },
     "text": "        vadd.i32    q8,q10,q8"
   },
   {
@@ -190,7 +256,10 @@
       "28e2"
     ],
     "address": 54,
-    "source": null,
+    "source": {
+      "file": null,
+      "line": 5
+    },
     "text": "        vadd.i32    q9,q10,q9"
   },
   {
@@ -198,7 +267,10 @@
       "dbf8"
     ],
     "address": 58,
-    "source": null,
+    "source": {
+      "file": null,
+      "line": 5
+    },
     "text": "        blt         |$LL4@moose|"
   },
   {
@@ -207,7 +279,10 @@
       "08e0"
     ],
     "address": 60,
-    "source": null,
+    "source": {
+      "file": null,
+      "line": 5
+    },
     "text": "        vadd.i32    q8,q9,q8"
   },
   {
@@ -216,7 +291,10 @@
       "2b90"
     ],
     "address": 64,
-    "source": null,
+    "source": {
+      "file": null,
+      "line": 5
+    },
     "text": "        vmov.32     r2,d17[1]"
   },
   {
@@ -225,7 +303,10 @@
       "3b90"
     ],
     "address": 68,
-    "source": null,
+    "source": {
+      "file": null,
+      "line": 5
+    },
     "text": "        vmov.32     r3,d17[0]"
   },
   {
@@ -233,7 +314,10 @@
       "441a"
     ],
     "address": 72,
-    "source": null,
+    "source": {
+      "file": null,
+      "line": 5
+    },
     "text": "        add         r2,r2,r3"
   },
   {
@@ -242,7 +326,10 @@
       "3b90"
     ],
     "address": 74,
-    "source": null,
+    "source": {
+      "file": null,
+      "line": 5
+    },
     "text": "        vmov.32     r3,d16[1]"
   },
   {
@@ -250,7 +337,10 @@
       "441a"
     ],
     "address": 78,
-    "source": null,
+    "source": {
+      "file": null,
+      "line": 5
+    },
     "text": "        add         r2,r2,r3"
   },
   {
@@ -259,7 +349,10 @@
       "3b90"
     ],
     "address": 80,
-    "source": null,
+    "source": {
+      "file": null,
+      "line": 5
+    },
     "text": "        vmov.32     r3,d16[0]"
   },
   {
@@ -267,7 +360,10 @@
       "4413"
     ],
     "address": 84,
-    "source": null,
+    "source": {
+      "file": null,
+      "line": 5
+    },
     "text": "        add         r3,r3,r2"
   },
   {
@@ -275,13 +371,19 @@
       "1c58"
     ],
     "address": 86,
-    "source": null,
+    "source": {
+      "file": null,
+      "line": 5
+    },
     "text": "        adds        r0,r3,#1"
   },
   {
     "opcodes": [],
     "address": 88,
-    "source": null,
+    "source": {
+      "file": null,
+      "line": 5
+    },
     "text": "        |$LN11@moose|"
   },
   {
@@ -289,7 +391,10 @@
       "428c"
     ],
     "address": 88,
-    "source": null,
+    "source": {
+      "file": null,
+      "line": 5
+    },
     "text": "        cmp         r4,r1"
   },
   {
@@ -297,7 +402,10 @@
       "da04"
     ],
     "address": 90,
-    "source": null,
+    "source": {
+      "file": null,
+      "line": 5
+    },
     "text": "        bge         |$LN17@moose|"
   },
   {
@@ -305,7 +413,10 @@
       "1b0b"
     ],
     "address": 92,
-    "source": null,
+    "source": {
+      "file": null,
+      "line": 5
+    },
     "text": "        subs        r3,r1,r4"
   },
   {
@@ -314,7 +425,10 @@
       "f305"
     ],
     "address": 94,
-    "source": null,
+    "source": {
+      "file": null,
+      "line": 5
+    },
     "text": "        mul         r3,r3,r5"
   },
   {
@@ -323,19 +437,28 @@
       "0005"
     ],
     "address": 98,
-    "source": null,
+    "source": {
+      "file": null,
+      "line": 5
+    },
     "text": "        mla         r0,r3,r5,r0"
   },
   {
     "opcodes": [],
     "address": 102,
-    "source": null,
+    "source": {
+      "file": null,
+      "line": 5
+    },
     "text": "        |$LN17@moose|"
   },
   {
     "opcodes": [],
     "address": 102,
-    "source": null,
+    "source": {
+      "file": null,
+      "line": 5
+    },
     "text": "        |$M20|"
   },
   {
@@ -343,19 +466,28 @@
       "bd38"
     ],
     "address": 102,
-    "source": null,
+    "source": {
+      "file": null,
+      "line": 8
+    },
     "text": "        pop         {r3-r5,pc}"
   },
   {
     "opcodes": [],
     "address": 104,
-    "source": null,
+    "source": {
+      "file": null,
+      "line": 8
+    },
     "text": "        |$LN18@moose|"
   },
   {
     "opcodes": [],
     "address": 104,
-    "source": null,
+    "source": {
+      "file": null,
+      "line": 8
+    },
     "text": "        |$M21|"
   },
   {
@@ -363,13 +495,19 @@
       "bd38"
     ],
     "address": 104,
-    "source": null,
+    "source": {
+      "file": null,
+      "line": 8
+    },
     "text": "        pop         {r3-r5,pc}"
   },
   {
     "opcodes": [],
     "address": 106,
-    "source": null,
+    "source": {
+      "file": null,
+      "line": 8
+    },
     "text": "        |$M23|"
   },
   {
@@ -388,13 +526,19 @@
       "f000"
     ],
     "address": 0,
-    "source": null,
+    "source": {
+      "file": null,
+      "line": 1
+    },
     "text": "        mul         r0,r0,r0"
   },
   {
     "opcodes": [],
     "address": 4,
-    "source": null,
+    "source": {
+      "file": null,
+      "line": 1
+    },
     "text": "        |$M4|"
   },
   {
@@ -402,7 +546,10 @@
       "4770"
     ],
     "address": 4,
-    "source": null,
+    "source": {
+      "file": null,
+      "line": 1
+    },
     "text": "        bx          lr"
   },
   {

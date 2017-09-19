@@ -16,95 +16,95 @@
     "text": "regexTest PROC"
   },
   {
-    "source": 5,
+    "source": {"file": null, "line": 5},
     "text": "        sub      rsp, 120   ; 00000078H"
   },
   {
-    "source": 5,
+    "source": {"file": null, "line": 5},
     "text": "        mov      rax, QWORD PTR __security_cookie"
   },
   {
-    "source": 5,
+    "source": {"file": null, "line": 5},
     "text": "        xor      rax, rsp"
   },
   {
-    "source": 5,
+    "source": {"file": null, "line": 5},
     "text": "        mov      QWORD PTR __$ArrayPad$[rsp], rax"
   },
   {
-    "source": 6,
+    "source": {"file": null, "line": 6},
     "text": "        lea      rdx, OFFSET FLAT:$SG44257"
   },
   {
-    "source": 6,
+    "source": {"file": null, "line": 6},
     "text": "        lea      rcx, QWORD PTR s$[rsp]"
   },
   {
-    "source": 6,
+    "source": {"file": null, "line": 6},
     "text": "        call     std::basic_string<char,std::char_traits<char>,std::allocator<char> >::basic_string<char,std::char_traits<char>,std::allocator<char> >"
   },
   {
-    "source": 9,
+    "source": {"file": null, "line": 9},
     "text": "        mov      edx, 256   ; 00000100H"
   },
   {
-    "source": 9,
+    "source": {"file": null, "line": 9},
     "text": "        mov      ecx, 1"
   },
   {
-    "source": 9,
+    "source": {"file": null, "line": 9},
     "text": "        call     std::regex_constants::operator|"
   },
   {
-    "source": 9,
+    "source": {"file": null, "line": 9},
     "text": "        mov      r8d, eax"
   },
   {
-    "source": 9,
+    "source": {"file": null, "line": 9},
     "text": "        lea      rdx, OFFSET FLAT:$SG44258"
   },
   {
-    "source": 9,
+    "source": {"file": null, "line": 9},
     "text": "        lea      rcx, QWORD PTR self_regex$[rsp]"
   },
   {
-    "source": 9,
+    "source": {"file": null, "line": 9},
     "text": "        call     std::basic_regex<char,std::regex_traits<char> >::basic_regex<char,std::regex_traits<char> >"
   },
   {
-    "source": 11,
+    "source": {"file": null, "line": 11},
     "text": "        lea      rcx, QWORD PTR self_regex$[rsp]"
   },
   {
-    "source": 11,
+    "source": {"file": null, "line": 11},
     "text": "        call     std::basic_regex<char,std::regex_traits<char> >::~basic_regex<char,std::regex_traits<char> >"
   },
   {
-    "source": 11,
+    "source": {"file": null, "line": 11},
     "text": "        lea      rcx, QWORD PTR s$[rsp]"
   },
   {
-    "source": 11,
+    "source": {"file": null, "line": 11},
     "text": "        call     std::basic_string<char,std::char_traits<char>,std::allocator<char> >::~basic_string<char,std::char_traits<char>,std::allocator<char> >"
   },
   {
-    "source": 11,
+    "source": {"file": null, "line": 11},
     "text": "        mov      rcx, QWORD PTR __$ArrayPad$[rsp]"
   },
   {
-    "source": 11,
+    "source": {"file": null, "line": 11},
     "text": "        xor      rcx, rsp"
   },
   {
-    "source": 11,
+    "source": {"file": null, "line": 11},
     "text": "        call     __security_check_cookie"
   },
   {
-    "source": 11,
+    "source": {"file": null, "line": 11},
     "text": "        add      rsp, 120   ; 00000078H"
   },
   {
-    "source": 11,
+    "source": {"file": null, "line": 11},
     "text": "        ret      0"
   },
   {

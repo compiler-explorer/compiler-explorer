@@ -52,6 +52,7 @@ var opts = nopt({
     'debug': [Boolean],
     'static': [String],
     'archivedVersions': [String],
+    'noRemoteFetch': [Boolean]
 });
 
 if (opts.debug) logger.level = 'debug';
@@ -66,6 +67,8 @@ var staticDir = opts.static || 'static';
 var archivedVersions = opts.archivedVersions;
 var gitReleaseName = child_process.execSync('git rev-parse HEAD').toString().trim();
 var versionedRootPrefix = "";
+// Don't treat @ in paths as remote adresses
+var fetchCompilersFromRemote = !opts.noRemoteFetch;
 if (opts.static && fs.existsSync(opts.static + '/v/' + gitReleaseName))
     versionedRootPrefix = "v/" + gitReleaseName + "/";
 
@@ -169,6 +172,26 @@ function ClientOptionsHandler(fileSources) {
     }));
     var supportsBinary = !!compilerProps("supportsBinary", true);
     var supportsExecute = supportsBinary && !!compilerProps("supportsExecute", true);
+    var libs = {};
+
+    var baseLibs = compilerProps("libs");
+
+    if (baseLibs) {
+        _.each(baseLibs.split(':'),function (lib) {
+            libs[lib] = {name: compilerProps('libs.' + lib + '.name')};
+            libs[lib].versions = {};
+            var listedVersions = compilerProps("libs." + lib + '.versions');
+            if (listedVersions) {
+                _.each(listedVersions.split(':'), function (version) {
+                    libs[lib].versions[version] = {};
+                    libs[lib].versions[version].version = compilerProps("libs." + lib + '.versions.' + version + '.version');
+                    libs[lib].versions[version].path = compilerProps("libs." + lib + '.versions.' + version + '.path');
+                });
+            } else {
+                logger.warn("No versions found for " + lib + " library");
+            }
+        });
+    }
     var options = {
         googleAnalyticsAccount: gccProps('clientGoogleAnalyticsAccount', 'UA-55180-6'),
         googleAnalyticsEnabled: gccProps('clientGoogleAnalyticsEnabled', false),
@@ -179,6 +202,7 @@ function ClientOptionsHandler(fileSources) {
         defaultSource: gccProps('defaultSource', ''),
         language: language,
         compilers: [],
+        libs: libs,
         sourceExtension: compilerProps('compileFilename').split('.', 2)[1],
         defaultCompiler: compilerProps('defaultCompiler', ''),
         compileOptions: compilerProps('defaultOptions', ''),
@@ -189,7 +213,9 @@ function ClientOptionsHandler(fileSources) {
         raven: gccProps('ravenUrl', ''),
         release: gitReleaseName,
         environment: env,
-        localStoragePrefix: gccProps('localStoragePrefix')
+        localStoragePrefix: gccProps('localStoragePrefix'),
+        cvCompilerCountMax: gccProps('cvCompilerCountMax', 6),
+        defaultFontScale: gccProps('defaultFontScale', 1.0)
     };
     this.setCompilers = function (compilers) {
         options.compilers = compilers;
@@ -255,7 +281,6 @@ function retryPromise(promiseFunc, name, maxFails, retryMs) {
         doit();
     });
 }
-
 
 function findCompilers() {
     var exes = compilerProps("compilers", "/usr/bin/g++").split(":");
@@ -335,7 +360,8 @@ function findCompilers() {
     }
 
     function compilerConfigFor(name, parentProps) {
-        var base = "compiler." + name;
+        const base = "compiler." + name,
+            exe = compilerProps(base + ".exe", name);
 
         function props(name, def) {
             return parentProps(base + "." + name, parentProps(name, def));
@@ -345,7 +371,7 @@ function findCompilers() {
         var supportsExecute = supportsBinary && !!props("supportsExecute", true);
         var compilerInfo = {
             id: name,
-            exe: compilerProps(base + ".exe", name),
+            exe: exe,
             name: props("name", name),
             alias: props("alias"),
             options: props("options"),
@@ -365,7 +391,7 @@ function findCompilers() {
     }
 
     function recurseGetCompilers(name, parentProps) {
-        if (name.indexOf("@") !== -1) {
+        if (fetchCompilersFromRemote && name.indexOf("@") !== -1) {
             var bits = name.split("@");
             var host = bits[0];
             var port = parseInt(bits[1]);
@@ -375,6 +401,9 @@ function findCompilers() {
             var groupName = name.substr(1);
 
             var props = function (name, def) {
+                if (name === "group") {
+                    return groupName;
+                }
                 return compilerProps("group." + groupName + "." + name, parentProps(name, def));
             };
 

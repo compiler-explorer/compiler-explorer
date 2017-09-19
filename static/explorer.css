@@ -106,21 +106,22 @@ input.options {
 }
 
 .address {
-    width: 5em;
-    font-size: smaller;
-    text-align: left;
-    display: inline-block;
+    display: inline;
 }
 
 .opcodes {
-    width: 6em;
-    font-size: smaller;
-    text-align: left;
-    display: inline-block;
+    display: inline;
 }
 
 .opcode {
     margin-right: 0.2em;
+}
+
+.binary-side {
+    font-size: xx-small;
+    text-align: left;
+    float: left;
+    clear: none;
 }
 
 .highlighted {
@@ -153,6 +154,28 @@ pre.content {
     font-style: italic;
 }
 
+.lib-checkbox {
+    display: inline;
+}
+
+.lib-label {
+    display: inline;
+    padding: 5px 0 5px 5px;
+}
+
+.lib-list {
+    padding: 0;
+    text-align: left;
+}
+
+.lib-item {
+    list-style: none;
+}
+
+.lib-separator {
+    margin: 3px 0 3px 0;
+    padding: 0 2px 0 2px;
+}
 
 .small-v-scrollable {
     max-height: 8em;
@@ -199,4 +222,9 @@ pre.content {
 .opt-decoration {
 	width: 8px !important;
 	left: 3px;
+}
+
+.compiler-list {
+    display: block;
+    overflow: auto;
 }

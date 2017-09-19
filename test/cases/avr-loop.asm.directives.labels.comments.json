@@ -29,47 +29,47 @@
   },
   {
     "text": "        push r29",
-    "source": 2
+    "source": {"file": null, "line": 2}
   },
   {
     "text": "        push r28",
-    "source": 2
+    "source": {"file": null, "line": 2}
   },
   {
     "text": "        rcall .",
-    "source": 2
+    "source": {"file": null, "line": 2}
   },
   {
     "text": "        rcall .",
-    "source": 2
+    "source": {"file": null, "line": 2}
   },
   {
     "text": "        in r28,__SP_L__",
-    "source": 2
+    "source": {"file": null, "line": 2}
   },
   {
     "text": "        in r29,__SP_H__",
-    "source": 2
+    "source": {"file": null, "line": 2}
   },
   {
     "text": "        std Y+2,__zero_reg__",
-    "source": 3
+    "source": {"file": null, "line": 3}
   },
   {
     "text": "        std Y+1,__zero_reg__",
-    "source": 3
+    "source": {"file": null, "line": 3}
   },
   {
     "text": "        std Y+4,__zero_reg__",
-    "source": 4
+    "source": {"file": null, "line": 4}
   },
   {
     "text": "        std Y+3,__zero_reg__",
-    "source": 4
+    "source": {"file": null, "line": 4}
   },
   {
     "text": "        rjmp .L2",
-    "source": 4
+    "source": {"file": null, "line": 4}
   },
   {
     "text": ".L4:",
@@ -77,51 +77,51 @@
   },
   {
     "text": "        rcall bar()",
-    "source": 5
+    "source": {"file": null, "line": 5}
   },
   {
     "text": "        ldd r18,Y+1",
-    "source": 5
+    "source": {"file": null, "line": 5}
   },
   {
     "text": "        ldd r19,Y+2",
-    "source": 5
+    "source": {"file": null, "line": 5}
   },
   {
     "text": "        add r24,r18",
-    "source": 5
+    "source": {"file": null, "line": 5}
   },
   {
     "text": "        adc r25,r19",
-    "source": 5
+    "source": {"file": null, "line": 5}
   },
   {
     "text": "        std Y+2,r25",
-    "source": 5
+    "source": {"file": null, "line": 5}
   },
   {
     "text": "        std Y+1,r24",
-    "source": 5
+    "source": {"file": null, "line": 5}
   },
   {
     "text": "        ldd r24,Y+3",
-    "source": 4
+    "source": {"file": null, "line": 4}
   },
   {
     "text": "        ldd r25,Y+4",
-    "source": 4
+    "source": {"file": null, "line": 4}
   },
   {
     "text": "        adiw r24,1",
-    "source": 4
+    "source": {"file": null, "line": 4}
   },
   {
     "text": "        std Y+4,r25",
-    "source": 4
+    "source": {"file": null, "line": 4}
   },
   {
     "text": "        std Y+3,r24",
-    "source": 4
+    "source": {"file": null, "line": 4}
   },
   {
     "text": ".L2:",
@@ -129,31 +129,31 @@
   },
   {
     "text": "        ldi r18,lo8(1)",
-    "source": 4
+    "source": {"file": null, "line": 4}
   },
   {
     "text": "        ldd r24,Y+3",
-    "source": 4
+    "source": {"file": null, "line": 4}
   },
   {
     "text": "        ldd r25,Y+4",
-    "source": 4
+    "source": {"file": null, "line": 4}
   },
   {
     "text": "        cpi r24,100",
-    "source": 4
+    "source": {"file": null, "line": 4}
   },
   {
     "text": "        cpc r25,__zero_reg__",
-    "source": 4
+    "source": {"file": null, "line": 4}
   },
   {
     "text": "        brlt .L3",
-    "source": 4
+    "source": {"file": null, "line": 4}
   },
   {
     "text": "        ldi r18,lo8(0)",
-    "source": 4
+    "source": {"file": null, "line": 4}
   },
   {
     "text": ".L3:",
@@ -161,47 +161,47 @@
   },
   {
     "text": "        tst r18",
-    "source": 4
+    "source": {"file": null, "line": 4}
   },
   {
     "text": "        brne .L4",
-    "source": 4
+    "source": {"file": null, "line": 4}
   },
   {
     "text": "        ldd r24,Y+1",
-    "source": 7
+    "source": {"file": null, "line": 7}
   },
   {
     "text": "        ldd r25,Y+2",
-    "source": 7
+    "source": {"file": null, "line": 7}
   },
   {
     "text": "        pop __tmp_reg__",
-    "source": 8
+    "source": {"file": null, "line": 8}
   },
   {
     "text": "        pop __tmp_reg__",
-    "source": 8
+    "source": {"file": null, "line": 8}
   },
   {
     "text": "        pop __tmp_reg__",
-    "source": 8
+    "source": {"file": null, "line": 8}
   },
   {
     "text": "        pop __tmp_reg__",
-    "source": 8
+    "source": {"file": null, "line": 8}
   },
   {
     "text": "        pop r28",
-    "source": 8
+    "source": {"file": null, "line": 8}
   },
   {
     "text": "        pop r29",
-    "source": 8
+    "source": {"file": null, "line": 8}
   },
   {
     "text": "        ret",
-    "source": 8
+    "source": {"file": null, "line": 8}
   },
   {
     "text": "",

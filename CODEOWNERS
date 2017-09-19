@@ -1,0 +1,24 @@
+# Lines starting with '#' are comments.
+# Each line is a file pattern followed by one or more owners.
+
+# These owners will be the default owners for everything in the repo.
+*       @mattgodbolt
+
+# rabsrincon
+static/conformance-view.js @RabsRincon
+static/cppp-mode.js @RabsRincon
+static/themes.js @RabsRincon
+lib/asm-docs.js @RabsRincon
+lib/asm-docs-api.js @RabsRincon
+views/sitemap.pug @RabsRincon
+
+
+# jaredwy
+static/opt-view.js @jaredwy
+lib/compilers/argument-parsers.js @jaredwy
+
+# tartanllama
+static/ast-view.js @TartanLlama
+static/haskell-mode.js @TartanLlama
+lib/compilers/haskell.js @TartanLlama
+views/example.hs @TartanLlama

@@ -34,6 +34,9 @@ define(function (require) {
     var Components = require('components');
     var diff = require('diff');
     var optView = require('opt-view');
+    var astView = require('ast-view');
+    var conformanceView = require('conformance-view');
+    var CompilerService = require('compiler-service');
 
     function Ids() {
         this.used = {};
@@ -60,8 +63,12 @@ define(function (require) {
         this.defaultSrc = defaultSrc;
         this.editorIds = new Ids();
         this.compilerIds = new Ids();
+        this.compilerService = new CompilerService();
 
+        // FIXME
+        // We can't avoid this self as _ is undefined at this point
         var self = this;
+
         layout.registerComponent(Components.getEditor().componentName,
             function (container, state) {
                 return self.codeEditorFactory(container, state);
@@ -81,6 +88,14 @@ define(function (require) {
         layout.registerComponent(Components.getOptView().componentName,
             function (container, state) {
                 return self.optViewFactory(container, state);
+            });
+        layout.registerComponent(Components.getAstView().componentName,
+            function (container, state) {
+                return self.astViewFactory(container, state);
+            });
+        layout.registerComponent(Components.getConformanceView().componentName,
+            function (container, state) {
+                return self.confomanceFactory(container, state);
             });
 
         layout.eventHub.on('editorOpen', function (id) {
@@ -125,6 +140,12 @@ define(function (require) {
     };
     Hub.prototype.optViewFactory = function (container, state) {
         return new optView.Opt(this, container, state);
+    };
+    Hub.prototype.astViewFactory = function (container, state) {
+        return new astView.Ast(this, container, state);
+    };
+    Hub.prototype.confomanceFactory = function (container, state) {
+        return new conformanceView.Conformance(this, container, state);
     };
     
     function WrappedEventHub(eventHub) {

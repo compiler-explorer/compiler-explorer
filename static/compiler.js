@@ -1,26 +1,26 @@
 // Copyright (c) 2012-2017, Matt Godbolt
 //
 // All rights reserved.
-// 
-// Redistribution and use in source and binary forms, with or without 
+//
+// Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
-// 
-//     * Redistributions of source code must retain the above copyright notice, 
+//
+//     * Redistributions of source code must retain the above copyright notice,
 //       this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above copyright 
-//       notice, this list of conditions and the following disclaimer in the 
+//     * Redistributions in binary form must reproduce the above copyright
+//       notice, this list of conditions and the following disclaimer in the
 //       documentation and/or other materials provided with the distribution.
-// 
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE 
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
 define(function (require) {
@@ -34,6 +34,7 @@ define(function (require) {
     var Promise = require('es6-promise').Promise;
     var Components = require('components');
     var LruCache = require('lru-cache');
+    var options = require('options');
     var monaco = require('monaco');
     var Alert = require('alert');
     var bigInt = require('big-integer');
@@ -41,43 +42,51 @@ define(function (require) {
 
     require('selectize');
 
-    var options = require('options');
-    var compilers = options.compilers;
-    var compilersById = {};
-    _.forEach(compilers, function (compiler) {
-        compilersById[compiler.id] = compiler;
-        if (compiler.alias) compilersById[compiler.alias] = compiler;
-    });
-    var Cache = new LruCache({
-        max: 200 * 1024,
+    var OpcodeCache = new LruCache({
+        max: 64 * 1024,
         length: function (n) {
             return JSON.stringify(n).length;
         }
     });
 
     function Compiler(hub, container, state) {
-        var self = this;
         this.container = container;
         this.eventHub = hub.createEventHub();
+        this.compilerService = hub.compilerService;
         this.domRoot = container.getElement();
         this.domRoot.html($('#compiler').html());
-
         this.id = state.id || hub.nextCompilerId();
         this.sourceEditorId = state.source || 1;
-        this.compiler = compilersById[state.compiler] || compilersById[options.defaultCompiler];
+        this.compiler = this.compilerService.getCompilerById(state.compiler) ||
+            this.compilerService.getCompilerById(options.defaultCompiler);
         this.options = state.options || options.compileOptions;
         this.filters = new Toggles(this.domRoot.find(".filters"), state.filters);
         this.source = "";
         this.assembly = [];
         this.colours = [];
-        this.lastResult = null;
+        this.lastResult = {};
         this.pendingRequestSentAt = 0;
         this.nextRequest = null;
         this.settings = {};
-
+        this.optViewOpen = false;
+        this.wantOptInfo = state.wantOptInfo;
         this.decorations = {};
         this.prevDecorations = [];
         this.optButton = this.domRoot.find('.btn.view-optimization');
+        this.astButton = this.domRoot.find('.btn.view-ast');
+        this.libsButton = this.domRoot.find('.btn.show-libs');
+
+        this.availableLibs = $.extend(true, {}, options.libs);
+
+        _.each(state.libs, _.bind(function(lib) {
+            if (this.availableLibs[lib.name] && this.availableLibs[lib.name].versions &&
+                this.availableLibs[lib.name].versions[lib.ver]) {
+                this.availableLibs[lib.name].versions[lib.ver].used = true;
+            }
+        }, this));
+
+        if (Object.keys(this.availableLibs).length === 0) // Hide libs if there are none
+            this.domRoot.find('.show-libs').hide();
 
         this.linkedFadeTimeoutId = -1;
 
@@ -86,15 +95,22 @@ define(function (require) {
             valueField: 'id',
             labelField: 'name',
             searchField: ['name'],
-            options: compilers,
+            options: options.compilers,
             items: this.compiler ? [this.compiler.id] : []
-        }).on('change', function () {
-            self.onCompilerChange($(this).val());
-        });
-        var optionsChange = _.debounce(function () {
-            self.onOptionsChange($(this).val());
-        }, 800);
-        this.domRoot.find(".options")
+        }).on('change', _.bind(function (e) {
+            var val = $(e.target).val();
+            ga('send', {
+                hitType: 'event',
+                eventCategory: 'SelectCompiler',
+                eventAction: val
+            });
+            this.onCompilerChange(val);
+        }, this));
+        var optionsChange = _.debounce(_.bind(function (e) {
+            this.onOptionsChange($(e.target).val());
+        }, this), 800);
+        this.optionsField = this.domRoot.find(".options");
+        this.optionsField 
             .val(this.options)
             .on("change", optionsChange)
             .on("keyup", optionsChange);
@@ -108,10 +124,13 @@ define(function (require) {
             readOnly: true,
             language: 'asm',
             fontFamily: 'Fira Mono',
-            glyphMargin: true,
-            fixedOverflowWidgets: true
+            glyphMargin: !options.embedded,
+            fixedOverflowWidgets: true,
+            minimap: {
+                maxColumn: 80
+            },
+            lineNumbersMinChars: options.embedded ? 1 : 5
         });
-
         this.outputEditor.addAction({
             id: 'viewsource',
             label: 'Scroll to source',
@@ -119,10 +138,17 @@ define(function (require) {
             keybindingContext: null,
             contextMenuGroupId: 'navigation',
             contextMenuOrder: 1.5,
-            run: function (ed) {
+            run: _.bind(function (ed) {
                 var desiredLine = ed.getPosition().lineNumber - 1;
-                self.eventHub.emit('editorSetDecoration', self.sourceEditorId, self.assembly[desiredLine].source, true);
-            }
+                var source = this.assembly[desiredLine].source;
+                if (source.file === null) {
+                    // a null file means it was the user's source
+                    this.eventHub.emit('editorSetDecoration', this.sourceEditorId, source.line, true);
+                } else {
+                    // TODO: some indication this asm statement came from elsewhere
+                    this.eventHub.emit('editorSetDecoration', this.sourceEditorId, -1, false);
+                }
+            }, this)
         });
 
         this.outputEditor.addAction({
@@ -147,26 +173,26 @@ define(function (require) {
             }, this)
         });
 
-        function clearEditorsLinkedLines() {
-            self.eventHub.emit('editorSetDecoration', self.sourceEditorId, -1, false);
-        }
+        var clearEditorsLinkedLines = _.bind(function() {
+            this.eventHub.emit('editorSetDecoration', this.sourceEditorId, -1, false);
+        }, this);
 
-        this.outputEditor.onMouseMove(function (e) {
-            self.mouseMoveThrottledFunction(e);
-            if (self.linkedFadeTimeoutId !== -1) {
-                clearTimeout(self.linkedFadeTimeoutId);
-                self.linkedFadeTimeoutId = -1;
+        this.outputEditor.onMouseMove(_.bind(function (e) {
+            this.mouseMoveThrottledFunction(e);
+            if (this.linkedFadeTimeoutId !== -1) {
+                clearTimeout(this.linkedFadeTimeoutId);
+                this.linkedFadeTimeoutId = -1;
             }
-        });
+        }, this));
 
         this.mouseMoveThrottledFunction = _.throttle(_.bind(this.onMouseMove, this), 250);
 
-        this.outputEditor.onMouseLeave(function (e) {
-            self.linkedFadeTimeoutId = setTimeout(function () {
+        this.outputEditor.onMouseLeave(_.bind(function () {
+            this.linkedFadeTimeoutId = setTimeout(_.bind(function () {
                 clearEditorsLinkedLines();
-                self.linkedFadeTimeoutId = -1;
-            }, 5000);
-        });
+                this.linkedFadeTimeoutId = -1;
+            }, this), 5000);
+        },this));
 
         this.fontScale = new FontScale(this.domRoot, state, this.outputEditor);
         this.fontScale.on('change', _.bind(function () {
@@ -177,16 +203,16 @@ define(function (require) {
         this.filters.on('change', _.bind(this.onFilterChange, this));
 
         container.on('destroy', function () {
-            self.eventHub.unsubscribe();
-            self.eventHub.emit('compilerClose', self.id);
-            self.outputEditor.dispose();
+            this.eventHub.unsubscribe();
+            this.eventHub.emit('compilerClose', this.id);
+            this.outputEditor.dispose();
         }, this);
         container.on('resize', this.resize, this);
         container.on('shown', this.resize, this);
         container.on('open', function () {
-            self.eventHub.emit('compilerOpen', self.id, self.sourceEditorId);
-            self.updateFontScale();
-        });
+            this.eventHub.emit('compilerOpen', this.id, this.sourceEditorId);
+            this.updateFontScale();
+        }, this);
         this.eventHub.on('editorChange', this.onEditorChange, this);
         this.eventHub.on('editorClose', this.onEditorClose, this);
         this.eventHub.on('colours', this.onColours, this);
@@ -194,10 +220,12 @@ define(function (require) {
         this.eventHub.on('findCompilers', this.sendCompiler, this);
         this.eventHub.on('compilerSetDecorations', this.onCompilerSetDecorations, this);
         this.eventHub.on('settingsChange', this.onSettingsChange, this);
-        this.eventHub.on('themeChange', this.onThemeChange, this);
         this.eventHub.on('optViewClosed', this.onOptViewClosed, this);
+        this.eventHub.on('astViewOpened', this.onAstViewOpened, this);
+        this.eventHub.on('astViewClosed', this.onAstViewClosed, this);
+        this.eventHub.on('optViewOpened', this.onOptViewOpened, this);
+        this.eventHub.on('resize', this.resize, this);
         this.eventHub.emit('requestSettings');
-        this.eventHub.emit('requestTheme');
         this.sendCompiler();
         this.updateCompilerName();
         this.updateButtons();
@@ -213,17 +241,21 @@ define(function (require) {
             insertPoint.addChild(outputConfig());
         }, this));
 
-        function cloneComponent() {
+        var cloneComponent = _.bind(function() {
             return {
                 type: 'component',
                 componentName: 'compiler',
-                componentState: self.currentState()
+                componentState: this.currentState()
             };
-        }
+        }, this);
 
-        function createOptView() {
-            return Components.getOptViewWith(self.id, self.source, self.lastResult.optOutput, self.getCompilerName(), self.sourceEditorId);
-        }
+        var createOptView = _.bind(function() {
+            return Components.getOptViewWith(this.id, this.source, this.lastResult.optOutput, this.getCompilerName(), this.sourceEditorId);
+        }, this);
+
+        var createAstView = _.bind(function() {
+            return Components.getAstViewWith(this.id, this.source, this.lastResult.astOutput, this.getCompilerName(), this.sourceEditorId);
+        }, this);
 
         this.container.layoutManager.createDragSource(
             this.domRoot.find('.btn.add-compiler'), cloneComponent);
@@ -235,13 +267,111 @@ define(function (require) {
         }, this));
 
         this.container.layoutManager.createDragSource(
-            this.optButton, createOptView.bind(this));
+            this.optButton, function() {
+                this.wantOptInfo = true;
+                this.compile();
+                return createOptView.apply(this);
+            }.bind(this));
 
         this.optButton.click(_.bind(function () {
+            this.wantOptInfo = true;
             var insertPoint = hub.findParentRowOrColumn(this.container) ||
                 this.container.layoutManager.root.contentItems[0];
             insertPoint.addChild(createOptView());
             this.optButton.prop("disabled", true);
+            this.compile();
+        }, this));
+
+        this.container.layoutManager.createDragSource(
+            this.astButton, function() {
+                this.compile();
+                return createAstView.apply(this);
+            }.bind(this));
+
+        this.astButton.click(_.bind(function () {
+            var insertPoint = hub.findParentRowOrColumn(this.container) ||
+                this.container.layoutManager.root.contentItems[0];
+            insertPoint.addChild(createAstView());
+            this.compile();
+        }, this));
+
+
+        var updateLibsUsed = _.bind(function() {
+            var libsList = $('<ul></ul>');
+            var onChecked = _.bind(function(e) {
+                var elem = $(e.target);
+                if (elem.prop('checked')) {
+                    libsList.find('input[name=' + elem.prop('name') + ']').prop('checked', false);
+                    elem.prop('checked', true);
+                }
+                _.each(this.availableLibs[elem.prop('data-lib')].versions, function(version) {
+                    version.used = false;
+                });
+                this.availableLibs[elem.prop('data-lib')].versions[elem.prop('data-version')].used = elem.prop('checked');
+                this.saveState();
+                this.compile();
+            }, this);
+
+
+            libsList.addClass('lib-list');
+            var firstLibGroup = true;
+            _.each(this.availableLibs, function(lib, libKey) {
+                if (!firstLibGroup)
+                    libsList.append($('<hr>').addClass('lib-separator'));
+                else
+                    firstLibGroup = false;
+                _.each(lib.versions, function(version, vKey) {
+                    var checkbox = $('<input type="checkbox">')
+                        .addClass('lib-checkbox')
+                        .prop('data-lib', libKey)
+                        .prop('data-version', vKey)
+                        .prop('data-path', version.path)
+                        .prop('checked', version.used)
+                        .prop('name', libKey)
+                        .on('change', onChecked);
+                    $('<li></li>')
+                        .addClass('lib-item')
+                        .appendTo(libsList)
+                        .append(checkbox)
+                        .append($('<label></label>')
+                            .addClass('lib-label')
+                            .text(lib.name + " " + version.version)
+                            .on('click', function() {
+                                $(this).parent().find('.lib-checkbox').trigger('click');
+                            })
+                        );
+                });
+            });
+            return libsList;
+        }, this);
+
+        this.libsButton.popover({
+            container: 'body',
+            content: updateLibsUsed(),
+            html: true,
+            placement: 'bottom',
+            trigger: 'manual'
+        }).click(_.bind(function () {
+            this.libsButton.popover('show');
+        }, this)).on('inserted.bs.popover', function (e) {
+            $(e.target).content = updateLibsUsed().html();
+        });
+
+        // Dismiss the popover on escape.
+        $(document).on('keyup.editable', _.bind(function (e) {
+            if (e.which === 27) {
+                this.libsButton.popover("hide");
+            }
+        }, this));
+
+        // Dismiss on any click that isn't either in the opening element, inside
+        // the popover or on any alert
+        $(document).on('click', _.bind(function (e) {
+            var elem = this.libsButton;
+            var target = $(e.target);
+            if (!target.is(elem) && elem.has(target).length === 0 && target.closest('.popover').length === 0) {
+                elem.popover("hide");
+            }
         }, this));
 
         this.saveState();
@@ -267,29 +397,42 @@ define(function (require) {
         if (filters.binary && !this.compiler.supportsBinary) {
             delete filters.binary;
         }
-        if (filters.exeute && !this.compiler.supportsExecute) {
+        if (filters.execute && !this.compiler.supportsExecute) {
             delete filters.execute;
         }
         return filters;
     };
 
+
     Compiler.prototype.compile = function () {
-        var request = {
-            source: this.source || "",
-            compiler: this.compiler ? this.compiler.id : "",
-            options: this.options,
+        var options = {
+            userArguments: this.options,
+            compilerOptions: { produceAst: this.astViewOpen, produceOptInfo: this.wantOptInfo },
             filters: this.getEffectiveFilters()
         };
-
-        if (!this.compiler) {
-            this.onCompileResponse(request, errorResult("<Please select a compiler>"), false);
-            return;
-        }
-
-        this.sendCompile(request);
+        _.each(this.availableLibs, function(lib) {
+            _.each(lib.versions, function(version) {
+                if (version.used)
+                    options.userArguments+= " -I" + version.path;
+            });
+        });
+        this.compilerService.expand(this.source).then(_.bind(function (expanded) {
+            var request = {
+                source: expanded || "",
+                compiler: this.compiler ? this.compiler.id : "",
+                options: options
+            };
+            if (!this.compiler) {
+                this.onCompileResponse(request, errorResult("<Please select a compiler>"), false);
+            } else {
+                this.sendCompile(request);
+            }
+        }, this));
     };
 
     Compiler.prototype.sendCompile = function (request) {
+        var onCompilerResponse = _.bind(this.onCompileResponse, this);
+
         if (this.pendingRequestSentAt) {
             // If we have a request pending, then just store this request to do once the
             // previous request completes.
@@ -297,38 +440,21 @@ define(function (require) {
             return;
         }
         this.eventHub.emit('compiling', this.id, this.compiler);
-        var jsonRequest = JSON.stringify(request);
-        var cachedResult = Cache.get(jsonRequest);
-        if (cachedResult) {
-            this.onCompileResponse(request, cachedResult, true);
-            return;
-        }
-
         this.pendingRequestSentAt = Date.now();
         // After a short delay, give the user some indication that we're working on their
         // compilation.
         var progress = setTimeout(_.bind(function () {
             this.setAssembly(fakeAsm("<Compiling...>"));
         }, this), 500);
-        $.ajax({
-            type: 'POST',
-            url: 'api/compiler/' + encodeURIComponent(request.compiler) + '/compile',
-            dataType: 'json',
-            contentType: 'application/json',
-            data: jsonRequest,
-            success: _.bind(function (result) {
+        this.compilerService.submit(request)
+            .then(function (x) {
                 clearTimeout(progress);
-                if (result.okToCache) {
-                    Cache.set(jsonRequest, result);
-                }
-                this.onCompileResponse(request, result, false);
-            }, this),
-            error: _.bind(function (xhr, e_status, error) {
+                onCompilerResponse(request, x.result, x.localCacheHit);
+            })
+            .catch(function (x) {
                 clearTimeout(progress);
-                this.onCompileResponse(request, errorResult("<Remote compilation failed: " + error + ">"), false);
-            }, this),
-            cache: false
-        });
+                onCompilerResponse(request, errorResult("<Remote compilation failed: " + x.error + ">"), false);
+            });
     };
 
     Compiler.prototype.getBinaryForLine = function (line) {
@@ -339,51 +465,53 @@ define(function (require) {
         _.each(obj.opcodes, function (op) {
             opcodes += ('<span class="opcode">' + op + '</span>');
         });
-        return '<div class="address">' + address + '</div>' + opcodes + '</div>';
+        return '<div class="binary-side"><div class="address">' + address + '</div>' + opcodes + '</div></div>';
     };
 
     // TODO: use ContentWidgets? OverlayWidgets?
     // Use highlight providers? hover providers? highlight providers?
     Compiler.prototype.setAssembly = function (assembly) {
         this.assembly = assembly;
-        this.outputEditor.getModel().setValue(_.pluck(assembly, 'text').join("\n"));
-        var addrToAddrDiv = {};
-        var decorations = [];
-        _.each(this.assembly, _.bind(function (obj, line) {
-            var address = obj.address ? obj.address.toString(16) : "";
-            //     var div = $("<div class='address cm-number'>" + address + "</div>");
-            addrToAddrDiv[address] = {div: "moo", line: line};
-        }, this));
+        if (this.outputEditor.getModel()) {
+            this.outputEditor.getModel().setValue(_.pluck(assembly, 'text').join("\n"));
+            var addrToAddrDiv = {};
+            var decorations = [];
+            _.each(this.assembly, _.bind(function (obj, line) {
+                var address = obj.address ? obj.address.toString(16) : "";
+                //     var div = $("<div class='address cm-number'>" + address + "</div>");
+                addrToAddrDiv[address] = {div: "moo", line: line};
+            }, this));
 
-        _.each(this.assembly, _.bind(function (obj, line) {
-            if (obj.links) {
-                _.each(obj.links, _.bind(function (link) {
-                    var address = link.to.toString(16);
-                    // var thing = $("<a href='#' class='cm-number'>" + address + "</a>");
-                    // this.outputEditor.markText(
-                    //     from, to, {replacedWith: thing[0], handleMouseEvents: false});
-                    var dest = addrToAddrDiv[address];
-                    if (dest) {
-                        decorations.push({
-                            range: new monaco.Range(line, link.offset, line, link.offset + link.length),
-                            options: {}
-                        });
-                        // var editor = this.outputEditor;
-                        // thing.hover(function (e) {
-                        //     var entered = e.type == "mouseenter";
-                        //     dest.div.toggleClass("highlighted", entered);
-                        //     thing.toggleClass("highlighted", entered);
-                        // });
-                        // thing.on('click', function (e) {
-                        //     editor.scrollIntoView({line: dest.line, ch: 0}, 30);
-                        //     dest.div.toggleClass("highlighted", false);
-                        //     thing.toggleClass("highlighted", false);
-                        //     e.preventDefault();
-                        // });
-                    }
-                }, this));
-            }
-        }, this));
+            _.each(this.assembly, _.bind(function (obj, line) {
+                if (obj.links) {
+                    _.each(obj.links, _.bind(function (link) {
+                        var address = link.to.toString(16);
+                        // var thing = $("<a href='#' class='cm-number'>" + address + "</a>");
+                        // this.outputEditor.markText(
+                        //     from, to, {replacedWith: thing[0], handleMouseEvents: false});
+                        var dest = addrToAddrDiv[address];
+                        if (dest) {
+                            decorations.push({
+                                range: new monaco.Range(line, link.offset, line, link.offset + link.length),
+                                options: {}
+                            });
+                            // var editor = this.outputEditor;
+                            // thing.hover(function (e) {
+                            //     var entered = e.type == "mouseenter";
+                            //     dest.div.toggleClass("highlighted", entered);
+                            //     thing.toggleClass("highlighted", entered);
+                            // });
+                            // thing.on('click', function (e) {
+                            //     editor.scrollIntoView({line: dest.line, ch: 0}, 30);
+                            //     dest.div.toggleClass("highlighted", false);
+                            //     thing.toggleClass("highlighted", false);
+                            //     e.preventDefault();
+                            // });
+                        }
+                    }, this));
+                }
+            }, this));
+        }
     };
 
     function errorResult(text) {
@@ -414,7 +542,7 @@ define(function (require) {
             hitType: 'event',
             eventCategory: 'Compile',
             eventAction: request.compiler,
-            eventLabel: request.options,
+            eventLabel: request.options.userArguments,
             eventValue: cached ? 1 : 0
         });
         ga('send', {
@@ -423,26 +551,29 @@ define(function (require) {
             timingVar: request.compiler,
             timingValue: timeTaken
         });
+
         this.setAssembly(result.asm || fakeAsm("<No output>"));
-        if (request.filters.binary) {
+        if (request.options.filters.binary) {
             this.outputEditor.updateOptions({
                 lineNumbers: _.bind(this.getBinaryForLine, this),
-                lineNumbersMinChars: 19
+                // Until something comes out of Microsoft/monaco-editor/issues/515, this gets clamped to ten
+                lineNumbersMinChars: 25,
+                glyphMargin: false
             });
         } else {
             this.outputEditor.updateOptions({
                 lineNumbers: true,
-                lineNumbersMinChars: 5
+                lineNumbersMinChars: options.embedded ? 1 : 5,
+                glyphMargin: true
             });
         }
         var status = this.domRoot.find(".status");
-        var allText = _.pluck((result.stdout || []).concat(result.stderr | []), 'text').join("\n");
+        var allText = _.pluck((result.stdout || []).concat(result.stderr || []), 'text').join("\n");
         var failed = result.code !== 0;
         var warns = !failed && !!allText;
         status.toggleClass('error', failed);
         status.toggleClass('warning', warns);
         status.parent().attr('title', allText);
-        this.optButton.prop("disabled", !result.hasOptOutput);
         var compileTime = this.domRoot.find('.compile-time');
         if (cached) {
             compileTime.text("- cached");
@@ -460,46 +591,42 @@ define(function (require) {
         }
     };
 
-    Compiler.prototype.expand = function (source) {
-        var includeFind = /^\s*#include\s*["<](https?:\/\/[^>"]+)[>"]$/;
-        var lines = source.split("\n");
-        var promises = [];
-        _.each(lines, function (line, lineNumZeroBased) {
-            var match = line.match(includeFind);
-            if (match) {
-                promises.push(new Promise(function (resolve, reject) {
-                    var req = $.get(match[1], function (data) {
-                        data = '# 1 "' + match[1] + '"\n' + data + '\n\n# ' +
-                            (lineNumZeroBased + 1) + ' "<stdin>"\n';
-
-                        lines[lineNumZeroBased] = data;
-                        resolve();
-                    });
-                    req.fail(function () {
-                        resolve();
-                    });
-                }));
-            }
-        });
-        return Promise.all(promises).then(function () {
-            return lines.join("\n");
-        });
-    };
-
     Compiler.prototype.onEditorChange = function (editor, source) {
         if (editor === this.sourceEditorId) {
-            this.expand(source).then(_.bind(function (expanded) {
-                this.source = expanded;
-                this.compile();
-            }, this));
+            this.source = source;
+            this.compile();
         }
     };
 
     Compiler.prototype.onOptViewClosed = function (id) {
         if (this.id == id) {
-            this.optButton.prop('disabled', false);
+            this.wantOptInfo = false;
+            this.optViewOpen = false;
+            this.optButton.prop("disabled", this.optViewOpen);
         }
     };
+
+    Compiler.prototype.onAstViewOpened = function (id) {
+        if (this.id == id) {
+            this.astButton.prop("disabled", true);
+            this.astViewOpen = true;
+        }
+    };
+
+    Compiler.prototype.onAstViewClosed = function (id) {
+        if (this.id == id) {
+            this.astButton.prop('disabled', false);
+            this.astViewOpen = false;
+        }
+    };
+    Compiler.prototype.onOptViewOpened = function (id) {
+        if (this.id == id) {
+            this.optViewOpen = true;
+            this.wantOptInfo = true;
+            this.optButton.prop("disabled", this.optViewOpen);
+        }
+    };
+
 
     Compiler.prototype.updateButtons = function () {
         if (!this.compiler) return;
@@ -516,6 +643,14 @@ define(function (require) {
         // Disable any of the options which don't make sense in binary mode.
         var filtersDisabled = !!filters.binary && !this.compiler.supportsFiltersInBinary;
         this.domRoot.find('.nonbinary').toggleClass("disabled", filtersDisabled);
+        // If its already open, we should turn the it off.
+        // The pane will update with error text
+        // Other wise we just disable the button.
+        if(!this.optViewOpen) {
+            this.optButton.prop("disabled", !this.compiler.supportsOptOutput);
+        } else {
+            this.optButton.prop("disabled", true);
+        }
     };
 
     Compiler.prototype.onOptionsChange = function (options) {
@@ -527,7 +662,7 @@ define(function (require) {
     };
 
     Compiler.prototype.onCompilerChange = function (value) {
-        this.compiler = compilersById[value];
+        this.compiler = this.compilerService.getCompilerById(value);
         this.saveState();
         this.compile();
         this.updateButtons();
@@ -556,11 +691,22 @@ define(function (require) {
     };
 
     Compiler.prototype.currentState = function () {
+        var libs = [];
+        _.each(this.availableLibs, function(library, name) {
+            _.each(library.versions, function(version, ver) {
+                if (library.versions[ver].used) {
+                    libs.push({name, ver});
+                }
+            });
+        });
         var state = {
             compiler: this.compiler ? this.compiler.id : "",
             source: this.sourceEditorId,
             options: this.options,
-            filters: this.filters.get()  // NB must *not* be effective filters
+            // NB must *not* be effective filters
+            filters: this.filters.get(),
+            wantOptInfo: this.wantOptInfo,
+            libs: libs
         };
         this.fontScale.addState(state);
         return state;
@@ -578,7 +724,9 @@ define(function (require) {
         if (editor == this.sourceEditorId) {
             var asmColours = {};
             _.each(this.assembly, function (x, index) {
-                if (x.source) asmColours[index] = colours[x.source - 1];
+                if (x.source && x.source.file === null) {
+                    asmColours[index] = colours[x.source.line - 1];
+                }
             });
             this.colours = colour.applyColours(this.outputEditor, asmColours, scheme, this.colours);
         }
@@ -596,7 +744,7 @@ define(function (require) {
     };
 
     Compiler.prototype.onResendCompilation = function (id) {
-        if (id == this.id && this.lastResult) {
+        if (id == this.id && !$.isEmptyObject(this.lastResult)) {
             this.eventHub.emit('compileResult', this.id, this.compiler, this.lastResult);
         }
     };
@@ -630,42 +778,50 @@ define(function (require) {
         if (!before.lastHoverShowSource && this.settings.hoverShowSource) {
             this.onCompilerSetDecorations(this.id, []);
         }
+        this.outputEditor.updateOptions({
+            contextmenu: this.settings.useCustomContextMenu,
+            minimap: {
+                enabled: this.settings.showMinimap && !options.embedded
+            }
+        });
     };
 
     var hexLike = /^(#?[$]|0x)([0-9a-fA-F]+)$/;
-    var decimalLike = /^(#?)([0-9]+)$/;
+    var hexLike2 = /^(#?)([0-9a-fA-F]+)H$/;
+    var decimalLike = /^(#?)(-?[0-9]+)$/;
 
     function getNumericToolTip(value) {
-        var match = hexLike.exec(value);
+        var match = hexLike.exec(value) || hexLike2.exec(value);
         if (match) {
             return value + ' = ' + bigInt(match[2], 16).toString(10);
         }
-        match = decimalLike.exec(value); 
+        match = decimalLike.exec(value);
         if (match) {
-            return value + ' = 0x' +  bigInt(match[2]).toString(16).toUpperCase();
+            var asBig = bigInt(match[2]);
+            if (asBig.isNegative()) {
+                asBig = bigInt("ffffffffffffffff", 16).and(asBig);
+            }
+            return value + ' = 0x' + asBig.toString(16).toUpperCase();
         }
-        
+
         return null;
     }
 
-    var opcodeLike = /^[a-zA-Z][a-zA-Z0-9_.]+$/; // at least two characters
+    
     var getAsmInfo = function (opcode) {
-        if (!opcodeLike.exec(opcode)) {
-            return Promise.resolve(null);
-        }
         var cacheName = "asm/" + opcode;
-        var cached = Cache.get(cacheName);
+        var cached = OpcodeCache.get(cacheName);
         if (cached) {
             return Promise.resolve(cached.found ? cached.result : null);
         }
-        var promise = new Promise(function (resolve, reject) {
+        return new Promise(function (resolve, reject) {
             $.ajax({
                 type: 'GET',
                 url: 'api/asm/' + opcode,
                 dataType: 'json',  // Expected,
                 contentType: 'text/plain',  // Sent
                 success: function (result) {
-                    Cache.set(cacheName, result);
+                    OpcodeCache.set(cacheName, result);
                     resolve(result.found ? result.result : null);
                 },
                 error: function (result) {
@@ -674,34 +830,57 @@ define(function (require) {
                 cache: true
             });
         });
-        return promise;
     };
 
     Compiler.prototype.onMouseMove = function (e) {
         if (e === null || e.target === null || e.target.position === null) return;
         if (this.settings.hoverShowSource === true && this.assembly) {
-            var desiredLine = e.target.position.lineNumber - 1;
-            if (this.assembly[desiredLine]) {
+            var hoverAsm = this.assembly[e.target.position.lineNumber - 1];
+            if (hoverAsm && hoverAsm.source && !hoverAsm.source.file) {
                 // We check that we actually have something to show at this point!
-                this.eventHub.emit('editorSetDecoration', this.sourceEditorId, this.assembly[desiredLine].source, false);
+                this.eventHub.emit('editorSetDecoration', this.sourceEditorId, hoverAsm.source.line, false);
             }
         }
         var currentWord = this.outputEditor.getModel().getWordAtPosition(e.target.position);
         if (currentWord && currentWord.word) {
-            var numericToolTip = getNumericToolTip(currentWord.word);
+            var word = currentWord.word;
+            currentWord.range = new monaco.Range(e.target.position.lineNumber, currentWord.startColumn, e.target.position.lineNumber, currentWord.endColumn);
+            // Hacky workaround to check for negative numbers. c.f. https://github.com/mattgodbolt/compiler-explorer/issues/434
+            var lineContent = this.outputEditor.getModel().getLineContent(e.target.position.lineNumber);
+            if (lineContent[currentWord.startColumn - 2] === '-') {
+                word = '-' + word;
+                currentWord.range.startColumn -= 1;
+            }
+            var numericToolTip = getNumericToolTip(word);
             if (numericToolTip) {
                 this.decorations.numericToolTip = {
-                    range: e.target.range,
+                    range: currentWord.range,
                     options: {isWholeLine: false, hoverMessage: ['`' + numericToolTip + '`']}
                 };
                 this.updateDecorations();
             }
 
-            if (this.settings.hoverShowAsmDoc === true) {
+            var getTokensForLine = function(model, line) {
+                //Force line's state to be accurate
+                model.getLineTokens(line, /*inaccurateTokensAcceptable*/false);
+                // Get the tokenization state at the beginning of this line
+                var state = model._lines[line - 1].getState();
+                if (state) {
+                    var freshState = model._lines[line - 1].getState().clone();
+                    // Get the human readable tokens on this line
+                    return model._tokenizationSupport.tokenize(model.getLineContent(line), freshState, 0).tokens;
+                }
+                return [];
+            };
+
+            if (this.settings.hoverShowAsmDoc === true &&
+                _.some(getTokensForLine(this.outputEditor.getModel(), currentWord.range.startLineNumber), function(t) {
+                    return t.offset + 1 === currentWord.startColumn && t.type === "keyword.asm";
+                })) {
                 getAsmInfo(currentWord.word).then(_.bind(function (response) {
                     if (response) {
                         this.decorations.asmToolTip = {
-                            range: e.target.range,
+                            range: currentWord.range,
                             options: {
                                 isWholeLine: false,
                                 hoverMessage: [response.tooltip + "\n\nMore information available in the context menu."]
@@ -724,7 +903,7 @@ define(function (require) {
                 if (asmHelp) {
                     new Alert().alert(opcode + " help", asmHelp.html +
                         '<br><br>For more information, visit <a href="' + asmHelp.url + '" target="_blank" rel="noopener noreferrer">the ' +
-                        opcode + ' documentation <span class="glyphicon glyphicon-new-window" width="16px" height="16px" title="Opens in a new window"/></span></a>.',
+                        opcode + ' documentation <sup><small class="glyphicon glyphicon-new-window" width="16px" height="16px" title="Opens in a new window"></small></sup></a>.',
                         function () {
                             ed.focus();
                             ed.setPosition(pos);
@@ -745,12 +924,6 @@ define(function (require) {
                 });
             }
         );
-    };
-
-    Compiler.prototype.onThemeChange = function (newTheme) {
-        if (this.outputEditor)
-            this.outputEditor.updateOptions({theme: newTheme.monaco});
-        this.resize(); // in case anything changes size in the header or footer
     };
 
     return {

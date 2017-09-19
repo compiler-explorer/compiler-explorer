@@ -47,7 +47,8 @@ define(function (require) {
             .each(function () {
                 $(this).toggleClass('active', !!state[$(this).data().bind]);
             });
-        this.state = get(this.domRoot);
+        _.extend(state, this.domRoot);
+        this.state = state;
     }
 
     _.extend(Toggles.prototype, EventEmitter.prototype);
@@ -56,13 +57,25 @@ define(function (require) {
         return _.clone(this.state);
     };
 
+    Toggles.prototype.set = function (key, value) {
+        this._change(function() {
+            this.state[key] = value;
+        }.bind(this));
+    };
+
+    Toggles.prototype._change = function(update) {
+        var before = this.get();
+        update();
+        this.emit('change', before, this.get()); 
+    };
+
     Toggles.prototype.onClick = function (event) {
         var button = $(event.currentTarget);
         if (button.hasClass("disabled")) return;
         button.toggleClass('active');
-        var before = this.state;
-        var after = this.state = get(this.domRoot);
-        this.emit('change', before, after);
+        this._change(function() {
+            this.state = get(this.domRoot);
+        }.bind(this));
     };
 
     return Toggles;

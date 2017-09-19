@@ -34,20 +34,26 @@ define(function (require) {
     require('selectize');
 
     function Opt(hub, container, state) {
+        state = state || {};
         this.container = container;
         this.eventHub = hub.createEventHub();
         this.domRoot = container.getElement();
         this.domRoot.html($('#opt').html());
         this.compilers = {};
+        this.code = state.source || "";
         this._currentDecorations = [];
         this.optEditor = monaco.editor.create(this.domRoot.find(".monaco-placeholder")[0], {
-            value: state.source || "",
+            value: this.code,
             scrollBeyondLastLine: false,
-            language: 'cpp', //we only support cpp for now
+            language: 'cppp', //we only support cpp(p) for now
             readOnly: true,
             glyphMargin: true,
             quickSuggestions: false,
-            fixedOverflowWidgets: true
+            fixedOverflowWidgets: true,
+            minimap: {
+                maxColumn: 80
+            },
+            lineNumbersMinChars: 3
         });
 
         this._compilerid = state.id;
@@ -60,21 +66,22 @@ define(function (require) {
         this.eventHub.on('compiler', this.onCompiler, this);
         this.eventHub.on('compilerClose', this.onCompilerClose, this);
         this.eventHub.on('editorChange', this.onEditorChange, this);
-        this.eventHub.on('themeChange', this.onThemeChange, this);
-        this.eventHub.emit('requestTheme');
-
+        this.eventHub.on('settingsChange', this.onSettingsChange, this);
+        this.eventHub.on('resize', this.resize, this);
         this.container.on('destroy', function () {
             this.eventHub.emit("optViewClosed", this._compilerid);
             this.eventHub.unsubscribe();
             this.optEditor.dispose();
         }, this);
+        this.eventHub.emit('requestSettings');
 
         container.on('resize', this.resize, this);
         container.on('shown', this.resize, this);
         if(state && state.optOutput) {
-              this.showOptResults(state.optOutput);
+            this.showOptResults(state.optOutput);
         }
         this.setTitle();
+        this.eventHub.emit("optViewOpened", this._compilerid);
     }
 
     // TODO: de-dupe with compiler etc
@@ -88,6 +95,7 @@ define(function (require) {
 
     Opt.prototype.onEditorChange = function(id, source) {
         if (this._editorid == id) {
+            this.code = source;
             this.optEditor.setValue(source);
         }
     };
@@ -118,11 +126,12 @@ define(function (require) {
         _.mapObject(results, function(value, key) {
             var linenumber = Number(key);
             var className = value.reduce(function(acc, x) {
-                if(acc && acc !== "Analysis" && x.optType !== acc) {
-                    return "Mixed";
-                } else {
-                    return x.optType;
+                if(x.optType == "Missed" || acc == "Missed") {
+                    return "Missed";
+                } else if(x.optType == "Passed" || acc == "Passed") {
+                    return "Passed";
                 }
+                return x.optType;
             },"");
             var contents = _.map(value, this.getDisplayableOpt, this);
             opt.push({
@@ -140,10 +149,17 @@ define(function (require) {
     };
 
     Opt.prototype.onCompiler = function (id, compiler, options, editorid) {
+        if(!compiler.supportsOptOutput) {
+            this.code = this.optEditor.getValue();
+            this.optEditor.setValue("<" +compiler.version +  " does not support the optimisation view>");
+            return;
+        }
+
         if(id == this._compilerid) {
             this._compilerName = compiler.name;
             this._editorid = editorid;
             this.setTitle();
+            this.optEditor.setValue(this.code);
         }
     };
 
@@ -151,14 +167,15 @@ define(function (require) {
         delete this.compilers[id];
     };
 
-    Opt.prototype.onThemeChange = function (newTheme) {
-        if (this.optEditor) {
-            this.optEditor.updateOptions({theme: newTheme.monaco});
-        }
+    Opt.prototype.updateState = function () {
     };
 
-
-    Opt.prototype.updateState = function () {
+    Opt.prototype.onSettingsChange = function(newSettings) {
+        this.optEditor.updateOptions({
+            minimap: {
+                enabled: newSettings.showMinimap
+            }
+        });
     };
 
     return {

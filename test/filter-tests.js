@@ -103,9 +103,10 @@ function testFilter(filename, suffix, filters) {
 // bless("cases/bug-192.asm", "cases/bug-192.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
 // bless("cases/arm-moose.asm", "cases/arm-moose.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
 // bless("cases/arm-moose.asm", "cases/arm-moose.asm.dlcb.json", {directives: true, labels: true, commentOnly: true, binary: true});
+// bless("cases/gcc-x86-vector.asm", "cases/gcc-x86-vector.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
 // describe('A test', function() {
 //     it('should work', function(){
-//         console.log(processAsm(__dirname + '/cases/mips5-square.asm', {directives: true, labels: true, commentOnly: true}));
+//         console.log(processAsm(__dirname + '/cases/gcc-x86-vector.asm', {directives: true, labels: true, commentOnly: true}));
 //     });
 // });
 
@@ -134,4 +135,3 @@ describe('Filter test cases', function () {
         });
     });
 });
-

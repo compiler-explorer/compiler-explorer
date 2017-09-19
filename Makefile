@@ -16,18 +16,28 @@ default: run
 endif
 endif
 
-.PHONY: clean run test run-amazon c-preload optional-d-support optional-rust-support
+.PHONY: clean run test run-amazon c-preload optional-haskell-support optional-d-support optional-rust-support
 .PHONY: dist lint prereqs node_modules bower_modules
-prereqs: optional-d-support optional-rust-support node_modules c-preload bower_modules
+prereqs: optional-haskell-support optional-d-support optional-rust-support node_modules c-preload bower_modules
 
 GDC?=gdc
 DMD?=dmd
-ifneq "" "$(shell which $(GDC) 2>/dev/null || which $(DMD) 2>/dev/null)"
+LDC?=ldc2
+ifneq "" "$(shell which $(GDC) 2>/dev/null || which $(DMD) 2>/dev/null || which $(LDC) 2>/dev/null)"
 optional-d-support:
 	$(MAKE) -C d
 else
 optional-d-support:
 	@echo "D language support disabled"
+endif
+
+GHC?=ghc
+ifneq "" "$(shell which $(GHC))"
+optional-haskell-support:
+	$(MAKE) -C haskell
+else
+optional-haskell-support:
+	@echo "Haskell language support disabled"
 endif
 
 ifneq "" "$(shell which cargo)"
@@ -41,8 +51,7 @@ endif
 
 NODE_MODULES=.npm-updated
 $(NODE_MODULES): package.json
-	$(NPM) install --only=production
-	$(NPM) install --only=dev
+	$(NPM) install
 	@touch $@
 
 BOWER_MODULES=.bower-updated
@@ -72,7 +81,7 @@ clean:
 	$(MAKE) -C c-preload clean
 
 run: prereqs
-	$(NODE) ./node_modules/.bin/supervisor -w app.js,lib,etc/config -e 'js|node|properties' --exec $(NODE) -- ./app.js --language $(LANG) $(EXTRA_ARGS)
+	$(NODE) ./node_modules/.bin/supervisor -w app.js,lib,etc/config -e 'js|node|properties' --exec $(NODE) $(NODE_ARGS) -- ./app.js --language $(LANG) $(EXTRA_ARGS)
 
 HASH := $(shell git rev-parse HEAD)
 dist: prereqs
