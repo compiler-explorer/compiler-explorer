@@ -19,6 +19,8 @@
         tr
           td: select.compiler-picker(placeholder="Select a compiler...")
           td: input.options.form-control(type="text" placeholder="Compiler options..." size="256")
+      if !embedded
+        include font-size.pug
       div.btn-group.btn-group-sm.filters(data-toggle="buttons")
         // TODO store these in the app and drive from there?
         // Make a dropdown? With more options? e.g. demangling etc
@@ -38,8 +40,10 @@
           span Intel
         if embedded
           include font-size.pug
+      .btn-group.btn-group-sm
+        button.btn.btn-default.btn-sm.show-libs
+          span.glyphicon.glyphicon-book(title="Include libs")
       if !embedded
-        include font-size.pug
         .btn-group.btn-group-sm
           button.btn.btn-default.btn-sm.add-compiler(title="Clone this compiler window (click or drag)")
             span.glyphicon.glyphicon-new-window
@@ -47,8 +51,6 @@
             span.glyphicon.glyphicon-scale
           button.btn.btn-default.btn-sm.view-ast(title="Show AST output (Clang only)")
             span.glyphicon.glyphicon-tree-deciduous
-          button.btn.btn-default.btn-sm.show-libs
-            span.glyphicon.glyphicon-book
     .monaco-placeholder
     .bottom-bar
       if !embedded

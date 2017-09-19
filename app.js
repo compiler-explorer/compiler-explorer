@@ -180,11 +180,16 @@ function ClientOptionsHandler(fileSources) {
         _.each(baseLibs.split(':'),function (lib) {
             libs[lib] = {name: compilerProps('libs.' + lib + '.name')};
             libs[lib].versions = {};
-            _.each(compilerProps("libs." + lib + '.versions').split(':'), function (version) {
-                libs[lib].versions[version] = {};
-                libs[lib].versions[version].version = compilerProps("libs." + lib + '.versions.' + version + '.version');
-                libs[lib].versions[version].path = compilerProps("libs." + lib + '.versions.' + version + '.path');
-            });
+            var listedVersions = compilerProps("libs." + lib + '.versions');
+            if (listedVersions) {
+                _.each(listedVersions.split(':'), function (version) {
+                    libs[lib].versions[version] = {};
+                    libs[lib].versions[version].version = compilerProps("libs." + lib + '.versions.' + version + '.version');
+                    libs[lib].versions[version].path = compilerProps("libs." + lib + '.versions.' + version + '.path');
+                });
+            } else {
+                logger.warn("No versions found for " + lib + " library");
+            }
         });
     }
     var options = {
