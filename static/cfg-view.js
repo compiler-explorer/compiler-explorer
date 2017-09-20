@@ -51,7 +51,8 @@ define(function(require){
             locale: 'en',
             edges: {
                 arrows: {to: {enabled: true}},
-                smooth: {enabled: true, type: 'straightCross'}
+                smooth: {enabled: true},
+                physics: false
             },
             nodes: {
                 font: {'face': 'monospace', 'align': 'left'}
