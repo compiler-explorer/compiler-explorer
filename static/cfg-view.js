@@ -46,8 +46,6 @@ define(function(require){
         
         this.networkOpts = {
             autoResize: true,
-            height: '99%',
-            width: '99%',
             locale: 'en',
             edges: {
                 arrows: {to: {enabled: true}},
@@ -63,8 +61,8 @@ define(function(require){
                     "enabled": true,
                     "sortMethod": "directed",
                     "direction": "UD",
-                    nodeSpacing: 200,
-                    levelSeparation: 200
+                    nodeSpacing: 100,
+                    levelSeparation: 100
                 }
             },
             physics: {
@@ -102,6 +100,9 @@ define(function(require){
             this.eventHub.emit("cfgViewClosed", this._compilerid, this.cfgVisualiser);
             this.eventHub.unsubscribe();
         }, this);
+        
+        container.on('resize', this.resize, this);
+        container.on('shown', this.resize, this);
         
         this.adaptStructure = function(names){
             var options = [];
@@ -177,7 +178,6 @@ define(function(require){
         }
     };
 
-    
     Cfg.prototype.onFunctionChange = function (functions, name) {
 
         if (functions[name]) {
@@ -186,6 +186,12 @@ define(function(require){
                 'edges': functions[name].edges
             });
         }      
+    };
+    
+    Cfg.prototype.resize = function () {
+        var height = this.domRoot.height() - this.domRoot.find(".top-bar").outerHeight(true);
+        this.cfgVisualiser.setSize('100%', height.toString());
+        this.cfgVisualiser.redraw();
     };
 
     return {
