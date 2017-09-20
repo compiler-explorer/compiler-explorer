@@ -691,15 +691,13 @@ define(function (require) {
         } else {
             this.optButton.prop("disabled", true);
         }
-        if (filters.commentOnly && filters.directives && filters.labels) {
-            if (!this.cfgViewOpen) {
-                this.cfgButton.prop("disabled", !this.compilerSupportsCfg);
-            }else {
-            this.cfgButton.prop("disabled", true);
-        }
+       
+        if (!this.cfgViewOpen) {
+            this.cfgButton.prop("disabled", !this.compilerSupportsCfg);
         } else {
             this.cfgButton.prop("disabled", true);
         }
+
         
     };
 
