@@ -498,6 +498,10 @@ function shortUrlHandler(req, res, next) {
             }
 
             var resultObj = JSON.parse(responseText);
+            if (!resultObj.longUrl) {
+                logger.warn("Missing long URL field in response for short URL " + bits[1] + " - got " + responseText);
+                return next();
+            }
             var parsed = url.parse(resultObj.longUrl);
             var allowedRe = new RegExp(gccProps('allowedShortUrlHostRe'));
             if (parsed.host.match(allowedRe) === null) {

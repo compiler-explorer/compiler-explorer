@@ -860,11 +860,14 @@ define(function (require) {
         if (currentWord && currentWord.word) {
             var word = currentWord.word;
             currentWord.range = new monaco.Range(e.target.position.lineNumber, currentWord.startColumn, e.target.position.lineNumber, currentWord.endColumn);
-            // Hacky workaround to check for negative numbers. c.f. https://github.com/mattgodbolt/compiler-explorer/issues/434
-            var lineContent = this.outputEditor.getModel().getLineContent(e.target.position.lineNumber);
-            if (lineContent[currentWord.startColumn - 2] === '-') {
-                word = '-' + word;
-                currentWord.range.startColumn -= 1;
+            // Avoid throwing an exception if somehow (How?) we have a non existent lineNumber. c.f. https://sentry.io/matt-godbolt/compiler-explorer/issues/285270358/
+            if (e.target.position.lineNumber < this.outputEditor.getModel().getLineCount()) {
+                // Hacky workaround to check for negative numbers. c.f. https://github.com/mattgodbolt/compiler-explorer/issues/434
+                var lineContent = this.outputEditor.getModel().getLineContent(e.target.position.lineNumber);
+                if (lineContent[currentWord.startColumn - 2] === '-') {
+                    word = '-' + word;
+                    currentWord.range.startColumn -= 1;
+                }
             }
             var numericToolTip = getNumericToolTip(word);
             if (numericToolTip) {
