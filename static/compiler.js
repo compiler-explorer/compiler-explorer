@@ -50,6 +50,7 @@ define(function (require) {
     });
 
     function patchOldFilters(filters) {
+        if (filters === undefined) return undefined;
         // Filters are of the form {filter: true|false¸ ...}. In older versions, we used
         // to suppress the {filter:false} form. This means we can't distinguish between
         // "filter not on" and "filter not present". In the latter case we want to default
