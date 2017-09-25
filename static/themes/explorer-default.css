@@ -55,6 +55,14 @@
     background: #4477AA;
 }
 
+.linked-code-decoration-margin {
+    background: lightblue;
+}
+
+.modal-content .well {
+    border-color: #474747;
+}
+
 .notification {
     background-color: cornflowerblue;
 }
