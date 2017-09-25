@@ -183,7 +183,6 @@ pre.content {
 }
 
 .linked-code-decoration-margin {
-    background: lightblue;
     width: 5px !important;
     left: 3px;
 }
@@ -193,7 +192,7 @@ pre.content {
 }
 
 .modal-content .well {
-    border: 1px solid #474747;
+    border: 1px solid;
     border-radius: 3px;
 }
 
