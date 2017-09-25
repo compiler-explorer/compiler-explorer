@@ -49,6 +49,21 @@ define(function (require) {
         }
     });
 
+    function patchOldFilters(filters) {
+        if (filters === undefined) return undefined;
+        // Filters are of the form {filter: true|false¸ ...}. In older versions, we used
+        // to suppress the {filter:false} form. This means we can't distinguish between
+        // "filter not on" and "filter not present". In the latter case we want to default
+        // the filter. In the former case we want the filter off. Filters now don't suppress
+        // but there are plenty of permanlinks out there with no filters set at all. Here
+        // we manually set any missing filters to 'false' to recover the old behaviour of
+        // "if it's not here, it's off".
+        _.each(['binary', 'labels', 'directives', 'commentOnly', 'trim', 'intel'], function (oldFilter) {
+            if (filters[oldFilter] === undefined) filters[oldFilter] = false;
+        });
+        return filters;
+    }
+
     function Compiler(hub, container, state) {
         this.container = container;
         this.eventHub = hub.createEventHub();
@@ -60,7 +75,7 @@ define(function (require) {
         this.compiler = this.compilerService.getCompilerById(state.compiler) ||
             this.compilerService.getCompilerById(options.defaultCompiler);
         this.options = state.options || options.compileOptions;
-        this.filters = new Toggles(this.domRoot.find(".filters"), state.filters);
+        this.filters = new Toggles(this.domRoot.find(".filters"), patchOldFilters(state.filters));
         this.source = "";
         this.assembly = [];
         this.colours = [];
@@ -81,7 +96,7 @@ define(function (require) {
 
         this.availableLibs = $.extend(true, {}, options.libs);
 
-        _.each(state.libs, _.bind(function(lib) {
+        _.each(state.libs, _.bind(function (lib) {
             if (this.availableLibs[lib.name] && this.availableLibs[lib.name].versions &&
                 this.availableLibs[lib.name].versions[lib.ver]) {
                 this.availableLibs[lib.name].versions[lib.ver].used = true;
@@ -110,7 +125,7 @@ define(function (require) {
             this.onOptionsChange($(e.target).val());
         }, this), 800);
         this.optionsField = this.domRoot.find(".options");
-        this.optionsField 
+        this.optionsField
             .val(this.options)
             .on("change", optionsChange)
             .on("keyup", optionsChange);
@@ -173,7 +188,7 @@ define(function (require) {
             }, this)
         });
 
-        var clearEditorsLinkedLines = _.bind(function() {
+        var clearEditorsLinkedLines = _.bind(function () {
             this.eventHub.emit('editorSetDecoration', this.sourceEditorId, -1, false);
         }, this);
 
@@ -192,7 +207,7 @@ define(function (require) {
                 clearEditorsLinkedLines();
                 this.linkedFadeTimeoutId = -1;
             }, this), 5000);
-        },this));
+        }, this));
 
         this.fontScale = new FontScale(this.domRoot, state, this.outputEditor);
         this.fontScale.on('change', _.bind(function () {
@@ -240,10 +255,10 @@ define(function (require) {
         this.domRoot.find(".status").parent().click(_.bind(function () {
             var insertPoint = hub.findParentRowOrColumn(this.container) ||
                 this.container.layoutManager.root.contentItems[0];
-            insertPoint.addChild(outputConfig());
+            insertPoint.addChild(outputConfig);
         }, this));
 
-        var cloneComponent = _.bind(function() {
+        var cloneComponent = _.bind(function () {
             return {
                 type: 'component',
                 componentName: 'compiler',
@@ -251,11 +266,11 @@ define(function (require) {
             };
         }, this);
 
-        var createOptView = _.bind(function() {
+        var createOptView = _.bind(function () {
             return Components.getOptViewWith(this.id, this.source, this.lastResult.optOutput, this.getCompilerName(), this.sourceEditorId);
         }, this);
 
-        var createAstView = _.bind(function() {
+        var createAstView = _.bind(function () {
             return Components.getAstViewWith(this.id, this.source, this.lastResult.astOutput, this.getCompilerName(), this.sourceEditorId);
         }, this);
         
@@ -269,11 +284,11 @@ define(function (require) {
         this.domRoot.find('.btn.add-compiler').click(_.bind(function () {
             var insertPoint = hub.findParentRowOrColumn(this.container) ||
                 this.container.layoutManager.root.contentItems[0];
-            insertPoint.addChild(cloneComponent());
+            insertPoint.addChild(cloneComponent);
         }, this));
 
         this.container.layoutManager.createDragSource(
-            this.optButton, function() {
+            this.optButton, function () {
                 this.wantOptInfo = true;
                 this.compile();
                 return createOptView.apply(this);
@@ -283,13 +298,13 @@ define(function (require) {
             this.wantOptInfo = true;
             var insertPoint = hub.findParentRowOrColumn(this.container) ||
                 this.container.layoutManager.root.contentItems[0];
-            insertPoint.addChild(createOptView());
+            insertPoint.addChild(createOptView);
             this.optButton.prop("disabled", true);
             this.compile();
         }, this));
 
         this.container.layoutManager.createDragSource(
-            this.astButton, function() {
+            this.astButton, function () {
                 this.compile();
                 return createAstView.apply(this);
             }.bind(this));
@@ -297,7 +312,7 @@ define(function (require) {
         this.astButton.click(_.bind(function () {
             var insertPoint = hub.findParentRowOrColumn(this.container) ||
                 this.container.layoutManager.root.contentItems[0];
-            insertPoint.addChild(createAstView());
+            insertPoint.addChild(createAstView);
             this.compile();
         }, this));
         
@@ -316,7 +331,7 @@ define(function (require) {
         }, this));
 
 
-        var updateLibsUsed = _.bind(function() {
+        var updateLibsUsed = _.bind(function () {
             if (Object.keys(this.availableLibs).length === 0) {
                 return $('<p></p>')
                     .text("No libs configured for this language yet. ")
@@ -331,16 +346,16 @@ define(function (require) {
                             .height("16px")
                             .attr("title", "Opens in a new window")
                         )
-                );
+                    );
             }
             var libsList = $('<ul></ul>');
-            var onChecked = _.bind(function(e) {
+            var onChecked = _.bind(function (e) {
                 var elem = $(e.target);
                 if (elem.prop('checked')) {
                     libsList.find('input[name=' + elem.prop('name') + ']').prop('checked', false);
                     elem.prop('checked', true);
                 }
-                _.each(this.availableLibs[elem.prop('data-lib')].versions, function(version) {
+                _.each(this.availableLibs[elem.prop('data-lib')].versions, function (version) {
                     version.used = false;
                 });
                 this.availableLibs[elem.prop('data-lib')].versions[elem.prop('data-version')].used = elem.prop('checked');
@@ -351,12 +366,12 @@ define(function (require) {
 
             libsList.addClass('lib-list');
             var firstLibGroup = true;
-            _.each(this.availableLibs, function(lib, libKey) {
+            _.each(this.availableLibs, function (lib, libKey) {
                 if (!firstLibGroup)
                     libsList.append($('<hr>').addClass('lib-separator'));
                 else
                     firstLibGroup = false;
-                _.each(lib.versions, function(version, vKey) {
+                _.each(lib.versions, function (version, vKey) {
                     var checkbox = $('<input type="checkbox">')
                         .addClass('lib-checkbox')
                         .prop('data-lib', libKey)
@@ -371,7 +386,7 @@ define(function (require) {
                         .append($('<label></label>')
                             .addClass('lib-label')
                             .text(lib.name + " " + version.version)
-                            .on('click', function() {
+                            .on('click', function () {
                                 $(this).parent().find('.lib-checkbox').trigger('click');
                             })
                         );
@@ -442,13 +457,13 @@ define(function (require) {
     Compiler.prototype.compile = function () {
         var options = {
             userArguments: this.options,
-            compilerOptions: { produceAst: this.astViewOpen, produceOptInfo: this.wantOptInfo },
+            compilerOptions: {produceAst: this.astViewOpen, produceOptInfo: this.wantOptInfo},
             filters: this.getEffectiveFilters()
         };
-        _.each(this.availableLibs, function(lib) {
-            _.each(lib.versions, function(version) {
+        _.each(this.availableLibs, function (lib) {
+            _.each(lib.versions, function (version) {
                 if (version.used) {
-                    _.each(version.path, function(path) {
+                    _.each(version.path, function (path) {
                         options.userArguments += " -I" + path;
                     });
                 }
@@ -701,7 +716,7 @@ define(function (require) {
         // If its already open, we should turn the it off.
         // The pane will update with error text
         // Other wise we just disable the button.
-        if(!this.optViewOpen) {
+        if (!this.optViewOpen) {
             this.optButton.prop("disabled", !this.compiler.supportsOptOutput);
         } else {
             this.optButton.prop("disabled", true);
@@ -755,8 +770,8 @@ define(function (require) {
 
     Compiler.prototype.currentState = function () {
         var libs = [];
-        _.each(this.availableLibs, function(library, name) {
-            _.each(library.versions, function(version, ver) {
+        _.each(this.availableLibs, function (library, name) {
+            _.each(library.versions, function (version, ver) {
                 if (library.versions[ver].used) {
                     libs.push({name, ver});
                 }
@@ -870,7 +885,7 @@ define(function (require) {
         return null;
     }
 
-    
+
     var getAsmInfo = function (opcode) {
         var cacheName = "asm/" + opcode;
         var cached = OpcodeCache.get(cacheName);
@@ -926,7 +941,7 @@ define(function (require) {
                 this.updateDecorations();
             }
 
-            var getTokensForLine = function(model, line) {
+            var getTokensForLine = function (model, line) {
                 //Force line's state to be accurate
                 model.getLineTokens(line, /*inaccurateTokensAcceptable*/false);
                 // Get the tokenization state at the beginning of this line
@@ -940,7 +955,7 @@ define(function (require) {
             };
 
             if (this.settings.hoverShowAsmDoc === true &&
-                _.some(getTokensForLine(this.outputEditor.getModel(), currentWord.range.startLineNumber), function(t) {
+                _.some(getTokensForLine(this.outputEditor.getModel(), currentWord.range.startLineNumber), function (t) {
                     return t.offset + 1 === currentWord.startColumn && t.type === "keyword.asm";
                 })) {
                 getAsmInfo(currentWord.word).then(_.bind(function (response) {

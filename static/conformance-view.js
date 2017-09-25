@@ -198,7 +198,6 @@ define(function (require) {
                 // We make sure we are not over our limit
                 if (picker && compileCount < this.maxCompilations) {
                     compileCount++;
-
                     if (picker.val()) {
                         var cv = Number(picker.attr("data-cv"));
                         var request = {
