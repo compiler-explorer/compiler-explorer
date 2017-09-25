@@ -41,7 +41,7 @@ define(function(require){
         this.domRoot.html($('#cfg').html());
         this.functions = state.cfgResult;
         this.defaultCfgOuput = {'nodes': [{id: 0, label: 'No Output'}], 'edges': []};
-        this.fnNames = this.functions? Object.keys(this.functions):  "no function";
+        this.fnNames = this.functions? Object.keys(this.functions):  [];
         this.currentFunc = this.fnNames.length? this.fnNames[0]: "";
         
         this.networkOpts = {
@@ -117,8 +117,8 @@ define(function(require){
             valueField: 'name',
             labelField: 'name',
             searchField: ['name'],
-            options: this.fnNames.length ? this.adaptStructure(this.fnNames) : [{name:"no functions"}],
-            items: this.fnNames.length ? [this.currentFunc] : [{name:"no functions"}]
+            options: this.fnNames.length ? this.adaptStructure(this.fnNames) : [{name:"the input contain no function"}],
+            items: this.fnNames.length ? [this.currentFunc] : ["select a function please..."]
         }).on('change', _.bind(function(event){
             this.onFunctionChange(this.functions, event.target.value);
         }, this));
@@ -150,8 +150,8 @@ define(function(require){
                 valueField: 'name',
                 labelField: 'name',
                 searchField: ['name'],
-                options: this.fnNames.length ? this.adaptStructure(this.fnNames) : [],
-                items:  [this.currentFunc]
+                options: this.fnNames.length ? this.adaptStructure(this.fnNames) : [{name:"the input contain no function"}],
+                items:  this.fnNames.length ? [this.currentFunc] : ["select a function please..."]
             }).on('change', function (event) {
                 this.onFunctionChange(this.functions, event.target.value);
             });
