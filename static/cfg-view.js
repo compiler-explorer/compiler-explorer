@@ -42,7 +42,7 @@ define(function(require){
         this.functions = state.cfgResult;
         this.defaultCfgOuput = {'nodes': [{id: 0, label: 'No Output'}], 'edges': []};
         this.fnNames = this.functions? Object.keys(this.functions):  "no function";
-        this. currentFunc = this.fnNames.length? this.fnNames[0]: "";
+        this.currentFunc = this.fnNames.length? this.fnNames[0]: "";
         
         this.networkOpts = {
             autoResize: true,
@@ -94,7 +94,6 @@ define(function(require){
         
         this.eventHub.on('compileResult', this.onCompileResult, this);
         this.eventHub.on('compiler', this.onCompiler, this);
-        //this.eventHub.on('editorChange', this.onEditorChange, this);
         this.eventHub.emit('cfgViewOpened', this._compilerid);
         this.container.on('destroy', function () {
             this.eventHub.emit("cfgViewClosed", this._compilerid, this.cfgVisualiser);
@@ -112,8 +111,7 @@ define(function(require){
             }
             return options;
         };
-        //self stays until 
-        var self = this;
+
         this.select = this.domRoot.find(".function-picker").selectize({
             sortField: 'name',
             valueField: 'name',
@@ -121,9 +119,9 @@ define(function(require){
             searchField: ['name'],
             options: this.fnNames.length ? this.adaptStructure(this.fnNames) : [{name:"no functions"}],
             items: this.fnNames.length ? [this.currentFunc] : [{name:"no functions"}]
-        }).on('change', function(event){
-            self.onFunctionChange(self.functions, this.value);
-        });
+        }).on('change', _.bind(function(event){
+            this.onFunctionChange(this.functions, event.target.value);
+        }, this));
         
         this.setTitle();
    }
@@ -147,7 +145,6 @@ define(function(require){
             }
             
             this.select[0].selectize.destroy();
-            var self = this;//stays until investigation
             this.select = this.domRoot.find(".function-picker").selectize({
                 sortField: 'name',
                 valueField: 'name',
@@ -156,7 +153,7 @@ define(function(require){
                 options: this.fnNames.length ? this.adaptStructure(this.fnNames) : [],
                 items:  [this.currentFunc]
             }).on('change', function (event) {
-                self.onFunctionChange(self.functions, this.value);
+                this.onFunctionChange(this.functions, event.target.value);
             });
 
         }
@@ -179,7 +176,6 @@ define(function(require){
     };
 
     Cfg.prototype.onFunctionChange = function (functions, name) {
-
         if (functions[name]) {
             this.showCfgResults({
                 'nodes': functions[name].nodes,
