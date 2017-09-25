@@ -75,7 +75,7 @@ define(function(require){
                 keyboard: {
                     enabled: true,
                     speed: {x: 10, y: 10, zoom: 0.03},
-                    bindToWindow: true
+                    bindToWindow: false
                 }
             }
         };
@@ -152,9 +152,9 @@ define(function(require){
                 searchField: ['name'],
                 options: this.fnNames.length ? this.adaptStructure(this.fnNames) : [{name:"the input contain no function"}],
                 items:  this.fnNames.length ? [this.currentFunc] : ["select a function please..."]
-            }).on('change', function (event) {
+            }).on('change', _.bind(function (event) {
                 this.onFunctionChange(this.functions, event.target.value);
-            });
+            }), this);
 
         }
     };
@@ -194,3 +194,4 @@ define(function(require){
         Cfg: Cfg
     };
 });
+
