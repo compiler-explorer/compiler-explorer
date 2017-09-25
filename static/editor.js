@@ -298,12 +298,13 @@ define(function (require) {
         var addCompilerButton = this.domRoot.find('.btn.add-compiler');
 
         this.container.layoutManager.createDragSource(
-            addCompilerButton, compilerConfig());
+            addCompilerButton, compilerConfig);
         addCompilerButton.click(_.bind(function () {
             var insertPoint = hub.findParentRowOrColumn(this.container) ||
                 this.container.layoutManager.root.contentItems[0];
-            insertPoint.addChild(compilerConfig());
+            insertPoint.addChild(compilerConfig);
         }, this));
+
 
         var conformanceConfig = _.bind(function () {
             return Components.getConformanceView(this.id, this.getSource());
@@ -312,11 +313,11 @@ define(function (require) {
         this.conformanceViewerButton = this.domRoot.find('.btn.conformance');
 
         this.container.layoutManager.createDragSource(
-            this.conformanceViewerButton, conformanceConfig());
+            this.conformanceViewerButton, conformanceConfig);
         this.conformanceViewerButton.click(_.bind(function () {
             var insertPoint = hub.findParentRowOrColumn(this.container) ||
                 this.container.layoutManager.root.contentItems[0];
-            insertPoint.addChild(conformanceConfig());
+            insertPoint.addChild(conformanceConfig);
         }, this));
 
         this.updateState();
