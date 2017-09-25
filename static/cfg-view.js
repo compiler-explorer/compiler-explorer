@@ -137,7 +137,7 @@ define(function(require){
                     'nodes': this.functions[this.currentFunc].nodes,
                     'edges': this.functions[this.currentFunc].edges
                 });
-                
+                this.cfgVisualiser.selectNodes([this.functions[this.currentFunc].nodes[0].id]);
             } else {
                 this.showCfgResults(this.defaultCfgOuput);
                 this.currentFunc = "";
@@ -155,6 +155,8 @@ define(function(require){
             }).on('change', _.bind(function (event) {
                 this.onFunctionChange(this.functions, event.target.value);
             }), this);
+            
+            
 
         }
     };
@@ -177,10 +179,12 @@ define(function(require){
 
     Cfg.prototype.onFunctionChange = function (functions, name) {
         if (functions[name]) {
+            this.currentFunc = name;
             this.showCfgResults({
                 'nodes': functions[name].nodes,
                 'edges': functions[name].edges
             });
+            this.cfgVisualiser.selectNodes([functions[name].nodes[0].id]);
         }      
     };
     
