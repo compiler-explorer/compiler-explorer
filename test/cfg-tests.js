@@ -44,8 +44,3 @@ describe('Cfg test cases', function () {
         common(cases, "clang", "clang");
     });
 });
-
-
-
-
-

@@ -25,25 +25,23 @@
 
 define(function(require){
    "use strict";
-   
-   var FontScale = require('fontscale');
-   var options = require('options');
-   var vis = require('vis');
-   var _ = require('underscore');
-   
+
+    var vis = require('vis');
+    var _ = require('underscore');
+
     require('asm-mode');
     require('selectize');
-   
-   function Cfg(hub, container, state){
+
+    function Cfg(hub, container, state){
         this.container = container;
         this.eventHub = hub.createEventHub();
         this.domRoot = container.getElement();
         this.domRoot.html($('#cfg').html());
         this.functions = state.cfgResult;
-        this.defaultCfgOuput = {'nodes': [{id: 0, label: 'No Output'}], 'edges': []};
+        this.defaultCfgOuput = {nodes: [{id: 0, label: 'No Output'}], edges: []};
         this.fnNames = this.functions? Object.keys(this.functions):  [];
         this.currentFunc = this.fnNames.length? this.fnNames[0]: "";
-        
+
         this.networkOpts = {
             autoResize: true,
             locale: 'en',
@@ -57,10 +55,10 @@ define(function(require){
             },
             layout: {
                 improvedLayout: true,
-                "hierarchical": {
-                    "enabled": true,
-                    "sortMethod": "directed",
-                    "direction": "UD",
+                hierarchical: {
+                    enabled: true,
+                    sortMethod: "directed",
+                    direction: "LR", // LR means Upside/down for some reason!
                     nodeSpacing: 100,
                     levelSeparation: 100
                 }
@@ -79,19 +77,19 @@ define(function(require){
                 }
             }
         };
-        
-        this.cfgVisualiser = new vis.Network(this.domRoot.find(".graph-placeholder")[0], 
+
+        this.cfgVisualiser = new vis.Network(this.domRoot.find(".graph-placeholder")[0],
                                              this.defaultCfgOuput, this.networkOpts);
         this.restButton = this.domRoot.find(".show-hide-btn")
-                .on('click', _.bind(function(event){
-                    this.networkOpts.interaction.navigationButtons = !this.networkOpts.interaction.navigationButtons;
-                    this.cfgVisualiser.setOptions(this.networkOpts);
-                }, this));
-        
+            .on('click', _.bind(function(){
+                this.networkOpts.interaction.navigationButtons = !this.networkOpts.interaction.navigationButtons;
+                this.cfgVisualiser.setOptions(this.networkOpts);
+            }, this));
+
         this._compilerid = state.id;
         this._compilerName = state.compilerName;
         this._editorid = state.editorid;
-        
+
         this.eventHub.on('compileResult', this.onCompileResult, this);
         this.eventHub.on('compiler', this.onCompiler, this);
         this.eventHub.emit('cfgViewOpened', this._compilerid);
@@ -99,13 +97,13 @@ define(function(require){
             this.eventHub.emit("cfgViewClosed", this._compilerid, this.cfgVisualiser);
             this.eventHub.unsubscribe();
         }, this);
-        
+
         container.on('resize', this.resize, this);
         container.on('shown', this.resize, this);
-        
+
         this.adaptStructure = function(names){
             var options = [];
-            
+
             for(var i = 0; i < names.length; ++i){
                 options.push({name:names[i]});
             }
@@ -117,16 +115,16 @@ define(function(require){
             valueField: 'name',
             labelField: 'name',
             searchField: ['name'],
-            options: this.fnNames.length ? this.adaptStructure(this.fnNames) : [{name:"the input contain no function"}],
-            items: this.fnNames.length ? [this.currentFunc] : ["select a function please..."]
+            options: this.fnNames.length ? this.adaptStructure(this.fnNames) : [{name:"The input does not contain any function"}],
+            items: this.fnNames.length ? [this.currentFunc] : ["Please select a function"]
         }).on('change', _.bind(function(event){
             this.onFunctionChange(this.functions, event.target.value);
         }, this));
-        
+
         this.setTitle();
-   }
-   
-   Cfg.prototype.onCompileResult = function (id, compiler, result) {
+    }
+
+    Cfg.prototype.onCompileResult = function (id, compiler, result) {
         if (this._compilerid === id) {
             if (result.supportsCfg && !$.isEmptyObject(result.cfg)) {
                 this.functions = result.cfg;
@@ -143,25 +141,22 @@ define(function(require){
                 this.currentFunc = "";
                 this.fnNames = [];
             }
-            
+
             this.select[0].selectize.destroy();
             this.select = this.domRoot.find(".function-picker").selectize({
                 sortField: 'name',
                 valueField: 'name',
                 labelField: 'name',
                 searchField: ['name'],
-                options: this.fnNames.length ? this.adaptStructure(this.fnNames) : [{name:"the input contain no function"}],
-                items:  this.fnNames.length ? [this.currentFunc] : ["select a function please..."]
+                options: this.fnNames.length ? this.adaptStructure(this.fnNames) : [{name:"The input does not contain any function"}],
+                items:  this.fnNames.length ? [this.currentFunc] : ["Please select a function"]
             }).on('change', _.bind(function (event) {
                 this.onFunctionChange(this.functions, event.target.value);
-            }), this);
-            
-            
-
+            }, this));
         }
     };
-   
-   Cfg.prototype.setTitle = function () {
+
+    Cfg.prototype.setTitle = function () {
           this.container.setTitle(this._compilerName + " Graph Viewer (Editor #" + this._editorid + ", Compiler #" + this._compilerid + ")");
     };
 
@@ -185,9 +180,9 @@ define(function(require){
                 'edges': functions[name].edges
             });
             this.cfgVisualiser.selectNodes([functions[name].nodes[0].id]);
-        }      
+        }
     };
-    
+
     Cfg.prototype.resize = function () {
         var height = this.domRoot.height() - this.domRoot.find(".top-bar").outerHeight(true);
         this.cfgVisualiser.setSize('100%', height.toString());

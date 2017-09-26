@@ -325,7 +325,7 @@ define(function (require) {
         this.cfgButton.click(_.bind(function () {
             var insertPoint = hub.findParentRowOrColumn(this.container) ||
                 this.container.layoutManager.root.contentItems[0];
-            insertPoint.addChild(createCfgView());
+            insertPoint.addChild(createCfgView);
             this.cfgButton.prop("disabled", true);
             this.compile();
         }, this));

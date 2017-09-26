@@ -233,3 +233,12 @@ pre.content {
     display: block;
     overflow: auto;
 }
+
+.cfg-toolbar table {
+    width: 100%;
+}
+
+.graph-placeholder {
+    width: 100%;
+    height: 100%;
+}
