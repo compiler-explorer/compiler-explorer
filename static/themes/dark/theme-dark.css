@@ -213,3 +213,8 @@ input.permalink {
 .conformance-wrapper {
     background-color: #1e1e1e !important;
 }
+
+.graph-placeholder {
+    background-color: #333333 !important;
+}
+
