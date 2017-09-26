@@ -1,0 +1,927 @@
+{
+    "asm": [{
+            "text": "main:",
+            "source": null
+        }, {
+            "text": "  lea edx, [0+rdi*8]",
+            "source": {
+                "file": null,
+                "line": 6
+            }
+        }, {
+            "text": "  test edx, edx",
+            "source": {
+                "file": null,
+                "line": 6
+            }
+        }, {
+            "text": "  je .L8",
+            "source": {
+                "file": null,
+                "line": 6
+            }
+        }, {
+            "text": "  add edx, edi",
+            "source": {
+                "file": null,
+                "line": 9
+            }
+        }, {
+            "text": "  je .L13",
+            "source": {
+                "file": null,
+                "line": 9
+            }
+        }, {
+            "text": "  imul eax, edi, 223",
+            "source": {
+                "file": null,
+                "line": 12
+            }
+        }, {
+            "text": "  cmp eax, 1",
+            "source": {
+                "file": null,
+                "line": 12
+            }
+        }, {
+            "text": "  je .L14",
+            "source": {
+                "file": null,
+                "line": 12
+            }
+        }, {
+            "text": "  xor eax, eax",
+            "source": {
+                "file": null,
+                "line": 18
+            }
+        }, {
+            "text": ".L1:",
+            "source": null
+        }, {
+            "text": "  rep ret",
+            "source": {
+                "file": null,
+                "line": 19
+            }
+        }, {
+            "text": ".L14:",
+            "source": null
+        }, {
+            "text": "  test edi, edi",
+            "source": {
+                "file": null,
+                "line": 13
+            }
+        }, {
+            "text": "  jle .L1",
+            "source": {
+                "file": null,
+                "line": 13
+            }
+        }, {
+            "text": "  lea edx, [rdi-1]",
+            "source": {
+                "file": null,
+                "line": 13
+            }
+        }, {
+            "text": "  mov esi, edx",
+            "source": {
+                "file": null,
+                "line": 13
+            }
+        }, {
+            "text": "  shr esi",
+            "source": {
+                "file": null,
+                "line": 13
+            }
+        }, {
+            "text": "  add esi, 1",
+            "source": {
+                "file": null,
+                "line": 13
+            }
+        }, {
+            "text": "  cmp edx, 11",
+            "source": {
+                "file": null,
+                "line": 13
+            }
+        }, {
+            "text": "  jbe .L10",
+            "source": {
+                "file": null,
+                "line": 13
+            }
+        }, {
+            "text": "  mov DWORD PTR [rsp-12], edi",
+            "source": {
+                "file": null,
+                "line": 13
+            }
+        }, {
+            "text": "  pxor xmm3, xmm3",
+            "source": {
+                "file": null,
+                "line": 13
+            }
+        }, {
+            "text": "  movd xmm7, DWORD PTR [rsp-12]",
+            "source": {
+                "file": null,
+                "line": 13
+            }
+        }, {
+            "text": "  mov ecx, esi",
+            "source": {
+                "file": null,
+                "line": 13
+            }
+        }, {
+            "text": "  xor edx, edx",
+            "source": {
+                "file": null,
+                "line": 13
+            }
+        }, {
+            "text": "  movdqa xmm2, XMMWORD PTR .LC0[rip]",
+            "source": {
+                "file": null,
+                "line": 13
+            }
+        }, {
+            "text": "  shr ecx, 2",
+            "source": {
+                "file": null,
+                "line": 13
+            }
+        }, {
+            "text": "  pshufd xmm4, xmm7, 0",
+            "source": {
+                "file": null,
+                "line": 13
+            }
+        }, {
+            "text": "  movdqa xmm6, XMMWORD PTR .LC1[rip]",
+            "source": {
+                "file": null,
+                "line": 13
+            }
+        }, {
+            "text": "  movdqa xmm5, xmm4",
+            "source": {
+                "file": null,
+                "line": 13
+            }
+        }, {
+            "text": "  psrlq xmm5, 32",
+            "source": {
+                "file": null,
+                "line": 13
+            }
+        }, {
+            "text": ".L5:",
+            "source": null
+        }, {
+            "text": "  movdqa xmm0, xmm2",
+            "source": {
+                "file": null,
+                "line": 14
+            }
+        }, {
+            "text": "  add edx, 1",
+            "source": {
+                "file": null,
+                "line": 14
+            }
+        }, {
+            "text": "  movdqa xmm1, xmm2",
+            "source": {
+                "file": null,
+                "line": 14
+            }
+        }, {
+            "text": "  cmp ecx, edx",
+            "source": {
+                "file": null,
+                "line": 14
+            }
+        }, {
+            "text": "  paddd xmm2, xmm6",
+            "source": {
+                "file": null,
+                "line": 14
+            }
+        }, {
+            "text": "  pmuludq xmm0, xmm4",
+            "source": {
+                "file": null,
+                "line": 14
+            }
+        }, {
+            "text": "  pshufd xmm0, xmm0, 8",
+            "source": {
+                "file": null,
+                "line": 14
+            }
+        }, {
+            "text": "  psrlq xmm1, 32",
+            "source": {
+                "file": null,
+                "line": 14
+            }
+        }, {
+            "text": "  pmuludq xmm1, xmm5",
+            "source": {
+                "file": null,
+                "line": 14
+            }
+        }, {
+            "text": "  pshufd xmm1, xmm1, 8",
+            "source": {
+                "file": null,
+                "line": 14
+            }
+        }, {
+            "text": "  punpckldq xmm0, xmm1",
+            "source": {
+                "file": null,
+                "line": 14
+            }
+        }, {
+            "text": "  paddd xmm3, xmm0",
+            "source": {
+                "file": null,
+                "line": 14
+            }
+        }, {
+            "text": "  ja .L5",
+            "source": {
+                "file": null,
+                "line": 14
+            }
+        }, {
+            "text": "  movdqa xmm0, xmm3",
+            "source": {
+                "file": null,
+                "line": 14
+            }
+        }, {
+            "text": "  mov r8d, esi",
+            "source": {
+                "file": null,
+                "line": 14
+            }
+        }, {
+            "text": "  and r8d, -4",
+            "source": {
+                "file": null,
+                "line": 14
+            }
+        }, {
+            "text": "  psrldq xmm0, 8",
+            "source": {
+                "file": null,
+                "line": 14
+            }
+        }, {
+            "text": "  paddd xmm3, xmm0",
+            "source": {
+                "file": null,
+                "line": 14
+            }
+        }, {
+            "text": "  movdqa xmm0, xmm3",
+            "source": {
+                "file": null,
+                "line": 14
+            }
+        }, {
+            "text": "  psrldq xmm0, 4",
+            "source": {
+                "file": null,
+                "line": 14
+            }
+        }, {
+            "text": "  paddd xmm3, xmm0",
+            "source": {
+                "file": null,
+                "line": 14
+            }
+        }, {
+            "text": "  movd edx, xmm3",
+            "source": {
+                "file": null,
+                "line": 14
+            }
+        }, {
+            "text": "  add eax, edx",
+            "source": {
+                "file": null,
+                "line": 14
+            }
+        }, {
+            "text": "  lea edx, [r8+r8]",
+            "source": {
+                "file": null,
+                "line": 14
+            }
+        }, {
+            "text": "  cmp esi, r8d",
+            "source": {
+                "file": null,
+                "line": 14
+            }
+        }, {
+            "text": "  lea ecx, [rdx+1]",
+            "source": {
+                "file": null,
+                "line": 14
+            }
+        }, {
+            "text": "  je .L15",
+            "source": {
+                "file": null,
+                "line": 14
+            }
+        }, {
+            "text": ".L4:",
+            "source": null
+        }, {
+            "text": "  imul ecx, edi",
+            "source": {
+                "file": null,
+                "line": 14
+            }
+        }, {
+            "text": "  add eax, ecx",
+            "source": {
+                "file": null,
+                "line": 14
+            }
+        }, {
+            "text": "  lea ecx, [rdx+3]",
+            "source": {
+                "file": null,
+                "line": 13
+            }
+        }, {
+            "text": "  cmp edi, ecx",
+            "source": {
+                "file": null,
+                "line": 13
+            }
+        }, {
+            "text": "  jl .L1",
+            "source": {
+                "file": null,
+                "line": 13
+            }
+        }, {
+            "text": "  imul ecx, edi",
+            "source": {
+                "file": null,
+                "line": 14
+            }
+        }, {
+            "text": "  add eax, ecx",
+            "source": {
+                "file": null,
+                "line": 14
+            }
+        }, {
+            "text": "  lea ecx, [rdx+5]",
+            "source": {
+                "file": null,
+                "line": 13
+            }
+        }, {
+            "text": "  cmp edi, ecx",
+            "source": {
+                "file": null,
+                "line": 13
+            }
+        }, {
+            "text": "  jl .L1",
+            "source": {
+                "file": null,
+                "line": 13
+            }
+        }, {
+            "text": "  imul ecx, edi",
+            "source": {
+                "file": null,
+                "line": 14
+            }
+        }, {
+            "text": "  add eax, ecx",
+            "source": {
+                "file": null,
+                "line": 14
+            }
+        }, {
+            "text": "  lea ecx, [rdx+7]",
+            "source": {
+                "file": null,
+                "line": 13
+            }
+        }, {
+            "text": "  cmp edi, ecx",
+            "source": {
+                "file": null,
+                "line": 13
+            }
+        }, {
+            "text": "  jl .L1",
+            "source": {
+                "file": null,
+                "line": 13
+            }
+        }, {
+            "text": "  imul ecx, edi",
+            "source": {
+                "file": null,
+                "line": 14
+            }
+        }, {
+            "text": "  add eax, ecx",
+            "source": {
+                "file": null,
+                "line": 14
+            }
+        }, {
+            "text": "  lea ecx, [rdx+9]",
+            "source": {
+                "file": null,
+                "line": 13
+            }
+        }, {
+            "text": "  cmp edi, ecx",
+            "source": {
+                "file": null,
+                "line": 13
+            }
+        }, {
+            "text": "  jl .L1",
+            "source": {
+                "file": null,
+                "line": 13
+            }
+        }, {
+            "text": "  imul ecx, edi",
+            "source": {
+                "file": null,
+                "line": 14
+            }
+        }, {
+            "text": "  add edx, 11",
+            "source": {
+                "file": null,
+                "line": 13
+            }
+        }, {
+            "text": "  add eax, ecx",
+            "source": {
+                "file": null,
+                "line": 14
+            }
+        }, {
+            "text": "  cmp edi, edx",
+            "source": {
+                "file": null,
+                "line": 13
+            }
+        }, {
+            "text": "  jl .L1",
+            "source": {
+                "file": null,
+                "line": 13
+            }
+        }, {
+            "text": "  imul edi, edx",
+            "source": {
+                "file": null,
+                "line": 14
+            }
+        }, {
+            "text": "  add eax, edi",
+            "source": {
+                "file": null,
+                "line": 14
+            }
+        }, {
+            "text": "  ret",
+            "source": {
+                "file": null,
+                "line": 14
+            }
+        }, {
+            "text": ".L13:",
+            "source": null
+        }, {
+            "text": "  imul edx, edi",
+            "source": {
+                "file": null,
+                "line": 10
+            }
+        }, {
+            "text": "  imul eax, edx, 78",
+            "source": {
+                "file": null,
+                "line": 10
+            }
+        }, {
+            "text": "  ret",
+            "source": {
+                "file": null,
+                "line": 10
+            }
+        }, {
+            "text": ".L8:",
+            "source": null
+        }, {
+            "text": "  mov eax, 78",
+            "source": {
+                "file": null,
+                "line": 7
+            }
+        }, {
+            "text": "  ret",
+            "source": {
+                "file": null,
+                "line": 7
+            }
+        }, {
+            "text": ".L15:",
+            "source": null
+        }, {
+            "text": "  ret",
+            "source": {
+                "file": null,
+                "line": 7
+            }
+        }, {
+            "text": ".L10:",
+            "source": null
+        }, {
+            "text": "  mov ecx, 1",
+            "source": {
+                "file": null,
+                "line": 13
+            }
+        }, {
+            "text": "  xor edx, edx",
+            "source": {
+                "file": null,
+                "line": 13
+            }
+        }, {
+            "text": "  jmp .L4",
+            "source": {
+                "file": null,
+                "line": 13
+            }
+        }, {
+            "text": "_GLOBAL__sub_I_main:",
+            "source": null
+        }, {
+            "text": "  sub rsp, 8",
+            "source": {
+                "file": null,
+                "line": 19
+            }
+        }, {
+            "text": "  mov edi, OFFSET FLAT:std::__ioinit",
+            "source": {
+                "file": "/usr/include/c++/7/iostream",
+                "line": 74
+            }
+        }, {
+            "text": "  call std::ios_base::Init::Init()",
+            "source": {
+                "file": "/usr/include/c++/7/iostream",
+                "line": 74
+            }
+        }, {
+            "text": "  mov edx, OFFSET FLAT:__dso_handle",
+            "source": {
+                "file": "/usr/include/c++/7/iostream",
+                "line": 74
+            }
+        }, {
+            "text": "  mov esi, OFFSET FLAT:std::__ioinit",
+            "source": {
+                "file": "/usr/include/c++/7/iostream",
+                "line": 74
+            }
+        }, {
+            "text": "  mov edi, OFFSET FLAT:std::ios_base::Init::~Init()",
+            "source": {
+                "file": "/usr/include/c++/7/iostream",
+                "line": 74
+            }
+        }, {
+            "text": "  add rsp, 8",
+            "source": {
+                "file": null,
+                "line": 19
+            }
+        }, {
+            "text": "  jmp __cxa_atexit",
+            "source": {
+                "file": "/usr/include/c++/7/iostream",
+                "line": 74
+            }
+        }, {
+            "text": ".LC0:",
+            "source": null
+        }, {
+            "text": "  .long 1",
+            "source": null
+        }, {
+            "text": "  .long 3",
+            "source": null
+        }, {
+            "text": "  .long 5",
+            "source": null
+        }, {
+            "text": "  .long 7",
+            "source": null
+        }, {
+            "text": ".LC1:",
+            "source": null
+        }, {
+            "text": "  .long 8",
+            "source": null
+        }, {
+            "text": "  .long 8",
+            "source": null
+        }, {
+            "text": "  .long 8",
+            "source": null
+        }, {
+            "text": "  .long 8",
+            "source": null
+        }, {
+            "text": "",
+            "source": null
+        }],
+    "cfg": {
+        "main:": {
+            "nodes": [{
+                    "id": "main:",
+                    "label": "main:\n  lea edx, [0+rdi*8]\n  test edx, edx\n  je .L8",
+                    "color": "#99ccff",
+                    "shape": "box"
+                }, {
+                    "id": "main:@4",
+                    "label": "main:@4\n  add edx, edi\n  je .L13",
+                    "color": "#99ccff",
+                    "shape": "box"
+                }, {
+                    "id": "main:@6",
+                    "label": "main:@6\n  imul eax, edi, 223\n  cmp eax, 1\n  je .L14",
+                    "color": "#99ccff",
+                    "shape": "box"
+                }, {
+                    "id": "main:@9",
+                    "label": "main:@9\n  xor eax, eax",
+                    "color": "#99ccff",
+                    "shape": "box"
+                }, {
+                    "id": ".L1:",
+                    "label": ".L1:\n  rep ret",
+                    "color": "#99ccff",
+                    "shape": "box"
+                }, {
+                    "id": ".L14:",
+                    "label": ".L14:\n  test edi, edi\n  jle .L1",
+                    "color": "#99ccff",
+                    "shape": "box"
+                }, {
+                    "id": ".L14:@15",
+                    "label": ".L14:@15\n  lea edx, [rdi-1]\n  mov esi, edx\n  shr esi\n  add esi, 1\n  cmp edx, 11\n  jbe .L10",
+                    "color": "#99ccff",
+                    "shape": "box"
+                }, {
+                    "id": ".L14:@21",
+                    "label": ".L14:@21\n  mov DWORD PTR [rsp-12], edi\n  pxor xmm3, xmm3\n  movd xmm7, DWORD PTR [rsp-12]\n  mov ecx, esi\n  xor edx, edx\n  movdqa xmm2, XMMWORD PTR .LC0[rip]\n  shr ecx, 2\n  pshufd xmm4, xmm7, 0\n  movdqa xmm6, XMMWORD PTR .LC1[rip]\n  movdqa xmm5, xmm4\n  psrlq xmm5, 32",
+                    "color": "#99ccff",
+                    "shape": "box"
+                }, {
+                    "id": ".L5:",
+                    "label": ".L5:\n  movdqa xmm0, xmm2\n  add edx, 1\n  movdqa xmm1, xmm2\n  cmp ecx, edx\n  paddd xmm2, xmm6\n  pmuludq xmm0, xmm4\n  pshufd xmm0, xmm0, 8\n  psrlq xmm1, 32\n  pmuludq xmm1, xmm5\n  pshufd xmm1, xmm1, 8\n  punpckldq xmm0, xmm1\n  paddd xmm3, xmm0\n  ja .L5",
+                    "color": "#99ccff",
+                    "shape": "box"
+                }, {
+                    "id": ".L5:@46",
+                    "label": ".L5:@46\n  movdqa xmm0, xmm3\n  mov r8d, esi\n  and r8d, -4\n  psrldq xmm0, 8\n  paddd xmm3, xmm0\n  movdqa xmm0, xmm3\n  psrldq xmm0, 4\n  paddd xmm3, xmm0\n  movd edx, xmm3\n  add eax, edx\n  lea edx, [r8+r8]\n  cmp esi, r8d\n  lea ecx, [rdx+1]\n  je .L15",
+                    "color": "#99ccff",
+                    "shape": "box"
+                }, {
+                    "id": ".L4:",
+                    "label": ".L4:\n  imul ecx, edi\n  add eax, ecx\n  lea ecx, [rdx+3]\n  cmp edi, ecx\n  jl .L1",
+                    "color": "#99ccff",
+                    "shape": "box"
+                }, {
+                    "id": ".L4:@66",
+                    "label": ".L4:@66\n  imul ecx, edi\n  add eax, ecx\n  lea ecx, [rdx+5]\n  cmp edi, ecx\n  jl .L1",
+                    "color": "#99ccff",
+                    "shape": "box"
+                }, {
+                    "id": ".L4:@71",
+                    "label": ".L4:@71\n  imul ecx, edi\n  add eax, ecx\n  lea ecx, [rdx+7]\n  cmp edi, ecx\n  jl .L1",
+                    "color": "#99ccff",
+                    "shape": "box"
+                }, {
+                    "id": ".L4:@76",
+                    "label": ".L4:@76\n  imul ecx, edi\n  add eax, ecx\n  lea ecx, [rdx+9]\n  cmp edi, ecx\n  jl .L1",
+                    "color": "#99ccff",
+                    "shape": "box"
+                }, {
+                    "id": ".L4:@81",
+                    "label": ".L4:@81\n  imul ecx, edi\n  add edx, 11\n  add eax, ecx\n  cmp edi, edx\n  jl .L1",
+                    "color": "#99ccff",
+                    "shape": "box"
+                }, {
+                    "id": ".L4:@86",
+                    "label": ".L4:@86\n  imul edi, edx\n  add eax, edi\n  ret",
+                    "color": "#99ccff",
+                    "shape": "box"
+                }, {
+                    "id": ".L13:",
+                    "label": ".L13:\n  imul edx, edi\n  imul eax, edx, 78\n  ret",
+                    "color": "#99ccff",
+                    "shape": "box"
+                }, {
+                    "id": ".L8:",
+                    "label": ".L8:\n  mov eax, 78\n  ret",
+                    "color": "#99ccff",
+                    "shape": "box"
+                }, {
+                    "id": ".L15:",
+                    "label": ".L15:\n  ret",
+                    "color": "#99ccff",
+                    "shape": "box"
+                }, {
+                    "id": ".L10:",
+                    "label": ".L10:\n  mov ecx, 1\n  xor edx, edx\n  jmp .L4",
+                    "color": "#99ccff",
+                    "shape": "box"
+                }],
+            "edges": [{
+                    "from": "main:",
+                    "to": ".L8:",
+                    "arrows": "to",
+                    "color": "green"
+                }, {
+                    "from": "main:",
+                    "to": "main:@4",
+                    "arrows": "to",
+                    "color": "red"
+                }, {
+                    "from": "main:@4",
+                    "to": ".L13:",
+                    "arrows": "to",
+                    "color": "green"
+                }, {
+                    "from": "main:@4",
+                    "to": "main:@6",
+                    "arrows": "to",
+                    "color": "red"
+                }, {
+                    "from": "main:@6",
+                    "to": ".L14:",
+                    "arrows": "to",
+                    "color": "green"
+                }, {
+                    "from": "main:@6",
+                    "to": "main:@9",
+                    "arrows": "to",
+                    "color": "red"
+                }, {
+                    "from": "main:@9",
+                    "to": ".L1:",
+                    "arrows": "to",
+                    "color": "grey"
+                }, {
+                    "from": ".L14:",
+                    "to": ".L1:",
+                    "arrows": "to",
+                    "color": "green"
+                }, {
+                    "from": ".L14:",
+                    "to": ".L14:@15",
+                    "arrows": "to",
+                    "color": "red"
+                }, {
+                    "from": ".L14:@15",
+                    "to": ".L10:",
+                    "arrows": "to",
+                    "color": "green"
+                }, {
+                    "from": ".L14:@15",
+                    "to": ".L14:@21",
+                    "arrows": "to",
+                    "color": "red"
+                }, {
+                    "from": ".L14:@21",
+                    "to": ".L5:",
+                    "arrows": "to",
+                    "color": "grey"
+                }, {
+                    "from": ".L5:",
+                    "to": ".L5:",
+                    "arrows": "to",
+                    "color": "green"
+                }, {
+                    "from": ".L5:",
+                    "to": ".L5:@46",
+                    "arrows": "to",
+                    "color": "red"
+                }, {
+                    "from": ".L5:@46",
+                    "to": ".L15:",
+                    "arrows": "to",
+                    "color": "green"
+                }, {
+                    "from": ".L5:@46",
+                    "to": ".L4:",
+                    "arrows": "to",
+                    "color": "red"
+                }, {
+                    "from": ".L4:",
+                    "to": ".L1:",
+                    "arrows": "to",
+                    "color": "green"
+                }, {
+                    "from": ".L4:",
+                    "to": ".L4:@66",
+                    "arrows": "to",
+                    "color": "red"
+                }, {
+                    "from": ".L4:@66",
+                    "to": ".L1:",
+                    "arrows": "to",
+                    "color": "green"
+                }, {
+                    "from": ".L4:@66",
+                    "to": ".L4:@71",
+                    "arrows": "to",
+                    "color": "red"
+                }, {
+                    "from": ".L4:@71",
+                    "to": ".L1:",
+                    "arrows": "to",
+                    "color": "green"
+                }, {
+                    "from": ".L4:@71",
+                    "to": ".L4:@76",
+                    "arrows": "to",
+                    "color": "red"
+                }, {
+                    "from": ".L4:@76",
+                    "to": ".L1:",
+                    "arrows": "to",
+                    "color": "green"
+                }, {
+                    "from": ".L4:@76",
+                    "to": ".L4:@81",
+                    "arrows": "to",
+                    "color": "red"
+                }, {
+                    "from": ".L4:@81",
+                    "to": ".L1:",
+                    "arrows": "to",
+                    "color": "green"
+                }, {
+                    "from": ".L4:@81",
+                    "to": ".L4:@86",
+                    "arrows": "to",
+                    "color": "red"
+                }, {
+                    "from": ".L10:",
+                    "to": ".L4:",
+                    "arrows": "to",
+                    "color": "blue"
+                }]
+        },
+        "_GLOBAL__sub_I_main:": {
+            "nodes": [{
+                    "id": "_GLOBAL__sub_I_main:",
+                    "label": "_GLOBAL__sub_I_main:\n  sub rsp, 8\n  mov edi, OFFSET FLAT:std::__ioinit\n  call std::ios_base::Init::Init()\n  mov edx, OFFSET FLAT:__dso_handle\n  mov esi, OFFSET FLAT:std::__ioinit\n  mov edi, OFFSET FLAT:std::ios_base::Init::~Init(\n  add rsp, 8\n  jmp __cxa_atexit",
+                    "color": "#99ccff",
+                    "shape": "box"
+                }],
+            "edges": [{
+                    "from": "_GLOBAL__sub_I_main:",
+                    "to": "null:",
+                    "arrows": "to",
+                    "color": "blue"
+                }]
+        }
+    }
+}

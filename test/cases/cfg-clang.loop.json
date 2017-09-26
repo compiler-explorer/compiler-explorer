@@ -1,0 +1,411 @@
+{
+    "asm": [{
+            "text": "__cxx_global_var_init: # @__cxx_global_var_init",
+            "source": null
+        }, {
+            "text": "  pushq %rax",
+            "source": {
+                "file": "/usr/bin/../lib/gcc/x86_64-linux-gnu/7.2.0/../../../../include/c++/7.2.0/ \"iostream\"",
+                "line": 74
+            }
+        }, {
+            "text": "  movl std::__ioinit, %edi",
+            "source": {
+                "file": "/usr/bin/../lib/gcc/x86_64-linux-gnu/7.2.0/../../../../include/c++/7.2.0/ \"iostream\"",
+                "line": 74
+            }
+        }, {
+            "text": "  callq std::ios_base::Init::Init()",
+            "source": {
+                "file": "/usr/bin/../lib/gcc/x86_64-linux-gnu/7.2.0/../../../../include/c++/7.2.0/ \"iostream\"",
+                "line": 74
+            }
+        }, {
+            "text": "  movl std::ios_base::Init::~Init(), %edi",
+            "source": {
+                "file": "/usr/bin/../lib/gcc/x86_64-linux-gnu/7.2.0/../../../../include/c++/7.2.0/ \"iostream\"",
+                "line": 74
+            }
+        }, {
+            "text": "  movl std::__ioinit, %esi",
+            "source": {
+                "file": "/usr/bin/../lib/gcc/x86_64-linux-gnu/7.2.0/../../../../include/c++/7.2.0/ \"iostream\"",
+                "line": 74
+            }
+        }, {
+            "text": "  movl $__dso_handle, %edx",
+            "source": {
+                "file": "/usr/bin/../lib/gcc/x86_64-linux-gnu/7.2.0/../../../../include/c++/7.2.0/ \"iostream\"",
+                "line": 74
+            }
+        }, {
+            "text": "  popq %rax",
+            "source": {
+                "file": "/usr/bin/../lib/gcc/x86_64-linux-gnu/7.2.0/../../../../include/c++/7.2.0/ \"iostream\"",
+                "line": 74
+            }
+        }, {
+            "text": "  jmp __cxa_atexit # TAILCALL",
+            "source": {
+                "file": "/usr/bin/../lib/gcc/x86_64-linux-gnu/7.2.0/../../../../include/c++/7.2.0/ \"iostream\"",
+                "line": 74
+            }
+        }, {
+            "text": "",
+            "source": null
+        }, {
+            "text": ".LCPI1_0:",
+            "source": null
+        }, {
+            "text": "  .quad 4648342504644416635 # double 583.36000000000001",
+            "source": null
+        }, {
+            "text": "foo(int, double, float): # @foo(int, double, float)",
+            "source": null
+        }, {
+            "text": "  movl $583, %eax # imm = 0x247",
+            "source": {
+                "file": null,
+                "line": 5
+            }
+        }, {
+            "text": "  movsd .LCPI1_0(%rip), %xmm2 # xmm2 = mem[0],zero",
+            "source": {
+                "file": null,
+                "line": 7
+            }
+        }, {
+            "text": "  ucomisd %xmm0, %xmm2",
+            "source": {
+                "file": null,
+                "line": 7
+            }
+        }, {
+            "text": "  jbe .LBB1_6",
+            "source": {
+                "file": null,
+                "line": 7
+            }
+        }, {
+            "text": "  leal (%rdi,%rdi,4), %eax",
+            "source": {
+                "file": null,
+                "line": 8
+            }
+        }, {
+            "text": "  xorps %xmm2, %xmm2",
+            "source": {
+                "file": null,
+                "line": 9
+            }
+        }, {
+            "text": "  cvtss2sd %xmm1, %xmm2",
+            "source": {
+                "file": null,
+                "line": 9
+            }
+        }, {
+            "text": "  cvtsi2sdl %eax, %xmm3",
+            "source": {
+                "file": null,
+                "line": 9
+            }
+        }, {
+            "text": "  mulsd %xmm0, %xmm3",
+            "source": {
+                "file": null,
+                "line": 9
+            }
+        }, {
+            "text": "  ucomisd %xmm3, %xmm2",
+            "source": {
+                "file": null,
+                "line": 9
+            }
+        }, {
+            "text": "  jbe .LBB1_5",
+            "source": {
+                "file": null,
+                "line": 9
+            }
+        }, {
+            "text": "  movl %eax, %ecx",
+            "source": {
+                "file": null,
+                "line": 10
+            }
+        }, {
+            "text": "  imull %edi, %ecx",
+            "source": {
+                "file": null,
+                "line": 10
+            }
+        }, {
+            "text": "  testl %ecx, %ecx",
+            "source": {
+                "file": null,
+                "line": 10
+            }
+        }, {
+            "text": "  jle .LBB1_6",
+            "source": {
+                "file": null,
+                "line": 10
+            }
+        }, {
+            "text": "  xorl %ecx, %ecx",
+            "source": {
+                "file": null,
+                "line": 10
+            }
+        }, {
+            "text": ".LBB1_4: # =>This Inner Loop Header: Depth=1",
+            "source": null
+        }, {
+            "text": "  addl %eax, %eax",
+            "source": {
+                "file": null,
+                "line": 11
+            }
+        }, {
+            "text": "  xorps %xmm0, %xmm0",
+            "source": {
+                "file": null,
+                "line": 12
+            }
+        }, {
+            "text": "  cvtsi2ssl %eax, %xmm0",
+            "source": {
+                "file": null,
+                "line": 12
+            }
+        }, {
+            "text": "  movaps %xmm0, %xmm2",
+            "source": {
+                "file": null,
+                "line": 12
+            }
+        }, {
+            "text": "  subss %xmm1, %xmm2",
+            "source": {
+                "file": null,
+                "line": 12
+            }
+        }, {
+            "text": "  mulss %xmm0, %xmm2",
+            "source": {
+                "file": null,
+                "line": 12
+            }
+        }, {
+            "text": "  cvttss2si %xmm2, %eax",
+            "source": {
+                "file": null,
+                "line": 12
+            }
+        }, {
+            "text": "  incl %ecx",
+            "source": {
+                "file": null,
+                "line": 10
+            }
+        }, {
+            "text": "  movl %eax, %edx",
+            "source": {
+                "file": null,
+                "line": 10
+            }
+        }, {
+            "text": "  imull %edi, %edx",
+            "source": {
+                "file": null,
+                "line": 10
+            }
+        }, {
+            "text": "  cmpl %edx, %ecx",
+            "source": {
+                "file": null,
+                "line": 10
+            }
+        }, {
+            "text": "  jl .LBB1_4",
+            "source": {
+                "file": null,
+                "line": 10
+            }
+        }, {
+            "text": "  jmp .LBB1_6",
+            "source": {
+                "file": null,
+                "line": 10
+            }
+        }, {
+            "text": ".LBB1_5:",
+            "source": null
+        }, {
+            "text": "  cvttss2si %xmm1, %eax",
+            "source": {
+                "file": null,
+                "line": 17
+            }
+        }, {
+            "text": ".LBB1_6:",
+            "source": null
+        }, {
+            "text": "  retq",
+            "source": {
+                "file": null,
+                "line": 22
+            }
+        }, {
+            "text": "",
+            "source": null
+        }, {
+            "text": "_GLOBAL__sub_I_example.cpp: # @_GLOBAL__sub_I_example.cpp",
+            "source": null
+        }, {
+            "text": "  jmp __cxx_global_var_init # TAILCALL",
+            "source": {
+                "file": null,
+                "line": 0
+            }
+        }, {
+            "text": "",
+            "source": null
+        }, {
+            "text": "",
+            "source": null
+        }, {
+            "text": "",
+            "source": null
+        }],
+    "cfg": {
+        "__cxx_global_var_init:": {
+            "nodes": [{
+                    "id": "__cxx_global_var_init:",
+                    "label": "__cxx_global_var_init:\n  pushq %rax\n  movl std::__ioinit, %edi\n  callq std::ios_base::Init::Init()\n  movl std::ios_base::Init::~Init(), %edi\n  movl std::__ioinit, %esi\n  movl $__dso_handle, %edx\n  popq %rax\n  jmp __cxa_atexit",
+                    "color": "#99ccff",
+                    "shape": "box"
+                }],
+            "edges": [{
+                    "from": "__cxx_global_var_init:",
+                    "to": "null:",
+                    "arrows": "to",
+                    "color": "blue"
+                }]
+        },
+        "foo(int, double, float):": {
+            "nodes": [{
+                    "id": "foo(int, double, float):",
+                    "label": "foo(int, double, float):\n  movl $583, %eax\n  movsd .LCPI1_0(%rip), %xmm2\n  ucomisd %xmm0, %xmm2\n  jbe .LBB1_6",
+                    "color": "#99ccff",
+                    "shape": "box"
+                }, {
+                    "id": "foo(int, double, float):@14",
+                    "label": "foo(int, double, float):@14\n  leal (%rdi,%rdi,4), %eax\n  xorps %xmm2, %xmm2\n  cvtss2sd %xmm1, %xmm2\n  cvtsi2sdl %eax, %xmm3\n  mulsd %xmm0, %xmm3\n  ucomisd %xmm3, %xmm2\n  jbe .LBB1_5",
+                    "color": "#99ccff",
+                    "shape": "box"
+                }, {
+                    "id": "foo(int, double, float):@21",
+                    "label": "foo(int, double, float):@21\n  movl %eax, %ecx\n  imull %edi, %ecx\n  testl %ecx, %ecx\n  jle .LBB1_6",
+                    "color": "#99ccff",
+                    "shape": "box"
+                }, {
+                    "id": "foo(int, double, float):@25",
+                    "label": "foo(int, double, float):@25\n  xorl %ecx, %ecx",
+                    "color": "#99ccff",
+                    "shape": "box"
+                }, {
+                    "id": ".LBB1_4:",
+                    "label": ".LBB1_4:\n  addl %eax, %eax\n  xorps %xmm0, %xmm0\n  cvtsi2ssl %eax, %xmm0\n  movaps %xmm0, %xmm2\n  subss %xmm1, %xmm2\n  mulss %xmm0, %xmm2\n  cvttss2si %xmm2, %eax\n  incl %ecx\n  movl %eax, %edx\n  imull %edi, %edx\n  cmpl %edx, %ecx\n  jl .LBB1_4",
+                    "color": "#99ccff",
+                    "shape": "box"
+                }, {
+                    "id": ".LBB1_4:@39",
+                    "label": ".LBB1_4:@39\n  jmp .LBB1_6",
+                    "color": "#99ccff",
+                    "shape": "box"
+                }, {
+                    "id": ".LBB1_5:",
+                    "label": ".LBB1_5:\n  cvttss2si %xmm1, %eax",
+                    "color": "#99ccff",
+                    "shape": "box"
+                }, {
+                    "id": ".LBB1_6:",
+                    "label": ".LBB1_6:\n  retq",
+                    "color": "#99ccff",
+                    "shape": "box"
+                }],
+            "edges": [{
+                    "from": "foo(int, double, float):",
+                    "to": ".LBB1_6:",
+                    "arrows": "to",
+                    "color": "green"
+                }, {
+                    "from": "foo(int, double, float):",
+                    "to": "foo(int, double, float):@14",
+                    "arrows": "to",
+                    "color": "red"
+                }, {
+                    "from": "foo(int, double, float):@14",
+                    "to": ".LBB1_5:",
+                    "arrows": "to",
+                    "color": "green"
+                }, {
+                    "from": "foo(int, double, float):@14",
+                    "to": "foo(int, double, float):@21",
+                    "arrows": "to",
+                    "color": "red"
+                }, {
+                    "from": "foo(int, double, float):@21",
+                    "to": ".LBB1_6:",
+                    "arrows": "to",
+                    "color": "green"
+                }, {
+                    "from": "foo(int, double, float):@21",
+                    "to": "foo(int, double, float):@25",
+                    "arrows": "to",
+                    "color": "red"
+                }, {
+                    "from": "foo(int, double, float):@25",
+                    "to": ".LBB1_4:",
+                    "arrows": "to",
+                    "color": "grey"
+                }, {
+                    "from": ".LBB1_4:",
+                    "to": ".LBB1_4:",
+                    "arrows": "to",
+                    "color": "green"
+                }, {
+                    "from": ".LBB1_4:",
+                    "to": ".LBB1_4:@39",
+                    "arrows": "to",
+                    "color": "red"
+                }, {
+                    "from": ".LBB1_4:@39",
+                    "to": ".LBB1_6:",
+                    "arrows": "to",
+                    "color": "blue"
+                }, {
+                    "from": ".LBB1_5:",
+                    "to": ".LBB1_6:",
+                    "arrows": "to",
+                    "color": "grey"
+                }]
+        },
+        "_GLOBAL__sub_I_example.cpp:": {
+            "nodes": [{
+                    "id": "_GLOBAL__sub_I_example.cpp:",
+                    "label": "_GLOBAL__sub_I_example.cpp:\n  jmp __cxx_global_var_init",
+                    "color": "#99ccff",
+                    "shape": "box"
+                }],
+            "edges": [{
+                    "from": "_GLOBAL__sub_I_example.cpp:",
+                    "to": "null:",
+                    "arrows": "to",
+                    "color": "blue"
+                }]
+        }
+    }
+}

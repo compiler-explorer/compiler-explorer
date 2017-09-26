@@ -41,7 +41,8 @@ require.config({
         'lru-cache': 'ext/lru-cache/lib/lru-cache',
         vs: "ext/monaco-editor/min/vs",
         'bootstrap-slider': 'ext/seiyria-bootstrap-slider/dist/bootstrap-slider',
-        filesaver: 'ext/file-saver/FileSaver'
+        filesaver: 'ext/file-saver/FileSaver',
+        vis: 'ext/vis/dist/vis'
     },
     shim: {
         underscore: {exports: '_'},

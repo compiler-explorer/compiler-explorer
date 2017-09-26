@@ -2,6 +2,7 @@
 @import url("ext/golden-layout/src/css/goldenlayout-base.css");
 @import url("ext/selectize/dist/css/selectize.bootstrap2.css");
 @import url("ext/seiyria-bootstrap-slider/dist/css/bootstrap-slider.css");
+@import url("ext/vis/dist/vis.css");
 @import url("colours.css");
 
 /* TEMP HACK: https://github.com/Microsoft/monaco-editor/issues/349 */
@@ -58,6 +59,11 @@
 
 .compiler-picker {
     min-width: 14em;
+}
+
+.function-picker {
+    min-width: 14em;
+    width: 99%;
 }
 
 li.tweet {
