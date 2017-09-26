@@ -1,0 +1,8 @@
+---
+Language: JavaScript
+BasedOnStyle: Google
+IndentWidth: 4
+ColumnLimit: 120
+UseTab: Never
+SpaceBeforeParens: Always
+---

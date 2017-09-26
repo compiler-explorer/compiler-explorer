@@ -44,7 +44,8 @@
     "mocha": "^3.3.0",
     "requirejs": "*",
     "supervisor": "*",
-    "uglify-js": "*"
+    "uglify-js": "*",
+    "clang-format": "1.0.55"
   },
   "scripts": {
     "test": "mocha && make test"
