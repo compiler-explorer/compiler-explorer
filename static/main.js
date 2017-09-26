@@ -42,7 +42,7 @@ require.config({
         vs: "ext/monaco-editor/min/vs",
         'bootstrap-slider': 'ext/seiyria-bootstrap-slider/dist/bootstrap-slider',
         filesaver: 'ext/file-saver/FileSaver',
-        vis: 'ext/vis/dist/vis'
+        vis: 'ext/vis/dist/vis.min'
     },
     shim: {
         underscore: {exports: '_'},

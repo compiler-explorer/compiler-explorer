@@ -23,24 +23,24 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-define(function(require){
-   "use strict";
+define(function (require) {
+    "use strict";
 
+    var $ = require('jquery');
     var vis = require('vis');
     var _ = require('underscore');
-
     require('asm-mode');
     require('selectize');
 
-    function Cfg(hub, container, state){
+    function Cfg(hub, container, state) {
         this.container = container;
         this.eventHub = hub.createEventHub();
         this.domRoot = container.getElement();
         this.domRoot.html($('#cfg').html());
         this.functions = state.cfgResult;
         this.defaultCfgOuput = {nodes: [{id: 0, label: 'No Output'}], edges: []};
-        this.fnNames = this.functions? Object.keys(this.functions):  [];
-        this.currentFunc = this.fnNames.length? this.fnNames[0]: "";
+        this.fnNames = this.functions ? Object.keys(this.functions) : [];
+        this.currentFunc = this.fnNames.length ? this.fnNames[0] : "";
 
         this.networkOpts = {
             autoResize: true,
@@ -79,9 +79,9 @@ define(function(require){
         };
 
         this.cfgVisualiser = new vis.Network(this.domRoot.find(".graph-placeholder")[0],
-                                             this.defaultCfgOuput, this.networkOpts);
+            this.defaultCfgOuput, this.networkOpts);
         this.restButton = this.domRoot.find(".show-hide-btn")
-            .on('click', _.bind(function(){
+            .on('click', _.bind(function () {
                 this.networkOpts.interaction.navigationButtons = !this.networkOpts.interaction.navigationButtons;
                 this.cfgVisualiser.setOptions(this.networkOpts);
             }, this));
@@ -101,11 +101,11 @@ define(function(require){
         container.on('resize', this.resize, this);
         container.on('shown', this.resize, this);
 
-        this.adaptStructure = function(names){
+        this.adaptStructure = function (names) {
             var options = [];
 
-            for(var i = 0; i < names.length; ++i){
-                options.push({name:names[i]});
+            for (var i = 0; i < names.length; ++i) {
+                options.push({name: names[i]});
             }
             return options;
         };
@@ -115,9 +115,9 @@ define(function(require){
             valueField: 'name',
             labelField: 'name',
             searchField: ['name'],
-            options: this.fnNames.length ? this.adaptStructure(this.fnNames) : [{name:"The input does not contain any function"}],
+            options: this.fnNames.length ? this.adaptStructure(this.fnNames) : [{name: "The input does not contain any function"}],
             items: this.fnNames.length ? [this.currentFunc] : ["Please select a function"]
-        }).on('change', _.bind(function(event){
+        }).on('change', _.bind(function (event) {
             this.onFunctionChange(this.functions, event.target.value);
         }, this));
 
@@ -129,7 +129,7 @@ define(function(require){
             if (result.supportsCfg && !$.isEmptyObject(result.cfg)) {
                 this.functions = result.cfg;
                 this.fnNames = Object.keys(this.functions);
-                if(this.fnNames.indexOf(this.currentFunc) === -1)
+                if (this.fnNames.indexOf(this.currentFunc) === -1)
                     this.currentFunc = this.fnNames[0];
                 this.showCfgResults({
                     'nodes': this.functions[this.currentFunc].nodes,
@@ -148,8 +148,8 @@ define(function(require){
                 valueField: 'name',
                 labelField: 'name',
                 searchField: ['name'],
-                options: this.fnNames.length ? this.adaptStructure(this.fnNames) : [{name:"The input does not contain any function"}],
-                items:  this.fnNames.length ? [this.currentFunc] : ["Please select a function"]
+                options: this.fnNames.length ? this.adaptStructure(this.fnNames) : [{name: "The input does not contain any function"}],
+                items: this.fnNames.length ? [this.currentFunc] : ["Please select a function"]
             }).on('change', _.bind(function (event) {
                 this.onFunctionChange(this.functions, event.target.value);
             }, this));
@@ -157,15 +157,15 @@ define(function(require){
     };
 
     Cfg.prototype.setTitle = function () {
-          this.container.setTitle(this._compilerName + " Graph Viewer (Editor #" + this._editorid + ", Compiler #" + this._compilerid + ")");
+        this.container.setTitle(this._compilerName + " Graph Viewer (Editor #" + this._editorid + ", Compiler #" + this._compilerid + ")");
     };
 
-    Cfg.prototype.showCfgResults = function(data) {
+    Cfg.prototype.showCfgResults = function (data) {
         this.cfgVisualiser.setData(data);
     };
 
     Cfg.prototype.onCompiler = function (id, compiler, options, editorid) {
-        if(id === this._compilerid) {
+        if (id === this._compilerid) {
             this._compilerName = compiler.name;
             this._editorid = editorid;
             this.setTitle();

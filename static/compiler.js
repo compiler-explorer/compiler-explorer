@@ -235,10 +235,10 @@ define(function (require) {
         this.eventHub.on('findCompilers', this.sendCompiler, this);
         this.eventHub.on('compilerSetDecorations', this.onCompilerSetDecorations, this);
         this.eventHub.on('settingsChange', this.onSettingsChange, this);
+        this.eventHub.on('optViewOpened', this.onOptViewOpened, this);
         this.eventHub.on('optViewClosed', this.onOptViewClosed, this);
         this.eventHub.on('astViewOpened', this.onAstViewOpened, this);
         this.eventHub.on('astViewClosed', this.onAstViewClosed, this);
-        this.eventHub.on('optViewOpened', this.onOptViewOpened, this);
         this.eventHub.on('cfgViewOpened', this.onCfgViewOpened, this);
         this.eventHub.on('cfgViewClosed', this.onCfgViewClosed, this);
         this.eventHub.on('resize', this.resize, this);
@@ -288,46 +288,30 @@ define(function (require) {
         }, this));
 
         this.container.layoutManager.createDragSource(
-            this.optButton, function () {
-                this.wantOptInfo = true;
-                this.compile();
-                return createOptView.apply(this);
-            }.bind(this));
+            this.optButton, createOptView);
 
         this.optButton.click(_.bind(function () {
-            this.wantOptInfo = true;
             var insertPoint = hub.findParentRowOrColumn(this.container) ||
                 this.container.layoutManager.root.contentItems[0];
             insertPoint.addChild(createOptView);
-            this.optButton.prop("disabled", true);
-            this.compile();
         }, this));
 
         this.container.layoutManager.createDragSource(
-            this.astButton, function () {
-                this.compile();
-                return createAstView.apply(this);
-            }.bind(this));
+            this.astButton, createAstView);
 
         this.astButton.click(_.bind(function () {
             var insertPoint = hub.findParentRowOrColumn(this.container) ||
                 this.container.layoutManager.root.contentItems[0];
             insertPoint.addChild(createAstView);
-            this.compile();
         }, this));
         
         this.container.layoutManager.createDragSource(
-            this.cfgButton, function() {
-                this.compile();
-                return createCfgView.apply(this);
-            }.bind(this));
+            this.cfgButton, createCfgView);
         
         this.cfgButton.click(_.bind(function () {
             var insertPoint = hub.findParentRowOrColumn(this.container) ||
                 this.container.layoutManager.root.contentItems[0];
             insertPoint.addChild(createCfgView);
-            this.cfgButton.prop("disabled", true);
-            this.compile();
         }, this));
 
 
@@ -665,6 +649,7 @@ define(function (require) {
         if (this.id == id) {
             this.astButton.prop("disabled", true);
             this.astViewOpen = true;
+            this.compile();
         }
     };
 
@@ -679,6 +664,7 @@ define(function (require) {
             this.optViewOpen = true;
             this.wantOptInfo = true;
             this.optButton.prop("disabled", this.optViewOpen);
+            this.compile();
         }
     };
     
@@ -686,6 +672,7 @@ define(function (require) {
         if (this.id == id) {
             this.cfgButton.prop("disabled", true);
             this.cfgViewOpen = true;
+            this.compile();
         }
     };
 
