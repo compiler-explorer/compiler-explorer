@@ -106,6 +106,3 @@ dist: prereqs
 
 c-preload:
 	$(MAKE) -C c-preload
-
-format:
-	$(NODE) ./node_modules/.bin/clang-format -i -style=file static/*.js lib/*.js app.js
