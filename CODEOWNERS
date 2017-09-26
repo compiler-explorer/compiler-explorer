@@ -22,3 +22,7 @@ static/ast-view.js @TartanLlama
 static/haskell-mode.js @TartanLlama
 lib/compilers/haskell.js @TartanLlama
 views/example.hs @TartanLlama
+
+# cppchedy
+static/cfg-view.js @cppchedy
+lib/cfg.js @cppchedy
