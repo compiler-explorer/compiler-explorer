@@ -34,15 +34,16 @@ define(function (require) {
     require('selectize');
 
     function Opt(hub, container, state) {
+        state = state || {};
         this.container = container;
         this.eventHub = hub.createEventHub();
         this.domRoot = container.getElement();
         this.domRoot.html($('#opt').html());
         this.compilers = {};
-        this.code = "";
+        this.code = state.source || "";
         this._currentDecorations = [];
         this.optEditor = monaco.editor.create(this.domRoot.find(".monaco-placeholder")[0], {
-            value: state.source || "",
+            value: this.code,
             scrollBeyondLastLine: false,
             language: 'cppp', //we only support cpp(p) for now
             readOnly: true,

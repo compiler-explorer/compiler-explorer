@@ -31,9 +31,9 @@ define(function (require) {
 
     function get(domRoot) {
         var result = {};
-        _.each(domRoot.find(".btn.active"), function (a) {
+        _.each(domRoot.find(".btn"), function (a) {
             var obj = $(a);
-            result[obj.data().bind] = true;
+            result[obj.data().bind] = obj.hasClass("active");
         });
         return result;
     }
@@ -41,13 +41,12 @@ define(function (require) {
     function Toggles(root, state) {
         EventEmitter.call(this);
         this.domRoot = root;
-        state = state || get(this.domRoot);
+        state = _.extend(get(this.domRoot), state);
         this.domRoot.find('.btn')
             .click(_.bind(this.onClick, this))
             .each(function () {
                 $(this).toggleClass('active', !!state[$(this).data().bind]);
             });
-        _.extend(state, this.domRoot);
         this.state = state;
     }
 

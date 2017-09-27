@@ -29,6 +29,7 @@ define(function (require) {
     var FontScale = require('fontscale');
     var monaco = require('monaco');
     var options = require('options');
+    var _ = require('underscore');
 
     require('asm-mode');
     require('selectize');
@@ -66,6 +67,7 @@ define(function (require) {
         this.eventHub.on('editorChange', this.onEditorChange, this);
         this.eventHub.on('settingsChange', this.onSettingsChange, this);
         this.eventHub.emit('astViewOpened', this._compilerid);
+        this.eventHub.emit('requestSettings');
         this.container.on('destroy', function () {
             this.eventHub.emit("astViewClosed", this._compilerid);
             this.eventHub.unsubscribe();
@@ -123,7 +125,15 @@ define(function (require) {
     };
 
     Ast.prototype.onCompilerClose = function (id) {
+        // There must be a reason for this to be here
         delete this.compilers[id];
+        if (id === this._compilerid) {
+            // We can't immediately close as an outer loop somewhere in GoldenLayout is iterating over
+            // the hierarchy. We can't modify while it's being iterated over.
+            _.defer(function (self) {
+                self.container.close();
+            }, this);
+        }
     };
 
     Ast.prototype.updateState = function () {

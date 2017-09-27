@@ -186,6 +186,34 @@ function ClientOptionsHandler(fileSources) {
     }));
     var supportsBinary = !!compilerProps("supportsBinary", true);
     var supportsExecute = supportsBinary && !!compilerProps("supportsExecute", true);
+    var libs = {};
+
+    var baseLibs = compilerProps("libs");
+
+    if (baseLibs) {
+        _.each(baseLibs.split(':'),function (lib) {
+            libs[lib] = {name: compilerProps('libs.' + lib + '.name')};
+            libs[lib].versions = {};
+            var listedVersions = compilerProps("libs." + lib + '.versions');
+            if (listedVersions) {
+                _.each(listedVersions.split(':'), function (version) {
+                    libs[lib].versions[version] = {};
+                    libs[lib].versions[version].version = compilerProps("libs." + lib + '.versions.' + version + '.version');
+                    libs[lib].versions[version].path = [];
+                    var listedIncludes = compilerProps("libs." + lib + '.versions.' + version + '.path');
+                    if (listedIncludes) {
+                        _.each(listedIncludes.split(':'), function(path) {
+                            libs[lib].versions[version].path.push(path);
+                        });
+                    } else {
+                        logger.warn("No paths found for " + lib + " version " + version);
+                    }
+                });
+            } else {
+                logger.warn("No versions found for " + lib + " library");
+            }
+        });
+    }
     var options = {
         googleAnalyticsAccount: gccProps('clientGoogleAnalyticsAccount', 'UA-55180-6'),
         googleAnalyticsEnabled: gccProps('clientGoogleAnalyticsEnabled', false),
@@ -196,6 +224,7 @@ function ClientOptionsHandler(fileSources) {
         defaultSource: gccProps('defaultSource', ''),
         language: language,
         compilers: [],
+        libs: libs,
         sourceExtension: compilerProps('compileFilename').split('.', 2)[1],
         defaultCompiler: compilerProps('defaultCompiler', ''),
         compileOptions: compilerProps('defaultOptions', ''),
@@ -207,7 +236,8 @@ function ClientOptionsHandler(fileSources) {
         release: gitReleaseName,
         environment: env,
         localStoragePrefix: gccProps('localStoragePrefix'),
-        cvCompilerCountMax: gccProps('cvCompilerCountMax', 6)
+        cvCompilerCountMax: gccProps('cvCompilerCountMax', 6),
+        defaultFontScale: gccProps('defaultFontScale', 1.0)
     };
     this.setCompilers = function (compilers) {
         options.compilers = compilers;
@@ -482,6 +512,10 @@ function shortUrlHandler(req, res, next) {
             }
 
             var resultObj = JSON.parse(responseText);
+            if (!resultObj.longUrl) {
+                logger.warn("Missing long URL field in response for short URL " + bits[1] + " - got " + responseText);
+                return next();
+            }
             var parsed = url.parse(resultObj.longUrl);
             var allowedRe = new RegExp(gccProps('allowedShortUrlHostRe'));
             if (parsed.host.match(allowedRe) === null) {

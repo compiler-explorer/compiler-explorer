@@ -64,24 +64,23 @@ define(function (require) {
                 localCacheHit: true
             });
         }
-        var self = this;
-        return new Promise(function (resolve, reject) {
+        return new Promise(_.bind(function (resolve, reject) {
             $.ajax({
                 type: 'POST',
                 url: 'api/compiler/' + encodeURIComponent(request.compiler) + '/compile',
                 dataType: 'json',
                 contentType: 'application/json',
                 data: jsonRequest,
-                success: function (result) {
+                success: _.bind(function (result) {
                     if (result.okToCache) {
-                        self.cache.set(jsonRequest, result);
+                        this.cache.set(jsonRequest, result);
                     }
                     resolve({
                         request: request,
                         result: result,
                         localCacheHit: false
                     });
-                },
+                }, this),
                 error: function (xhr, textStatus, errorThrown) {
                     var error = errorThrown;
                     if (!error) {
@@ -103,11 +102,11 @@ define(function (require) {
                     });
                 }
             });
-        });
+        }, this));
     };
 
     CompilerService.prototype.expand = function (source) {
-        var includeFind = /^\s*#include\s*["<](https?:\/\/[^>"]+)[>"]$/;
+        var includeFind = /^\s*#include\s*["<](https?:\/\/[^>"]+)[>"]/;
         var lines = source.split("\n");
         var promises = [];
         _.each(lines, function (line, lineNumZeroBased) {

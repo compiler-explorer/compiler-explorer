@@ -35,6 +35,7 @@ define(function (require) {
     var diff = require('diff');
     var optView = require('opt-view');
     var astView = require('ast-view');
+    var cfgView = require('cfg-view');
     var conformanceView = require('conformance-view');
     var CompilerService = require('compiler-service');
 
@@ -65,7 +66,10 @@ define(function (require) {
         this.compilerIds = new Ids();
         this.compilerService = new CompilerService();
 
+        // FIXME
+        // We can't avoid this self as _ is undefined at this point
         var self = this;
+
         layout.registerComponent(Components.getEditor().componentName,
             function (container, state) {
                 return self.codeEditorFactory(container, state);
@@ -89,6 +93,10 @@ define(function (require) {
         layout.registerComponent(Components.getAstView().componentName,
             function (container, state) {
                 return self.astViewFactory(container, state);
+            });
+        layout.registerComponent(Components.getCfgView().componentName,
+            function (container, state) {
+                return self.cfgViewFactory(container, state);
             });
         layout.registerComponent(Components.getConformanceView().componentName,
             function (container, state) {
@@ -140,6 +148,9 @@ define(function (require) {
     };
     Hub.prototype.astViewFactory = function (container, state) {
         return new astView.Ast(this, container, state);
+    };
+    Hub.prototype.cfgViewFactory = function (container, state) {
+        return new cfgView.Cfg(this, container, state);
     };
     Hub.prototype.confomanceFactory = function (container, state) {
         return new conformanceView.Conformance(this, container, state);
