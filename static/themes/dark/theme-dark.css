@@ -63,6 +63,10 @@ body {
     border-radius: 0px 0px 3px 3px;
 }
 
+.linked-code-decoration-margin {
+    background: #433b4b !important;
+}
+
 .opcode {
     color: #066 !important;
 }
