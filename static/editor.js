@@ -170,7 +170,7 @@ define(function (require) {
             }, this)
         });
 
-        var tryCompilerLinkLine = _.bind(function(thisLineNumber, reveal) {
+        var tryCompilerLinkLine = _.bind(function (thisLineNumber, reveal) {
             _.each(this.asmByCompiler, _.bind(function (asms, compilerId) {
                 var targetLines = [];
                 _.each(asms, function (asmLine, i) {
@@ -183,7 +183,7 @@ define(function (require) {
             }, this));
         }, this);
 
-        var clearCompilerLinkedLines = _.bind(function() {
+        var clearCompilerLinkedLines = _.bind(function () {
             _.each(this.asmByCompiler, _.bind(function (asms, compilerId) {
                 this.eventHub.emit('compilerSetDecorations', compilerId, -1, false);
             }, this));
@@ -247,7 +247,7 @@ define(function (require) {
         //     this.debouncedEmitChange();
         // }, this));
 
-        var layout = _.bind(function() {
+        var layout = _.bind(function () {
             var topBarHeight = this.domRoot.find(".top-bar").outerHeight(true) || 0;
             this.editor.layout({width: this.domRoot.width(), height: this.domRoot.height() - topBarHeight});
         }, this);

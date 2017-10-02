@@ -88,7 +88,7 @@ define(function (require) {
                     e.preventDefault();
                     return false;
                 }, this))
-                .on('mouseover', _.bind(function() {
+                .on('mouseover', _.bind(function () {
                     this.eventHub.emit('editorSetDecoration', this.editorId, lineNum, false);
                 }, this));
         } else {
