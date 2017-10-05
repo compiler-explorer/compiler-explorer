@@ -38,7 +38,7 @@ define(function (require) {
         this.domRoot = container.getElement();
         this.domRoot.html($('#cfg').html());
         this.functions = state.cfgResult;
-        this.defaultCfgOuput = {nodes: [{id: 0, label: 'No Output'}], edges: []};
+        this.defaultCfgOutput = {nodes: [{id: 0, label: 'No Output'}], edges: []};
         this.fnNames = this.functions ? Object.keys(this.functions) : [];
         this.currentFunc = this.fnNames.length ? this.fnNames[0] : "";
 
@@ -79,7 +79,7 @@ define(function (require) {
         };
 
         this.cfgVisualiser = new vis.Network(this.domRoot.find(".graph-placeholder")[0],
-            this.defaultCfgOuput, this.networkOpts);
+            this.defaultCfgOutput, this.networkOpts);
         this.restButton = this.domRoot.find(".show-hide-btn")
             .on('click', _.bind(function () {
                 this.networkOpts.interaction.navigationButtons = !this.networkOpts.interaction.navigationButtons;
@@ -137,7 +137,7 @@ define(function (require) {
                 });
                 this.cfgVisualiser.selectNodes([this.functions[this.currentFunc].nodes[0].id]);
             } else {
-                this.showCfgResults(this.defaultCfgOuput);
+                this.showCfgResults(this.defaultCfgOutput);
                 this.currentFunc = "";
                 this.fnNames = [];
             }
