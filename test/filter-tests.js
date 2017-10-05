@@ -82,14 +82,13 @@ function testFilter(filename, suffix, filters) {
         if (json) {
             result.should.deep.equal(file);
         } else {
-            result.length.should.equal(file.length);
-            var count = Math.min(file.length, result.length);
-            for (var i = 0; i < count; ++i) {
-                result[i].text.should.deep.equal(file[i]);
-            }
+            result.map(function (x) {
+                return x.text;
+            }).should.deep.equal(file);
         }
     });
 }
+
 // bless("cases/mips5-square.asm", "cases/mips5-square.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
 // bless("cases/gcc-sum.asm", "cases/gcc-sum.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
 // bless("cases/gcc-arm-sum.asm", "cases/gcc-arm-sum.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
@@ -104,9 +103,10 @@ function testFilter(filename, suffix, filters) {
 // bless("cases/arm-moose.asm", "cases/arm-moose.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
 // bless("cases/arm-moose.asm", "cases/arm-moose.asm.dlcb.json", {directives: true, labels: true, commentOnly: true, binary: true});
 // bless("cases/gcc-x86-vector.asm", "cases/gcc-x86-vector.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
+// bless("cases/clang-on-mac.asm", "cases/clang-on-mac.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
 // describe('A test', function() {
 //     it('should work', function(){
-//         console.log(processAsm(__dirname + '/cases/gcc-x86-vector.asm', {directives: true, labels: true, commentOnly: true}));
+//         console.log(processAsm(__dirname + '/cases/clang-on-mac.asm', {directives: true, labels: true, commentOnly: true}));
 //     });
 // });
 

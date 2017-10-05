@@ -1,3 +1,4 @@
+        .globl  LongLong
 LongLong:
         .quad   123456
         .globl  Long

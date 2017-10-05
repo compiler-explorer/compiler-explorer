@@ -1,18 +1,10 @@
 [
   {
-    "text": "__SREG__ = 0x3f",
-    "source": null
-  },
-  {
     "text": "__SP_H__ = 0x3e",
     "source": null
   },
   {
     "text": "__SP_L__ = 0x3d",
-    "source": null
-  },
-  {
-    "text": "__CCP__ = 0x34",
     "source": null
   },
   {
