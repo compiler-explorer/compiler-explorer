@@ -77,7 +77,7 @@ define(function (require) {
 
         container.on('resize', this.resize, this);
         container.on('shown', this.resize, this);
-        if(state && state.optOutput) {
+        if (state && state.optOutput) {
             this.showOptResults(state.optOutput);
         }
         this.setTitle();
@@ -93,49 +93,49 @@ define(function (require) {
         });
     };
 
-    Opt.prototype.onEditorChange = function(id, source) {
+    Opt.prototype.onEditorChange = function (id, source) {
         if (this._editorid == id) {
             this.code = source;
             this.optEditor.setValue(source);
         }
     };
     Opt.prototype.onCompileResult = function (id, compiler, result) {
-        if(result.hasOptOutput && this._compilerid == id) {
+        if (result.hasOptOutput && this._compilerid == id) {
             this.showOptResults(result.optOutput);
         }
     };
     Opt.prototype.setTitle = function () {
-          this.container.setTitle(this._compilerName + " Opt Viewer (Editor #" + this._editorid + ", Compiler #" + this._compilerid + ")");
+        this.container.setTitle(this._compilerName + " Opt Viewer (Editor #" + this._editorid + ", Compiler #" + this._compilerid + ")");
     };
 
     Opt.prototype.getDisplayableOpt = function (optResult) {
-       return "**" + optResult.optType + "** - " + optResult.displayString;
+        return "**" + optResult.optType + "** - " + optResult.displayString;
     };
 
-    Opt.prototype.showOptResults = function(results) {
+    Opt.prototype.showOptResults = function (results) {
         var opt = [];
 
-        results = _.filter(results, function(x) {
+        results = _.filter(results, function (x) {
             return x.DebugLoc !== undefined;
         });
-        
-        results = _.groupBy(results, function(x) {
+
+        results = _.groupBy(results, function (x) {
             return x.DebugLoc.Line;
         });
 
-        _.mapObject(results, function(value, key) {
+        _.mapObject(results, function (value, key) {
             var linenumber = Number(key);
-            var className = value.reduce(function(acc, x) {
-                if(x.optType == "Missed" || acc == "Missed") {
+            var className = value.reduce(function (acc, x) {
+                if (x.optType == "Missed" || acc == "Missed") {
                     return "Missed";
-                } else if(x.optType == "Passed" || acc == "Passed") {
+                } else if (x.optType == "Passed" || acc == "Passed") {
                     return "Passed";
                 }
                 return x.optType;
-            },"");
+            }, "");
             var contents = _.map(value, this.getDisplayableOpt, this);
             opt.push({
-                range: new monaco.Range(linenumber,1,linenumber,Infinity),
+                range: new monaco.Range(linenumber, 1, linenumber, Infinity),
                 options: {
                     isWholeLine: true,
                     glyphMarginClassName: "opt-decoration." + className.toLowerCase(),
@@ -149,13 +149,13 @@ define(function (require) {
     };
 
     Opt.prototype.onCompiler = function (id, compiler, options, editorid) {
-        if(!compiler.supportsOptOutput) {
+        if (!compiler.supportsOptOutput) {
             this.code = this.optEditor.getValue();
-            this.optEditor.setValue("<" +compiler.version +  " does not support the optimisation view>");
+            this.optEditor.setValue("<" + compiler.version + " does not support the optimisation view>");
             return;
         }
 
-        if(id == this._compilerid) {
+        if (id == this._compilerid) {
             this._compilerName = compiler.name;
             this._editorid = editorid;
             this.setTitle();
@@ -170,7 +170,7 @@ define(function (require) {
     Opt.prototype.updateState = function () {
     };
 
-    Opt.prototype.onSettingsChange = function(newSettings) {
+    Opt.prototype.onSettingsChange = function (newSettings) {
         this.optEditor.updateOptions({
             minimap: {
                 enabled: newSettings.showMinimap

@@ -15,14 +15,8 @@ var cases = fs.readdirSync(__dirname + '/cases')
 function common(cases, filterArg, cfgArg){
     cases.filter(function (x) {return x.includes(filterArg);})
         .forEach(function (filename) {
-            var file;
-            var content;
-            try {
-                 file = fs.readFileSync(filename, 'utf-8');
-                 content = JSON.parse(file);
-            } catch (e) {
-
-            }
+            var file = fs.readFileSync(filename, 'utf-8');
+            var content = JSON.parse(file);;
 
             if (file) {
                 it(filename, function () {

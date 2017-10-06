@@ -91,7 +91,7 @@ define(function (require) {
         this.prevDecorations = [];
         this.optButton = this.domRoot.find('.btn.view-optimization');
         this.astButton = this.domRoot.find('.btn.view-ast');
-        this.cfgButton = this.domRoot.find('.btn.view-cfg'); 
+        this.cfgButton = this.domRoot.find('.btn.view-cfg');
         this.libsButton = this.domRoot.find('.btn.show-libs');
 
         this.availableLibs = $.extend(true, {}, options.libs);
@@ -273,11 +273,11 @@ define(function (require) {
         var createAstView = _.bind(function () {
             return Components.getAstViewWith(this.id, this.source, this.lastResult.astOutput, this.getCompilerName(), this.sourceEditorId);
         }, this);
-        
-        var createCfgView = _.bind(function() {
+
+        var createCfgView = _.bind(function () {
             return Components.getCfgViewWith(this.id, this.source, this.lastResult.cfg, this.getCompilerName(), this.sourceEditorId);
         }, this);
-      
+
         this.container.layoutManager.createDragSource(
             this.domRoot.find('.btn.add-compiler'), cloneComponent);
 
@@ -304,10 +304,10 @@ define(function (require) {
                 this.container.layoutManager.root.contentItems[0];
             insertPoint.addChild(createAstView);
         }, this));
-        
+
         this.container.layoutManager.createDragSource(
             this.cfgButton, createCfgView);
-        
+
         this.cfgButton.click(_.bind(function () {
             var insertPoint = hub.findParentRowOrColumn(this.container) ||
                 this.container.layoutManager.root.contentItems[0];
@@ -667,7 +667,7 @@ define(function (require) {
             this.compile();
         }
     };
-    
+
     Compiler.prototype.onCfgViewOpened = function (id) {
         if (this.id == id) {
             this.cfgButton.prop("disabled", true);
@@ -708,14 +708,14 @@ define(function (require) {
         } else {
             this.optButton.prop("disabled", true);
         }
-       
+
         if (!this.cfgViewOpen) {
             this.cfgButton.prop("disabled", !this.compilerSupportsCfg);
         } else {
             this.cfgButton.prop("disabled", true);
         }
 
-        
+
     };
 
     Compiler.prototype.onOptionsChange = function (options) {

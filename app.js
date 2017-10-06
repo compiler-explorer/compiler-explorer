@@ -110,7 +110,9 @@ function compilerProps(property, defaultValue) {
     if (forCompiler !== undefined) return forCompiler;
     return gccProps(property, defaultValue); // gccProps comes from lib/compile-handler.js
 }
+
 var staticMaxAgeSecs = gccProps('staticMaxAgeSecs', 0);
+
 function staticHeaders(res) {
     if (staticMaxAgeSecs) {
         res.setHeader('Cache-Control', 'public, max-age=' + staticMaxAgeSecs + ', must-revalidate');
@@ -119,6 +121,7 @@ function staticHeaders(res) {
 
 var awsProps = props.propsFor("aws");
 var awsPoller = null;
+
 function awsInstances() {
     if (!awsPoller) awsPoller = new aws.InstanceFetcher(awsProps);
     return awsPoller.getInstances();
@@ -177,7 +180,7 @@ function ClientOptionsHandler(fileSources) {
     var baseLibs = compilerProps("libs");
 
     if (baseLibs) {
-        _.each(baseLibs.split(':'),function (lib) {
+        _.each(baseLibs.split(':'), function (lib) {
             libs[lib] = {name: compilerProps('libs.' + lib + '.name')};
             libs[lib].versions = {};
             var listedVersions = compilerProps("libs." + lib + '.versions');
@@ -188,7 +191,7 @@ function ClientOptionsHandler(fileSources) {
                     libs[lib].versions[version].path = [];
                     var listedIncludes = compilerProps("libs." + lib + '.versions.' + version + '.path');
                     if (listedIncludes) {
-                        _.each(listedIncludes.split(':'), function(path) {
+                        _.each(listedIncludes.split(':'), function (path) {
                             libs[lib].versions[version].path.push(path);
                         });
                     } else {

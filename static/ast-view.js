@@ -76,8 +76,8 @@ define(function (require) {
 
         container.on('resize', this.resize, this);
         container.on('shown', this.resize, this);
-        if(state && state.astOutput) {
-              this.showAstResults(state.astOutput);
+        if (state && state.astOutput) {
+            this.showAstResults(state.astOutput);
         }
         this.setTitle();
     }
@@ -91,12 +91,12 @@ define(function (require) {
         });
     };
 
-    Ast.prototype.onEditorChange = function(id, source) {
+    Ast.prototype.onEditorChange = function (id, source) {
     };
 
     Ast.prototype.onCompileResult = function (id, compiler, result) {
         if (this._compilerid == id) {
-            if(result.hasAstOutput) {
+            if (result.hasAstOutput) {
                 this.showAstResults(result.astOutput);
             }
             else {
@@ -105,19 +105,19 @@ define(function (require) {
         }
     };
     Ast.prototype.setTitle = function () {
-          this.container.setTitle(this._compilerName + " Ast Viewer (Editor #" + this._editorid + ", Compiler #" + this._compilerid + ")");
+        this.container.setTitle(this._compilerName + " Ast Viewer (Editor #" + this._editorid + ", Compiler #" + this._compilerid + ")");
     };
 
     Ast.prototype.getDisplayableAst = function (astResult) {
-       return "**" + astResult.astType + "** - " + astResult.displayString;
+        return "**" + astResult.astType + "** - " + astResult.displayString;
     };
 
-    Ast.prototype.showAstResults = function(results) {
+    Ast.prototype.showAstResults = function (results) {
         this.astEditor.setValue(results);
     };
 
     Ast.prototype.onCompiler = function (id, compiler, options, editorid) {
-        if(id == this._compilerid) {
+        if (id == this._compilerid) {
             this._compilerName = compiler.name;
             this._editorid = editorid;
             this.setTitle();
@@ -139,7 +139,7 @@ define(function (require) {
     Ast.prototype.updateState = function () {
     };
 
-    Ast.prototype.onSettingsChange = function(newSettings) {
+    Ast.prototype.onSettingsChange = function (newSettings) {
         this.astEditor.updateOptions({
             minimap: {
                 enabled: newSettings.showMinimap

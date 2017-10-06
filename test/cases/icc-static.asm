@@ -1,3 +1,4 @@
+        .globl  LongLong
 LongLong:
         .long   0x0001e240,0x00000000
         .type   LongLong,@object
