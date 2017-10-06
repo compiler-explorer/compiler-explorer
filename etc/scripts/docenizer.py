@@ -36,7 +36,7 @@ class Instruction(object):
     def __init__(self, name, names, tooltip, body):
         self.name = name
         self.names = names
-        self.tooltip = tooltip
+        self.tooltip = tooltip.rstrip(': ,')
         self.body = body
 
     def __str__(self):
