@@ -44,7 +44,7 @@ define(function (require) {
         this.astEditor = monaco.editor.create(this.domRoot.find(".monaco-placeholder")[0], {
             value: "",
             scrollBeyondLastLine: false,
-            language: 'cppp', //we only support cpp for now
+            language: 'cpp', //we only support cpp for now
             readOnly: true,
             glyphMargin: true,
             quickSuggestions: false,
