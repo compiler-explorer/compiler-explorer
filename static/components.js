@@ -114,6 +114,31 @@ define(function () {
                 }
             };
         },
+        getGccDumpView: function () {
+            return {
+                type: 'component',
+                componentName: 'gccdump',
+                componentState: {}
+            };
+        },
+        getGccDumpViewWith: function (id, compilerName, editorid, gccDumpOutput) {
+            var ret =  {
+                type: 'component',
+                componentName: 'gccdump',
+                componentState: {
+                    _compilerid: id,
+                    _compilerName: compilerName,
+                    _editorid: editorid
+                }
+            };
+            if (gccDumpOutput) {
+                ret.treeDump = gccDumpOutput.treeDump;
+                ret.rtlDump = gccDumpOutput.rtlDump;
+                ret.selectedPass = gccDumpOutput.selectedPass;
+            }
+            return ret;
+        },
+
         getCfgView: function () {
             return {
                 type: 'component',
