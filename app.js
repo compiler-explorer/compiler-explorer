@@ -496,6 +496,10 @@ function ApiHandler(compileHandler) {
     this.handler.post('/compiler/:compiler/compile', this.compileHandler.handler);
 }
 
+function healthcheckHandler(req, res, next) {
+    res.end("Everything is awesome");
+}
+
 function shortUrlHandler(req, res, next) {
     var bits = req.url.split("/");
     if (bits.length !== 2 || req.method !== "GET") return next();
@@ -590,6 +594,7 @@ findCompilers()
         webServer
             .set('trust proxy', true)
             .set('view engine', 'pug')
+            .use('/healthcheck', healthcheckHandler) // before morgan so healthchecks aren't logged
             .use(morgan('combined', {stream: logger.stream}))
             .use(compression())
             .get('/', function (req, res) {
