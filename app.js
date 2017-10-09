@@ -52,10 +52,24 @@ var opts = nopt({
     'debug': [Boolean],
     'static': [String],
     'archivedVersions': [String],
-    'noRemoteFetch': [Boolean]
+    'noRemoteFetch': [Boolean],
+    'tmpDir': [String]
 });
 
 if (opts.debug) logger.level = 'debug';
+
+// AP: Detect if we're running under Windows Subsystem for Linux. Temporary modification
+// of process.env is allowed: https://nodejs.org/api/process.html#process_process_env
+if (child_process.execSync('uname -a').toString().indexOf('Microsoft') > -1)
+    process.env.wsl = true;
+
+// AP: Allow setting of tmpDir (used in lib/base-compiler.js & lib/exec.js) through
+// opts. WSL requires a tmpDir as it can't see Linux volumes so set default to c:\tmp.
+if (opts.tmpDir)
+    process.env.tmpDir = opts.tmpDir;
+else if (process.env.wsl)
+    process.env.tmpDir = "/mnt/c/tmp";
+
 
 // Set default values for omitted arguments
 var rootDir = opts.rootDir || './etc';
@@ -110,7 +124,9 @@ function compilerProps(property, defaultValue) {
     if (forCompiler !== undefined) return forCompiler;
     return gccProps(property, defaultValue); // gccProps comes from lib/compile-handler.js
 }
+
 var staticMaxAgeSecs = gccProps('staticMaxAgeSecs', 0);
+
 function staticHeaders(res) {
     if (staticMaxAgeSecs) {
         res.setHeader('Cache-Control', 'public, max-age=' + staticMaxAgeSecs + ', must-revalidate');
@@ -119,6 +135,7 @@ function staticHeaders(res) {
 
 var awsProps = props.propsFor("aws");
 var awsPoller = null;
+
 function awsInstances() {
     if (!awsPoller) awsPoller = new aws.InstanceFetcher(awsProps);
     return awsPoller.getInstances();
@@ -177,7 +194,7 @@ function ClientOptionsHandler(fileSources) {
     var baseLibs = compilerProps("libs");
 
     if (baseLibs) {
-        _.each(baseLibs.split(':'),function (lib) {
+        _.each(baseLibs.split(':'), function (lib) {
             libs[lib] = {name: compilerProps('libs.' + lib + '.name')};
             libs[lib].versions = {};
             var listedVersions = compilerProps("libs." + lib + '.versions');
@@ -188,7 +205,7 @@ function ClientOptionsHandler(fileSources) {
                     libs[lib].versions[version].path = [];
                     var listedIncludes = compilerProps("libs." + lib + '.versions.' + version + '.path');
                     if (listedIncludes) {
-                        _.each(listedIncludes.split(':'), function(path) {
+                        _.each(listedIncludes.split(':'), function (path) {
                             libs[lib].versions[version].path.push(path);
                         });
                     } else {
@@ -479,6 +496,10 @@ function ApiHandler(compileHandler) {
     this.handler.post('/compiler/:compiler/compile', this.compileHandler.handler);
 }
 
+function healthcheckHandler(req, res, next) {
+    res.end("Everything is awesome");
+}
+
 function shortUrlHandler(req, res, next) {
     var bits = req.url.split("/");
     if (bits.length !== 2 || req.method !== "GET") return next();
@@ -573,6 +594,7 @@ findCompilers()
         webServer
             .set('trust proxy', true)
             .set('view engine', 'pug')
+            .use('/healthcheck', healthcheckHandler) // before morgan so healthchecks aren't logged
             .use(morgan('combined', {stream: logger.stream}))
             .use(compression())
             .get('/', function (req, res) {

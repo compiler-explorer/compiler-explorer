@@ -39,7 +39,11 @@ str:
 .Linfo_end1:
 .Labbrev_begin:
 .Labbrev_end:
+.Lset0 = .Lpubnames_end1-.Lpubnames_begin1 # Length of Public Names Info
 .Lpubnames_begin1:
+.Lset1 = .Linfo_end1-.Linfo_begin1      # Compilation Unit Length
 .Lpubnames_end1:
+.Lset2 = .Lpubtypes_end1-.Lpubtypes_begin1 # Length of Public Types Info
 .Lpubtypes_begin1:
+.Lset3 = .Linfo_end1-.Linfo_begin1      # Compilation Unit Length
 .Lpubtypes_end1:

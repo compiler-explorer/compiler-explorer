@@ -85,8 +85,8 @@ define(function (require) {
 
     Conformance.prototype.setTitle = function (compilerCount) {
         this.container.setTitle("Conformance viewer (Editor #" + this.editorId + ") " + (
-                compilerCount !== 0 ? (compilerCount + "/" + this.maxCompilations) : ""
-            ));
+            compilerCount !== 0 ? (compilerCount + "/" + this.maxCompilations) : ""
+        ));
     };
 
     Conformance.prototype.addCompilerSelector = function (config) {
@@ -206,7 +206,7 @@ define(function (require) {
                             options: {
                                 userArguments: $(child).find(".options[data-cv='" + cv + "']").val(),
                                 filters: {},
-                                compilerOptions: { produceAst: false, produceOptInfo: false }
+                                compilerOptions: {produceAst: false, produceOptInfo: false}
                             }
                         };
                         // This error function ensures that the user will know we had a problem (As we don't save asm)
