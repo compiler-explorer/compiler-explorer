@@ -930,15 +930,14 @@ define(function (require) {
 
             var getTokensForLine = function (model, line) {
                 //Force line's state to be accurate
+                if (line >= model.getLineCount()) return [];
                 model.getLineTokens(line, /*inaccurateTokensAcceptable*/false);
                 // Get the tokenization state at the beginning of this line
                 var state = model._lines[line - 1].getState();
-                if (state) {
-                    var freshState = model._lines[line - 1].getState().clone();
-                    // Get the human readable tokens on this line
-                    return model._tokenizationSupport.tokenize(model.getLineContent(line), freshState, 0).tokens;
-                }
-                return [];
+                if (!state) return [];
+                var freshState = model._lines[line - 1].getState().clone();
+                // Get the human readable tokens on this line
+                return model._tokenizationSupport.tokenize(model.getLineContent(line), freshState, 0).tokens;
             };
 
             if (this.settings.hoverShowAsmDoc === true &&
