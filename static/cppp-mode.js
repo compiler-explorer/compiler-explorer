@@ -19,6 +19,7 @@ define(function (require) {
         removeKeyword("array");
         removeKeyword("in");
         removeKeyword("interface");
+        removeKeyword("ref");
 
         return cppp;
     }
