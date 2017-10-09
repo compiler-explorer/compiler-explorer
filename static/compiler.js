@@ -930,7 +930,7 @@ define(function (require) {
 
             var getTokensForLine = function (model, line) {
                 //Force line's state to be accurate
-                if (line >= model.getLineCount()) return [];
+                if (line > model.getLineCount()) return [];
                 model.getLineTokens(line, /*inaccurateTokensAcceptable*/false);
                 // Get the tokenization state at the beginning of this line
                 var state = model._lines[line - 1].getState();
