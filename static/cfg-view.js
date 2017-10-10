@@ -51,7 +51,7 @@ define(function (require) {
                 physics: false
             },
             nodes: {
-                font: {'face': 'monospace', 'align': 'left'}
+                font: {face: 'monospace', align: 'left'}
             },
             layout: {
                 improvedLayout: true,
@@ -65,7 +65,7 @@ define(function (require) {
             },
             physics: {
                 hierarchicalRepulsion: {
-                    nodeDistance: 300
+                    nodeDistance: 125
                 }
             },
             interaction: {
