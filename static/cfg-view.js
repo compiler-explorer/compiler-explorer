@@ -24,7 +24,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 define(function (require) {
-    "use strict";
+    'use strict';
 
     var $ = require('jquery');
     var vis = require('vis');
@@ -37,11 +37,12 @@ define(function (require) {
         this.eventHub = hub.createEventHub();
         this.domRoot = container.getElement();
         this.domRoot.html($('#cfg').html());
-        this.functions = state.cfgResult;
         this.defaultCfgOutput = {nodes: [{id: 0, label: 'No Output'}], edges: []};
-        this.fnNames = this.functions ? Object.keys(this.functions) : [];
-        this.currentFunc = this.fnNames.length ? this.fnNames[0] : "";
-
+        // Note that this might be outdated if no functions were present when creating the link, but that's handled
+        // by selectize
+        this.currentFunc = state.selectedFn || '';
+        this._compilerName = state.compilerName;
+        this.functions = [];
         this.networkOpts = {
             autoResize: true,
             locale: 'en',
@@ -57,8 +58,8 @@ define(function (require) {
                 improvedLayout: true,
                 hierarchical: {
                     enabled: true,
-                    sortMethod: "directed",
-                    direction: "LR", // LR means Upside/down for some reason!
+                    sortMethod: 'directed',
+                    direction: 'LR', // LR means Upside/down for some reason!
                     nodeSpacing: 100,
                     levelSeparation: 100
                 }
@@ -78,13 +79,12 @@ define(function (require) {
             }
         };
 
-        this.cfgVisualiser = new vis.Network(this.domRoot.find(".graph-placeholder")[0],
+        this.cfgVisualiser = new vis.Network(this.domRoot.find('.graph-placeholder')[0],
             this.defaultCfgOutput, this.networkOpts);
-        this.restButton = this.domRoot.find(".show-hide-btn")
-            .on('click', _.bind(function () {
-                this.networkOpts.interaction.navigationButtons = !this.networkOpts.interaction.navigationButtons;
-                this.cfgVisualiser.setOptions(this.networkOpts);
-            }, this));
+        this.domRoot.find('.show-hide-btn').on('click', _.bind(function () {
+            this.networkOpts.interaction.navigationButtons = !this.networkOpts.interaction.navigationButtons;
+            this.cfgVisualiser.setOptions(this.networkOpts);
+        }, this));
 
         this._compilerid = state.id;
         this._compilerName = state.compilerName;
@@ -92,101 +92,103 @@ define(function (require) {
 
         this.eventHub.on('compileResult', this.onCompileResult, this);
         this.eventHub.on('compiler', this.onCompiler, this);
-        this.eventHub.emit('cfgViewOpened', this._compilerid);
         this.container.on('destroy', function () {
-            this.eventHub.emit("cfgViewClosed", this._compilerid, this.cfgVisualiser);
+            this.cfgVisualiser.destroy();
+            this.eventHub.emit('cfgViewClosed', this._compilerid);
             this.eventHub.unsubscribe();
         }, this);
-
-        container.on('resize', this.resize, this);
-        container.on('shown', this.resize, this);
+        this.container.on('resize', this.resize, this);
+        this.container.on('shown', this.resize, this);
+        this.eventHub.emit('cfgViewOpened', this._compilerid);
 
         this.adaptStructure = function (names) {
-            var options = [];
-
-            for (var i = 0; i < names.length; ++i) {
-                options.push({name: names[i]});
-            }
-            return options;
+            return _.map(names, function (name) {
+                return {name: name};
+            });
         };
 
-        this.select = this.domRoot.find(".function-picker").selectize({
+        this.functionPicker = $(this.domRoot).find('.function-picker').selectize({
             sortField: 'name',
             valueField: 'name',
             labelField: 'name',
-            searchField: ['name'],
-            options: this.fnNames.length ? this.adaptStructure(this.fnNames) : [{name: "The input does not contain any function"}],
-            items: this.fnNames.length ? [this.currentFunc] : ["Please select a function"]
-        }).on('change', _.bind(function (event) {
-            this.onFunctionChange(this.functions, event.target.value);
+            searchField: ['name']
+        }).on('change', _.bind(function (e) {
+            var selectedFn = this.functions[e.target.value];
+            if (selectedFn) {
+                this.currentFunc = e.target.value;
+                this.showCfgResults({
+                    nodes: selectedFn.nodes,
+                    edges: selectedFn.edges
+                });
+                this.cfgVisualiser.selectNodes([selectedFn.nodes[0].id]);
+                this.saveState();
+            }
         }, this));
-
         this.setTitle();
     }
 
     Cfg.prototype.onCompileResult = function (id, compiler, result) {
         if (this._compilerid === id) {
+            var functionNames = [];
             if (result.supportsCfg && !$.isEmptyObject(result.cfg)) {
                 this.functions = result.cfg;
-                this.fnNames = Object.keys(this.functions);
-                if (this.fnNames.indexOf(this.currentFunc) === -1)
-                    this.currentFunc = this.fnNames[0];
+                functionNames = Object.keys(this.functions);
+                if (functionNames.indexOf(this.currentFunc) === -1) {
+                    this.currentFunc = functionNames[0];
+                }
                 this.showCfgResults({
-                    'nodes': this.functions[this.currentFunc].nodes,
-                    'edges': this.functions[this.currentFunc].edges
+                    nodes: this.functions[this.currentFunc].nodes,
+                    edges: this.functions[this.currentFunc].edges
                 });
                 this.cfgVisualiser.selectNodes([this.functions[this.currentFunc].nodes[0].id]);
             } else {
                 this.showCfgResults(this.defaultCfgOutput);
-                this.currentFunc = "";
-                this.fnNames = [];
+                // We don't reset the current function here as we would lose the saved one if this happened at the begining
+                // (Hint: It *does* happen)
             }
 
-            this.select[0].selectize.destroy();
-            this.select = this.domRoot.find(".function-picker").selectize({
-                sortField: 'name',
-                valueField: 'name',
-                labelField: 'name',
-                searchField: ['name'],
-                options: this.fnNames.length ? this.adaptStructure(this.fnNames) : [{name: "The input does not contain any function"}],
-                items: this.fnNames.length ? [this.currentFunc] : ["Please select a function"]
-            }).on('change', _.bind(function (event) {
-                this.onFunctionChange(this.functions, event.target.value);
-            }, this));
+            this.functionPicker[0].selectize.clearOptions();
+            this.functionPicker[0].selectize.addOption(functionNames.length ? this.adaptStructure(functionNames) : {name: 'The input does not contain any function'});
+            this.functionPicker[0].selectize.refreshOptions(false);
+
+            this.functionPicker[0].selectize.clear();
+            this.functionPicker[0].selectize.addItem(functionNames.length ? this.currentFunc : 'The input does not contain any function', true);
+            this.saveState();
         }
     };
 
     Cfg.prototype.setTitle = function () {
-        this.container.setTitle(this._compilerName + " Graph Viewer (Editor #" + this._editorid + ", Compiler #" + this._compilerid + ")");
+        this.container.setTitle(this._compilerName + ' Graph Viewer (Editor #' + this._editorid + ', Compiler #' + this._compilerid + ')');
     };
 
     Cfg.prototype.showCfgResults = function (data) {
         this.cfgVisualiser.setData(data);
     };
 
-    Cfg.prototype.onCompiler = function (id, compiler, options, editorid) {
+    Cfg.prototype.onCompiler = function (id, compiler) {
         if (id === this._compilerid) {
             this._compilerName = compiler.name;
-            this._editorid = editorid;
             this.setTitle();
         }
     };
 
-    Cfg.prototype.onFunctionChange = function (functions, name) {
-        if (functions[name]) {
-            this.currentFunc = name;
-            this.showCfgResults({
-                'nodes': functions[name].nodes,
-                'edges': functions[name].edges
-            });
-            this.cfgVisualiser.selectNodes([functions[name].nodes[0].id]);
-        }
-    };
-
     Cfg.prototype.resize = function () {
-        var height = this.domRoot.height() - this.domRoot.find(".top-bar").outerHeight(true);
+        var height = this.domRoot.height() - this.domRoot.find('.top-bar').outerHeight(true);
         this.cfgVisualiser.setSize('100%', height.toString());
         this.cfgVisualiser.redraw();
+    };
+
+    Cfg.prototype.saveState = function () {
+        this.container.setState(this.currentState());
+    };
+
+    Cfg.prototype.currentState = function () {
+        return {
+            id: this._compilerid,
+            editorid: this._editorid,
+            selectedFn: this.currentFunc,
+            compilerName: this._compilerName
+        };
     };
 
     return {

@@ -680,7 +680,6 @@ define(function (require) {
         if (this.id == id) {
             this.cfgButton.prop('disabled', false);
             this.cfgViewOpen = false;
-            network.destroy();
         }
     };
 
