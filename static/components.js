@@ -137,16 +137,6 @@ define(function () {
                     source: source
                 }
             };
-        },
-        getConformanceViewWith: function (editorid, source) {
-            return {
-                type: 'component',
-                componentName: 'conformance',
-                componentState: {
-                    editorid: editorid,
-                    source: source
-                }
-            };
         }
     };
 
