@@ -759,7 +759,7 @@ define(function (require) {
         _.each(this.availableLibs, function (library, name) {
             _.each(library.versions, function (version, ver) {
                 if (library.versions[ver].used) {
-                    libs.push({name, ver});
+                    libs.push({name: name, ver: ver});
                 }
             });
         });
