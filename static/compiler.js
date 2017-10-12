@@ -713,8 +713,6 @@ define(function (require) {
         } else {
             this.cfgButton.prop("disabled", true);
         }
-
-
     };
 
     Compiler.prototype.onOptionsChange = function (options) {
