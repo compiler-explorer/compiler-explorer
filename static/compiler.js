@@ -678,7 +678,10 @@ define(function (require) {
 
     Compiler.prototype.onCfgViewClosed = function (id, network) {
         if (this.id == id) {
-            this.cfgButton.prop('disabled', false);
+            var state = false;
+            if (this.filters.binary) 
+                state = true;
+            this.cfgButton.prop('disabled', state);
             this.cfgViewOpen = false;
         }
     };
@@ -752,6 +755,9 @@ define(function (require) {
         this.saveState();
         this.compile();
         this.updateButtons();
+        if(this.getEffectiveFilters().binary){
+            this.eventHub.emit('binaryMode');
+        }
     };
 
     Compiler.prototype.currentState = function () {

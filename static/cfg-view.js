@@ -92,6 +92,7 @@ define(function (require) {
 
         this.eventHub.on('compileResult', this.onCompileResult, this);
         this.eventHub.on('compiler', this.onCompiler, this);
+        this.eventHub.on('binaryMode', this.onBinaryMode, this);
         this.container.on('destroy', function () {
             this.cfgVisualiser.destroy();
             this.eventHub.emit('cfgViewClosed', this._compilerid);
@@ -156,6 +157,16 @@ define(function (require) {
             this.saveState();
         }
     };
+    
+    Cfg.prototype.closeCfg = function () {
+         _.defer(function (self) {
+                self.container.close();
+            }, this);
+    };
+    
+    Cfg.prototype.onBinaryMode = function() {
+        this.closeCfg();
+    }
 
     Cfg.prototype.setTitle = function () {
         this.container.setTitle(this._compilerName + ' Graph Viewer (Editor #' + this._editorid + ', Compiler #' + this._compilerid + ')');
