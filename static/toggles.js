@@ -31,9 +31,9 @@ define(function (require) {
 
     function get(domRoot) {
         var result = {};
-        _.each(domRoot.find(".btn.active"), function (a) {
+        _.each(domRoot.find(".btn"), function (a) {
             var obj = $(a);
-            result[obj.data().bind] = true;
+            result[obj.data().bind] = obj.hasClass("active");
         });
         return result;
     }
@@ -41,13 +41,13 @@ define(function (require) {
     function Toggles(root, state) {
         EventEmitter.call(this);
         this.domRoot = root;
-        state = state || get(this.domRoot);
+        state = _.extend(get(this.domRoot), state);
         this.domRoot.find('.btn')
             .click(_.bind(this.onClick, this))
             .each(function () {
                 $(this).toggleClass('active', !!state[$(this).data().bind]);
             });
-        this.state = get(this.domRoot);
+        this.state = state;
     }
 
     _.extend(Toggles.prototype, EventEmitter.prototype);
@@ -56,13 +56,25 @@ define(function (require) {
         return _.clone(this.state);
     };
 
+    Toggles.prototype.set = function (key, value) {
+        this._change(function() {
+            this.state[key] = value;
+        }.bind(this));
+    };
+
+    Toggles.prototype._change = function(update) {
+        var before = this.get();
+        update();
+        this.emit('change', before, this.get()); 
+    };
+
     Toggles.prototype.onClick = function (event) {
         var button = $(event.currentTarget);
         if (button.hasClass("disabled")) return;
         button.toggleClass('active');
-        var before = this.state;
-        var after = this.state = get(this.domRoot);
-        this.emit('change', before, after);
+        this._change(function() {
+            this.state = get(this.domRoot);
+        }.bind(this));
     };
 
     return Toggles;

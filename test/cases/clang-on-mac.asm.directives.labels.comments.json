@@ -1,0 +1,53 @@
+[
+  {
+    "text": "_main:                                  ## @main",
+    "source": null
+  },
+  {
+    "text": "        pushq   %rbp",
+    "source": {
+      "file": null,
+      "line": 2
+    }
+  },
+  {
+    "text": "        movq    %rsp, %rbp",
+    "source": {
+      "file": null,
+      "line": 2
+    }
+  },
+  {
+    "text": "        xorl    %eax, %eax",
+    "source": {
+      "file": null,
+      "line": 2
+    }
+  },
+  {
+    "text": "        popq    %rbp",
+    "source": {
+      "file": null,
+      "line": 2
+    }
+  },
+  {
+    "text": "        retq",
+    "source": {
+      "file": null,
+      "line": 2
+    }
+  },
+  {
+    "text": "",
+    "source": null
+  },
+  {
+    "text": "",
+    "source": null
+  },
+  {
+    "text": "",
+    "source": null
+  }
+]

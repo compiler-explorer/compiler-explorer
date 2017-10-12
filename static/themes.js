@@ -26,6 +26,7 @@
 define(function (require) {
     "use strict";
     var $ = require('jquery');
+    var monaco = require('monaco');
     var themes = {
         default: {
             path: "./themes/explorer-default.css",
@@ -44,14 +45,14 @@ define(function (require) {
     function Themer(eventHub, initialSettings) {
         this.currentTheme = null;
         this.eventHub = eventHub;
-        this.root = root;
 
         this.setTheme = function (theme) {
             if (this.currentTheme === theme) return;
-            $.get(require.toUrl(theme.path), function (cssData) {
+            $.get(require.toUrl(theme.path), _.bind(function (cssData) {
                 $('#theme').html(cssData);
-                eventHub.emit('themeChange', theme);
-            });
+                monaco.editor.setTheme(theme.monaco);
+                this.eventHub.emit('resize');
+            }, this));
             this.currentTheme = theme;
         };
 

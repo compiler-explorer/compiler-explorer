@@ -4,16 +4,20 @@
 Compiler Explorer
 ------------
 
-Compiler Explorer is an interactive compiler. The left-hand pane shows editable C/C++/Rust/Go/D code. The right, the
+Compiler Explorer is an interactive compiler. The left-hand pane shows editable C/C++/Rust/Go/D/Haskell/Swift code. The right, the
 assembly output of having compiled the code with a given compiler and settings. Multiple compilers are supported, and
 the UI layout is configurable (the [Golden Layout](https://www.golden-layout.com/) library is used for this).
+There is also an ispc compiler for a C variant with extensions for SPMD.
 
-Try out one of the demo sites: [C++][cpp], [Rust][rust], [D][d] or [Go][go].
+Try out one of the demo sites: [C++][cpp], [Rust][rust], [D][d], [Go][go], [Haskell][haskell], [Swif][swift], [ispc][ispc].
 
 [cpp]: https://gcc.godbolt.org/ "Compiler Explorer for C++"
 [rust]: https://rust.godbolt.org/ "Compiler Explorer for Rust"
 [d]: https://d.godbolt.org/ "Compiler Explorer for D"
 [go]: https://go.godbolt.org/ "Compiler Explorer for Go"
+[ispc]: https://ispc.godbolt.org/ "Compiler Explorer for ispc"
+[haskell]: https://haskell.godbolt.org/ "Compiler Explorer for Haskell"
+[swift]: https://swift.godbolt.org/ "Compiler Explorer for Swift"
 
 You can support this [this project on Patreon](https://patreon.com/mattgodbolt).
 
@@ -39,7 +43,7 @@ There's now a [Road map](Roadmap.md) that gives a little insight into future pla
 
 ### Credits
 
-Compiler Explorer is maintained by [Matt Godbolt](http://xania.org) and [Rubén Rincón](https://github.com/RabsRincon).
+Compiler Explorer is maintained by [Matt Godbolt](http://xania.org), [Rubén Rincón](https://github.com/RabsRincon) and [Simon Brand](https://blog.tartanllama.xyz/).
 Multiple compiler and difference view initially implemented by [Gabriel Devillers](https://github.com/voxelf),
 while working for [Kalray](http://www.kalrayinc.com/). Clang optview output by [Jared Wyles](https://github.com/jaredwy).
 
@@ -64,8 +68,10 @@ primary identifier of each compiler.
 #### `POST /api/compiler/<compiler-id>/compile` - perform a compilation
 
 To specify a compilation request as a JSON document, post it as the appropriate type and send an object of
-the form: `{'source': 'source to compile', 'options': 'compiler flags', 'filters': {'filter': true}}`. The filters are an JSON object with true/false. If not supplied, defaults are used. If supplied, the filters are used
-as-is.
+the form: `{'source': 'source to compile', 'options': {userOptions': 'compiler flags', 'compilerOptions':{}, filters': {'filter': true}}}`.
+The filters are an JSON object with true/false. If not supplied, defaults are used. If supplied, the
+filters are used as-is. The `compilerOptions` is used to pass extra arguments to the back end, and is probably
+not useful for most REST users. 
 
 A text compilation request has the source as the body of the post, and uses query parameters to pass the
 options and filters. Filters are supplied as a comma-separated string. Use the query parameter `filters=XX`
@@ -108,7 +114,7 @@ Optional values are marked with a '**'
   "asm": [
          {
            "text": Assembly text,
-           "source": Source line number or null if none
+           "source": {file: null for user input, else path, line: number} or null if none
          },
          ...
   ],

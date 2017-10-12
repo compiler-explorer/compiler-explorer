@@ -1,0 +1,226 @@
+{
+  "asm": [
+    {
+      "text": "main:",
+      "source": null
+    },
+    {
+      "opcodes": [
+        "85",
+        "ff"
+      ],
+      "address": 4195280,
+      "text": " test edi,edi",
+      "source": 3,
+      "links": null
+    },
+    {
+      "opcodes": [
+        "78",
+        "16"
+      ],
+      "address": 4195282,
+      "text": " js 4003ea <main+0x1a>",
+      "source": 3,
+      "links": [
+        {
+          "offset": 4,
+          "length": 6,
+          "to": 4195306
+        }
+      ]
+    },
+    {
+      "opcodes": [
+        "83",
+        "c7",
+        "01"
+      ],
+      "address": 4195284,
+      "text": " add edi,0x1",
+      "source": 3,
+      "links": null
+    },
+    {
+      "opcodes": [
+        "31",
+        "c0"
+      ],
+      "address": 4195287,
+      "text": " xor eax,eax",
+      "source": 2,
+      "links": null
+    },
+    {
+      "opcodes": [
+        "31",
+        "d2"
+      ],
+      "address": 4195289,
+      "text": " xor edx,edx",
+      "source": 3,
+      "links": null
+    },
+    {
+      "opcodes": [
+        "0f",
+        "1f",
+        "44",
+        "00",
+        "00"
+      ],
+      "address": 4195291,
+      "text": " nop DWORD PTR [rax+rax*1+0x0]",
+      "source": 3,
+      "links": null
+    },
+    {
+      "opcodes": [
+        "01",
+        "d0"
+      ],
+      "address": 4195296,
+      "text": " add eax,edx",
+      "source": 4,
+      "links": null
+    },
+    {
+      "opcodes": [
+        "83",
+        "c2",
+        "01"
+      ],
+      "address": 4195298,
+      "text": " add edx,0x1",
+      "source": 3,
+      "links": null
+    },
+    {
+      "opcodes": [
+        "39",
+        "fa"
+      ],
+      "address": 4195301,
+      "text": " cmp edx,edi",
+      "source": 3,
+      "links": null
+    },
+    {
+      "opcodes": [
+        "75",
+        "f7"
+      ],
+      "address": 4195303,
+      "text": " jne 4003e0 <main+0x10>",
+      "source": 3,
+      "links": [
+        {
+          "offset": 5,
+          "length": 6,
+          "to": 4195296
+        }
+      ]
+    },
+    {
+      "opcodes": [
+        "c3"
+      ],
+      "address": 4195305,
+      "text": " ret ",
+      "source": 3,
+      "links": null
+    },
+    {
+      "opcodes": [
+        "31",
+        "c0"
+      ],
+      "address": 4195306,
+      "text": " xor eax,eax",
+      "source": 2,
+      "links": null
+    },
+    {
+      "opcodes": [
+        "c3"
+      ],
+      "address": 4195308,
+      "text": " ret ",
+      "source": 9,
+      "links": null
+    },
+    {
+      "opcodes": [
+        "0f",
+        "1f",
+        "00"
+      ],
+      "address": 4195309,
+      "text": " nop DWORD PTR [rax]",
+      "source": 9,
+      "links": null
+    }
+  ],
+  "cfg": {
+    "main:": {
+      "edges": [
+        {
+          "arrows": "to",
+          "color": "green",
+          "from": "main:",
+          "to": "null:"
+        },
+        {
+          "arrows": "to",
+          "color": "red",
+          "from": "main:",
+          "to": "main:@3"
+        },
+        {
+          "arrows": "to",
+          "color": "green",
+          "from": "main:@3",
+          "to": "null:"
+        },
+        {
+          "arrows": "to",
+          "color": "red",
+          "from": "main:@3",
+          "to": "main:@11"
+        }
+      ],
+      "nodes": [
+        {
+          "color": "#99ccff",
+          "id": "main:",
+          "label": "main:\n test edi,edi\n js 4003ea <main+0x1a>",
+          "shape": "box"
+        },
+        {
+          "color": "#99ccff",
+          "id": "main:@3",
+          "label": "main:@3\n add edi,0x1\n xor eax,eax\n xor edx,edx\n nop DWORD PTR [rax+rax*1+0x0]\n add eax,edx\n add edx,0x1\n cmp edx,edi\n jne 4003e0 <main+0x10>",
+          "shape": "box"
+        },
+        {
+          "color": "#99ccff",
+          "id": "main:@11",
+          "label": "main:@11\n ret ",
+          "shape": "box"
+        },
+        {
+          "color": "#99ccff",
+          "id": " xor eax,eax",
+          "label": " xor eax,eax:\n ret ",
+          "shape": "box"
+        },
+        {
+          "color": "#99ccff",
+          "id": " nop DWORD PTR [rax]",
+          "label": " nop DWORD PTR [rax]:\n",
+          "shape": "box"
+        }
+      ]
+    }
+  }
+}

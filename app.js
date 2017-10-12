@@ -52,9 +52,24 @@ var opts = nopt({
     'debug': [Boolean],
     'static': [String],
     'archivedVersions': [String],
+    'noRemoteFetch': [Boolean],
+    'tmpDir': [String]
 });
 
 if (opts.debug) logger.level = 'debug';
+
+// AP: Detect if we're running under Windows Subsystem for Linux. Temporary modification
+// of process.env is allowed: https://nodejs.org/api/process.html#process_process_env
+if (child_process.execSync('uname -a').toString().indexOf('Microsoft') > -1)
+    process.env.wsl = true;
+
+// AP: Allow setting of tmpDir (used in lib/base-compiler.js & lib/exec.js) through
+// opts. WSL requires a tmpDir as it can't see Linux volumes so set default to c:\tmp.
+if (opts.tmpDir)
+    process.env.tmpDir = opts.tmpDir;
+else if (process.env.wsl)
+    process.env.tmpDir = "/mnt/c/tmp";
+
 
 // Set default values for omitted arguments
 var rootDir = opts.rootDir || './etc';
@@ -66,6 +81,8 @@ var staticDir = opts.static || 'static';
 var archivedVersions = opts.archivedVersions;
 var gitReleaseName = child_process.execSync('git rev-parse HEAD').toString().trim();
 var versionedRootPrefix = "";
+// Don't treat @ in paths as remote adresses
+var fetchCompilersFromRemote = !opts.noRemoteFetch;
 if (opts.static && fs.existsSync(opts.static + '/v/' + gitReleaseName))
     versionedRootPrefix = "v/" + gitReleaseName + "/";
 
@@ -107,7 +124,9 @@ function compilerProps(property, defaultValue) {
     if (forCompiler !== undefined) return forCompiler;
     return gccProps(property, defaultValue); // gccProps comes from lib/compile-handler.js
 }
+
 var staticMaxAgeSecs = gccProps('staticMaxAgeSecs', 0);
+
 function staticHeaders(res) {
     if (staticMaxAgeSecs) {
         res.setHeader('Cache-Control', 'public, max-age=' + staticMaxAgeSecs + ', must-revalidate');
@@ -116,6 +135,7 @@ function staticHeaders(res) {
 
 var awsProps = props.propsFor("aws");
 var awsPoller = null;
+
 function awsInstances() {
     if (!awsPoller) awsPoller = new aws.InstanceFetcher(awsProps);
     return awsPoller.getInstances();
@@ -169,6 +189,34 @@ function ClientOptionsHandler(fileSources) {
     }));
     var supportsBinary = !!compilerProps("supportsBinary", true);
     var supportsExecute = supportsBinary && !!compilerProps("supportsExecute", true);
+    var libs = {};
+
+    var baseLibs = compilerProps("libs");
+
+    if (baseLibs) {
+        _.each(baseLibs.split(':'), function (lib) {
+            libs[lib] = {name: compilerProps('libs.' + lib + '.name')};
+            libs[lib].versions = {};
+            var listedVersions = compilerProps("libs." + lib + '.versions');
+            if (listedVersions) {
+                _.each(listedVersions.split(':'), function (version) {
+                    libs[lib].versions[version] = {};
+                    libs[lib].versions[version].version = compilerProps("libs." + lib + '.versions.' + version + '.version');
+                    libs[lib].versions[version].path = [];
+                    var listedIncludes = compilerProps("libs." + lib + '.versions.' + version + '.path');
+                    if (listedIncludes) {
+                        _.each(listedIncludes.split(':'), function (path) {
+                            libs[lib].versions[version].path.push(path);
+                        });
+                    } else {
+                        logger.warn("No paths found for " + lib + " version " + version);
+                    }
+                });
+            } else {
+                logger.warn("No versions found for " + lib + " library");
+            }
+        });
+    }
     var options = {
         googleAnalyticsAccount: gccProps('clientGoogleAnalyticsAccount', 'UA-55180-6'),
         googleAnalyticsEnabled: gccProps('clientGoogleAnalyticsEnabled', false),
@@ -179,6 +227,7 @@ function ClientOptionsHandler(fileSources) {
         defaultSource: gccProps('defaultSource', ''),
         language: language,
         compilers: [],
+        libs: libs,
         sourceExtension: compilerProps('compileFilename').split('.', 2)[1],
         defaultCompiler: compilerProps('defaultCompiler', ''),
         compileOptions: compilerProps('defaultOptions', ''),
@@ -189,7 +238,9 @@ function ClientOptionsHandler(fileSources) {
         raven: gccProps('ravenUrl', ''),
         release: gitReleaseName,
         environment: env,
-        localStoragePrefix: gccProps('localStoragePrefix')
+        localStoragePrefix: gccProps('localStoragePrefix'),
+        cvCompilerCountMax: gccProps('cvCompilerCountMax', 6),
+        defaultFontScale: gccProps('defaultFontScale', 1.0)
     };
     this.setCompilers = function (compilers) {
         options.compilers = compilers;
@@ -255,7 +306,6 @@ function retryPromise(promiseFunc, name, maxFails, retryMs) {
         doit();
     });
 }
-
 
 function findCompilers() {
     var exes = compilerProps("compilers", "/usr/bin/g++").split(":");
@@ -335,7 +385,8 @@ function findCompilers() {
     }
 
     function compilerConfigFor(name, parentProps) {
-        var base = "compiler." + name;
+        const base = "compiler." + name,
+            exe = compilerProps(base + ".exe", name);
 
         function props(name, def) {
             return parentProps(base + "." + name, parentProps(name, def));
@@ -345,7 +396,7 @@ function findCompilers() {
         var supportsExecute = supportsBinary && !!props("supportsExecute", true);
         var compilerInfo = {
             id: name,
-            exe: compilerProps(base + ".exe", name),
+            exe: exe,
             name: props("name", name),
             alias: props("alias"),
             options: props("options"),
@@ -365,7 +416,7 @@ function findCompilers() {
     }
 
     function recurseGetCompilers(name, parentProps) {
-        if (name.indexOf("@") !== -1) {
+        if (fetchCompilersFromRemote && name.indexOf("@") !== -1) {
             var bits = name.split("@");
             var host = bits[0];
             var port = parseInt(bits[1]);
@@ -375,6 +426,9 @@ function findCompilers() {
             var groupName = name.substr(1);
 
             var props = function (name, def) {
+                if (name === "group") {
+                    return groupName;
+                }
                 return compilerProps("group." + groupName + "." + name, parentProps(name, def));
             };
 
@@ -442,6 +496,10 @@ function ApiHandler(compileHandler) {
     this.handler.post('/compiler/:compiler/compile', this.compileHandler.handler);
 }
 
+function healthcheckHandler(req, res, next) {
+    res.end("Everything is awesome");
+}
+
 function shortUrlHandler(req, res, next) {
     var bits = req.url.split("/");
     if (bits.length !== 2 || req.method !== "GET") return next();
@@ -461,6 +519,10 @@ function shortUrlHandler(req, res, next) {
             }
 
             var resultObj = JSON.parse(responseText);
+            if (!resultObj.longUrl) {
+                logger.warn("Missing long URL field in response for short URL " + bits[1] + " - got " + responseText);
+                return next();
+            }
             var parsed = url.parse(resultObj.longUrl);
             var allowedRe = new RegExp(gccProps('allowedShortUrlHostRe'));
             if (parsed.host.match(allowedRe) === null) {
@@ -532,6 +594,7 @@ findCompilers()
         webServer
             .set('trust proxy', true)
             .set('view engine', 'pug')
+            .use('/healthcheck', healthcheckHandler) // before morgan so healthchecks aren't logged
             .use(morgan('combined', {stream: logger.stream}))
             .use(compression())
             .get('/', function (req, res) {

@@ -1,3 +1,4 @@
+        .globl  Char
 Char:
         .byte   128                     # 0x80
         .size   Char, 1

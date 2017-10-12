@@ -86,7 +86,7 @@ define(function (require) {
         }
         if (options.autoDismiss) {  // Dismiss this after dismissTime
             setTimeout(function () {
-                newElement.fadeOut('slow', function() {
+                newElement.fadeOut('slow', function () {
                     newElement.remove();
                 });
             }, options.dismissTime);
