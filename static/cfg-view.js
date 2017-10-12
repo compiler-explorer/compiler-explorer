@@ -166,7 +166,7 @@ define(function (require) {
     
     Cfg.prototype.onBinaryMode = function() {
         this.closeCfg();
-    }
+    };
 
     Cfg.prototype.setTitle = function () {
         this.container.setTitle(this._compilerName + ' Graph Viewer (Editor #' + this._editorid + ', Compiler #' + this._compilerid + ')');
