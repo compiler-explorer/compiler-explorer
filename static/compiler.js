@@ -620,7 +620,7 @@ define(function (require) {
             compileTime.text("");
         }
         this.compilerSupportsCfg = result.supportsCfg;
-        this.eventHub.emit('compileResult', this.id, this.compiler, result);
+        this.eventHub.emit('compileResult', this.id, this.compiler, result, this.getEffectiveFilters().binary);
         this.updateButtons();
 
         if (this.nextRequest) {
@@ -676,12 +676,9 @@ define(function (require) {
         }
     };
 
-    Compiler.prototype.onCfgViewClosed = function (id, network) {
+    Compiler.prototype.onCfgViewClosed = function (id) {
         if (this.id == id) {
-            var state = false;
-            if (this.filters.binary) 
-                state = true;
-            this.cfgButton.prop('disabled', state);
+            this.cfgButton.prop('disabled', this.filters.binary);
             this.cfgViewOpen = false;
         }
     };
@@ -755,9 +752,6 @@ define(function (require) {
         this.saveState();
         this.compile();
         this.updateButtons();
-        if(this.getEffectiveFilters().binary){
-            this.eventHub.emit('binaryMode');
-        }
     };
 
     Compiler.prototype.currentState = function () {

@@ -37,7 +37,8 @@ define(function (require) {
         this.eventHub = hub.createEventHub();
         this.domRoot = container.getElement();
         this.domRoot.html($('#cfg').html());
-        this.defaultCfgOutput = {nodes: [{id: 0, label: 'No Output'}], edges: []};
+        this.defaultCfgOutput = {nodes: [{id: 0, shape:"box", label: 'No Output'}], edges: []};
+        this.binaryModeSupport = {nodes: [{id: 0, shape:"box", label: "Cfg mode cannot be used when binary filter is set"}], edges: []};
         // Note that this might be outdated if no functions were present when creating the link, but that's handled
         // by selectize
         this.currentFunc = state.selectedFn || '';
@@ -92,7 +93,6 @@ define(function (require) {
 
         this.eventHub.on('compileResult', this.onCompileResult, this);
         this.eventHub.on('compiler', this.onCompiler, this);
-        this.eventHub.on('binaryMode', this.onBinaryMode, this);
         this.container.on('destroy', function () {
             this.cfgVisualiser.destroy();
             this.eventHub.emit('cfgViewClosed', this._compilerid);
@@ -128,7 +128,7 @@ define(function (require) {
         this.setTitle();
     }
 
-    Cfg.prototype.onCompileResult = function (id, compiler, result) {
+    Cfg.prototype.onCompileResult = function (id, compiler, result, binaryFilter) {
         if (this._compilerid === id) {
             var functionNames = [];
             if (result.supportsCfg && !$.isEmptyObject(result.cfg)) {
@@ -143,7 +143,7 @@ define(function (require) {
                 });
                 this.cfgVisualiser.selectNodes([this.functions[this.currentFunc].nodes[0].id]);
             } else {
-                this.showCfgResults(this.defaultCfgOutput);
+                this.showCfgResults(binaryFilter ? this.binaryModeSupport : this.defaultCfgOutput);
                 // We don't reset the current function here as we would lose the saved one if this happened at the begining
                 // (Hint: It *does* happen)
             }
@@ -156,16 +156,6 @@ define(function (require) {
             this.functionPicker[0].selectize.addItem(functionNames.length ? this.currentFunc : 'The input does not contain any function', true);
             this.saveState();
         }
-    };
-    
-    Cfg.prototype.closeCfg = function () {
-         _.defer(function (self) {
-                self.container.close();
-            }, this);
-    };
-    
-    Cfg.prototype.onBinaryMode = function() {
-        this.closeCfg();
     };
 
     Cfg.prototype.setTitle = function () {
