@@ -16,7 +16,7 @@
   },
   "main": "./app.js",
   "dependencies": {
-    "aws-sdk": "^2.122.0",
+    "aws-sdk": "*",
     "body-parser": "1.14.x",
     "compiler-opt-info": "0.0.4",
     "compression": "1.6.x",
@@ -28,8 +28,8 @@
     "morgan": "1.6.x",
     "nopt": "3.0.x",
     "promise": "7.0.x",
-    "promise-queue": "^2.2.3",
-    "pug": "^2.0.0-rc.4",
+    "promise-queue": "2.2.3",
+    "pug": "^2.0.0-beta11",
     "serve-favicon": "2.3.x",
     "shell-quote": "1.6.x",
     "temp": "0.8.x",
@@ -38,13 +38,13 @@
     "winston": "2.2.x"
   },
   "devDependencies": {
-    "bower": "^1.8.2",
+    "bower": "*",
     "chai": "3.5.x",
-    "jshint": "^2.9.5",
+    "jshint": "*",
     "mocha": "^3.3.0",
-    "requirejs": "^2.3.5",
+    "requirejs": "*",
     "supervisor": "*",
-    "uglify-js": "^3.1.2"
+    "uglify-js": "*"
   },
   "scripts": {
     "test": "mocha && make test"
