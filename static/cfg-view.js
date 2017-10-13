@@ -29,6 +29,7 @@ define(function (require) {
     var $ = require('jquery');
     var vis = require('vis');
     var _ = require('underscore');
+    var Alert = require('alert');
     require('asm-mode');
     require('selectize');
 
@@ -38,11 +39,11 @@ define(function (require) {
         this.domRoot = container.getElement();
         this.domRoot.html($('#cfg').html());
         this.defaultCfgOutput = {nodes: [{id: 0, shape:"box", label: 'No Output'}], edges: []};
-        this.binaryModeSupport = {nodes: [{id: 0, shape:"box", label: "Cfg mode cannot be used when binary filter is set"}], edges: []};
         // Note that this might be outdated if no functions were present when creating the link, but that's handled
         // by selectize
         this.currentFunc = state.selectedFn || '';
         this._compilerName = state.compilerName;
+        this._binaryFilter = state.binaryFilter;
         this.functions = [];
         this.networkOpts = {
             autoResize: true,
@@ -93,6 +94,7 @@ define(function (require) {
 
         this.eventHub.on('compileResult', this.onCompileResult, this);
         this.eventHub.on('compiler', this.onCompiler, this);
+        this.eventHub.on('filtersChange', this.onFiltersChange, this);
         this.container.on('destroy', function () {
             this.cfgVisualiser.destroy();
             this.eventHub.emit('cfgViewClosed', this._compilerid);
@@ -128,7 +130,7 @@ define(function (require) {
         this.setTitle();
     }
 
-    Cfg.prototype.onCompileResult = function (id, compiler, result, binaryFilter) {
+    Cfg.prototype.onCompileResult = function (id, compiler, result) {
         if (this._compilerid === id) {
             var functionNames = [];
             if (result.supportsCfg && !$.isEmptyObject(result.cfg)) {
@@ -143,7 +145,7 @@ define(function (require) {
                 });
                 this.cfgVisualiser.selectNodes([this.functions[this.currentFunc].nodes[0].id]);
             } else {
-                this.showCfgResults(binaryFilter ? this.binaryModeSupport : this.defaultCfgOutput);
+                this.showCfgResults(this.defaultCfgOutput);
                 // We don't reset the current function here as we would lose the saved one if this happened at the begining
                 // (Hint: It *does* happen)
             }
@@ -172,6 +174,21 @@ define(function (require) {
             this.setTitle();
         }
     };
+    
+    Cfg.prototype.onFiltersChange = function (id, filters) {
+        if (this._compilerid === id) {
+            if (filters.binary !== this._binaryFilter) {
+                if (filters.binary === true) {
+                    new Alert().notify("Cfg mode cannot be used when the binary filter is set.", {
+                        group: "cfgnotsupported",
+                        alertClass: "notification-error"
+                    });
+                }
+                this._binaryFilter = filters.binary;
+                this.saveState();
+            }
+        }
+    };
 
     Cfg.prototype.resize = function () {
         var height = this.domRoot.height() - this.domRoot.find('.top-bar').outerHeight(true);
@@ -188,7 +205,8 @@ define(function (require) {
             id: this._compilerid,
             editorid: this._editorid,
             selectedFn: this.currentFunc,
-            compilerName: this._compilerName
+            compilerName: this._compilerName,
+            binaryFilter: this._binaryFilter
         };
     };
 

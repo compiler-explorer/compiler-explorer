@@ -275,7 +275,8 @@ define(function (require) {
         }, this);
 
         var createCfgView = _.bind(function () {
-            return Components.getCfgViewWith(this.id, this.source, this.lastResult.cfg, this.getCompilerName(), this.sourceEditorId);
+            return Components.getCfgViewWith(this.id, this.source, this.lastResult.cfg, this.getCompilerName(), this.sourceEditorId, 
+                                             this.getEffectiveFilters().binary);
         }, this);
 
         this.container.layoutManager.createDragSource(
@@ -620,7 +621,7 @@ define(function (require) {
             compileTime.text("");
         }
         this.compilerSupportsCfg = result.supportsCfg;
-        this.eventHub.emit('compileResult', this.id, this.compiler, result, this.getEffectiveFilters().binary);
+        this.eventHub.emit('compileResult', this.id, this.compiler, result);
         this.updateButtons();
 
         if (this.nextRequest) {
@@ -669,17 +670,17 @@ define(function (require) {
     };
 
     Compiler.prototype.onCfgViewOpened = function (id) {
-        if (this.id == id) {
-            this.cfgButton.prop("disabled", true);
+        if (this.id === id) {
             this.cfgViewOpen = true;
+            this.cfgButton.prop("disabled", false);
             this.compile();
         }
     };
 
     Compiler.prototype.onCfgViewClosed = function (id) {
-        if (this.id == id) {
-            this.cfgButton.prop('disabled', this.filters.binary);
+        if (this.id === id) {
             this.cfgViewOpen = false;
+            this.cfgButton.prop('disabled', this.getEffectiveFilters().binary);
         }
     };
 
@@ -752,6 +753,7 @@ define(function (require) {
         this.saveState();
         this.compile();
         this.updateButtons();
+        this.eventHub.emit('filtersChange', this.id, this.getEffectiveFilters());
     };
 
     Compiler.prototype.currentState = function () {
