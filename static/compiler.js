@@ -672,7 +672,7 @@ define(function (require) {
     Compiler.prototype.onCfgViewOpened = function (id) {
         if (this.id === id) {
             this.cfgViewOpen = true;
-            this.cfgButton.prop("disabled", false);
+            this.cfgButton.prop('disabled', true);
             this.compile();
         }
     };
