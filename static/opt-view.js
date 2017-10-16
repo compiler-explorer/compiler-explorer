@@ -149,14 +149,14 @@ define(function (require) {
     };
 
     Opt.prototype.onCompiler = function (id, compiler, options, editorid) {
-        if (!compiler.supportsOptOutput) {
+        if (compiler && !compiler.supportsOptOutput) {
             this.code = this.optEditor.getValue();
             this.optEditor.setValue("<" + compiler.version + " does not support the optimisation view>");
             return;
         }
 
         if (id == this._compilerid) {
-            this._compilerName = compiler.name;
+            this._compilerName = compiler ? compiler.name : '';
             this._editorid = editorid;
             this.setTitle();
             this.optEditor.setValue(this.code);

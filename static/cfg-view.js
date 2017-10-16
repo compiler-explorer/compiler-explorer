@@ -170,7 +170,7 @@ define(function (require) {
 
     Cfg.prototype.onCompiler = function (id, compiler) {
         if (id === this._compilerid) {
-            this._compilerName = compiler.name;
+            this._compilerName = compiler ? compiler.name : '';
             this.setTitle();
         }
     };

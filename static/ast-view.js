@@ -118,7 +118,7 @@ define(function (require) {
 
     Ast.prototype.onCompiler = function (id, compiler, options, editorid) {
         if (id == this._compilerid) {
-            this._compilerName = compiler.name;
+            this._compilerName = compiler ? compiler.name : '';
             this._editorid = editorid;
             this.setTitle();
         }
