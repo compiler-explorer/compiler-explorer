@@ -15,7 +15,7 @@
  * Safari 10.1, fails inherit correct visibility from parent when we change the visibility of parent element from hidden to inherit, in this particular case.
  */
 .monaco-editor-hover .monaco-scrollable-element {
-	visibility: visible;
+    visibility: visible;
 }
 
 .navbar {
@@ -235,8 +235,8 @@ pre.content {
 }
 
 .opt-decoration {
-	width: 8px !important;
-	left: 3px;
+    width: 8px !important;
+    left: 3px;
 }
 
 .compiler-list {

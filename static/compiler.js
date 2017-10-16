@@ -24,7 +24,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 define(function (require) {
-    "use strict";
+    'use strict';
     var $ = require('jquery');
     var _ = require('underscore');
     var ga = require('analytics').ga;
@@ -75,8 +75,8 @@ define(function (require) {
         this.compiler = this.compilerService.getCompilerById(state.compiler) ||
             this.compilerService.getCompilerById(options.defaultCompiler);
         this.options = state.options || options.compileOptions;
-        this.filters = new Toggles(this.domRoot.find(".filters"), patchOldFilters(state.filters));
-        this.source = "";
+        this.filters = new Toggles(this.domRoot.find('.filters'), patchOldFilters(state.filters));
+        this.source = '';
         this.assembly = [];
         this.colours = [];
         this.lastResult = {};
@@ -105,7 +105,7 @@ define(function (require) {
 
         this.linkedFadeTimeoutId = -1;
 
-        this.domRoot.find(".compiler-picker").selectize({
+        this.domRoot.find('.compiler-picker').selectize({
             sortField: 'name',
             valueField: 'id',
             labelField: 'name',
@@ -124,17 +124,17 @@ define(function (require) {
         var optionsChange = _.debounce(_.bind(function (e) {
             this.onOptionsChange($(e.target).val());
         }, this), 800);
-        this.optionsField = this.domRoot.find(".options");
+        this.optionsField = this.domRoot.find('.options');
         this.optionsField
             .val(this.options)
-            .on("change", optionsChange)
-            .on("keyup", optionsChange);
+            .on('change', optionsChange)
+            .on('keyup', optionsChange);
 
         // Hide the binary option if the global options has it disabled.
-        this.domRoot.find("[data-bind='binary']").toggle(options.supportsBinary);
-        this.domRoot.find("[data-bind='execute']").toggle(options.supportsExecute);
+        this.domRoot.find('[data-bind=\'binary\']').toggle(options.supportsBinary);
+        this.domRoot.find('[data-bind=\'execute\']').toggle(options.supportsExecute);
 
-        this.outputEditor = monaco.editor.create(this.domRoot.find(".monaco-placeholder")[0], {
+        this.outputEditor = monaco.editor.create(this.domRoot.find('.monaco-placeholder')[0], {
             scrollBeyondLastLine: false,
             readOnly: true,
             language: 'asm',
@@ -251,8 +251,8 @@ define(function (require) {
             return Components.getOutput(this.id, this.sourceEditorId);
         }, this);
 
-        this.container.layoutManager.createDragSource(this.domRoot.find(".status").parent(), outputConfig);
-        this.domRoot.find(".status").parent().click(_.bind(function () {
+        this.container.layoutManager.createDragSource(this.domRoot.find('.status').parent(), outputConfig);
+        this.domRoot.find('.status').parent().click(_.bind(function () {
             var insertPoint = hub.findParentRowOrColumn(this.container) ||
                 this.container.layoutManager.root.contentItems[0];
             insertPoint.addChild(outputConfig);
@@ -319,17 +319,17 @@ define(function (require) {
             var libsCount = Object.keys(this.availableLibs).length;
             if (libsCount === 0) {
                 return $('<p></p>')
-                    .text("No libs configured for this language yet. ")
+                    .text('No libs configured for this language yet. ')
                     .append($('<a></a>')
-                        .attr("target", "_blank")
-                        .attr("rel", "noopener noreferrer")
-                        .attr("href", "https://github.com/mattgodbolt/compiler-explorer/issues/new")
-                        .text("You can suggest us one at any time ")
+                        .attr('target', '_blank')
+                        .attr('rel', 'noopener noreferrer')
+                        .attr('href', 'https://github.com/mattgodbolt/compiler-explorer/issues/new')
+                        .text('You can suggest us one at any time ')
                         .append($('<sup></sup>')
-                            .addClass("glyphicon glyphicon-new-window")
-                            .width("16px")
-                            .height("16px")
-                            .attr("title", "Opens in a new window")
+                            .addClass('glyphicon glyphicon-new-window')
+                            .width('16px')
+                            .height('16px')
+                            .attr('title', 'Opens in a new window')
                         )
                     );
             }
@@ -337,7 +337,7 @@ define(function (require) {
             var currentLibIndex = -1;
 
             var libLists = [];
-            for (var i = 0;i < columnCount;i++) {
+            for (var i = 0; i < columnCount; i++) {
                 libLists.push($('<ul></ul>').addClass('lib-list'));
             }
 
@@ -386,7 +386,7 @@ define(function (require) {
                             .on('change', onChecked)
                         ).append($('<label></label>')
                             .addClass('lib-label')
-                            .text(lib.name + " " + version.version)
+                            .text(lib.name + ' ' + version.version)
                             .on('click', function () {
                                 $(this).parent().find('.lib-checkbox').trigger('click');
                             })
@@ -404,19 +404,19 @@ define(function (require) {
             content: updateLibsUsed(),
             html: true,
             placement: 'bottom',
-            trigger: 'manual',
+            trigger: 'manual'
         }).click(_.bind(function () {
             this.libsButton.popover('show');
         }, this)).on('inserted.bs.popover', function (e) {
             $(e.target).content = updateLibsUsed().html();
         }).on('show.bs.popover', function () {
-            $(this).data("bs.popover").tip().css('max-width', '100%').css('width', 'auto');
+            $(this).data('bs.popover').tip().css('max-width', '100%').css('width', 'auto');
         });
 
         // Dismiss the popover on escape.
         $(document).on('keyup.editable', _.bind(function (e) {
             if (e.which === 27) {
-                this.libsButton.popover("hide");
+                this.libsButton.popover('hide');
             }
         }, this));
 
@@ -426,7 +426,7 @@ define(function (require) {
             var elem = this.libsButton;
             var target = $(e.target);
             if (!target.is(elem) && elem.has(target).length === 0 && target.closest('.popover').length === 0) {
-                elem.popover("hide");
+                elem.popover('hide');
             }
         }, this));
 
@@ -437,8 +437,8 @@ define(function (require) {
     // Issue manifests if you make a window where one compiler is small enough that the buttons spill onto two lines:
     // reload the page and the bottom-bar is off the bottom until you scroll a tiny bit.
     Compiler.prototype.resize = function () {
-        var topBarHeight = this.domRoot.find(".top-bar").outerHeight(true);
-        var bottomBarHeight = this.domRoot.find(".bottom-bar").outerHeight(true);
+        var topBarHeight = this.domRoot.find('.top-bar').outerHeight(true);
+        var bottomBarHeight = this.domRoot.find('.bottom-bar').outerHeight(true);
         this.outputEditor.layout({
             width: this.domRoot.width(),
             height: this.domRoot.height() - topBarHeight - bottomBarHeight
@@ -470,19 +470,19 @@ define(function (require) {
             _.each(lib.versions, function (version) {
                 if (version.used) {
                     _.each(version.path, function (path) {
-                        options.userArguments += " -I" + path;
+                        options.userArguments += ' -I' + path;
                     });
                 }
             });
         });
         this.compilerService.expand(this.source).then(_.bind(function (expanded) {
             var request = {
-                source: expanded || "",
-                compiler: this.compiler ? this.compiler.id : "",
+                source: expanded || '',
+                compiler: this.compiler ? this.compiler.id : '',
                 options: options
             };
             if (!this.compiler) {
-                this.onCompileResponse(request, errorResult("<Please select a compiler>"), false);
+                this.onCompileResponse(request, errorResult('<Please select a compiler>'), false);
             } else {
                 this.sendCompile(request);
             }
@@ -503,7 +503,7 @@ define(function (require) {
         // After a short delay, give the user some indication that we're working on their
         // compilation.
         var progress = setTimeout(_.bind(function () {
-            this.setAssembly(fakeAsm("<Compiling...>"));
+            this.setAssembly(fakeAsm('<Compiling...>'));
         }, this), 500);
         this.compilerService.submit(request)
             .then(function (x) {
@@ -512,15 +512,15 @@ define(function (require) {
             })
             .catch(function (x) {
                 clearTimeout(progress);
-                onCompilerResponse(request, errorResult("<Remote compilation failed: " + x.error + ">"), false);
+                onCompilerResponse(request, errorResult('<Remote compilation failed: ' + x.error + '>'), false);
             });
     };
 
     Compiler.prototype.getBinaryForLine = function (line) {
         var obj = this.assembly[line - 1];
         if (!obj) return '<div class="address">????</div><div class="opcodes"><span class="opcode">????</span></div>';
-        var address = obj.address ? obj.address.toString(16) : "";
-        var opcodes = '<div class="opcodes" title="' + (obj.opcodes || []).join(" ") + '">';
+        var address = obj.address ? obj.address.toString(16) : '';
+        var opcodes = '<div class="opcodes" title="' + (obj.opcodes || []).join(' ') + '">';
         _.each(obj.opcodes, function (op) {
             opcodes += ('<span class="opcode">' + op + '</span>');
         });
@@ -532,13 +532,13 @@ define(function (require) {
     Compiler.prototype.setAssembly = function (assembly) {
         this.assembly = assembly;
         if (this.outputEditor.getModel()) {
-            this.outputEditor.getModel().setValue(_.pluck(assembly, 'text').join("\n"));
+            this.outputEditor.getModel().setValue(_.pluck(assembly, 'text').join('\n'));
             var addrToAddrDiv = {};
             var decorations = [];
             _.each(this.assembly, _.bind(function (obj, line) {
-                var address = obj.address ? obj.address.toString(16) : "";
+                var address = obj.address ? obj.address.toString(16) : '';
                 //     var div = $("<div class='address cm-number'>" + address + "</div>");
-                addrToAddrDiv[address] = {div: "moo", line: line};
+                addrToAddrDiv[address] = {div: 'moo', line: line};
             }, this));
 
             _.each(this.assembly, _.bind(function (obj, line) {
@@ -574,7 +574,7 @@ define(function (require) {
     };
 
     function errorResult(text) {
-        return {asm: fakeAsm(text), code: -1, stdout: "", stderr: ""};
+        return {asm: fakeAsm(text), code: -1, stdout: '', stderr: ''};
     }
 
     function fakeAsm(text) {
@@ -611,7 +611,7 @@ define(function (require) {
             timingValue: timeTaken
         });
 
-        this.setAssembly(result.asm || fakeAsm("<No output>"));
+        this.setAssembly(result.asm || fakeAsm('<No output>'));
         if (request.options.filters.binary) {
             this.outputEditor.updateOptions({
                 lineNumbers: _.bind(this.getBinaryForLine, this),
@@ -626,8 +626,8 @@ define(function (require) {
                 glyphMargin: true
             });
         }
-        var status = this.domRoot.find(".status");
-        var allText = _.pluck((result.stdout || []).concat(result.stderr || []), 'text').join("\n");
+        var status = this.domRoot.find('.status');
+        var allText = _.pluck((result.stdout || []).concat(result.stderr || []), 'text').join('\n');
         var failed = result.code !== 0;
         var warns = !failed && !!allText;
         status.toggleClass('error', failed);
@@ -635,11 +635,11 @@ define(function (require) {
         status.parent().attr('title', allText);
         var compileTime = this.domRoot.find('.compile-time');
         if (cached) {
-            compileTime.text("- cached");
+            compileTime.text('- cached');
         } else if (wasRealReply) {
-            compileTime.text("- " + timeTaken + "ms");
+            compileTime.text('- ' + timeTaken + 'ms');
         } else {
-            compileTime.text("");
+            compileTime.text('');
         }
         this.compilerSupportsCfg = result.supportsCfg;
         this.eventHub.emit('compileResult', this.id, this.compiler, result);
@@ -663,13 +663,13 @@ define(function (require) {
         if (this.id == id) {
             this.wantOptInfo = false;
             this.optViewOpen = false;
-            this.optButton.prop("disabled", this.optViewOpen);
+            this.optButton.prop('disabled', this.optViewOpen);
         }
     };
 
     Compiler.prototype.onAstViewOpened = function (id) {
         if (this.id == id) {
-            this.astButton.prop("disabled", true);
+            this.astButton.prop('disabled', true);
             this.astViewOpen = true;
             this.compile();
         }
@@ -685,14 +685,14 @@ define(function (require) {
         if (this.id == id) {
             this.optViewOpen = true;
             this.wantOptInfo = true;
-            this.optButton.prop("disabled", this.optViewOpen);
+            this.optButton.prop('disabled', this.optViewOpen);
             this.compile();
         }
     };
 
     Compiler.prototype.onCfgViewOpened = function (id) {
         if (this.id == id) {
-            this.cfgButton.prop("disabled", true);
+            this.cfgButton.prop('disabled', true);
             this.cfgViewOpen = true;
             this.compile();
         }
@@ -712,28 +712,28 @@ define(function (require) {
         // We can support intel output if the compiler supports it, or if we're compiling
         // to binary (as we can disassemble it however we like).
         var intelAsm = this.compiler.supportsIntel || filters.binary;
-        this.domRoot.find("[data-bind='intel']").toggleClass("disabled", !intelAsm);
+        this.domRoot.find('[data-bind=\'intel\']').toggleClass('disabled', !intelAsm);
         // Disable binary support on compilers that don't work with it.
-        this.domRoot.find("[data-bind='binary']")
-            .toggleClass("disabled", !this.compiler.supportsBinary);
-        this.domRoot.find("[data-bind='execute']")
-            .toggleClass("disabled", !this.compiler.supportsExecute);
+        this.domRoot.find('[data-bind=\'binary\']')
+            .toggleClass('disabled', !this.compiler.supportsBinary);
+        this.domRoot.find('[data-bind=\'execute\']')
+            .toggleClass('disabled', !this.compiler.supportsExecute);
         // Disable any of the options which don't make sense in binary mode.
         var filtersDisabled = !!filters.binary && !this.compiler.supportsFiltersInBinary;
-        this.domRoot.find('.nonbinary').toggleClass("disabled", filtersDisabled);
+        this.domRoot.find('.nonbinary').toggleClass('disabled', filtersDisabled);
         // If its already open, we should turn the it off.
         // The pane will update with error text
         // Other wise we just disable the button.
         if (!this.optViewOpen) {
-            this.optButton.prop("disabled", !this.compiler.supportsOptOutput);
+            this.optButton.prop('disabled', !this.compiler.supportsOptOutput);
         } else {
-            this.optButton.prop("disabled", true);
+            this.optButton.prop('disabled', true);
         }
 
         if (!this.cfgViewOpen) {
-            this.cfgButton.prop("disabled", !this.compilerSupportsCfg);
+            this.cfgButton.prop('disabled', !this.compilerSupportsCfg);
         } else {
-            this.cfgButton.prop("disabled", true);
+            this.cfgButton.prop('disabled', true);
         }
     };
 
@@ -784,7 +784,7 @@ define(function (require) {
             });
         });
         var state = {
-            compiler: this.compiler ? this.compiler.id : "",
+            compiler: this.compiler ? this.compiler.id : '',
             source: this.sourceEditorId,
             options: this.options,
             // NB must *not* be effective filters
@@ -817,14 +817,14 @@ define(function (require) {
     };
 
     Compiler.prototype.getCompilerName = function () {
-        return this.compiler ? this.compiler.name : "no compiler set";
+        return this.compiler ? this.compiler.name : 'no compiler set';
     };
 
     Compiler.prototype.updateCompilerName = function () {
         var compilerName = this.getCompilerName();
-        var compilerVersion = this.compiler ? this.compiler.version : "";
-        this.container.setTitle(compilerName + " (Editor #" + this.sourceEditorId + ", Compiler #" + this.id + ")");
-        this.domRoot.find(".full-compiler-name").text(compilerVersion);
+        var compilerVersion = this.compiler ? this.compiler.version : '';
+        this.container.setTitle(compilerName + ' (Editor #' + this.sourceEditorId + ', Compiler #' + this.id + ')');
+        this.domRoot.find('.full-compiler-name').text(compilerVersion);
     };
 
     Compiler.prototype.onResendCompilation = function (id) {
@@ -883,7 +883,7 @@ define(function (require) {
         if (match) {
             var asBig = bigInt(match[2]);
             if (asBig.isNegative()) {
-                asBig = bigInt("ffffffffffffffff", 16).and(asBig);
+                asBig = bigInt('ffffffffffffffff', 16).and(asBig);
             }
             return value + ' = 0x' + asBig.toString(16).toUpperCase();
         }
@@ -893,7 +893,7 @@ define(function (require) {
 
 
     var getAsmInfo = function (opcode) {
-        var cacheName = "asm/" + opcode;
+        var cacheName = 'asm/' + opcode;
         var cached = OpcodeCache.get(cacheName);
         if (cached) {
             return Promise.resolve(cached.found ? cached.result : null);
@@ -922,7 +922,7 @@ define(function (require) {
             var hoverAsm = this.assembly[e.target.position.lineNumber - 1];
             if (hoverAsm) {
                 // We check that we actually have something to show at this point!
-                this.eventHub.emit('editorSetDecoration', this.sourceEditorId,  hoverAsm.source && !hoverAsm.source.file ? hoverAsm.source.line : -1, false);
+                this.eventHub.emit('editorSetDecoration', this.sourceEditorId, hoverAsm.source && !hoverAsm.source.file ? hoverAsm.source.line : -1, false);
             }
         }
         var currentWord = this.outputEditor.getModel().getWordAtPosition(e.target.position);
@@ -961,7 +961,7 @@ define(function (require) {
 
             if (this.settings.hoverShowAsmDoc === true &&
                 _.some(getTokensForLine(this.outputEditor.getModel(), currentWord.range.startLineNumber), function (t) {
-                    return t.offset + 1 === currentWord.startColumn && t.type === "keyword.asm";
+                    return t.offset + 1 === currentWord.startColumn && t.type === 'keyword.asm';
                 })) {
                 getAsmInfo(currentWord.word).then(_.bind(function (response) {
                     if (response) {
@@ -969,7 +969,7 @@ define(function (require) {
                             range: currentWord.range,
                             options: {
                                 isWholeLine: false,
-                                hoverMessage: [response.tooltip + "\n\nMore information available in the context menu."]
+                                hoverMessage: [response.tooltip + '\n\nMore information available in the context menu.']
                             }
                         };
                         this.updateDecorations();
@@ -987,7 +987,7 @@ define(function (require) {
         getAsmInfo(word.word).then(
             _.bind(function (asmHelp) {
                 if (asmHelp) {
-                    new Alert().alert(opcode + " help", asmHelp.html +
+                    new Alert().alert(opcode + ' help', asmHelp.html +
                         '<br><br>For more information, visit <a href="' + asmHelp.url + '" target="_blank" rel="noopener noreferrer">the ' +
                         opcode + ' documentation <sup><small class="glyphicon glyphicon-new-window" width="16px" height="16px" title="Opens in a new window"></small></sup></a>.',
                         function () {
@@ -997,15 +997,15 @@ define(function (require) {
                     );
                 } else {
                     new Alert().notify('This token was not found in the documentation.<br>Only <i>most</i> <b>Intel x86</b> opcodes supported for now.', {
-                        group: "notokenindocs",
-                        alertClass: "notification-error",
+                        group: 'notokenindocs',
+                        alertClass: 'notification-error',
                         dismissTime: 3000
                     });
                 }
             }), function (rejection) {
                 new Alert().notify('There was an error fetching the documentation for this opcode (' + rejection + ').', {
-                    group: "notokenindocs",
-                    alertClass: "notification-error",
+                    group: 'notokenindocs',
+                    alertClass: 'notification-error',
                     dismissTime: 3000
                 });
             }
