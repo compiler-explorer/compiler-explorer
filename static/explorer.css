@@ -160,6 +160,25 @@ pre.content {
     font-style: italic;
 }
 
+.libs-container ul {
+    float: left;
+    clear: none;
+}
+
+.lib-list {
+    margin: 3px;
+    padding: 3px;
+    text-align: left;
+}
+
+.lib-header {
+    padding-left: 1px;
+}
+
+.lib-item {
+    list-style: none;
+}
+
 .lib-checkbox {
     display: inline;
 }
@@ -167,15 +186,6 @@ pre.content {
 .lib-label {
     display: inline;
     padding: 5px 0 5px 5px;
-}
-
-.lib-list {
-    padding: 0;
-    text-align: left;
-}
-
-.lib-item {
-    list-style: none;
 }
 
 .lib-separator {

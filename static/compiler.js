@@ -316,7 +316,8 @@ define(function (require) {
 
 
         var updateLibsUsed = _.bind(function () {
-            if (Object.keys(this.availableLibs).length === 0) {
+            var libsCount = Object.keys(this.availableLibs).length;
+            if (libsCount === 0) {
                 return $('<p></p>')
                     .text("No libs configured for this language yet. ")
                     .append($('<a></a>')
@@ -332,11 +333,24 @@ define(function (require) {
                         )
                     );
             }
-            var libsList = $('<ul></ul>');
+            var columnCount = Math.ceil(libsCount / 5);
+            var currentLibIndex = -1;
+
+            var libLists = [];
+            for (var i = 0;i < columnCount;i++) {
+                libLists.push($('<ul></ul>').addClass('lib-list'));
+            }
+
+            // Utility function so we can iterate indefinetly over our lists
+            var getNextList = function () {
+                currentLibIndex = (currentLibIndex + 1) % columnCount;
+                return libLists[currentLibIndex];
+            };
+
             var onChecked = _.bind(function (e) {
                 var elem = $(e.target);
                 if (elem.prop('checked')) {
-                    libsList.find('input[name=' + elem.prop('name') + ']').prop('checked', false);
+                    $(this.domRoot).find('input[name=' + elem.prop('name') + ']').prop('checked', false);
                     elem.prop('checked', true);
                 }
                 _.each(this.availableLibs[elem.prop('data-lib')].versions, function (version) {
@@ -347,36 +361,42 @@ define(function (require) {
                 this.compile();
             }, this);
 
-
-            libsList.addClass('lib-list');
-            var firstLibGroup = true;
             _.each(this.availableLibs, function (lib, libKey) {
-                if (!firstLibGroup)
+                var libsList = getNextList();
+                var libCat = $('<li></li>')
+                    .append($('<span></span>')
+                        .text(lib.name)
+                        .addClass('lib-header')
+                    )
+                    .addClass('lib-item');
+
+                var libGroup = $('<div></div>');
+
+                if (libsList.children().length > 0)
                     libsList.append($('<hr>').addClass('lib-separator'));
-                else
-                    firstLibGroup = false;
+
                 _.each(lib.versions, function (version, vKey) {
-                    var checkbox = $('<input type="checkbox">')
-                        .addClass('lib-checkbox')
-                        .prop('data-lib', libKey)
-                        .prop('data-version', vKey)
-                        .prop('checked', version.used)
-                        .prop('name', libKey)
-                        .on('change', onChecked);
-                    $('<li></li>')
-                        .addClass('lib-item')
-                        .appendTo(libsList)
-                        .append(checkbox)
-                        .append($('<label></label>')
+                    libGroup.append($('<div></div>')
+                        .append($('<input type="checkbox">')
+                            .addClass('lib-checkbox')
+                            .prop('data-lib', libKey)
+                            .prop('data-version', vKey)
+                            .prop('checked', version.used)
+                            .prop('name', libKey)
+                            .on('change', onChecked)
+                        ).append($('<label></label>')
                             .addClass('lib-label')
                             .text(lib.name + " " + version.version)
                             .on('click', function () {
                                 $(this).parent().find('.lib-checkbox').trigger('click');
                             })
-                        );
+                        )
+                    );
                 });
+                libGroup.appendTo(libCat);
+                libCat.appendTo(libsList);
             });
-            return libsList;
+            return $('<div></div>').addClass('libs-container').append(libLists);
         }, this);
 
         this.libsButton.popover({
@@ -384,11 +404,13 @@ define(function (require) {
             content: updateLibsUsed(),
             html: true,
             placement: 'bottom',
-            trigger: 'manual'
+            trigger: 'manual',
         }).click(_.bind(function () {
             this.libsButton.popover('show');
         }, this)).on('inserted.bs.popover', function (e) {
             $(e.target).content = updateLibsUsed().html();
+        }).on('show.bs.popover', function () {
+            $(this).data("bs.popover").tip().css('max-width', '100%').css('width', 'auto');
         });
 
         // Dismiss the popover on escape.
