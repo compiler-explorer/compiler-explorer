@@ -39,11 +39,11 @@ define(function (require) {
         this.domRoot = container.getElement();
         this.domRoot.html($('#cfg').html());
         this.defaultCfgOutput = {nodes: [{id: 0, shape:"box", label: 'No Output'}], edges: []};
+        this.binaryModeSupport = {nodes: [{id: 0, shape:"box", label: "Cfg mode cannot be used when the binary filter is set"}], edges: []};
         // Note that this might be outdated if no functions were present when creating the link, but that's handled
         // by selectize
         this.currentFunc = state.selectedFn || '';
         this._compilerName = state.compilerName;
-        this._binaryFilter = state.binaryFilter;
         this.functions = [];
         this.networkOpts = {
             autoResize: true,
@@ -61,9 +61,9 @@ define(function (require) {
                 hierarchical: {
                     enabled: true,
                     sortMethod: 'directed',
-                    direction: 'LR', // LR means Upside/down for some reason!
+                    direction: 'UD', // LR means Upside/down for some reason!
                     nodeSpacing: 100,
-                    levelSeparation: 100
+                    levelSeparation: 150
                 }
             },
             physics: {
@@ -103,6 +103,7 @@ define(function (require) {
         this.container.on('resize', this.resize, this);
         this.container.on('shown', this.resize, this);
         this.eventHub.emit('cfgViewOpened', this._compilerid);
+        this.eventHub.emit('requestFilters', this._compilerid);
 
         this.adaptStructure = function (names) {
             return _.map(names, function (name) {
@@ -145,7 +146,7 @@ define(function (require) {
                 });
                 this.cfgVisualiser.selectNodes([this.functions[this.currentFunc].nodes[0].id]);
             } else {
-                this.showCfgResults(this.defaultCfgOutput);
+                this.showCfgResults(this._binaryFilter ? this.binaryModeSupport : this.defaultCfgOutput);
                 // We don't reset the current function here as we would lose the saved one if this happened at the begining
                 // (Hint: It *does* happen)
             }
@@ -177,15 +178,8 @@ define(function (require) {
     
     Cfg.prototype.onFiltersChange = function (id, filters) {
         if (this._compilerid === id) {
-            if (filters.binary !== this._binaryFilter) {
-                if (filters.binary === true) {
-                    new Alert().notify("Cfg mode cannot be used when the binary filter is set.", {
-                        group: "cfgnotsupported",
-                        alertClass: "notification-error"
-                    });
-                }
+            if (this._binaryFilter === undefined || filters.binary !== this._binaryFilter) {
                 this._binaryFilter = filters.binary;
-                this.saveState();
             }
         }
     };
@@ -206,7 +200,6 @@ define(function (require) {
             editorid: this._editorid,
             selectedFn: this.currentFunc,
             compilerName: this._compilerName,
-            binaryFilter: this._binaryFilter
         };
     };
 

@@ -242,6 +242,11 @@ define(function (require) {
         this.eventHub.on('cfgViewOpened', this.onCfgViewOpened, this);
         this.eventHub.on('cfgViewClosed', this.onCfgViewClosed, this);
         this.eventHub.on('resize', this.resize, this);
+        this.eventHub.on('requestFilters', function(id){
+            if(id === this.id){
+                this.eventHub.emit('filtersChange', this.id, this.getEffectiveFilters());
+            }
+        }, this);
         this.eventHub.emit('requestSettings');
         this.sendCompiler();
         this.updateCompilerName();
@@ -275,8 +280,7 @@ define(function (require) {
         }, this);
 
         var createCfgView = _.bind(function () {
-            return Components.getCfgViewWith(this.id, this.source, this.lastResult.cfg, this.getCompilerName(), this.sourceEditorId, 
-                                             this.getEffectiveFilters().binary);
+            return Components.getCfgViewWith(this.id, this.source, this.lastResult.cfg, this.getCompilerName(), this.sourceEditorId);
         }, this);
 
         this.container.layoutManager.createDragSource(
@@ -677,13 +681,13 @@ define(function (require) {
     };
 
     Compiler.prototype.onAstViewClosed = function (id) {
-        if (this.id == id) {
+        if (this.id === id) {
             this.astButton.prop('disabled', false);
             this.astViewOpen = false;
         }
     };
     Compiler.prototype.onOptViewOpened = function (id) {
-        if (this.id == id) {
+        if (this.id === id) {
             this.optViewOpen = true;
             this.wantOptInfo = true;
             this.optButton.prop('disabled', this.optViewOpen);
@@ -770,10 +774,10 @@ define(function (require) {
     };
 
     Compiler.prototype.onFilterChange = function () {
+        this.eventHub.emit('filtersChange', this.id, this.getEffectiveFilters());
         this.saveState();
         this.compile();
         this.updateButtons();
-        this.eventHub.emit('filtersChange', this.id, this.getEffectiveFilters());
     };
 
     Compiler.prototype.currentState = function () {
