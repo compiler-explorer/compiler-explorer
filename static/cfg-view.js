@@ -60,7 +60,7 @@ define(function (require) {
                 hierarchical: {
                     enabled: true,
                     sortMethod: 'directed',
-                    direction: 'UD', // LR means Upside/down for some reason!
+                    direction: 'UD', 
                     nodeSpacing: 100,
                     levelSeparation: 150
                 }
