@@ -178,9 +178,7 @@ define(function (require) {
     
     Cfg.prototype.onFiltersChange = function (id, filters) {
         if (this._compilerid === id) {
-            if (filters.binary !== this._binaryFilter) {
-                this._binaryFilter = filters.binary;
-            }
+            this._binaryFilter = filters.binary;
         }
     };
 
