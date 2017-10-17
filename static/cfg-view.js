@@ -37,12 +37,17 @@ define(function (require) {
         this.eventHub = hub.createEventHub();
         this.domRoot = container.getElement();
         this.domRoot.html($('#cfg').html());
-        this.defaultCfgOutput = {nodes: [{id: 0, shape:"box", label: 'No Output'}], edges: []};
-        this.binaryModeSupport = {nodes: [{id: 0, shape:"box", label: "Cfg mode cannot be used when the binary filter is set"}], edges: []};
+        this.defaultCfgOutput = {nodes: [{id: 0, shape: 'box', label: 'No Output'}], edges: []};
+        this.binaryModeSupport = {
+            nodes: [{
+                id: 0,
+                shape: 'box',
+                label: 'Cfg mode cannot be used when the binary filter is set'
+            }], edges: []
+        };
         // Note that this might be outdated if no functions were present when creating the link, but that's handled
         // by selectize
         this.currentFunc = state.selectedFn || '';
-        this._compilerName = state.compilerName;
         this.functions = [];
         this.networkOpts = {
             autoResize: true,
@@ -60,7 +65,7 @@ define(function (require) {
                 hierarchical: {
                     enabled: true,
                     sortMethod: 'directed',
-                    direction: 'UD', 
+                    direction: 'UD',
                     nodeSpacing: 100,
                     levelSeparation: 150
                 }
@@ -146,9 +151,9 @@ define(function (require) {
                 });
                 this.cfgVisualiser.selectNodes([this.functions[this.currentFunc].nodes[0].id]);
             } else {
-                this.showCfgResults(this._binaryFilter ? this.binaryModeSupport : this.defaultCfgOutput);
                 // We don't reset the current function here as we would lose the saved one if this happened at the begining
                 // (Hint: It *does* happen)
+                this.showCfgResults(this._binaryFilter ? this.binaryModeSupport : this.defaultCfgOutput);
             }
 
             this.functionPicker[0].selectize.clearOptions();
@@ -175,7 +180,7 @@ define(function (require) {
             this.setTitle();
         }
     };
-    
+
     Cfg.prototype.onFiltersChange = function (id, filters) {
         if (this._compilerid === id) {
             this._binaryFilter = filters.binary;
@@ -197,7 +202,7 @@ define(function (require) {
             id: this._compilerid,
             editorid: this._editorid,
             selectedFn: this.currentFunc,
-            compilerName: this._compilerName,
+            compilerName: this._compilerName
         };
     };
 

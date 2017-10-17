@@ -242,8 +242,8 @@ define(function (require) {
         this.eventHub.on('cfgViewOpened', this.onCfgViewOpened, this);
         this.eventHub.on('cfgViewClosed', this.onCfgViewClosed, this);
         this.eventHub.on('resize', this.resize, this);
-        this.eventHub.on('requestFilters', function(id){
-            if(id === this.id){
+        this.eventHub.on('requestFilters', function (id) {
+            if (id === this.id) {
                 this.eventHub.emit('filtersChange', this.id, this.getEffectiveFilters());
             }
         }, this);
@@ -280,7 +280,7 @@ define(function (require) {
         }, this);
 
         var createCfgView = _.bind(function () {
-            return Components.getCfgViewWith(this.id, this.source, this.lastResult.cfg, this.getCompilerName(), this.sourceEditorId);
+            return Components.getCfgViewWith(this.id, this.getCompilerName(), this.sourceEditorId);
         }, this);
 
         this.container.layoutManager.createDragSource(
