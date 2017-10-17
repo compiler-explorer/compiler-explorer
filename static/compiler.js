@@ -242,6 +242,11 @@ define(function (require) {
         this.eventHub.on('cfgViewOpened', this.onCfgViewOpened, this);
         this.eventHub.on('cfgViewClosed', this.onCfgViewClosed, this);
         this.eventHub.on('resize', this.resize, this);
+        this.eventHub.on('requestFilters', function(id){
+            if(id === this.id){
+                this.eventHub.emit('filtersChange', this.id, this.getEffectiveFilters());
+            }
+        }, this);
         this.eventHub.emit('requestSettings');
         this.sendCompiler();
         this.updateCompilerName();
@@ -676,13 +681,13 @@ define(function (require) {
     };
 
     Compiler.prototype.onAstViewClosed = function (id) {
-        if (this.id == id) {
+        if (this.id === id) {
             this.astButton.prop('disabled', false);
             this.astViewOpen = false;
         }
     };
     Compiler.prototype.onOptViewOpened = function (id) {
-        if (this.id == id) {
+        if (this.id === id) {
             this.optViewOpen = true;
             this.wantOptInfo = true;
             this.optButton.prop('disabled', this.optViewOpen);
@@ -698,10 +703,10 @@ define(function (require) {
         }
     };
 
-    Compiler.prototype.onCfgViewClosed = function (id, network) {
-        if (this.id == id) {
-            this.cfgButton.prop('disabled', false);
+    Compiler.prototype.onCfgViewClosed = function (id) {
+        if (this.id === id) {
             this.cfgViewOpen = false;
+            this.cfgButton.prop('disabled', this.getEffectiveFilters().binary);
         }
     };
 
@@ -769,6 +774,7 @@ define(function (require) {
     };
 
     Compiler.prototype.onFilterChange = function () {
+        this.eventHub.emit('filtersChange', this.id, this.getEffectiveFilters());
         this.saveState();
         this.compile();
         this.updateButtons();

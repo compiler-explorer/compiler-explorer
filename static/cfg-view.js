@@ -37,7 +37,8 @@ define(function (require) {
         this.eventHub = hub.createEventHub();
         this.domRoot = container.getElement();
         this.domRoot.html($('#cfg').html());
-        this.defaultCfgOutput = {nodes: [{id: 0, label: 'No Output'}], edges: []};
+        this.defaultCfgOutput = {nodes: [{id: 0, shape:"box", label: 'No Output'}], edges: []};
+        this.binaryModeSupport = {nodes: [{id: 0, shape:"box", label: "Cfg mode cannot be used when the binary filter is set"}], edges: []};
         // Note that this might be outdated if no functions were present when creating the link, but that's handled
         // by selectize
         this.currentFunc = state.selectedFn || '';
@@ -59,9 +60,9 @@ define(function (require) {
                 hierarchical: {
                     enabled: true,
                     sortMethod: 'directed',
-                    direction: 'LR', // LR means Upside/down for some reason!
+                    direction: 'UD', 
                     nodeSpacing: 100,
-                    levelSeparation: 100
+                    levelSeparation: 150
                 }
             },
             physics: {
@@ -89,9 +90,11 @@ define(function (require) {
         this._compilerid = state.id;
         this._compilerName = state.compilerName;
         this._editorid = state.editorid;
+        this._binaryFilter = false;
 
         this.eventHub.on('compileResult', this.onCompileResult, this);
         this.eventHub.on('compiler', this.onCompiler, this);
+        this.eventHub.on('filtersChange', this.onFiltersChange, this);
         this.container.on('destroy', function () {
             this.cfgVisualiser.destroy();
             this.eventHub.emit('cfgViewClosed', this._compilerid);
@@ -100,6 +103,7 @@ define(function (require) {
         this.container.on('resize', this.resize, this);
         this.container.on('shown', this.resize, this);
         this.eventHub.emit('cfgViewOpened', this._compilerid);
+        this.eventHub.emit('requestFilters', this._compilerid);
 
         this.adaptStructure = function (names) {
             return _.map(names, function (name) {
@@ -142,7 +146,7 @@ define(function (require) {
                 });
                 this.cfgVisualiser.selectNodes([this.functions[this.currentFunc].nodes[0].id]);
             } else {
-                this.showCfgResults(this.defaultCfgOutput);
+                this.showCfgResults(this._binaryFilter ? this.binaryModeSupport : this.defaultCfgOutput);
                 // We don't reset the current function here as we would lose the saved one if this happened at the begining
                 // (Hint: It *does* happen)
             }
@@ -171,6 +175,12 @@ define(function (require) {
             this.setTitle();
         }
     };
+    
+    Cfg.prototype.onFiltersChange = function (id, filters) {
+        if (this._compilerid === id) {
+            this._binaryFilter = filters.binary;
+        }
+    };
 
     Cfg.prototype.resize = function () {
         var height = this.domRoot.height() - this.domRoot.find('.top-bar').outerHeight(true);
@@ -187,7 +197,7 @@ define(function (require) {
             id: this._compilerid,
             editorid: this._editorid,
             selectedFn: this.currentFunc,
-            compilerName: this._compilerName
+            compilerName: this._compilerName,
         };
     };
 

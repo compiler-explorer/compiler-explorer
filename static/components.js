@@ -124,7 +124,7 @@ define(function () {
                     source: source,
                     cfgResult: cfg,
                     compilerName: compilerName,
-                    editorid: editorid
+                    editorid: editorid,
                 }
             };
         },
