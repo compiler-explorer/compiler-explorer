@@ -24,7 +24,7 @@
     "fs-extra": "0.26.x",
     "http-proxy": "1.12.x",
     "lru-cache": "4.1.1",
-    "monaco-editor": "0.10.0",
+    "monaco-editor": "0.10.1",
     "morgan": "1.6.x",
     "nopt": "3.0.x",
     "promise": "7.0.x",
