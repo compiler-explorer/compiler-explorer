@@ -29,7 +29,6 @@ define(function (require) {
     var $ = require('jquery');
     var vis = require('vis');
     var _ = require('underscore');
-    var Alert = require('alert');
     require('asm-mode');
     require('selectize');
 
@@ -91,6 +90,7 @@ define(function (require) {
         this._compilerid = state.id;
         this._compilerName = state.compilerName;
         this._editorid = state.editorid;
+        this._binaryFilter = false;
 
         this.eventHub.on('compileResult', this.onCompileResult, this);
         this.eventHub.on('compiler', this.onCompiler, this);
@@ -178,7 +178,7 @@ define(function (require) {
     
     Cfg.prototype.onFiltersChange = function (id, filters) {
         if (this._compilerid === id) {
-            if (this._binaryFilter === undefined || filters.binary !== this._binaryFilter) {
+            if (filters.binary !== this._binaryFilter) {
                 this._binaryFilter = filters.binary;
             }
         }
