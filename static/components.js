@@ -24,7 +24,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 define(function () {
-    "use strict";
+    'use strict';
     // here instead of in the editor.js and compiler.js etc to prevent circular dependencies.
     return {
         getCompiler: function (editorId) {
@@ -64,7 +64,7 @@ define(function () {
             return {
                 type: 'component',
                 componentName: 'output',
-                componentState: {compiler: compiler, editor: editor},
+                componentState: {compiler: compiler, editor: editor}
             };
         },
         getDiff: function () {
@@ -74,7 +74,7 @@ define(function () {
                 componentState: {}
             };
         },
-        getOptView: function() {
+        getOptView: function () {
             return {
                 type: 'component',
                 componentName: 'opt',
@@ -85,10 +85,16 @@ define(function () {
             return {
                 type: 'component',
                 componentName: 'opt',
-                componentState: {id: id, source: source, optOutput: optimization, compilerName: compilerName, editorid: editorid}
+                componentState: {
+                    id: id,
+                    source: source,
+                    optOutput: optimization,
+                    compilerName: compilerName,
+                    editorid: editorid
+                }
             };
         },
-        getAstView: function() {
+        getAstView: function () {
             return {
                 type: 'component',
                 componentName: 'ast',
@@ -108,21 +114,19 @@ define(function () {
                 }
             };
         },
-        getCfgView: function() {
+        getCfgView: function () {
             return {
                 type: 'component',
                 componentName: 'cfg',
                 componentState: {}
             };
         },
-        getCfgViewWith: function (id, source, cfg, compilerName, editorid) {
+        getCfgViewWith: function (id, compilerName, editorid) {
             return {
                 type: 'component',
                 componentName: 'cfg',
                 componentState: {
                     id: id,
-                    source: source,
-                    cfgResult: cfg,
                     compilerName: compilerName,
                     editorid: editorid
                 }
