@@ -5,6 +5,7 @@ set -ex
 OPT=$(pwd)/out/compilers
 rm -rf ${OPT}
 mkdir -p ${OPT}
+mkdir -p ${OPT}/tmp
 
 fetch() {
     curl -v ${http_proxy:+--proxy $http_proxy} -L "$*"
@@ -14,13 +15,13 @@ get_ghc() {
     local VER=$1
     local DIR=ghc-$VER
 
-	pushd /tmp
+	pushd ${OPT}/tmp
 	fetch https://downloads.haskell.org/~ghc/${VER}/ghc-${VER}-x86_64-deb8-linux.tar.xz | tar Jxf -
 	cd /tmp/ghc-${VER}
 	./configure --prefix=${OPT}/ghc
 	make install
 	popd
-    rm -rf /tmp/ghc-${VER}
+    rm -rf ${OPT}/tmp/ghc-${VER}
 }
 
 get_gdc() {
@@ -34,12 +35,12 @@ get_gdc() {
 
 do_rust_install() {
     local DIR=$1
-    pushd /tmp
+    pushd ${OPT}/tmp
     fetch http://static.rust-lang.org/dist/${DIR}.tar.gz | tar zxvf -
     cd ${DIR}
-    ./install.sh --prefix=${OPT}/rust --verbose --without=rust-docs
+    ./install.sh --prefix=${OPT}/rust --without=rust-docs
     popd
-    rm -rf /tmp/${DIR}
+    rm -rf ${OPT}/tmp/${DIR}
 }
 
 install_new_rust() {
