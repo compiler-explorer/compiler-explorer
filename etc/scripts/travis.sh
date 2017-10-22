@@ -17,7 +17,7 @@ get_ghc() {
 
 	pushd ${OPT}/tmp
 	fetch https://downloads.haskell.org/~ghc/${VER}/ghc-${VER}-x86_64-deb8-linux.tar.xz | tar Jxf -
-	cd /tmp/ghc-${VER}
+	cd ${OPT}/tmp/ghc-${VER}
 	./configure --prefix=${OPT}/ghc
 	make install
 	popd
