@@ -17,7 +17,7 @@ endif
 endif
 
 .PHONY: clean run test run-amazon c-preload optional-haskell-support optional-d-support optional-rust-support
-.PHONY: dist lint prereqs node_modules bower_modules
+.PHONY: dist lint prereqs node_modules bower_modules travis-dist
 prereqs: optional-haskell-support optional-d-support optional-rust-support node_modules c-preload bower_modules
 
 GDC?=gdc
@@ -104,6 +104,12 @@ dist: prereqs
 	    --source-map-url require.js.map \
 	    --source-map-root //v/$(HASH)/ext/requirejs \
 	    --prefix 6
+
+travis-dist: dist
+	tar --exclude './out/compilers' --exclude './.git' --exclude './static' --exclude './out/dist/ext' -Jcvf /tmp/ce-build.tar.xz . 
+	rm -rf out/dist-bin
+	mkdir -p out/dist-bin
+	mv /tmp/ce-build.tar.xz out/dist-bin/${HASH}.tar.xz
 
 c-preload:
 	$(MAKE) -C c-preload
