@@ -51,6 +51,6 @@ install_new_rust() {
     do_rust_install rust-${NAME}-x86_64-unknown-linux-gnu
 }
 
-get_ghc 8.0.2
-get_gdc 5.2.0 2.066.1
+#get_ghc 8.0.2
+#get_gdc 5.2.0 2.066.1
 install_new_rust nightly
