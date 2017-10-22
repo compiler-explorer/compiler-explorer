@@ -20,6 +20,8 @@ get_ghc() {
 	cd ${OPT}/tmp/ghc-${VER}
 	./configure --prefix=${OPT}/ghc
 	make install
+    rm -rf ${OPT}/ghc/lib/ghc-${VER}/Cabal*
+    rm -rf ${OPT}/ghc/share
 	popd
     rm -rf ${OPT}/tmp/ghc-${VER}
 }
