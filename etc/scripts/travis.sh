@@ -38,7 +38,7 @@ get_gdc() {
 do_rust_install() {
     local DIR=$1
     pushd ${OPT}/tmp
-    fetch http://static.rust-lang.org/dist/${DIR}.tar.gz | tar zxvf -
+    fetch http://static.rust-lang.org/dist/${DIR}.tar.gz | tar zxf -
     cd ${DIR}
     ./install.sh --prefix=${OPT}/rust --without=rust-docs
     popd
