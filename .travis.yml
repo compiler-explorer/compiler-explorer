@@ -23,4 +23,4 @@ deploy:
     skip_cleanup: true
     acl: public_read
     local_dir: out/dist-bin
-    upload-dir: dist/travis
+    upload-dir: dist/travis/${TRAVIS_BRANCH}
