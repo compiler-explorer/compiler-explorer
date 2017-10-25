@@ -109,8 +109,8 @@ travis-dist: dist
 	tar --exclude './out/compilers' --exclude './.git' --exclude './static' --exclude './out/dist/ext' -Jcvf /tmp/ce-build.tar.xz . 
 	rm -rf out/dist-bin
 	mkdir -p out/dist-bin
-	mv /tmp/ce-build.tar.xz out/dist-bin/ce-${TRAVIS_BUILD_NUMBER}.tar.xz
-	echo ${HASH} > out/dist-bin/ce-${TRAVIS_BUILD_NUMBER}.txt
+	mv /tmp/ce-build.tar.xz out/dist-bin/${TRAVIS_BUILD_NUMBER}.tar.xz
+	echo ${HASH} > out/dist-bin/${TRAVIS_BUILD_NUMBER}.txt
 
 c-preload:
 	$(MAKE) -C c-preload
