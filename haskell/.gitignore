@@ -1,3 +1,4 @@
 *.hi
 *.o
+*.so*
 demangle
