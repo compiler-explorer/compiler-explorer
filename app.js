@@ -79,12 +79,18 @@ var hostname = opts.host;
 var port = opts.port || 10240;
 var staticDir = opts.static || 'static';
 var archivedVersions = opts.archivedVersions;
-var gitReleaseName = child_process.execSync('git rev-parse HEAD').toString().trim();
+var gitReleaseName = "";
 var versionedRootPrefix = "";
-// Don't treat @ in paths as remote adresses
-var fetchCompilersFromRemote = !opts.noRemoteFetch;
+// Use the canned git_hash if provided
+if (opts.static && fs.existsSync(opts.static + "/git_hash")) {
+    gitReleaseName = fs.readFileSync(opts.static + "/git_hash").toString().trim();
+} else {
+    gitReleaseName = child_process.execSync('git rev-parse HEAD').toString().trim();
+}
 if (opts.static && fs.existsSync(opts.static + '/v/' + gitReleaseName))
     versionedRootPrefix = "v/" + gitReleaseName + "/";
+// Don't treat @ in paths as remote adresses
+var fetchCompilersFromRemote = !opts.noRemoteFetch;
 
 var propHierarchy = _.flatten([
     'defaults',

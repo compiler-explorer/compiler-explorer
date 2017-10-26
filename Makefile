@@ -89,6 +89,7 @@ dist: prereqs
 	rm -rf out/dist
 	$(NODE) ./node_modules/requirejs/bin/r.js -o app.build.js
 	# Move all assets to a versioned directory
+	echo $(HASH) > out/dist/git_hash
 	mkdir -p out/dist/v/$(HASH)
 	mv out/dist/main.js* out/dist/v/$(HASH)/
 	mv out/dist/explorer.css out/dist/v/$(HASH)/
