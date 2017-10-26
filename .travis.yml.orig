@@ -18,9 +18,10 @@ script:
     - make travis-dist
 
 deploy:
-    on:
-        all_branches: 
-            true
+<<<<<<< HEAD
+=======
+    all_branches: true
+>>>>>>> master
     provider: s3
     bucket: "compiler-explorer"
     skip_cleanup: true
