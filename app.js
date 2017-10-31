@@ -53,14 +53,16 @@ var opts = nopt({
     'static': [String],
     'archivedVersions': [String],
     'noRemoteFetch': [Boolean],
-    'tmpDir': [String]
+    'tmpDir': [String],
+    'wsl': [Boolean]
 });
 
 if (opts.debug) logger.level = 'debug';
 
 // AP: Detect if we're running under Windows Subsystem for Linux. Temporary modification
 // of process.env is allowed: https://nodejs.org/api/process.html#process_process_env
-if (child_process.execSync('uname -a').toString().indexOf('Microsoft') > -1)
+if ((child_process.execSync('uname -a').toString().indexOf('Microsoft') > -1)
+    && (opts.wsl))
     process.env.wsl = true;
 
 // AP: Allow setting of tmpDir (used in lib/base-compiler.js & lib/exec.js) through
