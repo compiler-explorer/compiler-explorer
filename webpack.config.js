@@ -45,7 +45,7 @@ module.exports = {
         new CopyWebpackPlugin([
           {
             from: 'node_modules/monaco-editor/min/vs',
-            to:  path.resolve(__dirname, 'vs'),
+            to:  path.resolve(__dirname, 'static/vs'),
           }
         ]),
         new webpack.ProvidePlugin({
