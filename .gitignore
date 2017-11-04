@@ -2,7 +2,6 @@
 /node_modules
 newrelic_agent.log
 /.npm-updated
-/.bower-updated
 *.vscode
 /out
 *.heapsnapshot
@@ -10,3 +9,6 @@ etc/config/*.local.properties
 .travis-compilers
 /nbproject
 /package-lock.json
+*.bundle*.js
+*.map
+static/dist

@@ -16,20 +16,20 @@
     "tests"
   ],
   "dependencies": {
-    "requirejs": "^2.3.2",
-    "underscore": "^1.8.3",
+    "requirejs": "^2.3.2", //don't nee d
+    "underscore": "^1.8.3", //added 
     "golden-layout": "^1.5.9",
     "jquery": "^3.1.1",
-    "bootstrap": "^3.3.7",
     "selectize": "RabsRincon/selectize.js#master",
-    "eventEmitter": "^5.1.0",
-    "lz-string": "^1.4.4",
-    "clipboard": "^1.5.12",
-    "raven-js": "^3.10.0",
-    "es6-promise": "^4.0.5",
-    "lru-cache": "2.7.3",
-    "seiyria-bootstrap-slider": "9.7.x",
-    "big-integer": "https://github.com/peterolson/BigInteger.js.git#^1.6.22",
+    "bootstrap": "^3.3.7", //done
+    "eventEmitter": "^5.1.0", // added as wolfy87-eventemitter 
+    "lz-string": "^1.4.4", //added as lz-string
+    "clipboard": "^1.5.12", //done
+    "raven-js": "^3.10.0", //done
+    "es6-promise": "^4.0.5", //done
+    "lru-cache": "2.7.3", //done - debug is ok?
+    "seiyria-bootstrap-slider": "9.7.x", //done bootstrap-slider
+    "big-integer": "https://github.com/peterolson/BigInteger.js.git#^1.6.22", //done
     "file-saver": "filesaver#^1.3.3",
     "vis": "4.20.1"
   }

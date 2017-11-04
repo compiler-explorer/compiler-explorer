@@ -21,9 +21,8 @@ endif
 endif
 
 .PHONY: clean run test run-amazon c-preload optional-haskell-support optional-d-support optional-rust-support
-.PHONY: dist lint prereqs node_modules bower_modules travis-dist
-prereqs: optional-haskell-support optional-d-support optional-rust-support node_modules c-preload bower_modules
-
+.PHONY: dist lint prereqs node_modules travis-dist
+prereqs: optional-haskell-support optional-d-support optional-rust-support node_modules webpack c-preload
 GDC?=gdc
 DMD?=dmd
 LDC?=ldc2
@@ -59,21 +58,15 @@ $(NODE_MODULES): package.json
 	$(NPM) install
 	@touch $@
 
-BOWER_MODULES=.bower-updated
-$(BOWER_MODULES): bower.json $(NODE_MODULES)
-	if ! test -f "${BOWER_MODULES}"; then rm -rf static/ext; fi
-	$(NODE) ./node_modules/bower/bin/bower install
-	@touch $@
-	# Workaround for lack of versioned monaco-editor in bower
-	rm -rf static/ext/monaco-editor
-	cp -r node_modules/monaco-editor static/ext/
+webpack:
+	$(NODE) node_modules/webpack/bin/webpack.js 
 
 lint: $(NODE_MODULES)
 	$(NODE) ./node_modules/.bin/jshint --config etc/jshintrc.server app.js $(shell find lib test -name '*.js')
 	$(NODE) ./node_modules/.bin/jshint --config etc/jshintrc.client $(shell find static -name '*.js' -not -path 'static/ext/*' -not -path static/analytics.js)
 
 node_modules: $(NODE_MODULES)
-bower_modules: $(BOWER_MODULES)
+webpack: $(WEBPACK)
 
 test: $(NODE_MODULES) lint
 	$(MAKE) -C c-preload test
@@ -83,7 +76,7 @@ check: $(NODE_MODULES) lint
 	$(NODE) ./node_modules/.bin/mocha --recursive
 
 clean:
-	rm -rf bower_modules node_modules .npm-updated .bower-updated out static/ext
+	rm -rf node_modules .npm-updated out static/ext static/bundle.js
 	$(MAKE) -C d clean
 	$(MAKE) -C c-preload clean
 
