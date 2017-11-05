@@ -1,19 +1,19 @@
+NODE_DIR?=/opt/compiler-explorer/node
 ifneq "" "$(NODE_DIR)"
 NPM:=$(NODE_DIR)/bin/npm
 NODE:=$(NODE_DIR)/bin/node
 default: run
 else
-ifeq "" "$(shell which npm)"
-default:
-	@echo "Please install node.js"
-	@echo "Visit http://nodejs.org/ for more details"
-	@echo "On Ubuntu/Debian try: sudo apt-get install nodejs npm"
-	exit 1
-else
 NPM:= $(shell which npm)
 NODE:= $(shell which node || which nodejs)
 default: run
 endif
+
+NODE_VERSION:=$(shell $(NODE) --version)
+ifneq "$(shell echo $(NODE_VERSION) | cut -f1 -d.)" "v8"
+$(error Compiler Explorer needs node v8.x available. $(NODE_VERSION) was found. \
+Visit https://nodejs.org/ for installation instructions \
+To configure where we look for node, set NODE_DIR to its installation base)
 endif
 
 .PHONY: clean run test run-amazon c-preload optional-haskell-support optional-d-support optional-rust-support
