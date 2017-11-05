@@ -22,8 +22,7 @@ every commit, ensuring that they pass before commiting your changes. _You can di
 
 ## Basic code layout
 
-Code is separated into server-side code and client-side code. Server packages are installed via `package.json` and client-side via
-`bower.json`. Server code is in `app.js` and in the `lib` directory. Client code is all in the `static` directory.
+Code is separated into server-side code and client-side code. All dependencies(server and client side) are installed via `package.json`. Server code is in `app.js` and in the `lib` directory. Client code is all in the `static` directory.
 
 In the server code, the `app.js` sets up a basic `express` middleware-driven web server, delegating to the various compiler
 backends in `lib/compilers`. Most inherit (loosely) from `lib/base-compiler.js` which does most of the work of running

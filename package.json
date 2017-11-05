@@ -54,7 +54,6 @@
   },
   "devDependencies": {
     "aws-sdk-mock": "^1.7.0",
-    "bower": "*",
     "chai": "3.5.x",
     "chai-as-promised": "^7.1.1",
     "chai-http": "^3.0.0",
@@ -73,7 +72,8 @@
     "supervisor": "*",
     "uglify-js": "*",
     "url-loader": "^0.6.2",
-    "webpack": "^3.6.0"
+    "webpack": "^3.6.0",
+    "webpack-dev-server": "^2.9.4"
   },
   "scripts": {
     "test": "mocha --recursive && make test",
