@@ -3,7 +3,6 @@
 
 define(function (require) {
     'use strict';
-    var jquery = require('jquery');
     var monaco = require('monaco');
 
     function definition() {
