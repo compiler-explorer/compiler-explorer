@@ -1,15 +1,17 @@
 const path = require('path'),
     CopyWebpackPlugin = require('copy-webpack-plugin'),
     webpack = require('webpack'),
-    ExtractTextPlugin = require("extract-text-webpack-plugin");
+    ExtractTextPlugin = require('extract-text-webpack-plugin');
 
-const vsPath = path.resolve(__dirname, 'static/vs/')
+const staticPath = path.resolve(__dirname, 'static');
+const distPath = path.join(staticPath, 'dist');
+const vsPath = path.join(staticPath, 'vs/');
 
 module.exports = {
     entry: './static/main.js',
     output: {
         filename: 'bundle.js',
-        path: path.resolve(__dirname, 'static/dist')
+        path: distPath
     },
     resolve: {
         modules: ['./static', "./node_modules"],
@@ -18,7 +20,7 @@ module.exports = {
             goldenlayout:  path.resolve(__dirname, 'node_modules/golden-layout/'),
             lzstring:  path.resolve(__dirname, 'node_modules/lz-string/'),
             filesaver:  path.resolve(__dirname, 'node_modules/file-saver/'),
-            vs: vsPath
+            vs: path.resolve(__dirname, 'node_modules/monaco-editor/min/vs')
         }
     },
     stats: "errors-only",

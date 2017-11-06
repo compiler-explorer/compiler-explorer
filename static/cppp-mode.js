@@ -1,7 +1,6 @@
-
 'use strict';
 var $ = require('jquery');
-var cpp = require('./vs/basic-languages/src/cpp');
+var cpp = require('vs/basic-languages/src/cpp');
 
 // We need to create a new definition for cpp so we can remove invalid keywords
 

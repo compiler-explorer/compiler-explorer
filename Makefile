@@ -76,7 +76,7 @@ check: $(NODE_MODULES) lint
 	$(NODE) ./node_modules/.bin/mocha --recursive
 
 clean:
-	rm -rf node_modules .npm-updated out static/ext static/bundle.js
+	rm -rf node_modules .npm-updated out static/dist static/vs
 	$(MAKE) -C d clean
 	$(MAKE) -C c-preload clean
 
