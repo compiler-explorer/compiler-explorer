@@ -6,7 +6,7 @@ before_install:
     - etc/scripts/travis.sh
 
 node_js: 
-    - "node"
+    - "8"
 
 before_script:
     - export PATH=$PATH:$PWD/out/compilers/ghc/bin

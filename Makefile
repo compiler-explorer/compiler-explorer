@@ -1,13 +1,7 @@
 NODE_DIR?=/opt/compiler-explorer/node
-ifneq "" "$(NODE_DIR)"
-NPM:=$(NODE_DIR)/bin/npm
-NODE:=$(NODE_DIR)/bin/node
+NPM:=$(shell env PATH=$(NODE_DIR)/bin:$(PATH) which npm)
+NODE:=$(shell env PATH=$(NODE_DIR)/bin:$(PATH) which node || env PATH=$(NODE_DIR)/bin:$(PATH) which nodejs)
 default: run
-else
-NPM:= $(shell which npm)
-NODE:= $(shell which node || which nodejs)
-default: run
-endif
 
 NODE_VERSION:=$(shell $(NODE) --version)
 ifneq "$(shell echo $(NODE_VERSION) | cut -f1 -d.)" "v8"
