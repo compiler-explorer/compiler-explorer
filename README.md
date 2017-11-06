@@ -25,8 +25,8 @@ You can support this [this project on Patreon](https://patreon.com/mattgodbolt).
 
 Compiler Explorer is written in node.js.
 
-Assuming you have npm and node installed, simply running `make` ought to get you up and running with an Explorer
-running on port 10240 on your local machine: http://localhost:10240/
+Assuming you have a compatible version of `node` installed, simply running `make` ought to get you up and running with an Explorer
+running on port 10240 on your local machine: http://localhost:10240/. Currently Compiler Explorer requires `node` v8 installed, either on the path or at `NODE_PATH` (an environment variable or `make` parameter).
 
 The `Makefile` will automatically install all the third party libraries needed to run; using `npm` to install server-side
 components and `bower` to install all the client-facing libraries.
