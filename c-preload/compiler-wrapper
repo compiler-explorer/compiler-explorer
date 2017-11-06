@@ -12,9 +12,6 @@ export WINEPREFIX=/tmp/wine
 mkdir -p /tmp/wine
 ALLOWED_FOR_READ=${ALLOWED_FOR_READ}:/usr/share/fonts:/etc/passwd
 
-# Intel compiler license shenanigans
-export INTEL_LICENSE_FILE=/opt/compiler-explorer/intel/licenses
-
 # Last-gasp limits
 ulimit -m $((512 * 1024)) # RSS limit in K
 ulimit -t 10 # CPU time in seconds
