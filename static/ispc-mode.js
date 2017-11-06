@@ -1,7 +1,7 @@
 'use strict';
 
 var jquery = require('jquery');
-var cpp = require('vs/basic-languages/src/cpp');
+var cpp = require('./vs/basic-languages/src/cpp');
 
 function definition() {
     var ispc = jquery.extend(true, {}, cpp.language); // deep copy

@@ -2,7 +2,8 @@ const path = require('path'),
     CopyWebpackPlugin = require('copy-webpack-plugin'),
     webpack = require('webpack'),
     ExtractTextPlugin = require("extract-text-webpack-plugin");
-    
+
+const vsPath = path.resolve(__dirname, 'static/vs/')
 
 module.exports = {
     entry: './static/main.js',
@@ -16,7 +17,8 @@ module.exports = {
             //is this safe?
             goldenlayout:  path.resolve(__dirname, 'node_modules/golden-layout/'),
             lzstring:  path.resolve(__dirname, 'node_modules/lz-string/'),
-            filesaver:  path.resolve(__dirname, 'node_modules/file-saver/')
+            filesaver:  path.resolve(__dirname, 'node_modules/file-saver/'),
+            vs: vsPath
         }
     },
     stats: "errors-only",
@@ -45,7 +47,7 @@ module.exports = {
         new CopyWebpackPlugin([
           {
             from: 'node_modules/monaco-editor/min/vs',
-            to:  path.resolve(__dirname, 'static/vs'),
+            to: vsPath,
           }
         ]),
         new webpack.ProvidePlugin({
