@@ -96,6 +96,9 @@ define(function (require) {
 
         this.availableLibs = $.extend(true, {}, options.libs);
 
+        this.compileTimeLabel = this.domRoot.find('.compile-time');
+        this.compileClearCache = this.domRoot.find('.clear-cache');
+
         _.each(state.libs, _.bind(function (lib) {
             if (this.availableLibs[lib.name] && this.availableLibs[lib.name].versions &&
                 this.availableLibs[lib.name].versions[lib.ver]) {
@@ -418,6 +421,11 @@ define(function (require) {
             $(this).data('bs.popover').tip().css('max-width', '100%').css('width', 'auto');
         });
 
+        this.compileClearCache.on('click', _.bind(function() {
+            this.compilerService.cache.reset();
+            this.compile();
+        }, this));
+
         // Dismiss the popover on escape.
         $(document).on('keyup.editable', _.bind(function (e) {
             if (e.which === 27) {
@@ -463,7 +471,6 @@ define(function (require) {
         }
         return filters;
     };
-
 
     Compiler.prototype.compile = function () {
         var options = {
@@ -638,13 +645,12 @@ define(function (require) {
         status.toggleClass('error', failed);
         status.toggleClass('warning', warns);
         status.parent().attr('title', allText);
-        var compileTime = this.domRoot.find('.compile-time');
         if (cached) {
-            compileTime.text('- cached');
+            this.compileTimeLabel.text(' - cached');
         } else if (wasRealReply) {
-            compileTime.text('- ' + timeTaken + 'ms');
+            this.compileTimeLabel.text(' - ' + timeTaken + 'ms');
         } else {
-            compileTime.text('');
+            this.compileTimeLabel.text('');
         }
         this.compilerSupportsCfg = result.supportsCfg;
         this.eventHub.emit('compileResult', this.id, this.compiler, result);
