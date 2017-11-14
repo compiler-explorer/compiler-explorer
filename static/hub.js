@@ -35,6 +35,7 @@ define(function (require) {
     var diff = require('diff');
     var optView = require('opt-view');
     var astView = require('ast-view');
+    var gccDumpView = require('gccdump-view');
     var cfgView = require('cfg-view');
     var conformanceView = require('conformance-view');
     var CompilerService = require('compiler-service');
@@ -94,6 +95,10 @@ define(function (require) {
             function (container, state) {
                 return self.astViewFactory(container, state);
             });
+        layout.registerComponent(Components.getGccDumpView().componentName,
+            function (container, state) {
+                return self.gccDumpViewFactory(container, state);
+            });
         layout.registerComponent(Components.getCfgView().componentName,
             function (container, state) {
                 return self.cfgViewFactory(container, state);
@@ -148,6 +153,9 @@ define(function (require) {
     };
     Hub.prototype.astViewFactory = function (container, state) {
         return new astView.Ast(this, container, state);
+    };
+    Hub.prototype.gccDumpViewFactory = function (container, state) {
+        return new gccDumpView.GccDump(this, container, state);
     };
     Hub.prototype.cfgViewFactory = function (container, state) {
         return new cfgView.Cfg(this, container, state);
