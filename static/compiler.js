@@ -378,10 +378,16 @@ define(function (require) {
 
             var onChecked = _.bind(function (e) {
                 var elem = $(e.target);
+                // Uncheck every lib checkbox with the same name if we're checking the target
                 if (elem.prop('checked')) {
-                    $(this.domRoot).find('input[name=' + elem.prop('name') + ']').prop('checked', false);
+                    var others = $.find('input[name=\'' + elem.prop('name') + '\']');
+                    _.each(others, function (other) {
+                        $(other).prop('checked', false);
+                    });
+                    // Recheck the targeted one
                     elem.prop('checked', true);
                 }
+                // And now do the same with the availableLibs object
                 _.each(this.availableLibs[elem.prop('data-lib')].versions, function (version) {
                     version.used = false;
                 });
