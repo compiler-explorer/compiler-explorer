@@ -53,6 +53,8 @@
             span.glyphicon.glyphicon-scale
           button.btn.btn-default.btn-sm.view-ast(title="Show AST output (Clang only)")
             span.glyphicon.glyphicon-tree-deciduous  
+          button.btn.btn-default.btn-sm.view-gccdump(title="Show GCC's Tree/RTL dump")
+            span.glyphicon.glyphicon-tree-conifer
           button.btn.btn-default.btn-sm.view-cfg(title="Show Graph Output")
             span.glyphicon.glyphicon-lamp
     .monaco-placeholder
@@ -86,6 +88,25 @@
   #ast
     .top-bar.btn-toolbar(role="toolbar")
       include font-size.pug
+    .monaco-placeholder
+
+  #gccdump
+    .top-bar.btn-toolbar(role="toolbar")
+      table
+        tr
+          td(style="padding-right: 1em")
+            include font-size.pug
+          td: div Pass filters:
+          td: div.btn-group.btn-group-sm.dump-filters(data-toggle="buttons")
+                  button.btn.btn-sm.active(title="Tree" data-bind="treeDump")
+                      span Tree
+                  button.btn.btn-sm.active(title="RTL" data-bind="rtlDump")
+                      span RTL
+        tr
+          td: div
+          td: div Pass dump to display:
+          td: select.gccdump-pass-picker(placeholder="Select a pass...")
+
     .monaco-placeholder
 
   #cfg

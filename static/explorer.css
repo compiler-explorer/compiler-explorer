@@ -66,6 +66,12 @@
     width: 99%;
 }
 
+.gccdump-pass-picker {
+    min-width: 14em;
+    width: 99%;
+}
+
+
 li.tweet {
     padding: 3px 20px;
 }

@@ -91,6 +91,7 @@ define(function (require) {
         this.prevDecorations = [];
         this.optButton = this.domRoot.find('.btn.view-optimization');
         this.astButton = this.domRoot.find('.btn.view-ast');
+        this.gccDumpButton = this.domRoot.find('.btn.view-gccdump');
         this.cfgButton = this.domRoot.find('.btn.view-cfg');
         this.libsButton = this.domRoot.find('.btn.show-libs');
 
@@ -242,6 +243,13 @@ define(function (require) {
         this.eventHub.on('optViewClosed', this.onOptViewClosed, this);
         this.eventHub.on('astViewOpened', this.onAstViewOpened, this);
         this.eventHub.on('astViewClosed', this.onAstViewClosed, this);
+
+        this.eventHub.on('gccDumpPassSelected', this.onGccDumpPassSelected, this);
+        this.eventHub.on('gccDumpFiltersChanged', this.onGccDumpFiltersChanged, this);
+        this.eventHub.on('gccDumpViewOpened', this.onGccDumpViewOpened, this);
+        this.eventHub.on('gccDumpViewClosed', this.onGccDumpViewClosed, this);
+        this.eventHub.on('gccDumpUIInit', this.onGccDumpUIInit, this);
+
         this.eventHub.on('cfgViewOpened', this.onCfgViewOpened, this);
         this.eventHub.on('cfgViewClosed', this.onCfgViewClosed, this);
         this.eventHub.on('resize', this.resize, this);
@@ -282,6 +290,10 @@ define(function (require) {
             return Components.getAstViewWith(this.id, this.source, this.lastResult.astOutput, this.getCompilerName(), this.sourceEditorId);
         }, this);
 
+        var createGccDumpView = _.bind(function () {
+            return Components.getGccDumpViewWith(this.id, this.getCompilerName(), this.sourceEditorId, this.lastResult.gccDumpOutput);
+        }, this);
+        
         var createCfgView = _.bind(function () {
             return Components.getCfgViewWith(this.id, this.getCompilerName(), this.sourceEditorId);
         }, this);
@@ -311,6 +323,15 @@ define(function (require) {
             var insertPoint = hub.findParentRowOrColumn(this.container) ||
                 this.container.layoutManager.root.contentItems[0];
             insertPoint.addChild(createAstView);
+        }, this));
+
+        this.container.layoutManager.createDragSource(
+            this.gccDumpButton, createGccDumpView);
+
+        this.gccDumpButton.click(_.bind(function () {
+            var insertPoint = hub.findParentRowOrColumn(this.container) ||
+                this.container.layoutManager.root.contentItems[0];
+            insertPoint.addChild(createGccDumpView);
         }, this));
 
         this.container.layoutManager.createDragSource(
@@ -475,7 +496,16 @@ define(function (require) {
     Compiler.prototype.compile = function () {
         var options = {
             userArguments: this.options,
-            compilerOptions: {produceAst: this.astViewOpen, produceOptInfo: this.wantOptInfo},
+            compilerOptions: {
+                produceAst: this.astViewOpen,
+                produceGccDump: {
+                    opened: this.gccDumpViewOpen,
+                    pass : this.gccDumpPassSelected,
+                    treeDump : this.treeDumpEnabled,
+                    rtlDump : this.rtlDumpEnabled
+                },
+                produceOptInfo: this.wantOptInfo
+            },
             filters: this.getEffectiveFilters()
         };
         _.each(this.availableLibs, function (lib) {
@@ -692,6 +722,50 @@ define(function (require) {
             this.astViewOpen = false;
         }
     };
+
+    Compiler.prototype.onGccDumpUIInit = function (id) {
+        this.compile();
+    };
+
+    Compiler.prototype.onGccDumpFiltersChanged = function (id, filters, reqCompile) {
+        if (this.id === id) {
+            this.treeDumpEnabled = (filters.treeDump !== false);
+            this.rtlDumpEnabled = (filters.rtlDump !== false);
+
+            if (reqCompile) {
+                this.compile();
+            }
+         }
+    };
+
+    Compiler.prototype.onGccDumpPassSelected = function (id, passId, reqCompile) {
+        if (this.id === id) {
+            this.gccDumpPassSelected = passId;
+
+            if (reqCompile && passId !== "") {
+                this.compile();
+            }
+        }
+    };
+
+    Compiler.prototype.onGccDumpViewOpened = function (id) {
+        if (this.id === id) {
+            this.gccDumpButton.prop("disabled", true);
+            this.gccDumpViewOpen = true;
+        }
+    };
+
+    Compiler.prototype.onGccDumpViewClosed = function (id) {
+        if (this.id === id) {
+            this.gccDumpButton.prop('disabled', false);
+            this.gccDumpViewOpen = false;
+
+            delete this.gccDumpPassSelected;
+            delete this.treeDumpEnabled;
+            delete this.rtlDumpEnabled;
+        }
+    };
+
     Compiler.prototype.onOptViewOpened = function (id) {
         if (this.id === id) {
             this.optViewOpen = true;
