@@ -9,7 +9,7 @@ assembly output of having compiled the code with a given compiler and settings. 
 the UI layout is configurable (the [Golden Layout](https://www.golden-layout.com/) library is used for this).
 There is also an ispc compiler for a C variant with extensions for SPMD.
 
-Try out one of the demo sites: [C++][cpp], [Rust][rust], [D][d], [Go][go], [Haskell][haskell], [Swif][swift], [ispc][ispc].
+Try out one of the demo sites: [C++][cpp], [Rust][rust], [D][d], [Go][go], [Haskell][haskell], [Swift][swift], [ispc][ispc].
 
 [cpp]: https://gcc.godbolt.org/ "Compiler Explorer for C++"
 [rust]: https://rust.godbolt.org/ "Compiler Explorer for Rust"
