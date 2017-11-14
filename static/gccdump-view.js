@@ -25,7 +25,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 define(function (require) {
-    "use strict";
+    'use strict';
 
     var FontScale = require('fontscale');
     var monaco = require('monaco');
@@ -53,8 +53,8 @@ define(function (require) {
                 $(this).addClass('disabled');
             });
 
-        this.gccDumpEditor = monaco.editor.create(this.domRoot.find(".monaco-placeholder")[0], {
-            value: "",
+        this.gccDumpEditor = monaco.editor.create(this.domRoot.find('.monaco-placeholder')[0], {
+            value: '',
             scrollBeyondLastLine: false,
             readOnly: true,
             glyphMargin: true,
@@ -66,16 +66,16 @@ define(function (require) {
             lineNumbersMinChars: 3
         });
 
-        var selectize = this.domRoot.find(".gccdump-pass-picker").selectize({
+        var selectize = this.domRoot.find('.gccdump-pass-picker').selectize({
             sortField: 'name',
             valueField: 'name',
             labelField: 'name',
             searchField: ['name'],
             options: [],
-            items: [],
+            items: []
         });
 
-        this.selectize  = selectize[0].selectize;
+        this.selectize = selectize[0].selectize;
         this.selectize.disable();
 
         // this is used to save internal state.
@@ -86,7 +86,7 @@ define(function (require) {
         this.state._editorid = state._editorid;
 
         this.fontScale = new FontScale(this.domRoot, state, this.gccDumpEditor);
-        this.fontScale.on('change', _.bind(this.updateState, this));
+        this.fontScale.on('change', _.bind(this.saveState, this));
 
         this.eventHub.on('compileResult', this.onCompileResult, this);
         this.eventHub.on('compiler', this.onCompiler, this);
@@ -96,7 +96,7 @@ define(function (require) {
         this.eventHub.emit('gccDumpViewOpened', this.state._compilerid);
         this.eventHub.emit('requestSettings');
         this.container.on('destroy', function () {
-            this.eventHub.emit("gccDumpViewClosed", this.state._compilerid);
+            this.eventHub.emit('gccDumpViewClosed', this.state._compilerid);
             this.eventHub.unsubscribe();
             this.gccDumpEditor.dispose();
         }, this);
@@ -107,15 +107,15 @@ define(function (require) {
         if (state && state.selectedPass) {
             this.state.selectedPass = state.selectedPass;
             this.eventHub.emit('gccDumpPassSelected',
-                               this.state._compilerid,
-                               state.selectedPass,
-                               false);
+                this.state._compilerid,
+                state.selectedPass,
+                false);
         }
 
-	this.eventHub.emit('gccDumpFiltersChanged',
-                           this.state._compilerid,
-                           this.getEffectiveFilters(),
-                           false);
+        this.eventHub.emit('gccDumpFiltersChanged',
+            this.state._compilerid,
+            this.getEffectiveFilters(),
+            false);
 
         this.saveState();
         this.setTitle();
@@ -140,9 +140,9 @@ define(function (require) {
     GccDump.prototype.onPassSelect = function (passId) {
         if (this.inhibitPassSelect !== true) {
             this.eventHub.emit('gccDumpPassSelected',
-                               this.state._compilerid,
-                               passId,
-                               true);
+                this.state._compilerid,
+                passId,
+                true);
         }
         this.state.selectedPass = passId;
         this.saveState();
@@ -150,7 +150,7 @@ define(function (require) {
 
     // TODO: de-dupe with compiler etc
     GccDump.prototype.resize = function () {
-        var topBarHeight = this.domRoot.find(".top-bar").outerHeight(true);
+        var topBarHeight = this.domRoot.find('.top-bar').outerHeight(true);
         this.gccDumpEditor.layout({
             width: this.domRoot.width(),
             height: this.domRoot.height() - topBarHeight
@@ -166,28 +166,28 @@ define(function (require) {
         // trigger new compilation
         this.inhibitPassSelect = true;
 
-        _.each(selectize.options, function(p) {
+        _.each(selectize.options, function (p) {
             if (passes.indexOf(p.name) === -1) {
                 selectize.removeOption(p.name);
             }
         }, this);
 
-        _.each(passes, function(p) {
+        _.each(passes, function (p) {
             selectize.addOption({
-                name: p,
+                name: p
             });
         }, this);
 
-        if (gccDumpOutput.selectedPass && gccDumpOutput.selectedPass !== "") {
-            selectize.addItem(gccDumpOutput.selectedPass ,true);
+        if (gccDumpOutput.selectedPass && gccDumpOutput.selectedPass !== '') {
+            selectize.addItem(gccDumpOutput.selectedPass, true);
         } else {
             selectize.clear(true);
         }
 
         this.eventHub.emit('gccDumpPassSelected',
-                           this.state._compilerid,
-                           gccDumpOutput.selectedPass,
-                           false);
+            this.state._compilerid,
+            gccDumpOutput.selectedPass,
+            false);
 
         this.inhibitPassSelect = false;
     };
@@ -195,41 +195,41 @@ define(function (require) {
     GccDump.prototype.onCompileResult = function (id, compiler, result) {
         if (this.state._compilerid === id) {
 
-	    // ignore spurious result when :
-	    // - UI is disabled
-	    // - some state has been restored
-	    // - result does not have an gccdump info
-	    //
-	    // This happens when restoring a state and some builds are
-	    // executed by another part of the code before we had the
-	    // chance to set all our parameters : results are coming
-	    // back without any dump info.
+            // ignore spurious result when :
+            // - UI is disabled
+            // - some state has been restored
+            // - result does not have an gccdump info
+            //
+            // This happens when restoring a state and some builds are
+            // executed by another part of the code before we had the
+            // chance to set all our parameters : results are coming
+            // back without any dump info.
             if (!this.uiIsReady &&
-		this.state.selectedPass !== "" &&
-		(!result.hasGccDumpOutput ||
-		 result.gccDumpOutput.selectedPass === "")) {
-		// wait for correct build job:
-		// We should get something back from what has been
-		// requested earlier at the end of GccDump().
-		return;
-	    }
+                this.state.selectedPass !== '' &&
+                (!result.hasGccDumpOutput ||
+                    result.gccDumpOutput.selectedPass === '')) {
+                // wait for correct build job:
+                // We should get something back from what has been
+                // requested earlier at the end of GccDump().
+                return;
+            }
 
             if (result.hasGccDumpOutput) {
                 var currOutput = result.gccDumpOutput.currentPassOutput;
 
                 // if result contains empty selected pass, probably means
                 // we requested an invalid/outdated pass.
-                if (result.gccDumpOutput.selectedPass === "") {
+                if (result.gccDumpOutput.selectedPass === '') {
                     this.selectize.clear(true);
-                    this.state.selectedPass = "";
+                    this.state.selectedPass = '';
                 }
                 this.updatePass(this.filters, this.selectize, result.gccDumpOutput);
                 this.showGccDumpResults(currOutput);
             } else {
                 this.selectize.clear(true);
-                this.state.selectedPass = "";
+                this.state.selectedPass = '';
                 this.updatePass(this.filters, this.selectize, false);
-                this.showGccDumpResults("<no output>");
+                this.showGccDumpResults('<no output>');
             }
             // enable UI on first compilation
             if (!this.uiIsReady) {
@@ -242,7 +242,7 @@ define(function (require) {
     };
 
     GccDump.prototype.setTitle = function () {
-        this.container.setTitle(this.state._compilerName + " GCC Tree/RTL Viewer (Editor #" + this.state._editorid + ", Compiler #" + this.state._compilerid + ")");
+        this.container.setTitle(this.state._compilerName + ' GCC Tree/RTL Viewer (Editor #' + this.state._editorid + ', Compiler #' + this.state._compilerid + ')');
     };
 
     GccDump.prototype.showGccDumpResults = function (results) {
@@ -276,14 +276,16 @@ define(function (require) {
 
         if (this.inhibitPassSelect !== true) {
             this.eventHub.emit('gccDumpFiltersChanged',
-                               this.state._compilerid,
-                               this.getEffectiveFilters(),
-                               true);
+                this.state._compilerid,
+                this.getEffectiveFilters(),
+                true);
         }
     };
 
     GccDump.prototype.saveState = function () {
-        this.container.setState(this.currentState());
+        var state = this.currentState();
+        this.container.setState(state);
+        this.fontScale.addState(state);
     };
 
     GccDump.prototype.currentState = function () {
@@ -293,13 +295,10 @@ define(function (require) {
             _editorid: this.state._editorid,
             _compilerName: this.state._compilerName,
 
-            selectedPass : this.state.selectedPass,
-            treeDump : filters.treeDump,
+            selectedPass: this.state.selectedPass,
+            treeDump: filters.treeDump,
             rtlDump: filters.rtlDump
         };
-    };
-
-    GccDump.prototype.updateState = function () {
     };
 
     GccDump.prototype.onSettingsChange = function (newSettings) {
