@@ -1,9 +1,9 @@
 # Compiler Explorer Road Map
 
-CE was started in 2012 to serve my needs at [my company](http:/drw.com) in terms of showing how
+CE was started in 2012 to serve my needs at [my company](https:/drw.com) to show how
 C++ constructs translated to assembly code. It started out as a `tmux` session with `vi` running in one
-pane and `watch gcc -S foo.cc -o -` running in the other. Since those days, it's now a public website
-serving the C++, Rust, Go and D communities and performs around 20,000 compilations per day.
+pane and `watch gcc -S foo.cc -o -` running in the other. Since then, it became a public website
+serving the C++, Rust, Go, Haskell, Ispc and D communities and performs around 20,000 compilations per day.
 
 This document is an attempt to capture thoughts on the future direction of Compiler Explorer.
 
@@ -29,10 +29,6 @@ The UI has a number of things that need improving:
 - [X] Saving and restoring from browser-local storage
 - [ ] Handling the loss of data if one has a work-in-progress CE window open and then clicks another CE link.
 
-### Diff view
-
-A frequently requested feature that arrived with the inclusion of the [Monaco](https://microsoft.github.io/monaco-editor/) editor.
-
 ### Execution support
 
 Another big ticket item is to allow executing of the user's code. This is fraught with security issues, and
@@ -47,7 +43,7 @@ storage).
 
 Most of the open tickets are to do with adding new compilers, or fixing issues with existing compilers.
 Continuing to add more compilers and make it easier for others to submit PRs to add new compilers is
-very important.
+very important. A [separate document](docs/AddingACompiler.md) explains how to add a compiler.
 
 ## Tensions
 
@@ -57,11 +53,11 @@ development is done on a laptop during a commute (with little or no internet acc
 
 ## Priorities
 
-Above all, the priority is to keep the main CE site up, stable and dependable. After that, features are
-added honestly in the order that is most useful and interesting to the primary developer (Matt Godbolt).
+Above all, the priority is to keep the main CE site up, stable and dependable. 
 
 ## Non-goals
-CE will remain ad-free, open-source and non-commercial. There's no plans at all to add "freemium" content.
+CE will remain ad-free, open-source and non-commercial. There's no plans at all to add "freemium" content,
+despite the Patreon site where folks can help support the cost of running the servers.
 
 ## 2017 goals
 
@@ -69,7 +65,7 @@ With all this in mind, the tentative goals for 2017 are:
 
 - [X] Move to the Monaco editor
    - [X] Implement diff view
-- [ ] Come up with a decent secure solution for code execution
+- [X] Come up with a decent secure solution for code execution
 - [ ] Design an API that can handle remote code execution and download needs
 - [ ] Implement remote execution UIs
 
