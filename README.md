@@ -9,7 +9,7 @@ assembly output of having compiled the code with a given compiler and settings. 
 the UI layout is configurable (the [Golden Layout](https://www.golden-layout.com/) library is used for this).
 There is also an ispc compiler for a C variant with extensions for SPMD.
 
-Try out one of the demo sites: [C++][cpp], [Rust][rust], [D][d], [Go][go], [Haskell][haskell], [Swif][swift], [ispc][ispc].
+Try out one of the demo sites: [C++][cpp], [Rust][rust], [D][d], [Go][go], [Haskell][haskell], [Swift][swift], [ispc][ispc].
 
 [cpp]: https://gcc.godbolt.org/ "Compiler Explorer for C++"
 [rust]: https://rust.godbolt.org/ "Compiler Explorer for Rust"
@@ -20,6 +20,10 @@ Try out one of the demo sites: [C++][cpp], [Rust][rust], [D][d], [Go][go], [Hask
 [swift]: https://swift.godbolt.org/ "Compiler Explorer for Swift"
 
 You can support this [this project on Patreon](https://patreon.com/mattgodbolt).
+
+For general discussion, feel free to join the mailing list: https://groups.google.com/forum/#!forum/compiler-explorer-discussion or the cpplang slack https://cpplang.now.sh/ channel `#compiler_explorer`.
+
+If you are interested in developing, or want to see the discussions between existing developers, feel free to join the mailing list at https://groups.google.com/forum/#!forum/compiler-explorer-development or the cpplang slack https://cpplang.now.sh/ channel `#ce_implementators`.
 
 ### Developing or running a local instance
 

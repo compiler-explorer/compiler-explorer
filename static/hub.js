@@ -24,7 +24,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 define(function (require) {
-    "use strict";
+    'use strict';
 
     var _ = require('underscore');
     var options = require('options');
@@ -57,7 +57,7 @@ define(function (require) {
                 return i;
             }
         }
-        throw "Ran out of ids!?";
+        throw 'Ran out of ids!?';
     };
 
     function Hub(layout, defaultSrc) {
@@ -66,6 +66,8 @@ define(function (require) {
         this.editorIds = new Ids();
         this.compilerIds = new Ids();
         this.compilerService = new CompilerService();
+        this.deferred = true;
+        this.deferredEmissions = [];
 
         // FIXME
         // We can't avoid this self as _ is undefined at this point
@@ -121,7 +123,18 @@ define(function (require) {
             this.compilerIds.remove(id);
         }, this);
         layout.init();
+        this.undefer();
+        layout.eventHub.emit('initialised');
     }
+
+    Hub.prototype.undefer = function () {
+        this.deferred = false;
+        var eventHub = this.layout.eventHub;
+        _.each(this.deferredEmissions, function (args) {
+            eventHub.emit.apply(eventHub, args);
+        });
+        this.deferredEmissions = [];
+    };
 
     Hub.prototype.nextEditorId = function () {
         return this.editorIds.next();
@@ -163,14 +176,21 @@ define(function (require) {
     Hub.prototype.confomanceFactory = function (container, state) {
         return new conformanceView.Conformance(this, container, state);
     };
-    
-    function WrappedEventHub(eventHub) {
+
+    function WrappedEventHub(hub, eventHub) {
+        this.hub = hub;
         this.eventHub = eventHub;
         this.subscriptions = [];
     }
 
     WrappedEventHub.prototype.emit = function () {
-        this.eventHub.emit.apply(this.eventHub, arguments);
+        // Events are deferred during initialisation to allow all the components to install their listeners before
+        // all the emits are done. This fixes some ordering issues.
+        if (this.hub.deferred) {
+            this.hub.deferredEmissions.push(arguments);
+        } else {
+            this.eventHub.emit.apply(this.eventHub, arguments);
+        }
     };
     WrappedEventHub.prototype.on = function (event, callback, context) {
         this.eventHub.on(event, callback, context);
@@ -183,7 +203,7 @@ define(function (require) {
     };
 
     Hub.prototype.createEventHub = function () {
-        return new WrappedEventHub(this.layout.eventHub);
+        return new WrappedEventHub(this, this.layout.eventHub);
     };
 
     Hub.prototype.findParentRowOrColumn = function (elem) {
