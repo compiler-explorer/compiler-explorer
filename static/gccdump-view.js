@@ -193,56 +193,55 @@ define(function (require) {
     };
 
     GccDump.prototype.onCompileResult = function (id, compiler, result) {
-        if (this.state._compilerid === id) {
+        if (this.state._compilerid !== id) return;
+        // ignore spurious result when :
+        // - UI is disabled
+        // - some state has been restored
+        // - result does not have an gccdump info
+        //
+        // This happens when restoring a state and some builds are
+        // executed by another part of the code before we had the
+        // chance to set all our parameters : results are coming
+        // back without any dump info.
+        if (!this.uiIsReady &&
+            this.state.selectedPass !== '' &&
+            (!result.hasGccDumpOutput ||
+                result.gccDumpOutput.selectedPass === '')) {
+            // wait for correct build job:
+            // We should get something back from what has been
+            // requested earlier at the end of GccDump().
+            return;
+        }
 
-            // ignore spurious result when :
-            // - UI is disabled
-            // - some state has been restored
-            // - result does not have an gccdump info
-            //
-            // This happens when restoring a state and some builds are
-            // executed by another part of the code before we had the
-            // chance to set all our parameters : results are coming
-            // back without any dump info.
-            if (!this.uiIsReady &&
-                this.state.selectedPass !== '' &&
-                (!result.hasGccDumpOutput ||
-                    result.gccDumpOutput.selectedPass === '')) {
-                // wait for correct build job:
-                // We should get something back from what has been
-                // requested earlier at the end of GccDump().
-                return;
-            }
+        if (result.hasGccDumpOutput) {
+            var currOutput = result.gccDumpOutput.currentPassOutput;
 
-            if (result.hasGccDumpOutput) {
-                var currOutput = result.gccDumpOutput.currentPassOutput;
-
-                // if result contains empty selected pass, probably means
-                // we requested an invalid/outdated pass.
-                if (result.gccDumpOutput.selectedPass === '') {
-                    this.selectize.clear(true);
-                    this.state.selectedPass = '';
-                }
-                this.updatePass(this.filters, this.selectize, result.gccDumpOutput);
-                this.showGccDumpResults(currOutput);
-            } else {
+            // if result contains empty selected pass, probably means
+            // we requested an invalid/outdated pass.
+            if (result.gccDumpOutput.selectedPass === '') {
                 this.selectize.clear(true);
                 this.state.selectedPass = '';
-                this.updatePass(this.filters, this.selectize, false);
-                this.showGccDumpResults('<no output>');
             }
-            // enable UI on first compilation
-            if (!this.uiIsReady) {
-                this.uiIsReady = true;
-                this.onUiReady();
-            }
-
-            this.saveState();
+            this.updatePass(this.filters, this.selectize, result.gccDumpOutput);
+            this.showGccDumpResults(currOutput);
+        } else {
+            this.selectize.clear(true);
+            this.state.selectedPass = '';
+            this.updatePass(this.filters, this.selectize, false);
+            this.showGccDumpResults('<no output>');
         }
+        // enable UI on first compilation
+        if (!this.uiIsReady) {
+            this.uiIsReady = true;
+            this.onUiReady();
+        }
+
+        this.saveState();
     };
 
     GccDump.prototype.setTitle = function () {
-        this.container.setTitle(this.state._compilerName + ' GCC Tree/RTL Viewer (Editor #' + this.state._editorid + ', Compiler #' + this.state._compilerid + ')');
+        this.container.setTitle(this.state._compilerName +
+            ' GCC Tree/RTL Viewer (Editor #' + this.state._editorid + ', Compiler #' + this.state._compilerid + ')');
     };
 
     GccDump.prototype.showGccDumpResults = function (results) {

@@ -74,6 +74,8 @@ define(function (require) {
         this.sourceEditorId = state.source || 1;
         this.compiler = this.compilerService.getCompilerById(state.compiler) ||
             this.compilerService.getCompilerById(options.defaultCompiler);
+        this.deferCompiles = true;
+        this.needsCompile = false;
         this.options = state.options || options.compileOptions;
         this.filters = new Toggles(this.domRoot.find('.filters'), patchOldFilters(state.filters));
         this.source = '';
@@ -293,7 +295,7 @@ define(function (require) {
         var createGccDumpView = _.bind(function () {
             return Components.getGccDumpViewWith(this.id, this.getCompilerName(), this.sourceEditorId, this.lastResult.gccDumpOutput);
         }, this);
-        
+
         var createCfgView = _.bind(function () {
             return Components.getCfgViewWith(this.id, this.getCompilerName(), this.sourceEditorId);
         }, this);
@@ -448,7 +450,7 @@ define(function (require) {
             $(this).data('bs.popover').tip().css('max-width', '100%').css('width', 'auto');
         });
 
-        this.compileClearCache.on('click', _.bind(function() {
+        this.compileClearCache.on('click', _.bind(function () {
             this.compilerService.cache.reset();
             this.compile();
         }, this));
@@ -470,8 +472,15 @@ define(function (require) {
             }
         }, this));
 
+        this.eventHub.on('initialised', this.undefer, this);
+
         this.saveState();
     }
+
+    Compiler.prototype.undefer = function () {
+        this.deferCompiles = false;
+        if (this.needsCompile) this.compile();
+    };
 
     // TODO: need to call resize if either .top-bar or .bottom-bar resizes, which needs some work.
     // Issue manifests if you make a window where one compiler is small enough that the buttons spill onto two lines:
@@ -500,15 +509,20 @@ define(function (require) {
     };
 
     Compiler.prototype.compile = function () {
+        if (this.deferCompiles) {
+            this.needsCompile = true;
+            return;
+        }
+        this.needsCompile = false;
         var options = {
             userArguments: this.options,
             compilerOptions: {
                 produceAst: this.astViewOpen,
                 produceGccDump: {
                     opened: this.gccDumpViewOpen,
-                    pass : this.gccDumpPassSelected,
-                    treeDump : this.treeDumpEnabled,
-                    rtlDump : this.rtlDumpEnabled
+                    pass: this.gccDumpPassSelected,
+                    treeDump: this.treeDumpEnabled,
+                    rtlDump: this.rtlDumpEnabled
                 },
                 produceOptInfo: this.wantOptInfo
             },
@@ -730,7 +744,9 @@ define(function (require) {
     };
 
     Compiler.prototype.onGccDumpUIInit = function (id) {
-        this.compile();
+        if (this.id === id) {
+            this.compile();
+        }
     };
 
     Compiler.prototype.onGccDumpFiltersChanged = function (id, filters, reqCompile) {
@@ -741,14 +757,14 @@ define(function (require) {
             if (reqCompile) {
                 this.compile();
             }
-         }
+        }
     };
 
     Compiler.prototype.onGccDumpPassSelected = function (id, passId, reqCompile) {
         if (this.id === id) {
             this.gccDumpPassSelected = passId;
 
-            if (reqCompile && passId !== "") {
+            if (reqCompile && passId !== '') {
                 this.compile();
             }
         }
@@ -756,7 +772,7 @@ define(function (require) {
 
     Compiler.prototype.onGccDumpViewOpened = function (id) {
         if (this.id === id) {
-            this.gccDumpButton.prop("disabled", true);
+            this.gccDumpButton.prop('disabled', true);
             this.gccDumpViewOpen = true;
         }
     };
