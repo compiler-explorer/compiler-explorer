@@ -40,6 +40,7 @@ define(function (require) {
     require('./ispc-mode');
     require('./haskell-mode');
     require('./swift-mode');
+    require('./fpc-mode');
 
     var loadSave = new loadSaveLib.LoadSave();
 
@@ -100,6 +101,10 @@ define(function (require) {
             case "swift":
                 cmMode = "swift";
                 extensions = ['.swift'];
+                break;
+            case "fpc":
+                cmMode = "fpc";
+                extensions = ['.pas'];
                 break;
         }
 
