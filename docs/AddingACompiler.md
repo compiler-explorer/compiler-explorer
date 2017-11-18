@@ -1,16 +1,17 @@
 # Adding a new compiler
 
 This document explains how to add a new compiler to Compiler Explorer ("CE" from here on), first for a local instance, and
-then how to submit PRs to get it into the main Compiler Explorer site.
+then how to submit PRs to get it into the main CE site.
 
 ## Configuration
 
 Compiler configuration is done through the `etc/config/c++.*.properties` files (for C++, other languages follow the obvious pattern).
 The various named configuration files are used in different contexts: for example `etc/config/c++.local.properties` take priority over
 `etc/config/c++.defaults.properties`. The `local` version is ignored by git, so you can make your own personalised changes there.
-The live site uses the `ietc/config/c++.amazon.properties` file.
+The live site uses the `etc/config/c++.amazon.properties` file.
 
-Within the file, configuration is a set of key and value pairs, separated by an `=`. Whitespace is _not_ trimmed. 
+Within the file, configuration is a set of key and value pairs, separated by an `=`. Whitespace is _not_ trimmed.
+Lines starting with `#` are considered comments and not parsed.
 The list of compilers is set by the `compilers` key and is a list of compiler identifiers or groups, separated by colons. Group names
 have an `&` prepended. As a nod to backwards compatibility with very old configurations, a path to a compiler can also be put
 in the list, but that doesn't let you configure many aspects of the compiler, nor does it allow paths with colons in them (since these
@@ -75,12 +76,12 @@ It should be pretty straightforward to add a compiler of your own. Create a `etc
 `compilers` list to include your own compiler, and its configuration.
 
 Once you've done that, running `make` should pick up the configuration and during startup you should see your compiler being run
-and its versoin being extracted. If you don't, check for any errors, and try running with `make EXTRA_ARGS='--debug'` to see (a lot of)
+and its version being extracted. If you don't, check for any errors, and try running with `make EXTRA_ARGS='--debug'` to see (a lot of)
 debug output.
 
 If you're looking to add other language compilers for another language, obviously create the `etc/config/LANG.local.properties` in
-the above steps, and run with `make EXTRA_ARGS='--language LANG` (e.g. `etc/config/rust.local.properties` and 
-`make EXTRA_ARGS='--language Rust').
+the above steps, and run with `make EXTRA_ARGS='--language LANG'` (e.g. `etc/config/rust.local.properties` and
+`make EXTRA_ARGS='--language Rust'`).
 
 Test locally, and for many compilers that's probably all you need to do. Some compilers might need a few options tweaks (like
 the intel asm setting, or the version flag). For a completely new compiler, you might need to define a whole new `compilerType`.
@@ -93,7 +94,7 @@ On the main CE website, compilers are installed into a `/opt/compiler-explorer/`
 GitHub repo: https://github.com/mattgodbolt/compiler-explorer-image
 
 In the `update_compilers` directory in that repository are a set of scripts that download and install binaries and compilers.
-If you wish to test locally, and can create a `/opt/compiler-explorer` directory on your machine, readable and writable by your
+If you wish to test locally, and can create a `/opt/compiler-explorer` directory on your machine which is readable and writable by your
 current user, then you can run the scripts directly. The binaries and the free compilers can be installed - the commercial compilers
 live in the `install_nonfree_compilers.sh` and won't work.
 
@@ -103,5 +104,5 @@ authors for more help.
 ## Putting it all together
 
 Hopefully that's enough to get an idea. The ideal case of a GCC-like compiler should be a pull request to add a couple of
-lines to the `compiler-explorer-image` to install the compiler, and a pull request to add a few lines to the `c++.amazon.properties`
+lines to the `compiler-explorer-image` to install the compiler, and a pull request to add a few lines to the `LANG.amazon.properties`
 file in this repository.
