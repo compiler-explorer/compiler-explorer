@@ -22,8 +22,8 @@ An example configuration:
 libs=kvasir:boost:rangesv3
 ```
 
-This says there are three libraries with identifiers `abseil`, `boost` and `rangesv3`. CE will look for the keyx named
-`libs.ID.versions` and `libs.ID.name`. The `ID` is the identifier we just set of the library being looked up.
+This says there are three libraries with identifiers `kvasir`, `boost` and `rangesv3`. CE will look for the key named
+`libs.ID.versions` and `libs.ID.name`. The `ID` is the identifier (The one we just set) of the library being looked up.
 The `name` key expects the human readable name of the library (Note that you can use spaces here!)
 The `versions` key expects another list, akin to the libs key itself. This time, you have to define the available versions
 for each library.
@@ -40,7 +40,7 @@ libs.rangesv3.versions=trunk:030
 ```
 
 Now, for each declared version, CE will look for a `version` key, an human readeable string representing the corresponding version,
-and `path`, a list consisting of the paths to add to the inclusion path of the library
+and `path`, a list consisting of the paths to add to the inclusion path of the library.
 
 This would leave us with: (Empty lines added for clarity. Please refrain from using them if you plan to PR us :D)
 
