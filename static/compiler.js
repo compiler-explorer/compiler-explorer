@@ -825,6 +825,9 @@ define(function (require) {
             .toggleClass('disabled', !this.compiler.supportsBinary);
         this.domRoot.find('[data-bind=\'execute\']')
             .toggleClass('disabled', !this.compiler.supportsExecute);
+        // Disable demangle for compilers where we can't access it
+        this.domRoot.find('[data-bind=\'demangle\']')
+            .toggleClass('disabled', !this.compiler.demangler);
         // Disable any of the options which don't make sense in binary mode.
         var filtersDisabled = !!filters.binary && !this.compiler.supportsFiltersInBinary;
         this.domRoot.find('.nonbinary').toggleClass('disabled', filtersDisabled);
