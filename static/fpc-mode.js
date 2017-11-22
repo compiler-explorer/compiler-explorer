@@ -74,7 +74,7 @@ define(function (require) {
             [/[A-Z][\w]*/, { cases: { '~[A-Z0-9_]+': 'constructor.identifier',
                                       '@default'   : 'namespace.identifier' }}],  // to show class names nicely
             { include: '@whitespace' },
-            [/[{}()\[\]]/, '@brackets'],
+            [/[()\[\]]/, '@brackets'],
             [/@symbols/, { cases: { '@keywords' : 'keyword',
                                     '@operators': 'operator',
                                     '@default'  : '' } } ],
