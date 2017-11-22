@@ -41,7 +41,7 @@
   "devDependencies": {
     "bower": "*",
     "chai": "3.5.x",
-    "jshint": "*",
+    "jshint": "^2.9.5",
     "mocha": "^3.3.0",
     "requirejs": "*",
     "supervisor": "*",

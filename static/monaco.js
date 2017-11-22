@@ -24,7 +24,8 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 define(function (require) {
+    "use strict";
     require('vs/editor/editor.main');
 
-    return monaco;
+    return monaco; // jshint ignore:line
 });

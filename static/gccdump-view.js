@@ -32,6 +32,7 @@ define(function (require) {
     var options = require('options');
     var Toggles = require('toggles');
     var _ = require('underscore');
+    var $ = require('jquery');
 
     require('selectize');
 

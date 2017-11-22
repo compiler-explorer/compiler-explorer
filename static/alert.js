@@ -24,6 +24,8 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 define(function (require) {
+    "use strict";
+    var _ = require('underscore');
     var $ = require('jquery');
 
     function Alert() {
