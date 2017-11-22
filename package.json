@@ -30,6 +30,7 @@
     "promise": "7.0.x",
     "promise-queue": "2.2.3",
     "pug": "^2.0.0-beta11",
+    "raven": "^2.2.1",
     "serve-favicon": "2.3.x",
     "shell-quote": "1.6.x",
     "temp": "0.8.x",
