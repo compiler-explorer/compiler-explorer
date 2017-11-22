@@ -27,14 +27,17 @@ define(function (require) {
     "use strict";
     var options = require('options');
     var Alert = require('alert');
+    var $ = require('jquery');
 
     function googleJSClientLoaded() {
+        var gapi = window.gapi;
         gapi.client.setApiKey(options.gapiKey);
         gapi.client.load('urlshortener', 'v1', googleJSClientLoaded.done);
     }
 
     function shortenURL(url, done) {
-        if (!window.gapi || !gapi.client) {
+        var gapi = window.gapi;
+        if (!gapi || !gapi.client) {
             // Load the Google APIs client library asynchronously, then the
             // urlshortener API, and finally come back here.
             window.googleJSClientLoaded = googleJSClientLoaded;

@@ -24,6 +24,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 define(function (require) {
+    "use strict";
     var $ = require('jquery');
     var _ = require('underscore');
     var colour = require('./colour');
@@ -142,7 +143,7 @@ define(function (require) {
             // Store the scheme of the old theme
             $.data(themeSelect, 'theme-' + $.data(themeSelect, 'last-theme'), colourSchemeSelect.val());
             // Get the scheme of the new theme
-            var newThemeStoredScheme =  $.data(themeSelect, 'theme-' + newTheme);
+            var newThemeStoredScheme = $.data(themeSelect, 'theme-' + newTheme);
             var isStoredUsable = false;
             colourSchemeSelect.empty();
             _.each(colour.schemes, function (scheme) {
@@ -157,7 +158,6 @@ define(function (require) {
                 colourSchemeSelect.val(isStoredUsable ? newThemeStoredScheme : colourSchemeSelect.first().val());
             } else {
                 // This should never happen. In case it does, lets use the default one
-                console.log(newTheme + ' is not using any colouring!');
                 colourSchemeSelect.append($('<option value="' + colour.schemes[0].name + '">' + colour.schemes[0].desc + "</option>"));
                 colourSchemeSelect.val(colourSchemeSelect.first().val());
             }

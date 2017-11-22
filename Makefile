@@ -59,7 +59,8 @@ $(BOWER_MODULES): bower.json $(NODE_MODULES)
 	cp -r node_modules/monaco-editor static/ext/
 
 lint: $(NODE_MODULES)
-	$(NODE) ./node_modules/.bin/jshint app.js $(shell find lib static -name '*.js' -not -path 'static/ext/*' -not -path static/analytics.js)
+	$(NODE) ./node_modules/.bin/jshint --config etc/jshintrc.server app.js $(shell find lib -name '*.js')
+	$(NODE) ./node_modules/.bin/jshint --config etc/jshintrc.client $(shell find static -name '*.js' -not -path 'static/ext/*' -not -path static/analytics.js)
 
 LANG:=C++
 

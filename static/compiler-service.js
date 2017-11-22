@@ -72,7 +72,7 @@ define(function (require) {
                 contentType: 'application/json',
                 data: jsonRequest,
                 success: _.bind(function (result) {
-                    if (result.okToCache) {
+                    if (result && result.okToCache) {
                         this.cache.set(jsonRequest, result);
                     }
                     resolve({

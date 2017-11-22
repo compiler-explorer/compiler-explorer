@@ -26,7 +26,7 @@
 
 // Initialise options and properties. Don't load any handlers here; they
 // may need an initialised properties library.
-var nopt = require('nopt'),
+const nopt = require('nopt'),
     os = require('os'),
     props = require('./lib/properties'),
     child_process = require('child_process'),
@@ -35,11 +35,11 @@ var nopt = require('nopt'),
     http = require('http'),
     https = require('https'),
     url = require('url'),
-    Promise = require('promise'),
     _ = require('underscore-node'),
     utils = require('./lib/utils'),
     express = require('express'),
-    logger = require('./lib/logger').logger;
+    logger = require('./lib/logger').logger,
+    Raven = require('raven');
 
 // Parse arguments from command line 'node ./app.js args...'
 var opts = nopt({
@@ -510,7 +510,7 @@ function healthcheckHandler(req, res, next) {
 function shortUrlHandler(req, res, next) {
     var bits = req.url.split("/");
     if (bits.length !== 2 || req.method !== "GET") return next();
-    var key = process.env.GOOGLE_API_KEY;
+    var key = aws.getConfig('googleApiKey');
     var googleApiUrl = 'https://www.googleapis.com/urlshortener/v1/url?shortUrl=http://goo.gl/' +
         encodeURIComponent(bits[1]) + '&key=' + key;
     https.get(googleApiUrl, function (response) {
@@ -548,9 +548,22 @@ function shortUrlHandler(req, res, next) {
     });
 }
 
-findCompilers()
-    .then(function (compilers) {
+
+Promise.all([findCompilers(), aws.initConfig(awsProps)])
+    .then(function (args) {
+        let compilers = args[0];
         var prevCompilers;
+
+        let ravenPrivateEndpoint = aws.getConfig('ravenPrivateEndpoint');
+        if (ravenPrivateEndpoint) {
+            Raven.config(ravenPrivateEndpoint, {
+                release: gitReleaseName,
+                environment: env
+            }).install();
+            logger.info("Configured with raven endpoint", ravenPrivateEndpoint);
+        } else {
+            Raven.config(false).install();
+        }
 
         function onCompilerChange(compilers) {
             if (JSON.stringify(prevCompilers) === JSON.stringify(compilers)) {
@@ -599,6 +612,7 @@ findCompilers()
             res.render('embed', renderConfig({embedded: true}));
         };
         webServer
+            .use(Raven.requestHandler())
             .set('trust proxy', true)
             .set('view engine', 'pug')
             .use('/healthcheck', healthcheckHandler) // before morgan so healthchecks aren't logged
@@ -646,6 +660,8 @@ findCompilers()
             .use('/g', shortUrlHandler)
             .post('/compile', compileHandler.handler);
         logger.info("=======================================");
+
+        webServer.use(Raven.errorHandler());
 
         webServer.on('error', function (err) {
             logger.error('Caught error:', err, "(in web error handler; continuing)");

@@ -30,6 +30,7 @@ define(function (require) {
     var monaco = require('monaco');
     var options = require('options');
     var _ = require('underscore');
+    var $ = require('jquery');
 
     require('asm-mode');
     require('selectize');

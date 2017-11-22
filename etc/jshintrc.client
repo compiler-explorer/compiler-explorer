@@ -1,0 +1,7 @@
+{
+    "strict": true,
+    "undef": true,
+    "browser": true,
+    "globals": {"define": false},
+    "esversion": 5
+}

@@ -27,10 +27,9 @@ define(function (require) {
     "use strict";
     var $ = require('jquery');
     var _ = require('underscore');
+    var saveAs = require('filesaver');
     var Alert = require('./alert');
     var local = require('./local');
-
-    require('filesaver');
 
     function getLocalFiles() {
         return JSON.parse(local.get('files', "{}"));

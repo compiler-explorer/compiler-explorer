@@ -29,6 +29,7 @@ define(function (require) {
     var FontScale = require('fontscale');
     var monaco = require('monaco');
     var _ = require('underscore');
+    var $ = require('jquery');
 
     require('asm-mode');
     require('selectize');

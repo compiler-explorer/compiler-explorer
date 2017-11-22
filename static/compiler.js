@@ -74,7 +74,7 @@ define(function (require) {
         this.sourceEditorId = state.source || 1;
         this.compiler = this.compilerService.getCompilerById(state.compiler) ||
             this.compilerService.getCompilerById(options.defaultCompiler);
-        this.deferCompiles = true;
+        this.deferCompiles = hub.deferred;
         this.needsCompile = false;
         this.options = state.options || options.compileOptions;
         this.filters = new Toggles(this.domRoot.find('.filters'), patchOldFilters(state.filters));

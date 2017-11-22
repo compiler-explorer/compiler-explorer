@@ -23,7 +23,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 // POSSIBILITY OF SUCH DAMAGE.
 
-require.config({
+require.config({ // jshint ignore:line
     paths: {
         bootstrap: 'ext/bootstrap/dist/js/bootstrap',
         jquery: 'ext/jquery/dist/jquery',
@@ -46,6 +46,7 @@ require.config({
     },
     shim: {
         underscore: {exports: '_'},
+        filesaver: {exports: 'saveAs'},
         'lru-cache': {exports: 'LRUCache'},
         bootstrap: ['jquery'],
         'bootstrap-slider': ['bootstrap']
