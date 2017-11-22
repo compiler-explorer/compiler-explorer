@@ -41,6 +41,7 @@ define(function (require) {
           'for', 'try', 'then', 'do',
           ':','=', 'var',
           'strict', 'private', 'protected', 'public', 'published',
+          'type'
         ],
         operators: [
           '+', '-', '*', '/', 'div', 'mod',
