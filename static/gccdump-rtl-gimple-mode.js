@@ -196,7 +196,7 @@ define(function (require) {
                 "var_location",
                 "debug_implicit_ptr",
                 "entry_value",
-                "debug_parameter_ref",
+                "debug_parameter_ref"
             ],
 
             typeKeywords: [
@@ -211,7 +211,7 @@ define(function (require) {
             ],
 
             // we include these common regular expressions
-            symbols:  /[=><!~?:&|+\-*\/\^%]+/,
+            symbols: /[=><!~?:&|+\-*\/\^%]+/,
 
             // C# style strings
             escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
@@ -220,19 +220,27 @@ define(function (require) {
             tokenizer: {
                 root: [
                     // identifiers and keywords
-                    [/[a-z_$][\w$]*/, { cases: { '@typeKeywords': 'keyword',
-                                                 '@keywords': 'keyword',
-                                                 '@default': 'identifier' } }],
-                    [/[A-Z][\w\$]*/, 'type.identifier' ],  // to show class names nicely
+                    [/[a-z_$][\w$]*/, {
+                        cases: {
+                            '@typeKeywords': 'keyword',
+                            '@keywords': 'keyword',
+                            '@default': 'identifier'
+                        }
+                    }],
+                    [/[A-Z][\w\$]*/, 'type.identifier'],  // to show class names nicely
 
                     // whitespace
-                    { include: '@whitespace' },
+                    {include: '@whitespace'},
 
                     // delimiters and operators
                     [/[{}()\[\]]/, '@brackets'],
                     [/[<>](?!@symbols)/, '@brackets'],
-                    [/@symbols/, { cases: { '@operators': 'operator',
-                                            '@default'  : '' } } ],
+                    [/@symbols/, {
+                        cases: {
+                            '@operators': 'operator',
+                            '@default': ''
+                        }
+                    }],
 
                     // @ annotations.
                     // As an example, we emit a debugging log message on these tokens.
@@ -248,37 +256,37 @@ define(function (require) {
                     [/[;,.]/, 'delimiter'],
 
                     // strings
-                    [/"([^"\\]|\\.)*$/, 'string.invalid' ],  // non-teminated string
-                    [/"/,  { token: 'string.quote', bracket: '@open', next: '@string' } ],
+                    [/"([^"\\]|\\.)*$/, 'string.invalid'],  // non-teminated string
+                    [/"/, {token: 'string.quote', bracket: '@open', next: '@string'}],
 
                     // characters
                     [/'[^\\']'/, 'string'],
-                    [/(')(@escapes)(')/, ['string','string.escape','string']],
+                    [/(')(@escapes)(')/, ['string', 'string.escape', 'string']],
                     [/'/, 'string.invalid']
                 ],
 
                 comment: [
-                    [/[^\/*]+/, 'comment' ],
-                    [/\/\*/,    'comment', '@push' ],    // nested comment
-                    ["\\*/",    'comment', '@pop'  ],
-                    [/[\/*]/,   'comment' ]
+                    [/[^\/*]+/, 'comment'],
+                    [/\/\*/, 'comment', '@push'],    // nested comment
+                    ["\\*/", 'comment', '@pop'],
+                    [/[\/*]/, 'comment']
                 ],
 
                 string: [
-                    [/[^\\"]+/,  'string'],
+                    [/[^\\"]+/, 'string'],
                     [/@escapes/, 'string.escape'],
-                    [/\\./,      'string.escape.invalid'],
-                    [/"/,        { token: 'string.quote', bracket: '@close', next: '@pop' } ]
+                    [/\\./, 'string.escape.invalid'],
+                    [/"/, {token: 'string.quote', bracket: '@close', next: '@pop'}]
                 ],
 
                 whitespace: [
                     [/[ \t\r\n]+/, 'white'],
-                    [/\/\*/,       'comment', '@comment' ],
-                    [/\/\/.*$/,    'comment'],
-                    [/^;;.*$/,    'comment'],
+                    [/\/\*/, 'comment', '@comment'],
+                    [/\/\/.*$/, 'comment'],
+                    [/^;;.*$/, 'comment']
 
-                ],
-            },
+                ]
+            }
         };
     }
 
