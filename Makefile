@@ -3,9 +3,13 @@ NPM:=$(shell env PATH=$(NODE_DIR)/bin:$(PATH) which npm)
 NODE:=$(shell env PATH=$(NODE_DIR)/bin:$(PATH) which node || env PATH=$(NODE_DIR)/bin:$(PATH) which nodejs)
 default: run
 
+MIN_NODE_VERSION:=8
 NODE_VERSION:=$(shell $(NODE) --version)
-ifneq "$(shell echo $(NODE_VERSION) | cut -f1 -d.)" "v8"
-$(error Compiler Explorer needs node v8.x available. $(NODE_VERSION) was found. \
+NODE_MAJOR_VERSION:=$(shell echo $(NODE_VERSION) | cut -f1 -d. | sed 's/^v//g')
+NODE_VERSION_CHECK:=$(shell [ $(NODE_MAJOR_VERSION) -ge $(MIN_NODE_VERSION) ] && echo true)
+
+ifneq ($(NODE_VERSION_CHECK), true)
+$(error Compiler Explorer needs node v$(MIN_NODE_VERSION).x or higher, but $(NODE_VERSION) was found. \
 Visit https://nodejs.org/ for installation instructions \
 To configure where we look for node, set NODE_DIR to its installation base)
 endif
