@@ -31,6 +31,7 @@ define(function (require) {
     var monaco = require('monaco');
     var options = require('options');
     var Toggles = require('toggles');
+    require('gccdump-rtl-gimple-mode');
     var _ = require('underscore');
     var $ = require('jquery');
 
@@ -212,6 +213,12 @@ define(function (require) {
             // We should get something back from what has been
             // requested earlier at the end of GccDump().
             return;
+        }
+
+        if (result.hasGccDumpOutput && result.gccDumpOutput.syntaxHighlight) {
+            monaco.editor.setModelLanguage(this.gccDumpEditor.getModel(), 'gccdump-rtl-gimple');
+        } else {
+            monaco.editor.setModelLanguage(this.gccDumpEditor.getModel(), null);
         }
 
         if (result.hasGccDumpOutput) {

@@ -475,6 +475,7 @@ define(function (require) {
         this.eventHub.on('initialised', this.undefer, this);
 
         this.saveState();
+        this.checkCompiler();
     }
 
     Compiler.prototype.undefer = function () {
@@ -862,6 +863,8 @@ define(function (require) {
         this.updateButtons();
         this.updateCompilerName();
         this.sendCompiler();
+        // Let the user know if the user chooses a poorly supported Go version
+        this.checkCompiler();
     };
 
     Compiler.prototype.sendCompiler = function () {
@@ -1121,6 +1124,16 @@ define(function (require) {
                 });
             }
         );
+    };
+
+    // Checks the current compiler for special cases
+    Compiler.prototype.checkCompiler = function() {
+        // Go older 1.4.1 is poorly supported right now. Let people know
+        if (this.compiler.id === '6g141') {
+            new Alert().notify('gc 1.4.1 is poorly supported right now. Consider using a newer gc version!', {
+                group: 'gc-update'
+            });
+        }
     };
 
     return {
