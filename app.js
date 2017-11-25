@@ -446,14 +446,13 @@ function findCompilers() {
             }));
         }
         if (name === "AWS") return fetchAws();
-        return Promise.resolve(compilerConfigFor(name, parentProps));
+        return compilerConfigFor(name, parentProps);
     }
 
     return Promise.all(
         exes.map(function (compiler) {
             return recurseGetCompilers(compiler, compilerProps);
-        })
-    )
+        }))
         .then(_.flatten)
         .then(function (compilers) {
             return compileHandler.setCompilers(compilers);
