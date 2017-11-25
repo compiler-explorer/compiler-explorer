@@ -133,6 +133,7 @@ function compilerProps(property, defaultValue) {
 }
 
 var staticMaxAgeSecs = gccProps('staticMaxAgeSecs', 0);
+let extraBodyClass = gccProps('extraBodyClass', '');
 
 function staticHeaders(res) {
     if (staticMaxAgeSecs) {
@@ -603,6 +604,7 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
             var options = _.extend(extra, clientOptionsHandler.get());
             options.compilerExplorerOptions = JSON.stringify(options);
             options.root = versionedRootPrefix;
+            options.extraBodyClass = extraBodyClass;
             return options;
         }
 
