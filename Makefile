@@ -3,15 +3,21 @@ NPM:=$(shell env PATH=$(NODE_DIR)/bin:$(PATH) which npm)
 NODE:=$(shell env PATH=$(NODE_DIR)/bin:$(PATH) which node || env PATH=$(NODE_DIR)/bin:$(PATH) which nodejs)
 default: run
 
-MIN_NODE_VERSION:=8
+NODE_VERSION_USED:=8
 NODE_VERSION:=$(shell $(NODE) --version)
 NODE_MAJOR_VERSION:=$(shell echo $(NODE_VERSION) | cut -f1 -d. | sed 's/^v//g')
-NODE_VERSION_CHECK:=$(shell [ $(NODE_MAJOR_VERSION) -ge $(MIN_NODE_VERSION) ] && echo true)
+NODE_VERSION_TEST:=$(shell [ $(NODE_MAJOR_VERSION) -eq $(NODE_VERSION_USED) ] && echo true)
+NODE_VERSION_TEST_FAIL:=$(shell [ $(NODE_MAJOR_VERSION) -lt $(NODE_VERSION_USED) ] && echo true)
 
-ifneq ($(NODE_VERSION_CHECK), true)
-$(error Compiler Explorer needs node v$(MIN_NODE_VERSION).x or higher, but $(NODE_VERSION) was found. \
+ifneq ($(NODE_VERSION_TEST), true)
+ifeq ($(NODE_VERSION_TEST_FAIL), true)
+$(error Compiler Explorer needs node v$(NODE_VERSION_USED).x, but $(NODE_VERSION) was found. \
 Visit https://nodejs.org/ for installation instructions \
 To configure where we look for node, set NODE_DIR to its installation base)
+else
+$(warning Compiler Explorer needs node v$(NODE_VERSION_USED).x, but $(NODE_VERSION) was found. \
+The higher node version might work but it has not been tested.)
+endif
 endif
 
 .PHONY: clean run test run-amazon c-preload optional-haskell-support optional-d-support optional-rust-support
