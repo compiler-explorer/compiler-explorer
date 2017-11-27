@@ -5,7 +5,7 @@ then how to submit PRs to get it into the main CE site.
 
 ## Configuration
 
-Library configurations are part of the compiler's propoperties, which is done through the `etc/config/c++.*.properties` files
+Library configurations are part of the compiler's properties, which is done through the `etc/config/c++.*.properties` files
 (for C++, other languages follow the obvious pattern). The various named configuration files are used in different contexts:
  for example `etc/config/c++.local.properties` take priority over `etc/config/c++.defaults.properties`.
 The `local` version is ignored by git, so you can make your own personalised changes there.
