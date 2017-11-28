@@ -120,6 +120,12 @@ var CompileHandler = require('./lib/compile-handler').CompileHandler,
 // in hidden object props.properties
 var gccProps = props.propsFor("compiler-explorer");
 
+var languages = require('./lib/languages');
+
+var compilerPropsFuncsL = {};
+_.each(languages.list(), function (lang) {
+    compilerPropsFuncsL[lang.id] = lang;
+});
 // Instantiate a function to access records concerning the chosen language
 // in hidden object props.properties
 var compilerPropsFunc = props.propsFor(language.toLowerCase());
@@ -130,6 +136,23 @@ function compilerProps(property, defaultValue) {
     var forCompiler = compilerPropsFunc(property, undefined);
     if (forCompiler !== undefined) return forCompiler;
     return gccProps(property, defaultValue); // gccProps comes from lib/compile-handler.js
+}
+
+function compilerPropsL(lang, property, defaultValue) {
+    var forLanguage = compilerPropsFuncsL[lang];
+    if (forLanguage) {
+        var forCompiler = forLanguage(property, defaultValue);
+        if (forCompiler) return forCompiler;
+    }
+    return gccProps(property, defaultValue);
+}
+
+function compilerPropsA(langs, property, defaultValue) {
+    var forLanguages = {};
+    langs.forEach(lang => {
+        forLanguages[lang.id] = compilerPropsL(lang, property, defaultValue);
+    });
+    return forLanguages;
 }
 
 var staticMaxAgeSecs = gccProps('staticMaxAgeSecs', 0);

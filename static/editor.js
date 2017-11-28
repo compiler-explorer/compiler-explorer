@@ -41,8 +41,66 @@ define(function (require) {
     require('./haskell-mode');
     require('./swift-mode');
     require('./fpc-mode');
+    require('selectize');
 
     var loadSave = new loadSaveLib.LoadSave();
+
+    var languages = {
+        cpp: {
+            id: 'cpp',
+            name: 'C++',
+            monaco: 'cppp',
+            extensions: ['.cpp', '.cxx', '.h', '.hpp', '.hxx', '.c']
+        },
+        cppx: {
+            id: 'cppx',
+            name: 'Cppx',
+            monaco: 'cppp',
+            extensions: ['.cppx', '.cpp', '.cxx', '.h', '.hpp', '.hxx', '.c']
+        },
+        c: {
+            id: 'c',
+            name: 'C',
+            monaco: 'c',
+            extensions: ['.c', '.h']
+        },
+        rust: {
+            id: 'rust',
+            name: 'Rust',
+            monaco: 'rust',
+            extensions: ['.rs']
+        },
+        d: {
+            id: 'd',
+            name: 'D',
+            monaco: 'd',
+            extensions: ['.d']
+        },
+        go: {
+            id: 'go',
+            name: 'Go',
+            monaco: 'go',
+            extensions: ['.go']
+        },
+        ispc: {
+            id: 'ispc',
+            name: 'ispc',
+            monaco: 'ispc',
+            extensions: ['.ispc']
+        },
+        haskell: {
+            id: 'haskell',
+            name: 'Haskell',
+            monaco: 'haskell',
+            extensions: ['.haskell']
+        },
+        swift: {
+            id: 'swift',
+            name: 'Swift',
+            monaco: 'swift',
+            extensions: ['.swift']
+        }
+    };
 
     function Editor(hub, state, container, lang, defaultSrc) {
         this.id = state.id || hub.nextEditorId();
@@ -64,56 +122,15 @@ define(function (require) {
 
         this.fadeTimeoutId = -1;
 
-        var cmMode;
-        // The first one is used as the default file extension when saving to local file.
-        // All of them are used as the contents of the accept attribute of the file input
-        var extensions = [];
-        switch (lang.toLowerCase()) {
-            default:
-                cmMode = "cppp";
-                extensions = ['.cpp', '.cxx', '.h', '.hpp', '.hxx'];
-                break;
-            case "c":
-                // C Plus Plus Plus. C++ without invalid keywords!
-                cmMode = "cppp";
-                extensions = ['.cpp', '.cxx', '.h', '.hpp', '.hxx'];
-                break;
-            case "rust":
-                cmMode = "rust";
-                extensions = ['.rs'];
-                break;
-            case "d":
-                cmMode = "d";
-                extensions = ['.d'];
-                break;
-            case "go":
-                cmMode = "go";
-                extensions = ['.go'];
-                break;
-            case "ispc":
-                cmMode = "ispc";
-                extensions = ['.ispc'];
-                break;
-            case "haskell":
-                cmMode = "haskell";
-                extensions = ['.hs'];
-                break;
-            case "swift":
-                cmMode = "swift";
-                extensions = ['.swift'];
-                break;
-            case "fpc":
-                cmMode = "fpc";
-                extensions = ['.pas'];
-                break;
-        }
+        this.languageBtn = this.domRoot.find('.change-language');
+        this.currentLanguage = state.lang ? languages[state.lang] : languages.cpp;
 
         var root = this.domRoot.find(".monaco-placeholder");
         var legacyReadOnly = state.options && !!state.options.readOnly;
         this.editor = monaco.editor.create(root[0], {
             value: state.source || defaultSrc || "",
             scrollBeyondLastLine: false,
-            language: cmMode,
+            language: this.currentLanguage.monaco,
             fontFamily: 'Fira Mono',
             readOnly: !!options.readOnly || legacyReadOnly,
             glyphMargin: !options.embedded,
@@ -125,7 +142,7 @@ define(function (require) {
             folding: true,
             lineNumbersMinChars: options.embedded ? 1 : 3,
             emptySelectionClipboard: true,
-            autoIndent: true,
+            autoIndent: true
         });
 
         var startFolded = /^[/*#;]+\s*setup.*/;
@@ -175,6 +192,18 @@ define(function (require) {
             }, this)
         });
 
+        this.editor.addAction({
+            id: 'viewasm',
+            label: 'Scroll to assembly',
+            keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.F10],
+            keybindingContext: null,
+            contextMenuGroupId: 'navigation',
+            contextMenuOrder: 1.5,
+            run: function (ed) {
+                tryCompilerLinkLine(ed.getPosition().lineNumber, true);
+            }
+        });
+
         var tryCompilerLinkLine = _.bind(function (thisLineNumber, reveal) {
             _.each(this.asmByCompiler, _.bind(function (asms, compilerId) {
                 var targetLines = [];
@@ -194,18 +223,6 @@ define(function (require) {
             }, this));
         }, this);
 
-        this.editor.addAction({
-            id: 'viewasm',
-            label: 'Scroll to assembly',
-            keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.F10],
-            keybindingContext: null,
-            contextMenuGroupId: 'navigation',
-            contextMenuOrder: 1.5,
-            run: function (ed) {
-                tryCompilerLinkLine(ed.getPosition().lineNumber, true);
-            }
-        });
-
         this.editor.onMouseLeave(_.bind(function () {
             this.fadeTimeoutId = setTimeout(_.bind(function () {
                 clearCompilerLinkedLines();
@@ -217,10 +234,7 @@ define(function (require) {
                 if (e !== null && e.target !== null && this.settings.hoverShowSource && e.target.position !== null) {
                     tryCompilerLinkLine(e.target.position.lineNumber, false);
                 }
-            },
-            this),
-            250
-        );
+            }, this), 250);
 
         this.editor.onMouseMove(_.bind(function (e) {
             this.mouseMoveThrottledFunction(e);
@@ -231,8 +245,24 @@ define(function (require) {
             }
         }, this));
 
+        this.updateEditorLayout = _.bind(function () {
+            var topBarHeight = this.domRoot.find(".top-bar").outerHeight(true) || 0;
+            this.editor.layout({width: this.domRoot.width(), height: this.domRoot.height() - topBarHeight});
+        }, this);
+
         this.fontScale = new FontScale(this.domRoot, state, this.editor);
         this.fontScale.on('change', _.bind(this.updateState, this));
+
+        this.languageBtn.selectize({
+            sortField: 'name',
+            valueField: 'id',
+            labelField: 'name',
+            searchField: ['name'],
+            options: _.map(languages, function (lang) { return lang; }),
+            items: [this.currentLanguage.id]
+        }).on('change', _.bind(function (e) {
+            this.onLanguageChange($(e.target).val());
+        }, this));
 
         // We suppress posting changes until the user has stopped typing by:
         // * Using _.debounce() to run emitChange on any key event or change
@@ -252,21 +282,8 @@ define(function (require) {
         //     this.debouncedEmitChange();
         // }, this));
 
-        var layout = _.bind(function () {
-            var topBarHeight = this.domRoot.find(".top-bar").outerHeight(true) || 0;
-            this.editor.layout({width: this.domRoot.width(), height: this.domRoot.height() - topBarHeight});
-        }, this);
-
-        this.domRoot.find('.load-save').click(_.bind(function () {
-            loadSave.run(_.bind(function (text) {
-                this.editor.setValue(text);
-                this.updateState();
-                this.maybeEmitChange();
-            }, this), this.getSource(), extensions);
-        }, this));
-
-        container.on('resize', layout);
-        container.on('shown', layout);
+        container.on('resize', this.updateEditorLayout);
+        container.on('shown', this.updateEditorLayout);
         container.on('open', _.bind(function () {
             this.eventHub.emit('editorOpen', this.id);
         }, this));
@@ -275,7 +292,6 @@ define(function (require) {
             this.eventHub.emit('editorClose', this.id);
             this.editor.dispose();
         }, this));
-        container.setTitle(lang + " source #" + this.id);
         this.container.layoutManager.on('initialised', function () {
             // Once initialized, let everyone know what text we have.
             this.maybeEmitChange();
@@ -290,7 +306,7 @@ define(function (require) {
         this.eventHub.on('settingsChange', this.onSettingsChange, this);
         this.eventHub.on('conformanceViewOpen', this.onConformanceViewOpen, this);
         this.eventHub.on('conformanceViewClose', this.onConformanceViewClose, this);
-        this.eventHub.on('resize', layout, this);
+        this.eventHub.on('resize', this.updateEditorLayout, this);
         this.eventHub.emit('requestSettings');
 
         // NB a new compilerConfig needs to be created every time; else the state is shared
@@ -330,7 +346,7 @@ define(function (require) {
 
     Editor.prototype.maybeEmitChange = function (force) {
         var source = this.getSource();
-        if (!force && source == this.lastChangeEmitted) return;
+        if (!force && source === this.lastChangeEmitted) return;
         this.lastChangeEmitted = source;
         this.eventHub.emit('editorChange', this.id, this.lastChangeEmitted);
     };
@@ -338,7 +354,8 @@ define(function (require) {
     Editor.prototype.updateState = function () {
         var state = {
             id: this.id,
-            source: this.getSource()
+            source: this.getSource(),
+            lang: this.currentLanguage.id
         };
         this.fontScale.addState(state);
         this.container.setState(state);
@@ -515,6 +532,24 @@ define(function (require) {
     Editor.prototype.onConformanceViewClose = function (editorId) {
         if (editorId == this.id) {
             this.conformanceViewerButton.attr("disabled", false);
+        }
+    };
+
+    Editor.prototype.onLanguageChange = function (newLangId) {
+        if (newLangId !== this.currentLanguage.id) {
+            this.currentLanguage = languages[newLangId] || languages.cpp;
+            monaco.editor.setModelLanguage(this.editor.getModel(), this.currentLanguage.monaco);
+            this.domRoot.find('.load-save')
+                .off('click')
+                .click(_.bind(function () {
+                    loadSave.run(_.bind(function (text) {
+                        this.editor.setValue(text);
+                        this.updateState();
+                        this.maybeEmitChange();
+                    }, this), this.getSource(), this.currentLanguage.extensions);
+                }, this));
+            this.container.setTitle(this.currentLanguage.name + " source #" + this.id);
+            this.updateState();
         }
     };
 

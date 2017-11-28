@@ -2,6 +2,9 @@
   #codeEditor
     .top-bar.btn-toolbar(role="toolbar")
       include font-size.pug
+      if !embedded
+        .btn-group.btn-group-sm
+          select.change-language(title="Change this editor's (and associated panels) language")
       .btn-group.btn-group-sm
         button.btn.btn-default.btn-sm.load-save(title="Load or save text")
           span.glyphicon.glyphicon-floppy-disk
