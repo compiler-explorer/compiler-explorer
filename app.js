@@ -149,12 +149,12 @@ function compilerPropsL(lang, property, defaultValue) {
 
 function compilerPropsLT(lang, transform, property, defaultValue) {
     var proper = compilerPropsL(lang, property, defaultValue);
-    return transform(lang, proper);
+    return transform(proper, lang);
 }
 
 function compilerPropsA(langs, property, defaultValue) {
     var forLanguages = {};
-    langs.forEach(lang => {
+    _.each(langs, lang => {
         forLanguages[lang.id] = compilerPropsL(lang.id, property, defaultValue);
     });
     return forLanguages;
@@ -162,7 +162,7 @@ function compilerPropsA(langs, property, defaultValue) {
 
 function compilerPropsAT(langs, transform, property, defaultValue) {
     var forLanguages = {};
-    langs.forEach(lang => {
+    _.each(langs, lang => {
         forLanguages[lang.id] = compilerPropsLT(lang.id, transform, property, defaultValue);
     });
     return forLanguages;
@@ -227,9 +227,9 @@ function ClientOptionsHandler(fileSources) {
     // sort source file alphabetically
     sources = sources.sort(compareOn("name"));
 
-    var langs = _.map(languages.list(), lang => lang);
-    var supportsBinary = compilerPropsAT(langs, (lang, res) => !!res, "supportsBinary", true);
-    var supportsExecute = supportsBinary && !!compilerPropsAT(langs, (lang, res) => supportsBinary[lang.id] && !!res, "supportsExecute", true);
+    var langs = languages.toArray();
+    var supportsBinary = compilerPropsAT(langs, res => !!res, "supportsBinary", true);
+    var supportsExecute = supportsBinary && !!compilerPropsAT(langs, (res, lang) => supportsBinary[lang.id] && !!res, "supportsExecute", true);
     var libs = {};
 
     var baseLibs = compilerPropsA(langs, "libs");
@@ -349,7 +349,8 @@ function retryPromise(promiseFunc, name, maxFails, retryMs) {
 }
 
 function findCompilers() {
-    var exes = compilerProps("compilers", "/usr/bin/g++").split(":");
+    var exes = compilerPropsAT(languages.toArray(), exs => {if (exs) exs.split(':')}, "compilers", "/usr/bin/g++");
+    logger.info(exes);
     var ndk = compilerProps('androidNdk');
     if (ndk) {
         var toolchains = fs.readdirSync(ndk + "/toolchains");
@@ -484,7 +485,8 @@ function findCompilers() {
     }
 
     return Promise.all(
-        exes.map(function (compiler) {
+        exes.map(function (compiler, lang) {
+            logger.warn(compiler, lang);
             return recurseGetCompilers(compiler, compilerProps);
         }))
         .then(_.flatten)
