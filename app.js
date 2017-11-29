@@ -124,7 +124,7 @@ var languages = require('./lib/languages');
 
 var compilerPropsFuncsL = {};
 _.each(languages.list(), function (lang) {
-    compilerPropsFuncsL[lang.id] = lang;
+    compilerPropsFuncsL[lang.id] = props.propsFor(lang.id);
 });
 // Instantiate a function to access records concerning the chosen language
 // in hidden object props.properties
@@ -147,10 +147,23 @@ function compilerPropsL(lang, property, defaultValue) {
     return gccProps(property, defaultValue);
 }
 
+function compilerPropsLT(lang, transform, property, defaultValue) {
+    var proper = compilerPropsL(lang, property, defaultValue);
+    return transform(lang, proper);
+}
+
 function compilerPropsA(langs, property, defaultValue) {
     var forLanguages = {};
     langs.forEach(lang => {
-        forLanguages[lang.id] = compilerPropsL(lang, property, defaultValue);
+        forLanguages[lang.id] = compilerPropsL(lang.id, property, defaultValue);
+    });
+    return forLanguages;
+}
+
+function compilerPropsAT(langs, transform, property, defaultValue) {
+    var forLanguages = {};
+    langs.forEach(lang => {
+        forLanguages[lang.id] = compilerPropsLT(lang.id, transform, property, defaultValue);
     });
     return forLanguages;
 }
@@ -213,41 +226,40 @@ function ClientOptionsHandler(fileSources) {
     });
     // sort source file alphabetically
     sources = sources.sort(compareOn("name"));
-    var languages = _.compact(_.map(gccProps("languages", '').split(':'), function (thing) {
-        if (!thing) return null;
-        var splat = thing.split("=");
-        return {language: splat[0], url: splat[1]};
-    }));
-    var supportsBinary = !!compilerProps("supportsBinary", true);
-    var supportsExecute = supportsBinary && !!compilerProps("supportsExecute", true);
+
+    var langs = _.map(languages.list(), lang => lang);
+    var supportsBinary = compilerPropsAT(langs, (lang, res) => !!res, "supportsBinary", true);
+    var supportsExecute = supportsBinary && !!compilerPropsAT(langs, (lang, res) => supportsBinary[lang.id] && !!res, "supportsExecute", true);
     var libs = {};
 
-    var baseLibs = compilerProps("libs");
-
-    if (baseLibs) {
-        _.each(baseLibs.split(':'), function (lib) {
-            libs[lib] = {name: compilerProps('libs.' + lib + '.name')};
-            libs[lib].versions = {};
-            var listedVersions = compilerProps("libs." + lib + '.versions');
-            if (listedVersions) {
-                _.each(listedVersions.split(':'), function (version) {
-                    libs[lib].versions[version] = {};
-                    libs[lib].versions[version].version = compilerProps("libs." + lib + '.versions.' + version + '.version');
-                    libs[lib].versions[version].path = [];
-                    var listedIncludes = compilerProps("libs." + lib + '.versions.' + version + '.path');
-                    if (listedIncludes) {
-                        _.each(listedIncludes.split(':'), function (path) {
-                            libs[lib].versions[version].path.push(path);
-                        });
-                    } else {
-                        logger.warn("No paths found for " + lib + " version " + version);
-                    }
-                });
-            } else {
-                logger.warn("No versions found for " + lib + " library");
-            }
-        });
-    }
+    var baseLibs = compilerPropsA(langs, "libs");
+    _.each(baseLibs, function (forLang, lang) {
+        if (lang && forLang) {
+            libs[lang] = {};
+            _.each(forLang.split(':'), function (lib) {
+                libs[lang][lib] = {name: compilerPropsL(lang, 'libs.' + lib + '.name')};
+                libs[lang][lib].versions = {};
+                var listedVersions = compilerPropsL(lang, "libs." + lib + '.versions');
+                if (listedVersions) {
+                    _.each(listedVersions.split(':'), function (version) {
+                        libs[lang][lib].versions[version] = {};
+                        libs[lang][lib].versions[version].version = compilerPropsL(lang, "libs." + lib + '.versions.' + version + '.version');
+                        libs[lang][lib].versions[version].path = [];
+                        var listedIncludes = compilerPropsL(lang, "libs." + lib + '.versions.' + version + '.path');
+                        if (listedIncludes) {
+                            _.each(listedIncludes.split(':'), function (path) {
+                                libs[lang][lib].versions[version].path.push(path);
+                            });
+                        } else {
+                            logger.warn("No paths found for " + lib + " version " + version);
+                        }
+                    });
+                } else {
+                    logger.warn("No versions found for " + lib + " library");
+                }
+            });
+        }
+    });
     var options = {
         googleAnalyticsAccount: gccProps('clientGoogleAnalyticsAccount', 'UA-55180-6'),
         googleAnalyticsEnabled: gccProps('clientGoogleAnalyticsEnabled', false),
@@ -256,15 +268,13 @@ function ClientOptionsHandler(fileSources) {
         gapiKey: gccProps('googleApiKey', ''),
         googleShortLinkRewrite: gccProps('googleShortLinkRewrite', '').split('|'),
         defaultSource: gccProps('defaultSource', ''),
-        language: language,
         compilers: [],
         libs: libs,
-        sourceExtension: compilerProps('compileFilename').split('.', 2)[1],
-        defaultCompiler: compilerProps('defaultCompiler', ''),
-        compileOptions: compilerProps('defaultOptions', ''),
+        defaultCompiler: compilerPropsA(langs, 'defaultCompiler', ''),
+        compileOptions: compilerPropsA(langs, 'defaultOptions', ''),
         supportsBinary: supportsBinary,
         supportsExecute: supportsExecute,
-        languages: languages,
+        languages: languages.list(),
         sources: sources,
         raven: gccProps('ravenUrl', ''),
         release: gitReleaseName,
