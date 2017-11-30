@@ -474,17 +474,24 @@ function findCompilers() {
             var exes = props('compilers', '').split(":");
             logger.info("Processing compilers from group " + groupName);
             return Promise.all(exes.map(function (compiler) {
-                return recurseGetCompilers(compiler, props);
+                return recurseGetCompilers(langId, compiler, props);
             }));
         }
         if (name === "AWS") return fetchAws();
         return compilerConfigFor(langId, name, parentProps);
     }
 
-    return Promise.all(
-        _.map(exes, (compiler, langId) => {
-            return recurseGetCompilers(langId, compiler, compilerPropsL);
-        }))
+    function getCompilers() {
+        var promises = [];
+        _.each(exes, (exs, langId) => {
+            _.each(exs, exe => {
+                promises.push(recurseGetCompilers(langId, exe, compilerPropsL))
+            });
+        });
+        return promises;
+    }
+
+    return Promise.all(getCompilers())
         .then(_.flatten)
         .then(function (compilers) {
             return compileHandler.setCompilers(compilers);
