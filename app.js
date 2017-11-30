@@ -147,11 +147,6 @@ function compilerPropsL(lang, property, defaultValue) {
     return gccProps(property, defaultValue);
 }
 
-function compilerPropsLT(lang, transform, property, defaultValue) {
-    var proper = compilerPropsL(lang, property, defaultValue);
-    return transform(proper, lang);
-}
-
 function compilerPropsA(langs, property, defaultValue) {
     var forLanguages = {};
     _.each(langs, lang => {
@@ -163,7 +158,7 @@ function compilerPropsA(langs, property, defaultValue) {
 function compilerPropsAT(langs, transform, property, defaultValue) {
     var forLanguages = {};
     _.each(langs, lang => {
-        forLanguages[lang.id] = compilerPropsLT(lang.id, transform, property, defaultValue);
+        forLanguages[lang.id] = transform(compilerPropsL(lang.id, property, defaultValue), lang);
     });
     return forLanguages;
 }
@@ -349,8 +344,10 @@ function retryPromise(promiseFunc, name, maxFails, retryMs) {
 }
 
 function findCompilers() {
-    var exes = compilerPropsAT(languages.toArray(), exs => {if (exs) exs.split(':')}, "compilers", "/usr/bin/g++");
-    logger.info(exes);
+    var exes = compilerPropsAT(languages.toArray(), exs => {
+        return exs ? exs.split(":") : "/usr/bin/g++";
+    }, "compilers", "/usr/bin/g++");
+
     var ndk = compilerProps('androidNdk');
     if (ndk) {
         var toolchains = fs.readdirSync(ndk + "/toolchains");
@@ -426,12 +423,12 @@ function findCompilers() {
         });
     }
 
-    function compilerConfigFor(name, parentProps) {
+    function compilerConfigFor(langId, name, parentProps) {
         const base = "compiler." + name,
-            exe = compilerProps(base + ".exe", name);
+            exe = compilerPropsL(langId, base + ".exe", name);
 
         function props(name, def) {
-            return parentProps(base + "." + name, parentProps(name, def));
+            return parentProps(langId, base + "." + name, parentProps(langId, name, def));
         }
 
         var supportsBinary = !!props("supportsBinary", true);
@@ -457,7 +454,7 @@ function findCompilers() {
         return Promise.resolve(compilerInfo);
     }
 
-    function recurseGetCompilers(name, parentProps) {
+    function recurseGetCompilers(langId, name, parentProps) {
         if (fetchCompilersFromRemote && name.indexOf("@") !== -1) {
             var bits = name.split("@");
             var host = bits[0];
@@ -471,7 +468,7 @@ function findCompilers() {
                 if (name === "group") {
                     return groupName;
                 }
-                return compilerProps("group." + groupName + "." + name, parentProps(name, def));
+                return compilerPropsL(langId, "group." + groupName + "." + name, parentProps(langId, name, def));
             };
 
             var exes = props('compilers', '').split(":");
