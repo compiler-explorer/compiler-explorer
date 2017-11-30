@@ -478,13 +478,12 @@ function findCompilers() {
             }));
         }
         if (name === "AWS") return fetchAws();
-        return compilerConfigFor(name, parentProps);
+        return compilerConfigFor(langId, name, parentProps);
     }
 
     return Promise.all(
-        exes.map(function (compiler, lang) {
-            logger.warn(compiler, lang);
-            return recurseGetCompilers(compiler, compilerProps);
+        _.map(exes, (compiler, langId) => {
+            return recurseGetCompilers(langId, compiler, compilerPropsL);
         }))
         .then(_.flatten)
         .then(function (compilers) {
