@@ -45,7 +45,6 @@ const nopt = require('nopt'),
 var opts = nopt({
     'env': [String, Array],
     'rootDir': [String],
-    'language': [String],
     'host': [String],
     'port': [Number],
     'propDebug': [Boolean],
@@ -74,7 +73,6 @@ else if (process.env.wsl)
 
 // Set default values for omitted arguments
 var rootDir = opts.rootDir || './etc';
-var language = opts.language || "C++";
 var env = opts.env || ['dev'];
 var hostname = opts.host;
 var port = opts.port || 10240;
@@ -96,7 +94,6 @@ var fetchCompilersFromRemote = !opts.noRemoteFetch;
 var propHierarchy = _.flatten([
     'defaults',
     env,
-    language,
     _.map(env, function (e) {
         return e + '.' + process.platform;
     }),
@@ -118,35 +115,29 @@ var CompileHandler = require('./lib/compile-handler').CompileHandler,
 
 // Instantiate a function to access records concerning "compiler-explorer" 
 // in hidden object props.properties
-var gccProps = props.propsFor("compiler-explorer");
+var ceProps = props.propsFor("compiler-explorer");
 
 var languages = require('./lib/languages');
 
+// Instantiate a function to access records concerning the chosen language
+// in hidden object props.properties
 var compilerPropsFuncsL = {};
 _.each(languages.list(), function (lang) {
     compilerPropsFuncsL[lang.id] = props.propsFor(lang.id);
 });
-// Instantiate a function to access records concerning the chosen language
-// in hidden object props.properties
-var compilerPropsFunc = props.propsFor(language.toLowerCase());
 
-// If no option for the compiler ... use gcc's options (??)
-function compilerProps(property, defaultValue) {
-    // My kingdom for ccs... [see Matt's github page]
-    var forCompiler = compilerPropsFunc(property, undefined);
-    if (forCompiler !== undefined) return forCompiler;
-    return gccProps(property, defaultValue); // gccProps comes from lib/compile-handler.js
-}
-
+// Get a property from the specified langId, and if not found, use defaults from CE,
+// and at last return whatever default value was set by the caller
 function compilerPropsL(lang, property, defaultValue) {
     var forLanguage = compilerPropsFuncsL[lang];
     if (forLanguage) {
         var forCompiler = forLanguage(property, defaultValue);
         if (forCompiler) return forCompiler;
     }
-    return gccProps(property, defaultValue);
+    return ceProps(property, defaultValue);
 }
 
+// For every lang passed, get its corresponding compiler property
 function compilerPropsA(langs, property, defaultValue) {
     var forLanguages = {};
     _.each(langs, lang => {
@@ -155,6 +146,7 @@ function compilerPropsA(langs, property, defaultValue) {
     return forLanguages;
 }
 
+// Same as A version, but transfrom each value by fn(original, lang)
 function compilerPropsAT(langs, transform, property, defaultValue) {
     var forLanguages = {};
     _.each(langs, lang => {
@@ -163,8 +155,8 @@ function compilerPropsAT(langs, transform, property, defaultValue) {
     return forLanguages;
 }
 
-var staticMaxAgeSecs = gccProps('staticMaxAgeSecs', 0);
-let extraBodyClass = gccProps('extraBodyClass', '');
+var staticMaxAgeSecs = ceProps('staticMaxAgeSecs', 0);
+let extraBodyClass = ceProps('extraBodyClass', '');
 
 function staticHeaders(res) {
     if (staticMaxAgeSecs) {
@@ -200,7 +192,7 @@ fileSources.forEach(function (source) {
 });
 
 var clientOptionsHandler = new ClientOptionsHandler(fileSources);
-var compileHandler = new CompileHandler(gccProps, compilerProps);
+var compileHandler = new CompileHandler(ceProps, compilerPropsL);
 var apiHandler = new ApiHandler(compileHandler);
 
 // auxiliary function used in clientOptionsHandler
@@ -256,13 +248,13 @@ function ClientOptionsHandler(fileSources) {
         }
     });
     var options = {
-        googleAnalyticsAccount: gccProps('clientGoogleAnalyticsAccount', 'UA-55180-6'),
-        googleAnalyticsEnabled: gccProps('clientGoogleAnalyticsEnabled', false),
-        sharingEnabled: gccProps('clientSharingEnabled', true),
-        githubEnabled: gccProps('clientGitHubRibbonEnabled', true),
-        gapiKey: gccProps('googleApiKey', ''),
-        googleShortLinkRewrite: gccProps('googleShortLinkRewrite', '').split('|'),
-        defaultSource: gccProps('defaultSource', ''),
+        googleAnalyticsAccount: ceProps('clientGoogleAnalyticsAccount', 'UA-55180-6'),
+        googleAnalyticsEnabled: ceProps('clientGoogleAnalyticsEnabled', false),
+        sharingEnabled: ceProps('clientSharingEnabled', true),
+        githubEnabled: ceProps('clientGitHubRibbonEnabled', true),
+        gapiKey: ceProps('googleApiKey', ''),
+        googleShortLinkRewrite: ceProps('googleShortLinkRewrite', '').split('|'),
+        defaultSource: ceProps('defaultSource', ''),
         compilers: [],
         libs: libs,
         defaultCompiler: compilerPropsA(langs, 'defaultCompiler', ''),
@@ -271,12 +263,12 @@ function ClientOptionsHandler(fileSources) {
         supportsExecute: supportsExecute,
         languages: languages.list(),
         sources: sources,
-        raven: gccProps('ravenUrl', ''),
+        raven: ceProps('ravenUrl', ''),
         release: gitReleaseName,
         environment: env,
-        localStoragePrefix: gccProps('localStoragePrefix'),
-        cvCompilerCountMax: gccProps('cvCompilerCountMax', 6),
-        defaultFontScale: gccProps('defaultFontScale', 1.0)
+        localStoragePrefix: ceProps('localStoragePrefix'),
+        cvCompilerCountMax: ceProps('cvCompilerCountMax', 6),
+        defaultFontScale: ceProps('defaultFontScale', 1.0)
     };
     this.setCompilers = function (compilers) {
         options.compilers = compilers;
@@ -348,25 +340,25 @@ function findCompilers() {
         return exs ? exs.split(":") : "/usr/bin/g++";
     }, "compilers", "/usr/bin/g++");
 
-    var ndk = compilerProps('androidNdk');
-    if (ndk) {
-        var toolchains = fs.readdirSync(ndk + "/toolchains");
-        toolchains.forEach(function (v, i, a) {
-            var path = ndk + "/toolchains/" + v + "/prebuilt/linux-x86_64/bin/";
-            if (fs.existsSync(path)) {
-                var cc = fs.readdirSync(path).filter(function (filename) {
-                    return filename.indexOf("g++") !== -1;
-                });
-                a[i] = path + cc[0];
-            } else {
-                a[i] = null;
-            }
-        });
-        toolchains = toolchains.filter(function (x) {
-            return x !== null;
-        });
-        exes.push.apply(exes, toolchains);
-    }
+    var ndk = compilerPropsA(languages.toArray(), 'androidNdk');
+    _.each(ndk, (ndkPath, langId) => {
+        if (ndkPath) {
+            var toolchains = fs.readdirSync(ndkPath + "/toolchains");
+            toolchains.forEach(function (v, i, a) {
+                var path = ndkPath + "/toolchains/" + v + "/prebuilt/linux-x86_64/bin/";
+                if (fs.existsSync(path)) {
+                    var cc = fs.readdirSync(path).filter(function (filename) {
+                        return filename.indexOf("g++") !== -1;
+                    });
+                    a[i] = path + cc[0];
+                } else {
+                    a[i] = null;
+                }
+            });
+            toolchains = toolchains.filter(x => x !== null);
+            exes[langId].push(toolchains);
+        }
+    });
 
     function fetchRemote(host, port, props) {
         logger.info("Fetching compilers from remote source " + host + ":" + port);
@@ -423,20 +415,23 @@ function findCompilers() {
         });
     }
 
-    function compilerConfigFor(langId, name, parentProps) {
-        const base = "compiler." + name,
-            exe = compilerPropsL(langId, base + ".exe", name);
+    function compilerConfigFor(langId, compilerName, parentProps) {
+        const base = "compiler." + compilerName + ".";
 
-        function props(name, def) {
-            return parentProps(langId, base + "." + name, parentProps(langId, name, def));
+        function props(propName, def) {
+            var propsForCompiler = parentProps(langId, base + propName, undefined);
+            if (propsForCompiler === undefined) {
+                propsForCompiler = parentProps(langId, propName, def);
+            }
+            return propsForCompiler;
         }
 
         var supportsBinary = !!props("supportsBinary", true);
         var supportsExecute = supportsBinary && !!props("supportsExecute", true);
         var compilerInfo = {
-            id: name,
-            exe: exe,
-            name: props("name", name),
+            id: compilerName,
+            exe: props("exe", compilerName),
+            name: props("name", compilerName),
             alias: props("alias"),
             options: props("options"),
             versionFlag: props("versionFlag"),
@@ -448,63 +443,55 @@ function findCompilers() {
             needsMulti: !!props("needsMulti", true),
             supportsBinary: supportsBinary,
             supportsExecute: supportsExecute,
-            postProcess: props("postProcess", "").split("|")
+            postProcess: props("postProcess", "").split("|"),
+            lang: langId
         };
-        logger.info("Found compiler", compilerInfo);
+        logger.debug("Found compiler", compilerInfo);
         return Promise.resolve(compilerInfo);
     }
 
-    function recurseGetCompilers(langId, name, parentProps) {
-        if (fetchCompilersFromRemote && name.indexOf("@") !== -1) {
-            var bits = name.split("@");
+    function recurseGetCompilers(langId, compilerName, parentProps) {
+        if (fetchCompilersFromRemote && compilerName.indexOf("@") !== -1) {
+            var bits = compilerName.split("@");
             var host = bits[0];
             var port = parseInt(bits[1]);
-            return fetchRemote(host, port, gccProps);
+            return fetchRemote(host, port, ceProps);
         }
-        if (name.indexOf("&") === 0) {
-            var groupName = name.substr(1);
+        if (compilerName.indexOf("&") === 0) {
+            var groupName = compilerName.substr(1);
 
-            var props = function (name, def) {
-                if (name === "group") {
+            var props = function (langId, propName, def) {
+                if (propName === "group") {
                     return groupName;
                 }
-                return compilerPropsL(langId, "group." + groupName + "." + name, parentProps(langId, name, def));
+                return compilerPropsL(langId, "group." + groupName + "." + propName, parentProps(langId, propName, def));
             };
 
-            var exes = props('compilers', '').split(":");
-            logger.info("Processing compilers from group " + groupName);
-            return Promise.all(exes.map(function (compiler) {
+            var compilerExes = props(langId, 'compilers', '').split(":");
+            logger.debug("Processing compilers from group " + groupName);
+            return Promise.all(compilerExes.map(function (compiler) {
                 return recurseGetCompilers(langId, compiler, props);
             }));
         }
-        if (name === "AWS") return fetchAws();
-        return compilerConfigFor(langId, name, parentProps);
+        if (compilerName === "AWS") return fetchAws();
+        return compilerConfigFor(langId, compilerName, parentProps);
     }
 
     function getCompilers() {
-        var promises = [];
+        var compilers = [];
         _.each(exes, (exs, langId) => {
             _.each(exs, exe => {
-                promises.push(recurseGetCompilers(langId, exe, compilerPropsL))
+                compilers.push(recurseGetCompilers(langId, exe, compilerPropsL))
             });
         });
-        return promises;
+        return compilers;
     }
 
     return Promise.all(getCompilers())
         .then(_.flatten)
-        .then(function (compilers) {
-            return compileHandler.setCompilers(compilers);
-        })
-        .then(function (compilers) {
-            return _.filter(compilers, function (x) {
-                return x;
-            });
-        })
-        .then(function (compilers) {
-            compilers = compilers.sort(compareOn("name"));
-            return compilers;
-        });
+        .then(compileHandler.setCompilers)
+        .then(compilers => _.filter(compilers, compiler => !!compiler))
+        .then(compilers => compilers.sort(compareOn("name")));
 }
 
 function ApiHandler(compileHandler) {
@@ -569,7 +556,7 @@ function shortUrlHandler(req, res, next) {
                 return next();
             }
             var parsed = url.parse(resultObj.longUrl);
-            var allowedRe = new RegExp(gccProps('allowedShortUrlHostRe'));
+            var allowedRe = new RegExp(ceProps('allowedShortUrlHostRe'));
             if (parsed.host.match(allowedRe) === null) {
                 logger.warn("Denied access to short URL " + bits[1] + " - linked to " + resultObj.longUrl);
                 return next();
@@ -618,7 +605,7 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
 
         onCompilerChange(compilers);
 
-        var rescanCompilerSecs = gccProps('rescanCompilerSecs', 0);
+        var rescanCompilerSecs = ceProps('rescanCompilerSecs', 0);
         if (rescanCompilerSecs) {
             logger.info("Rescanning compilers every " + rescanCompilerSecs + "secs");
             setInterval(function () {
@@ -686,9 +673,9 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
             webServer.use('/v', express.static(archivedVersions, {maxAge: Infinity, index: false}));
         }
         webServer
-            .use(bodyParser.json({limit: gccProps('bodyParserLimit', '1mb')}))
+            .use(bodyParser.json({limit: ceProps('bodyParserLimit', '1mb')}))
             .use(bodyParser.text({
-                limit: gccProps('bodyParserLimit', '1mb'), type: function () {
+                limit: ceProps('bodyParserLimit', '1mb'), type: function () {
                     return true;
                 }
             }))

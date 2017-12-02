@@ -46,8 +46,8 @@ define(function (require) {
     var loadSave = new loadSaveLib.LoadSave();
 
     var languages = {
-        cpp: {
-            id: 'cpp',
+        'c++': {
+            id: 'c++',
             name: 'C++',
             monaco: 'cppp',
             extensions: ['.cpp', '.cxx', '.h', '.hpp', '.hxx', '.c']
@@ -123,7 +123,7 @@ define(function (require) {
         this.fadeTimeoutId = -1;
 
         this.languageBtn = this.domRoot.find('.change-language');
-        this.currentLanguage = state.lang ? languages[state.lang] : languages.cpp;
+        this.currentLanguage = state.lang ? languages[state.lang] : languages["c++"];
 
         var root = this.domRoot.find(".monaco-placeholder");
         var legacyReadOnly = state.options && !!state.options.readOnly;
@@ -550,6 +550,8 @@ define(function (require) {
                 }, this));
             this.container.setTitle(this.currentLanguage.name + " source #" + this.id);
             this.updateState();
+            // Broadcast the change to other panels
+            this.eventHub.emit("languageChange", this.id, newLangId);
         }
     };
 

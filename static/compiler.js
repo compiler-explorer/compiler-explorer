@@ -44,7 +44,7 @@ define(function (require) {
 
     var OpcodeCache = new LruCache({
         max: 64 * 1024,
-        length: function (n) {
+        length:function (n) {
             return JSON.stringify(n).length;
         }
     });
@@ -72,11 +72,13 @@ define(function (require) {
         this.domRoot.html($('#compiler').html());
         this.id = state.id || hub.nextCompilerId();
         this.sourceEditorId = state.source || 1;
-        this.compiler = this.compilerService.getCompilerById(state.compiler) ||
-            this.compilerService.getCompilerById(options.defaultCompiler);
+        this.currentLangId = state.lang || "c++";
+        this.compiler = this.compilerService.findCompiler(this.currentLangId, state.compiler) ||
+            this.compilerService.findCompiler(this.currentLangId, options.defaultCompiler[this.currentLangId]);
+        this.selectedCompilerByLang = {};
         this.deferCompiles = hub.deferred;
         this.needsCompile = false;
-        this.options = state.options || options.compileOptions;
+        this.options = state.options || options.compileOptions[this.currentLangId];
         this.filters = new Toggles(this.domRoot.find('.filters'), patchOldFilters(state.filters));
         this.source = '';
         this.assembly = [];
@@ -96,16 +98,21 @@ define(function (require) {
         this.gccDumpButton = this.domRoot.find('.btn.view-gccdump');
         this.cfgButton = this.domRoot.find('.btn.view-cfg');
         this.libsButton = this.domRoot.find('.btn.show-libs');
-
-        this.availableLibs = $.extend(true, {}, options.libs);
-
         this.compileTimeLabel = this.domRoot.find('.compile-time');
         this.compileClearCache = this.domRoot.find('.clear-cache');
 
+        this.availableLibs = {};
+        this.updateAvailableLibs = function() {
+            if (!this.availableLibs[this.currentLangId]) {
+                this.availableLibs[this.currentLangId] = $.extend(true, {}, options.libs[this.currentLangId]);
+            }
+        };
+        this.updateAvailableLibs();
         _.each(state.libs, _.bind(function (lib) {
-            if (this.availableLibs[lib.name] && this.availableLibs[lib.name].versions &&
-                this.availableLibs[lib.name].versions[lib.ver]) {
-                this.availableLibs[lib.name].versions[lib.ver].used = true;
+            if (this.availableLibs[this.currentLangId][lib.name] &&
+                this.availableLibs[this.currentLangId][lib.name].versions &&
+                this.availableLibs[this.currentLangId][lib.name].versions[lib.ver]) {
+                this.availableLibs[this.currentLangId][lib.name].versions[lib.ver].used = true;
             }
         }, this));
 
@@ -116,7 +123,7 @@ define(function (require) {
             valueField: 'id',
             labelField: 'name',
             searchField: ['name'],
-            options: options.compilers,
+            options: _.map(this.getCurrentLangCompilers(), _.identity),
             items: this.compiler ? [this.compiler.id] : []
         }).on('change', _.bind(function (e) {
             var val = $(e.target).val();
@@ -260,6 +267,7 @@ define(function (require) {
                 this.eventHub.emit('filtersChange', this.id, this.getEffectiveFilters());
             }
         }, this);
+        this.eventHub.on('languageChange', this.onLanguageChange, this);
         this.eventHub.emit('requestSettings');
         this.sendCompiler();
         this.updateCompilerName();
@@ -856,7 +864,7 @@ define(function (require) {
     };
 
     Compiler.prototype.onCompilerChange = function (value) {
-        this.compiler = this.compilerService.getCompilerById(value);
+        this.compiler = this.compilerService.findCompiler(this.currentLangId, value);
         this.saveState();
         this.compile();
         this.updateButtons();
@@ -901,7 +909,8 @@ define(function (require) {
             // NB must *not* be effective filters
             filters: this.filters.get(),
             wantOptInfo: this.wantOptInfo,
-            libs: libs
+            libs: libs,
+            lang: this.currentLangId
         };
         this.fontScale.addState(state);
         return state;
@@ -1122,6 +1131,38 @@ define(function (require) {
             }
         );
     };
+
+    Compiler.prototype.onLanguageChange = function (editorId, languageId) {
+        if (this.sourceEditorId === editorId) {
+            var oldLangId = this.currentLangId;
+            this.currentLangId = languageId;
+            // Store the current selected compiler to come back to it later in the same session (Not state sotred!)
+            this.selectedCompilerByLang[oldLangId] = this.compiler ? this.compiler.id : options.defaultCompiler[oldLangId];
+            this.updateAvailableLibs();
+            this.updateCompilersSelector();
+        }
+    };
+
+    Compiler.prototype.getCurrentLangCompilers = function () {
+        return this.compilerService.getCompilersForLang(this.currentLangId);
+    };
+
+    Compiler.prototype.updateCompilersSelector = function () {
+        var selector = this.domRoot.find('.compiler-picker')[0].selectize;
+        selector.clearOptions();
+        var newCompilers = _.map(this.getCurrentLangCompilers(), _.identity);
+        console.log(newCompilers);
+        selector.load(function (callback) {
+            callback(newCompilers);
+        });
+        selector.setValue([this.selectedCompilerByLang[this.currentLangId] ||
+                this.findCompiler(this.currentLangId, options.defaultCompiler[this.currentLangId])]);
+    };
+
+    Compiler.prototype.findCompiler = function (langId, compilerId) {
+        return this.compilerService.findCompiler(langId, compilerId)
+    };
+
 
     return {
         Compiler: Compiler
