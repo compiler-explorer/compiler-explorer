@@ -1150,17 +1150,15 @@ define(function (require) {
     Compiler.prototype.updateCompilersSelector = function () {
         var selector = this.domRoot.find('.compiler-picker')[0].selectize;
         selector.clearOptions();
-        var newCompilers = _.map(this.getCurrentLangCompilers(), _.identity);
-        console.log(newCompilers);
-        selector.load(function (callback) {
-            callback(newCompilers);
-        });
+        selector.load(_.bind(function (callback) {
+            callback(_.map(this.getCurrentLangCompilers(), _.identity));
+        }, this));
         selector.setValue([this.selectedCompilerByLang[this.currentLangId] ||
                 this.findCompiler(this.currentLangId, options.defaultCompiler[this.currentLangId])]);
     };
 
     Compiler.prototype.findCompiler = function (langId, compilerId) {
-        return this.compilerService.findCompiler(langId, compilerId)
+        return this.compilerService.findCompiler(langId, compilerId);
     };
 
 

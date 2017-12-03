@@ -481,7 +481,7 @@ function findCompilers() {
         var compilers = [];
         _.each(exes, (exs, langId) => {
             _.each(exs, exe => {
-                compilers.push(recurseGetCompilers(langId, exe, compilerPropsL))
+                compilers.push(recurseGetCompilers(langId, exe, compilerPropsL));
             });
         });
         return compilers;
