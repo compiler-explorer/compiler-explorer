@@ -244,6 +244,40 @@ define(function (require) {
         };
     }
 
+    function configuration() {
+        return {
+            comments: {
+                lineComment: '//',
+                blockComment: ['/*', '*/'],
+            },
+
+            brackets: [
+                ['{', '}'],
+                ['[', ']'],
+                ['(', ')']
+            ],
+
+            autoClosingPairs: [
+                { open: '{', close: '}' },
+                { open: '[', close: ']' },
+                { open: '(', close: ')' },
+                { open: '`', close: '`', notIn: ['string'] },
+                { open: '"', close: '"', notIn: ['string'] },
+                { open: '\'', close: '\'', notIn: ['string', 'comment'] },
+            ],
+
+            surroundingPairs: [
+                { open: '{', close: '}' },
+                { open: '[', close: ']' },
+                { open: '(', close: ')' },
+                { open: '`', close: '`' },
+                { open: '"', close: '"' },
+                { open: '\'', close: '\'' },
+            ]
+        };
+    }
+
     monaco.languages.register({id: 'd'});
     monaco.languages.setMonarchTokensProvider('d', definition());
+    monaco.languages.setLanguageConfiguration('d', configuration());
 });
