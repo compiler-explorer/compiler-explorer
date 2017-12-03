@@ -211,17 +211,22 @@ define(function (require) {
                 whitespace: [
                     [/[ \t\r\n]+/, 'white'],
                     [/\/\*/, 'comment', '@comment'],
-                    [/\/\+/, 'comment', '@comment'],
+                    [/\/\+/, 'comment', '@nestingcomment'],
                     [/\/\/.*$/, 'comment'],
                 ],
 
                 comment: [
                     [/[^\/*]+/, 'comment'],
-                    [/\/\+/, 'comment', '@push'],
-                    [/\/\*/, 'comment.invalid'],
-                    ["\\*/", 'comment', '@pop'],
-                    ["\\+/", 'comment', '@pop'],
+                    [/\*\//, 'comment', '@pop'],
                     [/[\/*]/, 'comment']
+                ],
+
+                nestingcomment: [
+                    [/[^\/+]+/, 'comment'],
+                    [/\/\+/, 'comment', '@push'],
+                    [/\/\+/, 'comment.invalid'],
+                    [/\+\//, 'comment', '@pop'],
+                    [/[\/+]/, 'comment']
                 ],
 
                 string: [
