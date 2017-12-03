@@ -200,6 +200,7 @@ define(function (require) {
                     // strings
                     [/"([^"\\]|\\.)*$/, 'string.invalid'],  // non-teminated string
                     [/"/, 'string', '@string'],
+                    [/`/, 'string', '@rawstring'],
 
                     // characters
                     [/'[^\\']'/, 'string'],
@@ -228,6 +229,11 @@ define(function (require) {
                     [/@escapes/, 'string.escape'],
                     [/\\./, 'string.escape.invalid'],
                     [/"/, 'string', '@pop']
+                ],
+
+                rawstring: [
+                    [/[^\`]/, "string"],
+                    [/`/, "string", "@pop"]
                 ],
             }
         };
