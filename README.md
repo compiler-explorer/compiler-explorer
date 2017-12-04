@@ -129,9 +129,9 @@ Optional values are marked with a '**'
 Compiler Explorer is maintained by [Matt Godbolt](http://xania.org), [Rubén Rincón](https://github.com/RabsRincon) and [Simon Brand](https://blog.tartanllama.xyz/).
 - [Gabriel Devillers](https://github.com/voxelf) - Initial multiple compilers and difference view (while working for [Kalray](http://www.kalrayinc.com/)).
 - [Jared Wyles](https://github.com/jaredwy) - Clang OPT Output view and maintenance
-- [Johan Engelen][https://github.com/JohanEngelen] - D support and its maintenance
-- [Chedy Najjar][https://github.com/CppChedy] - CFG View and maintenance
-- [Patrick Quist][https://github.com/partouf] - Pascal support
-- [Joshua Sheard][https://github.com/jsheard] - ISPC support
-- [Marc Poulhiès][https://github.com/dkm] - GCC Dumps view
-- [Andrew Pardoe][https://github.com/AndrewPardoe] - WSL-CL support
+- [Johan Engelen](https://github.com/JohanEngelen) - D support and its maintenance
+- [Chedy Najjar](https://github.com/CppChedy) - CFG View and maintenance
+- [Patrick Quist](https://github.com/partouf) - Pascal support
+- [Joshua Sheard](https://github.com/jsheard) - ISPC support
+- [Marc Poulhiès](https://github.com/dkm) - GCC Dumps view
+- [Andrew Pardoe](https://github.com/AndrewPardoe) - WSL-CL support
