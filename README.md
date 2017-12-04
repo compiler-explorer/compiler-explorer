@@ -4,22 +4,14 @@
 Compiler Explorer
 ------------
 
-Compiler Explorer is an interactive compiler. The left-hand pane shows editable C/C++/Rust/Go/D/Haskell/Swift code. The right, the
-assembly output of having compiled the code with a given compiler and settings. Multiple compilers are supported, and
+Compiler Explorer is an interactive compiler. The left-hand pane shows editable C, C++, Rust, Go, D, Haskell, Swift and Pascal code.
+The right, the assembly output of having compiled the code with a given compiler and settings. Multiple compilers are supported, and
 the UI layout is configurable (the [Golden Layout](https://www.golden-layout.com/) library is used for this).
 There is also an ispc compiler for a C variant with extensions for SPMD.
 
-Try out one of the demo sites: [C++][cpp], [Rust][rust], [D][d], [Go][go], [Haskell][haskell], [Swift][swift], [ispc][ispc].
+Try out at [godbolt.org][https://godbolt.org]
 
-[cpp]: https://gcc.godbolt.org/ "Compiler Explorer for C++"
-[rust]: https://rust.godbolt.org/ "Compiler Explorer for Rust"
-[d]: https://d.godbolt.org/ "Compiler Explorer for D"
-[go]: https://go.godbolt.org/ "Compiler Explorer for Go"
-[ispc]: https://ispc.godbolt.org/ "Compiler Explorer for ispc"
-[haskell]: https://haskell.godbolt.org/ "Compiler Explorer for Haskell"
-[swift]: https://swift.godbolt.org/ "Compiler Explorer for Swift"
-
-You can support this [this project on Patreon](https://patreon.com/mattgodbolt).
+You can support [this project on Patreon](https://patreon.com/mattgodbolt).
 
 For general discussion, feel free to join the mailing list: https://groups.google.com/forum/#!forum/compiler-explorer-discussion or the cpplang slack https://cpplang.now.sh/ channel `#compiler_explorer`.
 
@@ -44,12 +36,6 @@ Feel free to raise an issue on [github](https://github.com/mattgodbolt/compiler-
 [email me directly](mailto:matt@godbolt.org) for more help.
 
 There's now a [Road map](Roadmap.md) that gives a little insight into future plans for Compiler Explorer.
-
-### Credits
-
-Compiler Explorer is maintained by [Matt Godbolt](http://xania.org), [Rubén Rincón](https://github.com/RabsRincon) and [Simon Brand](https://blog.tartanllama.xyz/).
-Multiple compiler and difference view initially implemented by [Gabriel Devillers](https://github.com/voxelf),
-while working for [Kalray](http://www.kalrayinc.com/). Clang optview output by [Jared Wyles](https://github.com/jaredwy).
 
 ### RESTful API
 
@@ -137,3 +123,10 @@ Optional values are marked with a '**'
      }
 }
 ```
+
+### Credits
+
+Compiler Explorer is maintained by [Matt Godbolt](http://xania.org), [Rubén Rincón](https://github.com/RabsRincon),
+[Simon Brand](https://blog.tartanllama.xyz/) and [Jared Wyles](https://github.com/jaredwy).
+- Multiple compiler and difference view initially implemented by [Gabriel Devillers](https://github.com/voxelf) while working for [Kalray](http://www.kalrayinc.com/).
+- TODO: Update the credits list

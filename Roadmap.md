@@ -1,9 +1,9 @@
 # Compiler Explorer Road Map
 
-CE was started in 2012 to serve my needs at [my company](https:/drw.com) to show how
+CE was started in 2012 to serve my needs at [my company](https://drw.com) to show how
 C++ constructs translated to assembly code. It started out as a `tmux` session with `vi` running in one
 pane and `watch gcc -S foo.cc -o -` running in the other. Since then, it became a public website
-serving the C++, Rust, Go, Haskell, Ispc and D communities and performs around 20,000 compilations per day.
+serving the C++, Rust, Go, Haskell, Ispc, D, Swift and Pascal communities and performs around 20,000 compilations per day.
 
 This document is an attempt to capture thoughts on the future direction of Compiler Explorer.
 
@@ -53,7 +53,8 @@ development is done on a laptop during a commute (with little or no internet acc
 
 ## Priorities
 
-Above all, the priority is to keep the main CE site up, stable and dependable. 
+Above all, the priority is to keep the main CE site up, stable and dependable.
+That also means that URLs should live forever once they are created
 
 ## Non-goals
 CE will remain ad-free, open-source and non-commercial. There's no plans at all to add "freemium" content,
@@ -66,6 +67,7 @@ With all this in mind, the tentative goals for 2017 are:
 - [X] Move to the Monaco editor
    - [X] Implement diff view
 - [X] Come up with a decent secure solution for code execution
+- [X] Unify every language
 - [ ] Design an API that can handle remote code execution and download needs
 - [ ] Implement remote execution UIs
 

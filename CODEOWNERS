@@ -8,8 +8,13 @@
 static/conformance-view.js @RabsRincon
 static/cppp-mode.js @RabsRincon
 static/themes.js @RabsRincon
+static/editor.js @RabsRincon
+static/compiler.js @RabsRincon
 lib/asm-docs.js @RabsRincon
 lib/asm-docs-api.js @RabsRincon
+lib/languages.js @RabsRincon
+lib/base-compiler.js @RabsRincon
+lib/compilers/ @RabsRincon
 views/sitemap.pug @RabsRincon
 
 
@@ -21,7 +26,6 @@ lib/compilers/argument-parsers.js @jaredwy
 static/ast-view.js @TartanLlama
 static/haskell-mode.js @TartanLlama
 lib/compilers/haskell.js @TartanLlama
-views/example.hs @TartanLlama
 
 # cppchedy
 static/cfg-view.js @cppchedy
