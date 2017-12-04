@@ -7,9 +7,6 @@
           <option name="FORCE_SEMICOLON_STYLE" value="true" />
           <option name="ENFORCE_TRAILING_COMMA" value="Remove" />
         </JSCodeStyleSettings>
-        <MarkdownNavigatorCodeStyleSettings>
-          <option name="RIGHT_MARGIN" value="72" />
-        </MarkdownNavigatorCodeStyleSettings>
         <codeStyleSettings language="Jade">
           <indentOptions>
             <option name="INDENT_SIZE" value="2" />

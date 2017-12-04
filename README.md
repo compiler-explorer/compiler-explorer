@@ -21,6 +21,8 @@ Try out one of the demo sites: [C++][cpp], [Rust][rust], [D][d], [Go][go], [Hask
 
 You can support this [this project on Patreon](https://patreon.com/mattgodbolt).
 
+##### Contact us
+
 For general discussion, feel free to join the mailing list: https://groups.google.com/forum/#!forum/compiler-explorer-discussion or the cpplang slack https://cpplang.now.sh/ channel `#compiler_explorer`.
 
 If you are interested in developing, or want to see the discussions between existing developers, feel free to join the mailing list at https://groups.google.com/forum/#!forum/compiler-explorer-development or the cpplang slack https://cpplang.now.sh/ channel `#ce_implementators`.

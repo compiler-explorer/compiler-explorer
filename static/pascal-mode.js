@@ -29,7 +29,7 @@ define(function (require) {
 
     function definition() {
       // Object-Pascal language definition
-      
+
       return {
         keywords: [
           'unit', 'interface', 'implementation', 'uses',
@@ -138,6 +138,6 @@ define(function (require) {
       };
     }
 
-    monaco.languages.register({id: 'fpc'});
-    monaco.languages.setMonarchTokensProvider('fpc', definition());
+    monaco.languages.register({id: 'pascal'});
+    monaco.languages.setMonarchTokensProvider('pascal', definition());
 });
