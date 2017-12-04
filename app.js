@@ -594,7 +594,7 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
             if (JSON.stringify(prevCompilers) === JSON.stringify(compilers)) {
                 return;
             }
-            logger.info("Compilers:", compilers);
+            logger.debug("Compilers:", compilers);
             if (compilers.length === 0) {
                 logger.error("#### No compilers found: no compilation will be done!");
             }

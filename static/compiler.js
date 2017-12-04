@@ -1132,10 +1132,10 @@ define(function (require) {
         );
     };
 
-    Compiler.prototype.onLanguageChange = function (editorId, languageId) {
+    Compiler.prototype.onLanguageChange = function (editorId, newLangId) {
         if (this.sourceEditorId === editorId) {
             var oldLangId = this.currentLangId;
-            this.currentLangId = languageId;
+            this.currentLangId = newLangId;
             // Store the current selected compiler to come back to it later in the same session (Not state sotred!)
             this.selectedCompilerByLang[oldLangId] = this.compiler ? this.compiler.id : options.defaultCompiler[oldLangId];
             this.updateAvailableLibs();
@@ -1154,13 +1154,12 @@ define(function (require) {
             callback(_.map(this.getCurrentLangCompilers(), _.identity));
         }, this));
         selector.setValue([this.selectedCompilerByLang[this.currentLangId] ||
-                this.findCompiler(this.currentLangId, options.defaultCompiler[this.currentLangId])]);
+                            options.defaultCompiler[this.currentLangId]]);
     };
 
     Compiler.prototype.findCompiler = function (langId, compilerId) {
         return this.compilerService.findCompiler(langId, compilerId);
     };
-
 
     return {
         Compiler: Compiler

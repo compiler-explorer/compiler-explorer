@@ -15,17 +15,6 @@ html(lang="en")
           a.navbar-brand(href="#" title="Compiler Explorer") Compiler Explorer
         li.navbar-collapse.collapse#navbar-collapse
           ul.nav.navbar-nav.navbar-left
-            if languages.length
-              li.dropdown#lang-dropdown
-                a(href="#" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false")
-                  span= language
-                  span.caret
-                ul.dropdown-menu.dropdown-brand
-                  each language in languages
-                    li: a(href=language.url)= language.language
-            else
-              li#lang-dropdown
-                a(href="#"): span= language
             li: a#add-editor(href="#" title="Click or drag to desired destination") Editor
             li: a#add-diff(href="#" title="Click or drag to desired destination") Diff View
             li.dropdown
@@ -95,18 +84,5 @@ html(lang="en")
               src=root + "assets/clippy.svg" width="13px"
               alt="Copy to clipboard")
       .lang
-        case language
-          when "C++"
-            if environment.indexOf("cppx") >= 0
-              include example.cppx
-            else
-              include example.cpp
-          when "Rust": include example.rs
-          when "Go": include example.go
-          when "D": include example.d
-          when "ispc": include example.ispc
-          when "Haskell": include example.hs
-          when "Swift": include example.swift
-          when "FPC": include example.pas
 
     include popups.pug

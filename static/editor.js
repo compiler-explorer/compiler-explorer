@@ -50,55 +50,162 @@ define(function (require) {
             id: 'c++',
             name: 'C++',
             monaco: 'cppp',
-            extensions: ['.cpp', '.cxx', '.h', '.hpp', '.hxx', '.c']
+            extensions: ['.cpp', '.cxx', '.h', '.hpp', '.hxx', '.c'],
+            example: "// Type your code here, or load an example.\n" +
+            "int square(int num) {\n" +
+            "    return num * num;\n" +
+            "}\n"
         },
         cppx: {
             id: 'cppx',
             name: 'Cppx',
             monaco: 'cppp',
-            extensions: ['.cppx', '.cpp', '.cxx', '.h', '.hpp', '.hxx', '.c']
+            extensions: ['.cppx', '.cpp', '.cxx', '.h', '.hpp', '.hxx', '.c'],
+            example: "//====================================================================\n" +
+            "// Library code: implementing the metaclass (once)\n" +
+            "\n" +
+            "$class basic_value {\n" +
+            "    basic_value() = default;\n" +
+            "    basic_value(const basic_value& that) = default;\n" +
+            "    basic_value(basic_value&& that) = default;\n" +
+            "    basic_value& operator=(const basic_value& that) = default;\n" +
+            "    basic_value& operator=(basic_value&& that) = default;\n" +
+            "\n" +
+            "    constexpr {\n" +
+            "        for... (auto f : $basic_value.variables())\n" +
+            "            if (!f.has_access()) f.make_private();\n" +
+            "        for... (auto f : $basic_value.functions()) {\n" +
+            "            if (!f.has_access()) f.make_public();\n" +
+            "            compiler.require(!f.is_protected(), \"a value type may not have a protected function\");\n" +
+            "            compiler.require(!f.is_virtual(),   \"a value type may not have a virtual function\");\n" +
+            "            compiler.require(!f.is_destructor() || f.is_public(), \"a value destructor must be public\");\n" +
+            "        }\n" +
+            "    }\n" +
+            "};\n" +
+            "\n" +
+            "$class value : basic_value { };\n" +
+            "\n" +
+            "\n" +
+            "//====================================================================\n" +
+            "// User code: using the metaclass to write a type (many times)\n" +
+            "\n" +
+            "value Point {\n" +
+            "    int x = 0, y = 0;\n" +
+            "    Point(int xx, int yy) : x{xx}, y{yy} { }\n" +
+            "};\n" +
+            "\n" +
+            "Point get_some_point() { return {1,1}; }\n" +
+            "\n" +
+            "int main() {\n" +
+            "\n" +
+            "    Point p1(50,100), p2;\n" +
+            "    p2 = get_some_point();\n" +
+            "    p2.x = 42;\n" +
+            "\n" +
+            "}\n" +
+            "\n" +
+            "// Compiler Explorer note: Click the \"triangle ! icon\" to see the output:\n" +
+            "constexpr {\n" +
+            "    compiler.debug($Point);\n" +
+            "}\n"
         },
         c: {
             id: 'c',
             name: 'C',
             monaco: 'c',
-            extensions: ['.c', '.h']
+            extensions: ['.c', '.h'],
+            example: "// Type your code here, or load an example.\n" +
+            "int square(int num) {\n" +
+            "    return num * num;\n" +
+            "}\n"
         },
         rust: {
             id: 'rust',
             name: 'Rust',
             monaco: 'rust',
-            extensions: ['.rs']
+            extensions: ['.rs'],
+            example: "// Type your code here, or load an example.\n" +
+            "pub fn square(num: i32) -> i32 {\n" +
+            "  num * num\n" +
+            "}\n"
         },
         d: {
             id: 'd',
             name: 'D',
             monaco: 'd',
-            extensions: ['.d']
+            extensions: ['.d'],
+            example: "// Type your code here, or load an example.\n" +
+            "int square(int num) {\n" +
+            "  return num * num;\n" +
+            "}\n"
         },
         go: {
             id: 'go',
             name: 'Go',
             monaco: 'go',
-            extensions: ['.go']
+            extensions: ['.go'],
+            example: "// Type your code here, or load an example.\n" +
+            "// Your function name should start with a capital letter.\n" +
+            "package main\n" +
+            "\n" +
+            "func Square(x int) int {\n" +
+            "  return x * x\n" +
+            "}\n" +
+            "\n" +
+            "func main() {}\n"
         },
         ispc: {
             id: 'ispc',
             name: 'ispc',
             monaco: 'ispc',
-            extensions: ['.ispc']
+            extensions: ['.ispc'],
+            example: "// Type your code here, or load an example.\n" +
+            "uniform int square(uniform int num) {\n" +
+            "    return num * num;\n" +
+            "}\n"
         },
         haskell: {
             id: 'haskell',
             name: 'Haskell',
             monaco: 'haskell',
-            extensions: ['.haskell']
+            extensions: ['.haskell'],
+            example: "module Example where\n" +
+            "\n" +
+            "sumOverArray :: [Int] -> Int\n" +
+            "sumOverArray (x:xs) = x + sumOverArray xs\n" +
+            "sumOverArray [] =  0\n"
         },
         swift: {
             id: 'swift',
             name: 'Swift',
             monaco: 'swift',
-            extensions: ['.swift']
+            extensions: ['.swift'],
+            example: "// Type your code here, or load an example.\n" +
+            "func square(n: Int) -> Int {\n" +
+            "    return n * n\n" +
+            "}"
+        },
+        pascal: {
+            id: 'pascal',
+            name: 'Pascal',
+            monaco: 'pascal',
+            extensions: ['.pas'],
+            example: "unit output;\n" +
+            "\n" +
+            "interface\n" +
+            "\n" +
+            "function Square(const num: Integer): Integer;\n" +
+            "\n" +
+            "implementation\n" +
+            "\n" +
+            "// Type your code here, or load an example.\n" +
+            "\n" +
+            "function Square(const num: Integer): Integer;\n" +
+            "begin\n" +
+            "  Square := num * num;\n" +
+            "end;\n" +
+            "\n" +
+            "end.\n"
         }
     };
 
@@ -115,12 +222,13 @@ define(function (require) {
         this.asmByCompiler = {};
         this.busyCompilers = {};
         this.colours = [];
-        this.lastCompilerIDResponse = -1;
 
         this.decorations = {};
         this.prevDecorations = [];
 
         this.fadeTimeoutId = -1;
+
+        this.editorSourceByLang = {};
 
         this.languageBtn = this.domRoot.find('.change-language');
         this.currentLanguage = state.lang ? languages[state.lang] : languages["c++"];
@@ -128,7 +236,6 @@ define(function (require) {
         var root = this.domRoot.find(".monaco-placeholder");
         var legacyReadOnly = state.options && !!state.options.readOnly;
         this.editor = monaco.editor.create(root[0], {
-            value: state.source || defaultSrc || "",
             scrollBeyondLastLine: false,
             language: this.currentLanguage.monaco,
             fontFamily: 'Fira Mono',
@@ -144,6 +251,12 @@ define(function (require) {
             emptySelectionClipboard: true,
             autoIndent: true
         });
+
+        if (state.source) {
+            this.setSource(state.source);
+        } else {
+            this.updateEditorCode();
+        }
 
         var startFolded = /^[/*#;]+\s*setup.*/;
         if (state.source && state.source.match(startFolded)) {
@@ -487,7 +600,6 @@ define(function (require) {
         }, this);
         this.updateDecorations();
         this.asmByCompiler[compilerId] = result.asm;
-        this.lastCompilerIDResponse = compilerId;
         this.numberUsedLines();
     };
 
@@ -536,23 +648,33 @@ define(function (require) {
     };
 
     Editor.prototype.onLanguageChange = function (newLangId) {
-        if (newLangId !== this.currentLanguage.id) {
-            this.currentLanguage = languages[newLangId] || languages.cpp;
+        if (newLangId !== this.currentLanguage.id && languages[newLangId]) {
+            var oldLangId = this.currentLanguage.id;
+            // Save the current source, so we can come back to it later
+            this.editorSourceByLang[oldLangId] = this.getSource();
+            this.currentLanguage = languages[newLangId];
             monaco.editor.setModelLanguage(this.editor.getModel(), this.currentLanguage.monaco);
             this.domRoot.find('.load-save')
                 .off('click')
                 .click(_.bind(function () {
                     loadSave.run(_.bind(function (text) {
-                        this.editor.setValue(text);
+                        this.setSource(text);
                         this.updateState();
                         this.maybeEmitChange();
                     }, this), this.getSource(), this.currentLanguage.extensions);
                 }, this));
+            // And now set the editor value to either the saved one or the default to the new lang
+            this.updateEditorCode();
             this.container.setTitle(this.currentLanguage.name + " source #" + this.id);
             this.updateState();
             // Broadcast the change to other panels
             this.eventHub.emit("languageChange", this.id, newLangId);
         }
+    };
+
+    // Called every time we change language, so we get the relevant code
+    Editor.prototype.updateEditorCode = function () {
+        this.setSource(this.editorSourceByLang[this.currentLanguage.id] || languages[this.currentLanguage.id].example);
     };
 
     return {
