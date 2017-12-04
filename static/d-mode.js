@@ -200,6 +200,7 @@ define(function (require) {
                     // strings
                     [/"([^"\\]|\\.)*$/, 'string.invalid'],  // non-teminated string
                     [/"/, 'string', '@string'],
+                    [/`/, 'string', '@rawstring'],
 
                     // characters
                     [/'[^\\']'/, 'string'],
@@ -210,17 +211,22 @@ define(function (require) {
                 whitespace: [
                     [/[ \t\r\n]+/, 'white'],
                     [/\/\*/, 'comment', '@comment'],
-                    [/\/\+/, 'comment', '@comment'],
+                    [/\/\+/, 'comment', '@nestingcomment'],
                     [/\/\/.*$/, 'comment'],
                 ],
 
                 comment: [
                     [/[^\/*]+/, 'comment'],
-                    [/\/\+/, 'comment', '@push'],
-                    [/\/\*/, 'comment.invalid'],
-                    ["\\*/", 'comment', '@pop'],
-                    ["\\+/", 'comment', '@pop'],
+                    [/\*\//, 'comment', '@pop'],
                     [/[\/*]/, 'comment']
+                ],
+
+                nestingcomment: [
+                    [/[^\/+]+/, 'comment'],
+                    [/\/\+/, 'comment', '@push'],
+                    [/\/\+/, 'comment.invalid'],
+                    [/\+\//, 'comment', '@pop'],
+                    [/[\/+]/, 'comment']
                 ],
 
                 string: [
@@ -229,10 +235,49 @@ define(function (require) {
                     [/\\./, 'string.escape.invalid'],
                     [/"/, 'string', '@pop']
                 ],
+
+                rawstring: [
+                    [/[^\`]/, "string"],
+                    [/`/, "string", "@pop"]
+                ],
             }
+        };
+    }
+
+    function configuration() {
+        return {
+            comments: {
+                lineComment: '//',
+                blockComment: ['/*', '*/'],
+            },
+
+            brackets: [
+                ['{', '}'],
+                ['[', ']'],
+                ['(', ')']
+            ],
+
+            autoClosingPairs: [
+                { open: '{', close: '}' },
+                { open: '[', close: ']' },
+                { open: '(', close: ')' },
+                { open: '`', close: '`', notIn: ['string'] },
+                { open: '"', close: '"', notIn: ['string'] },
+                { open: '\'', close: '\'', notIn: ['string', 'comment'] },
+            ],
+
+            surroundingPairs: [
+                { open: '{', close: '}' },
+                { open: '[', close: ']' },
+                { open: '(', close: ')' },
+                { open: '`', close: '`' },
+                { open: '"', close: '"' },
+                { open: '\'', close: '\'' },
+            ]
         };
     }
 
     monaco.languages.register({id: 'd'});
     monaco.languages.setMonarchTokensProvider('d', definition());
+    monaco.languages.setLanguageConfiguration('d', configuration());
 });

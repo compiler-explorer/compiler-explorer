@@ -40,7 +40,7 @@ define(function (require) {
     require('./ispc-mode');
     require('./haskell-mode');
     require('./swift-mode');
-    require('./fpc-mode');
+    require('./pascal-mode');
     require('selectize');
 
     var loadSave = new loadSaveLib.LoadSave();
