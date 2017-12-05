@@ -27,7 +27,6 @@ define(function (require) {
     'use strict';
 
     var _ = require('underscore');
-    var options = require('options');
     var editor = require('editor');
     var compiler = require('compiler');
     var output = require('output');
@@ -60,9 +59,8 @@ define(function (require) {
         throw 'Ran out of ids!?';
     };
 
-    function Hub(layout, defaultSrc) {
+    function Hub(layout) {
         this.layout = layout;
-        this.defaultSrc = defaultSrc;
         this.editorIds = new Ids();
         this.compilerIds = new Ids();
         this.compilerService = new CompilerService();
@@ -148,7 +146,7 @@ define(function (require) {
         // NB there doesn't seem to be a better way to do this than reach into the config and rely on the fact nothing
         // has used it yet.
         container.parent.config.isClosable = true;
-        return new editor.Editor(this, state, container, options.language, this.defaultSrc);
+        return new editor.Editor(this, state, container);
     };
 
     Hub.prototype.compilerFactory = function (container, state) {

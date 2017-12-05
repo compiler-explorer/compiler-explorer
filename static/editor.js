@@ -47,7 +47,7 @@ define(function (require) {
 
     var languages = options.languages;
 
-    function Editor(hub, state, container, lang, defaultSrc) {
+    function Editor(hub, state, container) {
         this.id = state.id || hub.nextEditorId();
         this.container = container;
         this.domRoot = container.getElement();
@@ -69,7 +69,7 @@ define(function (require) {
         this.editorSourceByLang = {};
 
         this.languageBtn = this.domRoot.find('.change-language');
-        this.currentLanguage = state.lang ? languages[state.lang] : languages["c++"];
+        this.currentLanguage = state.lang && languages[state.lang] ? languages[state.lang] : languages["c++"];
 
         var root = this.domRoot.find(".monaco-placeholder");
         var legacyReadOnly = state.options && !!state.options.readOnly;

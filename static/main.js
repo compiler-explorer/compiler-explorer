@@ -99,12 +99,11 @@ define(function (require) {
 
         var options = require('options');
 
-        var defaultSrc = $('.template .lang').text().trim();
         var defaultConfig = {
             settings: {showPopoutIcon: false},
             content: [{type: 'row', content: [Components.getEditor(1), Components.getCompiler(1)]}]
         };
-
+        
         $(window).bind('hashchange', function () {
             // punt on hash events and just reload the page if there's a hash
             if (window.location.hash.substr(1))
@@ -141,11 +140,11 @@ define(function (require) {
         var hub;
         try {
             layout = new GoldenLayout(config, root);
-            hub = new Hub(layout, defaultSrc);
+            hub = new Hub(layout);
         } catch (e) {
             Raven.captureException(e);
             layout = new GoldenLayout(defaultConfig, root);
-            hub = new Hub(layout, defaultSrc);
+            hub = new Hub(layout);
         }
         layout.on('stateChanged', function () {
             var config = layout.toConfig();
