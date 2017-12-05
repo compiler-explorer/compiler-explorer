@@ -23,209 +23,207 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-define(function (require) {
-    "use strict";
+"use strict";
 
-    var FontScale = require('fontscale');
-    var monaco = require('monaco');
-    var _ = require('underscore');
-    var $ = require('jquery');
+var FontScale = require('fontscale');
+var monaco = require('monaco');
+var _ = require('underscore');
+var $ = require('jquery');
 
-    require('asm-mode');
-    require('selectize');
+require('asm-mode');
+require('selectize');
 
-    function State(id, model) {
-        this.id = id;
-        this.model = model;
-        this.compiler = null;
-        this.result = null;
-    }
+function State(id, model) {
+    this.id = id;
+    this.model = model;
+    this.compiler = null;
+    this.result = null;
+}
 
-    State.prototype.update = function (id, compiler, result) {
-        if (this.id !== id) return false;
-        this.compiler = compiler;
-        this.result = result;
-        var asm = result.asm || [];
-        this.model.setValue(_.pluck(asm, 'text').join("\n"));
-        return true;
-    };
+State.prototype.update = function (id, compiler, result) {
+    if (this.id !== id) return false;
+    this.compiler = compiler;
+    this.result = result;
+    var asm = result.asm || [];
+    this.model.setValue(_.pluck(asm, 'text').join("\n"));
+    return true;
+};
 
-    function Diff(hub, container, state) {
-        this.container = container;
-        this.eventHub = hub.createEventHub();
-        this.domRoot = container.getElement();
-        this.domRoot.html($('#diff').html());
-        this.compilers = {};
+function Diff(hub, container, state) {
+    this.container = container;
+    this.eventHub = hub.createEventHub();
+    this.domRoot = container.getElement();
+    this.domRoot.html($('#diff').html());
+    this.compilers = {};
 
-        this.outputEditor = monaco.editor.createDiffEditor(this.domRoot.find(".monaco-placeholder")[0], {
-            fontFamily: 'monospace',
-            scrollBeyondLastLine: false,
-            readOnly: true,
-            language: 'asm'
-        });
+    this.outputEditor = monaco.editor.createDiffEditor(this.domRoot.find(".monaco-placeholder")[0], {
+        fontFamily: 'monospace',
+        scrollBeyondLastLine: false,
+        readOnly: true,
+        language: 'asm'
+    });
 
-        this.lhs = new State(state.lhs, monaco.editor.createModel('', 'asm'));
-        this.rhs = new State(state.rhs, monaco.editor.createModel('', 'asm'));
-        this.outputEditor.setModel({original: this.lhs.model, modified: this.rhs.model});
+    this.lhs = new State(state.lhs, monaco.editor.createModel('', 'asm'));
+    this.rhs = new State(state.rhs, monaco.editor.createModel('', 'asm'));
+    this.outputEditor.setModel({original: this.lhs.model, modified: this.rhs.model});
 
-        var selectize = this.domRoot.find(".diff-picker").selectize({
-            sortField: 'name',
-            valueField: 'id',
-            labelField: 'name',
-            searchField: ['name'],
-            options: [],
-            items: [],
-            render: {
-                option: function (item, escape) {
-                    return '<div>' +
-                        '<span class="compiler">' + escape(item.compiler.name) + '</span>' +
-                        '<span class="options">' + escape(item.options) + '</span>' +
-                        '<ul class="meta">' +
-                        '<li class="editor">Editor #' + escape(item.editorId) + '</li>' +
-                        '<li class="compilerId">Compiler #' + escape(item.id) + '</li>' +
-                        '</ul></div>';
-                }
+    var selectize = this.domRoot.find(".diff-picker").selectize({
+        sortField: 'name',
+        valueField: 'id',
+        labelField: 'name',
+        searchField: ['name'],
+        options: [],
+        items: [],
+        render: {
+            option: function (item, escape) {
+                return '<div>' +
+                    '<span class="compiler">' + escape(item.compiler.name) + '</span>' +
+                    '<span class="options">' + escape(item.options) + '</span>' +
+                    '<ul class="meta">' +
+                    '<li class="editor">Editor #' + escape(item.editorId) + '</li>' +
+                    '<li class="compilerId">Compiler #' + escape(item.id) + '</li>' +
+                    '</ul></div>';
             }
-        }).on('change', _.bind(function (e) {
-            var target = $(e.target);
-            var compiler = this.compilers[target.val()];
-            if (!compiler) return;
-            if (target.hasClass('lhs')) {
-                this.lhs.compiler = compiler;
-                this.lhs.id = compiler.id;
-            } else {
-                this.rhs.compiler = compiler;
-                this.rhs.id = compiler.id;
-            }
-            this.onDiffSelect(compiler.id);
-        }, this));
-        this.selectize = {lhs: selectize[0].selectize, rhs: selectize[1].selectize};
-
-        this.fontScale = new FontScale(this.domRoot, state, this.outputEditor);
-        this.fontScale.on('change', _.bind(this.updateState, this));
-
-        this.eventHub.on('compileResult', this.onCompileResult, this);
-        this.eventHub.on('compiler', this.onCompiler, this);
-        this.eventHub.on('compilerClose', this.onCompilerClose, this);
-        this.eventHub.on('themeChange', this.onThemeChange, this);
-        this.container.on('destroy', function () {
-            this.eventHub.unsubscribe();
-            this.outputEditor.dispose();
-        }, this);
-        container.on('resize', this.resize, this);
-        container.on('shown', this.resize, this);
-
-        this.eventHub.emit('resendCompilation', this.lhs.id);
-        this.eventHub.emit('resendCompilation', this.rhs.id);
-        this.eventHub.emit('findCompilers');
-        this.eventHub.emit('requestTheme');
-
-        this.updateCompilerNames();
-        this.updateCompilers();
-    }
-
-    // TODO: de-dupe with compiler etc
-    Diff.prototype.resize = function () {
-        var topBarHeight = this.domRoot.find(".top-bar").outerHeight(true);
-        this.outputEditor.layout({
-            width: this.domRoot.width(),
-            height: this.domRoot.height() - topBarHeight
-        });
-    };
-
-    Diff.prototype.onDiffSelect = function (id) {
-        this.eventHub.emit('resendCompilation', id);
-        this.updateCompilerNames();
-        this.updateState();
-    };
-
-    Diff.prototype.onCompileResult = function (id, compiler, result) {
-        // both sides must be updated, don't be tempted to rewrite this as
-        // var changes = lhs.update() || rhs.update();
-        var lhsChanged = this.lhs.update(id, compiler, result);
-        var rhsChanged = this.rhs.update(id, compiler, result);
-        if (lhsChanged || rhsChanged) {
-            this.updateCompilerNames();
         }
-    };
-
-    Diff.prototype.onCompiler = function (id, compiler, options, editorId) {
+    }).on('change', _.bind(function (e) {
+        var target = $(e.target);
+        var compiler = this.compilers[target.val()];
         if (!compiler) return;
-        options = options || "";
-        var name = compiler.name + " " + options;
-        // TODO: selectize doesn't play nicely with CSS tricks for truncation; this is the best I can do
-        // There's a plugin at: http://www.benbybenjacobs.com/blog/2014/04/09/no-wrap-plugin-for-selectize-dot-js
-        // but it doesn't look easy to integrate.
-        var maxLength = 30;
-        if (name.length > maxLength - 3) name = name.substr(0, maxLength - 3) + "...";
-        this.compilers[id] = {
-            id: id,
-            name: name,
-            options: options,
-            editorId: editorId,
-            compiler: compiler
+        if (target.hasClass('lhs')) {
+            this.lhs.compiler = compiler;
+            this.lhs.id = compiler.id;
+        } else {
+            this.rhs.compiler = compiler;
+            this.rhs.id = compiler.id;
+        }
+        this.onDiffSelect(compiler.id);
+    }, this));
+    this.selectize = {lhs: selectize[0].selectize, rhs: selectize[1].selectize};
+
+    this.fontScale = new FontScale(this.domRoot, state, this.outputEditor);
+    this.fontScale.on('change', _.bind(this.updateState, this));
+
+    this.eventHub.on('compileResult', this.onCompileResult, this);
+    this.eventHub.on('compiler', this.onCompiler, this);
+    this.eventHub.on('compilerClose', this.onCompilerClose, this);
+    this.eventHub.on('themeChange', this.onThemeChange, this);
+    this.container.on('destroy', function () {
+        this.eventHub.unsubscribe();
+        this.outputEditor.dispose();
+    }, this);
+    container.on('resize', this.resize, this);
+    container.on('shown', this.resize, this);
+
+    this.eventHub.emit('resendCompilation', this.lhs.id);
+    this.eventHub.emit('resendCompilation', this.rhs.id);
+    this.eventHub.emit('findCompilers');
+    this.eventHub.emit('requestTheme');
+
+    this.updateCompilerNames();
+    this.updateCompilers();
+}
+
+// TODO: de-dupe with compiler etc
+Diff.prototype.resize = function () {
+    var topBarHeight = this.domRoot.find(".top-bar").outerHeight(true);
+    this.outputEditor.layout({
+        width: this.domRoot.width(),
+        height: this.domRoot.height() - topBarHeight
+    });
+};
+
+Diff.prototype.onDiffSelect = function (id) {
+    this.eventHub.emit('resendCompilation', id);
+    this.updateCompilerNames();
+    this.updateState();
+};
+
+Diff.prototype.onCompileResult = function (id, compiler, result) {
+    // both sides must be updated, don't be tempted to rewrite this as
+    // var changes = lhs.update() || rhs.update();
+    var lhsChanged = this.lhs.update(id, compiler, result);
+    var rhsChanged = this.rhs.update(id, compiler, result);
+    if (lhsChanged || rhsChanged) {
+        this.updateCompilerNames();
+    }
+};
+
+Diff.prototype.onCompiler = function (id, compiler, options, editorId) {
+    if (!compiler) return;
+    options = options || "";
+    var name = compiler.name + " " + options;
+    // TODO: selectize doesn't play nicely with CSS tricks for truncation; this is the best I can do
+    // There's a plugin at: http://www.benbybenjacobs.com/blog/2014/04/09/no-wrap-plugin-for-selectize-dot-js
+    // but it doesn't look easy to integrate.
+    var maxLength = 30;
+    if (name.length > maxLength - 3) name = name.substr(0, maxLength - 3) + "...";
+    this.compilers[id] = {
+        id: id,
+        name: name,
+        options: options,
+        editorId: editorId,
+        compiler: compiler
+    };
+    if (!this.lhs.id) {
+        this.lhs.compiler = this.compilers[id];
+        this.lhs.id = id;
+        this.onDiffSelect(id);
+    } else if (!this.rhs.id) {
+        this.rhs.compiler = this.compilers[id];
+        this.rhs.id = id;
+        this.onDiffSelect(id);
+    }
+    this.updateCompilers();
+};
+
+Diff.prototype.onCompilerClose = function (id) {
+    delete this.compilers[id];
+    this.updateCompilers();
+};
+
+Diff.prototype.updateCompilerNames = function () {
+    var name = "Diff";
+    if (this.lhs.compiler && this.rhs.compiler)
+        name += " " + this.lhs.compiler.name + " vs " + this.rhs.compiler.name;
+    this.container.setTitle(name);
+};
+
+Diff.prototype.updateCompilersFor = function (selectize, id) {
+    selectize.clearOptions();
+    _.each(this.compilers, function (compiler) {
+        selectize.addOption(compiler);
+    }, this);
+    if (this.compilers[id]) {
+        selectize.setValue(id);
+    }
+};
+
+Diff.prototype.updateCompilers = function () {
+    this.updateCompilersFor(this.selectize.lhs, this.lhs.id);
+    this.updateCompilersFor(this.selectize.rhs, this.rhs.id);
+};
+
+Diff.prototype.updateState = function () {
+    var state = {
+        lhs: this.lhs.id,
+        rhs: this.rhs.id
+    };
+    this.fontScale.addState(state);
+    this.container.setState(state);
+};
+
+Diff.prototype.onThemeChange = function (newTheme) {
+    if (this.outputEditor)
+        this.outputEditor.updateOptions({theme: newTheme.monaco});
+};
+
+module.exports =  {
+    Diff: Diff,
+    getComponent: function (lhs, rhs) {
+        return {
+            type: 'component',
+            componentName: 'diff',
+            componentState: {lhs: lhs, rhs: rhs},
         };
-        if (!this.lhs.id) {
-            this.lhs.compiler = this.compilers[id];
-            this.lhs.id = id;
-            this.onDiffSelect(id);
-        } else if (!this.rhs.id) {
-            this.rhs.compiler = this.compilers[id];
-            this.rhs.id = id;
-            this.onDiffSelect(id);
-        }
-        this.updateCompilers();
-    };
-
-    Diff.prototype.onCompilerClose = function (id) {
-        delete this.compilers[id];
-        this.updateCompilers();
-    };
-
-    Diff.prototype.updateCompilerNames = function () {
-        var name = "Diff";
-        if (this.lhs.compiler && this.rhs.compiler)
-            name += " " + this.lhs.compiler.name + " vs " + this.rhs.compiler.name;
-        this.container.setTitle(name);
-    };
-
-    Diff.prototype.updateCompilersFor = function (selectize, id) {
-        selectize.clearOptions();
-        _.each(this.compilers, function (compiler) {
-            selectize.addOption(compiler);
-        }, this);
-        if (this.compilers[id]) {
-            selectize.setValue(id);
-        }
-    };
-
-    Diff.prototype.updateCompilers = function () {
-        this.updateCompilersFor(this.selectize.lhs, this.lhs.id);
-        this.updateCompilersFor(this.selectize.rhs, this.rhs.id);
-    };
-
-    Diff.prototype.updateState = function () {
-        var state = {
-            lhs: this.lhs.id,
-            rhs: this.rhs.id
-        };
-        this.fontScale.addState(state);
-        this.container.setState(state);
-    };
-
-    Diff.prototype.onThemeChange = function (newTheme) {
-        if (this.outputEditor)
-            this.outputEditor.updateOptions({theme: newTheme.monaco});
-    };
-
-    return {
-        Diff: Diff,
-        getComponent: function (lhs, rhs) {
-            return {
-                type: 'component',
-                componentName: 'diff',
-                componentState: {lhs: lhs, rhs: rhs},
-            };
-        }
-    };
-});
+    }
+};

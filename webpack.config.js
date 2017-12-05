@@ -3,15 +3,19 @@ const path = require('path'),
     webpack = require('webpack'),
     ExtractTextPlugin = require('extract-text-webpack-plugin');
 
-const staticPath = path.resolve(__dirname, 'static');
-const distPath = path.join(staticPath, 'dist');
+const outputPathRelative = 'dist/';
+const staticRelative = 'static/';
+const staticPath = path.resolve(__dirname, staticRelative);
+const distPath = path.join(staticPath, outputPathRelative);
 const vsPath = path.join(staticPath, 'vs/');
+
 
 module.exports = {
     entry: './static/main.js',
     output: {
         filename: 'bundle.js',
-        path: distPath
+        path: distPath,
+        publicPath: "/static/dist/",
     },
     resolve: {
         modules: ['./static', "./node_modules"],

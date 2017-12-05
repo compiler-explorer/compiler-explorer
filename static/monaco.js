@@ -24,7 +24,6 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 
+
 //until webpack can support monaco properly it exists on the window
 module.exports = monaco;
-
-

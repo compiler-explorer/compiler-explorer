@@ -52,6 +52,7 @@ require("selectize/dist/css/selectize.bootstrap2.css");
 require("bootstrap-slider/dist/css/bootstrap-slider.css");
 
 
+
 function setupSettings(eventHub) {
     var eventHub = hub.layout.eventHub;
     var defaultSettings = {
@@ -65,7 +66,7 @@ function setupSettings(eventHub) {
         local.set('settings', JSON.stringify(settings));
         eventHub.emit('settingsChange', settings);
     }
-
+    
     new themer.Themer(eventHub, currentSettings);
 
     eventHub.on('requestSettings', function () {
