@@ -29,7 +29,6 @@ define(function (require) {
 
     var FontScale = require('fontscale');
     var monaco = require('monaco');
-    var options = require('options');
     var Toggles = require('toggles');
     require('gccdump-rtl-gimple-mode');
     var _ = require('underscore');
