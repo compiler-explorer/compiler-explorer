@@ -487,10 +487,26 @@ function findCompilers() {
         return compilers;
     }
 
+    function ensureDistinct(compilers) {
+        let ids = {};
+        _.each(compilers, compiler => {
+            if (!ids[compiler.id]) ids[compiler.id] = [];
+            ids[compiler.id].push(compiler);
+        });
+        _.each(ids, (list, id) => {
+            if (list.length !== 1) {
+                logger.error("Compiler ID clash for '" + id + "' - used by "
+                    + _.map(list, o => 'lang:' + o.lang + " name:" + o.name).join(', '));
+            }
+        });
+        return compilers;
+    }
+
     return Promise.all(getCompilers())
         .then(_.flatten)
         .then(compileHandler.setCompilers)
         .then(compilers => _.filter(compilers, compiler => !!compiler))
+        .then(ensureDistinct)
         .then(compilers => compilers.sort(compareOn("name")));
 }
 
