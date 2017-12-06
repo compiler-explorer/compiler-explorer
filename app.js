@@ -129,17 +129,17 @@ _.each(languages.list(), function (lang) {
 // Get a property from the specified langId, and if not found, use defaults from CE,
 // and at last return whatever default value was set by the caller
 function compilerPropsL(lang, property, defaultValue) {
-    var forLanguage = compilerPropsFuncsL[lang];
+    const forLanguage = compilerPropsFuncsL[lang];
     if (forLanguage) {
-        var forCompiler = forLanguage(property, defaultValue);
-        if (forCompiler) return forCompiler;
+        const forCompiler = forLanguage(property);
+        if (forCompiler !== undefined) return forCompiler;
     }
     return ceProps(property, defaultValue);
 }
 
 // For every lang passed, get its corresponding compiler property
 function compilerPropsA(langs, property, defaultValue) {
-    var forLanguages = {};
+    const forLanguages = {};
     _.each(langs, lang => {
         forLanguages[lang.id] = compilerPropsL(lang.id, property, defaultValue);
     });
@@ -337,7 +337,7 @@ function retryPromise(promiseFunc, name, maxFails, retryMs) {
 
 function findCompilers() {
     var exes = compilerPropsAT(languages.toArray(), exs => {
-        return exs ? exs.split(":") : "/usr/bin/g++";
+        return exs.split(":").filter(x => x);
     }, "compilers", "/usr/bin/g++");
 
     var ndk = compilerPropsA(languages.toArray(), 'androidNdk');
