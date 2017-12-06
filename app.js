@@ -452,22 +452,22 @@ function findCompilers() {
 
     function recurseGetCompilers(langId, compilerName, parentProps) {
         if (fetchCompilersFromRemote && compilerName.indexOf("@") !== -1) {
-            var bits = compilerName.split("@");
-            var host = bits[0];
-            var port = parseInt(bits[1]);
+            const bits = compilerName.split("@");
+            const host = bits[0];
+            const port = parseInt(bits[1]);
             return fetchRemote(host, port, ceProps);
         }
         if (compilerName.indexOf("&") === 0) {
-            var groupName = compilerName.substr(1);
+            const groupName = compilerName.substr(1);
 
-            var props = function (langId, propName, def) {
+            const props = function (langId, propName, def) {
                 if (propName === "group") {
                     return groupName;
                 }
                 return compilerPropsL(langId, "group." + groupName + "." + propName, parentProps(langId, propName, def));
             };
 
-            var compilerExes = props(langId, 'compilers', '').split(":");
+            const compilerExes = props(langId, 'compilers', '').split(":").filter(x=>x);
             logger.debug("Processing compilers from group " + groupName);
             return Promise.all(compilerExes.map(function (compiler) {
                 return recurseGetCompilers(langId, compiler, props);
