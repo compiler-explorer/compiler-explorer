@@ -72,8 +72,6 @@ lint: $(NODE_MODULES)
 	$(NODE) ./node_modules/.bin/jshint --config etc/jshintrc.server app.js $(shell find lib -name '*.js')
 	$(NODE) ./node_modules/.bin/jshint --config etc/jshintrc.client $(shell find static -name '*.js' -not -path 'static/ext/*' -not -path static/analytics.js)
 
-LANG:=C++
-
 node_modules: $(NODE_MODULES)
 bower_modules: $(BOWER_MODULES)
 
@@ -87,7 +85,7 @@ clean:
 	$(MAKE) -C c-preload clean
 
 run: prereqs
-	$(NODE) ./node_modules/.bin/supervisor -w app.js,lib,etc/config -e 'js|node|properties' --exec $(NODE) $(NODE_ARGS) -- ./app.js --language $(LANG) $(EXTRA_ARGS)
+	$(NODE) ./node_modules/.bin/supervisor -w app.js,lib,etc/config -e 'js|node|properties' --exec $(NODE) $(NODE_ARGS) -- ./app.js $(EXTRA_ARGS)
 
 HASH := $(shell git rev-parse HEAD)
 dist: prereqs
