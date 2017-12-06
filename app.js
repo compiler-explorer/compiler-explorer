@@ -495,8 +495,8 @@ function findCompilers() {
         });
         _.each(ids, (list, id) => {
             if (list.length !== 1) {
-                logger.error("Compiler ID clash for '" + id + "' - used by "
-                    + _.map(list, o => 'lang:' + o.lang + " name:" + o.name).join(', '));
+                logger.error("Compiler ID clash for '" + id + "' - used by " + 
+                    _.map(list, o => 'lang:' + o.lang + " name:" + o.name).join(', '));
             }
         });
         return compilers;
