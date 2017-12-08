@@ -60,9 +60,9 @@ define(function (require) {
         }, this);
 
         if (!result.execResult) {
-            this.add("compiler returned: " + result.code);
+            this.add("Compiler returned: " + result.code);
         } else {
-            this.add("program returned: " + result.execResult.code);
+            this.add("Program returned: " + result.execResult.code);
             if (result.execResult.stderr.length || result.execResult.stdout.length) {
                 _.each(result.execResult.stderr, function (obj) {
                     this.programOutput(obj.text, "red");
@@ -83,8 +83,8 @@ define(function (require) {
 
     Output.prototype.programOutput = function (msg, color) {
         var elem = $('<div></div>').appendTo(this.contentRoot);
-        elem.text(msg);
-        elem.css('font-family', '"Courier New", Courier, monospace');
+        elem.text(msg)
+            .css('font-family', '"Courier New", Courier, monospace');
         if (color)
             elem.css("color", color);
     };
