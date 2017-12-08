@@ -467,7 +467,7 @@ function findCompilers() {
                 return compilerPropsL(langId, "group." + groupName + "." + propName, parentProps(langId, propName, def));
             };
 
-            const compilerExes = props(langId, 'compilers', '').split(":").filter(x=>x);
+            const compilerExes = props(langId, 'compilers', '').split(":").filter(_.identity);
             logger.debug("Processing compilers from group " + groupName);
             return Promise.all(compilerExes.map(function (compiler) {
                 return recurseGetCompilers(langId, compiler, props);
