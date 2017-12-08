@@ -554,7 +554,7 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
         let compilers = args[0];
         var prevCompilers;
 
-        let ravenPrivateEndpoint = aws.getConfig('ravenPrivateEndpoint');
+        const ravenPrivateEndpoint = aws.getConfig('ravenPrivateEndpoint');
         if (ravenPrivateEndpoint) {
             Raven.config(ravenPrivateEndpoint, {
                 release: gitReleaseName,
@@ -563,6 +563,16 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
             logger.info("Configured with raven endpoint", ravenPrivateEndpoint);
         } else {
             Raven.config(false).install();
+        }
+
+        const newRelicLicense = aws.getConfig('newRelicLicense');
+        if (newRelicLicense) {
+            process.env.NEW_RELIC_NO_CONFIG_FILE = true;
+            process.env.NEW_RELIC_APP_NAME = 'Compiler Explorer';
+            process.env.NEW_RELIC_LICENSE_KEY = newRelicLicense;
+            process.env.NEW_RELIC_LABELS = 'Language:' + language;
+            require('newrelic');
+            logger.info('New relic configured with license', newRelicLicense);
         }
 
         function onCompilerChange(compilers) {
