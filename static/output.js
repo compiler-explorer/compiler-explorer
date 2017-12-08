@@ -82,8 +82,8 @@ define(function (require) {
     };
 
     Output.prototype.programOutput = function (msg, color) {
-        var elem = $('<div></div>').appendTo(this.contentRoot);
-        elem.text(msg)
+        var elem = $('<div></div>').appendTo(this.contentRoot)
+            .text(msg)
             .css('font-family', '"Courier New", Courier, monospace');
         if (color)
             elem.css("color", color);

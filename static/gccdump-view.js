@@ -29,7 +29,6 @@ define(function (require) {
 
     var FontScale = require('fontscale');
     var monaco = require('monaco');
-    var options = require('options');
     var Toggles = require('toggles');
     require('gccdump-rtl-gimple-mode');
     var _ = require('underscore');
@@ -238,7 +237,7 @@ define(function (require) {
             this.selectize.clear(true);
             this.state.selectedPass = '';
             this.updatePass(this.filters, this.selectize, false);
-            this.showGccDumpResults('<No output, maybe you switched to a non-GCC compiler ?>');
+            this.showGccDumpResults('<No output, this view is only supported on GCC compilers>');
             this.uiIsReady = false;
             this.onUiNotReady();
         }
