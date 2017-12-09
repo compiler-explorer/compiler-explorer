@@ -127,12 +127,14 @@ define(function (require) {
             items: this.compiler ? [this.compiler.id] : []
         }).on('change', _.bind(function (e) {
             var val = $(e.target).val();
-            ga('send', {
-                hitType: 'event',
-                eventCategory: 'SelectCompiler',
-                eventAction: val
-            });
-            this.onCompilerChange(val);
+            if (val) {
+                ga('send', {
+                    hitType: 'event',
+                    eventCategory: 'SelectCompiler',
+                    eventAction: val
+                });
+                this.onCompilerChange(val);
+            }
         }, this));
         var optionsChange = _.debounce(_.bind(function (e) {
             this.onOptionsChange($(e.target).val());

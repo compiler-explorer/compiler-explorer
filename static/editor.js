@@ -96,6 +96,8 @@ define(function (require) {
             this.updateEditorCode();
         }
 
+        this.initLoadSaver();
+
         var startFolded = /^[/*#;]+\s*setup.*/;
         if (state.source && state.source.match(startFolded)) {
             var foldAction = this.editor.getAction('editor.fold');
@@ -291,6 +293,7 @@ define(function (require) {
                 this.container.layoutManager.root.contentItems[0];
             insertPoint.addChild(conformanceConfig);
         }, this));
+        this.container.setTitle(this.currentLanguage.name + " source #" + this.id);
 
         this.updateState();
     }
@@ -485,22 +488,26 @@ define(function (require) {
         }
     };
 
+    Editor.prototype.initLoadSaver = function () {
+        this.domRoot.find('.load-save')
+            .off('click')
+            .click(_.bind(function () {
+                loadSave.run(_.bind(function (text) {
+                    this.setSource(text);
+                    this.updateState();
+                    this.maybeEmitChange();
+                }, this), this.getSource(), this.currentLanguage);
+            }, this));
+    };
+
     Editor.prototype.onLanguageChange = function (newLangId) {
         if (newLangId !== this.currentLanguage.id && languages[newLangId]) {
             var oldLangId = this.currentLanguage.id;
             // Save the current source, so we can come back to it later
             this.editorSourceByLang[oldLangId] = this.getSource();
             this.currentLanguage = languages[newLangId];
+            this.initLoadSaver();
             monaco.editor.setModelLanguage(this.editor.getModel(), this.currentLanguage.monaco);
-            this.domRoot.find('.load-save')
-                .off('click')
-                .click(_.bind(function () {
-                    loadSave.run(_.bind(function (text) {
-                        this.setSource(text);
-                        this.updateState();
-                        this.maybeEmitChange();
-                    }, this), this.getSource(), this.currentLanguage.extensions);
-                }, this));
             // And now set the editor value to either the saved one or the default to the new lang
             this.updateEditorCode();
             this.container.setTitle(this.currentLanguage.name + " source #" + this.id);

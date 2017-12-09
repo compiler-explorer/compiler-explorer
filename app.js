@@ -117,14 +117,12 @@ var CompileHandler = require('./lib/compile-handler').CompileHandler,
 // in hidden object props.properties
 var ceProps = props.propsFor("compiler-explorer");
 
-var languages = require('./lib/languages');
+const languages = require('./lib/languages').list;
 
 // Instantiate a function to access records concerning the chosen language
 // in hidden object props.properties
 var compilerPropsFuncsL = {};
-_.each(languages.list(), function (lang) {
-    compilerPropsFuncsL[lang.id] = props.propsFor(lang.id);
-});
+_.each(languages, lang => compilerPropsFuncsL[lang.id] = props.propsFor(lang.id));
 
 // Get a property from the specified langId, and if not found, use defaults from CE,
 // and at last return whatever default value was set by the caller
@@ -139,16 +137,16 @@ function compilerPropsL(lang, property, defaultValue) {
 
 // For every lang passed, get its corresponding compiler property
 function compilerPropsA(langs, property, defaultValue) {
-    const forLanguages = {};
+    let forLanguages = {};
     _.each(langs, lang => {
         forLanguages[lang.id] = compilerPropsL(lang.id, property, defaultValue);
     });
     return forLanguages;
 }
 
-// Same as A version, but transfrom each value by fn(original, lang)
+// Same as A version, but transfroms each value by fn(original, lang)
 function compilerPropsAT(langs, transform, property, defaultValue) {
-    var forLanguages = {};
+    let forLanguages = {};
     _.each(langs, lang => {
         forLanguages[lang.id] = transform(compilerPropsL(lang.id, property, defaultValue), lang);
     });
@@ -208,18 +206,16 @@ function compareOn(key) {
 
 // instantiate a function that generate javascript code,
 function ClientOptionsHandler(fileSources) {
-    var sources = fileSources.map(function (source) {
+    const sources = fileSources.map(function (source) {
         return {name: source.name, urlpart: source.urlpart};
-    });
+    }).sort(compareOn("name"));
     // sort source file alphabetically
-    sources = sources.sort(compareOn("name"));
 
-    var langs = languages.toArray();
-    var supportsBinary = compilerPropsAT(langs, res => !!res, "supportsBinary", true);
-    var supportsExecute = supportsBinary && !!compilerPropsAT(langs, (res, lang) => supportsBinary[lang.id] && !!res, "supportsExecute", true);
+    var supportsBinary = compilerPropsAT(languages, res => !!res, "supportsBinary", true);
+    var supportsExecute = supportsBinary && !!compilerPropsAT(languages, (res, lang) => supportsBinary[lang.id] && !!res, "supportsExecute", true);
     var libs = {};
 
-    var baseLibs = compilerPropsA(langs, "libs");
+    var baseLibs = compilerPropsA(languages, "libs");
     _.each(baseLibs, function (forLang, lang) {
         if (lang && forLang) {
             libs[lang] = {};
@@ -257,11 +253,11 @@ function ClientOptionsHandler(fileSources) {
         defaultSource: ceProps('defaultSource', ''),
         compilers: [],
         libs: libs,
-        defaultCompiler: compilerPropsA(langs, 'defaultCompiler', ''),
-        compileOptions: compilerPropsA(langs, 'defaultOptions', ''),
+        defaultCompiler: compilerPropsA(languages, 'defaultCompiler', ''),
+        compileOptions: compilerPropsA(languages, 'defaultOptions', ''),
         supportsBinary: supportsBinary,
         supportsExecute: supportsExecute,
-        languages: languages.list(),
+        languages: languages,
         sources: sources,
         raven: ceProps('ravenUrl', ''),
         release: gitReleaseName,
@@ -336,23 +332,21 @@ function retryPromise(promiseFunc, name, maxFails, retryMs) {
 }
 
 function findCompilers() {
-    var exes = compilerPropsAT(languages.toArray(), exs => {
-        return exs.split(":").filter(x => x);
-    }, "compilers", "/usr/bin/g++");
+    let exes = compilerPropsAT(languages, exs => {
+        return exs.split(":").filter(_.identity);
+    }, "compilers", "");
 
-    var ndk = compilerPropsA(languages.toArray(), 'androidNdk');
+    const ndk = compilerPropsA(languages, 'androidNdk');
     _.each(ndk, (ndkPath, langId) => {
         if (ndkPath) {
-            var toolchains = fs.readdirSync(ndkPath + "/toolchains");
-            toolchains.forEach(function (v, i, a) {
-                var path = ndkPath + "/toolchains/" + v + "/prebuilt/linux-x86_64/bin/";
+            let toolchains = fs.readdirSync(ndkPath + "/toolchains");
+            toolchains.forEach((version, index, a) => {
+                const path = ndkPath + "/toolchains/" + version + "/prebuilt/linux-x86_64/bin/";
                 if (fs.existsSync(path)) {
-                    var cc = fs.readdirSync(path).filter(function (filename) {
-                        return filename.indexOf("g++") !== -1;
-                    });
-                    a[i] = path + cc[0];
+                    const cc = fs.readdirSync(path).filter(filename => filename.indexOf("g++") !== -1);
+                    a[index] = path + cc[0];
                 } else {
-                    a[i] = null;
+                    a[index] = null;
                 }
             });
             toolchains = toolchains.filter(x => x !== null);
@@ -362,40 +356,38 @@ function findCompilers() {
 
     function fetchRemote(host, port, props) {
         logger.info("Fetching compilers from remote source " + host + ":" + port);
-        return retryPromise(function () {
-                return new Promise(function (resolve, reject) {
-                    var request = http.get({
+        return retryPromise(() => {
+                return new Promise((resolve, reject) => {
+                    let request = http.get({
                         hostname: host,
                         port: port,
                         path: "/api/compilers",
                         headers: {
                             'Accept': 'application/json'
                         }
-                    }, function (res) {
-                        var str = '';
-                        res.on('data', function (chunk) {
+                    }, res => {
+                        let str = '';
+                        res.on('data', chunk => {
                             str += chunk;
                         });
-                        res.on('end', function () {
-                            var compilers = JSON.parse(str).map(function (compiler) {
+                        res.on('end', () => {
+                            let compilers = JSON.parse(str).map(compiler => {
                                 compiler.exe = null;
                                 compiler.remote = "http://" + host + ":" + port;
                                 return compiler;
                             });
                             resolve(compilers);
                         });
-                    }).on('error', function (e) {
-                        reject(e);
-                    }).on('timeout', function () {
-                        reject("timeout");
-                    });
+                    })
+                        .on('error', reject)
+                        .on('timeout', () => reject("timeout"));
                     request.setTimeout(awsProps('proxyTimeout', 1000));
                 });
             },
             host + ":" + port,
             props('proxyRetries', 5),
             props('proxyRetryMs', 500))
-            .catch(function () {
+            .catch(() => {
                 logger.warn("Unable to contact " + host + ":" + port + "; skipping");
                 return [];
             });
@@ -403,10 +395,10 @@ function findCompilers() {
 
     function fetchAws() {
         logger.info("Fetching instances from AWS");
-        return awsInstances().then(function (instances) {
-            return Promise.all(instances.map(function (instance) {
+        return awsInstances().then(instances => {
+            return Promise.all(instances.map(instance => {
                 logger.info("Checking instance " + instance.InstanceId);
-                var address = instance.PrivateDnsName;
+                let address = instance.PrivateDnsName;
                 if (awsProps("externalTestMode", false)) {
                     address = instance.PublicDnsName;
                 }
@@ -419,16 +411,16 @@ function findCompilers() {
         const base = "compiler." + compilerName + ".";
 
         function props(propName, def) {
-            var propsForCompiler = parentProps(langId, base + propName, undefined);
+            let propsForCompiler = parentProps(langId, base + propName, undefined);
             if (propsForCompiler === undefined) {
                 propsForCompiler = parentProps(langId, propName, def);
             }
             return propsForCompiler;
         }
 
-        var supportsBinary = !!props("supportsBinary", true);
-        var supportsExecute = supportsBinary && !!props("supportsExecute", true);
-        var compilerInfo = {
+        const supportsBinary = !!props("supportsBinary", true);
+        const supportsExecute = supportsBinary && !!props("supportsExecute", true);
+        const compilerInfo = {
             id: compilerName,
             exe: props("exe", compilerName),
             name: props("name", compilerName),
@@ -469,20 +461,16 @@ function findCompilers() {
 
             const compilerExes = props(langId, 'compilers', '').split(":").filter(_.identity);
             logger.debug("Processing compilers from group " + groupName);
-            return Promise.all(compilerExes.map(function (compiler) {
-                return recurseGetCompilers(langId, compiler, props);
-            }));
+            return Promise.all(compilerExes.map(compiler => recurseGetCompilers(langId, compiler, props)));
         }
         if (compilerName === "AWS") return fetchAws();
         return compilerConfigFor(langId, compilerName, parentProps);
     }
 
     function getCompilers() {
-        var compilers = [];
+        let compilers = [];
         _.each(exes, (exs, langId) => {
-            _.each(exs, exe => {
-                compilers.push(recurseGetCompilers(langId, exe, compilerPropsL));
-            });
+            _.each(exs, exe => compilers.push(recurseGetCompilers(langId, exe, compilerPropsL)));
         });
         return compilers;
     }
@@ -517,12 +505,12 @@ function ApiHandler(compileHandler) {
         this.compilers = compilers;
     };
     this.handler = express.Router();
-    this.handler.use(function (req, res, next) {
+    this.handler.use((req, res, next) => {
         res.header("Access-Control-Allow-Origin", "*");
         res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
         next();
     });
-    this.handler.get('/compilers', _.bind(function (req, res) {
+    this.handler.get('/compilers', _.bind((req, res) => {
         if (req.accepts(['text', 'json']) === 'json') {
             res.set('Content-Type', 'application/json');
             res.end(JSON.stringify(this.compilers));
@@ -531,13 +519,13 @@ function ApiHandler(compileHandler) {
             var title = 'Compiler Name';
             var maxLength = _.max(_.pluck(_.pluck(this.compilers, 'id').concat([title]), 'length'));
             res.write(utils.padRight(title, maxLength) + ' | Description\n');
-            res.end(_.map(this.compilers, function (compiler) {
+            res.end(_.map(this.compilers, compiler => {
                 return utils.padRight(compiler.id, maxLength) + ' | ' + compiler.name;
             }).join("\n"));
         }
     }, this));
     this.handler.get('/asm/:opcode', asm_doc_api.asmDocsHandler);
-    this.handler.param('compiler', _.bind(function (req, res, next, compilerName) {
+    this.handler.param('compiler', _.bind((req, res, next, compilerName) => {
         req.compiler = compilerName;
         next();
     }, this));
@@ -554,12 +542,10 @@ function shortUrlHandler(req, res, next) {
     var key = aws.getConfig('googleApiKey');
     var googleApiUrl = 'https://www.googleapis.com/urlshortener/v1/url?shortUrl=http://goo.gl/' +
         encodeURIComponent(bits[1]) + '&key=' + key;
-    https.get(googleApiUrl, function (response) {
+    https.get(googleApiUrl, response => {
         var responseText = '';
-        response.on('data', function (d) {
-            responseText += d;
-        });
-        response.on('end', function () {
+        response.on('data', d => responseText += d);
+        response.on('end', () => {
             if (response.statusCode !== 200) {
                 logger.error("Failed to resolve short URL " + bits[1] + " - got response " +
                     response.statusCode + " : " + responseText);
@@ -591,7 +577,7 @@ function shortUrlHandler(req, res, next) {
 
 
 Promise.all([findCompilers(), aws.initConfig(awsProps)])
-    .then(function (args) {
+    .then(args => {
         let compilers = args[0];
         var prevCompilers;
 
