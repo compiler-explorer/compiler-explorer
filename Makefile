@@ -1,6 +1,6 @@
 NODE_DIR?=/opt/compiler-explorer/node
-NPM:= $(shell env PATH="$(NODE_DIR)/bin:$$PATH" which npm)
-NODE:= $(shell env PATH="$(NODE_DIR)/bin:$$PATH" which node || env PATH="$(NODE_DIR)/bin:$$PATH" which nodejs)
+NPM:=$(shell env PATH=$(NODE_DIR)/bin:$(PATH) which yarn)
+NODE:=$(shell env PATH=$(NODE_DIR)/bin:$(PATH) which node || env PATH=$(NODE_DIR)/bin:$(PATH) which nodejs)
 default: run
 
 NODE_VERSION_USED:=8
@@ -80,6 +80,7 @@ clean:
 	$(MAKE) -C d clean
 	$(MAKE) -C c-preload clean
 
+run: export NODE_ENV=LOCAL
 run: prereqs
 	$(NODE) ./node_modules/.bin/supervisor -w app.js,lib,etc/config -e 'js|node|properties' --exec $(NODE) $(NODE_ARGS) -- ./app.js $(EXTRA_ARGS)
 
