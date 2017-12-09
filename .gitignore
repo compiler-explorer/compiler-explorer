@@ -6,5 +6,6 @@
 /out
 *.heapsnapshot
 etc/config/*.local.properties
+.travis-compilers
 /nbproject
 /package-lock.json
