@@ -36,7 +36,7 @@ const nopt = require('nopt'),
     url = require('url'),
     _ = require('underscore-node'),
     express = require('express'),
-    Raven = require('raven');
+    Raven = require('raven'),
     logger = require('./lib/logger').logger,
     webpackDevMiddleware = require("webpack-dev-middleware");
     

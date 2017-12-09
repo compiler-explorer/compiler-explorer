@@ -1,6 +1,8 @@
-var Promise = require('es6-promise').Promise;
-var _loaded = false
-var _loadPromise = null;
+"use strict";
+
+var Promise = require('es6-promise').Promise,
+    _loaded = false,
+    _loadPromise = null;
 
 // Returns promise that will be fulfilled when monaco is available
 var waitForMonaco = function() {

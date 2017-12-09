@@ -2,6 +2,7 @@
     "strict": true,
     "undef": true,
     "browser": true,
-    "globals": {"define": false},
+    "node": true,
+    "globals": {"define": false, "monaco": true},
     "esversion": 5
 }
