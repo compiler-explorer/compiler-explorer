@@ -59,15 +59,19 @@ define(function (require) {
             this.add(obj.text, obj.tag ? obj.tag.line : obj.line);
         }, this);
 
-        this.add("Compiler exited with result code " + result.code);
+        if (!result.execResult) {
+            this.add("Compiler returned: " + result.code);
+        } else {
+            this.add("Program returned: " + result.execResult.code);
+            if (result.execResult.stderr.length || result.execResult.stdout.length) {
+                _.each(result.execResult.stderr, function (obj) {
+                    this.programOutput(obj.text, "red");
+                }, this);
 
-        if (result.execResult) {
-            var elem = $('<div><hr></div>').appendTo(this.contentRoot);
-            this.add("Output from execution:");
-            _.each((result.execResult.stdout || []).concat(result.execResult.stderr || []), function (obj) {
-                this.add(obj.text, obj.line);
-            }, this);
-            this.add("User code exited with result code " + result.execResult.code);
+                _.each(result.execResult.stdout, function (obj) {
+                    this.programOutput(obj.text);
+                }, this);
+            }
         }
 
         this.updateCompilerName();
@@ -75,6 +79,14 @@ define(function (require) {
 
     Output.prototype.onFontScale = function (id, scale) {
         if (id === this.compilerId) this.fontScale.setScale(scale);
+    };
+
+    Output.prototype.programOutput = function (msg, color) {
+        var elem = $('<div></div>').appendTo(this.contentRoot)
+            .text(msg)
+            .css('font-family', '"Courier New", Courier, monospace');
+        if (color)
+            elem.css("color", color);
     };
 
     Output.prototype.add = function (msg, lineNum) {

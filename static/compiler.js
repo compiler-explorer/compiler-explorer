@@ -789,7 +789,7 @@ define(function (require) {
 
     Compiler.prototype.onGccDumpViewClosed = function (id) {
         if (this.id === id) {
-            this.gccDumpButton.prop('disabled', false);
+            this.gccDumpButton.prop('disabled', !this.compiler.supportsGccDump);
             this.gccDumpViewOpen = false;
 
             delete this.gccDumpPassSelected;
@@ -854,6 +854,12 @@ define(function (require) {
             this.cfgButton.prop('disabled', !this.compilerSupportsCfg);
         } else {
             this.cfgButton.prop('disabled', true);
+        }
+
+        if (!this.gccDumpViewOpen) {
+            this.gccDumpButton.prop('disabled', !this.compiler.supportsGccDump);
+        } else {
+            this.gccDumpButton.prop('disabled', true);
         }
     };
 

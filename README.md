@@ -17,7 +17,7 @@ You can support [this project on Patreon](https://patreon.com/mattgodbolt).
 
 For general discussion, feel free to join the mailing list: https://groups.google.com/forum/#!forum/compiler-explorer-discussion or the cpplang slack https://cpplang.now.sh/ channel `#compiler_explorer`.
 
-If you are interested in developing, or want to see the discussions between existing developers, feel free to join the mailing list at https://groups.google.com/forum/#!forum/compiler-explorer-development or the cpplang slack https://cpplang.now.sh/ channel `#ce_implementators`.
+If you are interested in developing, or want to see the discussions between existing developers, feel free to join the mailing list at https://groups.google.com/forum/#!forum/compiler-explorer-development or the cpplang slack https://cpplang.now.sh/ channel `#ce_implementation`.
 
 ### Developing or running a local instance
 

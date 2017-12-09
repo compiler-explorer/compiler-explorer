@@ -49,7 +49,7 @@ define(function (require) {
         // disable UI callbacks.
         this.uiIsReady = false;
         // disable filter buttons
-        this.domRoot.find('.dump-filters').find('.btn')
+        this.domRoot.find('.dump-filters .btn')
             .each(function () {
                 $(this).addClass('disabled');
             });
@@ -126,13 +126,27 @@ define(function (require) {
         this.eventHub.emit('gccDumpUIInit', this.state._compilerid);
     }
 
+    // Disable view's menu when invalid compiler has been
+    // selected after view is opened.
+    GccDump.prototype.onUiNotReady = function () {
+        this.filters.off('change');
+        this.selectize.off('change');
+
+        // disable drop down menu and buttons
+        this.selectize.disable();
+        this.domRoot.find('.dump-filters .btn')
+            .each(function () {
+                $(this).addClass('disabled');
+            });
+    };
+
     GccDump.prototype.onUiReady = function () {
         this.filters.on('change', _.bind(this.onFilterChange, this));
         this.selectize.on('change', _.bind(this.onPassSelect, this));
 
         // enable drop down menu and buttons
         this.selectize.enable();
-        this.domRoot.find('.dump-filters').find('.btn')
+        this.domRoot.find('.dump-filters .btn')
             .each(function () {
                 $(this).removeClass('disabled');
             });
@@ -195,24 +209,6 @@ define(function (require) {
 
     GccDump.prototype.onCompileResult = function (id, compiler, result) {
         if (this.state._compilerid !== id) return;
-        // ignore spurious result when :
-        // - UI is disabled
-        // - some state has been restored
-        // - result does not have an gccdump info
-        //
-        // This happens when restoring a state and some builds are
-        // executed by another part of the code before we had the
-        // chance to set all our parameters : results are coming
-        // back without any dump info.
-        if (!this.uiIsReady &&
-            this.state.selectedPass !== '' &&
-            (!result.hasGccDumpOutput ||
-                result.gccDumpOutput.selectedPass === '')) {
-            // wait for correct build job:
-            // We should get something back from what has been
-            // requested earlier at the end of GccDump().
-            return;
-        }
 
         if (result.hasGccDumpOutput && result.gccDumpOutput.syntaxHighlight) {
             monaco.editor.setModelLanguage(this.gccDumpEditor.getModel(), 'gccdump-rtl-gimple');
@@ -231,16 +227,19 @@ define(function (require) {
             }
             this.updatePass(this.filters, this.selectize, result.gccDumpOutput);
             this.showGccDumpResults(currOutput);
+
+            // enable UI on first successful compilation or after an invalid compiler selection (eg. clang)
+            if (!this.uiIsReady) {
+                this.uiIsReady = true;
+                this.onUiReady();
+            }
         } else {
             this.selectize.clear(true);
             this.state.selectedPass = '';
             this.updatePass(this.filters, this.selectize, false);
-            this.showGccDumpResults('<no output>');
-        }
-        // enable UI on first compilation
-        if (!this.uiIsReady) {
-            this.uiIsReady = true;
-            this.onUiReady();
+            this.showGccDumpResults('<No output, this view is only supported on GCC compilers>');
+            this.uiIsReady = false;
+            this.onUiNotReady();
         }
 
         this.saveState();
