@@ -58,7 +58,7 @@ define(function (require) {
     LoadSave.prototype.fetchBuiltins = function () {
         $.getJSON('source/builtin/list', _.bind(function (list) {
             this.savedBuiltins = list;
-        }, this))
+        }, this));
     };
 
     LoadSave.prototype.populateBuiltins = function () {
