@@ -583,7 +583,7 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
             process.env.NEW_RELIC_NO_CONFIG_FILE = true;
             process.env.NEW_RELIC_APP_NAME = 'Compiler Explorer';
             process.env.NEW_RELIC_LICENSE_KEY = newRelicLicense;
-            process.env.NEW_RELIC_LABELS = 'Language:' + language;
+            process.env.NEW_RELIC_LABELS = 'Languages:' + _.map(languages, languages => languages.name);
             require('newrelic');
             logger.info('New relic configured with license', newRelicLicense);
         }
