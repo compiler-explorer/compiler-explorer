@@ -112,9 +112,10 @@ if (opts.propDebug) props.setDebug(true);
 props.initialize(rootDir + '/config', propHierarchy);
 
 // Now load up our libraries.
-var CompileHandler = require('./lib/compile-handler').CompileHandler,
+const CompileHandler = require('./lib/compile-handler').CompileHandler,
     aws = require('./lib/aws'),
-    asm_doc_api = require('./lib/asm-docs-api');
+    asm_doc_api = require('./lib/asm-docs-api'),
+    google = require('./lib/google');
 
 // Instantiate a function to access records concerning "compiler-explorer" 
 // in hidden object props.properties
@@ -508,28 +509,12 @@ function healthcheckHandler(req, res, next) {
 }
 
 function shortUrlHandler(req, res, next) {
-    var bits = req.url.split("/");
+    const resolver = new google.ShortLinkResolver(aws.getConfig('googleApiKey'));
+    const bits = req.url.split("/");
     if (bits.length !== 2 || req.method !== "GET") return next();
-    var key = aws.getConfig('googleApiKey');
-    var googleApiUrl = 'https://www.googleapis.com/urlshortener/v1/url?shortUrl=http://goo.gl/' +
-        encodeURIComponent(bits[1]) + '&key=' + key;
-    https.get(googleApiUrl, function (response) {
-        var responseText = '';
-        response.on('data', function (d) {
-            responseText += d;
-        });
-        response.on('end', function () {
-            if (response.statusCode !== 200) {
-                logger.error("Failed to resolve short URL " + bits[1] + " - got response " +
-                    response.statusCode + " : " + responseText);
-                return next();
-            }
-
-            var resultObj = JSON.parse(responseText);
-            if (!resultObj.longUrl) {
-                logger.warn("Missing long URL field in response for short URL " + bits[1] + " - got " + responseText);
-                return next();
-            }
+    const googleUrl = `http://goo.gl/${encodeURIComponent(bits[1])}`;
+    resolver.resolve(googleUrl)
+        .then(resultObj => {
             var parsed = url.parse(resultObj.longUrl);
             var allowedRe = new RegExp(gccProps('allowedShortUrlHostRe'));
             if (parsed.host.match(allowedRe) === null) {
@@ -541,13 +526,12 @@ function shortUrlHandler(req, res, next) {
                 'Cache-Control': 'public'
             });
             res.end();
+        })
+        .catch(e => {
+            logger.error(`Failed to expand ${googleUrl} - ${e}`);
+            next();
         });
-    }).on('error', function (e) {
-        logger.error("Error handling google URL shortener request", e);
-        res.end("Error " + e.message);
-    });
 }
-
 
 Promise.all([findCompilers(), aws.initConfig(awsProps)])
     .then(function (args) {

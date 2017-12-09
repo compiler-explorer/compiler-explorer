@@ -42,8 +42,10 @@
   "devDependencies": {
     "bower": "*",
     "chai": "3.5.x",
+    "chai-as-promised": "^7.1.1",
     "jshint": "^2.9.5",
     "mocha": "^3.3.0",
+    "nock": "^9.1.4",
     "requirejs": "*",
     "supervisor": "*",
     "uglify-js": "*"
