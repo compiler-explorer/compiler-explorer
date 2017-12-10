@@ -1,0 +1,25 @@
+#!/bin/bash
+#
+# An example hook script to verify what is about to be committed.
+# Called by "git commit" with no arguments.  The hook should
+# exit with non-zero status after issuing an appropriate message if
+# it wants to stop the commit.
+#
+# To enable this hook, rename this file to "pre-commit".
+
+against='HEAD'
+
+printf "\033[0;32mRunning tests...\033[0m\n"
+FORBIDDEN='console.log'
+FILES_PATTERN='\.(js)(\..+)?$'
+OUT=0
+git diff --cached --name-only | \
+    grep -E $FILES_PATTERN | \
+    GREP_COLOR='4;5;37;41' xargs grep --color --with-filename -n $FORBIDDEN && printf "Please unstage console.log before commiting\n\033[0;31mAborting commit\033[0m\n" && exit 1
+
+make check
+if [ $? -ne 0 ]
+then
+	printf "\033[0;31mAborting commit\033[0m\n"
+	exit 1
+fi
