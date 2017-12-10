@@ -40,6 +40,7 @@
     "winston": "2.2.x"
   },
   "devDependencies": {
+    "aws-sdk-mock": "^1.7.0",
     "bower": "*",
     "chai": "3.5.x",
     "chai-as-promised": "^7.1.1",
