@@ -355,110 +355,7 @@ define(function (require) {
             insertPoint.addChild(createCfgView);
         }, this));
 
-
-        var updateLibsUsed = _.bind(function () {
-            var libsCount = Object.keys(this.availableLibs).length;
-            if (libsCount === 0) {
-                return $('<p></p>')
-                    .text('No libs configured for this language yet. ')
-                    .append($('<a></a>')
-                        .attr('target', '_blank')
-                        .attr('rel', 'noopener noreferrer')
-                        .attr('href', 'https://github.com/mattgodbolt/compiler-explorer/issues/new')
-                        .text('You can suggest us one at any time ')
-                        .append($('<sup></sup>')
-                            .addClass('glyphicon glyphicon-new-window')
-                            .width('16px')
-                            .height('16px')
-                            .attr('title', 'Opens in a new window')
-                        )
-                    );
-            }
-            var columnCount = Math.ceil(libsCount / 5);
-            var currentLibIndex = -1;
-
-            var libLists = [];
-            for (var i = 0; i < columnCount; i++) {
-                libLists.push($('<ul></ul>').addClass('lib-list'));
-            }
-
-            // Utility function so we can iterate indefinetly over our lists
-            var getNextList = function () {
-                currentLibIndex = (currentLibIndex + 1) % columnCount;
-                return libLists[currentLibIndex];
-            };
-
-            var onChecked = _.bind(function (e) {
-                var elem = $(e.target);
-                // Uncheck every lib checkbox with the same name if we're checking the target
-                if (elem.prop('checked')) {
-                    var others = $.find('input[name=\'' + elem.prop('name') + '\']');
-                    _.each(others, function (other) {
-                        $(other).prop('checked', false);
-                    });
-                    // Recheck the targeted one
-                    elem.prop('checked', true);
-                }
-                // And now do the same with the availableLibs object
-                _.each(this.availableLibs[elem.prop('data-lib')].versions, function (version) {
-                    version.used = false;
-                });
-                this.availableLibs[elem.prop('data-lib')].versions[elem.prop('data-version')].used = elem.prop('checked');
-                this.saveState();
-                this.compile();
-            }, this);
-
-            _.each(this.availableLibs, function (lib, libKey) {
-                var libsList = getNextList();
-                var libCat = $('<li></li>')
-                    .append($('<span></span>')
-                        .text(lib.name)
-                        .addClass('lib-header')
-                    )
-                    .addClass('lib-item');
-
-                var libGroup = $('<div></div>');
-
-                if (libsList.children().length > 0)
-                    libsList.append($('<hr>').addClass('lib-separator'));
-
-                _.each(lib.versions, function (version, vKey) {
-                    libGroup.append($('<div></div>')
-                        .append($('<input type="checkbox">')
-                            .addClass('lib-checkbox')
-                            .prop('data-lib', libKey)
-                            .prop('data-version', vKey)
-                            .prop('checked', version.used)
-                            .prop('name', libKey)
-                            .on('change', onChecked)
-                        ).append($('<label></label>')
-                            .addClass('lib-label')
-                            .text(lib.name + ' ' + version.version)
-                            .on('click', function () {
-                                $(this).parent().find('.lib-checkbox').trigger('click');
-                            })
-                        )
-                    );
-                });
-                libGroup.appendTo(libCat);
-                libCat.appendTo(libsList);
-            });
-            return $('<div></div>').addClass('libs-container').append(libLists);
-        }, this);
-
-        this.libsButton.popover({
-            container: 'body',
-            content: updateLibsUsed(),
-            html: true,
-            placement: 'bottom',
-            trigger: 'manual'
-        }).click(_.bind(function () {
-            this.libsButton.popover('show');
-        }, this)).on('inserted.bs.popover', function (e) {
-            $(e.target).content = updateLibsUsed().html();
-        }).on('show.bs.popover', function () {
-            $(this).data('bs.popover').tip().css('max-width', '100%').css('width', 'auto');
-        });
+        this.updateLibsDropdown();
 
         this.compileClearCache.on('click', _.bind(function () {
             this.compilerService.cache.reset();
@@ -1140,14 +1037,117 @@ define(function (require) {
         );
     };
 
+    Compiler.prototype.updateLibsDropdown = function () {
+        this.updateAvailableLibs();
+        this.libsButton.popover({
+            container: 'body',
+            content: _.bind(function () {
+                var libsCount = Object.keys(this.availableLibs[this.currentLangId]).length;
+                if (libsCount === 0) {
+                    return $('<p></p>')
+                        .text('No libs configured for ' + options.languages[this.currentLangId].name + ' yet. ')
+                        .append($('<a></a>')
+                            .attr('target', '_blank')
+                            .attr('rel', 'noopener noreferrer')
+                            .attr('href', 'https://github.com/mattgodbolt/compiler-explorer/issues/new')
+                            .text('You can suggest us one at any time ')
+                            .append($('<sup></sup>')
+                                .addClass('glyphicon glyphicon-new-window')
+                                .width('16px')
+                                .height('16px')
+                                .attr('title', 'Opens in a new window')
+                            )
+                        );
+                }
+                var columnCount = Math.ceil(libsCount / 5);
+                var currentLibIndex = -1;
+
+                var libLists = [];
+                for (var i = 0; i < columnCount; i++) {
+                    libLists.push($('<ul></ul>').addClass('lib-list'));
+                }
+
+                // Utility function so we can iterate indefinetly over our lists
+                var getNextList = function () {
+                    currentLibIndex = (currentLibIndex + 1) % columnCount;
+                    return libLists[currentLibIndex];
+                };
+
+                var onChecked = _.bind(function (e) {
+                    var elem = $(e.target);
+                    // Uncheck every lib checkbox with the same name if we're checking the target
+                    if (elem.prop('checked')) {
+                        var others = $.find('input[name=\'' + elem.prop('name') + '\']');
+                        _.each(others, function (other) {
+                            $(other).prop('checked', false);
+                        });
+                        // Recheck the targeted one
+                        elem.prop('checked', true);
+                    }
+                    // And now do the same with the availableLibs object
+                    _.each(this.availableLibs[this.currentLangId][elem.prop('data-lib')].versions, function (version) {
+                        version.used = false;
+                    });
+                    this.availableLibs[this.currentLangId][elem.prop('data-lib')].versions[elem.prop('data-version')].used = elem.prop('checked');
+                    this.saveState();
+                    this.compile();
+                }, this);
+
+                _.each(this.availableLibs[this.currentLangId], function (lib, libKey) {
+                    var libsList = getNextList();
+                    var libCat = $('<li></li>')
+                        .append($('<span></span>')
+                            .text(lib.name)
+                            .addClass('lib-header')
+                        )
+                        .addClass('lib-item');
+
+                    var libGroup = $('<div></div>');
+
+                    if (libsList.children().length > 0)
+                        libsList.append($('<hr>').addClass('lib-separator'));
+
+                    _.each(lib.versions, function (version, vKey) {
+                        libGroup.append($('<div></div>')
+                            .append($('<input type="checkbox">')
+                                .addClass('lib-checkbox')
+                                .prop('data-lib', libKey)
+                                .prop('data-version', vKey)
+                                .prop('checked', version.used)
+                                .prop('name', libKey)
+                                .on('change', onChecked)
+                            ).append($('<label></label>')
+                                .addClass('lib-label')
+                                .text(lib.name + ' ' + version.version)
+                                .on('click', function () {
+                                    $(this).parent().find('.lib-checkbox').trigger('click');
+                                })
+                            )
+                        );
+                    });
+                    libGroup.appendTo(libCat);
+                    libCat.appendTo(libsList);
+                });
+                return $('<div></div>').addClass('libs-container').append(libLists);
+            }, this),
+            html: true,
+            placement: 'bottom',
+            trigger: 'manual'
+        }).click(_.bind(function () {
+            this.libsButton.popover('show');
+        }, this)).on('show.bs.popover', function () {
+            $(this).data('bs.popover').tip().css('max-width', '100%').css('width', 'auto');
+        });
+    };
+
     Compiler.prototype.onLanguageChange = function (editorId, newLangId) {
         if (this.sourceEditorId === editorId) {
             var oldLangId = this.currentLangId;
             this.currentLangId = newLangId;
             // Store the current selected compiler to come back to it later in the same session (Not state sotred!)
             this.selectedCompilerByLang[oldLangId] = this.compiler ? this.compiler.id : options.defaultCompiler[oldLangId];
-            this.updateAvailableLibs();
             this.updateCompilersSelector();
+            this.updateLibsDropdown();
         }
     };
 
