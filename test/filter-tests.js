@@ -22,14 +22,15 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 // POSSIBILITY OF SUCH DAMAGE.
 
-var fs = require('fs'), assert = require('assert');
-var asm = require('../lib/asm');
-var asmCl = require('../lib/asm-cl');
-var should = require('chai').should();
+const fs = require('fs');
+const asm = require('../lib/asm');
+const asmCl = require('../lib/asm-cl');
+const utils = require('../lib/utils');
+require('chai').should();
 
 function processAsm(filename, filters) {
-    var file = fs.readFileSync(filename, 'utf-8');
-    var parser;
+    const file = fs.readFileSync(filename, 'utf-8');
+    let parser;
     if (file.indexOf('Microsoft') >= 0)
         parser = new asmCl.AsmParser();
     else
@@ -37,30 +38,30 @@ function processAsm(filename, filters) {
     return parser.process(file, filters);
 }
 
-var cases = fs.readdirSync(__dirname + '/cases')
+const cases = fs.readdirSync(__dirname + '/cases')
     .filter(function (x) {
-        return x.match(/\.asm$/)
+        return x.match(/\.asm$/);
     })
     .map(function (x) {
         return __dirname + '/cases/' + x;
     });
 
 function bless(filename, output, filters) {
-    var result = processAsm(__dirname + '/' + filename, filters);
+    const result = processAsm(__dirname + '/' + filename, filters);
     fs.writeFileSync(__dirname + '/' + output, JSON.stringify(result, null, 2));
 }
 
 function dump(file) {
-    for (var i = 0; i < file.length; ++i) {
+    for (let i = 0; i < file.length; ++i) {
         console.log((i + 1) + " : " + JSON.stringify(file[i]));
     }
 }
 
 function testFilter(filename, suffix, filters) {
-    var result = processAsm(filename, filters);
-    var expected = filename + suffix;
-    var json = false;
-    var file;
+    const result = processAsm(filename, filters);
+    const expected = filename + suffix;
+    let json = false;
+    let file;
     try {
         file = fs.readFileSync(expected + '.json', 'utf-8');
         json = true;
@@ -77,7 +78,7 @@ function testFilter(filename, suffix, filters) {
         if (json) {
             file = JSON.parse(file);
         } else {
-            file = file.split(/\r?\n/);
+            file = utils.splitLines(file);
         }
         if (json) {
             result.should.deep.equal(file);

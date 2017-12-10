@@ -17,6 +17,5 @@
   {"text":"        cmp     rcx, 65536","source":{"file":null,"line":2}},
   {"text":"        mov     rax, rcx","source":{"file":null,"line":2}},
   {"text":"        jne     .LBB0_1","source":{"file":null,"line":2}},
-  {"text":"        ret","source":{"file":null,"line":5}},
-  {"text":"","source":null}
+  {"text":"        ret","source":{"file":null,"line":5}}
 ]
