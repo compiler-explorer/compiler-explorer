@@ -43,6 +43,8 @@
     "bower": "*",
     "chai": "3.5.x",
     "chai-as-promised": "^7.1.1",
+    "codecov": "^3.0.0",
+    "istanbul": "^0.4.5",
     "jshint": "^2.9.5",
     "mocha": "^3.3.0",
     "nock": "^9.1.4",
@@ -51,7 +53,8 @@
     "uglify-js": "*"
   },
   "scripts": {
-    "test": "mocha && make test"
+    "test": "mocha && make test",
+    "codecov": "istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec && codecov"
   },
   "license": "BSD-2-Clause"
 }

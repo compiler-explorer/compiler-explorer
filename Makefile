@@ -110,7 +110,7 @@ dist: prereqs
 	    --prefix 6
 
 travis-dist: dist
-	tar --exclude './out/compilers' --exclude './.git' --exclude './static' --exclude './out/dist/ext' -Jcf /tmp/ce-build.tar.xz . 
+	tar --exclude './.travis-compilers' --exclude './.git' --exclude './static' --exclude './out/dist/ext' -Jcf /tmp/ce-build.tar.xz . 
 	rm -rf out/dist-bin
 	mkdir -p out/dist-bin
 	mv /tmp/ce-build.tar.xz out/dist-bin/${TRAVIS_BUILD_NUMBER}.tar.xz
