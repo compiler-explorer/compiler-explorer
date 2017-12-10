@@ -74,7 +74,16 @@ primary identifier of each compiler.
 #### `POST /api/compiler/<compiler-id>/compile` - perform a compilation
 
 To specify a compilation request as a JSON document, post it as the appropriate type and send an object of
-the form: `{'source': 'source to compile', 'options': {userOptions': 'compiler flags', 'compilerOptions':{}, filters': {'filter': true}}}`.
+the form: 
+```JSON
+{'source': 'source to compile', 
+ 'options': {
+   'userArguments': 'compiler flags', 
+   'compilerOptions': { }, 
+   'filters': {'filter': true}
+  }
+}
+``` 
 The filters are an JSON object with true/false. If not supplied, defaults are used. If supplied, the
 filters are used as-is. The `compilerOptions` is used to pass extra arguments to the back end, and is probably
 not useful for most REST users. 
