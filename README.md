@@ -76,12 +76,15 @@ primary identifier of each compiler.
 To specify a compilation request as a JSON document, post it as the appropriate type and send an object of
 the form: 
 ```JSON
-{"source": "source to compile",
- "options": {
-   "userArguments": "compiler flags",
-   "compilerOptions": {},
-   "filters": {"filter": true}
-  }
+{
+    "source": "Source to compile",
+    "options": {
+        "userArguments": "Compiler flags",
+        "compilerOptions": {},
+        "filters": {
+            "filter": true
+        }
+    }
 }
 ``` 
 The filters are an JSON object with true/false. If not supplied, defaults are used. If supplied, the
