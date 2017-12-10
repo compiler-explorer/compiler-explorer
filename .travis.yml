@@ -14,8 +14,8 @@ before_script:
     - export PATH=$PATH:$PWD/.travis-compilers/rust/bin
 
 cache:
-        directories:
-                - /home/travis/.travis-compilers
+    directories:
+        - .travis-compilers
 
 script:
     - npm test
