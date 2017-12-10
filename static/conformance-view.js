@@ -42,9 +42,9 @@ define(function (require) {
         this.addCompilerButton = this.domRoot.find('.add-compiler');
         this.selectorTemplate = $('#compiler-selector .compiler-row');
         this.editorId = state.editorid;
-        this.source = state.source || "";
         this.nextSelectorId = 0;
         this.maxCompilations = options.cvCompilerCountMax || 6;
+        this.langId = state.langId;
 
         this.status = {
             allowCompile: false,
@@ -67,6 +67,7 @@ define(function (require) {
 
         this.eventHub.on('editorChange', this.onEditorChange, this);
         this.eventHub.on('editorClose', this.onEditorClose, this);
+        this.eventHub.on('languageChange', this.onLanguageChange, this);
 
         this.addCompilerButton.on('click', _.bind(function () {
             this.addCompilerSelector();
@@ -129,6 +130,10 @@ define(function (require) {
         this.selectorList.append(newEntry);
 
         var status = newEntry.find('.status').attr("data-cv", config.cv);
+        var langId = this.langId;
+        var isVisible = function (compiler) {
+            return compiler.lang == langId;
+        };
 
         newEntry.find('.compiler-picker')
             .attr("data-cv", config.cv)
@@ -137,7 +142,7 @@ define(function (require) {
                 valueField: 'id',
                 labelField: 'name',
                 searchField: ['name'],
-                options: options.compilers,
+                options: _.filter(options.compilers, isVisible),
                 items: config.compilerId ? [config.compilerId] : []
             })
             .on('change', _.bind(function () {
@@ -149,6 +154,7 @@ define(function (require) {
             }, this));
         this.handleStatusIcon(status, {code: 0, text: ""});
         this.handleToolbarUI();
+        this.saveState();
     };
 
     Conformance.prototype.removeCompilerSelector = function (cv) {
@@ -162,8 +168,9 @@ define(function (require) {
         this.saveState();
     };
 
-    Conformance.prototype.onEditorChange = function (editorId, newSource) {
+    Conformance.prototype.onEditorChange = function (editorId, newSource, langId) {
         if (editorId == this.editorId) {
+            this.langId = langId;
             this.source = newSource;
             this.compileAll();
         }
@@ -190,6 +197,7 @@ define(function (require) {
     };
 
     Conformance.prototype.compileAll = function () {
+        if (!this.source) return;
         // Hide previous status icons
         this.selectorList.find('.status').css("visibility", "hidden");
         this.compilerService.expand(this.source).then(_.bind(function (expanded) {
@@ -251,11 +259,10 @@ define(function (require) {
     Conformance.prototype.currentState = function () {
         var state = {
             editorid: this.editorId,
-            source: this.source,
+            langId: this.langId,
             compilers: []
         };
         _.each(this.selectorList.children(), _.bind(function (child) {
-            var status = $(child).find('.status');
             state.compilers.push({
                 // Code we have
                 cv: $(child).attr("data-cv"),
@@ -274,6 +281,18 @@ define(function (require) {
 
     Conformance.prototype.resize = function () {
         this.selectorList.css("height", this.domRoot.height() - this.domRoot.find('.top-bar').outerHeight(true));
+    };
+
+    Conformance.prototype.onLanguageChange = function (editorId, newLangId) {
+        if (editorId === this.editorId) {
+            this.langId = newLangId;
+            // Sorry for this future me. You promised to come back and enchance this after the unification merge
+            // Hopefuly it's been soon enough for noone to notice :)
+            this.selectorList.children().remove();
+            this.nextSelectorId = 0;
+            this.handleToolbarUI();
+            this.saveState();
+        }
     };
 
     return {

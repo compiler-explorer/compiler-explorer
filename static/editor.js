@@ -295,6 +295,7 @@ define(function (require) {
         }, this));
         this.container.setTitle(this.currentLanguage.name + " source #" + this.id);
 
+        this.eventHub.on('initialised', this.maybeEmitChange, this);
         this.updateState();
     }
 
@@ -302,7 +303,7 @@ define(function (require) {
         var source = this.getSource();
         if (!force && source === this.lastChangeEmitted) return;
         this.lastChangeEmitted = source;
-        this.eventHub.emit('editorChange', this.id, this.lastChangeEmitted);
+        this.eventHub.emit('editorChange', this.id, this.lastChangeEmitted, this.currentLanguage.id);
     };
 
     Editor.prototype.updateState = function () {
