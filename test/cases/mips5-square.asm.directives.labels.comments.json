@@ -5,55 +5,87 @@
   },
   {
     "text": "        addiu   $sp,$sp,-8",
-    "source": {"file": null, "line": 1}
+    "source": {
+      "file": null,
+      "line": 1
+    }
   },
   {
     "text": "        sw      $fp,4($sp)",
-    "source": {"file": null, "line": 1}
+    "source": {
+      "file": null,
+      "line": 1
+    }
   },
   {
     "text": "        move    $fp,$sp",
-    "source": {"file": null, "line": 1}
+    "source": {
+      "file": null,
+      "line": 1
+    }
   },
   {
     "text": "        sw      $4,8($fp)",
-    "source": {"file": null, "line": 1}
+    "source": {
+      "file": null,
+      "line": 1
+    }
   },
   {
     "text": "        lw      $3,8($fp)",
-    "source": {"file": null, "line": 2}
+    "source": {
+      "file": null,
+      "line": 2
+    }
   },
   {
     "text": "        lw      $2,8($fp)",
-    "source": {"file": null, "line": 2}
+    "source": {
+      "file": null,
+      "line": 2
+    }
   },
   {
     "text": "        mul     $2,$3,$2",
-    "source": {"file": null, "line": 2}
+    "source": {
+      "file": null,
+      "line": 2
+    }
   },
   {
     "text": "        move    $sp,$fp",
-    "source": {"file": null, "line": 3}
+    "source": {
+      "file": null,
+      "line": 3
+    }
   },
   {
     "text": "        lw      $fp,4($sp)",
-    "source": {"file": null, "line": 3}
+    "source": {
+      "file": null,
+      "line": 3
+    }
   },
   {
     "text": "        addiu   $sp,$sp,8",
-    "source": {"file": null, "line": 3}
+    "source": {
+      "file": null,
+      "line": 3
+    }
   },
   {
     "text": "        j       $31",
-    "source": {"file": null, "line": 3}
+    "source": {
+      "file": null,
+      "line": 3
+    }
   },
   {
     "text": "        nop",
-    "source": {"file": null, "line": 3}
-  },
-  {
-    "text": "",
-    "source": null
+    "source": {
+      "file": null,
+      "line": 3
+    }
   },
   {
     "text": "",

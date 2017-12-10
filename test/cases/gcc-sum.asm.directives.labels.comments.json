@@ -5,27 +5,45 @@
   },
   {
     "text": "        pushq   %rbp",
-    "source": {"file": null, "line": 1}
+    "source": {
+      "file": null,
+      "line": 1
+    }
   },
   {
     "text": "        movq    %rsp, %rbp",
-    "source": {"file": null, "line": 1}
+    "source": {
+      "file": null,
+      "line": 1
+    }
   },
   {
     "text": "        movq    %rdi, -24(%rbp)",
-    "source": {"file": null, "line": 1}
+    "source": {
+      "file": null,
+      "line": 1
+    }
   },
   {
     "text": "        movl    %esi, -28(%rbp)",
-    "source": {"file": null, "line": 1}
+    "source": {
+      "file": null,
+      "line": 1
+    }
   },
   {
     "text": "        movl    $0, -8(%rbp)",
-    "source": {"file": null, "line": 2}
+    "source": {
+      "file": null,
+      "line": 2
+    }
   },
   {
     "text": "        movl    $0, -4(%rbp)",
-    "source": {"file": null, "line": 3}
+    "source": {
+      "file": null,
+      "line": 3
+    }
   },
   {
     "text": ".L3:",
@@ -33,51 +51,87 @@
   },
   {
     "text": "        movl    -4(%rbp), %eax",
-    "source": {"file": null, "line": 3}
+    "source": {
+      "file": null,
+      "line": 3
+    }
   },
   {
     "text": "        cmpl    -28(%rbp), %eax",
-    "source": {"file": null, "line": 3}
+    "source": {
+      "file": null,
+      "line": 3
+    }
   },
   {
     "text": "        jge     .L2",
-    "source": {"file": null, "line": 3}
+    "source": {
+      "file": null,
+      "line": 3
+    }
   },
   {
     "text": "        movl    -4(%rbp), %eax",
-    "source": {"file": null, "line": 4}
+    "source": {
+      "file": null,
+      "line": 4
+    }
   },
   {
     "text": "        cltq",
-    "source": {"file": null, "line": 4}
+    "source": {
+      "file": null,
+      "line": 4
+    }
   },
   {
     "text": "        leaq    0(,%rax,4), %rdx",
-    "source": {"file": null, "line": 4}
+    "source": {
+      "file": null,
+      "line": 4
+    }
   },
   {
     "text": "        movq    -24(%rbp), %rax",
-    "source": {"file": null, "line": 4}
+    "source": {
+      "file": null,
+      "line": 4
+    }
   },
   {
     "text": "        addq    %rdx, %rax",
-    "source": {"file": null, "line": 4}
+    "source": {
+      "file": null,
+      "line": 4
+    }
   },
   {
     "text": "        movl    (%rax), %eax",
-    "source": {"file": null, "line": 4}
+    "source": {
+      "file": null,
+      "line": 4
+    }
   },
   {
     "text": "        addl    %eax, -8(%rbp)",
-    "source": {"file": null, "line": 4}
+    "source": {
+      "file": null,
+      "line": 4
+    }
   },
   {
     "text": "        addl    $1, -4(%rbp)",
-    "source": {"file": null, "line": 3}
+    "source": {
+      "file": null,
+      "line": 3
+    }
   },
   {
     "text": "        jmp     .L3",
-    "source": {"file": null, "line": 3}
+    "source": {
+      "file": null,
+      "line": 3
+    }
   },
   {
     "text": ".L2:",
@@ -85,18 +139,23 @@
   },
   {
     "text": "        movl    -8(%rbp), %eax",
-    "source": {"file": null, "line": 6}
+    "source": {
+      "file": null,
+      "line": 6
+    }
   },
   {
     "text": "        popq    %rbp",
-    "source": {"file": null, "line": 7}
+    "source": {
+      "file": null,
+      "line": 7
+    }
   },
   {
     "text": "        ret",
-    "source": {"file": null, "line": 7}
-  },
-  {
-    "text": "",
-    "source": null
+    "source": {
+      "file": null,
+      "line": 7
+    }
   }
 ]
