@@ -19,6 +19,7 @@ cache:
 
 script:
     - npm test
+    - npm run codecov
     - make travis-dist
 
 deploy:
