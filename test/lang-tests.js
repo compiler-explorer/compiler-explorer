@@ -23,15 +23,27 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 var chai = require('chai'),
-    languages = require('../lib/languages').list;
+    languages = require('../lib/languages').list,
+    fs = require('fs-extra'),
+    path = require('path');
 
 
 chai.should();
 
 describe('Language definitions tests', () => {
-    it('Has same id as object key', () => {
+    it('Has id equal to object key', () => {
+        Object.keys(languages).forEach(languageKey => languages[languageKey].id.should.be.equal(languageKey));
+    });
+    it ('Has extensions with leading dots', () => {
+        Object.keys(languages).forEach(languageKey => languages[languageKey].extensions[0][0].should.be.equal('.'))
+    });
+    it('Has examples & are initialized', () => {
         Object.keys(languages).forEach(languageKey => {
-            languageKey.should.be.equal(languages[languageKey].id);
+            const lang = languages[languageKey];
+            fs.stat(path.join('examples', lang.id, 'default' + lang.extensions[0]), (err, fd) => {
+                err.should.be.null();
+                fd.should.be.equal(lang.example);
+            });
         });
     });
 });
