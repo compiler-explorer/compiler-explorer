@@ -484,8 +484,9 @@ function findCompilers() {
         });
         _.each(ids, (list, id) => {
             if (list.length !== 1) {
-                logger.error("Compiler ID clash for '" + id + "' - used by " + 
-                    _.map(list, o => 'lang:' + o.lang + " name:" + o.name).join(', '));
+                logger.error(`Compiler ID clash for '${id}' - used by ${
+                    _.map(list, o => 'lang:' + o.lang + " name:" + o.name).join(', ')
+                }`);
             }
         });
         return compilers;
@@ -547,7 +548,7 @@ function shortUrlHandler(req, res, next) {
             var parsed = url.parse(resultObj.longUrl);
             var allowedRe = new RegExp(ceProps('allowedShortUrlHostRe'));
             if (parsed.host.match(allowedRe) === null) {
-                logger.warn("Denied access to short URL " + bits[1] + " - linked to " + resultObj.longUrl);
+                logger.warn(`Denied access to short URL ${bits[1]} - linked to ${resultObj.longUrl}`);
                 return next();
             }
             res.writeHead(301, {
@@ -605,10 +606,9 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
 
         var rescanCompilerSecs = ceProps('rescanCompilerSecs', 0);
         if (rescanCompilerSecs) {
-            logger.info("Rescanning compilers every " + rescanCompilerSecs + "secs");
-            setInterval(function () {
-                findCompilers().then(onCompilerChange);
-            }, rescanCompilerSecs * 1000);
+            logger.info(`Rescanning compilers every ${rescanCompilerSecs} secs`);
+            setInterval(() => findCompilers().then(onCompilerChange),
+                rescanCompilerSecs * 1000);
         }
 
         var webServer = express(),
