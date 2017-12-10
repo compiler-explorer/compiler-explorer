@@ -63,6 +63,12 @@ describe('Code Segments', function () {
         assert(info === false, "Address should not be in any segment");
     });
 
+    it('Not include this segment', function () {
+        var reader = new MapFileReader();
+        reader.TryReadingCodeSegmentInfo(" 0002:000000B0 00000023 C=ICODE    S=.itext   G=(none)   M=output   ACBP=A9");
+        reader.segments.length.should.equal(0);
+    });
+
     it('One normal VS-Map segment', function () {
         var reader = new MapFileReader();
         reader.TryReadingCodeSegmentInfo(" 0001:00002838 00000080H .text$mn                CODE");
@@ -100,6 +106,16 @@ describe('Symbol info', function () {
         var info = reader.GetSymbolAt("0001", reader.preferredLoadAddress + (1 * reader.segmentMultiplier) + 0x2838);
         assert(info !== false, "Symbol Square should have been returned");
         info.displayName.should.equal("Square");
+    });
+
+    it('Delphi-Map D2009 symbol test', function () {
+        var reader = new MapFileReader();
+        reader.TryReadingNamedAddress(" 0001:00002C4C       output.MaxArray");
+        reader.namedAddresses.length.should.equal(1);
+
+        var info = reader.GetSymbolAt("0001", reader.preferredLoadAddress + (1 * reader.segmentMultiplier) + 0x2C4C);
+        assert(info !== false, "Symbol MaxArray should have been returned");
+        info.displayName.should.equal("output.MaxArray");
     });
 
     it('VS-Map symbol test', function () {
