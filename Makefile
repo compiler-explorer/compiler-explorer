@@ -81,6 +81,9 @@ test: $(NODE_MODULES) lint
 	$(MAKE) -C c-preload test
 	@echo Tests pass
 
+check: $(NODE_MODULES) lint
+	$(NODE) ./node_modules/.bin/mocha
+
 clean:
 	rm -rf bower_modules node_modules .npm-updated .bower-updated out static/ext
 	$(MAKE) -C d clean
