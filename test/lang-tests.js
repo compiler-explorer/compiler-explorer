@@ -22,27 +22,25 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-var chai = require('chai'),
+var should = require('chai').should(),
     languages = require('../lib/languages').list,
     fs = require('fs-extra'),
     path = require('path');
 
 
-chai.should();
-
 describe('Language definitions tests', () => {
     it('Has id equal to object key', () => {
-        Object.keys(languages).forEach(languageKey => languages[languageKey].id.should.be.equal(languageKey));
+        Object.keys(languages).forEach(languageKey => should.equal(languages[languageKey].id, languageKey));
     });
     it ('Has extensions with leading dots', () => {
-        Object.keys(languages).forEach(languageKey => languages[languageKey].extensions[0][0].should.be.equal('.'))
+        Object.keys(languages).forEach(languageKey => should.equal(languages[languageKey].extensions[0][0], '.'));
     });
     it('Has examples & are initialized', () => {
         Object.keys(languages).forEach(languageKey => {
             const lang = languages[languageKey];
             fs.stat(path.join('examples', lang.id, 'default' + lang.extensions[0]), (err, fd) => {
-                err.should.be.null();
-                fd.should.be.equal(lang.example);
+                should.equal(err, null);
+                should.equal(fd, lang.example);
             });
         });
     });
