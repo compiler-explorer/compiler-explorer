@@ -123,3 +123,8 @@ travis-dist: dist
 
 c-preload:
 	$(MAKE) -C c-preload
+
+install-git-hooks:
+	ln -sf $(shell pwd)/etc/scripts/pre-commit .git/hooks/pre-commit
+.PHONY: install-git-hooks
+
