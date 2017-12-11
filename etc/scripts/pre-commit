@@ -1,18 +1,30 @@
 #!/bin/bash
 
-against='HEAD'
-
-printf "\033[0;32mRunning tests...\033[0m\n"
 FORBIDDEN='console.log'
 FILES_PATTERN='\.(js)(\..+)?$'
-OUT=0
+
+printf "\033[0;32mRunning tests...\033[0m\n"
+
+# Do not commit forbidden elements
 git diff --cached --name-only | \
     grep -E $FILES_PATTERN | \
-    GREP_COLOR='4;5;37;41' xargs grep --color --with-filename -n $FORBIDDEN && printf "Please unstage console.log before commiting\n\033[0;31mAborting commit\033[0m\n" && exit 1
+    GREP_COLOR='4;5;37;41' xargs grep --color --with-filename -n $FORBIDDEN && printf "Please unstage ${FORBIDDEN} before committing\n\033[0;31mAborting commit\033[0m\n" && exit 1
 
-make check
+# Pass lint and mocha tests
+CHECK_OUTPUT=`make check`
 if [ $? -ne 0 ]
 then
+	printf "%s\n" "${CHECK_OUTPUT}"
 	printf "\033[0;31mAborting commit\033[0m\n"
 	exit 1
 fi
+
+# Have normalized whitespaces
+git diff-index --check --cached 'HEAD' --
+if [ $? -ne 0 ]
+then
+    printf "\033[0;31mAborting commit\033[0m\n"
+    exit 1
+fi
+
+printf "\033[0;32mTests pass!\033[0m\n"

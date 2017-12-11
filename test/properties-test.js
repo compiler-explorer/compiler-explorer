@@ -49,9 +49,6 @@ describe('Properties', () => {
     it('Ignores commented out properties', () => {
         should.equal(casesProps("commentedProperty"), undefined);
     });
-    it('Handles non split properties', () => {
-        should.equal(casesProps("unusable"), undefined)
-    });
     it('Understands positive integers', () => {
         should.equal(casesProps("numericPropertyPositive"), 42);
     });
