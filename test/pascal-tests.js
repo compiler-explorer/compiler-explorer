@@ -222,11 +222,11 @@ describe('Add, order and demangle inline', function () {
     demangler.demangle("OUTPUT$_$TMYCLASS_$__$$_MYTEST2:");
     demangler.demangle("OUTPUT$_$TMYCLASS_$__$$_MYOVERLOAD$ANSISTRING:");
     demangler.demangle("OUTPUT$_$TMYCLASS_$__$$_MYOVERLOAD$INTEGER:");
-    demangler.buildOrderedCache();
 
     demangler.demangleIfNeeded("  call OUTPUT$_$TMYCLASS_$__$$_MYTEST2").should.equal("  call tmyclass.mytest2()");
     demangler.demangleIfNeeded("  movl U_$OUTPUT_$$_MYGLOBALVAR,%eax").should.equal("  movl myglobalvar,%eax");
     demangler.demangleIfNeeded("  call OUTPUT$_$TMYCLASS_$__$$_MYTEST2").should.equal("  call tmyclass.mytest2()");
+    demangler.demangleIfNeeded("  call OUTPUT$_$TMYCLASS_$__$$_MYTEST").should.equal("  call tmyclass.mytest()");
     demangler.demangleIfNeeded("  call OUTPUT$_$TMYCLASS_$__$$_MYOVERLOAD$ANSISTRING").should.equal("  call tmyclass.myoverload(ansistring)");
     demangler.demangleIfNeeded("  call OUTPUT$_$TMYCLASS_$__$$_MYOVERLOAD$INTEGER").should.equal("  call tmyclass.myoverload(integer)");
 });
