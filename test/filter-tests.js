@@ -114,25 +114,25 @@ function testFilter(filename, suffix, filters) {
 describe('Filter test cases', function () {
     describe('Directive filters', function () {
         cases.forEach(function (x) {
-            testFilter(x, ".directives", {directives: true})
+            testFilter(x, ".directives", {directives: true});
         });
     });
     describe('Directives and labels together', function () {
         cases.forEach(function (x) {
             testFilter(x, ".directives.labels",
-                {directives: true, labels: true})
+                {directives: true, labels: true});
         });
     });
     describe('Directives, labels and comments', function () {
         cases.forEach(function (x) {
             testFilter(x, ".directives.labels.comments",
-                {directives: true, labels: true, commentOnly: true})
+                {directives: true, labels: true, commentOnly: true});
         });
     });
     describe('Directives, labels, comments and binary mode', function () {
         cases.forEach(function (x) {
             testFilter(x, ".dlcb",
-                {directives: true, labels: true, commentOnly: true, binary: true})
+                {directives: true, labels: true, commentOnly: true, binary: true});
         });
     });
 });

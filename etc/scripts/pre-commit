@@ -7,7 +7,7 @@ printf "\033[0;32mRunning tests...\033[0m\n"
 
 # Do not commit forbidden elements
 git diff --cached --name-only | \
-    grep -E $FILES_PATTERN | \
+    grep -E $FILES_PATTERN | grep -v tests.js \
     GREP_COLOR='4;5;37;41' xargs grep --color --with-filename -n $FORBIDDEN && printf "Please unstage ${FORBIDDEN} before committing\n\033[0;31mAborting commit\033[0m\n" && exit 1
 
 # Pass lint and mocha tests
