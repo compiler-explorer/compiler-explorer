@@ -17,7 +17,7 @@ git diff --cached --name-only | \
     grep -E $FILES_PATTERN | \
     GREP_COLOR='4;5;37;41' xargs grep --color --with-filename -n $FORBIDDEN && printf "Please unstage console.log before commiting\n\033[0;31mAborting commit\033[0m\n" && exit 1
 
-make check 
+make check
 if [ $? -ne 0 ]
 then
 	printf "\033[0;31mAborting commit\033[0m\n"
