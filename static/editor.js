@@ -211,7 +211,7 @@ define(function (require) {
             valueField: 'id',
             labelField: 'name',
             searchField: ['name'],
-            options: _.map(languages, function (lang) { return lang; }),
+            options: _.map(languages, _.identity),
             items: [this.currentLanguage.id]
         }).on('change', _.bind(function (e) {
             this.onLanguageChange($(e.target).val());
