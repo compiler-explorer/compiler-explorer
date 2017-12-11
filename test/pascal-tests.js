@@ -235,6 +235,7 @@ describe('Add, order and demangle inline', function () {
     demangler.demangleIfNeeded("  call OUTPUT$_$TMYCLASS_$__$$_MYOVERLOAD$INTEGER").should.equal("  call tmyclass.myoverload(integer)");
 
     demangler.demangleIfNeeded(".Le1").should.equal(".Le1");
+    demangler.demangleIfNeeded("_$SomeThing").should.equal("_$SomeThing");
 });
 
 describe('Add, order and demangle inline - using addDemangleToCache()', function () {
