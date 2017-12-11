@@ -28,71 +28,71 @@ const properties = require('../lib/properties');
 
 properties.initialize('test/example-config/', ['test', 'overridden-base', 'overridden-tip']);
 
-const defaultProps = properties.propsFor("default");
+const casesProps = properties.propsFor("cases");
 const overridingProps = properties.propsFor("overwrite");
 
 describe('Properties', () => {
     it('Has working propsFor', () => {
-        should.equal(properties.get("default", "exampleProperty"), defaultProps("exampleProperty"));
+        should.equal(properties.get("cases", "exampleProperty"), casesProps("exampleProperty"));
     });
     it('Does not find non existent properties when no default is set', () => {
-        should.equal(defaultProps("nonexistentProp"), undefined);
+        should.equal(casesProps("nonexistentProp"), undefined);
     });
     it('Falls back to default if value not found and default is set', () => {
         // Randomly generated number...
-        defaultProps("nonexistentProp", 4).should.be.equal(4);
-        should.equal(defaultProps("nonexistentProp", 4), 4);
+        casesProps("nonexistentProp", 4).should.be.equal(4);
+        should.equal(casesProps("nonexistentProp", 4), 4);
     });
     it('Handles empty properties as empty strings', ()  => {
-        should.equal(defaultProps("emptyProperty"), "");
+        should.equal(casesProps("emptyProperty"), "");
     });
     it('Ignores commented out properties', () => {
-        should.equal(defaultProps("commentedProperty"), undefined);
+        should.equal(casesProps("commentedProperty"), undefined);
     });
     it('Understands positive integers', () => {
-        should.equal(defaultProps("numericPropertyPositive"), 42);
+        should.equal(casesProps("numericPropertyPositive"), 42);
     });
     it('Understands zero as integer', () => {
-        should.equal(defaultProps("numericPropertyZero"), 0);
+        should.equal(casesProps("numericPropertyZero"), 0);
     });
     it('Understands negative integers', () => {
-        should.equal(defaultProps("numericPropertyNegative"), -11);
+        should.equal(casesProps("numericPropertyNegative"), -11);
     });
     it('Understands positive floats', () => {
-        should.equal(defaultProps("floatPropertyPositive"), 3.14);
+        should.equal(casesProps("floatPropertyPositive"), 3.14);
     });
     it('Understands negative floats', () => {
-        should.equal(defaultProps("floatPropertyNegative"), -9000.0);
+        should.equal(casesProps("floatPropertyNegative"), -9000.0);
     });
     it('Does not understand comma decimal as float', () => {
-        should.equal(defaultProps("commaAsDecimalProperty"), "3,14");
+        should.equal(casesProps("commaAsDecimalProperty"), "3,14");
     });
     it('Does not understand DASH-SPACE-NUMBER as a negative number', () => {
-        should.equal(defaultProps("stringPropertyNumberLike"), "- 97");
+        should.equal(casesProps("stringPropertyNumberLike"), "- 97");
     });
     it('Understands yes as true boolean', () => {
-        should.equal(defaultProps("truePropertyYes"), true);
+        should.equal(casesProps("truePropertyYes"), true);
     });
     it('Understands true as true boolean', () => {
-        should.equal(defaultProps("truePropertyTrue"), true);
+        should.equal(casesProps("truePropertyTrue"), true);
     });
     it('Does not understand Yes as boolean', () => {
-        should.equal(defaultProps("stringPropertyYes"), "Yes");
+        should.equal(casesProps("stringPropertyYes"), "Yes");
     });
     it('Does not understand True as boolean', () => {
-        should.equal(defaultProps("stringPropertyTrue"), "True");
+        should.equal(casesProps("stringPropertyTrue"), "True");
     });
     it('Understands no as false boolean', () => {
-        should.equal(defaultProps("falsePropertyNo"), false);
+        should.equal(casesProps("falsePropertyNo"), false);
     });
     it('Understands false as false boolean', () => {
-        should.equal(defaultProps("falsePropertyFalse"), false);
+        should.equal(casesProps("falsePropertyFalse"), false);
     });
     it('Does not understand No as boolean', () => {
-        should.equal(defaultProps("stringPropertyNo"), "No");
+        should.equal(casesProps("stringPropertyNo"), "No");
     });
     it('Does not understand False as boolean', () => {
-        should.equal(defaultProps("stringPropertyFalse"), "False");
+        should.equal(casesProps("stringPropertyFalse"), "False");
     });
     it('Should find non overridden properties', () => {
         should.equal(overridingProps("nonOverriddenProperty"), ".... . .-.. .-.. ---");

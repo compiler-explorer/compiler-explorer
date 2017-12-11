@@ -16,7 +16,7 @@ function common(cases, filterArg, cfgArg){
     cases.filter(function (x) {return x.includes(filterArg);})
         .forEach(function (filename) {
             var file = fs.readFileSync(filename, 'utf-8');
-            var content = JSON.parse(file);;
+            var content = JSON.parse(file);
 
             if (file) {
                 it(filename, function () {
