@@ -32,13 +32,13 @@ describe('Builtin sources', () => {
             list.forEach(example => {
                 should.not.equal(example.name, "default");
             });
-        })
+        });
     });
     it('Has a valid language listed', () => {
         builtin.list((_, list) => {
             list.forEach(example => {
                 should.not.equal(languages[example.lang], undefined);
             });
-        })
+        });
     });
 });

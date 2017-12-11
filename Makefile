@@ -75,9 +75,6 @@ lint: $(NODE_MODULES)
 node_modules: $(NODE_MODULES)
 bower_modules: $(BOWER_MODULES)
 
-check: $(NODE_MODULES) lint
-	$(NODE) ./node_modules/.bin/mocha
-
 test: $(NODE_MODULES) lint
 	$(MAKE) -C c-preload test
 	@echo Tests pass
