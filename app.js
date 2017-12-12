@@ -190,7 +190,7 @@ fileSources.forEach(function (source) {
 });
 
 var clientOptionsHandler = new ClientOptionsHandler(fileSources);
-var compileHandler = new CompileHandler(ceProps, compilerProps);
+var compileHandler = new CompileHandler(ceProps, compilerPropsL);
 const ApiHandler = require('./lib/handlers/api').ApiHandler;
 const apiHandler = new ApiHandler(compileHandler);
 
