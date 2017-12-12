@@ -55,9 +55,9 @@
     "uglify-js": "*"
   },
   "scripts": {
-    "test": "mocha && make test",
-    "codecov": "istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec && codecov",
-    "coverage": "istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec"
+    "test": "mocha --recursive && make test",
+    "codecov": "istanbul cover ./node_modules/mocha/bin/_mocha --recursive --report lcovonly -- -R spec && codecov",
+    "coverage": "istanbul cover ./node_modules/mocha/bin/_mocha --recursive --report lcovonly -- -R spec"
   },
   "license": "BSD-2-Clause"
 }

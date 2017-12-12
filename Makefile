@@ -80,7 +80,7 @@ test: $(NODE_MODULES) lint
 	@echo Tests pass
 
 check: $(NODE_MODULES) lint
-	$(NODE) ./node_modules/.bin/mocha
+	$(NODE) ./node_modules/.bin/mocha --recursive
 
 clean:
 	rm -rf bower_modules node_modules .npm-updated .bower-updated out static/ext
