@@ -24,7 +24,8 @@
 
 const should = require('chai').should(),
     builtin = require('../lib/sources/builtin'),
-    languages = require('../lib/languages').list;
+    languages = require('../lib/languages').list,
+    _ = require('underscore-node');
 
 describe('Builtin sources', () => {
     it('Does not include default code', () => {
@@ -37,7 +38,30 @@ describe('Builtin sources', () => {
     it('Has a valid language listed', () => {
         builtin.list((_, list) => {
             list.forEach(example => {
-                should.not.equal(languages[example.lang], undefined);
+                should.not.equal(languages[example.lang], undefined, `Builtin ${example.name} has unrecognised language ${example.lang}`);
+            });
+        });
+    });
+    it('Has at least one example for each language', () => {
+        builtin.list((placeholder, list) => {
+            _.each(languages, lang => {
+                should.not.equal(_.find(list, elem => elem.lang === lang.id), undefined, `Language ${lang.name} does not have any builtins`);
+            });
+        });
+    });
+    it('Reports a string error if no example found', () => {
+        builtin.load('BADLANG', 'BADFILE', (error, result) => {
+            should.equal(result, undefined, 'A result should not be returned for bad requests');
+            error.should.be.a("string");
+        });
+    });
+    it('Reports something for every defined example', () => {
+        builtin.list((placeholder, examples) => {
+            examples.forEach(example => {
+                builtin.load(example.lang, example.file, (error, result) => {
+                    should.not.exist(error, `Can't read ${example.name} for ${example.lang} in ${example.file}`);
+                    result.file.should.be.a('string');
+                });
             });
         });
     });
