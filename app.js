@@ -504,9 +504,6 @@ function ApiHandler(compileHandler) {
     this.handler.post('/compiler/:compiler/compile', this.compileHandler.handler);
 }
 
-function healthcheckHandler(req, res, next) {
-    res.end("Everything is awesome");
-}
 
 function shortUrlHandler(req, res, next) {
     const resolver = new google.ShortLinkResolver(aws.getConfig('googleApiKey'));
@@ -606,11 +603,12 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
             staticHeaders(res);
             res.render('embed', renderConfig({embedded: true}));
         };
+        const healthCheck = require('./lib/handlers/health-check');
         webServer
             .use(Raven.requestHandler())
             .set('trust proxy', true)
             .set('view engine', 'pug')
-            .use('/healthcheck', healthcheckHandler) // before morgan so healthchecks aren't logged
+            .use('/healthcheck', new healthCheck.HealthCheckHandler().handle) // before morgan so healthchecks aren't logged
             .use(morgan('combined', {stream: logger.stream}))
             .use(compression())
             .get('/', function (req, res) {
