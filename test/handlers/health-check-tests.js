@@ -1,5 +1,4 @@
 // Copyright (c) 2012-2017, Matt Godbolt
-//
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -23,38 +22,23 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-var asm_doc = require('./asm-docs');
-var props = require('./properties');
+const chai = require('chai'),
+    healthCheck = require('../../lib/handlers/health-check'),
+    express = require('express');
 
-var asmProps = props.propsFor("asm-docs");
-var staticMaxAgeSecs = asmProps('staticMaxAgeSecs', 10);
+chai.use(require("chai-http"));
+chai.should();
 
-function docHandler(req, res, next) {
-    var info = asm_doc.getAsmOpcode(req.params.opcode);
-    if (!info) {
-        // If the opcode ends with an AT&T suffix, try removing that and giving it another go.
-        // Ideally, we'd be smarter here, but this is a quick win.
-        var atAndTSuffixRemover = /^([A-Z]+)[BWLQ]$/;
-        var suffixRemoved = atAndTSuffixRemover.exec(req.params.opcode);
-        if (suffixRemoved) {
-            info = asm_doc.getAsmOpcode(suffixRemoved[1]);
-        }
-    }
-    if (staticMaxAgeSecs) {
-        res.setHeader('Cache-Control', 'public, max-age=' + staticMaxAgeSecs);
-    }
-    if (req.accepts(['text', 'json']) == 'json') {
-        res.set('Content-Type', 'application/json');
-        res.end(JSON.stringify({found: !!info, result: info}));
-    } else {
-        res.set('Content-Type', 'text/html');
-        if (info)
-            res.end(info.html);
-        else
-            res.end("Unknown opcode");
-    }
-}
+describe('Health checks', () => {
+    const app = express();
+    app.use('/hc', new healthCheck.HealthCheckHandler().handle);
 
-module.exports = {
-    asmDocsHandler: docHandler
-};
+    it('should respond with OK', () => {
+        return chai.request(app)
+            .get('/hc')
+            .then(res => res.should.have.status(200))
+            .catch(function (err) {
+                throw err;
+            });
+    });
+});

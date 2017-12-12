@@ -44,6 +44,7 @@
     "bower": "*",
     "chai": "3.5.x",
     "chai-as-promised": "^7.1.1",
+    "chai-http": "^3.0.0",
     "codecov": "^3.0.0",
     "istanbul": "^0.4.5",
     "jshint": "^2.9.5",
