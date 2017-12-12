@@ -104,6 +104,10 @@ describe('Pascal Demangling FPC 3.2', function () {
     it('Should demangle OUTPUT$_$TMYCLASS_$__$$_MYFUNC$ANSISTRING$$INTEGER', function () {
         demangler.demangle("OUTPUT$_$TMYCLASS_$__$$_MYFUNC$ANSISTRING$$INTEGER:").should.equal("tmyclass.myfunc(ansistring)");
     });
+
+    it('Should demangle OUTPUT$_$TMYCLASS_$__$$_MYFUNC$ANSISTRING$INTEGER$INTEGER$$INTEGER', function () {
+        demangler.demangle("OUTPUT$_$TMYCLASS_$__$$_MYFUNC$ANSISTRING$INTEGER$INTEGER$$INTEGER:").should.equal("tmyclass.myfunc(ansistring,integer,integer)");
+    });
     
     it('Should demangle OUTPUT_$$_NOPARAMFUNC$$ANSISTRING', function () {
         demangler.demangle("OUTPUT_$$_NOPARAMFUNC$$ANSISTRING:").should.equal("noparamfunc()");
@@ -222,11 +226,47 @@ describe('Add, order and demangle inline', function () {
     demangler.demangle("OUTPUT$_$TMYCLASS_$__$$_MYTEST2:");
     demangler.demangle("OUTPUT$_$TMYCLASS_$__$$_MYOVERLOAD$ANSISTRING:");
     demangler.demangle("OUTPUT$_$TMYCLASS_$__$$_MYOVERLOAD$INTEGER:");
-    demangler.buildOrderedCache();
 
     demangler.demangleIfNeeded("  call OUTPUT$_$TMYCLASS_$__$$_MYTEST2").should.equal("  call tmyclass.mytest2()");
     demangler.demangleIfNeeded("  movl U_$OUTPUT_$$_MYGLOBALVAR,%eax").should.equal("  movl myglobalvar,%eax");
     demangler.demangleIfNeeded("  call OUTPUT$_$TMYCLASS_$__$$_MYTEST2").should.equal("  call tmyclass.mytest2()");
+    demangler.demangleIfNeeded("  call OUTPUT$_$TMYCLASS_$__$$_MYTEST").should.equal("  call tmyclass.mytest()");
     demangler.demangleIfNeeded("  call OUTPUT$_$TMYCLASS_$__$$_MYOVERLOAD$ANSISTRING").should.equal("  call tmyclass.myoverload(ansistring)");
     demangler.demangleIfNeeded("  call OUTPUT$_$TMYCLASS_$__$$_MYOVERLOAD$INTEGER").should.equal("  call tmyclass.myoverload(integer)");
+
+    demangler.demangleIfNeeded(".Le1").should.equal(".Le1");
+    demangler.demangleIfNeeded("_$SomeThing").should.equal("_$SomeThing");
+});
+
+describe('Add, order and demangle inline - using addDemangleToCache()', function () {
+    var demangler = new PascalDemangler();
+
+    demangler.addDemangleToCache("OUTPUT$_$TMYCLASS_$__$$_MYTEST:");
+    demangler.addDemangleToCache("U_$OUTPUT_$$_MYGLOBALVAR:");
+    demangler.addDemangleToCache("OUTPUT$_$TMYCLASS_$__$$_MYTEST2:");
+    demangler.addDemangleToCache("OUTPUT$_$TMYCLASS_$__$$_MYOVERLOAD$ANSISTRING:");
+    demangler.addDemangleToCache("OUTPUT$_$TMYCLASS_$__$$_MYOVERLOAD$INTEGER:");
+
+    demangler.demangleIfNeeded("  call OUTPUT$_$TMYCLASS_$__$$_MYTEST2").should.equal("  call tmyclass.mytest2()");
+    demangler.demangleIfNeeded("  movl U_$OUTPUT_$$_MYGLOBALVAR,%eax").should.equal("  movl myglobalvar,%eax");
+    demangler.demangleIfNeeded("  call OUTPUT$_$TMYCLASS_$__$$_MYTEST2").should.equal("  call tmyclass.mytest2()");
+    demangler.demangleIfNeeded("  call OUTPUT$_$TMYCLASS_$__$$_MYTEST").should.equal("  call tmyclass.mytest()");
+    demangler.demangleIfNeeded("  call OUTPUT$_$TMYCLASS_$__$$_MYOVERLOAD$ANSISTRING").should.equal("  call tmyclass.myoverload(ansistring)");
+    demangler.demangleIfNeeded("  call OUTPUT$_$TMYCLASS_$__$$_MYOVERLOAD$INTEGER").should.equal("  call tmyclass.myoverload(integer)");
+
+    demangler.demangleIfNeeded(".Le1").should.equal(".Le1");
+});
+
+describe('Pascal Ignored Symbols', function () {
+    var demangler = new PascalDemangler();
+
+    it('Should ignore certain labels', function () {
+        demangler.shouldIgnoreSymbol(".Le1").should.equal(true);
+        demangler.shouldIgnoreSymbol("_$SomeThing").should.equal(true);
+    });
+
+    it('Should be able to differentiate between System and User functions', function() {
+        demangler.shouldIgnoreSymbol("RTTI_OUTPUT_MyProperty").should.equal(true);
+        demangler.shouldIgnoreSymbol("Rtti_Output_UserFunction").should.equal(false);
+    });
 });

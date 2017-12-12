@@ -111,7 +111,6 @@ props.initialize(rootDir + '/config', propHierarchy);
 // Now load up our libraries.
 const CompileHandler = require('./lib/compile-handler').CompileHandler,
     aws = require('./lib/aws'),
-    asm_doc_api = require('./lib/asm-docs-api'),
     google = require('./lib/google');
 
 // Instantiate a function to access records concerning "compiler-explorer" 
@@ -191,8 +190,9 @@ fileSources.forEach(function (source) {
 });
 
 var clientOptionsHandler = new ClientOptionsHandler(fileSources);
-var compileHandler = new CompileHandler(ceProps, compilerPropsL);
-var apiHandler = new ApiHandler(compileHandler);
+var compileHandler = new CompileHandler(ceProps, compilerProps);
+const ApiHandler = require('./lib/handlers/api').ApiHandler;
+const apiHandler = new ApiHandler(compileHandler);
 
 // auxiliary function used in clientOptionsHandler
 function compareOn(key) {
@@ -500,44 +500,6 @@ function findCompilers() {
         .then(compilers => compilers.sort(compareOn("name")));
 }
 
-function ApiHandler(compileHandler) {
-    this.compilers = [];
-    this.compileHandler = compileHandler;
-    this.setCompilers = function (compilers) {
-        this.compilers = compilers;
-    };
-    this.handler = express.Router();
-    this.handler.use((req, res, next) => {
-        res.header("Access-Control-Allow-Origin", "*");
-        res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-        next();
-    });
-    this.handler.get('/compilers', _.bind((req, res) => {
-        if (req.accepts(['text', 'json']) === 'json') {
-            res.set('Content-Type', 'application/json');
-            res.end(JSON.stringify(this.compilers));
-        } else {
-            res.set('Content-Type', 'text/plain');
-            var title = 'Compiler Name';
-            var maxLength = _.max(_.pluck(_.pluck(this.compilers, 'id').concat([title]), 'length'));
-            res.write(utils.padRight(title, maxLength) + ' | Description\n');
-            res.end(_.map(this.compilers, compiler => {
-                return utils.padRight(compiler.id, maxLength) + ' | ' + compiler.name;
-            }).join("\n"));
-        }
-    }, this));
-    this.handler.get('/asm/:opcode', asm_doc_api.asmDocsHandler);
-    this.handler.param('compiler', _.bind((req, res, next, compilerName) => {
-        req.compiler = compilerName;
-        next();
-    }, this));
-    this.handler.post('/compiler/:compiler/compile', this.compileHandler.handler);
-}
-
-function healthcheckHandler(req, res, next) {
-    res.end("Everything is awesome");
-}
-
 function shortUrlHandler(req, res, next) {
     const resolver = new google.ShortLinkResolver(aws.getConfig('googleApiKey'));
     const bits = req.url.split("/");
@@ -635,11 +597,12 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
             staticHeaders(res);
             res.render('embed', renderConfig({embedded: true}));
         };
+        const healthCheck = require('./lib/handlers/health-check');
         webServer
             .use(Raven.requestHandler())
             .set('trust proxy', true)
             .set('view engine', 'pug')
-            .use('/healthcheck', healthcheckHandler) // before morgan so healthchecks aren't logged
+            .use('/healthcheck', new healthCheck.HealthCheckHandler().handle) // before morgan so healthchecks aren't logged
             .use(morgan('combined', {stream: logger.stream}))
             .use(compression())
             .get('/', function (req, res) {
@@ -680,7 +643,7 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
             .use(restreamer())
             .get('/client-options.json', clientOptionsHandler.handler)
             .use('/source', getSource)
-            .use('/api', apiHandler.handler)
+            .use('/api', apiHandler.handle)
             .use('/g', shortUrlHandler)
             .post('/compile', compileHandler.handler);
         logger.info("=======================================");
