@@ -57,7 +57,8 @@
   "scripts": {
     "test": "mocha --recursive && make test",
     "codecov": "istanbul cover ./node_modules/mocha/bin/_mocha --recursive --report lcovonly -- -R spec && codecov",
-    "coverage": "istanbul cover ./node_modules/mocha/bin/_mocha --recursive --report lcovonly -- -R spec"
+    "coverage": "istanbul cover ./node_modules/mocha/bin/_mocha --recursive --report lcovonly -- -R spec",
+    "localcoverage": "istanbul cover ./node_modules/mocha/bin/_mocha --recursive --report html -- -R spec"
   },
   "license": "BSD-2-Clause"
 }
