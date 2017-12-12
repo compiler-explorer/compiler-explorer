@@ -55,7 +55,7 @@
     "uglify-js": "*"
   },
   "scripts": {
-    "test": "mocha && make test",
+    "test": "mocha --recursive && make test",
     "codecov": "istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec && codecov",
     "coverage": "istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec"
   },
