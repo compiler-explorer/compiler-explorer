@@ -94,6 +94,11 @@ body {
     background-color: #666 !important;
 }
 
+.selectize-control.single .selectize-input.disabled {
+    color: #eee !important;
+    background: #000 !important;
+}
+
 .dropdown-menu {
     color: #eee !important;
     background-color: #303030 !important;
