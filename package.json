@@ -67,6 +67,7 @@
     "imports-loader": "^0.7.1",
     "mocha": "^3.3.0",
     "nock": "^9.1.4",
+    "pug-loader": "^2.3.0",
     "requirejs": "*",
     "style-loader": "^0.19.0",
     "supervisor": "*",

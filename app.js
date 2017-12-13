@@ -42,6 +42,7 @@ const nopt = require('nopt'),
     
 const config = require('./webpack.config.js'),
     compiler = require('webpack')(config);
+    
 // Parse arguments from command line 'node ./app.js args...'
 const opts = nopt({
     'env': [String, Array],
