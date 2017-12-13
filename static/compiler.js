@@ -73,7 +73,8 @@ define(function (require) {
         this.id = state.id || hub.nextCompilerId();
         this.sourceEditorId = state.source || 1;
         this.currentLangId = state.lang || "c++";
-        this.compiler = this.compilerService.findCompiler(this.currentLangId, state.compiler) ||
+        this.originalCompilerId = state.compiler;
+        this.compiler = this.compilerService.findCompiler(this.currentLangId, this.originalCompilerId) ||
             this.compilerService.findCompiler(this.currentLangId, options.defaultCompiler[this.currentLangId]);
         this.selectedCompilerByLang = {};
         this.deferCompiles = hub.deferred;

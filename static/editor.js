@@ -69,6 +69,7 @@ define(function (require) {
         this.editorSourceByLang = {};
 
         this.languageBtn = this.domRoot.find('.change-language');
+        this.needsLanguageUpdate = !(state.lang && languages[state.lang]);
         this.currentLanguage = state.lang && languages[state.lang] ? languages[state.lang] : languages["c++"];
 
         var root = this.domRoot.find(".monaco-placeholder");
@@ -216,6 +217,10 @@ define(function (require) {
         }).on('change', _.bind(function (e) {
             this.onLanguageChange($(e.target).val());
         }, this));
+
+        this.changeLanguage = function (newLang) {
+            this.languageBtn[0].selectize.setValue(newLang);
+        };
 
         // We suppress posting changes until the user has stopped typing by:
         // * Using _.debounce() to run emitChange on any key event or change
@@ -392,6 +397,20 @@ define(function (require) {
     Editor.prototype.onCompilerOpen = function (compilerId, editorId) {
         if (editorId === this.id) {
             // On any compiler open, rebroadcast our state in case they need to know it.
+            if (this.needsLanguageUpdate) {
+                var glCompiler =_.find(this.container.layoutManager.root.getComponentsByName("compiler"), function (compiler) {
+                    return compiler.id === compilerId;
+                });
+                if (glCompiler) {
+                    var selected = _.find(options.compilers, function (compiler) {
+                        return compiler.id === glCompiler.originalCompilerId;
+                    });
+                    if (selected) {
+                        this.needsLanguageUpdate = false;
+                        this.changeLanguage(selected.lang);
+                    }
+                }
+            }
             this.maybeEmitChange(true);
             this.ourCompilers[compilerId] = true;
         }

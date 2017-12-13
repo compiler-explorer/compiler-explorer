@@ -44,7 +44,7 @@ define(function (require) {
         this.editorId = state.editorid;
         this.nextSelectorId = 0;
         this.maxCompilations = options.cvCompilerCountMax || 6;
-        this.langId = state.langId;
+        this.langId = state.langId || 'c++';
 
         this.status = {
             allowCompile: false,
