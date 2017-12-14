@@ -10,7 +10,7 @@ The right, the assembly output of having compiled the code with a given compiler
 the UI layout is configurable (the [Golden Layout](https://www.golden-layout.com/) library is used for this).
 There is also an ispc compiler for a C variant with extensions for SPMD.
 
-Try out at [godbolt.org][https://godbolt.org]
+Try out at [godbolt.org](https://godbolt.org)
 
 You can support [this project on Patreon](https://patreon.com/mattgodbolt).
 
@@ -52,10 +52,21 @@ future (for the main Compiler Explorer site anyway).
 
 The following endpoints are defined:
 
+#### `GET /api/languages` - return a list of languages
+
+Returns a list of the currently supported languages, as pairs of languages IDs and their names.
+
 #### `GET /api/compilers` - return a list of compilers
 
-Returns a list of compilers. In text form, there's a simple formatting of the ID of the compiler and its
-description. In JSON, all the information is returned as an array of compilers, with the `id` key being the
+Returns a list of compilers. In text form, there's a simple formatting of the ID of the compiler, its
+description and its languge ID. In JSON, all the information is returned as an array of compilers, with the `id` key being the
+primary identifier of each compiler.
+
+
+#### `GET /api/compilers/<language-id>` - return a list of compilers with mstching language
+
+Returns a list of compilers for the provided language id. In text form, there's a simple formatting of the ID of the compiler, its
+description and its languge ID. In JSON, all the information is returned as an array of compilers, with the `id` key being the
 primary identifier of each compiler.
 
 #### `POST /api/compiler/<compiler-id>/compile` - perform a compilation
