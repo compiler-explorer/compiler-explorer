@@ -4,7 +4,7 @@ _Z6squarei:
         mov     DWORD PTR -4[rbp], edi
 #APP
 # 3 "example.cpp" 1
-        label:
+label:
 # 0 "" 2
 #NO_APP
         mov     eax, DWORD PTR -4[rbp]
