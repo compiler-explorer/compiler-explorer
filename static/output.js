@@ -29,6 +29,7 @@ define(function (require) {
     var _ = require('underscore');
     var $ = require('jquery');
     var FontScale = require('fontscale');
+    var AnsiToHtml = require('ansi-to-html');
 
     function Output(hub, container, state) {
         this.container = container;
@@ -55,8 +56,15 @@ define(function (require) {
 
         this.contentRoot.empty();
 
+        var ansiToHtml = new AnsiToHtml({
+            fg: 'inherit',
+            bg: 'inherit',
+            stream: true,
+            escapeXML: true
+        });
+
         _.each((result.stdout || []).concat(result.stderr || []), function (obj) {
-            this.add(obj.text, obj.tag ? obj.tag.line : obj.line);
+            this.add(ansiToHtml.toHtml(obj.text), obj.tag ? obj.tag.line : obj.line);
         }, this);
 
         if (!result.execResult) {
@@ -93,7 +101,7 @@ define(function (require) {
         var elem = $('<div></div>').appendTo(this.contentRoot);
         if (lineNum) {
             elem.html($('<a href="#">')
-                .text(lineNum + " : " + msg))
+                .html(lineNum + " : " + msg))
                 .click(_.bind(function (e) {
                     this.eventHub.emit('editorSetDecoration', this.editorId, lineNum, true);
                     // do not bring user to the top of index.html
@@ -105,7 +113,7 @@ define(function (require) {
                     this.eventHub.emit('editorSetDecoration', this.editorId, lineNum, false);
                 }, this));
         } else {
-            elem.text(msg);
+            elem.html(msg);
         }
     };
 
