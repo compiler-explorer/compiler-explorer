@@ -71,11 +71,12 @@ if (opts.tmpDir)
     process.env.tmpDir = opts.tmpDir;
 else if (process.env.wsl) {
     // Example %TEMP% is C:\Users\apardoe\AppData\Local\Temp
+    // Can use /bin/wslpath to convert path, new in Dec. 2017 Windows Insider builds
     var windowsTemp = child_process.execSync('cmd.exe /c echo %TEMP%').toString().replace(/\\/g, "/");
     var driveLetter = windowsTemp.substring(0, 1).toLowerCase();
     var directoryPath = windowsTemp.substring(2).trim();
     process.env.tmpDir = "/mnt/".concat(driveLetter).concat(directoryPath);
-    //process.env.tmpDir = "/mnt/c/tmp";
+    process.env.tmpDir = "/mnt/c/tmp";
 }
 
 
