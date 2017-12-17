@@ -31,6 +31,15 @@ define(function (require) {
     var FontScale = require('fontscale');
     var AnsiToHtml = require('ansi-to-html');
 
+    function makeAnsiToHtml(color) {
+        return new AnsiToHtml({
+            fg: color ? color : '#333',
+            bg: '#f5f5f5',
+            stream: true,
+            escapeXML: true
+        });
+    }
+
     function Output(hub, container, state) {
         this.container = container;
         this.compilerId = state.compiler;
@@ -56,12 +65,7 @@ define(function (require) {
 
         this.contentRoot.empty();
 
-        var ansiToHtml = new AnsiToHtml({
-            fg: 'inherit',
-            bg: 'inherit',
-            stream: true,
-            escapeXML: true
-        });
+        var ansiToHtml = makeAnsiToHtml();
 
         _.each((result.stdout || []).concat(result.stderr || []), function (obj) {
             this.add(ansiToHtml.toHtml(obj.text), obj.tag ? obj.tag.line : obj.line);
@@ -72,12 +76,14 @@ define(function (require) {
         } else {
             this.add("Program returned: " + result.execResult.code);
             if (result.execResult.stderr.length || result.execResult.stdout.length) {
+                ansiToHtml = makeAnsiToHtml("red");
                 _.each(result.execResult.stderr, function (obj) {
-                    this.programOutput(obj.text, "red");
+                    this.programOutput(ansiToHtml.toHtml(obj.text), "red");
                 }, this);
 
+                ansiToHtml = makeAnsiToHtml();
                 _.each(result.execResult.stdout, function (obj) {
-                    this.programOutput(obj.text);
+                    this.programOutput(ansiToHtml.toHtml(obj.text));
                 }, this);
             }
         }
@@ -91,7 +97,7 @@ define(function (require) {
 
     Output.prototype.programOutput = function (msg, color) {
         var elem = $('<div></div>').appendTo(this.contentRoot)
-            .text(msg)
+            .html(msg)
             .css('font-family', '"Courier New", Courier, monospace');
         if (color)
             elem.css("color", color);
