@@ -1,6 +1,6 @@
 # Running on Windows Subsystem for Linux
 
-Contact: Andrew Pardoe, @AndrewPardoe on GitHub
+Contact: [https://github.com/AndrewPardoe](@AndrewPardoe)
 
 The Compiler Explorer ("CE" from here on) runs quite well on the [Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/faq) ("WSL"). Running on WSL enables Linux-based compilers to continue running natively while enabling Windows-based compilers to run in a real Windows environment. 
 
@@ -25,8 +25,8 @@ CE is built on node.js ("node"). The easiest way to install node is using NVM, t
 - Check https://github.com/creationix/nvm/releases for the latest NVM release, substituting it in the next command.
 - `curl https://raw.githubusercontent.com/creationix/nvm/v0.33.8/install.sh | bash` to install NVM
 - `source ~/.profile` to reload your profile, bringing NVM into your environment
-- `nvm ls-remote -lts` to show the latest supported version of node.js
-- `nvm install 8.9.3`, substituting the latest version, to install node.js
+- `nvm ls-remote -lts` to show the latest long-term supported (LTS) version of node.js
+- `nvm install 8.9.3`, substituting the latest LTS version, to install node.js
 
 At this point you can change into the directory where you cloned CE and `make`. `make` will install a bunch of node packages and will finish with a message similar to this:
 
@@ -60,9 +60,6 @@ The only viable option for debugging under WSL is to use [VS Code](https://code.
 
 ```json
 {
-    // Use IntelliSense to learn about possible Node.js debug attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
         {
