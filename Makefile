@@ -1,6 +1,6 @@
 NODE_DIR?=/opt/compiler-explorer/node
-NPM:=$(shell env PATH=$(NODE_DIR)/bin:$(PATH) which npm)
-NODE:=$(shell env PATH=$(NODE_DIR)/bin:$(PATH) which node || env PATH=$(NODE_DIR)/bin:$(PATH) which nodejs)
+NPM:= $(shell env PATH="$(NODE_DIR)/bin:$$PATH" which npm)
+NODE:= $(shell env PATH="$(NODE_DIR)/bin:$$PATH" which node || env PATH="$(NODE_DIR)/bin:$$PATH" which nodejs)
 default: run
 
 NODE_VERSION_USED:=8
