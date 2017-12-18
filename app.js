@@ -77,7 +77,6 @@ else if (process.env.wsl) {
     var windowsTemp = child_process.execSync('cmd.exe /c echo %TEMP%').toString().replace(/\\/g, "/");
     var driveLetter = windowsTemp.substring(0, 1).toLowerCase();
     var directoryPath = windowsTemp.substring(2).trim();
-    //process.env.winTmp = "/mnt/".concat(driveLetter).concat(directoryPath);
     process.env.winTmp = path.join("/mnt", driveLetter, directoryPath);
 }
 
