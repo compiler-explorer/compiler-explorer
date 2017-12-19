@@ -580,7 +580,6 @@ define(function (require) {
             timingVar: request.compiler,
             timingValue: timeTaken
         });
-
         this.setAssembly(result.asm || fakeAsm('<No output>'));
         if (request.options.filters.binary) {
             this.outputEditor.updateOptions({
