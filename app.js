@@ -60,16 +60,24 @@ if (opts.debug) logger.level = 'debug';
 
 // AP: Detect if we're running under Windows Subsystem for Linux. Temporary modification
 // of process.env is allowed: https://nodejs.org/api/process.html#process_process_env
-if ((child_process.execSync('uname -a').toString().indexOf('Microsoft') > -1) && (opts.wsl))
+if (child_process.execSync('uname -a').toString().indexOf('Microsoft') > -1)
     process.env.wsl = true;
 
-// AP: Allow setting of tmpDir (used in lib/base-compiler.js & lib/exec.js) through
-// opts. WSL requires a tmpDir as it can't see Linux volumes so set default to c:\tmp.
-if (opts.tmpDir)
+// AP: Allow setting of tmpDir (used in lib/base-compiler.js & lib/exec.js) through opts.
+// WSL requires a directory on a Windows volume. Set that to Windows %TEMP% if no tmpDir supplied.
+// If a tempDir is supplied then assume that it will work for WSL processes as well. 
+if (opts.tmpDir) {
     process.env.tmpDir = opts.tmpDir;
-else if (process.env.wsl)
-    process.env.tmpDir = "/mnt/c/tmp";
-
+    process.env.winTmp = opts.tmpDir;
+}
+else if (process.env.wsl) {
+    // Dec 2017 preview builds of WSL include /bin/wslpath; do the parsing work for now.
+    // Parsing example %TEMP% is C:\Users\apardoe\AppData\Local\Temp
+    var windowsTemp = child_process.execSync('cmd.exe /c echo %TEMP%').toString().replace(/\\/g, "/");
+    var driveLetter = windowsTemp.substring(0, 1).toLowerCase();
+    var directoryPath = windowsTemp.substring(2).trim();
+    process.env.winTmp = path.join("/mnt", driveLetter, directoryPath);
+}
 
 // Set default values for omitted arguments
 var rootDir = opts.rootDir || './etc';
