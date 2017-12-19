@@ -116,6 +116,19 @@ describe('Parses compiler output', () => {
             }
         ]);
     });
+    it('treats <stdin> as if it were the compiler source', () => {
+        utils.parseOutput('<stdin>:120:25: error: variable or field \'transform_data\' declared void', 'bob.cpp')
+            .should.deep.equals([
+            {
+                tag: {
+                    column: 25,
+                    line: 120,
+                    text: 'error: variable or field \'transform_data\' declared void'
+                },
+                text: '<source>:120:25: error: variable or field \'transform_data\' declared void'
+            }
+        ]);
+    });
 });
 
 describe('Pads right', () => {
