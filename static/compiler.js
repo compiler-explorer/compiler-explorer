@@ -449,7 +449,8 @@ define(function (require) {
             var request = {
                 source: expanded || '',
                 compiler: this.compiler ? this.compiler.id : '',
-                options: options
+                options: options,
+                lang: this.currentLangId
             };
             if (!this.compiler) {
                 this.onCompileResponse(request, errorResult('<Please select a compiler>'), false);
@@ -1161,8 +1162,20 @@ define(function (require) {
         selector.load(_.bind(function (callback) {
             callback(_.map(this.getCurrentLangCompilers(), _.identity));
         }, this));
-        selector.setValue([this.selectedCompilerByLang[this.currentLangId] ||
-                            options.defaultCompiler[this.currentLangId]]);
+        var defaultOrFirst = _.bind(function defaultOrFirst () {
+            // If the default is a valid compiler, return it
+            var defaultCompiler = options.defaultCompiler[this.currentLangId];
+            if (defaultCompiler && options.compilers[defaultCompiler]) return defaultCompiler;
+            // Else try to find the first one for this language
+            var value = _.find(options.compilers, _.bind(function (compiler) {
+                return compiler.lang === this.currentLangId;
+            }, this));
+
+            // Return the first, or an empty string if none found (Should prob report this one...)
+            return value && value.id ? value.id : "";
+        }, this);
+
+        selector.setValue([this.selectedCompilerByLang[this.currentLangId] || defaultOrFirst()]);
     };
 
     Compiler.prototype.findCompiler = function (langId, compilerId) {
