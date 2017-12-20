@@ -1,0 +1,5 @@
+instrumentation:
+    root: ./lib
+    include-all-sources: true
+reporting:
+    dir: ./out/coverage

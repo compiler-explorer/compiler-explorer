@@ -2,8 +2,7 @@
 
 set -ex
 
-OPT=$(pwd)/out/compilers
-rm -rf ${OPT}
+OPT=$(pwd)/.travis-compilers
 mkdir -p ${OPT}
 mkdir -p ${OPT}/tmp
 
@@ -15,14 +14,14 @@ get_ghc() {
     local VER=$1
     local DIR=ghc-$VER
 
-	pushd ${OPT}/tmp
-	fetch https://downloads.haskell.org/~ghc/${VER}/ghc-${VER}-x86_64-deb8-linux.tar.xz | tar Jxf -
-	cd ${OPT}/tmp/ghc-${VER}
-	./configure --prefix=${OPT}/ghc
-	make install
+    pushd ${OPT}/tmp
+    fetch https://downloads.haskell.org/~ghc/${VER}/ghc-${VER}-x86_64-deb8-linux.tar.xz | tar Jxf -
+    cd ${OPT}/tmp/ghc-${VER}
+    ./configure --prefix=${OPT}/ghc
+    make install
     rm -rf ${OPT}/ghc/lib/ghc-${VER}/Cabal*
     rm -rf ${OPT}/ghc/share
-	popd
+    popd
     rm -rf ${OPT}/tmp/ghc-${VER}
 }
 
@@ -51,6 +50,12 @@ install_new_rust() {
     do_rust_install rust-${NAME}-x86_64-unknown-linux-gnu
 }
 
-get_ghc 8.0.2
-get_gdc 5.2.0 2.066.1
-install_new_rust nightly
+if [[ ! -d ${OPT}/ghc/bin ]]; then
+    get_ghc 8.0.2
+fi
+if [[ ! -d ${OPT}/gdc/x86_64-pc-linux-gnu/bin ]]; then
+    get_gdc 5.2.0 2.066.1
+fi
+if [[ ! -d ${OPT}/rust/bin ]]; then
+    install_new_rust nightly
+fi

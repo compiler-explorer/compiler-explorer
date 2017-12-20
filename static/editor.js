@@ -40,11 +40,14 @@ define(function (require) {
     require('./ispc-mode');
     require('./haskell-mode');
     require('./swift-mode');
-    require('./fpc-mode');
+    require('./pascal-mode');
+    require('selectize');
 
     var loadSave = new loadSaveLib.LoadSave();
 
-    function Editor(hub, state, container, lang, defaultSrc) {
+    var languages = options.languages;
+
+    function Editor(hub, state, container) {
         this.id = state.id || hub.nextEditorId();
         this.container = container;
         this.domRoot = container.getElement();
@@ -57,63 +60,23 @@ define(function (require) {
         this.asmByCompiler = {};
         this.busyCompilers = {};
         this.colours = [];
-        this.lastCompilerIDResponse = -1;
 
         this.decorations = {};
         this.prevDecorations = [];
 
         this.fadeTimeoutId = -1;
 
-        var cmMode;
-        // The first one is used as the default file extension when saving to local file.
-        // All of them are used as the contents of the accept attribute of the file input
-        var extensions = [];
-        switch (lang.toLowerCase()) {
-            default:
-                cmMode = "cppp";
-                extensions = ['.cpp', '.cxx', '.h', '.hpp', '.hxx'];
-                break;
-            case "c":
-                // C Plus Plus Plus. C++ without invalid keywords!
-                cmMode = "cppp";
-                extensions = ['.cpp', '.cxx', '.h', '.hpp', '.hxx'];
-                break;
-            case "rust":
-                cmMode = "rust";
-                extensions = ['.rs'];
-                break;
-            case "d":
-                cmMode = "d";
-                extensions = ['.d'];
-                break;
-            case "go":
-                cmMode = "go";
-                extensions = ['.go'];
-                break;
-            case "ispc":
-                cmMode = "ispc";
-                extensions = ['.ispc'];
-                break;
-            case "haskell":
-                cmMode = "haskell";
-                extensions = ['.hs'];
-                break;
-            case "swift":
-                cmMode = "swift";
-                extensions = ['.swift'];
-                break;
-            case "fpc":
-                cmMode = "fpc";
-                extensions = ['.pas'];
-                break;
-        }
+        this.editorSourceByLang = {};
+
+        this.languageBtn = this.domRoot.find('.change-language');
+        this.needsLanguageUpdate = !(state.lang && languages[state.lang]);
+        this.currentLanguage = state.lang && languages[state.lang] ? languages[state.lang] : languages["c++"];
 
         var root = this.domRoot.find(".monaco-placeholder");
         var legacyReadOnly = state.options && !!state.options.readOnly;
         this.editor = monaco.editor.create(root[0], {
-            value: state.source || defaultSrc || "",
             scrollBeyondLastLine: false,
-            language: cmMode,
+            language: this.currentLanguage.monaco,
             fontFamily: 'Fira Mono',
             readOnly: !!options.readOnly || legacyReadOnly,
             glyphMargin: !options.embedded,
@@ -125,8 +88,16 @@ define(function (require) {
             folding: true,
             lineNumbersMinChars: options.embedded ? 1 : 3,
             emptySelectionClipboard: true,
-            autoIndent: true,
+            autoIndent: true
         });
+
+        if (state.source) {
+            this.setSource(state.source);
+        } else {
+            this.updateEditorCode();
+        }
+
+        this.initLoadSaver();
 
         var startFolded = /^[/*#;]+\s*setup.*/;
         if (state.source && state.source.match(startFolded)) {
@@ -175,6 +146,18 @@ define(function (require) {
             }, this)
         });
 
+        this.editor.addAction({
+            id: 'viewasm',
+            label: 'Scroll to assembly',
+            keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.F10],
+            keybindingContext: null,
+            contextMenuGroupId: 'navigation',
+            contextMenuOrder: 1.5,
+            run: function (ed) {
+                tryCompilerLinkLine(ed.getPosition().lineNumber, true);
+            }
+        });
+
         var tryCompilerLinkLine = _.bind(function (thisLineNumber, reveal) {
             _.each(this.asmByCompiler, _.bind(function (asms, compilerId) {
                 var targetLines = [];
@@ -194,18 +177,6 @@ define(function (require) {
             }, this));
         }, this);
 
-        this.editor.addAction({
-            id: 'viewasm',
-            label: 'Scroll to assembly',
-            keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.F10],
-            keybindingContext: null,
-            contextMenuGroupId: 'navigation',
-            contextMenuOrder: 1.5,
-            run: function (ed) {
-                tryCompilerLinkLine(ed.getPosition().lineNumber, true);
-            }
-        });
-
         this.editor.onMouseLeave(_.bind(function () {
             this.fadeTimeoutId = setTimeout(_.bind(function () {
                 clearCompilerLinkedLines();
@@ -217,10 +188,7 @@ define(function (require) {
                 if (e !== null && e.target !== null && this.settings.hoverShowSource && e.target.position !== null) {
                     tryCompilerLinkLine(e.target.position.lineNumber, false);
                 }
-            },
-            this),
-            250
-        );
+            }, this), 250);
 
         this.editor.onMouseMove(_.bind(function (e) {
             this.mouseMoveThrottledFunction(e);
@@ -231,8 +199,28 @@ define(function (require) {
             }
         }, this));
 
+        this.updateEditorLayout = _.bind(function () {
+            var topBarHeight = this.domRoot.find(".top-bar").outerHeight(true) || 0;
+            this.editor.layout({width: this.domRoot.width(), height: this.domRoot.height() - topBarHeight});
+        }, this);
+
         this.fontScale = new FontScale(this.domRoot, state, this.editor);
         this.fontScale.on('change', _.bind(this.updateState, this));
+
+        this.languageBtn.selectize({
+            sortField: 'name',
+            valueField: 'id',
+            labelField: 'name',
+            searchField: ['name'],
+            options: _.map(languages, _.identity),
+            items: [this.currentLanguage.id]
+        }).on('change', _.bind(function (e) {
+            this.onLanguageChange($(e.target).val());
+        }, this));
+
+        this.changeLanguage = function (newLang) {
+            this.languageBtn[0].selectize.setValue(newLang);
+        };
 
         // We suppress posting changes until the user has stopped typing by:
         // * Using _.debounce() to run emitChange on any key event or change
@@ -252,21 +240,8 @@ define(function (require) {
         //     this.debouncedEmitChange();
         // }, this));
 
-        var layout = _.bind(function () {
-            var topBarHeight = this.domRoot.find(".top-bar").outerHeight(true) || 0;
-            this.editor.layout({width: this.domRoot.width(), height: this.domRoot.height() - topBarHeight});
-        }, this);
-
-        this.domRoot.find('.load-save').click(_.bind(function () {
-            loadSave.run(_.bind(function (text) {
-                this.editor.setValue(text);
-                this.updateState();
-                this.maybeEmitChange();
-            }, this), this.getSource(), extensions);
-        }, this));
-
-        container.on('resize', layout);
-        container.on('shown', layout);
+        container.on('resize', this.updateEditorLayout);
+        container.on('shown', this.updateEditorLayout);
         container.on('open', _.bind(function () {
             this.eventHub.emit('editorOpen', this.id);
         }, this));
@@ -275,7 +250,6 @@ define(function (require) {
             this.eventHub.emit('editorClose', this.id);
             this.editor.dispose();
         }, this));
-        container.setTitle(lang + " source #" + this.id);
         this.container.layoutManager.on('initialised', function () {
             // Once initialized, let everyone know what text we have.
             this.maybeEmitChange();
@@ -290,7 +264,7 @@ define(function (require) {
         this.eventHub.on('settingsChange', this.onSettingsChange, this);
         this.eventHub.on('conformanceViewOpen', this.onConformanceViewOpen, this);
         this.eventHub.on('conformanceViewClose', this.onConformanceViewClose, this);
-        this.eventHub.on('resize', layout, this);
+        this.eventHub.on('resize', this.updateEditorLayout, this);
         this.eventHub.emit('requestSettings');
 
         // NB a new compilerConfig needs to be created every time; else the state is shared
@@ -324,21 +298,24 @@ define(function (require) {
                 this.container.layoutManager.root.contentItems[0];
             insertPoint.addChild(conformanceConfig);
         }, this));
+        this.container.setTitle(this.currentLanguage.name + " source #" + this.id);
 
+        this.eventHub.on('initialised', this.maybeEmitChange, this);
         this.updateState();
     }
 
     Editor.prototype.maybeEmitChange = function (force) {
         var source = this.getSource();
-        if (!force && source == this.lastChangeEmitted) return;
+        if (!force && source === this.lastChangeEmitted) return;
         this.lastChangeEmitted = source;
-        this.eventHub.emit('editorChange', this.id, this.lastChangeEmitted);
+        this.eventHub.emit('editorChange', this.id, this.lastChangeEmitted, this.currentLanguage.id);
     };
 
     Editor.prototype.updateState = function () {
         var state = {
             id: this.id,
-            source: this.getSource()
+            source: this.getSource(),
+            lang: this.currentLanguage.id
         };
         this.fontScale.addState(state);
         this.container.setState(state);
@@ -420,6 +397,20 @@ define(function (require) {
     Editor.prototype.onCompilerOpen = function (compilerId, editorId) {
         if (editorId === this.id) {
             // On any compiler open, rebroadcast our state in case they need to know it.
+            if (this.needsLanguageUpdate) {
+                var glCompiler =_.find(this.container.layoutManager.root.getComponentsByName("compiler"), function (compiler) {
+                    return compiler.id === compilerId;
+                });
+                if (glCompiler) {
+                    var selected = _.find(options.compilers, function (compiler) {
+                        return compiler.id === glCompiler.originalCompilerId;
+                    });
+                    if (selected) {
+                        this.needsLanguageUpdate = false;
+                        this.changeLanguage(selected.lang);
+                    }
+                }
+            }
             this.maybeEmitChange(true);
             this.ourCompilers[compilerId] = true;
         }
@@ -470,7 +461,6 @@ define(function (require) {
         }, this);
         this.updateDecorations();
         this.asmByCompiler[compilerId] = result.asm;
-        this.lastCompilerIDResponse = compilerId;
         this.numberUsedLines();
     };
 
@@ -516,6 +506,40 @@ define(function (require) {
         if (editorId == this.id) {
             this.conformanceViewerButton.attr("disabled", false);
         }
+    };
+
+    Editor.prototype.initLoadSaver = function () {
+        this.domRoot.find('.load-save')
+            .off('click')
+            .click(_.bind(function () {
+                loadSave.run(_.bind(function (text) {
+                    this.setSource(text);
+                    this.updateState();
+                    this.maybeEmitChange();
+                }, this), this.getSource(), this.currentLanguage);
+            }, this));
+    };
+
+    Editor.prototype.onLanguageChange = function (newLangId) {
+        if (newLangId !== this.currentLanguage.id && languages[newLangId]) {
+            var oldLangId = this.currentLanguage.id;
+            // Save the current source, so we can come back to it later
+            this.editorSourceByLang[oldLangId] = this.getSource();
+            this.currentLanguage = languages[newLangId];
+            this.initLoadSaver();
+            monaco.editor.setModelLanguage(this.editor.getModel(), this.currentLanguage.monaco);
+            // And now set the editor value to either the saved one or the default to the new lang
+            this.updateEditorCode();
+            this.container.setTitle(this.currentLanguage.name + " source #" + this.id);
+            this.updateState();
+            // Broadcast the change to other panels
+            this.eventHub.emit("languageChange", this.id, newLangId);
+        }
+    };
+
+    // Called every time we change language, so we get the relevant code
+    Editor.prototype.updateEditorCode = function () {
+        this.setSource(this.editorSourceByLang[this.currentLanguage.id] || languages[this.currentLanguage.id].example);
     };
 
     return {

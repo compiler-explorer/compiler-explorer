@@ -38,20 +38,22 @@ define(function (require) {
                 return JSON.stringify(n).length;
             }
         });
-        this.compilersById = _.chain(options.compilers)
-            .map(function (compiler) {
-                var aliases = [];
-                aliases.push([compiler.id, compiler]);
-                if (compiler.alias) aliases.push([compiler.alias, compiler]);
-                return aliases;
-            })
-            .flatten(true)
-            .object()
-            .value();
+        this.compilersByLang = {};
+        _.each(options.compilers, function (compiler) {
+            if (!this.compilersByLang[compiler.lang]) this.compilersByLang[compiler.lang] = {};
+            this.compilersByLang[compiler.lang][compiler.id] = compiler;
+            if (compiler.alias) {
+                this.compilersByLang[compiler.lang][compiler.alias] = compiler;
+            }
+        }, this);
     }
 
-    CompilerService.prototype.getCompilerById = function (id) {
-        return this.compilersById[id];
+    CompilerService.prototype.getCompilersForLang = function (langId) {
+        return this.compilersByLang[langId];
+    };
+
+    CompilerService.prototype.findCompiler = function (langId, compilerId) {
+        return this.getCompilersForLang(langId)[compilerId];
     };
 
     CompilerService.prototype.submit = function (request) {

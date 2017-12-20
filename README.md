@@ -1,29 +1,23 @@
 [![Build Status](https://travis-ci.org/mattgodbolt/compiler-explorer.svg?branch=master)](https://travis-ci.org/mattgodbolt/compiler-explorer)
-[![Codewake](https://www.codewake.com/badges/ask_question.svg)](https://www.codewake.com/p/compiler-explorer)
+[![codecov](https://codecov.io/gh/mattgodbolt/compiler-explorer/branch/master/graph/badge.svg)](https://codecov.io/gh/mattgodbolt/compiler-explorer)
 
 Compiler Explorer
 ------------
 
-Compiler Explorer is an interactive compiler. The left-hand pane shows editable C/C++/Rust/Go/D/Haskell/Swift code. The right, the
-assembly output of having compiled the code with a given compiler and settings. Multiple compilers are supported, and
+Compiler Explorer is an interactive compiler. The left-hand pane shows editable C, C++, Rust, Go, D, Haskell, Swift and Pascal code.
+The right, the assembly output of having compiled the code with a given compiler and settings. Multiple compilers are supported, and
 the UI layout is configurable (the [Golden Layout](https://www.golden-layout.com/) library is used for this).
 There is also an ispc compiler for a C variant with extensions for SPMD.
 
-Try out one of the demo sites: [C++][cpp], [Rust][rust], [D][d], [Go][go], [Haskell][haskell], [Swift][swift], [ispc][ispc].
+Try out at [godbolt.org](https://godbolt.org)
 
-[cpp]: https://gcc.godbolt.org/ "Compiler Explorer for C++"
-[rust]: https://rust.godbolt.org/ "Compiler Explorer for Rust"
-[d]: https://d.godbolt.org/ "Compiler Explorer for D"
-[go]: https://go.godbolt.org/ "Compiler Explorer for Go"
-[ispc]: https://ispc.godbolt.org/ "Compiler Explorer for ispc"
-[haskell]: https://haskell.godbolt.org/ "Compiler Explorer for Haskell"
-[swift]: https://swift.godbolt.org/ "Compiler Explorer for Swift"
+You can support [this project on Patreon](https://patreon.com/mattgodbolt).
 
-You can support this [this project on Patreon](https://patreon.com/mattgodbolt).
+##### Contact us
 
 For general discussion, feel free to join the mailing list: https://groups.google.com/forum/#!forum/compiler-explorer-discussion or the cpplang slack https://cpplang.now.sh/ channel `#compiler_explorer`.
 
-If you are interested in developing, or want to see the discussions between existing developers, feel free to join the mailing list at https://groups.google.com/forum/#!forum/compiler-explorer-development or the cpplang slack https://cpplang.now.sh/ channel `#ce_implementators`.
+If you are interested in developing, or want to see the discussions between existing developers, feel free to join the mailing list at https://groups.google.com/forum/#!forum/compiler-explorer-development or the cpplang slack https://cpplang.now.sh/ channel `#ce_implementation`.
 
 ### Developing or running a local instance
 
@@ -45,12 +39,6 @@ Feel free to raise an issue on [github](https://github.com/mattgodbolt/compiler-
 
 There's now a [Road map](Roadmap.md) that gives a little insight into future plans for Compiler Explorer.
 
-### Credits
-
-Compiler Explorer is maintained by [Matt Godbolt](http://xania.org), [Rubén Rincón](https://github.com/RabsRincon) and [Simon Brand](https://blog.tartanllama.xyz/).
-Multiple compiler and difference view initially implemented by [Gabriel Devillers](https://github.com/voxelf),
-while working for [Kalray](http://www.kalrayinc.com/). Clang optview output by [Jared Wyles](https://github.com/jaredwy).
-
 ### RESTful API
 
 There's a simple restful API that can be used to do compiles to asm and to list compilers. In general
@@ -63,16 +51,39 @@ future (for the main Compiler Explorer site anyway).
 
 The following endpoints are defined:
 
+#### `GET /api/languages` - return a list of languages
+
+Returns a list of the currently supported languages, as pairs of languages IDs and their names.
+
 #### `GET /api/compilers` - return a list of compilers
 
-Returns a list of compilers. In text form, there's a simple formatting of the ID of the compiler and its
-description. In JSON, all the information is returned as an array of compilers, with the `id` key being the
+Returns a list of compilers. In text form, there's a simple formatting of the ID of the compiler, its
+description and its languge ID. In JSON, all the information is returned as an array of compilers, with the `id` key being the
+primary identifier of each compiler.
+
+
+#### `GET /api/compilers/<language-id>` - return a list of compilers with mstching language
+
+Returns a list of compilers for the provided language id. In text form, there's a simple formatting of the ID of the compiler, its
+description and its languge ID. In JSON, all the information is returned as an array of compilers, with the `id` key being the
 primary identifier of each compiler.
 
 #### `POST /api/compiler/<compiler-id>/compile` - perform a compilation
 
 To specify a compilation request as a JSON document, post it as the appropriate type and send an object of
-the form: `{'source': 'source to compile', 'options': {userOptions': 'compiler flags', 'compilerOptions':{}, filters': {'filter': true}}}`.
+the form: 
+```JSON
+{
+    "source": "Source to compile",
+    "options": {
+        "userArguments": "Compiler flags",
+        "compilerOptions": {},
+        "filters": {
+            "filter": true
+        }
+    }
+}
+``` 
 The filters are an JSON object with true/false. If not supplied, defaults are used. If supplied, the
 filters are used as-is. The `compilerOptions` is used to pass extra arguments to the back end, and is probably
 not useful for most REST users. 
@@ -101,7 +112,7 @@ If JSON is present in the request's `Accept` header, the compilation results are
 
 Optional values are marked with a '**'
 
-```
+```javascript
 {
   "code": 0 if successful, else compiler return code,
   "stdout": [
@@ -137,3 +148,15 @@ Optional values are marked with a '**'
      }
 }
 ```
+
+### Credits
+
+Compiler Explorer is maintained by [Matt Godbolt](http://xania.org), [Rubén Rincón](https://github.com/RabsRincon) and [Simon Brand](https://blog.tartanllama.xyz/).
+- [Gabriel Devillers](https://github.com/voxelf) - Initial multiple compilers and difference view (while working for [Kalray](http://www.kalrayinc.com/)).
+- [Jared Wyles](https://github.com/jaredwy) - Clang OPT Output view and maintenance
+- [Johan Engelen](https://github.com/JohanEngelen) - D support and its maintenance
+- [Chedy Najjar](https://github.com/CppChedy) - CFG View and maintenance
+- [Patrick Quist](https://github.com/partouf) - Pascal support
+- [Joshua Sheard](https://github.com/jsheard) - ISPC support
+- [Marc Poulhiès](https://github.com/dkm) - GCC Dumps view
+- [Andrew Pardoe](https://github.com/AndrewPardoe) - WSL-CL support

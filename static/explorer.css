@@ -263,3 +263,7 @@ pre.content {
     position: absolute;
     right: 0;
 }
+
+.change-language {
+    min-width: 100px !important;
+}

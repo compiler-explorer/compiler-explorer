@@ -1,5 +1,4 @@
-// Copyright (c) 2012-2017, Matt Godbolt
-//
+// Copyright (c) 2017, Matt Godbolt & Rubén Rincón
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -23,38 +22,26 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-var asm_doc = require('./asm-docs');
-var props = require('./properties');
+var should = require('chai').should(),
+    languages = require('../lib/languages').list,
+    fs = require('fs-extra'),
+    path = require('path');
 
-var asmProps = props.propsFor("asm-docs");
-var staticMaxAgeSecs = asmProps('staticMaxAgeSecs', 10);
 
-function docHandler(req, res, next) {
-    var info = asm_doc.getAsmOpcode(req.params.opcode);
-    if (!info) {
-        // If the opcode ends with an AT&T suffix, try removing that and giving it another go.
-        // Ideally, we'd be smarter here, but this is a quick win.
-        var atAndTSuffixRemover = /^([A-Z]+)[BWLQ]$/;
-        var suffixRemoved = atAndTSuffixRemover.exec(req.params.opcode);
-        if (suffixRemoved) {
-            info = asm_doc.getAsmOpcode(suffixRemoved[1]);
-        }
-    }
-    if (staticMaxAgeSecs) {
-        res.setHeader('Cache-Control', 'public, max-age=' + staticMaxAgeSecs);
-    }
-    if (req.accepts(['text', 'json']) == 'json') {
-        res.set('Content-Type', 'application/json');
-        res.end(JSON.stringify({found: !!info, result: info}));
-    } else {
-        res.set('Content-Type', 'text/html');
-        if (info)
-            res.end(info.html);
-        else
-            res.end("Unknown opcode");
-    }
-}
-
-module.exports = {
-    asmDocsHandler: docHandler
-};
+describe('Language definitions tests', () => {
+    it('Has id equal to object key', () => {
+        Object.keys(languages).forEach(languageKey => should.equal(languages[languageKey].id, languageKey));
+    });
+    it ('Has extensions with leading dots', () => {
+        Object.keys(languages).forEach(languageKey => should.equal(languages[languageKey].extensions[0][0], '.'));
+    });
+    it('Has examples & are initialized', () => {
+        Object.keys(languages).forEach(languageKey => {
+            const lang = languages[languageKey];
+            fs.stat(path.join('examples', lang.id, 'default' + lang.extensions[0]), (err, fd) => {
+                should.equal(err, null);
+                should.equal(fd, lang.example);
+            });
+        });
+    });
+});

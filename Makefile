@@ -1,17 +1,23 @@
 NODE_DIR?=/opt/compiler-explorer/node
-NPM:=$(shell env PATH=$(NODE_DIR)/bin:$(PATH) which npm)
-NODE:=$(shell env PATH=$(NODE_DIR)/bin:$(PATH) which node || env PATH=$(NODE_DIR)/bin:$(PATH) which nodejs)
+NPM:= $(shell env PATH="$(NODE_DIR)/bin:$$PATH" which npm)
+NODE:= $(shell env PATH="$(NODE_DIR)/bin:$$PATH" which node || env PATH="$(NODE_DIR)/bin:$$PATH" which nodejs)
 default: run
 
-MIN_NODE_VERSION:=8
+NODE_VERSION_USED:=8
 NODE_VERSION:=$(shell $(NODE) --version)
 NODE_MAJOR_VERSION:=$(shell echo $(NODE_VERSION) | cut -f1 -d. | sed 's/^v//g')
-NODE_VERSION_CHECK:=$(shell [ $(NODE_MAJOR_VERSION) -ge $(MIN_NODE_VERSION) ] && echo true)
+NODE_VERSION_TEST:=$(shell [ $(NODE_MAJOR_VERSION) -eq $(NODE_VERSION_USED) ] && echo true)
+NODE_VERSION_TEST_FAIL:=$(shell [ $(NODE_MAJOR_VERSION) -lt $(NODE_VERSION_USED) ] && echo true)
 
-ifneq ($(NODE_VERSION_CHECK), true)
-$(error Compiler Explorer needs node v$(MIN_NODE_VERSION).x or higher, but $(NODE_VERSION) was found. \
+ifneq ($(NODE_VERSION_TEST), true)
+ifeq ($(NODE_VERSION_TEST_FAIL), true)
+$(error Compiler Explorer needs node v$(NODE_VERSION_USED).x, but $(NODE_VERSION) was found. \
 Visit https://nodejs.org/ for installation instructions \
 To configure where we look for node, set NODE_DIR to its installation base)
+else
+$(warning Compiler Explorer needs node v$(NODE_VERSION_USED).x, but $(NODE_VERSION) was found. \
+The higher node version might work but it has not been tested.)
+endif
 endif
 
 .PHONY: clean run test run-amazon c-preload optional-haskell-support optional-d-support optional-rust-support
@@ -63,10 +69,8 @@ $(BOWER_MODULES): bower.json $(NODE_MODULES)
 	cp -r node_modules/monaco-editor static/ext/
 
 lint: $(NODE_MODULES)
-	$(NODE) ./node_modules/.bin/jshint --config etc/jshintrc.server app.js $(shell find lib -name '*.js')
+	$(NODE) ./node_modules/.bin/jshint --config etc/jshintrc.server app.js $(shell find lib test -name '*.js')
 	$(NODE) ./node_modules/.bin/jshint --config etc/jshintrc.client $(shell find static -name '*.js' -not -path 'static/ext/*' -not -path static/analytics.js)
-
-LANG:=C++
 
 node_modules: $(NODE_MODULES)
 bower_modules: $(BOWER_MODULES)
@@ -75,13 +79,16 @@ test: $(NODE_MODULES) lint
 	$(MAKE) -C c-preload test
 	@echo Tests pass
 
+check: $(NODE_MODULES) lint
+	$(NODE) ./node_modules/.bin/mocha --recursive
+
 clean:
 	rm -rf bower_modules node_modules .npm-updated .bower-updated out static/ext
 	$(MAKE) -C d clean
 	$(MAKE) -C c-preload clean
 
 run: prereqs
-	$(NODE) ./node_modules/.bin/supervisor -w app.js,lib,etc/config -e 'js|node|properties' --exec $(NODE) $(NODE_ARGS) -- ./app.js --language $(LANG) $(EXTRA_ARGS)
+	$(NODE) ./node_modules/.bin/supervisor -w app.js,lib,etc/config -e 'js|node|properties' --exec $(NODE) $(NODE_ARGS) -- ./app.js $(EXTRA_ARGS)
 
 HASH := $(shell git rev-parse HEAD)
 dist: prereqs
@@ -106,7 +113,7 @@ dist: prereqs
 	    --prefix 6
 
 travis-dist: dist
-	tar --exclude './out/compilers' --exclude './.git' --exclude './static' --exclude './out/dist/ext' -Jcvf /tmp/ce-build.tar.xz . 
+	tar --exclude './.travis-compilers' --exclude './.git' --exclude './static' --exclude './out/dist/ext' -Jcf /tmp/ce-build.tar.xz . 
 	rm -rf out/dist-bin
 	mkdir -p out/dist-bin
 	mv /tmp/ce-build.tar.xz out/dist-bin/${TRAVIS_BUILD_NUMBER}.tar.xz
@@ -114,3 +121,8 @@ travis-dist: dist
 
 c-preload:
 	$(MAKE) -C c-preload
+
+install-git-hooks:
+	ln -sf $(shell pwd)/etc/scripts/pre-commit .git/hooks/pre-commit
+.PHONY: install-git-hooks
+

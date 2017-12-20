@@ -31,7 +31,8 @@ define(function (require) {
         }
 
         // We remove everything that's not an identifier, underscore reserved name and not an official C++ keyword...
-        removeKeywords(["abstract", "amp", "array", "cpu", "delegate", "each", "event", "final", "finally", "gcnew",
+        // Regarding #617, final is a identifier with special meaning, not a fully qualified keyword
+        removeKeywords(["abstract", "amp", "array", "cpu", "delegate", "each", "event", "finally", "gcnew",
             "generic", "in", "initonly", "interface", "interior_ptr", "internal", "literal", "partial", "pascal",
             "pin_ptr", "property", "ref", "restrict", "safe_cast", "sealed", "title_static", "where"]);
 

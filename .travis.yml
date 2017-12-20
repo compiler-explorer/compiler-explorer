@@ -9,12 +9,17 @@ node_js:
     - "8"
 
 before_script:
-    - export PATH=$PATH:$PWD/out/compilers/ghc/bin
-    - export PATH=$PATH:$PWD/out/compilers/gdc/x86_64-pc-linux-gnu/bin
-    - export PATH=$PATH:$PWD/out/compilers/rust/bin
+    - export PATH=$PATH:$PWD/.travis-compilers/ghc/bin
+    - export PATH=$PATH:$PWD/.travis-compilers/gdc/x86_64-pc-linux-gnu/bin
+    - export PATH=$PATH:$PWD/.travis-compilers/rust/bin
+
+cache:
+    directories:
+        - .travis-compilers
 
 script:
     - npm test
+    - npm run codecov
     - make travis-dist
 
 deploy:
