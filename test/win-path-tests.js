@@ -62,7 +62,7 @@ describe('Paths', function () {
 
         var compiler = new WslCL(info, env);
         
-        process.env.tmpDir = "/mnt/c/tmp";
+        process.env.winTmp = "/mnt/c/tmp";
         compiler._12.filename("/mnt/c/tmp/123456/output.s").should.equal("c:/tmp/123456/output.s");
     });
 });
