@@ -181,40 +181,24 @@ var compileHandler = new CompileHandler(gccProps, compilerProps);
 const ApiHandler = require('./lib/handlers/api').ApiHandler;
 const apiHandler = new ApiHandler(compileHandler);
 
-// auxiliary function used in clientOptionsHandler
-function compareOn(key) {
-    return function (xObj, yObj) {
-        var x = xObj[key];
-        var y = yObj[key];
-        if (x < y) return -1;
-        if (x > y) return 1;
-        return 0;
-    };
-}
-
-// instantiate a function that generate javascript code,
 function ClientOptionsHandler(fileSources) {
-    var sources = fileSources.map(function (source) {
-        return {name: source.name, urlpart: source.urlpart};
-    });
-    // sort source file alphabetically
-    sources = sources.sort(compareOn("name"));
-    var languages = _.compact(_.map(gccProps("languages", '').split(':'), function (thing) {
+    const sources = _.sortBy(fileSources.map(source => ({name: source.name, urlpart: source.urlpart})), "name");
+    const languages = _.compact(_.map(gccProps("languages", '').split(':'), thing => {
         if (!thing) return null;
         var splat = thing.split("=");
         return {language: splat[0], url: splat[1]};
     }));
-    var supportsBinary = !!compilerProps("supportsBinary", true);
-    var supportsExecute = supportsBinary && !!compilerProps("supportsExecute", true);
-    var libs = {};
+    const supportsBinary = !!compilerProps("supportsBinary", true);
+    const supportsExecute = supportsBinary && !!compilerProps("supportsExecute", true);
+    const libs = {};
 
-    var baseLibs = compilerProps("libs");
+    const baseLibs = compilerProps("libs");
 
     if (baseLibs) {
         _.each(baseLibs.split(':'), function (lib) {
             libs[lib] = {name: compilerProps('libs.' + lib + '.name')};
             libs[lib].versions = {};
-            var listedVersions = compilerProps("libs." + lib + '.versions');
+            const listedVersions = compilerProps("libs." + lib + '.versions');
             if (listedVersions) {
                 _.each(listedVersions.split(':'), function (version) {
                     libs[lib].versions[version] = {};
@@ -234,7 +218,7 @@ function ClientOptionsHandler(fileSources) {
             }
         });
     }
-    var options = {
+    const options = {
         googleAnalyticsAccount: gccProps('clientGoogleAnalyticsAccount', 'UA-55180-6'),
         googleAnalyticsEnabled: gccProps('clientGoogleAnalyticsEnabled', false),
         sharingEnabled: gccProps('clientSharingEnabled', true),
@@ -459,23 +443,11 @@ function findCompilers() {
         return compilerConfigFor(name, parentProps);
     }
 
-    return Promise.all(
-        exes.map(function (compiler) {
-            return recurseGetCompilers(compiler, compilerProps);
-        }))
+    return Promise.all(exes.map(compiler => recurseGetCompilers(compiler, compilerProps)))
         .then(_.flatten)
-        .then(function (compilers) {
-            return compileHandler.setCompilers(compilers);
-        })
-        .then(function (compilers) {
-            return _.filter(compilers, function (x) {
-                return x;
-            });
-        })
-        .then(function (compilers) {
-            compilers = compilers.sort(compareOn("name"));
-            return compilers;
-        });
+        .then(compilers => compileHandler.setCompilers(compilers))
+        .then(compilers => _.filter(compilers, _.identity))
+        .then(compilers => _.sortBy(compilers, "name"));
 }
 
 function shortUrlHandler(req, res, next) {
