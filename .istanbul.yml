@@ -1,5 +1,7 @@
 instrumentation:
     root: ./lib
     include-all-sources: true
+    excludes:
+        - "handlers/asm-docs.js"
 reporting:
     dir: ./out/coverage
