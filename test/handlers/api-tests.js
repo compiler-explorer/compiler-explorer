@@ -72,5 +72,18 @@ describe('API handling', () => {
                 throw err;
             });
     });
+    it('should respond to ASM doc requests', () => {
+        return chai.request(app)
+            .get('/api/asm/MOVQ')
+            .set('Accept', 'application/json')
+            .then(res => {
+                res.should.have.status(200);
+                res.should.be.json;
+                res.body.found.should.be.true;
+            })
+            .catch(function (err) {
+                throw err;
+            });
+    });
     // TODO: more tests!
 });
