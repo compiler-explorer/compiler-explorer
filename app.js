@@ -202,23 +202,10 @@ var compileHandler = new CompileHandler(ceProps, compilerPropsL);
 const ApiHandler = require('./lib/handlers/api').ApiHandler;
 const apiHandler = new ApiHandler(compileHandler);
 
-// auxiliary function used in clientOptionsHandler
-function compareOn(key) {
-    return function (xObj, yObj) {
-        var x = xObj[key];
-        var y = yObj[key];
-        if (x < y) return -1;
-        if (x > y) return 1;
-        return 0;
-    };
-}
-
-// instantiate a function that generate javascript code,
 function ClientOptionsHandler(fileSources) {
-    const sources = fileSources.map(function (source) {
+    const sources = _.sortBy(fileSources.map(function (source) {
         return {name: source.name, urlpart: source.urlpart};
-    }).sort(compareOn("name"));
-    // sort source file alphabetically
+    }), "name");
 
     var supportsBinary = compilerPropsAT(languages, res => !!res, "supportsBinary", true);
     var supportsExecute = supportsBinary && !!compilerPropsAT(languages, (res, lang) => supportsBinary[lang.id] && !!res, "supportsExecute", true);
@@ -341,9 +328,7 @@ function retryPromise(promiseFunc, name, maxFails, retryMs) {
 }
 
 function findCompilers() {
-    let exes = compilerPropsAT(languages, exs => {
-        return exs.split(":").filter(_.identity);
-    }, "compilers", "");
+    let exes = compilerPropsAT(languages, exs => _.compact(exs.split(":")), "compilers", "");
 
     const ndk = compilerPropsA(languages, 'androidNdk');
     _.each(ndk, (ndkPath, langId) => {
@@ -468,7 +453,7 @@ function findCompilers() {
                 return compilerPropsL(langId, "group." + groupName + "." + propName, parentProps(langId, propName, def));
             };
 
-            const compilerExes = props(langId, 'compilers', '').split(":").filter(_.identity);
+            const compilerExes = _.compact(props(langId, 'compilers', '').split(":"));
             logger.debug("Processing compilers from group " + groupName);
             return Promise.all(compilerExes.map(compiler => recurseGetCompilers(langId, compiler, props)));
         }
@@ -505,7 +490,7 @@ function findCompilers() {
         .then(compileHandler.setCompilers)
         .then(compilers => _.filter(compilers, compiler => !!compiler))
         .then(ensureDistinct)
-        .then(compilers => compilers.sort(compareOn("name")));
+        .then(compilers => _.sortBy(compilers, "name"));
 }
 
 function shortUrlHandler(req, res, next) {
