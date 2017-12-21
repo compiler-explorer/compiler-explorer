@@ -169,17 +169,13 @@ function loadSources() {
         });
 }
 
-// load effectively
-var fileSources = loadSources();
-var sourceToHandler = {};
-fileSources.forEach(function (source) {
-    sourceToHandler[source.urlpart] = source;
-});
-
-var clientOptionsHandler = new ClientOptionsHandler(fileSources);
-var compileHandler = new CompileHandler(gccProps, compilerProps);
+const fileSources = loadSources();
+const clientOptionsHandler = new ClientOptionsHandler(fileSources);
+const compileHandler = new CompileHandler(gccProps, compilerProps);
 const ApiHandler = require('./lib/handlers/api').ApiHandler;
 const apiHandler = new ApiHandler(compileHandler);
+const SourceHandler = require('./lib/handlers/source').Handler;
+const sourceHandler = new SourceHandler(fileSources, staticHeaders);
 
 function ClientOptionsHandler(fileSources) {
     const sources = _.sortBy(fileSources.map(source => ({name: source.name, urlpart: source.urlpart})), "name");
@@ -255,33 +251,6 @@ function ClientOptionsHandler(fileSources) {
     this.get = function () {
         return options;
     };
-}
-
-// function used to enable loading and saving source code from web interface
-function getSource(req, res, next) {
-    var bits = req.url.split("/");
-    var handler = sourceToHandler[bits[1]];
-    if (!handler) {
-        next();
-        return;
-    }
-    var action = bits[2];
-    if (action === "list") action = handler.list;
-    else if (action === "load") action = handler.load;
-    else if (action === "save") action = handler.save;
-    else action = null;
-    if (action === null) {
-        next();
-        return;
-    }
-    action.apply(handler, bits.slice(3).concat(function (err, response) {
-        staticHeaders(res);
-        if (err) {
-            res.end(JSON.stringify({err: err}));
-        } else {
-            res.end(JSON.stringify(response));
-        }
-    }));
 }
 
 function retryPromise(promiseFunc, name, maxFails, retryMs) {
@@ -543,7 +512,7 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
             return options;
         }
 
-        var embeddedHandler = function (req, res) {
+        const embeddedHandler = function (req, res) {
             staticHeaders(res);
             res.render('embed', renderConfig({embedded: true}));
         };
@@ -592,7 +561,7 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
             }))
             .use(restreamer())
             .get('/client-options.json', clientOptionsHandler.handler)
-            .use('/source', getSource)
+            .use('/source', sourceHandler.handle.bind(sourceHandler))
             .use('/api', apiHandler.handle)
             .use('/g', shortUrlHandler)
             .post('/compile', compileHandler.handler);
