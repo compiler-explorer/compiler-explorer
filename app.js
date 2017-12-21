@@ -488,7 +488,7 @@ function findCompilers() {
     return Promise.all(getCompilers())
         .then(_.flatten)
         .then(compileHandler.setCompilers)
-        .then(compilers => _.filter(compilers, compiler => !!compiler))
+        .then(compilers => _.compact(compilers))
         .then(ensureDistinct)
         .then(compilers => _.sortBy(compilers, "name"));
 }
