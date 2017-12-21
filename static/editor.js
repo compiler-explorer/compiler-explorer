@@ -70,7 +70,12 @@ define(function (require) {
 
         this.languageBtn = this.domRoot.find('.change-language');
         this.needsLanguageUpdate = !(state.lang && languages[state.lang]);
-        this.currentLanguage = state.lang && languages[state.lang] ? languages[state.lang] : languages["c++"];
+        this.currentLanguage = languages["c++"];
+        if (state.lang && languages[state.lang]) {
+            this.currentLanguage = languages[state.lang];
+        } else if (hub.lastOpenedLangId && languages[hub.lastOpenedLangId]) {
+            this.currentLanguage = languages[hub.lastOpenedLangId];
+        }
 
         var root = this.domRoot.find(".monaco-placeholder");
         var legacyReadOnly = state.options && !!state.options.readOnly;

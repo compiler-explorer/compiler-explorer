@@ -66,6 +66,7 @@ define(function (require) {
         this.compilerService = new CompilerService();
         this.deferred = true;
         this.deferredEmissions = [];
+        this.lastOpenedLangId = null;
 
         // FIXME
         // We can't avoid this self as _ is undefined at this point
@@ -119,6 +120,9 @@ define(function (require) {
         }, this);
         layout.eventHub.on('compilerClose', function (id) {
             this.compilerIds.remove(id);
+        }, this);
+        layout.eventHub.on('languageChange', function (editorId, langId) {
+            this.lastOpenedLangId = langId;
         }, this);
         layout.init();
         this.undefer();
