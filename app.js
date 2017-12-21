@@ -446,8 +446,7 @@ function findCompilers() {
     return Promise.all(exes.map(compiler => recurseGetCompilers(compiler, compilerProps)))
         .then(_.flatten)
         .then(compilers => compileHandler.setCompilers(compilers))
-        .then(compilers => _.filter(compilers, _.identity))
-        .then(compilers => _.sortBy(compilers, "name"));
+        .then(compilers => _.sortBy(_.compact(compilers), "name"));
 }
 
 function shortUrlHandler(req, res, next) {
