@@ -117,8 +117,7 @@ if (opts.propDebug) props.setDebug(true);
 props.initialize(rootDir + '/config', propHierarchy);
 
 // Now load up our libraries.
-const CompileHandler = require('./lib/compile-handler').CompileHandler,
-    aws = require('./lib/aws'),
+const aws = require('./lib/aws'),
     google = require('./lib/google');
 
 // Instantiate a function to access records concerning "compiler-explorer" 
@@ -192,8 +191,9 @@ function loadSources() {
 
 const fileSources = loadSources();
 const clientOptionsHandler = new ClientOptionsHandler(fileSources);
+const CompileHandler = require('./lib/handlers/compile').Handler;
 const compileHandler = new CompileHandler(ceProps, compilerPropsL);
-const ApiHandler = require('./lib/handlers/api').ApiHandler;
+const ApiHandler = require('./lib/handlers/api').Handler;
 const apiHandler = new ApiHandler(compileHandler);
 const SourceHandler = require('./lib/handlers/source').Handler;
 const sourceHandler = new SourceHandler(fileSources, staticHeaders);
@@ -606,8 +606,7 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
             .get('/client-options.json', clientOptionsHandler.handler)
             .use('/source', sourceHandler.handle.bind(sourceHandler))
             .use('/api', apiHandler.handle)
-            .use('/g', shortUrlHandler)
-            .post('/compile', compileHandler.handler);
+            .use('/g', shortUrlHandler);
         logger.info("=======================================");
 
         webServer.use(Raven.errorHandler());

@@ -1,0 +1,203 @@
+// Copyright (c) 2012-2017, Matt Godbolt
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
+//
+//     * Redistributions of source code must retain the above copyright notice,
+//       this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above copyright
+//       notice, this list of conditions and the following disclaimer in the
+//       documentation and/or other materials provided with the distribution.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+
+const chai = require('chai'),
+    CompileHandler = require('../../lib/handlers/compile').Handler,
+    {fakeProps} = require('../../lib/properties'),
+    express = require('express'),
+    bodyParser = require('body-parser');
+
+chai.use(require("chai-http"));
+chai.should();
+
+describe('Compiler tests', () => {
+    const app = express();
+    app.use(bodyParser.json()).use(bodyParser.text());
+    const fakeGccProps = {};
+    const fakeCompilerProps = {};
+    const compileHandler = new CompileHandler(fakeProps(fakeGccProps), fakeProps(fakeCompilerProps));
+    app.post('/:compiler/compile', compileHandler.handle.bind(compileHandler));
+
+    it('throws for unknown compilers', () => {
+        return chai.request(app)
+            .post('/NOT_A_COMPILER/compile')
+            .then(() => {
+                throw "Shouldn't succeeed";
+            }, (e) => {
+                e.should.have.status(404);
+            });
+    });
+
+    describe('JSON API', () => {
+        it('handles text output', () => {
+            return compileHandler.setCompilers([{
+                compilerType: "fake-for-test",
+                exe: "fake",
+                fakeResult: {
+                    code: 0,
+                    stdout: [{text: "Something from stdout"}],
+                    stderr: [{text: "Something from stderr"}],
+                    asm: [{text: "ASMASMASM"}]
+                }
+            }]).then(() => {
+                return chai.request(app)
+                    .post('/fake-for-test/compile')
+                    .send({
+                        options: '',
+                        source: 'I am a program'
+                    })
+                    .then(res => {
+                        res.should.have.status(200);
+                        res.should.be.text;
+                        res.text.should.contain("Something from stdout");
+                        res.text.should.contain("Something from stderr");
+                        res.text.should.contain("ASMASMASM");
+                    })
+                    .catch(function (err) {
+                        throw err;
+                    });
+            });
+        });
+
+        function makeFakeJson(source, options, fakeResult) {
+            return compileHandler.setCompilers([{
+                compilerType: "fake-for-test",
+                exe: "fake",
+                fakeResult: fakeResult || {}
+            }])
+                .then(() => chai.request(app)
+                    .post('/fake-for-test/compile')
+                    .set('Accept', 'application/json')
+                    .send({
+                        options: options || {},
+                        source: source || ''
+                    }));
+        }
+
+        it('handles JSON output', () => {
+            return makeFakeJson('I am a program', {}, {
+                code: 0,
+                stdout: [{text: "Something from stdout"}],
+                stderr: [{text: "Something from stderr"}],
+                asm: [{text: "ASMASMASM"}]
+            })
+                .then(res => {
+                    res.should.have.status(200);
+                    res.should.be.json;
+                    res.body.should.deep.equals({
+                        asm: [{text: "ASMASMASM"}],
+                        code: 0,
+                        input: {
+                            filters: [],
+                            options: [],
+                            source: "I am a program"
+                        },
+                        stderr: [{text: "Something from stderr"}],
+                        stdout: [{text: "Something from stdout"}]
+                    });
+                })
+                .catch(function (err) {
+                    throw err;
+                });
+        });
+
+        it('parses options and filters', () => {
+            return makeFakeJson('I am a program', {
+                userArguments: '-O1 -monkey "badger badger"',
+                filters: {a: true, b: true, c: true}
+            })
+                .then(res => {
+                    res.should.have.status(200);
+                    res.should.be.json;
+                    res.body.input.options.should.deep.equals(['-O1', '-monkey', 'badger badger']);
+                    res.body.input.filters.should.deep.equals({a: true, b: true, c: true});
+                });
+        });
+    });
+
+    describe('Query API', () => {
+        function makeFakeQuery(source, query, fakeResult) {
+            return compileHandler.setCompilers([{
+                compilerType: "fake-for-test",
+                exe: "fake",
+                fakeResult: fakeResult || {}
+            }])
+                .then(() => chai.request(app)
+                    .post('/fake-for-test/compile')
+                    .query(query || {})
+                    .set('Accept', 'application/json')
+                    .send(source || ""));
+        }
+
+        it('handles filters set directly', () => {
+            return makeFakeQuery("source", {filters: 'a,b,c'})
+                .then(res => {
+                    res.should.have.status(200);
+                    res.should.be.json;
+                    res.body.input.options.should.deep.equals([]);
+                    res.body.input.filters.should.deep.equals({a: true, b: true, c: true});
+                })
+                .catch(function (err) {
+                    throw err;
+                });
+        });
+
+        it('handles filters added', () => {
+            return makeFakeQuery("source", {filters: 'a', addFilters: 'e,f'})
+                .then(res => {
+                    res.should.have.status(200);
+                    res.should.be.json;
+                    res.body.input.options.should.deep.equals([]);
+                    res.body.input.filters.should.deep.equals({a: true, e: true, f: true});
+                })
+                .catch(function (err) {
+                    throw err;
+                });
+        });
+        it('handles filters removed', () => {
+            return makeFakeQuery("source", {filters: 'a,b,c', removeFilters: 'b,c,d'})
+                .then(res => {
+                    res.should.have.status(200);
+                    res.should.be.json;
+                    res.body.input.options.should.deep.equals([]);
+                    res.body.input.filters.should.deep.equals({a: true});
+                })
+                .catch(function (err) {
+                    throw err;
+                });
+        });
+        it('handles filters added and removed', () => {
+            return makeFakeQuery("source", {filters: 'a,b,c', addFilters:'c,g,h', removeFilters: 'b,c,d,h'})
+                .then(res => {
+                    res.should.have.status(200);
+                    res.should.be.json;
+                    res.body.input.options.should.deep.equals([]);
+                    res.body.input.filters.should.deep.equals({a: true, g: true});
+                })
+                .catch(function (err) {
+                    throw err;
+                });
+        });
+    });
+});

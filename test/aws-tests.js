@@ -90,8 +90,6 @@ AWS.mock('SSM', 'getParametersByPath', {
 });
 
 describe('AWS instance fetcher tests', () => {
-
-
     it('Fetches Bob', () => {
         const fakeProps = {
             region: 'not-a-region',

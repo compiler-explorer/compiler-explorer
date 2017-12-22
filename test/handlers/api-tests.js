@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 const chai = require('chai'),
-    ApiHandler = require('../../lib/handlers/api').ApiHandler,
+    ApiHandler = require('../../lib/handlers/api').Handler,
     express = require('express');
 
 chai.use(require("chai-http"));
@@ -32,7 +32,7 @@ chai.should();
 describe('API handling', () => {
     const app = express();
     const apiHandler = new ApiHandler({
-        handler: (res, req, next) => {
+        handle: (res, req, next) => {
             res.end("compile");
         }
     });
