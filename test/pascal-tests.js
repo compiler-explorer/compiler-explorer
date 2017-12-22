@@ -34,18 +34,19 @@ var props = function (key, deflt) {
 };
 
 describe('Basic compiler setup', function () {
-    var ce = new CompilationEnvironment(props);
-    var info = {
+    const ce = new CompilationEnvironment(props);
+    const info = {
         "exe": null,
         "remote": true,
-        "unitTestMode": true
+        "unitTestMode": true,
+        "lang": "pascal"
     };
 
     ce.compilerPropsL = function (lang, property, defaultValue) {
         return "";
     };
 
-    var compiler = new PascalCompiler(info, ce, "pascal");
+    const compiler = new PascalCompiler(info, ce, info.lang);
 
     compiler.getOutputFilename("/tmp/", "output.pas").should.equal("/tmp/output.s");
 });
