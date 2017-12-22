@@ -188,12 +188,84 @@ describe('Compiler tests', () => {
                 });
         });
         it('handles filters added and removed', () => {
-            return makeFakeQuery("source", {filters: 'a,b,c', addFilters:'c,g,h', removeFilters: 'b,c,d,h'})
+            return makeFakeQuery("source", {filters: 'a,b,c', addFilters: 'c,g,h', removeFilters: 'b,c,d,h'})
                 .then(res => {
                     res.should.have.status(200);
                     res.should.be.json;
                     res.body.input.options.should.deep.equals([]);
                     res.body.input.filters.should.deep.equals({a: true, g: true});
+                })
+                .catch(function (err) {
+                    throw err;
+                });
+        });
+    });
+
+    describe('Multi language', () => {
+        function makeFakeJson(compiler, lang) {
+            return compileHandler.setCompilers([
+                {
+                    compilerType: "fake-for-test",
+                    id: 'a',
+                    lang: 'a',
+                    exe: "fake",
+                    fakeResult: {code: 0, stdout: [], stderr: [], asm: [{text: "LANG A"}]}
+                },
+                {
+                    compilerType: "fake-for-test",
+                    id: 'b',
+                    lang: 'b',
+                    exe: "fake",
+                    fakeResult: {code: 0, stdout: [], stderr: [], asm: [{text: "LANG B"}]}
+                },
+                {
+                    compilerType: "fake-for-test",
+                    id: 'a',
+                    lang: 'b',
+                    exe: "fake",
+                    fakeResult: {code: 0, stdout: [], stderr: [], asm: [{text: "LANG B but A"}]}
+                }
+            ])
+                .then(() => chai.request(app)
+                    .post(`/${compiler}/compile`)
+                    .set('Accept', 'application/json')
+                    .send({
+                        lang: lang,
+                        options: {},
+                        source: ''
+                    }));
+        }
+
+        it('finds without language', () => {
+            return makeFakeJson("b", {})
+                .then(res => {
+                    res.should.have.status(200);
+                    res.should.be.json;
+                    res.body.asm.should.deep.equals([{text: "LANG B"}]);
+                })
+                .catch(function (err) {
+                    throw err;
+                });
+        });
+
+        it('disambiguates by language, choosing A', () => {
+            return makeFakeJson("a", "a")
+                .then(res => {
+                    res.should.have.status(200);
+                    res.should.be.json;
+                    res.body.asm.should.deep.equals([{text: "LANG A"}]);
+                })
+                .catch(function (err) {
+                    throw err;
+                });
+        });
+
+        it('disambiguates by language, choosing B', () => {
+            return makeFakeJson("a", "b")
+                .then(res => {
+                    res.should.have.status(200);
+                    res.should.be.json;
+                    res.body.asm.should.deep.equals([{text: "LANG B but A"}]);
                 })
                 .catch(function (err) {
                     throw err;
