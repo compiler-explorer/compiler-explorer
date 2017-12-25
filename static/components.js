@@ -27,11 +27,14 @@ define(function () {
     'use strict';
     // here instead of in the editor.js and compiler.js etc to prevent circular dependencies.
     return {
-        getCompiler: function (editorId) {
+        getCompiler: function (editorId, lang) {
             return {
                 type: 'component',
                 componentName: 'compiler',
-                componentState: {source: editorId}
+                componentState: {
+                    source: editorId,
+                    lang: lang
+                }
             };
         },
         getCompilerWith: function (editorId, filters, options, compilerId) {

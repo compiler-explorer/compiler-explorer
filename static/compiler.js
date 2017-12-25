@@ -74,8 +74,12 @@ define(function (require) {
         this.sourceEditorId = state.source || 1;
         this.currentLangId = state.lang || "c++";
         this.originalCompilerId = state.compiler;
-        this.compiler = this.compilerService.findCompiler(this.currentLangId, this.originalCompilerId) ||
-            this.compilerService.findCompiler(this.currentLangId, options.defaultCompiler[this.currentLangId]);
+        if (this.originalCompilerId) {
+            this.compiler = this.findCompiler(this.currentLangId, this.originalCompilerId);
+        }
+        if (!this.compiler) {
+            this.compiler = this.findCompiler(this.currentLangId, options.defaultCompiler[this.currentLangId]);
+        }
         this.infoByLang = {};
         this.deferCompiles = hub.deferred;
         this.needsCompile = false;

@@ -276,7 +276,7 @@ define(function (require) {
         // between all compilers created this way. That leads to some nasty-to-find state
         // bugs e.g. https://github.com/mattgodbolt/compiler-explorer/issues/225
         var compilerConfig = _.bind(function () {
-            return Components.getCompiler(this.id);
+            return Components.getCompiler(this.id, this.currentLanguage.id);
         }, this);
 
         var addCompilerButton = this.domRoot.find('.btn.add-compiler');
