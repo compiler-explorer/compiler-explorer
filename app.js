@@ -53,7 +53,8 @@ var opts = nopt({
     'archivedVersions': [String],
     'noRemoteFetch': [Boolean],
     'tmpDir': [String],
-    'wsl': [Boolean]
+    'wsl': [Boolean],
+    'language': [String]
 });
 
 if (opts.debug) logger.level = 'debug';
@@ -88,6 +89,7 @@ var staticDir = opts.static || 'static';
 var archivedVersions = opts.archivedVersions;
 var gitReleaseName = "";
 var versionedRootPrefix = "";
+const wantedLanguage = opts.language || null;
 // Use the canned git_hash if provided
 if (opts.static && fs.existsSync(opts.static + "/git_hash")) {
     gitReleaseName = fs.readFileSync(opts.static + "/git_hash").toString().trim();
@@ -122,13 +124,28 @@ const aws = require('./lib/aws'),
 
 // Instantiate a function to access records concerning "compiler-explorer" 
 // in hidden object props.properties
-var ceProps = props.propsFor("compiler-explorer");
+const ceProps = props.propsFor("compiler-explorer");
 
-const languages = require('./lib/languages').list;
+let languages = require('./lib/languages').list;
+
+if (wantedLanguage) {
+    const filteredLangs = {};
+    _.each(languages, lang => {
+        if (lang.id === wantedLanguage || lang.name === wantedLanguage) {
+            filteredLangs[lang.id] = lang;
+        }
+    });
+    languages = filteredLangs;
+}
+
+if (languages.length === 0) {
+    logger.error("Trying to start Compiler Explorer without a language");
+    process.exit(1);
+}
 
 // Instantiate a function to access records concerning the chosen language
 // in hidden object props.properties
-var compilerPropsFuncsL = {};
+let compilerPropsFuncsL = {};
 _.each(languages, lang => compilerPropsFuncsL[lang.id] = props.propsFor(lang.id));
 
 // Get a property from the specified langId, and if not found, use defaults from CE,

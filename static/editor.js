@@ -70,7 +70,11 @@ define(function (require) {
 
         this.languageBtn = this.domRoot.find('.change-language');
         this.needsLanguageUpdate = !(state.lang && languages[state.lang]);
-        this.currentLanguage = languages["c++"];
+        var langKeys = _.keys(languages);
+        if (langKeys.length <= 1) {
+            this.languageBtn.prop("disabled", true);
+        }
+        this.currentLanguage = langKeys ?  languages[langKeys[0]] : null;
         if (state.lang && languages[state.lang]) {
             this.currentLanguage = languages[state.lang];
         } else if (hub.lastOpenedLangId && languages[hub.lastOpenedLangId]) {
