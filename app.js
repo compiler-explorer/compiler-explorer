@@ -88,7 +88,7 @@ var hostname = opts.host;
 var port = opts.port || 10240;
 var staticDir = opts.static || 'static';
 var archivedVersions = opts.archivedVersions;
-var gitReleaseName = "UNKNOWN";
+var gitReleaseName = "";
 var versionedRootPrefix = "";
 // Use the canned git_hash if provided
 if (opts.static && fs.existsSync(opts.static + "/git_hash")) {
@@ -502,7 +502,7 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
         logger.info("=======================================");
         logger.info("Listening on http://" + (hostname || 'localhost') + ":" + port + "/");
         logger.info("  serving static files from '" + staticDir + "'");
-        logger.info("  git release " + gitReleaseName);
+        if (gitReleaseName) logger.info("  git release " + gitReleaseName);
 
         function renderConfig(extra) {
             var options = _.extend(extra, clientOptionsHandler.get());
