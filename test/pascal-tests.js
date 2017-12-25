@@ -46,7 +46,7 @@ describe('Basic compiler setup', function () {
         return "";
     };
 
-    const compiler = new PascalCompiler(info, ce, info.lang);
+    const compiler = new PascalCompiler(info, ce);
 
     compiler.getOutputFilename("/tmp/", "output.pas").should.equal("/tmp/output.s");
 });
