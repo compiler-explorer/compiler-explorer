@@ -24,7 +24,32 @@
 
 var should = require('chai').should();
 var PascalDemangler = require('../lib/pascal-support').demangler;
+var PascalCompiler = require('../lib/compilers/pascal');
+var logger = require('../lib/logger').logger;
 
+var CompilationEnvironment = require('../lib/compilation-env').CompilationEnvironment;
+
+var props = function (key, deflt) {
+    return deflt;
+};
+
+describe('Basic compiler setup', function () {
+    const ce = new CompilationEnvironment(props);
+    const info = {
+        "exe": null,
+        "remote": true,
+        "unitTestMode": true,
+        "lang": "pascal"
+    };
+
+    ce.compilerPropsL = function (lang, property, defaultValue) {
+        return "";
+    };
+
+    const compiler = new PascalCompiler(info, ce, info.lang);
+
+    compiler.getOutputFilename("/tmp/", "output.pas").should.equal("/tmp/output.s");
+});
 
 describe('Pascal signature composer function', function () {
     var demangler = new PascalDemangler();
