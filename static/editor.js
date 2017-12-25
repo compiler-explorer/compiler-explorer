@@ -70,7 +70,16 @@ define(function (require) {
 
         this.languageBtn = this.domRoot.find('.change-language');
         this.needsLanguageUpdate = !(state.lang && languages[state.lang]);
-        this.currentLanguage = state.lang && languages[state.lang] ? languages[state.lang] : languages["c++"];
+        var langKeys = _.keys(languages);
+        if (langKeys.length <= 1) {
+            this.languageBtn.prop("disabled", true);
+        }
+        this.currentLanguage = langKeys ?  languages[langKeys[0]] : null;
+        if (state.lang && languages[state.lang]) {
+            this.currentLanguage = languages[state.lang];
+        } else if (hub.lastOpenedLangId && languages[hub.lastOpenedLangId]) {
+            this.currentLanguage = languages[hub.lastOpenedLangId];
+        }
 
         var root = this.domRoot.find(".monaco-placeholder");
         var legacyReadOnly = state.options && !!state.options.readOnly;
@@ -271,7 +280,7 @@ define(function (require) {
         // between all compilers created this way. That leads to some nasty-to-find state
         // bugs e.g. https://github.com/mattgodbolt/compiler-explorer/issues/225
         var compilerConfig = _.bind(function () {
-            return Components.getCompiler(this.id);
+            return Components.getCompiler(this.id, this.currentLanguage.id);
         }, this);
 
         var addCompilerButton = this.domRoot.find('.btn.add-compiler');

@@ -23,67 +23,48 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 const chai = require('chai'),
-    ApiHandler = require('../../lib/handlers/api').Handler,
+    source = require('../../lib/handlers/source'),
     express = require('express');
 
 chai.use(require("chai-http"));
 chai.should();
 
-describe('API handling', () => {
+describe('Sources', () => {
     const app = express();
-    const apiHandler = new ApiHandler({
-        handle: (res, req, next) => {
-            res.end("compile");
-        }
-    });
-    app.use('/api', apiHandler.handle);
-    apiHandler.setCompilers([{
-        id: "gcc900",
-        name: "GCC 9.0.0"
-    }]);
+    const handler = new source.Handler(
+        [{
+            urlpart: 'moose',
+            list: () => Promise.resolve({moose: 'pig'}),
+            load: name => Promise.resolve({file: `File called ${name}`}),
+            save: null
+        }],
+        res => res.setHeader('Yibble', 'boing'));
+    app.use('/source', handler.handle.bind(handler));
 
-    it('should respond to plain text compiler requests', () => {
+    it('should list', () => {
         return chai.request(app)
-            .get('/api/compilers')
-            .then(res => {
-                res.should.have.status(200);
-                res.should.be.text;
-                res.text.should.contain("Compiler Name");
-                res.text.should.contain("gcc900");
-                res.text.should.contain("GCC 9.0.0");
-            })
-            .catch(function (err) {
-                throw err;
-            });
-    });
-    it('should respond to JSON compiler requests', () => {
-        return chai.request(app)
-            .get('/api/compilers')
-            .set('Accept', 'application/json')
+            .get('/source/moose/list')
             .then(res => {
                 res.should.have.status(200);
                 res.should.be.json;
-                res.body.should.deep.equals([{
-                    id: "gcc900",
-                    name: "GCC 9.0.0"
-                }]);
+                res.body.should.deep.equals({moose: 'pig'});
+                res.should.have.header("Yibble", 'boing');
             })
             .catch(function (err) {
                 throw err;
             });
     });
-    it('should respond to ASM doc requests', () => {
+    it('should fetch files', () => {
         return chai.request(app)
-            .get('/api/asm/MOVQ')
-            .set('Accept', 'application/json')
+            .get('/source/moose/load/Grunkle')
             .then(res => {
                 res.should.have.status(200);
                 res.should.be.json;
-                res.body.found.should.be.true;
+                res.body.should.deep.equals({file: 'File called Grunkle'});
+                res.should.have.header("Yibble", 'boing');
             })
             .catch(function (err) {
                 throw err;
             });
     });
-    // TODO: more tests!
 });

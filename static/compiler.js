@@ -74,9 +74,13 @@ define(function (require) {
         this.sourceEditorId = state.source || 1;
         this.currentLangId = state.lang || "c++";
         this.originalCompilerId = state.compiler;
-        this.compiler = this.compilerService.findCompiler(this.currentLangId, this.originalCompilerId) ||
-            this.compilerService.findCompiler(this.currentLangId, options.defaultCompiler[this.currentLangId]);
-        this.selectedCompilerByLang = {};
+        if (this.originalCompilerId) {
+            this.compiler = this.findCompiler(this.currentLangId, this.originalCompilerId);
+        }
+        if (!this.compiler) {
+            this.compiler = this.findCompiler(this.currentLangId, options.defaultCompiler[this.currentLangId]);
+        }
+        this.infoByLang = {};
         this.deferCompiles = hub.deferred;
         this.needsCompile = false;
         this.options = state.options || options.compileOptions[this.currentLangId];
@@ -1145,8 +1149,11 @@ define(function (require) {
         if (this.sourceEditorId === editorId) {
             var oldLangId = this.currentLangId;
             this.currentLangId = newLangId;
-            // Store the current selected compiler to come back to it later in the same session (Not state sotred!)
-            this.selectedCompilerByLang[oldLangId] = this.compiler ? this.compiler.id : options.defaultCompiler[oldLangId];
+            // Store the current selected stuff to come back to it later in the same session (Not state stored!)
+            this.infoByLang[oldLangId] = {
+                compiler: this.compiler && this.compiler.id ? this.compiler.id : options.defaultCompiler[oldLangId],
+                options: this.options
+            };
             this.updateCompilersSelector();
             this.updateLibsDropdown();
         }
@@ -1174,8 +1181,9 @@ define(function (require) {
             // Return the first, or an empty string if none found (Should prob report this one...)
             return value && value.id ? value.id : "";
         }, this);
-
-        selector.setValue([this.selectedCompilerByLang[this.currentLangId] || defaultOrFirst()]);
+        var info = this.infoByLang[this.currentLangId] || {};
+        selector.setValue([info.compiler || defaultOrFirst()]);
+        this.optionsField.val(info.options || "");
     };
 
     Compiler.prototype.findCompiler = function (langId, compilerId) {

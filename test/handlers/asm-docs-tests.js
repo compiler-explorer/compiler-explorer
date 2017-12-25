@@ -31,7 +31,8 @@ chai.should();
 
 describe('Assembly documents', () => {
     const app = express();
-    app.use('/asm/:opcode', asmDocsApi.handler);
+    const handler = new asmDocsApi.Handler();
+    app.use('/asm/:opcode', handler.handle.bind(handler));
 
     // We don't serve a 404 for unknown opcodes as it allows the not-an-opcode to be cached.
     it('should respond with "unknown opcode" for unknown opcodes', () => {
@@ -89,4 +90,18 @@ describe('Assembly documents', () => {
                 throw err;
             });
     });
+
+    it('should handle at&t syntax', () => {
+        return chai.request(app)
+            .get('/asm/addq')
+            .then(res => {
+                res.should.have.status(200);
+                res.should.be.html;
+                res.text.should.contain("Adds the destination operand");
+            })
+            .catch(function (err) {
+                throw err;
+            });
+    });
+
 });

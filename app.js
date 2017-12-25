@@ -53,7 +53,8 @@ var opts = nopt({
     'archivedVersions': [String],
     'noRemoteFetch': [Boolean],
     'tmpDir': [String],
-    'wsl': [Boolean]
+    'wsl': [Boolean],
+    'language': [String]
 });
 
 if (opts.debug) logger.level = 'debug';
@@ -88,6 +89,7 @@ var staticDir = opts.static || 'static';
 var archivedVersions = opts.archivedVersions;
 var gitReleaseName = "";
 var versionedRootPrefix = "";
+const wantedLanguage = opts.language || null;
 // Use the canned git_hash if provided
 if (opts.static && fs.existsSync(opts.static + "/git_hash")) {
     gitReleaseName = fs.readFileSync(opts.static + "/git_hash").toString().trim();
@@ -117,19 +119,32 @@ if (opts.propDebug) props.setDebug(true);
 props.initialize(rootDir + '/config', propHierarchy);
 
 // Now load up our libraries.
-const CompileHandler = require('./lib/compile-handler').CompileHandler,
-    aws = require('./lib/aws'),
+const aws = require('./lib/aws'),
     google = require('./lib/google');
 
 // Instantiate a function to access records concerning "compiler-explorer" 
 // in hidden object props.properties
-var ceProps = props.propsFor("compiler-explorer");
+const ceProps = props.propsFor("compiler-explorer");
 
-const languages = require('./lib/languages').list;
+let languages = require('./lib/languages').list;
+
+if (wantedLanguage) {
+    const filteredLangs = {};
+    _.each(languages, lang => {
+        if (lang.id === wantedLanguage || lang.name === wantedLanguage) {
+            filteredLangs[lang.id] = lang;
+        }
+    });
+    languages = filteredLangs;
+}
+
+if (languages.length === 0) {
+    logger.error("Trying to start Compiler Explorer without a language");
+}
 
 // Instantiate a function to access records concerning the chosen language
 // in hidden object props.properties
-var compilerPropsFuncsL = {};
+let compilerPropsFuncsL = {};
 _.each(languages, lang => compilerPropsFuncsL[lang.id] = props.propsFor(lang.id));
 
 // Get a property from the specified langId, and if not found, use defaults from CE,
@@ -190,35 +205,19 @@ function loadSources() {
         });
 }
 
-// load effectively
-var fileSources = loadSources();
-var sourceToHandler = {};
-fileSources.forEach(function (source) {
-    sourceToHandler[source.urlpart] = source;
-});
-
-var clientOptionsHandler = new ClientOptionsHandler(fileSources);
-var compileHandler = new CompileHandler(ceProps, compilerPropsL);
-const ApiHandler = require('./lib/handlers/api').ApiHandler;
+const fileSources = loadSources();
+const clientOptionsHandler = new ClientOptionsHandler(fileSources);
+const CompileHandler = require('./lib/handlers/compile').Handler;
+const compileHandler = new CompileHandler(ceProps, compilerPropsL);
+const ApiHandler = require('./lib/handlers/api').Handler;
 const apiHandler = new ApiHandler(compileHandler);
+const SourceHandler = require('./lib/handlers/source').Handler;
+const sourceHandler = new SourceHandler(fileSources, staticHeaders);
 
-// auxiliary function used in clientOptionsHandler
-function compareOn(key) {
-    return function (xObj, yObj) {
-        var x = xObj[key];
-        var y = yObj[key];
-        if (x < y) return -1;
-        if (x > y) return 1;
-        return 0;
-    };
-}
-
-// instantiate a function that generate javascript code,
 function ClientOptionsHandler(fileSources) {
-    const sources = fileSources.map(function (source) {
+    const sources = _.sortBy(fileSources.map(function (source) {
         return {name: source.name, urlpart: source.urlpart};
-    }).sort(compareOn("name"));
-    // sort source file alphabetically
+    }), "name");
 
     var supportsBinary = compilerPropsAT(languages, res => !!res, "supportsBinary", true);
     var supportsExecute = supportsBinary && !!compilerPropsAT(languages, (res, lang) => supportsBinary[lang.id] && !!res, "supportsExecute", true);
@@ -289,33 +288,6 @@ function ClientOptionsHandler(fileSources) {
     };
 }
 
-// function used to enable loading and saving source code from web interface
-function getSource(req, res, next) {
-    var bits = req.url.split("/");
-    var handler = sourceToHandler[bits[1]];
-    if (!handler) {
-        next();
-        return;
-    }
-    var action = bits[2];
-    if (action === "list") action = handler.list;
-    else if (action === "load") action = handler.load;
-    else if (action === "save") action = handler.save;
-    else action = null;
-    if (action === null) {
-        next();
-        return;
-    }
-    action.apply(handler, bits.slice(3).concat(function (err, response) {
-        staticHeaders(res);
-        if (err) {
-            res.end(JSON.stringify({err: err}));
-        } else {
-            res.end(JSON.stringify(response));
-        }
-    }));
-}
-
 function retryPromise(promiseFunc, name, maxFails, retryMs) {
     return new Promise(function (resolve, reject) {
         var fails = 0;
@@ -341,9 +313,7 @@ function retryPromise(promiseFunc, name, maxFails, retryMs) {
 }
 
 function findCompilers() {
-    let exes = compilerPropsAT(languages, exs => {
-        return exs.split(":").filter(_.identity);
-    }, "compilers", "");
+    let exes = compilerPropsAT(languages, exs => _.compact(exs.split(":")), "compilers", "");
 
     const ndk = compilerPropsA(languages, 'androidNdk');
     _.each(ndk, (ndkPath, langId) => {
@@ -468,7 +438,7 @@ function findCompilers() {
                 return compilerPropsL(langId, "group." + groupName + "." + propName, parentProps(langId, propName, def));
             };
 
-            const compilerExes = props(langId, 'compilers', '').split(":").filter(_.identity);
+            const compilerExes = _.compact(props(langId, 'compilers', '').split(":"));
             logger.debug("Processing compilers from group " + groupName);
             return Promise.all(compilerExes.map(compiler => recurseGetCompilers(langId, compiler, props)));
         }
@@ -502,10 +472,10 @@ function findCompilers() {
 
     return Promise.all(getCompilers())
         .then(_.flatten)
-        .then(compileHandler.setCompilers)
-        .then(compilers => _.filter(compilers, compiler => !!compiler))
+        .then(compilers => compileHandler.setCompilers(compilers))
+        .then(compilers => _.compact(compilers))
         .then(ensureDistinct)
-        .then(compilers => compilers.sort(compareOn("name")));
+        .then(compilers => _.sortBy(compilers, "name"));
 }
 
 function shortUrlHandler(req, res, next) {
@@ -601,7 +571,7 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
             return options;
         }
 
-        var embeddedHandler = function (req, res) {
+        const embeddedHandler = function (req, res) {
             staticHeaders(res);
             res.render('embed', renderConfig({embedded: true}));
         };
@@ -650,10 +620,9 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
             }))
             .use(restreamer())
             .get('/client-options.json', clientOptionsHandler.handler)
-            .use('/source', getSource)
+            .use('/source', sourceHandler.handle.bind(sourceHandler))
             .use('/api', apiHandler.handle)
-            .use('/g', shortUrlHandler)
-            .post('/compile', compileHandler.handler);
+            .use('/g', shortUrlHandler);
         logger.info("=======================================");
 
         webServer.use(Raven.errorHandler());
