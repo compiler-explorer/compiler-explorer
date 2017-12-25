@@ -88,12 +88,12 @@ var hostname = opts.host;
 var port = opts.port || 10240;
 var staticDir = opts.static || 'static';
 var archivedVersions = opts.archivedVersions;
-var gitReleaseName = "";
+var gitReleaseName = "UNKNOWN";
 var versionedRootPrefix = "";
 // Use the canned git_hash if provided
 if (opts.static && fs.existsSync(opts.static + "/git_hash")) {
     gitReleaseName = fs.readFileSync(opts.static + "/git_hash").toString().trim();
-} else {
+} else if (fs.existsSync('.git/')) { // Just if we have been cloned and not downloaded (Thanks David!)
     gitReleaseName = child_process.execSync('git rev-parse HEAD').toString().trim();
 }
 if (opts.static && fs.existsSync(opts.static + '/v/' + gitReleaseName))
