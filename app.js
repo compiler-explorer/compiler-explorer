@@ -140,7 +140,6 @@ if (wantedLanguage) {
 
 if (languages.length === 0) {
     logger.error("Trying to start Compiler Explorer without a language");
-    process.exit(1);
 }
 
 // Instantiate a function to access records concerning the chosen language
