@@ -72,7 +72,7 @@ define(function (require) {
         this.domRoot.html($('#compiler').html());
         this.id = state.id || hub.nextCompilerId();
         this.sourceEditorId = state.source || 1;
-        this.currentLangId = state.lang || "c++";
+        this.currentLangId = state.lang || _.keys(options.languages)[0];
         this.originalCompilerId = state.compiler;
         if (this.originalCompilerId) {
             this.compiler = this.findCompiler(this.currentLangId, this.originalCompilerId);
@@ -255,6 +255,7 @@ define(function (require) {
         this.eventHub.on('findCompilers', this.sendCompiler, this);
         this.eventHub.on('compilerSetDecorations', this.onCompilerSetDecorations, this);
         this.eventHub.on('settingsChange', this.onSettingsChange, this);
+
         this.eventHub.on('optViewOpened', this.onOptViewOpened, this);
         this.eventHub.on('optViewClosed', this.onOptViewClosed, this);
         this.eventHub.on('astViewOpened', this.onAstViewOpened, this);
@@ -1156,6 +1157,7 @@ define(function (require) {
             };
             this.updateCompilersSelector();
             this.updateLibsDropdown();
+            this.saveState();
         }
     };
 
