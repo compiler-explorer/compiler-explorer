@@ -72,7 +72,7 @@ define(function (require) {
         this.domRoot.html($('#compiler').html());
         this.id = state.id || hub.nextCompilerId();
         this.sourceEditorId = state.source || 1;
-        this.currentLangId = state.lang || "c++";
+        this.currentLangId = state.lang || "php";
         this.originalCompilerId = state.compiler;
         if (this.originalCompilerId) {
             this.compiler = this.findCompiler(this.currentLangId, this.originalCompilerId);
