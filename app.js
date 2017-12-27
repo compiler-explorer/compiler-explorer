@@ -313,7 +313,8 @@ function retryPromise(promiseFunc, name, maxFails, retryMs) {
 }
 
 function findCompilers() {
-    let exes = compilerPropsAT(languages, exs => _.compact(exs.split(":")), "compilers", "");
+    const exes = compilerPropsAT(languages, exs => _.compact(exs.split(":")), "compilers", "");
+
 
     const ndk = compilerPropsA(languages, 'androidNdk');
     _.each(ndk, (ndkPath, langId) => {
