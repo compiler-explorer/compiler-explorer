@@ -1,4 +1,4 @@
-// Copyright (c) 2012-2017, Matt Godbolt
+// Copyright (c) 2017, Patrick Quist
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,45 +22,47 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-var Compile = require('../base-compiler');
-var asm = require('../asm-cl');
-var RunCLDemangler = require('../cl-support').RunCLDemangler;
+var chai = require('chai');
+var should = chai.should();
+var assert = chai.assert;
+var WslCL = require('../lib/compilers/WSL-CL');
+var WineCL = require('../lib/compilers/Wine-CL');
+var logger = require('../lib/logger').logger;
+var CompilationEnvironment = require('../lib/compilation-env').CompilationEnvironment;
 
-function compileCl(info, env) {
-    var compile = new Compile(info, env);
-    compile.asm = new asm.AsmParser(env.compilerProps);
-    info.supportsFiltersInBinary = true;
-    if (process.platform == "linux") {
-        var wine = env.gccProps("wine");
-        var origExec = compile.exec;
-        compile.exec = function (command, args, options) {
-            if (command.toLowerCase().endsWith(".exe")) {
-                args.unshift(command);
-                command = wine;
-            }
-            return origExec(command, args, options);
+describe('Paths', function () {
+    it('Linux -> Wine path', function () {
+        var info = {
+            "exe": null,
+            "remote": true
         };
-        compile.filename = function (fn) {
-            return 'Z:' + fn;
+        var envprops = function (key, deflt) {
+            return deflt;
         };
-    }
-    compile.supportsObjdump = function () {
-        return false;
-    };
 
-    compile.postProcessAsm = function(result) {
-        return RunCLDemangler(this, result);
-    };
+        var env = new CompilationEnvironment(envprops);
+        env.compilerProps = function () {};
 
-    compile.optionsForFilter = function (filters, outputFilename, userOptions) {
-        return [
-            '/FAsc',
-            '/c',
-            '/Fa' + this.filename(outputFilename),
-            '/Fo' + this.filename(outputFilename + '.obj')
-        ];
-    };
-    return compile.initialise();
-}
+        var compiler = new WineCL(info, env);
+        
+        compiler._12.filename("/tmp/123456/output.s").should.equal("Z:/tmp/123456/output.s");
+    });
 
-module.exports = compileCl;
+    it('Linux -> Windows path', function () {
+        var info = {
+            "exe": null,
+            "remote": true
+        };
+        var envprops = function (key, deflt) {
+            return deflt;
+        };
+
+        var env = new CompilationEnvironment(envprops);
+        env.compilerProps = function () {};
+
+        var compiler = new WslCL(info, env);
+        
+        process.env.winTmp = "/mnt/c/tmp";
+        compiler._12.filename("/mnt/c/tmp/123456/output.s").should.equal("c:/tmp/123456/output.s");
+    });
+});
