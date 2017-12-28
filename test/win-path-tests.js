@@ -34,7 +34,8 @@ describe('Paths', function () {
     it('Linux -> Wine path', function () {
         var info = {
             "exe": null,
-            "remote": true
+            "remote": true,
+            "unitTestMode": true
         };
         var envprops = function (key, deflt) {
             return deflt;
@@ -43,15 +44,15 @@ describe('Paths', function () {
         var env = new CompilationEnvironment(envprops);
         env.compilerProps = function () {};
 
-        var compiler = new WineCL(info, env);
-        
-        compiler._12.filename("/tmp/123456/output.s").should.equal("Z:/tmp/123456/output.s");
+        var compiler = new WineCL(info, env);        
+        compiler.filename("/tmp/123456/output.s").should.equal("Z:/tmp/123456/output.s");
     });
 
     it('Linux -> Windows path', function () {
         var info = {
             "exe": null,
-            "remote": true
+            "remote": true,
+            "unitTestMode": true
         };
         var envprops = function (key, deflt) {
             return deflt;
@@ -60,9 +61,9 @@ describe('Paths', function () {
         var env = new CompilationEnvironment(envprops);
         env.compilerProps = function () {};
 
-        var compiler = new WslCL(info, env);
-        
         process.env.winTmp = "/mnt/c/tmp";
-        compiler._12.filename("/mnt/c/tmp/123456/output.s").should.equal("c:/tmp/123456/output.s");
+
+        var compiler = new WslCL(info, env);
+        compiler.filename("/mnt/c/tmp/123456/output.s").should.equal("c:/tmp/123456/output.s");
     });
 });
