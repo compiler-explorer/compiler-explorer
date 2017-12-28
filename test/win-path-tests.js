@@ -22,50 +22,48 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-var chai = require('chai');
-var should = chai.should();
-var assert = chai.assert;
-var WslCL = require('../lib/compilers/WSL-CL');
-var WineCL = require('../lib/compilers/Wine-CL');
-var logger = require('../lib/logger').logger;
-var CompilationEnvironment = require('../lib/compilation-env').CompilationEnvironment;
+const chai = require('chai');
+const should = chai.should();
+const assert = chai.assert;
+const WslCL = require('../lib/compilers/WSL-CL');
+const WineCL = require('../lib/compilers/Wine-CL');
+const logger = require('../lib/logger').logger;
+const {CompilationEnvironment} = require('../lib/compilation-env');
 
-describe('Paths', function () {
-    it('Linux -> Wine path', function () {
-        var info = {
-            "lang": "c++",
-            "exe": null,
-            "remote": true,
-            "unitTestMode": true
+describe('Paths', () => {
+    it('Linux -> Wine path', () => {
+        const info = {
+            lang: "c++",
+            exe: null,
+            remote: true,
+            unitTestMode: true
         };
-        var envprops = function (key, deflt) {
-            return deflt;
+        const envprops = (key, deflt) => deflt;
+
+        const env = new CompilationEnvironment(envprops);
+        env.compilerProps = () => {
         };
 
-        var env = new CompilationEnvironment(envprops);
-        env.compilerProps = function () {};
-
-        var compiler = new WineCL(info, env);
+        const compiler = new WineCL(info, env);
         compiler.filename("/tmp/123456/output.s").should.equal("Z:/tmp/123456/output.s");
     });
 
     it('Linux -> Windows path', function () {
-        var info = {
-            "lang": "c++",
-            "exe": null,
-            "remote": true,
-            "unitTestMode": true
+        const info = {
+            lang: "c++",
+            exe: null,
+            remote: true,
+            unitTestMode: true
         };
-        var envprops = function (key, deflt) {
-            return deflt;
-        };
+        const envprops = (key, deflt) => deflt;
 
-        var env = new CompilationEnvironment(envprops);
-        env.compilerProps = function () {};
+        const env = new CompilationEnvironment(envprops);
+        env.compilerProps = () => {
+        };
 
         process.env.winTmp = "/mnt/c/tmp";
 
-        var compiler = new WslCL(info, env);
+        const compiler = new WslCL(info, env);
         compiler.filename("/mnt/c/tmp/123456/output.s").should.equal("c:/tmp/123456/output.s");
     });
 });
