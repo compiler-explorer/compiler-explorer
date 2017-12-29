@@ -627,7 +627,6 @@ define(function (require) {
     };
 
     Compiler.prototype.onEditorChange = function (editor, source, langId) {
-        console.log(editor, this.sourceEditorId, langId, this.currentLangId);
         if (editor === this.sourceEditorId && langId === this.currentLangId) {
             this.source = source;
             this.compile();
