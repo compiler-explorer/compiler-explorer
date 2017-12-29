@@ -34,6 +34,7 @@ define(function (require) {
     var monaco = require('monaco');
     var options = require('options');
     var Alert = require('alert');
+    var local = require('./local');
     require('./cppp-mode');
     require('./d-mode');
     require('./rust-mode');
@@ -54,7 +55,8 @@ define(function (require) {
         this.domRoot = container.getElement();
         this.domRoot.html($('#codeEditor').html());
         this.eventHub = hub.createEventHub();
-        this.settings = {};
+        // Should probably be its own function somewhere
+        this.settings = JSON.parse(local.get('settings', '{}'));
         this.ourCompilers = {};
 
         this.widgetsByCompiler = {};
@@ -75,10 +77,10 @@ define(function (require) {
         if (langKeys.length <= 1) {
             this.languageBtn.prop("disabled", true);
         }
-        this.currentLanguage = langKeys ?  languages[langKeys[0]] : null;
+        this.currentLanguage = languages[this.settings.defaultLanguage || langKeys[0]];
         if (state.lang && languages[state.lang]) {
             this.currentLanguage = languages[state.lang];
-        } else if (hub.lastOpenedLangId && languages[hub.lastOpenedLangId]) {
+        } else if (this.settings.newEditorLastLang && hub.lastOpenedLangId && languages[hub.lastOpenedLangId]) {
             this.currentLanguage = languages[hub.lastOpenedLangId];
         }
 
@@ -87,7 +89,7 @@ define(function (require) {
         this.editor = monaco.editor.create(root[0], {
             scrollBeyondLastLine: false,
             language: this.currentLanguage.monaco,
-            fontFamily: 'Fira Mono',
+            fontFamily: 'Fira Mono, monospace',
             readOnly: !!options.readOnly || legacyReadOnly,
             glyphMargin: !options.embedded,
             quickSuggestions: false,
@@ -238,7 +240,7 @@ define(function (require) {
         // * Only actually triggering a change if the document text has changed from
         //   the previous emitted.
         this.lastChangeEmitted = null;
-        this.onSettingsChange({});
+        this.onSettingsChange(this.settings);
         this.editor.getModel().onDidChangeContent(_.bind(function () {
             this.debouncedEmitChange();
             this.updateState();
@@ -275,7 +277,6 @@ define(function (require) {
         this.eventHub.on('conformanceViewOpen', this.onConformanceViewOpen, this);
         this.eventHub.on('conformanceViewClose', this.onConformanceViewClose, this);
         this.eventHub.on('resize', this.updateEditorLayout, this);
-        this.eventHub.emit('requestSettings');
 
         // NB a new compilerConfig needs to be created every time; else the state is shared
         // between all compilers created this way. That leads to some nasty-to-find state
@@ -544,6 +545,7 @@ define(function (require) {
             this.updateState();
             // Broadcast the change to other panels
             this.eventHub.emit("languageChange", this.id, newLangId);
+            this.maybeEmitChange(true);
         }
     };
 
