@@ -626,8 +626,9 @@ define(function (require) {
         }
     };
 
-    Compiler.prototype.onEditorChange = function (editor, source) {
-        if (editor === this.sourceEditorId) {
+    Compiler.prototype.onEditorChange = function (editor, source, langId) {
+        console.log(editor, this.sourceEditorId, langId, this.currentLangId);
+        if (editor === this.sourceEditorId && langId === this.currentLangId) {
             this.source = source;
             this.compile();
         }
@@ -1167,7 +1168,7 @@ define(function (require) {
 
     Compiler.prototype.updateCompilersSelector = function () {
         var selector = this.domRoot.find('.compiler-picker')[0].selectize;
-        selector.clearOptions();
+        selector.clearOptions(true);
         selector.load(_.bind(function (callback) {
             callback(_.map(this.getCurrentLangCompilers(), _.identity));
         }, this));
@@ -1184,7 +1185,8 @@ define(function (require) {
             return value && value.id ? value.id : "";
         }, this);
         var info = this.infoByLang[this.currentLangId] || {};
-        selector.setValue([info.compiler || defaultOrFirst()]);
+        this.compiler = this.findCompiler(this.currentLangId, info.compiler || defaultOrFirst());
+        selector.setValue([this.compiler.id], true);
         this.optionsField.val(info.options || "");
     };
 

@@ -543,6 +543,7 @@ define(function (require) {
             this.updateState();
             // Broadcast the change to other panels
             this.eventHub.emit("languageChange", this.id, newLangId);
+            this.maybeEmitChange(true);
         }
     };
 

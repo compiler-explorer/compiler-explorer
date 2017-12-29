@@ -21,7 +21,7 @@
     "golden-layout": "^1.5.9",
     "jquery": "^3.1.1",
     "bootstrap": "^3.3.7",
-    "selectize": "^0.12.2",
+    "selectize": "RabsRincon/selectize.js#master",
     "eventEmitter": "^5.1.0",
     "lz-string": "^1.4.4",
     "clipboard": "^1.5.12",
