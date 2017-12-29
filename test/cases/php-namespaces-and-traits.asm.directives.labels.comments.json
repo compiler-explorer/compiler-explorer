@@ -1,0 +1,286 @@
+[
+  {
+    "text": "op                           fetch          ext  return  operands",
+    "source": null
+  },
+  {
+    "text": "NOP",
+    "source": {
+      "file": null,
+      "line": 6
+    }
+  },
+  {
+    "text": "DECLARE_CLASS                                    $2      'ns\\a'",
+    "source": {
+      "file": null,
+      "line": 12
+    }
+  },
+  {
+    "text": "ADD_TRAIT                                                $2, 'NS\\canAdd'",
+    "source": {
+      "file": null,
+      "line": 13
+    }
+  },
+  {
+    "text": "BIND_TRAITS                                              $2",
+    "source": {
+      "file": null,
+      "line": 12
+    }
+  },
+  {
+    "text": "INIT_STATIC_METHOD_CALL                                  'NS\\A', 'add_two_numbers'",
+    "source": {
+      "file": null,
+      "line": 21
+    }
+  },
+  {
+    "text": "SEND_VAL_EX                                              1",
+    "source": {
+      "file": null,
+      "line": 21
+    }
+  },
+  {
+    "text": "SEND_VAL_EX                                              2",
+    "source": {
+      "file": null,
+      "line": 21
+    }
+  },
+  {
+    "text": "DO_FCALL                                      0  $3",
+    "source": {
+      "file": null,
+      "line": 21
+    }
+  },
+  {
+    "text": "ECHO                                                     $3",
+    "source": {
+      "file": null,
+      "line": 21
+    }
+  },
+  {
+    "text": "NEW                                              $4      :5",
+    "source": {
+      "file": null,
+      "line": 22
+    }
+  },
+  {
+    "text": "DO_FCALL                                      0",
+    "source": {
+      "file": null,
+      "line": 22
+    }
+  },
+  {
+    "text": "ASSIGN                                                   $a, $4",
+    "source": {
+      "file": null,
+      "line": 22
+    }
+  },
+  {
+    "text": "INIT_METHOD_CALL                                         $a, 'multiple_two_numbers'",
+    "source": {
+      "file": null,
+      "line": 23
+    }
+  },
+  {
+    "text": "SEND_VAL_EX                                              1",
+    "source": {
+      "file": null,
+      "line": 23
+    }
+  },
+  {
+    "text": "SEND_VAL_EX                                              2",
+    "source": {
+      "file": null,
+      "line": 23
+    }
+  },
+  {
+    "text": "DO_FCALL                                      0  $7",
+    "source": {
+      "file": null,
+      "line": 23
+    }
+  },
+  {
+    "text": "ECHO                                                     $7",
+    "source": {
+      "file": null,
+      "line": 23
+    }
+  },
+  {
+    "text": "RETURN                                                   1",
+    "source": {
+      "file": null,
+      "line": 25
+    }
+  },
+  {
+    "text": "",
+    "source": null
+  },
+  {
+    "text": "Class NS\\canAdd:",
+    "source": null
+  },
+  {
+    "text": "    Function add_two_numbers:",
+    "source": null
+  },
+  {
+    "text": "        op                           fetch          ext  return  operands",
+    "source": null
+  },
+  {
+    "text": "        RECV                                             $num1",
+    "source": {
+      "file": null,
+      "line": 7
+    }
+  },
+  {
+    "text": "        RECV                                             $num2",
+    "source": {
+      "file": null,
+      "line": 7
+    }
+  },
+  {
+    "text": "        ADD                                              ~2      $num1, $num2",
+    "source": {
+      "file": null,
+      "line": 8
+    }
+  },
+  {
+    "text": "        VERIFY_RETURN_TYPE                                       ~2",
+    "source": {
+      "file": null,
+      "line": 8
+    }
+  },
+  {
+    "text": "        RETURN                                                   ~2",
+    "source": {
+      "file": null,
+      "line": 8
+    }
+  },
+  {
+    "text": "        VERIFY_RETURN_TYPE",
+    "source": {
+      "file": null,
+      "line": 9
+    }
+  },
+  {
+    "text": "        RETURN                                                   null",
+    "source": {
+      "file": null,
+      "line": 9
+    }
+  },
+  {
+    "text": "    End of function add_two_numbers",
+    "source": null
+  },
+  {
+    "text": "End of class NS\\canAdd.",
+    "source": null
+  },
+  {
+    "text": "",
+    "source": null
+  },
+  {
+    "text": "",
+    "source": null
+  },
+  {
+    "text": "Class NS\\A:",
+    "source": null
+  },
+  {
+    "text": "    Function multiple_two_numbers:",
+    "source": null
+  },
+  {
+    "text": "        op                           fetch          ext  return  operands",
+    "source": null
+  },
+  {
+    "text": "        RECV                                             $a",
+    "source": {
+      "file": null,
+      "line": 14
+    }
+  },
+  {
+    "text": "        RECV                                             $b",
+    "source": {
+      "file": null,
+      "line": 14
+    }
+  },
+  {
+    "text": "        MUL                                              ~2      $a, $b",
+    "source": {
+      "file": null,
+      "line": 15
+    }
+  },
+  {
+    "text": "        VERIFY_RETURN_TYPE                                       ~2",
+    "source": {
+      "file": null,
+      "line": 15
+    }
+  },
+  {
+    "text": "        RETURN                                                   ~2",
+    "source": {
+      "file": null,
+      "line": 15
+    }
+  },
+  {
+    "text": "        VERIFY_RETURN_TYPE",
+    "source": {
+      "file": null,
+      "line": 16
+    }
+  },
+  {
+    "text": "        RETURN                                                   null",
+    "source": {
+      "file": null,
+      "line": 16
+    }
+  },
+  {
+    "text": "    End of function multiple_two_numbers",
+    "source": null
+  },
+  {
+    "text": "End of class NS\\A.",
+    "source": null
+  },
+  {
+    "text": "",
+    "source": null
+  }
+]
