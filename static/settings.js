@@ -29,6 +29,7 @@ define(function (require) {
     var _ = require('underscore');
     var colour = require('./colour');
     var themes = require('./themes').themes;
+    var options = require('./options');
 
     function Setting(elem, name, Control, param) {
         this.elem = elem;
@@ -111,7 +112,8 @@ define(function (require) {
         add(colourSchemeSelect, 'colourScheme', colour.schemes[0].name, Select,
             _.map(colour.schemes, function (scheme) {
                 return {label: scheme.name, desc: scheme.desc};
-            }));
+            })
+        );
         // Handle older settings
         if (settings.delayAfterChange === 0) {
             settings.delayAfterChange = 750;
@@ -163,6 +165,15 @@ define(function (require) {
             }
             colourSchemeSelect.trigger('change');
         }
+
+        var langs = options.languages;
+        add(root.find('.defaultLanguage'), 'defaultLanguage', _.keys(langs)[0] || 'c++', Select,
+            _.map(langs, function (lang) {
+                return {label: lang.id, desc: lang.name};
+            })
+        );
+
+        add(root.find('.newEditorLastLang'), 'newEditorLastLang', true, Checkbox);
 
         function setSettings(settings) {
             onSettingsChange(settings);

@@ -65,6 +65,15 @@
         .well.well-sm
           h4 Editor
           .form-group(role="group")
+            label
+              | Default language&nbsp;
+              small
+                span.glyphicon.glyphicon-info-sign(title="New editors only (Reset UI to clear yours)" aria-label="New editors only (Reset UI to clear yours)")
+              select.defaultLanguage
+            .checkbox
+              label
+                input.newEditorLastLang(type="checkbox")
+                | Use last selected language when opening new Editors
             .checkbox
               label
                 input.autoCloseBrackets(type="checkbox")

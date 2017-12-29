@@ -34,6 +34,7 @@ define(function (require) {
     var monaco = require('monaco');
     var options = require('options');
     var Alert = require('alert');
+    var local = require('./local');
     require('./cppp-mode');
     require('./d-mode');
     require('./rust-mode');
@@ -53,7 +54,8 @@ define(function (require) {
         this.domRoot = container.getElement();
         this.domRoot.html($('#codeEditor').html());
         this.eventHub = hub.createEventHub();
-        this.settings = {};
+        // Should probably be its own function somewhere
+        this.settings = JSON.parse(local.get('settings', '{}'));
         this.ourCompilers = {};
 
         this.widgetsByCompiler = {};
@@ -74,10 +76,10 @@ define(function (require) {
         if (langKeys.length <= 1) {
             this.languageBtn.prop("disabled", true);
         }
-        this.currentLanguage = langKeys ?  languages[langKeys[0]] : null;
+        this.currentLanguage = languages[this.settings.defaultLanguage || langKeys[0]];
         if (state.lang && languages[state.lang]) {
             this.currentLanguage = languages[state.lang];
-        } else if (hub.lastOpenedLangId && languages[hub.lastOpenedLangId]) {
+        } else if (this.settings.newEditorLastLang && hub.lastOpenedLangId && languages[hub.lastOpenedLangId]) {
             this.currentLanguage = languages[hub.lastOpenedLangId];
         }
 
