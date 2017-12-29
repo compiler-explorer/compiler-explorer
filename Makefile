@@ -36,7 +36,7 @@ optional-d-support:
 endif
 
 GHC?=ghc
-ifneq "" "$(shell which $(GHC))"
+ifneq "" "$(shell which $(GHC) 2>/dev/null)"
 optional-haskell-support:
 	$(MAKE) -C haskell
 else
