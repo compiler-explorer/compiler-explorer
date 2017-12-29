@@ -23,6 +23,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+if (!extension_loaded('ast')) {
+    echo "PHP AST extension required to generate ASTs";
+    exit(1);
+}
+
 use ast\flags;
 
 // Cache flag names for each AST node kind
