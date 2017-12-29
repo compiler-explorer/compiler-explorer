@@ -239,7 +239,7 @@ define(function (require) {
         // * Only actually triggering a change if the document text has changed from
         //   the previous emitted.
         this.lastChangeEmitted = null;
-        this.onSettingsChange({});
+        this.onSettingsChange(this.settings);
         this.editor.getModel().onDidChangeContent(_.bind(function () {
             this.debouncedEmitChange();
             this.updateState();
@@ -276,7 +276,6 @@ define(function (require) {
         this.eventHub.on('conformanceViewOpen', this.onConformanceViewOpen, this);
         this.eventHub.on('conformanceViewClose', this.onConformanceViewClose, this);
         this.eventHub.on('resize', this.updateEditorLayout, this);
-        this.eventHub.emit('requestSettings');
 
         // NB a new compilerConfig needs to be created every time; else the state is shared
         // between all compilers created this way. That leads to some nasty-to-find state
