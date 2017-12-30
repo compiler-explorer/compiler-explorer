@@ -11,7 +11,7 @@ This document is an attempt to capture thoughts on the future direction of Compi
 
 ### Mobile client support
 
-CE's UI doesn't work well with mobile clients. The editor doesn't work well on many mobile clients, and the
+CE's UI doesn't work well with mobile clients. The editor doesn't support mobile clients, and the
 layout doesn't lend itself well to small screens.
 
 Ideas for improving mobile support include automatically folding up all the panes into a single tab upon
@@ -25,8 +25,6 @@ look at tweeted links rather than author content.
 
 The UI has a number of things that need improving:
 
-- [X] Multiple editor windows
-- [X] Saving and restoring from browser-local storage
 - [ ] Handling the loss of data if one has a work-in-progress CE window open and then clicks another CE link.
 
 ### Execution support
@@ -48,8 +46,7 @@ very important. A [separate document](docs/AddingACompiler.md) explains how to a
 ## Tensions
 
 There's an inherent tension between the standalone, run-it-yourself version of CE and the scalable, AWS-backed
-CE instance. Care must be taken to keep the standalone version usable, not least as the majority of CE's
-development is done on a laptop during a commute (with little or no internet access).
+CE instance. Care must be taken to keep the standalone version usable.
 
 ## Priorities
 
@@ -57,17 +54,13 @@ Above all, the priority is to keep the main CE site up, stable and dependable.
 That also means that URLs should live forever once they are created
 
 ## Non-goals
+
 CE will remain ad-free, open-source and non-commercial. There's no plans at all to add "freemium" content,
 despite the Patreon site where folks can help support the cost of running the servers.
 
-## 2017 goals
+## 2018 goals
 
-With all this in mind, the tentative goals for 2017 are:
-
-- [X] Move to the Monaco editor
-   - [X] Implement diff view
-- [X] Come up with a decent secure solution for code execution
-- [X] Unify every language
+With all this in mind, the tentative goals for 2018 are:
 - [ ] Design an API that can handle remote code execution and download needs
 - [ ] Implement remote execution UIs
 
