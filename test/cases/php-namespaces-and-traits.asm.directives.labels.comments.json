@@ -1,9 +1,5 @@
 [
   {
-    "text": "op                           fetch          ext  return  operands",
-    "source": null
-  },
-  {
     "text": "NOP",
     "source": {
       "file": null,
@@ -11,119 +7,119 @@
     }
   },
   {
-    "text": "DECLARE_CLASS                                    $2      'ns\\a'",
+    "text": "DECLARE_CLASS $2 'ns\\a'",
     "source": {
       "file": null,
       "line": 12
     }
   },
   {
-    "text": "ADD_TRAIT                                                $2, 'NS\\canAdd'",
+    "text": "ADD_TRAIT $2, 'NS\\canAdd'",
     "source": {
       "file": null,
       "line": 13
     }
   },
   {
-    "text": "BIND_TRAITS                                              $2",
+    "text": "BIND_TRAITS $2",
     "source": {
       "file": null,
       "line": 12
     }
   },
   {
-    "text": "INIT_STATIC_METHOD_CALL                                  'NS\\A', 'add_two_numbers'",
+    "text": "INIT_STATIC_METHOD_CALL 'NS\\A', 'add_two_numbers'",
     "source": {
       "file": null,
       "line": 21
     }
   },
   {
-    "text": "SEND_VAL_EX                                              1",
+    "text": "SEND_VAL_EX 1",
     "source": {
       "file": null,
       "line": 21
     }
   },
   {
-    "text": "SEND_VAL_EX                                              2",
+    "text": "SEND_VAL_EX 2",
     "source": {
       "file": null,
       "line": 21
     }
   },
   {
-    "text": "DO_FCALL                                      0  $3",
+    "text": "DO_FCALL $3",
     "source": {
       "file": null,
       "line": 21
     }
   },
   {
-    "text": "ECHO                                                     $3",
+    "text": "ECHO $3",
     "source": {
       "file": null,
       "line": 21
     }
   },
   {
-    "text": "NEW                                              $4      :5",
+    "text": "NEW $4 :5",
     "source": {
       "file": null,
       "line": 22
     }
   },
   {
-    "text": "DO_FCALL                                      0",
+    "text": "DO_FCALL",
     "source": {
       "file": null,
       "line": 22
     }
   },
   {
-    "text": "ASSIGN                                                   $a, $4",
+    "text": "ASSIGN $a, $4",
     "source": {
       "file": null,
       "line": 22
     }
   },
   {
-    "text": "INIT_METHOD_CALL                                         $a, 'multiple_two_numbers'",
+    "text": "INIT_METHOD_CALL $a, 'multiple_two_numbers'",
     "source": {
       "file": null,
       "line": 23
     }
   },
   {
-    "text": "SEND_VAL_EX                                              1",
+    "text": "SEND_VAL_EX 1",
     "source": {
       "file": null,
       "line": 23
     }
   },
   {
-    "text": "SEND_VAL_EX                                              2",
+    "text": "SEND_VAL_EX 2",
     "source": {
       "file": null,
       "line": 23
     }
   },
   {
-    "text": "DO_FCALL                                      0  $7",
+    "text": "DO_FCALL $7",
     "source": {
       "file": null,
       "line": 23
     }
   },
   {
-    "text": "ECHO                                                     $7",
+    "text": "ECHO $7",
     "source": {
       "file": null,
       "line": 23
     }
   },
   {
-    "text": "RETURN                                                   1",
+    "text": "RETURN 1",
     "source": {
       "file": null,
       "line": 25
@@ -142,39 +138,35 @@
     "source": null
   },
   {
-    "text": "        op                           fetch          ext  return  operands",
-    "source": null
-  },
-  {
-    "text": "        RECV                                             $num1",
+    "text": "        RECV $num1",
     "source": {
       "file": null,
       "line": 7
     }
   },
   {
-    "text": "        RECV                                             $num2",
+    "text": "        RECV $num2",
     "source": {
       "file": null,
       "line": 7
     }
   },
   {
-    "text": "        ADD                                              ~2      $num1, $num2",
+    "text": "        ADD ~2 $num1, $num2",
     "source": {
       "file": null,
       "line": 8
     }
   },
   {
-    "text": "        VERIFY_RETURN_TYPE                                       ~2",
+    "text": "        VERIFY_RETURN_TYPE ~2",
     "source": {
       "file": null,
       "line": 8
     }
   },
   {
-    "text": "        RETURN                                                   ~2",
+    "text": "        RETURN ~2",
     "source": {
       "file": null,
       "line": 8
@@ -188,7 +180,7 @@
     }
   },
   {
-    "text": "        RETURN                                                   null",
+    "text": "        RETURN null",
     "source": {
       "file": null,
       "line": 9
@@ -199,11 +191,7 @@
     "source": null
   },
   {
-    "text": "End of class NS\\canAdd.",
-    "source": null
-  },
-  {
-    "text": "",
+    "text": "End of class NS\\canAdd",
     "source": null
   },
   {
@@ -219,39 +207,35 @@
     "source": null
   },
   {
-    "text": "        op                           fetch          ext  return  operands",
-    "source": null
-  },
-  {
-    "text": "        RECV                                             $a",
+    "text": "        RECV $a",
     "source": {
       "file": null,
       "line": 14
     }
   },
   {
-    "text": "        RECV                                             $b",
+    "text": "        RECV $b",
     "source": {
       "file": null,
       "line": 14
     }
   },
   {
-    "text": "        MUL                                              ~2      $a, $b",
+    "text": "        MUL ~2 $a, $b",
     "source": {
       "file": null,
       "line": 15
     }
   },
   {
-    "text": "        VERIFY_RETURN_TYPE                                       ~2",
+    "text": "        VERIFY_RETURN_TYPE ~2",
     "source": {
       "file": null,
       "line": 15
     }
   },
   {
-    "text": "        RETURN                                                   ~2",
+    "text": "        RETURN ~2",
     "source": {
       "file": null,
       "line": 15
@@ -265,7 +249,7 @@
     }
   },
   {
-    "text": "        RETURN                                                   null",
+    "text": "        RETURN null",
     "source": {
       "file": null,
       "line": 16
@@ -276,11 +260,7 @@
     "source": null
   },
   {
-    "text": "End of class NS\\A.",
-    "source": null
-  },
-  {
-    "text": "",
+    "text": "End of class NS\\A",
     "source": null
   }
 ]

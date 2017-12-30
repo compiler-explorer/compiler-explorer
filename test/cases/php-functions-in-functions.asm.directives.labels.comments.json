@@ -1,0 +1,171 @@
+[
+  {
+    "text": "NOP",
+    "source": {
+      "file": null,
+      "line": 5
+    }
+  },
+  {
+    "text": "INIT_FCALL 'a'",
+    "source": {
+      "file": null,
+      "line": 15
+    }
+  },
+  {
+    "text": "DO_FCALL $0",
+    "source": {
+      "file": null,
+      "line": 15
+    }
+  },
+  {
+    "text": "ECHO $0",
+    "source": {
+      "file": null,
+      "line": 15
+    }
+  },
+  {
+    "text": "RETURN 1",
+    "source": {
+      "file": null,
+      "line": 15
+    }
+  },
+  {
+    "text": "",
+    "source": null
+  },
+  {
+    "text": "Annonymous function b:",
+    "source": null
+  },
+  {
+    "text": "    DECLARE_FUNCTION 'c'",
+    "source": {
+      "file": null,
+      "line": 7
+    }
+  },
+  {
+    "text": "    INIT_FCALL_BY_NAME 'c'",
+    "source": {
+      "file": null,
+      "line": 10
+    }
+  },
+  {
+    "text": "    DO_FCALL $0",
+    "source": {
+      "file": null,
+      "line": 10
+    }
+  },
+  {
+    "text": "    CONCAT ~1 'b', $0",
+    "source": {
+      "file": null,
+      "line": 10
+    }
+  },
+  {
+    "text": "    RETURN ~1",
+    "source": {
+      "file": null,
+      "line": 10
+    }
+  },
+  {
+    "text": "    RETURN null",
+    "source": {
+      "file": null,
+      "line": 11
+    }
+  },
+  {
+    "text": "End of annonymous function b",
+    "source": null
+  },
+  {
+    "text": "",
+    "source": null
+  },
+  {
+    "text": "Annonymous function c:",
+    "source": null
+  },
+  {
+    "text": "    RETURN 'c'",
+    "source": {
+      "file": null,
+      "line": 8
+    }
+  },
+  {
+    "text": "    RETURN null",
+    "source": {
+      "file": null,
+      "line": 9
+    }
+  },
+  {
+    "text": "End of annonymous function c",
+    "source": null
+  },
+  {
+    "text": "",
+    "source": null
+  },
+  {
+    "text": "Function a:",
+    "source": null
+  },
+  {
+    "text": "    DECLARE_FUNCTION 'b'",
+    "source": {
+      "file": null,
+      "line": 6
+    }
+  },
+  {
+    "text": "    INIT_FCALL_BY_NAME 'b'",
+    "source": {
+      "file": null,
+      "line": 12
+    }
+  },
+  {
+    "text": "    DO_FCALL $0",
+    "source": {
+      "file": null,
+      "line": 12
+    }
+  },
+  {
+    "text": "    CONCAT ~1 'a', $0",
+    "source": {
+      "file": null,
+      "line": 12
+    }
+  },
+  {
+    "text": "    RETURN ~1",
+    "source": {
+      "file": null,
+      "line": 12
+    }
+  },
+  {
+    "text": "    RETURN null",
+    "source": {
+      "file": null,
+      "line": 13
+    }
+  },
+  {
+    "text": "End of function a",
+    "source": null
+  }
+]
