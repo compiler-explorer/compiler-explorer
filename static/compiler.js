@@ -1174,7 +1174,7 @@ define(function (require) {
         var defaultOrFirst = _.bind(function defaultOrFirst () {
             // If the default is a valid compiler, return it
             var defaultCompiler = options.defaultCompiler[this.currentLangId];
-            if (defaultCompiler && options.compilers[defaultCompiler]) return defaultCompiler;
+            if (defaultCompiler) return defaultCompiler;
             // Else try to find the first one for this language
             var value = _.find(options.compilers, _.bind(function (compiler) {
                 return compiler.lang === this.currentLangId;
@@ -1186,7 +1186,8 @@ define(function (require) {
         var info = this.infoByLang[this.currentLangId] || {};
         this.compiler = this.findCompiler(this.currentLangId, info.compiler || defaultOrFirst());
         selector.setValue([this.compiler.id], true);
-        this.optionsField.val(info.options || "");
+        this.options = info.options || "";
+        this.optionsField.val(this.options);
     };
 
     Compiler.prototype.findCompiler = function (langId, compilerId) {
