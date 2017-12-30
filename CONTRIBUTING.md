@@ -5,18 +5,20 @@ Before we go too far, an apology: Compiler Explorer grew out of a bit of hacky J
 well-used project pretty quickly. Not all the code was originally well-written or well-tested. Please be forgiving of that, 
 and be ready to help in improving that.
 
-## In brief
+Note that Compiler Explorer targets the latest Node.js LTS, so it's better if you do so as well when testing your changes locally. (But it will run in everything post-Node.js 8)
 
+## In brief
 * Make your changes, trying to stick to the style and code format where possible. We use default IntelliJ settings, 
   if that helps.
 * If adding a new server-side component please do your best to add a test to cover it. For client-side changes that's trickier, 
   but do your best to help us improve this situation.
-* Run the tests: `npm test` will do the trick. Everything should pass.
+* Run the git hooks installer (Only needed once): `make install-git-hooks`. This will automatically run the tests before 
+every commit, ensuring that they pass before commiting your changes. _You can disable this check with `git commit --no-verify` if needed_.
 * Do a smoke test: run `make` and ensure the site works as you'd expect. Concentrate on the areas you'd expect to have
   changed, but if you can, click about generally to help check you haven't unintentionally broken something else.
 * Submit a PR.
 * If you have any questions, don't hesitate to email matt@godbolt.org or join the cpplang slack channel and talk on 
-  channel #compiler_explorer
+  channel #compiler_explorer
 
 ## Basic code layout
 
@@ -43,6 +45,6 @@ a page reload. This makes for a pretty quick turnaround.
 ## Gotchas
 
 * Don't use new-style JS (`let` or arrow operators) in the client-side code. Sadly there's still enough users out there
-  on old browsers.
+  on old browsers. But feel free to use all the cool stuff on the server side code.
 * Be aware Compiler Explorer runs on a cluster on the live site. No local state is kept between invocations, and it's likely
   the user's next request will hit another node in the cluster, so don't rely on any in-memory state.
