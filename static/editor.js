@@ -73,6 +73,8 @@ define(function (require) {
         this.languageBtn = this.domRoot.find('.change-language');
         this.needsLanguageUpdate = !(state.lang && languages[state.lang]);
         var langKeys = _.keys(languages);
+        // Ensure that the btn is disabled if we don't have nothing to select
+        // Note that is might be disabled for other reasons beforehand
         if (langKeys.length <= 1) {
             this.languageBtn.prop("disabled", true);
         }
