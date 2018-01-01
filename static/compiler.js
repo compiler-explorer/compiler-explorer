@@ -156,7 +156,7 @@ define(function (require) {
             .on('keyup', optionsChange);
 
         // Hide the binary option if the global options has it disabled.
-        this.domRoot.find('[data-bind=\'binary\']').toggle(options.supportsBinary);
+        this.domRoot.find('[data-bind=\'binary\']').toggle(options.supportsBinary[this.currentLangId]);
         this.domRoot.find('[data-bind=\'execute\']').toggle(options.supportsExecute);
 
         this.outputEditor = monaco.editor.create(this.domRoot.find('.monaco-placeholder')[0], {
