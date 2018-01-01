@@ -1,0 +1,66 @@
+
+ Start         Length     Name                   Class
+ 0001:00401000 00002D08H .text                   CODE
+ 0002:00404000 000000F0H .itext                  ICODE
+ 0003:00405000 000007ACH .data                   DATA
+ 0004:00406000 0000318CH .bss                    BSS
+ 0005:00000000 00000008H .tls                    TLS
+
+
+Detailed map of segments
+
+ 0001:00000000 00002B43 C=CODE     S=.text    G=(none)   M=System   ACBP=A9
+ 0001:00002B44 00000105 C=CODE     S=.text    G=(none)   M=SysInit  ACBP=A9
+ 0001:00002C4C 0000006A C=CODE     S=.text    G=(none)   M=output   ACBP=A9
+ 0001:00002CB8 00000050 C=CODE     S=.text    G=(none)   M=prog     ACBP=A9
+ 0002:00000000 000000AE C=ICODE    S=.itext   G=(none)   M=System   ACBP=A9
+ 0002:000000B0 00000020 C=ICODE    S=.itext   G=(none)   M=output   ACBP=A9
+ 0002:000000D0 0000001D C=ICODE    S=.itext   G=(none)   M=prog     ACBP=A9
+
+
+  Address             Publics by Name
+
+ 0004:00002B38       output..1
+ 0004:00002B3C       output.A
+ 0004:00002E64       output.B
+ 0001:00002C88       output.Finalization
+ 0001:00002C4C       output.MaxArray
+ 0002:000000B0       output.output
+ 0001:00002CB8       prog.Finalization
+ 0002:000000D0       prog.prog
+ 0001:00002BBC       SysInit.@GetTls
+ 0001:00002ADC       System.Finalization
+
+
+  Address             Publics by Value
+
+ 0001:000025B4       System.FinalizeUnits
+ 0001:00002C4C       output.MaxArray
+ 0001:00002C88       output.Finalization
+ 0001:00002CB8       prog.Finalization
+ 0002:000000B0       output.output
+ 0002:000000D0       prog.prog
+ 0004:00002B38       output..1
+ 0004:00002B3C       output.A
+ 0004:00002E64       output.B
+
+
+Line numbers for output(Z:\tmp\compiler-explorer-compiler1171110-10390-19q384o\output.pas) segment .text
+
+    12 0001:00002C4C    13 0001:00002C57    15 0001:00002C61    16 0001:00002C6B
+    17 0001:00002C75    13 0001:00002C7B    18 0001:00002C7E
+
+Line numbers for output(Z:\tmp\compiler-explorer-compiler1171110-10390-19q384o\output.pas) segment .itext
+
+    23 0002:000000B0    24 0002:000000B9    25 0002:000000CF
+
+Line numbers for prog(Z:\tmp\compiler-explorer-compiler1171110-10390-19q384o\prog.dpr) segment .itext
+
+     1 0002:000000D0     1 0002:000000E8
+
+Bound resource files
+
+C:\users\partouf\Temp\dtfaa23.tmp
+
+
+Program entry point at 0002:000000D0
