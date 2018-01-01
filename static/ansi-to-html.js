@@ -26,6 +26,8 @@
 define(function (require) {
     'use strict';
 
+    var _ = require('underscore');
+
     var defaults = {
         fg: '#FFF',
         bg: '#000',
@@ -473,10 +475,9 @@ define(function (require) {
         options = options || {};
 
         if (options.colors) {
-            options.colors = Object.assign({}, defaults.colors, options.colors);
+            options.colors = _.extend(defaults.colors, options.colors);
         }
-
-        this.opts = Object.assign({}, defaults, options);
+        this.opts = _.extend({}, defaults, options);
         this.stack = [];
         this.stickyStack = [];
     }
