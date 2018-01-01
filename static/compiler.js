@@ -72,11 +72,16 @@ define(function (require) {
         this.domRoot.html($('#compiler').html());
         this.id = state.id || hub.nextCompilerId();
         this.sourceEditorId = state.source || 1;
-        this.currentLangId = state.lang || _.keys(options.languages)[0];
-        this.originalCompilerId = state.compiler;
-        if (this.originalCompilerId) {
-            this.compiler = this.findCompiler(this.currentLangId, this.originalCompilerId);
+        // If we don't have a language, but a compiler, find the corresponding language.
+        this.currentLangId = state.lang;
+        if (!this.currentLangId && state.compiler) {
+            this.currentLangId = this.langOfCompiler(state.compiler);
         }
+        if (!this.currentLangId) {
+            this.currentLangId = _.keys(options.languages)[0];
+        }
+        this.originalCompilerId = state.compiler;
+        this.compiler = this.findCompiler(this.currentLangId, state.compiler);
         if (!this.compiler) {
             this.compiler = this.findCompiler(this.currentLangId, options.defaultCompiler[this.currentLangId]);
         }
@@ -852,9 +857,10 @@ define(function (require) {
     };
 
     Compiler.prototype.updateCompilerName = function () {
+        var langName = options.languages[this.currentLangId].name;
         var compilerName = this.getCompilerName();
         var compilerVersion = this.compiler ? this.compiler.version : '';
-        this.container.setTitle(compilerName + ' (Editor #' + this.sourceEditorId + ', Compiler #' + this.id + ')');
+        this.container.setTitle(compilerName + ' (Editor #' + this.sourceEditorId + ', Compiler #' + this.id + ') ' + langName);
         this.domRoot.find('.full-compiler-name').text(compilerVersion);
     };
 
@@ -1192,6 +1198,16 @@ define(function (require) {
 
     Compiler.prototype.findCompiler = function (langId, compilerId) {
         return this.compilerService.findCompiler(langId, compilerId);
+    };
+
+    Compiler.prototype.langOfCompiler = function (compilerId) {
+        var language;
+        _.find(options.compilers, function (compiler) {
+            if (compiler.id === compilerId) {
+                language = compiler.lang;
+            }
+        });
+        return language;
     };
 
     return {

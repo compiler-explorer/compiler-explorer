@@ -87,7 +87,6 @@ define(function (require) {
         } else if (this.settings.newEditorLastLang && hub.lastOpenedLangId && languages[hub.lastOpenedLangId]) {
             this.currentLanguage = languages[hub.lastOpenedLangId];
         }
-
         var root = this.domRoot.find(".monaco-placeholder");
         var legacyReadOnly = state.options && !!state.options.readOnly;
         this.editor = monaco.editor.create(root[0], {
