@@ -1,4 +1,4 @@
-// Copyright (c) 2012-2017, Rubén Rincón
+// Copyright (c) 2012-2018, Rubén Rincón
 //
 // All rights reserved.
 //

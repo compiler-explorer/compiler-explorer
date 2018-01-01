@@ -1,4 +1,4 @@
-// Copyright (c) 2012-2017, Simon Brand
+// Copyright (c) 2012-2018, Simon Brand
 //
 // All rights reserved.
 //
