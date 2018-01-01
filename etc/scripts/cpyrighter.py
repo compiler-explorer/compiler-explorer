@@ -17,6 +17,8 @@ if __name__ == '__main__':
     non_recursive_searched_paths = ['static/', 'test/', 'test/handlers/', 'test/compilers/']
     recursive_searched_paths = ['lib/']
 
+    ignored_files = set(['static/ansi-to-html.js', 'static/gccdump-view.js', 'static/gccdump-rtl-gimple-mode.js'])
+
     found_paths = ['./app.js', './LICENSE']
 
     for root in non_recursive_searched_paths:
@@ -24,6 +26,8 @@ if __name__ == '__main__':
 
     for root, _, files in chain.from_iterable(walk(file_path) for file_path in recursive_searched_paths):
         found_paths.extend(path.join(root, file_name) for file_name in files if file_name.endswith('.js'))
+
+    found_paths = [file for file in found_paths if file not in ignored_files]
 
     change_count = 0
     for path in found_paths:
