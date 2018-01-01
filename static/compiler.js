@@ -1162,6 +1162,7 @@ define(function (require) {
                 options: this.options
             };
             this.updateCompilersSelector();
+            this.updateCompilerName();
             this.updateLibsDropdown();
             this.saveState();
         }

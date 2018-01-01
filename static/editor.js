@@ -69,9 +69,7 @@ define(function (require) {
         this.fadeTimeoutId = -1;
 
         this.editorSourceByLang = {};
-
         this.languageBtn = this.domRoot.find('.change-language');
-        this.needsLanguageUpdate = !(state.lang && languages[state.lang]);
         var langKeys = _.keys(languages);
         // Ensure that the btn is disabled if we don't have nothing to select
         // Note that is might be disabled for other reasons beforehand
@@ -79,12 +77,13 @@ define(function (require) {
             this.languageBtn.prop("disabled", true);
         }
         this.currentLanguage = languages[langKeys[0]];
-        if (this.settings.defaultLanguage && languages[this.settings.defaultLanguage]) {
+        this.needsLanguageUpdate = state.source && !state.lang;
+        if (languages[this.settings.defaultLanguage]) {
             this.currentLanguage = languages[this.settings.defaultLanguage];
         }
-        if (state.lang && languages[state.lang]) {
+        if (languages[state.lang]) {
             this.currentLanguage = languages[state.lang];
-        } else if (this.settings.newEditorLastLang && hub.lastOpenedLangId && languages[hub.lastOpenedLangId]) {
+        } else if (this.settings.newEditorLastLang && languages[hub.lastOpenedLangId]) {
             this.currentLanguage = languages[hub.lastOpenedLangId];
         }
         var root = this.domRoot.find(".monaco-placeholder");
@@ -312,8 +311,7 @@ define(function (require) {
                 this.container.layoutManager.root.contentItems[0];
             insertPoint.addChild(conformanceConfig);
         }, this));
-        this.container.setTitle(this.currentLanguage.name + " source #" + this.id);
-
+        this.updateTitle();
         this.eventHub.on('initialised', this.maybeEmitChange, this);
         this.updateState();
     }
@@ -420,7 +418,6 @@ define(function (require) {
                         return compiler.id === glCompiler.originalCompilerId;
                     });
                     if (selected) {
-                        this.needsLanguageUpdate = false;
                         this.changeLanguage(selected.lang);
                     }
                 }
@@ -537,19 +534,26 @@ define(function (require) {
     Editor.prototype.onLanguageChange = function (newLangId) {
         if (newLangId !== this.currentLanguage.id && languages[newLangId]) {
             var oldLangId = this.currentLanguage.id;
-            // Save the current source, so we can come back to it later
-            this.editorSourceByLang[oldLangId] = this.getSource();
             this.currentLanguage = languages[newLangId];
+            if (this.needsLanguageUpdate) {
+                // Don't change the editor source if we're getting the needed lang
+                this.needsLanguageUpdate = false;
+            } else {
+                this.editorSourceByLang[oldLangId] = this.getSource();
+                this.updateEditorCode();
+            }
             this.initLoadSaver();
             monaco.editor.setModelLanguage(this.editor.getModel(), this.currentLanguage.monaco);
-            // And now set the editor value to either the saved one or the default to the new lang
-            this.updateEditorCode();
-            this.container.setTitle(this.currentLanguage.name + " source #" + this.id);
+            this.updateTitle();
             this.updateState();
             // Broadcast the change to other panels
             this.eventHub.emit("languageChange", this.id, newLangId);
             this.maybeEmitChange(true);
         }
+    };
+
+    Editor.prototype.updateTitle = function () {
+        this.container.setTitle(this.currentLanguage.name + " source #" + this.id);
     };
 
     // Called every time we change language, so we get the relevant code
