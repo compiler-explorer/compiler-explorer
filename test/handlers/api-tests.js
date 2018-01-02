@@ -26,6 +26,27 @@ const chai = require('chai'),
     ApiHandler = require('../../lib/handlers/api').Handler,
     express = require('express');
 
+const languages = {
+    'c++': {
+        id: 'c++',
+        name: 'C++',
+        monaco: 'cppp',
+        extensions: ['.cpp', '.cxx', '.h', '.hpp', '.hxx', '.c']
+    },
+    haskell: {
+        id: 'haskell',
+        name: 'Haskell',
+        monaco: 'haskell',
+        extensions: ['.hs', '.haskell']
+    },
+    pascal: {
+        id: 'pascal',
+        name: 'Pascal',
+        monaco: 'pascal',
+        extensions: ['.pas']
+    }
+};
+
 chai.use(require("chai-http"));
 chai.should();
 
@@ -37,10 +58,23 @@ describe('API handling', () => {
         }
     });
     app.use('/api', apiHandler.handle);
-    apiHandler.setCompilers([{
+    const compilers = [{
         id: "gcc900",
-        name: "GCC 9.0.0"
-    }]);
+        name: "GCC 9.0.0",
+        lang: "c++"
+    },
+    {
+        id: "fpc302",
+        name: "FPC 3.0.2",
+        lang: "pascal"
+    },
+    {
+        id: "clangtrunk",
+        name: "Clang trunk",
+        lang: "c++"
+    }];
+    apiHandler.setCompilers(compilers);
+    apiHandler.setLanguages(languages);
 
     it('should respond to plain text compiler requests', () => {
         return chai.request(app)
@@ -63,10 +97,7 @@ describe('API handling', () => {
             .then(res => {
                 res.should.have.status(200);
                 res.should.be.json;
-                res.body.should.deep.equals([{
-                    id: "gcc900",
-                    name: "GCC 9.0.0"
-                }]);
+                res.body.should.deep.equals(compilers);
             })
             .catch(function (err) {
                 throw err;
@@ -85,5 +116,46 @@ describe('API handling', () => {
                 throw err;
             });
     });
-    // TODO: more tests!
+
+    it('should respond to JSON compilers requests with c++ filter', () => {
+        return chai.request(app)
+            .get('/api/compilers/c++')
+            .set('Accept', 'application/json')
+            .then(res => {
+                res.should.have.status(200);
+                res.should.be.json;
+                res.body.should.deep.equals([compilers[0], compilers[2]]);
+            })
+            .catch(function (err) {
+                throw err;
+            });
+    });
+ 
+    it('should respond to JSON compilers requests with pascal filter', () => {
+        return chai.request(app)
+            .get('/api/compilers/pascal')
+            .set('Accept', 'application/json')
+            .then(res => {
+                res.should.have.status(200);
+                res.should.be.json;
+                res.body.should.deep.equals([compilers[1]]);
+            })
+            .catch(function (err) {
+                throw err;
+            });
+    });
+ 
+    it('should respond to JSON languages requests', () => {
+        return chai.request(app)
+            .get('/api/languages')
+            .set('Accept', 'application/json')
+            .then(res => {
+                res.should.have.status(200);
+                res.should.be.json;
+                res.body.should.deep.equals([languages['c++'], languages.pascal]);
+            })
+            .catch(function (err) {
+                throw err;
+            });
+    });
 });

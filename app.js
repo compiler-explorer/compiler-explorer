@@ -541,6 +541,7 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
             prevCompilers = compilers;
             clientOptionsHandler.setCompilers(compilers);
             apiHandler.setCompilers(compilers);
+            apiHandler.setLanguages(languages);
         }
 
         onCompilerChange(compilers);
