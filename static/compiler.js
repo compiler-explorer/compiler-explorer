@@ -811,7 +811,7 @@ define(function (require) {
 
     Compiler.prototype.currentState = function () {
         var libs = [];
-        _.each(this.availableLibs, function (library, name) {
+        _.each(this.availableLibs[this.currentLangId], function (library, name) {
             _.each(library.versions, function (version, ver) {
                 if (library.versions[ver].used) {
                     libs.push({name: name, ver: ver});
