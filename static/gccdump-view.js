@@ -83,8 +83,8 @@ define(function (require) {
         this.state = {};
 
         this.state._compilerid = state._compilerid;
-        this.state._compilerName = state._compilerName;
         this.state._editorid = state._editorid;
+        this._compilerName = state._compilerName;
 
         this.fontScale = new FontScale(this.domRoot, state, this.gccDumpEditor);
         this.fontScale.on('change', _.bind(this.saveState, this));
@@ -246,7 +246,7 @@ define(function (require) {
     };
 
     GccDump.prototype.setTitle = function () {
-        this.container.setTitle(this.state._compilerName +
+        this.container.setTitle((this._compilerName || '') +
             ' GCC Tree/RTL Viewer (Editor #' + this.state._editorid + ', Compiler #' + this.state._compilerid + ')');
     };
 
@@ -298,8 +298,6 @@ define(function (require) {
         return {
             _compilerid: this.state._compilerid,
             _editorid: this.state._editorid,
-            _compilerName: this.state._compilerName,
-
             selectedPass: this.state.selectedPass,
             treeDump: filters.treeDump,
             rtlDump: filters.rtlDump
