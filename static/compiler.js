@@ -446,7 +446,7 @@ define(function (require) {
             },
             filters: this.getEffectiveFilters()
         };
-        _.each(this.availableLibs, function (lib) {
+        _.each(this.availableLibs[this.currentLangId], function (lib) {
             _.each(lib.versions, function (version) {
                 if (version.used) {
                     _.each(version.path, function (path) {
