@@ -51,7 +51,7 @@ describe('Basic demangling', function () {
     it('One label and some asm', function () {
         const result = {};
         result.asm = [
-            {"text": "_Z6squarei:"},
+            {"text": "__Z6squarei:"},
             {"text": "  ret"}
         ];
 
@@ -61,6 +61,47 @@ describe('Basic demangling', function () {
             demangler.Process(result).then((output) => {
                 output.asm[0].text.should.equal("square(int):");
                 output.asm[1].text.should.equal("  ret");
+            })
+        ]);
+    });
+
+    it('One label and use of a label', function () {
+        const result = {};
+        result.asm = [
+            {"text": "__Z6squarei:"},
+            {"text": "  mov eax, $__Z6squarei"}
+        ];
+
+        const demangler = new Demangler("c++filt");
+
+        return Promise.all([
+            demangler.Process(result).then((output) => {
+                output.asm[0].text.should.equal("square(int):");
+                output.asm[1].text.should.equal("  mov eax, $square(int)");
+            })
+        ]);
+    });
+
+    it('Two destructors', function () {
+        const result = {};
+        result.asm = [
+            {"text": "__ZN6NormalD0Ev:"},
+            {"text": "  callq __ZdlPv"},
+            {"text": "__Z7caller1v:"},
+            {"text": "  rep ret"},
+            {"text": "__Z7caller2P6Normal:"},
+            {"text": "  cmp rax, OFFSET FLAT:_ZN6NormalD0Ev"},
+            {"text": "  jmp __ZdlPvm"},
+            {"text": "__ZN6NormalD2Ev:"},
+            {"text": "  rep ret"}
+        ];
+
+        const demangler = new Demangler("c++filt");
+
+        return Promise.all([
+            demangler.Process(result).then((output) => {
+                output.asm[0].text.should.equal("Normal::~Normal() [deleting destructor]:");
+                output.asm[1].text.should.equal("  callq __ZdlPv"); // todo: should be operator delete(void*, unsigned long)
             })
         ]);
     });
