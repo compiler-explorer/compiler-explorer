@@ -1,5 +1,6 @@
 *.swp
 /node_modules
+newrelic_agent.log
 /.npm-updated
 /.bower-updated
 *.vscode
