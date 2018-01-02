@@ -220,7 +220,8 @@ function ClientOptionsHandler(fileSources) {
     }), "name");
 
     var supportsBinary = compilerPropsAT(languages, res => !!res, "supportsBinary", true);
-    var supportsExecute = supportsBinary && !!compilerPropsAT(languages, (res, lang) => supportsBinary[lang.id] && !!res, "supportsExecute", true);
+    var supportsExecutePerLanguage = compilerPropsAT(languages, (res, lang) => supportsBinary[lang.id] && !!res, "supportsExecute", true);
+    var supportsExecute = Object.values(supportsExecutePerLanguage).some((value) => value);
     var libs = {};
 
     var baseLibs = compilerPropsA(languages, "libs");
