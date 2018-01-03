@@ -98,8 +98,8 @@ the HTML version.
 The text request is designed for simplicity for command-line clients like `curl`:
 
 ```bash
-$ curl 'https://gcc.godbolt.org/api/compiler/g63/compile?options=-Wall' --data-binary 'int foo() { return 1; }'
-# Compilation provided by Compiler Explorer at gcc.godbolt.org
+$ curl 'https://godbolt.org/api/compiler/g63/compile?options=-Wall' --data-binary 'int foo() { return 1; }'
+# Compilation provided by Compiler Explorer at godbolt.org
 foo():
         push    rbp
         mov     rbp, rsp
