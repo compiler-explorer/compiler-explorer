@@ -584,7 +584,7 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
             .use('/healthcheck', new healthCheck.HealthCheckHandler().handle) // before morgan so healthchecks aren't logged
             .use(morgan('combined', {stream: logger.stream}))
             .use(compression())
-            .get('/', function (req, res) {
+            .get('/', (req, res) => {
                 staticHeaders(res);
                 res.render('index', renderConfig({embedded: false}));
             })
@@ -614,11 +614,7 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
         }
         webServer
             .use(bodyParser.json({limit: ceProps('bodyParserLimit', '1mb')}))
-            .use(bodyParser.text({
-                limit: ceProps('bodyParserLimit', '1mb'), type: function () {
-                    return true;
-                }
-            }))
+            .use(bodyParser.text({limit: ceProps('bodyParserLimit', '1mb'), type: () => true}))
             .use(restreamer())
             .get('/client-options.json', clientOptionsHandler.handler)
             .use('/source', sourceHandler.handle.bind(sourceHandler))
@@ -628,13 +624,11 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
 
         webServer.use(Raven.errorHandler());
 
-        webServer.on('error', function (err) {
-            logger.error('Caught error:', err, "(in web error handler; continuing)");
-        });
+        webServer.on('error', err => logger.error('Caught error:', err, "(in web error handler; continuing)"));
 
         webServer.listen(port, hostname);
     })
-    .catch(function (err) {
+    .catch(err => {
         logger.error("Promise error:", err, "(shutting down)");
         process.exit(1);
     });
