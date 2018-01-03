@@ -31,7 +31,7 @@ The UI has a number of things that need improving:
 
 Another big ticket item is to allow executing of the user's code. This is fraught with security issues, and
 brings up a number of UI and API considerations. Compiling code every time to execute with different params
-seems wasteful, so caching seems good; but in a multi-instance setup a shared cache woudl be needed. Perhaps
+seems wasteful, so caching seems good; but in a multi-instance setup a shared cache would be needed. Perhaps
 a backend system that caches the executables (and makes them downloadable; at least for some compilers where
 license allows), and stores the binaries in ephemeral, shared storage. This same backend system could also 
 be used to store code, and could be part of a whole new way of sending and sharing code (if made permanent

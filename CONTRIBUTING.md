@@ -38,7 +38,7 @@ between separate windows).
 
 ## Editing flow
 
-The recommended way to work on Compiler Explorer is to just run `make` and let the automatic reload sutff do its magic.
+The recommended way to work on Compiler Explorer is to just run `make` and let the automatic reload stuff do its magic.
 Any changes to the server code will cause the server to reload, and any changes to the client code will be reflected upon
 a page reload. This makes for a pretty quick turnaround.
 
