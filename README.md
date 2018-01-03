@@ -58,14 +58,14 @@ Returns a list of the currently supported languages, as pairs of languages IDs a
 #### `GET /api/compilers` - return a list of compilers
 
 Returns a list of compilers. In text form, there's a simple formatting of the ID of the compiler, its
-description and its languge ID. In JSON, all the information is returned as an array of compilers, with the `id` key being the
+description and its language ID. In JSON, all the information is returned as an array of compilers, with the `id` key being the
 primary identifier of each compiler.
 
 
-#### `GET /api/compilers/<language-id>` - return a list of compilers with mstching language
+#### `GET /api/compilers/<language-id>` - return a list of compilers with matching language
 
 Returns a list of compilers for the provided language id. In text form, there's a simple formatting of the ID of the compiler, its
-description and its languge ID. In JSON, all the information is returned as an array of compilers, with the `id` key being the
+description and its language ID. In JSON, all the information is returned as an array of compilers, with the `id` key being the
 primary identifier of each compiler.
 
 #### `POST /api/compiler/<compiler-id>/compile` - perform a compilation
