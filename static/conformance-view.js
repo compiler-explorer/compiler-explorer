@@ -44,12 +44,14 @@ define(function (require) {
         this.editorId = state.editorid;
         this.nextSelectorId = 0;
         this.maxCompilations = options.cvCompilerCountMax || 6;
-        this.langId = state.langId || 'c++';
+        this.langId = state.langId || _.keys(options.languages)[0];
+        this.source = state.source || "";
 
         this.status = {
             allowCompile: false,
             allowAdd: true
         };
+        this.stateByLang = {};
 
         this.container.on('destroy', function () {
             this.eventHub.emit("conformanceViewClose", this.editorId);
@@ -74,19 +76,12 @@ define(function (require) {
             this.saveState();
         }, this));
 
-        if (state.compilers) {
-            _.each(state.compilers, _.bind(function (config) {
-                config.cv = this.nextSelectorId;
-                this.nextSelectorId++;
-                this.addCompilerSelector(config);
-            }, this));
-        }
-
+        this.initFromState(state);
         this.handleToolbarUI();
     }
 
     Conformance.prototype.setTitle = function (compilerCount) {
-        this.container.setTitle("Conformance viewer (Editor #" + this.editorId + ") " + (
+        this.container.setTitle(options.languages[this.langId].name + " Conformance viewer (Editor #" + this.editorId + ") " + (
             compilerCount !== 0 ? (compilerCount + "/" + this.maxCompilations) : ""
         ));
     };
@@ -132,7 +127,7 @@ define(function (require) {
         var status = newEntry.find('.status').attr("data-cv", config.cv);
         var langId = this.langId;
         var isVisible = function (compiler) {
-            return compiler.lang == langId;
+            return compiler.lang === langId;
         };
 
         newEntry.find('.compiler-picker')
@@ -189,7 +184,7 @@ define(function (require) {
         var failed = result.code !== 0;
         var warns = !failed && !!allText;
         var status = {
-            text: allText,
+            text: allText.replace(/\x1b\\[[0-9;]*m/, ''),
             code: failed ? 3 : (warns ? 2 : 1)
         };
         this.handleStatusIcon(this.selectorList.find('[data-cv="' + cv + '"] .status'), status);
@@ -284,14 +279,28 @@ define(function (require) {
     };
 
     Conformance.prototype.onLanguageChange = function (editorId, newLangId) {
-        if (editorId === this.editorId) {
+        if (editorId === this.editorId && this.langId !== newLangId) {
+            var oldLangId = this.langId;
+            this.stateByLang[oldLangId] = this.currentState();
+
             this.langId = newLangId;
-            // Sorry for this future me. You promised to come back and enchance this after the unification merge
-            // Hopefuly it's been soon enough for noone to notice :)
             this.selectorList.children().remove();
             this.nextSelectorId = 0;
+            if (this.stateByLang[newLangId]) {
+                this.initFromState(this.stateByLang[newLangId]);
+            }
             this.handleToolbarUI();
             this.saveState();
+        }
+    };
+
+    Conformance.prototype.initFromState = function (state) {
+        if (state.compilers) {
+            _.each(state.compilers, _.bind(function (config) {
+                config.cv = this.nextSelectorId;
+                this.nextSelectorId++;
+                this.addCompilerSelector(config);
+            }, this));
         }
     };
 
