@@ -41,6 +41,17 @@ function makeCompiler(stdout, stderr, code) {
     };
 }
 
+function makeCompilerUndefinedOptions(stdout, stderr, code) {
+    if (code === undefined) code = 0;
+    return {
+        exec: () => {
+            return Promise.resolve({code: code, stdout: stdout || "", stderr: stderr || ""});
+        },
+        compiler: {
+        }
+    };
+}
+
 describe('option parser', () => {
     it('should handle empty options', () => {
         return parsers.getOptions(makeCompiler()).should.eventually.deep.equals({});
@@ -82,6 +93,14 @@ describe('gcc parser', () => {
                     options: '-fdiagnostics-color=always'
                 });
             });
+    });
+    it('should handle undefined options', () => {
+        return parsers.gcc(makeCompilerUndefinedOptions("-fdiagnostics-color=[blah]")).should.eventually.satisfy(result => {
+            return result.compiler.should.deep.equals({
+                supportsGccDump: true,
+                options: '-fdiagnostics-color=always'
+            });
+        });
     });
 });
 
