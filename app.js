@@ -42,7 +42,7 @@ const nopt = require('nopt'),
     Raven = require('raven');
 
 // Parse arguments from command line 'node ./app.js args...'
-var opts = nopt({
+const opts = nopt({
     'env': [String, Array],
     'rootDir': [String],
     'host': [String],
@@ -74,21 +74,21 @@ if (opts.tmpDir) {
 else if (process.env.wsl) {
     // Dec 2017 preview builds of WSL include /bin/wslpath; do the parsing work for now.
     // Parsing example %TEMP% is C:\Users\apardoe\AppData\Local\Temp
-    var windowsTemp = child_process.execSync('cmd.exe /c echo %TEMP%').toString().replace(/\\/g, "/");
-    var driveLetter = windowsTemp.substring(0, 1).toLowerCase();
-    var directoryPath = windowsTemp.substring(2).trim();
+    const windowsTemp = child_process.execSync('cmd.exe /c echo %TEMP%').toString().replace(/\\/g, "/");
+    const driveLetter = windowsTemp.substring(0, 1).toLowerCase();
+    const directoryPath = windowsTemp.substring(2).trim();
     process.env.winTmp = path.join("/mnt", driveLetter, directoryPath);
 }
 
 // Set default values for omitted arguments
-var rootDir = opts.rootDir || './etc';
-var env = opts.env || ['dev'];
-var hostname = opts.host;
-var port = opts.port || 10240;
-var staticDir = opts.static || 'static';
-var archivedVersions = opts.archivedVersions;
-var gitReleaseName = "";
-var versionedRootPrefix = "";
+const rootDir = opts.rootDir || './etc';
+const env = opts.env || ['dev'];
+const hostname = opts.host;
+const port = opts.port || 10240;
+const staticDir = opts.static || 'static';
+const archivedVersions = opts.archivedVersions;
+let gitReleaseName = "";
+let versionedRootPrefix = "";
 const wantedLanguage = opts.language || null;
 // Use the canned git_hash if provided
 if (opts.static && fs.existsSync(opts.static + "/git_hash")) {
@@ -99,9 +99,9 @@ if (opts.static && fs.existsSync(opts.static + "/git_hash")) {
 if (opts.static && fs.existsSync(opts.static + '/v/' + gitReleaseName))
     versionedRootPrefix = "v/" + gitReleaseName + "/";
 // Don't treat @ in paths as remote adresses
-var fetchCompilersFromRemote = !opts.noRemoteFetch;
+const fetchCompilersFromRemote = !opts.noRemoteFetch;
 
-var propHierarchy = _.flatten([
+const propHierarchy = _.flatten([
     'defaults',
     env,
     _.map(env, function (e) {
@@ -176,7 +176,7 @@ function compilerPropsAT(langs, transform, property, defaultValue) {
     return forLanguages;
 }
 
-var staticMaxAgeSecs = ceProps('staticMaxAgeSecs', 0);
+const staticMaxAgeSecs = ceProps('staticMaxAgeSecs', 0);
 let extraBodyClass = ceProps('extraBodyClass', '');
 
 function staticHeaders(res) {
@@ -185,8 +185,8 @@ function staticHeaders(res) {
     }
 }
 
-var awsProps = props.propsFor("aws");
-var awsPoller = null;
+const awsProps = props.propsFor("aws");
+let awsPoller = null;
 
 function awsInstances() {
     if (!awsPoller) awsPoller = new aws.InstanceFetcher(awsProps);
@@ -195,7 +195,7 @@ function awsInstances() {
 
 // function to load internal binaries (i.e. lib/source/*.js)
 function loadSources() {
-    var sourcesDir = "lib/sources";
+    const sourcesDir = "lib/sources";
     return fs.readdirSync(sourcesDir)
         .filter(function (file) {
             return file.match(/.*\.js$/);
@@ -222,22 +222,22 @@ function ClientOptionsHandler(fileSources) {
     const supportsBinary = compilerPropsAT(languages, res => !!res, "supportsBinary", true);
     const supportsExecutePerLanguage = compilerPropsAT(languages, (res, lang) => supportsBinary[lang.id] && !!res, "supportsExecute", true);
     const supportsExecute = Object.values(supportsExecutePerLanguage).some((value) => value);
-    var libs = {};
+    const libs = {};
 
-    var baseLibs = compilerPropsA(languages, "libs");
+    const baseLibs = compilerPropsA(languages, "libs");
     _.each(baseLibs, function (forLang, lang) {
         if (lang && forLang) {
             libs[lang] = {};
             _.each(forLang.split(':'), function (lib) {
                 libs[lang][lib] = {name: compilerPropsL(lang, 'libs.' + lib + '.name')};
                 libs[lang][lib].versions = {};
-                var listedVersions = compilerPropsL(lang, "libs." + lib + '.versions');
+                const listedVersions = compilerPropsL(lang, "libs." + lib + '.versions');
                 if (listedVersions) {
                     _.each(listedVersions.split(':'), function (version) {
                         libs[lang][lib].versions[version] = {};
                         libs[lang][lib].versions[version].version = compilerPropsL(lang, "libs." + lib + '.versions.' + version + '.version');
                         libs[lang][lib].versions[version].path = [];
-                        var listedIncludes = compilerPropsL(lang, "libs." + lib + '.versions.' + version + '.path');
+                        const listedIncludes = compilerPropsL(lang, "libs." + lib + '.versions.' + version + '.path');
                         if (listedIncludes) {
                             _.each(listedIncludes.split(':'), function (path) {
                                 libs[lang][lib].versions[version].path.push(path);
@@ -252,7 +252,7 @@ function ClientOptionsHandler(fileSources) {
             });
         }
     });
-    var options = {
+    const options = {
         googleAnalyticsAccount: ceProps('clientGoogleAnalyticsAccount', 'UA-55180-6'),
         googleAnalyticsEnabled: ceProps('clientGoogleAnalyticsEnabled', false),
         sharingEnabled: ceProps('clientSharingEnabled', true),
@@ -291,10 +291,10 @@ function ClientOptionsHandler(fileSources) {
 
 function retryPromise(promiseFunc, name, maxFails, retryMs) {
     return new Promise(function (resolve, reject) {
-        var fails = 0;
+        let fails = 0;
 
         function doit() {
-            var promise = promiseFunc();
+            const promise = promiseFunc();
             promise.then(function (arg) {
                 resolve(arg);
             }, function (e) {
@@ -487,8 +487,8 @@ function shortUrlHandler(req, res, next) {
     const googleUrl = `http://goo.gl/${encodeURIComponent(bits[1])}`;
     resolver.resolve(googleUrl)
         .then(resultObj => {
-            var parsed = url.parse(resultObj.longUrl);
-            var allowedRe = new RegExp(ceProps('allowedShortUrlHostRe'));
+            const parsed = url.parse(resultObj.longUrl);
+            const allowedRe = new RegExp(ceProps('allowedShortUrlHostRe'));
             if (parsed.host.match(allowedRe) === null) {
                 logger.warn(`Denied access to short URL ${bits[1]} - linked to ${resultObj.longUrl}`);
                 return next();
@@ -508,7 +508,7 @@ function shortUrlHandler(req, res, next) {
 Promise.all([findCompilers(), aws.initConfig(awsProps)])
     .then(args => {
         let compilers = args[0];
-        var prevCompilers;
+        let prevCompilers;
 
         const ravenPrivateEndpoint = aws.getConfig('ravenPrivateEndpoint');
         if (ravenPrivateEndpoint) {
@@ -547,14 +547,14 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
 
         onCompilerChange(compilers);
 
-        var rescanCompilerSecs = ceProps('rescanCompilerSecs', 0);
+        const rescanCompilerSecs = ceProps('rescanCompilerSecs', 0);
         if (rescanCompilerSecs) {
             logger.info(`Rescanning compilers every ${rescanCompilerSecs} secs`);
             setInterval(() => findCompilers().then(onCompilerChange),
                 rescanCompilerSecs * 1000);
         }
 
-        var webServer = express(),
+        const webServer = express(),
             sFavicon = require('serve-favicon'),
             bodyParser = require('body-parser'),
             morgan = require('morgan'),
@@ -567,7 +567,7 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
         if (gitReleaseName) logger.info("  git release " + gitReleaseName);
 
         function renderConfig(extra) {
-            var options = _.extend(extra, clientOptionsHandler.get());
+            const options = _.extend(extra, clientOptionsHandler.get());
             options.compilerExplorerOptions = JSON.stringify(options);
             options.root = versionedRootPrefix;
             options.extraBodyClass = extraBodyClass;
