@@ -23,6 +23,8 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 const chai = require('chai'),
+    Compile = require('../../lib/base-compiler'),
+    CompilationEnvironment = require('../../lib/compilation-env').CompilationEnvironment,
     chaiAsPromised = require("chai-as-promised"),
     parsers = require('../../lib/compilers/argument-parsers');
 
@@ -31,14 +33,12 @@ chai.should();
 
 function makeCompiler(stdout, stderr, code) {
     if (code === undefined) code = 0;
-    return {
-        exec: () => {
-            return Promise.resolve({code: code, stdout: stdout || "", stderr: stderr || ""});
-        },
-        compiler: {
-            options: ''
-        }
+    const env = new CompilationEnvironment((key, def) => def);
+    const compiler = new Compile({'lang': 'c++', 'remote': true}, env);
+    compiler.exec = () => {
+        return Promise.resolve({code: code, stdout: stdout || "", stderr: stderr || ""});
     };
+    return compiler;
 }
 
 describe('option parser', () => {
@@ -66,41 +66,49 @@ describe('option parser', () => {
 describe('gcc parser', () => {
     it('should handle empty options', () => {
         return parsers.gcc(makeCompiler()).should.eventually.satisfy(result => {
-            return result.compiler.should.deep.equals({
-                supportsGccDump: true,
-                options: ''
-            });
+            return Promise.all([
+                result.compiler.supportsGccDump.should.equals(true),
+                result.compiler.options.should.equals('')
+            ]);
         });
     });
     it('should handle options', () => {
         return parsers.gcc(makeCompiler("-masm=intel\n-fdiagnostics-color=[blah]"))
             .should.eventually.satisfy(result => {
-                return result.compiler.should.deep.equals({
-                    supportsGccDump: true,
-                    supportsIntel: true,
-                    intelAsm: '-masm=intel',
-                    options: '-fdiagnostics-color=always'
-                });
+                return Promise.all([
+                    result.compiler.supportsGccDump.should.equals(true),
+                    result.compiler.supportsIntel.should.equals(true),
+                    result.compiler.intelAsm.should.equals('-masm=intel'),
+                    result.compiler.options.should.equals('-fdiagnostics-color=always')
+                ]);
             });
+    });
+    it('should handle undefined options', () => {
+        return parsers.gcc(makeCompiler("-fdiagnostics-color=[blah]")).should.eventually.satisfy(result => {
+            return Promise.all([
+                result.compiler.supportsGccDump.should.equals(true),
+                result.compiler.options.should.equals('-fdiagnostics-color=always')
+            ]);
+        });
     });
 });
 
 describe('clang parser', () => {
     it('should handle empty options', () => {
         return parsers.clang(makeCompiler()).should.eventually.satisfy(result => {
-            return result.compiler.should.deep.equals({
-                options: ''
-            });
+            return Promise.all([
+                result.compiler.options.should.equals('')
+            ]);
         });
     });
     it('should handle options', () => {
         return parsers.clang(makeCompiler("-fsave-optimization-record\n-fcolor-diagnostics"))
             .should.eventually.satisfy(result => {
-                return result.compiler.should.deep.equals({
-                    supportsOptOutput: true,
-                    optArg: '-fsave-optimization-record',
-                    options: '-fcolor-diagnostics'
-                });
+                return Promise.all([
+                    result.compiler.supportsOptOutput.should.equals(true),
+                    result.compiler.optArg.should.equals('-fsave-optimization-record'),
+                    result.compiler.options.should.equals('-fcolor-diagnostics')
+                ]);
             });
     });
 });
