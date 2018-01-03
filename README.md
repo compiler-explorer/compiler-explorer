@@ -156,7 +156,7 @@ Compiler Explorer is maintained by [Matt Godbolt](http://xania.org), [Rubén Rin
 - [Jared Wyles](https://github.com/jaredwy) - Clang OPT Output view and maintenance
 - [Johan Engelen](https://github.com/JohanEngelen) - D support and its maintenance
 - [Chedy Najjar](https://github.com/CppChedy) - CFG View and maintenance
-- [Patrick Quist](https://github.com/partouf) - Pascal support
+- [Patrick Quist](https://github.com/partouf) - Pascal support, bug-fixes, windows support
 - [Joshua Sheard](https://github.com/jsheard) - ISPC support
 - [Marc Poulhiès](https://github.com/dkm) - GCC Dumps view
 - [Andrew Pardoe](https://github.com/AndrewPardoe) - WSL-CL support
