@@ -21,7 +21,7 @@
     "compiler-opt-info": "0.0.4",
     "compression": "1.6.x",
     "denodeify": "^1.2.1",
-    "express": "4.13.x",
+    "express": "4.16.x",
     "fs-extra": "0.26.x",
     "http-proxy": "1.12.x",
     "lru-cache": "4.1.1",
