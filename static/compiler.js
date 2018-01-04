@@ -1061,7 +1061,7 @@ define(function (require) {
         this.libsButton.popover({
             container: 'body',
             content: _.bind(function () {
-                var libsCount = Object.keys(this.availableLibs[this.currentLangId]).length;
+                var libsCount = _.keys(this.availableLibs[this.currentLangId]).length;
                 if (libsCount === 0) {
                     return $('<p></p>')
                         .text('No libs configured for ' + options.languages[this.currentLangId].name + ' yet. ')
@@ -1114,11 +1114,21 @@ define(function (require) {
 
                 _.each(this.availableLibs[this.currentLangId], function (lib, libKey) {
                     var libsList = getNextList();
+                    var libHeader = $('<span></span>')
+                        .text(lib.name +  ' ')
+                        .addClass('lib-header');
+                    if (lib.url && lib.url.length >= 1) {
+                        libHeader.append($('<a></a>')
+                            .prop('href', lib.url)
+                            .prop('target', '_blank')
+                            .prop('rel', 'noopener noreferrer')
+                            .append($('<small><span></span></small>')
+                                .addClass('glyphicon glyphicon-new-window')
+                            )
+                        );
+                    }
                     var libCat = $('<li></li>')
-                        .append($('<span></span>')
-                            .text(lib.name)
-                            .addClass('lib-header')
-                        )
+                        .append(libHeader)
                         .addClass('lib-item');
 
                     var libGroup = $('<div></div>');

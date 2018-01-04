@@ -213,39 +213,40 @@ const SourceHandler = require('./lib/handlers/source').Handler;
 const sourceHandler = new SourceHandler(fileSources, staticHeaders);
 
 function ClientOptionsHandler(fileSources) {
-    const sources = _.sortBy(fileSources.map(function (source) {
-        return {name: source.name, urlpart: source.urlpart};
-    }), "name");
+    const sources = _.sortBy(fileSources.map(source => {return {name: source.name, urlpart: source.urlpart}}), 'name');
 
-    const supportsBinary = compilerPropsAT(languages, res => !!res, "supportsBinary", true);
-    const supportsExecutePerLanguage = compilerPropsAT(languages, (res, lang) => supportsBinary[lang.id] && !!res, "supportsExecute", true);
+    const supportsBinary = compilerPropsAT(languages, res => !!res, 'supportsBinary', true);
+    const supportsExecutePerLanguage = compilerPropsAT(languages, (res, lang) => supportsBinary[lang.id] && !!res, 'supportsExecute', true);
     const supportsExecute = Object.values(supportsExecutePerLanguage).some((value) => value);
-    const libs = {};
 
-    const baseLibs = compilerPropsA(languages, "libs");
-    _.each(baseLibs, function (forLang, lang) {
+    const libs = {};
+    const baseLibs = compilerPropsA(languages, 'libs');
+    _.each(baseLibs, (forLang, lang) => {
         if (lang && forLang) {
             libs[lang] = {};
-            _.each(forLang.split(':'), function (lib) {
-                libs[lang][lib] = {name: compilerPropsL(lang, 'libs.' + lib + '.name')};
+            _.each(forLang.split(':'), lib => {
+                const libBaseName = `libs.${lib}`;
+                libs[lang][lib] = {
+                    name: compilerPropsL(lang, libBaseName + '.name'),
+                    url: compilerPropsL(lang, libBaseName + '.url')
+                };
                 libs[lang][lib].versions = {};
-                const listedVersions = compilerPropsL(lang, "libs." + lib + '.versions');
+                const listedVersions = compilerPropsL(lang, libBaseName + '.versions');
                 if (listedVersions) {
-                    _.each(listedVersions.split(':'), function (version) {
+                    _.each(listedVersions.split(':'), version => {
+                        const libVersionName = libBaseName + `.versions.${version}`;
                         libs[lang][lib].versions[version] = {};
-                        libs[lang][lib].versions[version].version = compilerPropsL(lang, "libs." + lib + '.versions.' + version + '.version');
+                        libs[lang][lib].versions[version].version = compilerPropsL(lang, libVersionName + '.version');
                         libs[lang][lib].versions[version].path = [];
-                        const listedIncludes = compilerPropsL(lang, "libs." + lib + '.versions.' + version + '.path');
-                        if (listedIncludes) {
-                            _.each(listedIncludes.split(':'), function (path) {
-                                libs[lang][lib].versions[version].path.push(path);
-                            });
+                        const includes = compilerPropsL(lang, libVersionName + '.path');
+                        if (includes) {
+                            _.each(includes.split(':'), path => libs[lang][lib].versions[version].path.push(path));
                         } else {
-                            logger.warn("No paths found for " + lib + " version " + version);
+                            logger.warn(`No paths found for ${lib} - ${version}`);
                         }
                     });
                 } else {
-                    logger.warn("No versions found for " + lib + " library");
+                    logger.warn(`No versions found for ${lib} library`);
                 }
             });
         }
@@ -273,18 +274,14 @@ function ClientOptionsHandler(fileSources) {
         cvCompilerCountMax: ceProps('cvCompilerCountMax', 6),
         defaultFontScale: ceProps('defaultFontScale', 1.0)
     };
-    this.setCompilers = function (compilers) {
-        options.compilers = compilers;
-    };
+    this.setCompilers = compilers => options.compilers = compilers;
     this.setCompilers([]);
     this.handler = function getClientOptions(req, res) {
         res.set('Content-Type', 'application/json');
         staticHeaders(res);
         res.end(JSON.stringify(options));
     };
-    this.get = function () {
-        return options;
-    };
+    this.get = () => options;
 }
 
 function retryPromise(promiseFunc, name, maxFails, retryMs) {
