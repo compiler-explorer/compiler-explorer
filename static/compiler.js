@@ -38,6 +38,7 @@ define(function (require) {
     var monaco = require('monaco');
     var Alert = require('alert');
     var bigInt = require('big-integer');
+    var local = require('./local');
     require('asm-mode');
 
     require('selectize');
@@ -64,6 +65,8 @@ define(function (require) {
         return filters;
     }
 
+    var languages = options.languages;
+
     function Compiler(hub, container, state) {
         this.container = container;
         this.eventHub = hub.createEventHub();
@@ -72,13 +75,14 @@ define(function (require) {
         this.domRoot.html($('#compiler').html());
         this.id = state.id || hub.nextCompilerId();
         this.sourceEditorId = state.source || 1;
+        this.settings = JSON.parse(local.get('settings', '{}'));
         // If we don't have a language, but a compiler, find the corresponding language.
         this.currentLangId = state.lang;
         if (!this.currentLangId && state.compiler) {
             this.currentLangId = this.langOfCompiler(state.compiler);
         }
         if (!this.currentLangId) {
-            this.currentLangId = _.keys(options.languages)[0];
+            this.currentLangId = languages[this.settings.defaultLanguage].id || _.keys(languages)[0];
         }
         this.originalCompilerId = state.compiler;
         this.compiler = this.findCompiler(this.currentLangId, state.compiler);
@@ -96,7 +100,6 @@ define(function (require) {
         this.lastResult = {};
         this.pendingRequestSentAt = 0;
         this.nextRequest = null;
-        this.settings = {};
         this.optViewOpen = false;
         this.cfgViewOpen = false;
         this.wantOptInfo = state.wantOptInfo;
@@ -390,6 +393,7 @@ define(function (require) {
             }
         }, this));
 
+        this.onSettingsChange(this.settings);
         this.eventHub.on('initialised', this.undefer, this);
 
         this.saveState();
