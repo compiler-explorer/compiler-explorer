@@ -81,8 +81,11 @@ define(function (require) {
         if (!this.currentLangId && state.compiler) {
             this.currentLangId = this.langOfCompiler(state.compiler);
         }
+        if (!this.currentLangId && languages[this.settings.defaultLanguage]) {
+            this.currentLangId = languages[this.settings.defaultLanguage].id;
+        }
         if (!this.currentLangId) {
-            this.currentLangId = languages[this.settings.defaultLanguage].id || _.keys(languages)[0];
+            this.currentLangId = _.keys(languages)[0];
         }
         this.originalCompilerId = state.compiler;
         this.compiler = this.findCompiler(this.currentLangId, state.compiler);
