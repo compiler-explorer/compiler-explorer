@@ -42,6 +42,7 @@ define(function (require) {
     require('./haskell-mode');
     require('./swift-mode');
     require('./pascal-mode');
+    require('./php-mode');
     require('selectize');
 
     var loadSave = new loadSaveLib.LoadSave();
