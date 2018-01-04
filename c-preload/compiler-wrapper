@@ -9,7 +9,7 @@ export DENIED=/proc/self/cwd:/proc/self/root:/proc/self/exe
 # Wine configuration
 export DISPLAY=
 export WINEPREFIX=/tmp/wine
-export WINEDLLOVERRIDES="vcruntime140=n"
+export WINEDLLOVERRIDES="vcruntime140=b"
 mkdir -p /tmp/wine
 ALLOWED_FOR_READ=${ALLOWED_FOR_READ}:/usr/share/fonts:/etc/passwd
 
