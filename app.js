@@ -213,7 +213,7 @@ const SourceHandler = require('./lib/handlers/source').Handler;
 const sourceHandler = new SourceHandler(fileSources, staticHeaders);
 
 function ClientOptionsHandler(fileSources) {
-    const sources = _.sortBy(fileSources.map(source => {return {name: source.name, urlpart: source.urlpart}}), 'name');
+    const sources = _.sortBy(fileSources.map(source => {return {name: source.name, urlpart: source.urlpart};}), 'name');
 
     const supportsBinary = compilerPropsAT(languages, res => !!res, 'supportsBinary', true);
     const supportsExecutePerLanguage = compilerPropsAT(languages, (res, lang) => supportsBinary[lang.id] && !!res, 'supportsExecute', true);
