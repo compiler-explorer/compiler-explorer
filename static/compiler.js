@@ -173,7 +173,7 @@ define(function (require) {
             scrollBeyondLastLine: false,
             readOnly: true,
             language: 'asm',
-            fontFamily: 'Fira Mono, monospace',
+            fontFamily: '"Fira Mono", monospace',
             glyphMargin: !options.embedded,
             fixedOverflowWidgets: true,
             minimap: {

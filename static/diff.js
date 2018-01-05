@@ -58,7 +58,7 @@ define(function (require) {
         this.compilers = {};
 
         this.outputEditor = monaco.editor.createDiffEditor(this.domRoot.find(".monaco-placeholder")[0], {
-            fontFamily: 'Fira Mono, monospace',
+            fontFamily: '"Fira Mono", monospace',
             scrollBeyondLastLine: false,
             readOnly: true,
             language: 'asm'
