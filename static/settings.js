@@ -169,17 +169,19 @@ define(function (require) {
         var langs = options.languages;
 
         var defaultLanguageSelector = root.find('.defaultLanguage');
-        add(defaultLanguageSelector, 'defaultLanguage', langId || _.keys(langs)[0] || 'c++', Select,
+        var defLang = settings.defaultLanguage || _.keys(langs)[0] || 'c++';
+        add(defaultLanguageSelector, 'defaultLanguage', defLang, Select,
             _.map(langs, function (lang) {
                 return {label: lang.id, desc: lang.name};
             })
         );
 
+        defaultLanguageSelector.val(defLang);
         if (langId) {
             defaultLanguageSelector
-                .val(langId)
                 .prop('disabled', true)
-                .prop('title', 'Default language inherited from subdomain');
+                .prop('title', 'Default language inherited from subdomain')
+                .css('cursor', 'not-allowed');
         }
 
         add(root.find('.newEditorLastLang'), 'newEditorLastLang', true, Checkbox);

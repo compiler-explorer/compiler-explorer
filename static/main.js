@@ -75,7 +75,10 @@ define(function (require) {
 
     function setupSettings(hub) {
         var eventHub = hub.layout.eventHub;
-        var currentSettings = JSON.parse(local.get('settings', '{}'));
+        var defaultSettings = {
+            defaultLanguage: hub.subdomainLangId
+        };
+        var currentSettings = JSON.parse(local.get('settings', null)) || defaultSettings;
 
         function onChange(settings) {
             currentSettings = settings;
@@ -100,9 +103,15 @@ define(function (require) {
 
         var options = require('options');
 
+        var subdomainPart = window.location.hostname.split('.')[0];
+        var langBySubdomain = _.find(options.languages, function (lang) {
+            return lang.id === subdomainPart || lang.alias.indexOf(subdomainPart) >= 0;
+        });
+        var subLangId = langBySubdomain ? langBySubdomain.id : null;
+
         var defaultConfig = {
             settings: {showPopoutIcon: false},
-            content: [{type: 'row', content: [Components.getEditor(1), Components.getCompiler(1)]}]
+            content: [{type: 'row', content: [Components.getEditorWithLang(1, subLangId), Components.getCompiler(1)]}]
         };
         
         $(window).bind('hashchange', function () {
@@ -136,12 +145,6 @@ define(function (require) {
         }
 
         var root = $("#root");
-
-        var subdomainPart = window.location.hostname.split('.')[0];
-        var langBySubdomain = _.find(options.languages, function (lang) {
-            return lang.id === subdomainPart || lang.alias.indexOf(subdomainPart) >= 0;
-        });
-        var subLangId = langBySubdomain ? langBySubdomain.id : null;
 
         var layout;
         var hub;

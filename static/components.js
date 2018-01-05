@@ -56,6 +56,13 @@ define(function () {
                 componentState: {id: id}
             };
         },
+        getEditorWithLang: function (id, langId) {
+            return {
+                type: 'component',
+                componentName: 'codeEditor',
+                componentState: {id: id, lang: langId}
+            };
+        },
         getEditorWith: function (id, source, options) {
             return {
                 type: 'component',
