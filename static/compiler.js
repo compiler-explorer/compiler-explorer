@@ -92,6 +92,10 @@ define(function (require) {
         if (!this.compiler) {
             this.compiler = this.findCompiler(this.currentLangId, options.defaultCompiler[this.currentLangId]);
         }
+        if (!this.compiler) {
+            var compilers = this.compilerService.compilersByLang[this.currentLangId];
+            if (compilers) this.compiler = _.values(compilers)[0];
+        }
         this.infoByLang = {};
         this.deferCompiles = hub.deferred;
         this.needsCompile = false;
