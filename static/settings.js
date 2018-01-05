@@ -80,7 +80,7 @@ define(function (require) {
         elem.slider('setValue', value);
     };
 
-    function setupSettings(root, settings, onChange) {
+    function setupSettings(root, settings, onChange, langId) {
         settings = settings || {};
 
         var settingsObjs = [];
@@ -167,11 +167,20 @@ define(function (require) {
         }
 
         var langs = options.languages;
-        add(root.find('.defaultLanguage'), 'defaultLanguage', _.keys(langs)[0] || 'c++', Select,
+
+        var defaultLanguageSelector = root.find('.defaultLanguage');
+        add(defaultLanguageSelector, 'defaultLanguage', langId || _.keys(langs)[0] || 'c++', Select,
             _.map(langs, function (lang) {
                 return {label: lang.id, desc: lang.name};
             })
         );
+
+        if (langId) {
+            defaultLanguageSelector
+                .val(langId)
+                .prop('disabled', true)
+                .prop('title', 'Default language inherited from subdomain');
+        }
 
         add(root.find('.newEditorLastLang'), 'newEditorLastLang', true, Checkbox);
 

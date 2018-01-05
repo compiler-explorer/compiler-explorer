@@ -73,7 +73,8 @@ define(function (require) {
     var Alert = require('./alert');
     var themer = require('./themes');
 
-    function setupSettings(eventHub) {
+    function setupSettings(hub) {
+        var eventHub = hub.layout.eventHub;
         var currentSettings = JSON.parse(local.get('settings', '{}'));
 
         function onChange(settings) {
@@ -88,7 +89,7 @@ define(function (require) {
             eventHub.emit('settingsChange', currentSettings);
         });
 
-        var setSettings = settings($('#settings'), currentSettings, onChange);
+        var setSettings = settings($('#settings'), currentSettings, onChange, hub.subdomainLangId);
         eventHub.on('modifySettings', function (newSettings) {
             setSettings(_.extend(currentSettings, newSettings));
         });
@@ -136,15 +137,21 @@ define(function (require) {
 
         var root = $("#root");
 
+        var subdomainPart = window.location.hostname.split('.')[0];
+        var langBySubdomain = _.find(options.languages, function (lang) {
+            return lang.id === subdomainPart || lang.alias.indexOf(subdomainPart) >= 0;
+        });
+        var subLangId = langBySubdomain ? langBySubdomain.id : null;
+
         var layout;
         var hub;
         try {
             layout = new GoldenLayout(config, root);
-            hub = new Hub(layout);
+            hub = new Hub(layout, subLangId);
         } catch (e) {
             Raven.captureException(e);
             layout = new GoldenLayout(defaultConfig, root);
-            hub = new Hub(layout);
+            hub = new Hub(layout, subLangId);
         }
         layout.on('stateChanged', function () {
             var config = layout.toConfig();
@@ -170,7 +177,7 @@ define(function (require) {
 
         new clipboard('.btn.clippy');
 
-        setupSettings(layout.eventHub);
+        setupSettings(hub);
 
         sharing.initShareButton($('#share'), layout);
 

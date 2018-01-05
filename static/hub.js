@@ -59,7 +59,7 @@ define(function (require) {
         throw 'Ran out of ids!?';
     };
 
-    function Hub(layout) {
+    function Hub(layout, subLangId) {
         this.layout = layout;
         this.editorIds = new Ids();
         this.compilerIds = new Ids();
@@ -67,6 +67,7 @@ define(function (require) {
         this.deferred = true;
         this.deferredEmissions = [];
         this.lastOpenedLangId = null;
+        this.subdomainLangId = subLangId || null;
 
         // FIXME
         // We can't avoid this self as _ is undefined at this point
