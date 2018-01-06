@@ -61,7 +61,7 @@ define(function (require) {
             glyphMargin: true,
             quickSuggestions: false,
             fixedOverflowWidgets: true,
-            fontFamily: '"Fira Mono", monospace',
+            fontFamily: 'monospace',
             minimap: {
                 maxColumn: 80
             },

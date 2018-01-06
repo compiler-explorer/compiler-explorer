@@ -129,7 +129,9 @@ let languages = require('./lib/languages').list;
 if (wantedLanguage) {
     const filteredLangs = {};
     _.each(languages, lang => {
-        if (lang.id === wantedLanguage || lang.name === wantedLanguage) {
+        if (lang.id === wantedLanguage ||
+            lang.name === wantedLanguage ||
+            (lang.alias && lang.alias.indexOf(wantedLanguage) >= 0)) {
             filteredLangs[lang.id] = lang;
         }
     });

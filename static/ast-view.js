@@ -47,7 +47,7 @@ define(function (require) {
             language: 'cppp', //we only support cpp for now
             readOnly: true,
             glyphMargin: true,
-            fontFamily: '"Fira Mono", monospace',
+            fontFamily: 'monospace',
             quickSuggestions: false,
             fixedOverflowWidgets: true,
             minimap: {

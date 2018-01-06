@@ -91,7 +91,7 @@ define(function (require) {
         this.editor = monaco.editor.create(root[0], {
             scrollBeyondLastLine: false,
             language: this.currentLanguage.monaco,
-            fontFamily: '"Fira Mono", monospace',
+            fontFamily: 'monospace',
             readOnly: !!options.readOnly || legacyReadOnly,
             glyphMargin: !options.embedded,
             quickSuggestions: false,
