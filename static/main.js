@@ -111,7 +111,13 @@ define(function (require) {
 
         var defaultConfig = {
             settings: {showPopoutIcon: false},
-            content: [{type: 'row', content: [Components.getEditorWithLang(1, subLangId), Components.getCompiler(1)]}]
+            content: [{
+                type: 'row',
+                content: [
+                    Components.getEditor(1, subLangId),
+                    Components.getCompiler(1, subLangId)
+                ]
+            }]
         };
         
         $(window).bind('hashchange', function () {

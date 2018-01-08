@@ -31,10 +31,7 @@ define(function () {
             return {
                 type: 'component',
                 componentName: 'compiler',
-                componentState: {
-                    source: editorId,
-                    lang: lang
-                }
+                componentState: {source: editorId, lang: lang}
             };
         },
         getCompilerWith: function (editorId, filters, options, compilerId) {
@@ -49,14 +46,7 @@ define(function () {
                 }
             };
         },
-        getEditor: function (id) {
-            return {
-                type: 'component',
-                componentName: 'codeEditor',
-                componentState: {id: id}
-            };
-        },
-        getEditorWithLang: function (id, langId) {
+        getEditor: function (id, langId) {
             return {
                 type: 'component',
                 componentName: 'codeEditor',
