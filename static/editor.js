@@ -105,7 +105,7 @@ define(function (require) {
             autoIndent: true
         });
 
-        if (state.source) {
+        if (state.source !== undefined) {
             this.setSource(state.source);
         } else {
             this.updateEditorCode();
