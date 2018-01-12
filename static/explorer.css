@@ -265,5 +265,10 @@ pre.content {
 }
 
 .change-language {
+    line-height: 14px;
     min-width: 100px !important;
+}
+
+.pane-dropdown button {
+    width: 100%;
 }
