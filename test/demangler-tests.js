@@ -24,6 +24,9 @@
 
 const
     chai = require('chai'),
+    fs = require('fs'),
+    path = require('path'),
+    utils = require('../lib/utils'),
     chaiAsPromised = require('chai-as-promised'),
     SymbolStore = require('../lib/symbol-store').SymbolStore,
     Demangler = require('../lib/demangler').Demangler,
@@ -51,7 +54,7 @@ describe('Basic demangling', function () {
     it('One label and some asm', function () {
         const result = {};
         result.asm = [
-            {"text": "__Z6squarei:"},
+            {"text": "_Z6squarei:"},
             {"text": "  ret"}
         ];
 
@@ -68,8 +71,8 @@ describe('Basic demangling', function () {
     it('One label and use of a label', function () {
         const result = {};
         result.asm = [
-            {"text": "__Z6squarei:"},
-            {"text": "  mov eax, $__Z6squarei"}
+            {"text": "_Z6squarei:"},
+            {"text": "  mov eax, $_Z6squarei"}
         ];
 
         const demangler = new Demangler("c++filt");
@@ -85,14 +88,14 @@ describe('Basic demangling', function () {
     it('Two destructors', function () {
         const result = {};
         result.asm = [
-            {"text": "__ZN6NormalD0Ev:"},
-            {"text": "  callq __ZdlPv"},
-            {"text": "__Z7caller1v:"},
+            {"text": "_ZN6NormalD0Ev:"},
+            {"text": "  callq _ZdlPv"},
+            {"text": "_Z7caller1v:"},
             {"text": "  rep ret"},
-            {"text": "__Z7caller2P6Normal:"},
+            {"text": "_Z7caller2P6Normal:"},
             {"text": "  cmp rax, OFFSET FLAT:_ZN6NormalD0Ev"},
-            {"text": "  jmp __ZdlPvm"},
-            {"text": "__ZN6NormalD2Ev:"},
+            {"text": "  jmp _ZdlPvm"},
+            {"text": "_ZN6NormalD2Ev:"},
             {"text": "  rep ret"}
         ];
 
@@ -101,8 +104,55 @@ describe('Basic demangling', function () {
         return Promise.all([
             demangler.Process(result).then((output) => {
                 output.asm[0].text.should.equal("Normal::~Normal() [deleting destructor]:");
-                output.asm[1].text.should.equal("  callq __ZdlPv"); // todo: should be operator delete(void*, unsigned long)
+                output.asm[1].text.should.equal("  callq operator delete(void*)");
+                output.asm[6].text.should.equal("  jmp operator delete(void*, unsigned long)");
             })
         ]);
+    });
+});
+
+function DoDemangleTest(root, filename) {
+    return new Promise(function(resolve, reject) {
+        fs.readFile(path.join(root, filename), function(err, dataIn) {
+            if (err) throw err;
+
+            let resultIn = {"asm": []};
+            
+            resultIn.asm = utils.splitLines(dataIn.toString()).map(function(line) {
+                return {"text": line};
+            });
+
+            fs.readFile(path.join(root, filename + ".demangle"), function(err, dataOut) {
+                if (err) throw err;
+
+                let resultOut = {"asm": []};
+                resultOut.asm = utils.splitLines(dataOut.toString()).map(function(line) {
+                    return {"text": line};
+                });
+
+                let demangler = new Demangler("c++filt");
+                demangler.Process(resultIn).then((output) => {
+                    resolve(output.should.deep.equal(resultOut));
+                });
+            });
+        });
+    });
+}
+
+describe('File demangling', function() {
+    const testcasespath = __dirname + '/demangle-cases';
+
+    return new Promise(function(resolve, reject) {
+        fs.readdir(testcasespath, function(err, files) {
+            let testResults = [];
+
+            files.forEach((filename) => {
+                if (filename.endsWith(".asm")) {
+                    testResults.push(DoDemangleTest(testcasespath, filename));
+                }
+            });
+
+            resolve(Promise.all(testResults));
+        });
     });
 });

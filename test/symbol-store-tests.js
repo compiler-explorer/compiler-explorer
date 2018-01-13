@@ -27,7 +27,7 @@ const SymbolStore = require('../lib/symbol-store').SymbolStore;
 
 chai.should();
 
-describe('Basic examples', function () {
+describe('SymbolStore tests', function () {
     it('Empty', function () {
         const store = new SymbolStore();
         store.ListSymbols().length.should.equal(0);
@@ -82,5 +82,42 @@ describe('Basic examples', function () {
         const translations = store.ListTranslations();
         translations[0][0].should.equal("test123456");
         translations[1][0].should.equal("test123");
+    });
+
+    it('Exclude', function () {
+        const store1 = new SymbolStore();
+        store1.AddMany(["test123", "test123456", "test123"]);
+
+        const store2 = new SymbolStore();
+        store2.AddMany(["test123"]);
+
+        store1.Exclude(store2);
+        var translations = store1.ListTranslations();
+        translations.length.should.equal(1);
+        translations[0][0].should.equal("test123456");
+    });
+
+    it('SoftExclude', function () {
+        const store1 = new SymbolStore();
+        store1.AddMany(["test123", "test123456", "test123"]);
+
+        const store2 = new SymbolStore();
+        store2.AddMany(["est123"]);
+
+        store1.SoftExclude(store2);
+        var translations = store1.ListTranslations();
+        translations.length.should.equal(1);
+        translations[0][0].should.equal("test123456");
+    });
+    
+    it('Contains', function () {
+        const store = new SymbolStore();
+        store.AddMany(["test123", "test123456", "test123"]);
+
+        store.Contains("test123").should.equal(true);
+        store.Contains("test123456").should.equal(true);
+        store.Contains("test456").should.equal(false);
+
+        store.ListSymbols().length.should.equal(2);
     });
 });
