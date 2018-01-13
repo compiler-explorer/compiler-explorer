@@ -288,9 +288,16 @@ define(function (require) {
         }, this);
 
         var addCompilerButton = this.domRoot.find('.btn.add-compiler');
+        var paneAdderDropdown = this.domRoot.find('.add-pane');
 
-        this.container.layoutManager.createDragSource(
-            addCompilerButton, compilerConfig);
+        var togglePaneAdder = function () {
+            paneAdderDropdown.dropdown('toggle');
+        };
+
+        this.container.layoutManager
+            .createDragSource(addCompilerButton, compilerConfig)
+            ._dragListener.on('dragStart', togglePaneAdder);
+
         addCompilerButton.click(_.bind(function () {
             var insertPoint = hub.findParentRowOrColumn(this.container) ||
                 this.container.layoutManager.root.contentItems[0];
@@ -304,8 +311,9 @@ define(function (require) {
 
         this.conformanceViewerButton = this.domRoot.find('.btn.conformance');
 
-        this.container.layoutManager.createDragSource(
-            this.conformanceViewerButton, conformanceConfig);
+        this.container.layoutManager
+            .createDragSource(this.conformanceViewerButton, conformanceConfig)
+            ._dragListener.on('dragStart', togglePaneAdder);
         this.conformanceViewerButton.click(_.bind(function () {
             var insertPoint = hub.findParentRowOrColumn(this.container) ||
                 this.container.layoutManager.root.contentItems[0];

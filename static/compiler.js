@@ -341,8 +341,14 @@ define(function (require) {
             return Components.getCfgViewWith(this.id, this.getCompilerName(), this.sourceEditorId);
         }, this);
 
-        this.container.layoutManager.createDragSource(
-            this.domRoot.find('.btn.add-compiler'), cloneComponent);
+        var panerDropdown = this.domRoot.find('.pane-dropdown');
+        var togglePannerAdder = function () {
+            panerDropdown.dropdown('toggle');
+        };
+
+        this.container.layoutManager
+            .createDragSource(this.domRoot.find('.btn.add-compiler'), cloneComponent)
+            ._dragListener.on('dragStart', togglePannerAdder);
 
         this.domRoot.find('.btn.add-compiler').click(_.bind(function () {
             var insertPoint = hub.findParentRowOrColumn(this.container) ||
@@ -350,8 +356,9 @@ define(function (require) {
             insertPoint.addChild(cloneComponent);
         }, this));
 
-        this.container.layoutManager.createDragSource(
-            this.optButton, createOptView);
+        this.container.layoutManager
+            .createDragSource(this.optButton, createOptView)
+            ._dragListener.on('dragStart', togglePannerAdder);
 
         this.optButton.click(_.bind(function () {
             var insertPoint = hub.findParentRowOrColumn(this.container) ||
@@ -359,8 +366,9 @@ define(function (require) {
             insertPoint.addChild(createOptView);
         }, this));
 
-        this.container.layoutManager.createDragSource(
-            this.astButton, createAstView);
+        this.container.layoutManager
+            .createDragSource(this.astButton, createAstView)
+            ._dragListener.on('dragStart', togglePannerAdder);
 
         this.astButton.click(_.bind(function () {
             var insertPoint = hub.findParentRowOrColumn(this.container) ||
@@ -368,8 +376,9 @@ define(function (require) {
             insertPoint.addChild(createAstView);
         }, this));
 
-        this.container.layoutManager.createDragSource(
-            this.gccDumpButton, createGccDumpView);
+        this.container.layoutManager
+            .createDragSource(this.gccDumpButton, createGccDumpView)
+            ._dragListener.on('dragStart', togglePannerAdder);
 
         this.gccDumpButton.click(_.bind(function () {
             var insertPoint = hub.findParentRowOrColumn(this.container) ||
@@ -377,8 +386,9 @@ define(function (require) {
             insertPoint.addChild(createGccDumpView);
         }, this));
 
-        this.container.layoutManager.createDragSource(
-            this.cfgButton, createCfgView);
+        this.container.layoutManager
+            .createDragSource(this.cfgButton, createCfgView)
+            ._dragListener.on('dragStart', togglePannerAdder);
 
         this.cfgButton.click(_.bind(function () {
             var insertPoint = hub.findParentRowOrColumn(this.container) ||

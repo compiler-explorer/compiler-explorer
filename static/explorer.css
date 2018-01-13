@@ -271,6 +271,7 @@ pre.content {
 
 .pane-dropdown button {
     width: 100%;
+    text-align: left;
 }
 
 .full-compiler-name {
