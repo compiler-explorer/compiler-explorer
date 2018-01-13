@@ -37,7 +37,7 @@ define(function (require) {
 
     function shortenURL(url, done) {
         var gapi = window.gapi;
-        if (!gapi || !gapi.client) {
+        if (!gapi || !gapi.client || !gapi.client.urlshortener) {
             // Load the Google APIs client library asynchronously, then the
             // urlshortener API, and finally come back here.
             window.googleJSClientLoaded = googleJSClientLoaded;
