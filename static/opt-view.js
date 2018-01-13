@@ -164,9 +164,14 @@ define(function (require) {
             this.optEditor.setValue(this.code);
         }
     };
-
     Opt.prototype.onCompilerClose = function (id) {
-        delete this.compilers[id];
+        if (id === this._compilerid) {
+            // We can't immediately close as an outer loop somewhere in GoldenLayout is iterating over
+            // the hierarchy. We can't modify while it's being iterated over.
+            _.defer(function (self) {
+                self.container.close();
+            }, this);
+        }
     };
 
     Opt.prototype.updateState = function () {

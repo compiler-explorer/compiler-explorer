@@ -262,11 +262,7 @@ define(function (require) {
 
         this.filters.on('change', _.bind(this.onFilterChange, this));
 
-        container.on('destroy', function () {
-            this.eventHub.unsubscribe();
-            this.eventHub.emit('compilerClose', this.id);
-            this.outputEditor.dispose();
-        }, this);
+        container.on('destroy', this.close, this);
         container.on('resize', this.resize, this);
         container.on('shown', this.resize, this);
         container.on('open', function () {
@@ -425,6 +421,12 @@ define(function (require) {
 
         this.saveState();
     }
+
+    Compiler.prototype.close = function () {
+        this.eventHub.unsubscribe();
+        this.eventHub.emit('compilerClose', this.id);
+        this.outputEditor.dispose();
+    };
 
     Compiler.prototype.undefer = function () {
         this.deferCompiles = false;
@@ -827,6 +829,7 @@ define(function (require) {
         if (editor === this.sourceEditorId) {
             // We can't immediately close as an outer loop somewhere in GoldenLayout is iterating over
             // the hierarchy. We can't modify while it's being iterated over.
+            this.close();
             _.defer(function (self) {
                 self.container.close();
             }, this);

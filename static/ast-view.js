@@ -39,7 +39,6 @@ define(function (require) {
         this.eventHub = hub.createEventHub();
         this.domRoot = container.getElement();
         this.domRoot.html($('#ast').html());
-        this.compilers = {};
         this._currentDecorations = [];
         this.astEditor = monaco.editor.create(this.domRoot.find(".monaco-placeholder")[0], {
             value: "",
@@ -126,8 +125,6 @@ define(function (require) {
     };
 
     Ast.prototype.onCompilerClose = function (id) {
-        // There must be a reason for this to be here
-        delete this.compilers[id];
         if (id === this._compilerid) {
             // We can't immediately close as an outer loop somewhere in GoldenLayout is iterating over
             // the hierarchy. We can't modify while it's being iterated over.

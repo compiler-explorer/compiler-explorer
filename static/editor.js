@@ -436,12 +436,14 @@ define(function (require) {
     };
 
     Editor.prototype.onCompilerClose = function (compilerId) {
-        if (!this.ourCompilers[compilerId]) return;
-        monaco.editor.setModelMarkers(this.editor.getModel(), compilerId, []);
-        delete this.widgetsByCompiler[compilerId];
-        delete this.asmByCompiler[compilerId];
-        delete this.busyCompilers[compilerId];
-        this.numberUsedLines();
+        if (this.ourCompilers[compilerId]) {
+            monaco.editor.setModelMarkers(this.editor.getModel(), compilerId, []);
+            delete this.widgetsByCompiler[compilerId];
+            delete this.asmByCompiler[compilerId];
+            delete this.busyCompilers[compilerId];
+            delete this.ourCompilers[compilerId];
+            this.numberUsedLines();
+        }
     };
 
     Editor.prototype.onCompiling = function (compilerId) {
