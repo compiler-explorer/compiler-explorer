@@ -398,6 +398,7 @@ function findCompilers() {
 
         const supportsBinary = !!props("supportsBinary", true);
         const supportsExecute = supportsBinary && !!props("supportsExecute", true);
+        const group = props("group", "");
         const compilerInfo = {
             id: compilerName,
             exe: props("exe", compilerName),
@@ -414,7 +415,9 @@ function findCompilers() {
             supportsBinary: supportsBinary,
             supportsExecute: supportsExecute,
             postProcess: props("postProcess", "").split("|"),
-            lang: langId
+            lang: langId,
+            group: group,
+            groupName: props("groupName", "")
         };
         logger.debug("Found compiler", compilerInfo);
         return Promise.resolve(compilerInfo);

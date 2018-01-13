@@ -137,13 +137,23 @@ define(function (require) {
         }, this));
 
         this.linkedFadeTimeoutId = -1;
+        this.getGroupsInUse = function () {
+            var currentLangCompilers = _.map(this.getCurrentLangCompilers(), _.identity, this);
+            return _.map(_.uniq(currentLangCompilers, false, function (compiler) {
+                return compiler.group;
+            }), function (compiler) {
+                return {value: compiler.group, label: compiler.groupName || compiler.group};
+            });
+        };
 
         this.domRoot.find('.compiler-picker').selectize({
             sortField: 'name',
             valueField: 'id',
             labelField: 'name',
             searchField: ['name'],
-            options: _.map(this.getCurrentLangCompilers(), _.identity),
+            optgroupField: 'group',
+            optgroups: this.getGroupsInUse(),
+            options: _.map(this.getCurrentLangCompilers(), _.identity, this),
             items: this.compiler ? [this.compiler.id] : []
         }).on('change', _.bind(function (e) {
             var val = $(e.target).val();
@@ -1196,8 +1206,12 @@ define(function (require) {
     Compiler.prototype.updateCompilersSelector = function () {
         var selector = this.domRoot.find('.compiler-picker')[0].selectize;
         selector.clearOptions(true);
+        selector.clearOptionGroups();
+        _.each(this.getGroupsInUse(), function (group) {
+            selector.addOptionGroup(group.value, {label: group.label});
+        }, this);
         selector.load(_.bind(function (callback) {
-            callback(_.map(this.getCurrentLangCompilers(), _.identity));
+            callback(_.map(this.getCurrentLangCompilers(), _.identity, this));
         }, this));
         var defaultOrFirst = _.bind(function defaultOrFirst () {
             // If the default is a valid compiler, return it
@@ -1223,13 +1237,10 @@ define(function (require) {
     };
 
     Compiler.prototype.langOfCompiler = function (compilerId) {
-        var language;
-        _.find(options.compilers, function (compiler) {
-            if (compiler.id === compilerId) {
-                language = compiler.lang;
-            }
+        var compiler = _.find(options.compilers, function (compiler) {
+            return compiler.id === compilerId;
         });
-        return language;
+        return compiler.lang;
     };
 
     return {
