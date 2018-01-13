@@ -272,3 +272,7 @@ pre.content {
 .pane-dropdown button {
     width: 100%;
 }
+
+.full-compiler-name {
+    padding-left: 3px;
+}
