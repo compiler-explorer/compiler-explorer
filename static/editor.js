@@ -324,11 +324,12 @@ define(function (require) {
         this.updateState();
     }
 
-    Editor.prototype.maybeEmitChange = function (force) {
+    // If compilerId is undefined, every compiler will be pinged
+    Editor.prototype.maybeEmitChange = function (force, compilerId) {
         var source = this.getSource();
         if (!force && source === this.lastChangeEmitted) return;
         this.lastChangeEmitted = source;
-        this.eventHub.emit('editorChange', this.id, this.lastChangeEmitted, this.currentLanguage.id);
+        this.eventHub.emit('editorChange', this.id, this.lastChangeEmitted, this.currentLanguage.id, compilerId);
     };
 
     Editor.prototype.updateState = function () {
@@ -430,7 +431,7 @@ define(function (require) {
                     }
                 }
             }
-            this.maybeEmitChange(true);
+            this.maybeEmitChange(true, compilerId);
             this.ourCompilers[compilerId] = true;
         }
     };

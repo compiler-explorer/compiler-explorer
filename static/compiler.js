@@ -664,8 +664,8 @@ define(function (require) {
         }
     };
 
-    Compiler.prototype.onEditorChange = function (editor, source, langId) {
-        if (editor === this.sourceEditorId && langId === this.currentLangId) {
+    Compiler.prototype.onEditorChange = function (editor, source, langId, compilerId) {
+        if (editor === this.sourceEditorId && langId === this.currentLangId && (compilerId === undefined || compilerId === this.id)) {
             this.source = source;
             this.compile();
         }
