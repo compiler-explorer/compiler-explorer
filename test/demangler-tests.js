@@ -114,7 +114,7 @@ describe('Basic demangling', function () {
 function DoDemangleTest(root, filename) {
     return new Promise(function(resolve, reject) {
         fs.readFile(path.join(root, filename), function(err, dataIn) {
-            if (err) throw err;
+            if (err) reject(err);
 
             let resultIn = {"asm": []};
             
@@ -123,7 +123,7 @@ function DoDemangleTest(root, filename) {
             });
 
             fs.readFile(path.join(root, filename + ".demangle"), function(err, dataOut) {
-                if (err) throw err;
+                if (err) reject(err);
 
                 let resultOut = {"asm": []};
                 resultOut.asm = utils.splitLines(dataOut.toString()).map(function(line) {
@@ -131,9 +131,9 @@ function DoDemangleTest(root, filename) {
                 });
 
                 let demangler = new Demangler("c++filt");
-                demangler.Process(resultIn).then((output) => {
-                    resolve(output.should.deep.equal(resultOut));
-                });
+                resolve(demangler.Process(resultIn).then((output) => {
+                    output.should.deep.equal(resultOut);
+                }));
             });
         });
     });
@@ -142,17 +142,19 @@ function DoDemangleTest(root, filename) {
 describe('File demangling', function() {
     const testcasespath = __dirname + '/demangle-cases';
 
-    return new Promise(function(resolve, reject) {
-        fs.readdir(testcasespath, function(err, files) {
-            let testResults = [];
+    it('Does things', function() {
+        return new Promise(function(resolve, reject) {
+            fs.readdir(testcasespath, function(err, files) {
+                let testResults = [];
 
-            files.forEach((filename) => {
-                if (filename.endsWith(".asm")) {
-                    testResults.push(DoDemangleTest(testcasespath, filename));
-                }
+                files.forEach((filename) => {
+                    if (filename.endsWith(".asm")) {
+                        testResults.push(DoDemangleTest(testcasespath, filename));
+                    }
+                });
+
+                resolve(Promise.all(testResults));
             });
-
-            resolve(Promise.all(testResults));
         });
     });
 });

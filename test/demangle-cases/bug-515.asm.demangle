@@ -7,4 +7,4 @@ bar2():
 foo2:
         .long   1
 foo:
-        .long   23
+        .long   2
