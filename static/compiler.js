@@ -175,9 +175,7 @@ define(function (require) {
             .on('change', optionsChange)
             .on('keyup', optionsChange);
 
-        // Hide the binary option if the global options has it disabled.
-        this.domRoot.find('[data-bind=\'binary\']').toggle(options.supportsBinary[this.currentLangId]);
-        this.domRoot.find('[data-bind=\'execute\']').toggle(options.supportsExecute);
+        this.domRoot.find("[data-bind='execute']").toggle(options.supportsExecute);
 
         this.outputEditor = monaco.editor.create(this.domRoot.find('.monaco-placeholder')[0], {
             scrollBeyondLastLine: false,
@@ -770,18 +768,15 @@ define(function (require) {
         // We can support intel output if the compiler supports it, or if we're compiling
         // to binary (as we can disassemble it however we like).
         var intelAsm = this.compiler.supportsIntel || filters.binary;
-        this.domRoot.find('[data-bind=\'intel\']').toggleClass('disabled', !intelAsm);
+        this.domRoot.find("[data-bind='intel']").prop('disabled', !intelAsm);
         // Disable binary support on compilers that don't work with it.
-        this.domRoot.find('[data-bind=\'binary\']')
-            .toggleClass('disabled', !this.compiler.supportsBinary);
-        this.domRoot.find('[data-bind=\'execute\']')
-            .toggleClass('disabled', !this.compiler.supportsExecute);
+        this.domRoot.find("[data-bind='binary']").prop('disabled', !this.compiler.supportsBinary);
+        this.domRoot.find("[data-bind='execute']").prop('disabled', !this.compiler.supportsExecute);
         // Disable demangle for compilers where we can't access it
-        this.domRoot.find('[data-bind=\'demangle\']')
-            .toggleClass('disabled', !this.compiler.demangler);
+        this.domRoot.find("[data-bind='demangle']").prop('disabled', !this.compiler.demangler);
         // Disable any of the options which don't make sense in binary mode.
         var filtersDisabled = !!filters.binary && !this.compiler.supportsFiltersInBinary;
-        this.domRoot.find('.nonbinary').toggleClass('disabled', filtersDisabled);
+        this.domRoot.find('.nonbinary').prop('disabled', filtersDisabled);
         // If its already open, we should turn the it off.
         // The pane will update with error text
         // Other wise we just disable the button.
