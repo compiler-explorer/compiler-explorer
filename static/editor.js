@@ -226,7 +226,9 @@ define(function (require) {
             valueField: 'id',
             labelField: 'name',
             searchField: ['name'],
-            options: _.map(languages, _.identity),
+            options: _.chain(languages).filter(function (elm) {
+                        return _.keys(hub.compilerService.compilersByLang).find((x) => { return x === elm.id }) !== undefined;
+                    }).map(_.identity).value(),
             items: [this.currentLanguage.id]
         }).on('change', _.bind(function (e) {
             this.onLanguageChange($(e.target).val());
