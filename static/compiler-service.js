@@ -49,7 +49,7 @@ define(function (require) {
     }
 
     CompilerService.prototype.getCompilersForLang = function (langId) {
-        return this.compilersByLang[langId];
+        return this.compilersByLang[langId] || {};
     };
 
     CompilerService.prototype.findCompiler = function (langId, compilerId) {

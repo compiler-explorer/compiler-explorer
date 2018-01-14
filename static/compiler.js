@@ -1200,9 +1200,9 @@ define(function (require) {
                 compiler: this.compiler && this.compiler.id ? this.compiler.id : options.defaultCompiler[oldLangId],
                 options: this.options
             };
-            this.updateCompilersSelector();
             this.updateCompilerName();
             this.updateLibsDropdown();
+            this.updateCompilersSelector();
             this.saveState();
         }
     };
@@ -1235,7 +1235,7 @@ define(function (require) {
         }, this);
         var info = this.infoByLang[this.currentLangId] || {};
         this.compiler = this.findCompiler(this.currentLangId, info.compiler || defaultOrFirst());
-        selector.setValue([this.compiler.id], true);
+        if (this.compiler) selector.setValue([this.compiler.id], true);
         this.options = info.options || "";
         this.optionsField.val(this.options);
     };
