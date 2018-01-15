@@ -110,7 +110,6 @@ define(function (require) {
         this.optViewOpen = false;
         this.cfgViewOpen = false;
         this.wantOptInfo = state.wantOptInfo;
-        this.compilerSupportsCfg = false;
         this.decorations = {};
         this.prevDecorations = [];
         this.optButton = this.domRoot.find('.btn.view-optimization');
@@ -294,8 +293,13 @@ define(function (require) {
                 this.eventHub.emit('filtersChange', this.id, this.getEffectiveFilters());
             }
         }, this);
+        this.eventHub.on('requestCompiler', function (id) {
+            if (id === this.id) {
+                this.sendCompiler();
+            }
+        }, this);
         this.eventHub.on('languageChange', this.onLanguageChange, this);
-        this.eventHub.emit('requestSettings');
+        this.onSettingsChange(this.settings);
         this.sendCompiler();
         this.updateCompilerName();
         this.updateButtons();
@@ -332,7 +336,7 @@ define(function (require) {
         }, this);
 
         var createCfgView = _.bind(function () {
-            return Components.getCfgViewWith(this.id, this.getCompilerName(), this.sourceEditorId);
+            return Components.getCfgViewWith(this.id, this.sourceEditorId);
         }, this);
 
         var panerDropdown = this.domRoot.find('.pane-dropdown');
@@ -473,7 +477,8 @@ define(function (require) {
                     treeDump: this.treeDumpEnabled,
                     rtlDump: this.rtlDumpEnabled
                 },
-                produceOptInfo: this.wantOptInfo
+                produceOptInfo: this.wantOptInfo,
+                produceCfg: this.cfgViewOpen
             },
             filters: this.getEffectiveFilters()
         };
@@ -651,7 +656,6 @@ define(function (require) {
         } else {
             this.compileTimeLabel.text('');
         }
-        this.compilerSupportsCfg = result.supportsCfg;
         this.eventHub.emit('compileResult', this.id, this.compiler, result);
         this.updateButtons();
 
@@ -787,7 +791,7 @@ define(function (require) {
         }
 
         if (!this.cfgViewOpen) {
-            this.cfgButton.prop('disabled', !this.compilerSupportsCfg);
+            this.cfgButton.prop('disabled', !this.compiler.supportsCfg);
         } else {
             this.cfgButton.prop('disabled', true);
         }
@@ -894,7 +898,7 @@ define(function (require) {
     };
 
     Compiler.prototype.onResendCompilation = function (id) {
-        if (id == this.id && !$.isEmptyObject(this.lastResult)) {
+        if (id === this.id && !$.isEmptyObject(this.lastResult)) {
             this.eventHub.emit('compileResult', this.id, this.compiler, this.lastResult);
         }
     };
@@ -1200,9 +1204,9 @@ define(function (require) {
                 compiler: this.compiler && this.compiler.id ? this.compiler.id : options.defaultCompiler[oldLangId],
                 options: this.options
             };
-            this.updateCompilerName();
             this.updateLibsDropdown();
             this.updateCompilersSelector();
+            this.updateCompilerName();
             this.saveState();
         }
     };

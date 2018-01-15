@@ -1,40 +1,30 @@
+const chai = require('chai'),
+    cfg = require('../lib/cfg'),
+    fs = require('fs');
 
+const cases = fs.readdirSync(__dirname + '/cases/')
+    .filter(x => x.match(/cfg-\w*/))
+    .map(x => __dirname + '/cases/' + x);
 
-var should = require('chai').should();
-var cfg = require('../lib/cfg');
-var fs = require('fs');
+const assert = chai.assert;
 
-var cases = fs.readdirSync(__dirname + '/cases')
-    .filter(function (x) {
-        return x.match(/cfg-\w*/);
-    })
-    .map(function (x) {
-        return __dirname + '/cases/' + x;
-    });
-    
-function common(cases, filterArg, cfgArg){
-    cases.filter(function (x) {return x.includes(filterArg);})
-        .forEach(function (filename) {
-            var file = fs.readFileSync(filename, 'utf-8');
-            var content = JSON.parse(file);
-
+function common(cases, filterArg, cfgArg) {
+    cases.filter(x => x.includes(filterArg))
+        .forEach(filename => {
+            const file = fs.readFileSync(filename, 'utf-8');
             if (file) {
-                it(filename, function () {
-                    var cfg_ = new cfg.ControlFlowGraph(cfgArg);
-                    var result = cfg_.generateCfgStructure(content.asm);
-                    result.should.deep.equal(content.cfg);
-                });
+                const contents = JSON.parse(file);
+                assert.deepEqual(cfg.generateStructure(cfgArg, contents.asm), contents.cfg, `${filename}`);
             }
         });
-}    
-    
-    
-describe('Cfg test cases', function () {
-    describe('gcc tests', function () {
+}
+
+describe('Cfg test cases', () => {
+    it('works for gcc', () => {
         common(cases, "gcc", "g++");
     });
-    
-    describe('clang tests', function () {
+
+    it('works for clang', () => {
         common(cases, "clang", "clang");
     });
 });

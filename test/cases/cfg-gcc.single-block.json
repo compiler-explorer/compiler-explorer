@@ -1,97 +1,117 @@
 {
-    "asm": [{
-            "text": "main:",
-            "source": null
-        }, {
-            "text": "  xor eax, eax",
-            "source": {
-                "file": null,
-                "line": 5
-            }
-        }, {
-            "text": "  ret",
-            "source": {
-                "file": null,
-                "line": 5
-            }
-        }, {
-            "text": "_GLOBAL__sub_I_main:",
-            "source": null
-        }, {
-            "text": "  sub rsp, 8",
-            "source": {
-                "file": null,
-                "line": 5
-            }
-        }, {
-            "text": "  mov edi, OFFSET FLAT:std::__ioinit",
-            "source": {
-                "file": "/usr/include/c++/7/iostream",
-                "line": 74
-            }
-        }, {
-            "text": "  call std::ios_base::Init::Init()",
-            "source": {
-                "file": "/usr/include/c++/7/iostream",
-                "line": 74
-            }
-        }, {
-            "text": "  mov edx, OFFSET FLAT:__dso_handle",
-            "source": {
-                "file": "/usr/include/c++/7/iostream",
-                "line": 74
-            }
-        }, {
-            "text": "  mov esi, OFFSET FLAT:std::__ioinit",
-            "source": {
-                "file": "/usr/include/c++/7/iostream",
-                "line": 74
-            }
-        }, {
-            "text": "  mov edi, OFFSET FLAT:std::ios_base::Init::~Init()",
-            "source": {
-                "file": "/usr/include/c++/7/iostream",
-                "line": 74
-            }
-        }, {
-            "text": "  add rsp, 8",
-            "source": {
-                "file": null,
-                "line": 5
-            }
-        }, {
-            "text": "  jmp __cxa_atexit",
-            "source": {
-                "file": "/usr/include/c++/7/iostream",
-                "line": 74
-            }
-        }, {
-            "text": "",
-            "source": null
-        }],
-    "cfg": {
-        "main:": {
-            "nodes": [{
-                    "id": "main:",
-                    "label": "main:\n  xor eax, eax\n  ret",
-                    "color": "#99ccff",
-                    "shape": "box"
-                }],
-            "edges": []
-        },
-        "_GLOBAL__sub_I_main:": {
-            "nodes": [{
-                    "id": "_GLOBAL__sub_I_main:",
-                    "label": "_GLOBAL__sub_I_main:\n  sub rsp, 8\n  mov edi, OFFSET FLAT:std::__ioinit\n  call std::ios_base::Init::Init()\n  mov edx, OFFSET FLAT:__dso_handle\n  mov esi, OFFSET FLAT:std::__ioinit\n  mov edi, OFFSET FLAT:std::ios_base::Init::~Init(\n  add rsp, 8\n  jmp __cxa_atexit",
-                    "color": "#99ccff",
-                    "shape": "box"
-                }],
-            "edges": [{
-                    "from": "_GLOBAL__sub_I_main:",
-                    "to": "null:",
-                    "arrows": "to",
-                    "color": "blue"
-                }]
-        }
+  "asm": [
+    {
+      "text": "main:",
+      "source": null
+    },
+    {
+      "text": "  xor eax, eax",
+      "source": {
+        "file": null,
+        "line": 5
+      }
+    },
+    {
+      "text": "  ret",
+      "source": {
+        "file": null,
+        "line": 5
+      }
+    },
+    {
+      "text": "_GLOBAL__sub_I_main:",
+      "source": null
+    },
+    {
+      "text": "  sub rsp, 8",
+      "source": {
+        "file": null,
+        "line": 5
+      }
+    },
+    {
+      "text": "  mov edi, OFFSET FLAT:std::__ioinit",
+      "source": {
+        "file": "/usr/include/c++/7/iostream",
+        "line": 74
+      }
+    },
+    {
+      "text": "  call std::ios_base::Init::Init()",
+      "source": {
+        "file": "/usr/include/c++/7/iostream",
+        "line": 74
+      }
+    },
+    {
+      "text": "  mov edx, OFFSET FLAT:__dso_handle",
+      "source": {
+        "file": "/usr/include/c++/7/iostream",
+        "line": 74
+      }
+    },
+    {
+      "text": "  mov esi, OFFSET FLAT:std::__ioinit",
+      "source": {
+        "file": "/usr/include/c++/7/iostream",
+        "line": 74
+      }
+    },
+    {
+      "text": "  mov edi, OFFSET FLAT:std::ios_base::Init::~Init()",
+      "source": {
+        "file": "/usr/include/c++/7/iostream",
+        "line": 74
+      }
+    },
+    {
+      "text": "  add rsp, 8",
+      "source": {
+        "file": null,
+        "line": 5
+      }
+    },
+    {
+      "text": "  jmp __cxa_atexit",
+      "source": {
+        "file": "/usr/include/c++/7/iostream",
+        "line": 74
+      }
+    },
+    {
+      "text": "",
+      "source": null
     }
+  ],
+  "cfg": {
+    "main:": {
+      "nodes": [
+        {
+          "id": "main:",
+          "label": "main:\n  xor eax, eax\n  ret",
+          "color": "#99ccff",
+          "shape": "box"
+        }
+      ],
+      "edges": []
+    },
+    "_GLOBAL__sub_I_main:": {
+      "nodes": [
+        {
+          "id": "_GLOBAL__sub_I_main:",
+          "label": "_GLOBAL__sub_I_main:\n  sub rsp, 8\n  mov edi, OFFSET FLAT:std::__ioinit\n  call std::ios_base::Init::Init()\n  mov edx, OFFSET FLAT:__dso_handle\n  mov esi, OFFSET FLAT:std::__ioinit\n  mov edi, OFFSET FLAT:std::ios_base::Init::~Init(\n  add rsp, 8\n  jmp __cxa_atexit",
+          "color": "#99ccff",
+          "shape": "box"
+        }
+      ],
+      "edges": [
+        {
+          "from": "_GLOBAL__sub_I_main:",
+          "to": "null:",
+          "arrows": "to",
+          "color": "blue"
+        }
+      ]
+    }
+  }
 }

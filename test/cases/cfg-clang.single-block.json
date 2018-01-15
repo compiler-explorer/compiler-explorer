@@ -1,106 +1,129 @@
 {
-    "asm": [{
-            "text": "main: # @main",
-            "source": null
-        }, {
-            "text": "  xorl %eax, %eax",
-            "source": {
-                "file": null,
-                "line": 4
-            }
-        }, {
-            "text": "  retq",
-            "source": {
-                "file": null,
-                "line": 4
-            }
-        }, {
-            "text": "",
-            "source": null
-        }, {
-            "text": "_GLOBAL__sub_I_example.cpp: # @_GLOBAL__sub_I_example.cpp",
-            "source": null
-        }, {
-            "text": "  pushq %rax",
-            "source": {
-                "file": "/usr/bin/../lib/gcc/x86_64-linux-gnu/7.2.0/../../../../include/c++/7.2.0/ \"iostream\"",
-                "line": 74
-            }
-        }, {
-            "text": "  movl std::__ioinit, %edi",
-            "source": {
-                "file": "/usr/bin/../lib/gcc/x86_64-linux-gnu/7.2.0/../../../../include/c++/7.2.0/ \"iostream\"",
-                "line": 74
-            }
-        }, {
-            "text": "  callq std::ios_base::Init::Init()",
-            "source": {
-                "file": "/usr/bin/../lib/gcc/x86_64-linux-gnu/7.2.0/../../../../include/c++/7.2.0/ \"iostream\"",
-                "line": 74
-            }
-        }, {
-            "text": "  movl std::ios_base::Init::~Init(), %edi",
-            "source": {
-                "file": "/usr/bin/../lib/gcc/x86_64-linux-gnu/7.2.0/../../../../include/c++/7.2.0/ \"iostream\"",
-                "line": 74
-            }
-        }, {
-            "text": "  movl std::__ioinit, %esi",
-            "source": {
-                "file": "/usr/bin/../lib/gcc/x86_64-linux-gnu/7.2.0/../../../../include/c++/7.2.0/ \"iostream\"",
-                "line": 74
-            }
-        }, {
-            "text": "  movl $__dso_handle, %edx",
-            "source": {
-                "file": "/usr/bin/../lib/gcc/x86_64-linux-gnu/7.2.0/../../../../include/c++/7.2.0/ \"iostream\"",
-                "line": 74
-            }
-        }, {
-            "text": "  popq %rax",
-            "source": {
-                "file": "/usr/bin/../lib/gcc/x86_64-linux-gnu/7.2.0/../../../../include/c++/7.2.0/ \"iostream\"",
-                "line": 74
-            }
-        }, {
-            "text": "  jmp __cxa_atexit # TAILCALL",
-            "source": {
-                "file": "/usr/bin/../lib/gcc/x86_64-linux-gnu/7.2.0/../../../../include/c++/7.2.0/ \"iostream\"",
-                "line": 74
-            }
-        }, {
-            "text": "",
-            "source": null
-        }, {
-            "text": "",
-            "source": null
-        }, {
-            "text": "",
-            "source": null
-        }],
-    "cfg": {
-        "main:": {
-            "nodes": [{
-                    "id": "main:",
-                    "label": "main:\n  xorl %eax, %eax\n  retq",
-                    "color": "#99ccff",
-                    "shape": "box"
-                }],
-            "edges": []
-        },
-        "_GLOBAL__sub_I_example.cpp:": {
-            "nodes": [{
-                    "id": "_GLOBAL__sub_I_example.cpp:",
-                    "label": "_GLOBAL__sub_I_example.cpp:\n  pushq %rax\n  movl std::__ioinit, %edi\n  callq std::ios_base::Init::Init()\n  movl std::ios_base::Init::~Init(), %edi\n  movl std::__ioinit, %esi\n  movl $__dso_handle, %edx\n  popq %rax\n  jmp __cxa_atexit",
-                    "color": "#99ccff",
-                    "shape": "box"
-                }],
-            "edges": [{
-                    "from": "_GLOBAL__sub_I_example.cpp:",
-                    "to": "null:",
-                    "arrows": "to",
-                    "color": "blue"
-                }]
-        }
+  "asm": [
+    {
+      "text": "main: # @main",
+      "source": null
+    },
+    {
+      "text": "  xorl %eax, %eax",
+      "source": {
+        "file": null,
+        "line": 4
+      }
+    },
+    {
+      "text": "  retq",
+      "source": {
+        "file": null,
+        "line": 4
+      }
+    },
+    {
+      "text": "",
+      "source": null
+    },
+    {
+      "text": "_GLOBAL__sub_I_example.cpp: # @_GLOBAL__sub_I_example.cpp",
+      "source": null
+    },
+    {
+      "text": "  pushq %rax",
+      "source": {
+        "file": "/usr/bin/../lib/gcc/x86_64-linux-gnu/7.2.0/../../../../include/c++/7.2.0/ \"iostream\"",
+        "line": 74
+      }
+    },
+    {
+      "text": "  movl std::__ioinit, %edi",
+      "source": {
+        "file": "/usr/bin/../lib/gcc/x86_64-linux-gnu/7.2.0/../../../../include/c++/7.2.0/ \"iostream\"",
+        "line": 74
+      }
+    },
+    {
+      "text": "  callq std::ios_base::Init::Init()",
+      "source": {
+        "file": "/usr/bin/../lib/gcc/x86_64-linux-gnu/7.2.0/../../../../include/c++/7.2.0/ \"iostream\"",
+        "line": 74
+      }
+    },
+    {
+      "text": "  movl std::ios_base::Init::~Init(), %edi",
+      "source": {
+        "file": "/usr/bin/../lib/gcc/x86_64-linux-gnu/7.2.0/../../../../include/c++/7.2.0/ \"iostream\"",
+        "line": 74
+      }
+    },
+    {
+      "text": "  movl std::__ioinit, %esi",
+      "source": {
+        "file": "/usr/bin/../lib/gcc/x86_64-linux-gnu/7.2.0/../../../../include/c++/7.2.0/ \"iostream\"",
+        "line": 74
+      }
+    },
+    {
+      "text": "  movl $__dso_handle, %edx",
+      "source": {
+        "file": "/usr/bin/../lib/gcc/x86_64-linux-gnu/7.2.0/../../../../include/c++/7.2.0/ \"iostream\"",
+        "line": 74
+      }
+    },
+    {
+      "text": "  popq %rax",
+      "source": {
+        "file": "/usr/bin/../lib/gcc/x86_64-linux-gnu/7.2.0/../../../../include/c++/7.2.0/ \"iostream\"",
+        "line": 74
+      }
+    },
+    {
+      "text": "  jmp __cxa_atexit # TAILCALL",
+      "source": {
+        "file": "/usr/bin/../lib/gcc/x86_64-linux-gnu/7.2.0/../../../../include/c++/7.2.0/ \"iostream\"",
+        "line": 74
+      }
+    },
+    {
+      "text": "",
+      "source": null
+    },
+    {
+      "text": "",
+      "source": null
+    },
+    {
+      "text": "",
+      "source": null
     }
+  ],
+  "cfg": {
+    "main:": {
+      "nodes": [
+        {
+          "id": "main:",
+          "label": "main:\n  xorl %eax, %eax\n  retq",
+          "color": "#99ccff",
+          "shape": "box"
+        }
+      ],
+      "edges": []
+    },
+    "_GLOBAL__sub_I_example.cpp:": {
+      "nodes": [
+        {
+          "id": "_GLOBAL__sub_I_example.cpp:",
+          "label": "_GLOBAL__sub_I_example.cpp:\n  pushq %rax\n  movl std::__ioinit, %edi\n  callq std::ios_base::Init::Init()\n  movl std::ios_base::Init::~Init(), %edi\n  movl std::__ioinit, %esi\n  movl $__dso_handle, %edx\n  popq %rax\n  jmp __cxa_atexit",
+          "color": "#99ccff",
+          "shape": "box"
+        }
+      ],
+      "edges": [
+        {
+          "from": "_GLOBAL__sub_I_example.cpp:",
+          "to": "null:",
+          "arrows": "to",
+          "color": "blue"
+        }
+      ]
+    }
+  }
 }

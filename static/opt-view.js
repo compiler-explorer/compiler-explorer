@@ -152,7 +152,7 @@ define(function (require) {
     };
 
     Opt.prototype.onCompiler = function (id, compiler, options, editorid) {
-        if (id == this._compilerid) {
+        if (id === this._compilerid) {
             this._compilerName = compiler ? compiler.name : '';
             this.setTitle();
             if (compiler && !compiler.supportsOptOutput) {

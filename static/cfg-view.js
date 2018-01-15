@@ -92,28 +92,28 @@ define(function (require) {
             this.cfgVisualiser.setOptions(this.networkOpts);
         }, this));
 
-        this._compilerid = state.id;
-        this._compilerName = state.compilerName;
+        this.compilerId = state.id;
         this._editorid = state.editorid;
         this._binaryFilter = false;
 
+        this.eventHub.on('compilerClose', this.onCompilerClose, this);
         this.eventHub.on('compileResult', this.onCompileResult, this);
         this.eventHub.on('compiler', this.onCompiler, this);
         this.eventHub.on('filtersChange', this.onFiltersChange, this);
+
         this.container.on('destroy', function () {
             this.cfgVisualiser.destroy();
-            this.eventHub.emit('cfgViewClosed', this._compilerid);
+            this.eventHub.emit('cfgViewClosed', this.compilerId);
             this.eventHub.unsubscribe();
         }, this);
         this.container.on('resize', this.resize, this);
         this.container.on('shown', this.resize, this);
-        this.eventHub.emit('cfgViewOpened', this._compilerid);
-        this.eventHub.emit('requestFilters', this._compilerid);
+        this.eventHub.emit('cfgViewOpened', this.compilerId);
+        this.eventHub.emit('requestFilters', this.compilerId);
+        this.eventHub.emit('requestCompiler', this.compilerId);
 
         this.adaptStructure = function (names) {
-            return _.map(names, function (name) {
-                return {name: name};
-            });
+            return _.map(names, function (name) {return {name: name};});
         };
 
         this.functionPicker = $(this.domRoot).find('.function-picker').selectize({
@@ -137,9 +137,9 @@ define(function (require) {
     }
 
     Cfg.prototype.onCompileResult = function (id, compiler, result) {
-        if (this._compilerid === id) {
+        if (this.compilerId === id) {
             var functionNames = [];
-            if (result.supportsCfg && !$.isEmptyObject(result.cfg)) {
+            if (this.supportsCfg && !$.isEmptyObject(result.cfg)) {
                 this.functions = result.cfg;
                 functionNames = Object.keys(this.functions);
                 if (functionNames.indexOf(this.currentFunc) === -1) {
@@ -157,17 +157,17 @@ define(function (require) {
             }
 
             this.functionPicker[0].selectize.clearOptions();
-            this.functionPicker[0].selectize.addOption(functionNames.length ? this.adaptStructure(functionNames) : {name: 'The input does not contain any function'});
+            this.functionPicker[0].selectize.addOption(functionNames.length ? this.adaptStructure(functionNames) : {name: 'The input does not contain functions'});
             this.functionPicker[0].selectize.refreshOptions(false);
 
             this.functionPicker[0].selectize.clear();
-            this.functionPicker[0].selectize.addItem(functionNames.length ? this.currentFunc : 'The input does not contain any function', true);
+            this.functionPicker[0].selectize.addItem(functionNames.length ? this.currentFunc : 'The input does not contain functions', true);
             this.saveState();
         }
     };
 
     Cfg.prototype.setTitle = function () {
-        this.container.setTitle(this._compilerName + ' Graph Viewer (Editor #' + this._editorid + ', Compiler #' + this._compilerid + ')');
+        this.container.setTitle((this._compilerName || '') + ' Graph Viewer (Editor #' + this._editorid + ', Compiler #' + this.compilerId + ')');
     };
 
     Cfg.prototype.showCfgResults = function (data) {
@@ -175,14 +175,15 @@ define(function (require) {
     };
 
     Cfg.prototype.onCompiler = function (id, compiler) {
-        if (id === this._compilerid) {
+        if (id === this.compilerId) {
             this._compilerName = compiler ? compiler.name : '';
+            this.supportsCfg = compiler.supportsCfg;
             this.setTitle();
         }
     };
 
     Cfg.prototype.onFiltersChange = function (id, filters) {
-        if (this._compilerid === id) {
+        if (this.compilerId === id) {
             this._binaryFilter = filters.binary;
         }
     };
@@ -199,11 +200,20 @@ define(function (require) {
 
     Cfg.prototype.currentState = function () {
         return {
-            id: this._compilerid,
+            id: this.compilerId,
             editorid: this._editorid,
-            selectedFn: this.currentFunc,
-            compilerName: this._compilerName
+            selectedFn: this.currentFunc
         };
+    };
+
+    Cfg.prototype.onCompilerClose = function (compilerId) {
+        if (this.compilerId === compilerId) {
+            // We can't immediately close as an outer loop somewhere in GoldenLayout is iterating over
+            // the hierarchy. We can't modify while it's being iterated over.
+            _.defer(function (self) {
+                self.container.close();
+            }, this);
+        }
     };
 
     return {

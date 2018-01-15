@@ -146,13 +146,12 @@ define(function () {
                 componentState: {}
             };
         },
-        getCfgViewWith: function (id, compilerName, editorid) {
+        getCfgViewWith: function (id, editorid) {
             return {
                 type: 'component',
                 componentName: 'cfg',
                 componentState: {
                     id: id,
-                    compilerName: compilerName,
                     editorid: editorid
                 }
             };
