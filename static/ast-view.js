@@ -31,9 +31,6 @@ define(function (require) {
     var _ = require('underscore');
     var $ = require('jquery');
 
-    require('asm-mode');
-    require('selectize');
-
     function Ast(hub, container, state) {
         this.container = container;
         this.eventHub = hub.createEventHub();

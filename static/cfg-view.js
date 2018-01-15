@@ -29,7 +29,6 @@ define(function (require) {
     var $ = require('jquery');
     var vis = require('vis');
     var _ = require('underscore');
-    require('asm-mode');
     require('selectize');
 
     function Cfg(hub, container, state) {
