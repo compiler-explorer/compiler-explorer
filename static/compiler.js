@@ -39,13 +39,14 @@ define(function (require) {
     var Alert = require('alert');
     var bigInt = require('big-integer');
     var local = require('./local');
+    var Raven = require('raven-js');
     require('asm-mode');
 
     require('selectize');
 
     var OpcodeCache = new LruCache({
         max: 64 * 1024,
-        length:function (n) {
+        length: function (n) {
             return JSON.stringify(n).length;
         }
     });
@@ -121,7 +122,7 @@ define(function (require) {
         this.compileClearCache = this.domRoot.find('.clear-cache');
 
         this.availableLibs = {};
-        this.updateAvailableLibs = function() {
+        this.updateAvailableLibs = function () {
             if (!this.availableLibs[this.currentLangId]) {
                 this.availableLibs[this.currentLangId] = $.extend(true, {}, options.libs[this.currentLangId]);
             }
@@ -1141,7 +1142,7 @@ define(function (require) {
                 _.each(this.availableLibs[this.currentLangId], function (lib, libKey) {
                     var libsList = getNextList();
                     var libHeader = $('<span></span>')
-                        .text(lib.name +  ' ')
+                        .text(lib.name + ' ')
                         .addClass('lib-header');
                     if (lib.url && lib.url.length >= 1) {
                         libHeader.append($('<a></a>')
@@ -1225,7 +1226,7 @@ define(function (require) {
         selector.load(_.bind(function (callback) {
             callback(_.map(this.getCurrentLangCompilers(), _.identity, this));
         }, this));
-        var defaultOrFirst = _.bind(function defaultOrFirst () {
+        var defaultOrFirst = _.bind(function defaultOrFirst() {
             // If the default is a valid compiler, return it
             var defaultCompiler = options.defaultCompiler[this.currentLangId];
             if (defaultCompiler) return defaultCompiler;
@@ -1252,6 +1253,10 @@ define(function (require) {
         var compiler = _.find(options.compilers, function (compiler) {
             return compiler.id === compilerId;
         });
+        if (!compiler) {
+            Raven.captureMessage('Unable to find compiler id "' + compilerId + '"');
+            compiler = options.compilers[0];
+        }
         return compiler.lang;
     };
 
