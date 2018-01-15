@@ -221,15 +221,16 @@ define(function (require) {
         this.fontScale = new FontScale(this.domRoot, state, this.editor);
         this.fontScale.on('change', _.bind(this.updateState, this));
 
-        languages = _.filter(languages, function (language) {
+        var usableLanguages = _.filter(languages, function (language) {
             return hub.compilerService.compilersByLang[language.id];
         });
+
         this.languageBtn.selectize({
             sortField: 'name',
             valueField: 'id',
             labelField: 'name',
             searchField: ['name'],
-            options: _.map(languages, _.identity),
+            options: _.map(usableLanguages, _.identity),
             items: [this.currentLanguage.id]
         }).on('change', _.bind(function (e) {
             this.onLanguageChange($(e.target).val());
