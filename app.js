@@ -177,6 +177,7 @@ function compilerPropsAT(langs, transform, property, defaultValue) {
 }
 
 const staticMaxAgeSecs = ceProps('staticMaxAgeSecs', 0);
+const maxUploadSize = ceProps('maxUploadSize', '1mb');
 let extraBodyClass = ceProps('extraBodyClass', '');
 
 function staticHeaders(res) {
@@ -605,8 +606,8 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
             webServer.use('/v', express.static(archivedVersions, {maxAge: Infinity, index: false}));
         }
         webServer
-            .use(bodyParser.json({limit: ceProps('bodyParserLimit', '1mb')}))
-            .use(bodyParser.text({limit: ceProps('bodyParserLimit', '1mb'), type: () => true}))
+            .use(bodyParser.json({limit: ceProps('bodyParserLimit', maxUploadSize)}))
+            .use(bodyParser.text({limit: ceProps('bodyParserLimit', maxUploadSize), type: () => true}))
             .use(restreamer())
             .get('/client-options.json', clientOptionsHandler.handler)
             .use('/source', sourceHandler.handle.bind(sourceHandler))
