@@ -89,10 +89,10 @@ define(function (require) {
             this.currentLangId = _.keys(languages)[0];
         }
         this.originalCompilerId = state.compiler;
-        this.compiler = this.findCompiler(this.currentLangId, state.compiler);
-        if (!this.compiler) {
+        if (state.compiler)
+            this.compiler = this.findCompiler(this.currentLangId, state.compiler);
+        else
             this.compiler = this.findCompiler(this.currentLangId, options.defaultCompiler[this.currentLangId]);
-        }
         if (!this.compiler) {
             var compilers = this.compilerService.compilersByLang[this.currentLangId];
             if (compilers) this.compiler = _.values(compilers)[0];

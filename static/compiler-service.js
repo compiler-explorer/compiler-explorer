@@ -53,6 +53,7 @@ define(function (require) {
     };
 
     CompilerService.prototype.findCompiler = function (langId, compilerId) {
+        if (!compilerId) return null;
         var compilers = this.getCompilersForLang(langId);
         if (compilers && compilers[compilerId]) {
             return compilers[compilerId];
