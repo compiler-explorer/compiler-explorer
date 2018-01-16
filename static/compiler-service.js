@@ -53,7 +53,13 @@ define(function (require) {
     };
 
     CompilerService.prototype.findCompiler = function (langId, compilerId) {
-        return this.getCompilersForLang(langId)[compilerId];
+        var compilers = this.getCompilersForLang(langId);
+        if (compilers && compilers[compilerId]) {
+            return compilers[compilerId];
+        }
+        return _.find(compilers, function (compiler) {
+            return compiler.alias === compilerId;
+        });
     };
 
     CompilerService.prototype.submit = function (request) {
