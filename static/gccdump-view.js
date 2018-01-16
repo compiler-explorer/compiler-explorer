@@ -98,8 +98,8 @@ define(function (require) {
         this.eventHub.emit('gccDumpViewOpened', this.state._compilerid);
         this.eventHub.emit('requestSettings');
         this.container.on('destroy', function () {
-            this.eventHub.emit('gccDumpViewClosed', this.state._compilerid);
             this.eventHub.unsubscribe();
+            this.eventHub.emit('gccDumpViewClosed', this.state._compilerid);
             this.gccDumpEditor.dispose();
         }, this);
 

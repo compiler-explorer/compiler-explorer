@@ -66,8 +66,8 @@ define(function (require) {
         this.eventHub.emit('astViewOpened', this._compilerid);
         this.eventHub.emit('requestSettings');
         this.container.on('destroy', function () {
-            this.eventHub.emit("astViewClosed", this._compilerid);
             this.eventHub.unsubscribe();
+            this.eventHub.emit("astViewClosed", this._compilerid);
             this.astEditor.dispose();
         }, this);
 

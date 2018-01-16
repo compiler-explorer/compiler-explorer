@@ -68,8 +68,8 @@ define(function (require) {
         this.eventHub.on('settingsChange', this.onSettingsChange, this);
         this.eventHub.on('resize', this.resize, this);
         this.container.on('destroy', function () {
-            this.eventHub.emit("optViewClosed", this._compilerid);
             this.eventHub.unsubscribe();
+            this.eventHub.emit("optViewClosed", this._compilerid);
             this.optEditor.dispose();
         }, this);
         this.eventHub.emit('requestSettings');

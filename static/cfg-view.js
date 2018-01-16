@@ -101,9 +101,9 @@ define(function (require) {
         this.eventHub.on('filtersChange', this.onFiltersChange, this);
 
         this.container.on('destroy', function () {
-            this.cfgVisualiser.destroy();
-            this.eventHub.emit('cfgViewClosed', this.compilerId);
             this.eventHub.unsubscribe();
+            this.eventHub.emit('cfgViewClosed', this.compilerId);
+            this.cfgVisualiser.destroy();
         }, this);
         this.container.on('resize', this.resize, this);
         this.container.on('shown', this.resize, this);

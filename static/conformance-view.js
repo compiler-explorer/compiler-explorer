@@ -54,8 +54,8 @@ define(function (require) {
         this.stateByLang = {};
 
         this.container.on('destroy', function () {
-            this.eventHub.emit("conformanceViewClose", this.editorId);
             this.eventHub.unsubscribe();
+            this.eventHub.emit("conformanceViewClose", this.editorId);
         }, this);
 
         this.container.on('open', function () {

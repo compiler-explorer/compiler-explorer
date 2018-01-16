@@ -27,6 +27,7 @@ define(function (require) {
     'use strict';
 
     var _ = require('underscore');
+    var Raven = require('raven-js');
     var editor = require('editor');
     var compiler = require('compiler');
     var output = require('output');
@@ -201,8 +202,13 @@ define(function (require) {
     };
     WrappedEventHub.prototype.unsubscribe = function () {
         _.each(this.subscriptions, _.bind(function (obj) {
-            this.eventHub.off(obj.evt, obj.fn, obj.ctx);
+            try {
+                this.eventHub.off(obj.evt, obj.fn, obj.ctx);
+            } catch (e) {
+                Raven.captureMessage('Can not unsubscribe from ' + obj.evt.toString() + ' :"' + e.msg + '"');
+            }
         }, this));
+        this.subscriptions = [];
     };
 
     Hub.prototype.createEventHub = function () {
