@@ -106,6 +106,7 @@ function testFilter(filename, suffix, filters) {
 // bless("cases/gcc-x86-vector.asm", "cases/gcc-x86-vector.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
 // bless("cases/clang-on-mac.asm", "cases/clang-on-mac.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
 // bless("cases/bug-349.asm", "cases/bug-349.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
+// bless("cases/bug-348.asm", "cases/bug-348.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
 // describe('A test', function() {
 //     it('should work', function(){
 //         console.log(processAsm(__dirname + '/cases/clang-on-mac.asm', {directives: true, labels: true, commentOnly: true}));

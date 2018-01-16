@@ -1,0 +1,70 @@
+[
+  {
+    "text": "",
+    "source": null
+  },
+  {
+    "text": "square(int):",
+    "source": null
+  },
+  {
+    "text": "        push    r10",
+    "source": null
+  },
+  {
+    "text": "        push    r4",
+    "source": null
+  },
+  {
+    "text": "        mov     r1, r4",
+    "source": null
+  },
+  {
+    "text": "        add     #4, r4",
+    "source": null
+  },
+  {
+    "text": "        sub     #2, r1",
+    "source": null
+  },
+  {
+    "text": "        mov     r15, -6(r4)",
+    "source": null
+  },
+  {
+    "text": "        mov     -6(r4), r10",
+    "source": null
+  },
+  {
+    "text": "        mov     -6(r4), r12",
+    "source": null
+  },
+  {
+    "text": "        call    #__mulhi3",
+    "source": null
+  },
+  {
+    "text": "        mov     r14, r15",
+    "source": null
+  },
+  {
+    "text": "        add     #2, r1",
+    "source": null
+  },
+  {
+    "text": "        pop     r4",
+    "source": null
+  },
+  {
+    "text": "        pop     r10",
+    "source": null
+  },
+  {
+    "text": "        ret",
+    "source": null
+  },
+  {
+    "text": "",
+    "source": null
+  }
+]
