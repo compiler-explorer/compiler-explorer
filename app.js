@@ -216,7 +216,9 @@ const SourceHandler = require('./lib/handlers/source').Handler;
 const sourceHandler = new SourceHandler(fileSources, staticHeaders);
 
 function ClientOptionsHandler(fileSources) {
-    const sources = _.sortBy(fileSources.map(source => {return {name: source.name, urlpart: source.urlpart};}), 'name');
+    const sources = _.sortBy(fileSources.map(source => {
+        return {name: source.name, urlpart: source.urlpart};
+    }), 'name');
 
     const supportsBinary = compilerPropsAT(languages, res => !!res, 'supportsBinary', true);
     const supportsExecutePerLanguage = compilerPropsAT(languages, (res, lang) => supportsBinary[lang.id] && !!res, 'supportsExecute', true);
@@ -313,7 +315,6 @@ function retryPromise(promiseFunc, name, maxFails, retryMs) {
 
 function findCompilers() {
     const exes = compilerPropsAT(languages, exs => _.compact(exs.split(":")), "compilers", "");
-
 
     const ndk = compilerPropsA(languages, 'androidNdk');
     _.each(ndk, (ndkPath, langId) => {
@@ -467,7 +468,7 @@ function findCompilers() {
             if (list.length !== 1) {
                 logger.error(`Compiler ID clash for '${id}' - used by ${
                     _.map(list, o => 'lang:' + o.lang + " name:" + o.name).join(', ')
-                }`);
+                    }`);
             }
         });
         return compilers;
