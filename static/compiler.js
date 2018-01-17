@@ -1251,7 +1251,7 @@ define(function (require) {
 
     Compiler.prototype.langOfCompiler = function (compilerId) {
         var compiler = _.find(options.compilers, function (compiler) {
-            return compiler.id === compilerId;
+            return compiler.id === compilerId || compiler.alias === compilerId;
         });
         if (!compiler) {
             Raven.captureMessage('Unable to find compiler id "' + compilerId + '"');
