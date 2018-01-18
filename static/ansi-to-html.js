@@ -376,7 +376,7 @@ define(function (require) {
                 g1 = '0';
             }
 
-            g1 = g1.trimRight(';').split(';');
+            g1 = g1.replace(/;+$/, "").split(';');
 
             for (var o = 0, len = g1.length; o < len; o++) {
                 callback('display', g1[o]);
