@@ -188,7 +188,7 @@ function staticHeaders(res) {
 }
 
 function contentPolicyHeader(res) {
-    res.setHeader('Content-Security-Policy', contentPolicy);
+    res.setHeader('Content-Security-Policy-Report-Only', contentPolicy);
 }
 
 const awsProps = props.propsFor("aws");
