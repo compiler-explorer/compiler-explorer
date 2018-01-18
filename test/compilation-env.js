@@ -22,28 +22,32 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-var should = require('chai').should();
-var CompilationEnvironment = require('../lib/compilation-env').CompilationEnvironment;
+const chai = require('chai');
+const CompilationEnvironment = require('../lib/compilation-env');
 
-var props = function (key, deflt) {
+const should = chai.should();
+
+const props = (key, deflt) => {
     switch (key) {
         case 'optionsWhitelistRe':
             return '.*';
         case 'optionsBlacklistRe':
             return '^(-W[alp],)?((-wrapper|-fplugin.*|-specs|-load|-plugin|(@.*)|-I|-i)(=.*)?|--)$';
+        case 'cacheMb':
+            return 10;
     }
     return deflt;
 };
 
-describe('Compilation environment', function () {
-    var ce = new CompilationEnvironment(props);
-    it('Should cache', function () {
+describe('Compilation environment', () => {
+    const ce = new CompilationEnvironment(props);
+    it('Should cache', () => {
         should.not.exist(ce.cacheGet('foo'));
         ce.cachePut('foo', 'bar');
         ce.cacheGet('foo').should.equal('bar');
         should.not.exist(ce.cacheGet('baz'));
     });
-    it('Should filter bad options', function () {
+    it('Should filter bad options', () => {
         ce.findBadOptions(['-O3', '-flto']).should.be.empty;
         ce.findBadOptions(['-O3', '-plugin']).should.eql(['-plugin']);
     });

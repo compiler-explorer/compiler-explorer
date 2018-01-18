@@ -22,14 +22,15 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-var should = require('chai').should();
-var PascalDemangler = require('../lib/pascal-support').demangler;
-var PascalCompiler = require('../lib/compilers/pascal');
-var logger = require('../lib/logger').logger;
+const chai = require('chai');
+const PascalDemangler = require('../lib/pascal-support').demangler;
+const PascalCompiler = require('../lib/compilers/pascal');
 
-var CompilationEnvironment = require('../lib/compilation-env').CompilationEnvironment;
+const CompilationEnvironment = require('../lib/compilation-env');
 
-var props = function (key, deflt) {
+chai.should();
+
+const props = function (key, deflt) {
     return deflt;
 };
 
@@ -52,7 +53,7 @@ describe('Basic compiler setup', function () {
 });
 
 describe('Pascal signature composer function', function () {
-    var demangler = new PascalDemangler();
+    const demangler = new PascalDemangler();
 
     it('Handle 0 parameter methods', function () {
         demangler.composeReadableMethodSignature("", "", "myfunc", "").should.equal("myfunc()");
@@ -72,7 +73,7 @@ describe('Pascal signature composer function', function () {
 });
 
 describe('Pascal Demangling FPC 2.6', function () {
-    var demangler = new PascalDemangler();
+    const demangler = new PascalDemangler();
 
     it('Should demangle OUTPUT_MAXARRAY$array_of_DOUBLE$array_of_DOUBLE', function () {
         demangler.demangle("OUTPUT_MAXARRAY$array_of_DOUBLE$array_of_DOUBLE:").should.equal("maxarray(array_of_double,array_of_double)");
@@ -108,7 +109,7 @@ describe('Pascal Demangling FPC 2.6', function () {
 });
 
 describe('Pascal Demangling FPC 3.2', function () {
-    var demangler = new PascalDemangler();
+    const demangler = new PascalDemangler();
 
     it('Should demangle OUTPUT_$$_SQUARE$LONGINT$$LONGINT', function () {
         demangler.demangle("OUTPUT_$$_SQUARE$LONGINT$$LONGINT:").should.equal("square(longint)");
@@ -152,7 +153,7 @@ describe('Pascal Demangling FPC 3.2', function () {
 });
 
 describe('Pascal Demangling Fixed Symbols FPC 2.6', function () {
-    var demangler = new PascalDemangler();
+    const demangler = new PascalDemangler();
 
     it('Should demangle OUTPUT_finalize_implicit', function () {
         demangler.demangle("OUTPUT_finalize_implicit:").should.equal("unit_finalization_implicit");
@@ -160,7 +161,7 @@ describe('Pascal Demangling Fixed Symbols FPC 2.6', function () {
 });
 
 describe('Pascal Demangling Fixed Symbols FPC 3.2', function () {
-    var demangler = new PascalDemangler();
+    const demangler = new PascalDemangler();
 
     it('Should demangle OUTPUT_$$_init', function () {
         demangler.demangle("OUTPUT_$$_init:").should.equal("unit_initialization");
@@ -184,7 +185,7 @@ describe('Pascal Demangling Fixed Symbols FPC 3.2', function () {
 });
 
 describe('Pascal NOT Demangling certain symbols FPC 2.6', function () {
-    var demangler = new PascalDemangler();
+    const demangler = new PascalDemangler();
 
     it('Should NOT demangle VMT_OUTPUT_TMYCLASS', function () {
         demangler.demangle("VMT_OUTPUT_TMYCLASS:").should.equal(false);
@@ -216,7 +217,7 @@ describe('Pascal NOT Demangling certain symbols FPC 2.6', function () {
 });
 
 describe('Pascal NOT Demangling certain symbols FPC 3.2', function () {
-    var demangler = new PascalDemangler();
+    const demangler = new PascalDemangler();
 
     it('Should NOT demangle RTTI_$OUTPUT_$$_TMYCLASS', function () {
         demangler.demangle("RTTI_$OUTPUT_$$_TMYCLASS:").should.equal(false);
@@ -244,7 +245,7 @@ describe('Pascal NOT Demangling certain symbols FPC 3.2', function () {
 });
 
 describe('Add, order and demangle inline', function () {
-    var demangler = new PascalDemangler();
+    const demangler = new PascalDemangler();
 
     demangler.demangle("OUTPUT$_$TMYCLASS_$__$$_MYTEST:");
     demangler.demangle("U_$OUTPUT_$$_MYGLOBALVAR:");
@@ -264,7 +265,7 @@ describe('Add, order and demangle inline', function () {
 });
 
 describe('Add, order and demangle inline - using addDemangleToCache()', function () {
-    var demangler = new PascalDemangler();
+    const demangler = new PascalDemangler();
 
     demangler.addDemangleToCache("OUTPUT$_$TMYCLASS_$__$$_MYTEST:");
     demangler.addDemangleToCache("U_$OUTPUT_$$_MYGLOBALVAR:");
@@ -283,7 +284,7 @@ describe('Add, order and demangle inline - using addDemangleToCache()', function
 });
 
 describe('Pascal Ignored Symbols', function () {
-    var demangler = new PascalDemangler();
+    const demangler = new PascalDemangler();
 
     it('Should ignore certain labels', function () {
         demangler.shouldIgnoreSymbol(".Le1").should.equal(true);

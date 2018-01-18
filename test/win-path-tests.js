@@ -26,7 +26,7 @@ const chai = require('chai');
 
 const WslCL = require('../lib/compilers/WSL-CL');
 const WineCL = require('../lib/compilers/Wine-CL');
-const {CompilationEnvironment} = require('../lib/compilation-env');
+const CompilationEnvironment = require('../lib/compilation-env');
 
 chai.should();
 

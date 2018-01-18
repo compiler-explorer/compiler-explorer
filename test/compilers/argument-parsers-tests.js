@@ -24,7 +24,7 @@
 
 const chai = require('chai'),
     FakeCompiler = require('../../lib/compilers/fake-for-test'),
-    CompilationEnvironment = require('../../lib/compilation-env').CompilationEnvironment,
+    CompilationEnvironment = require('../../lib/compilation-env'),
     chaiAsPromised = require("chai-as-promised"),
     parsers = require('../../lib/compilers/argument-parsers');
 
@@ -33,7 +33,7 @@ chai.should();
 
 function makeCompiler(stdout, stderr, code) {
     if (code === undefined) code = 0;
-    const env = new CompilationEnvironment((key, def) => def);
+    const env = new CompilationEnvironment((key, def) => def, x => x);
     const compiler = new FakeCompiler({lang: 'c++', remote: true}, env);
     compiler.exec = () => Promise.resolve({code: code, stdout: stdout || "", stderr: stderr || ""});
     return compiler;
@@ -63,7 +63,7 @@ describe('option parser', () => {
 
 describe('gcc parser', () => {
     it('should handle empty options', () => {
-        return new parsers.GCC(makeCompiler()).should.eventually.satisfy(result => {
+        return parsers.GCC.parse(makeCompiler()).should.eventually.satisfy(result => {
             return Promise.all([
                 result.compiler.supportsGccDump.should.equals(true),
                 result.compiler.options.should.equals('')
@@ -71,7 +71,7 @@ describe('gcc parser', () => {
         });
     });
     it('should handle options', () => {
-        return new parsers.GCC(makeCompiler("-masm=intel\n-fdiagnostics-color=[blah]"))
+        return parsers.GCC.parse(makeCompiler("-masm=intel\n-fdiagnostics-color=[blah]"))
             .should.eventually.satisfy(result => {
                 return Promise.all([
                     result.compiler.supportsGccDump.should.equals(true),
@@ -82,7 +82,7 @@ describe('gcc parser', () => {
             });
     });
     it('should handle undefined options', () => {
-        return new parsers.GCC(makeCompiler("-fdiagnostics-color=[blah]")).should.eventually.satisfy(result => {
+        return parsers.GCC.parse(makeCompiler("-fdiagnostics-color=[blah]")).should.eventually.satisfy(result => {
             return Promise.all([
                 result.compiler.supportsGccDump.should.equals(true),
                 result.compiler.options.should.equals('-fdiagnostics-color=always')
@@ -93,14 +93,14 @@ describe('gcc parser', () => {
 
 describe('clang parser', () => {
     it('should handle empty options', () => {
-        return new parsers.Clang(makeCompiler()).should.eventually.satisfy(result => {
+        return parsers.Clang.parse(makeCompiler()).should.eventually.satisfy(result => {
             return Promise.all([
                 result.compiler.options.should.equals('')
             ]);
         });
     });
     it('should handle options', () => {
-        return new parsers.Clang(makeCompiler("-fsave-optimization-record\n-fcolor-diagnostics"))
+        return parsers.Clang.parse(makeCompiler("-fsave-optimization-record\n-fcolor-diagnostics"))
             .should.eventually.satisfy(result => {
                 return Promise.all([
                     result.compiler.supportsOptOutput.should.equals(true),
