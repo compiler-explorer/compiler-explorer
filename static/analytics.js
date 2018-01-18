@@ -119,7 +119,7 @@ define(function (require) {
             }
 
             if (options.sharingEnabled) {
-                create_script_element('twitter-wjs', '//platform.twitter.com/widgets.js');
+                create_script_element('twitter-wjs', 'https://platform.twitter.com/widgets.js');
             }
         });
     }
