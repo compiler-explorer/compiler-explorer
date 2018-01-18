@@ -23,8 +23,6 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 // POSSIBILITY OF SUCH DAMAGE.
 
-window.compilerExplorerOptions = JSON.parse(document.getElementById('script-loader').getAttribute('data-ce-window'));
-
 require.config({ // jshint ignore:line
     paths: {
         bootstrap: 'ext/bootstrap/dist/js/bootstrap',
