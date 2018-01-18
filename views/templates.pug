@@ -95,7 +95,7 @@
     .top-bar.tn-toolbar(role="toolbar")
       table
         tr
-          td(style="padding-right: 1em")
+          td.header-fontscale
             include font-size.pug
           td: select.diff-picker.lhs(placeholder="Select compiler output...")
           td: select.diff-picker.rhs(placeholder="Select compiler output...")
@@ -115,7 +115,7 @@
     .top-bar.btn-toolbar(role="toolbar")
       table
         tr
-          td(style="padding-right: 1em")
+          td.header-fontscale
             include font-size.pug
           td: div Pass filters:
           td: div.btn-group.btn-group-sm.dump-filters(data-toggle="buttons")

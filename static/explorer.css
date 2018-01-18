@@ -277,3 +277,19 @@ pre.content {
 .full-compiler-name {
     padding-left: 3px;
 }
+
+.header-fontscale {
+    padding-right: 1em;
+}
+
+.local-file {
+    display: none;
+}
+
+.save-file {
+    display: none;
+}
+
+.save-btn {
+    margin-left: 5px;
+}

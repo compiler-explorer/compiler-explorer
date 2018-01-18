@@ -177,6 +177,7 @@ function compilerPropsAT(langs, transform, property, defaultValue) {
 }
 
 const staticMaxAgeSecs = ceProps('staticMaxAgeSecs', 0);
+const contentPolicy = ceProps('contentPolicy', 'default-src *');
 const maxUploadSize = ceProps('maxUploadSize', '1mb');
 let extraBodyClass = ceProps('extraBodyClass', '');
 
@@ -184,6 +185,10 @@ function staticHeaders(res) {
     if (staticMaxAgeSecs) {
         res.setHeader('Cache-Control', 'public, max-age=' + staticMaxAgeSecs + ', must-revalidate');
     }
+}
+
+function contentPolicyHeader(res) {
+    res.setHeader('Content-Security-Policy', contentPolicy);
 }
 
 const awsProps = props.propsFor("aws");
@@ -568,6 +573,7 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
 
         const embeddedHandler = function (req, res) {
             staticHeaders(res);
+            contentPolicyHeader(res);
             res.render('embed', renderConfig({embedded: true}));
         };
         const healthCheck = require('./lib/handlers/health-check');
@@ -580,19 +586,21 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
             .use(compression())
             .get('/', (req, res) => {
                 staticHeaders(res);
+                contentPolicyHeader(res);
                 res.render('index', renderConfig({embedded: false}));
             })
             .get('/e', embeddedHandler)
             .get('/embed.html', embeddedHandler) // legacy. not a 301 to prevent any redirect loops between old e links and embed.html
-            .get('/embed-ro', function (req, res) {
+            .get('/embed-ro', (req, res) => {
                 staticHeaders(res);
+                contentPolicyHeader(res);
                 res.render('embed', renderConfig({embedded: true, readOnly: true}));
             })
-            .get('/robots.txt', function (req, res) {
+            .get('/robots.txt', (req, res) => {
                 staticHeaders(res);
                 res.end('User-agent: *\nSitemap: https://godbolt.org/sitemap.xml');
             })
-            .get('/sitemap.xml', function (req, res) {
+            .get('/sitemap.xml', (req, res) => {
                 staticHeaders(res);
                 res.set('Content-Type', 'application/xml');
                 res.render('sitemap');
