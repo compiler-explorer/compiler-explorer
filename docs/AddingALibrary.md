@@ -23,23 +23,28 @@ libs=kvasir:boost:rangesv3
 ```
 
 This says there are three libraries with identifiers `kvasir`, `boost` and `rangesv3`. CE will look for the key named
-`libs.ID.versions` and `libs.ID.name`. The `ID` is the identifier (The one we just set) of the library being looked up.
+`libs.ID.versions`, `libs.ID.name` and an optional `libs.ID.url`. The `ID` is the identifier (The one we just set) of the library being looked up.
 The `name` key expects the human readable name of the library (Note that you can use spaces here!)
 The `versions` key expects another list, akin to the libs key itself. This time, you have to define the available versions
 for each library.
+The `url` key expects an unescaped url, where users can go to learn more about the library (This is usually the project's homepage, or in its
+absence, the GitHub repo)
 
 For example:
 
 ```
 libs.kvasir.name=kvasir
 libs.kvasir.versions=trunk
+libs.kvasir.url=https://github.com/kvasir-io/Kvasir
 libs.boost.name=Boost
 libs.boost.versions=164:165
+libs.boost.url=http://www.boost.org/
 libs.rangesv3.name=ranges-v3
 libs.rangesv3.versions=trunk:030
+libs.rangesv3.url=https://github.com/ericniebler/range-v3
 ```
 
-Now, for each declared version, CE will look for a `version` key, an human readeable string representing the corresponding version,
+Now, for each declared version, CE will look for a `version` key, an human readable string representing the corresponding version,
 and `path`, a list consisting of the paths to add to the inclusion path of the library.
 
 This would leave us with: (Empty lines added for clarity. Please refrain from using them if you plan to PR us :D)
@@ -47,6 +52,7 @@ This would leave us with: (Empty lines added for clarity. Please refrain from us
 ```
 libs.kvasir.name=Kvasir::mpl
 libs.kvasir.versions=trunk
+libs.kvasir.url=https://github.com/kvasir-io/Kvasir
 
 libs.kvasir.versions.trunk.name=trunk
 # Note how there are 2 paths defined for Kvasir in our case (Example usage!)
@@ -55,6 +61,7 @@ libs.kvasir.versions.trunk.path=/opt/compiler-explorer/libs/kvasir/mpl/trunk/src
 
 libs.boost.name=Boost
 libs.boost.versions=164:165
+libs.boost.url=http://www.boost.org/
 
 libs.boost.versions.164.name=1.64
 libs.boost.versions.165.name=1.65
@@ -65,6 +72,7 @@ libs.boost.versions.165.path=/opt/compiler-explorer/libs/boost_1_65_0
 
 libs.rangesv3.name=ranges-v3
 libs.rangesv3.versions=trunk:030
+libs.rangesv3.url=https://github.com/ericniebler/range-v3
 
 libs.rangesv3.versions.trunk.name=trunk
 libs.rangesv3.versions.030.name=0.3.0
