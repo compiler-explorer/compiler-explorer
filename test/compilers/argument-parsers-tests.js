@@ -35,7 +35,7 @@ function makeCompiler(stdout, stderr, code) {
     if (code === undefined) code = 0;
     const env = new CompilationEnvironment((key, def) => def);
     const compiler = new FakeCompiler({lang: 'c++', remote: true}, env);
-    compiler.exec = () =>  Promise.resolve({code: code, stdout: stdout || "", stderr: stderr || ""});
+    compiler.exec = () => Promise.resolve({code: code, stdout: stdout || "", stderr: stderr || ""});
     return compiler;
 }
 

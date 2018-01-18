@@ -116,9 +116,9 @@ describe('Compiler tests', () => {
                     stdout: [{text: "Something from stdout"}]
                 });
             })
-            .catch(err => {
-                throw err;
-            });
+                .catch(err => {
+                    throw err;
+                });
         });
 
         it('parses options and filters', () => {
