@@ -74,7 +74,7 @@ describe('Compiler tests', () => {
                         res.text.should.contain("Something from stderr");
                         res.text.should.contain("ASMASMASM");
                     })
-                    .catch(function (err) {
+                    .catch(err => {
                         throw err;
                     });
             });
@@ -101,25 +101,24 @@ describe('Compiler tests', () => {
                 stdout: [{text: "Something from stdout"}],
                 stderr: [{text: "Something from stderr"}],
                 asm: [{text: "ASMASMASM"}]
-            })
-                .then(res => {
-                    res.should.have.status(200);
-                    res.should.be.json;
-                    res.body.should.deep.equals({
-                        asm: [{text: "ASMASMASM"}],
-                        code: 0,
-                        input: {
-                            filters: [],
-                            options: [],
-                            source: "I am a program"
-                        },
-                        stderr: [{text: "Something from stderr"}],
-                        stdout: [{text: "Something from stdout"}]
-                    });
-                })
-                .catch(function (err) {
-                    throw err;
+            }).then(res => {
+                res.should.have.status(200);
+                res.should.be.json;
+                res.body.should.deep.equals({
+                    asm: [{text: "ASMASMASM"}],
+                    code: 0,
+                    input: {
+                        filters: [],
+                        options: [],
+                        source: "I am a program"
+                    },
+                    stderr: [{text: "Something from stderr"}],
+                    stdout: [{text: "Something from stdout"}]
                 });
+            })
+            .catch(err => {
+                throw err;
+            });
         });
 
         it('parses options and filters', () => {
@@ -158,7 +157,7 @@ describe('Compiler tests', () => {
                     res.body.input.options.should.deep.equals([]);
                     res.body.input.filters.should.deep.equals({a: true, b: true, c: true});
                 })
-                .catch(function (err) {
+                .catch(err => {
                     throw err;
                 });
         });
@@ -171,7 +170,7 @@ describe('Compiler tests', () => {
                     res.body.input.options.should.deep.equals([]);
                     res.body.input.filters.should.deep.equals({a: true, e: true, f: true});
                 })
-                .catch(function (err) {
+                .catch(err => {
                     throw err;
                 });
         });
@@ -183,7 +182,7 @@ describe('Compiler tests', () => {
                     res.body.input.options.should.deep.equals([]);
                     res.body.input.filters.should.deep.equals({a: true});
                 })
-                .catch(function (err) {
+                .catch(err => {
                     throw err;
                 });
         });
@@ -195,7 +194,7 @@ describe('Compiler tests', () => {
                     res.body.input.options.should.deep.equals([]);
                     res.body.input.filters.should.deep.equals({a: true, g: true});
                 })
-                .catch(function (err) {
+                .catch(err => {
                     throw err;
                 });
         });
@@ -243,7 +242,7 @@ describe('Compiler tests', () => {
                     res.should.be.json;
                     res.body.asm.should.deep.equals([{text: "LANG B"}]);
                 })
-                .catch(function (err) {
+                .catch(err => {
                     throw err;
                 });
         });
@@ -255,7 +254,7 @@ describe('Compiler tests', () => {
                     res.should.be.json;
                     res.body.asm.should.deep.equals([{text: "LANG A"}]);
                 })
-                .catch(function (err) {
+                .catch(err => {
                     throw err;
                 });
         });
@@ -267,7 +266,7 @@ describe('Compiler tests', () => {
                     res.should.be.json;
                     res.body.asm.should.deep.equals([{text: "LANG B but A"}]);
                 })
-                .catch(function (err) {
+                .catch(err => {
                     throw err;
                 });
         });
