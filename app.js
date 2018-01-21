@@ -187,9 +187,12 @@ function staticHeaders(res) {
     }
 }
 
+const csp = require('./lib/csp');
+
 function contentPolicyHeader(res) {
-    // Once we have gone thru the data, reenable
-    //res.setHeader('Content-Security-Policy-Report-Only', contentPolicy);
+    if (csp.policies[contentPolicy]) {
+        res.setHeader('Content-Security-Policy-Report-Only', csp.policies[contentPolicy]);
+    }
 }
 
 const awsProps = props.propsFor("aws");
