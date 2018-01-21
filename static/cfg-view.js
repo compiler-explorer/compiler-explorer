@@ -95,6 +95,24 @@ define(function (require) {
         this._editorid = state.editorid;
         this._binaryFilter = false;
 
+        this.functionPicker = $(this.domRoot).find('.function-picker').selectize({
+            sortField: 'name',
+            valueField: 'name',
+            labelField: 'name',
+            searchField: ['name']
+        }).on('change', _.bind(function (e) {
+            var selectedFn = this.functions[e.target.value];
+            if (selectedFn) {
+                this.currentFunc = e.target.value;
+                this.showCfgResults({
+                    nodes: selectedFn.nodes,
+                    edges: selectedFn.edges
+                });
+                this.cfgVisualiser.selectNodes([selectedFn.nodes[0].id]);
+                this.saveState();
+            }
+        }, this));
+
         this.eventHub.on('compilerClose', this.onCompilerClose, this);
         this.eventHub.on('compileResult', this.onCompileResult, this);
         this.eventHub.on('compiler', this.onCompiler, this);
@@ -115,23 +133,6 @@ define(function (require) {
             return _.map(names, function (name) {return {name: name};});
         };
 
-        this.functionPicker = $(this.domRoot).find('.function-picker').selectize({
-            sortField: 'name',
-            valueField: 'name',
-            labelField: 'name',
-            searchField: ['name']
-        }).on('change', _.bind(function (e) {
-            var selectedFn = this.functions[e.target.value];
-            if (selectedFn) {
-                this.currentFunc = e.target.value;
-                this.showCfgResults({
-                    nodes: selectedFn.nodes,
-                    edges: selectedFn.edges
-                });
-                this.cfgVisualiser.selectNodes([selectedFn.nodes[0].id]);
-                this.saveState();
-            }
-        }, this));
         this.setTitle();
     }
 
