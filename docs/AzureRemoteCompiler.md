@@ -7,14 +7,21 @@ The VM used in this example is the "Visual Studio Community 2017 (latest release
 Instructions to run CE on the Windows machine:
 * Log onto RDP
 * Install NodeJS (v8)
-* Download or clone CE in the folder C:\CE\
+* Download or clone CE
 * Create the folder c:\tmp\
 * From a command line
   - Run 'npm remove newrelic'
   - Run 'npm install'
-  - Run 'node app.js --env azure --tmpDir=c:\tmp\'
+  - Run 'azure-app.cmd'
 * Allow TCP port 10240 through the Windows firewall
 * Allow TCP port 10240 through the Azure network settings
+
+Automatic startup on the Windows machine:
+* Create a new Task with the Task Scheduler
+* Set the startup Trigger to 'At startup', disable 'stop task' options
+* Set the action to starting azure-app.cmd in your CE folder
+* Set the initial working directory to your CE folder
+* Set the security option to 'Run whether user is logged on or not'
 
 From your *nix CE installation:
 * Add your Azure machine as a remote by adding it to your C++ compilers properties file
