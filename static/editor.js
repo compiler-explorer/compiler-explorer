@@ -40,7 +40,6 @@ define(function (require) {
     require('./rust-mode');
     require('./ispc-mode');
     require('./haskell-mode');
-    require('./swift-mode');
     require('./pascal-mode');
     require('selectize');
 
