@@ -48,7 +48,7 @@ define(function (require) {
         this.domRoot = container.getElement();
         this.domRoot.html($('#compiler-output').html());
         this.contentRoot = this.domRoot.find(".content");
-        this.compiler = null;
+        this.compilerName = "";
         this.fontScale = new FontScale(this.domRoot, state, "pre");
 
         this.eventHub.on('compileResult', this.onCompileResult, this);
@@ -61,7 +61,7 @@ define(function (require) {
 
     Output.prototype.onCompileResult = function (id, compiler, result) {
         if (id !== this.compilerId) return;
-        this.compiler = compiler;
+        if (compiler) this.compilerName = compiler.name;
 
         this.contentRoot.empty();
 
@@ -106,8 +106,7 @@ define(function (require) {
     Output.prototype.add = function (msg, lineNum) {
         var elem = $('<div></div>').appendTo(this.contentRoot);
         if (lineNum) {
-            elem.html($('<a href="#">')
-                .html(lineNum + " : " + msg))
+            elem.html($('<a></a>').prop('href', '#').html(msg))
                 .click(_.bind(function (e) {
                     this.eventHub.emit('editorSetDecoration', this.editorId, lineNum, true);
                     // do not bring user to the top of index.html
@@ -125,7 +124,7 @@ define(function (require) {
 
     Output.prototype.updateCompilerName = function () {
         var name = "#" + this.compilerId;
-        if (this.compiler) name += " with " + this.compiler.name;
+        if (this.compilerName) name += " with " + this.compilerName;
         this.container.setTitle(name);
     };
 

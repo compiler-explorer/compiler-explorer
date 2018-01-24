@@ -103,5 +103,4 @@ describe('Assembly documents', () => {
                 throw err;
             });
     });
-
 });
