@@ -5,8 +5,8 @@ meta(name="description" content="Compiler Explorer is an interactive online comp
 meta(name="author" content="Matt Godbolt")
 meta(name="google" content="nositelinkssearchbox")
 meta(name="google" content="notranslate")
-link(href=builtResourcesRoot + "dist/styles.css" rel="stylesheet")
+link(href=require("main.css") rel="stylesheet")
 style#theme
 script window.compilerExplorerOptions = !{compilerExplorerOptions}
 
-script(src=builtResourcesRoot + "dist/bundle.js")
+script(src=require("main.js"))

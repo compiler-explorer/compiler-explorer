@@ -61,6 +61,7 @@
     "istanbul": "^0.4.5",
     "jshint": "^2.9.5",
     "copy-webpack-plugin": "^4.1.1",
+    "assets-webpack-plugin": "^3.5.1",
     "css-loader": "^0.28.7",
     "extract-text-webpack-plugin": "^3.0.1",
     "file-loader": "^1.1.5",
@@ -75,7 +76,8 @@
     "url-loader": "^0.6.2",
     "webpack": "^3.6.0",
     "webpack-dev-middleware": "^1.12.0",
-    "webpack-dev-server": "^2.9.4"
+    "webpack-dev-server": "^2.9.4",
+    "webpack-manifest-plugin": "^1.3.2"
   },
   "scripts": {
     "test": "mocha --recursive && make test",

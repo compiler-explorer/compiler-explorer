@@ -39,10 +39,16 @@ const nopt = require('nopt'),
     Raven = require('raven'),
     logger = require('./lib/logger').logger,
     webpackDevMiddleware = require("webpack-dev-middleware");
-    
-const config = require('./webpack.config.js'),
-    compiler = require('webpack')(config);
-    
+
+
+const config = require('./webpack.config.js')[1],
+    webpackCompiler = require('webpack')(config),
+    manifestName = 'manifest.json',
+    staticManifestPath = path.join(__dirname, config.output.publicPath),
+    assetManifestPath = path.join(staticManifestPath, 'assets'),
+    staticManifest = require(path.join(staticManifestPath, manifestName)),
+    assetManifest = require(path.join(assetManifestPath, manifestName));
+
 // Parse arguments from command line 'node ./app.js args...'
 const opts = nopt({
     'env': [String, Array],
@@ -582,6 +588,23 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
             options.root = versionedRootPrefix;
             options.extraBodyClass = extraBodyClass;
             options.builtResourcesRoot = builtResourcesRoot;
+            options.require = function(path) { 
+                if(process.env.NODE_ENV == "DEV") {
+                    //I have no idea why main => maps to styles i need to dig into this
+                    if(path == 'main.css') {
+                        return '/dist/styles.css';
+                    }
+                    //this will break assets in dev mode for now
+                    return '/dist/' + path;
+                }
+                if(staticManifest.hasOwnProperty(path)) {
+                    return versionedRootPrefix + "/dist/" + staticManifest[path];
+                }
+                if(assetManifest.hasOwnProperty(path)) {
+                    return versionedRootPrefix + "/dist/assets/" + assetManifest[path];
+                }
+                console.warn("requested an asset I don't know about");
+            };
             return options;
         }
 
@@ -594,7 +617,8 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
         
         
         if(process.env.NODE_ENV == "DEV") {
-            webServer.use(webpackDevMiddleware(compiler, {
+            console.log("rar");
+            webServer.use(webpackDevMiddleware(webpackCompiler, {
                 publicPath: config.output.publicPath
             }));
             webServer.use(express.static(staticDir));

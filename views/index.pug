@@ -32,18 +32,18 @@ html(lang="en")
                 li
                   a(href="https://www.patreon.com/bePatron?u=3691963"
                   title="Help Compiler Explorer - become a Patron" target="_blank" rel="noopener")
-                    img(height="20" width="20" src=root + "assets/patreon_logo.png")
+                    img(height="20" width="20" src=require("patreon_logo.png"))
                     | &nbsp; Become a Patron
                 if githubEnabled
                   li
                     a(href="https://github.com/mattgodbolt/compiler-explorer"
                     title="View the source on GitHub" target="_blank" rel="noopener")
-                      img(height="20" width="20" src=root + "assets/GitHub-Mark-20px.png")
+                      img(height="20" width="20" src=require("GitHub-Mark-20px.png"))
                       | &nbsp; Source on GitHub
                 li
                   a(href="https://groups.google.com/forum/#!forum/compiler-explorer-discussion"
                   title="Join Compiler Explorer Public Google Group" target="_blank" rel="noopener")
-                    img(height="20" width="20" src=root + "assets/Google-Groups-20px.png")
+                    img(height="20" width="20" src=require("Google-Groups-20px.png"))
                     | &nbsp; Mailing list
                 li: a(href="https://github.com/mattgodbolt/compiler-explorer/wiki/Installed-libraries" target="_blank" rel="noopener") Installed libraries
                 li: a(href="https://github.com/mattgodbolt/compiler-explorer/wiki" target="_blank" rel="noopener") Wiki
@@ -82,7 +82,7 @@ html(lang="en")
             type="button" data-clipboard-target=".popover .permalink"
             title="Copy to clipboard")
               img.clippy(
-              src =require("./static/assets/clippy.svg")  width="13px"
+              src = require("clippy.svg")  width="13px"
               alt="Copy to clipboard")
       .lang
 
