@@ -187,11 +187,11 @@ function staticHeaders(res) {
     }
 }
 
-const csp = require('./lib/csp');
+const csp = require('./lib/csp').policy;
 
 function contentPolicyHeader(res) {
-    if (csp.policies[contentPolicy]) {
-        res.setHeader('Content-Security-Policy-Report-Only', csp.policies[contentPolicy]);
+    if (csp) {
+        res.setHeader('Content-Security-Policy-Report-Only', csp);
     }
 }
 
