@@ -171,12 +171,12 @@ function getAsmOpcode(opcode) {
 """)
         for inst in instructions:
             for name in inst.names:
-                f.write('    case "{}":\n'.format(name))
-            f.write('        return {};\n\n'.format(json.dumps({
+                f.write('        case "{}":\n'.format(name))
+            f.write('            return {}'.format(json.dumps({
                 "tooltip": inst.tooltip,
                 "html": inst.body,
                 "url": "http://www.felixcloutier.com/x86/{}.html".format(inst.name)
-            })))
+                }, indent=16, separators=(',', ': ')))[:-1] + '            };\n\n')
         f.write("""
     }
 }
