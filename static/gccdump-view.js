@@ -97,11 +97,7 @@ define(function (require) {
 
         this.eventHub.emit('gccDumpViewOpened', this.state._compilerid);
         this.eventHub.emit('requestSettings');
-        this.container.on('destroy', function () {
-            this.eventHub.unsubscribe();
-            this.eventHub.emit('gccDumpViewClosed', this.state._compilerid);
-            this.gccDumpEditor.dispose();
-        }, this);
+        this.container.on('destroy', this.close, this);
 
         container.on('resize', this.resize, this);
         container.on('shown', this.resize, this);
@@ -267,6 +263,7 @@ define(function (require) {
         if (id === this.state._compilerid) {
             // We can't immediately close as an outer loop somewhere in GoldenLayout is iterating over
             // the hierarchy. We can't modify while it's being iterated over.
+            this.close();
             _.defer(function (self) {
                 self.container.close();
             }, this);
@@ -311,6 +308,12 @@ define(function (require) {
                 enabled: newSettings.showMinimap
             }
         });
+    };
+
+    GccDump.prototype.close = function () {
+        this.eventHub.unsubscribe();
+        this.eventHub.emit('gccDumpViewClosed', this.state._compilerid);
+        this.gccDumpEditor.dispose();
     };
 
     return {

@@ -51,10 +51,12 @@ define(function (require) {
         this.compilerName = "";
         this.fontScale = new FontScale(this.domRoot, state, "pre");
 
+        this.container.on('destroy', this.close, this);
+
         this.eventHub.on('compileResult', this.onCompileResult, this);
-        this.eventHub.emit('resendCompilation', this.compilerId);
         this.eventHub.on('compilerFontScale', this.onFontScale, this);
         this.eventHub.on('compilerClose', this.onCompilerClose, this);
+        this.eventHub.emit('resendCompilation', this.compilerId);
 
         this.updateCompilerName();
     }
@@ -132,10 +134,15 @@ define(function (require) {
         if (id === this.compilerId) {
             // We can't immediately close as an outer loop somewhere in GoldenLayout is iterating over
             // the hierarchy. We can't modify while it's being iterated over.
+            this.close();
             _.defer(function (self) {
                 self.container.close();
             }, this);
         }
+    };
+
+    Output.prototype.close = function () {
+        this.eventHub.unsubscribe();
     };
 
     return {
