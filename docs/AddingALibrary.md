@@ -115,3 +115,4 @@ authors for more help.
 Hopefully that's enough to get an idea. The ideal case should be a pull request to add a couple of
 lines to the `compiler-explorer-image` to install the library, and a pull request to add a few lines to the `LANG.amazon.properties`
 file in this repository.
+Once that's done, remember to update [the wiki](https://github.com/mattgodbolt/compiler-explorer/wiki/Installed-libraries) with the new library, adding the library in alphabetical order, with newer versions on top
