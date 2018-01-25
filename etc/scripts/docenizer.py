@@ -65,16 +65,16 @@ def get_description(section):
     raise RuntimeError("Couldn't find decent description in {}".format(section))
 
 
-def parse(name, f):
+def parse(filename, f):
     doc = BeautifulSoup(f, 'html.parser')
     table = read_table(doc.table)
     names = set()
 
     def add_all(instrs):
         for i in instrs:
-            name = instr_name(i)
-            if name:
-                names.add(name)
+            instruction_name = instr_name(i)
+            if instruction_name:
+                names.add(instruction_name)
 
     for inst in table:
         if 'Opcode/Instruction' in inst:
@@ -82,14 +82,14 @@ def parse(name, f):
         elif 'Opcode*/Instruction' in inst:
             add_all(inst['Opcode*/Instruction'].split("\n"))
         else:
-            name = instr_name(inst['Instruction'])
-            if not name:
+            instruction_name = instr_name(inst['Instruction'])
+            if not instruction_name:
                 print "Unable to get instruction from:", inst['Instruction']
             else:
-                names.add(name)
+                names.add(instruction_name)
     if not names:
-        if name in UNPARSEABLE_INSTR_NAMES:
-            for inst in name.split(":"):
+        if filename in UNPARSEABLE_INSTR_NAMES:
+            for inst in filename.split(":"):
                 names.add(inst)
         else:
             return None
@@ -103,7 +103,7 @@ def parse(name, f):
             first = first.next_sibling
         sections[section_header.text] = children
     return Instruction(
-        name,
+        filename,
         names,
         get_description(sections['Description']),
         "".join(str(x) for x in sections['Description'][:MAX_DESC_PARAS]).strip())
