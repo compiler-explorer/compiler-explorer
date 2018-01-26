@@ -41,6 +41,7 @@ ASMDOC_DIR = "asm-docs"
 class Instruction(object):
     def __init__(self, name, names, tooltip, body):
         self.name = name
+        self.url = "http://www.felixcloutier.com/x86/{}.html".format(urllib.quote(name))
         self.names = names
         self.tooltip = tooltip.rstrip(': ,')
         self.body = body
@@ -167,6 +168,12 @@ def parse_html(directory):
     return instructions
 
 
+def self_test(instructions, directory):
+    directory = os.path.join(directory, "html")
+    for inst in instructions:
+        if not os.path.isfile(os.path.join(directory, inst.name + ".html")):
+            print("Warning: {} has not file associated".format(inst.name))
+
 if __name__ == '__main__':
     args = parser.parse_args()
     if args.inputfolder is None:
@@ -174,6 +181,7 @@ if __name__ == '__main__':
         args.inputfolder = ASMDOC_DIR
     instructions = parse_html(args.inputfolder)
     instructions.sort(lambda x, y: cmp(x.name, y.name))
+    self_test(instructions, args.inputfolder)
     all_inst = set()
     for inst in instructions:
         if not all_inst.isdisjoint(inst.names):
@@ -193,7 +201,7 @@ function getAsmOpcode(opcode) {
             f.write('            return {}'.format(json.dumps({
                 "tooltip": inst.tooltip,
                 "html": inst.body,
-                "url": "http://www.felixcloutier.com/x86/{}.html".format(inst.name)
+                "url": inst.url
                 }, indent=16, separators=(',', ': ')))[:-1] + '            };\n\n')
         f.write("""
     }
