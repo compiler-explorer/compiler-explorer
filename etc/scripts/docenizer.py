@@ -1,9 +1,12 @@
 #! /usr/bin/env python2
 # -*- coding: utf-8 -*-
-import os
 import argparse
-import re
 import json
+import os
+import re
+import shutil
+import urllib
+import zipfile
 
 try:
     from bs4 import BeautifulSoup
@@ -12,7 +15,7 @@ except ImportError:
 
 parser = argparse.ArgumentParser(description='Docenizes HTML version of the official Intel Asm PDFs')
 parser.add_argument('-i', '--inputfolder', type=str,
-                    help='Folder where the input files reside as .html. Default is current folder', default='./')
+                    help='Folder where the input files reside as .html. Default is current folder')
 parser.add_argument('-o', '--outputpath', type=str, help='Final path of the .js file. Default is ./asm-docs.js',
                     default='./asm-docs.js')
 
@@ -31,6 +34,8 @@ IGNORED_DUPLICATES = [
     'MOVQ',  # defined in MOVD:MOVQ
     'MOVSD'  # defined in MOVS:MOVSB:MOVSW:MOVSD:MOVSQ
 ]
+# Where to extract the asmdoc archive.
+ASMDOC_DIR = "asm-docs"
 
 
 class Instruction(object):
@@ -42,6 +47,16 @@ class Instruction(object):
 
     def __str__(self):
         return "{} = {}\n{}".format(self.names, self.tooltip, self.body)
+
+def download_asm_doc_archive():
+    print("Downloading archive...")
+    urllib.urlretrieve("http://www.felixcloutier.com/x86/x86.zip", "x86.zip")
+    if os.path.isdir(ASMDOC_DIR):
+        shutil.rmtree(ASMDOC_DIR)
+    zip_ref = zipfile.ZipFile("x86.zip", 'r')
+    zip_ref.extractall(ASMDOC_DIR)
+    zip_ref.close()
+    shutil.rmtree(os.path.join(ASMDOC_DIR, "__MACOSX"));
 
 
 def strip_non_instr(i):
@@ -154,6 +169,9 @@ def parse_html(directory):
 
 if __name__ == '__main__':
     args = parser.parse_args()
+    if args.inputfolder is None:
+        download_asm_doc_archive()
+        args.inputfolder = ASMDOC_DIR
     instructions = parse_html(args.inputfolder)
     instructions.sort(lambda x, y: cmp(x.name, y.name))
     all_inst = set()
