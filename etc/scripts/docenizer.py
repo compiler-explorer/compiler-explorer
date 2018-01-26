@@ -41,13 +41,15 @@ ASMDOC_DIR = "asm-docs"
 class Instruction(object):
     def __init__(self, name, names, tooltip, body):
         self.name = name
-        self.url = "http://www.felixcloutier.com/x86/{}.html".format(urllib.quote(name))
         self.names = names
         self.tooltip = tooltip.rstrip(': ,')
         self.body = body
 
     def __str__(self):
         return "{} = {}\n{}".format(self.names, self.tooltip, self.body)
+
+def get_url_for_instruction(instr):
+    return "http://www.felixcloutier.com/x86/{}.html".format(urllib.quote(name))
 
 def download_asm_doc_archive():
     print("Downloading archive...")
@@ -201,7 +203,7 @@ function getAsmOpcode(opcode) {
             f.write('            return {}'.format(json.dumps({
                 "tooltip": inst.tooltip,
                 "html": inst.body,
-                "url": inst.url
+                "url": get_url_for_instruction(inst)
                 }, indent=16, separators=(',', ': ')))[:-1] + '            };\n\n')
         f.write("""
     }
