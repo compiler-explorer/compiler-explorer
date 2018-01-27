@@ -43,7 +43,6 @@ describe('Basic compiler setup', function () {
     const info = {
         "exe": null,
         "remote": true,
-        "unitTestMode": true,
         "lang": "pascal"
     };
 
@@ -310,7 +309,6 @@ describe('Pascal ASM line number injection', function () {
     const info = {
         "exe": null,
         "remote": true,
-        "unitTestMode": true,
         "lang": "pascal"
     };
 
