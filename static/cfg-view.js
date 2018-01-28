@@ -95,26 +95,6 @@ define(function (require) {
         this._editorid = state.editorid;
         this._binaryFilter = false;
 
-        this.eventHub.on('compilerClose', this.onCompilerClose, this);
-        this.eventHub.on('compileResult', this.onCompileResult, this);
-        this.eventHub.on('compiler', this.onCompiler, this);
-        this.eventHub.on('filtersChange', this.onFiltersChange, this);
-
-        this.container.on('destroy', function () {
-            this.eventHub.unsubscribe();
-            this.eventHub.emit('cfgViewClosed', this.compilerId);
-            this.cfgVisualiser.destroy();
-        }, this);
-        this.container.on('resize', this.resize, this);
-        this.container.on('shown', this.resize, this);
-        this.eventHub.emit('cfgViewOpened', this.compilerId);
-        this.eventHub.emit('requestFilters', this.compilerId);
-        this.eventHub.emit('requestCompiler', this.compilerId);
-
-        this.adaptStructure = function (names) {
-            return _.map(names, function (name) {return {name: name};});
-        };
-
         this.functionPicker = $(this.domRoot).find('.function-picker').selectize({
             sortField: 'name',
             valueField: 'name',
@@ -132,6 +112,23 @@ define(function (require) {
                 this.saveState();
             }
         }, this));
+
+        this.eventHub.on('compilerClose', this.onCompilerClose, this);
+        this.eventHub.on('compileResult', this.onCompileResult, this);
+        this.eventHub.on('compiler', this.onCompiler, this);
+        this.eventHub.on('filtersChange', this.onFiltersChange, this);
+
+        this.container.on('destroy', this.close, this);
+        this.container.on('resize', this.resize, this);
+        this.container.on('shown', this.resize, this);
+        this.eventHub.emit('cfgViewOpened', this.compilerId);
+        this.eventHub.emit('requestFilters', this.compilerId);
+        this.eventHub.emit('requestCompiler', this.compilerId);
+
+        this.adaptStructure = function (names) {
+            return _.map(names, function (name) {return {name: name};});
+        };
+
         this.setTitle();
     }
 
@@ -188,9 +185,11 @@ define(function (require) {
     };
 
     Cfg.prototype.resize = function () {
-        var height = this.domRoot.height() - this.domRoot.find('.top-bar').outerHeight(true);
-        this.cfgVisualiser.setSize('100%', height.toString());
-        this.cfgVisualiser.redraw();
+        if (this.cfgVisualiser.canvas) {
+            var height = this.domRoot.height() - this.domRoot.find('.top-bar').outerHeight(true);
+            this.cfgVisualiser.setSize('100%', height.toString());
+            this.cfgVisualiser.redraw();
+        }
     };
 
     Cfg.prototype.saveState = function () {
@@ -209,10 +208,17 @@ define(function (require) {
         if (this.compilerId === compilerId) {
             // We can't immediately close as an outer loop somewhere in GoldenLayout is iterating over
             // the hierarchy. We can't modify while it's being iterated over.
+            this.close();
             _.defer(function (self) {
                 self.container.close();
             }, this);
         }
+    };
+
+    Cfg.prototype.close = function () {
+        this.eventHub.unsubscribe();
+        this.eventHub.emit('cfgViewClosed', this.compilerId);
+        this.cfgVisualiser.destroy();
     };
 
     return {

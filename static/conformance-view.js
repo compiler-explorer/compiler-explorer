@@ -53,10 +53,7 @@ define(function (require) {
         };
         this.stateByLang = {};
 
-        this.container.on('destroy', function () {
-            this.eventHub.unsubscribe();
-            this.eventHub.emit("conformanceViewClose", this.editorId);
-        }, this);
+        this.container.on('destroy', this.close, this);
 
         this.container.on('open', function () {
             this.eventHub.emit("conformanceViewOpen", this.editorId);
@@ -172,7 +169,8 @@ define(function (require) {
     };
 
     Conformance.prototype.onEditorClose = function (editorId) {
-        if (editorId == this.editorId) {
+        if (editorId === this.editorId) {
+            this.close();
             _.defer(function (self) {
                 self.container.close();
             }, this);
@@ -302,6 +300,11 @@ define(function (require) {
                 this.addCompilerSelector(config);
             }, this));
         }
+    };
+
+    Conformance.prototype.close = function () {
+        this.eventHub.unsubscribe();
+        this.eventHub.emit("conformanceViewClose", this.editorId);
     };
 
     return {

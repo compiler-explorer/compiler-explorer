@@ -48,20 +48,22 @@ define(function (require) {
         this.domRoot = container.getElement();
         this.domRoot.html($('#compiler-output').html());
         this.contentRoot = this.domRoot.find(".content");
-        this.compiler = null;
+        this.compilerName = "";
         this.fontScale = new FontScale(this.domRoot, state, "pre");
 
+        this.container.on('destroy', this.close, this);
+
         this.eventHub.on('compileResult', this.onCompileResult, this);
-        this.eventHub.emit('resendCompilation', this.compilerId);
         this.eventHub.on('compilerFontScale', this.onFontScale, this);
         this.eventHub.on('compilerClose', this.onCompilerClose, this);
+        this.eventHub.emit('resendCompilation', this.compilerId);
 
         this.updateCompilerName();
     }
 
     Output.prototype.onCompileResult = function (id, compiler, result) {
         if (id !== this.compilerId) return;
-        this.compiler = compiler;
+        if (compiler) this.compilerName = compiler.name;
 
         this.contentRoot.empty();
 
@@ -106,8 +108,7 @@ define(function (require) {
     Output.prototype.add = function (msg, lineNum) {
         var elem = $('<div></div>').appendTo(this.contentRoot);
         if (lineNum) {
-            elem.html($('<a href="#">')
-                .html(lineNum + " : " + msg))
+            elem.html($('<a></a>').prop('href', '#').html(msg))
                 .click(_.bind(function (e) {
                     this.eventHub.emit('editorSetDecoration', this.editorId, lineNum, true);
                     // do not bring user to the top of index.html
@@ -125,7 +126,7 @@ define(function (require) {
 
     Output.prototype.updateCompilerName = function () {
         var name = "#" + this.compilerId;
-        if (this.compiler) name += " with " + this.compiler.name;
+        if (this.compilerName) name += " with " + this.compilerName;
         this.container.setTitle(name);
     };
 
@@ -133,10 +134,15 @@ define(function (require) {
         if (id === this.compilerId) {
             // We can't immediately close as an outer loop somewhere in GoldenLayout is iterating over
             // the hierarchy. We can't modify while it's being iterated over.
+            this.close();
             _.defer(function (self) {
                 self.container.close();
             }, this);
         }
+    };
+
+    Output.prototype.close = function () {
+        this.eventHub.unsubscribe();
     };
 
     return {

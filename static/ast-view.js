@@ -58,6 +58,8 @@ define(function (require) {
         this.fontScale = new FontScale(this.domRoot, state, this.astEditor);
         this.fontScale.on('change', _.bind(this.updateState, this));
 
+        this.container.on('destroy', this.close, this);
+
         this.eventHub.on('compileResult', this.onCompileResult, this);
         this.eventHub.on('compiler', this.onCompiler, this);
         this.eventHub.on('compilerClose', this.onCompilerClose, this);
@@ -65,11 +67,6 @@ define(function (require) {
         this.eventHub.on('settingsChange', this.onSettingsChange, this);
         this.eventHub.emit('astViewOpened', this._compilerid);
         this.eventHub.emit('requestSettings');
-        this.container.on('destroy', function () {
-            this.eventHub.unsubscribe();
-            this.eventHub.emit("astViewClosed", this._compilerid);
-            this.astEditor.dispose();
-        }, this);
 
         container.on('resize', this.resize, this);
         container.on('shown', this.resize, this);
@@ -125,6 +122,7 @@ define(function (require) {
         if (id === this._compilerid) {
             // We can't immediately close as an outer loop somewhere in GoldenLayout is iterating over
             // the hierarchy. We can't modify while it's being iterated over.
+            this.close();
             _.defer(function (self) {
                 self.container.close();
             }, this);
@@ -140,6 +138,12 @@ define(function (require) {
                 enabled: newSettings.showMinimap
             }
         });
+    };
+
+    Ast.prototype.close = function () {
+        this.eventHub.unsubscribe();
+        this.eventHub.emit("astViewClosed", this._compilerid);
+        this.astEditor.dispose();
     };
 
     return {

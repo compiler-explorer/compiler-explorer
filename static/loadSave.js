@@ -30,6 +30,7 @@ define(function (require) {
     var saveAs = require('filesaver');
     var Alert = require('./alert');
     var local = require('./local');
+    var Promise = require('es6-promise').Promise;
 
     function getLocalFiles() {
         return JSON.parse(local.get('files', "{}"));
@@ -56,8 +57,10 @@ define(function (require) {
     }
 
     LoadSave.prototype.fetchBuiltins = function () {
-        $.getJSON('source/builtin/list', _.bind(function (list) {
-            this.savedBuiltins = list;
+        return new Promise(_.bind(function (resolve, reject) {
+            $.getJSON('source/builtin/list', function (list) {
+                resolve(list);
+            });
         }, this));
     };
 
@@ -65,16 +68,19 @@ define(function (require) {
         var isVisible = _.bind(function (entry) {
             return this.currentLanguage && this.currentLanguage.id === entry.lang;
         }, this);
-        this.populate(this.modal.find('.examples'),
-            _.map(_.filter(this.savedBuiltins, isVisible), _.bind(function (elem) {
-                return {
-                    name: elem.name,
-                    load: _.bind(function () {
-                        this.doLoad(elem);
-                    }, this)
-                };
-            }, this))
-        );
+        return this.fetchBuiltins()
+            .then(_.bind(function (builtins) {
+                this.populate(this.modal.find('.examples'),
+                    _.map(_.filter(builtins, isVisible), _.bind(function (elem) {
+                        return {
+                            name: elem.name,
+                            load: _.bind(function () {
+                                this.doLoad(elem);
+                            }, this)
+                        };
+                    }, this))
+                );
+            }, this));
     };
 
     LoadSave.prototype.populateLocalStorage = function () {
@@ -122,12 +128,13 @@ define(function (require) {
         this.editorText = editorText;
         // In case we don't send anything...
         this.currentLanguage = currentLanguage;
-        this.populateBuiltins();
         this.extension = currentLanguage.extensions[0] || '.txt';
         this.modal.find('.local-file').attr('accept', _.map(currentLanguage.extensions, function (extension) {
             return extension + ', ';
         }, this));
-        this.modal.modal();
+        this.populateBuiltins().then(_.bind(function () {
+            this.modal.modal();
+        }, this));
     };
 
     LoadSave.prototype.onSaveToBrowserStorage = function () {
@@ -154,7 +161,10 @@ define(function (require) {
 
     LoadSave.prototype.onSaveToFile = function () {
         try {
-            saveAs(new Blob([this.editorText], {type: "text/plain;charset=utf-8"}), "Compiler Explorer Code" + this.extension);
+            saveAs(new Blob(
+                [this.editorText],
+                {type: "text/plain;charset=utf-8"}),
+                "Compiler Explorer Code" + this.extension);
         } catch (e) {
             new Alert().notify('Error while saving your code. Use the clipboard instead.', {
                 group: "savelocalerror",

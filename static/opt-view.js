@@ -67,11 +67,7 @@ define(function (require) {
         this.eventHub.on('editorChange', this.onEditorChange, this);
         this.eventHub.on('settingsChange', this.onSettingsChange, this);
         this.eventHub.on('resize', this.resize, this);
-        this.container.on('destroy', function () {
-            this.eventHub.unsubscribe();
-            this.eventHub.emit("optViewClosed", this._compilerid);
-            this.optEditor.dispose();
-        }, this);
+        this.container.on('destroy', this.close, this);
         this.eventHub.emit('requestSettings');
 
         container.on('resize', this.resize, this);
@@ -93,13 +89,13 @@ define(function (require) {
     };
 
     Opt.prototype.onEditorChange = function (id, source) {
-        if (this._editorid == id) {
+        if (this._editorid === id) {
             this.code = source;
             this.optEditor.setValue(source);
         }
     };
     Opt.prototype.onCompileResult = function (id, compiler, result) {
-        if (result.hasOptOutput && this._compilerid == id) {
+        if (result.hasOptOutput && this._compilerid === id) {
             this.showOptResults(result.optOutput);
         }
     };
@@ -125,9 +121,9 @@ define(function (require) {
         _.mapObject(results, function (value, key) {
             var linenumber = Number(key);
             var className = value.reduce(function (acc, x) {
-                if (x.optType == "Missed" || acc == "Missed") {
+                if (x.optType === "Missed" || acc === "Missed") {
                     return "Missed";
-                } else if (x.optType == "Passed" || acc == "Passed") {
+                } else if (x.optType === "Passed" || acc === "Passed") {
                     return "Passed";
                 }
                 return x.optType;
@@ -164,6 +160,7 @@ define(function (require) {
         if (id === this._compilerid) {
             // We can't immediately close as an outer loop somewhere in GoldenLayout is iterating over
             // the hierarchy. We can't modify while it's being iterated over.
+            this.close();
             _.defer(function (self) {
                 self.container.close();
             }, this);
@@ -179,6 +176,12 @@ define(function (require) {
                 enabled: newSettings.showMinimap
             }
         });
+    };
+
+    Opt.prototype.close = function () {
+        this.eventHub.unsubscribe();
+        this.eventHub.emit("optViewClosed", this._compilerid);
+        this.optEditor.dispose();
     };
 
     return {

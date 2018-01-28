@@ -6,8 +6,8 @@ import json
 
 try:
     from bs4 import BeautifulSoup
-except:
-    raise "Please install BeautifulSoup (apt-get install python-bs4 should do it)"
+except ImportError:
+    raise ImportError("Please install BeautifulSoup (apt-get install python-bs4 should do it)")
 
 parser = argparse.ArgumentParser(description='Docenizes HTML version of the official Intel Asm PDFs')
 parser.add_argument('-i', '--inputfolder', type=str,
@@ -19,7 +19,7 @@ parser.add_argument('-o', '--outputpath', type=str, help='Final path of the .js 
 MAX_DESC_PARAS = 5
 STRIP_PREFIX = re.compile(r'^(([0-9a-fA-F]{2}|(REX|VEX\.)[.0-9A-Z]*|/.|[a-z]+)\b\s*)*')
 INSTRUCTION_RE = re.compile(r'^([A-Z][A-Z0-9]+)\*?(\s+|$)')
-# Some instructions are so broken we just take their naes from the filename
+# Some instructions are so broken we just take their names from the filename
 UNPARSEABLE_INSTR_NAMES = ['PSRLW:PSRLD:PSRLQ', 'PSLLW:PSLLD:PSLLQ']
 # Some instructions are defined in multiple files. We ignore a specific set of the
 # duplicates here.
@@ -63,6 +63,7 @@ def get_description(section):
             return descr
     raise RuntimeError("Couldn't find decent description in {}".format(section))
 
+
 def parse(name, f):
     doc = BeautifulSoup(f, 'html.parser')
     table = read_table(doc.table)
@@ -71,7 +72,8 @@ def parse(name, f):
     def add_all(instrs):
         for i in instrs:
             name = instr_name(i)
-            if name: names.add(name)
+            if name:
+                names.add(name)
 
     for inst in table:
         if 'Opcode/Instruction' in inst:
@@ -151,7 +153,7 @@ def parse_html(directory):
 
 if __name__ == '__main__':
     args = parser.parse_args()
-    instructions = parse_html(args.inputfolder);
+    instructions = parse_html(args.inputfolder)
     instructions.sort(lambda x, y: cmp(x.name, y.name))
     all_inst = set()
     for inst in instructions:

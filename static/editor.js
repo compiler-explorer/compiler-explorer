@@ -40,7 +40,6 @@ define(function (require) {
     require('./rust-mode');
     require('./ispc-mode');
     require('./haskell-mode');
-    require('./swift-mode');
     require('./pascal-mode');
     require('selectize');
 
@@ -262,11 +261,7 @@ define(function (require) {
         container.on('open', _.bind(function () {
             this.eventHub.emit('editorOpen', this.id);
         }, this));
-        container.on('destroy', _.bind(function () {
-            this.eventHub.unsubscribe();
-            this.eventHub.emit('editorClose', this.id);
-            this.editor.dispose();
-        }, this));
+        container.on('destroy', this.close, this);
         this.container.layoutManager.on('initialised', function () {
             // Once initialized, let everyone know what text we have.
             this.maybeEmitChange();
@@ -573,6 +568,12 @@ define(function (require) {
     // Called every time we change language, so we get the relevant code
     Editor.prototype.updateEditorCode = function () {
         this.setSource(this.editorSourceByLang[this.currentLanguage.id] || languages[this.currentLanguage.id].example);
+    };
+
+    Editor.prototype.close = function () {
+        this.eventHub.unsubscribe();
+        this.eventHub.emit('editorClose', this.id);
+        this.editor.dispose();
     };
 
     return {
