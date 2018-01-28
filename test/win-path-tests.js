@@ -35,8 +35,7 @@ describe('Paths', () => {
         const info = {
             lang: "c++",
             exe: null,
-            remote: true,
-            unitTestMode: true
+            remote: true
         };
         const envprops = (key, deflt) => deflt;
 
@@ -51,8 +50,7 @@ describe('Paths', () => {
         const info = {
             lang: "c++",
             exe: null,
-            remote: true,
-            unitTestMode: true
+            remote: true
         };
         const envprops = (key, deflt) => deflt;
 
