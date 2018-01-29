@@ -51,15 +51,11 @@ require("bootstrap-slider/dist/css/bootstrap-slider.css");
 require("./colours.css");
 require("./explorer.css");
 
-
-
-
-function setupSettings(eventHub) {
+function setupSettings(hub) {
     var eventHub = hub.layout.eventHub;
     var defaultSettings = {
         defaultLanguage: hub.subdomainLangId
     };
-
     var currentSettings = JSON.parse(local.get('settings', null)) || defaultSettings;
 
     function onChange(settings) {
@@ -67,7 +63,7 @@ function setupSettings(eventHub) {
         local.set('settings', JSON.stringify(settings));
         eventHub.emit('settingsChange', settings);
     }
-    
+
     new themer.Themer(eventHub, currentSettings);
 
     eventHub.on('requestSettings', function () {

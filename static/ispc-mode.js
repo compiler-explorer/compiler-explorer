@@ -49,6 +49,7 @@ function definition() {
         'unmasked',
         'varying'
     );
+    return ispc;
 }
 
 monaco.languages.register({id: 'ispc'});

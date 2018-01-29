@@ -41,13 +41,6 @@ const nopt = require('nopt'),
     webpackDevMiddleware = require("webpack-dev-middleware");
 
 
-const config = require('./webpack.config.js')[1],
-    webpackCompiler = require('webpack')(config),
-    manifestName = 'manifest.json',
-    staticManifestPath = path.join(__dirname, config.output.publicPath),
-    assetManifestPath = path.join(staticManifestPath, 'assets'),
-    staticManifest = require(path.join(staticManifestPath, manifestName)),
-    assetManifest = require(path.join(assetManifestPath, manifestName));
 
 // Parse arguments from command line 'node ./app.js args...'
 const opts = nopt({
@@ -98,6 +91,16 @@ const archivedVersions = opts.archivedVersions;
 let gitReleaseName = "";
 let versionedRootPrefix = "";
 const wantedLanguage = opts.language || null;
+let builtResourcesRoot = "";
+
+
+const config = require('./webpack.config.js')[1],
+    webpackCompiler = require('webpack')(config),
+    manifestName = 'manifest.json',
+    staticManifestPath = path.join(__dirname, staticDir, config.output.publicPath),
+    assetManifestPath = path.join(staticManifestPath, 'assets'),
+    staticManifest = require(path.join(staticManifestPath, manifestName)),
+    assetManifest = require(path.join(assetManifestPath, manifestName));
 
 // Use the canned git_hash if provided
 if (opts.static && fs.existsSync(opts.static + "/git_hash")) {
@@ -579,7 +582,6 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
 
         logger.info("=======================================");
         logger.info("Listening on http://" + (hostname || 'localhost') + ":" + port + "/");
-        logger.info("  serving static files from '" + staticDir + "'");
         if (gitReleaseName) logger.info("  git release " + gitReleaseName);
 
         function renderConfig(extra) {
@@ -617,13 +619,13 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
         
         
         if(process.env.NODE_ENV == "DEV") {
-            console.log("rar");
             webServer.use(webpackDevMiddleware(webpackCompiler, {
                 publicPath: config.output.publicPath
             }));
             webServer.use(express.static(staticDir));
         } else {
                //assume that anything not dev is just production this gives sane defaults for anyone who isn't messing with this
+            logger.info("  serving static files from '" + staticDir + "'");
             webServer.use(express.static(staticDir, {maxAge: staticMaxAgeSecs * 1000}));
             webServer.use('/v', express.static(staticDir + '/v', {maxAge: Infinity, index: false}));
         }

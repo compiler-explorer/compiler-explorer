@@ -96,6 +96,7 @@ Opt.prototype.onEditorChange = function (id, source) {
         this.optEditor.setValue(source);
     }
 };
+
 Opt.prototype.onCompileResult = function (id, compiler, result) {
     if (result.hasOptOutput && this._compilerid == id) {
         this.showOptResults(result.optOutput);
@@ -149,8 +150,15 @@ Opt.prototype.onCompiler = function (id, compiler, options, editorid) {
     if (id === this._compilerid) {
         this._compilerName = compiler ? compiler.name : '';
         this.setTitle();
-        this.eventHub.emit("optViewOpened", this._compilerid);
+        if (compiler && !compiler.supportsOptOutput) {
+            this.code = this.optEditor.getValue();
+            this.optEditor.setValue("<" + compiler.version + " does not support the optimisation view>");
+            return;
+        }
+        this._editorid = editorid;
+        this.optEditor.setValue(this.code);
     }
+};
 
 // TODO: de-dupe with compiler etc
 Opt.prototype.resize = function () {

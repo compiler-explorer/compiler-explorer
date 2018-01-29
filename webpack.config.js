@@ -63,7 +63,7 @@ module.exports = [
         output: {
             filename: outputname,
             path: distPath,
-            publicPath: "/static/dist/"
+            publicPath: "/dist/"
         },
         resolve: {
             modules: ['./static', "./node_modules"],
