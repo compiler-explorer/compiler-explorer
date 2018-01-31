@@ -29,7 +29,7 @@
     var options = require('options');
     var shortenURL = require('urlshorten-google');
     var Components = require('components');
-    var url = require('url');
+    var url = require('./url');
 
     function configFromEmbedded(embeddedUrl) {
         // Old-style link?
