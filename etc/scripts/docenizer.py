@@ -66,7 +66,10 @@ def download_asm_doc_archive(downloadfolder):
     print("Downloading archive...")
     urllib.urlretrieve("http://www.felixcloutier.com/x86/x86.zip", archive_name)
     if os.path.isdir(os.path.join(downloadfolder, "html")):
-        shutil.rmtree(os.path.join(downloadfolder, "html"))
+        for root, dirs, files in os.walk(os.path.join(downloadfolder, "html")):
+            for file in files:
+                if os.path.splitext(file)[1] == ".html":
+                    os.remove(os.path.join(root, file));
     zip_ref = zipfile.ZipFile(archive_name, 'r')
     zip_ref.extractall(downloadfolder)
     zip_ref.close()
