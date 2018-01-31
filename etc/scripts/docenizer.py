@@ -5,6 +5,7 @@ import json
 import os
 import re
 import shutil
+import sys
 import urllib
 import zipfile
 
@@ -15,9 +16,12 @@ except ImportError:
 
 parser = argparse.ArgumentParser(description='Docenizes HTML version of the official Intel Asm PDFs')
 parser.add_argument('-i', '--inputfolder', type=str,
-                    help='Folder where the input files reside as .html. Default is current folder')
+                    help='Folder where the input files reside as .html. Default is ./asm-docs/',
+                    default='asm-docs')
 parser.add_argument('-o', '--outputpath', type=str, help='Final path of the .js file. Default is ./asm-docs.js',
                     default='./asm-docs.js')
+parser.add_argument('-d', '--downloadfolder', type=str,
+                    help='Folder where the archive will be downloaded and extracted', default='asm-docs')
 
 # The maximum number of paragraphs from the description to copy.
 MAX_DESC_PARAS = 5
@@ -51,15 +55,22 @@ class Instruction(object):
 def get_url_for_instruction(instr):
     return "http://www.felixcloutier.com/x86/{}.html".format(urllib.quote(name))
 
-def download_asm_doc_archive():
+
+def download_asm_doc_archive(downloadfolder):
+    if not os.path.exists(downloadfolder):
+        os.makedirs(downloadfolder)
+    elif not os.path.isdir(downloadfolder):
+        print("Error: download folder {} is not a directory".format(download))
+        sys.exit(1)
+    archive_name = os.path.join(downloadfolder, "x86.zip")
     print("Downloading archive...")
-    urllib.urlretrieve("http://www.felixcloutier.com/x86/x86.zip", "x86.zip")
-    if os.path.isdir(ASMDOC_DIR):
-        shutil.rmtree(ASMDOC_DIR)
-    zip_ref = zipfile.ZipFile("x86.zip", 'r')
-    zip_ref.extractall(ASMDOC_DIR)
+    urllib.urlretrieve("http://www.felixcloutier.com/x86/x86.zip", archive_name)
+    if os.path.isdir(os.path.join(downloadfolder, "html")):
+        shutil.rmtree(os.path.join(downloadfolder, "html"))
+    zip_ref = zipfile.ZipFile(archive_name, 'r')
+    zip_ref.extractall(downloadfolder)
     zip_ref.close()
-    shutil.rmtree(os.path.join(ASMDOC_DIR, "__MACOSX"));
+    shutil.rmtree(os.path.join(downloadfolder, "__MACOSX"));
 
 
 def strip_non_instr(i):
@@ -178,9 +189,18 @@ def self_test(instructions, directory):
 
 if __name__ == '__main__':
     args = parser.parse_args()
-    if args.inputfolder is None:
-        download_asm_doc_archive()
-        args.inputfolder = ASMDOC_DIR
+    if not os.path.exists(args.inputfolder):
+        try:
+            download_asm_doc_archive(args.downloadfolder)
+        except IOError as e:
+            print("Error when downloading archive:")
+            print(e)
+            sys.exit(1)
+        # Don't look into the input folder, but rather where we extracted.
+        args.inputfolder = args.downloadfolder
+    elif not os.path.isdir(args.inputfolder):
+        print("Error: input folder {} is not a folder".format(args.inputfolder))
+        sys.exit(1)
     instructions = parse_html(args.inputfolder)
     instructions.sort(lambda x, y: cmp(x.name, y.name))
     self_test(instructions, args.inputfolder)
