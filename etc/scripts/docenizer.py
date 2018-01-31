@@ -89,15 +89,35 @@ def instr_name(i):
         return match.group(1)
 
 
-def get_description(section):
+def get_section_description_pars(section):
+    l = []
     for sub in section:
-        descr = sub.get_text().strip()
+        l.append(sub.get_text())
+    return l
+
+
+def get_strong_description_pars(strong):
+    sibling = strong.parent
+    l = []
+    while True:
+        if hasattr(sibling, 'p'):
+            l.append(sibling.get_text())
+        if not hasattr(sibling, 'next_sibling'):
+            break;
+        sibling = sibling.next_sibling
+    return l
+
+
+def get_description_from_pars(pars):
+    for par in pars:
+        descr = par.strip()
         if len(descr) > 20:
             return descr
     raise RuntimeError("Couldn't find decent description in {}".format(section))
 
 
 def parse(filename, f):
+    print("============ " + filename)
     doc = BeautifulSoup(f, 'html.parser')
     table = read_table(doc.table)
     names = set()
@@ -109,8 +129,11 @@ def parse(filename, f):
                 names.add(instruction_name)
 
     for inst in table:
+        print(inst)
         if 'Opcode/Instruction' in inst:
             add_all(inst['Opcode/Instruction'].split("\n"))
+        elif 'OpcodeInstruction' in inst:
+            add_all(inst['OpcodeInstruction'].split("\n"))
         elif 'Opcode*/Instruction' in inst:
             add_all(inst['Opcode*/Instruction'].split("\n"))
         else:
@@ -134,22 +157,51 @@ def parse(filename, f):
                 children.append(first)
             first = first.next_sibling
         sections[section_header.text] = children
+
+    # If we couldn't find 'Description' in sections, this means that it's in a
+    # '<strong>' (MOV) tag or a '<h3>' (VCVTPS2PH) tag.
+    if not 'Description' in sections:
+        # Inspecting '<strong> tag.
+        for strong in doc.find_all('strong'):
+            if strong.get_text() == 'Description':
+                sections['Description'] = get_strong_description_pars(strong)
+                break
+        if not 'Description' in sections:
+            for section_header in doc.find_all("h3"):
+                children = []
+                first = section_header.next_sibling
+                while first and first.name != 'h3':
+                    if str(first).strip():
+                        children.append(first)
+                    first = first.next_sibling
+                sections[section_header.text] = children
+            sections['Description'] = get_section_description_pars(sections['Description'])
+    else:
+        sections['Description'] = get_section_description_pars(sections['Description'])
+
     return Instruction(
         filename,
         names,
-        get_description(sections['Description']),
-        "".join(str(x) for x in sections['Description'][:MAX_DESC_PARAS]).strip())
+        get_description_from_pars(sections['Description']),
+        "".join(x for x in sections['Description'][:MAX_DESC_PARAS]).strip())
 
 
 def read_table(table):
-    headers = [h.get_text() for h in table.find_all('th')]
+    # Finding all 'th' is not enough, since some headers are 'td'.
+    # Instead, walk through all children of the first 'tr', filter out those
+    # that are only whitespace, keep `get_text()` on the others.
+    headers = list(
+        map(lambda th: th.get_text(),
+            filter(lambda th: unicode(th).strip(), table.tr.children)))
+
     result = []
     if headers:
         # common case
         for row in table.find_all('tr'):
             obj = {}
             for column, name in zip(row.find_all('td'), headers):
-                obj[name] = column.get_text()
+                # Remove '\n's in names that contain it.
+                obj[name.replace('\n', '')] = column.get_text()
             if obj:
                 result.append(obj)
     else:
