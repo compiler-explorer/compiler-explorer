@@ -139,6 +139,10 @@ Output.prototype.onCompilerClose = function (id) {
     }
 };
 
+Output.prototype.close = function () {
+    this.eventHub.unsubscribe();
+};
+
 module.exports = {
     Output: Output
 };
