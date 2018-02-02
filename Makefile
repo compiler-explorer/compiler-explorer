@@ -92,28 +92,12 @@ dev: prereqs
 
 HASH := $(shell git rev-parse HEAD)
 dist: prereqs
-	rm -rf out/dist
-	$(NODE) ./node_modules/requirejs/bin/r.js -o app.build.js
-	# Move all assets to a versioned directory
-	echo $(HASH) > out/dist/git_hash
-	mkdir -p out/dist/v/$(HASH)
-	mv out/dist/main.js* out/dist/v/$(HASH)/
-	mv out/dist/explorer.css out/dist/v/$(HASH)/
-	mv out/dist/assets/ out/dist/v/$(HASH)/
-	mv out/dist/themes/ out/dist/v/$(HASH)/
-	# copy any external references into the directory too
-	cp -r $(shell pwd)/out/dist/ext out/dist/v/$(HASH)/ext
-	# uglify requirejs itself
-	$(NODE) ./node_modules/.bin/uglifyjs out/dist/v/$(HASH)/ext/requirejs/require.js \
-	    -c \
-	    --output out/dist/v/$(HASH)/ext/requirejs/require.js \
-	    --source-map out/dist/v/$(HASH)/ext/requirejs/require.js.map \
-	    --source-map-url require.js.map \
-	    --source-map-root //v/$(HASH)/ext/requirejs \
-	    --prefix 6
+	rm -rf out/dist/
+	mkdir -p out/dist/static/dist
+	cp -r static/dist/ out/dist/static/dist
 
 travis-dist: dist
-	tar --exclude './.travis-compilers' --exclude './.git' --exclude './static' --exclude './out/dist/ext' -Jcf /tmp/ce-build.tar.xz . 
+	tar --exclude './.travis-compilers' --exclude './.git' --exclude './static' -Jcf /tmp/ce-build.tar.xz . 
 	rm -rf out/dist-bin
 	mkdir -p out/dist-bin
 	mv /tmp/ce-build.tar.xz out/dist-bin/${TRAVIS_BUILD_NUMBER}.tar.xz
