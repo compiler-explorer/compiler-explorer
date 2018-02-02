@@ -50,7 +50,7 @@
     "underscore-node": "*",
     "winston": "^2.4.0",
     "wolfy87-eventemitter": "^5.2.3",
-    "vis": "^4.21.0"
+    "vis": "4.20.1"
   },
   "devDependencies": {
     "aws-sdk-mock": "^1.7.0",
@@ -64,10 +64,8 @@
     "css-loader": "^0.28.7",
     "extract-text-webpack-plugin": "^3.0.1",
     "file-loader": "^1.1.5",
-    "imports-loader": "^0.7.1",
     "mocha": "^3.3.0",
     "nock": "^9.1.4",
-    "pug-loader": "^2.3.0",
     "requirejs": "*",
     "style-loader": "^0.19.0",
     "supervisor": "*",

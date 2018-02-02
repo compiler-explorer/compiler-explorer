@@ -45,7 +45,7 @@ var themer = require('./themes');
 
 //css
 require("bootstrap/dist/css/bootstrap.min.css");
-require("goldenlayout/src/css/goldenlayout-base.css")
+require("goldenlayout/src/css/goldenlayout-base.css");
 require("selectize/dist/css/selectize.bootstrap2.css");
 require("bootstrap-slider/dist/css/bootstrap-slider.css");
 require("./colours.css");

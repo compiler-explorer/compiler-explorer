@@ -5407,9 +5407,9 @@ verror@1.10.0:
     core-util-is "1.0.2"
     extsprintf "^1.2.0"
 
-vis@^4.21.0:
-  version "4.21.0"
-  resolved "https://registry.yarnpkg.com/vis/-/vis-4.21.0.tgz#dd71638bff7f6495d00bc9f40c253526133ded6b"
+vis@4.20.1:
+  version "4.20.1"
+  resolved "https://registry.yarnpkg.com/vis/-/vis-4.20.1.tgz#67e92edafe72da63b15c9302991af9edf2f86619"
   dependencies:
     emitter-component "^1.1.1"
     hammerjs "^2.0.8"
