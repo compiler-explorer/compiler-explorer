@@ -88,9 +88,8 @@ const port = opts.port || 10240;
 const staticDir = opts.static || 'static';
 const archivedVersions = opts.archivedVersions;
 let gitReleaseName = "";
-let versionedRootPrefix = "";
 const wantedLanguage = opts.language || null;
-let builtResourcesRoot = "";
+
 
 
 const webpackConfig = require('./webpack.config.js')[1],
@@ -107,14 +106,11 @@ if (opts.static && fs.existsSync(opts.static + "/git_hash")) {
 } else if (fs.existsSync('.git/')) { // Just if we have been cloned and not downloaded (Thanks David!)
     gitReleaseName = child_process.execSync('git rev-parse HEAD').toString().trim();
 }
-if (opts.static && fs.existsSync(opts.static + '/v/' + gitReleaseName))
-    versionedRootPrefix = "v/" + gitReleaseName + "/";
 
-if (process.env.NODE_ENV === "DEV") {
-    builtResourcesRoot = "static/";
-}
-// Don't treat @ in paths as remote addresses
+// Don't treat @ in paths as remote adresses
 const fetchCompilersFromRemote = !opts.noRemoteFetch;
+
+const isDevMode = () => process.env.NODE_ENV === "DEV";
 
 const propHierarchy = _.flatten([
     'defaults',
@@ -581,11 +577,10 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
         function renderConfig(extra) {
             const options = _.extend(extra, clientOptionsHandler.get());
             options.compilerExplorerOptions = JSON.stringify(options);
-            options.root = versionedRootPrefix;
             options.extraBodyClass = extraBodyClass;
             options.builtResourcesRoot = builtResourcesRoot;
             options.require = function (path) {
-                if (process.env.NODE_ENV === "DEV") {
+                if (isDevMode()) {
                     //I have no idea why main => maps to styles i need to dig into this
                     if (path === 'main.css') {
                         return '/dist/styles.css';
@@ -593,11 +588,11 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
                     //this will break assets in dev mode for now
                     return '/dist/' + path;
                 }
-                if (staticManifest.hasOwnProperty(path)) {
-                    return versionedRootPrefix + "/dist/" + staticManifest[path];
+                if(staticManifest.hasOwnProperty(path)) {
+                    return "/dist/" + staticManifest[path];
                 }
-                if (assetManifest.hasOwnProperty(path)) {
-                    return versionedRootPrefix + "/dist/assets/" + assetManifest[path];
+                if(assetManifest.hasOwnProperty(path)) {
+                    return "/dist/assets/" + assetManifest[path];
                 }
                 logger.warn("Requested an asset I don't know about");
             };
@@ -611,7 +606,7 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
         };
         const healthCheck = require('./lib/handlers/health-check');
 
-        if (process.env.NODE_ENV === "DEV") {
+        if (isDevMode()) {
             webServer.use(webpackDevMiddleware(webpackCompiler, {
                 publicPath: webpackConfig.output.publicPath
             }));
@@ -620,7 +615,6 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
             //assume that anything not dev is just production this gives sane defaults for anyone who isn't messing with this
             logger.info("  serving static files from '" + staticDir + "'");
             webServer.use(express.static(staticDir, {maxAge: staticMaxAgeSecs * 1000}));
-            webServer.use('/v', express.static(staticDir + '/v', {maxAge: Infinity, index: false}));
         }
 
         webServer
@@ -651,13 +645,8 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
                 res.set('Content-Type', 'application/xml');
                 res.render('sitemap');
             })
-            .use(sFavicon(path.join(staticDir, webpackConfig.output.publicPath, 'favicon.ico')));
-        if (archivedVersions) {
-            // The archived versions directory is used to serve "old" versioned data during updates. It's expected
-            // to contain all the SHA-hashed directories from previous versions of Compiler Explorer.
-            logger.info("  serving archived versions from", archivedVersions);
-            webServer.use('/v', express.static(archivedVersions, {maxAge: Infinity, index: false}));
-        }
+            .use(sFavicon(path.join(staticDir, config.output.publicPath, 'favicon.ico')));
+
         webServer
             .use(bodyParser.json({limit: ceProps('bodyParserLimit', maxUploadSize)}))
             .use(bodyParser.text({limit: ceProps('bodyParserLimit', maxUploadSize), type: () => true}))
