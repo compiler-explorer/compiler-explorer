@@ -656,32 +656,18 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
             // The archived versions directory is used to serve "old" versioned data during updates. It's expected
             // to contain all the SHA-hashed directories from previous versions of Compiler Explorer.
             logger.info("  serving archived versions from", archivedVersions);
-            router.use('/v', express.static(archivedVersions, {maxAge: Infinity, index: false}));
+            webServer.use('/v', express.static(archivedVersions, {maxAge: Infinity, index: false}));
         }
-        router
+        webServer
             .use(bodyParser.json({limit: ceProps('bodyParserLimit', maxUploadSize)}))
             .use(bodyParser.text({limit: ceProps('bodyParserLimit', maxUploadSize), type: () => true}))
             .use(restreamer())
             .use('/source', sourceHandler.handle.bind(sourceHandler))
             .use('/api', apiHandler.handle)
             .use('/g', shortUrlHandler);
-
-        const healthCheck = require('./lib/handlers/health-check');
-        webServer
-            .use(Raven.requestHandler())
-            .set('trust proxy', true)
-            .set('view engine', 'pug')
-            .use('/healthcheck', new healthCheck.HealthCheckHandler().handle) // before morgan so healthchecks aren't logged
-            .use(morgan('combined', {stream: logger.stream}))
-            .use(compression())
-            .use(router)
-            .use(Raven.errorHandler())
-            .on('error', err => logger.error('Caught error:', err, "(in web error handler; continuing)"));
-
-        const webAlias = ceProps("web-alias", "");
-        if (webAlias) webServer.use(webAlias, router);
-        _.each(env, e => webServer.use(`/${e}`, router));
         logger.info("=======================================");
+        webServer.use(Raven.errorHandler());
+        webServer.on('error', err => logger.error('Caught error:', err, "(in web error handler; continuing)"));
         webServer.listen(port, hostname);
     })
     .catch(err => {
