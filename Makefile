@@ -1,6 +1,8 @@
 NODE_DIR?=/opt/compiler-explorer/node
-NPM:=$(shell env PATH=$(NODE_DIR)/bin:$(PATH) which yarn)
+YARN_DIR?=/opt/compiler-explorer/yarn
+YARN_EXE:=$(shell env PATH=$(NODE_DIR)/bin:$(YARN_DIR)/bin:$(PATH) which yarn)
 NODE:=$(shell env PATH=$(NODE_DIR)/bin:$(PATH) which node || env PATH=$(NODE_DIR)/bin:$(PATH) which nodejs)
+YARN:=$(NODE) $(YARN_EXE).js
 default: run
 
 NODE_VERSION_USED:=8
@@ -55,7 +57,7 @@ endif
 
 NODE_MODULES=.npm-updated
 $(NODE_MODULES): package.json
-	$(NPM) install
+	$(YARN) install
 	@touch $@
 
 webpack:
