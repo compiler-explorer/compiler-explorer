@@ -94,10 +94,10 @@ const wantedLanguage = opts.language || null;
 let builtResourcesRoot = "";
 
 
-const config = require('./webpack.config.js')[1],
-    webpackCompiler = require('webpack')(config),
+const webpackConfig = require('./webpack.config.js')[1],
+    webpackCompiler = require('webpack')(webpackConfig),
     manifestName = 'manifest.json',
-    staticManifestPath = path.join(__dirname, staticDir, config.output.publicPath),
+    staticManifestPath = path.join(__dirname, staticDir, webpackConfig.output.publicPath),
     assetManifestPath = path.join(staticManifestPath, 'assets'),
     staticManifest = require(path.join(staticManifestPath, manifestName)),
     assetManifest = require(path.join(assetManifestPath, manifestName));
@@ -111,10 +111,10 @@ if (opts.static && fs.existsSync(opts.static + "/git_hash")) {
 if (opts.static && fs.existsSync(opts.static + '/v/' + gitReleaseName))
     versionedRootPrefix = "v/" + gitReleaseName + "/";
 
-if(process.env.NODE_ENV == "DEV") {
+if (process.env.NODE_ENV === "DEV") {
     builtResourcesRoot = "static/";
 }
-// Don't treat @ in paths as remote adresses
+// Don't treat @ in paths as remote addresses
 const fetchCompilersFromRemote = !opts.noRemoteFetch;
 
 const propHierarchy = _.flatten([
@@ -591,9 +591,9 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
             options.extraBodyClass = extraBodyClass;
             options.builtResourcesRoot = builtResourcesRoot;
             options.require = function(path) { 
-                if(process.env.NODE_ENV == "DEV") {
+                if(process.env.NODE_ENV === "DEV") {
                     //I have no idea why main => maps to styles i need to dig into this
-                    if(path == 'main.css') {
+                    if(path === 'main.css') {
                         return '/dist/styles.css';
                     }
                     //this will break assets in dev mode for now
@@ -605,7 +605,7 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
                 if(assetManifest.hasOwnProperty(path)) {
                     return versionedRootPrefix + "/dist/assets/" + assetManifest[path];
                 }
-                console.warn("requested an asset I don't know about");
+                logger.warn("Requested an asset I don't know about");
             };
             return options;
         }
@@ -618,13 +618,13 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
         const healthCheck = require('./lib/handlers/health-check');
         
         
-        if(process.env.NODE_ENV == "DEV") {
+        if (process.env.NODE_ENV === "DEV") {
             webServer.use(webpackDevMiddleware(webpackCompiler, {
-                publicPath: config.output.publicPath
+                publicPath: webpackConfig.output.publicPath
             }));
             webServer.use(express.static(staticDir));
         } else {
-               //assume that anything not dev is just production this gives sane defaults for anyone who isn't messing with this
+            //assume that anything not dev is just production this gives sane defaults for anyone who isn't messing with this
             logger.info("  serving static files from '" + staticDir + "'");
             webServer.use(express.static(staticDir, {maxAge: staticMaxAgeSecs * 1000}));
             webServer.use('/v', express.static(staticDir + '/v', {maxAge: Infinity, index: false}));
@@ -659,7 +659,7 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
                 res.set('Content-Type', 'application/xml');
                 res.render('sitemap');
             })
-            .use(sFavicon(path.join(staticDir, config.output.publicPath, 'favicon.ico')));
+            .use(sFavicon(path.join(staticDir, webpackConfig.output.publicPath, 'favicon.ico')));
             
         if (archivedVersions) {
             // The archived versions directory is used to serve "old" versioned data during updates. It's expected
