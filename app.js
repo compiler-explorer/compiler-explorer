@@ -307,11 +307,6 @@ function ClientOptionsHandler(fileSources) {
     };
     this.setCompilers = compilers => options.compilers = compilers;
     this.setCompilers([]);
-    this.handler = function getClientOptions(req, res) {
-        res.set('Content-Type', 'application/json');
-        staticHeaders(res);
-        res.end(JSON.stringify(options));
-    };
     this.get = () => options;
 }
 
@@ -326,10 +321,10 @@ function retryPromise(promiseFunc, name, maxFails, retryMs) {
             }, function (e) {
                 fails++;
                 if (fails < maxFails) {
-                    logger.warn("Failed " + name + " : " + e + ", retrying");
+                    logger.warn(`Failed ${name} : ${e}, retrying`);
                     setTimeout(doit, retryMs);
                 } else {
-                    logger.error("Too many retries for " + name + " : " + e);
+                    logger.error(`Too many retries for ${name} : ${e}`);
                     reject(e);
                 }
             });
@@ -345,9 +340,9 @@ function findCompilers() {
     const ndk = compilerPropsA(languages, 'androidNdk');
     _.each(ndk, (ndkPath, langId) => {
         if (ndkPath) {
-            let toolchains = fs.readdirSync(ndkPath + "/toolchains");
+            let toolchains = fs.readdirSync(`${ndkPath}/toolchains`);
             toolchains.forEach((version, index, a) => {
-                const path = ndkPath + "/toolchains/" + version + "/prebuilt/linux-x86_64/bin/";
+                const path = `${ndkPath}/toolchains/${version}/prebuilt/linux-x86_64/bin/`;
                 if (fs.existsSync(path)) {
                     const cc = fs.readdirSync(path).filter(filename => filename.indexOf("g++") !== -1);
                     a[index] = path + cc[0];
@@ -361,7 +356,7 @@ function findCompilers() {
     });
 
     function fetchRemote(host, port, props) {
-        logger.info("Fetching compilers from remote source " + host + ":" + port);
+        logger.info(`Fetching compilers from remote source ${host}:${port}`);
         return retryPromise(() => {
                 return new Promise((resolve, reject) => {
                     let request = http.get({
@@ -379,7 +374,7 @@ function findCompilers() {
                         res.on('end', () => {
                             let compilers = JSON.parse(str).map(compiler => {
                                 compiler.exe = null;
-                                compiler.remote = "http://" + host + ":" + port;
+                                compiler.remote = `http://${host}:${port}`;
                                 return compiler;
                             });
                             resolve(compilers);
@@ -390,11 +385,11 @@ function findCompilers() {
                     request.setTimeout(awsProps('proxyTimeout', 1000));
                 });
             },
-            host + ":" + port,
+            `${host}:${port}`,
             props('proxyRetries', 5),
             props('proxyRetryMs', 500))
             .catch(() => {
-                logger.warn("Unable to contact " + host + ":" + port + "; skipping");
+                logger.warn(`Unable to contact ${host}:${port}; skipping`);
                 return [];
             });
     }
@@ -414,7 +409,7 @@ function findCompilers() {
     }
 
     function compilerConfigFor(langId, compilerName, parentProps) {
-        const base = "compiler." + compilerName + ".";
+        const base = `compiler.${compilerName}.`;
 
         function props(propName, def) {
             let propsForCompiler = parentProps(langId, base + propName, undefined);
@@ -465,7 +460,7 @@ function findCompilers() {
                 if (propName === "group") {
                     return groupName;
                 }
-                return compilerPropsL(langId, "group." + groupName + "." + propName, parentProps(langId, propName, def));
+                return compilerPropsL(langId, `group.${groupName}.${propName}`, parentProps(langId, propName, def));
             };
 
             const compilerExes = _.compact(props(langId, 'compilers', '').split(":"));
@@ -493,7 +488,7 @@ function findCompilers() {
         _.each(ids, (list, id) => {
             if (list.length !== 1) {
                 logger.error(`Compiler ID clash for '${id}' - used by ${
-                    _.map(list, o => 'lang:' + o.lang + " name:" + o.name).join(', ')
+                    _.map(list, o => `lang:${o.lang} name:${o.name}`).join(', ')
                     }`);
             }
         });
@@ -580,8 +575,8 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
             restreamer = require('./lib/restreamer');
 
         logger.info("=======================================");
-        logger.info("Listening on http://" + (hostname || 'localhost') + ":" + port + "/");
-        if (gitReleaseName) logger.info("  git release " + gitReleaseName);
+        logger.info(`Listening on http://${hostname || 'localhost'}:${port}/`);
+        if (gitReleaseName) logger.info(`  git release ${gitReleaseName}`);
 
         function renderConfig(extra) {
             const options = _.extend(extra, clientOptionsHandler.get());
@@ -616,7 +611,6 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
         };
         const healthCheck = require('./lib/handlers/health-check');
 
-
         if (process.env.NODE_ENV === "DEV") {
             webServer.use(webpackDevMiddleware(webpackCompiler, {
                 publicPath: webpackConfig.output.publicPath
@@ -628,7 +622,6 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
             webServer.use(express.static(staticDir, {maxAge: staticMaxAgeSecs * 1000}));
             webServer.use('/v', express.static(staticDir + '/v', {maxAge: Infinity, index: false}));
         }
-
 
         webServer
             .use(Raven.requestHandler())
@@ -659,27 +652,36 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
                 res.render('sitemap');
             })
             .use(sFavicon(path.join(staticDir, webpackConfig.output.publicPath, 'favicon.ico')));
-
         if (archivedVersions) {
             // The archived versions directory is used to serve "old" versioned data during updates. It's expected
             // to contain all the SHA-hashed directories from previous versions of Compiler Explorer.
             logger.info("  serving archived versions from", archivedVersions);
-            webServer.use('/v', express.static(archivedVersions, {maxAge: Infinity, index: false}));
+            router.use('/v', express.static(archivedVersions, {maxAge: Infinity, index: false}));
         }
-        webServer
+        router
             .use(bodyParser.json({limit: ceProps('bodyParserLimit', maxUploadSize)}))
             .use(bodyParser.text({limit: ceProps('bodyParserLimit', maxUploadSize), type: () => true}))
             .use(restreamer())
-            .get('/client-options.json', clientOptionsHandler.handler)
             .use('/source', sourceHandler.handle.bind(sourceHandler))
             .use('/api', apiHandler.handle)
             .use('/g', shortUrlHandler);
+
+        const healthCheck = require('./lib/handlers/health-check');
+        webServer
+            .use(Raven.requestHandler())
+            .set('trust proxy', true)
+            .set('view engine', 'pug')
+            .use('/healthcheck', new healthCheck.HealthCheckHandler().handle) // before morgan so healthchecks aren't logged
+            .use(morgan('combined', {stream: logger.stream}))
+            .use(compression())
+            .use(router)
+            .use(Raven.errorHandler())
+            .on('error', err => logger.error('Caught error:', err, "(in web error handler; continuing)"));
+
+        const webAlias = ceProps("web-alias", "");
+        if (webAlias) webServer.use(webAlias, router);
+        _.each(env, e => webServer.use(`/${e}`, router));
         logger.info("=======================================");
-
-        webServer.use(Raven.errorHandler());
-
-        webServer.on('error', err => logger.error('Caught error:', err, "(in web error handler; continuing)"));
-
         webServer.listen(port, hostname);
     })
     .catch(err => {
