@@ -1,7 +1,7 @@
 NODE_DIR?=/opt/compiler-explorer/node
 YARN_DIR?=/opt/compiler-explorer/yarn
-YARN_EXE:=$(shell env PATH=$(NODE_DIR)/bin:$(YARN_DIR)/bin:$(PATH) which yarn)
-NODE:=$(shell env PATH=$(NODE_DIR)/bin:$(PATH) which node || env PATH=$(NODE_DIR)/bin:$(PATH) which nodejs)
+YARN_EXE:=$(shell env PATH="$(NODE_DIR)/bin:$(YARN_DIR)/bin:$(PATH)" which yarn)
+NODE:=$(shell env PATH="$(NODE_DIR)/bin:$(PATH)" which node || env PATH="$(NODE_DIR)/bin:$(PATH)" which nodejs)
 YARN:=$(NODE) $(YARN_EXE).js
 default: run
 
