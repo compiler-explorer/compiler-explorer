@@ -659,7 +659,7 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
                 res.set('Content-Type', 'application/xml');
                 res.render('sitemap');
             })
-            .use(sFavicon(staticDir + '/favicon.ico'));
+            .use(sFavicon(path.join(staticDir, config.output.publicPath, 'favicon.ico')));
             
         if (archivedVersions) {
             // The archived versions directory is used to serve "old" versioned data during updates. It's expected

@@ -93,8 +93,10 @@ dev: prereqs
 HASH := $(shell git rev-parse HEAD)
 dist: prereqs
 	rm -rf out/dist/
-	mkdir -p out/dist/static/dist
-	cp -r static/dist/ out/dist/static/dist
+	mkdir -p out/dist/dist
+	mkdir -p out/dist/vs
+	cp -r static/dist/ out/dist/dist
+	cp -r static/vs/ out/dist/vs
 
 travis-dist: dist
 	tar --exclude './.travis-compilers' --exclude './.git' --exclude './static' -Jcf /tmp/ce-build.tar.xz . 

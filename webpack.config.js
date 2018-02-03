@@ -14,11 +14,11 @@ const staticPath = path.resolve(__dirname, staticRelative);
 const distPath = path.join(staticPath, outputPathRelative);
 const vsPath = path.join(staticPath, 'vs/');
 const assetPath = path.join(staticPath, "assets");
-const manifestPath = 'manifest.json';
+const manifestPath = 'manifest.json';  //if you change this, you also need to update it in the app.js
 const outputname = process.env.NODE_ENV == "DEV" ? 'main.js' : 'bundle.[hash].js';
 const cssName = process.env.NODE_ENV  == "DEV" ? 'styles.css' :  "styles.[contenthash].css";
 const manifestPlugin = new ManifestPlugin({
-    fileName: 'manifest.json' //if you change this, you also need to update it in the app.js
+    fileName: manifestPath
 });
 
 const assetEntries = glob.sync(`${assetPath}/**/*.*`).reduce((obj, p) => {
@@ -101,7 +101,12 @@ module.exports = [
                 new CopyWebpackPlugin([{
                     from: 'node_modules/monaco-editor/min/vs',
                     to: vsPath,
-                }]),
+                },
+                {
+                    from: path.join(staticPath, "favicon.ico"),
+                    to: distPath,
+                }
+                ]),
                 new webpack.ProvidePlugin({
                     $: 'jquery',
                     jQuery: 'jquery'
