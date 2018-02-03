@@ -41,7 +41,6 @@ const nopt = require('nopt'),
     webpackDevMiddleware = require("webpack-dev-middleware");
 
 
-
 // Parse arguments from command line 'node ./app.js args...'
 const opts = nopt({
     'env': [String, Array],
@@ -590,19 +589,19 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
             options.root = versionedRootPrefix;
             options.extraBodyClass = extraBodyClass;
             options.builtResourcesRoot = builtResourcesRoot;
-            options.require = function(path) { 
-                if(process.env.NODE_ENV === "DEV") {
+            options.require = function (path) {
+                if (process.env.NODE_ENV === "DEV") {
                     //I have no idea why main => maps to styles i need to dig into this
-                    if(path === 'main.css') {
+                    if (path === 'main.css') {
                         return '/dist/styles.css';
                     }
                     //this will break assets in dev mode for now
                     return '/dist/' + path;
                 }
-                if(staticManifest.hasOwnProperty(path)) {
+                if (staticManifest.hasOwnProperty(path)) {
                     return versionedRootPrefix + "/dist/" + staticManifest[path];
                 }
-                if(assetManifest.hasOwnProperty(path)) {
+                if (assetManifest.hasOwnProperty(path)) {
                     return versionedRootPrefix + "/dist/assets/" + assetManifest[path];
                 }
                 logger.warn("Requested an asset I don't know about");
@@ -616,8 +615,8 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
             res.render('embed', renderConfig({embedded: true}));
         };
         const healthCheck = require('./lib/handlers/health-check');
-        
-        
+
+
         if (process.env.NODE_ENV === "DEV") {
             webServer.use(webpackDevMiddleware(webpackCompiler, {
                 publicPath: webpackConfig.output.publicPath
@@ -630,7 +629,7 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
             webServer.use('/v', express.static(staticDir + '/v', {maxAge: Infinity, index: false}));
         }
 
-        
+
         webServer
             .use(Raven.requestHandler())
             .set('trust proxy', true)
@@ -660,7 +659,7 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
                 res.render('sitemap');
             })
             .use(sFavicon(path.join(staticDir, webpackConfig.output.publicPath, 'favicon.ico')));
-            
+
         if (archivedVersions) {
             // The archived versions directory is used to serve "old" versioned data during updates. It's expected
             // to contain all the SHA-hashed directories from previous versions of Compiler Explorer.
