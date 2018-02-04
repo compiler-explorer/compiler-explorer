@@ -578,7 +578,6 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
             const options = _.extend(extra, clientOptionsHandler.get());
             options.compilerExplorerOptions = JSON.stringify(options);
             options.extraBodyClass = extraBodyClass;
-            options.builtResourcesRoot = builtResourcesRoot;
             options.require = function (path) {
                 if (isDevMode()) {
                     //I have no idea why main => maps to styles i need to dig into this
@@ -589,10 +588,10 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
                     return '/dist/' + path;
                 }
                 if(staticManifest.hasOwnProperty(path)) {
-                    return "/dist/" + staticManifest[path];
+                    return "dist/" + staticManifest[path];
                 }
                 if(assetManifest.hasOwnProperty(path)) {
-                    return "/dist/assets/" + assetManifest[path];
+                    return "dist/assets/" + assetManifest[path];
                 }
                 logger.warn("Requested an asset I don't know about");
             };
