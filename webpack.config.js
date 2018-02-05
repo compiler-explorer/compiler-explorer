@@ -17,6 +17,7 @@ const assetPath = path.join(staticPath, "assets");
 const manifestPath = 'manifest.json';  //if you change this, you also need to update it in the app.js
 const outputname = process.env.NODE_ENV === "DEV" ? 'main.js' : 'bundle.[hash].js';
 const cssName = process.env.NODE_ENV  === "DEV" ? 'styles.css' :  "styles.[contenthash].css";
+const publicPath = process.env.NODE_ENV  === "DEV" ? '/dist/' : undefined;
 const manifestPlugin = new ManifestPlugin({
     fileName: manifestPath
 });
@@ -63,7 +64,7 @@ module.exports = [
         output: {
             filename: outputname,
             path: distPath,
-            publicPath: "/dist/"
+            publicPath: publicPath
         },
         resolve: {
             modules: ['./static', "./node_modules"],
