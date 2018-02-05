@@ -23,6 +23,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 // POSSIBILITY OF SUCH DAMAGE
 "use strict";
+if(window.resourceBaseUrl) {
+    __webpack_public_path__ = window.resourceBaseUrl;
+}
+
+
 require("monaco-loader")().then(function() {    
     
 require('bootstrap');
