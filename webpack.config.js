@@ -16,11 +16,14 @@ const vsPath = path.join(staticPath, 'vs/');
 const assetPath = path.join(staticPath, "assets");
 const manifestPath = 'manifest.json';  //if you change this, you also need to update it in the app.js
 const outputname = process.env.NODE_ENV === "DEV" ? 'main.js' : 'bundle.[hash].js';
-const cssName = process.env.NODE_ENV  === "DEV" ? 'styles.css' :  "styles.[contenthash].css";
-const publicPath = process.env.NODE_ENV  === "DEV" ? '/dist/' : undefined;
+const cssName = process.env.NODE_ENV  === "DEV" ? '[name].css' :  "[name].[contenthash].css";
+const publicPath = process.env.NODE_ENV  === "DEV" ? '/dist/' :  'dist/';
 const manifestPlugin = new ManifestPlugin({
     fileName: manifestPath
 });
+
+
+
 
 const assetEntries = glob.sync(`${assetPath}/**/*.*`).reduce((obj, p) => {
     const key = path.basename(p);
@@ -86,6 +89,7 @@ module.exports = [
                     use: ExtractTextPlugin.extract({
                         fallback: "style-loader",
                         use: "css-loader",
+                        publicPath: "./"
                     })
                 },
                 {

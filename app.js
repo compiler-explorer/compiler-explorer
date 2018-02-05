@@ -580,10 +580,6 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
             options.extraBodyClass = extraBodyClass;
             options.require = function (path) {
                 if (isDevMode()) {
-                    //I have no idea why main => maps to styles i need to dig into this
-                    if (path === 'main.css') {
-                        return '/dist/styles.css';
-                    }
                     //this will break assets in dev mode for now
                     return '/dist/' + path;
                 }

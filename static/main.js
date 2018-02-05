@@ -24,12 +24,6 @@
 // POSSIBILITY OF SUCH DAMAGE
 "use strict";
 
-//this has to be first. 
-// look in base-path.pug for it being set
- __webpack_public_path__ = window.resourceBaseUrl;
-
-
-
 require("monaco-loader")().then(function() {    
     
 require('bootstrap');
