@@ -5,7 +5,7 @@ const path = require('path'),
     ManifestPlugin = require('webpack-manifest-plugin'),
     glob = require("glob");
 
-
+const isDev = process.env.NODE_ENV  === "DEV";
 
 
 const outputPathRelative = 'dist/';
@@ -15,9 +15,9 @@ const distPath = path.join(staticPath, outputPathRelative);
 const vsPath = path.join(staticPath, 'vs/');
 const assetPath = path.join(staticPath, "assets");
 const manifestPath = 'manifest.json';  //if you change this, you also need to update it in the app.js
-const outputname = process.env.NODE_ENV === "DEV" ? 'main.js' : 'bundle.[hash].js';
-const cssName = process.env.NODE_ENV  === "DEV" ? '[name].css' :  "[name].[contenthash].css";
-const publicPath = process.env.NODE_ENV  === "DEV" ? '/dist/' :  'dist/';
+const outputname =isDev ? 'main.js' : 'bundle.[hash].js';
+const cssName = isDev ? '[name].css' :  "[name].[contenthash].css";
+const publicPath = isDev ? '/dist/' :  'dist/';
 const manifestPlugin = new ManifestPlugin({
     fileName: manifestPath
 });
@@ -87,9 +87,9 @@ module.exports = [
                     test: /\.css$/,
                     exclude: path.resolve(__dirname, 'static/themes/'),
                     use: ExtractTextPlugin.extract({
-                        fallback: "style-loader",
-                        use: "css-loader",
-                        publicPath: "./"
+                        fallback: 'style-loader',
+                        use: 'css-loader',
+                        publicPath: './'
                     })
                 },
                 {
@@ -100,6 +100,13 @@ module.exports = [
                 { 
                     test: /\.(png|woff|woff2|eot|ttf|svg)$/, 
                     loader: 'url-loader?limit=8192' 
+                },
+                { 
+                    test: /\.(html)$/,
+                    loader: 'html-loader',
+                    options: {
+                        minimize: !isDev
+                    }
                 }
             ]},
             plugins: [
@@ -111,16 +118,6 @@ module.exports = [
                     from: path.join(staticPath, "favicon.ico"),
                     to: distPath,
                 },
-                //not the best way to do this.
-                //put them into a template and load via webpack in the future
-                {
-                    from: path.join(staticPath, "thanks.html"),
-                    to: distPath,
-                },
-                {
-                    from: path.join(staticPath, "changelog.html"),
-                    to: distPath,
-                }
                 ]),
                 new webpack.ProvidePlugin({
                     $: 'jquery',
