@@ -186,6 +186,7 @@ function start() {
         local.remove('gl');
         window.location.reload();
     });
+    //TODO: get this path from webpack some how?
     $('#thanks-to').click(function () {
         $.get('thanks.html', function (result) {
             new Alert().alert("Special thanks to", $(result));

@@ -110,6 +110,16 @@ module.exports = [
                 {
                     from: path.join(staticPath, "favicon.ico"),
                     to: distPath,
+                },
+                //not the best way to do this.
+                //put them into a template and load via webpack in the future
+                {
+                    from: path.join(staticPath, "thanks.html"),
+                    to: distPath,
+                },
+                {
+                    from: path.join(staticPath, "changelog.html"),
+                    to: distPath,
                 }
                 ]),
                 new webpack.ProvidePlugin({
