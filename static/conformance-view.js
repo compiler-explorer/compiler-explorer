@@ -163,7 +163,7 @@ Conformance.prototype.addCompilerSelector = function (config) {
 Conformance.prototype.removeCompilerSelector = function (cv) {
     _.each(this.selectorList.children(), function (row) {
         var child = $(row);
-        if (child.attr("data-cv") == cv) {
+        if (child.attr("data-cv") === cv) {
             child.remove();
         }
     }, this);
@@ -172,7 +172,7 @@ Conformance.prototype.removeCompilerSelector = function (cv) {
 };
 
 Conformance.prototype.onEditorChange = function (editorId, newSource, langId) {
-    if (editorId == this.editorId) {
+    if (editorId === this.editorId) {
         this.langId = langId;
         this.source = newSource;
         this.compileAll();
@@ -180,7 +180,7 @@ Conformance.prototype.onEditorChange = function (editorId, newSource, langId) {
 };
 
 Conformance.prototype.onEditorClose = function (editorId) {
-    if (editorId == this.editorId) {
+    if (editorId === this.editorId) {
         this.close();
         _.defer(function (self) {
             self.container.close();

@@ -674,7 +674,7 @@ Compiler.prototype.onEditorChange = function (editor, source, langId, compilerId
 };
 
 Compiler.prototype.onOptViewClosed = function (id) {
-    if (this.id == id) {
+    if (this.id === id) {
         this.wantOptInfo = false;
         this.optViewOpen = false;
         this.optButton.prop('disabled', this.optViewOpen);
@@ -682,7 +682,7 @@ Compiler.prototype.onOptViewClosed = function (id) {
 };
 
 Compiler.prototype.onAstViewOpened = function (id) {
-    if (this.id == id) {
+    if (this.id === id) {
         this.astButton.prop('disabled', true);
         this.astViewOpen = true;
         this.compile();
@@ -751,7 +751,7 @@ Compiler.prototype.onOptViewOpened = function (id) {
 };
 
 Compiler.prototype.onCfgViewOpened = function (id) {
-    if (this.id == id) {
+    if (this.id === id) {
         this.cfgButton.prop('disabled', true);
         this.cfgViewOpen = true;
         this.compile();
@@ -874,7 +874,7 @@ Compiler.prototype.updateFontScale = function () {
 };
 
 Compiler.prototype.onColours = function (editor, colours, scheme) {
-    if (editor == this.sourceEditorId) {
+    if (editor === this.sourceEditorId) {
         var asmColours = {};
         _.each(this.assembly, function (x, index) {
             if (x.source && x.source.file === null) {
@@ -909,7 +909,7 @@ Compiler.prototype.updateDecorations = function () {
 };
 
 Compiler.prototype.onCompilerSetDecorations = function (id, lineNums, revealLine) {
-    if (id == this.id) {
+    if (id === this.id) {
         if (revealLine && lineNums[0])
             this.outputEditor.revealLineInCenter(lineNums[0]);
         this.decorations.linkedCode = _.map(lineNums, function (line) {

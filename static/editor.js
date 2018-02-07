@@ -175,7 +175,7 @@ function Editor(hub, state, container) {
             var targetLines = [];
             _.each(asms, function (asmLine, i) {
                 if (asmLine.source && asmLine.source.file === null &&
-                    asmLine.source.line == thisLineNumber) {
+                    asmLine.source.line === thisLineNumber) {
                     targetLines.push(i + 1);
                 }
             });
@@ -515,13 +515,13 @@ Editor.prototype.updateDecorations = function () {
 };
 
 Editor.prototype.onConformanceViewOpen = function (editorId) {
-    if (editorId == this.id) {
+    if (editorId === this.id) {
         this.conformanceViewerButton.attr("disabled", true);
     }
 };
 
 Editor.prototype.onConformanceViewClose = function (editorId) {
-    if (editorId == this.id) {
+    if (editorId === this.id) {
         this.conformanceViewerButton.attr("disabled", false);
     }
 };

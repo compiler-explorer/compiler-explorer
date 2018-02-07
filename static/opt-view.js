@@ -91,14 +91,14 @@ Opt.prototype.resize = function () {
 };
 
 Opt.prototype.onEditorChange = function (id, source) {
-    if (this._editorid == id) {
+    if (this._editorid === id) {
         this.code = source;
         this.optEditor.setValue(source);
     }
 };
 
 Opt.prototype.onCompileResult = function (id, compiler, result) {
-    if (result.hasOptOutput && this._compilerid == id) {
+    if (result.hasOptOutput && this._compilerid === id) {
         this.showOptResults(result.optOutput);
     }
 };
@@ -124,9 +124,9 @@ Opt.prototype.showOptResults = function (results) {
     _.mapObject(results, function (value, key) {
         var linenumber = Number(key);
         var className = value.reduce(function (acc, x) {
-            if (x.optType == "Missed" || acc == "Missed") {
+            if (x.optType === "Missed" || acc === "Missed") {
                 return "Missed";
-            } else if (x.optType == "Passed" || acc == "Passed") {
+            } else if (x.optType === "Passed" || acc === "Passed") {
                 return "Passed";
             }
             return x.optType;
