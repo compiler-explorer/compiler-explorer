@@ -232,5 +232,11 @@ input.permalink {
 }
 
 .err-count {
-    color: orange !important;;
+    color: orange !important;
+}
+
+.optgroup-header {
+    background-color: #555 !important;
+    color: #EEE !important;
+    text-shadow: none !important;
 }
