@@ -313,11 +313,6 @@ function ClientOptionsHandler(fileSources) {
         });
         options.compilers = copiedCompilers;
     };
-    this.handler = function getClientOptions(req, res) {
-        res.set('Content-Type', 'application/json');
-        staticHeaders(res);
-        res.end(JSON.stringify(options));
-    };
     this.setCompilers([]);
     this.get = () => options;
 }
@@ -662,7 +657,6 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
             .use(bodyParser.json({limit: ceProps('bodyParserLimit', maxUploadSize)}))
             .use(bodyParser.text({limit: ceProps('bodyParserLimit', maxUploadSize), type: () => true}))
             .use(restreamer())
-            .get('/client-options.json', clientOptionsHandler.handler)
             .use('/source', sourceHandler.handle.bind(sourceHandler))
             .use('/api', apiHandler.handle)
             .use('/g', shortUrlHandler);
