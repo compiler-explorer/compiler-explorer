@@ -61,7 +61,7 @@ $(NODE_MODULES): package.json
 	@touch $@
 
 webpack:
-	$(NODE) node_modules/webpack/bin/webpack.js 
+	$(NODE) node_modules/webpack/bin/webpack.js ${WEBPACK_ARGS}
 
 lint: $(NODE_MODULES)
 	$(NODE) ./node_modules/.bin/jshint --config etc/jshintrc.server app.js $(shell find lib -name '*.js')
@@ -82,7 +82,7 @@ clean:
 	$(MAKE) -C d clean
 	$(MAKE) -C c-preload clean
 
-run: export NODE_ENV=LOCAL
+run: export NODE_ENV=LOCAL WEBPACK_ARGS="-p"
 run: prereqs
 	$(NODE) ./node_modules/.bin/supervisor -w app.js,lib,etc/config -e 'js|node|properties' --exec $(NODE) $(NODE_ARGS) -- ./app.js $(EXTRA_ARGS)
 
@@ -93,6 +93,7 @@ dev: prereqs
 	
 
 HASH := $(shell git rev-parse HEAD)
+dist: export WEBPACK_ARGS=-p
 dist: prereqs
 	rm -rf out/dist/
 	mkdir -p out/dist

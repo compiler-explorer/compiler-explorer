@@ -3,10 +3,10 @@ const path = require('path'),
     CopyWebpackPlugin = require('copy-webpack-plugin'),
     ExtractTextPlugin = require('extract-text-webpack-plugin'),
     ManifestPlugin = require('webpack-manifest-plugin'),
-    glob = require("glob");
+    glob = require("glob"),
+    UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 
 const isDev = process.env.NODE_ENV  === "DEV";
-
 
 const outputPathRelative = 'dist/';
 const staticRelative = 'static/';
@@ -21,10 +21,6 @@ const publicPath = isDev ? '/dist/' :  'dist/';
 const manifestPlugin = new ManifestPlugin({
     fileName: manifestPath
 });
-const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
-
-
-
 
 
 const assetEntries = glob.sync(`${assetPath}/**/*.*`).reduce((obj, p) => {
@@ -32,7 +28,6 @@ const assetEntries = glob.sync(`${assetPath}/**/*.*`).reduce((obj, p) => {
     obj[key] = p; 
     return obj;
 }, {});
-
 
 let plugins = [ 
     new CopyWebpackPlugin([{
