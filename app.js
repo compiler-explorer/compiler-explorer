@@ -301,7 +301,23 @@ function ClientOptionsHandler(fileSources) {
         cvCompilerCountMax: ceProps('cvCompilerCountMax', 6),
         defaultFontScale: ceProps('defaultFontScale', 1.0)
     };
-    this.setCompilers = compilers => options.compilers = compilers;
+    this.setCompilers = compilers => {
+        const blacklistedKeys = ['exe', 'versionFlag', 'versionRe', 'compilerType', 'demangler', 'objdumper', 'postProcess'];
+        const copiedCompilers = JSON.parse(JSON.stringify(compilers));
+        _.each(options.compilers, (compiler, compilersKey) => {
+            _.each(compiler, (_, propKey) => {
+                if (blacklistedKeys.includes(propKey)) {
+                    delete copiedCompilers[compilersKey][propKey];
+                }
+            });
+        });
+        options.compilers = copiedCompilers;
+    };
+    this.handler = function getClientOptions(req, res) {
+        res.set('Content-Type', 'application/json');
+        staticHeaders(res);
+        res.end(JSON.stringify(options));
+    };
     this.setCompilers([]);
     this.get = () => options;
 }
@@ -646,6 +662,7 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
             .use(bodyParser.json({limit: ceProps('bodyParserLimit', maxUploadSize)}))
             .use(bodyParser.text({limit: ceProps('bodyParserLimit', maxUploadSize), type: () => true}))
             .use(restreamer())
+            .get('/client-options.json', clientOptionsHandler.handler)
             .use('/source', sourceHandler.handle.bind(sourceHandler))
             .use('/api', apiHandler.handle)
             .use('/g', shortUrlHandler);
