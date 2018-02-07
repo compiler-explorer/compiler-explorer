@@ -61,7 +61,7 @@ function makeFontSizeDropdown(elem, interval, obj, buttonDropdown) {
         var newElement = $('<li></li>');
         newElement.attr('data-value', i);
         newElement.addClass('font-option');
-        if (!found && (i === obj.scale || Math.floor(i) == obj.scale)) {
+        if (!found && (i === obj.scale || Math.floor(i) === obj.scale)) {
             found = true;
             newElement.addClass('font-option-active');
         }
@@ -100,7 +100,7 @@ FontScale.prototype.apply = function () {
 };
 
 FontScale.prototype.addState = function (state) {
-    if (this.scale != 1.0)
+    if (this.scale !== 1.0)
         state.fontScale = this.scale;
 };
 

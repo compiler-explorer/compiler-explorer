@@ -87,7 +87,7 @@ Ast.prototype.onEditorChange = function (id, source) {
 };
 
 Ast.prototype.onCompileResult = function (id, compiler, result) {
-    if (this._compilerid == id) {
+    if (this._compilerid === id) {
         if (result.hasAstOutput) {
             this.showAstResults(result.astOutput);
         }
@@ -109,7 +109,7 @@ Ast.prototype.showAstResults = function (results) {
 };
 
 Ast.prototype.onCompiler = function (id, compiler, options, editorid) {
-    if (id == this._compilerid) {
+    if (id === this._compilerid) {
         this._compilerName = compiler ? compiler.name : '';
         this._editorid = editorid;
         this.setTitle();
