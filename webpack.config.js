@@ -21,6 +21,8 @@ const publicPath = isDev ? '/dist/' :  'dist/';
 const manifestPlugin = new ManifestPlugin({
     fileName: manifestPath
 });
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+
 
 
 
@@ -31,6 +33,30 @@ const assetEntries = glob.sync(`${assetPath}/**/*.*`).reduce((obj, p) => {
     return obj;
 }, {});
 
+
+let plugins = [ 
+    new CopyWebpackPlugin([{
+        from: 'node_modules/monaco-editor/min/vs',
+        to: vsPath,
+    },
+    {
+        from: path.join(staticPath, "favicon.ico"),
+        to: distPath,
+    },
+    ]),
+    new webpack.ProvidePlugin({
+        $: 'jquery',
+        jQuery: 'jquery'
+    }),
+    new ExtractTextPlugin(cssName),
+    manifestPlugin
+];
+
+if(!isDev) {
+    plugins.push(new UglifyJsPlugin({
+        sourceMap: true
+    }));
+}
 
 
 module.exports = [
@@ -109,23 +135,7 @@ module.exports = [
                     }
                 }
             ]},
-            plugins: [
-                new CopyWebpackPlugin([{
-                    from: 'node_modules/monaco-editor/min/vs',
-                    to: vsPath,
-                },
-                {
-                    from: path.join(staticPath, "favicon.ico"),
-                    to: distPath,
-                },
-                ]),
-                new webpack.ProvidePlugin({
-                    $: 'jquery',
-                    jQuery: 'jquery'
-                }),
-                new ExtractTextPlugin(cssName),
-                manifestPlugin
-            ]
+            plugins: plugins
         },
 
     ];

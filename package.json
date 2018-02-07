@@ -47,6 +47,7 @@
     "shell-quote": "1.6.x",
     "temp": "0.8.x",
     "tree-kill": "^1.2.0",
+    "uglifyjs-webpack-plugin": "^1.1.8",
     "underscore": "^1.8.3",
     "underscore-node": "*",
     "vis": "4.20.1",
