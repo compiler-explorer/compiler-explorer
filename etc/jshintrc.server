@@ -3,5 +3,6 @@
     "undef": true,
     "node": true,
     "mocha": true,
-    "expr": true
+    "expr": true,
+    "eqeqeq": true
 }
