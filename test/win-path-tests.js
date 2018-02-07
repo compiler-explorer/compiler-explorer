@@ -23,26 +23,24 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 const chai = require('chai');
-const should = chai.should();
-const assert = chai.assert;
+
 const WslCL = require('../lib/compilers/WSL-CL');
 const WineCL = require('../lib/compilers/Wine-CL');
-const logger = require('../lib/logger').logger;
-const {CompilationEnvironment} = require('../lib/compilation-env');
+const CompilationEnvironment = require('../lib/compilation-env');
+
+chai.should();
 
 describe('Paths', () => {
     it('Linux -> Wine path', () => {
         const info = {
             lang: "c++",
             exe: null,
-            remote: true,
-            unitTestMode: true
+            remote: true
         };
         const envprops = (key, deflt) => deflt;
 
         const env = new CompilationEnvironment(envprops);
-        env.compilerProps = () => {
-        };
+        env.compilerProps = undefined;
 
         const compiler = new WineCL(info, env);
         compiler.filename("/tmp/123456/output.s").should.equal("Z:/tmp/123456/output.s");
@@ -52,8 +50,7 @@ describe('Paths', () => {
         const info = {
             lang: "c++",
             exe: null,
-            remote: true,
-            unitTestMode: true
+            remote: true
         };
         const envprops = (key, deflt) => deflt;
 

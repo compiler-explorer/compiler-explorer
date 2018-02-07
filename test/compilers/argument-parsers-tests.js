@@ -23,8 +23,8 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 const chai = require('chai'),
-    Compile = require('../../lib/base-compiler'),
-    CompilationEnvironment = require('../../lib/compilation-env').CompilationEnvironment,
+    FakeCompiler = require('../../lib/compilers/fake-for-test'),
+    CompilationEnvironment = require('../../lib/compilation-env'),
     chaiAsPromised = require("chai-as-promised"),
     parsers = require('../../lib/compilers/argument-parsers');
 
@@ -33,39 +33,37 @@ chai.should();
 
 function makeCompiler(stdout, stderr, code) {
     if (code === undefined) code = 0;
-    const env = new CompilationEnvironment((key, def) => def);
-    const compiler = new Compile({'lang': 'c++', 'remote': true}, env);
-    compiler.exec = () => {
-        return Promise.resolve({code: code, stdout: stdout || "", stderr: stderr || ""});
-    };
+    const env = new CompilationEnvironment((key, def) => def, x => x);
+    const compiler = new FakeCompiler({lang: 'c++', remote: true}, env);
+    compiler.exec = () => Promise.resolve({code: code, stdout: stdout || "", stderr: stderr || ""});
     return compiler;
 }
 
 describe('option parser', () => {
     it('should handle empty options', () => {
-        return parsers.getOptions(makeCompiler()).should.eventually.deep.equals({});
+        return parsers.Base.getOptions(makeCompiler()).should.eventually.deep.equals({});
     });
     it('should parse single-dash options', () => {
-        return parsers.getOptions(makeCompiler("-foo\n")).should.eventually.deep.equals({'-foo': true});
+        return parsers.Base.getOptions(makeCompiler("-foo\n")).should.eventually.deep.equals({'-foo': true});
     });
     it('should parse double-dash options', () => {
-        return parsers.getOptions(makeCompiler("--foo\n")).should.eventually.deep.equals({'--foo': true});
+        return parsers.Base.getOptions(makeCompiler("--foo\n")).should.eventually.deep.equals({'--foo': true});
     });
     it('should parse stderr options', () => {
-        return parsers.getOptions(makeCompiler("", "--bar=monkey\n")).should.eventually.deep.equals({'--bar': true});
+        return parsers.Base.getOptions(makeCompiler("", "--bar=monkey\n")).should.eventually.deep.equals({'--bar': true});
     });
     it('handles non-option text', () => {
-        return parsers.getOptions(makeCompiler("-foo=123\nthis is a fish\n-badger=123")).should.eventually.deep.equals(
+        return parsers.Base.getOptions(makeCompiler("-foo=123\nthis is a fish\n-badger=123")).should.eventually.deep.equals(
             {'-foo': true, '-badger': true});
     });
     it('should ignore if errors occur', () => {
-        return parsers.getOptions(makeCompiler("--foo\n", "--bar\n", 1)).should.eventually.deep.equals({});
+        return parsers.Base.getOptions(makeCompiler("--foo\n", "--bar\n", 1)).should.eventually.deep.equals({});
     });
 });
 
 describe('gcc parser', () => {
     it('should handle empty options', () => {
-        return parsers.gcc(makeCompiler()).should.eventually.satisfy(result => {
+        return parsers.GCC.parse(makeCompiler()).should.eventually.satisfy(result => {
             return Promise.all([
                 result.compiler.supportsGccDump.should.equals(true),
                 result.compiler.options.should.equals('')
@@ -73,7 +71,7 @@ describe('gcc parser', () => {
         });
     });
     it('should handle options', () => {
-        return parsers.gcc(makeCompiler("-masm=intel\n-fdiagnostics-color=[blah]"))
+        return parsers.GCC.parse(makeCompiler("-masm=intel\n-fdiagnostics-color=[blah]"))
             .should.eventually.satisfy(result => {
                 return Promise.all([
                     result.compiler.supportsGccDump.should.equals(true),
@@ -84,7 +82,7 @@ describe('gcc parser', () => {
             });
     });
     it('should handle undefined options', () => {
-        return parsers.gcc(makeCompiler("-fdiagnostics-color=[blah]")).should.eventually.satisfy(result => {
+        return parsers.GCC.parse(makeCompiler("-fdiagnostics-color=[blah]")).should.eventually.satisfy(result => {
             return Promise.all([
                 result.compiler.supportsGccDump.should.equals(true),
                 result.compiler.options.should.equals('-fdiagnostics-color=always')
@@ -95,14 +93,14 @@ describe('gcc parser', () => {
 
 describe('clang parser', () => {
     it('should handle empty options', () => {
-        return parsers.clang(makeCompiler()).should.eventually.satisfy(result => {
+        return parsers.Clang.parse(makeCompiler()).should.eventually.satisfy(result => {
             return Promise.all([
                 result.compiler.options.should.equals('')
             ]);
         });
     });
     it('should handle options', () => {
-        return parsers.clang(makeCompiler("-fsave-optimization-record\n-fcolor-diagnostics"))
+        return parsers.Clang.parse(makeCompiler("-fsave-optimization-record\n-fcolor-diagnostics"))
             .should.eventually.satisfy(result => {
                 return Promise.all([
                     result.compiler.supportsOptOutput.should.equals(true),

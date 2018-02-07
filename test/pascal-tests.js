@@ -22,14 +22,19 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-var should = require('chai').should();
-var PascalDemangler = require('../lib/pascal-support').demangler;
-var PascalCompiler = require('../lib/compilers/pascal');
-var logger = require('../lib/logger').logger;
+const chai = require('chai');
+const chaiAsPromised = require("chai-as-promised");
+const PascalDemangler = require('../lib/pascal-support').demangler;
+const PascalCompiler = require('../lib/compilers/pascal');
+const CompilationEnvironment = require('../lib/compilation-env');
+const fs = require('fs-extra');
+const utils = require('../lib/utils');
+const logger = require('../lib/logger').logger;
 
-var CompilationEnvironment = require('../lib/compilation-env').CompilationEnvironment;
+chai.use(chaiAsPromised);
+chai.should();
 
-var props = function (key, deflt) {
+const props = function (key, deflt) {
     return deflt;
 };
 
@@ -38,7 +43,6 @@ describe('Basic compiler setup', function () {
     const info = {
         "exe": null,
         "remote": true,
-        "unitTestMode": true,
         "lang": "pascal"
     };
 
@@ -48,11 +52,15 @@ describe('Basic compiler setup', function () {
 
     const compiler = new PascalCompiler(info, ce);
 
-    compiler.getOutputFilename("/tmp/", "output.pas").should.equal("/tmp/output.s");
+    if (process.platform == "win32") {
+        compiler.getOutputFilename("/tmp/", "output.pas").should.equal("\\tmp\\output.s");
+    } else {
+        compiler.getOutputFilename("/tmp/", "output.pas").should.equal("/tmp/output.s");
+    }
 });
 
 describe('Pascal signature composer function', function () {
-    var demangler = new PascalDemangler();
+    const demangler = new PascalDemangler();
 
     it('Handle 0 parameter methods', function () {
         demangler.composeReadableMethodSignature("", "", "myfunc", "").should.equal("myfunc()");
@@ -72,7 +80,7 @@ describe('Pascal signature composer function', function () {
 });
 
 describe('Pascal Demangling FPC 2.6', function () {
-    var demangler = new PascalDemangler();
+    const demangler = new PascalDemangler();
 
     it('Should demangle OUTPUT_MAXARRAY$array_of_DOUBLE$array_of_DOUBLE', function () {
         demangler.demangle("OUTPUT_MAXARRAY$array_of_DOUBLE$array_of_DOUBLE:").should.equal("maxarray(array_of_double,array_of_double)");
@@ -108,7 +116,7 @@ describe('Pascal Demangling FPC 2.6', function () {
 });
 
 describe('Pascal Demangling FPC 3.2', function () {
-    var demangler = new PascalDemangler();
+    const demangler = new PascalDemangler();
 
     it('Should demangle OUTPUT_$$_SQUARE$LONGINT$$LONGINT', function () {
         demangler.demangle("OUTPUT_$$_SQUARE$LONGINT$$LONGINT:").should.equal("square(longint)");
@@ -152,7 +160,7 @@ describe('Pascal Demangling FPC 3.2', function () {
 });
 
 describe('Pascal Demangling Fixed Symbols FPC 2.6', function () {
-    var demangler = new PascalDemangler();
+    const demangler = new PascalDemangler();
 
     it('Should demangle OUTPUT_finalize_implicit', function () {
         demangler.demangle("OUTPUT_finalize_implicit:").should.equal("unit_finalization_implicit");
@@ -160,7 +168,7 @@ describe('Pascal Demangling Fixed Symbols FPC 2.6', function () {
 });
 
 describe('Pascal Demangling Fixed Symbols FPC 3.2', function () {
-    var demangler = new PascalDemangler();
+    const demangler = new PascalDemangler();
 
     it('Should demangle OUTPUT_$$_init', function () {
         demangler.demangle("OUTPUT_$$_init:").should.equal("unit_initialization");
@@ -184,7 +192,7 @@ describe('Pascal Demangling Fixed Symbols FPC 3.2', function () {
 });
 
 describe('Pascal NOT Demangling certain symbols FPC 2.6', function () {
-    var demangler = new PascalDemangler();
+    const demangler = new PascalDemangler();
 
     it('Should NOT demangle VMT_OUTPUT_TMYCLASS', function () {
         demangler.demangle("VMT_OUTPUT_TMYCLASS:").should.equal(false);
@@ -216,7 +224,7 @@ describe('Pascal NOT Demangling certain symbols FPC 2.6', function () {
 });
 
 describe('Pascal NOT Demangling certain symbols FPC 3.2', function () {
-    var demangler = new PascalDemangler();
+    const demangler = new PascalDemangler();
 
     it('Should NOT demangle RTTI_$OUTPUT_$$_TMYCLASS', function () {
         demangler.demangle("RTTI_$OUTPUT_$$_TMYCLASS:").should.equal(false);
@@ -244,7 +252,7 @@ describe('Pascal NOT Demangling certain symbols FPC 3.2', function () {
 });
 
 describe('Add, order and demangle inline', function () {
-    var demangler = new PascalDemangler();
+    const demangler = new PascalDemangler();
 
     demangler.demangle("OUTPUT$_$TMYCLASS_$__$$_MYTEST:");
     demangler.demangle("U_$OUTPUT_$$_MYGLOBALVAR:");
@@ -264,7 +272,7 @@ describe('Add, order and demangle inline', function () {
 });
 
 describe('Add, order and demangle inline - using addDemangleToCache()', function () {
-    var demangler = new PascalDemangler();
+    const demangler = new PascalDemangler();
 
     demangler.addDemangleToCache("OUTPUT$_$TMYCLASS_$__$$_MYTEST:");
     demangler.addDemangleToCache("U_$OUTPUT_$$_MYGLOBALVAR:");
@@ -283,7 +291,7 @@ describe('Add, order and demangle inline - using addDemangleToCache()', function
 });
 
 describe('Pascal Ignored Symbols', function () {
-    var demangler = new PascalDemangler();
+    const demangler = new PascalDemangler();
 
     it('Should ignore certain labels', function () {
         demangler.shouldIgnoreSymbol(".Le1").should.equal(true);
@@ -293,5 +301,53 @@ describe('Pascal Ignored Symbols', function () {
     it('Should be able to differentiate between System and User functions', function() {
         demangler.shouldIgnoreSymbol("RTTI_OUTPUT_MyProperty").should.equal(true);
         demangler.shouldIgnoreSymbol("Rtti_Output_UserFunction").should.equal(false);
+    });
+});
+
+describe('Pascal ASM line number injection', function () {
+    const ce = new CompilationEnvironment(props);
+    const info = {
+        "exe": null,
+        "remote": true,
+        "lang": "pascal"
+    };
+
+    ce.compilerPropsL = function (lang, property, defaultValue) {
+        return "";
+    };
+
+    const compiler = new PascalCompiler(info, ce);
+
+    it('Should have line numbering', function() {
+        return new Promise(function(resolve, reject) {
+            fs.readFile("test/pascal/asm-example.s", function(err, buffer) {
+                const asmLines = utils.splitLines(buffer.toString());
+                compiler.preProcessLines(asmLines);
+
+                resolve(Promise.all([
+                    asmLines.should.include("# [output.pas]"),
+                    asmLines.should.include("  .file 1 \"<stdin>\""),
+                    asmLines.should.include("# [13] Square := num * num + 14;"),
+                    asmLines.should.include("  .loc 1 13 0"),
+                    asmLines.should.include(".Le0:"),
+                    asmLines.should.include("  .cfi_endproc")
+                ]));
+            });
+        });
+    });
+});
+
+describe('Pascal objdump filtering', function () {
+    it('Should filter out most of the runtime', function() {
+        return new Promise(function(resolve, reject) {
+            fs.readFile("test/pascal/objdump-example.s", function(err, buffer) {
+                const output = PascalCompiler.preProcessBinaryAsm(buffer.toString());
+                resolve(Promise.all([
+                    utils.splitLines(output).length.should.be.below(500),
+                    output.should.not.include("fpc_zeromem():"),
+                    output.should.include("SQUARE():")
+                ]));
+            });
+        });
     });
 });
