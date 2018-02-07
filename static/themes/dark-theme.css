@@ -1,4 +1,4 @@
-@import url("../../ext/golden-layout/src/css/goldenlayout-dark-theme.css");
+@import url("~golden-layout/src/css/goldenlayout-dark-theme.css");
 
 body {
     background-color: #333 !important;

@@ -1,6 +1,8 @@
 NODE_DIR?=/opt/compiler-explorer/node
-NPM:= $(shell env PATH="$(NODE_DIR)/bin:$$PATH" which npm)
-NODE:= $(shell env PATH="$(NODE_DIR)/bin:$$PATH" which node || env PATH="$(NODE_DIR)/bin:$$PATH" which nodejs)
+YARN_DIR?=/opt/compiler-explorer/yarn
+YARN_EXE:=$(shell env PATH="$(NODE_DIR)/bin:$(YARN_DIR)/bin:$(PATH)" which yarn)
+NODE:=$(shell env PATH="$(NODE_DIR)/bin:$(PATH)" which node || env PATH="$(NODE_DIR)/bin:$(PATH)" which nodejs)
+YARN:=$(NODE) $(YARN_EXE).js
 default: run
 
 NODE_VERSION_USED:=8
@@ -21,9 +23,8 @@ endif
 endif
 
 .PHONY: clean run test run-amazon c-preload optional-haskell-support optional-d-support optional-rust-support
-.PHONY: dist lint prereqs node_modules bower_modules travis-dist
-prereqs: optional-haskell-support optional-d-support optional-rust-support node_modules c-preload bower_modules
-
+.PHONY: dist lint prereqs node_modules travis-dist
+prereqs: optional-haskell-support optional-d-support optional-rust-support node_modules webpack c-preload
 GDC?=gdc
 DMD?=dmd
 LDC?=ldc2
@@ -56,24 +57,18 @@ endif
 
 NODE_MODULES=.npm-updated
 $(NODE_MODULES): package.json
-	$(NPM) install
+	$(YARN) install
 	@touch $@
 
-BOWER_MODULES=.bower-updated
-$(BOWER_MODULES): bower.json $(NODE_MODULES)
-	if ! test -f "${BOWER_MODULES}"; then rm -rf static/ext; fi
-	$(NODE) ./node_modules/bower/bin/bower install
-	@touch $@
-	# Workaround for lack of versioned monaco-editor in bower
-	rm -rf static/ext/monaco-editor
-	cp -r node_modules/monaco-editor static/ext/
+webpack:
+	$(NODE) node_modules/webpack/bin/webpack.js ${WEBPACK_ARGS}
 
 lint: $(NODE_MODULES)
-	$(NODE) ./node_modules/.bin/jshint --config etc/jshintrc.server app.js $(shell find lib test -name '*.js')
-	$(NODE) ./node_modules/.bin/jshint --config etc/jshintrc.client $(shell find static -name '*.js' -not -path 'static/ext/*' -not -path static/analytics.js)
+	$(NODE) ./node_modules/.bin/jshint --config etc/jshintrc.server app.js $(shell find lib -name '*.js')
+	$(NODE) ./node_modules/.bin/jshint --config etc/jshintrc.client $(shell find static -name '*.js' -not -path 'static/dist/*' -not -path static/analytics.js -not -path 'static/vs/*' -not -path 'static/ext/*')
 
 node_modules: $(NODE_MODULES)
-bower_modules: $(BOWER_MODULES)
+webpack: $(WEBPACK)
 
 test: $(NODE_MODULES) lint
 	$(MAKE) -C c-preload test
@@ -83,37 +78,31 @@ check: $(NODE_MODULES) lint
 	$(NODE) ./node_modules/.bin/mocha --recursive
 
 clean:
-	rm -rf bower_modules node_modules .npm-updated .bower-updated out static/ext
+	rm -rf node_modules .npm-updated out static/dist static/vs
 	$(MAKE) -C d clean
 	$(MAKE) -C c-preload clean
 
+run: export NODE_ENV=LOCAL WEBPACK_ARGS="-p"
 run: prereqs
 	$(NODE) ./node_modules/.bin/supervisor -w app.js,lib,etc/config -e 'js|node|properties' --exec $(NODE) $(NODE_ARGS) -- ./app.js $(EXTRA_ARGS)
 
+dev: export NODE_ENV=DEV
+dev: prereqs
+	 $(NODE) ./node_modules/.bin/supervisor -w app.js,lib,etc/config -e 'js|node|properties' --exec $(NODE) $(NODE_ARGS) -- ./app.js $(EXTRA_ARGS)
+	
+	
+
 HASH := $(shell git rev-parse HEAD)
+dist: export WEBPACK_ARGS=-p
 dist: prereqs
-	rm -rf out/dist
-	$(NODE) ./node_modules/requirejs/bin/r.js -o app.build.js
-	# Move all assets to a versioned directory
-	echo $(HASH) > out/dist/git_hash
-	mkdir -p out/dist/v/$(HASH)
-	mv out/dist/main.js* out/dist/v/$(HASH)/
-	mv out/dist/explorer.css out/dist/v/$(HASH)/
-	mv out/dist/assets/ out/dist/v/$(HASH)/
-	mv out/dist/themes/ out/dist/v/$(HASH)/
-	# copy any external references into the directory too
-	cp -r $(shell pwd)/out/dist/ext out/dist/v/$(HASH)/ext
-	# uglify requirejs itself
-	$(NODE) ./node_modules/.bin/uglifyjs out/dist/v/$(HASH)/ext/requirejs/require.js \
-	    -c \
-	    --output out/dist/v/$(HASH)/ext/requirejs/require.js \
-	    --source-map out/dist/v/$(HASH)/ext/requirejs/require.js.map \
-	    --source-map-url require.js.map \
-	    --source-map-root //v/$(HASH)/ext/requirejs \
-	    --prefix 6
+	rm -rf out/dist/
+	mkdir -p out/dist
+	mkdir -p out/dist/vs
+	cp -r static/dist/ out/dist/
+	cp -r static/vs/ out/dist/
 
 travis-dist: dist
-	tar --exclude './.travis-compilers' --exclude './.git' --exclude './static' --exclude './out/dist/ext' -Jcf /tmp/ce-build.tar.xz . 
+	tar --exclude './.travis-compilers' --exclude './.git' --exclude './static' -Jcf /tmp/ce-build.tar.xz . 
 	rm -rf out/dist-bin
 	mkdir -p out/dist-bin
 	mv /tmp/ce-build.tar.xz out/dist-bin/${TRAVIS_BUILD_NUMBER}.tar.xz

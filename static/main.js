@@ -21,203 +21,179 @@
 // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
-// POSSIBILITY OF SUCH DAMAGE.
+// POSSIBILITY OF SUCH DAMAGE
+"use strict";
 
-require.config({ // jshint ignore:line
-    paths: {
-        bootstrap: 'ext/bootstrap/dist/js/bootstrap',
-        jquery: 'ext/jquery/dist/jquery',
-        underscore: 'ext/underscore/underscore',
-        goldenlayout: 'ext/golden-layout/dist/goldenlayout',
-        selectize: 'ext/selectize/dist/js/selectize',
-        sifter: 'ext/sifter/sifter',
-        microplugin: 'ext/microplugin/src/microplugin',
-        events: 'ext/eventEmitter/EventEmitter',
-        lzstring: 'ext/lz-string/libs/lz-string',
-        clipboard: 'ext/clipboard/dist/clipboard',
-        'big-integer': 'ext/big-integer/BigInteger.min',
-        'raven-js': 'ext/raven-js/dist/raven',
-        'es6-promise': 'ext/es6-promise/es6-promise',
-        'lru-cache': 'ext/lru-cache/lib/lru-cache',
-        vs: "ext/monaco-editor/min/vs",
-        'bootstrap-slider': 'ext/seiyria-bootstrap-slider/dist/bootstrap-slider',
-        filesaver: 'ext/file-saver/FileSaver',
-        vis: 'ext/vis/dist/vis.min'
-    },
-    shim: {
-        underscore: {exports: '_'},
-        filesaver: {exports: 'saveAs'},
-        'lru-cache': {exports: 'LRUCache'},
-        bootstrap: ['jquery'],
-        'bootstrap-slider': ['bootstrap']
-    },
-    waitSeconds: 60
-});
+require("monaco-loader")().then(function() {    
+    
+require('bootstrap');
+require('bootstrap-slider');
 
-define(function (require) {
-    "use strict";
-    require('bootstrap');
-    require('bootstrap-slider');
-    var analytics = require('analytics');
-    var sharing = require('sharing');
-    var _ = require('underscore');
-    var $ = require('jquery');
-    var GoldenLayout = require('goldenlayout');
-    var Components = require('components');
-    var url = require('url');
-    var clipboard = require('clipboard');
-    var Hub = require('hub');
-    var Raven = require('raven-js');
-    var settings = require('./settings');
-    var local = require('./local');
-    var Alert = require('./alert');
-    var themer = require('./themes');
+var analytics = require('analytics');
+var sharing = require('sharing');
+var _ = require('underscore');
+var $ = require('jquery');
+var GoldenLayout = require('goldenlayout');
+var Components = require('components');
+var url = require('./url');
+var clipboard = require('clipboard');
+var Hub = require('hub');
+var Raven = require('raven-js');
+var settings = require('./settings');
+var local = require('./local');
+var Alert = require('./alert');
+var themer = require('./themes');
 
-    function setupSettings(hub) {
-        var eventHub = hub.layout.eventHub;
-        var defaultSettings = {
-            defaultLanguage: hub.subdomainLangId
-        };
-        var currentSettings = JSON.parse(local.get('settings', null)) || defaultSettings;
+//css
+require("bootstrap/dist/css/bootstrap.min.css");
+require("goldenlayout/src/css/goldenlayout-base.css");
+require("selectize/dist/css/selectize.bootstrap2.css");
+require("bootstrap-slider/dist/css/bootstrap-slider.css");
+require("./colours.css");
+require("./explorer.css");
 
-        function onChange(settings) {
-            currentSettings = settings;
-            local.set('settings', JSON.stringify(settings));
-            eventHub.emit('settingsChange', settings);
-        }
+function setupSettings(hub) {
+    var eventHub = hub.layout.eventHub;
+    var defaultSettings = {
+        defaultLanguage: hub.subdomainLangId
+    };
+    var currentSettings = JSON.parse(local.get('settings', null)) || defaultSettings;
 
-        new themer.Themer(eventHub, currentSettings);
-
-        eventHub.on('requestSettings', function () {
-            eventHub.emit('settingsChange', currentSettings);
-        });
-
-        var setSettings = settings($('#settings'), currentSettings, onChange, hub.subdomainLangId);
-        eventHub.on('modifySettings', function (newSettings) {
-            setSettings(_.extend(currentSettings, newSettings));
-        });
+    function onChange(settings) {
+        currentSettings = settings;
+        local.set('settings', JSON.stringify(settings));
+        eventHub.emit('settingsChange', settings);
     }
 
-    function start() {
-        analytics.initialise();
+    new themer.Themer(eventHub, currentSettings);
 
-        var options = require('options');
+    eventHub.on('requestSettings', function () {
+        eventHub.emit('settingsChange', currentSettings);
+    });
 
-        var subdomainPart = window.location.hostname.split('.')[0];
-        var langBySubdomain = _.find(options.languages, function (lang) {
-            return lang.id === subdomainPart || lang.alias.indexOf(subdomainPart) >= 0;
-        });
-        var subLangId = langBySubdomain ? langBySubdomain.id : null;
+    var setSettings = settings($('#settings'), currentSettings, onChange, hub.subdomainLangId);
+    eventHub.on('modifySettings', function (newSettings) {
+        setSettings(_.extend(currentSettings, newSettings));
+    });
+}
 
-        var defaultConfig = {
-            settings: {showPopoutIcon: false},
-            content: [{
-                type: 'row',
-                content: [
-                    Components.getEditor(1, subLangId),
-                    Components.getCompiler(1, subLangId)
-                ]
-            }]
-        };
-        
-        $(window).bind('hashchange', function () {
-            // punt on hash events and just reload the page if there's a hash
-            if (window.location.hash.substr(1))
-                window.location.reload();
-        });
+function start() {
+    analytics.initialise();
 
-        var config;
-        if (!options.embedded) {
-            config = url.deserialiseState(window.location.hash.substr(1));
-            if (config) {
-                // replace anything in the default config with that from the hash
-                config = _.extend(defaultConfig, config);
-            }
+    var options = require('options');
 
-            if (!config) {
-                var savedState = local.get('gl', null);
-                config = savedState !== null ? JSON.parse(savedState) : defaultConfig;
-            }
-        } else {
-            config = _.extend(defaultConfig,
-                {
-                    settings: {
-                        showMaximiseIcon: false,
-                        showCloseIcon: false,
-                        hasHeaders: false
-                    }
-                },
-                sharing.configFromEmbedded(window.location.hash.substr(1)));
-        }
+    var subdomainPart = window.location.hostname.split('.')[0];
+    var langBySubdomain = _.find(options.languages, function (lang) {
+        return lang.id === subdomainPart || lang.alias.indexOf(subdomainPart) >= 0;
+    });
+    var subLangId = langBySubdomain ? langBySubdomain.id : null;
 
-        var root = $("#root");
-
-        var layout;
-        var hub;
-        try {
-            layout = new GoldenLayout(config, root);
-            hub = new Hub(layout, subLangId);
-        } catch (e) {
-            Raven.captureException(e);
-            layout = new GoldenLayout(defaultConfig, root);
-            hub = new Hub(layout, subLangId);
-        }
-        layout.on('stateChanged', function () {
-            var config = layout.toConfig();
-            // Only preserve state in localStorage in non-embedded mode.
-            if (!options.embedded) {
-                local.set('gl', JSON.stringify(config));
-            } else {
-                var strippedToLast = window.location.pathname;
-                strippedToLast = strippedToLast.substr(0,
-                    strippedToLast.lastIndexOf('/') + 1);
-                $('a.link').attr('href', strippedToLast + '#' + url.serialiseState(config));
-            }
-        });
-
-        function sizeRoot() {
-            var height = $(window).height() - root.position().top;
-            root.height(height);
-            layout.updateSize();
-        }
-
-        $(window).resize(sizeRoot);
-        sizeRoot();
-
-        new clipboard('.btn.clippy');
-
-        setupSettings(hub);
-
-        sharing.initShareButton($('#share'), layout);
-
-        function setupAdd(thing, func) {
-            layout.createDragSource(thing, func);
-            thing.click(function () {
-                hub.addAtRoot(func());
-            });
-        }
-
-        setupAdd($('#add-diff'), function () {
-            return Components.getDiff();
-        });
-        setupAdd($('#add-editor'), function () {
-            return Components.getEditor();
-        });
-        $('#ui-reset').click(function () {
-            local.remove('gl');
+    var defaultConfig = {
+        settings: {showPopoutIcon: false},
+        content: [{
+            type: 'row',
+            content: [
+                Components.getEditor(1, subLangId),
+                Components.getCompiler(1, subLangId)
+            ]
+        }]
+    };
+    
+    $(window).bind('hashchange', function () {
+        // punt on hash events and just reload the page if there's a hash
+        if (window.location.hash.substr(1))
             window.location.reload();
-        });
-        $('#thanks-to').click(function () {
-            $.get('thanks.html', function (result) {
-                new Alert().alert("Special thanks to", $(result));
-            });
-        });
-        $('#changes').click(function () {
-            $.get('changelog.html', function (result) {
-                new Alert().alert("Changelog", $(result));
-            });
+    });
+
+    var config;
+    if (!options.embedded) {
+        config = url.deserialiseState(window.location.hash.substr(1));
+        if (config) {
+            // replace anything in the default config with that from the hash
+            config = _.extend(defaultConfig, config);
+        }
+
+        if (!config) {
+            var savedState = local.get('gl', null);
+            config = savedState !== null ? JSON.parse(savedState) : defaultConfig;
+        }
+    } else {
+        config = _.extend(defaultConfig,
+            {
+                settings: {
+                    showMaximiseIcon: false,
+                    showCloseIcon: false,
+                    hasHeaders: false
+                }
+            },
+            sharing.configFromEmbedded(window.location.hash.substr(1)));
+    }
+
+    var root = $("#root");
+
+    var layout;
+    var hub;
+    try {
+        layout = new GoldenLayout(config, root);
+        hub = new Hub(layout, subLangId);
+    } catch (e) {
+        Raven.captureException(e);
+        layout = new GoldenLayout(defaultConfig, root);
+        hub = new Hub(layout, subLangId);
+    }
+    layout.on('stateChanged', function () {
+        var config = layout.toConfig();
+        // Only preserve state in localStorage in non-embedded mode.
+        if (!options.embedded) {
+            local.set('gl', JSON.stringify(config));
+        } else {
+            var strippedToLast = window.location.pathname;
+            strippedToLast = strippedToLast.substr(0,
+                strippedToLast.lastIndexOf('/') + 1);
+            $('a.link').attr('href', strippedToLast + '#' + url.serialiseState(config));
+        }
+    });
+
+    function sizeRoot() {
+        var height = $(window).height() - root.position().top;
+        root.height(height);
+        layout.updateSize();
+    }
+
+    $(window).resize(sizeRoot);
+    sizeRoot();
+
+    new clipboard('.btn.clippy');
+
+    setupSettings(hub);
+
+    sharing.initShareButton($('#share'), layout);
+
+    function setupAdd(thing, func) {
+        layout.createDragSource(thing, func);
+        thing.click(function () {
+            hub.addAtRoot(func());
         });
     }
+
+    setupAdd($('#add-diff'), function () {
+        return Components.getDiff();
+    });
+    setupAdd($('#add-editor'), function () {
+        return Components.getEditor();
+    });
+    $('#ui-reset').click(function () {
+        local.remove('gl');
+        window.location.reload();
+    });
+    $('#thanks-to').click(function () {
+        new Alert().alert("Special thanks to", $(require('./thanks.html')));
+    });
+    $('#changes').click(function () {
+        new Alert().alert("Changelog", $(require('./changelog.html')));
+    });
+}
 
     $(start);
 });
+

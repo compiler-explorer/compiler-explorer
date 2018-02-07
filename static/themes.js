@@ -23,57 +23,54 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-define(function (require) {
-    "use strict";
-    var $ = require('jquery');
-    var _ = require('underscore');
-    var monaco = require('monaco');
-    var themes = {
-        default: {
-            path: "./themes/explorer-default.css",
-            id: "default",
-            name: "Default",
-            monaco: "vs" // Optional field
-        },
-        dark: {
-            path: "./themes/dark/theme-dark.css",
-            id: "dark",
-            name: "Dark",
-            monaco: "vs-dark"
-        }
-    };
+"use strict";
+var $ = require('jquery');
+var _ = require('underscore');
 
-    function Themer(eventHub, initialSettings) {
-        this.currentTheme = null;
-        this.eventHub = eventHub;
-
-        this.setTheme = function (theme) {
-            if (this.currentTheme === theme) return;
-            $.get(require.toUrl(theme.path), _.bind(function (cssData) {
-                $('#theme').html(cssData);
-                monaco.editor.setTheme(theme.monaco);
-                this.eventHub.emit('resize');
-            }, this));
-            this.currentTheme = theme;
-        };
-
-        this.onSettingsChange = function (newSettings) {
-            var newTheme = themes[newSettings.theme] || themes.default;
-            if (!newTheme.monaco)
-                newTheme.monaco = "vs";
-            this.setTheme(newTheme);
-        };
-        this.onSettingsChange(initialSettings);
-
-        this.eventHub.on('settingsChange', this.onSettingsChange, this);
-
-        this.eventHub.on('requestTheme', function () {
-            this.eventHub.emit('themeChange', this.currentTheme);
-        }, this);
+var themes = {
+    default: {
+        path: "default",
+        id: "default",
+        name: "Default",
+        monaco: "vs" // Optional field
+    },
+    dark: {
+        path: "dark",
+        id: "dark",
+        name: "Dark",
+        monaco: "vs-dark"
     }
+};
 
-    return {
-        themes: themes,
-        Themer: Themer
+function Themer(eventHub, initialSettings) {
+    this.currentTheme = null;
+    this.eventHub = eventHub;
+
+    this.setTheme = function (theme) {
+        if (this.currentTheme === theme) return;
+        var cssData = require('./themes/' + theme.path + "-theme.css");
+        $('#theme').html(cssData.toString());
+        monaco.editor.setTheme(theme.monaco);
+        this.eventHub.emit('resize');
+        this.currentTheme = theme;
     };
-});
+
+    this.onSettingsChange = function (newSettings) {
+        var newTheme = themes[newSettings.theme] || themes.default;
+        if (!newTheme.monaco)
+            newTheme.monaco = "vs";
+        this.setTheme(newTheme);
+    };
+    this.onSettingsChange(initialSettings);
+
+    this.eventHub.on('settingsChange', this.onSettingsChange, this);
+
+    this.eventHub.on('requestTheme', function () {
+        this.eventHub.emit('themeChange', this.currentTheme);
+    }, this);
+}
+
+module.exports = {
+    themes: themes,
+    Themer: Themer
+};

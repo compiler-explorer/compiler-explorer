@@ -22,103 +22,100 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-define(function (require) {
-    "use strict";
-    var monaco = require('monaco');
+"use strict";
 
-    function definition() {
-        return {
-            // Set defaultToken to invalid to see what you do not tokenize yet
-            defaultToken: 'invalid',
+function definition() {
+    return {
+        // Set defaultToken to invalid to see what you do not tokenize yet
+        defaultToken: 'invalid',
 
-            // C# style strings
-            escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
+        // C# style strings
+        escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
 
-            registers: /%?\b(r[0-9]+[dbw]?|([er]?([abcd][xhl]|cs|fs|ds|ss|sp|bp|ip|sil?|dil?))|[xyz]mm[0-9]+|sp|fp|lr)\b/,
+        registers: /%?\b(r[0-9]+[dbw]?|([er]?([abcd][xhl]|cs|fs|ds|ss|sp|bp|ip|sil?|dil?))|[xyz]mm[0-9]+|sp|fp|lr)\b/,
 
-            intelOperators: /PTR|(D|Q|[XYZ]MM)?WORD/,
+        intelOperators: /PTR|(D|Q|[XYZ]MM)?WORD/,
 
-            tokenizer: {
-                root: [
-                    // Error document
-                    [/^<.*>$/, {token: 'annotation'}],
-                    // Label definition
-                    [/^[.a-zA-Z0-9_$?@].*:/, {token: 'type.identifier', next: '@rest'}],
-                    // Label definition (ARM style)
-                    [/^\s*[|][^|]*[|]/, {token: 'type.identifier', next: '@rest'}],
-                    // Label definition (CL style)
-                    [/^\s*[.a-zA-Z0-9_$|]*\s*(PROC|ENDP|DB|DD)/, {token: 'type.identifier', next: '@rest'}],
-                    // Constant definition
-                    [/^[.a-zA-Z0-9_$?@][^=]*=/, {token: 'type.identifier', next: '@rest'}],
-                    // opcode
-                    [/[.a-zA-Z_][.a-zA-Z_0-9]*/, {token: 'keyword', next: '@rest'}],
+        tokenizer: {
+            root: [
+                // Error document
+                [/^<.*>$/, {token: 'annotation'}],
+                // Label definition
+                [/^[.a-zA-Z0-9_$?@].*:/, {token: 'type.identifier', next: '@rest'}],
+                // Label definition (ARM style)
+                [/^\s*[|][^|]*[|]/, {token: 'type.identifier', next: '@rest'}],
+                // Label definition (CL style)
+                [/^\s*[.a-zA-Z0-9_$|]*\s*(PROC|ENDP|DB|DD)/, {token: 'type.identifier', next: '@rest'}],
+                // Constant definition
+                [/^[.a-zA-Z0-9_$?@][^=]*=/, {token: 'type.identifier', next: '@rest'}],
+                // opcode
+                [/[.a-zA-Z_][.a-zA-Z_0-9]*/, {token: 'keyword', next: '@rest'}],
 
-                    // whitespace
-                    {include: '@whitespace'}
-                ],
+                // whitespace
+                {include: '@whitespace'}
+            ],
 
-                rest: [
-                    // pop at the beginning of the next line and rematch
-                    [/^.*$/, {token: '@rematch', next: '@pop'}],
+            rest: [
+                // pop at the beginning of the next line and rematch
+                [/^.*$/, {token: '@rematch', next: '@pop'}],
 
-                    [/@registers/, 'variable.predefined'],
-                    [/@intelOperators/, 'annotation'],
-                    // brackets
-                    [/[{}<>()\[\]]/, '@brackets'],
+                [/@registers/, 'variable.predefined'],
+                [/@intelOperators/, 'annotation'],
+                // brackets
+                [/[{}<>()\[\]]/, '@brackets'],
 
-                    // ARM-style label reference
-                    [/[|][^|]*[|]*/, 'type.identifier'],
+                // ARM-style label reference
+                [/[|][^|]*[|]*/, 'type.identifier'],
 
-                    // numbers
-                    [/\d*\.\d+([eE][\-+]?\d+)?/, 'number.float'],
-                    [/([$]|0[xX])[0-9a-fA-F]+/, 'number.hex'],
-                    [/\d+/, 'number'],
-                    // ARM-style immediate numbers (which otherwise look like comments)
-                    [/#-?\d+/, 'number'],
+                // numbers
+                [/\d*\.\d+([eE][\-+]?\d+)?/, 'number.float'],
+                [/([$]|0[xX])[0-9a-fA-F]+/, 'number.hex'],
+                [/\d+/, 'number'],
+                // ARM-style immediate numbers (which otherwise look like comments)
+                [/#-?\d+/, 'number'],
 
-                    // operators
-                    [/[-+,*\/!:&]/, 'operator'],
+                // operators
+                [/[-+,*\/!:&]/, 'operator'],
 
-                    // strings
-                    [/"([^"\\]|\\.)*$/, 'string.invalid'],  // non-terminated string
-                    [/"/, {token: 'string.quote', bracket: '@open', next: '@string'}],
+                // strings
+                [/"([^"\\]|\\.)*$/, 'string.invalid'],  // non-terminated string
+                [/"/, {token: 'string.quote', bracket: '@open', next: '@string'}],
 
-                    // characters
-                    [/'[^\\']'/, 'string'],
-                    [/(')(@escapes)(')/, ['string', 'string.escape', 'string']],
-                    [/'/, 'string.invalid'],
+                // characters
+                [/'[^\\']'/, 'string'],
+                [/(')(@escapes)(')/, ['string', 'string.escape', 'string']],
+                [/'/, 'string.invalid'],
 
-                    // Assume anything else is a label reference
-                    [/%?[.?_$a-zA-Z@][.?_$a-zA-Z0-9@]*/, 'type.identifier'],
+                // Assume anything else is a label reference
+                [/%?[.?_$a-zA-Z@][.?_$a-zA-Z0-9@]*/, 'type.identifier'],
 
-                    // whitespace
-                    {include: '@whitespace'}
-                ],
+                // whitespace
+                {include: '@whitespace'}
+            ],
 
-                comment: [
-                    [/[^\/*]+/, 'comment'],
-                    [/\/\*/, 'comment', '@push'],    // nested comment
-                    ["\\*/", 'comment', '@pop'],
-                    [/[\/*]/, 'comment']
-                ],
+            comment: [
+                [/[^\/*]+/, 'comment'],
+                [/\/\*/, 'comment', '@push'],    // nested comment
+                ["\\*/", 'comment', '@pop'],
+                [/[\/*]/, 'comment']
+            ],
 
-                string: [
-                    [/[^\\"]+/, 'string'],
-                    [/@escapes/, 'string.escape'],
-                    [/\\./, 'string.escape.invalid'],
-                    [/"/, {token: 'string.quote', bracket: '@close', next: '@pop'}]
-                ],
+            string: [
+                [/[^\\"]+/, 'string'],
+                [/@escapes/, 'string.escape'],
+                [/\\./, 'string.escape.invalid'],
+                [/"/, {token: 'string.quote', bracket: '@close', next: '@pop'}]
+            ],
 
-                whitespace: [
-                    [/[ \t\r\n]+/, 'white'],
-                    [/\/\*/, 'comment', '@comment'],
-                    [/\/\/.*$/, 'comment'],
-                    [/[#;\\@].*$/, 'comment']
-                ]
-            }
-        };
-    }
+            whitespace: [
+                [/[ \t\r\n]+/, 'white'],
+                [/\/\*/, 'comment', '@comment'],
+                [/\/\/.*$/, 'comment'],
+                [/[#;\\@].*$/, 'comment']
+            ]
+        }
+    };
+}
 
-    monaco.languages.register({id: 'asm'});
-    monaco.languages.setMonarchTokensProvider('asm', definition());
-});
+monaco.languages.register({id: 'asm'});
+monaco.languages.setMonarchTokensProvider('asm', definition());

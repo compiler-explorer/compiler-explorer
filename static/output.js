@@ -23,129 +23,126 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-define(function (require) {
-    "use strict";
+"use strict";
 
-    var _ = require('underscore');
-    var $ = require('jquery');
-    var FontScale = require('fontscale');
-    var AnsiToHtml = require('ansi-to-html');
+var _ = require('underscore');
+var $ = require('jquery');
+var FontScale = require('fontscale');
+var AnsiToHtml = require('ansi-to-html');
 
-    function makeAnsiToHtml(color) {
-        return new AnsiToHtml({
-            fg: color ? color : '#333',
-            bg: '#f5f5f5',
-            stream: true,
-            escapeXML: true
-        });
-    }
+function makeAnsiToHtml(color) {
+    return new AnsiToHtml({
+        fg: color ? color : '#333',
+        bg: '#f5f5f5',
+        stream: true,
+        escapeXML: true
+    });
+}
 
-    function Output(hub, container, state) {
-        this.container = container;
-        this.compilerId = state.compiler;
-        this.editorId = state.editor;
-        this.eventHub = hub.createEventHub();
-        this.domRoot = container.getElement();
-        this.domRoot.html($('#compiler-output').html());
-        this.contentRoot = this.domRoot.find(".content");
-        this.compilerName = "";
-        this.fontScale = new FontScale(this.domRoot, state, "pre");
+function Output(hub, container, state) {
+    this.container = container;
+    this.compilerId = state.compiler;
+    this.editorId = state.editor;
+    this.eventHub = hub.createEventHub();
+    this.domRoot = container.getElement();
+    this.domRoot.html($('#compiler-output').html());
+    this.contentRoot = this.domRoot.find(".content");
+    this.compilerName = "";
+    this.fontScale = new FontScale(this.domRoot, state, "pre");
 
-        this.container.on('destroy', this.close, this);
+    this.container.on('destroy', this.close, this);
+    
+    this.eventHub.on('compileResult', this.onCompileResult, this);
+    this.eventHub.on('compilerFontScale', this.onFontScale, this);
+    this.eventHub.on('compilerClose', this.onCompilerClose, this);
+    this.eventHub.emit('resendCompilation', this.compilerId);
+    
+    this.updateCompilerName();
+}
 
-        this.eventHub.on('compileResult', this.onCompileResult, this);
-        this.eventHub.on('compilerFontScale', this.onFontScale, this);
-        this.eventHub.on('compilerClose', this.onCompilerClose, this);
-        this.eventHub.emit('resendCompilation', this.compilerId);
+Output.prototype.onCompileResult = function (id, compiler, result) {
+    if (id !== this.compilerId) return;
+    if (compiler) this.compilerName = compiler.name;
 
-        this.updateCompilerName();
-    }
+    this.contentRoot.empty();
 
-    Output.prototype.onCompileResult = function (id, compiler, result) {
-        if (id !== this.compilerId) return;
-        if (compiler) this.compilerName = compiler.name;
+    var ansiToHtml = makeAnsiToHtml();
 
-        this.contentRoot.empty();
+    _.each((result.stdout || []).concat(result.stderr || []), function (obj) {
+        this.add(ansiToHtml.toHtml(obj.text), obj.tag ? obj.tag.line : obj.line);
+    }, this);
 
-        var ansiToHtml = makeAnsiToHtml();
+    if (!result.execResult) {
+        this.add("Compiler returned: " + result.code);
+    } else {
+        this.add("Program returned: " + result.execResult.code);
+        if (result.execResult.stderr.length || result.execResult.stdout.length) {
+            ansiToHtml = makeAnsiToHtml("red");
+            _.each(result.execResult.stderr, function (obj) {
+                this.programOutput(ansiToHtml.toHtml(obj.text), "red");
+            }, this);
 
-        _.each((result.stdout || []).concat(result.stderr || []), function (obj) {
-            this.add(ansiToHtml.toHtml(obj.text), obj.tag ? obj.tag.line : obj.line);
-        }, this);
-
-        if (!result.execResult) {
-            this.add("Compiler returned: " + result.code);
-        } else {
-            this.add("Program returned: " + result.execResult.code);
-            if (result.execResult.stderr.length || result.execResult.stdout.length) {
-                ansiToHtml = makeAnsiToHtml("red");
-                _.each(result.execResult.stderr, function (obj) {
-                    this.programOutput(ansiToHtml.toHtml(obj.text), "red");
-                }, this);
-
-                ansiToHtml = makeAnsiToHtml();
-                _.each(result.execResult.stdout, function (obj) {
-                    this.programOutput(ansiToHtml.toHtml(obj.text));
-                }, this);
-            }
-        }
-
-        this.updateCompilerName();
-    };
-
-    Output.prototype.onFontScale = function (id, scale) {
-        if (id === this.compilerId) this.fontScale.setScale(scale);
-    };
-
-    Output.prototype.programOutput = function (msg, color) {
-        var elem = $('<div></div>').appendTo(this.contentRoot)
-            .html(msg)
-            .css('font-family', '"Courier New", Courier, monospace');
-        if (color)
-            elem.css("color", color);
-    };
-
-    Output.prototype.add = function (msg, lineNum) {
-        var elem = $('<div></div>').appendTo(this.contentRoot);
-        if (lineNum) {
-            elem.html($('<a></a>').prop('href', '#').html(msg))
-                .click(_.bind(function (e) {
-                    this.eventHub.emit('editorSetDecoration', this.editorId, lineNum, true);
-                    // do not bring user to the top of index.html
-                    // http://stackoverflow.com/questions/3252730
-                    e.preventDefault();
-                    return false;
-                }, this))
-                .on('mouseover', _.bind(function () {
-                    this.eventHub.emit('editorSetDecoration', this.editorId, lineNum, false);
-                }, this));
-        } else {
-            elem.html(msg);
-        }
-    };
-
-    Output.prototype.updateCompilerName = function () {
-        var name = "#" + this.compilerId;
-        if (this.compilerName) name += " with " + this.compilerName;
-        this.container.setTitle(name);
-    };
-
-    Output.prototype.onCompilerClose = function (id) {
-        if (id === this.compilerId) {
-            // We can't immediately close as an outer loop somewhere in GoldenLayout is iterating over
-            // the hierarchy. We can't modify while it's being iterated over.
-            this.close();
-            _.defer(function (self) {
-                self.container.close();
+            ansiToHtml = makeAnsiToHtml();
+            _.each(result.execResult.stdout, function (obj) {
+                this.programOutput(ansiToHtml.toHtml(obj.text));
             }, this);
         }
-    };
+    }
 
-    Output.prototype.close = function () {
-        this.eventHub.unsubscribe();
-    };
+    this.updateCompilerName();
+};
 
-    return {
-        Output: Output
-    };
-});
+Output.prototype.onFontScale = function (id, scale) {
+    if (id === this.compilerId) this.fontScale.setScale(scale);
+};
+
+Output.prototype.programOutput = function (msg, color) {
+    var elem = $('<div></div>').appendTo(this.contentRoot)
+        .html(msg)
+        .css('font-family', '"Courier New", Courier, monospace');
+    if (color)
+        elem.css("color", color);
+};
+
+Output.prototype.add = function (msg, lineNum) {
+    var elem = $('<div></div>').appendTo(this.contentRoot);
+    if (lineNum) {
+        elem.html($('<a></a>').prop('href', '#').html(msg))
+            .click(_.bind(function (e) {
+                this.eventHub.emit('editorSetDecoration', this.editorId, lineNum, true);
+                // do not bring user to the top of index.html
+                // http://stackoverflow.com/questions/3252730
+                e.preventDefault();
+                return false;
+            }, this))
+            .on('mouseover', _.bind(function () {
+                this.eventHub.emit('editorSetDecoration', this.editorId, lineNum, false);
+            }, this));
+    } else {
+        elem.html(msg);
+    }
+};
+
+Output.prototype.updateCompilerName = function () {
+    var name = "#" + this.compilerId;
+    if (this.compilerName) name += " with " + this.compilerName;
+    this.container.setTitle(name);
+};
+
+Output.prototype.onCompilerClose = function (id) {
+    if (id === this.compilerId) {
+        // We can't immediately close as an outer loop somewhere in GoldenLayout is iterating over
+        // the hierarchy. We can't modify while it's being iterated over.
+        _.defer(function (self) {
+            self.container.close();
+        }, this);
+    }
+};
+
+Output.prototype.close = function () {
+    this.eventHub.unsubscribe();
+};
+
+module.exports = {
+    Output: Output
+};

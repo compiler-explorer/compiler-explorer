@@ -36,8 +36,10 @@ const nopt = require('nopt'),
     url = require('url'),
     _ = require('underscore-node'),
     express = require('express'),
+    Raven = require('raven'),
     logger = require('./lib/logger').logger,
-    Raven = require('raven');
+    webpackDevMiddleware = require("webpack-dev-middleware");
+
 
 // Parse arguments from command line 'node ./app.js args...'
 const opts = nopt({
@@ -86,18 +88,29 @@ const port = opts.port || 10240;
 const staticDir = opts.static || 'static';
 const archivedVersions = opts.archivedVersions;
 let gitReleaseName = "";
-let versionedRootPrefix = "";
 const wantedLanguage = opts.language || null;
+
+
+
+const webpackConfig = require('./webpack.config.js')[1],
+    webpackCompiler = require('webpack')(webpackConfig),
+    manifestName = 'manifest.json',
+    staticManifestPath = path.join(__dirname, staticDir, webpackConfig.output.publicPath),
+    assetManifestPath = path.join(staticManifestPath, 'assets'),
+    staticManifest = require(path.join(staticManifestPath, manifestName)),
+    assetManifest = require(path.join(assetManifestPath, manifestName));
+
 // Use the canned git_hash if provided
 if (opts.static && fs.existsSync(opts.static + "/git_hash")) {
     gitReleaseName = fs.readFileSync(opts.static + "/git_hash").toString().trim();
 } else if (fs.existsSync('.git/')) { // Just if we have been cloned and not downloaded (Thanks David!)
     gitReleaseName = child_process.execSync('git rev-parse HEAD').toString().trim();
 }
-if (opts.static && fs.existsSync(opts.static + '/v/' + gitReleaseName))
-    versionedRootPrefix = "v/" + gitReleaseName + "/";
+
 // Don't treat @ in paths as remote adresses
 const fetchCompilersFromRemote = !opts.noRemoteFetch;
+
+const isDevMode = () => process.env.NODE_ENV === "DEV";
 
 const propHierarchy = _.flatten([
     'defaults',
@@ -559,14 +572,25 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
 
         logger.info("=======================================");
         logger.info(`Listening on http://${hostname || 'localhost'}:${port}/`);
-        logger.info(`  serving static files from '${staticDir}'`);
         if (gitReleaseName) logger.info(`  git release ${gitReleaseName}`);
 
         function renderConfig(extra) {
             const options = _.extend(extra, clientOptionsHandler.get());
             options.compilerExplorerOptions = JSON.stringify(options);
-            options.root = versionedRootPrefix;
             options.extraBodyClass = extraBodyClass;
+            options.require = function (path) {
+                if (isDevMode()) {
+                    //this will break assets in dev mode for now
+                    return '/dist/' + path;
+                }
+                if(staticManifest.hasOwnProperty(path)) {
+                    return "dist/" + staticManifest[path];
+                }
+                if(assetManifest.hasOwnProperty(path)) {
+                    return "dist/assets/" + assetManifest[path];
+                }
+                logger.warn("Requested an asset I don't know about");
+            };
             return options;
         }
 
@@ -575,8 +599,26 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
             contentPolicyHeader(res);
             res.render('embed', renderConfig({embedded: true}));
         };
-        const router = express.Router();
-        router
+        const healthCheck = require('./lib/handlers/health-check');
+
+        if (isDevMode()) {
+            webServer.use(webpackDevMiddleware(webpackCompiler, {
+                publicPath: webpackConfig.output.publicPath
+            }));
+            webServer.use(express.static(staticDir));
+        } else {
+            //assume that anything not dev is just production this gives sane defaults for anyone who isn't messing with this
+            logger.info("  serving static files from '" + staticDir + "'");
+            webServer.use(express.static(staticDir, {maxAge: staticMaxAgeSecs * 1000}));
+        }
+
+        webServer
+            .use(Raven.requestHandler())
+            .set('trust proxy', true)
+            .set('view engine', 'pug')
+            .use('/healthcheck', new healthCheck.HealthCheckHandler().handle) // before morgan so healthchecks aren't logged
+            .use(morgan('combined', {stream: logger.stream}))
+            .use(compression())
             .get('/', (req, res) => {
                 staticHeaders(res);
                 contentPolicyHeader(res);
@@ -598,39 +640,18 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
                 res.set('Content-Type', 'application/xml');
                 res.render('sitemap');
             })
-            .use(sFavicon(`${staticDir}/favicon.ico`))
-            .use('/v', express.static(`${staticDir}/v`, {maxAge: Infinity, index: false}))
-            .use(express.static(staticDir, {maxAge: staticMaxAgeSecs * 1000}));
-        if (archivedVersions) {
-            // The archived versions directory is used to serve "old" versioned data during updates. It's expected
-            // to contain all the SHA-hashed directories from previous versions of Compiler Explorer.
-            logger.info("  serving archived versions from", archivedVersions);
-            router.use('/v', express.static(archivedVersions, {maxAge: Infinity, index: false}));
-        }
-        router
+            .use(sFavicon(path.join(staticDir, webpackConfig.output.publicPath, 'favicon.ico')));
+
+        webServer
             .use(bodyParser.json({limit: ceProps('bodyParserLimit', maxUploadSize)}))
             .use(bodyParser.text({limit: ceProps('bodyParserLimit', maxUploadSize), type: () => true}))
             .use(restreamer())
             .use('/source', sourceHandler.handle.bind(sourceHandler))
             .use('/api', apiHandler.handle)
             .use('/g', shortUrlHandler);
-
-        const healthCheck = require('./lib/handlers/health-check');
-        webServer
-            .use(Raven.requestHandler())
-            .set('trust proxy', true)
-            .set('view engine', 'pug')
-            .use('/healthcheck', new healthCheck.HealthCheckHandler().handle) // before morgan so healthchecks aren't logged
-            .use(morgan('combined', {stream: logger.stream}))
-            .use(compression())
-            .use(router)
-            .use(Raven.errorHandler())
-            .on('error', err => logger.error('Caught error:', err, "(in web error handler; continuing)"));
-
-        const webAlias = ceProps("web-alias", "");
-        if (webAlias) webServer.use(webAlias, router);
-        _.each(env, e => webServer.use(`/${e}`, router));
         logger.info("=======================================");
+        webServer.use(Raven.errorHandler());
+        webServer.on('error', err => logger.error('Caught error:', err, "(in web error handler; continuing)"));
         webServer.listen(port, hostname);
     })
     .catch(err => {
