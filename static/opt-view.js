@@ -22,169 +22,202 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
+"use strict";
 
-define(function (require) {
-    "use strict";
+var FontScale = require('fontscale');
+var monaco = require('monaco');
+var options = require('options');
+var _ = require('underscore');
+var $ = require('jquery');
 
-    var FontScale = require('fontscale');
-    var monaco = require('monaco');
-    var _ = require('underscore');
-    var $ = require('jquery');
+require('asm-mode');
+require('selectize');
 
-    function Opt(hub, container, state) {
-        state = state || {};
-        this.container = container;
-        this.eventHub = hub.createEventHub();
-        this.domRoot = container.getElement();
-        this.domRoot.html($('#opt').html());
-        this.compilers = {};
-        this.code = state.source || "";
-        this._currentDecorations = [];
-        this.optEditor = monaco.editor.create(this.domRoot.find(".monaco-placeholder")[0], {
-            value: this.code,
-            scrollBeyondLastLine: false,
-            language: 'cppp', //we only support cpp(p) for now
-            readOnly: true,
-            glyphMargin: true,
-            quickSuggestions: false,
-            fontFamily: 'monospace',
-            fixedOverflowWidgets: true,
-            minimap: {
-                maxColumn: 80
-            },
-            lineNumbersMinChars: 3
-        });
+function Opt(hub, container, state) {
+    state = state || {};
+    this.container = container;
+    this.eventHub = hub.createEventHub();
+    this.domRoot = container.getElement();
+    this.domRoot.html($('#opt').html());
+    this.compilers = {};
+    this.code = state.source || "";
+    this._currentDecorations = [];
+    this.optEditor = monaco.editor.create(this.domRoot.find(".monaco-placeholder")[0], {
+        value: this.code,
+        scrollBeyondLastLine: false,
+        language: 'cppp', //we only support cpp(p) for now
+        readOnly: true,
+        glyphMargin: true,
+        quickSuggestions: false,
+        fixedOverflowWidgets: true,
+        fontFamily: 'monospace',
+        minimap: {
+            maxColumn: 80
+        },
+        lineNumbersMinChars: 3
+    });
 
-        this._compilerid = state.id;
-        this._compilerName = state.compilerName;
-        this._editorid = state.editorid;
-        this.fontScale = new FontScale(this.domRoot, state, this.optEditor);
-        this.fontScale.on('change', _.bind(this.updateState, this));
+    this._compilerid = state.id;
+    this._compilerName = state.compilerName;
+    this._editorid = state.editorid;
+    this.fontScale = new FontScale(this.domRoot, state, this.optEditor);
+    this.fontScale.on('change', _.bind(this.updateState, this));
 
-        this.eventHub.on('compileResult', this.onCompileResult, this);
-        this.eventHub.on('compiler', this.onCompiler, this);
-        this.eventHub.on('compilerClose', this.onCompilerClose, this);
-        this.eventHub.on('editorChange', this.onEditorChange, this);
-        this.eventHub.on('settingsChange', this.onSettingsChange, this);
-        this.eventHub.on('resize', this.resize, this);
-        this.container.on('destroy', this.close, this);
-        this.eventHub.emit('requestSettings');
+    this.eventHub.on('compileResult', this.onCompileResult, this);
+    this.eventHub.on('compiler', this.onCompiler, this);
+    this.eventHub.on('compilerClose', this.onCompilerClose, this);
+    this.eventHub.on('editorChange', this.onEditorChange, this);
+    this.eventHub.on('settingsChange', this.onSettingsChange, this);
+    this.eventHub.on('resize', this.resize, this);
+    this.container.on('destroy', this.close, this);
+    this.eventHub.emit('requestSettings');
 
-        container.on('resize', this.resize, this);
-        container.on('shown', this.resize, this);
-        if (state && state.optOutput) {
-            this.showOptResults(state.optOutput);
-        }
-        this.setTitle();
-        this.eventHub.emit("optViewOpened", this._compilerid);
+    container.on('resize', this.resize, this);
+    container.on('shown', this.resize, this);
+    if (state && state.optOutput) {
+        this.showOptResults(state.optOutput);
     }
+    this.setTitle();
+    this.eventHub.emit("optViewOpened", this._compilerid);
+}
 
-    // TODO: de-dupe with compiler etc
-    Opt.prototype.resize = function () {
-        var topBarHeight = this.domRoot.find(".top-bar").outerHeight(true);
-        this.optEditor.layout({
-            width: this.domRoot.width(),
-            height: this.domRoot.height() - topBarHeight
+// TODO: de-dupe with compiler etc
+Opt.prototype.resize = function () {
+    var topBarHeight = this.domRoot.find(".top-bar").outerHeight(true);
+    this.optEditor.layout({
+        width: this.domRoot.width(),
+        height: this.domRoot.height() - topBarHeight
+    });
+};
+
+Opt.prototype.onEditorChange = function (id, source) {
+    if (this._editorid == id) {
+        this.code = source;
+        this.optEditor.setValue(source);
+    }
+};
+
+Opt.prototype.onCompileResult = function (id, compiler, result) {
+    if (result.hasOptOutput && this._compilerid == id) {
+        this.showOptResults(result.optOutput);
+    }
+};
+Opt.prototype.setTitle = function () {
+    this.container.setTitle(this._compilerName + " Opt Viewer (Editor #" + this._editorid + ", Compiler #" + this._compilerid + ")");
+};
+
+Opt.prototype.getDisplayableOpt = function (optResult) {
+    return "**" + optResult.optType + "** - " + optResult.displayString;
+};
+
+Opt.prototype.showOptResults = function (results) {
+    var opt = [];
+
+    results = _.filter(results, function (x) {
+        return x.DebugLoc !== undefined;
+    });
+
+    results = _.groupBy(results, function (x) {
+        return x.DebugLoc.Line;
+    });
+
+    _.mapObject(results, function (value, key) {
+        var linenumber = Number(key);
+        var className = value.reduce(function (acc, x) {
+            if (x.optType == "Missed" || acc == "Missed") {
+                return "Missed";
+            } else if (x.optType == "Passed" || acc == "Passed") {
+                return "Passed";
+            }
+            return x.optType;
+        }, "");
+        var contents = _.map(value, this.getDisplayableOpt, this);
+        opt.push({
+            range: new monaco.Range(linenumber, 1, linenumber, Infinity),
+            options: {
+                isWholeLine: true,
+                glyphMarginClassName: "opt-decoration." + className.toLowerCase(),
+                hoverMessage: contents,
+                glyphMarginHoverMessage: contents
+            }
         });
-    };
+    }, this);
 
-    Opt.prototype.onEditorChange = function (id, source) {
-        if (this._editorid === id) {
-            this.code = source;
-            this.optEditor.setValue(source);
+    this._currentDecorations = this.optEditor.deltaDecorations(this._currentDecorations, opt);
+};
+
+Opt.prototype.onCompiler = function (id, compiler, options, editorid) {
+    if (id === this._compilerid) {
+        this._compilerName = compiler ? compiler.name : '';
+        this.setTitle();
+        if (compiler && !compiler.supportsOptOutput) {
+            this.code = this.optEditor.getValue();
+            this.optEditor.setValue("<" + compiler.version + " does not support the optimisation view>");
+            return;
         }
-    };
-    Opt.prototype.onCompileResult = function (id, compiler, result) {
-        if (result.hasOptOutput && this._compilerid === id) {
-            this.showOptResults(result.optOutput);
-        }
-    };
-    Opt.prototype.setTitle = function () {
-        this.container.setTitle(this._compilerName + " Opt Viewer (Editor #" + this._editorid + ", Compiler #" + this._compilerid + ")");
-    };
+        this._editorid = editorid;
+        this.optEditor.setValue(this.code);
+    }
+};
 
-    Opt.prototype.getDisplayableOpt = function (optResult) {
-        return "**" + optResult.optType + "** - " + optResult.displayString;
-    };
+// TODO: de-dupe with compiler etc
+Opt.prototype.resize = function () {
+    var topBarHeight = this.domRoot.find(".top-bar").outerHeight(true);
+    this.optEditor.layout({
+        width: this.domRoot.width(),
+        height: this.domRoot.height() - topBarHeight
+    });
+};
 
-    Opt.prototype.showOptResults = function (results) {
-        var opt = [];
+Opt.prototype.onEditorChange = function (id, source) {
+    if (this._editorid === id) {
+        this.code = source;
+        this.optEditor.setValue(source);
+    }
+};
 
-        results = _.filter(results, function (x) {
-            return x.DebugLoc !== undefined;
-        });
+Opt.prototype.onCompileResult = function (id, compiler, result) {
+    if (result.hasOptOutput && this._compilerid === id) {
+        this.showOptResults(result.optOutput);
+    }
+};
 
-        results = _.groupBy(results, function (x) {
-            return x.DebugLoc.Line;
-        });
+Opt.prototype.setTitle = function () {
+    this.container.setTitle(this._compilerName + " Opt Viewer (Editor #" + this._editorid + ", Compiler #" + this._compilerid + ")");
+};
 
-        _.mapObject(results, function (value, key) {
-            var linenumber = Number(key);
-            var className = value.reduce(function (acc, x) {
-                if (x.optType === "Missed" || acc === "Missed") {
-                    return "Missed";
-                } else if (x.optType === "Passed" || acc === "Passed") {
-                    return "Passed";
-                }
-                return x.optType;
-            }, "");
-            var contents = _.map(value, this.getDisplayableOpt, this);
-            opt.push({
-                range: new monaco.Range(linenumber, 1, linenumber, Infinity),
-                options: {
-                    isWholeLine: true,
-                    glyphMarginClassName: "opt-decoration." + className.toLowerCase(),
-                    hoverMessage: contents,
-                    glyphMarginHoverMessage: contents
-                }
-            });
+Opt.prototype.getDisplayableOpt = function (optResult) {
+    return "**" + optResult.optType + "** - " + optResult.displayString;
+};
+
+Opt.prototype.updateState = function () {
+};
+
+Opt.prototype.close = function () {
+    this.eventHub.unsubscribe();
+    this.eventHub.emit("optViewClosed", this._compilerid);
+    this.optEditor.dispose();
+};
+
+Opt.prototype.onCompilerClose = function (id) {
+    if (id === this._compilerid) {
+        // We can't immediately close as an outer loop somewhere in GoldenLayout is iterating over
+        // the hierarchy. We can't modify while it's being iterated over.
+        this.close();
+        _.defer(function (self) {
+            self.container.close();
         }, this);
+    }
+};
 
-        this._currentDecorations = this.optEditor.deltaDecorations(this._currentDecorations, opt);
-    };
-
-    Opt.prototype.onCompiler = function (id, compiler, options, editorid) {
-        if (id === this._compilerid) {
-            this._compilerName = compiler ? compiler.name : '';
-            this.setTitle();
-            if (compiler && !compiler.supportsOptOutput) {
-                this.code = this.optEditor.getValue();
-                this.optEditor.setValue("<" + compiler.version + " does not support the optimisation view>");
-                return;
-            }
-            this._editorid = editorid;
-            this.optEditor.setValue(this.code);
+Opt.prototype.onSettingsChange = function (newSettings) {
+    this.optEditor.updateOptions({
+        minimap: {
+            enabled: newSettings.showMinimap
         }
-    };
-    Opt.prototype.onCompilerClose = function (id) {
-        if (id === this._compilerid) {
-            // We can't immediately close as an outer loop somewhere in GoldenLayout is iterating over
-            // the hierarchy. We can't modify while it's being iterated over.
-            this.close();
-            _.defer(function (self) {
-                self.container.close();
-            }, this);
-        }
-    };
+    });
+};
 
-    Opt.prototype.updateState = function () {
-    };
-
-    Opt.prototype.onSettingsChange = function (newSettings) {
-        this.optEditor.updateOptions({
-            minimap: {
-                enabled: newSettings.showMinimap
-            }
-        });
-    };
-
-    Opt.prototype.close = function () {
-        this.eventHub.unsubscribe();
-        this.eventHub.emit("optViewClosed", this._compilerid);
-        this.optEditor.dispose();
-    };
-
-    return {
-        Opt: Opt
-    };
-});
+module.exports = {
+    Opt: Opt
+};

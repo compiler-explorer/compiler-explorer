@@ -1,5 +1,5 @@
 #!/bin/bash
-FORBIDDEN='console.log'
+FORBIDDEN='console.(log|warn)'
 FILES_PATTERN='\.(js)(\..+)?$'
 
 printf "\033[0;32mRunning tests...\033[0m\n"

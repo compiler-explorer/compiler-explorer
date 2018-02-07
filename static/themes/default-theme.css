@@ -1,4 +1,4 @@
-@import url("../ext/golden-layout/src/css/goldenlayout-light-theme.css");
+@import url("~golden-layout/src/css/goldenlayout-light-theme.css");
 
 .navbar-inverse {
     background-color: #226;

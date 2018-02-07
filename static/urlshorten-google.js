@@ -23,45 +23,43 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-define(function (require) {
-    "use strict";
-    var options = require('options');
-    var Alert = require('alert');
-    var $ = require('jquery');
+"use strict";
+var options = require('options');
+var Alert = require('alert');
+var $ = require('jquery');
 
-    function googleJSClientLoaded() {
-        var gapi = window.gapi;
-        gapi.client.setApiKey(options.gapiKey);
-        gapi.client.load('urlshortener', 'v1', googleJSClientLoaded.done);
+function googleJSClientLoaded() {
+    var gapi = window.gapi;
+    gapi.client.setApiKey(options.gapiKey);
+    gapi.client.load('urlshortener', 'v1', googleJSClientLoaded.done);
+}
+
+function shortenURL(url, done) {
+    var gapi = window.gapi;
+    if (!gapi || !gapi.client || !gapi.client.urlshortener) {
+        // Load the Google APIs client library asynchronously, then the
+        // urlshortener API, and finally come back here.
+        window.googleJSClientLoaded = googleJSClientLoaded;
+        googleJSClientLoaded.done = function () {
+            shortenURL(url, done);
+        };
+        $(document.body).append('<script src="https://apis.google.com/js/client.js?onload=googleJSClientLoaded">');
+        return;
     }
-
-    function shortenURL(url, done) {
-        var gapi = window.gapi;
-        if (!gapi || !gapi.client || !gapi.client.urlshortener) {
-            // Load the Google APIs client library asynchronously, then the
-            // urlshortener API, and finally come back here.
-            window.googleJSClientLoaded = googleJSClientLoaded;
-            googleJSClientLoaded.done = function () {
-                shortenURL(url, done);
-            };
-            $(document.body).append('<script src="https://apis.google.com/js/client.js?onload=googleJSClientLoaded">');
-            return;
+    var request = gapi.client.urlshortener.url.insert({resource: {longUrl: url}});
+    request.then(function (resp) {
+        var id = resp.result.id;
+        if (options.googleShortLinkRewrite.length === 2) {
+            id = id.replace(new RegExp(options.googleShortLinkRewrite[0]), options.googleShortLinkRewrite[1]);
         }
-        var request = gapi.client.urlshortener.url.insert({resource: {longUrl: url}});
-        request.then(function (resp) {
-            var id = resp.result.id;
-            if (options.googleShortLinkRewrite.length === 2) {
-                id = id.replace(new RegExp(options.googleShortLinkRewrite[0]), options.googleShortLinkRewrite[1]);
-            }
-            done(id);
-        }, function () {
-            new Alert().notify("The URL could not be shortened. It probaly exceeds the Google URL Shortener length limits.", {
-                group: "urltoolong",
-                alertClass: "notification-error"
-            });
-            done(url);
+        done(id);
+    }, function () {
+        new Alert().notify("The URL could not be shortened. It probaly exceeds the Google URL Shortener length limits.", {
+            group: "urltoolong",
+            alertClass: "notification-error"
         });
-    }
+        done(url);
+    });
+}
 
-    return shortenURL;
-});
+module.exports = shortenURL;

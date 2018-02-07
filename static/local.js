@@ -23,44 +23,42 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-define(function (require) {
-    "use strict";
-    var options = require('./options');
-    var prefix = options.localStoragePrefix || '';
+"use strict";
+var options = require('./options');
+var prefix = options.localStoragePrefix || '';
 
-    function get(key, ifNotPresent) {
-        var result;
-        try {
-            result = window.localStorage.getItem(prefix + key);
-        } catch (e) {
-            // Swallow up any security exceptions...
-            return ifNotPresent;
-        }
-        if (result === null) return ifNotPresent;
-        return result;
+function get(key, ifNotPresent) {
+    var result;
+    try {
+        result = window.localStorage.getItem(prefix + key);
+    } catch (e) {
+        // Swallow up any security exceptions...
+        return ifNotPresent;
     }
+    if (result === null) return ifNotPresent;
+    return result;
+}
 
-    function set(key, value) {
-        try {
-            window.localStorage.setItem(prefix + key, value);
-            return true;
-        } catch (e) {
-            // Swallow up any security exceptions...
-        }
-        return false;
+function set(key, value) {
+    try {
+        window.localStorage.setItem(prefix + key, value);
+        return true;
+    } catch (e) {
+        // Swallow up any security exceptions...
     }
+    return false;
+}
 
-    function remove(key) {
-        try {
-            window.localStorage.removeItem(prefix + key);
-        } catch (e) {
-            // Swallow up any security exceptions...
-        }
+function remove(key) {
+    try {
+        window.localStorage.removeItem(prefix + key);
+    } catch (e) {
+        // Swallow up any security exceptions...
     }
+}
 
-    return {
-        set: set,
-        get: get,
-        remove: remove
-    };
-});
+module.exports = {
+    set: set,
+    get: get,
+    remove: remove
+};
