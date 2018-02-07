@@ -80,9 +80,15 @@
     .bottom-bar
       if !embedded
         .btn-group.btn-group-sm
-          button
+          button.btn.btn-default.btn-sm.output-btn
             span.glyphicon.glyphicon-alert.status
-            | &nbsp;Output
+              | &nbsp;Output
+              span.output-count
+                | &nbsp;(
+                span.text-count
+                | /
+                span.err-count
+                | )
         span.full-compiler-name
         span.compile-time
         button.btn.btn-default.btn-sm.clear-cache(title="Clear cache & recompile")

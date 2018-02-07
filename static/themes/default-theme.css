@@ -102,3 +102,11 @@
 .graph-placeholder {
     background-color: #FFFFFF;
 }
+
+.text-count {
+    color: green;
+}
+
+.err-count {
+    color: red;
+}

@@ -119,6 +119,8 @@ function Compiler(hub, container, state) {
     this.libsButton = this.domRoot.find('.btn.show-libs');
     this.compileTimeLabel = this.domRoot.find('.compile-time');
     this.compileClearCache = this.domRoot.find('.clear-cache');
+    this.outputBtn = this.domRoot.find('.output-btn');
+    this.outputCount = this.domRoot.find('.output-count');
 
     this.availableLibs = {};
     this.updateAvailableLibs = function () {
@@ -278,6 +280,8 @@ function Compiler(hub, container, state) {
     this.eventHub.on('optViewClosed', this.onOptViewClosed, this);
     this.eventHub.on('astViewOpened', this.onAstViewOpened, this);
     this.eventHub.on('astViewClosed', this.onAstViewClosed, this);
+    this.eventHub.on('outputOpened', this.onOutputOpened, this);
+    this.eventHub.on('outputClosed', this.onOutputClosed, this);
 
     this.eventHub.on('gccDumpPassSelected', this.onGccDumpPassSelected, this);
     this.eventHub.on('gccDumpFiltersChanged', this.onGccDumpFiltersChanged, this);
@@ -308,8 +312,8 @@ function Compiler(hub, container, state) {
         return Components.getOutput(this.id, this.sourceEditorId);
     }, this);
 
-    this.container.layoutManager.createDragSource(this.domRoot.find('.status').parent(), outputConfig);
-    this.domRoot.find('.status').parent().click(_.bind(function () {
+    this.container.layoutManager.createDragSource(this.outputBtn, outputConfig);
+    this.outputBtn.click(_.bind(function () {
         var insertPoint = hub.findParentRowOrColumn(this.container) ||
             this.container.layoutManager.root.contentItems[0];
         insertPoint.addChild(outputConfig);
@@ -642,13 +646,22 @@ Compiler.prototype.onCompileResponse = function (request, result, cached) {
             glyphMargin: true
         });
     }
-    var status = this.domRoot.find('.status');
-    var allText = _.pluck((result.stdout || []).concat(result.stderr || []), 'text').join('\n');
+    var stdout = result.stdout || [];
+    var stderr = result.stderr || [];
+
+    var allText = _.pluck(stdout.concat(stderr), 'text').join('\n');
     var failed = result.code !== 0;
     var warns = !failed && !!allText;
-    status.toggleClass('error', failed);
-    status.toggleClass('warning', warns);
-    status.parent().attr('title', allText);
+    this.domRoot.find('.status')
+        .toggleClass('error', failed)
+        .toggleClass('warning', warns);
+    this.outputCount
+        .css('display', (stdout.length + stderr.length) > 0 ? 'initial' : 'none');
+    var children = this.outputCount.children('span');
+    $(children[0]).text(stdout.length);
+    $(children[1]).text(stderr.length);
+
+    this.outputBtn.attr('title', allText);
     if (cached) {
         this.compileTimeLabel.text(' - cached');
     } else if (wasRealReply) {
@@ -897,9 +910,17 @@ Compiler.prototype.updateCompilerName = function () {
     this.domRoot.find('.full-compiler-name').text(compilerVersion);
 };
 
-Compiler.prototype.onResendCompilation = function (id) {
-    if (id === this.id && !$.isEmptyObject(this.lastResult)) {
+Compiler.prototype.resendResult = function () {
+    if (!$.isEmptyObject(this.lastResult)) {
         this.eventHub.emit('compileResult', this.id, this.compiler, this.lastResult);
+        return true;
+    }
+    return false;
+};
+
+Compiler.prototype.onResendCompilation = function (id) {
+    if (id === this.id) {
+        this.resendResult();
     }
 };
 
@@ -1257,6 +1278,19 @@ Compiler.prototype.langOfCompiler = function (compilerId) {
         compiler = options.compilers[0];
     }
     return compiler.lang;
+};
+
+Compiler.prototype.onOutputOpened = function (compilerId) {
+    if (this.id === compilerId) {
+        this.outputBtn.prop('disabled', true);
+        this.resendResult();
+    }
+};
+
+Compiler.prototype.onOutputClosed = function (compilerId) {
+    if (this.id === compilerId) {
+        this.outputBtn.prop('disabled', false);
+    }
 };
 
 module.exports = {

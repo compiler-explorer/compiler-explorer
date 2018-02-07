@@ -226,3 +226,11 @@ input.permalink {
 .graph-placeholder {
     background-color: #333333 !important;
 }
+
+.text-count {
+    color: green !important;
+}
+
+.err-count {
+    color: orange !important;;
+}
