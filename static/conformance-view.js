@@ -103,7 +103,7 @@ Conformance.prototype.addCompilerSelector = function (config) {
             // Compiler id which is being used
             compilerId: "",
             // Options which are in use
-            options: "",
+            options: ""
         };
         this.nextSelectorId++;
     }
@@ -273,7 +273,7 @@ Conformance.prototype.currentState = function () {
             // Compiler which is being used
             compilerId: $(child).find('.compiler-picker').val(),
             // Options which are in use
-            options: $(child).find(".options").val(),
+            options: $(child).find(".options").val()
         });
     }, this));
     return state;

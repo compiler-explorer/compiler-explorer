@@ -122,7 +122,7 @@ define(function () {
             };
         },
         getGccDumpViewWith: function (id, compilerName, editorid, gccDumpOutput) {
-            var ret =  {
+            var ret = {
                 type: 'component',
                 componentName: 'gccdump',
                 componentState: {

@@ -115,7 +115,7 @@ function serialiseState(stateText) {
     }
 }
 
-module.exports =  {
+module.exports = {
     deserialiseState: deserialiseState,
     serialiseState: serialiseState,
     unrisonify: unrisonify,

@@ -95,4 +95,4 @@ Alert.prototype.notify = function (body, options) {
     container.append(newElement);  // Add the new notification to the container
 };
 
-module.exports =  Alert;
+module.exports = Alert;

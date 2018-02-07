@@ -75,16 +75,16 @@ if (options.googleAnalyticsEnabled) {
         y.parentNode.insertBefore(o, y);
         g.identify = function (i, v) {
             g(l, {uid: i});
-            if (v) g(l, v)
+            if (v) g(l, v);
         };
         g.setUserVars = function (v) {
-            g(l, v)
+            g(l, v);
         };
         g.identifyAccount = function (i, v) {
             o = 'account';
             v = v || {};
             v.acctId = i;
-            g(o, v)
+            g(o, v);
         };
         g.clearUserCookie = function (c, d, i) {
             if (!c || document.cookie.match('fs_uid=[`;`]*`[`;`]*`[`;`]*`')) {
@@ -94,7 +94,7 @@ if (options.googleAnalyticsEnabled) {
                         ';path=/;expires=' + new Date(0).toUTCString();
                     i = d.indexOf('.');
                     if (i < 0) break;
-                    d = d.slice(i + 1)
+                    d = d.slice(i + 1);
                 }
             }
         };

@@ -112,7 +112,7 @@ function definition() {
             whitespace: [
                 [/[ \t\r\n]+/, 'white'],
                 [/\/\*/, 'comment', '@comment'],
-                [/\/\/.*$/, 'comment'],
+                [/\/\/.*$/, 'comment']
             ],
 
             comment: [
@@ -128,8 +128,8 @@ function definition() {
                 [/@escapes/, 'string.escape'],
                 [/\\./, 'string.escape.invalid'],
                 [/"/, 'string', '@pop']
-            ],
-        },
+            ]
+        }
     };
 }
 

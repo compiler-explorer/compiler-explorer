@@ -51,12 +51,12 @@ function Output(hub, container, state) {
     this.fontScale = new FontScale(this.domRoot, state, "pre");
 
     this.container.on('destroy', this.close, this);
-    
+
     this.eventHub.on('compileResult', this.onCompileResult, this);
     this.eventHub.on('compilerFontScale', this.onFontScale, this);
     this.eventHub.on('compilerClose', this.onCompilerClose, this);
     this.eventHub.emit('outputOpened', this.compilerId);
-    
+
     this.updateCompilerName();
 }
 

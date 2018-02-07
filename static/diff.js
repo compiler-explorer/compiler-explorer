@@ -217,13 +217,13 @@ Diff.prototype.onThemeChange = function (newTheme) {
         this.outputEditor.updateOptions({theme: newTheme.monaco});
 };
 
-module.exports =  {
+module.exports = {
     Diff: Diff,
     getComponent: function (lhs, rhs) {
         return {
             type: 'component',
             componentName: 'diff',
-            componentState: {lhs: lhs, rhs: rhs},
+            componentState: {lhs: lhs, rhs: rhs}
         };
     }
 };

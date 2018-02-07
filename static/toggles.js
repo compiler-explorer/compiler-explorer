@@ -23,57 +23,57 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-    "use strict";
-    var _ = require('underscore');
-    var $ = require('jquery');
-    var EventEmitter = require('events');
+"use strict";
+var _ = require('underscore');
+var $ = require('jquery');
+var EventEmitter = require('events');
 
-    function get(domRoot) {
-        var result = {};
-        _.each(domRoot.find(".btn"), function (a) {
-            var obj = $(a);
-            result[obj.data().bind] = obj.hasClass("active");
+function get(domRoot) {
+    var result = {};
+    _.each(domRoot.find(".btn"), function (a) {
+        var obj = $(a);
+        result[obj.data().bind] = obj.hasClass("active");
+    });
+    return result;
+}
+
+function Toggles(root, state) {
+    EventEmitter.call(this);
+    this.domRoot = root;
+    state = _.extend(get(this.domRoot), state);
+    this.domRoot.find('.btn')
+        .click(_.bind(this.onClick, this))
+        .each(function () {
+            $(this).toggleClass('active', !!state[$(this).data().bind]);
         });
-        return result;
-    }
+    this.state = state;
+}
 
-    function Toggles(root, state) {
-        EventEmitter.call(this);
-        this.domRoot = root;
-        state = _.extend(get(this.domRoot), state);
-        this.domRoot.find('.btn')
-            .click(_.bind(this.onClick, this))
-            .each(function () {
-                $(this).toggleClass('active', !!state[$(this).data().bind]);
-            });
-        this.state = state;
-    }
+_.extend(Toggles.prototype, EventEmitter.prototype);
 
-    _.extend(Toggles.prototype, EventEmitter.prototype);
+Toggles.prototype.get = function () {
+    return _.clone(this.state);
+};
 
-    Toggles.prototype.get = function () {
-        return _.clone(this.state);
-    };
+Toggles.prototype.set = function (key, value) {
+    this._change(function () {
+        this.state[key] = value;
+    }.bind(this));
+};
 
-    Toggles.prototype.set = function (key, value) {
-        this._change(function() {
-            this.state[key] = value;
-        }.bind(this));
-    };
+Toggles.prototype._change = function (update) {
+    var before = this.get();
+    update();
+    this.emit('change', before, this.get());
+};
 
-    Toggles.prototype._change = function(update) {
-        var before = this.get();
-        update();
-        this.emit('change', before, this.get()); 
-    };
+Toggles.prototype.onClick = function (event) {
+    var button = $(event.currentTarget);
+    if (button.hasClass("disabled")) return;
+    button.toggleClass('active');
+    this._change(function () {
+        this.state = get(this.domRoot);
+    }.bind(this));
+};
 
-    Toggles.prototype.onClick = function (event) {
-        var button = $(event.currentTarget);
-        if (button.hasClass("disabled")) return;
-        button.toggleClass('active');
-        this._change(function() {
-            this.state = get(this.domRoot);
-        }.bind(this));
-    };
-
-    module.exports = Toggles;
+module.exports = Toggles;

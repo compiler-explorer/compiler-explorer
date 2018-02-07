@@ -127,7 +127,9 @@ function Cfg(hub, container, state) {
     this.eventHub.emit('requestCompiler', this.compilerId);
 
     this.adaptStructure = function (names) {
-        return _.map(names, function (name) {return {name: name};});
+        return _.map(names, function (name) {
+            return {name: name};
+        });
     };
 
     this.setTitle();
@@ -152,7 +154,7 @@ Cfg.prototype.onCompileResult = function (id, compiler, result) {
             // (Hint: It *does* happen)
             this.showCfgResults(this._binaryFilter ? this.binaryModeSupport : this.defaultCfgOutput);
         }
-        
+
         this.functionPicker[0].selectize.clearOptions();
         this.functionPicker[0].selectize.addOption(functionNames.length ? this.adaptStructure(functionNames) : {name: 'The input does not contain functions'});
         this.functionPicker[0].selectize.refreshOptions(false);
@@ -163,12 +165,12 @@ Cfg.prototype.onCompileResult = function (id, compiler, result) {
     }
 };
 Cfg.prototype.onCompiler = function (id, compiler) {
-        if (id === this.compilerId) {
-            this._compilerName = compiler ? compiler.name : '';
-            this.supportsCfg = compiler.supportsCfg;
-            this.setTitle();
-        }
-    };
+    if (id === this.compilerId) {
+        this._compilerName = compiler ? compiler.name : '';
+        this.supportsCfg = compiler.supportsCfg;
+        this.setTitle();
+    }
+};
 
 Cfg.prototype.onFiltersChange = function (id, filters) {
     if (this.compilerId === id) {
@@ -209,7 +211,6 @@ Cfg.prototype.close = function () {
     this.eventHub.emit('cfgViewClosed', this.compilerId);
     this.cfgVisualiser.destroy();
 };
-
 
 
 Cfg.prototype.saveState = function () {

@@ -197,10 +197,10 @@ function Editor(hub, state, container) {
     }, this));
 
     this.mouseMoveThrottledFunction = _.throttle(_.bind(function (e) {
-            if (e !== null && e.target !== null && this.settings.hoverShowSource && e.target.position !== null) {
-                tryCompilerLinkLine(e.target.position.lineNumber, false);
-            }
-        }, this), 250);
+        if (e !== null && e.target !== null && this.settings.hoverShowSource && e.target.position !== null) {
+            tryCompilerLinkLine(e.target.position.lineNumber, false);
+        }
+    }, this), 250);
 
     this.editor.onMouseMove(_.bind(function (e) {
         this.mouseMoveThrottledFunction(e);
@@ -415,7 +415,7 @@ Editor.prototype.onCompilerOpen = function (compilerId, editorId) {
     if (editorId === this.id) {
         // On any compiler open, rebroadcast our state in case they need to know it.
         if (this.waitingForLanguage) {
-            var glCompiler =_.find(this.container.layoutManager.root.getComponentsByName("compiler"), function (compiler) {
+            var glCompiler = _.find(this.container.layoutManager.root.getComponentsByName("compiler"), function (compiler) {
                 return compiler.id === compilerId;
             });
             if (glCompiler) {

@@ -285,7 +285,7 @@ define(function (require) {
      */
     function pushText(text, options) {
         if (options.escapeXML) {
-            return text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+            return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
         }
 
         return text;
@@ -465,7 +465,7 @@ define(function (require) {
     function updateStickyStack(stickyStack, token, data) {
         if (token !== 'text') {
             stickyStack = stickyStack.filter(notCategory(categoryForCode(data)));
-            stickyStack.push({ token: token, data: data, category: categoryForCode(data) });
+            stickyStack.push({token: token, data: data, category: categoryForCode(data)});
         }
 
         return stickyStack;

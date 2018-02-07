@@ -91,7 +91,6 @@ let gitReleaseName = "";
 const wantedLanguage = opts.language || null;
 
 
-
 const webpackConfig = require('./webpack.config.js')[1],
     webpackCompiler = require('webpack')(webpackConfig),
     manifestName = 'manifest.json',
@@ -594,10 +593,10 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
                     //this will break assets in dev mode for now
                     return '/dist/' + path;
                 }
-                if(staticManifest.hasOwnProperty(path)) {
+                if (staticManifest.hasOwnProperty(path)) {
                     return "dist/" + staticManifest[path];
                 }
-                if(assetManifest.hasOwnProperty(path)) {
+                if (assetManifest.hasOwnProperty(path)) {
                     return "dist/assets/" + assetManifest[path];
                 }
                 logger.warn("Requested an asset I don't know about");

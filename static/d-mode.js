@@ -209,7 +209,7 @@ function definition() {
                 [/[ \t\r\n]+/, 'white'],
                 [/\/\*/, 'comment', '@comment'],
                 [/\/\+/, 'comment', '@nestingcomment'],
-                [/\/\/.*$/, 'comment'],
+                [/\/\/.*$/, 'comment']
             ],
 
             comment: [
@@ -236,7 +236,7 @@ function definition() {
             rawstring: [
                 [/[^\`]/, "string"],
                 [/`/, "string", "@pop"]
-            ],
+            ]
         }
     };
 }
@@ -245,7 +245,7 @@ function configuration() {
     return {
         comments: {
             lineComment: '//',
-            blockComment: ['/*', '*/'],
+            blockComment: ['/*', '*/']
         },
 
         brackets: [
@@ -255,21 +255,21 @@ function configuration() {
         ],
 
         autoClosingPairs: [
-            { open: '{', close: '}' },
-            { open: '[', close: ']' },
-            { open: '(', close: ')' },
-            { open: '`', close: '`', notIn: ['string'] },
-            { open: '"', close: '"', notIn: ['string'] },
-            { open: '\'', close: '\'', notIn: ['string', 'comment'] },
+            {open: '{', close: '}'},
+            {open: '[', close: ']'},
+            {open: '(', close: ')'},
+            {open: '`', close: '`', notIn: ['string']},
+            {open: '"', close: '"', notIn: ['string']},
+            {open: '\'', close: '\'', notIn: ['string', 'comment']}
         ],
 
         surroundingPairs: [
-            { open: '{', close: '}' },
-            { open: '[', close: ']' },
-            { open: '(', close: ')' },
-            { open: '`', close: '`' },
-            { open: '"', close: '"' },
-            { open: '\'', close: '\'' },
+            {open: '{', close: '}'},
+            {open: '[', close: ']'},
+            {open: '(', close: ')'},
+            {open: '`', close: '`'},
+            {open: '"', close: '"'},
+            {open: '\'', close: '\''}
         ]
     };
 }

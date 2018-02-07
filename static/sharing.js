@@ -23,124 +23,124 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 // POSSIBILITY OF SUCH DAMAGE.
 
-    "use strict";
-    var $ = require('jquery');
-    var _ = require('underscore');
-    var options = require('options');
-    var shortenURL = require('urlshorten-google');
-    var Components = require('components');
-    var url = require('./url');
+"use strict";
+var $ = require('jquery');
+var _ = require('underscore');
+var options = require('options');
+var shortenURL = require('urlshorten-google');
+var Components = require('components');
+var url = require('./url');
 
-    function configFromEmbedded(embeddedUrl) {
-        // Old-style link?
-        var params;
-        try {
-            params = url.unrisonify(embeddedUrl);
-        } catch (e) {
-        }
-        if (params && params.source && params.compiler) {
-            var filters = _.chain((params.filters || "").split(','))
-                .map(function (o) {
-                    return [o, true];
-                })
-                .object()
-                .value();
-            return {
-                content: [
-                    {
-                        type: 'row',
-                        content: [
-                            Components.getEditorWith(1, params.source, filters),
-                            Components.getCompilerWith(1, filters, params.options, params.compiler)
-                        ]
-                    }
-                ]
-            };
-        } else {
-            return url.deserialiseState(embeddedUrl);
-        }
+function configFromEmbedded(embeddedUrl) {
+    // Old-style link?
+    var params;
+    try {
+        params = url.unrisonify(embeddedUrl);
+    } catch (e) {
     }
-
-    function getEmbeddedUrl(layout, readOnly) {
-        var location = window.location.origin + window.location.pathname;
-        if (location[location.length - 1] !== '/') location += '/';
-        var path = readOnly ? 'embed-ro#' : 'e#';
-        return location + path + url.serialiseState(layout.toConfig());
-    }
-
-    function initShareButton(getLink, layout) {
-        var html = $('.template .urls').html();
-        var currentBind = '';
-
-        var title = getLink.attr('title'); // preserve before popover/tooltip breaks it
-
-        getLink.popover({
-            container: 'body',
-            content: html,
-            html: true,
-            placement: 'bottom',
-            trigger: 'manual'
-        }).click(function () {
-            getLink.popover('show');
-        }).on('inserted.bs.popover', function () {
-            var root = $('.urls-container:visible');
-            var urls = {};
-            if (!currentBind) currentBind = $(root.find('.sources a')[0]).data().bind;
-
-            function update() {
-                if (!currentBind) return;
-                root.find('.current').text(currentBind);
-                $(".permalink:visible").val(urls[currentBind] || "");
-            }
-
-            root.find('.sources a').on('click', function () {
-                currentBind = $(this).data().bind;
-                update();
-            });
-            getLinks(layout, function (theUrls) {
-                urls = theUrls;
-                update();
-            });
-            update();
-        }).attr('title', title);
-
-        // Dismiss the popover on escape.
-        $(document).on('keyup.editable', function (e) {
-            if (e.which === 27) {
-                getLink.popover("hide");
-            }
-        });
-
-        // Dismiss on any click that isn't either in the opening element, inside
-        // the popover or on any alert
-        $(document).on('click.editable', function (e) {
-            var target = $(e.target);
-            if (!target.is(getLink) && getLink.has(target).length === 0 && target.closest('.popover').length === 0)
-                getLink.popover("hide");
-        });
-    }
-
-    function permalink(layout) {
-        return window.location.href.split('#')[0] + '#' + url.serialiseState(layout.toConfig());
-    }
-
-    function getLinks(layout, done) {
-        var result = {
-            Full: permalink(layout),
-            Embed: '<iframe width="800px" height="200px" src="' + getEmbeddedUrl(layout, false) + '"></iframe>',
-            'Embed (RO)': '<iframe width="800px" height="200px" src="' + getEmbeddedUrl(layout, true) + '"></iframe>'
+    if (params && params.source && params.compiler) {
+        var filters = _.chain((params.filters || "").split(','))
+            .map(function (o) {
+                return [o, true];
+            })
+            .object()
+            .value();
+        return {
+            content: [
+                {
+                    type: 'row',
+                    content: [
+                        Components.getEditorWith(1, params.source, filters),
+                        Components.getCompilerWith(1, filters, params.options, params.compiler)
+                    ]
+                }
+            ]
         };
-        if (!options.gapiKey) {
-            done(result);
-        } else {
-            shortenURL(result.Full, function (shorter) {
-                result.Short = shorter;
-                done(result);
-            });
-        }
+    } else {
+        return url.deserialiseState(embeddedUrl);
     }
+}
 
-    module.exports = {
-        initShareButton: initShareButton,
-        configFromEmbedded: configFromEmbedded
+function getEmbeddedUrl(layout, readOnly) {
+    var location = window.location.origin + window.location.pathname;
+    if (location[location.length - 1] !== '/') location += '/';
+    var path = readOnly ? 'embed-ro#' : 'e#';
+    return location + path + url.serialiseState(layout.toConfig());
+}
+
+function initShareButton(getLink, layout) {
+    var html = $('.template .urls').html();
+    var currentBind = '';
+
+    var title = getLink.attr('title'); // preserve before popover/tooltip breaks it
+
+    getLink.popover({
+        container: 'body',
+        content: html,
+        html: true,
+        placement: 'bottom',
+        trigger: 'manual'
+    }).click(function () {
+        getLink.popover('show');
+    }).on('inserted.bs.popover', function () {
+        var root = $('.urls-container:visible');
+        var urls = {};
+        if (!currentBind) currentBind = $(root.find('.sources a')[0]).data().bind;
+
+        function update() {
+            if (!currentBind) return;
+            root.find('.current').text(currentBind);
+            $(".permalink:visible").val(urls[currentBind] || "");
+        }
+
+        root.find('.sources a').on('click', function () {
+            currentBind = $(this).data().bind;
+            update();
+        });
+        getLinks(layout, function (theUrls) {
+            urls = theUrls;
+            update();
+        });
+        update();
+    }).attr('title', title);
+
+    // Dismiss the popover on escape.
+    $(document).on('keyup.editable', function (e) {
+        if (e.which === 27) {
+            getLink.popover("hide");
+        }
+    });
+
+    // Dismiss on any click that isn't either in the opening element, inside
+    // the popover or on any alert
+    $(document).on('click.editable', function (e) {
+        var target = $(e.target);
+        if (!target.is(getLink) && getLink.has(target).length === 0 && target.closest('.popover').length === 0)
+            getLink.popover("hide");
+    });
+}
+
+function permalink(layout) {
+    return window.location.href.split('#')[0] + '#' + url.serialiseState(layout.toConfig());
+}
+
+function getLinks(layout, done) {
+    var result = {
+        Full: permalink(layout),
+        Embed: '<iframe width="800px" height="200px" src="' + getEmbeddedUrl(layout, false) + '"></iframe>',
+        'Embed (RO)': '<iframe width="800px" height="200px" src="' + getEmbeddedUrl(layout, true) + '"></iframe>'
     };
+    if (!options.gapiKey) {
+        done(result);
+    } else {
+        shortenURL(result.Full, function (shorter) {
+            result.Short = shorter;
+            done(result);
+        });
+    }
+}
+
+module.exports = {
+    initShareButton: initShareButton,
+    configFromEmbedded: configFromEmbedded
+};

@@ -34,7 +34,7 @@ function makeFontSizeDropdown(elem, interval, obj, buttonDropdown) {
     var step = 0.05;
     var found = false;
 
-    var onWheelEvent = function(e) {
+    var onWheelEvent = function (e) {
         e.preventDefault();
         var selectedId = elem.find('.font-option-active').index();
         if (e.originalEvent.deltaY >= 0 && selectedId < elem.children().length - 1) {
@@ -45,7 +45,7 @@ function makeFontSizeDropdown(elem, interval, obj, buttonDropdown) {
         elem.children().eq(selectedId).trigger('click');
     };
 
-    var onClickEvent = function() {
+    var onClickEvent = function () {
         // Toggle off the selection of the others
         elem.children().removeClass('font-option-active');
         // Toggle us on
