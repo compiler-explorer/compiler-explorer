@@ -120,7 +120,8 @@ function Compiler(hub, container, state) {
     this.compileTimeLabel = this.domRoot.find('.compile-time');
     this.compileClearCache = this.domRoot.find('.clear-cache');
     this.outputBtn = this.domRoot.find('.output-btn');
-    this.outputCount = this.domRoot.find('.output-count');
+    this.outputTextCount = this.domRoot.find('span.text-count');
+    this.outputErrorCount = this.domRoot.find('span.err-count');
 
     this.availableLibs = {};
     this.updateAvailableLibs = function () {
@@ -655,13 +656,13 @@ Compiler.prototype.onCompileResponse = function (request, result, cached) {
     this.domRoot.find('.status')
         .toggleClass('error', failed)
         .toggleClass('warning', warns);
-    this.outputCount
-        .css('display', (stdout.length + stderr.length) > 0 ? 'initial' : 'none');
-    var children = this.outputCount.children('span');
-    $(children[0]).text(stdout.length);
-    $(children[1]).text(stderr.length);
-
-    this.outputBtn.attr('title', allText);
+    this.outputTextCount.text(stdout.length);
+    this.outputErrorCount.text(stderr.length);
+    if (this.isOutputOpened) {
+        this.outputBtn.prop('title', '');
+    } else {
+        this.outputBtn.prop('title', allText.replace(/\x1b\[[0-9;]*m/g, ''));
+    }
     if (cached) {
         this.compileTimeLabel.text(' - cached');
     } else if (wasRealReply) {
@@ -1282,6 +1283,7 @@ Compiler.prototype.langOfCompiler = function (compilerId) {
 
 Compiler.prototype.onOutputOpened = function (compilerId) {
     if (this.id === compilerId) {
+        this.isOutputOpened = true;
         this.outputBtn.prop('disabled', true);
         this.resendResult();
     }
@@ -1289,6 +1291,7 @@ Compiler.prototype.onOutputOpened = function (compilerId) {
 
 Compiler.prototype.onOutputClosed = function (compilerId) {
     if (this.id === compilerId) {
+        this.isOutputOpened = false;
         this.outputBtn.prop('disabled', false);
     }
 };
