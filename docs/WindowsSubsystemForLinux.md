@@ -1,6 +1,6 @@
 # Running on Windows Subsystem for Linux
 
-Contact: [https://github.com/AndrewPardoe](@AndrewPardoe)
+Contact: [@AndrewPardoe](https://github.com/AndrewPardoe)
 
 The Compiler Explorer ("CE" from here on) runs quite well on the [Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/faq) ("WSL"). Running on WSL enables Linux-based compilers to continue running natively while enabling Windows-based compilers to run in a real Windows environment. 
 
