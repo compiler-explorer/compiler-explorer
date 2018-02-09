@@ -1,0 +1,3 @@
+docs/*  linguist-documentation
+lib/handlers/asm-docs.js linguist-generated
+test/cases/* linguist-vendored
