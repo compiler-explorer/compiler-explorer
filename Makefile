@@ -1,26 +1,33 @@
-NODE_DIR?=/opt/compiler-explorer/node
-YARN_DIR?=/opt/compiler-explorer/yarn
-YARN_EXE:=$(shell env PATH="$(NODE_DIR)/bin:$(YARN_DIR)/bin:$(PATH)" which yarn)
-NODE:=$(shell env PATH="$(NODE_DIR)/bin:$(PATH)" which node || env PATH="$(NODE_DIR)/bin:$(PATH)" which nodejs)
-YARN:=$(NODE) $(YARN_EXE).js
 default: run
 
-NODE_VERSION_USED:=8
-NODE_VERSION:=$(shell $(NODE) --version)
-NODE_MAJOR_VERSION:=$(shell echo $(NODE_VERSION) | cut -f1 -d. | sed 's/^v//g')
-NODE_VERSION_TEST:=$(shell [ $(NODE_MAJOR_VERSION) -eq $(NODE_VERSION_USED) ] && echo true)
-NODE_VERSION_TEST_FAIL:=$(shell [ $(NODE_MAJOR_VERSION) -lt $(NODE_VERSION_USED) ] && echo true)
+# If you see "node-not-found" or "yarn-not-found" then you need to depend
+# on either node-installed or yarn-installed.
+NODE:=node-not-found
+YARN:=yarn-not-found
 
-ifneq ($(NODE_VERSION_TEST), true)
-ifeq ($(NODE_VERSION_TEST_FAIL), true)
-$(error Compiler Explorer needs node v$(NODE_VERSION_USED).x, but $(NODE_VERSION) was found. \
-Visit https://nodejs.org/ for installation instructions \
-To configure where we look for node, set NODE_DIR to its installation base)
-else
-$(warning Compiler Explorer needs node v$(NODE_VERSION_USED).x, but $(NODE_VERSION) was found. \
-The higher node version might work but it has not been tested.)
-endif
-endif
+# These 'find' scripts cache their results in a dotfile.
+# Doing it this way instead of NODE:=$(shell etc/script/find-node) means
+# if they fail, they stop the make process. As best I can tell there's no
+# way to get make to fail if a sub-shell command fails.
+.node-bin: etc/scripts/find-node
+	@etc/scripts/find-node > .node-bin
+.yarn-bin: etc/scripts/find-yarn node-installed
+	@etc/scripts/find-yarn > .yarn-bin
+
+# All targets that need node must depend on this to ensure the NODE variable
+# is appropriately set, and that PATH is updated so that yarn etc will use this
+# node and not any other random node on the PATH.
+node-installed: .node-bin
+	@$(eval NODE:=$(shell cat .node-bin))
+	@$(eval PATH=$(shell dirname $(realpath $(NODE))):${PATH})
+# All targets that need yarn must depend on this to ensure YARN is set.
+yarn-installed: .yarn-bin
+	@$(eval YARN:=$(shell cat .yarn-bin))
+
+debug: node-installed yarn-installed
+	@echo Using node from $(NODE)
+	@echo Using yarn from $(YARN)
+	@echo PATH is $(PATH)
 
 .PHONY: clean run test run-amazon c-preload optional-haskell-support optional-d-support optional-rust-support
 .PHONY: dist lint prereqs node_modules travis-dist
@@ -55,12 +62,12 @@ optional-rust-support:
 endif
 
 
-NODE_MODULES=.npm-updated
-$(NODE_MODULES): package.json
+NODE_MODULES=.yarn-updated
+$(NODE_MODULES): package.json yarn-installed
 	$(YARN) install
 	@touch $@
 
-webpack:
+webpack: $(NODE_MODULES)
 	$(NODE) node_modules/webpack/bin/webpack.js ${WEBPACK_ARGS}
 
 lint: $(NODE_MODULES)
@@ -78,7 +85,7 @@ check: $(NODE_MODULES) lint
 	$(NODE) ./node_modules/.bin/mocha --recursive
 
 clean:
-	rm -rf node_modules .npm-updated out static/dist static/vs
+	rm -rf node_modules .*-updated .*-bin out static/dist static/vs
 	$(MAKE) -C d clean
 	$(MAKE) -C c-preload clean
 
@@ -89,7 +96,6 @@ run: prereqs
 dev: export NODE_ENV=DEV
 dev: prereqs
 	 $(NODE) ./node_modules/.bin/supervisor -w app.js,lib,etc/config -e 'js|node|properties' --exec $(NODE) $(NODE_ARGS) -- ./app.js $(EXTRA_ARGS)
-	
 	
 
 HASH := $(shell git rev-parse HEAD)
@@ -114,4 +120,3 @@ c-preload:
 install-git-hooks:
 	ln -sf $(shell pwd)/etc/scripts/pre-commit .git/hooks/pre-commit
 .PHONY: install-git-hooks
-
