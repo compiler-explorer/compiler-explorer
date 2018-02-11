@@ -136,9 +136,9 @@ function Cfg(hub, container, state) {
 }
 
 Cfg.prototype.onCompileResult = function (id, compiler, result) {
-    if (this._compilerid === id) {
+    if (this.compilerId === id) {
         var functionNames = [];
-        if (result.supportsCfg && !$.isEmptyObject(result.cfg)) {
+        if (this.supportsCfg && !$.isEmptyObject(result.cfg)) {
             this.functions = result.cfg;
             functionNames = Object.keys(this.functions);
             if (functionNames.indexOf(this.currentFunc) === -1) {
@@ -187,7 +187,7 @@ Cfg.prototype.resize = function () {
 };
 
 Cfg.prototype.setTitle = function () {
-    this.container.setTitle(this._compilerName + ' Graph Viewer (Editor #' + this._editorid + ', Compiler #' + this._compilerid + ')');
+    this.container.setTitle(this._compilerName + ' Graph Viewer (Editor #' + this._editorid + ', Compiler #' + this.compilerId + ')');
 };
 
 Cfg.prototype.showCfgResults = function (data) {
