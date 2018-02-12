@@ -428,6 +428,7 @@ function findCompilers() {
         const supportsBinary = !!props("supportsBinary", true);
         const supportsExecute = supportsBinary && !!props("supportsExecute", true);
         const group = props("group", "");
+        const demangler = props("demangler", "");
         const compilerInfo = {
             id: compilerName,
             exe: props("exe", compilerName),
@@ -437,10 +438,11 @@ function findCompilers() {
             versionFlag: props("versionFlag"),
             versionRe: props("versionRe"),
             compilerType: props("compilerType", ""),
-            demangler: props("demangler", ""),
+            demangler: demangler,
             objdumper: props("objdumper", ""),
             intelAsm: props("intelAsm", ""),
             needsMulti: !!props("needsMulti", true),
+            supportsDemangle: !!demangler,
             supportsBinary: supportsBinary,
             supportsExecute: supportsExecute,
             postProcess: props("postProcess", "").split("|"),

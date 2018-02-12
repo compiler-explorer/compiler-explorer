@@ -791,7 +791,7 @@ Compiler.prototype.updateButtons = function () {
     this.domRoot.find("[data-bind='binary']").prop('disabled', !this.compiler.supportsBinary);
     this.domRoot.find("[data-bind='execute']").prop('disabled', !this.compiler.supportsExecute);
     // Disable demangle for compilers where we can't access it
-    this.domRoot.find("[data-bind='demangle']").prop('disabled', !this.compiler.demangler);
+    this.domRoot.find("[data-bind='demangle']").prop('disabled', !this.compiler.supportsDemangle);
     // Disable any of the options which don't make sense in binary mode.
     var filtersDisabled = !!filters.binary && !this.compiler.supportsFiltersInBinary;
     this.domRoot.find('.nonbinary').prop('disabled', filtersDisabled);
