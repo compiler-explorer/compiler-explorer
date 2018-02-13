@@ -23,6 +23,6 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-
+'use strict';
 //until webpack can support monaco properly it exists on the window
 module.exports = monaco;

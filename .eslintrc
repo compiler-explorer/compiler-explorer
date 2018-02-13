@@ -1,0 +1,22 @@
+// Server code linter config
+{
+  "root": true,
+  "extends": "eslint:recommended",
+  "env": {
+    "mocha": true,
+    "node": true,
+    "es6": true
+  },
+  "rules": {
+    // The idea is to implement this first 2 warnings slowly into the code, and to eventually enforce them
+    "max-statements": ["warn", 50],
+    "max-len": ["warn", 120, { "ignoreRegExpLiterals": true }],
+    "eol-last": ["error", "always"],
+    "semi": ["error", "always"],
+    "indent": ["error", 4, { "SwitchCase": 1 }],
+    "no-control-regex": 0
+  },
+  "parserOptions": {
+    "ecmaVersion": 6
+  }
+}

@@ -1,0 +1,28 @@
+// Client code linter config
+{
+  "root": true,
+  "extends": "eslint:recommended",
+  "env": {
+    "browser": true,
+    "node": true,
+    "es6": false
+  },
+  "rules": {
+    // The idea is to implement this first 2 warnings slowly into the code, and to eventually enforce them
+    "max-statements": ["warn", 50],
+    "max-len": ["warn", 120, { "ignoreRegExpLiterals": true }],
+    "strict": ["error", "safe"],
+    "eol-last": ["error", "always"],
+    "semi": ["error", "always"],
+    "indent": ["error", 4, { "SwitchCase": 1 }],
+    "no-control-regex": 0
+  },
+  "parserOptions": {
+    "ecmaVersion": 5
+  },
+  "globals": {
+    "define": false,
+    "monaco": true,
+    "__webpack_public_path__": true
+  }
+}

@@ -62,20 +62,20 @@ function definition() {
                 [/@registers/, 'variable.predefined'],
                 [/@intelOperators/, 'annotation'],
                 // brackets
-                [/[{}<>()\[\]]/, '@brackets'],
+                [/[{}<>()[\]]/, '@brackets'],
 
                 // ARM-style label reference
                 [/[|][^|]*[|]*/, 'type.identifier'],
 
                 // numbers
-                [/\d*\.\d+([eE][\-+]?\d+)?/, 'number.float'],
+                [/\d*\.\d+([eE][-+]?\d+)?/, 'number.float'],
                 [/([$]|0[xX])[0-9a-fA-F]+/, 'number.hex'],
                 [/\d+/, 'number'],
                 // ARM-style immediate numbers (which otherwise look like comments)
                 [/#-?\d+/, 'number'],
 
                 // operators
-                [/[-+,*\/!:&]/, 'operator'],
+                [/[-+,*/!:&]/, 'operator'],
 
                 // strings
                 [/"([^"\\]|\\.)*$/, 'string.invalid'],  // non-terminated string
@@ -94,10 +94,10 @@ function definition() {
             ],
 
             comment: [
-                [/[^\/*]+/, 'comment'],
+                [/[^/*]+/, 'comment'],
                 [/\/\*/, 'comment', '@push'],    // nested comment
                 ["\\*/", 'comment', '@pop'],
-                [/[\/*]/, 'comment']
+                [/[/*]/, 'comment']
             ],
 
             string: [

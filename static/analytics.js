@@ -36,6 +36,7 @@ if (options.raven) {
 }
 
 var gaProxy;
+/* eslint-disable */
 if (options.googleAnalyticsEnabled) {
     (function (i, s, o, g, r, a, m) {
         i.GoogleAnalyticsObject = r;
@@ -100,9 +101,9 @@ if (options.googleAnalyticsEnabled) {
         };
     })(window, document, window['_fs_namespace'], 'script', 'user');
 } else {
-    gaProxy = function () {
-    };
+    gaProxy = function () {};
 }
+/* eslint-enable */
 
 function initialise() {
     if (options.embedded) return;

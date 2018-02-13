@@ -56,7 +56,7 @@ function LoadSave() {
 }
 
 LoadSave.prototype.fetchBuiltins = function () {
-    return new Promise(_.bind(function (resolve, reject) {
+    return new Promise(_.bind(function (resolve) {
         $.getJSON('source/builtin/list', function (list) {
             resolve(list);
         });
@@ -163,7 +163,7 @@ LoadSave.prototype.onSaveToFile = function () {
         saveAs(new Blob(
             [this.editorText],
             {type: "text/plain;charset=utf-8"}),
-            "Compiler Explorer Code" + this.extension);
+        "Compiler Explorer Code" + this.extension);
     } catch (e) {
         new Alert().notify('Error while saving your code. Use the clipboard instead.', {
             group: "savelocalerror",
