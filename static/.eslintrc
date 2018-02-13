@@ -9,8 +9,8 @@
   },
   "rules": {
     // The idea is to implement this first 2 warnings slowly into the code, and to eventually enforce them
-    "max-statements": ["warn", 55],
-    "max-len": ["warn", 130, { "ignoreRegExpLiterals": true }],
+    "max-statements": ["warn", 50],
+    "max-len": ["warn", 120, { "ignoreRegExpLiterals": true }],
     "strict": ["error", "safe"],
     "eol-last": ["error", "always"],
     "semi": ["error", "always"],
