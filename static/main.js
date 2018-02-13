@@ -44,7 +44,7 @@ require("monaco-loader")().then(function () {
     var Alert = require('./alert');
     var themer = require('./themes');
 
-//css
+    //css
     require("bootstrap/dist/css/bootstrap.min.css");
     require("goldenlayout/src/css/goldenlayout-base.css");
     require("selectize/dist/css/selectize.bootstrap2.css");

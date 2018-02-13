@@ -54,10 +54,11 @@ function shortenURL(url, done) {
         }
         done(id);
     }, function () {
-        new Alert().notify("The URL could not be shortened. It probaly exceeds the Google URL Shortener length limits.", {
-            group: "urltoolong",
-            alertClass: "notification-error"
-        });
+        new Alert().
+            notify("The URL could not be shortened. It probably exceeds the Google URL Shortener length limits.", {
+                group: "urltoolong",
+                alertClass: "notification-error"
+            });
         done(url);
     });
 }

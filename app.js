@@ -86,7 +86,6 @@ const env = opts.env || ['dev'];
 const hostname = opts.host;
 const port = opts.port || 10240;
 const staticDir = opts.static || 'static';
-const archivedVersions = opts.archivedVersions;
 let gitReleaseName = "";
 const wantedLanguage = opts.language || null;
 
@@ -189,7 +188,6 @@ function compilerPropsAT(langs, transform, property, defaultValue) {
 }
 
 const staticMaxAgeSecs = ceProps('staticMaxAgeSecs', 0);
-const contentPolicy = ceProps('contentPolicy', 'default-src *');
 const maxUploadSize = ceProps('maxUploadSize', '1mb');
 let extraBodyClass = ceProps('extraBodyClass', '');
 
@@ -364,40 +362,40 @@ function findCompilers() {
     function fetchRemote(host, port, props) {
         logger.info(`Fetching compilers from remote source ${host}:${port}`);
         return retryPromise(() => {
-                return new Promise((resolve, reject) => {
-                    let request = http.get({
-                        hostname: host,
-                        port: port,
-                        path: "/api/compilers",
-                        headers: {
-                            'Accept': 'application/json'
-                        }
-                    }, res => {
-                        let str = '';
-                        res.on('data', chunk => {
-                            str += chunk;
+            return new Promise((resolve, reject) => {
+                let request = http.get({
+                    hostname: host,
+                    port: port,
+                    path: "/api/compilers",
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                }, res => {
+                    let str = '';
+                    res.on('data', chunk => {
+                        str += chunk;
+                    });
+                    res.on('end', () => {
+                        let compilers = JSON.parse(str).map(compiler => {
+                            compiler.exe = null;
+                            compiler.remote = `http://${host}:${port}`;
+                            return compiler;
                         });
-                        res.on('end', () => {
-                            let compilers = JSON.parse(str).map(compiler => {
-                                compiler.exe = null;
-                                compiler.remote = `http://${host}:${port}`;
-                                return compiler;
-                            });
-                            resolve(compilers);
-                        });
-                    })
-                        .on('error', reject)
-                        .on('timeout', () => reject("timeout"));
-                    request.setTimeout(awsProps('proxyTimeout', 1000));
-                });
-            },
-            `${host}:${port}`,
-            props('proxyRetries', 5),
-            props('proxyRetryMs', 500))
-            .catch(() => {
-                logger.warn(`Unable to contact ${host}:${port}; skipping`);
-                return [];
+                        resolve(compilers);
+                    });
+                })
+                    .on('error', reject)
+                    .on('timeout', () => reject("timeout"));
+                request.setTimeout(awsProps('proxyTimeout', 1000));
             });
+        },
+        `${host}:${port}`,
+        props('proxyRetries', 5),
+        props('proxyRetryMs', 500)
+        ).catch(() => {
+            logger.warn(`Unable to contact ${host}:${port}; skipping`);
+            return [];
+        });
     }
 
     function fetchAws() {
@@ -497,7 +495,7 @@ function findCompilers() {
             if (list.length !== 1) {
                 logger.error(`Compiler ID clash for '${id}' - used by ${
                     _.map(list, o => `lang:${o.lang} name:${o.name}`).join(', ')
-                    }`);
+                }`);
             }
         });
         return compilers;

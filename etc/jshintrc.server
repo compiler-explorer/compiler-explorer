@@ -1,8 +1,0 @@
-{
-    "esversion": 6,
-    "undef": true,
-    "node": true,
-    "mocha": true,
-    "expr": true,
-    "eqeqeq": true
-}

@@ -23,149 +23,146 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-define(function () {
-    'use strict';
-    // here instead of in the editor.js and compiler.js etc to prevent circular dependencies.
-    return {
-        getCompiler: function (editorId, lang) {
-            return {
-                type: 'component',
-                componentName: 'compiler',
-                componentState: {source: editorId, lang: lang}
-            };
-        },
-        getCompilerWith: function (editorId, filters, options, compilerId) {
-            return {
-                type: 'component',
-                componentName: 'compiler',
-                componentState: {
-                    source: editorId,
-                    filters: filters,
-                    options: options,
-                    compiler: compilerId
-                }
-            };
-        },
-        getEditor: function (id, langId) {
-            return {
-                type: 'component',
-                componentName: 'codeEditor',
-                componentState: {id: id, lang: langId}
-            };
-        },
-        getEditorWith: function (id, source, options) {
-            return {
-                type: 'component',
-                componentName: 'codeEditor',
-                componentState: {id: id, source: source, options: options}
-            };
-        },
-        getOutput: function (compiler, editor) {
-            return {
-                type: 'component',
-                componentName: 'output',
-                componentState: {compiler: compiler, editor: editor}
-            };
-        },
-        getDiff: function () {
-            return {
-                type: 'component',
-                componentName: 'diff',
-                componentState: {}
-            };
-        },
-        getOptView: function () {
-            return {
-                type: 'component',
-                componentName: 'opt',
-                componentState: {}
-            };
-        },
-        getOptViewWith: function (id, source, optimization, compilerName, editorid) {
-            return {
-                type: 'component',
-                componentName: 'opt',
-                componentState: {
-                    id: id,
-                    source: source,
-                    optOutput: optimization,
-                    compilerName: compilerName,
-                    editorid: editorid
-                }
-            };
-        },
-        getAstView: function () {
-            return {
-                type: 'component',
-                componentName: 'ast',
-                componentState: {}
-            };
-        },
-        getAstViewWith: function (id, source, astOutput, compilerName, editorid) {
-            return {
-                type: 'component',
-                componentName: 'ast',
-                componentState: {
-                    id: id,
-                    source: source,
-                    astOutput: astOutput,
-                    compilerName: compilerName,
-                    editorid: editorid
-                }
-            };
-        },
-        getGccDumpView: function () {
-            return {
-                type: 'component',
-                componentName: 'gccdump',
-                componentState: {}
-            };
-        },
-        getGccDumpViewWith: function (id, compilerName, editorid, gccDumpOutput) {
-            var ret = {
-                type: 'component',
-                componentName: 'gccdump',
-                componentState: {
-                    _compilerid: id,
-                    _compilerName: compilerName,
-                    _editorid: editorid
-                }
-            };
-            if (gccDumpOutput) {
-                ret.treeDump = gccDumpOutput.treeDump;
-                ret.rtlDump = gccDumpOutput.rtlDump;
-                ret.selectedPass = gccDumpOutput.selectedPass;
+'use strict';
+// here instead of in the editor.js and compiler.js etc to prevent circular dependencies.
+module.exports = {
+    getCompiler: function (editorId, lang) {
+        return {
+            type: 'component',
+            componentName: 'compiler',
+            componentState: {source: editorId, lang: lang}
+        };
+    },
+    getCompilerWith: function (editorId, filters, options, compilerId) {
+        return {
+            type: 'component',
+            componentName: 'compiler',
+            componentState: {
+                source: editorId,
+                filters: filters,
+                options: options,
+                compiler: compilerId
             }
-            return ret;
-        },
-
-        getCfgView: function () {
-            return {
-                type: 'component',
-                componentName: 'cfg',
-                componentState: {}
-            };
-        },
-        getCfgViewWith: function (id, editorid) {
-            return {
-                type: 'component',
-                componentName: 'cfg',
-                componentState: {
-                    id: id,
-                    editorid: editorid
-                }
-            };
-        },
-        getConformanceView: function (editorid, source) {
-            return {
-                type: 'component',
-                componentName: 'conformance',
-                componentState: {
-                    editorid: editorid,
-                    source: source
-                }
-            };
+        };
+    },
+    getEditor: function (id, langId) {
+        return {
+            type: 'component',
+            componentName: 'codeEditor',
+            componentState: {id: id, lang: langId}
+        };
+    },
+    getEditorWith: function (id, source, options) {
+        return {
+            type: 'component',
+            componentName: 'codeEditor',
+            componentState: {id: id, source: source, options: options}
+        };
+    },
+    getOutput: function (compiler, editor) {
+        return {
+            type: 'component',
+            componentName: 'output',
+            componentState: {compiler: compiler, editor: editor}
+        };
+    },
+    getDiff: function () {
+        return {
+            type: 'component',
+            componentName: 'diff',
+            componentState: {}
+        };
+    },
+    getOptView: function () {
+        return {
+            type: 'component',
+            componentName: 'opt',
+            componentState: {}
+        };
+    },
+    getOptViewWith: function (id, source, optimization, compilerName, editorid) {
+        return {
+            type: 'component',
+            componentName: 'opt',
+            componentState: {
+                id: id,
+                source: source,
+                optOutput: optimization,
+                compilerName: compilerName,
+                editorid: editorid
+            }
+        };
+    },
+    getAstView: function () {
+        return {
+            type: 'component',
+            componentName: 'ast',
+            componentState: {}
+        };
+    },
+    getAstViewWith: function (id, source, astOutput, compilerName, editorid) {
+        return {
+            type: 'component',
+            componentName: 'ast',
+            componentState: {
+                id: id,
+                source: source,
+                astOutput: astOutput,
+                compilerName: compilerName,
+                editorid: editorid
+            }
+        };
+    },
+    getGccDumpView: function () {
+        return {
+            type: 'component',
+            componentName: 'gccdump',
+            componentState: {}
+        };
+    },
+    getGccDumpViewWith: function (id, compilerName, editorid, gccDumpOutput) {
+        var ret = {
+            type: 'component',
+            componentName: 'gccdump',
+            componentState: {
+                _compilerid: id,
+                _compilerName: compilerName,
+                _editorid: editorid
+            }
+        };
+        if (gccDumpOutput) {
+            ret.treeDump = gccDumpOutput.treeDump;
+            ret.rtlDump = gccDumpOutput.rtlDump;
+            ret.selectedPass = gccDumpOutput.selectedPass;
         }
-    };
+        return ret;
+    },
 
-});
+    getCfgView: function () {
+        return {
+            type: 'component',
+            componentName: 'cfg',
+            componentState: {}
+        };
+    },
+    getCfgViewWith: function (id, editorid) {
+        return {
+            type: 'component',
+            componentName: 'cfg',
+            componentState: {
+                id: id,
+                editorid: editorid
+            }
+        };
+    },
+    getConformanceView: function (editorid, source) {
+        return {
+            type: 'component',
+            componentName: 'conformance',
+            componentState: {
+                editorid: editorid,
+                source: source
+            }
+        };
+    }
+};

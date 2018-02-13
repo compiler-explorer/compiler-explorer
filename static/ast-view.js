@@ -61,7 +61,6 @@ function Ast(hub, container, state) {
     this.eventHub.on('compileResult', this.onCompileResult, this);
     this.eventHub.on('compiler', this.onCompiler, this);
     this.eventHub.on('compilerClose', this.onCompilerClose, this);
-    this.eventHub.on('editorChange', this.onEditorChange, this);
     this.eventHub.on('settingsChange', this.onSettingsChange, this);
     this.eventHub.emit('astViewOpened', this._compilerid);
     this.eventHub.emit('requestSettings');
@@ -83,9 +82,6 @@ Ast.prototype.resize = function () {
     });
 };
 
-Ast.prototype.onEditorChange = function (id, source) {
-};
-
 Ast.prototype.onCompileResult = function (id, compiler, result) {
     if (this._compilerid === id) {
         if (result.hasAstOutput) {
@@ -96,8 +92,11 @@ Ast.prototype.onCompileResult = function (id, compiler, result) {
         }
     }
 };
+
 Ast.prototype.setTitle = function () {
-    this.container.setTitle(this._compilerName + " Ast Viewer (Editor #" + this._editorid + ", Compiler #" + this._compilerid + ")");
+    this.container.setTitle(
+        this._compilerName + " Ast Viewer (Editor #" + this._editorid + ", Compiler #" + this._compilerid + ")"
+    );
 };
 
 Ast.prototype.getDisplayableAst = function (astResult) {

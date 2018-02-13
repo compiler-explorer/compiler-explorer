@@ -1076,19 +1076,21 @@ Compiler.prototype.onAsmToolTip = function (ed) {
     var word = ed.getModel().getWordAtPosition(pos);
     if (!word || !word.word) return;
     var opcode = word.word.toUpperCase();
+
+    function appendInfo(url) {
+        return '<br><br>For more information, visit <a href="'+url+'" target="_blank" rel="noopener noreferrer">the ' +
+        opcode + ' documentation <sup><small class="glyphicon glyphicon-new-window" width="16px" height="16px"' +
+        ' title="Opens in a new window"></small></sup></a>.';
+    }
     getAsmInfo(word.word).then(
         _.bind(function (asmHelp) {
             if (asmHelp) {
-                new Alert().alert(opcode + ' help', asmHelp.html +
-                    '<br><br>For more information, visit <a href="' + asmHelp.url + '" target="_blank" rel="noopener noreferrer">the ' +
-                    opcode + ' documentation <sup><small class="glyphicon glyphicon-new-window" width="16px" height="16px" title="Opens in a new window"></small></sup></a>.',
-                    function () {
-                        ed.focus();
-                        ed.setPosition(pos);
-                    }
-                );
+                new Alert().alert(opcode + ' help', asmHelp.html + appendInfo(asmHelp.url), function () {
+                    ed.focus();
+                    ed.setPosition(pos);
+                });
             } else {
-                new Alert().notify('This token was not found in the documentation.<br>Only <i>most</i> <b>Intel x86</b> opcodes supported for now.', {
+                new Alert().notify('This token was not found in the documentation. Sorry!', {
                     group: 'notokenindocs',
                     alertClass: 'notification-error',
                     dismissTime: 3000

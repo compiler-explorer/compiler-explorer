@@ -39,7 +39,7 @@ function Conformance(hub, container, state) {
     this.domRoot.html($('#conformance').html());
     this.selectorList = this.domRoot.find('.compiler-list');
     this.addCompilerButton = this.domRoot.find('.add-compiler');
-    this.selectorTemplate = $('#compiler-selector .compiler-row');
+    this.selectorTemplate = $('#compiler-selector').find('.compiler-row');
     this.editorId = state.editorid;
     this.nextSelectorId = 0;
     this.maxCompilations = options.cvCompilerCountMax || 6;
@@ -160,6 +160,7 @@ Conformance.prototype.addCompilerSelector = function (config) {
     this.handleToolbarUI();
     this.saveState();
 };
+
 Conformance.prototype.removeCompilerSelector = function (cv) {
     _.each(this.selectorList.children(), function (row) {
         var child = $(row);
@@ -252,11 +253,21 @@ Conformance.prototype.handleToolbarUI = function () {
 
 Conformance.prototype.handleStatusIcon = function (element, status) {
     if (!element) return;
-    element.attr("class", "status glyphicon glyphicon-" + (status.code === 3 ? "remove-sign" : (status.code === 2 ? "info-sign" : "ok-sign")))
+
+    function glyphClass(code) {
+        return code === 3 ? "remove-sign" : (code === 2 ? "info-sign" : "ok-sign");
+    }
+
+    function ariaLabel(code) {
+        return code === 3 ? "Compilation failed!" : (code === 2 ? "Compiled with warnings" : "No warnings");
+    }
+
+    element
+        .attr("class", "status glyphicon glyphicon-" + glyphClass(status.code))
         .css("visibility", status.code === 0 ? "hidden" : "visible")
         .css("color", status.code === 3 ? "red" : (status.code === 2 ? "yellow" : "green"))
         .attr("title", status.text)
-        .attr("aria-label", status.code === 3 ? "Compilation failed!" : (status.code === 2 ? "Compiled with warnings" : "Compiled without warnings"))
+        .attr("aria-label", ariaLabel(status.code))
         .attr("data-status", status.code);
 };
 

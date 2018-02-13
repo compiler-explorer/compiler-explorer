@@ -37,6 +37,7 @@ function configFromEmbedded(embeddedUrl) {
     try {
         params = url.unrisonify(embeddedUrl);
     } catch (e) {
+        // Ignore this, it's not a problem
     }
     if (params && params.source && params.compiler) {
         var filters = _.chain((params.filters || "").split(','))

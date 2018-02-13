@@ -64,8 +64,8 @@ webpack:
 	$(NODE) node_modules/webpack/bin/webpack.js ${WEBPACK_ARGS}
 
 lint: $(NODE_MODULES)
-	$(NODE) ./node_modules/.bin/jshint --config etc/jshintrc.server app.js $(shell find lib -name '*.js')
-	$(NODE) ./node_modules/.bin/jshint --config etc/jshintrc.client $(shell find static -name '*.js' -not -path 'static/dist/*' -not -path static/analytics.js -not -path 'static/vs/*' -not -path 'static/ext/*')
+	$(NODE) ./node_modules/.bin/eslint --config .eslintrc --ignore-path .eslintignore --fix app.js $(shell find lib -name '*.js' -not -path 'lib/handlers/asm-docs.js')
+	$(NODE) ./node_modules/.bin/eslint --config static/.eslintrc --ignore-path static/.eslintignore --fix $(shell find static -name '*.js' -not -path 'static/dist/*' -not -path 'static/vs/*' -not -path 'static/ext/*')
 
 node_modules: $(NODE_MODULES)
 webpack: $(WEBPACK)

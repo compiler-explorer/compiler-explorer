@@ -26,270 +26,269 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 // this is mostly based on 'mylang' example from https://microsoft.github.io/monaco-editor/monarch.html
-define(function (require) {
-    "use strict";
-    var monaco = require('monaco');
 
-    function definition() {
-        return {
-            // Set defaultToken to invalid to see what you do not tokenize yet
-            // defaultToken: 'invalid',
+"use strict";
+var monaco = require('monaco');
 
-            keywords: [
-                'abstract', 'continue', 'for', 'new', 'switch', 'assert', 'goto', 'do',
-                'if', 'private', 'this', 'break', 'protected', 'throw', 'else', 'public',
-                'enum', 'return', 'catch', 'try', 'interface', 'static', 'class',
-                'finally', 'const', 'super', 'while', 'true', 'false',
+function definition() {
+    return {
+        // Set defaultToken to invalid to see what you do not tokenize yet
+        // defaultToken: 'invalid',
 
-                // Generated using the following:
-                // #define DEF_RTL_EXPR(a,b,c,d) b,
-                // keyword: [
-                // #include <rtl.def>
-                // ],
-                // And by invoking the cpp :
-                // cpp -P -I/path/to/gcc/gcc/ 
+        keywords: [
+            'abstract', 'continue', 'for', 'new', 'switch', 'assert', 'goto', 'do',
+            'if', 'private', 'this', 'break', 'protected', 'throw', 'else', 'public',
+            'enum', 'return', 'catch', 'try', 'interface', 'static', 'class',
+            'finally', 'const', 'super', 'while', 'true', 'false',
 
-                // All RTL classes.
-                "UnKnown",
-                "value",
-                "debug_expr",
-                "expr_list",
-                "insn_list",
-                "int_list",
-                "sequence",
-                "address",
-                "debug_insn",
-                "insn",
-                "jump_insn",
-                "call_insn",
-                "jump_table_data",
-                "barrier",
-                "code_label",
-                "note",
-                "cond_exec",
-                "parallel",
-                "asm_input",
-                "asm_operands",
-                "unspec",
-                "unspec_volatile",
-                "addr_vec",
-                "addr_diff_vec",
-                "prefetch",
-                "set",
-                "use",
-                "clobber",
-                "call",
-                "return",
-                "simple_return",
-                "eh_return",
-                "trap_if",
-                "const_int",
-                "const_fixed",
-                "const_double",
-                "const_vector",
-                "const_string",
-                "const",
-                "pc",
-                "reg",
-                "scratch",
-                "subreg",
-                "strict_low_part",
-                "concat",
-                "concatn",
-                "mem",
-                "label_ref",
-                "symbol_ref",
-                "cc0",
-                "if_then_else",
-                "compare",
-                "plus",
-                "minus",
-                "neg",
-                "mult",
-                "ss_mult",
-                "us_mult",
-                "div",
-                "ss_div",
-                "us_div",
-                "mod",
-                "udiv",
-                "umod",
-                "and",
-                "ior",
-                "xor",
-                "not",
-                "ashift",
-                "rotate",
-                "ashiftrt",
-                "lshiftrt",
-                "rotatert",
-                "smin",
-                "smax",
-                "umin",
-                "umax",
-                "pre_dec",
-                "pre_inc",
-                "post_dec",
-                "post_inc",
-                "pre_modify",
-                "post_modify",
-                "ne",
-                "eq",
-                "ge",
-                "gt",
-                "le",
-                "lt",
-                "geu",
-                "gtu",
-                "leu",
-                "ltu",
-                "unordered",
-                "ordered",
-                "uneq",
-                "unge",
-                "ungt",
-                "unle",
-                "unlt",
-                "ltgt",
-                "sign_extend",
-                "zero_extend",
-                "truncate",
-                "float_extend",
-                "float_truncate",
-                "float",
-                "fix",
-                "unsigned_float",
-                "unsigned_fix",
-                "fract_convert",
-                "unsigned_fract_convert",
-                "sat_fract",
-                "unsigned_sat_fract",
-                "abs",
-                "sqrt",
-                "bswap",
-                "ffs",
-                "clrsb",
-                "clz",
-                "ctz",
-                "popcount",
-                "parity",
-                "sign_extract",
-                "zero_extract",
-                "high",
-                "lo_sum",
-                "vec_merge",
-                "vec_select",
-                "vec_concat",
-                "vec_duplicate",
-                "ss_plus",
-                "us_plus",
-                "ss_minus",
-                "ss_neg",
-                "us_neg",
-                "ss_abs",
-                "ss_ashift",
-                "us_ashift",
-                "us_minus",
-                "ss_truncate",
-                "us_truncate",
-                "fma",
-                "var_location",
-                "debug_implicit_ptr",
-                "entry_value",
-                "debug_parameter_ref"
+            // Generated using the following:
+            // #define DEF_RTL_EXPR(a,b,c,d) b,
+            // keyword: [
+            // #include <rtl.def>
+            // ],
+            // And by invoking the cpp :
+            // cpp -P -I/path/to/gcc/gcc/
+
+            // All RTL classes.
+            "UnKnown",
+            "value",
+            "debug_expr",
+            "expr_list",
+            "insn_list",
+            "int_list",
+            "sequence",
+            "address",
+            "debug_insn",
+            "insn",
+            "jump_insn",
+            "call_insn",
+            "jump_table_data",
+            "barrier",
+            "code_label",
+            "note",
+            "cond_exec",
+            "parallel",
+            "asm_input",
+            "asm_operands",
+            "unspec",
+            "unspec_volatile",
+            "addr_vec",
+            "addr_diff_vec",
+            "prefetch",
+            "set",
+            "use",
+            "clobber",
+            "call",
+            "return",
+            "simple_return",
+            "eh_return",
+            "trap_if",
+            "const_int",
+            "const_fixed",
+            "const_double",
+            "const_vector",
+            "const_string",
+            "const",
+            "pc",
+            "reg",
+            "scratch",
+            "subreg",
+            "strict_low_part",
+            "concat",
+            "concatn",
+            "mem",
+            "label_ref",
+            "symbol_ref",
+            "cc0",
+            "if_then_else",
+            "compare",
+            "plus",
+            "minus",
+            "neg",
+            "mult",
+            "ss_mult",
+            "us_mult",
+            "div",
+            "ss_div",
+            "us_div",
+            "mod",
+            "udiv",
+            "umod",
+            "and",
+            "ior",
+            "xor",
+            "not",
+            "ashift",
+            "rotate",
+            "ashiftrt",
+            "lshiftrt",
+            "rotatert",
+            "smin",
+            "smax",
+            "umin",
+            "umax",
+            "pre_dec",
+            "pre_inc",
+            "post_dec",
+            "post_inc",
+            "pre_modify",
+            "post_modify",
+            "ne",
+            "eq",
+            "ge",
+            "gt",
+            "le",
+            "lt",
+            "geu",
+            "gtu",
+            "leu",
+            "ltu",
+            "unordered",
+            "ordered",
+            "uneq",
+            "unge",
+            "ungt",
+            "unle",
+            "unlt",
+            "ltgt",
+            "sign_extend",
+            "zero_extend",
+            "truncate",
+            "float_extend",
+            "float_truncate",
+            "float",
+            "fix",
+            "unsigned_float",
+            "unsigned_fix",
+            "fract_convert",
+            "unsigned_fract_convert",
+            "sat_fract",
+            "unsigned_sat_fract",
+            "abs",
+            "sqrt",
+            "bswap",
+            "ffs",
+            "clrsb",
+            "clz",
+            "ctz",
+            "popcount",
+            "parity",
+            "sign_extract",
+            "zero_extract",
+            "high",
+            "lo_sum",
+            "vec_merge",
+            "vec_select",
+            "vec_concat",
+            "vec_duplicate",
+            "ss_plus",
+            "us_plus",
+            "ss_minus",
+            "ss_neg",
+            "us_neg",
+            "ss_abs",
+            "ss_ashift",
+            "us_ashift",
+            "us_minus",
+            "ss_truncate",
+            "us_truncate",
+            "fma",
+            "var_location",
+            "debug_implicit_ptr",
+            "entry_value",
+            "debug_parameter_ref"
+        ],
+
+        typeKeywords: [
+            'boolean', 'double', 'byte', 'int', 'short', 'char', 'void', 'long', 'float'
+        ],
+
+        operators: [
+            '=', '>', '<', '!', '~', '?', ':', '==', '<=', '>=', '!=',
+            '&&', '||', '++', '--', '+', '-', '*', '/', '&', '|', '^', '%',
+            '<<', '>>', '>>>', '+=', '-=', '*=', '/=', '&=', '|=', '^=',
+            '%=', '<<=', '>>=', '>>>='
+        ],
+
+        // we include these common regular expressions
+        symbols: /[=><!~?:&|+\-*/^%]+/,
+
+        // C# style strings
+        escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
+
+        // The main tokenizer for our languages
+        tokenizer: {
+            root: [
+                // identifiers and keywords
+                [/[a-z_$][\w$]*/, {
+                    cases: {
+                        '@typeKeywords': 'keyword',
+                        '@keywords': 'keyword',
+                        '@default': 'identifier'
+                    }
+                }],
+                [/[A-Z][\w$]*/, 'type.identifier'],  // to show class names nicely
+
+                // whitespace
+                {include: '@whitespace'},
+
+                // delimiters and operators
+                [/[{}()[\]]/, '@brackets'],
+                [/[<>](?!@symbols)/, '@brackets'],
+                [/@symbols/, {
+                    cases: {
+                        '@operators': 'operator',
+                        '@default': ''
+                    }
+                }],
+
+                // @ annotations.
+                // As an example, we emit a debugging log message on these tokens.
+                // Note: message are supressed during the first load -- change some lines to see them.
+                //  [/@\s*[a-zA-Z_\$][\w\$]*/, { token: 'annotation', log: 'annotation token: $0' }],
+
+                // numbers
+                [/\d*\.\d+([eE][-+]?\d+)?/, 'number.float'],
+                [/0[xX][0-9a-fA-F]+/, 'number.hex'],
+                [/\d+/, 'number'],
+
+                // delimiter: after number because of .\d floats
+                [/[;,.]/, 'delimiter'],
+
+                // strings
+                [/"([^"\\]|\\.)*$/, 'string.invalid'],  // non-teminated string
+                [/"/, {token: 'string.quote', bracket: '@open', next: '@string'}],
+
+                // characters
+                [/'[^\\']'/, 'string'],
+                [/(')(@escapes)(')/, ['string', 'string.escape', 'string']],
+                [/'/, 'string.invalid']
             ],
 
-            typeKeywords: [
-                'boolean', 'double', 'byte', 'int', 'short', 'char', 'void', 'long', 'float'
+            comment: [
+                [/[^/*]+/, 'comment'],
+                [/\/\*/, 'comment', '@push'],    // nested comment
+                ["\\*/", 'comment', '@pop'],
+                [/[/*]/, 'comment']
             ],
 
-            operators: [
-                '=', '>', '<', '!', '~', '?', ':', '==', '<=', '>=', '!=',
-                '&&', '||', '++', '--', '+', '-', '*', '/', '&', '|', '^', '%',
-                '<<', '>>', '>>>', '+=', '-=', '*=', '/=', '&=', '|=', '^=',
-                '%=', '<<=', '>>=', '>>>='
+            string: [
+                [/[^\\"]+/, 'string'],
+                [/@escapes/, 'string.escape'],
+                [/\\./, 'string.escape.invalid'],
+                [/"/, {token: 'string.quote', bracket: '@close', next: '@pop'}]
             ],
 
-            // we include these common regular expressions
-            symbols: /[=><!~?:&|+\-*\/\^%]+/,
+            whitespace: [
+                [/[ \t\r\n]+/, 'white'],
+                [/\/\*/, 'comment', '@comment'],
+                [/\/\/.*$/, 'comment'],
+                [/^;;.*$/, 'comment']
 
-            // C# style strings
-            escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
+            ]
+        }
+    };
+}
 
-            // The main tokenizer for our languages
-            tokenizer: {
-                root: [
-                    // identifiers and keywords
-                    [/[a-z_$][\w$]*/, {
-                        cases: {
-                            '@typeKeywords': 'keyword',
-                            '@keywords': 'keyword',
-                            '@default': 'identifier'
-                        }
-                    }],
-                    [/[A-Z][\w\$]*/, 'type.identifier'],  // to show class names nicely
-
-                    // whitespace
-                    {include: '@whitespace'},
-
-                    // delimiters and operators
-                    [/[{}()\[\]]/, '@brackets'],
-                    [/[<>](?!@symbols)/, '@brackets'],
-                    [/@symbols/, {
-                        cases: {
-                            '@operators': 'operator',
-                            '@default': ''
-                        }
-                    }],
-
-                    // @ annotations.
-                    // As an example, we emit a debugging log message on these tokens.
-                    // Note: message are supressed during the first load -- change some lines to see them.
-                    //  [/@\s*[a-zA-Z_\$][\w\$]*/, { token: 'annotation', log: 'annotation token: $0' }],
-
-                    // numbers
-                    [/\d*\.\d+([eE][\-+]?\d+)?/, 'number.float'],
-                    [/0[xX][0-9a-fA-F]+/, 'number.hex'],
-                    [/\d+/, 'number'],
-
-                    // delimiter: after number because of .\d floats
-                    [/[;,.]/, 'delimiter'],
-
-                    // strings
-                    [/"([^"\\]|\\.)*$/, 'string.invalid'],  // non-teminated string
-                    [/"/, {token: 'string.quote', bracket: '@open', next: '@string'}],
-
-                    // characters
-                    [/'[^\\']'/, 'string'],
-                    [/(')(@escapes)(')/, ['string', 'string.escape', 'string']],
-                    [/'/, 'string.invalid']
-                ],
-
-                comment: [
-                    [/[^\/*]+/, 'comment'],
-                    [/\/\*/, 'comment', '@push'],    // nested comment
-                    ["\\*/", 'comment', '@pop'],
-                    [/[\/*]/, 'comment']
-                ],
-
-                string: [
-                    [/[^\\"]+/, 'string'],
-                    [/@escapes/, 'string.escape'],
-                    [/\\./, 'string.escape.invalid'],
-                    [/"/, {token: 'string.quote', bracket: '@close', next: '@pop'}]
-                ],
-
-                whitespace: [
-                    [/[ \t\r\n]+/, 'white'],
-                    [/\/\*/, 'comment', '@comment'],
-                    [/\/\/.*$/, 'comment'],
-                    [/^;;.*$/, 'comment']
-
-                ]
-            }
-        };
-    }
-
-    monaco.languages.register({id: 'gccdump-rtl-gimple'});
-    monaco.languages.setMonarchTokensProvider('gccdump-rtl-gimple', definition());
-});
+monaco.languages.register({id: 'gccdump-rtl-gimple'});
+monaco.languages.setMonarchTokensProvider('gccdump-rtl-gimple', definition());

@@ -120,7 +120,7 @@ CompilerService.prototype.expand = function (source) {
     _.each(lines, function (line, lineNumZeroBased) {
         var match = line.match(includeFind);
         if (match) {
-            promises.push(new Promise(function (resolve, reject) {
+            promises.push(new Promise(function (resolve) {
                 var req = $.get(match[1], function (data) {
                     data = '#line 1 "' + match[1] + '"\n' + data + '\n\n#line ' +
                         (lineNumZeroBased + 1) + ' "<stdin>"\n';
