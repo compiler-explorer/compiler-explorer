@@ -255,17 +255,27 @@ Conformance.prototype.handleStatusIcon = function (element, status) {
     if (!element) return;
 
     function glyphClass(code) {
-        return code === 3 ? "remove-sign" : (code === 2 ? "info-sign" : "ok-sign");
+        if (code === 3) return "remove-sign";
+        if (code === 2) return "info-sign";
+        return "ok-sign";
     }
 
     function ariaLabel(code) {
-        return code === 3 ? "Compilation failed!" : (code === 2 ? "Compiled with warnings" : "No warnings");
+        if (code === 3) return "Compilation failed";
+        if (code === 2) return "Compiled with warnings";
+        return "Compiled without warnings";
+    }
+
+    function color(code) {
+        if (code === 3) return "red";
+        if (code === 2) return "yellow";
+        return "green";
     }
 
     element
         .attr("class", "status glyphicon glyphicon-" + glyphClass(status.code))
         .css("visibility", status.code === 0 ? "hidden" : "visible")
-        .css("color", status.code === 3 ? "red" : (status.code === 2 ? "yellow" : "green"))
+        .css("color", color(status.code))
         .attr("title", status.text)
         .attr("aria-label", ariaLabel(status.code))
         .attr("data-status", status.code);
