@@ -472,6 +472,7 @@ Compiler.prototype.compile = function () {
         return;
     }
     this.needsCompile = false;
+    this.compileTimeLabel.text(' - Compiling...');
     var options = {
         userArguments: this.options,
         compilerOptions: {
@@ -663,13 +664,19 @@ Compiler.prototype.onCompileResponse = function (request, result, cached) {
     } else {
         this.outputBtn.prop('title', allText.replace(/\x1b\[[0-9;]*m/g, ''));
     }
+    var timeLabelText = '';
     if (cached) {
-        this.compileTimeLabel.text(' - cached');
+        timeLabelText = ' - cached';
     } else if (wasRealReply) {
-        this.compileTimeLabel.text(' - ' + timeTaken + 'ms');
-    } else {
-        this.compileTimeLabel.text('');
+        timeLabelText = ' - ' + timeTaken + 'ms';
     }
+
+    if (result.asmSize !== undefined) {
+        timeLabelText += ' (' + result.asmSize + 'B)';
+    }
+
+    this.compileTimeLabel.text(timeLabelText);
+
     this.eventHub.emit('compileResult', this.id, this.compiler, result);
     this.updateButtons();
 
