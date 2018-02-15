@@ -41,7 +41,7 @@ function Ast(hub, container, state) {
         language: 'cppp', //we only support cpp for now
         readOnly: true,
         glyphMargin: true,
-        fontFamily: 'monospace',
+        fontFamily: 'Consolas, "Liberation Mono", Courier, monospace',
         quickSuggestions: false,
         fixedOverflowWidgets: true,
         minimap: {

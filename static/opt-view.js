@@ -49,7 +49,7 @@ function Opt(hub, container, state) {
         glyphMargin: true,
         quickSuggestions: false,
         fixedOverflowWidgets: true,
-        fontFamily: 'monospace',
+        fontFamily: 'Consolas, "Liberation Mono", Courier, monospace',
         minimap: {
             maxColumn: 80
         },

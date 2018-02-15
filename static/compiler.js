@@ -183,7 +183,7 @@ function Compiler(hub, container, state) {
         scrollBeyondLastLine: false,
         readOnly: true,
         language: 'asm',
-        fontFamily: '"Fira Mono", monospace',
+        fontFamily: 'Consolas, "Liberation Mono", Courier, monospace',
         glyphMargin: !options.embedded,
         fixedOverflowWidgets: true,
         minimap: {

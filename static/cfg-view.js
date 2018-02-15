@@ -58,7 +58,7 @@ function Cfg(hub, container, state) {
             physics: false
         },
         nodes: {
-            font: {face: 'monospace', align: 'left'}
+            font: {face: 'Consolas, "Liberation Mono", Courier, monospace', align: 'left'}
         },
         layout: {
             improvedLayout: true,

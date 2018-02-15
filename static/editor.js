@@ -89,7 +89,7 @@ function Editor(hub, state, container) {
     this.editor = monaco.editor.create(root[0], {
         scrollBeyondLastLine: false,
         language: this.currentLanguage.monaco,
-        fontFamily: 'monospace',
+        fontFamily: 'Consolas, "Liberation Mono", Courier, monospace',
         readOnly: !!options.readOnly || legacyReadOnly,
         glyphMargin: !options.embedded,
         quickSuggestions: false,
