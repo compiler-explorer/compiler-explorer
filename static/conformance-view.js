@@ -273,12 +273,12 @@ Conformance.prototype.handleStatusIcon = function (element, status) {
     }
 
     element
-        .attr("class", "status glyphicon glyphicon-" + glyphClass(status.code))
+        .addClass("status glyphicon glyphicon-" + glyphClass(status.code))
         .css("visibility", status.code === 0 ? "hidden" : "visible")
         .css("color", color(status.code))
-        .attr("title", status.text)
-        .attr("aria-label", ariaLabel(status.code))
-        .attr("data-status", status.code);
+        .prop("title", status.text.replace(/\x1b\[[0-9;]*m(.\[K)?/g, ''))
+        .prop("aria-label", ariaLabel(status.code))
+        .prop("data-status", status.code);
 };
 
 Conformance.prototype.currentState = function () {

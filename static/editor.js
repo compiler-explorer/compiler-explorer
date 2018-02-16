@@ -138,7 +138,7 @@ function Editor(hub, state, container) {
             this.eventHub.emit('modifySettings', {
                 compileOnChange: !this.settings.compileOnChange
             });
-            new Alert().notify('Compile on code change has been toggled ' + (this.settings.compileOnChange ? 'ON' : 'OFF'), {
+            new Alert().notify('Compile on change has been toggled ' + (this.settings.compileOnChange ? 'ON' : 'OFF'), {
                 group: "togglecompile",
                 alertClass: this.settings.compileOnChange ? "notification-on" : "notification-off",
                 dismissTime: 3000
@@ -415,8 +415,8 @@ Editor.prototype.onCompilerOpen = function (compilerId, editorId) {
     if (editorId === this.id) {
         // On any compiler open, rebroadcast our state in case they need to know it.
         if (this.waitingForLanguage) {
-            var glCompiler = _.find(this.container.layoutManager.root.getComponentsByName("compiler"), function (compiler) {
-                return compiler.id === compilerId;
+            var glCompiler = _.find(this.container.layoutManager.root.getComponentsByName("compiler"), function (c) {
+                return c.id === compilerId;
             });
             if (glCompiler) {
                 var selected = _.find(options.compilers, function (compiler) {
@@ -483,13 +483,13 @@ Editor.prototype.onCompileResponse = function (compilerId, compiler, result) {
 };
 
 Editor.prototype.onSelectLine = function (id, lineNum) {
-    if (id === this.id) {
+    if (Number(id) === this.id) {
         this.editor.setSelection({line: lineNum - 1, ch: 0}, {line: lineNum, ch: 0});
     }
 };
 
 Editor.prototype.onEditorSetDecoration = function (id, lineNum, reveal) {
-    if (id === this.id) {
+    if (Number(id) === this.id) {
         if (reveal && lineNum)
             this.editor.revealLineInCenter(lineNum);
         this.decorations.linkedCode = lineNum === -1 || !lineNum ?
@@ -510,8 +510,7 @@ Editor.prototype.onEditorSetDecoration = function (id, lineNum, reveal) {
 };
 
 Editor.prototype.updateDecorations = function () {
-    this.prevDecorations = this.editor.deltaDecorations(
-        this.prevDecorations, _.flatten(_.values(this.decorations), true));
+    this.prevDecorations = this.editor.deltaDecorations(this.prevDecorations, _.flatten(_.values(this.decorations)));
 };
 
 Editor.prototype.onConformanceViewOpen = function (editorId) {

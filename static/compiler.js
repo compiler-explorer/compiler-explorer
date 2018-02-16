@@ -329,15 +329,18 @@ function Compiler(hub, container, state) {
     }, this);
 
     var createOptView = _.bind(function () {
-        return Components.getOptViewWith(this.id, this.source, this.lastResult.optOutput, this.getCompilerName(), this.sourceEditorId);
+        return Components.getOptViewWith(this.id, this.source, this.lastResult.optOutput, this.getCompilerName(),
+            this.sourceEditorId);
     }, this);
 
     var createAstView = _.bind(function () {
-        return Components.getAstViewWith(this.id, this.source, this.lastResult.astOutput, this.getCompilerName(), this.sourceEditorId);
+        return Components.getAstViewWith(this.id, this.source, this.lastResult.astOutput, this.getCompilerName(),
+            this.sourceEditorId);
     }, this);
 
     var createGccDumpView = _.bind(function () {
-        return Components.getGccDumpViewWith(this.id, this.getCompilerName(), this.sourceEditorId, this.lastResult.gccDumpOutput);
+        return Components.getGccDumpViewWith(this.id, this.getCompilerName(), this.sourceEditorId,
+            this.lastResult.gccDumpOutput);
     }, this);
 
     var createCfgView = _.bind(function () {
@@ -662,7 +665,7 @@ Compiler.prototype.onCompileResponse = function (request, result, cached) {
     if (this.isOutputOpened) {
         this.outputBtn.prop('title', '');
     } else {
-        this.outputBtn.prop('title', allText.replace(/\x1b\[[0-9;]*m/g, ''));
+        this.outputBtn.prop('title', allText.replace(/\x1b\[[0-9;]*m(.\[K)?/g, ''));
     }
     var timeLabelText = '';
     if (cached) {
@@ -688,7 +691,8 @@ Compiler.prototype.onCompileResponse = function (request, result, cached) {
 };
 
 Compiler.prototype.onEditorChange = function (editor, source, langId, compilerId) {
-    if (editor === this.sourceEditorId && langId === this.currentLangId && (compilerId === undefined || compilerId === this.id)) {
+    if (editor === this.sourceEditorId && langId === this.currentLangId &&
+        (compilerId === undefined || compilerId === this.id)) {
         this.source = source;
         this.compile();
     }
@@ -907,14 +911,14 @@ Compiler.prototype.onColours = function (editor, colours, scheme) {
 };
 
 Compiler.prototype.getCompilerName = function () {
-    return this.compiler ? this.compiler.name : 'no compiler set';
+    return this.compiler ? this.compiler.name : 'No compiler set';
 };
 
 Compiler.prototype.updateCompilerName = function () {
-    var langName = options.languages[this.currentLangId].name;
+    var name = options.languages[this.currentLangId].name;
     var compilerName = this.getCompilerName();
     var compilerVersion = this.compiler ? this.compiler.version : '';
-    this.container.setTitle(compilerName + ' (Editor #' + this.sourceEditorId + ', Compiler #' + this.id + ') ' + langName);
+    this.container.setTitle(compilerName + ' (Editor #' + this.sourceEditorId + ', Compiler #' + this.id + ') ' + name);
     this.domRoot.find('.full-compiler-name').text(compilerVersion);
 };
 
@@ -934,13 +938,12 @@ Compiler.prototype.onResendCompilation = function (id) {
 
 Compiler.prototype.updateDecorations = function () {
     this.prevDecorations = this.outputEditor.deltaDecorations(
-        this.prevDecorations, _.flatten(_.values(this.decorations), true));
+        this.prevDecorations, _.flatten(_.values(this.decorations)));
 };
 
 Compiler.prototype.onCompilerSetDecorations = function (id, lineNums, revealLine) {
-    if (id === this.id) {
-        if (revealLine && lineNums[0])
-            this.outputEditor.revealLineInCenter(lineNums[0]);
+    if (Number(id) === this.id) {
+        if (revealLine && lineNums[0]) this.outputEditor.revealLineInCenter(lineNums[0]);
         this.decorations.linkedCode = _.map(lineNums, function (line) {
             return {
                 range: new monaco.Range(line, 1, line, 1),
@@ -1085,10 +1088,12 @@ Compiler.prototype.onAsmToolTip = function (ed) {
     var opcode = word.word.toUpperCase();
 
     function appendInfo(url) {
-        return '<br><br>For more information, visit <a href="'+url+'" target="_blank" rel="noopener noreferrer">the ' +
-        opcode + ' documentation <sup><small class="glyphicon glyphicon-new-window" width="16px" height="16px"' +
-        ' title="Opens in a new window"></small></sup></a>.';
+        return '<br><br>For more information, visit <a href="' + url +
+            '" target="_blank" rel="noopener noreferrer">the ' + opcode +
+            ' documentation <sup><small class="glyphicon glyphicon-new-window" width="16px" height="16px"' +
+            ' title="Opens in a new window"></small></sup></a>.';
     }
+
     getAsmInfo(word.word).then(
         _.bind(function (asmHelp) {
             if (asmHelp) {
@@ -1164,7 +1169,8 @@ Compiler.prototype.updateLibsDropdown = function () {
                 _.each(this.availableLibs[this.currentLangId][elem.prop('data-lib')].versions, function (version) {
                     version.used = false;
                 });
-                this.availableLibs[this.currentLangId][elem.prop('data-lib')].versions[elem.prop('data-version')].used = elem.prop('checked');
+                this.availableLibs[this.currentLangId][elem.prop('data-lib')]
+                    .versions[elem.prop('data-version')].used = elem.prop('checked');
                 this.saveState();
                 this.compile();
             }, this);
