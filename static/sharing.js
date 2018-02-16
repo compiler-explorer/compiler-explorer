@@ -85,7 +85,7 @@ function initShareButton(getLink, layout) {
         getLink.popover('show');
     }).on('inserted.bs.popover', function () {
         var root = $('.urls-container:visible');
-        var urls = {};
+        var urls = {Short: 'Loading...'};
         if (!currentBind) currentBind = $(root.find('.sources a')[0]).data().bind;
 
         function update() {
@@ -98,6 +98,7 @@ function initShareButton(getLink, layout) {
             currentBind = $(this).data().bind;
             update();
         });
+
         getLinks(layout, function (theUrls) {
             urls = theUrls;
             update();
