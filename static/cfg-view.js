@@ -57,7 +57,7 @@ function Cfg(hub, container, state) {
             smooth: {
                 enabled: true,
                 type: "dynamic",
-                roundness: 1,
+                roundness: 1
             },
             physics: true
         },
@@ -96,7 +96,7 @@ function Cfg(hub, container, state) {
     }, this));
     this.domRoot.find('.enable-physics-btn').on('click', _.bind(function () {
         this.networkOpts.physics.enabled = !this.networkOpts.physics.enabled;
-        //change only physics.enabled option to preserve current node locations
+        // change only physics.enabled option to preserve current node locations
         this.cfgVisualiser.setOptions({
             physics: {enabled: this.networkOpts.physics.enabled}
         });
@@ -200,7 +200,7 @@ Cfg.prototype.setTitle = function () {
     this.container.setTitle(this._compilerName + ' Graph Viewer (Editor #' + this._editorid + ', Compiler #' + this.compilerId + ')');
 };
 
-Cfg.prototype.assignLevels = function(data) {
+Cfg.prototype.assignLevels = function (data) {
     var nodes = [];
     var idToIdx = [];
     for (var i in data.nodes) {
@@ -216,7 +216,7 @@ Cfg.prototype.assignLevels = function(data) {
             inCount: 0
         });
     }
-    var isEdgeValid = function(edge) {
+    var isEdgeValid = function (edge) {
         return edge.from in idToIdx && edge.to in idToIdx;
     };
     data.edges.forEach(function (edge) {
@@ -229,8 +229,8 @@ Cfg.prototype.assignLevels = function(data) {
         node.state = 1;
         node.edges.forEach(function (targetIndex) {
             var target = nodes[targetIndex];
-            if (target.state != 1) {
-                if (target.state == 0) {
+            if (target.state !== 1) {
+                if (target.state === 0) {
                     dfs(target);
                 }
                 node.dagEdges.push(targetIndex);
@@ -243,13 +243,13 @@ Cfg.prototype.assignLevels = function(data) {
         node.dagEdges.forEach(function (targetIndex) {
             var target = nodes[targetIndex];
             target.level = Math.max(target.level, node.level + 1);
-            if (--target.inCount == 0) {
+            if (--target.inCount === 0) {
                 markLevels(target);
             }
         });
     };
     nodes.forEach(function (node) {
-        if (node.state == 0) {
+        if (node.state === 0) {
             dfs(node);
             node.level = 1;
             markLevels(node);
