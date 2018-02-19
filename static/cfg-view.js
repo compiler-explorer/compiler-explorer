@@ -54,25 +54,28 @@ function Cfg(hub, container, state) {
         locale: 'en',
         edges: {
             arrows: {to: {enabled: true}},
-            smooth: {enabled: true},
-            physics: false
+            smooth: {
+                enabled: true,
+                type: "dynamic",
+                roundness: 1,
+            },
+            physics: true
         },
         nodes: {
             font: {face: 'Consolas, "Liberation Mono", Courier, monospace', align: 'left'}
         },
         layout: {
-            improvedLayout: true,
             hierarchical: {
                 enabled: true,
-                sortMethod: 'directed',
                 direction: 'UD',
                 nodeSpacing: 100,
                 levelSeparation: 150
             }
         },
         physics: {
+            enabled: true,
             hierarchicalRepulsion: {
-                nodeDistance: 125
+                nodeDistance: 160
             }
         },
         interaction: {
@@ -90,6 +93,13 @@ function Cfg(hub, container, state) {
     this.domRoot.find('.show-hide-btn').on('click', _.bind(function () {
         this.networkOpts.interaction.navigationButtons = !this.networkOpts.interaction.navigationButtons;
         this.cfgVisualiser.setOptions(this.networkOpts);
+    }, this));
+    this.domRoot.find('.enable-physics-btn').on('click', _.bind(function () {
+        this.networkOpts.physics.enabled = !this.networkOpts.physics.enabled;
+        //change only physics.enabled option to preserve current node locations
+        this.cfgVisualiser.setOptions({
+            physics: {enabled: this.networkOpts.physics.enabled}
+        });
     }, this));
 
     this.compilerId = state.id;
@@ -190,7 +200,83 @@ Cfg.prototype.setTitle = function () {
     this.container.setTitle(this._compilerName + ' Graph Viewer (Editor #' + this._editorid + ', Compiler #' + this.compilerId + ')');
 };
 
+Cfg.prototype.assignLevels = function(data) {
+    var nodes = [];
+    var idToIdx = [];
+    for (var i in data.nodes) {
+        var node = data.nodes[i];
+        idToIdx[node.id] = i;
+        nodes.push({
+            edges: [],
+            dagEdges: [],
+            index: i,
+            id: node.id,
+            level: 0,
+            state: 0,
+            inCount: 0
+        });
+    }
+    var isEdgeValid = function(edge) {
+        return edge.from in idToIdx && edge.to in idToIdx;
+    };
+    data.edges.forEach(function (edge) {
+        if (isEdgeValid(edge)) {
+            nodes[idToIdx[edge.from]].edges.push(idToIdx[edge.to]);
+        }
+    });
+
+    var dfs = function (node) { // choose which edges will be back-edges
+        node.state = 1;
+        node.edges.forEach(function (targetIndex) {
+            var target = nodes[targetIndex];
+            if (target.state != 1) {
+                if (target.state == 0) {
+                    dfs(target);
+                }
+                node.dagEdges.push(targetIndex);
+                target.inCount += 1;
+            }
+        });
+        node.state = 2;
+    };
+    var markLevels = function (node) {
+        node.dagEdges.forEach(function (targetIndex) {
+            var target = nodes[targetIndex];
+            target.level = Math.max(target.level, node.level + 1);
+            if (--target.inCount == 0) {
+                markLevels(target);
+            }
+        });
+    };
+    nodes.forEach(function (node) {
+        if (node.state == 0) {
+            dfs(node);
+            node.level = 1;
+            markLevels(node);
+        }
+    });
+    nodes.forEach(function (node) {
+        data.nodes[node.index]['level'] = node.level;
+    });
+    data.edges.forEach(function (edge) {
+        if (isEdgeValid(edge)) {
+            var nodeA = nodes[idToIdx[edge.from]];
+            var nodeB = nodes[idToIdx[edge.to]];
+            if (nodeA.level >= nodeB.level) {
+                edge.physics = false;
+            } else {
+                edge.physics = true;
+                var diff = (nodeB.level - nodeA.level);
+                edge.length = diff * (200 - 5 * (Math.min(5, diff)));
+            }
+        } else {
+            edge.physics = false;
+        }
+    });
+};
+
 Cfg.prototype.showCfgResults = function (data) {
+    this.assignLevels(data);
     this.cfgVisualiser.setData(data);
 };
 
