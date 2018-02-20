@@ -491,11 +491,12 @@ Compiler.prototype.compile = function () {
         },
         filters: this.getEffectiveFilters()
     };
+    var includeFlag = (this.compiler && this.compiler.includeFlag) || '-isystem';
     _.each(this.availableLibs[this.currentLangId], function (lib) {
         _.each(lib.versions, function (version) {
             if (version.used) {
                 _.each(version.path, function (path) {
-                    options.userArguments += ' -I' + path;
+                    options.userArguments += ' ' + includeFlag + path;
                 });
             }
         });
