@@ -255,7 +255,7 @@ function ClientOptionsHandler(fileSources) {
                     url: compilerPropsL(lang, libBaseName + '.url')
                 };
                 libs[lang][lib].versions = {};
-                const listedVersions = compilerPropsL(lang, libBaseName + '.versions');
+                const listedVersions = `${compilerPropsL(lang, libBaseName + '.versions')}`;
                 if (listedVersions) {
                     _.each(listedVersions.split(':'), version => {
                         const libVersionName = libBaseName + `.versions.${version}`;
