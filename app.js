@@ -613,7 +613,8 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
 
         if (isDevMode()) {
             webServer.use(webpackDevMiddleware(webpackCompiler, {
-                publicPath: webpackConfig.output.publicPath
+                publicPath: webpackConfig.output.publicPath,
+                logger: logger
             }));
             webServer.use(express.static(staticDir));
         } else {
