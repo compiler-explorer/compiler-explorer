@@ -24,6 +24,10 @@ body {
     display: none !important;
 }
 
+.lm_header {
+    background-color: #121212 !important;
+}
+
 .nav.nav-tabs li a {
     color: #eee !important;
     background-color: #666 !important;
