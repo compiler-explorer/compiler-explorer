@@ -1,6 +1,8 @@
 [![Build Status](https://travis-ci.org/mattgodbolt/compiler-explorer.svg?branch=master)](https://travis-ci.org/mattgodbolt/compiler-explorer)
 [![codecov](https://codecov.io/gh/mattgodbolt/compiler-explorer/branch/master/graph/badge.svg)](https://codecov.io/gh/mattgodbolt/compiler-explorer)
 
+![Compiler Explorer](docs/logo.svg)
+
 Compiler Explorer
 ------------
 
