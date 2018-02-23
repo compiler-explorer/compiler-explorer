@@ -651,7 +651,7 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
                 res.set('Content-Type', 'application/xml');
                 res.render('sitemap');
             })
-            .use(sFavicon(path.join(staticDir, webpackConfig.output.publicPath, 'favicon.ico')));
+            .use(sFavicon(path.join(staticDir, webpackConfig.output.publicPath, 'favicon.png')));
 
         webServer
             .use(bodyParser.json({limit: ceProps('bodyParserLimit', maxUploadSize)}))

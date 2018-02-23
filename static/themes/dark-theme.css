@@ -16,6 +16,14 @@ body {
     color: #ccc !important;
 }
 
+.navbar-brand img.inverse {
+    display: block !important;
+}
+
+.navbar-brand img.normal {
+    display: none !important;
+}
+
 .nav.nav-tabs li a {
     color: #eee !important;
     background-color: #666 !important;

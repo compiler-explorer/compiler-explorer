@@ -1,19 +1,22 @@
 doctype html
 html(lang="en")
   head
+    link(rel="icon" href="/favicon.png?v=1")
     include monaco.pug
     include head.pug
   body(class=extraBodyClass)
-    .navbar.navbar-inverse
+    .navbar
       .container-fluid
         .navbar-header
+          a.navbar-brand(href="#" title="Compiler Explorer")
+            img.normal(src=require("site-logo.svg") height="50" width="165")
+            img.inverse(src=require("site-logo-inverse.svg") height="50" width="165")
           button(type="button" class="navbar-toggle collapsed" data-toggle="collapse"
           data-target="#navbar-collapse" aria-expanded="false")
             span.sr-only Toggle navigation
             span.icon-bar
             span.icon-bar
             span.icon-bar
-          a.navbar-brand(href="#" title="Compiler Explorer") Compiler Explorer
         li.navbar-collapse.collapse#navbar-collapse
           ul.nav.navbar-nav.navbar-left
             li: a#add-editor(href="#" title="Click or drag to desired destination") Editor
@@ -82,7 +85,7 @@ html(lang="en")
             type="button" data-clipboard-target=".popover .permalink"
             title="Copy to clipboard")
               img.clippy(
-              src = require("clippy.svg")  width="13px"
+              src = require("clippy.svg") width="13px"
               alt="Copy to clipboard")
       .lang
 

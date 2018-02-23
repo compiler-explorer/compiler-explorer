@@ -35,7 +35,7 @@ let plugins = [
         to: vsPath,
     },
     {
-        from: path.join(staticPath, "favicon.ico"),
+        from: path.join(staticPath, "favicon.png"),
         to: distPath,
     },
     ]),

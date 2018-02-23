@@ -17,8 +17,17 @@
     height: 50px; /* needed to override the darkly settings */
 }
 
+.navbar-brand {
+    padding-top: 0px;
+    padding-bottom: 0px;
+}
+
+.navbar-brand img.inverse {
+    display: none;
+}
+
 .beta .navbar-brand::after {
-    content: " (beta)"
+    content: " (beta)";
 }
 
 #lang-dropdown {
