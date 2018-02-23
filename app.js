@@ -446,7 +446,8 @@ function findCompilers() {
             postProcess: props("postProcess", "").split("|"),
             lang: langId,
             group: group,
-            groupName: props("groupName", "")
+            groupName: props("groupName", ""),
+            includeFlag: props("includeFlag", "-isystem")
         };
         logger.debug("Found compiler", compilerInfo);
         return Promise.resolve(compilerInfo);
