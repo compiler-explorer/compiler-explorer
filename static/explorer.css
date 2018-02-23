@@ -20,14 +20,24 @@
 .navbar-brand {
     padding-top: 0px;
     padding-bottom: 0px;
+    position: relative;
+    width: 185px;
+}
+
+.navbar-brand img {
+    position: absolute;
 }
 
 .navbar-brand img.inverse {
     display: none;
 }
 
-.beta .navbar-brand::after {
-    content: " (beta)";
+.navbar-brand img.beta-overlay {
+    display: none;
+}
+
+.beta .navbar-brand img.beta-overlay {
+    display: block;
 }
 
 #lang-dropdown {
