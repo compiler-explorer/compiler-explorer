@@ -110,6 +110,8 @@ current user, then you can run the scripts directly.
 If your library fits nicely into the harness then it should be straightforward to add it there. Anything more complex: contact the CE
 authors for more help.
 
+Remeber to also add the library dependencies following the same steps. It's on you if those should also appear in the UI.
+
 ## Putting it all together
 
 Hopefully that's enough to get an idea. The ideal case should be a pull request to add a couple of
