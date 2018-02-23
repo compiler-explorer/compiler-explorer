@@ -491,7 +491,7 @@ Compiler.prototype.compile = function () {
         },
         filters: this.getEffectiveFilters()
     };
-    var includeFlag = this.compiler && this.compiler.includeFlag;
+    var includeFlag = this.compiler ? this.compiler.includeFlag : '-I';
     _.each(this.availableLibs[this.currentLangId], function (lib) {
         _.each(lib.versions, function (version) {
             if (version.used) {
