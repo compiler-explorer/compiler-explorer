@@ -68,7 +68,7 @@ function Hub(layout, subLangId) {
     this.deferred = true;
     this.deferredEmissions = [];
     this.lastOpenedLangId = null;
-    this.subdomainLangId = subLangId || null;
+    this.subdomainLangId = subLangId || undefined;
 
     // FIXME
     // We can't avoid this self as _ is undefined at this point

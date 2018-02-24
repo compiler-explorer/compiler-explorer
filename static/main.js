@@ -86,7 +86,7 @@ require("monaco-loader")().then(function () {
         var langBySubdomain = _.find(options.languages, function (lang) {
             return lang.id === subdomainPart || lang.alias.indexOf(subdomainPart) >= 0;
         });
-        var subLangId = langBySubdomain ? langBySubdomain.id : null;
+        var subLangId = langBySubdomain ? langBySubdomain.id : undefined;
 
         var defaultConfig = {
             settings: {showPopoutIcon: false},
