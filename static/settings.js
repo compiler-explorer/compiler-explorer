@@ -81,7 +81,8 @@ Slider.prototype.putUi = function (elem, value) {
 
 function setupSettings(root, settings, onChange, langId) {
     settings = settings || {};
-
+    // Ensure the default language is not "null" but undefined. Temporary patch for a previous bug :(
+    settings.defaultLanguage = settings.defaultLanguage === null ? undefined : settings.defaultLanguage;
     var settingsObjs = [];
 
     function onUiChange() {
