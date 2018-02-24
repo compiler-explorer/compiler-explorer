@@ -174,8 +174,6 @@ function setupSettings(root, settings, onChange, langId) {
             return {label: lang.id, desc: lang.name};
         })
     );
-
-    defaultLanguageSelector.val(defLang);
     if (langId) {
         defaultLanguageSelector
             .prop('disabled', true)

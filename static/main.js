@@ -55,7 +55,7 @@ require("monaco-loader")().then(function () {
     function setupSettings(hub) {
         var eventHub = hub.layout.eventHub;
         var defaultSettings = {
-            defaultLanguage: hub.subdomainLangId
+            defaultLanguage: hub.subdomainLangId ? hub.subdomainLangId : undefined
         };
         var currentSettings = JSON.parse(local.get('settings', null)) || defaultSettings;
 
@@ -118,15 +118,14 @@ require("monaco-loader")().then(function () {
                 config = savedState !== null ? JSON.parse(savedState) : defaultConfig;
             }
         } else {
-            config = _.extend(defaultConfig,
-                {
-                    settings: {
-                        showMaximiseIcon: false,
-                        showCloseIcon: false,
-                        hasHeaders: false
-                    }
-                },
-                sharing.configFromEmbedded(window.location.hash.substr(1)));
+            config = _.extend(defaultConfig, {
+                settings: {
+                    showMaximiseIcon: false,
+                    showCloseIcon: false,
+                    hasHeaders: false
+                }
+            },
+            sharing.configFromEmbedded(window.location.hash.substr(1)));
         }
 
         var root = $("#root");
