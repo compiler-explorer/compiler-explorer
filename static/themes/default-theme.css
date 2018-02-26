@@ -8,6 +8,14 @@
     color: #ddd;
 }
 
+.navbar .navbar-toggle {
+    background-color: #f2f2f2;
+}
+
+.navbar .navbar-toggle .icon-bar {
+    background-color: black;
+}
+
 .float-link {
     background-color: rgba(128, 128, 128, 0.5);
 }
