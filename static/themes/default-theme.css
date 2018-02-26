@@ -1,19 +1,23 @@
 @import url("~golden-layout/src/css/goldenlayout-light-theme.css");
 
-.navbar-inverse {
-    background-color: #226;
+body {
+    background-color: #FFFFFF;
 }
 
-.navbar-inverse .navbar-brand {
-    color: #ddd;
+.navbar-default {
+    background-color: #FFFFFF;
 }
 
-.navbar .navbar-toggle {
-    background-color: #f2f2f2;
+.navbar-default .navbar-nav li a {
+    color: #337ab7;
 }
 
-.navbar .navbar-toggle .icon-bar {
-    background-color: black;
+.navbar-default .navbar-nav li a:hover {
+    color: #23527c;
+}
+
+.navbar-default ul.nav li:hover {
+    background-color: #eee;
 }
 
 .float-link {

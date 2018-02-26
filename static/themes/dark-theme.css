@@ -4,24 +4,8 @@ body {
     background-color: #333 !important;
 }
 
-.navbar-inverse {
+.navbar-default {
     background-color: #333 !important;
-}
-
-.navbar-inverse .navbar-brand {
-    color: #aaa !important;
-}
-
-.navbar .navbar-toggle {
-    background-color: #3e3e3e !important;
-}
-
-.navbar .navbar-toggle .icon-bar {
-    background-color: #f2f2f2 !important;
-}
-
-.nav.navbar-nav.navbar-left li:hover {
-    color: #ccc !important;
 }
 
 .navbar-brand img.inverse {

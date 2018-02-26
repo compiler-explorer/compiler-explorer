@@ -4,7 +4,7 @@ html(lang="en")
     include monaco.pug
     include head.pug
   body(class=extraBodyClass)
-    .navbar
+    .navbar-default
       .container-fluid
         .navbar-header
           a.navbar-brand(href="#" title="Compiler Explorer")
@@ -62,31 +62,5 @@ html(lang="en")
     #root
 
     include templates.pug
-
-    .gl_keep.template
-      .urls
-        .input-group.urls-container
-          .input-group-btn
-            .btn-group.btn-group-sm
-              button.btn.btn-sm.dropdown-toggle(
-              data-toggle="dropdown" type="button" aria-haspopup="true" aria-expanded="false")
-                span.current Short
-                span.caret
-              ul.dropdown-menu.sources
-                if gapiKey
-                  li: a(href="#" data-bind="Short") Short
-                li: a(href="#" data-bind="Full") Full
-                li: a(href="#" data-bind="Embed") Embed
-                li: a(href="#" data-bind="Embed (RO)") Embed (read only)
-          input.form-control.input-sm.permalink(
-          type="text" placeholder="Loading" readonly size="1024")
-          span.input-group-btn
-            button.btn.btn-sm.clippy(
-            type="button" data-clipboard-target=".popover .permalink"
-            title="Copy to clipboard")
-              img.clippy(
-              src = require("clippy.svg") width="13px"
-              alt="Copy to clipboard")
-      .lang
 
     include popups.pug
