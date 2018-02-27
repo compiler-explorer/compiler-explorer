@@ -1,4 +1,4 @@
-// Copyright (c) 2012-2018, Rubén Rincón
+// Copyright (c) 2017, Rubén Rincón
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -43,7 +43,7 @@ describe('Properties', () => {
         casesProps("nonexistentProp", 4).should.be.equal(4);
         should.equal(casesProps("nonexistentProp", 4), 4);
     });
-    it('Handles empty properties as empty strings', ()  => {
+    it('Handles empty properties as empty strings', () => {
         should.equal(casesProps("emptyProperty"), "");
     });
     it('Ignores commented out properties', () => {

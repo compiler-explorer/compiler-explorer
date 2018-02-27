@@ -1,4 +1,4 @@
-// Copyright (c) 2012-2018, Patrick Quist
+// Copyright (c) 2017, Patrick Quist
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -29,14 +29,11 @@ const PascalCompiler = require('../lib/compilers/pascal');
 const CompilationEnvironment = require('../lib/compilation-env');
 const fs = require('fs-extra');
 const utils = require('../lib/utils');
-const logger = require('../lib/logger').logger;
 
 chai.use(chaiAsPromised);
 chai.should();
 
-const props = function (key, deflt) {
-    return deflt;
-};
+const props = (key, deflt) => deflt;
 
 describe('Basic compiler setup', function () {
     const ce = new CompilationEnvironment(props);
@@ -46,13 +43,11 @@ describe('Basic compiler setup', function () {
         "lang": "pascal"
     };
 
-    ce.compilerPropsL = function (lang, property, defaultValue) {
-        return "";
-    };
+    ce.compilerPropsL = () => "";
 
     const compiler = new PascalCompiler(info, ce);
 
-    if (process.platform == "win32") {
+    if (process.platform === "win32") {
         compiler.getOutputFilename("/tmp/", "output.pas").should.equal("\\tmp\\output.s");
     } else {
         compiler.getOutputFilename("/tmp/", "output.pas").should.equal("/tmp/output.s");
@@ -141,7 +136,7 @@ describe('Pascal Demangling FPC 3.2', function () {
     it('Should demangle OUTPUT$_$TMYCLASS_$__$$_MYFUNC$ANSISTRING$INTEGER$INTEGER$$INTEGER', function () {
         demangler.demangle("OUTPUT$_$TMYCLASS_$__$$_MYFUNC$ANSISTRING$INTEGER$INTEGER$$INTEGER:").should.equal("tmyclass.myfunc(ansistring,integer,integer)");
     });
-    
+
     it('Should demangle OUTPUT_$$_NOPARAMFUNC$$ANSISTRING', function () {
         demangler.demangle("OUTPUT_$$_NOPARAMFUNC$$ANSISTRING:").should.equal("noparamfunc()");
     });
@@ -298,7 +293,7 @@ describe('Pascal Ignored Symbols', function () {
         demangler.shouldIgnoreSymbol("_$SomeThing").should.equal(true);
     });
 
-    it('Should be able to differentiate between System and User functions', function() {
+    it('Should be able to differentiate between System and User functions', function () {
         demangler.shouldIgnoreSymbol("RTTI_OUTPUT_MyProperty").should.equal(true);
         demangler.shouldIgnoreSymbol("Rtti_Output_UserFunction").should.equal(false);
     });
@@ -318,9 +313,9 @@ describe('Pascal ASM line number injection', function () {
 
     const compiler = new PascalCompiler(info, ce);
 
-    it('Should have line numbering', function() {
-        return new Promise(function(resolve, reject) {
-            fs.readFile("test/pascal/asm-example.s", function(err, buffer) {
+    it('Should have line numbering', function () {
+        return new Promise(function (resolve, reject) {
+            fs.readFile("test/pascal/asm-example.s", function (err, buffer) {
                 const asmLines = utils.splitLines(buffer.toString());
                 compiler.preProcessLines(asmLines);
 
@@ -338,9 +333,9 @@ describe('Pascal ASM line number injection', function () {
 });
 
 describe('Pascal objdump filtering', function () {
-    it('Should filter out most of the runtime', function() {
-        return new Promise(function(resolve, reject) {
-            fs.readFile("test/pascal/objdump-example.s", function(err, buffer) {
+    it('Should filter out most of the runtime', function () {
+        return new Promise(function (resolve, reject) {
+            fs.readFile("test/pascal/objdump-example.s", function (err, buffer) {
                 const output = PascalCompiler.preProcessBinaryAsm(buffer.toString());
                 resolve(Promise.all([
                     utils.splitLines(output).length.should.be.below(500),

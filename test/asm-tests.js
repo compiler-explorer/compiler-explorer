@@ -1,4 +1,4 @@
-// Copyright (c) 2012-2018, Matt Godbolt
+// Copyright (c) 2018, Matt Godbolt
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,21 +22,17 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-const fs = require('fs'),
-    asmCl = require('../lib/asm-cl');
+const asmCl = require('../lib/asm-cl');
 require('chai').should();
 
 describe('ASM CL parser', () => {
     it('should work for error documents', () => {
         const parser = new asmCl.AsmParser();
         parser.process("<Compilation failed>", {directives: true})
-            .should.deep.equal(
-            [
-                {
-                    "source": null,
-                    "text": "<Compilation failed>"
-                }
-            ]
+            .should.deep.equal([{
+                "source": null,
+                "text": "<Compilation failed>"
+            }]
         );
     });
 });
