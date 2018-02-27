@@ -31,9 +31,7 @@ const CompilationEnvironment = require('../lib/compilation-env');
 chai.use(chaiAsPromised);
 chai.should();
 
-const props = function (key, deflt) {
-    return deflt;
-};
+const props = (key, deflt) => deflt;
 
 function createCompiler(compiler) {
     const ce = new CompilationEnvironment(props);
@@ -43,12 +41,10 @@ function createCompiler(compiler) {
         'lang': 'llvm'
     };
 
-    ce.compilerPropsL = function (lang, property, defaultValue) {
-        return '';
-    };
+    ce.compilerPropsL = () => '';
 
     return new compiler(info, ce);
-};
+}
 
 describe('llc options for at&t assembly', function () {
     let compiler = createCompiler(LLCCompiler);
@@ -56,7 +52,7 @@ describe('llc options for at&t assembly', function () {
     compiler.optionsForFilter({
         'intel': false,
         'binary': false
-    },'output.s').should.eql(['-o', 'output.s']);
+    }, 'output.s').should.eql(['-o', 'output.s']);
 });
 
 describe('llc options for intel assembly', function () {
@@ -65,7 +61,7 @@ describe('llc options for intel assembly', function () {
     compiler.optionsForFilter({
         'intel': true,
         'binary': false
-    },'output.s').should.eql(['-o', 'output.s', '-x86-asm-syntax=intel']);
+    }, 'output.s').should.eql(['-o', 'output.s', '-x86-asm-syntax=intel']);
 });
 
 describe('llc options for at&t binary', function () {
@@ -74,7 +70,7 @@ describe('llc options for at&t binary', function () {
     compiler.optionsForFilter({
         'intel': false,
         'binary': true
-    },'output.s').should.eql(['-o', 'output.s', '-filetype=obj']);
+    }, 'output.s').should.eql(['-o', 'output.s', '-filetype=obj']);
 });
 
 describe('llc options for intel binary', function () {
@@ -83,7 +79,7 @@ describe('llc options for intel binary', function () {
     compiler.optionsForFilter({
         'intel': true,
         'binary': true
-    },'output.s').should.eql(['-o', 'output.s', '-filetype=obj']);
+    }, 'output.s').should.eql(['-o', 'output.s', '-filetype=obj']);
 });
 
 describe('opt options', function () {
@@ -92,5 +88,5 @@ describe('opt options', function () {
     compiler.optionsForFilter({
         'intel': false,
         'binary': false
-    },'output.s').should.eql(['-o', 'output.s', '-S']);
+    }, 'output.s').should.eql(['-o', 'output.s', '-S']);
 });
