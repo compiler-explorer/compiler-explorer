@@ -1,4 +1,4 @@
-// Copyright (c) 2012-2018, Matt Godbolt & Rubén Rincón
+// Copyright (c) 2017, Matt Godbolt & Rubén Rincón
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-var should = require('chai').should(),
+const should = require('chai').should(),
     languages = require('../lib/languages').list,
     fs = require('fs-extra'),
     path = require('path');
@@ -32,7 +32,7 @@ describe('Language definitions tests', () => {
     it('Has id equal to object key', () => {
         Object.keys(languages).forEach(languageKey => should.equal(languages[languageKey].id, languageKey));
     });
-    it ('Has extensions with leading dots', () => {
+    it('Has extensions with leading dots', () => {
         Object.keys(languages).forEach(languageKey => should.equal(languages[languageKey].extensions[0][0], '.'));
     });
     it('Has examples & are initialized', () => {
