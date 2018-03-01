@@ -11,6 +11,10 @@
     visibility: visible;
 }
 
+body {
+    overflow: hidden;
+}
+
 .navbar-default {
     border: none;
     border-radius: 0;
