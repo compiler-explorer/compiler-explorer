@@ -1,4 +1,4 @@
-// Copyright (c) 2012-2018, Patrick Quist
+// Copyright (c) 2017, Patrick Quist
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,34 +22,33 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-var chai = require('chai');
-var should = chai.should();
-var assert = chai.assert;
-var SymbolStore = require('../lib/symbol-store').SymbolStore;
-var logger = require('../lib/logger').logger;
+const chai = require('chai');
+const SymbolStore = require('../lib/symbol-store').SymbolStore;
+
+chai.should();
 
 describe('Basic examples', function () {
     it('Empty', function () {
-        var store = new SymbolStore();
+        const store = new SymbolStore();
         store.ListSymbols().length.should.equal(0);
         store.ListTranslations().length.should.equal(0);
     });
 
     it('One item', function () {
-        var store = new SymbolStore();
+        const store = new SymbolStore();
         store.Add("test");
         store.ListSymbols().length.should.equal(1);
         store.ListTranslations().length.should.equal(1);
 
         store.ListSymbols()[0].should.equal("test");
 
-        var translations = store.ListTranslations();
+        const translations = store.ListTranslations();
         translations[0][0].should.equal("test");
         translations[0][1].should.equal("test");
     });
 
     it('Duplicate items', function () {
-        var store = new SymbolStore();
+        const store = new SymbolStore();
         store.Add("test");
         store.Add("test");
         store.ListSymbols().length.should.equal(1);
@@ -57,30 +56,30 @@ describe('Basic examples', function () {
 
         store.ListSymbols()[0].should.equal("test");
 
-        var translations = store.ListTranslations();
+        const translations = store.ListTranslations();
         translations[0][0].should.equal("test");
         translations[0][1].should.equal("test");
     });
 
     it('Sorted items', function () {
-        var store = new SymbolStore();
+        const store = new SymbolStore();
         store.Add("test123");
         store.Add("test123456");
         store.ListSymbols().length.should.equal(2);
         store.ListTranslations().length.should.equal(2);
 
-        var translations = store.ListTranslations();
+        const translations = store.ListTranslations();
         translations[0][0].should.equal("test123456");
         translations[1][0].should.equal("test123");
     });
 
     it('Add-many', function () {
-        var store = new SymbolStore();
+        const store = new SymbolStore();
         store.AddMany(["test123", "test123456", "test123"]);
         store.ListSymbols().length.should.equal(2);
         store.ListTranslations().length.should.equal(2);
 
-        var translations = store.ListTranslations();
+        const translations = store.ListTranslations();
         translations[0][0].should.equal("test123456");
         translations[1][0].should.equal("test123");
     });

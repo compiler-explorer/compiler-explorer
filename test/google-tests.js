@@ -1,4 +1,4 @@
-// Copyright (c) 2012-2018, Matt Godbolt
+// Copyright (c) 2017, Matt Godbolt
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-var chai = require('chai'),
+const chai = require('chai'),
     chaiAsPromised = require("chai-as-promised"),
     nock = require('nock'),
     google = require('../lib/google');

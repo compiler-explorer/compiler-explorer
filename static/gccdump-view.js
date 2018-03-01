@@ -1,6 +1,4 @@
-// Copyright (c) 2012-2017, Simon Brand
 // Copyright (c) 2017, Marc Poulhiès - Kalray Inc.
-//
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without

@@ -11,15 +11,18 @@
     visibility: visible;
 }
 
-.navbar {
+body {
+    overflow: hidden;
+}
+
+.navbar-default {
+    border: none;
     border-radius: 0;
-    margin-bottom: 2px;
-    height: 50px; /* needed to override the darkly settings */
+    margin-bottom: 1px;
 }
 
 .navbar-brand {
-    padding-top: 0px;
-    padding-bottom: 0px;
+    padding: 0;
     position: relative;
     width: 185px;
 }
@@ -38,14 +41,6 @@
 
 .beta .navbar-brand img.beta-overlay {
     display: block;
-}
-
-#lang-dropdown {
-    min-width: 5em;
-}
-
-.navbar-inverse .navbar-brand {
-    font-weight: bold;
 }
 
 .nav.nav-tabs {
