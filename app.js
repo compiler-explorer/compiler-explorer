@@ -201,7 +201,7 @@ const csp = require('./lib/csp').policy;
 
 function contentPolicyHeader(res) {
     if (csp) {
-        res.setHeader('Content-Security-Policy-Report-Only', csp);
+        res.setHeader('Content-Security-Policy', csp);
     }
 }
 
