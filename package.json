@@ -81,6 +81,7 @@
   },
   "scripts": {
     "test": "mocha --recursive && make test",
+    "webpack": "node node_modules/webpack/bin/webpack.js",
     "codecov": "istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec --recursive && codecov",
     "coverage": "istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec --recursive",
     "localcoverage": "istanbul cover ./node_modules/mocha/bin/_mocha --report html -- -R spec --recursive"
