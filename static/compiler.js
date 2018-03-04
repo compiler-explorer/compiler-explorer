@@ -1126,7 +1126,7 @@ Compiler.prototype.updateLibsDropdown = function () {
         container: 'body',
         content: _.bind(function () {
             var libsCount = _.keys(this.availableLibs[this.currentLangId]).length;
-            if (libsCount === 0) return this.noLibsPanel.clone();
+            if (libsCount === 0) return this.noLibsPanel;
             var columnCount = Math.ceil(libsCount / 5);
             var currentLibIndex = -1;
 

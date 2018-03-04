@@ -23,23 +23,25 @@ libs=kvasir:boost:rangesv3
 ```
 
 This says there are three libraries with identifiers `kvasir`, `boost` and `rangesv3`. CE will look for the key named
-`libs.ID.versions`, `libs.ID.name` and an optional `libs.ID.url`. The `ID` is the identifier (The one we just set) of the library being looked up.
+`libs.ID.versions`, `libs.ID.name` and the optionals `libs.ID.url` & `libs.ID.description`. The `ID` is the identifier (The one we just set) of the library being looked up.
 The `name` key expects the human readable name of the library (Note that you can use spaces here!)
 The `versions` key expects another list, akin to the libs key itself. This time, you have to define the available versions
 for each library.
 The `url` key expects an unescaped url, where users can go to learn more about the library (This is usually the project's homepage, or in its
 absence, the GitHub repo)
+The `description` key should be use as an extremely short description of the library. Usually used to spell the library's full name in cases where the `name` key is an acronym
 
 For example:
 
 ```
-libs.kvasir.name=kvasir
+libs.kvasir.name=Kvasir::mpl
 libs.kvasir.versions=trunk
 libs.kvasir.url=https://github.com/kvasir-io/Kvasir
 libs.boost.name=Boost
 libs.boost.versions=164:165
 libs.boost.url=http://www.boost.org/
-libs.rangesv3.name=ranges-v3
+libs.rangesv3.name=range-v3
+libs.rangesv3.description=Range library for C++11/14/17
 libs.rangesv3.versions=trunk:030
 libs.rangesv3.url=https://github.com/ericniebler/range-v3
 ```
@@ -70,7 +72,7 @@ libs.boost.versions.164.path=/opt/compiler-explorer/libs/boost_1_64_0
 libs.boost.versions.165.path=/opt/compiler-explorer/libs/boost_1_65_0
 
 
-libs.rangesv3.name=ranges-v3
+libs.rangesv3.name=range-v3
 libs.rangesv3.versions=trunk:030
 libs.rangesv3.url=https://github.com/ericniebler/range-v3
 
@@ -110,11 +112,13 @@ current user, then you can run the scripts directly.
 If your library fits nicely into the harness then it should be straightforward to add it there. Anything more complex: contact the CE
 authors for more help.
 
-Remeber to also add the library dependencies following the same steps. It's on you if those should also appear in the UI.
+Remember to also add the library dependencies following the same steps. It's on you if those should also appear in the UI.
 
 ## Putting it all together
 
 Hopefully that's enough to get an idea. The ideal case should be a pull request to add a couple of
 lines to the `compiler-explorer-image` to install the library, and a pull request to add a few lines to the `LANG.amazon.properties`
 file in this repository.
-Once that's done, remember to update [the wiki](https://github.com/mattgodbolt/compiler-explorer/wiki/Installed-libraries) with the new library, adding the library in alphabetical order, with newer versions on top
+Once that's done, remember to update [the wiki](https://github.com/mattgodbolt/compiler-explorer/wiki/Installed-libraries) with the new library, adding the library in alphabetical order, with newer versions on top.
+
+If you feel like we could improve this document in any way, please contact us. We'd love to hear from you!
