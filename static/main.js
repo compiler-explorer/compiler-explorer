@@ -153,7 +153,7 @@ require("monaco-loader")().then(function () {
         });
 
         function sizeRoot() {
-            var height = $(window).height() - root.position().top;
+            var height = $(window).height() - (root.position().top || 0);
             root.height(height);
             layout.updateSize();
         }
