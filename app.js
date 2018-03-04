@@ -252,7 +252,8 @@ function ClientOptionsHandler(fileSources) {
                 const libBaseName = `libs.${lib}`;
                 libs[lang][lib] = {
                     name: compilerPropsL(lang, libBaseName + '.name'),
-                    url: compilerPropsL(lang, libBaseName + '.url')
+                    url: compilerPropsL(lang, libBaseName + '.url'),
+                    description: compilerPropsL(lang, libBaseName + '.description')
                 };
                 libs[lang][lib].versions = {};
                 const listedVersions = `${compilerPropsL(lang, libBaseName + '.versions')}`;

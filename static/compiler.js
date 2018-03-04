@@ -121,6 +121,8 @@ function Compiler(hub, container, state) {
     this.outputBtn = this.domRoot.find('.output-btn');
     this.outputTextCount = this.domRoot.find('span.text-count');
     this.outputErrorCount = this.domRoot.find('span.err-count');
+    this.libsTemplates = $('.template #libs-dropdown');
+    this.noLibsPanel = this.libsTemplates.children('.no-libs');
 
     this.availableLibs = {};
     this.updateAvailableLibs = function () {
@@ -1124,22 +1126,7 @@ Compiler.prototype.updateLibsDropdown = function () {
         container: 'body',
         content: _.bind(function () {
             var libsCount = _.keys(this.availableLibs[this.currentLangId]).length;
-            if (libsCount === 0) {
-                return $('<p></p>')
-                    .text('No libs configured for ' + options.languages[this.currentLangId].name + ' yet. ')
-                    .append($('<a></a>')
-                        .attr('target', '_blank')
-                        .attr('rel', 'noopener noreferrer')
-                        .attr('href', 'https://github.com/mattgodbolt/compiler-explorer/issues/new')
-                        .text('You can suggest us one at any time ')
-                        .append($('<sup></sup>')
-                            .addClass('glyphicon glyphicon-new-window')
-                            .width('16px')
-                            .height('16px')
-                            .attr('title', 'Opens in a new window')
-                        )
-                    );
-            }
+            if (libsCount === 0) return this.noLibsPanel.clone();
             var columnCount = Math.ceil(libsCount / 5);
             var currentLibIndex = -1;
 
@@ -1180,7 +1167,7 @@ Compiler.prototype.updateLibsDropdown = function () {
                 var libHeader = $('<span></span>')
                     .text(lib.name + ' ')
                     .addClass('lib-header');
-                if (lib.url && lib.url.length >= 1) {
+                if (lib.url && lib.url.length > 0) {
                     libHeader.append($('<a></a>')
                         .prop('href', lib.url)
                         .prop('target', '_blank')
@@ -1189,6 +1176,11 @@ Compiler.prototype.updateLibsDropdown = function () {
                             .addClass('glyphicon glyphicon-new-window')
                         )
                     );
+                }
+                if (lib.description && lib.description.length > 0) {
+                    libHeader
+                        .addClass('lib-described')
+                        .prop('title', lib.description);
                 }
                 var libCat = $('<li></li>')
                     .append(libHeader)

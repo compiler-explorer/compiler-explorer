@@ -299,3 +299,15 @@ pre.content {
 .save-btn {
     margin-left: 5px;
 }
+
+.opens-new-window {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+.lib-described {
+    text-decoration: underline;
+    text-decoration-style: dashed;
+    cursor: help;
+}
