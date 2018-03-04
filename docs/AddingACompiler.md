@@ -107,5 +107,4 @@ Hopefully that's enough to get an idea. The ideal case of a GCC-like compiler sh
 lines to the `compiler-explorer-image` to install the compiler, and a pull request to add a few lines to the `LANG.amazon.properties`
 file in this repository.
 
-
 If you feel like we could improve this document in any way, please contact us. We'd love to hear from you!

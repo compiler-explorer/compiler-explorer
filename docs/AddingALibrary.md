@@ -29,7 +29,7 @@ The `versions` key expects another list, akin to the libs key itself. This time,
 for each library.
 The `url` key expects an unescaped url, where users can go to learn more about the library (This is usually the project's homepage, or in its
 absence, the GitHub repo)
-The `description` key should be use as an extremely short description of the library. Usually used to spell the library's full name in cases where the `name` key is an acronym
+The `description` key should be use as an extremely short description of the library. Usually used to spell the library's full name in cases where the `name` key is an acronym.
 
 For example:
 
