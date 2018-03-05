@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 const chai = require('chai'),
+    CompilationEnvironment = require('../../lib/compilation-env'),
     CompileHandler = require('../../lib/handlers/compile').Handler,
     {fakeProps} = require('../../lib/properties'),
     express = require('express'),
@@ -34,9 +35,10 @@ chai.should();
 describe('Compiler tests', () => {
     const app = express();
     app.use(bodyParser.json()).use(bodyParser.text());
-    const fakeGccProps = {};
+    const fakeCEProps = {};
     const fakeCompilerProps = {};
-    const compileHandler = new CompileHandler(fakeProps(fakeGccProps), fakeProps(fakeCompilerProps));
+    const compilationEnvironment = new CompilationEnvironment(fakeProps(fakeCEProps), fakeProps(fakeCompilerProps));
+    const compileHandler = new CompileHandler(compilationEnvironment);
     app.post('/:compiler/compile', compileHandler.handle.bind(compileHandler));
 
     it('throws for unknown compilers', () => {

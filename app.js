@@ -54,7 +54,8 @@ const opts = nopt({
     'noRemoteFetch': [Boolean],
     'tmpDir': [String],
     'wsl': [Boolean],
-    'language': [String]
+    'language': [String],
+    'noCache': [Boolean]
 });
 
 if (opts.debug) logger.level = 'debug';
@@ -88,6 +89,7 @@ const port = opts.port || 10240;
 const staticDir = opts.static || 'static';
 let gitReleaseName = "";
 const wantedLanguage = opts.language || null;
+const doCache = !opts.noCache;
 
 
 const webpackConfig = require('./webpack.config.js')[1],
@@ -217,18 +219,16 @@ function awsInstances() {
 function loadSources() {
     const sourcesDir = "lib/sources";
     return fs.readdirSync(sourcesDir)
-        .filter(function (file) {
-            return file.match(/.*\.js$/);
-        })
-        .map(function (file) {
-            return require("./" + path.join(sourcesDir, file));
-        });
+        .filter(file => file.match(/.*\.js$/))
+        .map(file => require("./" + path.join(sourcesDir, file)));
 }
 
 const fileSources = loadSources();
 const clientOptionsHandler = new ClientOptionsHandler(fileSources);
+const CompilationEnvironment = require('./lib/compilation-env');
+const compilationEnvironment = new CompilationEnvironment(ceProps, compilerPropsL, doCache);
 const CompileHandler = require('./lib/handlers/compile').Handler;
-const compileHandler = new CompileHandler(ceProps, compilerPropsL);
+const compileHandler = new CompileHandler(compilationEnvironment);
 const ApiHandler = require('./lib/handlers/api').Handler;
 const apiHandler = new ApiHandler(compileHandler);
 const SourceHandler = require('./lib/handlers/source').Handler;
@@ -297,7 +297,8 @@ function ClientOptionsHandler(fileSources) {
         environment: env,
         localStoragePrefix: ceProps('localStoragePrefix'),
         cvCompilerCountMax: ceProps('cvCompilerCountMax', 6),
-        defaultFontScale: ceProps('defaultFontScale', 1.0)
+        defaultFontScale: ceProps('defaultFontScale', 1.0),
+        doCache: doCache
     };
     this.setCompilers = compilers => {
         const blacklistedKeys = ['exe', 'versionFlag', 'versionRe', 'compilerType', 'demangler', 'objdumper', 'postProcess'];
@@ -662,6 +663,9 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
             .use('/source', sourceHandler.handle.bind(sourceHandler))
             .use('/api', apiHandler.handle)
             .use('/g', shortUrlHandler);
+        if (!doCache) {
+            logger.info("  not caching due to --noCache parameter being present");
+        }
         logger.info("=======================================");
         webServer.use(Raven.errorHandler());
         webServer.on('error', err => logger.error('Caught error:', err, "(in web error handler; continuing)"));

@@ -40,14 +40,27 @@ const props = (key, deflt) => {
 };
 
 describe('Compilation environment', () => {
-    const ce = new CompilationEnvironment(props);
-    it('Should cache', () => {
+    it('Should cache by default', () => {
+        const ce = new CompilationEnvironment(props, () => {});
         should.not.exist(ce.cacheGet('foo'));
         ce.cachePut('foo', 'bar');
-        ce.cacheGet('foo').should.equal('bar');
+        should.equal(ce.cacheGet('foo'), 'bar');
         should.not.exist(ce.cacheGet('baz'));
     });
+    it('Should cache when asked', () => {
+        const ce = new CompilationEnvironment(props, () => {}, true);
+        should.not.exist(ce.cacheGet('foo'));
+        ce.cachePut('foo', 'bar');
+        should.equal(ce.cacheGet('foo'), 'bar');
+        should.not.exist(ce.cacheGet('baz'));
+    });
+    it('Shouldn\'t cache when asked', () => {
+        const ce = new CompilationEnvironment(props, () => {}, false);
+        ce.cachePut('foo', 'bar');
+        should.not.exist(ce.cacheGet('foo'));
+    });
     it('Should filter bad options', () => {
+        const ce = new CompilationEnvironment(props, () => {});
         ce.findBadOptions(['-O3', '-flto']).should.be.empty;
         ce.findBadOptions(['-O3', '-plugin']).should.eql(['-plugin']);
     });

@@ -55,7 +55,7 @@ function patchOldFilters(filters) {
     // to suppress the {filter:false} form. This means we can't distinguish between
     // "filter not on" and "filter not present". In the latter case we want to default
     // the filter. In the former case we want the filter off. Filters now don't suppress
-    // but there are plenty of permanlinks out there with no filters set at all. Here
+    // but there are plenty of permalinks out there with no filters set at all. Here
     // we manually set any missing filters to 'false' to recover the old behaviour of
     // "if it's not here, it's off".
     _.each(['binary', 'labels', 'directives', 'commentOnly', 'trim', 'intel'], function (oldFilter) {
@@ -1165,14 +1165,16 @@ Compiler.prototype.updateLibsDropdown = function () {
             _.each(this.availableLibs[this.currentLangId], function (lib, libKey) {
                 var libsList = getNextList();
                 var libHeader = $('<span></span>')
-                    .text(lib.name + ' ')
+                    .text(lib.name)
                     .addClass('lib-header');
                 if (lib.url && lib.url.length > 0) {
                     libHeader.append($('<a></a>')
+                        .css("float", "right")
+                        .addClass('opens-new-window')
                         .prop('href', lib.url)
                         .prop('target', '_blank')
                         .prop('rel', 'noopener noreferrer')
-                        .append($('<small><span></span></small>')
+                        .append($('<sup></sup>')
                             .addClass('glyphicon glyphicon-new-window')
                         )
                     );

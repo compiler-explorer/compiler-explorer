@@ -63,13 +63,15 @@ CompilerService.prototype.findCompiler = function (langId, compilerId) {
 
 CompilerService.prototype.submit = function (request) {
     var jsonRequest = JSON.stringify(request);
-    var cachedResult = this.cache.get(jsonRequest);
-    if (cachedResult) {
-        return Promise.resolve({
-            request: request,
-            result: cachedResult,
-            localCacheHit: true
-        });
+    if (options.doCache) {
+        var cachedResult = this.cache.get(jsonRequest);
+        if (cachedResult) {
+            return Promise.resolve({
+                request: request,
+                result: cachedResult,
+                localCacheHit: true
+            });
+        }
     }
     return new Promise(_.bind(function (resolve, reject) {
         $.ajax({
@@ -79,7 +81,7 @@ CompilerService.prototype.submit = function (request) {
             contentType: 'application/json',
             data: jsonRequest,
             success: _.bind(function (result) {
-                if (result && result.okToCache) {
+                if (result && result.okToCache && options.doCache) {
                     this.cache.set(jsonRequest, result);
                 }
                 resolve({
