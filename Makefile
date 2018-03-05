@@ -10,9 +10,9 @@ YARN:=yarn-not-found
 # if they fail, they stop the make process. As best I can tell there's no
 # way to get make to fail if a sub-shell command fails.
 .node-bin: etc/scripts/find-node
-	@etc/scripts/find-node > .node-bin
+	@etc/scripts/find-node .node-bin
 .yarn-bin: etc/scripts/find-yarn node-installed
-	@etc/scripts/find-yarn > .yarn-bin
+	@etc/scripts/find-yarn .yarn-bin
 
 # All targets that need node must depend on this to ensure the NODE variable
 # is appropriately set, and that PATH is updated so that yarn etc will use this

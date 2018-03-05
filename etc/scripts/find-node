@@ -1,6 +1,7 @@
 #!/bin/bash
 
 set -e
+OUT="$1"
 
 find_node() {
     local NODE="${NODE_DIR}/bin/node"
@@ -39,4 +40,4 @@ if [[ ${NODE_MAJOR_VERSION} -gt ${NODE_VERSION_USED} ]]; then
     >&2 echo The higher node version might work but it has not been tested.
 fi
 
-echo ${NODE}
+echo ${NODE} > ${OUT}
