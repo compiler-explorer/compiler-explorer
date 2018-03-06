@@ -88,36 +88,21 @@ def instr_name(i):
         return match.group(1)
 
 
-def get_section_description_pars(section):
-    l = []
-    for sub in section:
-        l.append(sub.get_text())
-    return l
-
-
-def get_strong_description_pars(strong):
-    sibling = strong.parent
-    l = []
-    while True:
-        if hasattr(sibling, 'p'):
-            l.append(sibling.get_text())
-        if not hasattr(sibling, 'next_sibling'):
-            break;
-        sibling = sibling.next_sibling
-    return l
-
-
-def get_description_from_pars(pars):
-    for par in pars:
-        descr = par.strip()
-        if len(descr) > 20:
-            return descr
-    raise RuntimeError("Couldn't find decent description in {}".format(section))
+def get_description_paragraphs(document_soup):
+    description_header_node = document_soup.find(id="Description")
+    i = 0;
+    description_paragraph_node = description_header_node.next_sibling.next_sibling
+    description_paragraphs = []
+    while i < MAX_DESC_PARAS and len(description_paragraph_node.text) > 20:
+        description_paragraphs.append(description_paragraph_node.text.strip())
+        i = i + 1
+    return description_paragraphs
 
 
 def parse(filename, f):
-    print("============ " + filename)
     doc = BeautifulSoup(f, 'html.parser')
+    if doc.table is None:
+        return None
     table = read_table(doc.table)
     names = set()
 
@@ -128,19 +113,23 @@ def parse(filename, f):
                 names.add(instruction_name)
 
     for inst in table:
-        print(inst)
         if 'Opcode/Instruction' in inst:
             add_all(inst['Opcode/Instruction'].split("\n"))
         elif 'OpcodeInstruction' in inst:
             add_all(inst['OpcodeInstruction'].split("\n"))
         elif 'Opcode*/Instruction' in inst:
             add_all(inst['Opcode*/Instruction'].split("\n"))
-        else:
+        elif 'Opcode / Instruction' in inst:
+            add_all(inst['Opcode / Instruction'].split("\n"))
+        elif 'Instruction' in inst:
             instruction_name = instr_name(inst['Instruction'])
             if not instruction_name:
                 print "Unable to get instruction from:", inst['Instruction']
             else:
                 names.add(instruction_name)
+        else:
+            print("Skipping "  + filename)
+            return None
     if not names:
         if filename in UNPARSEABLE_INSTR_NAMES:
             for inst in filename.split(":"):
@@ -157,32 +146,13 @@ def parse(filename, f):
             first = first.next_sibling
         sections[section_header.text] = children
 
-    # If we couldn't find 'Description' in sections, this means that it's in a
-    # '<strong>' (MOV) tag or a '<h3>' (VCVTPS2PH) tag.
-    if not 'Description' in sections:
-        # Inspecting '<strong> tag.
-        for strong in doc.find_all('strong'):
-            if strong.get_text() == 'Description':
-                sections['Description'] = get_strong_description_pars(strong)
-                break
-        if not 'Description' in sections:
-            for section_header in doc.find_all("h3"):
-                children = []
-                first = section_header.next_sibling
-                while first and first.name != 'h3':
-                    if str(first).strip():
-                        children.append(first)
-                    first = first.next_sibling
-                sections[section_header.text] = children
-            sections['Description'] = get_section_description_pars(sections['Description'])
-    else:
-        sections['Description'] = get_section_description_pars(sections['Description'])
+    description_paragraphs = get_description_paragraphs(doc)
 
     return Instruction(
         filename,
         names,
-        get_description_from_pars(sections['Description']),
-        "".join(x for x in sections['Description'][:MAX_DESC_PARAS]).strip())
+        description_paragraphs[0],
+        "\n".join(description_paragraphs).strip())
 
 
 def read_table(table):
