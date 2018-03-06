@@ -6,6 +6,7 @@ import os
 import re
 import shutil
 import sys
+import tarfile
 import urllib
 import zipfile
 
@@ -62,18 +63,16 @@ def download_asm_doc_archive(downloadfolder):
     elif not os.path.isdir(downloadfolder):
         print("Error: download folder {} is not a directory".format(download))
         sys.exit(1)
-    archive_name = os.path.join(downloadfolder, "x86.zip")
+    archive_name = os.path.join(downloadfolder, "x86.tbz2")
     print("Downloading archive...")
-    urllib.urlretrieve("http://www.felixcloutier.com/x86/x86.zip", archive_name)
+    urllib.urlretrieve("http://www.felixcloutier.com/x86/x86.tbz2", archive_name)
     if os.path.isdir(os.path.join(downloadfolder, "html")):
         for root, dirs, files in os.walk(os.path.join(downloadfolder, "html")):
             for file in files:
                 if os.path.splitext(file)[1] == ".html":
                     os.remove(os.path.join(root, file));
-    zip_ref = zipfile.ZipFile(archive_name, 'r')
-    zip_ref.extractall(downloadfolder)
-    zip_ref.close()
-    shutil.rmtree(os.path.join(downloadfolder, "__MACOSX"));
+    tar = tarfile.open(archive_name);
+    tar.extractall(path=extract_directory);
 
 
 def strip_non_instr(i):
