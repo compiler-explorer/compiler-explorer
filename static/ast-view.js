@@ -111,6 +111,9 @@ Ast.prototype.onCompiler = function (id, compiler, options, editorid) {
         this._compilerName = compiler ? compiler.name : '';
         this._editorid = editorid;
         this.setTitle();
+        if (compiler && !compiler.supportsAstView) {
+            this.astEditor.setValue("<" + compiler.version + " does not support the AST view>");
+        }
     }
 };
 

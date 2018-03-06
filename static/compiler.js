@@ -808,13 +808,18 @@ Compiler.prototype.updateButtons = function () {
     // Disable any of the options which don't make sense in binary mode.
     var filtersDisabled = !!filters.binary && !this.compiler.supportsFiltersInBinary;
     this.domRoot.find('.nonbinary').prop('disabled', filtersDisabled);
-    // If its already open, we should turn the it off.
+    // If its already open, we should turn it off.
     // The pane will update with error text
-    // Other wise we just disable the button.
+    // Otherwise we just disable the button.
     if (!this.optViewOpen) {
         this.optButton.prop('disabled', !this.compiler.supportsOptOutput);
     } else {
         this.optButton.prop('disabled', true);
+    }
+    if (!this.astViewOpen) {
+        this.astButton.prop('disabled', !this.compiler.supportsAstView);
+    } else {
+        this.astButton.prop('disabled', true);
     }
 
     if (!this.cfgViewOpen) {
