@@ -561,7 +561,7 @@ Compiler.prototype.setAssembly = function (assembly) {
     this.assembly = assembly;
     if (!this.outputEditor || !this.outputEditor.getModel()) return;
     var currentTopLine = this.outputEditor.getCompletelyVisibleLinesRangeInViewport().startLineNumber;
-    this.outputEditor.getModel().setValue(_.pluck(assembly, 'text').join('\n'));
+    this.outputEditor.getModel().setValue(assembly.length ? _.pluck(assembly, 'text').join('\n') : "<No assembly generated>");
     this.outputEditor.revealLine(currentTopLine);
     var addrToAddrDiv = {};
     var decorations = [];
