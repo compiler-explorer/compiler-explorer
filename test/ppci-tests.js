@@ -52,16 +52,16 @@ describe('PPCI', function () {
 
     it('Should be ok with most arguments', () => {
         const compiler = new PPCICompiler(info, ce);
-        compiler.filterArgs(["hello", "-help", "--something"]).should.deep.equal(["hello", "-help", "--something"]);
+        compiler.filterUserOptions(["hello", "-help", "--something"]).should.deep.equal(["hello", "-help", "--something"]);
     });
 
     it('Should be Not ok with path argument', () => {
         const compiler = new PPCICompiler(info, ce);
-        compiler.filterArgs(["hello", "--stuff", "/proc/cpuinfo"]).should.deep.equal(["hello", "--stuff"]);
+        compiler.filterUserOptions(["hello", "--stuff", "/proc/cpuinfo"]).should.deep.equal(["hello", "--stuff"]);
     });
     
     it('Should be Not ok with report arguments', () => {
         const compiler = new PPCICompiler(info, ce);
-        compiler.filterArgs(["hello", "--report", "--text-report"]).should.deep.equal(["hello"]);
+        compiler.filterUserOptions(["hello", "--report", "--text-report"]).should.deep.equal(["hello"]);
     });
 });
