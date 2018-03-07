@@ -30,6 +30,62 @@ STRIP_PREFIX = re.compile(r'^(([0-9a-fA-F]{2}|(REX|VEX\.)[.0-9A-Z]*|/.|[a-z]+)\b
 INSTRUCTION_RE = re.compile(r'^([A-Z][A-Z0-9]+)\*?(\s+|$)')
 # Some instructions are so broken we just take their names from the filename
 UNPARSEABLE_INSTR_NAMES = ['PSRLW:PSRLD:PSRLQ', 'PSLLW:PSLLD:PSLLQ']
+# Some files contain instructions which cannot be parsed and which compilers are unlikely to emit
+IGNORED_FILE_NAMES = [
+# SGX pseudo-instructions
+    "EADD",
+    "EACCEPT",
+    "EAUG",
+    "EACCEPTCOPY",
+    "EDECVIRTCHILD",
+    "EINCVIRTCHILD",
+    "EINIT",
+    "ELDB:ELDU:ELDBC:ELBUC",
+    "EMODPE",
+    "EMODPR",
+    "EMODT",
+    "ERDINFO",
+    "ESETCONTEXT",
+    "ETRACKC",
+    "EBLOCK",
+    "ECREATE",
+    "EDBGRD",
+    "EDBGWR",
+    "EENTER",
+    "EEXIT",
+    "EEXTEND",
+    "EGETKEY",
+    "ELDB",
+    "ELDU",
+    "ENCLS",
+    "ENCLU",
+    "EPA",
+    "EREMOVE",
+    "EREPORT",
+    "ERESUME",
+    "ETRACK",
+    "EWB",
+# VMX instructions
+    "INVEPT",
+    "INVVPID",
+    "VMCALL",
+    "VMCLEAR",
+    "VMFUNC",
+    "VMLAUNCH",
+    "VMLAUNCH:VMRESUME",
+    "VMPTRLD",
+    "VMPTRST",
+    "VMREAD",
+    "VMRESUME",
+    "VMWRITE",
+    "VMXOFF",
+    "VMXON",
+# Other instructions
+    "MFENCE",
+    "MONITOR",
+    "MOVBE",
+    "MOVDQ2Q",
+]
 # Some instructions are defined in multiple files. We ignore a specific set of the
 # duplicates here.
 IGNORED_DUPLICATES = [
@@ -37,7 +93,8 @@ IGNORED_DUPLICATES = [
     'MOV-2',  # move to debug reg
     'CMPSD',  # compare doubleword (defined in CMPS:CMPSB:CMPSW:CMPSD:CMPSQ)
     'MOVQ',  # defined in MOVD:MOVQ
-    'MOVSD'  # defined in MOVS:MOVSB:MOVSW:MOVSD:MOVSQ
+    'MOVSD', # defined in MOVS:MOVSB:MOVSW:MOVSD:MOVSQ
+    'VPBROADCASTB:VPBROADCASTW:VPBROADCASTD:VPBROADCASTQ' # defined in VPBROADCAST
 ]
 # Where to extract the asmdoc archive.
 ASMDOC_DIR = "asm-docs"
@@ -102,6 +159,7 @@ def get_description_paragraphs(document_soup):
 def parse(filename, f):
     doc = BeautifulSoup(f, 'html.parser')
     if doc.table is None:
+        print filename + ": Failed to find table"
         return None
     table = read_table(doc.table)
     names = set()
@@ -127,14 +185,13 @@ def parse(filename, f):
                 print "Unable to get instruction from:", inst['Instruction']
             else:
                 names.add(instruction_name)
-        else:
-            print("Skipping "  + filename)
-            return None
+        # else, skip the line
     if not names:
         if filename in UNPARSEABLE_INSTR_NAMES:
             for inst in filename.split(":"):
                 names.add(inst)
         else:
+            print filename + ": Failed to read instruction table"
             return None
     sections = {}
     for section_header in doc.find_all("h2"):
@@ -195,11 +252,10 @@ def parse_html(directory):
             if file.endswith(".html") and file != 'index.html':
                 with open(os.path.join(root, file)) as f2:
                     name = os.path.splitext(file)[0]
-                    if name in IGNORED_DUPLICATES:
+                    if name in IGNORED_DUPLICATES or name in IGNORED_FILE_NAMES:
                         continue
                     instruction = parse(name, f2)
                     if not instruction:
-                        print "Unable to get instructions for " + file
                         continue
                     instructions.append(instruction)
     return instructions
