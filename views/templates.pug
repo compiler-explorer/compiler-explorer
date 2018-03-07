@@ -50,7 +50,7 @@
       table
         tr
           td: select.compiler-picker(placeholder="Select a compiler...")
-          td: input.options.form-control(type="text" placeholder="Compiler options..." size="256")
+          td: input.options.form-control(type="text" placeholder="Compiler options..." size="256" autocorrect="off" autocapitalize="off" spellcheck="false")
       if !embedded
         include font-size.pug
       div.btn-group.btn-group-sm.filters(data-toggle="buttons")
@@ -188,7 +188,7 @@
         td
           select.compiler-picker(placeholder="Select a compiler...")
         td
-          input.options.form-control(type="text" size="256" placeholder="Compiler options...")
+          input.options.form-control(type="text" size="256" placeholder="Compiler options..." autocorrect="off" autocapitalize="off" spellcheck="false")
         td
           button.close(aria-label="Close")
             span(aria-hidden="true")
