@@ -111,33 +111,9 @@ function Compiler(hub, container, state) {
     this.wantOptInfo = state.wantOptInfo;
     this.decorations = {};
     this.prevDecorations = [];
-    this.optButton = this.domRoot.find('.btn.view-optimization');
-    this.astButton = this.domRoot.find('.btn.view-ast');
-    this.gccDumpButton = this.domRoot.find('.btn.view-gccdump');
-    this.cfgButton = this.domRoot.find('.btn.view-cfg');
-    this.libsButton = this.domRoot.find('.btn.show-libs');
-    this.compileTimeLabel = this.domRoot.find('.compile-time');
-    this.compileClearCache = this.domRoot.find('.clear-cache');
-    this.outputBtn = this.domRoot.find('.output-btn');
-    this.outputTextCount = this.domRoot.find('span.text-count');
-    this.outputErrorCount = this.domRoot.find('span.err-count');
-    this.libsTemplates = $('.template #libs-dropdown');
-    this.noLibsPanel = this.libsTemplates.children('.no-libs');
 
-    this.availableLibs = {};
-    this.updateAvailableLibs = function () {
-        if (!this.availableLibs[this.currentLangId]) {
-            this.availableLibs[this.currentLangId] = $.extend(true, {}, options.libs[this.currentLangId]);
-        }
-    };
-    this.updateAvailableLibs();
-    _.each(state.libs, _.bind(function (lib) {
-        if (this.availableLibs[this.currentLangId][lib.name] &&
-            this.availableLibs[this.currentLangId][lib.name].versions &&
-            this.availableLibs[this.currentLangId][lib.name].versions[lib.ver]) {
-            this.availableLibs[this.currentLangId][lib.name].versions[lib.ver].used = true;
-        }
-    }, this));
+    this.initButtons();
+    this.initLibraries(state);
 
     this.linkedFadeTimeoutId = -1;
     this.getGroupsInUse = function () {
@@ -263,48 +239,8 @@ function Compiler(hub, container, state) {
 
     this.filters.on('change', _.bind(this.onFilterChange, this));
 
-    container.on('destroy', this.close, this);
-    container.on('resize', this.resize, this);
-    container.on('shown', this.resize, this);
-    container.on('open', function () {
-        this.eventHub.emit('compilerOpen', this.id, this.sourceEditorId);
-        this.updateFontScale();
-    }, this);
-    this.eventHub.on('editorChange', this.onEditorChange, this);
-    this.eventHub.on('editorClose', this.onEditorClose, this);
-    this.eventHub.on('colours', this.onColours, this);
-    this.eventHub.on('resendCompilation', this.onResendCompilation, this);
-    this.eventHub.on('findCompilers', this.sendCompiler, this);
-    this.eventHub.on('compilerSetDecorations', this.onCompilerSetDecorations, this);
-    this.eventHub.on('settingsChange', this.onSettingsChange, this);
+    this.initCallbacks();
 
-    this.eventHub.on('optViewOpened', this.onOptViewOpened, this);
-    this.eventHub.on('optViewClosed', this.onOptViewClosed, this);
-    this.eventHub.on('astViewOpened', this.onAstViewOpened, this);
-    this.eventHub.on('astViewClosed', this.onAstViewClosed, this);
-    this.eventHub.on('outputOpened', this.onOutputOpened, this);
-    this.eventHub.on('outputClosed', this.onOutputClosed, this);
-
-    this.eventHub.on('gccDumpPassSelected', this.onGccDumpPassSelected, this);
-    this.eventHub.on('gccDumpFiltersChanged', this.onGccDumpFiltersChanged, this);
-    this.eventHub.on('gccDumpViewOpened', this.onGccDumpViewOpened, this);
-    this.eventHub.on('gccDumpViewClosed', this.onGccDumpViewClosed, this);
-    this.eventHub.on('gccDumpUIInit', this.onGccDumpUIInit, this);
-
-    this.eventHub.on('cfgViewOpened', this.onCfgViewOpened, this);
-    this.eventHub.on('cfgViewClosed', this.onCfgViewClosed, this);
-    this.eventHub.on('resize', this.resize, this);
-    this.eventHub.on('requestFilters', function (id) {
-        if (id === this.id) {
-            this.eventHub.emit('filtersChange', this.id, this.getEffectiveFilters());
-        }
-    }, this);
-    this.eventHub.on('requestCompiler', function (id) {
-        if (id === this.id) {
-            this.sendCompiler();
-        }
-    }, this);
-    this.eventHub.on('languageChange', this.onLanguageChange, this);
     this.onSettingsChange(this.settings);
     this.sendCompiler();
     this.updateCompilerName();
@@ -427,9 +363,7 @@ function Compiler(hub, container, state) {
         }
     }, this));
 
-    this.onSettingsChange(this.settings);
     this.eventHub.on('initialised', this.undefer, this);
-
     this.saveState();
 }
 
@@ -792,6 +726,38 @@ Compiler.prototype.onCfgViewClosed = function (id) {
     }
 };
 
+Compiler.prototype.initButtons = function () {
+    this.optButton = this.domRoot.find('.btn.view-optimization');
+    this.astButton = this.domRoot.find('.btn.view-ast');
+    this.gccDumpButton = this.domRoot.find('.btn.view-gccdump');
+    this.cfgButton = this.domRoot.find('.btn.view-cfg');
+    this.libsButton = this.domRoot.find('.btn.show-libs');
+    this.compileTimeLabel = this.domRoot.find('.compile-time');
+    this.compileClearCache = this.domRoot.find('.clear-cache');
+    this.outputBtn = this.domRoot.find('.output-btn');
+    this.outputTextCount = this.domRoot.find('span.text-count');
+    this.outputErrorCount = this.domRoot.find('span.err-count');
+    this.libsTemplates = $('.template #libs-dropdown');
+    this.noLibsPanel = this.libsTemplates.children('.no-libs');
+};
+
+Compiler.prototype.initLibraries = function (state) {
+    this.availableLibs = {};
+    this.updateAvailableLibs();
+    _.each(state.libs, _.bind(function (lib) {
+        if (this.availableLibs[this.currentLangId][lib.name] &&
+            this.availableLibs[this.currentLangId][lib.name].versions &&
+            this.availableLibs[this.currentLangId][lib.name].versions[lib.ver]) {
+            this.availableLibs[this.currentLangId][lib.name].versions[lib.ver].used = true;
+        }
+    }, this));
+};
+
+Compiler.prototype.updateAvailableLibs = function () {
+    if (!this.availableLibs[this.currentLangId]) {
+        this.availableLibs[this.currentLangId] = $.extend(true, {}, options.libs[this.currentLangId]);
+    }
+};
 
 Compiler.prototype.updateButtons = function () {
     if (!this.compiler) return;
@@ -833,6 +799,52 @@ Compiler.prototype.updateButtons = function () {
     } else {
         this.gccDumpButton.prop('disabled', true);
     }
+};
+
+
+Compiler.prototype.initCallbacks = function () {
+    this.container.on('destroy', this.close, this);
+    this.container.on('resize', this.resize, this);
+    this.container.on('shown', this.resize, this);
+    this.container.on('open', function () {
+        this.eventHub.emit('compilerOpen', this.id, this.sourceEditorId);
+        this.updateFontScale();
+    }, this);
+    this.eventHub.on('editorChange', this.onEditorChange, this);
+    this.eventHub.on('editorClose', this.onEditorClose, this);
+    this.eventHub.on('colours', this.onColours, this);
+    this.eventHub.on('resendCompilation', this.onResendCompilation, this);
+    this.eventHub.on('findCompilers', this.sendCompiler, this);
+    this.eventHub.on('compilerSetDecorations', this.onCompilerSetDecorations, this);
+    this.eventHub.on('settingsChange', this.onSettingsChange, this);
+
+    this.eventHub.on('optViewOpened', this.onOptViewOpened, this);
+    this.eventHub.on('optViewClosed', this.onOptViewClosed, this);
+    this.eventHub.on('astViewOpened', this.onAstViewOpened, this);
+    this.eventHub.on('astViewClosed', this.onAstViewClosed, this);
+    this.eventHub.on('outputOpened', this.onOutputOpened, this);
+    this.eventHub.on('outputClosed', this.onOutputClosed, this);
+
+    this.eventHub.on('gccDumpPassSelected', this.onGccDumpPassSelected, this);
+    this.eventHub.on('gccDumpFiltersChanged', this.onGccDumpFiltersChanged, this);
+    this.eventHub.on('gccDumpViewOpened', this.onGccDumpViewOpened, this);
+    this.eventHub.on('gccDumpViewClosed', this.onGccDumpViewClosed, this);
+    this.eventHub.on('gccDumpUIInit', this.onGccDumpUIInit, this);
+
+    this.eventHub.on('cfgViewOpened', this.onCfgViewOpened, this);
+    this.eventHub.on('cfgViewClosed', this.onCfgViewClosed, this);
+    this.eventHub.on('resize', this.resize, this);
+    this.eventHub.on('requestFilters', function (id) {
+        if (id === this.id) {
+            this.eventHub.emit('filtersChange', this.id, this.getEffectiveFilters());
+        }
+    }, this);
+    this.eventHub.on('requestCompiler', function (id) {
+        if (id === this.id) {
+            this.sendCompiler();
+        }
+    }, this);
+    this.eventHub.on('languageChange', this.onLanguageChange, this);
 };
 
 Compiler.prototype.onOptionsChange = function (options) {

@@ -25,7 +25,7 @@
 
 var _ = require('underscore');
 
-// themes is an array so one scheme can be used in multiple places. If you want to use it everywhere, ['all'] should suffice
+// If you want to use an scheme in every theme, set `theme: ['all']`
 var schemes = [
     {name: 'rainbow', desc: 'Rainbow 1', count: 12, themes: ['default']},
     {name: 'rainbow2', desc: 'Rainbow 2', count: 12, themes: ['default']},
