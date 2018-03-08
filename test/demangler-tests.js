@@ -1,4 +1,4 @@
-// Copyright (c) 2012-2018, Patrick Quist
+// Copyright (c) 2018, Patrick Quist
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -29,7 +29,7 @@ const
     utils = require('../lib/utils'),
     chaiAsPromised = require('chai-as-promised'),
     SymbolStore = require('../lib/symbol-store').SymbolStore,
-    Demangler = require('../lib/demangler').Demangler,
+    Demangler = require('../lib/demangler-cpp').DemanglerCPP,
     logger = require('../lib/logger').logger;
 
 chai.use(chaiAsPromised);
