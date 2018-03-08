@@ -43,19 +43,19 @@ const nopt = require('nopt'),
 
 // Parse arguments from command line 'node ./app.js args...'
 const opts = nopt({
-    'env': [String, Array],
-    'rootDir': [String],
-    'host': [String],
-    'port': [Number],
-    'propDebug': [Boolean],
-    'debug': [Boolean],
-    'static': [String],
-    'archivedVersions': [String],
-    'noRemoteFetch': [Boolean],
-    'tmpDir': [String],
-    'wsl': [Boolean],
-    'language': [String],
-    'noCache': [Boolean]
+    env: [String, Array],
+    rootDir: [String],
+    host: [String],
+    port: [Number],
+    propDebug: [Boolean],
+    debug: [Boolean],
+    static: [String],
+    archivedVersions: [String],
+    noRemoteFetch: [Boolean],
+    tmpDir: [String],
+    wsl: [Boolean],
+    language: [String],
+    noCache: [Boolean]
 });
 
 if (opts.debug) logger.level = 'debug';
@@ -370,7 +370,7 @@ function findCompilers() {
                     port: port,
                     path: "/api/compilers",
                     headers: {
-                        'Accept': 'application/json'
+                        Accept: 'application/json'
                     }
                 }, res => {
                     let str = '';

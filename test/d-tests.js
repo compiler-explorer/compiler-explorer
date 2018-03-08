@@ -1,4 +1,4 @@
-// Copyright (c) 2018, Patrick Quist
+// Copyright (c) 2018, Rubén Rincón
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -18,42 +18,35 @@
 // CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
 // SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
 // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ,
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
 const chai = require('chai');
 const chaiAsPromised = require("chai-as-promised");
-const PPCICompiler = require('../lib/compilers/ppci');
+const LDCCompiler = require('../lib/compilers/ldc');
+const DMDCompiler = require('../lib/compilers/dmd');
 const CompilationEnvironment = require('../lib/compilation-env');
 
 chai.use(chaiAsPromised);
 chai.should();
 
-const props = function (key, deflt) {
-    return deflt;
-};
+const props = (key, deflt) => deflt;
 
-describe('PPCI', function () {
+describe('D', () => {
     const ce = new CompilationEnvironment(props, () => "");
     const info = {
-        "exe": null,
-        "remote": true,
-        "lang": "c"
+        exe: null,
+        remote: true,
+        lang: "d"
     };
 
-    it('Should be ok with most arguments', () => {
-        const compiler = new PPCICompiler(info, ce);
-        compiler.filterUserOptions(["hello", "-help", "--something"]).should.deep.equal(["hello", "-help", "--something"]);
+    it('LDC should not allow -run parameter', () => {
+        const compiler = new LDCCompiler(info, ce);
+        compiler.filterUserOptions(["hello", "-run", "--something"]).should.deep.equal(["hello", "--something"]);
     });
-
-    it('Should be Not ok with path argument', () => {
-        const compiler = new PPCICompiler(info, ce);
-        compiler.filterUserOptions(["hello", "--stuff", "/proc/cpuinfo"]).should.deep.equal(["hello", "--stuff"]);
-    });
-    
-    it('Should be Not ok with report arguments', () => {
-        const compiler = new PPCICompiler(info, ce);
-        compiler.filterUserOptions(["hello", "--report", "--text-report"]).should.deep.equal(["hello"]);
+    it('DMD should not allow -run parameter', () => {
+        const compiler = new DMDCompiler(info, ce);
+        compiler.filterUserOptions(["hello", "-run", "--something"]).should.deep.equal(["hello", "--something"]);
     });
 });
