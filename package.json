@@ -82,8 +82,8 @@
   },
   "scripts": {
     "test": "mocha --recursive && make test",
-    "dev": "cross-env NODE_ENV=DEV && node app.js",
-    "run": "cross-env NODE_ENV=LOCAL && npx webpack && node app.js",
+    "dev": "cross-env NODE_ENV=DEV node app.js",
+    "run": "npx webpack && cross-env NODE_ENV=LOCAL node app.js",
     "codecov": "istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec --recursive && codecov",
     "coverage": "istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec --recursive",
     "localcoverage": "istanbul cover ./node_modules/mocha/bin/_mocha --report html -- -R spec --recursive"
