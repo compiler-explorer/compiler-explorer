@@ -26,7 +26,7 @@ parser.add_argument('-d', '--downloadfolder', type=str,
 
 # The maximum number of paragraphs from the description to copy.
 MAX_DESC_PARAS = 5
-STRIP_PREFIX = re.compile(r'^(([0-9a-fA-F]{2}|(REX|VEX\.)[.0-9A-Z]*|/.|[a-z]+)\b\s*)*')
+STRIP_PREFIX = re.compile(r'^(([0-9a-fA-F]{2}|NP|(REX|E?VEX\.)[.0-9A-Z]*|/.|[a-z]+)\b\s*)*')
 INSTRUCTION_RE = re.compile(r'^([A-Z][A-Z0-9]+)\*?(\s+|$)')
 # Some instructions are so broken we just take their names from the filename
 UNPARSEABLE_INSTR_NAMES = ['PSRLW:PSRLD:PSRLQ', 'PSLLW:PSLLD:PSLLQ']
