@@ -27,7 +27,7 @@ Code is separated into server-side code and client-side code. All dependencies (
 Server code is in `app.js` and in the `lib` directory. Client code is all in the `static` directory.
 
 In the server code, the `app.js` sets up a basic `express` middleware-driven web server, delegating to the various compiler
-backends in `lib/compilers`. Most inherit (loosely) from `lib/base-compiler.js` which does most of the work of running
+backends in `lib/compilers`. All of them inherit from `lib/base-compiler.js` which does most of the work of running
 compilers, then parsing the output and forming a JSON object to send to the client. Any assembly parsing is done in `asm.js`.
 
 In the client code, GoldenLayout is used as the container. If you look at some of the components like the `static/compiler.js`,
