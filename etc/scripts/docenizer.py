@@ -151,8 +151,10 @@ def get_description_paragraphs(document_soup):
     description_paragraph_node = description_header_node.next_sibling.next_sibling
     description_paragraphs = []
     while i < MAX_DESC_PARAS and len(description_paragraph_node.text) > 20:
-        description_paragraphs.append(description_paragraph_node.text.strip())
+        description_paragraphs.append(description_paragraph_node)
         i = i + 1
+        # Move two siblings forward. Next sibling is the line feed.
+        description_paragraph_node = description_paragraph_node.next_sibling.next_sibling
     return description_paragraphs
 
 
@@ -208,8 +210,8 @@ def parse(filename, f):
     return Instruction(
         filename,
         names,
-        description_paragraphs[0],
-        "\n".join(description_paragraphs).strip())
+        description_paragraphs[0].text.strip(),
+        ''.join(map(lambda x: str(x), description_paragraphs)).strip())
 
 
 def read_table(table):
