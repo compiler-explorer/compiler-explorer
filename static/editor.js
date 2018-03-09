@@ -463,7 +463,7 @@ Editor.prototype.onCompileResponse = function (compilerId, compiler, result) {
             startLineNumber: obj.tag.line,
             startColumn: obj.tag.column || 0,
             endLineNumber: obj.tag.line,
-            endColumn: -1
+            endColumn: obj.tag.column ? -1 : Infinity
         };
     }, this));
     monaco.editor.setModelMarkers(this.editor.getModel(), compilerId, widgets);
