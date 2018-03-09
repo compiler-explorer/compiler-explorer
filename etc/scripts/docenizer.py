@@ -26,7 +26,7 @@ parser.add_argument('-d', '--downloadfolder', type=str,
 
 # The maximum number of paragraphs from the description to copy.
 MAX_DESC_PARAS = 5
-STRIP_PREFIX = re.compile(r'^(([0-9a-fA-F]{2}|NP|(REX|E?VEX\.)[.0-9A-Z]*|/.|[a-z]+)\b\s*)*')
+STRIP_PREFIX = re.compile(r'^(([0-9a-fA-F]{2}|m64|NP|(REX|E?VEX\.)[.0-9A-Z]*|/[0-9a-z]+|[a-z]+)\b\s*)*')
 INSTRUCTION_RE = re.compile(r'^([A-Z][A-Z0-9]+)\*?(\s+|$)')
 # Some instructions are so broken we just take their names from the filename
 UNPARSEABLE_INSTR_NAMES = ['PSRLW:PSRLD:PSRLQ', 'PSLLW:PSLLD:PSLLQ']
@@ -81,10 +81,16 @@ IGNORED_FILE_NAMES = [
     "VMXOFF",
     "VMXON",
 # Other instructions
-    "MFENCE",
+    "INVLPG",
+    "LAHF",
+    "RDMSR",
+    "SGDT",
+# Unparsable instructions
+# These instructions should be supported in the future
     "MONITOR",
-    "MOVBE",
     "MOVDQ2Q",
+    "MOVBE",
+    "MFENCE",
 ]
 # Some instructions are defined in multiple files. We ignore a specific set of the
 # duplicates here.
@@ -94,7 +100,11 @@ IGNORED_DUPLICATES = [
     'CMPSD',  # compare doubleword (defined in CMPS:CMPSB:CMPSW:CMPSD:CMPSQ)
     'MOVQ',  # defined in MOVD:MOVQ
     'MOVSD', # defined in MOVS:MOVSB:MOVSW:MOVSD:MOVSQ
-    'VPBROADCASTB:VPBROADCASTW:VPBROADCASTD:VPBROADCASTQ' # defined in VPBROADCAST
+    'VPBROADCASTB:VPBROADCASTW:VPBROADCASTD:VPBROADCASTQ', # defined in VPBROADCAST
+    "VGATHERDPS:VGATHERDPD",
+    "VGATHERQPS:VGATHERQPD",
+    "VPGATHERDD:VPGATHERQD",
+    "VPGATHERDQ:VPGATHERQQ",
 ]
 # Where to extract the asmdoc archive.
 ASMDOC_DIR = "asm-docs"
@@ -178,6 +188,8 @@ def parse(filename, f):
             add_all(inst['Opcode/Instruction'].split("\n"))
         elif 'OpcodeInstruction' in inst:
             add_all(inst['OpcodeInstruction'].split("\n"))
+        elif 'Opcode Instruction' in inst:
+            add_all(inst['Opcode Instruction'].split("\n"))
         elif 'Opcode*/Instruction' in inst:
             add_all(inst['Opcode*/Instruction'].split("\n"))
         elif 'Opcode / Instruction' in inst:
