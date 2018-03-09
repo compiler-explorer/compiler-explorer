@@ -277,12 +277,18 @@ def parse_html(directory):
 
 
 def self_test(instructions, directory):
+    # For each generated instruction, check that there is a path to a file in
+    # the documentation.
     directory = os.path.join(directory, "html")
+    ok = True
     for inst in instructions:
         if not os.path.isfile(os.path.join(directory, inst.name + ".html")):
             print("Warning: {} has not file associated".format(inst.name))
+            ok = False
+    return ok
 
-if __name__ == '__main__':
+
+def docenizer():
     args = parser.parse_args()
     if not os.path.exists(args.inputfolder):
         try:
@@ -305,6 +311,9 @@ if __name__ == '__main__':
             print "Overlap in instruction names: {} for {}".format(
                 inst.names.intersection(all_inst), inst.name)
         all_inst = all_inst.union(inst.names)
+    if not self_test(instructions, args.inputfolder):
+        print("Not writing output file. Aborting.")
+        return
 
     with open(args.outputpath, 'w') as f:
         f.write("""
@@ -328,3 +337,6 @@ module.exports = {
     getAsmOpcode: getAsmOpcode
 };
 """)
+
+if __name__ == '__main__':
+    docenizer()
