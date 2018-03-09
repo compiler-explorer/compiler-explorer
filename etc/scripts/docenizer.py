@@ -111,7 +111,7 @@ class Instruction(object):
         return "{} = {}\n{}".format(self.names, self.tooltip, self.body)
 
 def get_url_for_instruction(instr):
-    return "http://www.felixcloutier.com/x86/{}.html".format(urllib.quote(name))
+    return "http://www.felixcloutier.com/x86/{}.html".format(urllib.quote(instr.name))
 
 
 def download_asm_doc_archive(downloadfolder):
@@ -151,9 +151,10 @@ def get_description_paragraphs(document_soup):
     description_paragraph_node = description_header_node.next_sibling.next_sibling
     description_paragraphs = []
     while i < MAX_DESC_PARAS and len(description_paragraph_node.text) > 20:
-        description_paragraphs.append(description_paragraph_node)
-        i = i + 1
-        # Move two siblings forward. Next sibling is the line feed.
+        if description_paragraph_node.name == "p":
+            description_paragraphs.append(description_paragraph_node)
+            i = i + 1
+            # Move two siblings forward. Next sibling is the line feed.
         description_paragraph_node = description_paragraph_node.next_sibling.next_sibling
     return description_paragraphs
 
