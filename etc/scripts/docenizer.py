@@ -4,11 +4,9 @@ import argparse
 import json
 import os
 import re
-import shutil
 import sys
 import tarfile
 import urllib
-import zipfile
 
 try:
     from bs4 import BeautifulSoup
@@ -32,7 +30,7 @@ INSTRUCTION_RE = re.compile(r'^([A-Z][A-Z0-9]+)\*?(\s+|$)')
 UNPARSEABLE_INSTR_NAMES = ['PSRLW:PSRLD:PSRLQ', 'PSLLW:PSLLD:PSLLQ']
 # Some files contain instructions which cannot be parsed and which compilers are unlikely to emit
 IGNORED_FILE_NAMES = [
-# SGX pseudo-instructions
+    # SGX pseudo-instructions
     "EADD",
     "EACCEPT",
     "EAUG",
@@ -65,7 +63,7 @@ IGNORED_FILE_NAMES = [
     "ERESUME",
     "ETRACK",
     "EWB",
-# VMX instructions
+    # VMX instructions
     "INVEPT",
     "INVVPID",
     "VMCALL",
@@ -80,13 +78,13 @@ IGNORED_FILE_NAMES = [
     "VMWRITE",
     "VMXOFF",
     "VMXON",
-# Other instructions
+    # Other instructions
     "INVLPG",
     "LAHF",
     "RDMSR",
     "SGDT",
-# Unparsable instructions
-# These instructions should be supported in the future
+    # Unparsable instructions
+    # These instructions should be supported in the future
     "MONITOR",
     "MOVDQ2Q",
     "MOVBE",
@@ -99,8 +97,8 @@ IGNORED_DUPLICATES = [
     'MOV-2',  # move to debug reg
     'CMPSD',  # compare doubleword (defined in CMPS:CMPSB:CMPSW:CMPSD:CMPSQ)
     'MOVQ',  # defined in MOVD:MOVQ
-    'MOVSD', # defined in MOVS:MOVSB:MOVSW:MOVSD:MOVSQ
-    'VPBROADCASTB:VPBROADCASTW:VPBROADCASTD:VPBROADCASTQ', # defined in VPBROADCAST
+    'MOVSD',  # defined in MOVS:MOVSB:MOVSW:MOVSD:MOVSQ
+    'VPBROADCASTB:VPBROADCASTW:VPBROADCASTD:VPBROADCASTQ',  # defined in VPBROADCAST
     "VGATHERDPS:VGATHERDPD",
     "VGATHERQPS:VGATHERQPD",
     "VPGATHERDD:VPGATHERQD",
@@ -108,6 +106,8 @@ IGNORED_DUPLICATES = [
 ]
 # Where to extract the asmdoc archive.
 ASMDOC_DIR = "asm-docs"
+ARCHIVE_URL = "http://www.felixcloutier.com/x86/x86.tbz2"
+ARCHIVE_NAME = "x86.tbz2"
 
 
 class Instruction(object):
@@ -120,26 +120,32 @@ class Instruction(object):
     def __str__(self):
         return "{} = {}\n{}".format(self.names, self.tooltip, self.body)
 
+
 def get_url_for_instruction(instr):
     return "http://www.felixcloutier.com/x86/{}.html".format(urllib.quote(instr.name))
 
 
 def download_asm_doc_archive(downloadfolder):
     if not os.path.exists(downloadfolder):
+        print "Creating {} as download folder".format(downloadfolder)
         os.makedirs(downloadfolder)
     elif not os.path.isdir(downloadfolder):
-        print("Error: download folder {} is not a directory".format(download))
+        print "Error: download folder {} is not a directory".format(downloadfolder)
         sys.exit(1)
-    archive_name = os.path.join(downloadfolder, "x86.tbz2")
+    archive_name = os.path.join(downloadfolder, ARCHIVE_NAME)
     print("Downloading archive...")
-    urllib.urlretrieve("http://www.felixcloutier.com/x86/x86.tbz2", archive_name)
-    if os.path.isdir(os.path.join(downloadfolder, "html")):
-        for root, dirs, files in os.walk(os.path.join(downloadfolder, "html")):
+    urllib.urlretrieve(ARCHIVE_URL, archive_name)
+
+
+def extract_asm_doc_archive(downloadfolder, inputfolder):
+    print "Extracting file..."
+    if os.path.isdir(os.path.join(inputfolder, "html")):
+        for root, dirs, files in os.walk(os.path.join(inputfolder, "html")):
             for file in files:
                 if os.path.splitext(file)[1] == ".html":
-                    os.remove(os.path.join(root, file));
-    tar = tarfile.open(archive_name);
-    tar.extractall(path=extract_directory);
+                    os.remove(os.path.join(root, file))
+    tar = tarfile.open(os.path.join(downloadfolder, ARCHIVE_NAME))
+    tar.extractall(path=inputfolder)
 
 
 def strip_non_instr(i):
@@ -157,7 +163,7 @@ def instr_name(i):
 
 def get_description_paragraphs(document_soup):
     description_header_node = document_soup.find(id="Description")
-    i = 0;
+    i = 0
     description_paragraph_node = description_header_node.next_sibling.next_sibling
     description_paragraphs = []
     while i < MAX_DESC_PARAS and len(description_paragraph_node.text) > 20:
@@ -261,6 +267,7 @@ def read_table(table):
 
 
 def parse_html(directory):
+    print "Parsing instructions..."
     instructions = []
     for root, dirs, files in os.walk(directory):
         for file in files:
@@ -290,18 +297,22 @@ def self_test(instructions, directory):
 
 def docenizer():
     args = parser.parse_args()
-    if not os.path.exists(args.inputfolder):
-        try:
-            download_asm_doc_archive(args.downloadfolder)
-        except IOError as e:
-            print("Error when downloading archive:")
-            print(e)
-            sys.exit(1)
-        # Don't look into the input folder, but rather where we extracted.
-        args.inputfolder = args.downloadfolder
-    elif not os.path.isdir(args.inputfolder):
-        print("Error: input folder {} is not a folder".format(args.inputfolder))
-        sys.exit(1)
+    print "Called with: {}".format(args)
+    # If we don't have the html folder already...
+    if not os.path.isdir(os.path.join(args.inputfolder, 'html')):
+        # We don't, try with the compressed file
+        if not os.path.isfile(os.path.join(args.downloadfolder, "x86.tbz2")):
+            # We can't find that either. Download it
+            try:
+                download_asm_doc_archive(args.downloadfolder)
+                extract_asm_doc_archive(args.downloadfolder, args.inputfolder)
+            except IOError as e:
+                print("Error when downloading archive:")
+                print(e)
+                sys.exit(1)
+        else:
+            # We have a file already downloaded
+            extract_asm_doc_archive(args.downloadfolder, args.inputfolder)
     instructions = parse_html(args.inputfolder)
     instructions.sort(lambda x, y: cmp(x.name, y.name))
     self_test(instructions, args.inputfolder)
@@ -312,9 +323,9 @@ def docenizer():
                 inst.names.intersection(all_inst), inst.name)
         all_inst = all_inst.union(inst.names)
     if not self_test(instructions, args.inputfolder):
-        print("Not writing output file. Aborting.")
-        return
-
+        print("Tests do not pass. Not writing output file. Aborting.")
+        sys.exit(3)
+    print "Writing {} instructions".format(len(instructions))
     with open(args.outputpath, 'w') as f:
         f.write("""
 function getAsmOpcode(opcode) {
@@ -337,6 +348,7 @@ module.exports = {
     getAsmOpcode: getAsmOpcode
 };
 """)
+
 
 if __name__ == '__main__':
     docenizer()
