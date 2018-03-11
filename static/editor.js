@@ -66,6 +66,7 @@ function Editor(hub, state, container) {
     this.fadeTimeoutId = -1;
 
     this.editorSourceByLang = {};
+    this.alertSystem = new Alert();
     this.languageBtn = this.domRoot.find('.change-language');
     var langKeys = _.keys(languages);
     // Ensure that the btn is disabled if we don't have nothing to select
@@ -137,7 +138,7 @@ function Editor(hub, state, container) {
             this.eventHub.emit('modifySettings', {
                 compileOnChange: !this.settings.compileOnChange
             });
-            new Alert().notify('Compile on change has been toggled ' + (this.settings.compileOnChange ? 'ON' : 'OFF'), {
+            this.alertSystem.notify('Compile on change has been toggled ' + (this.settings.compileOnChange ? 'ON' : 'OFF'), {
                 group: "togglecompile",
                 alertClass: this.settings.compileOnChange ? "notification-on" : "notification-off",
                 dismissTime: 3000

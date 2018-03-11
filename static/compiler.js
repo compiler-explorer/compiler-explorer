@@ -111,6 +111,7 @@ function Compiler(hub, container, state) {
     this.wantOptInfo = state.wantOptInfo;
     this.decorations = {};
     this.prevDecorations = [];
+    this.alertSystem = new Alert();
 
     this.initButtons();
     this.initLibraries(state);
@@ -148,7 +149,6 @@ function Compiler(hub, container, state) {
     var optionsChange = _.debounce(_.bind(function (e) {
         this.onOptionsChange($(e.target).val());
     }, this), 800);
-    this.optionsField = this.domRoot.find('.options');
     this.optionsField
         .val(this.options)
         .on('change', optionsChange)
@@ -243,7 +243,7 @@ function Compiler(hub, container, state) {
 
     this.onSettingsChange(this.settings);
     this.sendCompiler();
-    this.updateCompilerName();
+    this.updateCompilerInfo();
     this.updateButtons();
 
     var outputConfig = _.bind(function () {
@@ -739,6 +739,8 @@ Compiler.prototype.initButtons = function () {
     this.outputErrorCount = this.domRoot.find('span.err-count');
     this.libsTemplates = $('.template #libs-dropdown');
     this.noLibsPanel = this.libsTemplates.children('.no-libs');
+    this.optionsField = this.domRoot.find('.options');
+    this.prependOptions = this.domRoot.find('.prepend-options');
 };
 
 Compiler.prototype.initLibraries = function (state) {
@@ -855,12 +857,27 @@ Compiler.prototype.onOptionsChange = function (options) {
     this.sendCompiler();
 };
 
+Compiler.prototype.updateCompilerInfo = function () {
+    this.updateCompilerName();
+    if (this.compiler) {
+        if (this.compiler.notification) {
+            this.alertSystem.notify(this.compiler.notification, {
+                group: 'compilerwarning',
+                alertClass: 'notification',
+                dismissTime: 5000
+            });
+        }
+        this.prependOptions.prop('title', this.compiler.options);
+        this.prependOptions.toggle(!!this.compiler.options);
+    }
+};
+
 Compiler.prototype.onCompilerChange = function (value) {
     this.compiler = this.compilerService.findCompiler(this.currentLangId, value);
     this.saveState();
     this.compile();
     this.updateButtons();
-    this.updateCompilerName();
+    this.updateCompilerInfo();
     this.sendCompiler();
 };
 
@@ -1109,26 +1126,26 @@ Compiler.prototype.onAsmToolTip = function (ed) {
     function appendInfo(url) {
         return '<br><br>For more information, visit <a href="' + url +
             '" target="_blank" rel="noopener noreferrer">the ' + opcode +
-            ' documentation <sup><small class="glyphicon glyphicon-new-window" width="16px" height="16px"' +
+            ' documentation <sup><small class="glyphicon glyphicon-new-window opens-new-window"' +
             ' title="Opens in a new window"></small></sup></a>.';
     }
 
     getAsmInfo(word.word).then(
         _.bind(function (asmHelp) {
             if (asmHelp) {
-                new Alert().alert(opcode + ' help', asmHelp.html + appendInfo(asmHelp.url), function () {
+                this.alertSystem.alert(opcode + ' help', asmHelp.html + appendInfo(asmHelp.url), function () {
                     ed.focus();
                     ed.setPosition(pos);
                 });
             } else {
-                new Alert().notify('This token was not found in the documentation. Sorry!', {
+                this.alertSystem.notify('This token was not found in the documentation. Sorry!', {
                     group: 'notokenindocs',
                     alertClass: 'notification-error',
                     dismissTime: 3000
                 });
             }
         }), function (rejection) {
-            new Alert().notify('There was an error fetching the documentation for this opcode (' + rejection + ').', {
+            this.alertSystem.notify('There was an error fetching the documentation for this opcode (' + rejection + ').', {
                 group: 'notokenindocs',
                 alertClass: 'notification-error',
                 dismissTime: 3000
@@ -1254,7 +1271,6 @@ Compiler.prototype.onLanguageChange = function (editorId, newLangId) {
         };
         this.updateLibsDropdown();
         this.updateCompilersSelector();
-        this.updateCompilerName();
         this.saveState();
     }
 };

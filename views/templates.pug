@@ -51,6 +51,7 @@
         tr
           td: select.compiler-picker(placeholder="Select a compiler...")
           td: input.options.form-control(type="text" placeholder="Compiler options..." size="256" autocorrect="off" autocapitalize="off" spellcheck="false")
+          td: span.glyphicon.glyphicon-info-sign.prepend-options
       if !embedded
         include font-size.pug
       div.btn-group.btn-group-sm.filters(data-toggle="buttons")

@@ -449,7 +449,8 @@ function findCompilers() {
             lang: langId,
             group: group,
             groupName: props("groupName", ""),
-            includeFlag: props("includeFlag", "-isystem")
+            includeFlag: props("includeFlag", "-isystem"),
+            notification: props("notification", "")
         };
         logger.debug("Found compiler", compilerInfo);
         return Promise.resolve(compilerInfo);

@@ -164,7 +164,7 @@ LoadSave.prototype.onSaveToFile = function () {
             {type: "text/plain;charset=utf-8"}),
         "Compiler Explorer Code" + this.extension);
     } catch (e) {
-        new Alert().notify('Error while saving your code. Use the clipboard instead.', {
+        this.alert.notify('Error while saving your code. Use the clipboard instead.', {
             group: "savelocalerror",
             alertClass: "notification-error",
             dismissTime: 5000

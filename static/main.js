@@ -174,6 +174,8 @@ require("monaco-loader")().then(function () {
             });
         }
 
+        var alertSystem = new Alert();
+
         setupAdd($('#add-diff'), function () {
             return Components.getDiff();
         });
@@ -185,10 +187,10 @@ require("monaco-loader")().then(function () {
             window.location.reload();
         });
         $('#thanks-to').click(function () {
-            new Alert().alert("Special thanks to", $(require('./thanks.html')));
+            alertSystem.alert("Special thanks to", $(require('./thanks.html')));
         });
         $('#changes').click(function () {
-            new Alert().alert("Changelog", $(require('./changelog.html')));
+            alertSystem.alert("Changelog", $(require('./changelog.html')));
         });
     }
 
