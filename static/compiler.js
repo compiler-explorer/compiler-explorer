@@ -154,7 +154,7 @@ function Compiler(hub, container, state) {
         .on('change', optionsChange)
         .on('keyup', optionsChange);
 
-    this.domRoot.find("[data-bind='execute']").toggle(options.supportsExecute);
+    this.filterExecuteButton.toggle(options.supportsExecute);
 
     this.outputEditor = monaco.editor.create(this.domRoot.find('.monaco-placeholder')[0], {
         scrollBeyondLastLine: false,
@@ -732,15 +732,45 @@ Compiler.prototype.initButtons = function () {
     this.gccDumpButton = this.domRoot.find('.btn.view-gccdump');
     this.cfgButton = this.domRoot.find('.btn.view-cfg');
     this.libsButton = this.domRoot.find('.btn.show-libs');
+
     this.compileTimeLabel = this.domRoot.find('.compile-time');
     this.compileClearCache = this.domRoot.find('.clear-cache');
+
     this.outputBtn = this.domRoot.find('.output-btn');
     this.outputTextCount = this.domRoot.find('span.text-count');
     this.outputErrorCount = this.domRoot.find('span.err-count');
+
     this.libsTemplates = $('.template #libs-dropdown');
     this.noLibsPanel = this.libsTemplates.children('.no-libs');
+
     this.optionsField = this.domRoot.find('.options');
     this.prependOptions = this.domRoot.find('.prepend-options');
+
+    this.filterBinaryButton = this.domRoot.find("[data-bind='binary']");
+    this.filterBinaryTitle = this.filterBinaryButton.prop('title');
+
+    this.filterExecuteButton = this.domRoot.find("[data-bind='execute']");
+    this.filterExecuteTitle = this.filterExecuteButton.prop('title');
+
+    this.filterLabelsButton = this.domRoot.find("[data-bind='labels']");
+    this.filterLabelsTitle = this.filterLabelsButton.prop('title');
+
+    this.filterDirectivesButton = this.domRoot.find("[data-bind='directives']");
+    this.filterDirectivesTitle = this.filterDirectivesButton.prop('title');
+
+    this.filterCommentsButton = this.domRoot.find("[data-bind='commentOnly']");
+    this.filterCommentsTitle = this.filterCommentsButton.prop('title');
+
+    this.filterTrimButton = this.domRoot.find("[data-bind='trim']");
+    this.filterTrimTitle = this.filterTrimButton.prop('title');
+
+    this.filterIntelButton = this.domRoot.find("[data-bind='intel']");
+    this.filterIntelTitle = this.filterIntelButton.prop('title');
+
+    this.filterDemangleButton = this.domRoot.find("[data-bind='demangle']");
+    this.filterDemangleTitle = this.filterDemangleButton.prop('title');
+
+    this.noBinaryFiltersButtons = this.domRoot.find('.nonbinary');
 };
 
 Compiler.prototype.initLibraries = function (state) {
@@ -766,16 +796,27 @@ Compiler.prototype.updateButtons = function () {
     var filters = this.getEffectiveFilters();
     // We can support intel output if the compiler supports it, or if we're compiling
     // to binary (as we can disassemble it however we like).
-    var intelAsm = this.compiler.supportsIntel || filters.binary;
-    this.domRoot.find("[data-bind='intel']").prop('disabled', !intelAsm);
+    var formatFilterTitle = function (button, title) {
+        button.prop('title', '[' + (button.hasClass('active') ? 'ON' : 'OFF') + '] ' + title + (button.prop('disabled') ? ' [LOCKED]' : ''));
+    };
+    var isIntelFilterDisabled = !this.compiler.supportsIntel && !filters.binary;
+    this.filterIntelButton.prop('disabled', isIntelFilterDisabled);
+    formatFilterTitle(this.filterIntelButton, this.filterIntelTitle);
     // Disable binary support on compilers that don't work with it.
-    this.domRoot.find("[data-bind='binary']").prop('disabled', !this.compiler.supportsBinary);
-    this.domRoot.find("[data-bind='execute']").prop('disabled', !this.compiler.supportsExecute);
+    this.filterBinaryButton.prop('disabled', !this.compiler.supportsBinary);
+    formatFilterTitle(this.filterBinaryButton, this.filterBinaryTitle);
+    this.filterExecuteButton.prop('disabled', !this.compiler.supportsExecute);
+    formatFilterTitle(this.filterExecuteButton, this.filterExecuteTitle);
     // Disable demangle for compilers where we can't access it
-    this.domRoot.find("[data-bind='demangle']").prop('disabled', !this.compiler.supportsDemangle);
+    this.filterDemangleButton.prop('disabled', !this.compiler.supportsDemangle);
+    formatFilterTitle(this.filterDemangleButton, this.filterDemangleTitle);
     // Disable any of the options which don't make sense in binary mode.
-    var filtersDisabled = !!filters.binary && !this.compiler.supportsFiltersInBinary;
-    this.domRoot.find('.nonbinary').prop('disabled', filtersDisabled);
+    var noBinaryFiltersDisabled = !!filters.binary && !this.compiler.supportsFiltersInBinary;
+    this.noBinaryFiltersButtons.prop('disabled', noBinaryFiltersDisabled);
+    formatFilterTitle(this.filterLabelsButton, this.filterLabelsTitle);
+    formatFilterTitle(this.filterDirectivesButton, this.filterDirectivesTitle);
+    formatFilterTitle(this.filterCommentsButton, this.filterCommentsTitle);
+    formatFilterTitle(this.filterTrimButton, this.filterTrimTitle);
     // If its already open, we should turn it off.
     // The pane will update with error text
     // Otherwise we just disable the button.
@@ -784,6 +825,7 @@ Compiler.prototype.updateButtons = function () {
     } else {
         this.optButton.prop('disabled', true);
     }
+
     if (!this.astViewOpen) {
         this.astButton.prop('disabled', !this.compiler.supportsAstView);
     } else {
