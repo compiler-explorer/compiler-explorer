@@ -3,5 +3,6 @@ instrumentation:
     include-all-sources: true
     excludes:
         - "handlers/asm-docs.js"
+        - "restreamer.js"
 reporting:
     dir: ./out/coverage
