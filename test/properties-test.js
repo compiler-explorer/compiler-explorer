@@ -50,7 +50,7 @@ describe('Properties', () => {
         should.equal(casesProps("commentedProperty"), undefined);
     });
     it('Ignores bad lines', () => {
-        should.equal(casesProps("thisIsABadLine"), undefined)
+        should.equal(casesProps("badLineIfYouSeeThisWithAnErrorItsOk"), undefined)
     });
     it('Understands positive integers', () => {
         should.equal(casesProps("numericPropertyPositive"), 42);
