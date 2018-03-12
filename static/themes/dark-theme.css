@@ -157,6 +157,10 @@ body {
     background-color: gray !important;
 }
 
+.notification-info {
+    background-color: #f2f2f2 !important;
+}
+
 .notification-error {
     background-color: #aa3333 !important;
     color: #000;

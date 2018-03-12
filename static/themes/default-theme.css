@@ -83,6 +83,10 @@ body {
     background-color: cornflowerblue;
 }
 
+.notification-info {
+    background-color: #f2f2f2;
+}
+
 .notification-error {
     background-color: indianred;
     color: white;

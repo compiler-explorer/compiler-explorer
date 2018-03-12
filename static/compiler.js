@@ -863,7 +863,7 @@ Compiler.prototype.updateCompilerInfo = function () {
         if (this.compiler.notification) {
             this.alertSystem.notify(this.compiler.notification, {
                 group: 'compilerwarning',
-                alertClass: 'notification',
+                alertClass: 'notification-info',
                 dismissTime: 5000
             });
         }
