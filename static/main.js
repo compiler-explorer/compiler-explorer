@@ -192,9 +192,6 @@ require("monaco-loader")().then(function () {
         $('#changes').click(function () {
             alertSystem.alert("Changelog", $(require('./changelog.html')));
         });
-        $('#report-issue').click(function () {
-            Raven.showReportDialog({eventId: '0', dsn: 'https://849826dce97d4d1eae26df64061ec4bb@sentry.io/102028'});
-        });
     }
 
     $(start);
