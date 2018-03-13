@@ -91,11 +91,6 @@ body {
     color: #060 !important;
 }
 
-.highlighted {
-    background-color: rgba(255, 0, 0, 0.2) !important;
-    color: #0000b0 !important;
-}
-
 .linked-code-decoration {
     background: #555657 !important;
 }

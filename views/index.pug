@@ -28,6 +28,10 @@ html(lang="en")
                 li.divider
                 li: a#ui-reset(href="#") Reset (code and UI layout)
           ul.nav.navbar-nav.navbar-right
+            if extraBodyClass === "beta"
+              li: a(href="https://github.com/mattgodbolt/compiler-explorer/issues" target="_blank" rel="noopener")
+                img(height="20" width="20" src=require("GitHub-Mark-20px.png"))
+                | &nbsp;Report an issue
             li: a#share(href="#") Share#[b.caret]
             li.dropdown
               a.dropdown-toggle(href="#" data-toggle="dropdown") Other#[b.caret]
