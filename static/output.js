@@ -46,18 +46,34 @@ function Output(hub, container, state) {
     this.domRoot = container.getElement();
     this.domRoot.html($('#compiler-output').html());
     this.contentRoot = this.domRoot.find(".content");
+    this.bottomBar = this.domRoot.find('.compiler-code');
     this.compilerName = "";
     this.fontScale = new FontScale(this.domRoot, state, "pre");
+    this.fontScale.on('change', _.bind(function () {
+        this.saveState();
+    }, this));
 
     this.container.on('destroy', this.close, this);
 
     this.eventHub.on('compileResult', this.onCompileResult, this);
-    this.eventHub.on('compilerFontScale', this.onFontScale, this);
     this.eventHub.on('compilerClose', this.onCompilerClose, this);
     this.eventHub.emit('outputOpened', this.compilerId);
 
     this.updateCompilerName();
 }
+
+Output.prototype.currentState = function () {
+    var state = {
+        compiler: this.compilerId,
+        editorId: this.editorId
+    };
+    this.fontScale.addState(state);
+    return state;
+};
+
+Output.prototype.saveState = function () {
+    this.container.setState(this.currentState());
+};
 
 Output.prototype.onCompileResult = function (id, compiler, result) {
     if (id !== this.compilerId) return;
@@ -71,9 +87,8 @@ Output.prototype.onCompileResult = function (id, compiler, result) {
         this.add(ansiToHtml.toHtml(obj.text), obj.tag ? obj.tag.line : obj.line);
     }, this);
 
-    if (!result.execResult) {
-        this.add("Compiler returned: " + result.code);
-    } else {
+    this.add("Compiler returned: " + result.code);
+    if (result.execResult) {
         this.add("Program returned: " + result.execResult.code);
         if (result.execResult.stderr.length || result.execResult.stdout.length) {
             ansiToHtml = makeAnsiToHtml("red");
@@ -89,10 +104,6 @@ Output.prototype.onCompileResult = function (id, compiler, result) {
     }
 
     this.updateCompilerName();
-};
-
-Output.prototype.onFontScale = function (id, scale) {
-    if (id === this.compilerId) this.fontScale.setScale(scale);
 };
 
 Output.prototype.programOutput = function (msg, color) {
@@ -120,6 +131,10 @@ Output.prototype.add = function (msg, lineNum) {
     } else {
         elem.html(msg);
     }
+};
+
+Output.prototype.setResultCode = function (code) {
+    this.bottomBar.text('Compiler exited with code ' + code);
 };
 
 Output.prototype.updateCompilerName = function () {

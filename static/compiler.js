@@ -234,7 +234,6 @@ function Compiler(hub, container, state) {
     this.fontScale = new FontScale(this.domRoot, state, this.outputEditor);
     this.fontScale.on('change', _.bind(function () {
         this.saveState();
-        this.updateFontScale();
     }, this));
 
     this.filters.on('change', _.bind(this.onFilterChange, this));
@@ -852,7 +851,6 @@ Compiler.prototype.initCallbacks = function () {
     this.container.on('shown', this.resize, this);
     this.container.on('open', function () {
         this.eventHub.emit('compilerOpen', this.id, this.sourceEditorId);
-        this.updateFontScale();
     }, this);
     this.eventHub.on('editorChange', this.onEditorChange, this);
     this.eventHub.on('editorClose', this.onEditorClose, this);
@@ -970,10 +968,6 @@ Compiler.prototype.currentState = function () {
 
 Compiler.prototype.saveState = function () {
     this.container.setState(this.currentState());
-};
-
-Compiler.prototype.updateFontScale = function () {
-    this.eventHub.emit('compilerFontScale', this.id, this.fontScale.scale);
 };
 
 Compiler.prototype.onColours = function (editor, colours, scheme) {

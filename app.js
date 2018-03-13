@@ -472,9 +472,8 @@ function findCompilers() {
                 }
                 return compilerPropsL(langId, `group.${groupName}.${propName}`, parentProps(langId, propName, def));
             };
-
             const compilerExes = _.compact(props(langId, 'compilers', '').split(":"));
-            logger.debug("Processing compilers from group " + groupName);
+            logger.debug(`Processing compilers from group ${groupName}`);
             return Promise.all(compilerExes.map(compiler => recurseGetCompilers(langId, compiler, props)));
         }
         if (compilerName === "AWS") return fetchAws();
