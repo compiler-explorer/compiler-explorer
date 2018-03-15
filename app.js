@@ -536,6 +536,32 @@ function shortUrlHandler(req, res, next) {
         });
 }
 
+function startListening(server) {
+    const ss = systemdSocket();
+    var _port;
+    if (ss) {
+        const timeout = (typeof process.env.IDLE_TIMEOUT !== 'undefined' ? process.env.IDLE_TIMEOUT : 300) * 1000; // ms (5 min default)
+        if (timeout) {
+            let exit = () => {
+                logger.info("Inactivity timeout reached, exiting.");
+                process.exit(0);
+            };
+            let reset = () => {
+                clearTimeout(idleTimer);
+                idleTimer = setTimeout(exit, timeout);
+            };
+            let idleTimer = setTimeout(exit, timeout);
+            server.all('*', reset);
+        }
+        _port = ss;
+    } else {
+        _port = port;
+    }
+    logger.info("=======================================");
+    logger.info(`Listening on http://${hostname || 'localhost'}:${_port}/`);
+    server.listen(_port, hostname);
+}
+
 Promise.all([findCompilers(), aws.initConfig(awsProps)])
     .then(args => {
         let compilers = args[0];
@@ -583,7 +609,6 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
             restreamer = require('./lib/restreamer');
 
         logger.info("=======================================");
-        logger.info(`Listening on http://${hostname || 'localhost'}:${port}/`);
         if (gitReleaseName) logger.info(`  git release ${gitReleaseName}`);
 
         function renderConfig(extra) {
@@ -666,25 +691,7 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
         webServer.use(Raven.errorHandler());
         webServer.on('error', err => logger.error('Caught error:', err, "(in web error handler; continuing)"));
 
-        const ss = systemdSocket();
-        if (ss) {
-            const timeout = (typeof process.env.IDLE_TIMEOUT !== 'undefined' ? process.env.IDLE_TIMEOUT : 300) * 1000; // ms (5 min default)
-            if (timeout) {
-                let exit = () => {
-                    logger.info("Inactivity timeout reached, exiting.");
-                    process.exit(0);
-                };
-                let reset = () => {
-                    clearTimeout(idleTimer);
-                    idleTimer = setTimeout(exit, timeout);
-                };
-                let idleTimer = setTimeout(exit, timeout);
-                webServer.all('*', reset);
-            }
-            webServer.listen(ss, hostname);
-        } else {
-            webServer.listen(port, hostname);
-        }
+        startListening(webServer);
     })
     .catch(err => {
         logger.error("Promise error:", err, "(shutting down)");
