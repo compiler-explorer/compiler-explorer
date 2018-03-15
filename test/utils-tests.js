@@ -131,6 +131,34 @@ describe('Parses compiler output', () => {
     });
 });
 
+describe('Pascal compiler output', () => {
+    it('recognize fpc identifier not found error', () => {
+        utils.parseOutput('output.pas(13,23) Error: Identifier not found "adsadasd"', 'output.pas').should.deep.equals([
+            {
+                tag: {
+                    column: 23,
+                    line: 13,
+                    text: 'Error: Identifier not found "adsadasd"'
+                },
+                text: '<source>(13,23) Error: Identifier not found "adsadasd"'
+            }
+        ]);
+    });
+
+    it('recognize fpc exiting error', () => {
+        utils.parseOutput('output.pas(17) Fatal: There were 1 errors compiling module, stopping', 'output.pas').should.deep.equals([
+            {
+                tag: {
+                    column: 0,
+                    line: 17,
+                    text: 'Fatal: There were 1 errors compiling module, stopping'
+                },
+                text: '<source>(17) Fatal: There were 1 errors compiling module, stopping'
+            }
+        ]);
+    });
+});
+
 describe('Pads right', () => {
     it('works', () => {
         utils.padRight('abcd', 8).should.equal('abcd    ');
