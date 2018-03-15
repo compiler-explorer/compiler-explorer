@@ -157,6 +157,22 @@ describe('Pascal compiler output', () => {
             }
         ]);
     });
+
+    it('removes the temp path', () => {
+        utils.parseOutput('Compiling /tmp/path/prog.dpr\noutput.pas(17) Fatal: There were 1 errors compiling module, stopping', 'output.pas', '/tmp/path/').should.deep.equals([
+            {
+                text: 'Compiling prog.dpr'
+            },
+            {
+                tag: {
+                    column: 0,
+                    line: 17,
+                    text: 'Fatal: There were 1 errors compiling module, stopping'
+                },
+                text: '<source>(17) Fatal: There were 1 errors compiling module, stopping'
+            }
+        ]);
+    });
 });
 
 describe('Pads right', () => {
