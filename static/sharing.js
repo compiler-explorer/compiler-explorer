@@ -25,7 +25,8 @@
 "use strict";
 var $ = require('jquery');
 var _ = require('underscore');
-var shortenURL = require('urlshorten-google');
+var options = require('options');
+var shortenURL = require('./urlshorten-' + options.urlShortenService);
 var Components = require('components');
 var url = require('./url');
 
