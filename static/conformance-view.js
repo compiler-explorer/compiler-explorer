@@ -253,10 +253,10 @@ Conformance.prototype.handleToolbarUI = function () {
 Conformance.prototype.handleStatusIcon = function (element, status) {
     if (!element) return;
 
-    function glyphClass(code) {
-        if (code === 3) return "remove-sign";
-        if (code === 2) return "info-sign";
-        return "ok-sign";
+    function setGlyphClass(element) {
+        element.toggleClass('glyphicon-remove-sign', status.code === 3);
+        element.toggleClass('glyphicon-info-sign', status.code === 2);
+        element.toggleClass('glyphicon-ok-sign', status.code !== 3 && status.code !== 2);
     }
 
     function ariaLabel(code) {
@@ -272,12 +272,13 @@ Conformance.prototype.handleStatusIcon = function (element, status) {
     }
 
     element
-        .addClass("status glyphicon glyphicon-" + glyphClass(status.code))
+        .toggleClass('status', true)
         .css("visibility", status.code === 0 ? "hidden" : "visible")
         .css("color", color(status.code))
         .prop("title", status.text.replace(/\x1b\[[0-9;]*m(.\[K)?/g, ''))
         .prop("aria-label", ariaLabel(status.code))
         .prop("data-status", status.code);
+    setGlyphClass(element);
 };
 
 Conformance.prototype.currentState = function () {
