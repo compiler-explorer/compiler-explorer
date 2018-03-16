@@ -346,3 +346,31 @@ describe('Pascal objdump filtering', function () {
         });
     });
 });
+
+describe('Pascal parseOutput', () => {
+    const ce = new CompilationEnvironment(props);
+    const info = {
+        "exe": null,
+        "remote": true,
+        "lang": "pascal"
+    };
+
+    ce.compilerPropsL = () => "";
+
+    const compiler = new PascalCompiler(info, ce);
+
+    it('should return parsed output', () => {
+        const result = {
+            stdout: "Hello, world!",
+            stderr: ""
+        };
+
+        compiler.parseOutput(result, "/tmp/path/output.pas", "/tmp/path").should.deep.equal({
+            inputFilename: "output.pas",
+            stdout: [{
+                "text": "Hello, world!"
+            }],
+            stderr: []
+        });
+    });
+});
