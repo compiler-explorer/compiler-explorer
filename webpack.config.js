@@ -12,11 +12,10 @@ const outputPathRelative = 'dist/';
 const staticRelative = 'static/';
 const staticPath = path.resolve(__dirname, staticRelative);
 const distPath = path.join(staticPath, outputPathRelative);
-const vsPath = path.join(staticPath, 'vs/');
 const assetPath = path.join(staticPath, "assets");
 const manifestPath = 'manifest.json';  //if you change this, you also need to update it in the app.js
-const outputname =isDev ? 'main.js' : 'bundle.[hash].js';
-const cssName = isDev ? '[name].css' :  "[name].[contenthash].css";
+const outputname =isDev ? '[name].js' : '[name].[hash].js';
+const cssName = isDev ? '[name].css' :  '[name].[contenthash].css';
 const publicPath = isDev ? '/dist/' :  'dist/';
 const manifestPlugin = new ManifestPlugin({
     fileName: manifestPath
@@ -31,20 +30,16 @@ const assetEntries = glob.sync(`${assetPath}/**/*.*`).reduce((obj, p) => {
 
 let plugins = [ 
     new CopyWebpackPlugin([{
-        from: 'node_modules/monaco-editor/min/vs',
-        to: vsPath,
-    },
-    {
         from: path.join(staticPath, "favicon.ico"),
         to: distPath,
-    },
-    ]),
+    }]),
     new webpack.ProvidePlugin({
         $: 'jquery',
         jQuery: 'jquery'
     }),
     new ExtractTextPlugin(cssName),
-    manifestPlugin
+    manifestPlugin,
+    new webpack.IgnorePlugin(/^((fs)|(path)|(os)|(crypto)|(source-map-support))$/, /vs\/language\/typescript\/lib/)
 ];
 
 if(!isDev) {
@@ -84,7 +79,15 @@ module.exports = [
     }, 
     //this is the client side
     {
-        entry: './static/main.js',
+        
+        entry: {
+            "editor.worker": 'monaco-editor/esm/vs/editor/editor.worker.js',
+		    "json.worker": 'monaco-editor/esm/vs/language/json/json.worker',
+		    "css.worker": 'monaco-editor/esm/vs/language/css/css.worker',
+		    "html.worker": 'monaco-editor/esm/vs/language/html/html.worker',
+		    "ts.worker": 'monaco-editor/esm/vs/language/typescript/ts.worker',
+            "main": './static/main.js'
+        },
         output: {
             filename: outputname,
             path: distPath,
@@ -96,8 +99,7 @@ module.exports = [
                 //is this safe?
                 goldenlayout:  path.resolve(__dirname, 'node_modules/golden-layout/'),
                 lzstring:  path.resolve(__dirname, 'node_modules/lz-string/'),
-                filesaver:  path.resolve(__dirname, 'node_modules/file-saver/'),
-                vs: path.resolve(__dirname, 'node_modules/monaco-editor/min/vs')
+                filesaver:  path.resolve(__dirname, 'node_modules/file-saver/')
             }
         },
         stats: "errors-only",

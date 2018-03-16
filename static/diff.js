@@ -25,7 +25,7 @@
 "use strict";
 
 var FontScale = require('fontscale');
-var monaco = require('monaco');
+var monaco = require('./monaco').default;
 var _ = require('underscore');
 var $ = require('jquery');
 

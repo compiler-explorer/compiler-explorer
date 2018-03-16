@@ -25,7 +25,8 @@
 'use strict';
 
 var jquery = require('jquery');
-var cpp = require('vs/basic-languages/src/cpp');
+var cpp =  require('monaco-editor/esm/vs/basic-languages/cpp/cpp.js');
+
 
 function definition() {
     var ispc = jquery.extend(true, {}, cpp.language); // deep copy
