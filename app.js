@@ -2,26 +2,26 @@
 
 // Copyright (c) 2012, Matt Godbolt
 // All rights reserved.
-// 
-// Redistribution and use in source and binary forms, with or without 
+//
+// Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
-// 
-//     * Redistributions of source code must retain the above copyright notice, 
+//
+//     * Redistributions of source code must retain the above copyright notice,
 //       this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above copyright 
-//       notice, this list of conditions and the following disclaimer in the 
+//     * Redistributions in binary form must reproduce the above copyright
+//       notice, this list of conditions and the following disclaimer in the
 //       documentation and/or other materials provided with the distribution.
-// 
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE 
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
 // Initialise options and properties. Don't load any handlers here; they
@@ -32,6 +32,7 @@ const nopt = require('nopt'),
     child_process = require('child_process'),
     path = require('path'),
     fs = require('fs-extra'),
+    systemdSocket = require('systemd-socket'),
     http = require('http'),
     url = require('url'),
     _ = require('underscore-node'),
@@ -67,7 +68,7 @@ if ((process.platform === "win32") || child_process.execSync('uname -a').toStrin
 
 // AP: Allow setting of tmpDir (used in lib/base-compiler.js & lib/exec.js) through opts.
 // WSL requires a directory on a Windows volume. Set that to Windows %TEMP% if no tmpDir supplied.
-// If a tempDir is supplied then assume that it will work for WSL processes as well. 
+// If a tempDir is supplied then assume that it will work for WSL processes as well.
 if (opts.tmpDir) {
     process.env.tmpDir = opts.tmpDir;
     process.env.winTmp = opts.tmpDir;
@@ -126,14 +127,14 @@ logger.info("properties hierarchy: " + propHierarchy.join(', '));
 // Propagate debug mode if need be
 if (opts.propDebug) props.setDebug(true);
 
-// *All* files in config dir are parsed 
+// *All* files in config dir are parsed
 props.initialize(rootDir + '/config', propHierarchy);
 
 // Now load up our libraries.
 const aws = require('./lib/aws'),
     google = require('./lib/google');
 
-// Instantiate a function to access records concerning "compiler-explorer" 
+// Instantiate a function to access records concerning "compiler-explorer"
 // in hidden object props.properties
 const ceProps = props.propsFor("compiler-explorer");
 
@@ -537,6 +538,32 @@ function shortUrlHandler(req, res, next) {
         });
 }
 
+function startListening(server) {
+    const ss = systemdSocket();
+    var _port;
+    if (ss) {
+        const timeout = (typeof process.env.IDLE_TIMEOUT !== 'undefined' ? process.env.IDLE_TIMEOUT : 300) * 1000; // ms (5 min default)
+        if (timeout) {
+            let exit = () => {
+                logger.info("Inactivity timeout reached, exiting.");
+                process.exit(0);
+            };
+            let reset = () => {
+                clearTimeout(idleTimer);
+                idleTimer = setTimeout(exit, timeout);
+            };
+            let idleTimer = setTimeout(exit, timeout);
+            server.all('*', reset);
+        }
+        _port = ss;
+    } else {
+        _port = port;
+    }
+    logger.info("=======================================");
+    logger.info(`Listening on http://${hostname || 'localhost'}:${_port}/`);
+    server.listen(_port, hostname);
+}
+
 Promise.all([findCompilers(), aws.initConfig(awsProps)])
     .then(args => {
         let compilers = args[0];
@@ -584,7 +611,6 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
             restreamer = require('./lib/restreamer');
 
         logger.info("=======================================");
-        logger.info(`Listening on http://${hostname || 'localhost'}:${port}/`);
         if (gitReleaseName) logger.info(`  git release ${gitReleaseName}`);
 
         function renderConfig(extra) {
@@ -669,7 +695,8 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
         logger.info("=======================================");
         webServer.use(Raven.errorHandler());
         webServer.on('error', err => logger.error('Caught error:', err, "(in web error handler; continuing)"));
-        webServer.listen(port, hostname);
+
+        startListening(webServer);
     })
     .catch(err => {
         logger.error("Promise error:", err, "(shutting down)");
