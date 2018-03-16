@@ -23,8 +23,8 @@ Normal::~Normal() [base object destructor]:
         .cfi_endproc
 .LFE6:
         .size   Normal::~Normal() [base object destructor], .-Normal::~Normal() [base object destructor]
-        .weak   _ZN6NormalD1Ev
-        .set    _ZN6NormalD1Ev,Normal::~Normal() [base object destructor]
+        .weak   Normal::~Normal() [complete object destructor]
+        .set    Normal::~Normal() [complete object destructor],Normal::~Normal() [base object destructor]
         .section        .text.Normal::~Normal() [deleting destructor],"axG",@progbits,_ZN6NormalD5Ev,comdat
         .align 2
         .p2align 4,,15
@@ -171,7 +171,7 @@ typeinfo name for Normal:
         .type   typeinfo for Normal, @object
         .size   typeinfo for Normal, 16
 typeinfo for Normal:
-        .quad   _ZTVN10__cxxabiv117__class_type_infoE+16
+        .quad   vtable for __cxxabiv1::__class_type_info+16
         .quad   typeinfo name for Normal
         .weak   vtable for Normal
         .section        .rodata.vtable for Normal,"aG",@progbits,vtable for Normal,comdat
@@ -181,7 +181,7 @@ typeinfo for Normal:
 vtable for Normal:
         .quad   0
         .quad   typeinfo for Normal
-        .quad   _ZN6NormalD1Ev
+        .quad   Normal::~Normal() [complete object destructor]
         .quad   Normal::~Normal() [deleting destructor]
         .text
 .Letext0:
