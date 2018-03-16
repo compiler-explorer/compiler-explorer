@@ -540,27 +540,28 @@ function shortUrlHandler(req, res, next) {
 
 function startListening(server) {
     const ss = systemdSocket();
-    var _port;
+    let _port;
     if (ss) {
-        const timeout = (typeof process.env.IDLE_TIMEOUT !== 'undefined' ? process.env.IDLE_TIMEOUT : 300) * 1000; // ms (5 min default)
+        // ms (5 min default)
+        const timeout = (typeof process.env.IDLE_TIMEOUT !== 'undefined' ? process.env.IDLE_TIMEOUT : 300) * 1000;
         if (timeout) {
             let exit = () => {
                 logger.info("Inactivity timeout reached, exiting.");
                 process.exit(0);
             };
+            let idleTimer = setTimeout(exit, timeout);
             let reset = () => {
                 clearTimeout(idleTimer);
                 idleTimer = setTimeout(exit, timeout);
             };
-            let idleTimer = setTimeout(exit, timeout);
             server.all('*', reset);
         }
         _port = ss;
     } else {
         _port = port;
     }
+    logger.info(`  Listening on http://${hostname || 'localhost'}:${_port}/`);
     logger.info("=======================================");
-    logger.info(`Listening on http://${hostname || 'localhost'}:${_port}/`);
     server.listen(_port, hostname);
 }
 
@@ -656,7 +657,8 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
             .use(Raven.requestHandler())
             .set('trust proxy', true)
             .set('view engine', 'pug')
-            .use('/healthcheck', new healthCheck.HealthCheckHandler().handle) // before morgan so healthchecks aren't logged
+            // before morgan so healthchecks aren't logged
+            .use('/healthcheck', new healthCheck.HealthCheckHandler().handle)
             .use(morgan('combined', {stream: logger.stream}))
             .use(compression())
             .get('/', (req, res) => {
@@ -665,7 +667,8 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
                 res.render('index', renderConfig({embedded: false}));
             })
             .get('/e', embeddedHandler)
-            .get('/embed.html', embeddedHandler) // legacy. not a 301 to prevent any redirect loops between old e links and embed.html
+            // legacy. not a 301 to prevent any redirect loops between old e links and embed.html
+            .get('/embed.html', embeddedHandler)
             .get('/embed-ro', (req, res) => {
                 staticHeaders(res);
                 contentPolicyHeader(res);
@@ -692,7 +695,6 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
         if (!doCache) {
             logger.info("  not caching due to --noCache parameter being present");
         }
-        logger.info("=======================================");
         webServer.use(Raven.errorHandler());
         webServer.on('error', err => logger.error('Caught error:', err, "(in web error handler; continuing)"));
 

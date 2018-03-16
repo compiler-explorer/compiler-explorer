@@ -5353,6 +5353,10 @@ svgo@^0.7.0:
     sax "~1.2.1"
     whet.extend "~0.9.9"
 
+systemd-socket@0.0.0:
+  version "0.0.0"
+  resolved "https://registry.yarnpkg.com/systemd-socket/-/systemd-socket-0.0.0.tgz#a36b828433cf831a0878e29ee33a0d1d8fc7565b"
+
 table@^4.0.1:
   version "4.0.2"
   resolved "https://registry.yarnpkg.com/table/-/table-4.0.2.tgz#a33447375391e766ad34d3486e6e2aedc84d2e36"
