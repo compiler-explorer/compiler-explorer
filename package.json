@@ -24,6 +24,7 @@
     "clipboard": "^1.7.1",
     "compiler-opt-info": "0.0.4",
     "compression": "^1.7.1",
+    "cross-env": "^5.1.3",
     "denodeify": "^1.2.1",
     "es6-promise": "^4.1.1",
     "express": "4.16.x",
@@ -64,8 +65,8 @@
     "codecov": "^3.0.0",
     "copy-webpack-plugin": "^4.1.1",
     "css-loader": "^0.28.7",
-    "extract-text-webpack-plugin": "^3.0.1",
     "eslint": "^4.17.0",
+    "extract-text-webpack-plugin": "^3.0.1",
     "file-loader": "^1.1.5",
     "istanbul": "^0.4.5",
     "mocha": "^3.3.0",
@@ -82,6 +83,8 @@
   },
   "scripts": {
     "test": "mocha --recursive && make test",
+    "dev": "cross-env NODE_ENV=DEV node app.js",
+    "start": "npx webpack && cross-env NODE_ENV=LOCAL node app.js",
     "codecov": "istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec --recursive && codecov",
     "coverage": "istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec --recursive",
     "localcoverage": "istanbul cover ./node_modules/mocha/bin/_mocha --report html -- -R spec --recursive"
