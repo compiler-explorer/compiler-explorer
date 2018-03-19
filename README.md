@@ -199,7 +199,6 @@ We would also like to specially thank these people for their contributions to
 - [Gabriel Devillers](https://github.com/voxelf)
  (_while working for [Kalray](http://www.kalrayinc.com/)_)
 - [Johan Engelen](https://github.com/JohanEngelen)
-- [Chedy Najjar](https://github.com/CppChedy)
 - [Joshua Sheard](https://github.com/jsheard)
 - [Marc Poulhiès](https://github.com/dkm)
 - [Andrew Pardoe](https://github.com/AndrewPardoe)

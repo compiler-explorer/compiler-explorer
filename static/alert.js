@@ -70,10 +70,15 @@ Alert.prototype.ask = function (title, question, handlers) {
 Alert.prototype.notify = function (body, options) {
     var container = $('#notifications');
     if (!container) return;
-    var newElement = $('<div class="alert notification" tabindex="-1" role="dialog"><button type="button" class="close" style="float:left;margin-right: 5px;" data-dismiss="alert">&times;</button><span id="msg">' + body + '</span></div>');
+    var newElement = $('<div class="alert notification" tabindex="-1" role="dialog">' +
+        '<button type="button" class="close" style="float: left;margin-right: 5px;" data-dismiss="alert">' +
+            '&times;' +
+        '</button>' +
+        '<span id="msg">' + body + '</span>' +
+        '</div>');
     if (!options) options = {};
     // Set defaults
-    // Collapse similars by default
+    // Collapse similar by default
     options.collapseSimilar = ("collapseSimilar" in options) ? options.collapseSimilar : true;
     // autoDismiss by default
     options.autoDismiss = ("autoDismiss" in options) ? options.autoDismiss : true;
