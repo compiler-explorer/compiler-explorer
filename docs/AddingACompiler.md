@@ -63,7 +63,7 @@ options  | String | Additional compiler options passed to the compiler when runn
 intelAsm | String | Flags used to select intel assembly format (if not detected automatically)|
 needsMulti | Boolean | Whether the compiler needs multi arch support (defaults to yes if the host has multiarch enabled)|
 supportsBinary | Boolean | Whether this compiler supports compiling to binary|
-verionFlag | String | The flag to pass to the compiler to make it emit its version|
+versionFlag | String | The flag to pass to the compiler to make it emit its version|
 versionRe | RegExp | A regular expression used to capture the version from the version output|
 compilerType | String | The name of the class handling this compiler|
 
