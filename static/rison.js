@@ -210,7 +210,6 @@
                 },
                 undefined: function (x) {
                     // ignore undefined just like JSON
-                    return;
                 }
             };
 
@@ -349,7 +348,7 @@
             console.log('rison parser error: ', message);
         this.message = message;
         return undefined;
-    }
+    };
 
     rison.parser.prototype.readValue = function () {
         var c = this.next();
@@ -378,7 +377,7 @@
 
         if (c) return this.error("invalid character: '" + c + "'");
         return this.error("empty expression");
-    }
+    };
 
     rison.parser.parse_array = function (parser) {
         var ar = [];
@@ -404,7 +403,7 @@
         f: false,
         n: null,
         '(': rison.parser.parse_array
-    }
+    };
 
     rison.parser.prototype.table = {
         '!': function () {
@@ -492,7 +491,7 @@
                 if (state == 'exp') permittedSigns = '-';
             } while (state);
             this.index = --i;
-            s = s.slice(start, i)
+            s = s.slice(start, i);
             if (s == '-') return this.error("invalid number");
             return Number(s);
         }
