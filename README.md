@@ -36,7 +36,7 @@ Feel free to raise an issue on
  [github](https://github.com/mattgodbolt/compiler-explorer/issues) or
  [email Matt directly](mailto:matt@godbolt.org) for more help.
 
-### Developing or running a local instance
+### Developing
 
 **Compiler Explorer** is written in [Node.js](https://nodejs.org/).
 
@@ -56,11 +56,6 @@ Running with `make EXTRA_ARGS='--language LANG'` will allow you to load
  client side components.
 
 
-If you want to point it at your own GCC or similar binaries, either edit the
- `etc/config/compiler-explorer.defaults.properties` or else make a new one with
- the name `compiler-explorer.local.properties`. `*.local.properties` files
- have the highest priority when loading properties.
-
 The config system leaves a lot to be desired. Work has been done on porting
  [CCS](https://github.com/hellige/ccs-cpp) to Javascript and then something
  more rational can be used.
@@ -68,6 +63,22 @@ The config system leaves a lot to be desired. Work has been done on porting
 
 A [Road map](Roadmap.md) is available which gives a little insight into
  the future plans for **Compiler Explorer**.
+
+### Running a local instance
+
+If you want to point it at your own GCC or similar binaries, either edit the
+ `etc/config/compiler-explorer.defaults.properties` or else make a new one with
+ the name `compiler-explorer.local.properties`. `*.local.properties` files
+ have the highest priority when loading properties.
+
+
+When running in a corporate setting the URL shortening service can be replaced
+ by an internal one to avoid leaking source code outside of the organization.
+ This is done by adding a new module in `static/urlshorten-myservice.js` and
+ setting the `urlShortenService` variable in configuration. This module should
+ export a single function, see the [google module](static/urlshorten-google.js)
+ for an example. `urlShortenService` can also be set to `none` to disable url
+ shortening altogether.
 
 ### RESTful API
 
