@@ -256,10 +256,10 @@ input.permalink {
     text-shadow: none !important;
 }
 
-.even-row {
+.commits-list:nth-child(odd) {
     background-color: #222222 !important;
 }
 
-.odd-row {
+.commits-list:nth-child(even) {
     background-color: #424242 !important;
 }

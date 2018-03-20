@@ -126,10 +126,10 @@ body {
     color: red;
 }
 
-.even-row {
+.commits-list:nth-child(odd) {
     background-color: #ffffff;
 }
 
-.odd-row {
+.commits-list:nth-child(even) {
     background-color: #f2f2f2;
 }

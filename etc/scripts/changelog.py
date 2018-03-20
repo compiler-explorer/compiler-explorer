@@ -7,17 +7,17 @@ import json
 
 
 def format_commit(commit):
-    return '<div class="row">\n' \
+    return '<div class="row commits-list">\n' \
            '    <div class="col-sm-10">\n' \
            '        <p>{}{}</p>\n' \
            '    </div>\n' \
            '    <div class="col-sm-2">\n' \
-           '        <a href="{}" rel="noreferrer noopener" target="_blank">{} \n' \
+           '        <a href="{}" rel="noreferrer noopener" target="_blank">{}\n' \
            '            <sup><small class="glyphicon glyphicon-new-window opens-new-window" ' \
            'title="Opens in a new window"></small></sup>\n' \
            '        </a>\n' \
            '    </div>\n' \
-           '</div>\n'.format(commit['message'], commit['ellipsis'], commit['url'], commit['sha'])
+           '</div>\n'.format(commit['message'], commit['ellipsis'], commit['url'], commit['sha'][0:6])
 
 
 def get_commits(url):
