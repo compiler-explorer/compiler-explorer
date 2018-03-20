@@ -120,8 +120,11 @@
           span.glyphicon.glyphicon-refresh
 
   #compiler-output
-    .top-bar.btn-toolbar(role="toolbar")
+    .top-bar.btn-toolbar.options-toolbar(role="toolbar")
       include font-size
+      div.btn-group.btn-group-sm.options(data-toggle="buttons")
+        button.btn.btn-default.btn-sm.wrap-lines(title="Wrap lines" data-bind="wrap")
+          | Wrap lines
     pre.content
 
   #diff

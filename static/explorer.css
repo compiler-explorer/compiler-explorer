@@ -163,7 +163,20 @@ input.options {
 
 pre.content {
     width: 100%;
-    height: 100%;
+    padding-top: 3px;
+    padding-bottom: 0;
+    margin-bottom: 0;
+    overflow: auto;
+}
+
+pre.content p {
+    margin: 0;
+}
+
+pre.content.wrap {
+    word-break: keep-all;
+    overflow-x: hidden;
+    white-space: pre-wrap;
 }
 
 .compile-time {
