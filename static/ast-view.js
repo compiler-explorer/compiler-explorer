@@ -146,8 +146,9 @@ Ast.prototype.onCompilerClose = function (id) {
 };
 
 Ast.prototype.onLanguageChange = function (editorId, newLangId) {
-    if (editorId == this._editorid) {
-        monaco.editor.setLanguageModel(this.astEditor.getModel(), languages[newLangId].monaco);
+    if (editorId === this._editorid) {
+        monaco.editor.setModelLanguage(this.astEditor.getModel(), newLangId === languages.d.id ?
+            languages.d.monaco : languages['c++'].monaco);
     }
 };
 
