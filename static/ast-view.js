@@ -25,8 +25,11 @@
 
 var FontScale = require('fontscale');
 var monaco = require('monaco');
+var options = require('options');
 var _ = require('underscore');
 var $ = require('jquery');
+
+var languages = options.languages;
 
 function Ast(hub, container, state) {
     this.container = container;
@@ -37,7 +40,7 @@ function Ast(hub, container, state) {
     this.astEditor = monaco.editor.create(this.domRoot.find(".monaco-placeholder")[0], {
         value: "",
         scrollBeyondLastLine: false,
-        language: 'cppp', //we only support cpp for now
+        language: languages[state.lang] ? languages[state.lang].monaco : 'cppp',
         readOnly: true,
         glyphMargin: true,
         fontFamily: 'Consolas, "Liberation Mono", Courier, monospace',
@@ -60,6 +63,7 @@ function Ast(hub, container, state) {
     this.eventHub.on('compileResult', this.onCompileResult, this);
     this.eventHub.on('compiler', this.onCompiler, this);
     this.eventHub.on('compilerClose', this.onCompilerClose, this);
+    this.eventHub.on('languageChange', this.onLanguageChange, this);
     this.eventHub.on('settingsChange', this.onSettingsChange, this);
     this.eventHub.emit('astViewOpened', this._compilerid);
     this.eventHub.emit('requestSettings');
@@ -138,6 +142,12 @@ Ast.prototype.onCompilerClose = function (id) {
         _.defer(function (self) {
             self.container.close();
         }, this);
+    }
+};
+
+Ast.prototype.onLanguageChange = function (editorId, newLangId) {
+    if (editorId == this._editorid) {
+        monaco.editor.setLanguageModel(this.astEditor.getModel(), languages[newLangId].monaco);
     }
 };
 
