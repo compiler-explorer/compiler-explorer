@@ -41,12 +41,11 @@ function makeAnsiToHtml(color) {
 function Output(hub, container, state) {
     this.container = container;
     this.compilerId = state.compiler;
-    this.editorId = state.editor;
+    this.editorId = state.editorId;
     this.eventHub = hub.createEventHub();
     this.domRoot = container.getElement();
     this.domRoot.html($('#compiler-output').html());
     this.contentRoot = this.domRoot.find(".content");
-    this.bottomBar = this.domRoot.find('.compiler-code');
     this.compilerName = "";
     this.fontScale = new FontScale(this.domRoot, state, "pre");
     this.fontScale.on('change', _.bind(function () {
