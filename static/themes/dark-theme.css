@@ -255,3 +255,11 @@ input.permalink {
     color: #EEE !important;
     text-shadow: none !important;
 }
+
+.even-row {
+    background-color: #222222 !important;
+}
+
+.odd-row {
+    background-color: #424242 !important;
+}

@@ -125,3 +125,11 @@ body {
 .err-count {
     color: red;
 }
+
+.even-row {
+    background-color: #ffffff;
+}
+
+.odd-row {
+    background-color: #f2f2f2;
+}

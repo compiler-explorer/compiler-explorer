@@ -190,7 +190,68 @@ require("monaco-loader")().then(function () {
             alertSystem.alert("Special thanks to", $(require('./thanks.html')));
         });
         $('#changes').click(function () {
-            alertSystem.alert("Changelog", $(require('./changelog.html')));
+            var d = new Date();
+            d.setMonth(d.getMonth() - 3);
+            var data = JSON.stringify({since: d.toISOString()});
+            var container = $('<div class="container-fluid"></div>');
+            var setError = function (code) {
+                container.append($('<div></div>')
+                    .text('We ran into a problem while interacting with the GitHub api: Code ' + code)
+                    .css('border', '1px solid #994433')
+                );
+            };
+            var even = true;
+            var getCommits = function (page) {
+                $.ajax({
+                    header: {
+                        Accept: 'application/vnd.github.v3+json'
+                    },
+                    type: 'GET',
+                    url: page,
+                    data: data,
+                    contentType: 'application/json',
+                    cache: true,
+                    success: function (response, textStatus, promised) {
+                        var usefulCommits = [];
+                        if (promised.status === 200 && container.children().length < 20) {
+                            _.each(response, function (commitData) {
+                                if (commitData.commit.message.startsWith('* ')) {
+                                    var toggleRow = function () {
+                                        even = !even;
+                                        return even ? "even-row" : "odd-row";
+                                    };
+                                    var data = {
+                                        url: commitData.html_url,
+                                        sha: commitData.sha.substring(0, 6),
+                                        message: commitData.commit.message.split('\n')[0].substring(2, 80),
+                                        length: commitData.commit.message.length
+                                    };
+                                    usefulCommits.push($('<div class="row ' + toggleRow() + '">' +
+                                        '<div class="col-sm-10"><p>' +
+                                        data.message + (data.length > 80 ? '...' : '') +
+                                        '</p></div>' +
+                                        '<div class="col-sm-2">' +
+                                        '<a href="' + data.url + '" rel="noreferrer noopener" target="_blank">' +
+                                        data.sha + ' <sup>' +
+                                        '<small class="glyphicon glyphicon-new-window opens-new-window" ' +
+                                        'title="Opens in a new window"></small></sup></a></div></div>'));
+                                }
+                            });
+                            var link = promised.getResponseHeader('link').split(';')[0];
+                            var nextLink = link.indexOf('next') >= 0 ? link.substring(1, link.length - 1) : false;
+                            container.append(usefulCommits);
+                            if (nextLink) getCommits(nextLink);
+                        } else if (promised.status >= 400) {
+                            setError(promised.status);
+                        }
+                    },
+                    error: function (response) {
+                        setError(response.status);
+                    }
+                });
+            };
+            getCommits('https://api.github.com/repos/mattgodbolt/compiler-explorer/commits');
+            alertSystem.alert("Changelog", container);
         });
     }
 
