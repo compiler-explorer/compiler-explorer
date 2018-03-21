@@ -49,4 +49,11 @@ describe('D', () => {
         const compiler = new DMDCompiler(info, ce);
         compiler.filterUserOptions(["hello", "-run", "--something"]).should.deep.equal(["hello", "--something"]);
     });
+
+    it('LDC supports AST output since version 1.4.0', () => {
+        const compiler = new LDCCompiler(info, ce);
+        compiler.couldSupportASTDump("LDC - the LLVM D compiler (1.3.0)").should.equal(false);
+        compiler.couldSupportASTDump("LDC - the LLVM D compiler (1.4.0)").should.equal(true);
+        compiler.couldSupportASTDump("LDC - the LLVM D compiler (1.8.0git-d54d25b-dirty)").should.equal(true);
+    });
 });
