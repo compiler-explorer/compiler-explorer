@@ -25,8 +25,11 @@
 
 var FontScale = require('fontscale');
 var monaco = require('monaco');
+var options = require('options');
 var _ = require('underscore');
 var $ = require('jquery');
+
+var languages = options.languages;
 
 require('asm-mode');
 require('selectize');
@@ -43,7 +46,7 @@ function Opt(hub, container, state) {
     this.optEditor = monaco.editor.create(this.domRoot.find(".monaco-placeholder")[0], {
         value: this.code,
         scrollBeyondLastLine: false,
-        language: 'cppp', //we only support cpp(p) for now
+        language: state.lang ? languages[state.lang].monaco : 'text',
         readOnly: true,
         glyphMargin: true,
         quickSuggestions: false,

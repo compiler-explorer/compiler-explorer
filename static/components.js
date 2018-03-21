@@ -79,7 +79,7 @@ module.exports = {
             componentState: {}
         };
     },
-    getOptViewWith: function (id, source, optimization, compilerName, editorid) {
+    getOptViewWith: function (id, source, optimization, compilerName, editorid, langid) {
         return {
             type: 'component',
             componentName: 'opt',
@@ -88,7 +88,8 @@ module.exports = {
                 source: source,
                 optOutput: optimization,
                 compilerName: compilerName,
-                editorid: editorid
+                editorid: editorid,
+                lang: langid
             }
         };
     },
@@ -99,7 +100,7 @@ module.exports = {
             componentState: {}
         };
     },
-    getAstViewWith: function (id, source, astOutput, compilerName, editorid) {
+    getAstViewWith: function (id, source, astOutput, compilerName, editorid, langid) {
         return {
             type: 'component',
             componentName: 'ast',
@@ -108,7 +109,8 @@ module.exports = {
                 source: source,
                 astOutput: astOutput,
                 compilerName: compilerName,
-                editorid: editorid
+                editorid: editorid,
+                lang: langid
             }
         };
     },
