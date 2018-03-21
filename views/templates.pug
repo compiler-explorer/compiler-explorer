@@ -18,9 +18,7 @@
         button.btn.btn-sm.clippy(
         type="button" data-clipboard-target=".popover .permalink"
         title="Copy to clipboard")
-          img.clippy(
-          src = require("clippy.svg") width="13px"
-          alt="Copy to clipboard")
+          span.glyphicon.glyphicon-copy(style="width:13px")
   #codeEditor
     .top-bar.btn-toolbar(role="toolbar")
       include font-size.pug

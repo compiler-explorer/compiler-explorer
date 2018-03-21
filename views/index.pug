@@ -10,7 +10,8 @@ html(lang="en")
           a.navbar-brand(href="#" title="Compiler Explorer")
             img.normal(src=require("site-logo.svg") height="50" width="165" alt="Compiler Explorer")
             img.inverse(src=require("site-logo-inverse.svg") height="50" width="165" alt="Compiler Explorer")
-            img.beta-overlay(src=require("site-logo-beta.svg") height="50" width="165")
+            if extraBodyClass === "beta"
+              img.beta-overlay(src=require("site-logo-beta.svg") height="50" width="165")
           button(type="button" class="navbar-toggle collapsed" data-toggle="collapse"
           data-target="#navbar-collapse" aria-expanded="false")
             span.sr-only Toggle navigation
