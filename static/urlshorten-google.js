@@ -35,8 +35,8 @@ function googleJSClientLoaded() {
 
 function shortenURL(url, done) {
     if (!options.gapiKey) {
-	done(null);
-	return;
+        done(null);
+        return;
     }
     var gapi = window.gapi;
     if (!gapi || !gapi.client || !gapi.client.urlshortener) {
