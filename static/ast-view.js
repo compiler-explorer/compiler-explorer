@@ -40,7 +40,7 @@ function Ast(hub, container, state) {
     this.astEditor = monaco.editor.create(this.domRoot.find(".monaco-placeholder")[0], {
         value: "",
         scrollBeyondLastLine: false,
-        language: languages[state.lang] ? languages[state.lang].monaco : 'cppp',
+        language: 'text',
         readOnly: true,
         glyphMargin: true,
         fontFamily: 'Consolas, "Liberation Mono", Courier, monospace',
