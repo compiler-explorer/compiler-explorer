@@ -1166,28 +1166,27 @@ Compiler.prototype.onAsmToolTip = function (ed) {
             ' title="Opens in a new window"></small></sup></a>.';
     }
 
-    getAsmInfo(word.word).then(
-        _.bind(function (asmHelp) {
-            if (asmHelp) {
-                this.alertSystem.alert(opcode + ' help', asmHelp.html + appendInfo(asmHelp.url), function () {
-                    ed.focus();
-                    ed.setPosition(pos);
-                });
-            } else {
-                this.alertSystem.notify('This token was not found in the documentation. Sorry!', {
-                    group: 'notokenindocs',
-                    alertClass: 'notification-error',
-                    dismissTime: 3000
-                });
-            }
-        }), function (rejection) {
-            this.alertSystem.notify('There was an error fetching the documentation for this opcode (' + rejection + ').', {
+    getAsmInfo(word.word).then(_.bind(function (asmHelp) {
+        if (asmHelp) {
+            this.alertSystem.alert(opcode + ' help', asmHelp.html + appendInfo(asmHelp.url), function () {
+                ed.focus();
+                ed.setPosition(pos);
+            });
+        } else {
+            this.alertSystem.notify('This token was not found in the documentation. Sorry!', {
                 group: 'notokenindocs',
                 alertClass: 'notification-error',
                 dismissTime: 3000
             });
         }
-    );
+    }, this), _.bind(function (rejection) {
+        this.alertSystem
+            .notify('There was an error fetching the documentation for this opcode (' + rejection + ').', {
+                group: 'notokenindocs',
+                alertClass: 'notification-error',
+                dismissTime: 3000
+            });
+    }, this));
 };
 
 Compiler.prototype.updateLibsDropdown = function () {

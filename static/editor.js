@@ -138,11 +138,12 @@ function Editor(hub, state, container) {
             this.eventHub.emit('modifySettings', {
                 compileOnChange: !this.settings.compileOnChange
             });
-            this.alertSystem.notify('Compile on change has been toggled ' + (this.settings.compileOnChange ? 'ON' : 'OFF'), {
-                group: "togglecompile",
-                alertClass: this.settings.compileOnChange ? "notification-on" : "notification-off",
-                dismissTime: 3000
-            });
+            this.alertSystem
+                .notify('Compile on change has been toggled ' + (this.settings.compileOnChange ? 'ON' : 'OFF'), {
+                    group: "togglecompile",
+                    alertClass: this.settings.compileOnChange ? "notification-on" : "notification-off",
+                    dismissTime: 3000
+                });
         }, this)
     });
 
