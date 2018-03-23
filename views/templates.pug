@@ -54,28 +54,28 @@
       div.btn-group.btn-group-sm.filters(data-toggle="buttons")
         // TODO store these in the app and drive from there?
         // Make a dropdown? With more options?
-        button.btn.btn-sm(title="Compile to binary and disassemble the output" data-bind="binary")
+        button.btn.btn-primary.btn-sm(title="Compile to binary and disassemble the output" data-bind="binary")
           span 11010
-        button.btn.btn-sm(title="Execute the binary" data-bind="execute")
+        button.btn.btn-primary.btn-sm(title="Execute the binary" data-bind="execute")
           span ./a.out
-        button.btn.btn-sm.active.nonbinary(title="Filter unused labels from the output" data-bind="labels")
+        button.btn.btn-primary.btn-sm.active.nonbinary(title="Filter unused labels from the output" data-bind="labels")
           span .LX0:
-        button.btn.btn-sm.active.nonbinary(title="Filter all assembler directives from the output" data-bind="directives")
+        button.btn.btn-primary.btn-sm.active.nonbinary(title="Filter all assembler directives from the output" data-bind="directives")
           span .text
-        button.btn.btn-sm.active.nonbinary(title="Remove all lines which are only comments from the output" data-bind="commentOnly")
+        button.btn.btn-primary.btn-sm.active.nonbinary(title="Remove all lines which are only comments from the output" data-bind="commentOnly")
           span //
-        button.btn.btn-sm.active(title="Trim intra-line whitespace" data-bind="trim")
+        button.btn.btn-primary.btn-sm.active(title="Trim intra-line whitespace" data-bind="trim")
           span \s+
-        button.btn.btn-sm.active(title="Output disassembly in Intel syntax" data-bind="intel")
+        button.btn.btn-primary.btn-sm.active(title="Output disassembly in Intel syntax" data-bind="intel")
           span Intel
-        button.btn.btn-sm.active(title="Demangle output" data-bind="demangle")
+        button.btn.btn-primary.btn-sm.active(title="Demangle output" data-bind="demangle")
           span Demangle
         if embedded
           include font-size.pug
       .btn-group.btn-group-sm
         button.btn.btn-default.btn-sm.show-libs
           span.glyphicon.glyphicon-book(title="Include libs")
-          | &nbsp;Libraries
+          | &nbsp;Libraries#[b.caret]
       if !embedded
         .btn-group.btn-group-sm.dropdown
           button.btn.btn-default.btn-sm.dropdown-toggle.add-pane(type="button" title="Add a new pane" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
@@ -153,9 +153,9 @@
             include font-size.pug
           td: div Pass filters:
           td: div.btn-group.btn-group-sm.dump-filters(data-toggle="buttons")
-            button.btn.btn-sm.active(title="Tree" data-bind="treeDump")
+            button.btn.btn-primary.btn-sm.active(title="Tree" data-bind="treeDump")
               span Tree
-            button.btn.btn-sm.active(title="RTL" data-bind="rtlDump")
+            button.btn.btn-primary.btn-sm.active(title="RTL" data-bind="rtlDump")
               span RTL
         tr
           td: div
@@ -169,16 +169,17 @@
       table
         tr
           td: select.function-picker
-          td: button.btn.btn-default.btn-sm.show-hide-btn(title="Show navigation buttons")
-            span.glyphicon.glyphicon-unchecked
-          td: button.btn.btn-default.btn-sm.enable-physics-btn(title="Disable/Enable physics")
-            span P
+      div.btn-group.btn-group-sm.options(data-toggle="buttons")
+        button.btn.btn-primary.btn-sm.toggle-navigation(title="Toggle navigation buttons" data-bind="navigation")
+          span Navigation
+        button.btn.btn-primary.btn-sm.toggle-physics(title="Toggle physics to nodes" data-bind="physics")
+          span Physics
     div.graph-placeholder
 
   #conformance
     .top-bar.tn-toolbar(role="toolbar")
       .btn-group.btn-group-sm
-        button.btn.btn-default.btn-sm.add-compiler(title="Add compiler")
+        button.btn.btn-primary.btn-sm.add-compiler(title="Add compiler")
           span.glyphicon.glyphicon-plus-sign
     .conformance-wrapper
       table.compiler-list
