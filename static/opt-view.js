@@ -177,12 +177,6 @@ Opt.prototype.onEditorChange = function (id, source) {
     }
 };
 
-Opt.prototype.onCompileResult = function (id, compiler, result) {
-    if (result.hasOptOutput && this._compilerid === id) {
-        this.showOptResults(result.optOutput);
-    }
-};
-
 Opt.prototype.setTitle = function () {
     this.container.setTitle(this._compilerName + " Opt Viewer (Editor #" + this._editorid + ", Compiler #" + this._compilerid + ")");
 };
