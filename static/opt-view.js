@@ -43,7 +43,7 @@ function Opt(hub, container, state) {
     this.optEditor = monaco.editor.create(this.domRoot.find(".monaco-placeholder")[0], {
         value: this.code,
         scrollBeyondLastLine: false,
-        language: 'cppp', //we only support cpp(p) for now
+        language: 'text',
         readOnly: true,
         glyphMargin: true,
         quickSuggestions: false,
@@ -95,9 +95,12 @@ Opt.prototype.onEditorChange = function (id, source) {
     }
 };
 
-Opt.prototype.onCompileResult = function (id, compiler, result) {
+Opt.prototype.onCompileResult = function (id, compiler, result, lang) {
     if (result.hasOptOutput && this._compilerid === id) {
         this.showOptResults(result.optOutput);
+        if (lang && lang.monaco) {
+            monaco.editor.setModelLanguage(this.optEditor.getModel(), lang.monaco);
+        }
     }
 };
 Opt.prototype.setTitle = function () {

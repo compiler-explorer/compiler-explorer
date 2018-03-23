@@ -37,7 +37,7 @@ function Ast(hub, container, state) {
     this.astEditor = monaco.editor.create(this.domRoot.find(".monaco-placeholder")[0], {
         value: "",
         scrollBeyondLastLine: false,
-        language: 'cppp', //we only support cpp for now
+        language: 'text',
         readOnly: true,
         glyphMargin: true,
         fontFamily: 'Consolas, "Liberation Mono", Courier, monospace',
@@ -81,13 +81,16 @@ Ast.prototype.resize = function () {
     });
 };
 
-Ast.prototype.onCompileResult = function (id, compiler, result) {
+Ast.prototype.onCompileResult = function (id, compiler, result, lang) {
     if (this._compilerid === id) {
         if (result.hasAstOutput) {
             this.showAstResults(result.astOutput);
         }
         else {
             this.showAstResults("<No output>");
+        }
+        if (lang && lang.monaco) {
+            monaco.editor.setModelLanguage(this.astEditor.getModel(), lang.monaco);
         }
     }
 };
