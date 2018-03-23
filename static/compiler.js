@@ -266,12 +266,12 @@ function Compiler(hub, container, state) {
 
     var createOptView = _.bind(function () {
         return Components.getOptViewWith(this.id, this.source, this.lastResult.optOutput, this.getCompilerName(),
-            this.sourceEditorId);
+            this.sourceEditorId, this.currentLangId);
     }, this);
 
     var createAstView = _.bind(function () {
         return Components.getAstViewWith(this.id, this.source, this.lastResult.astOutput, this.getCompilerName(),
-            this.sourceEditorId);
+            this.sourceEditorId, this.currentLangId);
     }, this);
 
     var createGccDumpView = _.bind(function () {

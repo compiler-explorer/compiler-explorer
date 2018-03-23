@@ -25,8 +25,11 @@
 
 var FontScale = require('fontscale');
 var monaco = require('monaco');
+var options = require('options');
 var _ = require('underscore');
 var $ = require('jquery');
+
+var languages = options.languages;
 
 function Ast(hub, container, state) {
     this.container = container;
@@ -37,7 +40,7 @@ function Ast(hub, container, state) {
     this.astEditor = monaco.editor.create(this.domRoot.find(".monaco-placeholder")[0], {
         value: "",
         scrollBeyondLastLine: false,
-        language: 'cppp', //we only support cpp for now
+        language: state.lang ? languages[state.lang].monaco : 'text',
         readOnly: true,
         glyphMargin: true,
         fontFamily: 'Consolas, "Liberation Mono", Courier, monospace',
