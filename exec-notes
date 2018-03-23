@@ -1,0 +1,17 @@
+* separate execution endpoint
+  * pros:
+    * easy to see how many hits are coming in to execute vs just compile
+    * can potentially separate endpoint to different servers, rate limit, queue separately?
+    * maybe cache better as filters are unimportant (if cache at all)
+    * better separation of concerns
+    * ultimately allows for execute-only UI?
+  * cons:
+    * needs two POSTs in the client (probably not a problem)
+    * maybe complicates the UI? Toggle code, code/execute, execute?
+
+POST /api/execute/<lang>/<compiler>
+{ code: "", stdin: "", libraries, compile options } as per compile?
+
+On disk compilation cache? could then separate stdin from compile? S3 put? md5sum? retention policy? redis? will that end up costing too much?
+
+Execution queue?
