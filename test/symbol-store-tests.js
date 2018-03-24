@@ -30,94 +30,94 @@ chai.should();
 describe('SymbolStore tests', function () {
     it('Empty', function () {
         const store = new SymbolStore();
-        store.ListSymbols().length.should.equal(0);
-        store.ListTranslations().length.should.equal(0);
+        store.listSymbols().length.should.equal(0);
+        store.listTranslations().length.should.equal(0);
     });
 
     it('One item', function () {
         const store = new SymbolStore();
-        store.Add("test");
-        store.ListSymbols().length.should.equal(1);
-        store.ListTranslations().length.should.equal(1);
+        store.add("test");
+        store.listSymbols().length.should.equal(1);
+        store.listTranslations().length.should.equal(1);
 
-        store.ListSymbols()[0].should.equal("test");
+        store.listSymbols()[0].should.equal("test");
 
-        const translations = store.ListTranslations();
+        const translations = store.listTranslations();
         translations[0][0].should.equal("test");
         translations[0][1].should.equal("test");
     });
 
     it('Duplicate items', function () {
         const store = new SymbolStore();
-        store.Add("test");
-        store.Add("test");
-        store.ListSymbols().length.should.equal(1);
-        store.ListTranslations().length.should.equal(1);
+        store.add("test");
+        store.add("test");
+        store.listSymbols().length.should.equal(1);
+        store.listTranslations().length.should.equal(1);
 
-        store.ListSymbols()[0].should.equal("test");
+        store.listSymbols()[0].should.equal("test");
 
-        const translations = store.ListTranslations();
+        const translations = store.listTranslations();
         translations[0][0].should.equal("test");
         translations[0][1].should.equal("test");
     });
 
     it('Sorted items', function () {
         const store = new SymbolStore();
-        store.Add("test123");
-        store.Add("test123456");
-        store.ListSymbols().length.should.equal(2);
-        store.ListTranslations().length.should.equal(2);
+        store.add("test123");
+        store.add("test123456");
+        store.listSymbols().length.should.equal(2);
+        store.listTranslations().length.should.equal(2);
 
-        const translations = store.ListTranslations();
+        const translations = store.listTranslations();
         translations[0][0].should.equal("test123456");
         translations[1][0].should.equal("test123");
     });
 
     it('Add-many', function () {
         const store = new SymbolStore();
-        store.AddMany(["test123", "test123456", "test123"]);
-        store.ListSymbols().length.should.equal(2);
-        store.ListTranslations().length.should.equal(2);
+        store.addMany(["test123", "test123456", "test123"]);
+        store.listSymbols().length.should.equal(2);
+        store.listTranslations().length.should.equal(2);
 
-        const translations = store.ListTranslations();
+        const translations = store.listTranslations();
         translations[0][0].should.equal("test123456");
         translations[1][0].should.equal("test123");
     });
 
     it('Exclude', function () {
         const store1 = new SymbolStore();
-        store1.AddMany(["test123", "test123456", "test123"]);
+        store1.addMany(["test123", "test123456", "test123"]);
 
         const store2 = new SymbolStore();
-        store2.AddMany(["test123"]);
+        store2.addMany(["test123"]);
 
-        store1.Exclude(store2);
-        var translations = store1.ListTranslations();
+        store1.exclude(store2);
+        var translations = store1.listTranslations();
         translations.length.should.equal(1);
         translations[0][0].should.equal("test123456");
     });
 
     it('SoftExclude', function () {
         const store1 = new SymbolStore();
-        store1.AddMany(["test123", "test123456", "test123"]);
+        store1.addMany(["test123", "test123456", "test123"]);
 
         const store2 = new SymbolStore();
-        store2.AddMany(["est123"]);
+        store2.addMany(["est123"]);
 
-        store1.SoftExclude(store2);
-        var translations = store1.ListTranslations();
+        store1.softExclude(store2);
+        var translations = store1.listTranslations();
         translations.length.should.equal(1);
         translations[0][0].should.equal("test123456");
     });
     
     it('Contains', function () {
         const store = new SymbolStore();
-        store.AddMany(["test123", "test123456", "test123"]);
+        store.addMany(["test123", "test123456", "test123"]);
 
-        store.Contains("test123").should.equal(true);
-        store.Contains("test123456").should.equal(true);
-        store.Contains("test456").should.equal(false);
+        store.contains("test123").should.equal(true);
+        store.contains("test123456").should.equal(true);
+        store.contains("test456").should.equal(false);
 
-        store.ListSymbols().length.should.equal(2);
+        store.listSymbols().length.should.equal(2);
     });
 });

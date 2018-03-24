@@ -45,7 +45,7 @@ describe('Basic demangling', function () {
         const demangler = new Demangler("c++filt");
 
         return Promise.all([
-            demangler.Process(result).then((output) => {
+            demangler.process(result).then((output) => {
                 output.asm[0].text.should.equal("Hello, World!");
             })
         ]);
@@ -61,7 +61,7 @@ describe('Basic demangling', function () {
         const demangler = new Demangler("c++filt");
 
         return Promise.all([
-            demangler.Process(result).then((output) => {
+            demangler.process(result).then((output) => {
                 output.asm[0].text.should.equal("square(int):");
                 output.asm[1].text.should.equal("  ret");
             })
@@ -78,7 +78,7 @@ describe('Basic demangling', function () {
         const demangler = new Demangler("c++filt");
 
         return Promise.all([
-            demangler.Process(result).then((output) => {
+            demangler.process(result).then((output) => {
                 output.asm[0].text.should.equal("square(int):");
                 output.asm[1].text.should.equal("  mov eax, $square(int)");
             })
@@ -102,7 +102,7 @@ describe('Basic demangling', function () {
         const demangler = new Demangler("c++filt");
 
         return Promise.all([
-            demangler.Process(result).then((output) => {
+            demangler.process(result).then((output) => {
                 output.asm[0].text.should.equal("Normal::~Normal() [deleting destructor]:");
                 output.asm[1].text.should.equal("  callq operator delete(void*)");
                 output.asm[6].text.should.equal("  jmp operator delete(void*, unsigned long)");
@@ -131,7 +131,7 @@ function DoDemangleTest(root, filename) {
                 });
 
                 let demangler = new Demangler("c++filt");
-                resolve(demangler.Process(resultIn).then((output) => {
+                resolve(demangler.process(resultIn).then((output) => {
                     output.should.deep.equal(resultOut);
                 }));
             });
