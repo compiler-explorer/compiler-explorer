@@ -28,14 +28,42 @@ body {
     background-color: rgba(128, 128, 160, 0.5);
 }
 
-.btn.active {
-    color: #fff;
-    border-color: #46b8da;
-    background-color: #5bc0de;
-}
-
 .lm_header {
     background-color: #f2f2f2;
+}
+
+.btn-godbolt {
+    color: #212529;
+    background-color: #f8f9fa;
+    border-color: #e9e9e9;
+}
+
+.btn-godbolt:hover {
+    color: #212529;
+    background-color: #e2e6ea;
+    border-color: #dae0e5;
+}
+
+.btn-godbolt:focus, .btn-godbolt.focus {
+    box-shadow: 0 0 0 0.2rem rgba(248, 249, 250, 0.5);
+}
+
+.btn-godbolt.disabled, .btn-godbolt:disabled {
+    color: #212529;
+    background-color: #f8f9fa;
+    border-color: #e9e9e9;
+}
+
+.btn-godbolt:not(:disabled):not(.disabled):active, .btn-godbolt:not(:disabled):not(.disabled).active,
+.show > .btn-godbolt.dropdown-toggle {
+    color: #212529;
+    background-color: #dae0e5;
+    border-color: #d3d9df;
+}
+
+.btn-godbolt:not(:disabled):not(.disabled):active:focus, .btn-godbolt:not(:disabled):not(.disabled).active:focus,
+.show > .btn-godbolt.dropdown-toggle:focus {
+    box-shadow: 0 0 0 0.2rem rgba(248, 249, 250, 0.5);
 }
 
 .opcode {
@@ -124,4 +152,8 @@ body {
 
 .err-count {
     color: red;
+}
+
+.popover-content {
+    background-color: #f0f0f0;
 }
