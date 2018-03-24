@@ -241,7 +241,9 @@ function ClientOptionsHandler(fileSources) {
     }), 'name');
 
     const supportsBinary = compilerPropsAT(languages, res => !!res, 'supportsBinary', true);
-    const supportsExecutePerLanguage = compilerPropsAT(languages, (res, lang) => supportsBinary[lang.id] && !!res, 'supportsExecute', true);
+    const supportsExecutePerLanguage = compilerPropsAT(languages, (res, lang) => {
+        return supportsBinary[lang.id] && !!res;
+    }, 'supportsExecute', true);
     const supportsExecute = Object.values(supportsExecutePerLanguage).some((value) => value);
 
     const libs = {};
@@ -303,7 +305,8 @@ function ClientOptionsHandler(fileSources) {
         doCache: doCache
     };
     this.setCompilers = compilers => {
-        const blacklistedKeys = ['exe', 'versionFlag', 'versionRe', 'compilerType', 'demangler', 'objdumper', 'postProcess'];
+        const blacklistedKeys = ['exe', 'versionFlag', 'versionRe', 'compilerType', 'demangler', 'objdumper',
+            'postProcess'];
         const copiedCompilers = JSON.parse(JSON.stringify(compilers));
         _.each(options.compilers, (compiler, compilersKey) => {
             _.each(compiler, (_, propKey) => {
@@ -649,7 +652,8 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
             }));
             webServer.use(express.static(staticDir));
         } else {
-            //assume that anything not dev is just production this gives sane defaults for anyone who isn't messing with this
+            /* Assume that anything not dev is just production.
+             * This gives sane defaults for anyone who isn't messing with this */
             logger.info("  serving static files from '" + staticDir + "'");
             webServer.use(express.static(staticDir, {maxAge: staticMaxAgeSecs * 1000}));
         }

@@ -79,15 +79,6 @@ function Opt(hub, container, state) {
     this.eventHub.emit("optViewOpened", this._compilerid);
 }
 
-// TODO: de-dupe with compiler etc
-Opt.prototype.resize = function () {
-    var topBarHeight = this.domRoot.find(".top-bar").outerHeight(true);
-    this.optEditor.layout({
-        width: this.domRoot.width(),
-        height: this.domRoot.height() - topBarHeight
-    });
-};
-
 Opt.prototype.onEditorChange = function (id, source) {
     if (this._editorid === id) {
         this.code = source;
@@ -103,8 +94,10 @@ Opt.prototype.onCompileResult = function (id, compiler, result, lang) {
         }
     }
 };
+
 Opt.prototype.setTitle = function () {
-    this.container.setTitle(this._compilerName + " Opt Viewer (Editor #" + this._editorid + ", Compiler #" + this._compilerid + ")");
+    this.container.setTitle(
+        this._compilerName + " Opt Viewer (Editor #" + this._editorid + ", Compiler #" + this._compilerid + ")");
 };
 
 Opt.prototype.getDisplayableOpt = function (optResult) {
@@ -161,7 +154,6 @@ Opt.prototype.onCompiler = function (id, compiler, options, editorid) {
     }
 };
 
-// TODO: de-dupe with compiler etc
 Opt.prototype.resize = function () {
     var topBarHeight = this.domRoot.find(".top-bar").outerHeight(true);
     this.optEditor.layout({
@@ -170,22 +162,17 @@ Opt.prototype.resize = function () {
     });
 };
 
-Opt.prototype.onEditorChange = function (id, source) {
-    if (this._editorid === id) {
-        this.code = source;
-        this.optEditor.setValue(source);
-    }
-};
-
-Opt.prototype.setTitle = function () {
-    this.container.setTitle(this._compilerName + " Opt Viewer (Editor #" + this._editorid + ", Compiler #" + this._compilerid + ")");
-};
-
-Opt.prototype.getDisplayableOpt = function (optResult) {
-    return "**" + optResult.optType + "** - " + optResult.displayString;
-};
-
 Opt.prototype.updateState = function () {
+    this.container.setState(this.currentState());
+};
+
+Opt.prototype.currentState = function () {
+    var state = {
+        id: this._compilerid,
+        editorid: this._editorid
+    };
+    this.fontScale.addState(state);
+    return state;
 };
 
 Opt.prototype.close = function () {

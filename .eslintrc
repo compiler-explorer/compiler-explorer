@@ -8,8 +8,8 @@
   },
   "rules": {
     "eqeqeq": ["error", "smart"],
-    "max-statements": ["warn", 50],
-    "max-len": ["warn", 120, { "ignoreRegExpLiterals": true }],
+    "max-statements": ["error", 50],
+    "max-len": ["error", 120, { "ignoreRegExpLiterals": true }],
     "eol-last": ["error", "always"],
     "semi": ["error", "always"],
     "indent": ["error", 4, { "SwitchCase": 1 }],

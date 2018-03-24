@@ -50,6 +50,7 @@ function Editor(hub, state, container) {
     this.container = container;
     this.domRoot = container.getElement();
     this.domRoot.html($('#codeEditor').html());
+    this.hub = hub;
     this.eventHub = hub.createEventHub();
     // Should probably be its own function somewhere
     this.settings = JSON.parse(local.get('settings', '{}'));
@@ -67,23 +68,10 @@ function Editor(hub, state, container) {
 
     this.editorSourceByLang = {};
     this.alertSystem = new Alert();
-    this.languageBtn = this.domRoot.find('.change-language');
-    var langKeys = _.keys(languages);
-    // Ensure that the btn is disabled if we don't have nothing to select
-    // Note that is might be disabled for other reasons beforehand
-    if (langKeys.length <= 1) {
-        this.languageBtn.prop("disabled", true);
-    }
-    this.currentLanguage = languages[langKeys[0]];
-    this.waitingForLanguage = state.source && !state.lang;
-    if (languages[this.settings.defaultLanguage]) {
-        this.currentLanguage = languages[this.settings.defaultLanguage];
-    }
-    if (languages[state.lang]) {
-        this.currentLanguage = languages[state.lang];
-    } else if (this.settings.newEditorLastLang && languages[hub.lastOpenedLangId]) {
-        this.currentLanguage = languages[hub.lastOpenedLangId];
-    }
+
+    this.langKeys = _.keys(languages);
+    this.initLanguage(state);
+
     var root = this.domRoot.find(".monaco-placeholder");
     var legacyReadOnly = state.options && !!state.options.readOnly;
     this.editor = monaco.editor.create(root[0], {
@@ -117,6 +105,210 @@ function Editor(hub, state, container) {
         foldAction.run();
     }
 
+    this.initEditorActions();
+    this.initButtons(state);
+    this.initCallbacks();
+
+    var usableLanguages = _.filter(languages, function (language) {
+        return hub.compilerService.compilersByLang[language.id];
+    });
+
+    this.languageBtn.selectize({
+        sortField: 'name',
+        valueField: 'id',
+        labelField: 'name',
+        searchField: ['name'],
+        options: _.map(usableLanguages, _.identity),
+        items: [this.currentLanguage.id]
+    }).on('change', _.bind(function (e) {
+        this.onLanguageChange($(e.target).val());
+    }, this));
+    this.selectize = this.languageBtn[0].selectize;
+    // We suppress posting changes until the user has stopped typing by:
+    // * Using _.debounce() to run emitChange on any key event or change
+    //   only after a delay.
+    // * Only actually triggering a change if the document text has changed from
+    //   the previous emitted.
+    this.lastChangeEmitted = null;
+    this.onSettingsChange(this.settings);
+    // this.editor.on("keydown", _.bind(function () {
+    //     // Not strictly a change; but this suppresses changes until some time
+    //     // after the last key down (be it an actual change or a just a cursor
+    //     // movement etc).
+    //     this.debouncedEmitChange();
+    // }, this));
+
+    this.updateTitle();
+    this.updateState();
+}
+
+// If compilerId is undefined, every compiler will be pinged
+Editor.prototype.maybeEmitChange = function (force, compilerId) {
+    var source = this.getSource();
+    if (!force && source === this.lastChangeEmitted) return;
+    this.lastChangeEmitted = source;
+    this.eventHub.emit('editorChange', this.id, this.lastChangeEmitted, this.currentLanguage.id, compilerId);
+};
+
+Editor.prototype.updateState = function () {
+    var state = {
+        id: this.id,
+        source: this.getSource(),
+        lang: this.currentLanguage.id
+    };
+    this.fontScale.addState(state);
+    this.container.setState(state);
+};
+
+Editor.prototype.setSource = function (newSource) {
+    this.editor.getModel().setValue(newSource);
+};
+
+Editor.prototype.getSource = function () {
+    return this.editor.getModel().getValue();
+};
+
+Editor.prototype.initLanguage = function (state) {
+    this.currentLanguage = languages[this.langKeys[0]];
+    this.waitingForLanguage = state.source && !state.lang;
+    if (languages[this.settings.defaultLanguage]) {
+        this.currentLanguage = languages[this.settings.defaultLanguage];
+    }
+    if (languages[state.lang]) {
+        this.currentLanguage = languages[state.lang];
+    } else if (this.settings.newEditorLastLang && languages[this.hub.lastOpenedLangId]) {
+        this.currentLanguage = languages[this.hub.lastOpenedLangId];
+    }
+};
+
+Editor.prototype.initCallbacks = function () {
+    this.fontScale.on('change', _.bind(this.updateState, this));
+
+    this.container.on('resize', this.resize, this);
+    this.container.on('shown', this.resize, this);
+    this.container.on('open', _.bind(function () {
+        this.eventHub.emit('editorOpen', this.id);
+    }, this));
+    this.container.on('destroy', this.close, this);
+    this.container.layoutManager.on('initialised', function () {
+        // Once initialized, let everyone know what text we have.
+        this.maybeEmitChange();
+    }, this);
+
+    this.eventHub.on('compilerOpen', this.onCompilerOpen, this);
+    this.eventHub.on('compilerClose', this.onCompilerClose, this);
+    this.eventHub.on('compiling', this.onCompiling, this);
+    this.eventHub.on('compileResult', this.onCompileResponse, this);
+    this.eventHub.on('selectLine', this.onSelectLine, this);
+    this.eventHub.on('editorSetDecoration', this.onEditorSetDecoration, this);
+    this.eventHub.on('settingsChange', this.onSettingsChange, this);
+    this.eventHub.on('conformanceViewOpen', this.onConformanceViewOpen, this);
+    this.eventHub.on('conformanceViewClose', this.onConformanceViewClose, this);
+    this.eventHub.on('resize', this.resize, this);
+
+    this.editor.getModel().onDidChangeContent(_.bind(function () {
+        this.debouncedEmitChange();
+        this.updateState();
+    }, this));
+
+    this.editor.onMouseLeave(_.bind(function () {
+        this.fadeTimeoutId = setTimeout(_.bind(function () {
+            this.clearCompilerLinkedLines();
+            this.fadeTimeoutId = -1;
+        }, this), 5000);
+    }, this));
+
+    this.mouseMoveThrottledFunction = _.throttle(_.bind(function (e) {
+        if (e !== null && e.target !== null && this.settings.hoverShowSource && e.target.position !== null) {
+            this.tryCompilerLinkLine(e.target.position.lineNumber, false);
+        }
+    }, this), 250);
+
+    this.editor.onMouseMove(_.bind(function (e) {
+        this.mouseMoveThrottledFunction(e);
+        // This can't be throttled or we can clear a timeout where we're already outside
+        if (this.fadeTimeoutId !== -1) {
+            clearTimeout(this.fadeTimeoutId);
+            this.fadeTimeoutId = -1;
+        }
+    }, this));
+
+    this.eventHub.on('initialised', this.maybeEmitChange, this);
+};
+
+Editor.prototype.initButtons = function (state) {
+    this.fontScale = new FontScale(this.domRoot, state, this.editor);
+    this.languageBtn = this.domRoot.find('.change-language');
+    // Ensure that the buttonn is disabled if we don't have nothing to select
+    // Note that is might be disabled for other reasons beforehand
+    if (this.langKeys.length <= 1) {
+        this.languageBtn.prop("disabled", true);
+    }
+    var addCompilerButton = this.domRoot.find('.btn.add-compiler');
+    var paneAdderDropdown = this.domRoot.find('.add-pane');
+
+    var togglePaneAdder = function () {
+        paneAdderDropdown.dropdown('toggle');
+    };
+
+
+    // NB a new compilerConfig needs to be created every time; else the state is shared
+    // between all compilers created this way. That leads to some nasty-to-find state
+    // bugs e.g. https://github.com/mattgodbolt/compiler-explorer/issues/225
+    var getCompilerConfig = _.bind(function () {
+        return Components.getCompiler(this.id, this.currentLanguage.id);
+    }, this);
+
+    var  getConformanceConfig = _.bind(function () {
+        return Components.getConformanceView(this.id, this.getSource());
+    }, this);
+
+    this.container.layoutManager
+        .createDragSource(addCompilerButton, getCompilerConfig)
+        ._dragListener.on('dragStart', togglePaneAdder);
+
+    addCompilerButton.click(_.bind(function () {
+        var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
+            this.container.layoutManager.root.contentItems[0];
+        insertPoint.addChild(getCompilerConfig);
+    }, this));
+
+    this.conformanceViewerButton = this.domRoot.find('.btn.conformance');
+
+    this.container.layoutManager
+        .createDragSource(this.conformanceViewerButton, getConformanceConfig)
+        ._dragListener.on('dragStart', togglePaneAdder);
+    this.conformanceViewerButton.click(_.bind(function () {
+        var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
+            this.container.layoutManager.root.contentItems[0];
+        insertPoint.addChild(getConformanceConfig);
+    }, this));
+};
+
+Editor.prototype.changeLanguage = function (newLang) {
+    this.selectize.setValue(newLang);
+};
+
+Editor.prototype.clearCompilerLinkedLines = function () {
+    _.each(this.asmByCompiler, _.bind(function (asms, compilerId) {
+        this.eventHub.emit('compilerSetDecorations', compilerId, -1, false);
+    }, this));
+};
+
+Editor.prototype.tryCompilerLinkLine = function (thisLineNumber, reveal) {
+    _.each(this.asmByCompiler, _.bind(function (asms, compilerId) {
+        var targetLines = [];
+        _.each(asms, function (asmLine, i) {
+            if (asmLine.source && asmLine.source.file === null &&
+                asmLine.source.line === thisLineNumber) {
+                targetLines.push(i + 1);
+            }
+        });
+        this.eventHub.emit('compilerSetDecorations', compilerId, targetLines, reveal);
+    }, this));
+};
+
+Editor.prototype.initEditorActions = function () {
     this.editor.addAction({
         id: 'compile',
         label: 'Compile',
@@ -167,185 +359,14 @@ function Editor(hub, state, container) {
         contextMenuGroupId: 'navigation',
         contextMenuOrder: 1.5,
         run: function (ed) {
-            tryCompilerLinkLine(ed.getPosition().lineNumber, true);
+            this.tryCompilerLinkLine(ed.getPosition().lineNumber, true);
         }
     });
-
-    var tryCompilerLinkLine = _.bind(function (thisLineNumber, reveal) {
-        _.each(this.asmByCompiler, _.bind(function (asms, compilerId) {
-            var targetLines = [];
-            _.each(asms, function (asmLine, i) {
-                if (asmLine.source && asmLine.source.file === null &&
-                    asmLine.source.line === thisLineNumber) {
-                    targetLines.push(i + 1);
-                }
-            });
-            this.eventHub.emit('compilerSetDecorations', compilerId, targetLines, reveal);
-        }, this));
-    }, this);
-
-    var clearCompilerLinkedLines = _.bind(function () {
-        _.each(this.asmByCompiler, _.bind(function (asms, compilerId) {
-            this.eventHub.emit('compilerSetDecorations', compilerId, -1, false);
-        }, this));
-    }, this);
-
-    this.editor.onMouseLeave(_.bind(function () {
-        this.fadeTimeoutId = setTimeout(_.bind(function () {
-            clearCompilerLinkedLines();
-            this.fadeTimeoutId = -1;
-        }, this), 5000);
-    }, this));
-
-    this.mouseMoveThrottledFunction = _.throttle(_.bind(function (e) {
-        if (e !== null && e.target !== null && this.settings.hoverShowSource && e.target.position !== null) {
-            tryCompilerLinkLine(e.target.position.lineNumber, false);
-        }
-    }, this), 250);
-
-    this.editor.onMouseMove(_.bind(function (e) {
-        this.mouseMoveThrottledFunction(e);
-        // This can't be throttled or we can clear a timeout where we're already outside
-        if (this.fadeTimeoutId !== -1) {
-            clearTimeout(this.fadeTimeoutId);
-            this.fadeTimeoutId = -1;
-        }
-    }, this));
-
-    this.updateEditorLayout = _.bind(function () {
-        var topBarHeight = this.domRoot.find(".top-bar").outerHeight(true) || 0;
-        this.editor.layout({width: this.domRoot.width(), height: this.domRoot.height() - topBarHeight});
-    }, this);
-
-    this.fontScale = new FontScale(this.domRoot, state, this.editor);
-    this.fontScale.on('change', _.bind(this.updateState, this));
-
-    var usableLanguages = _.filter(languages, function (language) {
-        return hub.compilerService.compilersByLang[language.id];
-    });
-
-    this.languageBtn.selectize({
-        sortField: 'name',
-        valueField: 'id',
-        labelField: 'name',
-        searchField: ['name'],
-        options: _.map(usableLanguages, _.identity),
-        items: [this.currentLanguage.id]
-    }).on('change', _.bind(function (e) {
-        this.onLanguageChange($(e.target).val());
-    }, this));
-    this.changeLanguage = function (newLang) {
-        this.languageBtn[0].selectize.setValue(newLang);
-    };
-
-    // We suppress posting changes until the user has stopped typing by:
-    // * Using _.debounce() to run emitChange on any key event or change
-    //   only after a delay.
-    // * Only actually triggering a change if the document text has changed from
-    //   the previous emitted.
-    this.lastChangeEmitted = null;
-    this.onSettingsChange(this.settings);
-    this.editor.getModel().onDidChangeContent(_.bind(function () {
-        this.debouncedEmitChange();
-        this.updateState();
-    }, this));
-    // this.editor.on("keydown", _.bind(function () {
-    //     // Not strictly a change; but this suppresses changes until some time
-    //     // after the last key down (be it an actual change or a just a cursor
-    //     // movement etc).
-    //     this.debouncedEmitChange();
-    // }, this));
-
-    container.on('resize', this.updateEditorLayout);
-    container.on('shown', this.updateEditorLayout);
-    container.on('open', _.bind(function () {
-        this.eventHub.emit('editorOpen', this.id);
-    }, this));
-    container.on('destroy', this.close, this);
-    this.container.layoutManager.on('initialised', function () {
-        // Once initialized, let everyone know what text we have.
-        this.maybeEmitChange();
-    }, this);
-
-    this.eventHub.on('compilerOpen', this.onCompilerOpen, this);
-    this.eventHub.on('compilerClose', this.onCompilerClose, this);
-    this.eventHub.on('compiling', this.onCompiling, this);
-    this.eventHub.on('compileResult', this.onCompileResponse, this);
-    this.eventHub.on('selectLine', this.onSelectLine, this);
-    this.eventHub.on('editorSetDecoration', this.onEditorSetDecoration, this);
-    this.eventHub.on('settingsChange', this.onSettingsChange, this);
-    this.eventHub.on('conformanceViewOpen', this.onConformanceViewOpen, this);
-    this.eventHub.on('conformanceViewClose', this.onConformanceViewClose, this);
-    this.eventHub.on('resize', this.updateEditorLayout, this);
-
-    // NB a new compilerConfig needs to be created every time; else the state is shared
-    // between all compilers created this way. That leads to some nasty-to-find state
-    // bugs e.g. https://github.com/mattgodbolt/compiler-explorer/issues/225
-    var compilerConfig = _.bind(function () {
-        return Components.getCompiler(this.id, this.currentLanguage.id);
-    }, this);
-
-    var addCompilerButton = this.domRoot.find('.btn.add-compiler');
-    var paneAdderDropdown = this.domRoot.find('.add-pane');
-
-    var togglePaneAdder = function () {
-        paneAdderDropdown.dropdown('toggle');
-    };
-
-    this.container.layoutManager
-        .createDragSource(addCompilerButton, compilerConfig)
-        ._dragListener.on('dragStart', togglePaneAdder);
-
-    addCompilerButton.click(_.bind(function () {
-        var insertPoint = hub.findParentRowOrColumn(this.container) ||
-            this.container.layoutManager.root.contentItems[0];
-        insertPoint.addChild(compilerConfig);
-    }, this));
-
-
-    var conformanceConfig = _.bind(function () {
-        return Components.getConformanceView(this.id, this.getSource());
-    }, this);
-
-    this.conformanceViewerButton = this.domRoot.find('.btn.conformance');
-
-    this.container.layoutManager
-        .createDragSource(this.conformanceViewerButton, conformanceConfig)
-        ._dragListener.on('dragStart', togglePaneAdder);
-    this.conformanceViewerButton.click(_.bind(function () {
-        var insertPoint = hub.findParentRowOrColumn(this.container) ||
-            this.container.layoutManager.root.contentItems[0];
-        insertPoint.addChild(conformanceConfig);
-    }, this));
-    this.updateTitle();
-    this.eventHub.on('initialised', this.maybeEmitChange, this);
-    this.updateState();
-}
-
-// If compilerId is undefined, every compiler will be pinged
-Editor.prototype.maybeEmitChange = function (force, compilerId) {
-    var source = this.getSource();
-    if (!force && source === this.lastChangeEmitted) return;
-    this.lastChangeEmitted = source;
-    this.eventHub.emit('editorChange', this.id, this.lastChangeEmitted, this.currentLanguage.id, compilerId);
 };
 
-Editor.prototype.updateState = function () {
-    var state = {
-        id: this.id,
-        source: this.getSource(),
-        lang: this.currentLanguage.id
-    };
-    this.fontScale.addState(state);
-    this.container.setState(state);
-};
-
-Editor.prototype.setSource = function (newSource) {
-    this.editor.getModel().setValue(newSource);
-};
-
-Editor.prototype.getSource = function () {
-    return this.editor.getModel().getValue();
+Editor.prototype.resize = function () {
+    var topBarHeight = this.domRoot.find(".top-bar").outerHeight(true) || 0;
+    this.editor.layout({width: this.domRoot.width(), height: this.domRoot.height() - topBarHeight});
 };
 
 Editor.prototype.onSettingsChange = function (newSettings) {

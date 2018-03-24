@@ -93,28 +93,15 @@ function Cfg(hub, container, state) {
         }
     };
 
-    this.toggles = new Toggles(this.domRoot.find('.options'), state.options);
-
     this.cfgVisualiser = new vis.Network(this.domRoot.find('.graph-placeholder')[0],
         this.defaultCfgOutput, this.networkOpts);
 
     this.cfgVisualiser.on('dragEnd', _.bind(this.saveState, this));
     this.cfgVisualiser.on('zoom', _.bind(this.saveState, this));
 
-    this.toggleNavigationButton = this.domRoot.find('.toggle-navigation');
-    this.toggleNavigationButton.on('click', _.bind(function () {
-        this.networkOpts.interaction.navigationButtons = this.toggleNavigationButton.hasClass('active');
-        this.cfgVisualiser.setOptions(this.networkOpts);
-    }, this));
-    this.togglePhysicsButton = this.domRoot.find('.toggle-physics');
-    this.togglePhysicsButton.on('click', _.bind(function () {
-        this.networkOpts.physics.enabled = this.togglePhysicsButton.hasClass('active');
-        // change only physics.enabled option to preserve current node locations
-        this.cfgVisualiser.setOptions({
-            physics: {enabled: this.networkOpts.physics.enabled}
-        });
-    }, this));
+    this.initButtons(state);
 
+    this.initCallbacks();
     this.compilerId = state.id;
     this._editorid = state.editorid;
     this._binaryFilter = false;
@@ -137,24 +124,13 @@ function Cfg(hub, container, state) {
         }
     }, this));
 
-    this.eventHub.on('compilerClose', this.onCompilerClose, this);
-    this.eventHub.on('compileResult', this.onCompileResult, this);
-    this.eventHub.on('compiler', this.onCompiler, this);
-    this.eventHub.on('filtersChange', this.onFiltersChange, this);
-
-    this.container.on('destroy', this.close, this);
-    this.container.on('resize', this.resize, this);
-    this.container.on('shown', this.resize, this);
-    this.eventHub.emit('cfgViewOpened', this.compilerId);
-    this.eventHub.emit('requestFilters', this.compilerId);
-    this.eventHub.emit('requestCompiler', this.compilerId);
-
+    this.initCallbacks();
     this.adaptStructure = function (names) {
         return _.map(names, function (name) {
             return {name: name};
         });
     };
-
+    this.updateButtons();
     this.setTitle();
 }
 
@@ -203,6 +179,57 @@ Cfg.prototype.onFiltersChange = function (id, filters) {
     }
 };
 
+Cfg.prototype.initButtons = function (state) {
+    this.toggles = new Toggles(this.domRoot.find('.options'), state.options);
+
+    this.toggleNavigationButton = this.domRoot.find('.toggle-navigation');
+    this.toggleNavigationTitle = this.toggleNavigationButton.prop('title');
+
+    this.togglePhysicsButton = this.domRoot.find('.toggle-physics');
+    this.togglePhysicsTitle = this.togglePhysicsButton.prop('title');
+};
+
+Cfg.prototype.initCallbacks = function () {
+    this.eventHub.on('compilerClose', this.onCompilerClose, this);
+    this.eventHub.on('compileResult', this.onCompileResult, this);
+    this.eventHub.on('compiler', this.onCompiler, this);
+    this.eventHub.on('filtersChange', this.onFiltersChange, this);
+
+    this.container.on('destroy', this.close, this);
+    this.container.on('resize', this.resize, this);
+    this.container.on('shown', this.resize, this);
+    this.eventHub.emit('cfgViewOpened', this.compilerId);
+    this.eventHub.emit('requestFilters', this.compilerId);
+    this.eventHub.emit('requestCompiler', this.compilerId);
+
+    this.togglePhysicsButton.on('click', _.bind(function () {
+        this.networkOpts.physics.enabled = this.togglePhysicsButton.hasClass('active');
+        // change only physics.enabled option to preserve current node locations
+        this.cfgVisualiser.setOptions({
+            physics: {enabled: this.networkOpts.physics.enabled}
+        });
+    }, this));
+
+    this.toggleNavigationButton.on('click', _.bind(function () {
+        this.networkOpts.interaction.navigationButtons = this.toggleNavigationButton.hasClass('active');
+        this.cfgVisualiser.setOptions({interaction: {
+            navigationButtons: this.networkOpts.interaction.navigationButtons}
+        });
+    }, this));
+    this.toggles.on('change', _.bind(function () {
+        this.updateButtons();
+        this.saveState();
+    }, this));
+};
+
+Cfg.prototype.updateButtons = function () {
+    var formatButtonTitle = function (button, title) {
+        button.prop('title', '[' + (button.hasClass('active') ? 'ON' : 'OFF') + '] ' + title);
+    };
+    formatButtonTitle(this.togglePhysicsButton, this.togglePhysicsTitle);
+    formatButtonTitle(this.toggleNavigationButton, this.toggleNavigationTitle);
+};
+
 Cfg.prototype.resize = function () {
     if (this.cfgVisualiser.canvas) {
         var height = this.domRoot.height() - this.domRoot.find('.top-bar').outerHeight(true);
@@ -212,7 +239,8 @@ Cfg.prototype.resize = function () {
 };
 
 Cfg.prototype.setTitle = function () {
-    this.container.setTitle(this._compilerName + ' Graph Viewer (Editor #' + this._editorid + ', Compiler #' + this.compilerId + ')');
+    this.container.setTitle(
+        this._compilerName + ' Graph Viewer (Editor #' + this._editorid + ', Compiler #' + this.compilerId + ')');
 };
 
 Cfg.prototype.assignLevels = function (data) {

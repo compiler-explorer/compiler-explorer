@@ -131,6 +131,16 @@ Ast.prototype.onCompilerClose = function (id) {
 };
 
 Ast.prototype.updateState = function () {
+    this.container.setState(this.currentState());
+};
+
+Ast.prototype.currentState = function () {
+    var state = {
+        id: this._compilerid,
+        editorid: this._editorid
+    };
+    this.fontScale.addState(state);
+    return state;
 };
 
 Ast.prototype.onCompilerClose = function (id) {

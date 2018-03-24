@@ -105,6 +105,7 @@ function Diff(hub, container, state) {
     this.eventHub.on('compileResult', this.onCompileResult, this);
     this.eventHub.on('compiler', this.onCompiler, this);
     this.eventHub.on('compilerClose', this.onCompilerClose, this);
+    this.eventHub.on('settingsChange', this.onSettingsChange, this);
     this.eventHub.on('themeChange', this.onThemeChange, this);
     this.container.on('destroy', function () {
         this.eventHub.unsubscribe();
@@ -117,6 +118,7 @@ function Diff(hub, container, state) {
     this.eventHub.emit('resendCompilation', this.rhs.id);
     this.eventHub.emit('findCompilers');
     this.eventHub.emit('requestTheme');
+    this.eventHub.emit('requestSettings');
 
     this.updateCompilerNames();
     this.updateCompilers();
@@ -214,6 +216,14 @@ Diff.prototype.updateState = function () {
 Diff.prototype.onThemeChange = function (newTheme) {
     if (this.outputEditor)
         this.outputEditor.updateOptions({theme: newTheme.monaco});
+};
+
+Diff.prototype.onSettingsChange =  function (newSettings) {
+    this.outputEditor.updateOptions({
+        minimap: {
+            enabled: newSettings.showMinimap
+        }
+    });
 };
 
 module.exports = {
