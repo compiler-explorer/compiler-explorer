@@ -29,7 +29,7 @@ const
     utils = require('../lib/utils'),
     chaiAsPromised = require('chai-as-promised'),
     SymbolStore = require('../lib/symbol-store').SymbolStore,
-    Demangler = require('../lib/demangler-cpp').DemanglerCPP,
+    Demangler = require('../lib/demangler-cpp').Demangler,
     logger = require('../lib/logger').logger;
 
 chai.use(chaiAsPromised);
