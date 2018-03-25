@@ -52,7 +52,21 @@ function Ast(hub, container, state) {
     this._compilerid = state.id;
     this._compilerName = state.compilerName;
     this._editorid = state.editorid;
+
+    this.initButtons(state);
+    this.initCallbacks();
+
+    if (state && state.astOutput) {
+        this.showAstResults(state.astOutput);
+    }
+    this.setTitle();
+}
+
+Ast.prototype.initButtons = function (state) {
     this.fontScale = new FontScale(this.domRoot, state, this.astEditor);
+};
+
+Ast.prototype.initCallbacks = function () {
     this.fontScale.on('change', _.bind(this.updateState, this));
 
     this.container.on('destroy', this.close, this);
@@ -64,13 +78,9 @@ function Ast(hub, container, state) {
     this.eventHub.emit('astViewOpened', this._compilerid);
     this.eventHub.emit('requestSettings');
 
-    container.on('resize', this.resize, this);
-    container.on('shown', this.resize, this);
-    if (state && state.astOutput) {
-        this.showAstResults(state.astOutput);
-    }
-    this.setTitle();
-}
+    this.container.on('resize', this.resize, this);
+    this.container.on('shown', this.resize, this);
+};
 
 // TODO: de-dupe with compiler etc
 Ast.prototype.resize = function () {

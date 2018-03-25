@@ -58,20 +58,10 @@ function Opt(hub, container, state) {
     this._compilerid = state.id;
     this._compilerName = state.compilerName;
     this._editorid = state.editorid;
-    this.fontScale = new FontScale(this.domRoot, state, this.optEditor);
-    this.fontScale.on('change', _.bind(this.updateState, this));
 
-    this.eventHub.on('compileResult', this.onCompileResult, this);
-    this.eventHub.on('compiler', this.onCompiler, this);
-    this.eventHub.on('compilerClose', this.onCompilerClose, this);
-    this.eventHub.on('editorChange', this.onEditorChange, this);
-    this.eventHub.on('settingsChange', this.onSettingsChange, this);
-    this.eventHub.on('resize', this.resize, this);
-    this.container.on('destroy', this.close, this);
-    this.eventHub.emit('requestSettings');
+    this.initButtons(state);
+    this.initCallbacks();
 
-    container.on('resize', this.resize, this);
-    container.on('shown', this.resize, this);
     if (state && state.optOutput) {
         this.showOptResults(state.optOutput);
     }
@@ -84,6 +74,26 @@ Opt.prototype.onEditorChange = function (id, source) {
         this.code = source;
         this.optEditor.setValue(source);
     }
+};
+
+Opt.prototype.initButtons = function (state) {
+    this.fontScale = new FontScale(this.domRoot, state, this.optEditor);
+};
+
+Opt.prototype.initCallbacks = function () {
+    this.fontScale.on('change', _.bind(this.updateState, this));
+
+    this.eventHub.on('compileResult', this.onCompileResult, this);
+    this.eventHub.on('compiler', this.onCompiler, this);
+    this.eventHub.on('compilerClose', this.onCompilerClose, this);
+    this.eventHub.on('editorChange', this.onEditorChange, this);
+    this.eventHub.on('settingsChange', this.onSettingsChange, this);
+    this.eventHub.on('resize', this.resize, this);
+    this.container.on('destroy', this.close, this);
+    this.eventHub.emit('requestSettings');
+
+    this.container.on('resize', this.resize, this);
+    this.container.on('shown', this.resize, this);
 };
 
 Opt.prototype.onCompileResult = function (id, compiler, result, lang) {

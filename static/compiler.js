@@ -593,6 +593,21 @@ Compiler.prototype.onEditorChange = function (editor, source, langId, compilerId
     }
 };
 
+Compiler.prototype.onOutputOpened = function (compilerId) {
+    if (this.id === compilerId) {
+        this.isOutputOpened = true;
+        this.outputBtn.prop('disabled', true);
+        this.resendResult();
+    }
+};
+
+Compiler.prototype.onOutputClosed = function (compilerId) {
+    if (this.id === compilerId) {
+        this.isOutputOpened = false;
+        this.outputBtn.prop('disabled', false);
+    }
+};
+
 Compiler.prototype.onOptViewClosed = function (id) {
     if (this.id === id) {
         this.wantOptInfo = false;
@@ -1370,21 +1385,6 @@ Compiler.prototype.langOfCompiler = function (compilerId) {
         compiler = options.compilers[0];
     }
     return compiler.lang;
-};
-
-Compiler.prototype.onOutputOpened = function (compilerId) {
-    if (this.id === compilerId) {
-        this.isOutputOpened = true;
-        this.outputBtn.prop('disabled', true);
-        this.resendResult();
-    }
-};
-
-Compiler.prototype.onOutputClosed = function (compilerId) {
-    if (this.id === compilerId) {
-        this.isOutputOpened = false;
-        this.outputBtn.prop('disabled', false);
-    }
 };
 
 module.exports = {

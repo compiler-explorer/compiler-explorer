@@ -96,12 +96,8 @@ function Cfg(hub, container, state) {
     this.cfgVisualiser = new vis.Network(this.domRoot.find('.graph-placeholder')[0],
         this.defaultCfgOutput, this.networkOpts);
 
-    this.cfgVisualiser.on('dragEnd', _.bind(this.saveState, this));
-    this.cfgVisualiser.on('zoom', _.bind(this.saveState, this));
-
     this.initButtons(state);
 
-    this.initCallbacks();
     this.compilerId = state.id;
     this._editorid = state.editorid;
     this._binaryFilter = false;
@@ -165,6 +161,7 @@ Cfg.prototype.onCompileResult = function (id, compiler, result) {
         this.saveState();
     }
 };
+
 Cfg.prototype.onCompiler = function (id, compiler) {
     if (id === this.compilerId) {
         this._compilerName = compiler ? compiler.name : '';
@@ -190,6 +187,9 @@ Cfg.prototype.initButtons = function (state) {
 };
 
 Cfg.prototype.initCallbacks = function () {
+    this.cfgVisualiser.on('dragEnd', _.bind(this.saveState, this));
+    this.cfgVisualiser.on('zoom', _.bind(this.saveState, this));
+
     this.eventHub.on('compilerClose', this.onCompilerClose, this);
     this.eventHub.on('compileResult', this.onCompileResult, this);
     this.eventHub.on('compiler', this.onCompiler, this);
@@ -350,7 +350,6 @@ Cfg.prototype.close = function () {
     this.eventHub.emit('cfgViewClosed', this.compilerId);
     this.cfgVisualiser.destroy();
 };
-
 
 Cfg.prototype.saveState = function () {
     this.container.setState(this.currentState());
