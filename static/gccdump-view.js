@@ -101,16 +101,10 @@ function GccDump(hub, container, state) {
 
     if (state && state.selectedPass) {
         this.state.selectedPass = state.selectedPass;
-        this.eventHub.emit('gccDumpPassSelected',
-            this.state._compilerid,
-            state.selectedPass,
-            false);
+        this.eventHub.emit('gccDumpPassSelected', this.state._compilerid, state.selectedPass, false);
     }
 
-    this.eventHub.emit('gccDumpFiltersChanged',
-        this.state._compilerid,
-        this.getEffectiveFilters(),
-        false);
+    this.eventHub.emit('gccDumpFiltersChanged', this.state._compilerid, this.getEffectiveFilters(), false);
 
     this.saveState();
     this.setTitle();
@@ -128,10 +122,9 @@ GccDump.prototype.onUiNotReady = function () {
 
     // disable drop down menu and buttons
     this.selectize.disable();
-    this.domRoot.find('.dump-filters .btn')
-        .each(function () {
-            $(this).addClass('disabled');
-        });
+    this.domRoot.find('.dump-filters .btn').each(function () {
+        $(this).addClass('disabled');
+    });
 };
 
 GccDump.prototype.onUiReady = function () {
@@ -148,10 +141,7 @@ GccDump.prototype.onUiReady = function () {
 
 GccDump.prototype.onPassSelect = function (passId) {
     if (this.inhibitPassSelect !== true) {
-        this.eventHub.emit('gccDumpPassSelected',
-            this.state._compilerid,
-            passId,
-            true);
+        this.eventHub.emit('gccDumpPassSelected', this.state._compilerid, passId, true);
     }
     this.state.selectedPass = passId;
     this.saveState();
@@ -193,10 +183,7 @@ GccDump.prototype.updatePass = function (filters, selectize, gccDumpOutput) {
         selectize.clear(true);
     }
 
-    this.eventHub.emit('gccDumpPassSelected',
-        this.state._compilerid,
-        gccDumpOutput.selectedPass,
-        false);
+    this.eventHub.emit('gccDumpPassSelected', this.state._compilerid, gccDumpOutput.selectedPass, false);
 
     this.inhibitPassSelect = false;
 };
@@ -275,10 +262,7 @@ GccDump.prototype.onFilterChange = function () {
     this.saveState();
 
     if (this.inhibitPassSelect !== true) {
-        this.eventHub.emit('gccDumpFiltersChanged',
-            this.state._compilerid,
-            this.getEffectiveFilters(),
-            true);
+        this.eventHub.emit('gccDumpFiltersChanged', this.state._compilerid, this.getEffectiveFilters(), true);
     }
 };
 

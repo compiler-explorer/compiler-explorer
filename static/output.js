@@ -28,6 +28,7 @@ var _ = require('underscore');
 var $ = require('jquery');
 var FontScale = require('fontscale');
 var AnsiToHtml = require('ansi-to-html');
+var Toggles = require('toggles');
 
 function makeAnsiToHtml(color) {
     return new AnsiToHtml({
@@ -46,26 +47,59 @@ function Output(hub, container, state) {
     this.domRoot = container.getElement();
     this.domRoot.html($('#compiler-output').html());
     this.contentRoot = this.domRoot.find(".content");
-    this.bottomBar = this.domRoot.find('.compiler-code');
+    this.optionsToolbar = this.domRoot.find('.options-toolbar');
     this.compilerName = "";
-    this.fontScale = new FontScale(this.domRoot, state, "pre");
+    this.fontScale = new FontScale(this.domRoot, state, ".content");
     this.fontScale.on('change', _.bind(function () {
         this.saveState();
     }, this));
 
+    this.initButtons();
+    this.options = new Toggles(this.domRoot.find('.options'), state);
+    this.options.on('change', _.bind(this.onOptionsChange, this));
+
+    this.container.on('resize', this.resize, this);
+    this.container.on('shown', this.resize, this);
     this.container.on('destroy', this.close, this);
 
     this.eventHub.on('compileResult', this.onCompileResult, this);
     this.eventHub.on('compilerClose', this.onCompilerClose, this);
     this.eventHub.emit('outputOpened', this.compilerId);
 
+    this.onOptionsChange();
     this.updateCompilerName();
 }
 
+Output.prototype.getEffectiveOptions = function () {
+    return this.options.get();
+};
+
+Output.prototype.resize = function () {
+    this.contentRoot.height(this.domRoot.height() - this.optionsToolbar.height() - 5);
+};
+
+Output.prototype.onOptionsChange = function () {
+    var options = this.getEffectiveOptions();
+    //this.contentRoot.css('white-space', options.wrap ? 'initial' : 'nowrap');
+    //this.contentRoot.css('overflow-x', options.wrap ? 'initial' : 'auto');
+    this.contentRoot.toggleClass('wrap', options.wrap);
+    //this.contentRoot.toggleClass('scroll', !options.wrap);
+    this.wrapButton.prop('title', '[' + (options.wrap ? 'ON' : 'OFF') + '] ' + this.wrapTitle);
+
+    this.saveState();
+};
+
+Output.prototype.initButtons = function () {
+    this.wrapButton = this.domRoot.find('.wrap-lines');
+    this.wrapTitle = this.wrapButton.prop('title');
+};
+
 Output.prototype.currentState = function () {
+    var options = this.getEffectiveOptions();
     var state = {
         compiler: this.compilerId,
-        editorId: this.editorId
+        editor: this.editorId,
+        wrap: options.wrap
     };
     this.fontScale.addState(state);
     return state;
@@ -107,7 +141,7 @@ Output.prototype.onCompileResult = function (id, compiler, result) {
 };
 
 Output.prototype.programOutput = function (msg, color) {
-    var elem = $('<div></div>').appendTo(this.contentRoot)
+    var elem = $('<p></p>').appendTo(this.contentRoot)
         .html(msg)
         .css('font-family', '"Courier New", Courier, monospace');
     if (color)
@@ -115,26 +149,26 @@ Output.prototype.programOutput = function (msg, color) {
 };
 
 Output.prototype.add = function (msg, lineNum) {
-    var elem = $('<div></div>').appendTo(this.contentRoot);
+    var elem = $('<p></p>').appendTo(this.contentRoot);
     if (lineNum) {
-        elem.html($('<a></a>').prop('href', '#').html(msg))
-            .click(_.bind(function (e) {
-                this.eventHub.emit('editorSetDecoration', this.editorId, lineNum, true);
-                // do not bring user to the top of index.html
-                // http://stackoverflow.com/questions/3252730
-                e.preventDefault();
-                return false;
-            }, this))
-            .on('mouseover', _.bind(function () {
-                this.eventHub.emit('editorSetDecoration', this.editorId, lineNum, false);
-            }, this));
+        elem.html(
+            $('<a></a>')
+                .prop('href', '#')
+                .html(msg)
+                .click(_.bind(function (e) {
+                    this.eventHub.emit('editorSetDecoration', this.editorId, lineNum, true);
+                    // do not bring user to the top of index.html
+                    // http://stackoverflow.com/questions/3252730
+                    e.preventDefault();
+                    return false;
+                }, this))
+                .on('mouseover', _.bind(function () {
+                    this.eventHub.emit('editorSetDecoration', this.editorId, lineNum, false);
+                }, this))
+        );
     } else {
         elem.html(msg);
     }
-};
-
-Output.prototype.setResultCode = function (code) {
-    this.bottomBar.text('Compiler exited with code ' + code);
 };
 
 Output.prototype.updateCompilerName = function () {

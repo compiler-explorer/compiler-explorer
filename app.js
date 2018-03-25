@@ -284,6 +284,7 @@ function ClientOptionsHandler(fileSources) {
         githubEnabled: ceProps('clientGitHubRibbonEnabled', true),
         gapiKey: ceProps('googleApiKey', ''),
         googleShortLinkRewrite: ceProps('googleShortLinkRewrite', '').split('|'),
+        urlShortenService: ceProps('urlShortenService', 'none'),
         defaultSource: ceProps('defaultSource', ''),
         compilers: [],
         libs: libs,

@@ -181,30 +181,38 @@ pre.content {
     background-color: #333 !important;
 }
 
-.btn {
-    color: #ccc !important;
-    background-color: #464545 !important;
-    border: 2px solid #464545 !important;
+.btn-godbolt {
+    color: #fff !important;
+    background-color: #343a40 !important;
+    border-color: #303040 !important;
 }
 
-.btn.active {
-    color: #ccc !important;
-    background-color: #464545 !important;
-    border: 2px solid #464545 !important;
+.btn-godbolt:hover {
+    color: #fff !important;
+    background-color: #23272b !important;
+    border-color: #1d2124 !important;
 }
 
-.btn.active:hover {
-    color: #aaa !important;
-    background-color: #464545 !important;
-    box-shadow: inset 0 0.5px 1.5px rgba(0, 0, 0, 0.125) !important;
-    border: 2px solid #464545 !important;
+.btn-godbolt:focus, .btn-godbolt.focus {
+    box-shadow: 0 0 0 0.2rem rgba(52, 58, 64, 0.5) !important;
 }
 
-.btn:not(.active):hover {
-    background-color: #464545 !important;
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.125) !important;
-    border: 2px solid #464545 !important;
-    color: #aaa !important;
+.btn-godbolt.disabled, .btn-godbolt:disabled {
+    color: #fff !important;
+    background-color: #343a40 !important;
+    border-color: #303040 !important;
+}
+
+.btn-godbolt:not(:disabled):not(.disabled):active, .btn-godbolt:not(:disabled):not(.disabled).active,
+.show > .btn-godbolt.dropdown-toggle {
+    color: #fff !important;
+    background-color: #1d2124 !important;
+    border-color: #171a1d !important;
+}
+
+.btn-godbolt:not(:disabled):not(.disabled):active:focus, .btn-godbolt:not(:disabled):not(.disabled).active:focus,
+.show > .btn-godbolt.dropdown-toggle:focus {
+    box-shadow: 0 0 0 0.2rem rgba(52, 58, 64, 0.5) !important;
 }
 
 select {
@@ -239,7 +247,7 @@ input.permalink {
 }
 
 .graph-placeholder {
-    background-color: #333333 !important;
+    background-color: #1e1e1e !important;
 }
 
 .text-count {

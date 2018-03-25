@@ -34,6 +34,10 @@ function googleJSClientLoaded() {
 }
 
 function shortenURL(url, done) {
+    if (!options.gapiKey) {
+        done(null);
+        return;
+    }
     var gapi = window.gapi;
     if (!gapi || !gapi.client || !gapi.client.urlshortener) {
         // Load the Google APIs client library asynchronously, then the
@@ -58,7 +62,7 @@ function shortenURL(url, done) {
                 group: "urltoolong",
                 alertClass: "notification-error"
             });
-        done(url);
+        done(null);
     });
 }
 

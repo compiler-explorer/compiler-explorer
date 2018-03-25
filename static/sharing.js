@@ -26,7 +26,7 @@
 var $ = require('jquery');
 var _ = require('underscore');
 var options = require('options');
-var shortenURL = require('urlshorten-google');
+var shortenURL = require('./urlshorten-' + options.urlShortenService);
 var Components = require('components');
 var url = require('./url');
 
@@ -100,6 +100,11 @@ function initShareButton(getLink, layout) {
 
         getLinks(layout, function (theUrls) {
             urls = theUrls;
+            if (!urls[currentBind])
+                currentBind = 'Full';
+            root.find('.sources a').each(function () {
+                $(this).toggle(!!urls[$(this).data().bind]);
+            });
             update();
         });
         update();
@@ -131,14 +136,10 @@ function getLinks(layout, done) {
         Embed: '<iframe width="800px" height="200px" src="' + getEmbeddedUrl(layout, false) + '"></iframe>',
         'Embed (RO)': '<iframe width="800px" height="200px" src="' + getEmbeddedUrl(layout, true) + '"></iframe>'
     };
-    if (!options.gapiKey) {
+    shortenURL(result.Full, function (shorter) {
+        result.Short = shorter;
         done(result);
-    } else {
-        shortenURL(result.Full, function (shorter) {
-            result.Short = shorter;
-            done(result);
-        });
-    }
+    });
 }
 
 module.exports = {
