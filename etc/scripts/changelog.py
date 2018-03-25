@@ -26,8 +26,8 @@ import subprocess
 
 
 def format_commit(url, commit):
-    splitted_commit = commit.split(' * ')
-    print(splitted_commit)
+    grouped_commit = commit.split(' * ')
+    print(grouped_commit)
     return '<div class="row commits-list">\n' \
            '    <div class="col-sm-3">\n' \
            '        <a href="{}commit/{}" rel="noreferrer noopener" target="_blank">{}\n' \
@@ -38,7 +38,7 @@ def format_commit(url, commit):
            '    <div class="col-sm-9">\n' \
            '        <p>{}</p>\n' \
            '    </div>\n' \
-           '</div>\n'.format(url, splitted_commit[0], splitted_commit[0], splitted_commit[1])
+           '</div>\n'.format(url, grouped_commit[0], grouped_commit[0], grouped_commit[1])
 
 
 def get_commits(repo):
