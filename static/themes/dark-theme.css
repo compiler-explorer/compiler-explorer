@@ -263,3 +263,11 @@ input.permalink {
     color: #EEE !important;
     text-shadow: none !important;
 }
+
+.commit-entry:nth-child(odd) {
+    background-color: #222222 !important;
+}
+
+.commit-entry:nth-child(even) {
+    background-color: #424242 !important;
+}

@@ -154,6 +154,14 @@ body {
     color: red;
 }
 
+.commit-entry:nth-child(odd) {
+    background-color: #ffffff;
+}
+
+.commit-entry:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
 .popover-content {
     background-color: #f0f0f0;
 }
