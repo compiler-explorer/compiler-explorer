@@ -24,28 +24,42 @@
 
 import subprocess
 
+html_escape_table = {
+    "&": "&amp;",
+    '"': "&quot;",
+    "'": "&apos;",
+    ">": "&gt;",
+    "<": "&lt;",
+}
+
+
+def html_escape(text):
+    return "".join(html_escape_table.get(c, c) for c in text)
+
 
 def format_commit(url, commit):
     grouped_commit = commit.split(' * ')
     print(grouped_commit)
-    return '<div class="row commits-list">\n' \
-           '    <div class="col-sm-3">\n' \
-           '        <a href="{}commit/{}" rel="noreferrer noopener" target="_blank">{}\n' \
-           '            <sup><small class="glyphicon glyphicon-new-window opens-new-window" ' \
+    return '    <div class="row commit-entry">\n' \
+           '        <div class="col-sm-3">\n' \
+           '            <a href="{}commit/{}" rel="noreferrer noopener" target="_blank">{}\n' \
+           '                <sup><small class="glyphicon glyphicon-new-window opens-new-window" ' \
            'title="Opens in a new window"></small></sup>\n' \
-           '        </a>\n' \
-           '    </div>\n' \
-           '    <div class="col-sm-9">\n' \
-           '        <p>{}</p>\n' \
-           '    </div>\n' \
-           '</div>\n'.format(url, grouped_commit[0], grouped_commit[0], grouped_commit[1])
+           '            </a>\n' \
+           '        </div>\n' \
+           '        <div class="col-sm-9">\n' \
+           '            <p>{}</p>\n' \
+           '        </div>\n' \
+           '    </div>\n'.format(url, grouped_commit[0], grouped_commit[0], html_escape(grouped_commit[1]))
 
 
 def get_commits(repo):
     coms = subprocess.check_output(['git', 'log', '--date=local', '--after="3 months ago"', '--grep=^* ', '--oneline'])
     with open('static/changelog.html', 'w') as f:
+        f.write('<div class="commits-list">\n')
         for commit in coms.splitlines():
             f.write(format_commit(repo, commit))
+        f.write('</div>\n')
 
 
 if __name__ == '__main__':

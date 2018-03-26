@@ -154,11 +154,11 @@ body {
     color: red;
 }
 
-.commits-list:nth-child(odd) {
+.commit-entry:nth-child(odd) {
     background-color: #ffffff;
 }
 
-.commits-list:nth-child(even) {
+.commit-entry:nth-child(even) {
     background-color: #f2f2f2;
 }
 
