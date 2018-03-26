@@ -68,6 +68,7 @@ var languages = options.languages;
 
 function Compiler(hub, container, state) {
     this.container = container;
+    this.hub = hub;
     this.eventHub = hub.createEventHub();
     this.compilerService = hub.compilerService;
     this.domRoot = container.getElement();
@@ -75,31 +76,12 @@ function Compiler(hub, container, state) {
     this.id = state.id || hub.nextCompilerId();
     this.sourceEditorId = state.source || 1;
     this.settings = JSON.parse(local.get('settings', '{}'));
-    // If we don't have a language, but a compiler, find the corresponding language.
-    this.currentLangId = state.lang;
-    if (!this.currentLangId && state.compiler) {
-        this.currentLangId = this.langOfCompiler(state.compiler);
-    }
-    if (!this.currentLangId && languages[this.settings.defaultLanguage]) {
-        this.currentLangId = languages[this.settings.defaultLanguage].id;
-    }
-    if (!this.currentLangId) {
-        this.currentLangId = _.keys(languages)[0];
-    }
-    this.originalCompilerId = state.compiler;
-    if (state.compiler)
-        this.compiler = this.findCompiler(this.currentLangId, state.compiler);
-    else
-        this.compiler = this.findCompiler(this.currentLangId, options.defaultCompiler[this.currentLangId]);
-    if (!this.compiler) {
-        var compilers = this.compilerService.compilersByLang[this.currentLangId];
-        if (compilers) this.compiler = _.values(compilers)[0];
-    }
+    this.initLang(state);
+    this.initCompiler(state);
     this.infoByLang = {};
     this.deferCompiles = hub.deferred;
     this.needsCompile = false;
     this.options = state.options || options.compileOptions[this.currentLangId];
-    this.filters = new Toggles(this.domRoot.find('.filters'), patchOldFilters(state.filters));
     this.source = '';
     this.assembly = [];
     this.colours = [];
@@ -113,18 +95,7 @@ function Compiler(hub, container, state) {
     this.prevDecorations = [];
     this.alertSystem = new Alert();
 
-    this.initButtons();
-    this.initLibraries(state);
-
     this.linkedFadeTimeoutId = -1;
-    this.getGroupsInUse = function () {
-        var currentLangCompilers = _.map(this.getCurrentLangCompilers(), _.identity, this);
-        return _.map(_.uniq(currentLangCompilers, false, function (compiler) {
-            return compiler.group;
-        }), function (compiler) {
-            return {value: compiler.group, label: compiler.groupName || compiler.group};
-        });
-    };
 
     this.domRoot.find('.compiler-picker').selectize({
         sortField: 'name',
@@ -133,7 +104,7 @@ function Compiler(hub, container, state) {
         searchField: ['name'],
         optgroupField: 'group',
         optgroups: this.getGroupsInUse(),
-        options: _.map(this.getCurrentLangCompilers(), _.identity, this),
+        options: _.map(this.getCurrentLangCompilers(), _.identity),
         items: this.compiler ? [this.compiler.id] : []
     }).on('change', _.bind(function (e) {
         var val = $(e.target).val();
@@ -146,15 +117,6 @@ function Compiler(hub, container, state) {
             this.onCompilerChange(val);
         }
     }, this));
-    var optionsChange = _.debounce(_.bind(function (e) {
-        this.onOptionsChange($(e.target).val());
-    }, this), 800);
-    this.optionsField
-        .val(this.options)
-        .on('change', optionsChange)
-        .on('keyup', optionsChange);
-
-    this.filterExecuteButton.toggle(options.supportsExecute);
 
     this.outputEditor = monaco.editor.create(this.domRoot.find('.monaco-placeholder')[0], {
         scrollBeyondLastLine: false,
@@ -168,6 +130,181 @@ function Compiler(hub, container, state) {
         },
         lineNumbersMinChars: options.embedded ? 1 : 5
     });
+
+    this.initButtons(state);
+    this.initLibraries(state);
+
+    this.initEditorActions();
+
+    this.mouseMoveThrottledFunction = _.throttle(_.bind(this.onMouseMove, this), 250);
+
+    this.initCallbacks();
+    // Handle initial settings
+    this.onSettingsChange(this.settings);
+    this.sendCompiler();
+    this.updateCompilerInfo();
+    this.updateButtons();
+    this.updateLibsDropdown();
+    this.saveState();
+}
+
+Compiler.prototype.clearEditorsLinkedLines = function () {
+    this.eventHub.emit('editorSetDecoration', this.sourceEditorId, -1, false);
+};
+
+Compiler.prototype.getGroupsInUse = function () {
+    var currentLangCompilers = _.map(this.getCurrentLangCompilers(), _.identity);
+    return _.map(_.uniq(currentLangCompilers, false, function (compiler) {
+        return compiler.group;
+    }), function (compiler) {
+        return {value: compiler.group, label: compiler.groupName || compiler.group};
+    });
+};
+
+Compiler.prototype.close = function () {
+    this.eventHub.unsubscribe();
+    this.eventHub.emit('compilerClose', this.id);
+    this.outputEditor.dispose();
+};
+
+Compiler.prototype.initPanerButtons = function () {
+    var outputConfig = _.bind(function () {
+        return Components.getOutput(this.id, this.sourceEditorId);
+    }, this);
+
+    this.container.layoutManager.createDragSource(this.outputBtn, outputConfig);
+    this.outputBtn.click(_.bind(function () {
+        var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
+            this.container.layoutManager.root.contentItems[0];
+        insertPoint.addChild(outputConfig);
+    }, this));
+
+    var cloneComponent = _.bind(function () {
+        return {
+            type: 'component',
+            componentName: 'compiler',
+            componentState: this.currentState()
+        };
+    }, this);
+    var createOptView = _.bind(function () {
+        return Components.getOptViewWith(this.id, this.source, this.lastResult.optOutput, this.getCompilerName(),
+            this.sourceEditorId);
+    }, this);
+
+    var createAstView = _.bind(function () {
+        return Components.getAstViewWith(this.id, this.source, this.lastResult.astOutput, this.getCompilerName(),
+            this.sourceEditorId);
+    }, this);
+
+    var createGccDumpView = _.bind(function () {
+        return Components.getGccDumpViewWith(this.id, this.getCompilerName(), this.sourceEditorId,
+            this.lastResult.gccDumpOutput);
+    }, this);
+
+    var createCfgView = _.bind(function () {
+        return Components.getCfgViewWith(this.id, this.sourceEditorId);
+    }, this);
+
+    var panerDropdown = this.domRoot.find('.pane-dropdown');
+    var togglePannerAdder = function () {
+        panerDropdown.dropdown('toggle');
+    };
+
+    this.container.layoutManager
+        .createDragSource(this.domRoot.find('.btn.add-compiler'), cloneComponent)
+        ._dragListener.on('dragStart', togglePannerAdder);
+
+    this.domRoot.find('.btn.add-compiler').click(_.bind(function () {
+        var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
+            this.container.layoutManager.root.contentItems[0];
+        insertPoint.addChild(cloneComponent);
+    }, this));
+
+    this.container.layoutManager
+        .createDragSource(this.optButton, createOptView)
+        ._dragListener.on('dragStart', togglePannerAdder);
+
+    this.optButton.click(_.bind(function () {
+        var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
+            this.container.layoutManager.root.contentItems[0];
+        insertPoint.addChild(createOptView);
+    }, this));
+
+    this.container.layoutManager
+        .createDragSource(this.astButton, createAstView)
+        ._dragListener.on('dragStart', togglePannerAdder);
+
+    this.astButton.click(_.bind(function () {
+        var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
+            this.container.layoutManager.root.contentItems[0];
+        insertPoint.addChild(createAstView);
+    }, this));
+
+    this.container.layoutManager
+        .createDragSource(this.gccDumpButton, createGccDumpView)
+        ._dragListener.on('dragStart', togglePannerAdder);
+
+    this.gccDumpButton.click(_.bind(function () {
+        var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
+            this.container.layoutManager.root.contentItems[0];
+        insertPoint.addChild(createGccDumpView);
+    }, this));
+
+    this.container.layoutManager
+        .createDragSource(this.cfgButton, createCfgView)
+        ._dragListener.on('dragStart', togglePannerAdder);
+
+    this.cfgButton.click(_.bind(function () {
+        var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
+            this.container.layoutManager.root.contentItems[0];
+        insertPoint.addChild(createCfgView);
+    }, this));
+};
+
+Compiler.prototype.undefer = function () {
+    this.deferCompiles = false;
+    if (this.needsCompile) this.compile();
+};
+
+// TODO: need to call resize if either .top-bar or .bottom-bar resizes, which needs some work.
+// Issue manifests if you make a window where one compiler is small enough that the buttons spill onto two lines:
+// reload the page and the bottom-bar is off the bottom until you scroll a tiny bit.
+Compiler.prototype.resize = function () {
+    var topBarHeight = this.domRoot.find('.top-bar').outerHeight(true);
+    var bottomBarHeight = this.domRoot.find('.bottom-bar').outerHeight(true);
+    this.outputEditor.layout({
+        width: this.domRoot.width(),
+        height: this.domRoot.height() - topBarHeight - bottomBarHeight
+    });
+};
+
+Compiler.prototype.initLang = function (state) {
+    // If we don't have a language, but a compiler, find the corresponding language.
+    this.currentLangId = state.lang;
+    if (!this.currentLangId && state.compiler) {
+        this.currentLangId = this.langOfCompiler(state.compiler);
+    }
+    if (!this.currentLangId && languages[this.settings.defaultLanguage]) {
+        this.currentLangId = languages[this.settings.defaultLanguage].id;
+    }
+    if (!this.currentLangId) {
+        this.currentLangId = _.keys(languages)[0];
+    }
+};
+
+Compiler.prototype.initCompiler = function (state) {
+    this.originalCompilerId = state.compiler;
+    if (state.compiler)
+        this.compiler = this.findCompiler(this.currentLangId, state.compiler);
+    else
+        this.compiler = this.findCompiler(this.currentLangId, options.defaultCompiler[this.currentLangId]);
+    if (!this.compiler) {
+        var compilers = this.compilerService.compilersByLang[this.currentLangId];
+        if (compilers) this.compiler = _.values(compilers)[0];
+    }
+};
+
+Compiler.prototype.initEditorActions = function () {
     this.outputEditor.addAction({
         id: 'viewsource',
         label: 'Scroll to source',
@@ -210,183 +347,6 @@ function Compiler(hub, container, state) {
         }, this)
     });
 
-    var clearEditorsLinkedLines = _.bind(function () {
-        this.eventHub.emit('editorSetDecoration', this.sourceEditorId, -1, false);
-    }, this);
-
-    this.outputEditor.onMouseMove(_.bind(function (e) {
-        this.mouseMoveThrottledFunction(e);
-        if (this.linkedFadeTimeoutId !== -1) {
-            clearTimeout(this.linkedFadeTimeoutId);
-            this.linkedFadeTimeoutId = -1;
-        }
-    }, this));
-
-    this.mouseMoveThrottledFunction = _.throttle(_.bind(this.onMouseMove, this), 250);
-
-    this.outputEditor.onMouseLeave(_.bind(function () {
-        this.linkedFadeTimeoutId = setTimeout(_.bind(function () {
-            clearEditorsLinkedLines();
-            this.linkedFadeTimeoutId = -1;
-        }, this), 5000);
-    }, this));
-
-    this.fontScale = new FontScale(this.domRoot, state, this.outputEditor);
-    this.fontScale.on('change', _.bind(function () {
-        this.saveState();
-    }, this));
-
-    this.filters.on('change', _.bind(this.onFilterChange, this));
-
-    this.initCallbacks();
-
-    this.onSettingsChange(this.settings);
-    this.sendCompiler();
-    this.updateCompilerInfo();
-    this.updateButtons();
-
-    var outputConfig = _.bind(function () {
-        return Components.getOutput(this.id, this.sourceEditorId);
-    }, this);
-
-    this.container.layoutManager.createDragSource(this.outputBtn, outputConfig);
-    this.outputBtn.click(_.bind(function () {
-        var insertPoint = hub.findParentRowOrColumn(this.container) ||
-            this.container.layoutManager.root.contentItems[0];
-        insertPoint.addChild(outputConfig);
-    }, this));
-
-    var cloneComponent = _.bind(function () {
-        return {
-            type: 'component',
-            componentName: 'compiler',
-            componentState: this.currentState()
-        };
-    }, this);
-
-    var createOptView = _.bind(function () {
-        return Components.getOptViewWith(this.id, this.source, this.lastResult.optOutput, this.getCompilerName(),
-            this.sourceEditorId);
-    }, this);
-
-    var createAstView = _.bind(function () {
-        return Components.getAstViewWith(this.id, this.source, this.lastResult.astOutput, this.getCompilerName(),
-            this.sourceEditorId);
-    }, this);
-
-    var createGccDumpView = _.bind(function () {
-        return Components.getGccDumpViewWith(this.id, this.getCompilerName(), this.sourceEditorId,
-            this.lastResult.gccDumpOutput);
-    }, this);
-
-    var createCfgView = _.bind(function () {
-        return Components.getCfgViewWith(this.id, this.sourceEditorId);
-    }, this);
-
-    var panerDropdown = this.domRoot.find('.pane-dropdown');
-    var togglePannerAdder = function () {
-        panerDropdown.dropdown('toggle');
-    };
-
-    this.container.layoutManager
-        .createDragSource(this.domRoot.find('.btn.add-compiler'), cloneComponent)
-        ._dragListener.on('dragStart', togglePannerAdder);
-
-    this.domRoot.find('.btn.add-compiler').click(_.bind(function () {
-        var insertPoint = hub.findParentRowOrColumn(this.container) ||
-            this.container.layoutManager.root.contentItems[0];
-        insertPoint.addChild(cloneComponent);
-    }, this));
-
-    this.container.layoutManager
-        .createDragSource(this.optButton, createOptView)
-        ._dragListener.on('dragStart', togglePannerAdder);
-
-    this.optButton.click(_.bind(function () {
-        var insertPoint = hub.findParentRowOrColumn(this.container) ||
-            this.container.layoutManager.root.contentItems[0];
-        insertPoint.addChild(createOptView);
-    }, this));
-
-    this.container.layoutManager
-        .createDragSource(this.astButton, createAstView)
-        ._dragListener.on('dragStart', togglePannerAdder);
-
-    this.astButton.click(_.bind(function () {
-        var insertPoint = hub.findParentRowOrColumn(this.container) ||
-            this.container.layoutManager.root.contentItems[0];
-        insertPoint.addChild(createAstView);
-    }, this));
-
-    this.container.layoutManager
-        .createDragSource(this.gccDumpButton, createGccDumpView)
-        ._dragListener.on('dragStart', togglePannerAdder);
-
-    this.gccDumpButton.click(_.bind(function () {
-        var insertPoint = hub.findParentRowOrColumn(this.container) ||
-            this.container.layoutManager.root.contentItems[0];
-        insertPoint.addChild(createGccDumpView);
-    }, this));
-
-    this.container.layoutManager
-        .createDragSource(this.cfgButton, createCfgView)
-        ._dragListener.on('dragStart', togglePannerAdder);
-
-    this.cfgButton.click(_.bind(function () {
-        var insertPoint = hub.findParentRowOrColumn(this.container) ||
-            this.container.layoutManager.root.contentItems[0];
-        insertPoint.addChild(createCfgView);
-    }, this));
-
-    this.updateLibsDropdown();
-
-    this.compileClearCache.on('click', _.bind(function () {
-        this.compilerService.cache.reset();
-        this.compile();
-    }, this));
-
-    // Dismiss the popover on escape.
-    $(document).on('keyup.editable', _.bind(function (e) {
-        if (e.which === 27) {
-            this.libsButton.popover('hide');
-        }
-    }, this));
-
-    // Dismiss on any click that isn't either in the opening element, inside
-    // the popover or on any alert
-    $(document).on('click', _.bind(function (e) {
-        var elem = this.libsButton;
-        var target = $(e.target);
-        if (!target.is(elem) && elem.has(target).length === 0 && target.closest('.popover').length === 0) {
-            elem.popover('hide');
-        }
-    }, this));
-
-    this.eventHub.on('initialised', this.undefer, this);
-    this.saveState();
-}
-
-Compiler.prototype.close = function () {
-    this.eventHub.unsubscribe();
-    this.eventHub.emit('compilerClose', this.id);
-    this.outputEditor.dispose();
-};
-
-Compiler.prototype.undefer = function () {
-    this.deferCompiles = false;
-    if (this.needsCompile) this.compile();
-};
-
-// TODO: need to call resize if either .top-bar or .bottom-bar resizes, which needs some work.
-// Issue manifests if you make a window where one compiler is small enough that the buttons spill onto two lines:
-// reload the page and the bottom-bar is off the bottom until you scroll a tiny bit.
-Compiler.prototype.resize = function () {
-    var topBarHeight = this.domRoot.find('.top-bar').outerHeight(true);
-    var bottomBarHeight = this.domRoot.find('.bottom-bar').outerHeight(true);
-    this.outputEditor.layout({
-        width: this.domRoot.width(),
-        height: this.domRoot.height() - topBarHeight - bottomBarHeight
-    });
 };
 
 // Gets the filters that will actually be used (accounting for issues with binary
@@ -490,11 +450,11 @@ Compiler.prototype.getBinaryForLine = function (line) {
 
 // TODO: use ContentWidgets? OverlayWidgets?
 // Use highlight providers? hover providers? highlight providers?
-Compiler.prototype.setAssembly = function (assembly) {
-    this.assembly = assembly;
+Compiler.prototype.setAssembly = function (asm) {
+    this.assembly = asm;
     if (!this.outputEditor || !this.outputEditor.getModel()) return;
     var currentTopLine = this.outputEditor.getCompletelyVisibleLinesRangeInViewport().startLineNumber;
-    this.outputEditor.getModel().setValue(assembly.length ? _.pluck(assembly, 'text').join('\n') : "<No assembly generated>");
+    this.outputEditor.getModel().setValue(asm.length ? _.pluck(asm, 'text').join('\n') : "<No assembly generated>");
     this.outputEditor.revealLine(currentTopLine);
     var addrToAddrDiv = {};
     var decorations = [];
@@ -633,6 +593,21 @@ Compiler.prototype.onEditorChange = function (editor, source, langId, compilerId
     }
 };
 
+Compiler.prototype.onOutputOpened = function (compilerId) {
+    if (this.id === compilerId) {
+        this.isOutputOpened = true;
+        this.outputBtn.prop('disabled', true);
+        this.resendResult();
+    }
+};
+
+Compiler.prototype.onOutputClosed = function (compilerId) {
+    if (this.id === compilerId) {
+        this.isOutputOpened = false;
+        this.outputBtn.prop('disabled', false);
+    }
+};
+
 Compiler.prototype.onOptViewClosed = function (id) {
     if (this.id === id) {
         this.wantOptInfo = false;
@@ -725,7 +700,10 @@ Compiler.prototype.onCfgViewClosed = function (id) {
     }
 };
 
-Compiler.prototype.initButtons = function () {
+Compiler.prototype.initButtons = function (state) {
+    this.filters = new Toggles(this.domRoot.find('.filters'), patchOldFilters(state.filters));
+    this.fontScale = new FontScale(this.domRoot, state, this.outputEditor);
+
     this.optButton = this.domRoot.find('.btn.view-optimization');
     this.astButton = this.domRoot.find('.btn.view-ast');
     this.gccDumpButton = this.domRoot.find('.btn.view-gccdump');
@@ -770,6 +748,10 @@ Compiler.prototype.initButtons = function () {
     this.filterDemangleTitle = this.filterDemangleButton.prop('title');
 
     this.noBinaryFiltersButtons = this.domRoot.find('.nonbinary');
+    this.filterExecuteButton.toggle(options.supportsExecute);
+    this.optionsField.val(this.options);
+
+    this.initPanerButtons();
 };
 
 Compiler.prototype.initLibraries = function (state) {
@@ -796,7 +778,8 @@ Compiler.prototype.updateButtons = function () {
     // We can support intel output if the compiler supports it, or if we're compiling
     // to binary (as we can disassemble it however we like).
     var formatFilterTitle = function (button, title) {
-        button.prop('title', '[' + (button.hasClass('active') ? 'ON' : 'OFF') + '] ' + title + (button.prop('disabled') ? ' [LOCKED]' : ''));
+        button.prop('title', '[' + (button.hasClass('active') ? 'ON' : 'OFF') + '] ' + title +
+            (button.prop('disabled') ? ' [LOCKED]' : ''));
     };
     var isIntelFilterDisabled = !this.compiler.supportsIntel && !filters.binary;
     this.filterIntelButton.prop('disabled', isIntelFilterDisabled);
@@ -844,8 +827,10 @@ Compiler.prototype.updateButtons = function () {
     }
 };
 
-
 Compiler.prototype.initCallbacks = function () {
+    this.filters.on('change', _.bind(this.onFilterChange, this));
+    this.fontScale.on('change', _.bind(this.saveState, this));
+
     this.container.on('destroy', this.close, this);
     this.container.on('resize', this.resize, this);
     this.container.on('shown', this.resize, this);
@@ -887,6 +872,46 @@ Compiler.prototype.initCallbacks = function () {
         }
     }, this);
     this.eventHub.on('languageChange', this.onLanguageChange, this);
+
+    var optionsChange = _.debounce(_.bind(function (e) {
+        this.onOptionsChange($(e.target).val());
+    }, this), 800);
+
+    this.optionsField
+        .on('change', optionsChange)
+        .on('keyup', optionsChange);
+
+    this.outputEditor.onMouseLeave(_.bind(function () {
+        this.linkedFadeTimeoutId = setTimeout(_.bind(function () {
+            this.clearEditorsLinkedLines();
+            this.linkedFadeTimeoutId = -1;
+        }, this), 5000);
+    }, this));
+
+
+    this.compileClearCache.on('click', _.bind(function () {
+        this.compilerService.cache.reset();
+        this.compile();
+    }, this));
+
+    // Dismiss the popover on escape.
+    $(document).on('keyup.editable', _.bind(function (e) {
+        if (e.which === 27) {
+            this.libsButton.popover('hide');
+        }
+    }, this));
+
+    // Dismiss on any click that isn't either in the opening element, inside
+    // the popover or on any alert
+    $(document).on('click', _.bind(function (e) {
+        var elem = this.libsButton;
+        var target = $(e.target);
+        if (!target.is(elem) && elem.has(target).length === 0 && target.closest('.popover').length === 0) {
+            elem.popover('hide');
+        }
+    }, this));
+
+    this.eventHub.on('initialised', this.undefer, this);
 };
 
 Compiler.prototype.onOptionsChange = function (options) {
@@ -1065,8 +1090,7 @@ function getNumericToolTip(value) {
     return null;
 }
 
-
-var getAsmInfo = function (opcode) {
+function getAsmInfo(opcode) {
     var cacheName = 'asm/' + opcode;
     var cached = OpcodeCache.get(cacheName);
     if (cached) {
@@ -1088,7 +1112,7 @@ var getAsmInfo = function (opcode) {
             cache: true
         });
     });
-};
+}
 
 Compiler.prototype.onMouseMove = function (e) {
     if (e === null || e.target === null || e.target.position === null) return;
@@ -1096,22 +1120,27 @@ Compiler.prototype.onMouseMove = function (e) {
         var hoverAsm = this.assembly[e.target.position.lineNumber - 1];
         if (hoverAsm) {
             // We check that we actually have something to show at this point!
-            this.eventHub.emit('editorSetDecoration', this.sourceEditorId, hoverAsm.source && !hoverAsm.source.file ? hoverAsm.source.line : -1, false);
+            this.eventHub.emit('editorSetDecoration', this.sourceEditorId, hoverAsm.source && !hoverAsm.source.file ?
+                hoverAsm.source.line : -1, false);
         }
     }
     var currentWord = this.outputEditor.getModel().getWordAtPosition(e.target.position);
     if (currentWord && currentWord.word) {
         var word = currentWord.word;
-        currentWord.range = new monaco.Range(e.target.position.lineNumber, currentWord.startColumn, e.target.position.lineNumber, currentWord.endColumn);
-        // Avoid throwing an exception if somehow (How?) we have a non existent lineNumber. c.f. https://sentry.io/matt-godbolt/compiler-explorer/issues/285270358/
+        var startColumn = currentWord.startColumn;
+        // Avoid throwing an exception if somehow (How?) we have a non existent lineNumber.
+        // c.f. https://sentry.io/matt-godbolt/compiler-explorer/issues/285270358/
         if (e.target.position.lineNumber < this.outputEditor.getModel().getLineCount()) {
-            // Hacky workaround to check for negative numbers. c.f. https://github.com/mattgodbolt/compiler-explorer/issues/434
+            // Hacky workaround to check for negative numbers.
+            // c.f. https://github.com/mattgodbolt/compiler-explorer/issues/434
             var lineContent = this.outputEditor.getModel().getLineContent(e.target.position.lineNumber);
             if (lineContent[currentWord.startColumn - 2] === '-') {
                 word = '-' + word;
-                currentWord.range.startColumn -= 1;
+                startColumn -= 1;
             }
         }
+        currentWord.range = new monaco.Range(e.target.position.lineNumber, Math.max(startColumn, 1),
+            e.target.position.lineNumber, currentWord.endColumn);
         var numericToolTip = getNumericToolTip(word);
         if (numericToolTip) {
             this.decorations.numericToolTip = {
@@ -1358,22 +1387,6 @@ Compiler.prototype.langOfCompiler = function (compilerId) {
     return compiler.lang;
 };
 
-Compiler.prototype.onOutputOpened = function (compilerId) {
-    if (this.id === compilerId) {
-        this.isOutputOpened = true;
-        this.outputBtn.prop('disabled', true);
-        this.resendResult();
-    }
-};
-
-Compiler.prototype.onOutputClosed = function (compilerId) {
-    if (this.id === compilerId) {
-        this.isOutputOpened = false;
-        this.outputBtn.prop('disabled', false);
-    }
-};
-
 module.exports = {
     Compiler: Compiler
 };
-

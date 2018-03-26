@@ -148,7 +148,9 @@ function setupSettings(root, settings, onChange, langId) {
         var isStoredUsable = false;
         colourSchemeSelect.empty();
         _.each(colour.schemes, function (scheme) {
-            if (!scheme.themes || scheme.themes.length === 0 || scheme.themes.indexOf(newTheme) !== -1 || scheme.themes.indexOf('all') !== -1) {
+            if (!scheme.themes || scheme.themes.length === 0 || scheme.themes.indexOf(newTheme) !== -1 ||
+                scheme.themes.indexOf('all') !== -1) {
+
                 colourSchemeSelect.append($('<option value="' + scheme.name + '">' + scheme.desc + "</option>"));
                 if (newThemeStoredScheme === scheme.name) {
                     isStoredUsable = true;
@@ -159,7 +161,8 @@ function setupSettings(root, settings, onChange, langId) {
             colourSchemeSelect.val(isStoredUsable ? newThemeStoredScheme : colourSchemeSelect.first().val());
         } else {
             // This should never happen. In case it does, lets use the default one
-            colourSchemeSelect.append($('<option value="' + colour.schemes[0].name + '">' + colour.schemes[0].desc + "</option>"));
+            colourSchemeSelect.append(
+                $('<option value="' + colour.schemes[0].name + '">' + colour.schemes[0].desc + "</option>"));
             colourSchemeSelect.val(colourSchemeSelect.first().val());
         }
         colourSchemeSelect.trigger('change');

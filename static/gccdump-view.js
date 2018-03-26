@@ -38,7 +38,6 @@ function GccDump(hub, container, state) {
     this.eventHub = hub.createEventHub();
     this.domRoot = container.getElement();
     this.domRoot.html($('#gccdump').html());
-    this.filters = new Toggles(this.domRoot.find('.dump-filters'), state);
 
     this._currentDecorations = [];
 
@@ -84,20 +83,9 @@ function GccDump(hub, container, state) {
     this.state._editorid = state._editorid;
     this._compilerName = state._compilerName;
 
-    this.fontScale = new FontScale(this.domRoot, state, this.gccDumpEditor);
-    this.fontScale.on('change', _.bind(this.saveState, this));
+    this.initButtons(state);
 
-    this.eventHub.on('compileResult', this.onCompileResult, this);
-    this.eventHub.on('compiler', this.onCompiler, this);
-    this.eventHub.on('compilerClose', this.onCompilerClose, this);
-    this.eventHub.on('settingsChange', this.onSettingsChange, this);
-
-    this.eventHub.emit('gccDumpViewOpened', this.state._compilerid);
-    this.eventHub.emit('requestSettings');
-    this.container.on('destroy', this.close, this);
-
-    container.on('resize', this.resize, this);
-    container.on('shown', this.resize, this);
+    this.initCallbacks();
 
     if (state && state.selectedPass) {
         this.state.selectedPass = state.selectedPass;
@@ -125,6 +113,27 @@ GccDump.prototype.onUiNotReady = function () {
     this.domRoot.find('.dump-filters .btn').each(function () {
         $(this).addClass('disabled');
     });
+};
+
+GccDump.prototype.initButtons = function (state) {
+    this.filters = new Toggles(this.domRoot.find('.dump-filters'), state);
+    this.fontScale = new FontScale(this.domRoot, state, this.gccDumpEditor);
+};
+
+GccDump.prototype.initCallbacks = function () {
+    this.fontScale.on('change', _.bind(this.saveState, this));
+
+    this.eventHub.on('compileResult', this.onCompileResult, this);
+    this.eventHub.on('compiler', this.onCompiler, this);
+    this.eventHub.on('compilerClose', this.onCompilerClose, this);
+    this.eventHub.on('settingsChange', this.onSettingsChange, this);
+
+    this.eventHub.emit('gccDumpViewOpened', this.state._compilerid);
+    this.eventHub.emit('requestSettings');
+    this.container.on('destroy', this.close, this);
+
+    this.container.on('resize', this.resize, this);
+    this.container.on('shown', this.resize, this);
 };
 
 GccDump.prototype.onUiReady = function () {
