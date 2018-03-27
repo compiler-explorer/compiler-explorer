@@ -99,24 +99,8 @@ function Diff(hub, container, state) {
     }, this));
     this.selectize = {lhs: selectize[0].selectize, rhs: selectize[1].selectize};
 
-    this.fontScale = new FontScale(this.domRoot, state, this.outputEditor);
-    this.fontScale.on('change', _.bind(this.updateState, this));
-
-    this.eventHub.on('compileResult', this.onCompileResult, this);
-    this.eventHub.on('compiler', this.onCompiler, this);
-    this.eventHub.on('compilerClose', this.onCompilerClose, this);
-    this.eventHub.on('themeChange', this.onThemeChange, this);
-    this.container.on('destroy', function () {
-        this.eventHub.unsubscribe();
-        this.outputEditor.dispose();
-    }, this);
-    container.on('resize', this.resize, this);
-    container.on('shown', this.resize, this);
-
-    this.eventHub.emit('resendCompilation', this.lhs.id);
-    this.eventHub.emit('resendCompilation', this.rhs.id);
-    this.eventHub.emit('findCompilers');
-    this.eventHub.emit('requestTheme');
+    this.initButtons(state);
+    this.initCallbacks();
 
     this.updateCompilerNames();
     this.updateCompilers();
@@ -145,6 +129,32 @@ Diff.prototype.onCompileResult = function (id, compiler, result) {
     if (lhsChanged || rhsChanged) {
         this.updateCompilerNames();
     }
+};
+
+Diff.prototype.initButtons = function (state) {
+    this.fontScale = new FontScale(this.domRoot, state, this.outputEditor);
+};
+
+Diff.prototype.initCallbacks = function () {
+    this.fontScale.on('change', _.bind(this.updateState, this));
+
+    this.eventHub.on('compileResult', this.onCompileResult, this);
+    this.eventHub.on('compiler', this.onCompiler, this);
+    this.eventHub.on('compilerClose', this.onCompilerClose, this);
+    this.eventHub.on('settingsChange', this.onSettingsChange, this);
+    this.eventHub.on('themeChange', this.onThemeChange, this);
+    this.container.on('destroy', function () {
+        this.eventHub.unsubscribe();
+        this.outputEditor.dispose();
+    }, this);
+    this.container.on('resize', this.resize, this);
+    this.container.on('shown', this.resize, this);
+
+    this.eventHub.emit('resendCompilation', this.lhs.id);
+    this.eventHub.emit('resendCompilation', this.rhs.id);
+    this.eventHub.emit('findCompilers');
+    this.eventHub.emit('requestTheme');
+    this.eventHub.emit('requestSettings');
 };
 
 Diff.prototype.onCompiler = function (id, compiler, options, editorId) {
@@ -214,6 +224,14 @@ Diff.prototype.updateState = function () {
 Diff.prototype.onThemeChange = function (newTheme) {
     if (this.outputEditor)
         this.outputEditor.updateOptions({theme: newTheme.monaco});
+};
+
+Diff.prototype.onSettingsChange =  function (newSettings) {
+    this.outputEditor.updateOptions({
+        minimap: {
+            enabled: newSettings.showMinimap
+        }
+    });
 };
 
 module.exports = {

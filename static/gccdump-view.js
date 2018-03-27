@@ -38,18 +38,18 @@ function GccDump(hub, container, state) {
     this.eventHub = hub.createEventHub();
     this.domRoot = container.getElement();
     this.domRoot.html($('#gccdump').html());
-    this.filters = new Toggles(this.domRoot.find('.dump-filters'), state);
 
     this._currentDecorations = [];
+
+    this.initButtons(state);
 
     // until we get our first result from compilation backend with all fields,
     // disable UI callbacks.
     this.uiIsReady = false;
     // disable filter buttons
-    this.domRoot.find('.dump-filters .btn')
-        .each(function () {
-            $(this).addClass('disabled');
-        });
+    this.dumpFiltersButtons.each(function () {
+        $(this).addClass('disabled');
+    });
 
     this.gccDumpEditor = monaco.editor.create(this.domRoot.find('.monaco-placeholder')[0], {
         value: '',
@@ -84,7 +84,32 @@ function GccDump(hub, container, state) {
     this.state._editorid = state._editorid;
     this._compilerName = state._compilerName;
 
+    this.initCallbacks();
+
+    if (state && state.selectedPass) {
+        this.state.selectedPass = state.selectedPass;
+        this.eventHub.emit('gccDumpPassSelected', this.state._compilerid, state.selectedPass, false);
+    }
+
+    this.eventHub.emit('gccDumpFiltersChanged', this.state._compilerid, this.getEffectiveFilters(), false);
+
+    this.saveState();
+    this.setTitle();
+
+    // UI is ready, request compilation to get passes list and
+    // current output (if any)
+    this.eventHub.emit('gccDumpUIInit', this.state._compilerid);
+}
+
+GccDump.prototype.initButtons = function (state) {
+    this.filters = new Toggles(this.domRoot.find('.dump-filters'), state);
     this.fontScale = new FontScale(this.domRoot, state, this.gccDumpEditor);
+
+    this.topBar = this.domRoot.find('.top-bar');
+    this.dumpFiltersButtons = this.domRoot.find('.dump-filters .btn');
+};
+
+GccDump.prototype.initCallbacks = function () {
     this.fontScale.on('change', _.bind(this.saveState, this));
 
     this.eventHub.on('compileResult', this.onCompileResult, this);
@@ -96,29 +121,9 @@ function GccDump(hub, container, state) {
     this.eventHub.emit('requestSettings');
     this.container.on('destroy', this.close, this);
 
-    container.on('resize', this.resize, this);
-    container.on('shown', this.resize, this);
-
-    if (state && state.selectedPass) {
-        this.state.selectedPass = state.selectedPass;
-        this.eventHub.emit('gccDumpPassSelected',
-            this.state._compilerid,
-            state.selectedPass,
-            false);
-    }
-
-    this.eventHub.emit('gccDumpFiltersChanged',
-        this.state._compilerid,
-        this.getEffectiveFilters(),
-        false);
-
-    this.saveState();
-    this.setTitle();
-
-    // UI is ready, request compilation to get passes list and
-    // current output (if any)
-    this.eventHub.emit('gccDumpUIInit', this.state._compilerid);
-}
+    this.container.on('resize', this.resize, this);
+    this.container.on('shown', this.resize, this);
+};
 
 // Disable view's menu when invalid compiler has been
 // selected after view is opened.
@@ -128,10 +133,9 @@ GccDump.prototype.onUiNotReady = function () {
 
     // disable drop down menu and buttons
     this.selectize.disable();
-    this.domRoot.find('.dump-filters .btn')
-        .each(function () {
-            $(this).addClass('disabled');
-        });
+    this.dumpFiltersButtons.each(function () {
+        $(this).addClass('disabled');
+    });
 };
 
 GccDump.prototype.onUiReady = function () {
@@ -140,18 +144,15 @@ GccDump.prototype.onUiReady = function () {
 
     // enable drop down menu and buttons
     this.selectize.enable();
-    this.domRoot.find('.dump-filters .btn')
-        .each(function () {
-            $(this).removeClass('disabled');
-        });
+
+    this.dumpFiltersButtons.each(function () {
+        $(this).removeClass('disabled');
+    });
 };
 
 GccDump.prototype.onPassSelect = function (passId) {
     if (this.inhibitPassSelect !== true) {
-        this.eventHub.emit('gccDumpPassSelected',
-            this.state._compilerid,
-            passId,
-            true);
+        this.eventHub.emit('gccDumpPassSelected', this.state._compilerid, passId, true);
     }
     this.state.selectedPass = passId;
     this.saveState();
@@ -159,7 +160,7 @@ GccDump.prototype.onPassSelect = function (passId) {
 
 // TODO: de-dupe with compiler etc
 GccDump.prototype.resize = function () {
-    var topBarHeight = this.domRoot.find('.top-bar').outerHeight(true);
+    var topBarHeight = this.topBar.outerHeight(true);
     this.gccDumpEditor.layout({
         width: this.domRoot.width(),
         height: this.domRoot.height() - topBarHeight
@@ -193,10 +194,7 @@ GccDump.prototype.updatePass = function (filters, selectize, gccDumpOutput) {
         selectize.clear(true);
     }
 
-    this.eventHub.emit('gccDumpPassSelected',
-        this.state._compilerid,
-        gccDumpOutput.selectedPass,
-        false);
+    this.eventHub.emit('gccDumpPassSelected', this.state._compilerid, gccDumpOutput.selectedPass, false);
 
     this.inhibitPassSelect = false;
 };
@@ -275,10 +273,7 @@ GccDump.prototype.onFilterChange = function () {
     this.saveState();
 
     if (this.inhibitPassSelect !== true) {
-        this.eventHub.emit('gccDumpFiltersChanged',
-            this.state._compilerid,
-            this.getEffectiveFilters(),
-            true);
+        this.eventHub.emit('gccDumpFiltersChanged', this.state._compilerid, this.getEffectiveFilters(), true);
     }
 };
 
@@ -301,6 +296,7 @@ GccDump.prototype.currentState = function () {
 
 GccDump.prototype.onSettingsChange = function (newSettings) {
     this.gccDumpEditor.updateOptions({
+        contextmenu: newSettings.useCustomContextMenu,
         minimap: {
             enabled: newSettings.showMinimap
         }

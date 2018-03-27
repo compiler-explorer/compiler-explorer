@@ -36,9 +36,6 @@ function Conformance(hub, container, state) {
     this.compilerService = hub.compilerService;
     this.domRoot = container.getElement();
     this.domRoot.html($('#conformance').html());
-    this.selectorList = this.domRoot.find('.compiler-list');
-    this.addCompilerButton = this.domRoot.find('.add-compiler');
-    this.selectorTemplate = $('#compiler-selector').find('.compiler-row');
     this.editorId = state.editorid;
     this.nextSelectorId = 0;
     this.maxCompilations = options.cvCompilerCountMax || 6;
@@ -51,6 +48,28 @@ function Conformance(hub, container, state) {
     };
     this.stateByLang = {};
 
+    this.initButtons();
+    this.initCallbacks();
+
+    if (state.compilers) {
+        _.each(state.compilers, _.bind(function (config) {
+            config.cv = this.nextSelectorId;
+            this.nextSelectorId++;
+            this.addCompilerSelector(config);
+        }, this));
+    }
+
+    this.handleToolbarUI();
+}
+
+Conformance.prototype.initButtons = function () {
+    this.selectorList = this.domRoot.find('.compiler-list');
+    this.addCompilerButton = this.domRoot.find('.add-compiler');
+    this.selectorTemplate = $('#compiler-selector').find('.compiler-row');
+    this.topBar = this.domRoot.find('.top-bar');
+};
+
+Conformance.prototype.initCallbacks = function () {
     this.container.on('destroy', function () {
         this.eventHub.unsubscribe();
         this.eventHub.emit("conformanceViewClose", this.editorId);
@@ -75,17 +94,7 @@ function Conformance(hub, container, state) {
         this.addCompilerSelector();
         this.saveState();
     }, this));
-
-    if (state.compilers) {
-        _.each(state.compilers, _.bind(function (config) {
-            config.cv = this.nextSelectorId;
-            this.nextSelectorId++;
-            this.addCompilerSelector(config);
-        }, this));
-    }
-
-    this.handleToolbarUI();
-}
+};
 
 Conformance.prototype.setTitle = function (compilerCount) {
     this.container.setTitle("Conformance viewer (Editor #" + this.editorId + ") " + (
@@ -245,7 +254,7 @@ Conformance.prototype.handleToolbarUI = function () {
     var compilerCount = this.selectorList.children().length;
 
     // Only allow new compilers if we allow for more
-    this.addCompilerButton.attr("disabled", compilerCount >= this.maxCompilations);
+    this.addCompilerButton.prop("disabled", compilerCount >= this.maxCompilations);
 
     this.setTitle(compilerCount);
 };
@@ -305,7 +314,7 @@ Conformance.prototype.saveState = function () {
 };
 
 Conformance.prototype.resize = function () {
-    this.selectorList.css("height", this.domRoot.height() - this.domRoot.find('.top-bar').outerHeight(true));
+    this.selectorList.css("height", this.domRoot.height() - this.topBar.outerHeight(true));
 };
 
 Conformance.prototype.onLanguageChange = function (editorId, newLangId) {

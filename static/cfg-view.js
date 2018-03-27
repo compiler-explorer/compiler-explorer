@@ -27,6 +27,7 @@
 var $ = require('jquery');
 var vis = require('vis');
 var _ = require('underscore');
+var Toggles = require('./toggles');
 
 require('selectize');
 require("vis/dist/vis.css");
@@ -46,6 +47,11 @@ function Cfg(hub, container, state) {
     };
     // Note that this might be outdated if no functions were present when creating the link, but that's handled
     // by selectize
+    state.options = state.options || {};
+    this.savedPos = state.pos;
+    this.savedScale = state.scale;
+    this.needsMove = this.savedPos && this.savedScale;
+
     this.currentFunc = state.selectedFn || '';
     this.functions = [];
     this.networkOpts = {
@@ -72,13 +78,13 @@ function Cfg(hub, container, state) {
             }
         },
         physics: {
-            enabled: true,
+            enabled: !!state.options.physics,
             hierarchicalRepulsion: {
                 nodeDistance: 160
             }
         },
         interaction: {
-            navigationButtons: false,
+            navigationButtons: !!state.options.navigation,
             keyboard: {
                 enabled: true,
                 speed: {x: 10, y: 10, zoom: 0.03},
@@ -89,17 +95,8 @@ function Cfg(hub, container, state) {
 
     this.cfgVisualiser = new vis.Network(this.domRoot.find('.graph-placeholder')[0],
         this.defaultCfgOutput, this.networkOpts);
-    this.domRoot.find('.show-hide-btn').on('click', _.bind(function () {
-        this.networkOpts.interaction.navigationButtons = !this.networkOpts.interaction.navigationButtons;
-        this.cfgVisualiser.setOptions(this.networkOpts);
-    }, this));
-    this.domRoot.find('.enable-physics-btn').on('click', _.bind(function () {
-        this.networkOpts.physics.enabled = !this.networkOpts.physics.enabled;
-        // change only physics.enabled option to preserve current node locations
-        this.cfgVisualiser.setOptions({
-            physics: {enabled: this.networkOpts.physics.enabled}
-        });
-    }, this));
+
+    this.initButtons(state);
 
     this.compilerId = state.id;
     this._editorid = state.editorid;
@@ -123,24 +120,13 @@ function Cfg(hub, container, state) {
         }
     }, this));
 
-    this.eventHub.on('compilerClose', this.onCompilerClose, this);
-    this.eventHub.on('compileResult', this.onCompileResult, this);
-    this.eventHub.on('compiler', this.onCompiler, this);
-    this.eventHub.on('filtersChange', this.onFiltersChange, this);
-
-    this.container.on('destroy', this.close, this);
-    this.container.on('resize', this.resize, this);
-    this.container.on('shown', this.resize, this);
-    this.eventHub.emit('cfgViewOpened', this.compilerId);
-    this.eventHub.emit('requestFilters', this.compilerId);
-    this.eventHub.emit('requestCompiler', this.compilerId);
-
+    this.initCallbacks();
     this.adaptStructure = function (names) {
         return _.map(names, function (name) {
             return {name: name};
         });
     };
-
+    this.updateButtons();
     this.setTitle();
 }
 
@@ -159,20 +145,23 @@ Cfg.prototype.onCompileResult = function (id, compiler, result) {
             });
             this.cfgVisualiser.selectNodes([this.functions[this.currentFunc].nodes[0].id]);
         } else {
-            // We don't reset the current function here as we would lose the saved one if this happened at the begining
+            // We don't reset the current function here as we would lose the saved one if this happened at the beginning
             // (Hint: It *does* happen)
             this.showCfgResults(this._binaryFilter ? this.binaryModeSupport : this.defaultCfgOutput);
         }
 
         this.functionPicker[0].selectize.clearOptions();
-        this.functionPicker[0].selectize.addOption(functionNames.length ? this.adaptStructure(functionNames) : {name: 'The input does not contain functions'});
+        this.functionPicker[0].selectize.addOption(functionNames.length ?
+            this.adaptStructure(functionNames) : {name: 'The input does not contain functions'});
         this.functionPicker[0].selectize.refreshOptions(false);
 
         this.functionPicker[0].selectize.clear();
-        this.functionPicker[0].selectize.addItem(functionNames.length ? this.currentFunc : 'The input does not contain any function', true);
+        this.functionPicker[0].selectize.addItem(functionNames.length ?
+            this.currentFunc : 'The input does not contain any function', true);
         this.saveState();
     }
 };
+
 Cfg.prototype.onCompiler = function (id, compiler) {
     if (id === this.compilerId) {
         this._compilerName = compiler ? compiler.name : '';
@@ -187,16 +176,73 @@ Cfg.prototype.onFiltersChange = function (id, filters) {
     }
 };
 
+Cfg.prototype.initButtons = function (state) {
+    this.toggles = new Toggles(this.domRoot.find('.options'), state.options);
+
+    this.toggleNavigationButton = this.domRoot.find('.toggle-navigation');
+    this.toggleNavigationTitle = this.toggleNavigationButton.prop('title');
+
+    this.togglePhysicsButton = this.domRoot.find('.toggle-physics');
+    this.togglePhysicsTitle = this.togglePhysicsButton.prop('title');
+
+    this.topBar = this.domRoot.find('.top-bar');
+};
+
+Cfg.prototype.initCallbacks = function () {
+    this.cfgVisualiser.on('dragEnd', _.bind(this.saveState, this));
+    this.cfgVisualiser.on('zoom', _.bind(this.saveState, this));
+
+    this.eventHub.on('compilerClose', this.onCompilerClose, this);
+    this.eventHub.on('compileResult', this.onCompileResult, this);
+    this.eventHub.on('compiler', this.onCompiler, this);
+    this.eventHub.on('filtersChange', this.onFiltersChange, this);
+
+    this.container.on('destroy', this.close, this);
+    this.container.on('resize', this.resize, this);
+    this.container.on('shown', this.resize, this);
+    this.eventHub.emit('cfgViewOpened', this.compilerId);
+    this.eventHub.emit('requestFilters', this.compilerId);
+    this.eventHub.emit('requestCompiler', this.compilerId);
+
+    this.togglePhysicsButton.on('click', _.bind(function () {
+        this.networkOpts.physics.enabled = this.togglePhysicsButton.hasClass('active');
+        // change only physics.enabled option to preserve current node locations
+        this.cfgVisualiser.setOptions({
+            physics: {enabled: this.networkOpts.physics.enabled}
+        });
+    }, this));
+
+    this.toggleNavigationButton.on('click', _.bind(function () {
+        this.networkOpts.interaction.navigationButtons = this.toggleNavigationButton.hasClass('active');
+        this.cfgVisualiser.setOptions({interaction: {
+            navigationButtons: this.networkOpts.interaction.navigationButtons}
+        });
+    }, this));
+    this.toggles.on('change', _.bind(function () {
+        this.updateButtons();
+        this.saveState();
+    }, this));
+};
+
+Cfg.prototype.updateButtons = function () {
+    var formatButtonTitle = function (button, title) {
+        button.prop('title', '[' + (button.hasClass('active') ? 'ON' : 'OFF') + '] ' + title);
+    };
+    formatButtonTitle(this.togglePhysicsButton, this.togglePhysicsTitle);
+    formatButtonTitle(this.toggleNavigationButton, this.toggleNavigationTitle);
+};
+
 Cfg.prototype.resize = function () {
     if (this.cfgVisualiser.canvas) {
-        var height = this.domRoot.height() - this.domRoot.find('.top-bar').outerHeight(true);
+        var height = this.domRoot.height() - this.topBar.outerHeight(true);
         this.cfgVisualiser.setSize('100%', height.toString());
         this.cfgVisualiser.redraw();
     }
 };
 
 Cfg.prototype.setTitle = function () {
-    this.container.setTitle(this._compilerName + ' Graph Viewer (Editor #' + this._editorid + ', Compiler #' + this.compilerId + ')');
+    this.container.setTitle(
+        this._compilerName + ' Graph Viewer (Editor #' + this._editorid + ', Compiler #' + this.compilerId + ')');
 };
 
 Cfg.prototype.assignLevels = function (data) {
@@ -277,8 +323,18 @@ Cfg.prototype.assignLevels = function (data) {
 Cfg.prototype.showCfgResults = function (data) {
     this.assignLevels(data);
     this.cfgVisualiser.setData(data);
+    /* FIXME: This does not work. It's here because I suspected that not having content in the constructor was
+     * breaking the move, but it does not seem like it
+     */
+    if (this.needsMove) {
+        this.cfgVisualiser.moveTo({
+            position: this.savedPos,
+            animation: false,
+            scale: this.savedScale
+        });
+        this.needsMove = false;
+    }
 };
-
 
 Cfg.prototype.onCompilerClose = function (compilerId) {
     if (this.compilerId === compilerId) {
@@ -297,19 +353,24 @@ Cfg.prototype.close = function () {
     this.cfgVisualiser.destroy();
 };
 
-
 Cfg.prototype.saveState = function () {
     this.container.setState(this.currentState());
+};
+
+Cfg.prototype.getEffectiveOptions = function () {
+    return this.toggles.get();
 };
 
 Cfg.prototype.currentState = function () {
     return {
         id: this.compilerId,
         editorid: this._editorid,
-        selectedFn: this.currentFunc
+        selectedFn: this.currentFunc,
+        pos: this.cfgVisualiser.getViewPosition(),
+        scale: this.cfgVisualiser.getScale(),
+        options: this.getEffectiveOptions()
     };
 };
-
 
 module.exports = {
     Cfg: Cfg

@@ -117,14 +117,11 @@ require("monaco-loader")().then(function () {
                 config = savedState !== null ? JSON.parse(savedState) : defaultConfig;
             }
         } else {
-            config = _.extend(defaultConfig, {
-                settings: {
-                    showMaximiseIcon: false,
-                    showCloseIcon: false,
-                    hasHeaders: false
-                }
-            },
-            sharing.configFromEmbedded(window.location.hash.substr(1)));
+            config = _.extend(defaultConfig, {settings: {
+                showMaximiseIcon: false,
+                showCloseIcon: false,
+                hasHeaders: false
+            }}, sharing.configFromEmbedded(window.location.hash.substr(1)));
         }
 
         var root = $("#root");
