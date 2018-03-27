@@ -97,6 +97,19 @@ function Compiler(hub, container, state) {
 
     this.linkedFadeTimeoutId = -1;
 
+    this.outputEditor = monaco.editor.create(this.domRoot.find('.monaco-placeholder')[0], {
+        scrollBeyondLastLine: false,
+        readOnly: true,
+        language: 'asm',
+        fontFamily: 'Consolas, "Liberation Mono", Courier, monospace',
+        glyphMargin: !options.embedded,
+        fixedOverflowWidgets: true,
+        minimap: {
+            maxColumn: 80
+        },
+        lineNumbersMinChars: options.embedded ? 1 : 5
+    });
+
     this.initButtons(state);
 
     this.compilerPicker.selectize({
@@ -121,19 +134,6 @@ function Compiler(hub, container, state) {
     }, this));
 
     this.compilerSelecrizer = this.compilerPicker[0].selectize;
-
-    this.outputEditor = monaco.editor.create(this.domRoot.find('.monaco-placeholder')[0], {
-        scrollBeyondLastLine: false,
-        readOnly: true,
-        language: 'asm',
-        fontFamily: 'Consolas, "Liberation Mono", Courier, monospace',
-        glyphMargin: !options.embedded,
-        fixedOverflowWidgets: true,
-        minimap: {
-            maxColumn: 80
-        },
-        lineNumbersMinChars: options.embedded ? 1 : 5
-    });
 
     this.initLibraries(state);
 
