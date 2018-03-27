@@ -97,7 +97,9 @@ function Compiler(hub, container, state) {
 
     this.linkedFadeTimeoutId = -1;
 
-    this.domRoot.find('.compiler-picker').selectize({
+    this.initButtons(state);
+
+    this.compilerPicker.selectize({
         sortField: 'name',
         valueField: 'id',
         labelField: 'name',
@@ -118,6 +120,8 @@ function Compiler(hub, container, state) {
         }
     }, this));
 
+    this.compilerSelecrizer = this.compilerPicker[0].selectize;
+
     this.outputEditor = monaco.editor.create(this.domRoot.find('.monaco-placeholder')[0], {
         scrollBeyondLastLine: false,
         readOnly: true,
@@ -131,7 +135,6 @@ function Compiler(hub, container, state) {
         lineNumbersMinChars: options.embedded ? 1 : 5
     });
 
-    this.initButtons(state);
     this.initLibraries(state);
 
     this.initEditorActions();
@@ -751,6 +754,9 @@ Compiler.prototype.initButtons = function (state) {
     this.filterExecuteButton.toggle(options.supportsExecute);
     this.optionsField.val(this.options);
 
+    this.fullCompilerName = this.domRoot.find('.full-compiler-name');
+    this.compilerPicker = this.domRoot.find('.compiler-picker');
+
     this.initPanerButtons();
 };
 
@@ -1016,7 +1022,7 @@ Compiler.prototype.updateCompilerName = function () {
     var compilerName = this.getCompilerName();
     var compilerVersion = this.compiler ? this.compiler.version : '';
     this.container.setTitle(compilerName + ' (Editor #' + this.sourceEditorId + ', Compiler #' + this.id + ') ' + name);
-    this.domRoot.find('.full-compiler-name').text(compilerVersion);
+    this.fullCompilerName.text(compilerVersion);
 };
 
 Compiler.prototype.resendResult = function () {
@@ -1344,14 +1350,13 @@ Compiler.prototype.getCurrentLangCompilers = function () {
 };
 
 Compiler.prototype.updateCompilersSelector = function () {
-    var selector = this.domRoot.find('.compiler-picker')[0].selectize;
-    selector.clearOptions(true);
-    selector.clearOptionGroups();
+    this.compilerSelecrizer.clearOptions(true);
+    this.compilerSelecrizer.clearOptionGroups();
     _.each(this.getGroupsInUse(), function (group) {
-        selector.addOptionGroup(group.value, {label: group.label});
+        this.compilerSelecrizer.addOptionGroup(group.value, {label: group.label});
     }, this);
-    selector.load(_.bind(function (callback) {
-        callback(_.map(this.getCurrentLangCompilers(), _.identity, this));
+    this.compilerSelecrizer.load(_.bind(function (callback) {
+        callback(_.map(this.getCurrentLangCompilers(), _.identity));
     }, this));
     var defaultOrFirst = _.bind(function defaultOrFirst() {
         // If the default is a valid compiler, return it
@@ -1367,7 +1372,7 @@ Compiler.prototype.updateCompilersSelector = function () {
     }, this);
     var info = this.infoByLang[this.currentLangId] || {};
     this.compiler = this.findCompiler(this.currentLangId, info.compiler || defaultOrFirst());
-    if (this.compiler) selector.setValue([this.compiler.id], true);
+    if (this.compiler) this.compilerSelecrizer.setValue([this.compiler.id], true);
     this.options = info.options || "";
     this.optionsField.val(this.options);
 };

@@ -64,6 +64,8 @@ function Ast(hub, container, state) {
 
 Ast.prototype.initButtons = function (state) {
     this.fontScale = new FontScale(this.domRoot, state, this.astEditor);
+
+    this.topBar = this.domRoot.find(".top-bar");
 };
 
 Ast.prototype.initCallbacks = function () {
@@ -84,7 +86,7 @@ Ast.prototype.initCallbacks = function () {
 
 // TODO: de-dupe with compiler etc
 Ast.prototype.resize = function () {
-    var topBarHeight = this.domRoot.find(".top-bar").outerHeight(true);
+    var topBarHeight = this.topBar.outerHeight(true);
     this.astEditor.layout({
         width: this.domRoot.width(),
         height: this.domRoot.height() - topBarHeight
@@ -166,6 +168,7 @@ Ast.prototype.onCompilerClose = function (id) {
 
 Ast.prototype.onSettingsChange = function (newSettings) {
     this.astEditor.updateOptions({
+        contextmenu: newSettings.useCustomContextMenu,
         minimap: {
             enabled: newSettings.showMinimap
         }

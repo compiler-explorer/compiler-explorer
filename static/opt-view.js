@@ -78,6 +78,8 @@ Opt.prototype.onEditorChange = function (id, source) {
 
 Opt.prototype.initButtons = function (state) {
     this.fontScale = new FontScale(this.domRoot, state, this.optEditor);
+
+    this.topBar = this.domRoot.find(".top-bar");
 };
 
 Opt.prototype.initCallbacks = function () {
@@ -165,7 +167,7 @@ Opt.prototype.onCompiler = function (id, compiler, options, editorid) {
 };
 
 Opt.prototype.resize = function () {
-    var topBarHeight = this.domRoot.find(".top-bar").outerHeight(true);
+    var topBarHeight = this.topBar.outerHeight(true);
     this.optEditor.layout({
         width: this.domRoot.width(),
         height: this.domRoot.height() - topBarHeight
@@ -204,6 +206,7 @@ Opt.prototype.onCompilerClose = function (id) {
 
 Opt.prototype.onSettingsChange = function (newSettings) {
     this.optEditor.updateOptions({
+        contextmenu: newSettings.useCustomContextMenu,
         minimap: {
             enabled: newSettings.showMinimap
         }

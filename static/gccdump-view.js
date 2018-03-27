@@ -41,14 +41,15 @@ function GccDump(hub, container, state) {
 
     this._currentDecorations = [];
 
+    this.initButtons(state);
+
     // until we get our first result from compilation backend with all fields,
     // disable UI callbacks.
     this.uiIsReady = false;
     // disable filter buttons
-    this.domRoot.find('.dump-filters .btn')
-        .each(function () {
-            $(this).addClass('disabled');
-        });
+    this.dumpFiltersButtons.each(function () {
+        $(this).addClass('disabled');
+    });
 
     this.gccDumpEditor = monaco.editor.create(this.domRoot.find('.monaco-placeholder')[0], {
         value: '',
@@ -83,8 +84,6 @@ function GccDump(hub, container, state) {
     this.state._editorid = state._editorid;
     this._compilerName = state._compilerName;
 
-    this.initButtons(state);
-
     this.initCallbacks();
 
     if (state && state.selectedPass) {
@@ -102,22 +101,12 @@ function GccDump(hub, container, state) {
     this.eventHub.emit('gccDumpUIInit', this.state._compilerid);
 }
 
-// Disable view's menu when invalid compiler has been
-// selected after view is opened.
-GccDump.prototype.onUiNotReady = function () {
-    this.filters.off('change');
-    this.selectize.off('change');
-
-    // disable drop down menu and buttons
-    this.selectize.disable();
-    this.domRoot.find('.dump-filters .btn').each(function () {
-        $(this).addClass('disabled');
-    });
-};
-
 GccDump.prototype.initButtons = function (state) {
     this.filters = new Toggles(this.domRoot.find('.dump-filters'), state);
     this.fontScale = new FontScale(this.domRoot, state, this.gccDumpEditor);
+
+    this.topBar = this.domRoot.find('.top-bar');
+    this.dumpFiltersButtons = this.domRoot.find('.dump-filters .btn');
 };
 
 GccDump.prototype.initCallbacks = function () {
@@ -136,16 +125,29 @@ GccDump.prototype.initCallbacks = function () {
     this.container.on('shown', this.resize, this);
 };
 
+// Disable view's menu when invalid compiler has been
+// selected after view is opened.
+GccDump.prototype.onUiNotReady = function () {
+    this.filters.off('change');
+    this.selectize.off('change');
+
+    // disable drop down menu and buttons
+    this.selectize.disable();
+    this.dumpFiltersButtons.each(function () {
+        $(this).addClass('disabled');
+    });
+};
+
 GccDump.prototype.onUiReady = function () {
     this.filters.on('change', _.bind(this.onFilterChange, this));
     this.selectize.on('change', _.bind(this.onPassSelect, this));
 
     // enable drop down menu and buttons
     this.selectize.enable();
-    this.domRoot.find('.dump-filters .btn')
-        .each(function () {
-            $(this).removeClass('disabled');
-        });
+
+    this.dumpFiltersButtons.each(function () {
+        $(this).removeClass('disabled');
+    });
 };
 
 GccDump.prototype.onPassSelect = function (passId) {
@@ -158,7 +160,7 @@ GccDump.prototype.onPassSelect = function (passId) {
 
 // TODO: de-dupe with compiler etc
 GccDump.prototype.resize = function () {
-    var topBarHeight = this.domRoot.find('.top-bar').outerHeight(true);
+    var topBarHeight = this.topBar.outerHeight(true);
     this.gccDumpEditor.layout({
         width: this.domRoot.width(),
         height: this.domRoot.height() - topBarHeight
@@ -294,6 +296,7 @@ GccDump.prototype.currentState = function () {
 
 GccDump.prototype.onSettingsChange = function (newSettings) {
     this.gccDumpEditor.updateOptions({
+        contextmenu: newSettings.useCustomContextMenu,
         minimap: {
             enabled: newSettings.showMinimap
         }

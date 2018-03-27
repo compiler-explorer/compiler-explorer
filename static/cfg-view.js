@@ -184,6 +184,8 @@ Cfg.prototype.initButtons = function (state) {
 
     this.togglePhysicsButton = this.domRoot.find('.toggle-physics');
     this.togglePhysicsTitle = this.togglePhysicsButton.prop('title');
+
+    this.topBar = this.domRoot.find('.top-bar');
 };
 
 Cfg.prototype.initCallbacks = function () {
@@ -232,7 +234,7 @@ Cfg.prototype.updateButtons = function () {
 
 Cfg.prototype.resize = function () {
     if (this.cfgVisualiser.canvas) {
-        var height = this.domRoot.height() - this.domRoot.find('.top-bar').outerHeight(true);
+        var height = this.domRoot.height() - this.topBar.outerHeight(true);
         this.cfgVisualiser.setSize('100%', height.toString());
         this.cfgVisualiser.redraw();
     }

@@ -239,7 +239,7 @@ Editor.prototype.initCallbacks = function () {
 Editor.prototype.initButtons = function (state) {
     this.fontScale = new FontScale(this.domRoot, state, this.editor);
     this.languageBtn = this.domRoot.find('.change-language');
-    // Ensure that the buttonn is disabled if we don't have nothing to select
+    // Ensure that the button is disabled if we don't have nothing to select
     // Note that is might be disabled for other reasons beforehand
     if (this.langKeys.length <= 1) {
         this.languageBtn.prop("disabled", true);
@@ -250,7 +250,7 @@ Editor.prototype.initButtons = function (state) {
     var togglePaneAdder = function () {
         paneAdderDropdown.dropdown('toggle');
     };
-
+    this.topBar = this.domRoot.find('.top-bar');
 
     // NB a new compilerConfig needs to be created every time; else the state is shared
     // between all compilers created this way. That leads to some nasty-to-find state
@@ -365,7 +365,7 @@ Editor.prototype.initEditorActions = function () {
 };
 
 Editor.prototype.resize = function () {
-    var topBarHeight = this.domRoot.find(".top-bar").outerHeight(true) || 0;
+    var topBarHeight = this.topBar.outerHeight(true) || 0;
     this.editor.layout({width: this.domRoot.width(), height: this.domRoot.height() - topBarHeight});
 };
 
