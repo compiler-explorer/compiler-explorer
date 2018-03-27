@@ -41,16 +41,6 @@ function GccDump(hub, container, state) {
 
     this._currentDecorations = [];
 
-    this.initButtons(state);
-
-    // until we get our first result from compilation backend with all fields,
-    // disable UI callbacks.
-    this.uiIsReady = false;
-    // disable filter buttons
-    this.dumpFiltersButtons.each(function () {
-        $(this).addClass('disabled');
-    });
-
     this.gccDumpEditor = monaco.editor.create(this.domRoot.find('.monaco-placeholder')[0], {
         value: '',
         scrollBeyondLastLine: false,
@@ -64,6 +54,17 @@ function GccDump(hub, container, state) {
         },
         lineNumbersMinChars: 3
     });
+
+    this.initButtons(state);
+
+    // until we get our first result from compilation backend with all fields,
+    // disable UI callbacks.
+    this.uiIsReady = false;
+    // disable filter buttons
+    this.dumpFiltersButtons.each(function () {
+        $(this).addClass('disabled');
+    });
+
 
     var selectize = this.domRoot.find('.gccdump-pass-picker').selectize({
         sortField: 'name',
