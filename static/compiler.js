@@ -1372,7 +1372,10 @@ Compiler.prototype.updateCompilersSelector = function () {
     }, this);
     var info = this.infoByLang[this.currentLangId] || {};
     this.compiler = this.findCompiler(this.currentLangId, info.compiler || defaultOrFirst());
-    if (this.compiler) this.compilerSelecrizer.setValue([this.compiler.id], true);
+    if (this.compiler)  {
+        this.compilerSelecrizer.setValue([this.compiler.id], true);
+        this.updateCompilerInfo();
+    }
     this.options = info.options || "";
     this.optionsField.val(this.options);
 };
