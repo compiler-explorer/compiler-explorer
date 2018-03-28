@@ -67,7 +67,6 @@ function GccDump(hub, container, state) {
     });
 
     this.selectize = selectize[0].selectize;
-    this.selectize.disable();
 
     // this is used to save internal state.
     this.state = {};
@@ -107,6 +106,9 @@ GccDump.prototype.initButtons = function (state) {
 };
 
 GccDump.prototype.initCallbacks = function () {
+    this.filters.on('change', _.bind(this.onFilterChange, this));
+    this.selectize.on('change', _.bind(this.onPassSelect, this));
+
     this.fontScale.on('change', _.bind(this.saveState, this));
 
     this.eventHub.on('compileResult', this.onCompileResult, this);
