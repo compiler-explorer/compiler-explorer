@@ -9,15 +9,17 @@ body {
 }
 
 .navbar-default .navbar-nav li a {
-    color: #337ab7 !important;
+    color: #fff !important;
 }
 
 .navbar-default .navbar-nav li a:hover {
-    color: #23527c !important;
+    color: #fff !important;
+    background-color: #23272b !important;
 }
 
 .navbar-default ul.nav li:hover {
-    background-color: #eee !important;
+    color: #fff !important;
+    background-color: #23272b !important;
 }
 
 .navbar-brand img.inverse {
