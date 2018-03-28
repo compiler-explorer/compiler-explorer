@@ -1345,6 +1345,9 @@ Compiler.prototype.onLanguageChange = function (editorId, newLangId) {
         };
         this.updateLibsDropdown();
         this.updateCompilersSelector();
+        this.updateButtons();
+        this.updateCompilerInfo();
+        this.sendCompiler();
         this.saveState();
     }
 };
@@ -1377,7 +1380,6 @@ Compiler.prototype.updateCompilersSelector = function () {
     var info = this.infoByLang[this.currentLangId] || {};
     this.compiler = this.findCompiler(this.currentLangId, info.compiler || defaultOrFirst());
     this.compilerSelecrizer.setValue([this.compiler ? this.compiler.id : null], true);
-    this.updateCompilerInfo();
     this.options = info.options || "";
     this.optionsField.val(this.options);
 };
