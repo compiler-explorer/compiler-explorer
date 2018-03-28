@@ -273,8 +273,8 @@ Compiler.prototype.undefer = function () {
 // Issue manifests if you make a window where one compiler is small enough that the buttons spill onto two lines:
 // reload the page and the bottom-bar is off the bottom until you scroll a tiny bit.
 Compiler.prototype.resize = function () {
-    var topBarHeight = this.domRoot.find('.top-bar').outerHeight(true);
-    var bottomBarHeight = this.domRoot.find('.bottom-bar').outerHeight(true);
+    var topBarHeight = this.topBar.outerHeight(true);
+    var bottomBarHeight = this.bottomBar.outerHeight(true);
     this.outputEditor.layout({
         width: this.domRoot.width(),
         height: this.domRoot.height() - topBarHeight - bottomBarHeight
@@ -555,7 +555,7 @@ Compiler.prototype.onCompileResponse = function (request, result, cached) {
     var allText = _.pluck(stdout.concat(stderr), 'text').join('\n');
     var failed = result.code !== 0;
     var warns = !failed && !!allText;
-    this.domRoot.find('.status')
+    this.statusLabel
         .toggleClass('error', failed)
         .toggleClass('warning', warns);
     this.outputTextCount.text(stdout.length);
@@ -756,6 +756,10 @@ Compiler.prototype.initButtons = function (state) {
 
     this.fullCompilerName = this.domRoot.find('.full-compiler-name');
     this.compilerPicker = this.domRoot.find('.compiler-picker');
+
+    this.topBar = this.domRoot.find('.top-bar');
+    this.bottomBar = this.domRoot.find('.bottom-bar');
+    this.statusLabel = this.domRoot.find('.status');
 
     this.initPanerButtons();
 };
