@@ -57,15 +57,6 @@ function GccDump(hub, container, state) {
 
     this.initButtons(state);
 
-    // until we get our first result from compilation backend with all fields,
-    // disable UI callbacks.
-    this.uiIsReady = false;
-    // disable filter buttons
-    this.dumpFiltersButtons.each(function () {
-        $(this).addClass('disabled');
-    });
-
-
     var selectize = this.domRoot.find('.gccdump-pass-picker').selectize({
         sortField: 'name',
         valueField: 'name',
@@ -91,6 +82,11 @@ function GccDump(hub, container, state) {
         this.state.selectedPass = state.selectedPass;
         this.eventHub.emit('gccDumpPassSelected', this.state._compilerid, state.selectedPass, false);
     }
+
+    // until we get our first result from compilation backend with all fields,
+    // disable UI callbacks.
+    this.uiIsReady = false;
+    this.onUiNotReady();
 
     this.eventHub.emit('gccDumpFiltersChanged', this.state._compilerid, this.getEffectiveFilters(), false);
 
@@ -129,26 +125,16 @@ GccDump.prototype.initCallbacks = function () {
 // Disable view's menu when invalid compiler has been
 // selected after view is opened.
 GccDump.prototype.onUiNotReady = function () {
-    this.filters.off('change');
-    this.selectize.off('change');
-
     // disable drop down menu and buttons
     this.selectize.disable();
-    this.dumpFiltersButtons.each(function () {
-        $(this).addClass('disabled');
-    });
+    this.dumpFiltersButtons.prop('disabled', true);
 };
 
 GccDump.prototype.onUiReady = function () {
-    this.filters.on('change', _.bind(this.onFilterChange, this));
-    this.selectize.on('change', _.bind(this.onPassSelect, this));
-
     // enable drop down menu and buttons
     this.selectize.enable();
 
-    this.dumpFiltersButtons.each(function () {
-        $(this).removeClass('disabled');
-    });
+    this.dumpFiltersButtons.prop('disabled', false);
 };
 
 GccDump.prototype.onPassSelect = function (passId) {
@@ -206,7 +192,7 @@ GccDump.prototype.onCompileResult = function (id, compiler, result) {
     if (result.hasGccDumpOutput && result.gccDumpOutput.syntaxHighlight) {
         monaco.editor.setModelLanguage(this.gccDumpEditor.getModel(), 'gccdump-rtl-gimple');
     } else {
-        monaco.editor.setModelLanguage(this.gccDumpEditor.getModel(), null);
+        monaco.editor.setModelLanguage(this.gccDumpEditor.getModel(), 'text');
     }
 
     if (result.hasGccDumpOutput) {
