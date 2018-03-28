@@ -108,7 +108,7 @@ function Diff(hub, container, state) {
 
 // TODO: de-dupe with compiler etc
 Diff.prototype.resize = function () {
-    var topBarHeight = this.domRoot.find(".top-bar").outerHeight(true);
+    var topBarHeight = this.topBar.outerHeight(true);
     this.outputEditor.layout({
         width: this.domRoot.width(),
         height: this.domRoot.height() - topBarHeight
@@ -133,6 +133,8 @@ Diff.prototype.onCompileResult = function (id, compiler, result) {
 
 Diff.prototype.initButtons = function (state) {
     this.fontScale = new FontScale(this.domRoot, state, this.outputEditor);
+
+    this.topBar = this.domRoot.find(".top-bar");
 };
 
 Diff.prototype.initCallbacks = function () {

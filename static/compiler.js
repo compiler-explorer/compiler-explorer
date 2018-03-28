@@ -1362,7 +1362,7 @@ Compiler.prototype.updateCompilersSelector = function () {
     this.compilerSelecrizer.load(_.bind(function (callback) {
         callback(_.map(this.getCurrentLangCompilers(), _.identity));
     }, this));
-    var defaultOrFirst = _.bind(function defaultOrFirst() {
+    var defaultOrFirst = _.bind(function () {
         // If the default is a valid compiler, return it
         var defaultCompiler = options.defaultCompiler[this.currentLangId];
         if (defaultCompiler) return defaultCompiler;
@@ -1376,10 +1376,8 @@ Compiler.prototype.updateCompilersSelector = function () {
     }, this);
     var info = this.infoByLang[this.currentLangId] || {};
     this.compiler = this.findCompiler(this.currentLangId, info.compiler || defaultOrFirst());
-    if (this.compiler)  {
-        this.compilerSelecrizer.setValue([this.compiler.id], true);
-        this.updateCompilerInfo();
-    }
+    this.compilerSelecrizer.setValue([this.compiler ? this.compiler.id : null], true);
+    this.updateCompilerInfo();
     this.options = info.options || "";
     this.optionsField.val(this.options);
 };
