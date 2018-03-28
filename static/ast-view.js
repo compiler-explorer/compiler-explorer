@@ -37,7 +37,7 @@ function Ast(hub, container, state) {
     this.astEditor = monaco.editor.create(this.domRoot.find(".monaco-placeholder")[0], {
         value: "",
         scrollBeyondLastLine: false,
-        language: 'text',
+        language: 'plaintext',
         readOnly: true,
         glyphMargin: true,
         fontFamily: 'Consolas, "Liberation Mono", Courier, monospace',
@@ -94,17 +94,23 @@ Ast.prototype.resize = function () {
 };
 
 Ast.prototype.onCompileResult = function (id, compiler, result, lang) {
-    if (this._compilerid === id) {
-        if (result.hasAstOutput) {
-            this.showAstResults(result.astOutput);
-        }
-        else {
-            this.showAstResults("<No output>");
-        }
-        if (lang && lang.monaco) {
-            monaco.editor.setModelLanguage(this.astEditor.getModel(), lang.monaco);
-        }
+    if (this._compilerid !== id) return;
+
+    if (result.hasAstOutput) {
+        this.showAstResults(result.astOutput);
     }
+    else {
+        this.showAstResults("<No output>");
+    }
+
+    if (lang && lang.monaco && this.getCurrentEditorLanguage() !== lang.monaco) {
+        monaco.editor.setModelLanguage(this.astEditor.getModel(), lang.monaco);
+    }
+};
+
+// Monaco language id of the current editor
+Ast.prototype.getCurrentEditorLanguage = function () {
+    return this.astEditor.getModel().getModeId();
 };
 
 Ast.prototype.setTitle = function () {

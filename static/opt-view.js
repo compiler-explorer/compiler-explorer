@@ -43,7 +43,7 @@ function Opt(hub, container, state) {
     this.optEditor = monaco.editor.create(this.domRoot.find(".monaco-placeholder")[0], {
         value: this.code,
         scrollBeyondLastLine: false,
-        language: 'text',
+        language: 'plaintext',
         readOnly: true,
         glyphMargin: true,
         quickSuggestions: false,
@@ -101,12 +101,18 @@ Opt.prototype.initCallbacks = function () {
 };
 
 Opt.prototype.onCompileResult = function (id, compiler, result, lang) {
-    if (result.hasOptOutput && this._compilerid === id) {
+    if (this._compilerid !== id) return;
+    if (result.hasOptOutput) {
         this.showOptResults(result.optOutput);
-        if (lang && lang.monaco) {
-            monaco.editor.setModelLanguage(this.optEditor.getModel(), lang.monaco);
-        }
     }
+    if (lang && lang.monaco && this.getCurrentEditorLanguage() !== lang.monaco) {
+        monaco.editor.setModelLanguage(this.optEditor.getModel(), lang.monaco);
+    }
+};
+
+// Monaco language id of the current editor
+Opt.prototype.getCurrentEditorLanguage = function () {
+    return this.optEditor.getModel().getModeId();
 };
 
 Opt.prototype.setTitle = function () {

@@ -194,7 +194,7 @@ GccDump.prototype.onCompileResult = function (id, compiler, result) {
     if (result.hasGccDumpOutput && result.gccDumpOutput.syntaxHighlight) {
         monaco.editor.setModelLanguage(this.gccDumpEditor.getModel(), 'gccdump-rtl-gimple');
     } else {
-        monaco.editor.setModelLanguage(this.gccDumpEditor.getModel(), 'text');
+        monaco.editor.setModelLanguage(this.gccDumpEditor.getModel(), 'plaintext');
     }
 
     if (result.hasGccDumpOutput) {

@@ -10,7 +10,7 @@ implementation
 
 function Square(const num: Integer): Integer;
 begin
-  Square := num * num;
+    Square := num * num;
 end;
 
 end.
