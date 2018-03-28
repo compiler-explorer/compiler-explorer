@@ -58,6 +58,7 @@ function Opt(hub, container, state) {
     this._compilerid = state.id;
     this._compilerName = state.compilerName;
     this._editorid = state.editorid;
+    this.isShowingError = false;
 
     this.initButtons(state);
     this.initCallbacks();
@@ -73,6 +74,7 @@ Opt.prototype.onEditorChange = function (id, source) {
     if (this._editorid === id) {
         this.code = source;
         this.optEditor.setValue(source);
+        this.isShowingError = false;
     }
 };
 
@@ -157,12 +159,14 @@ Opt.prototype.onCompiler = function (id, compiler, options, editorid) {
         this._compilerName = compiler ? compiler.name : '';
         this.setTitle();
         if (compiler && !compiler.supportsOptOutput) {
-            this.code = this.optEditor.getValue();
+            if (!this.isShowingError) this.code = this.optEditor.getValue();
             this.optEditor.setValue("<" + compiler.version + " does not support the optimisation view>");
+            this.isShowingError = true;
             return;
         }
         this._editorid = editorid;
         this.optEditor.setValue(this.code);
+        this.isShowingError = false;
     }
 };
 
