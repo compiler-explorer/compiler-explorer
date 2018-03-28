@@ -218,7 +218,7 @@ GccDump.prototype.onCompileResult = function (id, compiler, result) {
         this.selectize.clear(true);
         this.state.selectedPass = '';
         this.updatePass(this.filters, this.selectize, false);
-        this.showGccDumpResults('<No output, this view is only supported on GCC compilers>');
+        this.showGccDumpResults('<Tree/RTL output is not supported for this compiler (GCC only)>');
         this.uiIsReady = false;
         this.onUiNotReady();
     }

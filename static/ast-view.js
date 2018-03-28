@@ -99,7 +99,7 @@ Ast.prototype.onCompileResult = function (id, compiler, result, lang) {
     if (result.hasAstOutput) {
         this.showAstResults(result.astOutput);
     }
-    else {
+    else if (result.supportsAstView) {
         this.showAstResults("<No output>");
     }
 
@@ -133,7 +133,7 @@ Ast.prototype.onCompiler = function (id, compiler, options, editorid) {
         this._editorid = editorid;
         this.setTitle();
         if (compiler && !compiler.supportsAstView) {
-            this.astEditor.setValue("<" + compiler.version + " does not support the AST view>");
+            this.astEditor.setValue("<AST output is not supported for this compiler>");
         }
     }
 };
