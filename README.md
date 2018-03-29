@@ -67,10 +67,9 @@ A [Road map](Roadmap.md) is available which gives a little insight into
 ### Running a local instance
 
 If you want to point it at your own GCC or similar binaries, either edit the
- `etc/config/compiler-explorer.defaults.properties` or else make a new one with
- the name `compiler-explorer.local.properties`. `*.local.properties` files
- have the highest priority when loading properties.
-
+ `etc/config/LANG.defaults.properties` or else make a new one with
+ the name `LANG.local.properties`, subsituting `LANG` as needed.
+ `*.local.properties` files have the highest priority when loading properties.
 
 When running in a corporate setting the URL shortening service can be replaced
  by an internal one to avoid leaking source code outside of the organization.
