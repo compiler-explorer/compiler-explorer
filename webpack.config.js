@@ -1,13 +1,15 @@
 const path = require('path'),
     webpack = require('webpack'),    
+    glob = require("glob"),
     CopyWebpackPlugin = require('copy-webpack-plugin'),
     ExtractTextPlugin = require('extract-text-webpack-plugin'),
     ManifestPlugin = require('webpack-manifest-plugin'),
-    glob = require("glob"),
     UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 
-const isDev = process.env.NODE_ENV  === "DEV";
+const isDev = process.env.NODE_ENV  === 'DEV';
+const isProd = process.env.NODE_ENV  === 'PROD';
 
+const sourceMap = isProd ? 'source-map' : 'cheap-source-map';
 const outputPathRelative = 'dist/';
 const staticRelative = 'static/';
 const staticPath = path.resolve(__dirname, staticRelative);
@@ -16,11 +18,10 @@ const assetPath = path.join(staticPath, "assets");
 const manifestPath = 'manifest.json';  //if you change this, you also need to update it in the app.js
 const outputname =isDev ? '[name].js' : '[name].[hash].js';
 const cssName = isDev ? '[name].css' :  '[name].[contenthash].css';
-const publicPath = isDev ? '/dist/' :  'dist/';
+const publicPath = isDev ? '/' + outputPathRelative :  outputPathRelative;
 const manifestPlugin = new ManifestPlugin({
     fileName: manifestPath
 });
-
 
 const assetEntries = glob.sync(`${assetPath}/**/*.*`).reduce((obj, p) => {
     const key = path.basename(p);
@@ -42,9 +43,13 @@ let plugins = [
     new webpack.IgnorePlugin(/^((fs)|(path)|(os)|(crypto)|(source-map-support))$/, /vs\/language\/typescript\/lib/)
 ];
 
-if(!isDev) {
+
+//treating people who write make as prod like, with less accurate source maps.
+//unsure if this is the right thing, but its a start
+if(isProd) {
     plugins.push(new UglifyJsPlugin({
-        sourceMap: true
+        sourceMap: true,
+        parallel: true
     }));
 }
 
@@ -82,10 +87,6 @@ module.exports = [
         
         entry: {
             "editor.worker": 'monaco-editor/esm/vs/editor/editor.worker.js',
-		    "json.worker": 'monaco-editor/esm/vs/language/json/json.worker',
-		    "css.worker": 'monaco-editor/esm/vs/language/css/css.worker',
-		    "html.worker": 'monaco-editor/esm/vs/language/html/html.worker',
-		    "ts.worker": 'monaco-editor/esm/vs/language/typescript/ts.worker',
             "main": './static/main.js'
         },
         output: {
@@ -103,7 +104,7 @@ module.exports = [
             }
         },
         stats: "errors-only",
-        devtool: 'source-map',
+        devtool: sourceMap,
         module: {
             rules: [
                 {
