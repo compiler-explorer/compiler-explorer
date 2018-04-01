@@ -947,12 +947,18 @@ Compiler.prototype.updateCompilerInfo = function () {
     }
 };
 
+Compiler.prototype.updateCompilerUI = function () {
+    this.updateButtons();
+    this.updateCompilerInfo();
+    // Resize in case the new compiler name is too big
+    this.resize();
+};
+
 Compiler.prototype.onCompilerChange = function (value) {
     this.compiler = this.compilerService.findCompiler(this.currentLangId, value);
     this.saveState();
     this.compile();
-    this.updateButtons();
-    this.updateCompilerInfo();
+    this.updateCompilerUI();
     this.sendCompiler();
 };
 
@@ -1345,8 +1351,7 @@ Compiler.prototype.onLanguageChange = function (editorId, newLangId) {
         };
         this.updateLibsDropdown();
         this.updateCompilersSelector();
-        this.updateButtons();
-        this.updateCompilerInfo();
+        this.updateCompilerUI();
         this.sendCompiler();
         this.saveState();
     }
