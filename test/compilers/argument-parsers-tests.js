@@ -29,7 +29,7 @@ const chai = require('chai'),
     parsers = require('../../lib/compilers/argument-parsers');
 
 chai.use(chaiAsPromised);
-chai.should();
+const should = chai.should();
 
 function makeCompiler(stdout, stderr, code) {
     if (code === undefined) code = 0;
@@ -65,13 +65,13 @@ describe('gcc parser', () => {
     it('should handle empty options', () => {
         return parsers.GCC.parse(makeCompiler()).should.eventually.satisfy(result => {
             return Promise.all([
-                result.compiler.supportsGccDump.should.equals(true),
+                should.not.equal(result.compiler.supportsGccDump, true),
                 result.compiler.options.should.equals('')
             ]);
         });
     });
     it('should handle options', () => {
-        return parsers.GCC.parse(makeCompiler("-masm=intel\n-fdiagnostics-color=[blah]"))
+        return parsers.GCC.parse(makeCompiler("-masm=intel\n-fdiagnostics-color=[blah]\n-fdump-tree-all"))
             .should.eventually.satisfy(result => {
                 return Promise.all([
                     result.compiler.supportsGccDump.should.equals(true),
@@ -84,7 +84,6 @@ describe('gcc parser', () => {
     it('should handle undefined options', () => {
         return parsers.GCC.parse(makeCompiler("-fdiagnostics-color=[blah]")).should.eventually.satisfy(result => {
             return Promise.all([
-                result.compiler.supportsGccDump.should.equals(true),
                 result.compiler.options.should.equals('-fdiagnostics-color=always')
             ]);
         });
