@@ -116,6 +116,7 @@ function Cfg(hub, container, state) {
                 edges: selectedFn.edges
             });
             this.cfgVisualiser.selectNodes([selectedFn.nodes[0].id]);
+            this.resize();
             this.saveState();
         }
     }, this));

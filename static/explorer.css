@@ -329,3 +329,7 @@ pre.content.wrap {
     text-decoration-style: dashed;
     cursor: help;
 }
+
+.modal-footer {
+    border-top: none;
+}
