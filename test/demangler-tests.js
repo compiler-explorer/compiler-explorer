@@ -174,6 +174,25 @@ describe('Basic demangling', function () {
             ]
         );
     });
+    
+    it('Should handle normal labels without PROC suffix', () => {
+        const result = {};
+        result.asm = [
+            {"text": "$LN3@caller2:"}
+        ];
+
+        const demangler = new DemanglerCL("c++filt", new DummyCompiler());
+        demangler.result = result;
+        demangler.symbolstore = new SymbolStore();
+        demangler.collectLabels();
+
+        const output = demangler.symbolstore.listSymbols();
+        output.should.deep.equal(
+            [
+                "$LN3@caller2"
+            ]
+        );
+    });
 });
 
 function DoDemangleTest(root, filename) {
