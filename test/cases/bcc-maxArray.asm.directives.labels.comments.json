@@ -22,6 +22,5 @@
   {"text":"        ret ", "source":{"file":null,"line":7}},
   {"text": "_i      label       dword","source":null},
   {"text": "        dd      0","source":null},
-  {"text": "        public  _i","source":null},
   {"text":"", "source":null}
 ]

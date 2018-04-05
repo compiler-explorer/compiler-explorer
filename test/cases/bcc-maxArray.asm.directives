@@ -57,5 +57,4 @@
 @testFunction$qpii      ends
 _i      label       dword
         dd      0
-        public  _i
 
