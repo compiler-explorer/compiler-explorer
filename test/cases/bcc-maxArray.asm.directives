@@ -1,0 +1,57 @@
+@testFunction$qpii      segment virtual
+@@testFunction$qpii     proc      near
+?live16385@0:
+ ;      
+ ;      int testFunction(int* input, int length) {
+ ;      
+@1:
+        push      ebp
+        mov       ebp,esp
+        push      ebx
+ ;      
+ ;        int sum = 0;
+ ;      
+?live16385@16: ; EBX = length
+        xor       ecx,ecx
+?live16385@32: ; 
+        mov       ebx,dword ptr [ebp+12]
+ ;      
+ ;        for (int i = 0; i < length; ++i) {
+ ;      
+?live16385@48: ; ECX = sum, EBX = length
+@2:
+        xor       edx,edx
+        mov       eax,dword ptr [ebp+8]
+        cmp       ebx,edx
+        jle       short @4
+ ;      
+ ;          sum += input[i];
+ ;      
+?live16385@64: ; EAX = @temp0, EDX = i, ECX = sum, EBX = length
+@3:
+@5:
+        add       ecx,dword ptr [eax]
+@6:
+@7:
+        inc       edx
+        add       eax,4
+        cmp       ebx,edx
+        jg        short @3
+ ;      
+ ;        }
+ ;        return sum;
+ ;      
+?live16385@96: ; ECX = sum
+@4:
+        mov       eax,ecx
+ ;      
+ ;      }
+ ;      
+?live16385@112: ; 
+@10:
+@9:
+        pop       ebx
+        pop       ebp
+        ret 
+@@testFunction$qpii     endp
+@testFunction$qpii      ends

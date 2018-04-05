@@ -25,6 +25,7 @@
 const fs = require('fs');
 const asm = require('../lib/asm');
 const asmCl = require('../lib/asm-cl');
+const asmBcc = require('../lib/asm-bcc');
 const utils = require('../lib/utils');
 require('chai').should();
 
@@ -33,7 +34,9 @@ function processAsm(filename, filters) {
     let parser;
     if (file.indexOf('Microsoft') >= 0)
         parser = new asmCl.AsmParser();
-    else
+    else if (file.indexOf('version GT 500H') >= 0)
+        parser = new asmBcc.AsmParser();
+    else    
         parser = new asm.AsmParser();
     return parser.process(file, filters);
 }
