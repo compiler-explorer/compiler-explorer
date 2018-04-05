@@ -25,7 +25,7 @@
 const chai = require('chai');
 
 const WslCL = require('../lib/compilers/WSL-CL');
-const Wine = require('../lib/compilers/wine');
+const WineCL = require('../lib/compilers/Wine-CL');
 const CompilationEnvironment = require('../lib/compilation-env');
 
 chai.should();
@@ -42,7 +42,7 @@ describe('Paths', () => {
         const env = new CompilationEnvironment(envprops);
         env.compilerProps = undefined;
 
-        const compiler = new Wine(info, env);
+        const compiler = new WineCL(info, env);
         compiler.filename("/tmp/123456/output.s").should.equal("Z:/tmp/123456/output.s");
     });
 
