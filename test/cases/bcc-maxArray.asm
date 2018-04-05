@@ -9,8 +9,8 @@
         ?debug  macro
         endm
         endif
-        ?debug  S "Z:/tmp/compiler-explorer-compiler11835-686-ht1de2.m4bmf/example.cpp"
-        ?debug  T "Z:/tmp/compiler-explorer-compiler11835-686-ht1de2.m4bmf/example.cpp"
+        ?debug  S "Z:/tmp/compiler-explorer-compiler11835-686-19j4wz8.s26r/example.cpp"
+        ?debug  T "Z:/tmp/compiler-explorer-compiler11835-686-19j4wz8.s26r/example.cpp"
 _TEXT   segment dword public use32 'CODE'
 _TEXT   ends
 _DATA   segment dword public use32 'DATA'
@@ -87,7 +87,14 @@ _TEXT   segment dword public use32 'CODE'
 @@testFunction$qpii     endp
 @testFunction$qpii      ends
 _TEXT   ends
+_DATA   segment dword public use32 'DATA'
+        align   4
+_i      label       dword
+        dd      0
+_DATA   ends
 _TEXT   segment dword public use32 'CODE'
 _TEXT   ends
-        ?debug  D "Z:/tmp/compiler-explorer-compiler11835-686-ht1de2.m4bmf/example.cpp" 19589 35826
+        public  _i
+        ?debug  D "Z:/tmp/compiler-explorer-compiler11835-686-19j4wz8.s26r/example.cpp" 19589 38693
         end
+        

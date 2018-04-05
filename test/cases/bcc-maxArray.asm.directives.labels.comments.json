@@ -19,5 +19,9 @@
   {"text":"        mov       eax,ecx", "source":{"file":null,"line":6}},
   {"text":"        pop       ebx", "source":{"file":null,"line":7}},
   {"text":"        pop       ebp", "source":{"file":null,"line":7}},
-  {"text":"        ret ", "source":{"file":null,"line":7}}
+  {"text":"        ret ", "source":{"file":null,"line":7}},
+  {"text": "_i      label       dword","source":null},
+  {"text": "        dd      0","source":null},
+  {"text": "        public  _i","source":null},
+  {"text":"", "source":null}
 ]
