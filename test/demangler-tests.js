@@ -155,6 +155,25 @@ describe('Basic demangling', function () {
             ]
         );
     });
+
+    it('Should also support ARM branch instructions', () => {
+        const result = {};
+        result.asm = [
+            {"text": "   bl _ZN3FooC1Ev"}
+        ];
+
+        const demangler = new Demangler("c++filt", new DummyCompiler());
+        demangler.result = result;
+        demangler.symbolstore = new SymbolStore();
+        demangler.collectLabels();
+
+        const output = demangler.othersymbols.listSymbols();
+        output.should.deep.equal(
+            [
+                "_ZN3FooC1Ev"
+            ]
+        );
+    });
 });
 
 function DoDemangleTest(root, filename) {
