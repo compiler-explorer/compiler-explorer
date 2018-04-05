@@ -111,7 +111,7 @@ describe('Parses compiler output', () => {
     it('handles borland output', () => {
         utils.parseOutput('Warning W1235 bob.cpp 1: Oh noes', 'bob.cpp').should.deep.equals([
             {
-                tag: {column: 0, line: 1, text: 'Oh noes'},
+                tag: {column: 0, line: 1, text: 'warning: Oh noes'},
                 text: 'Warning W1235 <source> 1: Oh noes'
             }
         ]);
