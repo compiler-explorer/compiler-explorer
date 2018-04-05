@@ -108,6 +108,14 @@ describe('Parses compiler output', () => {
             }
         ]);
     });
+    it('handles borland output', () => {
+        utils.parseOutput('Warning W1235 bob.cpp 1: Oh noes', 'bob.cpp').should.deep.equals([
+            {
+                tag: {column: 0, line: 1, text: 'Oh noes'},
+                text: 'Warning W1235 <source> 1: Oh noes'
+            }
+        ]);
+    });
     it('replaces all references to input source', () => {
         utils.parseOutput('bob.cpp:1 error in bob.cpp', 'bob.cpp').should.deep.equals([
             {
