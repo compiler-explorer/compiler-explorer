@@ -1,0 +1,23 @@
+[
+  {"text":"@@testFunction$qpii     proc      near", "source":null},
+  {"text":"        push      ebp", "source":{"file":null,"line":1}},
+  {"text":"        mov       ebp,esp", "source":{"file":null,"line":1}},
+  {"text":"        push      ebx", "source":{"file":null,"line":1}},
+  {"text":"        xor       ecx,ecx", "source":{"file":null,"line":2}},
+  {"text":"        mov       ebx,dword ptr [ebp+12]", "source":{"file":null,"line":1}},
+  {"text":"        xor       edx,edx", "source":{"file":null,"line":3}},
+  {"text":"        mov       eax,dword ptr [ebp+8]", "source":{"file":null,"line":3}},
+  {"text":"        cmp       ebx,edx", "source":{"file":null,"line":3}},
+  {"text":"        jle       short @4", "source":{"file":null,"line":3}},
+  {"text":"@3:", "source":null},
+  {"text":"        add       ecx,dword ptr [eax]", "source":{"file":null,"line":4}},
+  {"text":"        inc       edx", "source":{"file":null,"line":3}},
+  {"text":"        add       eax,4", "source":{"file":null,"line":3}},
+  {"text":"        cmp       ebx,edx", "source":{"file":null,"line":3}},
+  {"text":"        jg        short @3", "source":{"file":null,"line":3}},
+  {"text":"@4:", "source":null},
+  {"text":"        mov       eax,ecx", "source":{"file":null,"line":6}},
+  {"text":"        pop       ebx", "source":{"file":null,"line":7}},
+  {"text":"        pop       ebp", "source":{"file":null,"line":7}},
+  {"text":"        ret ", "source":{"file":null,"line":7}}
+]
