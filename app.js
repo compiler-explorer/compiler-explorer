@@ -315,6 +315,7 @@ function ClientOptionsHandler(fileSources) {
     this.get = () => options;
 }
 
+            demanglerClassFile: props("demanglerClassFile", ""),
 function shortUrlHandler(req, res, next) {
     const resolver = new google.ShortLinkResolver(aws.getConfig('googleApiKey'));
     const bits = req.url.split("/");

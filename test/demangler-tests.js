@@ -30,6 +30,8 @@ const
     chaiAsPromised = require('chai-as-promised'),
     SymbolStore = require('../lib/symbol-store').SymbolStore,
     Demangler = require('../lib/demangler-cpp').Demangler,
+    DemanglerCL = require('../lib/cl-support').Demangler,
+    exec = require('../lib/exec'),
     logger = require('../lib/logger').logger;
 
 chai.use(chaiAsPromised);
@@ -37,12 +39,18 @@ const should = chai.should();
 const expect = chai.expect;
 const assert = chai.assert;
 
+class DummyCompiler {
+    exec(command, args, options) {
+        return exec.execute(command, args, options);
+    }
+}
+
 describe('Basic demangling', function () {
     it('One line of asm', function () {
         const result = {};
         result.asm = [{"text": "Hello, World!"}];
 
-        const demangler = new Demangler("c++filt");
+        const demangler = new Demangler("c++filt", new DummyCompiler());
 
         return Promise.all([
             demangler.process(result).then((output) => {
@@ -58,7 +66,7 @@ describe('Basic demangling', function () {
             {"text": "  ret"}
         ];
 
-        const demangler = new Demangler("c++filt");
+        const demangler = new Demangler("c++filt", new DummyCompiler());
 
         return Promise.all([
             demangler.process(result).then((output) => {
@@ -75,7 +83,7 @@ describe('Basic demangling', function () {
             {"text": "  mov eax, $_Z6squarei"}
         ];
 
-        const demangler = new Demangler("c++filt");
+        const demangler = new Demangler("c++filt", new DummyCompiler());
 
         return Promise.all([
             demangler.process(result).then((output) => {
@@ -99,7 +107,7 @@ describe('Basic demangling', function () {
             {"text": "  rep ret"}
         ];
 
-        const demangler = new Demangler("c++filt");
+        const demangler = new Demangler("c++filt", new DummyCompiler());
 
         return Promise.all([
             demangler.process(result).then((output) => {
@@ -108,6 +116,44 @@ describe('Basic demangling', function () {
                 output.asm[6].text.should.equal("  jmp operator delete(void*, unsigned long)");
             })
         ]);
+    });
+
+    it('Should ignore comments (CL)', function () {
+        const result = {};
+        result.asm = [
+            {"text": "        call     ??3@YAXPEAX_K@Z                ; operator delete"}
+        ];
+
+        const demangler = new DemanglerCL("c++filt", new DummyCompiler());
+        demangler.result = result;
+        demangler.symbolstore = new SymbolStore();
+        demangler.collectLabels();
+
+        const output = demangler.othersymbols.listSymbols();
+        output.should.deep.equal(
+            [
+                "??3@YAXPEAX_K@Z"
+            ]
+        );
+    });
+
+    it('Should ignore comments (CPP)', function () {
+        const result = {};
+        result.asm = [
+            {"text": "        call     hello                ; operator delete"}
+        ];
+
+        const demangler = new Demangler("c++filt", new DummyCompiler());
+        demangler.result = result;
+        demangler.symbolstore = new SymbolStore();
+        demangler.collectLabels();
+
+        const output = demangler.othersymbols.listSymbols();
+        output.should.deep.equal(
+            [
+                "hello"
+            ]
+        );
     });
 });
 
@@ -130,7 +176,7 @@ function DoDemangleTest(root, filename) {
                     return {"text": line};
                 });
 
-                let demangler = new Demangler("c++filt");
+                const demangler = new Demangler("c++filt", new DummyCompiler());
                 resolve(demangler.process(resultIn).then((output) => {
                     output.should.deep.equal(resultOut);
                 }));
