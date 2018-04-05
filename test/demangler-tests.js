@@ -175,7 +175,7 @@ describe('Basic demangling', function () {
         );
     });
     
-    it('Should handle normal labels without PROC suffix', () => {
+    it('Should NOT handle normal labels without PROC suffix', () => {
         const result = {};
         result.asm = [
             {"text": "$LN3@caller2:"}
@@ -189,7 +189,6 @@ describe('Basic demangling', function () {
         const output = demangler.symbolstore.listSymbols();
         output.should.deep.equal(
             [
-                "$LN3@caller2"
             ]
         );
     });
