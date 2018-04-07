@@ -116,7 +116,6 @@ describe('API handling', () => {
                 throw err;
             });
     });
-
     it('should respond to JSON compilers requests with c++ filter', () => {
         return chai.request(app)
             .get('/api/compilers/c++')
@@ -130,7 +129,6 @@ describe('API handling', () => {
                 throw err;
             });
     });
- 
     it('should respond to JSON compilers requests with pascal filter', () => {
         return chai.request(app)
             .get('/api/compilers/pascal')
@@ -144,7 +142,23 @@ describe('API handling', () => {
                 throw err;
             });
     });
- 
+    it('should respond to plain text language requests', () => {
+        return chai.request(app)
+            .get('/api/languages')
+            .then(res => {
+                console.log(res.text);
+                res.should.have.status(200);
+                res.should.be.text;
+                res.text.should.contain("Name");
+                res.text.should.contain("c++");
+                res.text.should.contain("pascal");
+                // We should not list languages for which there are no compilers
+                res.text.should.not.contain("Haskell");
+            })
+            .catch(function (err) {
+                throw err;
+            });
+    });
     it('should respond to JSON languages requests', () => {
         return chai.request(app)
             .get('/api/languages')
