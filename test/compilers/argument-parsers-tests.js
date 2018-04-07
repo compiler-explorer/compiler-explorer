@@ -40,6 +40,10 @@ function makeCompiler(stdout, stderr, code) {
 }
 
 describe('option parser', () => {
+    it('should do nothing for the base parser', () => {
+        const compiler = makeCompiler();
+        return parsers.Base.parse(compiler).should.deep.equals(compiler);
+    });
     it('should handle empty options', () => {
         return parsers.Base.getOptions(makeCompiler()).should.eventually.deep.equals({});
     });
