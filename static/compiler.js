@@ -536,13 +536,7 @@ Compiler.prototype.onCompileResponse = function (request, result, cached) {
     });
     this.setAssembly(result.asm || fakeAsm('<No output>'));
     if (request.options.filters.binary) {
-        this.outputEditor.updateOptions({
-            lineNumbers: _.bind(this.getBinaryForLine, this),
-            lineNumbersMinChars: 18,
-            glyphMargin: false
-        });
-        this.outputEditor._configuration._validatedOptions.lineNumbersMinChars = 18;
-        this.outputEditor._configuration._recomputeOptions();
+        this.setBinaryMargin();
     } else {
         this.outputEditor.updateOptions({
             lineNumbers: true,
@@ -587,6 +581,16 @@ Compiler.prototype.onCompileResponse = function (request, result, cached) {
         this.nextRequest = null;
         this.sendCompile(next);
     }
+};
+
+Compiler.prototype.setBinaryMargin = function () {
+    this.outputEditor.updateOptions({
+        lineNumbers: _.bind(this.getBinaryForLine, this),
+        lineNumbersMinChars: 20,
+        glyphMargin: false
+    });
+    this.outputEditor._configuration._validatedOptions.lineNumbersMinChars = 20;
+    this.outputEditor._configuration._recomputeOptions();
 };
 
 Compiler.prototype.onEditorChange = function (editor, source, langId, compilerId) {
@@ -838,9 +842,16 @@ Compiler.prototype.updateButtons = function () {
     }
 };
 
+Compiler.prototype.onFontScale = function () {
+    if (this.getEffectiveFilters().binary) {
+        this.setBinaryMargin();
+    }
+    this.saveState();
+};
+
 Compiler.prototype.initCallbacks = function () {
     this.filters.on('change', _.bind(this.onFilterChange, this));
-    this.fontScale.on('change', _.bind(this.saveState, this));
+    this.fontScale.on('change', _.bind(this.onFontScale, this));
 
     this.container.on('destroy', this.close, this);
     this.container.on('resize', this.resize, this);
@@ -899,6 +910,11 @@ Compiler.prototype.initCallbacks = function () {
         }, this), 5000);
     }, this));
 
+    this.outputEditor.onMouseUp(_.bind(function () {
+        if (this.getEffectiveFilters().binary) {
+            this.setBinaryMargin();
+        }
+    }, this));
 
     this.compileClearCache.on('click', _.bind(function () {
         this.compilerService.cache.reset();
