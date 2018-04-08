@@ -141,10 +141,10 @@ input.options {
 }
 
 .binary-side {
-    font-size: xx-small;
     text-align: left;
     float: left;
     clear: none;
+    width: 100%;
 }
 
 .highlighted {

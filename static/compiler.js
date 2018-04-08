@@ -538,10 +538,11 @@ Compiler.prototype.onCompileResponse = function (request, result, cached) {
     if (request.options.filters.binary) {
         this.outputEditor.updateOptions({
             lineNumbers: _.bind(this.getBinaryForLine, this),
-            // Until something comes out of Microsoft/monaco-editor/issues/515, this gets clamped to ten
-            lineNumbersMinChars: 25,
+            lineNumbersMinChars: 18,
             glyphMargin: false
         });
+        this.outputEditor._configuration._validatedOptions.lineNumbersMinChars = 18;
+        this.outputEditor._configuration._recomputeOptions();
     } else {
         this.outputEditor.updateOptions({
             lineNumbers: true,
