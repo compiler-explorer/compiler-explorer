@@ -33,7 +33,6 @@ const nopt = require('nopt'),
     path = require('path'),
     fs = require('fs-extra'),
     systemdSocket = require('systemd-socket'),
-    http = require('http'),
     url = require('url'),
     _ = require('underscore-node'),
     express = require('express'),
@@ -82,43 +81,43 @@ else if (process.env.wsl) {
     process.env.winTmp = path.join("/mnt", driveLetter, directoryPath);
 }
 
-// Set default values for omitted arguments
-const rootDir = opts.rootDir || './etc';
-const env = opts.env || ['dev'];
-const hostname = opts.host;
-const port = opts.port || 10240;
-const staticDir = opts.static || 'static';
-let gitReleaseName = "";
-const wantedLanguage = opts.language || null;
-const doCache = !opts.noCache;
-
-
-const webpackConfig = require('./webpack.config.js')[1],
-    webpackCompiler = require('webpack')(webpackConfig),
-    manifestName = 'manifest.json',
-    staticManifestPath = path.join(__dirname, staticDir, webpackConfig.output.publicPath),
-    assetManifestPath = path.join(staticManifestPath, 'assets'),
-    staticManifest = require(path.join(staticManifestPath, manifestName)),
-    assetManifest = require(path.join(assetManifestPath, manifestName));
-
 // Use the canned git_hash if provided
+let gitReleaseName = '';
 if (opts.static && fs.existsSync(opts.static + "/git_hash")) {
     gitReleaseName = fs.readFileSync(opts.static + "/git_hash").toString().trim();
 } else if (fs.existsSync('.git/')) { // Just if we have been cloned and not downloaded (Thanks David!)
     gitReleaseName = child_process.execSync('git rev-parse HEAD').toString().trim();
 }
 
-// Don't treat @ in paths as remote adresses
-const fetchCompilersFromRemote = !opts.noRemoteFetch;
+// Set default values for omitted arguments
+const defArgs = {
+    rootDir: opts.rootDir || './etc',
+    env: opts.env || ['dev'],
+    hostname: opts.host,
+    port: opts.port || 10240,
+    staticDir: opts.static || 'static',
+    gitReleaseName: gitReleaseName,
+    wantedLanguage: opts.language || null,
+    doCache: !opts.noCache,
+    fetchCompilersFromRemote: !opts.noRemoteFetch
+};
+
+const webpackConfig = require('./webpack.config.js')[1],
+    webpackCompiler = require('webpack')(webpackConfig),
+    manifestName = 'manifest.json',
+    staticManifestPath = path.join(__dirname, defArgs.staticDir, webpackConfig.output.publicPath),
+    assetManifestPath = path.join(staticManifestPath, 'assets'),
+    staticManifest = require(path.join(staticManifestPath, manifestName)),
+    assetManifest = require(path.join(assetManifestPath, manifestName));
+
+logger.warn(staticManifest);
 
 const isDevMode = () => process.env.NODE_ENV === "DEV";
 
 const propHierarchy = _.flatten([
     'defaults',
-    env,
-    _.map(env, function (e) {
-        return e + '.' + process.platform;
-    }),
+    defArgs.env,
+    _.map(defArgs.env, e => e + '.' + process.platform),
     process.platform,
     os.hostname(),
     'local']);
@@ -128,7 +127,7 @@ logger.info("properties hierarchy: " + propHierarchy.join(', '));
 if (opts.propDebug) props.setDebug(true);
 
 // *All* files in config dir are parsed
-props.initialize(rootDir + '/config', propHierarchy);
+props.initialize(defArgs.rootDir + '/config', propHierarchy);
 
 // Now load up our libraries.
 const aws = require('./lib/aws'),
@@ -140,12 +139,12 @@ const ceProps = props.propsFor("compiler-explorer");
 
 let languages = require('./lib/languages').list;
 
-if (wantedLanguage) {
+if (defArgs.wantedLanguage) {
     const filteredLangs = {};
     _.each(languages, lang => {
-        if (lang.id === wantedLanguage ||
-            lang.name === wantedLanguage ||
-            (lang.alias && lang.alias.indexOf(wantedLanguage) >= 0)) {
+        if (lang.id === defArgs.wantedLanguage ||
+            lang.name === defArgs.wantedLanguage ||
+            (lang.alias && lang.alias.indexOf(defArgs.wantedLanguage) >= 0)) {
             filteredLangs[lang.id] = lang;
         }
     });
@@ -209,12 +208,6 @@ function contentPolicyHeader(res) {
 }
 
 const awsProps = props.propsFor("aws");
-let awsPoller = null;
-
-function awsInstances() {
-    if (!awsPoller) awsPoller = new aws.InstanceFetcher(awsProps);
-    return awsPoller.getInstances();
-}
 
 // function to load internal binaries (i.e. lib/source/*.js)
 function loadSources() {
@@ -227,13 +220,16 @@ function loadSources() {
 const fileSources = loadSources();
 const clientOptionsHandler = new ClientOptionsHandler(fileSources);
 const CompilationEnvironment = require('./lib/compilation-env');
-const compilationEnvironment = new CompilationEnvironment(ceProps, compilerPropsL, doCache);
+const compilationEnvironment = new CompilationEnvironment(ceProps, compilerPropsL, defArgs.doCache);
 const CompileHandler = require('./lib/handlers/compile').Handler;
 const compileHandler = new CompileHandler(compilationEnvironment);
 const ApiHandler = require('./lib/handlers/api').Handler;
 const apiHandler = new ApiHandler(compileHandler);
 const SourceHandler = require('./lib/handlers/source').Handler;
 const sourceHandler = new SourceHandler(fileSources, staticHeaders);
+const CompilerFinder = require('./lib/compiler-finder');
+const compilerFinder = new CompilerFinder(compileHandler, compilerPropsL, compilerPropsAT, ceProps, awsProps,
+    languages, defArgs);
 
 function ClientOptionsHandler(fileSources) {
     const sources = _.sortBy(fileSources.map(source => {
@@ -298,11 +294,11 @@ function ClientOptionsHandler(fileSources) {
         sources: sources,
         raven: ceProps('ravenUrl', ''),
         release: gitReleaseName,
-        environment: env,
+        environment: defArgs.env,
         localStoragePrefix: ceProps('localStoragePrefix'),
         cvCompilerCountMax: ceProps('cvCompilerCountMax', 6),
         defaultFontScale: ceProps('defaultFontScale', 1.0),
-        doCache: doCache
+        doCache: defArgs.doCache
     };
     this.setCompilers = compilers => {
         const blacklistedKeys = ['exe', 'versionFlag', 'versionRe', 'compilerType', 'demangler', 'objdumper',
@@ -319,202 +315,6 @@ function ClientOptionsHandler(fileSources) {
     };
     this.setCompilers([]);
     this.get = () => options;
-}
-
-function retryPromise(promiseFunc, name, maxFails, retryMs) {
-    return new Promise(function (resolve, reject) {
-        let fails = 0;
-
-        function doit() {
-            const promise = promiseFunc();
-            promise.then(function (arg) {
-                resolve(arg);
-            }, function (e) {
-                fails++;
-                if (fails < maxFails) {
-                    logger.warn(`Failed ${name} : ${e}, retrying`);
-                    setTimeout(doit, retryMs);
-                } else {
-                    logger.error(`Too many retries for ${name} : ${e}`);
-                    reject(e);
-                }
-            });
-        }
-
-        doit();
-    });
-}
-
-function findCompilers() {
-    const exes = compilerPropsAT(languages, exs => _.compact(exs.split(":")), "compilers", "");
-
-    const ndk = compilerPropsA(languages, 'androidNdk');
-    _.each(ndk, (ndkPath, langId) => {
-        if (ndkPath) {
-            let toolchains = fs.readdirSync(`${ndkPath}/toolchains`);
-            toolchains.forEach((version, index, a) => {
-                const path = `${ndkPath}/toolchains/${version}/prebuilt/linux-x86_64/bin/`;
-                if (fs.existsSync(path)) {
-                    const cc = fs.readdirSync(path).filter(filename => filename.indexOf("g++") !== -1);
-                    a[index] = path + cc[0];
-                } else {
-                    a[index] = null;
-                }
-            });
-            toolchains = toolchains.filter(x => x !== null);
-            exes[langId].push(toolchains);
-        }
-    });
-
-    function fetchRemote(host, port, props) {
-        logger.info(`Fetching compilers from remote source ${host}:${port}`);
-        return retryPromise(() => {
-            return new Promise((resolve, reject) => {
-                let request = http.get({
-                    hostname: host,
-                    port: port,
-                    path: "/api/compilers",
-                    headers: {
-                        Accept: 'application/json'
-                    }
-                }, res => {
-                    let str = '';
-                    res.on('data', chunk => {
-                        str += chunk;
-                    });
-                    res.on('end', () => {
-                        let compilers = JSON.parse(str).map(compiler => {
-                            compiler.exe = null;
-                            compiler.remote = `http://${host}:${port}`;
-                            return compiler;
-                        });
-                        resolve(compilers);
-                    });
-                })
-                    .on('error', reject)
-                    .on('timeout', () => reject("timeout"));
-                request.setTimeout(awsProps('proxyTimeout', 1000));
-            });
-        },
-        `${host}:${port}`,
-        props('proxyRetries', 5),
-        props('proxyRetryMs', 500)
-        ).catch(() => {
-            logger.warn(`Unable to contact ${host}:${port}; skipping`);
-            return [];
-        });
-    }
-
-    function fetchAws() {
-        logger.info("Fetching instances from AWS");
-        return awsInstances().then(instances => {
-            return Promise.all(instances.map(instance => {
-                logger.info("Checking instance " + instance.InstanceId);
-                let address = instance.PrivateDnsName;
-                if (awsProps("externalTestMode", false)) {
-                    address = instance.PublicDnsName;
-                }
-                return fetchRemote(address, port, awsProps);
-            }));
-        });
-    }
-
-    function compilerConfigFor(langId, compilerName, parentProps) {
-        const base = `compiler.${compilerName}.`;
-
-        function props(propName, def) {
-            let propsForCompiler = parentProps(langId, base + propName, undefined);
-            if (propsForCompiler === undefined) {
-                propsForCompiler = parentProps(langId, propName, def);
-            }
-            return propsForCompiler;
-        }
-
-        const supportsBinary = !!props("supportsBinary", true);
-        const supportsExecute = supportsBinary && !!props("supportsExecute", true);
-        const group = props("group", "");
-        const demangler = props("demangler", "");
-        const compilerInfo = {
-            id: compilerName,
-            exe: props("exe", compilerName),
-            name: props("name", compilerName),
-            alias: props("alias"),
-            options: props("options"),
-            versionFlag: props("versionFlag"),
-            versionRe: props("versionRe"),
-            compilerType: props("compilerType", ""),
-            demangler: demangler,
-            objdumper: props("objdumper", ""),
-            intelAsm: props("intelAsm", ""),
-            needsMulti: !!props("needsMulti", true),
-            supportsDemangle: !!demangler,
-            supportsBinary: supportsBinary,
-            supportsExecute: supportsExecute,
-            postProcess: props("postProcess", "").split("|"),
-            lang: langId,
-            group: group,
-            groupName: props("groupName", ""),
-            includeFlag: props("includeFlag", "-isystem"),
-            notification: props("notification", "")
-        };
-        logger.debug("Found compiler", compilerInfo);
-        return Promise.resolve(compilerInfo);
-    }
-
-    function recurseGetCompilers(langId, compilerName, parentProps) {
-        if (fetchCompilersFromRemote && compilerName.indexOf("@") !== -1) {
-            const bits = compilerName.split("@");
-            const host = bits[0];
-            const port = parseInt(bits[1]);
-            return fetchRemote(host, port, ceProps);
-        }
-        if (compilerName.indexOf("&") === 0) {
-            const groupName = compilerName.substr(1);
-
-            const props = function (langId, propName, def) {
-                if (propName === "group") {
-                    return groupName;
-                }
-                return compilerPropsL(langId, `group.${groupName}.${propName}`, parentProps(langId, propName, def));
-            };
-            const compilerExes = _.compact(props(langId, 'compilers', '').split(":"));
-            logger.debug(`Processing compilers from group ${groupName}`);
-            return Promise.all(compilerExes.map(compiler => recurseGetCompilers(langId, compiler, props)));
-        }
-        if (compilerName === "AWS") return fetchAws();
-        return compilerConfigFor(langId, compilerName, parentProps);
-    }
-
-    function getCompilers() {
-        let compilers = [];
-        _.each(exes, (exs, langId) => {
-            _.each(exs, exe => compilers.push(recurseGetCompilers(langId, exe, compilerPropsL)));
-        });
-        return compilers;
-    }
-
-    function ensureDistinct(compilers) {
-        let ids = {};
-        _.each(compilers, compiler => {
-            if (!ids[compiler.id]) ids[compiler.id] = [];
-            ids[compiler.id].push(compiler);
-        });
-        _.each(ids, (list, id) => {
-            if (list.length !== 1) {
-                logger.error(`Compiler ID clash for '${id}' - used by ${
-                    _.map(list, o => `lang:${o.lang} name:${o.name}`).join(', ')
-                }`);
-            }
-        });
-        return compilers;
-    }
-
-    return Promise.all(getCompilers())
-        .then(_.flatten)
-        .then(compilers => compileHandler.setCompilers(compilers))
-        .then(compilers => _.compact(compilers))
-        .then(ensureDistinct)
-        .then(compilers => _.sortBy(compilers, "name"));
 }
 
 function shortUrlHandler(req, res, next) {
@@ -562,14 +362,14 @@ function startListening(server) {
         }
         _port = ss;
     } else {
-        _port = port;
+        _port = defArgs.port;
     }
-    logger.info(`  Listening on http://${hostname || 'localhost'}:${_port}/`);
+    logger.info(`  Listening on http://${defArgs.hostname || 'localhost'}:${_port}/`);
     logger.info("=======================================");
-    server.listen(_port, hostname);
+    server.listen(_port, defArgs.hostname);
 }
 
-Promise.all([findCompilers(), aws.initConfig(awsProps)])
+Promise.all([compilerFinder.find(), aws.initConfig(awsProps)])
     .then(args => {
         let compilers = args[0];
         let prevCompilers;
@@ -578,7 +378,7 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
         if (ravenPrivateEndpoint) {
             Raven.config(ravenPrivateEndpoint, {
                 release: gitReleaseName,
-                environment: env
+                environment: defArgs.env
             }).install();
             logger.info("Configured with raven endpoint", ravenPrivateEndpoint);
         } else {
@@ -604,7 +404,7 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
         const rescanCompilerSecs = ceProps('rescanCompilerSecs', 0);
         if (rescanCompilerSecs) {
             logger.info(`Rescanning compilers every ${rescanCompilerSecs} secs`);
-            setInterval(() => findCompilers().then(onCompilerChange),
+            setInterval(() => compilerFinder.find().then(onCompilerChange),
                 rescanCompilerSecs * 1000);
         }
 
@@ -650,12 +450,12 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
                 publicPath: webpackConfig.output.publicPath,
                 logger: logger
             }));
-            webServer.use(express.static(staticDir));
+            webServer.use(express.static(defArgs.staticDir));
         } else {
             /* Assume that anything not dev is just production.
              * This gives sane defaults for anyone who isn't messing with this */
-            logger.info("  serving static files from '" + staticDir + "'");
-            webServer.use(express.static(staticDir, {maxAge: staticMaxAgeSecs * 1000}));
+            logger.info("  serving static files from '" + defArgs.staticDir + "'");
+            webServer.use(express.static(defArgs.staticDir, {maxAge: staticMaxAgeSecs * 1000}));
         }
 
         webServer
@@ -688,7 +488,7 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
                 res.set('Content-Type', 'application/xml');
                 res.render('sitemap');
             })
-            .use(sFavicon(path.join(staticDir, webpackConfig.output.publicPath, 'favicon.ico')));
+            .use(sFavicon(path.join(defArgs.staticDir, webpackConfig.output.publicPath, 'favicon.ico')));
 
         webServer
             .use(bodyParser.json({limit: ceProps('bodyParserLimit', maxUploadSize)}))
@@ -697,7 +497,7 @@ Promise.all([findCompilers(), aws.initConfig(awsProps)])
             .use('/source', sourceHandler.handle.bind(sourceHandler))
             .use('/api', apiHandler.handle)
             .use('/g', shortUrlHandler);
-        if (!doCache) {
+        if (!defArgs.doCache) {
             logger.info("  not caching due to --noCache parameter being present");
         }
         webServer.use(Raven.errorHandler());
