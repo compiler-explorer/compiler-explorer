@@ -110,8 +110,6 @@ const webpackConfig = require('./webpack.config.js')[1],
     staticManifest = require(path.join(staticManifestPath, manifestName)),
     assetManifest = require(path.join(assetManifestPath, manifestName));
 
-logger.warn(staticManifest);
-
 const isDevMode = () => process.env.NODE_ENV === "DEV";
 
 const propHierarchy = _.flatten([
