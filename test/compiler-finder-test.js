@@ -37,9 +37,9 @@ class CompileHandler {
     }
 }
 
-chai.should();
+const should = chai.should();
 
-properties.initialize(`test/example-config/`, ['from-path', 'empty-groups']);
+properties.initialize(`test/example-config/`, ['default']);
 
 function makeCompilerFinder() {
     let compilerPropsFuncsL = {};
@@ -66,16 +66,46 @@ function makeCompilerFinder() {
 }
 
 describe('Compiler finder', () => {
-    it('should be able to find compilers from a path', () => {
-        let finder = makeCompilerFinder();
-        finder.find().then(() => {
-            finder.compileHandler.compilers.should.have.lengthOf(2);
+    let finder = makeCompilerFinder();
+    it('should not hang for empty elements', () => {
+        finder.find().catch(() => {
+            // Assertion
+            true.should.equal(false, "An empty group made the finder throw");
         });
     });
-    it('should not hang for empty groups', () => {
-        let finder = makeCompilerFinder();
+    it('should be able to find compilers from a path', () => {
+        const pth = './a.out';
         finder.find().then(() => {
-            finder.compileHandler.compilers.should.be.empty;
+            const pathedCompiler = _.find(finder.compileHandler.compilers, config => {
+                return config.id === pth;
+            });
+            should.exist(pathedCompiler);
+            pathedCompiler.exe.should.equal(pth);
+            pathedCompiler.name.should.equal(pth);
+            pathedCompiler.lang.should.equal(fakeLangs["fake-lang"].id);
+        });
+    });
+    it('should get the corret config of a compiler for a valid setup (Following fallthroughs)', () => {
+        finder.find().then(() => {
+            const compiler1 = _.find(finder.compileHandler.compilers, config => {
+                return config.id === 'compiler1';
+            });
+            should.exist(compiler1);
+            compiler1.exe.should.equal('bar');
+            compiler1.name.should.equal('Foo');
+            compiler1.lang.should.equal(fakeLangs["fake-lang"].id);
+            compiler1.objdumper.should.equal('foobar');
+            compiler1.groupName.should.equal('Compilers');
+
+            const compiler2 = _.find(finder.compileHandler.compilers, config => {
+                return config.id === 'compiler2';
+            });
+            should.exist(compiler2);
+            compiler2.exe.should.equal('./a.out');
+            compiler2.name.should.equal('Fiz');
+            compiler2.lang.should.equal(fakeLangs["fake-lang"].id);
+            compiler2.objdumper.should.equal('foobar');
+            compiler2.groupName.should.equal('Special');
         });
     });
 });
