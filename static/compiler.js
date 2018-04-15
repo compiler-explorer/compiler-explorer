@@ -916,6 +916,12 @@ Compiler.prototype.initCallbacks = function () {
         }
     }, this));
 
+    this.outputEditor.onContextMenu(_.bind(function () {
+        if (this.getEffectiveFilters().binary) {
+            this.setBinaryMargin();
+        }
+    }, this));
+
     this.compileClearCache.on('click', _.bind(function () {
         this.compilerService.cache.reset();
         this.compile();
