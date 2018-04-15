@@ -1335,7 +1335,7 @@ Compiler.prototype.updateLibsDropdown = function () {
                             .on('change', onChecked)
                         ).append($('<label></label>')
                             .addClass('lib-label')
-                            .text(lib.name + ' ' + version.version)
+                            .text(version.version)
                             .on('click', function () {
                                 $(this).parent().find('.lib-checkbox').trigger('click');
                             })
