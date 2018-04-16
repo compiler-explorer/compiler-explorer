@@ -139,8 +139,6 @@ function Compiler(hub, container, state) {
 
     this.initEditorActions();
 
-    this.mouseMoveThrottledFunction = _.throttle(_.bind(this.onMouseMove, this), 250);
-
     this.initCallbacks();
     // Handle initial settings
     this.onSettingsChange(this.settings);
@@ -903,6 +901,15 @@ Compiler.prototype.initCallbacks = function () {
         .on('change', optionsChange)
         .on('keyup', optionsChange);
 
+    this.mouseMoveThrottledFunction = _.throttle(_.bind(this.onMouseMove, this), 250);
+    this.outputEditor.onMouseMove(_.bind(function (e) {
+        this.mouseMoveThrottledFunction(e);
+        if (this.linkedFadeTimeoutId !== -1) {
+            clearTimeout(this.linkedFadeTimeoutId);
+            this.linkedFadeTimeoutId = -1;
+        }
+    }, this));
+
     this.outputEditor.onMouseLeave(_.bind(function () {
         this.linkedFadeTimeoutId = setTimeout(_.bind(function () {
             this.clearEditorsLinkedLines();
@@ -1206,16 +1213,15 @@ Compiler.prototype.onMouseMove = function (e) {
                 return t.offset + 1 === currentWord.startColumn && t.type === 'keyword.asm';
             })) {
             getAsmInfo(currentWord.word).then(_.bind(function (response) {
-                if (response) {
-                    this.decorations.asmToolTip = {
-                        range: currentWord.range,
-                        options: {
-                            isWholeLine: false,
-                            hoverMessage: [response.tooltip + '\n\nMore information available in the context menu.']
-                        }
-                    };
-                    this.updateDecorations();
-                }
+                if (!response) return;
+                this.decorations.asmToolTip = {
+                    range: currentWord.range,
+                    options: {
+                        isWholeLine: false,
+                        hoverMessage: [response.tooltip + '\n\nMore information available in the context menu.']
+                    }
+                };
+                this.updateDecorations();
             }, this));
         }
     }
