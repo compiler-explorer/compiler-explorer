@@ -4,5 +4,6 @@ instrumentation:
     excludes:
         - "handlers/asm-docs.js"
         - "restreamer.js"
+        - "compilers/fake-for-test.js"
 reporting:
     dir: ./out/coverage

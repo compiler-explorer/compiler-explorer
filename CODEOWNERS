@@ -14,6 +14,7 @@ lib/asm-docs.js @RabsRincon
 lib/asm-docs-api.js @RabsRincon
 lib/languages.js @RabsRincon
 lib/base-compiler.js @RabsRincon
+lib/compiler-finder.js @RabsRincon
 lib/compilers/ @RabsRincon
 views/sitemap.pug @RabsRincon
 
