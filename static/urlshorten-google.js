@@ -56,12 +56,21 @@ function shortenURL(url, done) {
             id = id.replace(new RegExp(options.googleShortLinkRewrite[0]), options.googleShortLinkRewrite[1]);
         }
         done(id);
-    }, function () {
-        new Alert().
-            notify("The URL could not be shortened. It probably exceeds the Google URL Shortener length limits.", {
-                group: "urltoolong",
+    }, function (t) {
+        // Advanced debugging technique right here...
+        if (t && t.result && t.result.error) {
+            var report = t.result.error;
+            new Alert().notify("Error #" + report.code + ": " + report.message, {
+                group: "shortlink-error",
                 alertClass: "notification-error"
             });
+        } else {
+            new Alert().notify("Unknown error while trying to query Google ShortLink Services.", {
+                group: "shortlink-error",
+                alertClass: "notification-error"
+            });
+        }
+
         done(null);
     });
 }
