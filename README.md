@@ -213,4 +213,5 @@ We would also like to specially thank these people for their contributions to
 - [Marc Poulhiès](https://github.com/dkm)
 - [Andrew Pardoe](https://github.com/AndrewPardoe)
 
-![JetBrains](docs/jetbrains.svg) We would like to thank [JetBrains](https://www.jetbrains.com/) for their support and for donating licenses to their excellent products to develop **Compiler Explorer**.
+![JetBrains](docs/jetbrains.svg)
+We would like to thank [JetBrains](https://www.jetbrains.com/) for their support and for donating licenses to their excellent products to develop **Compiler Explorer**.
