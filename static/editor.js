@@ -358,9 +358,9 @@ Editor.prototype.initEditorActions = function () {
         keybindingContext: null,
         contextMenuGroupId: 'navigation',
         contextMenuOrder: 1.5,
-        run: function (ed) {
+        run: _.bind(function (ed) {
             this.tryCompilerLinkLine(ed.getPosition().lineNumber, true);
-        }
+        }, this)
     });
 };
 
