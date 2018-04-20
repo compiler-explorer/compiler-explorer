@@ -56,7 +56,7 @@ describe('API handling', () => {
         handle: (res, req, next) => {
             res.end("compile");
         }
-    });
+    }, () => "");
     app.use('/api', apiHandler.handle);
     const compilers = [{
         id: "gcc900",
