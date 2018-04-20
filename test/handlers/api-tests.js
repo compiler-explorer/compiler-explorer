@@ -53,10 +53,18 @@ chai.should();
 describe('API handling', () => {
     const app = express();
     const apiHandler = new ApiHandler({
-        handle: (res, req, next) => {
+        handle: res => {
             res.end("compile");
         }
-    }, () => "");
+    }, (key, def) => {
+        switch (key) {
+            case "formatters": return "formatt";
+            case "formatter.formatt.exe": return "echo";
+            case "formatter.formatt.version": return "Release";
+            case "formatter.formatt.name": return "FormatT";
+            default: return def;
+        }
+    });
     app.use('/api', apiHandler.handle);
     const compilers = [{
         id: "gcc900",
@@ -86,7 +94,7 @@ describe('API handling', () => {
                 res.text.should.contain("gcc900");
                 res.text.should.contain("GCC 9.0.0");
             })
-            .catch(function (err) {
+            .catch(err => {
                 throw err;
             });
     });
@@ -99,7 +107,7 @@ describe('API handling', () => {
                 res.should.be.json;
                 res.body.should.deep.equals(compilers);
             })
-            .catch(function (err) {
+            .catch(err => {
                 throw err;
             });
     });
@@ -112,7 +120,7 @@ describe('API handling', () => {
                 res.should.be.json;
                 res.body.found.should.be.true;
             })
-            .catch(function (err) {
+            .catch(err => {
                 throw err;
             });
     });
@@ -125,7 +133,7 @@ describe('API handling', () => {
                 res.should.be.json;
                 res.body.should.deep.equals([compilers[0], compilers[2]]);
             })
-            .catch(function (err) {
+            .catch(err => {
                 throw err;
             });
     });
@@ -138,7 +146,7 @@ describe('API handling', () => {
                 res.should.be.json;
                 res.body.should.deep.equals([compilers[1]]);
             })
-            .catch(function (err) {
+            .catch(err => {
                 throw err;
             });
     });
@@ -146,7 +154,6 @@ describe('API handling', () => {
         return chai.request(app)
             .get('/api/languages')
             .then(res => {
-                console.log(res.text);
                 res.should.have.status(200);
                 res.should.be.text;
                 res.text.should.contain("Name");
@@ -155,7 +162,7 @@ describe('API handling', () => {
                 // We should not list languages for which there are no compilers
                 res.text.should.not.contain("Haskell");
             })
-            .catch(function (err) {
+            .catch(err => {
                 throw err;
             });
     });
@@ -168,8 +175,21 @@ describe('API handling', () => {
                 res.should.be.json;
                 res.body.should.deep.equals([languages['c++'], languages.pascal]);
             })
-            .catch(function (err) {
+            .catch(err => {
                 throw err;
             });
+    });
+    it('should list the formatters', () => {
+        return chai.request(app)
+            .get('/api/formats')
+            .set('Accept', 'application/json')
+            .then(res => {
+                res.should.have.status(200);
+                res.should.be.json;
+                res.body.should.deep.equals([{name: "FormatT", version: "Release"}]);
+            })
+            .catch(err => {
+                throw err;
+            })
     });
 });
