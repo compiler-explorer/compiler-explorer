@@ -58,7 +58,7 @@ describe('API handling', () => {
         }
     }, (key, def) => {
         switch (key) {
-            case "formatters": return "formatt";
+            case "formatters": return "formatt:badformatt";
             case "formatter.formatt.exe": return "echo";
             case "formatter.formatt.version": return "Release";
             case "formatter.formatt.name": return "FormatT";
@@ -187,6 +187,19 @@ describe('API handling', () => {
                 res.should.have.status(200);
                 res.should.be.json;
                 res.body.should.deep.equals([{name: "FormatT", version: "Release"}]);
+            })
+            .catch(err => {
+                throw err;
+            })
+    });
+    it('should not go through with invalid tools', () => {
+        return chai.request(app)
+            .post('/api/format/invalid')
+            .set('Accept', 'application/json')
+            .then(res => {
+                res.should.have.status(200);
+                res.should.be.json;
+                res.body.should.deep.equals({exit: 2, answer: "Tool not supported"});
             })
             .catch(err => {
                 throw err;
