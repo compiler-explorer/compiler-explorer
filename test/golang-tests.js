@@ -1,4 +1,4 @@
-// Copyright (c) 2018, Patrick Quist
+// Copyright (c) 2018, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -39,7 +39,7 @@ const ce = new CompilationEnvironment(props);
 const info = {
     "exe": null,
     "remote": true,
-    "lang": "pascal"
+    "lang": "go"
 };
 
 ce.compilerPropsL = function (lang, property, defaultValue) {
