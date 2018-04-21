@@ -26,8 +26,6 @@ const chai = require('chai');
 const chaiAsPromised = require("chai-as-promised");
 const BaseCompiler = require('../lib/base-compiler');
 const CompilationEnvironment = require('../lib/compilation-env');
-const fs = require('fs-extra');
-const utils = require('../lib/utils');
 
 chai.use(chaiAsPromised);
 const should = chai.should();
