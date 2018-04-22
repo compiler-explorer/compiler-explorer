@@ -381,8 +381,7 @@ Editor.prototype.isSameSource = function (otherSource) {
 Editor.prototype.confirmOverwrite = function (newSource, yes, no) {
     this.alertSystem.ask("Changes were made to the code",
         "Changes were made to the code while it was being processed. Overwrite changes?",
-        {yes: _.bind(function () {this.setSource(newSource);}, this), no: no},
-        {yes: "Overwrite my changes", no: "Keep my changes"});
+        {yes: _.bind(function () {this.setSource(newSource);}, this), no: no});
 };
 
 Editor.prototype.formatCurrentText = function () {
