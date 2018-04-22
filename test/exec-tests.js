@@ -75,9 +75,6 @@ describe('Executes external commands', () => {
                 });
     });
     it('handles missing executables', () => {
-        exec.execute('__not_a_command__', [], {}).then((result) => {
-            logger.info(result);
-        });
         return exec.execute('__not_a_command__', [], {})
             .should.be.rejectedWith("ENOENT");
     });
