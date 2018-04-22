@@ -374,6 +374,17 @@ Editor.prototype.initEditorActions = function () {
     });
 };
 
+Editor.prototype.isSameSource = function (otherSource) {
+    return otherSource === this.getSource();
+};
+
+Editor.prototype.confirmOverwrite = function (newSource, yes, no) {
+    this.alertSystem.ask("Changes were made to the code",
+        "Changes were made to the code while it was being processed. Overwrite changes?",
+        {yes: _.bind(function () {this.setSource(newSource);}, this), no: no},
+        {yes: "Overwrite my changes", no: "Keep my changes"});
+};
+
 Editor.prototype.formatCurrentText = function () {
     var previousSource = this.getSource();
     var currentPosition = this.editor.getPosition();
@@ -388,19 +399,19 @@ Editor.prototype.formatCurrentText = function () {
         }),
         success: _.bind(function (result) {
             if (result.exit === 0) {
-                if (previousSource === this.getSource()) {
+                if (this.isSameSource(previousSource)) {
                     this.setSource(result.answer);
+                    this.numberUsedLines();
+                    this.editor.setPosition(currentPosition);
                 } else {
-                    this.alertSystem.ask("Changes were made to the code",
-                        "Changes were made to the code while it was being formatted. What should be done?",
-                        {yes: _.bind(function () {this.setSource(result.answer);}, this), no: null},
-                        {yes: "Overwrite my changes", no: "Keep my changes"});
+                    this.confirmOverwrite(result.answer, _.bind(function () {
+                        this.numberUsedLines();
+                        this.editor.setPosition(currentPosition);
+                    }, this), null);
                 }
-                this.numberUsedLines();
-                this.editor.setPosition(currentPosition);
             } else {
-                // Ops
-                this.alertSystem.notify("We found an error formatting your code: " + result.answer, {
+                // Ops, the formatter itself failed!
+                this.alertSystem.notify("We encountered an error formatting your code: " + result.answer, {
                     group: "formatting",
                     alertClass: "notification-error"
                 });
@@ -409,8 +420,12 @@ Editor.prototype.formatCurrentText = function () {
         error: _.bind(function (xhr, e_status, error) {
             // Hopefully we have not exploded!
             if (xhr.responseText) {
-                var res = JSON.parse(xhr.responseText);
-                error = res.answer || error;
+                try {
+                    var res = JSON.parse(xhr.responseText);
+                    error = res.answer || error;
+                } catch (e) {
+                    error = error || "Unknown error";
+                }
             }
             this.alertSystem.notify("We ran into some issues while processing your request: " + error, {
                 group: "formatting",
