@@ -178,7 +178,7 @@ function compilerPropsA(langs, property, defaultValue) {
     return forLanguages;
 }
 
-// Same as A version, but transfroms each value by fn(original, lang)
+// Same as A version, but transforms each value by fn(original, lang)
 function compilerPropsAT(langs, transform, property, defaultValue) {
     let forLanguages = {};
     _.each(langs, lang => {
