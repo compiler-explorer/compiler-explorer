@@ -43,7 +43,11 @@ describe('Paths', () => {
         env.compilerProps = undefined;
 
         const compiler = new WineCL(info, env);
-        compiler.filename("/tmp/123456/output.s").should.equal("Z:/tmp/123456/output.s");
+        if (process.platform === "win32") {
+            compiler.filename("/tmp/123456/output.s").should.equal("/tmp/123456/output.s");
+        } else {
+            compiler.filename("/tmp/123456/output.s").should.equal("Z:/tmp/123456/output.s");
+        }
     });
 
     it('Linux -> Windows path', function () {
@@ -61,6 +65,10 @@ describe('Paths', () => {
         process.env.winTmp = "/mnt/c/tmp";
 
         const compiler = new WslCL(info, env);
-        compiler.filename("/mnt/c/tmp/123456/output.s").should.equal("c:/tmp/123456/output.s");
+        if (process.platform === "win32") {
+            compiler.filename("/mnt/c/tmp/123456/output.s").should.equal("/mnt/c/tmp/123456/output.s");
+        } else {
+            compiler.filename("/mnt/c/tmp/123456/output.s").should.equal("c:/tmp/123456/output.s");
+        }
     });
 });
