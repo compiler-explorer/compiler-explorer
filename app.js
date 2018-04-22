@@ -288,7 +288,6 @@ function ClientOptionsHandler(fileSources) {
         compileOptions: compilerPropsA(languages, 'defaultOptions', ''),
         supportsBinary: supportsBinary,
         supportsExecute: supportsExecute,
-        demanglerClassFile: props("demanglerClassFile", ""),
         languages: languages,
         sources: sources,
         raven: ceProps('ravenUrl', ''),
