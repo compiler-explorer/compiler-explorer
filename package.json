@@ -83,6 +83,7 @@
   },
   "scripts": {
     "test": "mocha --recursive && make test",
+    "check": "mocha --recursive && eslint --config .eslintrc --ignore-path .eslintignore --fix app.js --fix lib/*.js --ignore-pattern asm-docs.js && eslint --config static/.eslintrc --ignore-path static/.eslintignore --fix static/*.js --ignore-pattern 'static/dist' --ignore-pattern 'static/ext'",
     "dev": "cross-env NODE_ENV=DEV node app.js",
     "start": "npx webpack && cross-env NODE_ENV=LOCAL node app.js",
     "codecov": "istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec --recursive && codecov",

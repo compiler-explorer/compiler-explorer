@@ -22,16 +22,21 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-var chai = require('chai'),
+const
+    chai = require('chai'),
     chaiAsPromised = require("chai-as-promised"),
-    exec = require('../lib/exec');
+    exec = require('../lib/exec'),
+    logger = require('../lib/logger').logger,
+    builtinCommandsClass = require('../lib/utils').builtinCommands;
 
 chai.use(chaiAsPromised);
 chai.should();
 
+const builtinCommands = new builtinCommandsClass(exec.execute);
+
 describe('Executes external commands', () => {
     it('supports output', () => {
-        return exec.execute('echo', ['hello', 'world'], {}).should.eventually.deep.equals(
+        return builtinCommands.echo(['hello', 'world'], {}).should.eventually.deep.equals(
             {
                 code: 0,
                 okToCache: true,
@@ -40,7 +45,7 @@ describe('Executes external commands', () => {
             });
     });
     it('limits output', () => {
-        return exec.execute('echo', ['A very very very very very long string'], {maxOutput: 10})
+        return builtinCommands.echo(['A very very very very very long string'], {maxOutput: 10})
             .should.eventually.deep.equals(
                 {
                     code: 0,
@@ -50,7 +55,7 @@ describe('Executes external commands', () => {
                 });
     });
     it('handles failing commands', () => {
-        return exec.execute('false', [], {})
+        return builtinCommands.false([], {})
             .should.eventually.deep.equals(
                 {
                     code: 1,
@@ -60,7 +65,7 @@ describe('Executes external commands', () => {
                 });
     });
     it('handles timouts', () => {
-        return exec.execute('sleep', ['5'], {timeoutMs: 10})
+        return builtinCommands.sleep(['5'], {timeoutMs: 10})
             .should.eventually.deep.equals(
                 {
                     code: -1,
@@ -70,11 +75,14 @@ describe('Executes external commands', () => {
                 });
     });
     it('handles missing executables', () => {
+        exec.execute('__not_a_command__', [], {}).then((result) => {
+            logger.info(result);
+        });
         return exec.execute('__not_a_command__', [], {})
             .should.be.rejectedWith("ENOENT");
     });
     it('handles input', () => {
-        return exec.execute('cat', [], {input: "this is stdin"}).should.eventually.deep.equals(
+        return builtinCommands.cat([], {input: "this is stdin"}).should.eventually.deep.equals(
             {
                 code: 0,
                 okToCache: true,
