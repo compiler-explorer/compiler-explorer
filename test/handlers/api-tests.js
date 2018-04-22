@@ -197,12 +197,32 @@ describe('API handling', () => {
             .post('/api/format/invalid')
             .set('Accept', 'application/json')
             .then(res => {
-                res.should.have.status(200);
-                res.should.be.json;
-                res.body.should.deep.equals({exit: 2, answer: "Tool not supported"});
+                // Not expected to go here
+                res.should.equal(null);
             })
             .catch(err => {
-                throw err;
+                err.response.should.have.status(422);
+                err.response.should.be.json;
+                err.response.body.should.deep.equals({exit: 2, answer: "Tool not supported"});
             })
+    });
+    xit('should not go through with invalid base styles', () => {
+        return chai.request(app)
+            .post('/api/format/formatt')
+            .set('Accept', 'application/json')
+            .set('Content-Type', 'application/json')
+            .send({
+                base: "bad-base",
+                source: ""
+            })
+            .then(res => {
+                // Not expected to go here
+                res.should.equal(null);
+            })
+            .catch(err => {
+                err.response.should.have.status(422);
+                err.response.should.be.json;
+                err.response.body.should.deep.equals({exit: 3, answer: "Base style not supported"});
+            });
     });
 });

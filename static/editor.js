@@ -408,6 +408,10 @@ Editor.prototype.formatCurrentText = function () {
         }, this),
         error: _.bind(function (xhr, e_status, error) {
             // Hopefully we have not exploded!
+            if (xhr.responseText) {
+                var res = JSON.parse(xhr.responseText);
+                error = res.answer || error;
+            }
             this.alertSystem.notify("We ran into some issues while processing your request: " + error, {
                 group: "formatting",
                 alertClass: "notification-error"
