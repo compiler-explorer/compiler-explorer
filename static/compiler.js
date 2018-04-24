@@ -73,7 +73,6 @@ function Compiler(hub, container, state) {
     this.compilerService = hub.compilerService;
     this.domRoot = container.getElement();
     this.domRoot.html($('#compiler').html());
-    this.hideable = this.domRoot.find('.hideable');
     this.id = state.id || hub.nextCompilerId();
     this.sourceEditorId = state.source || 1;
     this.settings = JSON.parse(local.get('settings', '{}'));
@@ -787,6 +786,8 @@ Compiler.prototype.initButtons = function (state) {
     this.topBar = this.domRoot.find('.top-bar');
     this.bottomBar = this.domRoot.find('.bottom-bar');
     this.statusLabel = this.domRoot.find('.status');
+
+    this.hideable = this.domRoot.find('.hideable');
 
     this.initPanerButtons();
 };
