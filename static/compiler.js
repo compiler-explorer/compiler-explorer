@@ -73,6 +73,7 @@ function Compiler(hub, container, state) {
     this.compilerService = hub.compilerService;
     this.domRoot = container.getElement();
     this.domRoot.html($('#compiler').html());
+    this.hideable = this.domRoot.find('.hideable');
     this.id = state.id || hub.nextCompilerId();
     this.sourceEditorId = state.source || 1;
     this.settings = JSON.parse(local.get('settings', '{}'));
@@ -94,6 +95,8 @@ function Compiler(hub, container, state) {
     this.decorations = {};
     this.prevDecorations = [];
     this.alertSystem = new Alert();
+    this.cachedTopBarHeight = null;
+    this.cachedTopBarHeightAtWidth = null;
 
     this.linkedFadeTimeoutId = -1;
 
@@ -267,23 +270,32 @@ Compiler.prototype.undefer = function () {
     if (this.needsCompile) this.compile();
 };
 
+Compiler.prototype.updateAndCalcTopBarHeight = function() {
+    var width = this.domRoot.width();
+    if (width === this.cachedTopBarHeightAtWidth) {
+        return this.cachedTopBarHeight;
+    }
+    // If we save vertical space by hiding stuff that's OK to hide
+    // when thin, then hide that stuff.
+    this.hideable.show();
+    var topBarHeightMax = this.topBar.outerHeight(true);
+    this.hideable.hide();
+    var topBarHeightMin = this.topBar.outerHeight(true);
+    var topBarHeight = topBarHeightMin;
+    if (topBarHeightMin === topBarHeightMax) {
+        this.hideable.show();
+        topBarHeight = topBarHeightMax;
+    }
+    this.cachedTopBarHeight = topBarHeight;
+    this.cachedTopBarHeightAtWidth = width;
+    return topBarHeight;
+};
+
 // TODO: need to call resize if either .top-bar or .bottom-bar resizes, which needs some work.
 // Issue manifests if you make a window where one compiler is small enough that the buttons spill onto two lines:
 // reload the page and the bottom-bar is off the bottom until you scroll a tiny bit.
 Compiler.prototype.resize = function () {
-    // If we save vertical space by hiding stuff that's OK to hide
-    // when thin, then hide that stuff.
-    var hideable = this.domRoot.find('.hideable');
-    hideable.show();
-    var topBarHeightMax = this.topBar.outerHeight(true);
-    hideable.hide();
-    var topBarHeightMin = this.topBar.outerHeight(true);
-    var topBarHeight = topBarHeightMin;
-    if (topBarHeightMin === topBarHeightMax) {
-        hideable.show();
-        topBarHeight = topBarHeightMax;
-    }
-
+    var topBarHeight = this.updateAndCalcTopBarHeight();
     var bottomBarHeight = this.bottomBar.outerHeight(true);
     this.outputEditor.layout({
         width: this.domRoot.width(),
