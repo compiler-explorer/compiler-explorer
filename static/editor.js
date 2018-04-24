@@ -340,6 +340,16 @@ Editor.prototype.initEditorActions = function () {
     });
 
     this.editor.addAction({
+        id: 'clang-format',
+        label: 'Format text',
+        keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.F9],
+        keybindingContext: null,
+        contextMenuGroupId: 'help',
+        contextMenuOrder: 1.5,
+        run: _.bind(this.formatCurrentText, this)
+    });
+
+    this.editor.addAction({
         id: 'toggleColourisation',
         label: 'Toggle colourisation',
         keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.F1],
@@ -361,6 +371,68 @@ Editor.prototype.initEditorActions = function () {
         run: _.bind(function (ed) {
             this.tryCompilerLinkLine(ed.getPosition().lineNumber, true);
         }, this)
+    });
+};
+
+Editor.prototype.doesMatchEditor = function (otherSource) {
+    return otherSource === this.getSource();
+};
+
+Editor.prototype.confirmOverwrite = function (yes) {
+    this.alertSystem.ask("Changes were made to the code",
+        "Changes were made to the code while it was being processed. Overwrite changes?",
+        {yes: yes, no: null});
+};
+
+Editor.prototype.formatCurrentText = function () {
+    var previousSource = this.getSource();
+    var currentPosition = this.editor.getPosition();
+    $.ajax({
+        type: 'POST',
+        url: 'api/format/clangformat',
+        dataType: 'json',  // Expected
+        contentType: 'application/json',  // Sent
+        data: JSON.stringify({
+            source: previousSource,
+            base: this.settings.formatBase
+        }),
+        success: _.bind(function (result) {
+            if (result.exit === 0) {
+                if (this.doesMatchEditor(previousSource)) {
+                    this.setSource(result.answer);
+                    this.numberUsedLines();
+                    this.editor.setPosition(currentPosition);
+                } else {
+                    this.confirmOverwrite(_.bind(function () {
+                        this.setSource(result.answer);
+                        this.numberUsedLines();
+                        this.editor.setPosition(currentPosition);
+                    }, this), null);
+                }
+            } else {
+                // Ops, the formatter itself failed!
+                this.alertSystem.notify("We encountered an error formatting your code: " + result.answer, {
+                    group: "formatting",
+                    alertClass: "notification-error"
+                });
+            }
+        }, this),
+        error: _.bind(function (xhr, e_status, error) {
+            // Hopefully we have not exploded!
+            if (xhr.responseText) {
+                try {
+                    var res = JSON.parse(xhr.responseText);
+                    error = res.answer || error;
+                } catch (e) {
+                    error = error || "Unknown error";
+                }
+            }
+            this.alertSystem.notify("We ran into some issues while processing your request: " + error, {
+                group: "formatting",
+                alertClass: "notification-error"
+            });
+        }, this),
+        cache: true
     });
 };
 
