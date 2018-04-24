@@ -270,7 +270,7 @@ Compiler.prototype.undefer = function () {
     if (this.needsCompile) this.compile();
 };
 
-Compiler.prototype.updateAndCalcTopBarHeight = function() {
+Compiler.prototype.updateAndCalcTopBarHeight = function () {
     var width = this.domRoot.width();
     if (width === this.cachedTopBarHeightAtWidth) {
         return this.cachedTopBarHeight;
