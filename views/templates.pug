@@ -75,12 +75,14 @@
       .btn-group.btn-group-sm
         button.btn.btn-godbolt.btn-sm.show-libs.dropdown-toggle
           span.glyphicon.glyphicon-book(title="Include libs")
-          | &nbsp;Libraries#[b.caret]
+          span.hideable &nbsp;Libraries
+          | #[b.caret]
       if !embedded
         .btn-group.btn-group-sm.dropdown
           button.btn.btn-godbolt.btn-sm.dropdown-toggle.add-pane(type="button" title="Add a new pane" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
             span.glyphicon.glyphicon-plus
-            | &nbsp;Add new...#[b.caret]
+            span.hideable &nbsp;Add new...
+            | #[b.caret]
           div.dropdown-menu.pane-dropdown(aria-labelledby="add-pane")
             button.btn.btn-godbolt.btn-sm.add-compiler(title="Clone this compiler window (click or drag)")
               span.glyphicon.glyphicon-new-window
