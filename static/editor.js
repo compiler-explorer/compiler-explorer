@@ -374,7 +374,7 @@ Editor.prototype.initEditorActions = function () {
     });
 };
 
-Editor.prototype.isSameSource = function (otherSource) {
+Editor.prototype.doesMatchEditor = function (otherSource) {
     return otherSource === this.getSource();
 };
 
@@ -398,7 +398,7 @@ Editor.prototype.formatCurrentText = function () {
         }),
         success: _.bind(function (result) {
             if (result.exit === 0) {
-                if (this.isSameSource(previousSource)) {
+                if (this.doesMatchEditor(previousSource)) {
                     this.setSource(result.answer);
                     this.numberUsedLines();
                     this.editor.setPosition(currentPosition);
