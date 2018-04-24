@@ -271,7 +271,19 @@ Compiler.prototype.undefer = function () {
 // Issue manifests if you make a window where one compiler is small enough that the buttons spill onto two lines:
 // reload the page and the bottom-bar is off the bottom until you scroll a tiny bit.
 Compiler.prototype.resize = function () {
-    var topBarHeight = this.topBar.outerHeight(true);
+    // If we save vertical space by hiding stuff that's OK to hide
+    // when thin, then hide that stuff.
+    var hideable = this.domRoot.find('.hideable');
+    hideable.show();
+    var topBarHeightMax = this.topBar.outerHeight(true);
+    hideable.hide();
+    var topBarHeightMin = this.topBar.outerHeight(true);
+    var topBarHeight = topBarHeightMin;
+    if (topBarHeightMin === topBarHeightMax) {
+        hideable.show();
+        topBarHeight = topBarHeightMax;
+    }
+
     var bottomBarHeight = this.bottomBar.outerHeight(true);
     this.outputEditor.layout({
         width: this.domRoot.width(),
