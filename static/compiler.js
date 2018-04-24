@@ -386,8 +386,8 @@ Compiler.prototype.getEffectiveFilters = function () {
         delete filters.execute;
     }
     var disabledFilters = this.compiler.disabledFilters;
-    disabledFilters.forEach(function (filter) {
-        if (filters[filter] && disabledFilters.includes(filter)) {
+    _.each(disabledFilters, function (filter) {
+        if (filters[filter]) {
             delete filters[filter];
         }
     });
@@ -842,13 +842,13 @@ Compiler.prototype.updateButtons = function () {
     var noBinaryFiltersDisabled = !!filters.binary && !this.compiler.supportsFiltersInBinary;
     this.noBinaryFiltersButtons.prop('disabled', noBinaryFiltersDisabled);
 
-    this.filterLabelsButton.prop('disabled', this.compiler.disabledFilters.includes('labels'));
+    this.filterLabelsButton.prop('disabled', this.compiler.disabledFilters.indexOf('labels') !== -1);
     formatFilterTitle(this.filterLabelsButton, this.filterLabelsTitle);
-    this.filterDirectivesButton.prop('disabled', this.compiler.disabledFilters.includes('directives'));
+    this.filterDirectivesButton.prop('disabled', this.compiler.disabledFilters.indexOf('directives') !== -1);
     formatFilterTitle(this.filterDirectivesButton, this.filterDirectivesTitle);
-    this.filterCommentsButton.prop('disabled', this.compiler.disabledFilters.includes('commentOnly'));
+    this.filterCommentsButton.prop('disabled', this.compiler.disabledFilters.indexOf('commentOnly') !== -1);
     formatFilterTitle(this.filterCommentsButton, this.filterCommentsTitle);
-    this.filterTrimButton.prop('disabled', this.compiler.disabledFilters.includes('trim'));
+    this.filterTrimButton.prop('disabled', this.compiler.disabledFilters.indexOf('trim') !== -1);
     formatFilterTitle(this.filterTrimButton, this.filterTrimTitle);
 
     // If its already open, we should turn it off.
