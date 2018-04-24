@@ -378,10 +378,10 @@ Editor.prototype.isSameSource = function (otherSource) {
     return otherSource === this.getSource();
 };
 
-Editor.prototype.confirmOverwrite = function (newSource, yes, no) {
+Editor.prototype.confirmOverwrite = function (yes) {
     this.alertSystem.ask("Changes were made to the code",
         "Changes were made to the code while it was being processed. Overwrite changes?",
-        {yes: yes, no: no});
+        {yes: yes, no: null});
 };
 
 Editor.prototype.formatCurrentText = function () {
@@ -403,7 +403,7 @@ Editor.prototype.formatCurrentText = function () {
                     this.numberUsedLines();
                     this.editor.setPosition(currentPosition);
                 } else {
-                    this.confirmOverwrite(result.answer, _.bind(function () {
+                    this.confirmOverwrite(_.bind(function () {
                         this.setSource(result.answer);
                         this.numberUsedLines();
                         this.editor.setPosition(currentPosition);
