@@ -94,6 +94,7 @@ function Compiler(hub, container, state) {
     this.decorations = {};
     this.prevDecorations = [];
     this.alertSystem = new Alert();
+    this.alertSystem.prefixMessage = "Compiler #" + this.id + ": ";
     this.cachedTopBarHeight = null;
     this.cachedTopBarHeightAtWidth = null;
 

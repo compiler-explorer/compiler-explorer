@@ -29,6 +29,7 @@ var $ = require('jquery');
 function Alert() {
     this.yesHandler = null;
     this.noHandler = null;
+    this.prefixMessage = "";
     var yesNo = $('#yes-no');
     yesNo.find('button.yes').click(_.bind(function () {
         if (this.yesHandler) this.yesHandler();
@@ -74,7 +75,7 @@ Alert.prototype.notify = function (body, options) {
         '<button type="button" class="close" style="float: left;margin-right: 5px;" data-dismiss="alert">' +
             '&times;' +
         '</button>' +
-        '<span id="msg">' + body + '</span>' +
+        '<span id="msg">' + this.prefixMessage + body + '</span>' +
         '</div>');
     if (!options) options = {};
     // Set defaults

@@ -42,7 +42,8 @@ function setLocalFile(name, file) {
 
 function LoadSave() {
     this.modal = $('#load-save');
-    this.alert = new Alert();
+    this.alertSystem = new Alert();
+    this.alertSystem.prefixMessage = "Load-Saver: ";
     this.onLoad = _.identity;
     this.editorText = '';
     this.extension = '.txt';
@@ -138,7 +139,7 @@ LoadSave.prototype.run = function (onLoad, editorText, currentLanguage) {
 LoadSave.prototype.onSaveToBrowserStorage = function () {
     var name = this.modal.find('.save-name').val();
     if (!name) {
-        this.alert.alert("Save name", "Invalid save name");
+        this.alertSystem.alert("Save name", "Invalid save name");
         return;
     }
     name += " (" + this.currentLanguage.name + ")";
@@ -147,7 +148,7 @@ LoadSave.prototype.onSaveToBrowserStorage = function () {
     }, this);
     if (getLocalFiles()[name] !== undefined) {
         this.modal.modal('hide');
-        this.alert.ask(
+        this.alertSystem.ask(
             "Replace current?",
             "Do you want to replace the existing saved file '" + name + "'?",
             {yes: done});
@@ -164,7 +165,7 @@ LoadSave.prototype.onSaveToFile = function () {
             {type: "text/plain;charset=utf-8"}),
         "Compiler Explorer Code" + this.extension);
     } catch (e) {
-        this.alert.notify('Error while saving your code. Use the clipboard instead.', {
+        this.alertSystem.notify('Error while saving your code. Use the clipboard instead.', {
             group: "savelocalerror",
             alertClass: "notification-error",
             dismissTime: 5000

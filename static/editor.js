@@ -68,6 +68,7 @@ function Editor(hub, state, container) {
 
     this.editorSourceByLang = {};
     this.alertSystem = new Alert();
+    this.alertSystem.prefixMessage = "Editor #" + this.id + ": ";
 
     this.langKeys = _.keys(languages);
     this.initLanguage(state);
@@ -424,9 +425,10 @@ Editor.prototype.formatCurrentText = function () {
                     var res = JSON.parse(xhr.responseText);
                     error = res.answer || error;
                 } catch (e) {
-                    error = error || "Unknown error";
+                    // continue regardless of error
                 }
             }
+            error = error || "Unknown error";
             this.alertSystem.notify("We ran into some issues while processing your request: " + error, {
                 group: "formatting",
                 alertClass: "notification-error"
