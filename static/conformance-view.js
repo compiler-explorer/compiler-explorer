@@ -27,6 +27,7 @@
 var options = require('options');
 var _ = require('underscore');
 var $ = require('jquery');
+var Promise = require('es6-promise').Promise;
 
 require('selectize');
 
@@ -37,10 +38,11 @@ function Conformance(hub, container, state) {
     this.domRoot = container.getElement();
     this.domRoot.html($('#conformance').html());
     this.editorId = state.editorid;
-    this.nextSelectorId = 0;
     this.maxCompilations = options.cvCompilerCountMax || 6;
     this.langId = state.langId || _.keys(options.languages)[0];
     this.source = state.source || "";
+    this.sourceNeedsExpanding = true;
+    this.expandedSource = null;
 
     this.status = {
         allowCompile: false,
@@ -50,15 +52,7 @@ function Conformance(hub, container, state) {
 
     this.initButtons();
     this.initCallbacks();
-
-    if (state.compilers) {
-        _.each(state.compilers, _.bind(function (config) {
-            config.cv = this.nextSelectorId;
-            this.nextSelectorId++;
-            this.addCompilerSelector(config);
-        }, this));
-    }
-
+    this.initFromState(state);
     this.handleToolbarUI();
 }
 
@@ -80,15 +74,12 @@ Conformance.prototype.initCallbacks = function () {
         this.eventHub.emit("conformanceViewOpen", this.editorId);
     }, this);
 
-    this.eventHub.on('resize', this.resize, this);
     this.container.on('resize', this.resize, this);
+    this.container.on('shown', this.resize, this);
+    this.eventHub.on('resize', this.resize, this);
     this.eventHub.on('editorChange', this.onEditorChange, this);
     this.eventHub.on('editorClose', this.onEditorClose, this);
     this.eventHub.on('languageChange', this.onLanguageChange, this);
-    this.container.on('shown', this.resize, this);
-
-    this.eventHub.on('editorChange', this.onEditorChange, this);
-    this.eventHub.on('editorClose', this.onEditorClose, this);
 
     this.addCompilerButton.on('click', _.bind(function () {
         this.addCompilerSelector();
@@ -102,88 +93,105 @@ Conformance.prototype.setTitle = function (compilerCount) {
     ));
 };
 
+Conformance.prototype.getGroupsInUse = function () {
+    var currentLangCompilers = _.map(this.compilerService.getCompilersForLang(this.langId), _.identity);
+    return _.map(_.uniq(currentLangCompilers, false, function (compiler) {
+        return compiler.group;
+    }), function (compiler) {
+        return {value: compiler.group, label: compiler.groupName || compiler.group};
+    });
+};
 
 Conformance.prototype.addCompilerSelector = function (config) {
     if (!config) {
         config = {
-            // Code we have
-            cv: this.nextSelectorId,
             // Compiler id which is being used
             compilerId: "",
             // Options which are in use
             options: ""
         };
-        this.nextSelectorId++;
     }
-
-    config.cv = Number(config.cv);
 
     var newEntry = this.selectorTemplate.clone();
 
-    newEntry.attr("data-cv", config.cv);
-
     var onOptionsChange = _.debounce(_.bind(function () {
         this.saveState();
-        this.compileAll();
+        this.compileChild(newEntry);
     }, this), 800);
 
     newEntry.find('.options')
-        .attr("data-cv", config.cv)
         .val(config.options)
-        .on("click", onOptionsChange)
+        .on("change", onOptionsChange)
         .on("keyup", onOptionsChange);
 
     newEntry.find('.close')
-        .attr("data-cv", config.cv)
         .on("click", _.bind(function () {
-            this.removeCompilerSelector(config.cv);
+            this.removeCompilerSelector(newEntry);
         }, this));
 
     this.selectorList.append(newEntry);
 
-    var status = newEntry.find('.status').attr("data-cv", config.cv);
+    var status = newEntry.find('.status');
+    var prependOptions = newEntry.find('.prepend-options');
     var langId = this.langId;
     var isVisible = function (compiler) {
         return compiler.lang === langId;
     };
 
+    var onCompilerChange = _.bind(function (compilerId) {
+        // Hide the results icon when a new compiler is selected
+        this.handleStatusIcon(status, {code: 0, text: ""});
+        var compiler = this.compilerService.findCompiler(langId, compilerId);
+        if (compiler) {
+            prependOptions.prop('title', compiler.options);
+            prependOptions.toggle(!!compiler.options);
+        } else {
+            prependOptions.hide();
+        }
+    }, this);
+
     newEntry.find('.compiler-picker')
-        .attr("data-cv", config.cv)
         .selectize({
             sortField: 'name',
             valueField: 'id',
             labelField: 'name',
             searchField: ['name'],
+            optgroupField: 'group',
+            optgroups: this.getGroupsInUse(),
             options: _.filter(options.compilers, isVisible),
             items: config.compilerId ? [config.compilerId] : []
         })
-        .on('change', _.bind(function () {
-            // Hide the results button when a new compiler is selected
-            this.handleStatusIcon(status, {code: 0, text: ""});
-            // We could narrow the compilation to only this compiler!
-            this.compileAll();
-            // We're not saving state here. It's done after compiling
+        .on('change', _.bind(function (e) {
+            onCompilerChange($(e.target).val());
+            this.compileChild(newEntry);
         }, this));
-    this.handleStatusIcon(status, {code: 0, text: ""});
+    onCompilerChange(config.compilerId);
     this.handleToolbarUI();
     this.saveState();
 };
 
-Conformance.prototype.removeCompilerSelector = function (cv) {
-    _.each(this.selectorList.children(), function (row) {
-        var child = $(row);
-        if (child.attr("data-cv") === cv) {
-            child.remove();
-        }
-    }, this);
+Conformance.prototype.removeCompilerSelector = function (element) {
+    if (element) element.remove();
     this.handleToolbarUI();
     this.saveState();
+};
+
+Conformance.prototype.expandSource = function () {
+    if (this.sourceNeedsExpanding || !this.expandedSource) {
+        return this.compilerService.expand(this.source).then(_.bind(function (expandedSource) {
+            this.expandedSource = expandedSource;
+            this.sourceNeedsExpanding = false;
+            return expandedSource;
+        }, this));
+    }
+    return Promise.resolve(this.expandedSource);
 };
 
 Conformance.prototype.onEditorChange = function (editorId, newSource, langId) {
     if (editorId === this.editorId) {
         this.langId = langId;
         this.source = newSource;
+        this.sourceNeedsExpanding = true;
         this.compileAll();
     }
 };
@@ -197,7 +205,7 @@ Conformance.prototype.onEditorClose = function (editorId) {
     }
 };
 
-Conformance.prototype.onCompileResponse = function (cv, result) {
+Conformance.prototype.onCompileResponse = function (child, result) {
     var allText = _.pluck((result.stdout || []).concat(result.stderr || []), 'text').join("\n");
     var failed = result.code !== 0;
     var warns = !failed && !!allText;
@@ -205,48 +213,48 @@ Conformance.prototype.onCompileResponse = function (cv, result) {
         text: allText.replace(/\x1b\\[[0-9;]*m/, ''),
         code: failed ? 3 : (warns ? 2 : 1)
     };
-    this.handleStatusIcon(this.selectorList.find('[data-cv="' + cv + '"] .status'), status);
+    this.handleStatusIcon(child.find('.status'), status);
     this.saveState();
 };
 
-Conformance.prototype.compileAll = function () {
-    if (!this.source) return;
+Conformance.prototype.compileChild = function (child) {
     // Hide previous status icons
-    this.selectorList.find('.status').css("visibility", "hidden");
-    this.compilerService.expand(this.source).then(_.bind(function (expanded) {
-        var compileCount = 0;
-        _.each(this.selectorList.children(), _.bind(function (child) {
-            var picker = $(child).find('.compiler-picker');
-            // We make sure we are not over our limit
-            if (picker && compileCount < this.maxCompilations) {
-                compileCount++;
-                if (picker.val()) {
-                    var cv = Number(picker.attr("data-cv"));
-                    var request = {
-                        source: expanded || "",
-                        compiler: picker.val(),
-                        options: {
-                            userArguments: $(child).find(".options[data-cv='" + cv + "']").val(),
-                            filters: {},
-                            compilerOptions: {produceAst: false, produceOptInfo: false}
-                        }
-                    };
-                    // This error function ensures that the user will know we had a problem (As we don't save asm)
-                    this.compilerService.submit(request)
-                        .then(_.bind(function (x) {
-                            this.onCompileResponse(cv, x.result);
-                        }, this))
-                        .catch(_.bind(function (x) {
-                            this.onCompileResponse(cv, {
-                                asm: "",
-                                code: -1,
-                                stdout: "",
-                                stderr: x.error
-                            });
-                        }, this));
-                }
+    var picker = child.find('.compiler-picker');
+
+    if (!picker || !picker.val()) return;
+    this.handleStatusIcon(child.find('.status'), {
+        code: 4, // Compiling code
+        text: "Compiling"
+    });
+    this.expandSource().then(_.bind(function (expandedSource) {
+        var request = {
+            source: expandedSource,
+            compiler: picker.val(),
+            options: {
+                userArguments: child.find(".options").val(),
+                filters: {},
+                compilerOptions: {produceAst: false, produceOptInfo: false}
             }
-        }, this));
+        };
+        // This error function ensures that the user will know we had a problem (As we don't save asm)
+        this.compilerService.submit(request)
+            .then(_.bind(function (x) {
+                this.onCompileResponse(child, x.result);
+            }, this))
+            .catch(_.bind(function (x) {
+                this.onCompileResponse(child, {
+                    asm: "",
+                    code: -1,
+                    stdout: "",
+                    stderr: x.error
+                });
+            }, this));
+    }, this));
+};
+
+Conformance.prototype.compileAll = function () {
+    _.each(this.selectorList.children(), _.bind(function (child) {
+        this.compileChild($(child));
     }, this));
 };
 
@@ -262,13 +270,8 @@ Conformance.prototype.handleToolbarUI = function () {
 Conformance.prototype.handleStatusIcon = function (element, status) {
     if (!element) return;
 
-    function setGlyphClass(element) {
-        element.toggleClass('glyphicon-remove-sign', status.code === 3);
-        element.toggleClass('glyphicon-info-sign', status.code === 2);
-        element.toggleClass('glyphicon-ok-sign', status.code !== 3 && status.code !== 2);
-    }
-
     function ariaLabel(code) {
+        if (code === 4) return "Compiling";
         if (code === 3) return "Compilation failed";
         if (code === 2) return "Compiled with warnings";
         return "Compiled without warnings";
@@ -282,12 +285,16 @@ Conformance.prototype.handleStatusIcon = function (element, status) {
 
     element
         .toggleClass('status', true)
-        .css("visibility", status.code === 0 ? "hidden" : "visible")
         .css("color", color(status.code))
+        .css("visibility", status.code === 0 ? "hidden" : "visible")
         .prop("title", status.text.replace(/\x1b\[[0-9;]*m(.\[K)?/g, ''))
         .prop("aria-label", ariaLabel(status.code))
         .prop("data-status", status.code);
-    setGlyphClass(element);
+
+    element.toggleClass('glyphicon-tasks', status.code === 4);
+    element.toggleClass('glyphicon-remove-sign', status.code === 3);
+    element.toggleClass('glyphicon-info-sign', status.code === 2);
+    element.toggleClass('glyphicon-ok-sign', status.code === 1);
 };
 
 Conformance.prototype.currentState = function () {
@@ -297,13 +304,12 @@ Conformance.prototype.currentState = function () {
         compilers: []
     };
     _.each(this.selectorList.children(), _.bind(function (child) {
+        child = $(child);
         state.compilers.push({
-            // Code we have
-            cv: $(child).attr("data-cv"),
             // Compiler which is being used
-            compilerId: $(child).find('.compiler-picker').val(),
+            compilerId: child.find('.compiler-picker').val() || "",
             // Options which are in use
-            options: $(child).find(".options").val()
+            options: child.find(".options").val() || ""
         });
     }, this));
     return state;
@@ -324,7 +330,6 @@ Conformance.prototype.onLanguageChange = function (editorId, newLangId) {
 
         this.langId = newLangId;
         this.selectorList.children().remove();
-        this.nextSelectorId = 0;
         if (this.stateByLang[newLangId]) {
             this.initFromState(this.stateByLang[newLangId]);
         }
@@ -340,11 +345,7 @@ Conformance.prototype.close = function () {
 
 Conformance.prototype.initFromState = function (state) {
     if (state.compilers) {
-        _.each(state.compilers, _.bind(function (config) {
-            config.cv = this.nextSelectorId;
-            this.nextSelectorId++;
-            this.addCompilerSelector(config);
-        }, this));
+        _.each(state.compilers, _.bind(this.addCompilerSelector, this));
     }
 };
 module.exports = {

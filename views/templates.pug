@@ -176,6 +176,7 @@
       .btn-group.btn-group-sm
         button.btn.btn-godbolt.btn-sm.add-compiler(title="Add compiler")
           span.glyphicon.glyphicon-plus-sign
+          | &nbsp;Add new compiler
     .conformance-wrapper
       table.compiler-list
 
@@ -188,6 +189,8 @@
           select.compiler-picker(placeholder="Select a compiler...")
         td
           input.options.form-control(type="text" size="256" placeholder="Compiler options..." autocorrect="off" autocapitalize="off" spellcheck="false")
+        td
+          span.glyphicon.glyphicon-info-sign.prepend-options
         td
           button.close(aria-label="Close")
             span(aria-hidden="true")
