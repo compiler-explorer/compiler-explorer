@@ -278,6 +278,7 @@ Conformance.prototype.handleStatusIcon = function (element, status) {
     }
 
     function color(code) {
+        if (code === 4) return "black";
         if (code === 3) return "red";
         if (code === 2) return "yellow";
         return "green";
@@ -286,7 +287,7 @@ Conformance.prototype.handleStatusIcon = function (element, status) {
     element
         .toggleClass('status', true)
         .css("color", color(status.code))
-        .css("visibility", status.code === 0 ? "hidden" : "visible")
+        .toggle(status.code !== 0)
         .prop("title", status.text.replace(/\x1b\[[0-9;]*m(.\[K)?/g, ''))
         .prop("aria-label", ariaLabel(status.code))
         .prop("data-status", status.code);
