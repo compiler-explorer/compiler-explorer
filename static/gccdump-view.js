@@ -189,15 +189,14 @@ GccDump.prototype.updatePass = function (filters, selectize, gccDumpOutput) {
 };
 
 GccDump.prototype.onCompileResult = function (id, compiler, result) {
-    if (this.state._compilerid !== id) return;
+    if (this.state._compilerid !== id || !compiler) return;
 
-    if (result.hasGccDumpOutput && result.gccDumpOutput.syntaxHighlight) {
+    if (result.gccDumpOutput && result.gccDumpOutput.syntaxHighlight) {
         monaco.editor.setModelLanguage(this.gccDumpEditor.getModel(), 'gccdump-rtl-gimple');
     } else {
         monaco.editor.setModelLanguage(this.gccDumpEditor.getModel(), 'plaintext');
     }
-
-    if (result.hasGccDumpOutput) {
+    if (compiler.supportsGccDump && result.gccDumpOutput) {
         var currOutput = result.gccDumpOutput.currentPassOutput;
 
         // if result contains empty selected pass, probably means
@@ -218,9 +217,14 @@ GccDump.prototype.onCompileResult = function (id, compiler, result) {
         this.selectize.clear(true);
         this.state.selectedPass = '';
         this.updatePass(this.filters, this.selectize, false);
-        this.showGccDumpResults('<Tree/RTL output is not supported for this compiler (GCC only)>');
         this.uiIsReady = false;
         this.onUiNotReady();
+    }
+
+    if (!compiler.supportsGccDump) {
+        this.showGccDumpResults('<Tree/RTL output is not supported for this compiler (GCC only)>');
+    } else {
+        this.showGccDumpResults('<Tree/RTL output is empty>');
     }
 
     this.saveState();
