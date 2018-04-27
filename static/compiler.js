@@ -458,7 +458,8 @@ Compiler.prototype.sendCompile = function (request) {
         })
         .catch(function (x) {
             clearTimeout(progress);
-            onCompilerResponse(request, errorResult('<Remote compilation failed: ' + x.error + '>'), false);
+            onCompilerResponse(request,
+                errorResult('<Remote compilation failed: ' + x.error || "Unknown error" + '>'), false);
         });
 };
 

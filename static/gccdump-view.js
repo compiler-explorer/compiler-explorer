@@ -219,14 +219,12 @@ GccDump.prototype.onCompileResult = function (id, compiler, result) {
         this.updatePass(this.filters, this.selectize, false);
         this.uiIsReady = false;
         this.onUiNotReady();
+        if (!compiler.supportsGccDump) {
+            this.showGccDumpResults('<Tree/RTL output is not supported for this compiler (GCC only)>');
+        } else {
+            this.showGccDumpResults('<Tree/RTL output is empty>');
+        }
     }
-
-    if (!compiler.supportsGccDump) {
-        this.showGccDumpResults('<Tree/RTL output is not supported for this compiler (GCC only)>');
-    } else {
-        this.showGccDumpResults('<Tree/RTL output is empty>');
-    }
-
     this.saveState();
 };
 
