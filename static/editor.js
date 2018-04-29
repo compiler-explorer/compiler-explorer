@@ -284,6 +284,8 @@ Editor.prototype.initButtons = function (state) {
             this.container.layoutManager.root.contentItems[0];
         insertPoint.addChild(getConformanceConfig);
     }, this));
+
+    this.hideable = this.domRoot.find('.hideable');
 };
 
 Editor.prototype.changeLanguage = function (newLang) {
@@ -439,8 +441,33 @@ Editor.prototype.formatCurrentText = function () {
 };
 
 Editor.prototype.resize = function () {
-    var topBarHeight = this.topBar.outerHeight(true) || 0;
-    this.editor.layout({width: this.domRoot.width(), height: this.domRoot.height() - topBarHeight});
+    var topBarHeight = this.updateAndCalcTopBarHeight();
+    //var topBarHeight = this.topBar.outerHeight(true) || 0;
+    this.editor.layout({
+        width: this.domRoot.width(),
+        height: this.domRoot.height() - topBarHeight
+    });
+};
+
+Editor.prototype.updateAndCalcTopBarHeight = function () {
+    var width = this.domRoot.width();
+    if (width === this.cachedTopBarHeightAtWidth) {
+        return this.cachedTopBarHeight;
+    }
+    // If we save vertical space by hiding stuff that's OK to hide
+    // when thin, then hide that stuff.
+    this.hideable.show();
+    var topBarHeightMax = this.topBar.outerHeight(true);
+    this.hideable.hide();
+    var topBarHeightMin = this.topBar.outerHeight(true);
+    var topBarHeight = topBarHeightMin;
+    if (topBarHeightMin === topBarHeightMax) {
+        this.hideable.show();
+        topBarHeight = topBarHeightMax;
+    }
+    this.cachedTopBarHeight = topBarHeight;
+    this.cachedTopBarHeightAtWidth = width;
+    return topBarHeight;
 };
 
 Editor.prototype.onSettingsChange = function (newSettings) {

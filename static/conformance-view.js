@@ -61,6 +61,8 @@ Conformance.prototype.initButtons = function () {
     this.addCompilerButton = this.domRoot.find('.add-compiler');
     this.selectorTemplate = $('#compiler-selector').find('.compiler-row');
     this.topBar = this.domRoot.find('.top-bar');
+
+    this.hideable = this.domRoot.find('.hideable');
 };
 
 Conformance.prototype.initCallbacks = function () {
@@ -321,7 +323,12 @@ Conformance.prototype.saveState = function () {
 };
 
 Conformance.prototype.resize = function () {
+    this.updateHideables();
     this.selectorList.css("height", this.domRoot.height() - this.topBar.outerHeight(true));
+};
+
+Conformance.prototype.updateHideables = function () {
+    this.hideable.toggle(this.domRoot.width() > this.addCompilerButton.width());
 };
 
 Conformance.prototype.onLanguageChange = function (editorId, newLangId) {
