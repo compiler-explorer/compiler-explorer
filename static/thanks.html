@@ -1,8 +1,71 @@
 <!DOCTYPE html>
 <html lang="en">
+<style>
+    .thanks-container {
+        padding: 2px 2px 6px 2px;
+        margin: 0;
+        list-style: none;
+        display: flex;
+        align-items: center;
+        flex-flow: row wrap;
+        justify-content: space-around;
+        max-height: 500px;
+        overflow-y: auto;
+        -webkit-touch-callout: none; /* iOS Safari */
+        -webkit-user-select: none; /* Safari */
+        -khtml-user-select: none; /* Konqueror HTML */
+        -moz-user-select: none; /* Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+        user-select: none; /* Non-prefixed version, currently supported by Chrome and Opera */
+    }
+
+    .thanks-container > li {
+        border: 2px solid #1b330e;
+        box-shadow: 5px 5px 5px #004400;
+        border-radius: 5px;
+        background: #55a625; /* Old browsers */
+        background: -moz-linear-gradient(-45deg, #55a625 0%, #52bf00 100%); /* FF3.6-15 */
+        background: -webkit-linear-gradient(-45deg, #55a625 0%, #52bf00 100%); /* Chrome10-25,Safari5.1-6 */
+        background: linear-gradient(135deg, #55a625 0%, #52bf00 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+        padding: 4px;
+        min-width: 100px;
+        margin-top: 10px;
+        margin-right: 10px;
+        text-align: center;
+        font-size: 1.5em;
+    }
+
+    .thanks-container > li:hover {
+        border: 2px solid #3b6f1e;
+        background: #02c500; /* Old browsers */
+        background: -moz-linear-gradient(-45deg, #02c500 0%, #52bf00 100%); /* FF3.6-15 */
+        background: -webkit-linear-gradient(-45deg, #02c500 0%, #52bf00 100%); /* Chrome10-25,Safari5.1-6 */
+        background: linear-gradient(135deg, #02c500 0%, #52bf00 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+    }
+
+    .thanks-container.legend {
+        font-size: 2em;
+        font-weight: bold;
+    }
+
+    .thanks-container.legend > li {
+        height: 70px;
+    }
+</style>
 <body>
-<ul>
+<h3>Legendary <a href="https://www.patreon.com/mattgodbolt">Patreon</a> Supporters</h3>
+<p>These amazing people have pledged at the highest level of support. Huge thanks to these fine folks:</p>
+<ul class="thanks-container legend">
+    <li>Ólafur Waage</li>
+</ul>
+<h3><a href="https://www.patreon.com/mattgodbolt">Patreon</a> Supporters</h3>
+<p>These amazing people have pledged their support to help the development of Compiler Explorer. Thanks to each and
+    every one of you!</p>
+<ul class="thanks-container">
     <li>Karl</li>
+    <li>Gareth Lloyd</li>
+    <li>Arne Mertz</li>
+    <li>Peter Bindels</li>
     <li>Slobodan Milnovic</li>
     <li>Björn Fahller</li>
     <li>Michael Pearce</li>
@@ -85,10 +148,8 @@
     <li>Ian Carroll</li>
     <li>Jonathan Anderson</li>
     <li>Vimarsh Raina</li>
-    <li>Arne Mertz</li>
     <li>Gabriel Garcia</li>
     <li>Malcolm Rowe</li>
-    <li>Peter Bindels</li>
     <li>Jon Raymond</li>
     <li>Bene</li>
     <li>Billy</li>
