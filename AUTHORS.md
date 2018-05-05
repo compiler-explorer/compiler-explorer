@@ -4,3 +4,4 @@
 - [Patrick Quist](https://github.com/partouf)
 - [Chedy Najjar](https://github.com/CppChedy)
 - [Simon Brand](https://blog.tartanllama.xyz/)
+- [Filipe Cabecinhas](https://github.com/filcab)
