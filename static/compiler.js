@@ -385,6 +385,12 @@ Compiler.prototype.getEffectiveFilters = function () {
     if (filters.execute && !this.compiler.supportsExecute) {
         delete filters.execute;
     }
+    var disabledFilters = this.compiler.disabledFilters;
+    _.each(disabledFilters, function (filter) {
+        if (filters[filter]) {
+            delete filters[filter];
+        }
+    });
     return filters;
 };
 
@@ -835,10 +841,16 @@ Compiler.prototype.updateButtons = function () {
     // Disable any of the options which don't make sense in binary mode.
     var noBinaryFiltersDisabled = !!filters.binary && !this.compiler.supportsFiltersInBinary;
     this.noBinaryFiltersButtons.prop('disabled', noBinaryFiltersDisabled);
+
+    this.filterLabelsButton.prop('disabled', this.compiler.disabledFilters.indexOf('labels') !== -1);
     formatFilterTitle(this.filterLabelsButton, this.filterLabelsTitle);
+    this.filterDirectivesButton.prop('disabled', this.compiler.disabledFilters.indexOf('directives') !== -1);
     formatFilterTitle(this.filterDirectivesButton, this.filterDirectivesTitle);
+    this.filterCommentsButton.prop('disabled', this.compiler.disabledFilters.indexOf('commentOnly') !== -1);
     formatFilterTitle(this.filterCommentsButton, this.filterCommentsTitle);
+    this.filterTrimButton.prop('disabled', this.compiler.disabledFilters.indexOf('trim') !== -1);
     formatFilterTitle(this.filterTrimButton, this.filterTrimTitle);
+
     // If its already open, we should turn it off.
     // The pane will update with error text
     // Otherwise we just disable the button.
