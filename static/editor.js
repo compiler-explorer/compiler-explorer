@@ -102,8 +102,11 @@ function Editor(hub, state, container) {
 
     var startFolded = /^[/*#;]+\s*setup.*/;
     if (state.source && state.source.match(startFolded)) {
-        var foldAction = this.editor.getAction('editor.fold');
-        foldAction.run();
+        // With reference to https://github.com/Microsoft/monaco-editor/issues/115
+        // I tried that and it didn't work, but a delay of 500 seems to "be enough".
+        setTimeout(_.bind(function () {
+            this.editor.getAction("editor.fold").run();
+        }, this), 500);
     }
 
     this.initEditorActions();
@@ -260,7 +263,7 @@ Editor.prototype.initButtons = function (state) {
         return Components.getCompiler(this.id, this.currentLanguage.id);
     }, this);
 
-    var  getConformanceConfig = _.bind(function () {
+    var getConformanceConfig = _.bind(function () {
         return Components.getConformanceView(this.id, this.getSource());
     }, this);
 
