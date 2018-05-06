@@ -50,8 +50,8 @@ function Themer(eventHub, initialSettings) {
         if (this.currentTheme === theme) return;
         var cssData = require('./themes/' + theme.path + "-theme.css");
         $('#theme').html(cssData.toString());
-        $('#meta-theme').prop('content', theme.color);
-        monaco.editor.setTheme(theme["main-color"]);
+        $('#meta-theme').prop('content', theme["main-color"]);
+        monaco.editor.setTheme(theme.monaco);
         this.eventHub.emit('resize');
         this.currentTheme = theme;
     };
