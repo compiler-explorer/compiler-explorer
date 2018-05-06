@@ -385,8 +385,7 @@ Compiler.prototype.getEffectiveFilters = function () {
     if (filters.execute && !this.compiler.supportsExecute) {
         delete filters.execute;
     }
-    var disabledFilters = this.compiler.disabledFilters;
-    _.each(disabledFilters, function (filter) {
+    _.each(this.compiler.disabledFilters, function (filter) {
         if (filters[filter]) {
             delete filters[filter];
         }
@@ -1084,7 +1083,7 @@ Compiler.prototype.onColours = function (editor, colours, scheme) {
     if (editor === this.sourceEditorId) {
         var asmColours = {};
         _.each(this.assembly, function (x, index) {
-            if (x.source && x.source.file === null) {
+            if (x.source && x.source.file === null && x.source.line > 0) {
                 asmColours[index] = colours[x.source.line - 1];
             }
         });

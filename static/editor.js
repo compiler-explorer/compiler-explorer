@@ -518,7 +518,7 @@ Editor.prototype.numberUsedLines = function () {
         _.each(asm, function (asmLine) {
             // If the line has a source indicator, and the source indicator is null (i.e. the
             // user's input file), then tag it as used.
-            if (asmLine.source && asmLine.source.file === null)
+            if (asmLine.source && asmLine.source.file === null && asmLine.source.line > 0)
                 result[asmLine.source.line - 1] = true;
         });
     });
