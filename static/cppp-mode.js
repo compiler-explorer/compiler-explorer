@@ -60,6 +60,9 @@ function definition() {
     addKeywords(["alignas", "alignof", "and", "and_eq", "asm", "bitand", "bitor", "char16_t", "char32_t", "compl",
         "not", "not_eq", "or", "or_eq", "xor", "xor_eq"]);
 
+    // Keywords for CUDA
+    addKeywords(["__host__", "__global__", "__device__"]);
+
     // #880
     cppp.tokenizer.root[2] = [/\[\s*\[.*]\s*]/, 'annotation'];
 

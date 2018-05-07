@@ -189,7 +189,7 @@ function compilerPropsAT(langs, transform, property, defaultValue) {
 
 const staticMaxAgeSecs = ceProps('staticMaxAgeSecs', 0);
 const maxUploadSize = ceProps('maxUploadSize', '1mb');
-let extraBodyClass = ceProps('extraBodyClass', '');
+const extraBodyClass = ceProps('extraBodyClass', '');
 
 function staticHeaders(res) {
     if (staticMaxAgeSecs) {

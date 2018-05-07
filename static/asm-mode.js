@@ -50,6 +50,8 @@ function definition() {
                 [/^[.a-zA-Z0-9_$?@][^=]*=/, {token: 'type.identifier', next: '@rest'}],
                 // opcode
                 [/[.a-zA-Z_][.a-zA-Z_0-9]*/, {token: 'keyword', next: '@rest'}],
+                // braces and parentheses at the start of the line (e.g. nvcc output)
+                [/[(){}]/, {token: 'operator', next: '@rest'}],
 
                 // whitespace
                 {include: '@whitespace'}
@@ -75,7 +77,7 @@ function definition() {
                 [/#-?\d+/, 'number'],
 
                 // operators
-                [/[-+,*/!:&]/, 'operator'],
+                [/[-+,*/!:&{}()]/, 'operator'],
 
                 // strings
                 [/"([^"\\]|\\.)*$/, 'string.invalid'],  // non-terminated string
