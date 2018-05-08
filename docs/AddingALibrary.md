@@ -83,6 +83,16 @@ libs.rangesv3.versions.trunk.path=/opt/compiler-explorer/libs/rangesv3/trunk/inc
 libs.rangesv3.versions.030.path=/opt/compiler-explorer/libs/rangesv3/0.3.0/include
 ```
 
+## Setting default libraries
+
+The `defaultLibs` key specifies an array of libs/versions which will be enabled by default when the user visits the site.
+The expected format is:
+```
+defaultLibs=libKeyA.version:libKeyB.version:libKeyC.version
+```
+Where `libKey` is the key of the library to be enabled by default, and `version` is the version key to load.
+Note that the site won't complain if invalid key/version pairs are set. Repeating a lib key more than once is supported.
+
 ## Adding a new library locally
 
 It should be pretty straightforward to add a library of your own. Create a `etc/config/c++.local.properties` file and override the
