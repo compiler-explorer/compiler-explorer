@@ -799,22 +799,40 @@ Compiler.prototype.initButtons = function (state) {
     this.initPanerButtons();
 };
 
+Compiler.prototype.markLibraryAsUsed = function (name, version) {
+    if (this.availableLibs[this.currentLangId] &&
+        this.availableLibs[this.currentLangId][name] &&
+        this.availableLibs[this.currentLangId][name].versions[version]) {
+
+        this.availableLibs[this.currentLangId][name].versions[version].used = true;
+    }
+};
+
 Compiler.prototype.initLibraries = function (state) {
     this.availableLibs = {};
     this.updateAvailableLibs();
     _.each(state.libs, _.bind(function (lib) {
-        if (this.availableLibs[this.currentLangId][lib.name] &&
-            this.availableLibs[this.currentLangId][lib.name].versions &&
-            this.availableLibs[this.currentLangId][lib.name].versions[lib.ver]) {
-            this.availableLibs[this.currentLangId][lib.name].versions[lib.ver].used = true;
-        }
+        this.markLibraryAsUsed(lib.name, lib.ver);
     }, this));
 };
 
 Compiler.prototype.updateAvailableLibs = function () {
     if (!this.availableLibs[this.currentLangId]) {
         this.availableLibs[this.currentLangId] = $.extend(true, {}, options.libs[this.currentLangId]);
+        this.initLangDefaultLibs();
     }
+};
+
+Compiler.prototype.initLangDefaultLibs = function () {
+    var defaultLibs = options.defaultLibs[this.currentLangId];
+    _.each(defaultLibs.split(':'), _.bind(function (libPair) {
+        var pairSplits = libPair.split('.');
+        if (pairSplits.length === 2) {
+            var lib = pairSplits[0];
+            var ver = pairSplits[1];
+            this.markLibraryAsUsed(lib, ver);
+        }
+    }, this));
 };
 
 Compiler.prototype.updateButtons = function () {

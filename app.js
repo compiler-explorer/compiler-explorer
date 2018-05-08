@@ -284,6 +284,7 @@ function ClientOptionsHandler(fileSources) {
         defaultSource: ceProps('defaultSource', ''),
         compilers: [],
         libs: libs,
+        defaultLibs: compilerPropsA(languages, 'defaultLibs', ''),
         defaultCompiler: compilerPropsA(languages, 'defaultCompiler', ''),
         compileOptions: compilerPropsA(languages, 'defaultOptions', ''),
         supportsBinary: supportsBinary,
