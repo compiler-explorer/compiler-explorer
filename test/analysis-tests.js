@@ -22,20 +22,20 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-const AnalysisTool = require('../lib/compilers/analysis');
+const LLVMmcaTool = require('../lib/compilers/llvm-mca');
 const CompilationEnvironment = require('../lib/compilation-env');
 require('chai').should();
 
 const props = (key, deflt) => deflt;
 
-describe('Analysis tool definition', () => {
+describe('LLVM-mca tool definition', () => {
   const ce = new CompilationEnvironment(props);
   const info = {
       exe: null,
       remote: true,
       lang: "analysis"
   };
-  const a = new AnalysisTool(info, ce);
+  const a = new LLVMmcaTool(info, ce);
 
   it('should have most filters disabled', () => {
     a.compiler.disabledFilters.should.be.deep.equal(['labels', 'directives', 'commentOnly', 'trim']);
@@ -66,8 +66,7 @@ describe('Analysis tool definition', () => {
         lang: "analysis",
         disabledFilters: 'labels,directives'
     };
-    const a = new AnalysisTool(info, ce);
+    const a = new LLVMmcaTool(info, ce);
     a.compiler.disabledFilters.should.be.deep.equal(['labels', 'directives']);
   });
 });
-
