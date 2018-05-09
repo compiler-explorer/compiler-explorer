@@ -38,6 +38,7 @@ require('./rust-mode');
 require('./ispc-mode');
 require('./haskell-mode');
 require('./pascal-mode');
+require('./cuda-mode');
 require('selectize');
 
 var loadSave = new loadSaveLib.LoadSave();
