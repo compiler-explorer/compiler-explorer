@@ -604,6 +604,8 @@ Compiler.prototype.onCompileResponse = function (request, result, cached) {
     this.eventHub.emit('compileResult', this.id, this.compiler, result, languages[this.currentLangId]);
     this.updateButtons();
 
+    this.prependOptions.prop('title', result.compilationOptions.join(' '));
+
     if (this.nextRequest) {
         var next = this.nextRequest;
         this.nextRequest = null;
