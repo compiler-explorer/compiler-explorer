@@ -27,14 +27,14 @@ const SymbolStore = require('../lib/symbol-store').SymbolStore;
 
 chai.should();
 
-describe('SymbolStore tests', function () {
-    it('Empty', function () {
+describe('SymbolStore', function () {
+    it('should be empty initially', function () {
         const store = new SymbolStore();
         store.listSymbols().length.should.equal(0);
         store.listTranslations().length.should.equal(0);
     });
 
-    it('One item', function () {
+    it('should be able to add an item', function () {
         const store = new SymbolStore();
         store.add("test");
         store.listSymbols().length.should.equal(1);
@@ -47,7 +47,7 @@ describe('SymbolStore tests', function () {
         translations[0][1].should.equal("test");
     });
 
-    it('Duplicate items', function () {
+    it('should not contain duplicate items', function () {
         const store = new SymbolStore();
         store.add("test");
         store.add("test");
@@ -61,7 +61,7 @@ describe('SymbolStore tests', function () {
         translations[0][1].should.equal("test");
     });
 
-    it('Sorted items', function () {
+    it('should return a sorted list', function () {
         const store = new SymbolStore();
         store.add("test123");
         store.add("test123456");
@@ -73,7 +73,7 @@ describe('SymbolStore tests', function () {
         translations[1][0].should.equal("test123");
     });
 
-    it('Add-many', function () {
+    it('should be able to add an array of items', function () {
         const store = new SymbolStore();
         store.addMany(["test123", "test123456", "test123"]);
         store.listSymbols().length.should.equal(2);
@@ -84,7 +84,7 @@ describe('SymbolStore tests', function () {
         translations[1][0].should.equal("test123");
     });
 
-    it('Exclude', function () {
+    it('should be possible to exclude items in another store', function () {
         const store1 = new SymbolStore();
         store1.addMany(["test123", "test123456", "test123"]);
 
@@ -97,7 +97,7 @@ describe('SymbolStore tests', function () {
         translations[0][0].should.equal("test123456");
     });
 
-    it('SoftExclude', function () {
+    it('should be possible to exclude items that partially match', function () {
         const store1 = new SymbolStore();
         store1.addMany(["test123", "test123456", "test123"]);
 
@@ -110,7 +110,7 @@ describe('SymbolStore tests', function () {
         translations[0][0].should.equal("test123456");
     });
     
-    it('Contains', function () {
+    it('should be able to check contents', function () {
         const store = new SymbolStore();
         store.addMany(["test123", "test123456", "test123"]);
 
