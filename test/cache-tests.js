@@ -28,6 +28,8 @@ const InMemoryCache = require('../lib/cache/in-memory');
 const MultiCache = require('../lib/cache/multi');
 const OnDiskCache = require('../lib/cache/on-disk');
 const S3Cache = require('../lib/cache/s3');
+const NullCache = require('../lib/cache/null');
+const FromConfig = require('../lib/cache/from-config');
 const temp = require('temp');
 const fs = require('fs');
 const path = require('path');
@@ -193,7 +195,7 @@ AWS.mock('S3', 'getObject', (params, callback) => {
         error.code = "NoSuchKey";
         callback(error);
     } else {
-        callback(null, {Body:result});
+        callback(null, {Body: result});
     }
 });
 AWS.mock('S3', 'putObject', (params, callback) => {
@@ -205,4 +207,52 @@ describe('S3 tests', () => {
     basicTests(() => new S3Cache('test.bucket', 'cache', 'uk-north-1'));
     // BE VERY CAREFUL - the below can be used with sufficient permissions to test on prod (With mocks off)...
     // basicTests(() => new S3Cache('storage.godbolt.org', 'cache', 'us-east-1'));
+});
+
+describe('Config tests', () => {
+    it('should create null cache on empty config', () => {
+        const cache = FromConfig.create("");
+        cache.constructor.should.eql(NullCache);
+    });
+    it('should throw on bad types', () => {
+        (() => FromConfig.create("InMemory")).should.throw();
+        (() => FromConfig.create("NotAType()")).should.throw();
+    });
+    it('should create in memory caches', () => {
+        const cache = FromConfig.create("InMemory(123)");
+        cache.constructor.should.eql(InMemoryCache);
+        cache.cacheMb.should.equal(123);
+        (() => FromConfig.create("InMemory()")).should.throw();
+        (() => FromConfig.create("InMemory(argh)")).should.throw();
+        (() => FromConfig.create("InMemory(123,yibble)")).should.throw();
+    });
+    it('should create on disk caches', () => {
+        const tempDir = newTempDir();
+        const cache = FromConfig.create(`OnDisk(${tempDir},456)`);
+        cache.constructor.should.eql(OnDiskCache);
+        cache.path.should.equal(tempDir);
+        cache.cacheMb.should.equal(456);
+        (() => FromConfig.create("OnDisk()")).should.throw();
+        (() => FromConfig.create("OnDisk(argh,yibble)")).should.throw();
+        (() => FromConfig.create("OnDisk(/tmp/moo,456,blah)")).should.throw();
+    });
+    it('should create S3 caches', () => {
+        const cache = FromConfig.create(`S3(test.bucket,cache,uk-north-1)`);
+        cache.constructor.should.eql(S3Cache);
+        cache.bucket.should.equal("test.bucket");
+        cache.path.should.equal("cache");
+        cache.region.should.equal("uk-north-1");
+        (() => FromConfig.create("S3()")).should.throw();
+        (() => FromConfig.create("S3(argh,yibble)")).should.throw();
+        (() => FromConfig.create("S3(/tmp/moo,456,blah,nork)")).should.throw();
+    });
+    it('should create multi caches', () => {
+        const tempDir = newTempDir();
+        const cache = FromConfig.create(`InMemory(123);OnDisk(${tempDir},456);S3(test.bucket,cache,uk-north-1)`);
+        cache.constructor.should.eql(MultiCache);
+        cache.upstream.length.should.equal(3);
+        cache.upstream[0].constructor.should.eql(InMemoryCache);
+        cache.upstream[1].constructor.should.eql(OnDiskCache);
+        cache.upstream[2].constructor.should.eql(S3Cache);
+    });
 });
