@@ -36,6 +36,7 @@
     "jquery": "^3.3.1",
     "lru-cache": "^4.1.2",
     "lz-string": "^1.4.4",
+    "mkdirp": "^0.5.1",
     "monaco-editor": "0.10.1",
     "morgan": "^1.9.0",
     "nopt": "3.0.x",
