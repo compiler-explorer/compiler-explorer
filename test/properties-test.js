@@ -46,6 +46,12 @@ describe('Properties', () => {
     it('Handles empty properties as empty strings', () => {
         should.equal(casesProps("emptyProperty"), "");
     });
+    it('Handles bad numbers properties as strings', () => {
+        should.equal(casesProps("001string"), "001");
+    });
+    it('Handles bad numbers properties as strings', () => {
+        should.equal(casesProps("0985string"), "0985");
+    });
     it('Ignores commented out properties', () => {
         should.equal(casesProps("commentedProperty"), undefined);
     });
