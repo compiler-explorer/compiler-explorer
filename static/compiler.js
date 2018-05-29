@@ -603,8 +603,13 @@ Compiler.prototype.onCompileResponse = function (request, result, cached) {
 
     this.eventHub.emit('compileResult', this.id, this.compiler, result, languages[this.currentLangId]);
     this.updateButtons();
-
-    this.prependOptions.prop('title', result.compilationOptions.join(' '));
+    if (result.compilationOptions) {
+        this.prependOptions.prop('title', result.compilationOptions.join(' '));
+        this.prependOptions.show();
+    } else {
+        this.prependOptions.prop('title', '');
+        this.prependOptions.hide();
+    }
 
     if (this.nextRequest) {
         var next = this.nextRequest;
