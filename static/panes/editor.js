@@ -40,6 +40,7 @@ require('../modes/ispc-mode');
 require('../modes/haskell-mode');
 require('../modes/pascal-mode');
 require('../modes/cuda-mode');
+require('../modes/fortran-mode');
 require('../modes/zig-mode');
 require('../modes/nc-mode');
 require('selectize');
