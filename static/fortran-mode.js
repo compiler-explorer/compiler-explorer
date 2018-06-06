@@ -532,31 +532,40 @@ function configuration() {
         },
 
         brackets: [
-            ['{', '}'],
+            ['(\/', '\/)'],
             ['[', ']'],
             ['(', ')']
         ],
 
         autoClosingPairs: [
-            {open: '{', close: '}'},
             {open: '[', close: ']'},
             {open: '(', close: ')'},
-            {open: '`', close: '`', notIn: ['string']},
-            {open: '"', close: '"', notIn: ['string']},
-            {open: '\'', close: '\'', notIn: ['string', 'comment']}
+            {open: '`', close: '`', notIn: ['string','comment']},
+            {open: '\'', close: '\'', notIn: ['string','comment']},
+            {open: '"', close: '"', notIn: ['string']}
         ],
 
         surroundingPairs: [
-            {open: '{', close: '}'},
             {open: '[', close: ']'},
             {open: '(', close: ')'},
             {open: '`', close: '`'},
-            {open: '"', close: '"'},
-            {open: '\'', close: '\''}
-        ]
+            {open: '\'', close: '\''},
+            {open: '"', close: '"'}
+        ],
+
+        indentationRules: {
+		decreaseIndentPattern: /end\s*(do|if|function|subroutine|program|block|associate|forall)/,
+		increaseIndentPattern: /^((?!end).)*(do\s|if(\s|\()|function\s|subroutine\s|program\s|block\s*|associate(\s|\()|forall)/,
+		unIndentedLinePattern: null
+	}
+
     };
 }
+
+var def = definition();
 
 monaco.languages.register({id: 'fortran'});
 monaco.languages.setMonarchTokensProvider('fortran', definition());
 monaco.languages.setLanguageConfiguration('fortran', configuration());
+
+module.exports = def;
