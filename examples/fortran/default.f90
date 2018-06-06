@@ -1,3 +1,4 @@
+! Type your code here, or load an example.
 real function square(x)
    implicit none
    real, intent(in) :: x
