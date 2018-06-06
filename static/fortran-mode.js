@@ -433,7 +433,7 @@ function definition() {
         ],
 
         // we include these common regular expressions
-        symbols: /\.[a-z]+\.|[=><!~?&%|+\-*\/\.,\:]+/,
+        symbols: /[=><!~?:&|+\-*/^%]+/,
         escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
 
         // The main tokenizer for our languages
@@ -532,7 +532,7 @@ function configuration() {
         },
 
         brackets: [
-            ['(\/', '\/)'],
+            ['(/', '/)'],
             ['[', ']'],
             ['(', ')']
         ],
@@ -554,10 +554,10 @@ function configuration() {
         ],
 
         indentationRules: {
-		decreaseIndentPattern: /end\s*(do|if|function|subroutine|program|block|associate|forall)/,
-		increaseIndentPattern: /^((?!end).)*(do\s|if(\s|\()|function\s|subroutine\s|program\s|block\s*|associate(\s|\()|forall)/,
-		unIndentedLinePattern: null
-	}
+            decreaseIndentPattern: /end\s*(do|if|function|subroutine|program|block|associate|forall)/,
+            increaseIndentPattern: /^((?!end).)*(do\s|if(\s|\()|function\s|subroutine\s|program\s|block\s*|associate(\s|\()|forall)/,
+            unIndentedLinePattern: null
+        }
 
     };
 }
