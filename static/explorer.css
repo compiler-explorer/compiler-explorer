@@ -333,3 +333,8 @@ pre.content.wrap {
 .modal-footer {
     border-top: none;
 }
+
+.program-exec-output {
+    font-family: "Courier New", Courier, monospace;
+    padding-left: 2%;
+}

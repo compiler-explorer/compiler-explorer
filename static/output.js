@@ -46,13 +46,15 @@ function Output(hub, container, state) {
     this.eventHub = hub.createEventHub();
     this.domRoot = container.getElement();
     this.domRoot.html($('#compiler-output').html());
-    this.contentRoot = this.domRoot.find(".content");
+    this.contentRoot = this.domRoot.find('.content');
     this.optionsToolbar = this.domRoot.find('.options-toolbar');
     this.compilerName = "";
     this.fontScale = new FontScale(this.domRoot, state, ".content");
     this.fontScale.on('change', _.bind(function () {
         this.saveState();
     }, this));
+    this.normalAnsiToHtml = makeAnsiToHtml();
+    this.errorAnsiToHtml = makeAnsiToHtml('red');
 
     this.initButtons();
     this.options = new Toggles(this.domRoot.find('.options'), state);
@@ -115,24 +117,21 @@ Output.prototype.onCompileResult = function (id, compiler, result) {
 
     this.contentRoot.empty();
 
-    var ansiToHtml = makeAnsiToHtml();
-
     _.each((result.stdout || []).concat(result.stderr || []), function (obj) {
-        this.add(ansiToHtml.toHtml(obj.text), obj.tag ? obj.tag.line : obj.line);
+        this.add(this.normalAnsiToHtml.toHtml(obj.text), obj.tag ? obj.tag.line : obj.line);
     }, this);
 
     this.add("Compiler returned: " + result.code);
+
     if (result.execResult) {
         this.add("Program returned: " + result.execResult.code);
         if (result.execResult.stderr.length || result.execResult.stdout.length) {
-            ansiToHtml = makeAnsiToHtml("red");
             _.each(result.execResult.stderr, function (obj) {
-                this.programOutput(ansiToHtml.toHtml(obj.text), "red");
+                this.programOutput(this.normalAnsiToHtml.toHtml(obj.text), "red");
             }, this);
 
-            ansiToHtml = makeAnsiToHtml();
             _.each(result.execResult.stdout, function (obj) {
-                this.programOutput(ansiToHtml.toHtml(obj.text));
+                this.programOutput(this.errorAnsiToHtml.toHtml(obj.text));
             }, this);
         }
     }
@@ -143,7 +142,8 @@ Output.prototype.onCompileResult = function (id, compiler, result) {
 Output.prototype.programOutput = function (msg, color) {
     var elem = $('<p></p>').appendTo(this.contentRoot)
         .html(msg)
-        .css('font-family', '"Courier New", Courier, monospace');
+        .addClass('program-exec-output');
+
     if (color)
         elem.css("color", color);
 };
