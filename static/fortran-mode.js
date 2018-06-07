@@ -537,7 +537,7 @@ function configuration() {
 var def = definition();
 
 monaco.languages.register({id: 'fortran'});
-monaco.languages.setMonarchTokensProvider('fortran', definition());
+monaco.languages.setMonarchTokensProvider('fortran', def);
 monaco.languages.setLanguageConfiguration('fortran', configuration());
 
 module.exports = def;
