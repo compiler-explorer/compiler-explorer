@@ -281,10 +281,18 @@ input.permalink {
     background-color: #333 !important;
 }
 
-.lib-dropdown-arrow {
-    color: gray !important;
+.lib-arrow-up {
+    border-bottom-color: gray !important;
 }
 
-.lib-dropdown-arrow-used {
-    color: green !important;
+.lib-arrow-up.lib-arrow-used {
+    border-bottom-color: green !important;
+}
+
+.lib-arrow-down {
+    border-top-color: gray !important;
+}
+
+.lib-arrow-down.lib-arrow-used {
+    border-top-color: green !important;
 }

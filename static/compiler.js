@@ -1347,12 +1347,22 @@ Compiler.prototype.updateLibsDropdown = function () {
                 return libLists[currentLibIndex];
             };
 
+            var handleArrow = function (libGroup, libArrow) {
+                var anyInUse = _.any(libGroup.children().children('input'), function (element) {
+                    return $(element).prop('checked');
+                });
+                var isVisible = libGroup.is(":visible");
+
+                libArrow.toggleClass('lib-arrow-up', isVisible);
+                libArrow.toggleClass('lib-arrow-down', !isVisible);
+                libArrow.toggleClass('lib-arrow-used', anyInUse);
+            };
+
             var onChecked = _.bind(function (e) {
                 var elem = $(e.target);
                 // Uncheck every lib checkbox with the same name if we're checking the target
                 if (elem.prop('checked')) {
-                    var others = e.data.group.children().children();
-                    _.each(others, function (other) {
+                    _.each(e.data.group.children().children('input'), function (other) {
                         $(other).prop('checked', false);
                     });
                     // Recheck the targeted one
@@ -1365,7 +1375,7 @@ Compiler.prototype.updateLibsDropdown = function () {
                 this.availableLibs[this.currentLangId][elem.prop('data-lib')]
                     .versions[elem.prop('data-version')].used = elem.prop('checked');
 
-                e.data.arrow.toggleClass('lib-dropdown-arrow-used', elem.prop('checked'));
+                handleArrow(e.data.group, e.data.arrow);
 
                 this.saveState();
                 this.compile();
@@ -1373,8 +1383,7 @@ Compiler.prototype.updateLibsDropdown = function () {
 
             _.each(this.availableLibs[this.currentLangId], function (lib, libKey) {
                 var libsList = getNextList();
-                var libArrow = $('<span></span>')
-                    .addClass('lib-dropdown-arrow glyphicon glyphicon-arrow-down');
+                var libArrow = $('<div></div>').addClass('lib-arrow');
                 var libName = $('<span></span>').text(lib.name);
                 var libHeader = $('<span></span>')
                     .addClass('lib-header')
@@ -1406,8 +1415,6 @@ Compiler.prototype.updateLibsDropdown = function () {
                 if (libsList.children().length > 0)
                     libsList.append($('<hr>').addClass('lib-separator'));
 
-                var anyVerInUse = false;
-
                 _.each(lib.versions, function (version, vKey) {
                     var verCheckbox = $('<input type="checkbox">')
                         .addClass('lib-checkbox')
@@ -1427,21 +1434,16 @@ Compiler.prototype.updateLibsDropdown = function () {
                                 })
                             )
                         );
-                    if (version.used) {
-                        anyVerInUse = true;
-                    }
                 });
-
-                libArrow.toggleClass('lib-dropdown-arrow-used', anyVerInUse);
 
                 libGroup.hide();
+                handleArrow(libGroup, libArrow);
+
                 libHeader.on('click', function () {
                     libGroup.toggle();
-
-                    var isVisible = libGroup.is(":visible");
-                    libArrow.toggleClass('glyphicon-arrow-down', !isVisible);
-                    libArrow.toggleClass('glyphicon-arrow-up', isVisible);
+                    handleArrow(libGroup, libArrow);
                 });
+
                 libGroup.appendTo(libCat);
                 libCat.appendTo(libsList);
             });
