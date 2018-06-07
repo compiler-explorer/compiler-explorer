@@ -1347,32 +1347,14 @@ Compiler.prototype.updateLibsDropdown = function () {
                 return libLists[currentLibIndex];
             };
 
-            var onChecked = _.bind(function (e) {
-                var elem = $(e.target);
-                // Uncheck every lib checkbox with the same name if we're checking the target
-                if (elem.prop('checked')) {
-                    var others = $.find('input[name=\'' + elem.prop('name') + '\']');
-                    _.each(others, function (other) {
-                        $(other).prop('checked', false);
-                    });
-                    // Recheck the targeted one
-                    elem.prop('checked', true);
-                }
-                // And now do the same with the availableLibs object
-                _.each(this.availableLibs[this.currentLangId][elem.prop('data-lib')].versions, function (version) {
-                    version.used = false;
-                });
-                this.availableLibs[this.currentLangId][elem.prop('data-lib')]
-                    .versions[elem.prop('data-version')].used = elem.prop('checked');
-                this.saveState();
-                this.compile();
-            }, this);
-
-            _.each(this.availableLibs[this.currentLangId], function (lib, libKey) {
+            _.each(this.availableLibs[this.currentLangId], _.bind(function (lib, libKey) {
                 var libsList = getNextList();
+                var libArrow = $('<span></span>').addClass('glyphicon glyphicon-arrow-down');
+                var libName = $('<span></span>').text(lib.name);
                 var libHeader = $('<span></span>')
-                    .text(lib.name)
-                    .addClass('lib-header');
+                    .addClass('lib-header')
+                    .append(libArrow)
+                    .append(libName);
                 if (lib.url && lib.url.length > 0) {
                     libHeader.append($('<a></a>')
                         .css("float", "right")
@@ -1386,7 +1368,7 @@ Compiler.prototype.updateLibsDropdown = function () {
                     );
                 }
                 if (lib.description && lib.description.length > 0) {
-                    libHeader
+                    libName
                         .addClass('lib-described')
                         .prop('title', lib.description);
                 }
@@ -1398,6 +1380,32 @@ Compiler.prototype.updateLibsDropdown = function () {
 
                 if (libsList.children().length > 0)
                     libsList.append($('<hr>').addClass('lib-separator'));
+
+                var onChecked = _.bind(function (e) {
+                    var elem = $(e.target);
+                    // Uncheck every lib checkbox with the same name if we're checking the target
+                    if (elem.prop('checked')) {
+                        var others = $.find('input[name=\'' + elem.prop('name') + '\']');
+                        _.each(others, function (other) {
+                            $(other).prop('checked', false);
+                        });
+                        // Recheck the targeted one
+                        elem.prop('checked', true);
+                    }
+                    // And now do the same with the availableLibs object
+                    _.each(this.availableLibs[this.currentLangId][elem.prop('data-lib')].versions, function (version) {
+                        version.used = false;
+                    });
+                    this.availableLibs[this.currentLangId][elem.prop('data-lib')]
+                        .versions[elem.prop('data-version')].used = elem.prop('checked');
+
+                    libArrow.css('color', elem.prop('checked') ? 'green' : 'black');
+
+                    this.saveState();
+                    this.compile();
+                }, this);
+
+                var anyVerInUse = false;
 
                 _.each(lib.versions, function (version, vKey) {
                     libGroup.append($('<div></div>')
@@ -1416,10 +1424,27 @@ Compiler.prototype.updateLibsDropdown = function () {
                             })
                         )
                     );
+                    if (version.used) {
+                        anyVerInUse = true;
+                    }
+                });
+
+                libArrow.css('color', anyVerInUse ? 'green' : 'black');
+
+                libGroup.hide();
+                libHeader.on('click', function () {
+                    libGroup.toggle();
+                    if (libGroup.is(":visible")) {
+                        libArrow.removeClass('glyphicon-arrow-down');
+                        libArrow.addClass('glyphicon-arrow-up');
+                    } else {
+                        libArrow.removeClass('glyphicon-arrow-up');
+                        libArrow.addClass('glyphicon-arrow-down');
+                    }
                 });
                 libGroup.appendTo(libCat);
                 libCat.appendTo(libsList);
-            });
+            }, this));
             return $('<div></div>').addClass('libs-container').append(libLists);
         }, this),
         html: true,

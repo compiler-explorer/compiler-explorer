@@ -338,3 +338,7 @@ pre.content.wrap {
     font-family: "Courier New", Courier, monospace;
     padding-left: 2%;
 }
+
+.dropdown-menu .btn-godbolt {
+    margin-left: 0 !important;
+}

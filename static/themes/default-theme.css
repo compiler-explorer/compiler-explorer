@@ -162,6 +162,10 @@ body {
     background-color: #f2f2f2;
 }
 
-.popover-content {
-    background-color: #f0f0f0;
+.popover, .popover-content, .libs-container, .lib-list {
+    background-color: #fefefe;
+}
+
+.lib-item {
+    background-color: #fefefe;
 }
