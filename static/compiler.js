@@ -95,8 +95,6 @@ function Compiler(hub, container, state) {
     this.prevDecorations = [];
     this.alertSystem = new Alert();
     this.alertSystem.prefixMessage = "Compiler #" + this.id + ": ";
-    this.cachedTopBarHeight = null;
-    this.cachedTopBarHeightAtWidth = null;
 
     this.linkedFadeTimeoutId = -1;
 
@@ -271,10 +269,6 @@ Compiler.prototype.undefer = function () {
 };
 
 Compiler.prototype.updateAndCalcTopBarHeight = function () {
-    var width = this.domRoot.width();
-    if (width === this.cachedTopBarHeightAtWidth) {
-        return this.cachedTopBarHeight;
-    }
     // If we save vertical space by hiding stuff that's OK to hide
     // when thin, then hide that stuff.
     this.hideable.show();
@@ -284,16 +278,11 @@ Compiler.prototype.updateAndCalcTopBarHeight = function () {
     var topBarHeight = topBarHeightMin;
     if (topBarHeightMin === topBarHeightMax) {
         this.hideable.show();
-        topBarHeight = topBarHeightMax;
     }
-    this.cachedTopBarHeight = topBarHeight;
-    this.cachedTopBarHeightAtWidth = width;
+
     return topBarHeight;
 };
 
-// TODO: need to call resize if either .top-bar or .bottom-bar resizes, which needs some work.
-// Issue manifests if you make a window where one compiler is small enough that the buttons spill onto two lines:
-// reload the page and the bottom-bar is off the bottom until you scroll a tiny bit.
 Compiler.prototype.resize = function () {
     var topBarHeight = this.updateAndCalcTopBarHeight();
     var bottomBarHeight = this.bottomBar.outerHeight(true);
