@@ -1,5 +1,5 @@
-// This is put together from two sources:
-// 1) d-mode.js by Matt Godbolt
+// This file has evolved from 
+//    d-mode.js by Matt Godbolt
 //    Copyright (c) 2017, Matt Godbolt
 //    All rights reserved.
 //
@@ -23,28 +23,16 @@
 //    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 //    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 //    POSSIBILITY OF SUCH DAMAGE.
-// 2) vs.language.fortran by Tom Dunn
-//    Copyright (c) 2015 Thomas E. Dunn
-//    
-//    Permission is hereby granted, free of charge, to any person obtaining a copy of this
-//    software and associated documentation files (the "Software"), to deal in the Software
-//    without restriction, including without limitation the rights to use, copy, modify, merge,
-//    publish, distribute, sublicense, and/or sell copies of the Software, and to permit
-//    persons to whom the Software is furnished to do so, subject to the following conditions:
-//    
-//    The above copyright notice and this permission notice shall be included in all copies or
-//    substantial portions of the Software.
-//    
-//    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
-//    INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
-//    PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
-//    LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT
-//    OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-//    DEALINGS IN THE SOFTWARE.
+//
+// The lists of keywords, operator, functions, and subroutines have been adopted from
+//    vs.language.fortran by Thomas E. Dunn
 "use strict";
 
 function definition() {
     return {
+	// Fortran is case insensitive, so ignore case...
+	ignoreCase: true,
+
         defaultToken: 'invalid',
 
         keywords: [
@@ -122,7 +110,6 @@ function definition() {
             'include',
             'inout',
             'inquire',
-            'integer',
             'intent',
             'interface',
             'intrinsic',
@@ -439,18 +426,26 @@ function definition() {
         // The main tokenizer for our languages
         tokenizer: {
             root: [
+		// type names
+                [/[a-zA-Z][\w$]*(?=.*\:\:)/, {
+		    cases: {
+			'@typeKeywords': 'type.identifier',
+                        '@keywords': 'keyword',
+                        '@default': 'identifier'
+		    }
+		}],
                 // identifiers and keywords
-                [/[a-z_$][\w$]*/, {
+                [/[a-zA-Z][\w$]*/, {
                     cases: {
-                        '@typeKeywords': 'keyword',
                         '@keywords': 'keyword',
                         '@functions': 'keyword',
                         '@subroutines': 'keyword',
                         '@default': 'identifier'
                     }
                 }],
+
+                // comments
                 [/!.*$/, 'comment'],
-                [/[A-Z][\w$]*/, 'type.identifier'],  // to show class names nicely
 
                 // whitespace
                 {include: '@whitespace'},
@@ -499,28 +494,6 @@ function definition() {
                 [/\\./, 'string.escape.invalid'],
                 [/"/, 'string', '@pop']
             ],
-
-            /*
-            // Recognize strings, including those broken across lines with & (but not without)
-            strings: [
-                [/'$/, 'string.escape', '@popall'],
-                [/'/, 'string.escape', '@sglStringBody'],
-                [/"$/, 'string.escape', '@popall'],
-                [/"/, 'string.escape', '@dblStringBody']
-            ],
-            sglStringBody: [
-                [/'/, 'string.escape', '@popall'],
-                [/.(?=.*')/, 'string'],
-                [/.*&$/, 'string'],
-                [/.*$/, 'string', '@popall']
-            ],
-            dblStringBody: [
-                [/"/, 'string.escape', '@popall'],
-                [/.(?=.*")/, 'string'],
-                [/.*&$/, 'string'],
-                [/.*$/, 'string', '@popall']
-            ]
-	    */
         }
     };
 }
@@ -541,7 +514,7 @@ function configuration() {
             {open: '[', close: ']'},
             {open: '(', close: ')'},
             {open: '`', close: '`', notIn: ['string','comment']},
-            {open: '\'', close: '\'', notIn: ['string','comment']},
+            {open: "'", close: "'", notIn: ['string','comment']},
             {open: '"', close: '"', notIn: ['string']}
         ],
 
@@ -549,7 +522,7 @@ function configuration() {
             {open: '[', close: ']'},
             {open: '(', close: ')'},
             {open: '`', close: '`'},
-            {open: '\'', close: '\''},
+            {open: "'", close: "'"},
             {open: '"', close: '"'}
         ],
 
@@ -558,7 +531,6 @@ function configuration() {
             increaseIndentPattern: /^((?!end).)*(do\s|if(\s|\()|function\s|subroutine\s|program\s|block\s*|associate(\s|\()|forall)/,
             unIndentedLinePattern: null
         }
-
     };
 }
 
