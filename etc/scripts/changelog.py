@@ -41,16 +41,13 @@ def format_commit(url, commit):
     grouped_commit = commit.split(' * ')
     print(grouped_commit)
     return '    <div class="row commit-entry">\n' \
-           '        <div class="col-sm-3">\n' \
+           '        <div class="col-sm-12">\n' \
            '            <a href="{}commit/{}" rel="noreferrer noopener" target="_blank">{}\n' \
-           '                <sup><small class="glyphicon glyphicon-new-window opens-new-window" ' \
+           '            <sup><small class="glyphicon glyphicon-new-window opens-new-window" ' \
            'title="Opens in a new window"></small></sup>\n' \
            '            </a>\n' \
-           '        </div>\n' \
-           '        <div class="col-sm-9">\n' \
-           '            <p>{}</p>\n' \
-           '        </div>\n' \
-           '    </div>\n'.format(url, grouped_commit[0], grouped_commit[0], html_escape(grouped_commit[1]))
+           '        </div>' \
+           '    </div>\n'.format(url, grouped_commit[0], html_escape(grouped_commit[1]))
 
 
 def get_commits(repo):
