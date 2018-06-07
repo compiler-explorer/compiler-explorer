@@ -1341,15 +1341,40 @@ Compiler.prototype.updateLibsDropdown = function () {
                 libLists.push($('<ul></ul>').addClass('lib-list'));
             }
 
-            // Utility function so we can iterate indefinetly over our lists
+            // Utility function so we can iterate indefinitely over our lists
             var getNextList = function () {
                 currentLibIndex = (currentLibIndex + 1) % columnCount;
                 return libLists[currentLibIndex];
             };
 
+            var onChecked = _.bind(function (e) {
+                var elem = $(e.target);
+                // Uncheck every lib checkbox with the same name if we're checking the target
+                if (elem.prop('checked')) {
+                    var others = e.data.group.children().children();
+                    _.each(others, function (other) {
+                        $(other).prop('checked', false);
+                    });
+                    // Recheck the targeted one
+                    elem.prop('checked', true);
+                }
+                // And now do the same with the availableLibs object
+                _.each(this.availableLibs[this.currentLangId][elem.prop('data-lib')].versions, function (version) {
+                    version.used = false;
+                });
+                this.availableLibs[this.currentLangId][elem.prop('data-lib')]
+                    .versions[elem.prop('data-version')].used = elem.prop('checked');
+
+                e.data.arrow.css('color', elem.prop('checked') ? 'green' : 'black');
+
+                this.saveState();
+                this.compile();
+            }, this);
+
             _.each(this.availableLibs[this.currentLangId], _.bind(function (lib, libKey) {
                 var libsList = getNextList();
-                var libArrow = $('<span></span>').addClass('glyphicon glyphicon-arrow-down');
+                var libArrow = $('<span></span>')
+                    .addClass('lib-dropdown-arrow glyphicon glyphicon-arrow-down');
                 var libName = $('<span></span>').text(lib.name);
                 var libHeader = $('<span></span>')
                     .addClass('lib-header')
@@ -1381,66 +1406,41 @@ Compiler.prototype.updateLibsDropdown = function () {
                 if (libsList.children().length > 0)
                     libsList.append($('<hr>').addClass('lib-separator'));
 
-                var onChecked = _.bind(function (e) {
-                    var elem = $(e.target);
-                    // Uncheck every lib checkbox with the same name if we're checking the target
-                    if (elem.prop('checked')) {
-                        var others = $.find('input[name=\'' + elem.prop('name') + '\']');
-                        _.each(others, function (other) {
-                            $(other).prop('checked', false);
-                        });
-                        // Recheck the targeted one
-                        elem.prop('checked', true);
-                    }
-                    // And now do the same with the availableLibs object
-                    _.each(this.availableLibs[this.currentLangId][elem.prop('data-lib')].versions, function (version) {
-                        version.used = false;
-                    });
-                    this.availableLibs[this.currentLangId][elem.prop('data-lib')]
-                        .versions[elem.prop('data-version')].used = elem.prop('checked');
-
-                    libArrow.css('color', elem.prop('checked') ? 'green' : 'black');
-
-                    this.saveState();
-                    this.compile();
-                }, this);
-
                 var anyVerInUse = false;
 
                 _.each(lib.versions, function (version, vKey) {
-                    libGroup.append($('<div></div>')
-                        .append($('<input type="checkbox">')
-                            .addClass('lib-checkbox')
-                            .prop('data-lib', libKey)
-                            .prop('data-version', vKey)
-                            .prop('checked', version.used)
-                            .prop('name', libKey)
-                            .on('change', onChecked)
-                        ).append($('<label></label>')
-                            .addClass('lib-label')
-                            .text(version.version)
-                            .on('click', function () {
-                                $(this).parent().find('.lib-checkbox').trigger('click');
-                            })
-                        )
-                    );
+                    var verCheckbox = $('<input type="checkbox">')
+                        .addClass('lib-checkbox')
+                        .prop('data-lib', libKey)
+                        .prop('data-version', vKey)
+                        .prop('checked', version.used)
+                        .prop('name', libKey)
+                        .on('change', {arrow: libArrow, group: libGroup}, onChecked);
+                    libGroup
+                        .append($('<div></div>')
+                            .append(verCheckbox)
+                            .append($('<label></label>')
+                                .addClass('lib-label')
+                                .text(version.version)
+                                .on('click', function () {
+                                    verCheckbox.trigger('click');
+                                })
+                            )
+                        );
                     if (version.used) {
                         anyVerInUse = true;
                     }
                 });
 
-                libArrow.css('color', anyVerInUse ? 'green' : 'black');
+                libArrow.toggleClass('lib-dropdown-arrow-used', anyVerInUse);
 
                 libGroup.hide();
                 libHeader.on('click', function () {
                     libGroup.toggle();
-                    if (libGroup.is(":visible")) {
-                        libArrow.removeClass('glyphicon-arrow-down');
-                        libArrow.addClass('glyphicon-arrow-up');
-                    } else {
-                        libArrow.removeClass('glyphicon-arrow-up');
-                        libArrow.addClass('glyphicon-arrow-down');
-                    }
+
+                    var isVisible = libGroup.is(":visible");
+                    libArrow.toggleClass('glyphicon-arrow-down', !isVisible);
+                    libArrow.toggleClass('glyphicon-arrow-up', isVisible);
                 });
                 libGroup.appendTo(libCat);
                 libCat.appendTo(libsList);

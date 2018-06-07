@@ -169,3 +169,11 @@ body {
 .lib-item {
     background-color: #fefefe;
 }
+
+.lib-dropdown-arrow {
+    color: black;
+}
+
+.lib-dropdown-arrow-used {
+    color: green;
+}
