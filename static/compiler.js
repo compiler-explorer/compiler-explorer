@@ -1365,7 +1365,7 @@ Compiler.prototype.updateLibsDropdown = function () {
                 this.availableLibs[this.currentLangId][elem.prop('data-lib')]
                     .versions[elem.prop('data-version')].used = elem.prop('checked');
 
-                e.data.arrow.css('color', elem.prop('checked') ? 'green' : 'black');
+                e.data.arrow.toggleClass('lib-dropdown-arrow-used', elem.prop('checked'));
 
                 this.saveState();
                 this.compile();

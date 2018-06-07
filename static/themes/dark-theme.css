@@ -126,12 +126,6 @@ body {
     color: #fff !important;
 }
 
-.popover {
-    background-color: #333 !important;
-    color: #fff !important;
-    border: 2px solid #464545 !important;
-}
-
 .font-option {
     color: #eee !important;
     background: #303030 !important;
@@ -272,4 +266,25 @@ input.permalink {
 
 .commit-entry:nth-child(even) {
     background-color: #424242 !important;
+}
+
+.popover {
+    color: #fff !important;
+    border: 2px solid #464545 !important;
+}
+
+.popover, .popover-content, .libs-container, .lib-list {
+    background-color: #333 !important;
+}
+
+.lib-item {
+    background-color: #333 !important;
+}
+
+.lib-dropdown-arrow {
+    color: gray !important;
+}
+
+.lib-dropdown-arrow-used {
+    color: green !important;
 }
