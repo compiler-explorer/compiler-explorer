@@ -1371,7 +1371,7 @@ Compiler.prototype.updateLibsDropdown = function () {
                 this.compile();
             }, this);
 
-            _.each(this.availableLibs[this.currentLangId], _.bind(function (lib, libKey) {
+            _.each(this.availableLibs[this.currentLangId], function (lib, libKey) {
                 var libsList = getNextList();
                 var libArrow = $('<span></span>')
                     .addClass('lib-dropdown-arrow glyphicon glyphicon-arrow-down');
@@ -1444,7 +1444,7 @@ Compiler.prototype.updateLibsDropdown = function () {
                 });
                 libGroup.appendTo(libCat);
                 libCat.appendTo(libsList);
-            }, this));
+            });
             return $('<div></div>').addClass('libs-container').append(libLists);
         }, this),
         html: true,
