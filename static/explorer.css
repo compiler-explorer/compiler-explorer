@@ -348,4 +348,5 @@ pre.content.wrap {
     width: 0;
     height: 0;
     border: 7px solid transparent;
+    margin-right: 2px;
 }
