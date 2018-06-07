@@ -30,8 +30,8 @@
 
 function definition() {
     return {
-	// Fortran is case insensitive, so ignore case...
-	ignoreCase: true,
+        // Fortran is case insensitive, so ignore case...
+        ignoreCase: true,
 
         defaultToken: 'invalid',
 
@@ -426,14 +426,14 @@ function definition() {
         // The main tokenizer for our languages
         tokenizer: {
             root: [
-		// type names
-                [/[a-zA-Z][\w$]*(?=.*\:\:)/, {
-		    cases: {
-			'@typeKeywords': 'type.identifier',
+                // type names
+                [/[a-zA-Z][\w$]*(?=.*::)/, {
+                    cases: {
+                        '@typeKeywords': 'type.identifier',
                         '@keywords': 'keyword',
                         '@default': 'identifier'
-		    }
-		}],
+                    }
+                }],
                 // identifiers and keywords
                 [/[a-zA-Z][\w$]*/, {
                     cases: {
