@@ -601,6 +601,7 @@ Compiler.prototype.onCompileResponse = function (request, result, cached) {
 
     this.compileTimeLabel.text(timeLabelText);
 
+    result.stderr = result.stderr.slice(0, options.truncateErrorMessages);
     this.eventHub.emit('compileResult', this.id, this.compiler, result, languages[this.currentLangId]);
     this.updateButtons();
     if (result.compilationOptions) {
