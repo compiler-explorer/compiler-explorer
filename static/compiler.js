@@ -120,6 +120,7 @@ function Compiler(hub, container, state) {
         searchField: ['name'],
         optgroupField: 'group',
         optgroups: this.getGroupsInUse(),
+        lockOptgroupOrder: true,
         options: _.map(this.getCurrentLangCompilers(), _.identity),
         items: this.compiler ? [this.compiler.id] : []
     }).on('change', _.bind(function (e) {
@@ -156,11 +157,11 @@ Compiler.prototype.clearEditorsLinkedLines = function () {
 
 Compiler.prototype.getGroupsInUse = function () {
     var currentLangCompilers = _.map(this.getCurrentLangCompilers(), _.identity);
-    return _.map(_.uniq(currentLangCompilers, false, function (compiler) {
+    return _.sortBy(_.map(_.uniq(currentLangCompilers, false, function (compiler) {
         return compiler.group;
     }), function (compiler) {
         return {value: compiler.group, label: compiler.groupName || compiler.group};
-    });
+    }), 'label');
 };
 
 Compiler.prototype.close = function () {
