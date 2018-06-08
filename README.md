@@ -201,8 +201,12 @@ If JSON is present in the request's `Accept` header, the compilation results
 
 ### Credits
 
-**Compiler Explorer** is maintained by the awesome people listed in the 
+**Compiler Explorer** is maintained by the awesome people listed in the
  [AUTHORS](AUTHORS.md) file.
+
+We would like to thank the contributors listed in the
+ [CONTRIBUTORS](CONTRIBUTORS.md) file, who have helped shape **Compiler Explorer**.
+
 
 We would also like to specially thank these people for their contributions to
  **Compiler Explorer**:
@@ -213,6 +217,7 @@ We would also like to specially thank these people for their contributions to
 - [Marc Poulhiès](https://github.com/dkm)
 - [Andrew Pardoe](https://github.com/AndrewPardoe)
 
-We would like to thank [JetBrains](https://www.jetbrains.com/) for their support and for donating licenses to their excellent products to develop **Compiler Explorer**.
+We would like to thank [JetBrains](https://www.jetbrains.com/) for their support
+ and for donating licenses to their excellent products to develop **Compiler Explorer**.
 
 ![JetBrains](docs/jetbrains.svg)
