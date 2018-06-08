@@ -1,6 +1,6 @@
-// This file has evolved from 
-//    d-mode.js by Matt Godbolt
 //    Copyright (c) 2017, Matt Godbolt
+//    Copyright (c) 2018, Forschungzentrum Juelich GmbH
+//                        Juelich Supercomputing Centre
 //    All rights reserved.
 //
 //    Redistribution and use in source and binary forms, with or without
