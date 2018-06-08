@@ -53,6 +53,7 @@ describe('Basic demangling', function () {
         result.asm = [{"text": "Hello, World!"}];
 
         const demangler = new Demangler(cppfiltpath, new DummyCompiler());
+        demangler.demanglerArguments = ['-n'];
 
         return Promise.all([
             demangler.process(result).then((output) => {
@@ -69,6 +70,7 @@ describe('Basic demangling', function () {
         ];
 
         const demangler = new Demangler(cppfiltpath, new DummyCompiler());
+        demangler.demanglerArguments = ['-n'];
 
         return Promise.all([
             demangler.process(result).then((output) => {
@@ -86,6 +88,7 @@ describe('Basic demangling', function () {
         ];
 
         const demangler = new Demangler(cppfiltpath, new DummyCompiler());
+        demangler.demanglerArguments = ['-n'];
 
         return Promise.all([
             demangler.process(result).then((output) => {
@@ -110,6 +113,7 @@ describe('Basic demangling', function () {
         ];
 
         const demangler = new Demangler(cppfiltpath, new DummyCompiler());
+        demangler.demanglerArguments = ['-n'];
 
         return Promise.all([
             demangler.process(result).then((output) => {
@@ -146,6 +150,7 @@ describe('Basic demangling', function () {
         ];
 
         const demangler = new Demangler(cppfiltpath, new DummyCompiler());
+        demangler.demanglerArguments = ['-n'];
         demangler.result = result;
         demangler.symbolstore = new SymbolStore();
         demangler.collectLabels();
@@ -165,6 +170,7 @@ describe('Basic demangling', function () {
         ];
 
         const demangler = new Demangler(cppfiltpath, new DummyCompiler());
+        demangler.demanglerArguments = ['-n'];
         demangler.result = result;
         demangler.symbolstore = new SymbolStore();
         demangler.collectLabels();
@@ -216,6 +222,7 @@ function DoDemangleTest(root, filename) {
                 });
 
                 const demangler = new Demangler(cppfiltpath, new DummyCompiler());
+                demangler.demanglerArguments = ['-n'];
                 resolve(demangler.process(resultIn).then((output) => {
                     output.should.deep.equal(resultOut);
                 }));
