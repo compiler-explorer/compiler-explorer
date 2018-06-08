@@ -39,6 +39,8 @@ const should = chai.should();
 const expect = chai.expect;
 const assert = chai.assert;
 
+const cppfiltpath = "c++filt";
+
 class DummyCompiler {
     exec(command, args, options) {
         return exec.execute(command, args, options);
@@ -50,7 +52,7 @@ describe('Basic demangling', function () {
         const result = {};
         result.asm = [{"text": "Hello, World!"}];
 
-        const demangler = new Demangler("c++filt", new DummyCompiler());
+        const demangler = new Demangler(cppfiltpath, new DummyCompiler());
 
         return Promise.all([
             demangler.process(result).then((output) => {
@@ -66,7 +68,7 @@ describe('Basic demangling', function () {
             {"text": "  ret"}
         ];
 
-        const demangler = new Demangler("c++filt", new DummyCompiler());
+        const demangler = new Demangler(cppfiltpath, new DummyCompiler());
 
         return Promise.all([
             demangler.process(result).then((output) => {
@@ -83,7 +85,7 @@ describe('Basic demangling', function () {
             {"text": "  mov eax, $_Z6squarei"}
         ];
 
-        const demangler = new Demangler("c++filt", new DummyCompiler());
+        const demangler = new Demangler(cppfiltpath, new DummyCompiler());
 
         return Promise.all([
             demangler.process(result).then((output) => {
@@ -107,7 +109,7 @@ describe('Basic demangling', function () {
             {"text": "  rep ret"}
         ];
 
-        const demangler = new Demangler("c++filt", new DummyCompiler());
+        const demangler = new Demangler(cppfiltpath, new DummyCompiler());
 
         return Promise.all([
             demangler.process(result).then((output) => {
@@ -124,7 +126,7 @@ describe('Basic demangling', function () {
             {"text": "        call     ??3@YAXPEAX_K@Z                ; operator delete"}
         ];
 
-        const demangler = new DemanglerCL("c++filt", new DummyCompiler());
+        const demangler = new DemanglerCL(cppfiltpath, new DummyCompiler());
         demangler.result = result;
         demangler.symbolstore = new SymbolStore();
         demangler.collectLabels();
@@ -143,7 +145,7 @@ describe('Basic demangling', function () {
             {"text": "        call     hello                ; operator delete"}
         ];
 
-        const demangler = new Demangler("c++filt", new DummyCompiler());
+        const demangler = new Demangler(cppfiltpath, new DummyCompiler());
         demangler.result = result;
         demangler.symbolstore = new SymbolStore();
         demangler.collectLabels();
@@ -162,7 +164,7 @@ describe('Basic demangling', function () {
             {"text": "   bl _ZN3FooC1Ev"}
         ];
 
-        const demangler = new Demangler("c++filt", new DummyCompiler());
+        const demangler = new Demangler(cppfiltpath, new DummyCompiler());
         demangler.result = result;
         demangler.symbolstore = new SymbolStore();
         demangler.collectLabels();
@@ -181,7 +183,7 @@ describe('Basic demangling', function () {
             {"text": "$LN3@caller2:"}
         ];
 
-        const demangler = new DemanglerCL("c++filt", new DummyCompiler());
+        const demangler = new DemanglerCL(cppfiltpath, new DummyCompiler());
         demangler.result = result;
         demangler.symbolstore = new SymbolStore();
         demangler.collectLabels();
@@ -213,7 +215,7 @@ function DoDemangleTest(root, filename) {
                     return {"text": line};
                 });
 
-                const demangler = new Demangler("c++filt", new DummyCompiler());
+                const demangler = new Demangler(cppfiltpath, new DummyCompiler());
                 resolve(demangler.process(resultIn).then((output) => {
                     output.should.deep.equal(resultOut);
                 }));
