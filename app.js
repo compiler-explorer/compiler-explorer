@@ -298,7 +298,6 @@ function ClientOptionsHandler(fileSources) {
         cvCompilerCountMax: ceProps('cvCompilerCountMax', 6),
         defaultFontScale: ceProps('defaultFontScale', 1.0),
         doCache: defArgs.doCache,
-        truncateErrorMessages: ceProps('truncateErrorMessages', 50)
     };
     this.setCompilers = compilers => {
         const blacklistedKeys = ['exe', 'versionFlag', 'versionRe', 'compilerType', 'demangler', 'objdumper',
