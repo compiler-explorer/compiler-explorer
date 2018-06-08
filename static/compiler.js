@@ -1330,18 +1330,28 @@ Compiler.prototype.updateLibsDropdown = function () {
                 libLists.push($('<ul></ul>').addClass('lib-list'));
             }
 
-            // Utility function so we can iterate indefinetly over our lists
+            // Utility function so we can iterate indefinitely over our lists
             var getNextList = function () {
                 currentLibIndex = (currentLibIndex + 1) % columnCount;
                 return libLists[currentLibIndex];
+            };
+
+            var handleArrow = function (libGroup, libArrow) {
+                var anyInUse = _.any(libGroup.children().children('input'), function (element) {
+                    return $(element).prop('checked');
+                });
+                var isVisible = libGroup.is(":visible");
+
+                libArrow.toggleClass('lib-arrow-up', isVisible);
+                libArrow.toggleClass('lib-arrow-down', !isVisible);
+                libArrow.toggleClass('lib-arrow-used', anyInUse);
             };
 
             var onChecked = _.bind(function (e) {
                 var elem = $(e.target);
                 // Uncheck every lib checkbox with the same name if we're checking the target
                 if (elem.prop('checked')) {
-                    var others = $.find('input[name=\'' + elem.prop('name') + '\']');
-                    _.each(others, function (other) {
+                    _.each(e.data.group.children().children('input'), function (other) {
                         $(other).prop('checked', false);
                     });
                     // Recheck the targeted one
@@ -1353,15 +1363,21 @@ Compiler.prototype.updateLibsDropdown = function () {
                 });
                 this.availableLibs[this.currentLangId][elem.prop('data-lib')]
                     .versions[elem.prop('data-version')].used = elem.prop('checked');
+
+                handleArrow(e.data.group, e.data.arrow);
+
                 this.saveState();
                 this.compile();
             }, this);
 
             _.each(this.availableLibs[this.currentLangId], function (lib, libKey) {
                 var libsList = getNextList();
+                var libArrow = $('<div></div>').addClass('lib-arrow');
+                var libName = $('<span></span>').text(lib.name);
                 var libHeader = $('<span></span>')
-                    .text(lib.name)
-                    .addClass('lib-header');
+                    .addClass('lib-header')
+                    .append(libArrow)
+                    .append(libName);
                 if (lib.url && lib.url.length > 0) {
                     libHeader.append($('<a></a>')
                         .css("float", "right")
@@ -1375,7 +1391,7 @@ Compiler.prototype.updateLibsDropdown = function () {
                     );
                 }
                 if (lib.description && lib.description.length > 0) {
-                    libHeader
+                    libName
                         .addClass('lib-described')
                         .prop('title', lib.description);
                 }
@@ -1389,23 +1405,34 @@ Compiler.prototype.updateLibsDropdown = function () {
                     libsList.append($('<hr>').addClass('lib-separator'));
 
                 _.each(lib.versions, function (version, vKey) {
-                    libGroup.append($('<div></div>')
-                        .append($('<input type="checkbox">')
-                            .addClass('lib-checkbox')
-                            .prop('data-lib', libKey)
-                            .prop('data-version', vKey)
-                            .prop('checked', version.used)
-                            .prop('name', libKey)
-                            .on('change', onChecked)
-                        ).append($('<label></label>')
-                            .addClass('lib-label')
-                            .text(version.version)
-                            .on('click', function () {
-                                $(this).parent().find('.lib-checkbox').trigger('click');
-                            })
-                        )
-                    );
+                    var verCheckbox = $('<input type="checkbox">')
+                        .addClass('lib-checkbox')
+                        .prop('data-lib', libKey)
+                        .prop('data-version', vKey)
+                        .prop('checked', version.used)
+                        .prop('name', libKey)
+                        .on('change', {arrow: libArrow, group: libGroup}, onChecked);
+                    libGroup
+                        .append($('<div></div>')
+                            .append(verCheckbox)
+                            .append($('<label></label>')
+                                .addClass('lib-label')
+                                .text(version.version)
+                                .on('click', function () {
+                                    verCheckbox.trigger('click');
+                                })
+                            )
+                        );
                 });
+
+                libGroup.hide();
+                handleArrow(libGroup, libArrow);
+
+                libHeader.on('click', function () {
+                    libGroup.toggle();
+                    handleArrow(libGroup, libArrow);
+                });
+
                 libGroup.appendTo(libCat);
                 libCat.appendTo(libsList);
             });

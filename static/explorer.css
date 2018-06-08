@@ -338,3 +338,15 @@ pre.content.wrap {
     font-family: "Courier New", Courier, monospace;
     padding-left: 2%;
 }
+
+.dropdown-menu .btn-godbolt {
+    margin-left: 0 !important;
+}
+
+.lib-arrow {
+    display: inline-table;
+    width: 0;
+    height: 0;
+    border: 7px solid transparent;
+    margin-right: 2px;
+}

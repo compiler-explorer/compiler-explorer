@@ -162,6 +162,26 @@ body {
     background-color: #f2f2f2;
 }
 
-.popover-content {
-    background-color: #f0f0f0;
+.popover, .popover-content, .libs-container, .lib-list {
+    background-color: #fefefe;
+}
+
+.lib-item {
+    background-color: #fefefe;
+}
+
+.lib-arrow-up {
+    border-bottom-color: black;
+}
+
+.lib-arrow-up.lib-arrow-used {
+    border-bottom-color: green;
+}
+
+.lib-arrow-down {
+    border-top-color: black;
+}
+
+.lib-arrow-down.lib-arrow-used {
+    border-top-color: green;
 }
