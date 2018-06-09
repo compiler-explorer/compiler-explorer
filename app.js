@@ -303,7 +303,7 @@ function ClientOptionsHandler(fileSources) {
         const blacklistedKeys = ['exe', 'versionFlag', 'versionRe', 'compilerType', 'demangler', 'objdumper',
             'postProcess'];
         const copiedCompilers = JSON.parse(JSON.stringify(compilers));
-        _.each(options.compilers, (compiler, compilersKey) => {
+        _.each(copiedCompilers, (compiler, compilersKey) => {
             _.each(compiler, (_, propKey) => {
                 if (blacklistedKeys.includes(propKey)) {
                     delete copiedCompilers[compilersKey][propKey];
