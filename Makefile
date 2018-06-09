@@ -1,5 +1,7 @@
 default: run
 
+export XZ_DEFAULTS="-T 0"
+
 # If you see "node-not-found" or "yarn-not-found" then you need to depend
 # on either node-installed or yarn-installed.
 NODE:=node-not-found
