@@ -228,6 +228,7 @@ const sourceHandler = new SourceHandler(fileSources, staticHeaders);
 const CompilerFinder = require('./lib/compiler-finder');
 const compilerFinder = new CompilerFinder(compileHandler, compilerPropsL, compilerPropsAT, ceProps, awsProps,
     languages, defArgs);
+const semverParser = require('semver');
 
 function ClientOptionsHandler(fileSources) {
     const sources = _.sortBy(fileSources.map(source => {
@@ -301,14 +302,38 @@ function ClientOptionsHandler(fileSources) {
     };
     this.setCompilers = compilers => {
         const blacklistedKeys = ['exe', 'versionFlag', 'versionRe', 'compilerType', 'demangler', 'objdumper',
-            'postProcess'];
+            'postProcess', 'demanglerClassFile', 'isSemVer'];
+        let semverGroups = [];
         const copiedCompilers = JSON.parse(JSON.stringify(compilers));
-        _.each(options.compilers, (compiler, compilersKey) => {
+        _.each(copiedCompilers, (compiler, compilersKey) => {
+            // Find if this compiler's group uses semver
+            if (compiler.isSemVer && !semverGroups.includes(compiler.group)) {
+                semverGroups.push(compiler.group);
+            }
             _.each(compiler, (_, propKey) => {
                 if (blacklistedKeys.includes(propKey)) {
                     delete copiedCompilers[compilersKey][propKey];
                 }
             });
+        });
+        // Order those groups which have semver defined
+        const groupped = _.groupBy(copiedCompilers, compiler => compiler.group);
+        _.each(semverGroups, group => {
+            groupped[group].sort((lhc, rhc) => {
+                // Go to some length to have a valid semver version
+                const leftVersion = semverParser.valid(lhc.semver, true) ||
+                    semverParser.valid(lhc.semver + '.0', true) ||
+                    "9999999.99999.999";
+                const rightVersion = semverParser.valid(rhc.semver, true) ||
+                    semverParser.valid(rhc.semver + '.0', true) ||
+                    "9999999.99999.999";
+                return semverParser.compare(leftVersion, rightVersion);
+            });
+            for (let order = 0;order < groupped[group].length;++order) {
+                const xthCompiler = _.find(copiedCompilers, compiler => compiler.id === groupped[group][order].id);
+                // $order is used by selectize.js to order optGroup items
+                if (xthCompiler) xthCompiler['$order'] = groupped[group].length - order;
+            }
         });
         options.compilers = copiedCompilers;
     };
