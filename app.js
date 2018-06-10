@@ -303,12 +303,24 @@ function ClientOptionsHandler(fileSources) {
     this.setCompilers = compilers => {
         const blacklistedKeys = ['exe', 'versionFlag', 'versionRe', 'compilerType', 'demangler', 'objdumper',
             'postProcess', 'demanglerClassFile', 'isSemVer'];
-        let semverGroups = [];
+        let semverGroups = {};
         const copiedCompilers = JSON.parse(JSON.stringify(compilers));
+
+        const safeVer = version => {
+            return semverParser.valid(version, true) ||
+                semverParser.valid(version + '.0', true) ||
+                "9999999.99999.999";
+        };
+
         _.each(copiedCompilers, (compiler, compilersKey) => {
             // Find if this compiler's group uses semver
-            if (compiler.isSemVer && !semverGroups.includes(compiler.group)) {
-                semverGroups.push(compiler.group);
+            if (compiler.isSemVer) {
+                if (!semverGroups[compiler.group]) semverGroups[compiler.group] = [];
+                // Desired index which will keep the array in order
+                const index = _.sortedIndex(semverGroups[compiler.group], compiler.semver, (lhg) => {
+                    return semverParser.compare(safeVer(lhg.semver), safeVer(compiler.semver));
+                });
+                semverGroups[compiler.group].splice(index, 0, compiler);
             }
             _.each(compiler, (_, propKey) => {
                 if (blacklistedKeys.includes(propKey)) {
@@ -316,25 +328,12 @@ function ClientOptionsHandler(fileSources) {
                 }
             });
         });
-        // Order those groups which have semver defined
-        const groupped = _.groupBy(copiedCompilers, compiler => compiler.group);
         _.each(semverGroups, group => {
-            groupped[group].sort((lhc, rhc) => {
-                // Go to some length to have a valid semver version
-                const leftVersion = semverParser.valid(lhc.semver, true) ||
-                    semverParser.valid(lhc.semver + '.0', true) ||
-                    "9999999.99999.999";
-                const rightVersion = semverParser.valid(rhc.semver, true) ||
-                    semverParser.valid(rhc.semver + '.0', true) ||
-                    "9999999.99999.999";
-                return semverParser.compare(leftVersion, rightVersion);
-            });
-            for (let order = 0;order < groupped[group].length;++order) {
-                const xthCompiler = _.find(copiedCompilers, compiler => compiler.id === groupped[group][order].id);
-                // $order is used by selectize.js to order optGroup items
-                if (xthCompiler) xthCompiler['$order'] = groupped[group].length - order;
-            }
+            let order = 0;
+            // Set $order to -index on array. As group is an array, iteration order is guaranteed.
+            _.each(group, compiler => compiler['$order'] = -order++);
         });
+
         options.compilers = copiedCompilers;
     };
     this.setCompilers([]);
