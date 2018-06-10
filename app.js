@@ -305,7 +305,7 @@ function ClientOptionsHandler(fileSources) {
             'postProcess', 'demanglerClassFile', 'isSemVer'];
         let semverGroups = {};
         const copiedCompilers = JSON.parse(JSON.stringify(compilers));
-      
+
         const safeVer = version => {
             return semverParser.valid(version, true) ||
                 semverParser.valid(version + '.0', true) ||
