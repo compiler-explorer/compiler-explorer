@@ -1,3 +1,4 @@
+//    Copyright (c) 2015, Thomas E. Dunn
 //    Copyright (c) 2017, Matt Godbolt
 //    Copyright (c) 2018, Forschungzentrum Juelich GmbH
 //                        Juelich Supercomputing Centre
@@ -168,7 +169,15 @@ function definition() {
             'real',
             'integer',
             'complex',
-            'type'
+            'type',
+            'class',
+            // add non-type keywords that make sense when combined w/ types
+            'intent',
+            'dimension',
+            'allocatable',
+            'parameter',
+            'private',
+            'public'
         ],
 
         operators: [
@@ -426,8 +435,8 @@ function definition() {
         // The main tokenizer for our languages
         tokenizer: {
             root: [
-                // type names
-                [/[a-zA-Z][\w$]*(?=.*::)/, {
+                // identify type declarations (also functions)
+                [/[a-zA-Z][\w$]*(?=.*(::|function))/, {
                     cases: {
                         '@typeKeywords': 'type.identifier',
                         '@keywords': 'keyword',
@@ -461,11 +470,11 @@ function definition() {
                 }],
 
                 // numbers
-                [/\d*\.\d+([eE][-+]?\d+)?[fFdD]?/, 'number.float'],
-                [/0[xX][0-9a-fA-F_]*[0-9a-fA-F][Ll]?/, 'number.hex'],
-                [/0[0-7_]*[0-7][Ll]?/, 'number.octal'],
-                [/0[bB][0-1_]*[0-1][Ll]?/, 'number.binary'],
-                [/\d+[lL]?/, 'number'],
+                [/\d*\.\d+([eEdD][-+]?\d+)?/, 'number.float'],
+                [/[zZ][\'"][0-9a-fA-F]*[0-9a-fA-F][\'"]/, 'number.hex'],
+                [/[oO][\'"][0-7]*[0-7][\'"]/, 'number.octal'],
+                [/[bB][\'"][0-1]*[0-1][\'"]/, 'number.binary'],
+                [/\d/, 'number'],
 
                 // delimiter: after number because of .\d floats
                 [/[;,.]/, 'delimiter'],
@@ -490,7 +499,7 @@ function definition() {
 
             string: [
                 [/[^\\"]+/, 'string'],
-                [/@escapes/, 'string.escape'],
+            //    [/@escapes/, 'string.escape'],
                 [/\\./, 'string.escape.invalid'],
                 [/"/, 'string', '@pop']
             ],
