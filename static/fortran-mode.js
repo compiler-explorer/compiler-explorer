@@ -471,9 +471,9 @@ function definition() {
 
                 // numbers
                 [/\d*\.\d+([eEdD][-+]?\d+)?/, 'number.float'],
-                [/[zZ][\'"][0-9a-fA-F]*[0-9a-fA-F][\'"]/, 'number.hex'],
-                [/[oO][\'"][0-7]*[0-7][\'"]/, 'number.octal'],
-                [/[bB][\'"][0-1]*[0-1][\'"]/, 'number.binary'],
+                [/[zZ]['"][0-9a-fA-F]*[0-9a-fA-F]['"]/, 'number.hex'],
+                [/[oO]['"][0-7]*[0-7]['"]/, 'number.octal'],
+                [/[bB]['"][0-1]*[0-1]['"]/, 'number.binary'],
                 [/\d/, 'number'],
 
                 // delimiter: after number because of .\d floats
@@ -499,7 +499,7 @@ function definition() {
 
             string: [
                 [/[^\\"]+/, 'string'],
-            //    [/@escapes/, 'string.escape'],
+                [/@escapes/, 'string.escape'],
                 [/\\./, 'string.escape.invalid'],
                 [/"/, 'string', '@pop']
             ],
