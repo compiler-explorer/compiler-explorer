@@ -169,23 +169,20 @@ function compilerPropsL(lang, property, defaultValue) {
     return ceProps(property, defaultValue);
 }
 
-// For every lang passed, get its corresponding compiler property
-function compilerPropsA(langs, property, defaultValue) {
-    let forLanguages = {};
-    _.each(langs, lang => {
-        forLanguages[lang.id] = compilerPropsL(lang.id, property, defaultValue);
-    });
-    return forLanguages;
-}
-
 // Same as A version, but transforms each value by fn(original, lang)
-function compilerPropsAT(langs, transform, property, defaultValue) {
+function compilerPropsA(langs, property, transform, defaultValue) {
     let forLanguages = {};
+    transform = transform || _.identity;
     _.each(langs, lang => {
         forLanguages[lang.id] = transform(compilerPropsL(lang.id, property, defaultValue), lang);
     });
     return forLanguages;
 }
+
+const propsFns = {
+    compilerPropsA: compilerPropsA,
+    compilerPropsL: compilerPropsL
+};
 
 const staticMaxAgeSecs = ceProps('staticMaxAgeSecs', 0);
 const maxUploadSize = ceProps('maxUploadSize', '1mb');
@@ -216,7 +213,8 @@ function loadSources() {
 }
 
 const fileSources = loadSources();
-const clientOptionsHandler = new ClientOptionsHandler(fileSources);
+const ClientOptionsHandler = require('./lib/compilation-env');
+const clientOptionsHandler = new ClientOptionsHandler(fileSources, languages, ceProps, propsFns, defArgs);
 const CompilationEnvironment = require('./lib/compilation-env');
 const compilationEnvironment = new CompilationEnvironment(ceProps, compilerPropsL, defArgs.doCache);
 const CompileHandler = require('./lib/handlers/compile').Handler;
@@ -226,95 +224,8 @@ const apiHandler = new ApiHandler(compileHandler, ceProps);
 const SourceHandler = require('./lib/handlers/source').Handler;
 const sourceHandler = new SourceHandler(fileSources, staticHeaders);
 const CompilerFinder = require('./lib/compiler-finder');
-const compilerFinder = new CompilerFinder(compileHandler, compilerPropsL, compilerPropsAT, ceProps, awsProps,
+const compilerFinder = new CompilerFinder(compileHandler, compilerPropsL, compilerPropsA, ceProps, awsProps,
     languages, defArgs);
-
-function ClientOptionsHandler(fileSources) {
-    const sources = _.sortBy(fileSources.map(source => {
-        return {name: source.name, urlpart: source.urlpart};
-    }), 'name');
-
-    const supportsBinary = compilerPropsAT(languages, res => !!res, 'supportsBinary', true);
-    const supportsExecutePerLanguage = compilerPropsAT(languages, (res, lang) => {
-        return supportsBinary[lang.id] && !!res;
-    }, 'supportsExecute', true);
-    const supportsExecute = Object.values(supportsExecutePerLanguage).some((value) => value);
-
-    const libs = {};
-    const baseLibs = compilerPropsA(languages, 'libs');
-    _.each(baseLibs, (forLang, lang) => {
-        if (lang && forLang) {
-            libs[lang] = {};
-            _.each(forLang.split(':'), lib => {
-                const libBaseName = `libs.${lib}`;
-                libs[lang][lib] = {
-                    name: compilerPropsL(lang, libBaseName + '.name'),
-                    url: compilerPropsL(lang, libBaseName + '.url'),
-                    description: compilerPropsL(lang, libBaseName + '.description')
-                };
-                libs[lang][lib].versions = {};
-                const listedVersions = `${compilerPropsL(lang, libBaseName + '.versions')}`;
-                if (listedVersions) {
-                    _.each(listedVersions.split(':'), version => {
-                        const libVersionName = libBaseName + `.versions.${version}`;
-                        libs[lang][lib].versions[version] = {};
-                        libs[lang][lib].versions[version].version = compilerPropsL(lang, libVersionName + '.version');
-                        libs[lang][lib].versions[version].path = [];
-                        const includes = compilerPropsL(lang, libVersionName + '.path');
-                        if (includes) {
-                            _.each(includes.split(':'), path => libs[lang][lib].versions[version].path.push(path));
-                        } else {
-                            logger.warn(`No paths found for ${lib} - ${version}`);
-                        }
-                    });
-                } else {
-                    logger.warn(`No versions found for ${lib} library`);
-                }
-            });
-        }
-    });
-    const options = {
-        googleAnalyticsAccount: ceProps('clientGoogleAnalyticsAccount', 'UA-55180-6'),
-        googleAnalyticsEnabled: ceProps('clientGoogleAnalyticsEnabled', false),
-        sharingEnabled: ceProps('clientSharingEnabled', true),
-        githubEnabled: ceProps('clientGitHubRibbonEnabled', true),
-        gapiKey: ceProps('googleApiKey', ''),
-        googleShortLinkRewrite: ceProps('googleShortLinkRewrite', '').split('|'),
-        urlShortenService: ceProps('urlShortenService', 'none'),
-        defaultSource: ceProps('defaultSource', ''),
-        compilers: [],
-        libs: libs,
-        defaultLibs: compilerPropsA(languages, 'defaultLibs', ''),
-        defaultCompiler: compilerPropsA(languages, 'defaultCompiler', ''),
-        compileOptions: compilerPropsA(languages, 'defaultOptions', ''),
-        supportsBinary: supportsBinary,
-        supportsExecute: supportsExecute,
-        languages: languages,
-        sources: sources,
-        raven: ceProps('ravenUrl', ''),
-        release: gitReleaseName,
-        environment: defArgs.env,
-        localStoragePrefix: ceProps('localStoragePrefix'),
-        cvCompilerCountMax: ceProps('cvCompilerCountMax', 6),
-        defaultFontScale: ceProps('defaultFontScale', 1.0),
-        doCache: defArgs.doCache
-    };
-    this.setCompilers = compilers => {
-        const blacklistedKeys = ['exe', 'versionFlag', 'versionRe', 'compilerType', 'demangler', 'objdumper',
-            'postProcess'];
-        const copiedCompilers = JSON.parse(JSON.stringify(compilers));
-        _.each(copiedCompilers, (compiler, compilersKey) => {
-            _.each(compiler, (_, propKey) => {
-                if (blacklistedKeys.includes(propKey)) {
-                    delete copiedCompilers[compilersKey][propKey];
-                }
-            });
-        });
-        options.compilers = copiedCompilers;
-    };
-    this.setCompilers([]);
-    this.get = () => options;
-}
 
 function shortUrlHandler(req, res, next) {
     const resolver = new google.ShortLinkResolver(aws.getConfig('googleApiKey'));

@@ -43,7 +43,8 @@ const propsAT = (langs, f, key, def) => {
 describe('Compiler-finder', function () {
     it('should not hang for undefined groups (Bug #860)', () => {
         // Contrived setup. I know
-        const tweakedAT = (langs, f, key, def) => {
+        const tweakedAT = (langs, key, f, def) => {
+            f = f || _.identity;
             let response = {};
             _.each(langs, lang => {
                 let val = null;
