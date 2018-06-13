@@ -536,8 +536,8 @@ function configuration() {
         ],
 
         indentationRules: {
-            decreaseIndentPattern: /end\s*(do|if|function|subroutine|program|block|associate|forall)/,
-            increaseIndentPattern: /^((?!end).)*(do\s|if(\s|\()|function\s|subroutine\s|program\s|block\s*|associate(\s|\()|forall)/,
+            decreaseIndentPattern: /(end\s*(do|if|function|subroutine|program|block|associate|forall|select))|else|(^((?!select).)*(case))/,
+            increaseIndentPattern: /(^((?!end).)*(do\s|if(\s|\().*then|function\s|subroutine\s|program\s|block\s*|associate(\s|\()|forall|case)|else)/,
             unIndentedLinePattern: null
         }
     };
