@@ -25,10 +25,10 @@
 const chai = require('chai');
 const chaiAsPromised = require("chai-as-promised");
 const CompilerFinder = require('../lib/compiler-finder');
-const _ = require('underscore-node');
+const properties = require('../lib/properties');
 
 chai.use(chaiAsPromised);
-const should = chai.should();
+chai.should();
 
 const languages = {
     'a-lang': {
@@ -36,28 +36,15 @@ const languages = {
     }
 };
 
-const props = (key, def) => key === "compilers" ? "goodCompiler:&badCompiler" : def;
-
-const compilerProps = (langs, key, defaultValue, transform) => {
-    transform = transform || _.identity;
-    if (_.isEmpty(langs)) {
-        return transform(props(key, defaultValue));
-    }
-    if (!_.isString(langs)) {
-        return _.chain(langs)
-            .map(lang => [lang.id, transform(props(key) || props(key, defaultValue), lang)])
-            .object()
-            .value();
-    } else {
-        return transform(props(key) || props(key, defaultValue), languages[langs]);
-    }
+const props = {
+    compilers: "goodCompiler:&badCompiler"
 };
 
+const compilerProps = new properties.CompilerProps(languages, properties.fakeProps(props));
 
 describe('Compiler-finder', function () {
     it('should not hang for undefined groups (Bug #860)', () => {
-        // Contrived setup. I know
-        const finder = new CompilerFinder({}, props, compilerProps, props, languages, {});
+        const finder = new CompilerFinder({}, compilerProps, properties.fakeProps({}), languages, {});
         return Promise.all(finder.getCompilers()).should.eventually.have.lengthOf(2);
     })
 });

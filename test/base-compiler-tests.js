@@ -26,21 +26,24 @@ const chai = require('chai');
 const chaiAsPromised = require("chai-as-promised");
 const BaseCompiler = require('../lib/base-compiler');
 const CompilationEnvironment = require('../lib/compilation-env');
+const properties = require('../lib/properties');
 
 chai.use(chaiAsPromised);
 const should = chai.should();
 
-const props = (key, deflt) => deflt;
+const languages = {
+    'c++': {id: 'c++'}
+};
+
+const compilerProps = new properties.CompilerProps(languages, properties.fakeProps({}));
 
 describe('Basic compiler invariants', function () {
-    const ce = new CompilationEnvironment(props);
+    const ce = new CompilationEnvironment(compilerProps);
     const info = {
         exe: null,
         remote: true,
-        lang: "c++"
+        lang: languages['c++'].id
     };
-
-    ce.compilerPropsL = () => "";
 
     const compiler = new BaseCompiler(info, ce);
 
@@ -74,6 +77,6 @@ describe('Basic compiler invariants', function () {
         should.equal(compiler.checkSource(text), null);
         const badSource = compiler.checkSource("#include </dev/null..> //Muehehehe");
         should.exist(badSource);
-        badSource.should.equal("<stdin>:1:1: no absolute or relative includes please")
+        badSource.should.equal("<stdin>:1:1: no absolute or relative includes please");
     });
 });

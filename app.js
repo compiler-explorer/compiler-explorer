@@ -153,29 +153,7 @@ if (languages.length === 0) {
     logger.error("Trying to start Compiler Explorer without a language");
 }
 
-// Instantiate a function to access records concerning the chosen language
-// in hidden object props.properties
-let compilerPropsFuncsL = {};
-_.each(languages, lang => compilerPropsFuncsL[lang.id] = props.propsFor(lang.id));
-
-function compilerProps(langs, key, defaultValue, transform) {
-    transform = transform || _.identity;
-    if (_.isEmpty(langs)) {
-        return transform(ceProps(key, defaultValue));
-    }
-    if (!_.isString(langs)) {
-        return _.chain(langs)
-            .map(lang => [lang.id, transform(compilerPropsFuncsL[lang.id](key) || ceProps(key, defaultValue), lang)])
-            .object()
-            .value();
-    } else {
-        if (compilerPropsFuncsL[langs]) {
-            return transform(compilerPropsFuncsL[langs](key) || ceProps(key, defaultValue), languages[langs]);
-        } else {
-            logger.error(`Tried to pass ${langs} as a language ID`);
-        }
-    }
-}
+const compilerProps = new props.CompilerProps(languages, ceProps);
 
 const staticMaxAgeSecs = ceProps('staticMaxAgeSecs', 0);
 const maxUploadSize = ceProps('maxUploadSize', '1mb');
@@ -207,9 +185,9 @@ function loadSources() {
 
 const fileSources = loadSources();
 const ClientOptionsHandler = require('./lib/options-handler');
-const clientOptionsHandler = new ClientOptionsHandler(fileSources, languages, ceProps, compilerProps, defArgs);
+const clientOptionsHandler = new ClientOptionsHandler(fileSources, languages, compilerProps, defArgs);
 const CompilationEnvironment = require('./lib/compilation-env');
-const compilationEnvironment = new CompilationEnvironment(ceProps, compilerProps, defArgs.doCache);
+const compilationEnvironment = new CompilationEnvironment(compilerProps, defArgs.doCache);
 const CompileHandler = require('./lib/handlers/compile').Handler;
 const compileHandler = new CompileHandler(compilationEnvironment);
 const ApiHandler = require('./lib/handlers/api').Handler;
@@ -217,7 +195,7 @@ const apiHandler = new ApiHandler(compileHandler, ceProps);
 const SourceHandler = require('./lib/handlers/source').Handler;
 const sourceHandler = new SourceHandler(fileSources, staticHeaders);
 const CompilerFinder = require('./lib/compiler-finder');
-const compilerFinder = new CompilerFinder(compileHandler, ceProps, compilerProps, awsProps,
+const compilerFinder = new CompilerFinder(compileHandler, compilerProps, awsProps,
     languages, defArgs);
 
 function shortUrlHandler(req, res, next) {

@@ -26,15 +26,21 @@ const chai = require('chai'),
     FakeCompiler = require('../../lib/compilers/fake-for-test'),
     CompilationEnvironment = require('../../lib/compilation-env'),
     chaiAsPromised = require("chai-as-promised"),
-    parsers = require('../../lib/compilers/argument-parsers');
-
+    parsers = require('../../lib/compilers/argument-parsers'),
+    properties = require('../../lib/properties');
 chai.use(chaiAsPromised);
 const should = chai.should();
 
+const languages = {
+    'c++': {id: 'c++'}
+};
+
+const compilerProps = new properties.CompilerProps(languages, properties.fakeProps({}));
+
 function makeCompiler(stdout, stderr, code) {
     if (code === undefined) code = 0;
-    const env = new CompilationEnvironment((key, def) => def, x => x);
-    const compiler = new FakeCompiler({lang: 'c++', remote: true}, env);
+    const env = new CompilationEnvironment(compilerProps);
+    const compiler = new FakeCompiler({lang: languages['c++'].id, remote: true}, env);
     compiler.exec = () => Promise.resolve({code: code, stdout: stdout || "", stderr: stderr || ""});
     return compiler;
 }
