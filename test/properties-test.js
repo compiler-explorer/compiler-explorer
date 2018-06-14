@@ -133,4 +133,7 @@ describe('Properties', () => {
     it('should have backwards compatibility compilerProps behaviour', () => {
         should.equal(compilerProps.get('', 'foo', '0'), '1');
     });
+    it('should report the default value if an unknown language is used', () => {
+        should.equal(compilerProps.get('b', 'foo', '0'), '0');
+    });
 });
