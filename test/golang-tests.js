@@ -26,7 +26,6 @@ const chai = require('chai'),
     chaiAsPromised = require("chai-as-promised"),
     fs = require('fs-extra'),
     utils = require('../lib/utils'),
-    logger = require('../lib/logger').logger,
     CompilationEnvironment = require('../lib/compilation-env'),
     GoCompiler = require('../lib/compilers/golang');
 
@@ -42,9 +41,7 @@ const info = {
     "lang": "go"
 };
 
-ce.compilerPropsL = function (lang, property, defaultValue) {
-    return "";
-};
+ce.compilerProps = (lang, property, defaultValue) => "";
 
 function testGoAsm(basefilename) {
     const compiler = new GoCompiler(info, ce);

@@ -113,10 +113,7 @@ function Compiler(hub, container, state) {
 
     this.initButtons(state);
     this.compilerPicker.selectize({
-        sortField: [
-            {field: '$order'},
-            {field: 'name'}
-        ],
+        sortField: 'name',
         valueField: 'id',
         labelField: 'name',
         searchField: ['name'],

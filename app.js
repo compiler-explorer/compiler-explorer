@@ -158,31 +158,24 @@ if (languages.length === 0) {
 let compilerPropsFuncsL = {};
 _.each(languages, lang => compilerPropsFuncsL[lang.id] = props.propsFor(lang.id));
 
-// Get a property from the specified langId, and if not found, use defaults from CE,
-// and at last return whatever default value was set by the caller
-function compilerPropsL(lang, property, defaultValue) {
-    const forLanguage = compilerPropsFuncsL[lang];
-    if (forLanguage) {
-        const forCompiler = forLanguage(property);
-        if (forCompiler !== undefined) return forCompiler;
-    }
-    return ceProps(property, defaultValue);
-}
-
-// Same as A version, but transforms each value by fn(original, lang)
-function compilerPropsA(langs, property, transform, defaultValue) {
-    let forLanguages = {};
+function compilerProps(langs, key, defaultValue, transform) {
     transform = transform || _.identity;
-    _.each(langs, lang => {
-        forLanguages[lang.id] = transform(compilerPropsL(lang.id, property, defaultValue), lang);
-    });
-    return forLanguages;
+    if (_.isEmpty(langs)) {
+        return transform(ceProps(key, defaultValue));
+    }
+    if (!_.isString(langs)) {
+        return _.chain(langs)
+            .map(lang => [lang.id, transform(compilerPropsFuncsL[lang.id](key) || ceProps(key, defaultValue), lang)])
+            .object()
+            .value();
+    } else {
+        if (compilerPropsFuncsL[langs]) {
+            return transform(compilerPropsFuncsL[langs](key) || ceProps(key, defaultValue), languages[langs]);
+        } else {
+            logger.error(`Tried to pass ${langs} as a language ID`);
+        }
+    }
 }
-
-const propsFns = {
-    compilerPropsA: compilerPropsA,
-    compilerPropsL: compilerPropsL
-};
 
 const staticMaxAgeSecs = ceProps('staticMaxAgeSecs', 0);
 const maxUploadSize = ceProps('maxUploadSize', '1mb');
@@ -213,10 +206,10 @@ function loadSources() {
 }
 
 const fileSources = loadSources();
-const ClientOptionsHandler = require('./lib/compilation-env');
-const clientOptionsHandler = new ClientOptionsHandler(fileSources, languages, ceProps, propsFns, defArgs);
+const ClientOptionsHandler = require('./lib/options-handler');
+const clientOptionsHandler = new ClientOptionsHandler(fileSources, languages, ceProps, compilerProps, defArgs);
 const CompilationEnvironment = require('./lib/compilation-env');
-const compilationEnvironment = new CompilationEnvironment(ceProps, compilerPropsL, defArgs.doCache);
+const compilationEnvironment = new CompilationEnvironment(ceProps, compilerProps, defArgs.doCache);
 const CompileHandler = require('./lib/handlers/compile').Handler;
 const compileHandler = new CompileHandler(compilationEnvironment);
 const ApiHandler = require('./lib/handlers/api').Handler;
@@ -224,7 +217,7 @@ const apiHandler = new ApiHandler(compileHandler, ceProps);
 const SourceHandler = require('./lib/handlers/source').Handler;
 const sourceHandler = new SourceHandler(fileSources, staticHeaders);
 const CompilerFinder = require('./lib/compiler-finder');
-const compilerFinder = new CompilerFinder(compileHandler, compilerPropsL, compilerPropsA, ceProps, awsProps,
+const compilerFinder = new CompilerFinder(compileHandler, ceProps, compilerProps, awsProps,
     languages, defArgs);
 
 function shortUrlHandler(req, res, next) {

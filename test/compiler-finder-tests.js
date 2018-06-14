@@ -30,38 +30,34 @@ const _ = require('underscore-node');
 chai.use(chaiAsPromised);
 const should = chai.should();
 
-const props = (key, deflt) => deflt;
-const propsL = (lang, key, def) => props(key, def);
-const propsAT = (langs, f, key, def) => {
-    let response = {};
-    _.each(langs, lang => {
-        response[langs.id] = f(propsL(lang.id, key, def));
-    });
-    return response;
+const languages = {
+    'a-lang': {
+        id: 'a-lang'
+    }
 };
+
+const props = (key, def) => key === "compilers" ? "goodCompiler:&badCompiler" : def;
+
+const compilerProps = (langs, key, defaultValue, transform) => {
+    transform = transform || _.identity;
+    if (_.isEmpty(langs)) {
+        return transform(props(key, defaultValue));
+    }
+    if (!_.isString(langs)) {
+        return _.chain(langs)
+            .map(lang => [lang.id, transform(props(key) || props(key, defaultValue), lang)])
+            .object()
+            .value();
+    } else {
+        return transform(props(key) || props(key, defaultValue), languages[langs]);
+    }
+};
+
 
 describe('Compiler-finder', function () {
     it('should not hang for undefined groups (Bug #860)', () => {
         // Contrived setup. I know
-        const tweakedAT = (langs, key, f, def) => {
-            f = f || _.identity;
-            let response = {};
-            _.each(langs, lang => {
-                let val = null;
-                switch (key) {
-                    case "compilers":
-                        val = "goodCompiler:&badCompiler";
-                        break;
-                    default:
-                        val = propsL(lang.id, key, def);
-                        break;
-                }
-                response[langs.id] = f(val);
-            });
-            return response;
-        };
-        const finder = new CompilerFinder({}, propsL, tweakedAT, props, props, {'a-lang': {id:'a-lang'}}, {});
+        const finder = new CompilerFinder({}, props, compilerProps, props, languages, {});
         return Promise.all(finder.getCompilers()).should.eventually.have.lengthOf(2);
-        //return finder.recurseGetCompilers("lang", "", propsL).then();
     })
 });
