@@ -6,4 +6,4 @@ Thanks for taking the time to improve CE. We really appreciate it.
   but don't sweat it if you don't. We can discuss them at a later date.
 Feel free to append your name to the CONTRIBUTORS.md file
 Thanks again, we really appreciate this!
-->
+-->
