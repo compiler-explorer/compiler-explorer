@@ -526,10 +526,10 @@ function fakeAsm(text) {
 Compiler.prototype.onCompileResponse = function (request, result, cached) {
     // Delete trailing empty lines
     if ($.isArray(result.asm)) {
-        var indexToDiscard = _.findLastIndex(result.asm, function (entry) {
-            return !entry.text;
+        var indexToDiscard = _.findLastIndex(result.asm, function (line) {
+            return !_.isEmpty(line.text);
         });
-        result.asm.splice(result.asm.length - indexToDiscard, indexToDiscard);
+        result.asm.splice(indexToDiscard + 1, result.asm.length - indexToDiscard);
     }
     this.lastResult = result;
     var timeTaken = Math.max(0, Date.now() - this.pendingRequestSentAt);
