@@ -25,7 +25,7 @@
 const chai = require('chai');
 const chaiAsPromised = require("chai-as-promised");
 const CompilerFinder = require('../lib/compiler-finder');
-const _ = require('underscore-node');
+const _ = require('underscore');
 
 chai.use(chaiAsPromised);
 const should = chai.should();
