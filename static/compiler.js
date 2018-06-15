@@ -526,14 +526,10 @@ function fakeAsm(text) {
 Compiler.prototype.onCompileResponse = function (request, result, cached) {
     // Delete trailing empty lines
     if ($.isArray(result.asm)) {
-        var cutCount = 0;
-        for (var i = result.asm.length - 1; i >= 0; i--) {
-            if (result.asm[i].text) {
-                break;
-            }
-            cutCount++;
-        }
-        result.asm.splice(result.asm.length - cutCount, cutCount);
+        var indexToDiscard = _.findLastIndex(result.asm, function (entry) {
+            return !entry.text;
+        });
+        result.asm.splice(result.asm.length - indexToDiscard, indexToDiscard);
     }
     this.lastResult = result;
     var timeTaken = Math.max(0, Date.now() - this.pendingRequestSentAt);
@@ -552,6 +548,7 @@ Compiler.prototype.onCompileResponse = function (request, result, cached) {
         timingVar: request.compiler,
         timingValue: timeTaken
     });
+
     this.setAssembly(result.asm || fakeAsm('<No output>'));
     if (request.options.filters.binary) {
         this.setBinaryMargin();
