@@ -215,6 +215,11 @@ Conformance.prototype.onCompileResponse = function (child, result) {
         text: allText.replace(/\x1b\\[[0-9;]*m/, ''),
         code: failed ? 3 : (warns ? 2 : 1)
     };
+
+    child.find('.prepend-options')
+        .toggle(!!result.compilationOptions)
+        .prop('title', result.compilationOptions ? result.compilationOptions.join(' ') : '');
+
     this.handleStatusIcon(child.find('.status'), status);
     this.saveState();
 };
@@ -290,7 +295,7 @@ Conformance.prototype.handleStatusIcon = function (element, status) {
         .toggleClass('status', true)
         .css("color", color(status.code))
         .toggle(status.code !== 0)
-        .prop("title", status.text.replace(/\x1b\[[0-9;]*m(.\[K)?/g, ''))
+        .prop("title", status.text)
         .prop("aria-label", ariaLabel(status.code))
         .prop("data-status", status.code);
 

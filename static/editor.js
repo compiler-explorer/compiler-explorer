@@ -435,7 +435,7 @@ Editor.prototype.formatCurrentText = function () {
                 }
             }
             error = error || "Unknown error";
-            this.alertSystem.notify("We ran into some issues while processing your request: " + error, {
+            this.alertSystem.notify("We ran into some issues while formatting your code: " + error, {
                 group: "formatting",
                 alertClass: "notification-error"
             });
