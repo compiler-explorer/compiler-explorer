@@ -154,7 +154,10 @@ Conformance.prototype.addCompilerSelector = function (config) {
 
     newEntry.find('.compiler-picker')
         .selectize({
-            sortField: 'name',
+            sortField: [
+                {field: '$order'},
+                {field: 'name'}
+            ],
             valueField: 'id',
             labelField: 'name',
             searchField: ['name'],
