@@ -112,7 +112,6 @@ function Compiler(hub, container, state) {
     });
 
     this.initButtons(state);
-
     this.compilerPicker.selectize({
         sortField: 'name',
         valueField: 'id',

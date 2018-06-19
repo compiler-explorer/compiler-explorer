@@ -26,24 +26,23 @@ const chai = require('chai'),
     chaiAsPromised = require("chai-as-promised"),
     fs = require('fs-extra'),
     utils = require('../lib/utils'),
-    logger = require('../lib/logger').logger,
     CompilationEnvironment = require('../lib/compilation-env'),
-    GoCompiler = require('../lib/compilers/golang');
-
+    GoCompiler = require('../lib/compilers/golang'),
+    properties = require('../lib/properties');
 chai.use(chaiAsPromised);
 chai.should();
 
-const props = (key, deflt) => deflt;
-
-const ce = new CompilationEnvironment(props);
-const info = {
-    "exe": null,
-    "remote": true,
-    "lang": "go"
+const languages = {
+    go: {id: 'go'}
 };
 
-ce.compilerPropsL = function (lang, property, defaultValue) {
-    return "";
+const compilerProps = new properties.CompilerProps(languages, properties.fakeProps({}));
+
+const ce = new CompilationEnvironment(compilerProps);
+const info = {
+    exe: null,
+    remote: true,
+    lang: languages.go.id
 };
 
 function testGoAsm(basefilename) {

@@ -24,49 +24,54 @@
 
 const LLVMmcaTool = require('../lib/compilers/llvm-mca');
 const CompilationEnvironment = require('../lib/compilation-env');
+const properties = require('../lib/properties');
 require('chai').should();
 
-const props = (key, deflt) => deflt;
+const languages = {
+    analysis: {id: 'analysis'}
+};
+
+const compilerProps = new properties.CompilerProps(languages, properties.fakeProps({}));
 
 describe('LLVM-mca tool definition', () => {
-  const ce = new CompilationEnvironment(props);
-  const info = {
-      exe: null,
-      remote: true,
-      lang: "analysis"
-  };
-  const a = new LLVMmcaTool(info, ce);
-
-  it('should have most filters disabled', () => {
-    a.compiler.disabledFilters.should.be.deep.equal(['labels', 'directives', 'commentOnly', 'trim']);
-  });
-
-  it('should default to most filters off', () => {
-    const filters = a.getDefaultFilters();
-    filters.intel.should.equal(true);
-    filters.commentOnly.should.equal(false);
-    filters.directives.should.equal(false);
-    filters.labels.should.equal(false);
-    filters.optOutput.should.equal(false);
-  });
-
-  it('should not support objdump', () => {
-    a.supportsObjdump().should.equal(false);
-  });
-
-  it('should support "-o output-file" by default', () => {
-    const opts = a.optionsForFilter({ commentOnly: false, labels: true }, 'output.txt');
-    opts.should.be.deep.equal(['-o', 'output.txt']);
-  });
-
-  it('should split if disabledFilters is a string', () => {
+    const ce = new CompilationEnvironment(compilerProps);
     const info = {
         exe: null,
         remote: true,
-        lang: "analysis",
-        disabledFilters: 'labels,directives'
+        lang: languages.analysis.id
     };
     const a = new LLVMmcaTool(info, ce);
-    a.compiler.disabledFilters.should.be.deep.equal(['labels', 'directives']);
-  });
+
+    it('should have most filters disabled', () => {
+        a.compiler.disabledFilters.should.be.deep.equal(['labels', 'directives', 'commentOnly', 'trim']);
+    });
+
+    it('should default to most filters off', () => {
+        const filters = a.getDefaultFilters();
+        filters.intel.should.equal(true);
+        filters.commentOnly.should.equal(false);
+        filters.directives.should.equal(false);
+        filters.labels.should.equal(false);
+        filters.optOutput.should.equal(false);
+    });
+
+    it('should not support objdump', () => {
+        a.supportsObjdump().should.equal(false);
+    });
+
+    it('should support "-o output-file" by default', () => {
+        const opts = a.optionsForFilter({commentOnly: false, labels: true}, 'output.txt');
+        opts.should.be.deep.equal(['-o', 'output.txt']);
+    });
+
+    it('should split if disabledFilters is a string', () => {
+        const info = {
+            exe: null,
+            remote: true,
+            lang: "analysis",
+            disabledFilters: 'labels,directives'
+        };
+        const a = new LLVMmcaTool(info, ce);
+        a.compiler.disabledFilters.should.be.deep.equal(['labels', 'directives']);
+    });
 });

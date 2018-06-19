@@ -25,42 +25,26 @@
 const chai = require('chai');
 const chaiAsPromised = require("chai-as-promised");
 const CompilerFinder = require('../lib/compiler-finder');
-const _ = require('underscore');
+const properties = require('../lib/properties');
 
 chai.use(chaiAsPromised);
-const should = chai.should();
+chai.should();
 
-const props = (key, deflt) => deflt;
-const propsL = (lang, key, def) => props(key, def);
-const propsAT = (langs, f, key, def) => {
-    let response = {};
-    _.each(langs, lang => {
-        response[langs.id] = f(propsL(lang.id, key, def));
-    });
-    return response;
+const languages = {
+    'a-lang': {
+        id: 'a-lang'
+    }
 };
+
+const props = {
+    compilers: "goodCompiler:&badCompiler"
+};
+
+const compilerProps = new properties.CompilerProps(languages, properties.fakeProps(props));
 
 describe('Compiler-finder', function () {
     it('should not hang for undefined groups (Bug #860)', () => {
-        // Contrived setup. I know
-        const tweakedAT = (langs, f, key, def) => {
-            let response = {};
-            _.each(langs, lang => {
-                let val = null;
-                switch (key) {
-                    case "compilers":
-                        val = "goodCompiler:&badCompiler";
-                        break;
-                    default:
-                        val = propsL(lang.id, key, def);
-                        break;
-                }
-                response[langs.id] = f(val);
-            });
-            return response;
-        };
-        const finder = new CompilerFinder({}, propsL, tweakedAT, props, props, {'a-lang': {id:'a-lang'}}, {});
+        const finder = new CompilerFinder({}, compilerProps, properties.fakeProps({}), languages, {});
         return Promise.all(finder.getCompilers()).should.eventually.have.lengthOf(2);
-        //return finder.recurseGetCompilers("lang", "", propsL).then();
     })
 });
