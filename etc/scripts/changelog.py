@@ -32,6 +32,15 @@ html_escape_table = {
     "<": "&lt;",
 }
 
+commit_template = '    <div class="row commit-entry">\n' \
+        '                <div class="col-sm-12">{}\n' \
+        '                  <a href="{}commit/{}" rel="noreferrer noopener" target="_blank">\n' \
+        '                    <sup><small class="glyphicon glyphicon-new-window opens-new-window" ' \
+        'title="Opens in a new window"></small></sup>\n' \
+        '                  </a>\n' \
+        '                </div>\n' \
+        '              </div>\n'
+
 
 def html_escape(text):
     return "".join(html_escape_table.get(c, c) for c in text)
@@ -39,19 +48,16 @@ def html_escape(text):
 
 def format_commit(url, commit):
     grouped_commit = commit.split(' * ')
-    print(grouped_commit)
-    return '    <div class="row commit-entry">\n' \
-           '        <div class="col-sm-12">{}\n' \
-           '            <a href="{}commit/{}" rel="noreferrer noopener" target="_blank">\n' \
-           '                <sup><small class="glyphicon glyphicon-new-window opens-new-window" ' \
-           'title="Opens in a new window"></small></sup>\n' \
-           '            </a>\n' \
-           '        </div>\n' \
-           '    </div>\n'.format(html_escape(grouped_commit[1]), url, grouped_commit[0])
-
+    # --grep matches every line on the commit message, we ensure we don't get caught by it
+    try:
+        formatted_commit = commit_template.format(html_escape(grouped_commit[1]), url, grouped_commit[0])
+        print(grouped_commit)
+        return formatted_commit
+    except:
+        return ''
 
 def get_commits(repo):
-    coms = subprocess.check_output(['git', 'log', '--date=local', '--after="3 months ago"', '--grep=^* ', '--oneline'])
+    coms = subprocess.check_output(['git', 'log', '--date=local', '--after="3 months ago"', '--grep=^\* ', '--oneline'])
     with open('static/changelog.html', 'w') as f:
         f.write('<div class="commits-list">\n')
         for commit in coms.splitlines():
