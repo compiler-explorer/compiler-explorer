@@ -339,13 +339,15 @@ Promise.all([compilerFinder.find(), aws.initConfig(awsProps)])
             webServer.use(express.static(defArgs.staticDir, {maxAge: staticMaxAgeSecs * 1000}));
         }
 
+        // Based on combined format, but: No user IP, no unused fields for our usecase
+        const customMorganFormat = '[:date[clf]] ":method :url HTTP/:http-version" :status';
         webServer
             .use(Raven.requestHandler())
             .set('trust proxy', true)
             .set('view engine', 'pug')
             // before morgan so healthchecks aren't logged
             .use('/healthcheck', new healthCheck.HealthCheckHandler().handle)
-            .use(morgan('combined', {stream: logger.stream}))
+            .use(morgan(isDevMode() ? 'dev' : customMorganFormat, {stream: logger.stream}))
             .use(compression())
             .get('/', (req, res) => {
                 staticHeaders(res);
