@@ -52,10 +52,22 @@ Alert.prototype.alert = function (title, body, onClose) {
 
 Alert.prototype.ask = function (title, question, handlers) {
     var modal = $('#yes-no');
-    this.yesHandler = handlers.yes;
-    this.noHandler = handlers.no;
+    this.yesHandler = handlers ? handlers.yes : function (){};
+    this.noHandler = handlers ? handlers.no : function (){};
     modal.find('.modal-title').html(title);
     modal.find('.modal-body').html(question);
+    if (handlers.yesHtml) {
+        modal.find('.modal-footer .yes').html(handlers.yesHtml);
+    }
+    if (handlers.yesClass) {
+        modal.find('.modal-footer .yes').addClass(handlers.yesClass);
+    }
+    if (handlers.noHtml) {
+        modal.find('.modal-footer .no').html(handlers.noHtml);
+    }
+    if (handlers.noClass) {
+        modal.find('.modal-footer .no').addClass(handlers.noClass);
+    }
     modal.modal();
 };
 

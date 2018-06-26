@@ -185,3 +185,12 @@ body {
 .lib-arrow-down.lib-arrow-used {
     border-top-color: green;
 }
+
+.consent-cookie-yes {
+    background-color: #c1e2b3;
+}
+
+.consent-cookie-no {
+    background-color: #f44336;
+    color: #ffffff;
+}

@@ -25,7 +25,7 @@ html(lang="en")
             li.dropdown
               a.dropdown-toggle(href="#" data-toggle="dropdown") More#[b.caret]
               ul.dropdown-menu
-                li: a(href="#" data-target="#settings" data-toggle="modal") Settings
+                li: a#setting(href="#" data-target="#settings" data-toggle="modal") Settings
                 li.divider
                 li: a#ui-reset(href="#") Reset (code and UI layout)
           ul.nav.navbar-nav.navbar-right
@@ -65,6 +65,18 @@ html(lang="en")
                   li.tweet: a.twitter-share-button(href="https://twitter.com/share" data-via="mattgodbolt")
 
     #root
+
+    .navbar-fixed-bottom
+      .container-fluid
+        p
+          | This page uses cookie/localStorage technology to store your page state, including code, editor settings and window layout.
+          a#cookies(href="#")
+            | Find out more on how we use cookie/localStorage technology and how you can change your settings
+          a(href="#")
+            | I consent
+          a(href="#")
+            | I DO NOT consent
+
 
     include templates.pug
 
