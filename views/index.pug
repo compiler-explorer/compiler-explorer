@@ -36,23 +36,26 @@ html(lang="en")
             li: a#share(href="#") Share#[b.caret]
             li.dropdown
               a.dropdown-toggle(href="#" data-toggle="dropdown") Other#[b.caret]
-              ul.dropdown-menu
+              ul.dropdown-menu.menu-other
                 li
                   a(href="https://www.patreon.com/bePatron?u=3691963"
                   title="Help Compiler Explorer - become a Patron" target="_blank" rel="noopener")
-                    img(height="20" width="20" src=require("patreon_logo.png"))
-                    | &nbsp; Become a Patron
+                    span.fab.fa-patreon
+                    span.share_text
+                      | &nbsp; Become a Patron
                 if githubEnabled
                   li
                     a(href="https://github.com/mattgodbolt/compiler-explorer"
                     title="View the source on GitHub" target="_blank" rel="noopener")
-                      img(height="20" width="20" src=require("GitHub-Mark-20px.png"))
-                      | &nbsp; Source on GitHub
+                      span.fab.fa-github
+                      span.share_text
+                        | &nbsp; Source on GitHub
                 li
                   a(href="https://groups.google.com/forum/#!forum/compiler-explorer-discussion"
                   title="Join Compiler Explorer Public Google Group" target="_blank" rel="noopener")
-                    img(height="20" width="20" src=require("Google-Groups-20px.png"))
-                    | &nbsp; Mailing list
+                    span.fab.fa-google
+                    span.share_text
+                      | &nbsp; Mailing list
                 li: a(href="https://github.com/mattgodbolt/compiler-explorer/wiki/Installed-libraries" target="_blank" rel="noopener") Installed libraries
                 li: a(href="https://github.com/mattgodbolt/compiler-explorer/wiki" target="_blank" rel="noopener") Wiki
                 li: a(href="https://github.com/mattgodbolt/compiler-explorer/issues" target="_blank" rel="noopener") Report an issue
@@ -62,7 +65,7 @@ html(lang="en")
                 li: a(href="https://xania.org/MattGodbolt" rel="author" target="_blank") About the author
                 li#changes: a(href="#") Changelog
                 if sharingEnabled
-                  li.tweet: a.twitter-share-button(href="https://twitter.com/share" data-via="mattgodbolt")
+                  li#shariff
 
     #root
 

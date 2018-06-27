@@ -194,3 +194,11 @@ body {
     background-color: #f44336;
     color: #ffffff;
 }
+
+.reddit a {
+    color: #FFFFFF !important;
+}
+
+.twitter a {
+    color: #FFFFFF !important;
+}

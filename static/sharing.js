@@ -1,25 +1,25 @@
 // Copyright (c) 2016, Matt Godbolt
 // All rights reserved.
-// 
-// Redistribution and use in source and binary forms, with or without 
+//
+// Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
-// 
-//     * Redistributions of source code must retain the above copyright notice, 
+//
+//     * Redistributions of source code must retain the above copyright notice,
 //       this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above copyright 
-//       notice, this list of conditions and the following disclaimer in the 
+//     * Redistributions in binary form must reproduce the above copyright
+//       notice, this list of conditions and the following disclaimer in the
 //       documentation and/or other materials provided with the distribution.
-// 
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE 
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
 "use strict";
@@ -29,6 +29,7 @@ var options = require('options');
 var shortenURL = require('./urlshorten-' + options.urlShortenService);
 var Components = require('components');
 var url = require('./url');
+var Shariff = require('shariff');
 
 function configFromEmbedded(embeddedUrl) {
     // Old-style link?
@@ -68,10 +69,31 @@ function getEmbeddedUrl(layout, readOnly) {
     return location + path + url.serialiseState(layout.toConfig());
 }
 
+function createShariff(element, options) {
+    element.addClass('shariff');
+    return new Shariff(element, {
+        buttonStyle: options.buttonStyle || 'standard',
+        orientation: options.orientation || 'horizontal',
+        infoUrl: '#cookies',
+        infoDisplay: 'self',
+        lang: 'en',
+        services: options.services || ['twitter', 'reddit'],
+        twitterVia: 'mattgodbolt',
+        // Use js to set the correct default domain? (For 3rd party users)
+        url: options.url || 'https://godbolt.org',
+        theme: 'standard'
+    });
+}
+
+function initShariff() {
+    createShariff($('#shariff'), {
+        orientation: 'vertical'
+    });
+}
+
 function initShareButton(getLink, layout) {
     var html = $('.template .urls').html();
     var currentBind = '';
-
     var title = getLink.attr('title'); // preserve before popover/tooltip breaks it
 
     getLink.popover({
@@ -88,9 +110,23 @@ function initShareButton(getLink, layout) {
         if (!currentBind) currentBind = $(root.find('.sources a')[0]).data().bind;
 
         function update() {
+            var url = currentBind ? urls[currentBind] || "" : "";
+            if (options.sharingEnabled) {
+                // Is there a better way to get the popup object? There's a field with the element in getLink, but
+                // it's under a jQueryXXXXXX field which I guess changes name for each version?
+                var popoverId = '#' + getLink.attr('aria-describedby');
+                var socialSharing = $(popoverId).find('.socialsharing');
+
+                socialSharing.empty();
+                createShariff(socialSharing, {
+                    url: url,
+                    buttonStyle: 'standard',
+                    orientation: 'vertical'
+                });
+            }
             if (!currentBind) return;
             root.find('.current').text(currentBind);
-            $(".permalink:visible").val(urls[currentBind] || "");
+            $(".permalink:visible").val(url);
         }
 
         root.find('.sources a').on('click', function () {
@@ -124,6 +160,8 @@ function initShareButton(getLink, layout) {
         if (!target.is(getLink) && getLink.has(target).length === 0 && target.closest('.popover').length === 0)
             getLink.popover("hide");
     });
+
+    initShariff();
 }
 
 function permalink(layout) {

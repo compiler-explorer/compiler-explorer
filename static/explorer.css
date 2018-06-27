@@ -1,3 +1,5 @@
+@import url("~shariff/dist/shariff.complete.css");
+
 /* TEMP HACK: https://github.com/Microsoft/monaco-editor/issues/349 */
 .quick-open-tree .row {
     margin-left: 0;

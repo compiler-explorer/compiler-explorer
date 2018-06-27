@@ -25,7 +25,6 @@
 "use strict";
 var options = require('options');
 var Raven = require('raven-js');
-var $ = require('jquery');
 
 if (options.raven) {
     Raven.config(options.raven, {
@@ -61,22 +60,6 @@ if (options.googleAnalyticsEnabled) {
 /* eslint-enable */
 
 function initialise() {
-    if (options.embedded) return;
-    $(function () {
-        function create_script_element(id, url) {
-            var el = document.createElement('script');
-            el.type = 'text/javascript';
-            el.async = true;
-            el.id = id;
-            el.src = url;
-            var s = document.getElementsByTagName('script')[0];
-            s.parentNode.insertBefore(el, s);
-        }
-
-        if (options.sharingEnabled) {
-            create_script_element('twitter-wjs', 'https://platform.twitter.com/widgets.js');
-        }
-    });
 }
 
 module.exports = {

@@ -19,6 +19,9 @@
         type="button" data-clipboard-target=".popover .permalink"
         title="Copy to clipboard")
           span.glyphicon.glyphicon-copy(style="width:13px")
+    if sharingEnabled
+      .socialsharing
+
   #codeEditor
     .top-bar.btn-toolbar(role="toolbar")
       include font-size.pug
