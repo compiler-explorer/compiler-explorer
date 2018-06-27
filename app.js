@@ -339,8 +339,22 @@ Promise.all([compilerFinder.find(), aws.initConfig(awsProps)])
             webServer.use(express.static(defArgs.staticDir, {maxAge: staticMaxAgeSecs * 1000}));
         }
 
-        // Based on combined format, but: No user IP, no unused fields for our usecase
-        const customMorganFormat = '[:date[clf]] ":method :url HTTP/:http-version" :status';
+        // Removes last 3 octets for IPv6 and last octet for IPv4
+        // There's probably a better way to do this
+        morgan.token('gdpr_ip', req => {
+            const ip = req.ip;
+            if (ip.includes(':')) {
+                // IPv6
+                return ip.replace(/:[\da-fA-F]{0,4}:[\da-fA-F]{0,4}:[\da-fA-F]{0,4}$/, ':::');
+            } else {
+                // IPv4
+                return ip.replace(/\.\d{1,3}$/, '.0');
+            }
+        });
+
+        // Based on combined format, but: GDPR compilant IP, no timestamp & no unused fields for our usecase
+        const customMorganFormat = ':gdpr_ip ":method :url" :status';
+
         webServer
             .use(Raven.requestHandler())
             .set('trust proxy', true)
