@@ -60,9 +60,16 @@ function definition() {
     addKeywords(["alignas", "alignof", "and", "and_eq", "asm", "bitand", "bitor", "char16_t", "char32_t", "compl",
         "not", "not_eq", "or", "or_eq", "xor", "xor_eq"]);
 
+    // #880
+    cppp.tokenizer.root[2] = [/\[\s*\[.*]\s*]/, 'annotation'];
+
     return cppp;
 }
 
+var def = definition();
+
 monaco.languages.register({id: 'cppp'});
 monaco.languages.setLanguageConfiguration('cppp', cpp.conf);
-monaco.languages.setMonarchTokensProvider('cppp', definition());
+monaco.languages.setMonarchTokensProvider('cppp', def);
+
+module.exports = def;

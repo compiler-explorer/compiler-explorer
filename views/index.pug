@@ -10,7 +10,8 @@ html(lang="en")
           a.navbar-brand(href="#" title="Compiler Explorer")
             img.normal(src=require("site-logo.svg") height="50" width="165" alt="Compiler Explorer")
             img.inverse(src=require("site-logo-inverse.svg") height="50" width="165" alt="Compiler Explorer")
-            img.beta-overlay(src=require("site-logo-beta.svg") height="50" width="165")
+            if extraBodyClass === "beta"
+              img.beta-overlay(src=require("site-logo-beta.svg") height="50" width="165")
           button(type="button" class="navbar-toggle collapsed" data-toggle="collapse"
           data-target="#navbar-collapse" aria-expanded="false")
             span.sr-only Toggle navigation
@@ -28,6 +29,10 @@ html(lang="en")
                 li.divider
                 li: a#ui-reset(href="#") Reset (code and UI layout)
           ul.nav.navbar-nav.navbar-right
+            if extraBodyClass === "beta"
+              li: a(href="https://github.com/mattgodbolt/compiler-explorer/issues" target="_blank" rel="noopener")
+                img(height="20" width="20" src=require("GitHub-Mark-20px.png"))
+                | &nbsp;Report an issue
             li: a#share(href="#") Share#[b.caret]
             li.dropdown
               a.dropdown-toggle(href="#" data-toggle="dropdown") Other#[b.caret]

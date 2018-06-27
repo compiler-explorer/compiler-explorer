@@ -43,7 +43,7 @@ function Opt(hub, container, state) {
     this.optEditor = monaco.editor.create(this.domRoot.find(".monaco-placeholder")[0], {
         value: this.code,
         scrollBeyondLastLine: false,
-        language: 'cppp', //we only support cpp(p) for now
+        language: 'plaintext',
         readOnly: true,
         glyphMargin: true,
         quickSuggestions: false,
@@ -58,7 +58,32 @@ function Opt(hub, container, state) {
     this._compilerid = state.id;
     this._compilerName = state.compilerName;
     this._editorid = state.editorid;
+    this.isCompilerSupported = false;
+
+    this.initButtons(state);
+    this.initCallbacks();
+
+    if (state && state.optOutput) {
+        this.showOptResults(state.optOutput);
+    }
+    this.setTitle();
+    this.eventHub.emit("optViewOpened", this._compilerid);
+}
+
+Opt.prototype.onEditorChange = function (id, source) {
+    if (this._editorid === id) {
+        this.code = source;
+        if (!this.isCompilerSupported) this.optEditor.setValue(source);
+    }
+};
+
+Opt.prototype.initButtons = function (state) {
     this.fontScale = new FontScale(this.domRoot, state, this.optEditor);
+
+    this.topBar = this.domRoot.find(".top-bar");
+};
+
+Opt.prototype.initCallbacks = function () {
     this.fontScale.on('change', _.bind(this.updateState, this));
 
     this.eventHub.on('compileResult', this.onCompileResult, this);
@@ -70,38 +95,28 @@ function Opt(hub, container, state) {
     this.container.on('destroy', this.close, this);
     this.eventHub.emit('requestSettings');
 
-    container.on('resize', this.resize, this);
-    container.on('shown', this.resize, this);
-    if (state && state.optOutput) {
-        this.showOptResults(state.optOutput);
-    }
-    this.setTitle();
-    this.eventHub.emit("optViewOpened", this._compilerid);
-}
-
-// TODO: de-dupe with compiler etc
-Opt.prototype.resize = function () {
-    var topBarHeight = this.domRoot.find(".top-bar").outerHeight(true);
-    this.optEditor.layout({
-        width: this.domRoot.width(),
-        height: this.domRoot.height() - topBarHeight
-    });
+    this.container.on('resize', this.resize, this);
+    this.container.on('shown', this.resize, this);
 };
 
-Opt.prototype.onEditorChange = function (id, source) {
-    if (this._editorid === id) {
-        this.code = source;
-        this.optEditor.setValue(source);
-    }
-};
-
-Opt.prototype.onCompileResult = function (id, compiler, result) {
-    if (result.hasOptOutput && this._compilerid === id) {
+Opt.prototype.onCompileResult = function (id, compiler, result, lang) {
+    if (this._compilerid !== id) return;
+    if (result.hasOptOutput) {
         this.showOptResults(result.optOutput);
     }
+    if (lang && lang.monaco && this.getCurrentEditorLanguage() !== lang.monaco) {
+        monaco.editor.setModelLanguage(this.optEditor.getModel(), lang.monaco);
+    }
 };
+
+// Monaco language id of the current editor
+Opt.prototype.getCurrentEditorLanguage = function () {
+    return this.optEditor.getModel().getModeId();
+};
+
 Opt.prototype.setTitle = function () {
-    this.container.setTitle(this._compilerName + " Opt Viewer (Editor #" + this._editorid + ", Compiler #" + this._compilerid + ")");
+    this.container.setTitle(
+        this._compilerName + " Opt Viewer (Editor #" + this._editorid + ", Compiler #" + this._compilerid + ")");
 };
 
 Opt.prototype.getDisplayableOpt = function (optResult) {
@@ -148,47 +163,37 @@ Opt.prototype.onCompiler = function (id, compiler, options, editorid) {
     if (id === this._compilerid) {
         this._compilerName = compiler ? compiler.name : '';
         this.setTitle();
-        if (compiler && !compiler.supportsOptOutput) {
-            this.code = this.optEditor.getValue();
-            this.optEditor.setValue("<" + compiler.version + " does not support the optimisation view>");
+        if (!compiler || !compiler.supportsOptOutput) {
+            if (!this.isCompilerSupported) this.code = this.optEditor.getValue();
+            this.optEditor.setValue("<OPT output is not supported for this compiler>");
+            this.isCompilerSupported = true;
             return;
         }
         this._editorid = editorid;
         this.optEditor.setValue(this.code);
+        this.isCompilerSupported = false;
     }
 };
 
-// TODO: de-dupe with compiler etc
 Opt.prototype.resize = function () {
-    var topBarHeight = this.domRoot.find(".top-bar").outerHeight(true);
+    var topBarHeight = this.topBar.outerHeight(true);
     this.optEditor.layout({
         width: this.domRoot.width(),
         height: this.domRoot.height() - topBarHeight
     });
 };
 
-Opt.prototype.onEditorChange = function (id, source) {
-    if (this._editorid === id) {
-        this.code = source;
-        this.optEditor.setValue(source);
-    }
-};
-
-Opt.prototype.onCompileResult = function (id, compiler, result) {
-    if (result.hasOptOutput && this._compilerid === id) {
-        this.showOptResults(result.optOutput);
-    }
-};
-
-Opt.prototype.setTitle = function () {
-    this.container.setTitle(this._compilerName + " Opt Viewer (Editor #" + this._editorid + ", Compiler #" + this._compilerid + ")");
-};
-
-Opt.prototype.getDisplayableOpt = function (optResult) {
-    return "**" + optResult.optType + "** - " + optResult.displayString;
-};
-
 Opt.prototype.updateState = function () {
+    this.container.setState(this.currentState());
+};
+
+Opt.prototype.currentState = function () {
+    var state = {
+        id: this._compilerid,
+        editorid: this._editorid
+    };
+    this.fontScale.addState(state);
+    return state;
 };
 
 Opt.prototype.close = function () {
@@ -210,6 +215,7 @@ Opt.prototype.onCompilerClose = function (id) {
 
 Opt.prototype.onSettingsChange = function (newSettings) {
     this.optEditor.updateOptions({
+        contextmenu: newSettings.useCustomContextMenu,
         minimap: {
             enabled: newSettings.showMinimap
         }

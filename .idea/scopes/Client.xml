@@ -1,0 +1,3 @@
+<component name="DependencyValidationManager">
+  <scope name="Client" pattern="file[compiler-explorer]:static/*||file[compiler-explorer]:static/themes/*||file[compiler-explorer]:static/assets/*||file[compiler-explorer]:views/*" />
+</component>

@@ -23,20 +23,27 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 const chai = require('chai'),
+    CompilationEnvironment = require('../../lib/compilation-env'),
     CompileHandler = require('../../lib/handlers/compile').Handler,
-    {fakeProps} = require('../../lib/properties'),
     express = require('express'),
-    bodyParser = require('body-parser');
-
+    bodyParser = require('body-parser'),
+    properties = require('../../lib/properties');
 chai.use(require("chai-http"));
 chai.should();
+
+const languages = {
+    a: {id: 'a'},
+    b: {id: 'b'},
+    d: {id: 'd'}
+};
+
+const compilerProps = new properties.CompilerProps(languages, properties.fakeProps({}));
 
 describe('Compiler tests', () => {
     const app = express();
     app.use(bodyParser.json()).use(bodyParser.text());
-    const fakeGccProps = {};
-    const fakeCompilerProps = {};
-    const compileHandler = new CompileHandler(fakeProps(fakeGccProps), fakeProps(fakeCompilerProps));
+    const compilationEnvironment = new CompilationEnvironment(compilerProps);
+    const compileHandler = new CompileHandler(compilationEnvironment);
     app.post('/:compiler/compile', compileHandler.handle.bind(compileHandler));
 
     it('throws for unknown compilers', () => {

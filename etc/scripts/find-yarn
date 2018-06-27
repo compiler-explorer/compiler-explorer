@@ -1,6 +1,7 @@
 #!/bin/bash
 
 set -e
+OUT="$1"
 
 YARN=$(pwd)/node_modules/.bin/yarn
 
@@ -10,4 +11,4 @@ if [[ ! -x "${YARN}" ]]; then
     >&2 npm install yarn
 fi
 
-echo ${YARN}
+echo ${YARN} > ${OUT}

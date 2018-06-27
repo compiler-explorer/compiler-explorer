@@ -37,7 +37,7 @@ function Ast(hub, container, state) {
     this.astEditor = monaco.editor.create(this.domRoot.find(".monaco-placeholder")[0], {
         value: "",
         scrollBeyondLastLine: false,
-        language: 'cppp', //we only support cpp for now
+        language: 'plaintext',
         readOnly: true,
         glyphMargin: true,
         fontFamily: 'Consolas, "Liberation Mono", Courier, monospace',
@@ -52,7 +52,23 @@ function Ast(hub, container, state) {
     this._compilerid = state.id;
     this._compilerName = state.compilerName;
     this._editorid = state.editorid;
+
+    this.initButtons(state);
+    this.initCallbacks();
+
+    if (state && state.astOutput) {
+        this.showAstResults(state.astOutput);
+    }
+    this.setTitle();
+}
+
+Ast.prototype.initButtons = function (state) {
     this.fontScale = new FontScale(this.domRoot, state, this.astEditor);
+
+    this.topBar = this.domRoot.find(".top-bar");
+};
+
+Ast.prototype.initCallbacks = function () {
     this.fontScale.on('change', _.bind(this.updateState, this));
 
     this.container.on('destroy', this.close, this);
@@ -64,32 +80,37 @@ function Ast(hub, container, state) {
     this.eventHub.emit('astViewOpened', this._compilerid);
     this.eventHub.emit('requestSettings');
 
-    container.on('resize', this.resize, this);
-    container.on('shown', this.resize, this);
-    if (state && state.astOutput) {
-        this.showAstResults(state.astOutput);
-    }
-    this.setTitle();
-}
+    this.container.on('resize', this.resize, this);
+    this.container.on('shown', this.resize, this);
+};
 
 // TODO: de-dupe with compiler etc
 Ast.prototype.resize = function () {
-    var topBarHeight = this.domRoot.find(".top-bar").outerHeight(true);
+    var topBarHeight = this.topBar.outerHeight(true);
     this.astEditor.layout({
         width: this.domRoot.width(),
         height: this.domRoot.height() - topBarHeight
     });
 };
 
-Ast.prototype.onCompileResult = function (id, compiler, result) {
-    if (this._compilerid === id) {
-        if (result.hasAstOutput) {
-            this.showAstResults(result.astOutput);
-        }
-        else {
-            this.showAstResults("<No output>");
-        }
+Ast.prototype.onCompileResult = function (id, compiler, result, lang) {
+    if (this._compilerid !== id) return;
+
+    if (result.hasAstOutput) {
+        this.showAstResults(result.astOutput);
     }
+    else if (result.supportsAstView) {
+        this.showAstResults("<No output>");
+    }
+
+    if (lang && lang.monaco && this.getCurrentEditorLanguage() !== lang.monaco) {
+        monaco.editor.setModelLanguage(this.astEditor.getModel(), lang.monaco);
+    }
+};
+
+// Monaco language id of the current editor
+Ast.prototype.getCurrentEditorLanguage = function () {
+    return this.astEditor.getModel().getModeId();
 };
 
 Ast.prototype.setTitle = function () {
@@ -111,6 +132,9 @@ Ast.prototype.onCompiler = function (id, compiler, options, editorid) {
         this._compilerName = compiler ? compiler.name : '';
         this._editorid = editorid;
         this.setTitle();
+        if (compiler && !compiler.supportsAstView) {
+            this.astEditor.setValue("<AST output is not supported for this compiler>");
+        }
     }
 };
 
@@ -125,6 +149,16 @@ Ast.prototype.onCompilerClose = function (id) {
 };
 
 Ast.prototype.updateState = function () {
+    this.container.setState(this.currentState());
+};
+
+Ast.prototype.currentState = function () {
+    var state = {
+        id: this._compilerid,
+        editorid: this._editorid
+    };
+    this.fontScale.addState(state);
+    return state;
 };
 
 Ast.prototype.onCompilerClose = function (id) {
@@ -140,6 +174,7 @@ Ast.prototype.onCompilerClose = function (id) {
 
 Ast.prototype.onSettingsChange = function (newSettings) {
     this.astEditor.updateOptions({
+        contextmenu: newSettings.useCustomContextMenu,
         minimap: {
             enabled: newSettings.showMinimap
         }

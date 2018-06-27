@@ -3,7 +3,7 @@
 package main
 
 func Square(x int) int {
-  return x * x
+    return x * x
 }
 
 func main() {}

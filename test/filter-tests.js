@@ -108,9 +108,11 @@ function testFilter(filename, suffix, filters) {
 // bless("cases/bug-349.asm", "cases/bug-349.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
 // bless("cases/bug-348.asm", "cases/bug-348.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
 // bless("cases/bug-660.asm", "cases/bug-660.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
+// bless("cases/nvcc-example.asm", "cases/nvcc-example.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
+// bless("cases/clang-cuda-example.asm", "cases/clang-cuda.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
 // describe('A test', function() {
 //     it('should work', function(){
-//         console.log(processAsm(__dirname + '/cases/bug-660.asm', {directives: true, labels: true, commentOnly: true}));
+//         console.log(processAsm(__dirname + '/cases/clang-cuda-example.asm', {directives: true, labels: true, commentOnly: true}));
 //     });
 // });
 

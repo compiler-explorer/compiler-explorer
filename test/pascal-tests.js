@@ -24,26 +24,29 @@
 
 const chai = require('chai');
 const chaiAsPromised = require("chai-as-promised");
-const PascalDemangler = require('../lib/pascal-support').demangler;
+const PascalDemangler = require('../lib/pascal-support').Demangler;
 const PascalCompiler = require('../lib/compilers/pascal');
 const CompilationEnvironment = require('../lib/compilation-env');
 const fs = require('fs-extra');
 const utils = require('../lib/utils');
+const properties = require('../lib/properties');
 
 chai.use(chaiAsPromised);
 chai.should();
 
-const props = (key, deflt) => deflt;
+const languages = {
+    pascal: {id: 'pascal'}
+};
+
+const compilerProps = new properties.CompilerProps(languages, properties.fakeProps({}));
 
 describe('Basic compiler setup', function () {
-    const ce = new CompilationEnvironment(props);
+    const ce = new CompilationEnvironment(compilerProps);
     const info = {
-        "exe": null,
-        "remote": true,
-        "lang": "pascal"
+        exe: null,
+        remote: true,
+        lang: languages.pascal.id
     };
-
-    ce.compilerPropsL = () => "";
 
     const compiler = new PascalCompiler(info, ce);
 
@@ -300,15 +303,11 @@ describe('Pascal Ignored Symbols', function () {
 });
 
 describe('Pascal ASM line number injection', function () {
-    const ce = new CompilationEnvironment(props);
+    const ce = new CompilationEnvironment(compilerProps);
     const info = {
-        "exe": null,
-        "remote": true,
-        "lang": "pascal"
-    };
-
-    ce.compilerPropsL = function (lang, property, defaultValue) {
-        return "";
+        exe: null,
+        remote: true,
+        lang: languages.pascal.id
     };
 
     const compiler = new PascalCompiler(info, ce);
@@ -343,6 +342,32 @@ describe('Pascal objdump filtering', function () {
                     output.should.include("SQUARE():")
                 ]));
             });
+        });
+    });
+});
+
+describe('Pascal parseOutput', () => {
+    const ce = new CompilationEnvironment(compilerProps);
+    const info = {
+        exe: null,
+        remote: true,
+        lang: languages.pascal.id
+    };
+
+    const compiler = new PascalCompiler(info, ce);
+
+    it('should return parsed output', () => {
+        const result = {
+            stdout: "Hello, world!",
+            stderr: ""
+        };
+
+        compiler.parseOutput(result, "/tmp/path/output.pas", "/tmp/path").should.deep.equal({
+            inputFilename: "output.pas",
+            stdout: [{
+                "text": "Hello, world!"
+            }],
+            stderr: []
         });
     });
 });

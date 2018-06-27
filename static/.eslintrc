@@ -1,4 +1,3 @@
-// Client code linter config
 {
   "root": true,
   "extends": "eslint:recommended",
@@ -8,10 +7,9 @@
     "es6": false
   },
   "rules": {
-    // The idea is to implement this first 2 warnings slowly into the code, and to eventually enforce them
     "eqeqeq": ["error", "smart"],
-    "max-statements": ["warn", 50],
-    "max-len": ["warn", 120, { "ignoreRegExpLiterals": true }],
+    "max-statements": ["error", 50],
+    "max-len": ["error", 120, { "ignoreRegExpLiterals": true }],
     "strict": ["error", "safe"],
     "eol-last": ["error", "always"],
     "semi": ["error", "always"],
@@ -21,7 +19,8 @@
       "anonymous": "always",
       "named": "never",
       "asyncArrow": "always"
-    }]
+    }],
+    "quote-props": ["error", "as-needed"]
   },
   "parserOptions": {
     "ecmaVersion": 5

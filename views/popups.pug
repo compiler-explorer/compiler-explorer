@@ -21,14 +21,14 @@
                 li.template: a(href="#")
               .form-group
                 input.save-name(type="text" size="20")
-                button.btn.save-button(type="button") Save to browser-local storage
+                button.btn.btn-godbolt.save-button(type="button") Save to browser-local storage
             #load-file-system.tab-pane(role="tabpanel")
-              label.btn.btn-default.btn-file Load from a local file
+              label.btn.btn-godbolt.btn-file Load from a local file
                 input.local-file(type="file")
-              label.btn.btn-default.btn-file.save-btn Save to file
+              label.btn.btn-godbolt.btn-file.save-btn Save to file
                 input.save-file(type="button")
       .modal-footer
-        button.btn.btn-default(type="button" data-dismiss="modal") Close
+        button.btn.btn-godbolt(type="button" data-dismiss="modal") Close
 
 #alert.modal.fade.gl_keep(tabindex="-1" role="dialog")
   .modal-dialog
@@ -38,7 +38,7 @@
         h3.modal-title Something alert worthy
       .modal-body
       .modal-footer
-        button.btn.btn-default(type="button" data-dismiss="modal") Close
+        button.btn.btn-godbolt(type="button" data-dismiss="modal") Close
 
 #yes-no.modal.fade.gl_keep(tabindex="-1" role="dialog")
   .modal-dialog
@@ -48,8 +48,8 @@
         h3.modal-title Well, do you or not?
       .modal-body
       .modal-footer
-        button.btn.no(type="button" data-dismiss="modal") No
-        button.btn.yes(type="button" data-dismiss="modal") Yes
+        button.btn.btn-godbolt.no(type="button" data-dismiss="modal") No
+        button.btn.btn-godbolt.yes(type="button" data-dismiss="modal") Yes
 
 #settings.modal.fade.gl_keep(tabindex="-1" role="dialog")
   .modal-dialog
@@ -114,7 +114,10 @@
               label
                 | &nbsp;Tab width&nbsp;
                 select.tabWidth
-
+            div
+              label
+                | Format based on&nbsp;
+                select.formatBase
         .well.well-sm
           h4 Compilation
           .form-group(role="group")
@@ -126,6 +129,6 @@
               | Colour scheme&nbsp;
               select.colourScheme
       .modal-footer
-        button.btn.btn-default(type="button" data-dismiss="modal") Close
+        button.btn.btn-godbolt(type="button" data-dismiss="modal") Close
 
 #notifications

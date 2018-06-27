@@ -1,5 +1,7 @@
 default: run
 
+export XZ_DEFAULTS="-T 0"
+
 # If you see "node-not-found" or "yarn-not-found" then you need to depend
 # on either node-installed or yarn-installed.
 NODE:=node-not-found
@@ -10,9 +12,9 @@ YARN:=yarn-not-found
 # if they fail, they stop the make process. As best I can tell there's no
 # way to get make to fail if a sub-shell command fails.
 .node-bin: etc/scripts/find-node
-	@etc/scripts/find-node > .node-bin
+	@etc/scripts/find-node .node-bin
 .yarn-bin: etc/scripts/find-yarn node-installed
-	@etc/scripts/find-yarn > .yarn-bin
+	@etc/scripts/find-yarn .yarn-bin
 
 # All targets that need node must depend on this to ensure the NODE variable
 # is appropriately set, and that PATH is updated so that yarn etc will use this
@@ -120,3 +122,7 @@ c-preload:
 install-git-hooks:
 	ln -sf $(shell pwd)/etc/scripts/pre-commit .git/hooks/pre-commit
 .PHONY: install-git-hooks
+
+changelog:
+	python ./etc/scripts/changelog.py
+.PHONY: changelog

@@ -117,14 +117,11 @@ require("monaco-loader")().then(function () {
                 config = savedState !== null ? JSON.parse(savedState) : defaultConfig;
             }
         } else {
-            config = _.extend(defaultConfig, {
-                settings: {
-                    showMaximiseIcon: false,
-                    showCloseIcon: false,
-                    hasHeaders: false
-                }
-            },
-            sharing.configFromEmbedded(window.location.hash.substr(1)));
+            config = _.extend(defaultConfig, {settings: {
+                showMaximiseIcon: false,
+                showCloseIcon: false,
+                hasHeaders: false
+            }}, sharing.configFromEmbedded(window.location.hash.substr(1)));
         }
 
         var root = $("#root");
@@ -153,7 +150,7 @@ require("monaco-loader")().then(function () {
         });
 
         function sizeRoot() {
-            var height = $(window).height() - root.position().top;
+            var height = $(window).height() - (root.position().top || 0);
             root.height(height);
             layout.updateSize();
         }
@@ -174,6 +171,8 @@ require("monaco-loader")().then(function () {
             });
         }
 
+        var alertSystem = new Alert();
+
         setupAdd($('#add-diff'), function () {
             return Components.getDiff();
         });
@@ -185,10 +184,10 @@ require("monaco-loader")().then(function () {
             window.location.reload();
         });
         $('#thanks-to').click(function () {
-            new Alert().alert("Special thanks to", $(require('./thanks.html')));
+            alertSystem.alert("Special thanks to", $(require('./thanks.html')));
         });
         $('#changes').click(function () {
-            new Alert().alert("Changelog", $(require('./changelog.html')));
+            alertSystem.alert("Changelog", $(require('./changelog.html')));
         });
     }
 

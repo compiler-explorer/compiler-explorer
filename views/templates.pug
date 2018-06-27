@@ -3,42 +3,40 @@
     .input-group.urls-container
       .input-group-btn
         .btn-group.btn-group-sm
-          button.btn.btn-sm.dropdown-toggle(
+          button.btn.btn-godbolt.btn-sm.dropdown-toggle(
           data-toggle="dropdown" type="button" aria-haspopup="true" aria-expanded="false")
             span.current Short
             span.caret
           ul.dropdown-menu.sources
-            if gapiKey
-              li: a(href="#" data-bind="Short") Short
+            li: a(href="#" data-bind="Short") Short
             li: a(href="#" data-bind="Full") Full
             li: a(href="#" data-bind="Embed") Embed
             li: a(href="#" data-bind="Embed (RO)") Embed (read only)
       input.form-control.input-sm.permalink(
       type="text" placeholder="Loading" readonly size="1024")
       span.input-group-btn
-        button.btn.btn-sm.clippy(
+        button.btn.btn-godbolt.btn-sm.clippy(
         type="button" data-clipboard-target=".popover .permalink"
         title="Copy to clipboard")
-          img.clippy(
-          src = require("clippy.svg") width="13px"
-          alt="Copy to clipboard")
+          span.glyphicon.glyphicon-copy(style="width:13px")
   #codeEditor
     .top-bar.btn-toolbar(role="toolbar")
       include font-size.pug
       .btn-group.btn-group-sm
-        button.btn.btn-default.btn-sm.load-save(title="Load or save text")
+        button.btn.btn-godbolt.btn-sm.load-save(title="Load or save text")
           span.glyphicon.glyphicon-floppy-disk
-          | &nbsp;Save/Load
+          span.hideable &nbsp;Save/Load
       if !embedded
         .btn-group.btn-group-sm.dropdown
-          button.btn.btn-default.btn-sm.dropdown-toggle.add-pane(type="button" title="Add a new pane" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
+          button.btn.btn-godbolt.btn-sm.dropdown-toggle.add-pane(type="button" title="Add a new pane" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
             span.glyphicon.glyphicon-plus
-            | &nbsp;Add new...#[b.caret]
-          div.dropdown-menu.pane-dropdown(aria-labbeledby="add-pane")
-            button.btn.btn-default.btn-sm.add-compiler(title="Add a new compiler for this source" aria-label="Compiler")
+            span.hideable &nbsp;Add new...
+            | #[b.caret]
+          div.dropdown-menu.pane-dropdown(aria-labelledby="add-pane")
+            button.btn.btn-godbolt.btn-sm.add-compiler(title="Add a new compiler for this source" aria-label="Compiler")
               span.glyphicon.glyphicon-open
               | &nbsp;Compiler
-            button.btn.btn-default.btn-sm.conformance(title="Add a new conformance view" aria-label="Conformance view")
+            button.btn.btn-godbolt.btn-sm.conformance(title="Add a new conformance view" aria-label="Conformance view")
               span.glyphicon.glyphicon-list-alt
               | &nbsp;Conf. view
       .btn-group.btn-group-sm.pull-right
@@ -50,60 +48,63 @@
       table
         tr
           td: select.compiler-picker(placeholder="Select a compiler...")
-          td: input.options.form-control(type="text" placeholder="Compiler options..." size="256")
+          td: input.options.form-control(type="text" placeholder="Compiler options..." size="256" autocorrect="off" autocapitalize="off" spellcheck="false")
+          td: span.glyphicon.glyphicon-info-sign.prepend-options
       if !embedded
         include font-size.pug
       div.btn-group.btn-group-sm.filters(data-toggle="buttons")
         // TODO store these in the app and drive from there?
         // Make a dropdown? With more options?
-        button.btn.btn-sm(title="Compile to binary and disassemble the output" data-bind="binary")
+        button.btn.btn-godbolt.btn-sm(title="Compile to binary and disassemble the output" data-bind="binary")
           span 11010
-        button.btn.btn-sm(title="Execute the binary" data-bind="execute")
+        button.btn.btn-godbolt.btn-sm(title="Execute the binary" data-bind="execute")
           span ./a.out
-        button.btn.btn-sm.active.nonbinary(title="Filter unused labels from the output" data-bind="labels")
+        button.btn.btn-godbolt.btn-sm.active.nonbinary(title="Filter unused labels from the output" data-bind="labels")
           span .LX0:
-        button.btn.btn-sm.active.nonbinary(title="Filter all assembler directives from the output" data-bind="directives")
+        button.btn.btn-godbolt.btn-sm.active.nonbinary(title="Filter all assembler directives from the output" data-bind="directives")
           span .text
-        button.btn.btn-sm.active.nonbinary(title="Remove all lines which are only comments from the output" data-bind="commentOnly")
+        button.btn.btn-godbolt.btn-sm.active.nonbinary(title="Remove all lines which are only comments from the output" data-bind="commentOnly")
           span //
-        button.btn.btn-sm.active(title="Trim intra-line whitespace" data-bind="trim")
+        button.btn.btn-godbolt.btn-sm(title="Trim intra-line whitespace" data-bind="trim")
           span \s+
-        button.btn.btn-sm.active(title="Output disassembly in Intel syntax" data-bind="intel")
+        button.btn.btn-godbolt.btn-sm.active(title="Output disassembly in Intel syntax" data-bind="intel")
           span Intel
-        button.btn.btn-sm.active(title="Demangle output" data-bind="demangle")
+        button.btn.btn-godbolt.btn-sm.active(title="Demangle output" data-bind="demangle")
           span Demangle
         if embedded
           include font-size.pug
       .btn-group.btn-group-sm
-        button.btn.btn-default.btn-sm.show-libs
+        button.btn.btn-godbolt.btn-sm.show-libs.dropdown-toggle
           span.glyphicon.glyphicon-book(title="Include libs")
-          | &nbsp;Libraries
+          span.hideable &nbsp;Libraries
+          | #[b.caret]
       if !embedded
         .btn-group.btn-group-sm.dropdown
-          button.btn.btn-default.btn-sm.dropdown-toggle.add-pane(type="button" title="Add a new pane" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
+          button.btn.btn-godbolt.btn-sm.dropdown-toggle.add-pane(type="button" title="Add a new pane" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
             span.glyphicon.glyphicon-plus
-            | &nbsp;Add new...#[b.caret]
-          div.dropdown-menu.pane-dropdown(aria-labbeledby="add-pane")
-            button.btn.btn-default.btn-sm.add-compiler(title="Clone this compiler window (click or drag)")
+            span.hideable &nbsp;Add new...
+            | #[b.caret]
+          div.dropdown-menu.pane-dropdown(aria-labelledby="add-pane")
+            button.btn.btn-godbolt.btn-sm.add-compiler(title="Clone this compiler window (click or drag)")
               span.glyphicon.glyphicon-new-window
               | &nbsp;Clone compiler
-            button.btn.btn-default.btn-sm.view-optimization(title="Show optimization output (Clang only)" disabled=true)
+            button.btn.btn-godbolt.btn-sm.view-optimization(title="Show optimization output")
               span.glyphicon.glyphicon-scale
-              | &nbsp;Clang Optimization output
-            button.btn.btn-default.btn-sm.view-ast(title="Show AST output (Clang only)")
+              | &nbsp;Optimization output
+            button.btn.btn-godbolt.btn-sm.view-ast(title="Show AST output")
               span.glyphicon.glyphicon-tree-deciduous
-              | &nbsp;Clang AST output
-            button.btn.btn-default.btn-sm.view-gccdump(title="Show Tree/RTL dump (GCC only)")
+              | &nbsp;AST output
+            button.btn.btn-godbolt.btn-sm.view-gccdump(title="Show Tree/RTL dump (GCC only)")
               span.glyphicon.glyphicon-tree-conifer
               | &nbsp;GCC Tree/RTL output
-            button.btn.btn-default.btn-sm.view-cfg(title="Show Graph Output")
+            button.btn.btn-godbolt.btn-sm.view-cfg(title="Show Graph Output")
               span.glyphicon.glyphicon-lamp
               | &nbsp;Graph output
     .monaco-placeholder
     .bottom-bar
       if !embedded
         .btn-group.btn-group-sm
-          button.btn.btn-default.btn-sm.output-btn
+          button.btn.btn-godbolt.btn-sm.output-btn
             span.glyphicon.glyphicon-alert.status
             | &nbsp;Output
             span.output-count
@@ -116,10 +117,15 @@
               | )
         span.full-compiler-name
         span.compile-time
-        button.btn.btn-default.btn-sm.clear-cache(title="Clear cache & recompile")
+        button.btn.btn-godbolt.btn-sm.clear-cache(title="Clear cache & recompile")
           span.glyphicon.glyphicon-refresh
 
   #compiler-output
+    .top-bar.btn-toolbar.options-toolbar(role="toolbar")
+      include font-size
+      div.btn-group.btn-group-sm.options(data-toggle="buttons")
+        button.btn.btn-godbolt.btn-sm.wrap-lines(title="Wrap lines" data-bind="wrap")
+          | Wrap lines
     pre.content
 
   #diff
@@ -145,20 +151,13 @@
   #gccdump
     .top-bar.btn-toolbar(role="toolbar")
       table
-        tr
-          td.header-fontscale
-            include font-size.pug
-          td: div Pass filters:
-          td: div.btn-group.btn-group-sm.dump-filters(data-toggle="buttons")
-            button.btn.btn-sm.active(title="Tree" data-bind="treeDump")
-              span Tree
-            button.btn.btn-sm.active(title="RTL" data-bind="rtlDump")
-              span RTL
-        tr
-          td: div
-          td: div Pass dump to display:
-          td: select.gccdump-pass-picker(placeholder="Select a pass...")
-
+        tr: td: select.gccdump-pass-picker(placeholder="Select a pass...")
+      include font-size
+      div.btn-group.btn-group-sm.dump-filters(data-toggle="buttons")
+          button.btn.btn-godbolt.btn-sm.active(title="Tree" data-bind="treeDump")
+            span Tree pass
+          button.btn.btn-godbolt.btn-sm.active(title="RTL" data-bind="rtlDump")
+            span RTL pass
     .monaco-placeholder
 
   #cfg
@@ -166,17 +165,19 @@
       table
         tr
           td: select.function-picker
-          td: button.btn.btn-default.btn-sm.show-hide-btn(title="Show navigation buttons")
-            span.glyphicon.glyphicon-unchecked
-          td: button.btn.btn-default.btn-sm.enable-physics-btn(title="Disable/Enable physics")
-            span P
+      div.btn-group.btn-group-sm.options(data-toggle="buttons")
+        button.btn.btn-godbolt.btn-sm.toggle-navigation(title="Toggle navigation buttons" data-bind="navigation")
+          span Navigation
+        button.btn.btn-godbolt.btn-sm.toggle-physics(title="Toggle physics to nodes" data-bind="physics")
+          span Physics
     div.graph-placeholder
 
   #conformance
     .top-bar.tn-toolbar(role="toolbar")
       .btn-group.btn-group-sm
-        button.btn.btn-default.btn-sm.add-compiler(title="Add compiler")
+        button.btn.btn-godbolt.btn-sm.add-compiler(title="Add compiler")
           span.glyphicon.glyphicon-plus-sign
+          span.hideable &nbsp;Add new compiler
     .conformance-wrapper
       table.compiler-list
 
@@ -184,12 +185,21 @@
     table
       tr.compiler-row
         td
-          span.status.glyphicon.glyphicon-signal
+          span.status.glyphicon
         td
           select.compiler-picker(placeholder="Select a compiler...")
         td
-          input.options.form-control(type="text" size="256" placeholder="Compiler options...")
+          input.options.form-control(type="text" size="256" placeholder="Compiler options..." autocorrect="off" autocapitalize="off" spellcheck="false")
+        td
+          span.glyphicon.glyphicon-info-sign.prepend-options
         td
           button.close(aria-label="Close")
             span(aria-hidden="true")
               | &times;
+
+  #libs-dropdown
+    .no-libs
+      p No libs configured for this language yet.
+      a(target="_blank" rel="noopener noreferrer" href="https://github.com/mattgodbolt/compiler-explorer/issues/new")
+        | You can suggest us one at any time&nbsp;
+        sup.glyphicon.glyphicon-new-window.opens-new-window(title="Opens in a new window")
