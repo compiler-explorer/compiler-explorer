@@ -51,6 +51,7 @@ if (options.googleAnalyticsEnabled) {
     })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
     ga('create', options.googleAnalyticsAccount, 'auto');
     ga('send', 'pageview');
+    ga('set', 'anonymizeIp', true);
     gaProxy = function () {
         window.ga.apply(window.ga, arguments);
     };
