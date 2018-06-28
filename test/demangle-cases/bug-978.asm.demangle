@@ -1,0 +1,21 @@
+D::a():
+  push rbp
+  mov rbp, rsp
+  mov QWORD PTR [rbp-8], rdi
+  mov eax, 1
+  pop rbp
+  ret
+D::abc():
+  push rbp
+  mov rbp, rsp
+  mov QWORD PTR [rbp-8], rdi
+  mov eax, 1
+  pop rbp
+  ret
+C::a():
+  push rbp
+  mov rbp, rsp
+  mov QWORD PTR [rbp-8], rdi
+  mov eax, 1
+  pop rbp
+  ret
