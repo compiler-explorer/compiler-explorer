@@ -38,7 +38,8 @@ const nopt = require('nopt'),
     express = require('express'),
     Raven = require('raven'),
     logger = require('./lib/logger').logger,
-    webpackDevMiddleware = require("webpack-dev-middleware");
+    webpackDevMiddleware = require("webpack-dev-middleware"),
+    utils = require('./lib/utils');
 
 
 // Parse arguments from command line 'node ./app.js args...'
@@ -339,21 +340,7 @@ Promise.all([compilerFinder.find(), aws.initConfig(awsProps)])
             webServer.use(express.static(defArgs.staticDir, {maxAge: staticMaxAgeSecs * 1000}));
         }
 
-        // Removes last 3 octets for IPv6 and last octet for IPv4
-        // There's probably a better way to do this
-        morgan.token('gdpr_ip', req => {
-            const ip = req.ip;
-            if (ip.includes('localhost')) {
-                return ip;
-            }
-            else if (ip.includes(':')) {
-                // IPv6
-                return ip.replace(/:[\da-fA-F]{0,4}:[\da-fA-F]{0,4}:[\da-fA-F]{0,4}$/, ':::');
-            } else {
-                // IPv4
-                return ip.replace(/\.\d{1,3}$/, '.0');
-            }
-        });
+        morgan.token('gdpr_ip', req => utils.anonymizeIp(req.ip));
 
         // Based on combined format, but: GDPR compilant IP, no timestamp & no unused fields for our usecase
         const morganFormat = isDevMode() ? 'dev' : ':gdpr_ip ":method :url" :status';

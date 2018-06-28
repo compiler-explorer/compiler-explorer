@@ -184,3 +184,21 @@ describe('Pads right', () => {
         utils.padRight('abcd', 2).should.equal('abcd');
     });
 });
+
+describe('Anonymizes all kind of IPs', () => {
+    it('Ignores localhost', () => {
+        utils.anonymizeIp('localhost').should.equal('localhost');
+        utils.anonymizeIp('localhost:42').should.equal('localhost:42');
+    });
+    it('Removes last octet from IPv4 addresses', () => {
+        utils.anonymizeIp('127.0.0.0').should.equal('127.0.0.0');
+        utils.anonymizeIp('127.0.0.10').should.equal('127.0.0.0');
+        utils.anonymizeIp('127.0.0.255').should.equal('127.0.0.0');
+    });
+    it('Removes last 3 octets from IPv6 addresses', () => {
+        // Not necessarily valid addresses, we're interested in the format
+        utils.anonymizeIp('ffff:aaaa:dead:beef').should.equal('ffff:0:0:0');
+        utils.anonymizeIp('bad:c0de::').should.equal('bad:0:0:0');
+        utils.anonymizeIp(':1d7e::c0fe').should.equal(':0:0:0');
+    });
+});
