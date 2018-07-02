@@ -29,7 +29,25 @@ var options = require('options');
 var shortenURL = require('./urlshorten-' + options.urlShortenService);
 var Components = require('components');
 var url = require('./url');
-var Shariff = require('shariff');
+
+var shareServices = {
+    twitter: {
+        cssClass: 'share-twitter',
+        getLink: function (title, url) {
+            return "https://twitter.com/intent/tweet?text=" +
+                encodeURIComponent(title) + '&url=' + encodeURIComponent(url) + '&via=mattgodbolt';
+        },
+        text: 'Tweet'
+    },
+    reddit: {
+        cssClass: 'share-reddit',
+        getLink: function (title, url) {
+            return 'http://www.reddit.com/submit?url=' +
+                encodeURIComponent(url) + '&title=' + encodeURIComponent(title);
+        },
+        text: 'Share on Reddit'
+    }
+};
 
 function configFromEmbedded(embeddedUrl) {
     // Old-style link?
@@ -69,25 +87,12 @@ function getEmbeddedUrl(layout, readOnly) {
     return location + path + url.serialiseState(layout.toConfig());
 }
 
-function createShariff(element, options) {
-    element.addClass('shariff');
-    return new Shariff(element, {
-        buttonStyle: options.buttonStyle || 'standard',
-        orientation: options.orientation || 'horizontal',
-        infoUrl: '#cookies',
-        infoDisplay: 'self',
-        lang: 'en',
-        services: options.services || ['twitter', 'reddit'],
-        twitterVia: 'mattgodbolt',
-        // Use js to set the correct default domain? (For 3rd party users)
-        url: options.url || 'https://godbolt.org',
-        theme: 'standard'
-    });
-}
-
-function initShariff() {
-    createShariff($('#shariff'), {
-        orientation: 'vertical'
+function updateShares(container, url) {
+    _.each(shareServices, function (service) {
+        container.append($('<a></a>')
+            .prop('href', service.getLink('Compiler Explorer', url))
+            .addClass(service.cssClass)
+            .text(service.text));
     });
 }
 
@@ -116,13 +121,8 @@ function initShareButton(getLink, layout) {
                 // it's under a jQueryXXXXXX field which I guess changes name for each version?
                 var popoverId = '#' + getLink.attr('aria-describedby');
                 var socialSharing = $(popoverId).find('.socialsharing');
-
                 socialSharing.empty();
-                createShariff(socialSharing, {
-                    url: url,
-                    buttonStyle: 'standard',
-                    orientation: 'vertical'
-                });
+                updateShares(socialSharing, url || "https://godbolt.org");
             }
             if (!currentBind) return;
             root.find('.current').text(currentBind);
@@ -161,7 +161,9 @@ function initShareButton(getLink, layout) {
             getLink.popover("hide");
     });
 
-    initShariff();
+    if (options.sharingEnabled) {
+        updateShares($('#socialshare'), 'https://godbolt.org');
+    }
 }
 
 function permalink(layout) {

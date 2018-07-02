@@ -47,7 +47,6 @@
     "selectize": "^0.12.4",
     "semver": "^5.5.0",
     "serve-favicon": "^2.4.5",
-    "shariff": "^3.0.1",
     "shell-quote": "1.6.x",
     "systemd-socket": "0.0.0",
     "temp": "0.8.x",
