@@ -88,13 +88,22 @@ function getEmbeddedUrl(layout, readOnly) {
 }
 
 function updateShares(container, url) {
-    _.each(shareServices, function (service) {
-        container.append($('<a></a>')
+    var baseTemplate = $('#share-item');
+    _.each(shareServices, function (service, serviceName) {
+        var newElement = baseTemplate.children('a.share-item').clone();
+        var logoPath = baseTemplate.data('logo-' + serviceName);
+        if (logoPath) {
+            newElement.children('img.share-item-logo')
+                .prop('src', logoPath);
+        }
+        if (service.text) {
+            newElement.children('span.share-item-text')
+                .text(service.text);
+        }
+        newElement
             .prop('href', service.getLink('Compiler Explorer', url))
-            .prop('rel', 'noopener noreferrer')
-            .prop('target', '_blank')
             .addClass(service.cssClass)
-            .text(service.text));
+            .appendTo(container);
     });
 }
 
