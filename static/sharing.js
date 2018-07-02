@@ -91,6 +91,8 @@ function updateShares(container, url) {
     _.each(shareServices, function (service) {
         container.append($('<a></a>')
             .prop('href', service.getLink('Compiler Explorer', url))
+            .prop('rel', 'noopener noreferrer')
+            .prop('target', '_blank')
             .addClass(service.cssClass)
             .text(service.text));
     });

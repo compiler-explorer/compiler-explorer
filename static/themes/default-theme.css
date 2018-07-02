@@ -195,12 +195,12 @@ body {
     color: #ffffff;
 }
 
-.share-twitter {
+#socialshare .share-twitter {
     background-color: #1da1f2;
     color: #f5f8fa;
 }
 
-.share-reddit {
+#socialshare .share-reddit {
     background-color: #ff4500;
     color: #cee3f8;
 }
