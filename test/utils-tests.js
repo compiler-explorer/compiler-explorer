@@ -23,7 +23,8 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 const chai = require('chai'),
-    utils = require('../lib/utils');
+    utils = require('../lib/utils'),
+    logger = require('../lib/logger').logger;
 
 chai.should();
 
@@ -200,5 +201,17 @@ describe('Anonymizes all kind of IPs', () => {
         utils.anonymizeIp('ffff:aaaa:dead:beef').should.equal('ffff:0:0:0');
         utils.anonymizeIp('bad:c0de::').should.equal('bad:0:0:0');
         utils.anonymizeIp(':1d7e::c0fe').should.equal(':0:0:0');
+    });
+});
+
+describe('Logger functionality', () => {
+    it('has info stream with a write function', () => {
+        logger.stream.write.should.a("function");
+    });
+    it('Has warning stream with a write function', () => {
+        logger.warnStream.write.should.a("function");
+    });
+    it('Has error stream with a write function', () => {
+        logger.errStream.write.should.a("function");
     });
 });
