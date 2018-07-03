@@ -106,7 +106,8 @@ require("monaco-loader")().then(function () {
                 services: []
             },
             cookie: {
-                domain: '.localhost:10240'
+                // TODO: undefined for localhost testing, will change before merge
+                domain: undefined // '.godbolt.org'
             },
             elements: {
                 messagelink: '<span id="cookieconsent:desc" class="cc-message">' +
