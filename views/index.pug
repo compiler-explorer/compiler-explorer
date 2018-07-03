@@ -63,19 +63,13 @@ html(lang="en")
                 li#changes: a(href="#") Changelog
                 if sharingEnabled
                   li#socialshare
+            li.dropdown
+              a.dropdown-toggle(href="#" data-toggle="dropdown") Policies#[b.caret]
+              ul.dropdown-menu.menu-other
+                li#cookies: a(href="#") Cookie policy
+                li#privacy: a(href="#") Privacy policy
 
     #root
-
-    .navbar-fixed-bottom
-      .container-fluid
-        p
-          | This page uses cookie/localStorage technology to store your page state, including code, editor settings and window layout.
-          a#cookies(href="#")
-            | Find out more on how we use cookie/localStorage technology and how you can change your settings
-          a(href="#")
-            | I consent
-          a(href="#")
-            | I DO NOT consent
 
 
     include templates.pug

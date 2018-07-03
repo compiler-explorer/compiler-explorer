@@ -1033,6 +1033,10 @@ cookie@0.3.1:
   version "0.3.1"
   resolved "https://registry.yarnpkg.com/cookie/-/cookie-0.3.1.tgz#e7e0a1f9ef43b4c8ba925c5c5a96e806d16873bb"
 
+cookieconsent@^3.0.6:
+  version "3.0.6"
+  resolved "https://registry.yarnpkg.com/cookieconsent/-/cookieconsent-3.0.6.tgz#147afa3e594e7b1a7826e49cb322aa0beee7b987"
+
 cookiejar@2.0.x:
   version "2.0.6"
   resolved "https://registry.yarnpkg.com/cookiejar/-/cookiejar-2.0.6.tgz#0abf356ad00d1c5a219d88d44518046dd026acfe"

@@ -27,6 +27,7 @@ require("monaco-loader")().then(function () {
 
     require('bootstrap');
     require('bootstrap-slider');
+    require('cookieconsent');
 
     var analytics = require('analytics');
     var sharing = require('sharing');
@@ -76,6 +77,70 @@ require("monaco-loader")().then(function () {
         });
     }
 
+    function setupButtons() {
+        var alertSystem = new Alert();
+
+        window.cookieconsent.initialise({
+            palette: {
+                popup: {
+                    background: "#eaf7f7",
+                    text: "#5c7291"
+                },
+                button: {
+                    background: "#56cbdb",
+                    text: "#ffffff"
+                }
+            },
+            theme: "edgeless",
+            type: "opt-in",
+            content: {
+                href: "#",
+                message: "Compiler Explorer uses cookies & related technologies to provide a better service.",
+                dismiss: 'Do NOT allow cookies',
+                header: 'This is amazing, isnt it?'
+            },
+            law: {
+                regionalLaw: false
+            },
+            location: {
+                services: []
+            },
+            cookie: {
+                domain: '.localhost:10240'
+            },
+            elements: {
+                messagelink: '<span id="cookieconsent:desc" class="cc-message">' +
+                '{{message}} <a aria-label="learn more about cookies" tabindex="0" class="cc-link cookies" ' +
+                'href="{{href}}">{{link}}</a></span>',
+                link: '<a aria-label="learn more about cookies" tabindex="0" class="cc-link cookies" href="{{href}}">' +
+                '{{link}}</a>'
+            },
+            // fn(status, old)
+            onStatusChange: function () {
+                // The user selected an option, act accordingly
+            }
+        });
+
+        $('#ui-reset').click(function () {
+            local.remove('gl');
+            window.location.reload();
+        });
+        $('#thanks-to').click(function () {
+            alertSystem.alert("Special thanks to", $(require('./thanks.html')));
+        });
+        $('#changes').click(function () {
+            alertSystem.alert("Changelog", $(require('./changelog.html')));
+        });
+        var openCookiePolicy = function () {
+            alertSystem.alert("Cookies & related technologies policy", $(require('./cookies.html')));
+        };
+        $('#cookies').click(openCookiePolicy);
+        $('.cookies').click(openCookiePolicy);
+        $('#privacy').click(function () {
+            alertSystem.alert("Privacy policy", $(require('./privacy.html')));
+        });
+    }
+
     function start() {
         analytics.initialise();
 
@@ -105,7 +170,8 @@ require("monaco-loader")().then(function () {
         });
 
         var hashPart = null;
-        var linkablePopups = ['#thanks-to', '#changes', '#cookies', '#setting'];
+        // Which buttons act as a linkable popup
+        var linkablePopups = ['#thanks-to', '#changes', '#cookies', '#setting', '#privacy'];
         if (linkablePopups.indexOf(window.location.hash) > -1) {
             hashPart = window.location.hash;
             window.location.hash = "";
@@ -178,32 +244,15 @@ require("monaco-loader")().then(function () {
             });
         }
 
-        var alertSystem = new Alert();
-
         setupAdd($('#add-diff'), function () {
             return Components.getDiff();
         });
         setupAdd($('#add-editor'), function () {
             return Components.getEditor();
         });
-        $('#ui-reset').click(function () {
-            local.remove('gl');
-            window.location.reload();
-        });
-        $('#thanks-to').click(function () {
-            alertSystem.alert("Special thanks to", $(require('./thanks.html')));
-        });
-        $('#changes').click(function () {
-            alertSystem.alert("Changelog", $(require('./changelog.html')));
-        });
-        $('#cookies').click(function () {
-            alertSystem.ask("Cookies & related technologies", $(require('./cookies.html')), {
-                yesHtml: 'I consent',
-                yesClass: 'consent-cookie-yes',
-                noHtml: 'I DO NOT consent',
-                noClass: 'consent-cookie-no'
-            });
-        });
+
+        setupButtons();
+
         if (hashPart) {
             var element = $(hashPart);
             if (element) element.click();
