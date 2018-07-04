@@ -50,10 +50,24 @@ Alert.prototype.alert = function (title, body, onClose) {
     }
 };
 
+/***
+ * Asks the user a two choice question, where the title, content & buttons are customizable
+ *
+ * @param title
+ * @param question
+ * @param handlers
+ * @param handlers.yes {function?} Function to execute on yes press
+ * @param handlers.no {function?} Function to execute on no press
+ * @param handlers.yesHtml {HTML?} HTMl markup of yes button
+ * @param handlers.yesClass {string?} Custom class to add to yes button
+ * @param handlers.noHtml {HTML?} HTMl markup of no button
+ * @param handlers.noClass {string?} Custom class to add to no button
+ * @param handlers.onClose {function?} Function to execute on pane closure
+ */
 Alert.prototype.ask = function (title, question, handlers) {
     var modal = $('#yes-no');
-    this.yesHandler = handlers ? handlers.yes : function (){};
-    this.noHandler = handlers ? handlers.no : function (){};
+    this.yesHandler = handlers ? handlers.yes : function () {};
+    this.noHandler = handlers ? handlers.no : function () {};
     modal.find('.modal-title').html(title);
     modal.find('.modal-body').html(question);
     if (handlers.yesHtml) {
@@ -68,18 +82,36 @@ Alert.prototype.ask = function (title, question, handlers) {
     if (handlers.noClass) {
         modal.find('.modal-footer .no').addClass(handlers.noClass);
     }
-    modal.modal();
+    if (handlers.onClose) {
+        modal.off('hidden.bs.modal');
+        modal.on('hidden.bs.modal', handlers.onClose);
+    }
+    return modal.modal();
 };
 
-/* Options parameter:
-    *  group: What group this notification is from. Sets data-group's value. Default: none
-    *  collapseSimilar: If set to true, other notifications with the same group will be removed before sending this.
-    *   (Note that this only has any effect if group is set). Default: true
-    *  alertClass: Space separated classes to give to the notification div element. Default: none
-    *  autoDismiss: If set to true, the notification will fade out and be removed automatically. Default: true
-    *  dismissTime: If allowed by autoDismiss, controls how long the notification will be visible before being
-    *   automatically removed. Default: 5000ms. Min: 1000ms
-    */
+/***
+ * @typedef {number} Milliseconds
+ */
+
+/***
+ * Notifies the user of something by a popup which can be stacked, autodismissed etc... based on options
+ *
+ * @param body {HTML} Inner message html
+ * @param options {object} Object containing some extra settings
+ * @param options.group {string} What group this notification is from. Sets data-group's value.
+ *  Default: ""
+ * @param options.collapseSimilar {boolean} If set to true, other notifications with the same group
+ *  will be removed before sending this one. (Note that this only has any effect if options.group is set).
+ *  Default: true
+ * @param options.alertClass {string} Space separated classes to give to the notification div element.
+ *  Default: ""
+ * @param options.autoDismiss {boolean} If set to true, the notification will fade out and be removed automatically.
+ *  Default: true
+ * @param options.dismissTime {Milliseconds} If allowed by options.autoDismiss, controls how long in the notification
+ *  will be visible before being automatically removed.
+ *  Default: 5000
+ *  Min: 1000
+ */
 Alert.prototype.notify = function (body, options) {
     var container = $('#notifications');
     if (!container) return;

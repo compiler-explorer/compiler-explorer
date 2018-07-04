@@ -80,9 +80,26 @@ require("monaco-loader")().then(function () {
     function setupButtons(options) {
         var alertSystem = new Alert();
 
+        var cookiemodal = null;
+        var getCookieTitle = function () {
+            return 'Cookies & related technologies policy<br><p>Current consent status: <span style="color:' +
+                (cookieconsent.hasConsented() ? 'green':'red') +  '">' +
+                (cookieconsent.hasConsented() ? 'Granted' : 'Denied') + '</span></p>';
+        };
+        var openCookiePolicy = function () {
+            cookiemodal = alertSystem.ask(getCookieTitle(), $(require('./cookies.html')), {
+                yes: _.bind(cookieconsent.doConsent, cookieconsent),
+                yesHtml: 'Consent',
+                no: _.bind(cookieconsent.doOppose, cookieconsent),
+                noHtml: 'Do NOT consent',
+                onClose: function () {
+                    cookiemodal = null;
+                }
+            });
+        };
         window.cookieconsent.status.allow = options.hashs.cookies;
-
-        window.cookieconsent.initialise({
+        window.cookieconsent.status.dismiss = window.cookieconsent.status.deny;
+        var cookieconsent = window.cookieconsent.initialise({
             palette: {
                 popup: {
                     background: "#eaf7f7",
@@ -95,21 +112,15 @@ require("monaco-loader")().then(function () {
             },
             theme: "edgeless",
             type: "opt-in",
+            // We handle the revoking elsewhere
+            revokable: false,
+            forceRevokable: false,
             content: {
                 // We use onClick handlers to open the popup without reloading
+                link: 'Check our cookie policy',
                 href: "#",
-                message: "Compiler Explorer uses cookies & related technologies to provide a better service.",
-                dismiss: 'Do NOT allow cookies'
-            },
-            law: {
-                regionalLaw: false
-            },
-            location: {
-                services: []
-            },
-            cookie: {
-                // TODO: undefined for localhost testing, will change before merge
-                domain: window.location.hostname === 'localhost' ? undefined : '.' + window.location.hostname
+                message: "Compiler Explorer uses cookies & related technologies.",
+                dismiss: 'Do NOT allow nonessential cookies'
             },
             elements: {
                 messagelink: '<span id="cookieconsent:desc" class="cc-message">' +
@@ -119,6 +130,9 @@ require("monaco-loader")().then(function () {
                 '{{link}}</a>'
             },
             onStatusChange: function () {
+                if (cookiemodal) {
+                    cookiemodal.find('.modal-title').html(getCookieTitle());
+                }
                 if (this.hasConsented()) {
                     // enable cookies
                 }
@@ -127,9 +141,6 @@ require("monaco-loader")().then(function () {
                 if (this.hasConsented()) {
                     // enable cookies
                 }
-            },
-            onRevokeChoice: function () {
-                // Disable cookies here
             }
         });
 
@@ -143,9 +154,7 @@ require("monaco-loader")().then(function () {
         $('#changes').click(function () {
             alertSystem.alert("Changelog", $(require('./changelog.html')));
         });
-        var openCookiePolicy = function () {
-            alertSystem.alert("Cookies & related technologies policy", $(require('./cookies.html')));
-        };
+
         $('#cookies').click(openCookiePolicy);
         $('.cookies').click(openCookiePolicy);
         $('#privacy').click(function () {

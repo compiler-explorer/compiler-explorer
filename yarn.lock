@@ -1033,9 +1033,9 @@ cookie@0.3.1:
   version "0.3.1"
   resolved "https://registry.yarnpkg.com/cookie/-/cookie-0.3.1.tgz#e7e0a1f9ef43b4c8ba925c5c5a96e806d16873bb"
 
-cookieconsent@RabsRincon/cookieconsent#3.1.1:
-  version "3.1.1"
-  resolved "https://codeload.github.com/RabsRincon/cookieconsent/tar.gz/4a032b03de74f5c3a310a29d6a5031f905d85fbd"
+cookieconsent@RabsRincon/cookieconsent#^3.1.2:
+  version "3.1.2"
+  resolved "https://codeload.github.com/RabsRincon/cookieconsent/tar.gz/512f19f6dbe4c53dfbd3b539b57f10e0165b9075"
 
 cookiejar@2.0.x:
   version "2.0.6"
