@@ -77,8 +77,10 @@ require("monaco-loader")().then(function () {
         });
     }
 
-    function setupButtons() {
+    function setupButtons(options) {
         var alertSystem = new Alert();
+
+        window.cookieconsent.status.allow = options.hashs.cookies;
 
         window.cookieconsent.initialise({
             palette: {
@@ -94,10 +96,10 @@ require("monaco-loader")().then(function () {
             theme: "edgeless",
             type: "opt-in",
             content: {
+                // We use onClick handlers to open the popup without reloading
                 href: "#",
                 message: "Compiler Explorer uses cookies & related technologies to provide a better service.",
-                dismiss: 'Do NOT allow cookies',
-                header: 'This is amazing, isnt it?'
+                dismiss: 'Do NOT allow cookies'
             },
             law: {
                 regionalLaw: false
@@ -107,7 +109,7 @@ require("monaco-loader")().then(function () {
             },
             cookie: {
                 // TODO: undefined for localhost testing, will change before merge
-                domain: undefined // '.godbolt.org'
+                domain: window.location.hostname === 'localhost' ? undefined : '.' + window.location.hostname
             },
             elements: {
                 messagelink: '<span id="cookieconsent:desc" class="cc-message">' +
@@ -116,9 +118,18 @@ require("monaco-loader")().then(function () {
                 link: '<a aria-label="learn more about cookies" tabindex="0" class="cc-link cookies" href="{{href}}">' +
                 '{{link}}</a>'
             },
-            // fn(status, old)
             onStatusChange: function () {
-                // The user selected an option, act accordingly
+                if (this.hasConsented()) {
+                    // enable cookies
+                }
+            },
+            onInitialise: function () {
+                if (this.hasConsented()) {
+                    // enable cookies
+                }
+            },
+            onRevokeChoice: function () {
+                // Disable cookies here
             }
         });
 
@@ -252,7 +263,7 @@ require("monaco-loader")().then(function () {
             return Components.getEditor();
         });
 
-        setupButtons();
+        setupButtons(options);
 
         if (hashPart) {
             var element = $(hashPart);

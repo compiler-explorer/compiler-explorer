@@ -196,7 +196,7 @@ describe('Anonymizes all kind of IPs', () => {
         utils.anonymizeIp('127.0.0.10').should.equal('127.0.0.0');
         utils.anonymizeIp('127.0.0.255').should.equal('127.0.0.0');
     });
-    it('Removes last 3 octets from IPv6 addresses', () => {
+    it('Removes last 3 hextets from IPv6 addresses', () => {
         // Not necessarily valid addresses, we're interested in the format
         utils.anonymizeIp('ffff:aaaa:dead:beef').should.equal('ffff:0:0:0');
         utils.anonymizeIp('bad:c0de::').should.equal('bad:0:0:0');
