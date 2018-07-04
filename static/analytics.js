@@ -33,36 +33,53 @@ if (options.raven) {
     }).install();
 }
 
-var gaProxy;
-/* eslint-disable */
-if (options.googleAnalyticsEnabled) {
-    (function (i, s, o, g, r, a, m) {
-        i.GoogleAnalyticsObject = r;
-        i[r] = i[r] || function () {
-            (i[r].q = i[r].q || []).push(arguments);
-        };
-        i[r].l = 1 * new Date();
-        a = s.createElement(o);
-        m = s.getElementsByTagName(o)[0];
-        a.async = 1;
-        a.src = g;
-        m.parentNode.insertBefore(a, m);
-    })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
-    ga('create', options.googleAnalyticsAccount, 'auto');
-    ga('send', 'pageview');
-    ga('set', 'anonymizeIp', true);
-    gaProxy = function () {
-        window.ga.apply(window.ga, arguments);
+function GAProxy() {
+    this.hasBeenEnabled = false;
+    this.isEnabled = false;
+
+    this.proxy = function () {};
+
+    this.initialise = function () {
+        if (!this.isEnabled && options.googleAnalyticsEnabled) {
+            // Check if this is a re-enable, as the script is already there in this case
+            if (!this.hasBeenEnabled) {
+                (function (i, s, o, g, r, a, m) {
+                    i.GoogleAnalyticsObject = r;
+                    i[r] = i[r] || function () {
+                        (i[r].q = i[r].q || []).push(arguments);
+                    };
+                    i[r].l = 1 * new Date();
+                    a = s.createElement(o);
+                    m = s.getElementsByTagName(o)[0];
+                    a.async = 1;
+                    a.src = g;
+                    m.parentNode.insertBefore(a, m);
+                })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+                ga('set', 'anonymizeIp', true);
+                ga('create', options.googleAnalyticsAccount, 'auto');
+                ga('send', 'pageview');
+            }
+            this.proxy = function () {
+                window.ga.apply(window.ga, arguments);
+            };
+            this.isEnabled = true;
+            this.hasBeenEnabled = true;
+        } else {
+            this.isEnabled = false;
+            this.proxy = function () {};
+        }
     };
-} else {
-    gaProxy = function () {};
-}
-/* eslint-enable */
 
-function initialise() {
+    this.toggle = function (doEnable) {
+        if (doEnable) {
+            if (!this.isEnabled) this.initialise();
+        } else {
+            this.isEnabled = false;
+            this.proxy = function () {};
+        }
+    };
 }
 
-module.exports = {
-    ga: gaProxy,
-    initialise: initialise
-};
+var ga = new GAProxy();
+
+module.exports = ga;

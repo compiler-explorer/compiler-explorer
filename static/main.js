@@ -81,6 +81,7 @@ require("monaco-loader")().then(function () {
         var alertSystem = new Alert();
 
         var cookiemodal = null;
+
         var getCookieTitle = function () {
             return 'Cookies & related technologies policy<br><p>Current consent status: <span style="color:' +
                 (cookieconsent.hasConsented() ? 'green':'red') +  '">' +
@@ -88,11 +89,18 @@ require("monaco-loader")().then(function () {
         };
         var openCookiePolicy = function () {
             cookiemodal = alertSystem.ask(getCookieTitle(), $(require('./cookies.html')), {
-                yes: _.bind(cookieconsent.doConsent, cookieconsent),
+                yes: function () {
+                    cookieconsent.doConsent.apply(cookieconsent);
+                    analytics.toggle(true);
+                },
                 yesHtml: 'Consent',
-                no: _.bind(cookieconsent.doOppose, cookieconsent),
+                no: function () {
+                    analytics.toggle(false);
+                    cookieconsent.doOppose.apply(cookieconsent);
+                },
                 noHtml: 'Do NOT consent',
                 onClose: function () {
+                    // Remove modal ref so we don't try to update its title if the consent changes
                     cookiemodal = null;
                 }
             });
@@ -131,16 +139,16 @@ require("monaco-loader")().then(function () {
             },
             onStatusChange: function () {
                 if (cookiemodal) {
+                    // Change the title based on the current consent status
                     cookiemodal.find('.modal-title').html(getCookieTitle());
                 }
-                if (this.hasConsented()) {
-                    // enable cookies
-                }
+                // Toggle GA if the user consents, disable if not.
+                // analytics.toggle has internal checks for when we initialize without being turned off first
+                analytics.toggle(this.hasConsented());
             },
             onInitialise: function () {
-                if (this.hasConsented()) {
-                    // enable cookies
-                }
+                // Toggle GA on if the user has already consented
+                analytics.toggle(this.hasConsented());
             }
         });
 
@@ -163,8 +171,6 @@ require("monaco-loader")().then(function () {
     }
 
     function start() {
-        analytics.initialise();
-
         var options = require('options');
 
         var subdomainPart = window.location.hostname.split('.')[0];
