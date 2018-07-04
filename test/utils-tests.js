@@ -208,10 +208,25 @@ describe('Logger functionality', () => {
     it('has info stream with a write function', () => {
         logger.stream.write.should.a("function");
     });
-    it('Has warning stream with a write function', () => {
+    it('has warning stream with a write function', () => {
         logger.warnStream.write.should.a("function");
     });
-    it('Has error stream with a write function', () => {
+    it('has error stream with a write function', () => {
         logger.errStream.write.should.a("function");
+    });
+});
+
+describe('Hash interface', () => {
+    it('correctly hashes strings', () => {
+        const version = 'Compiler Explorer Tests Version 0';
+        utils.getHash('cream cheese', version).should.equal('cfff2d1f7a213e314a67cce8399160ae884f794a3ee9d4a01cd37a8c22c67d94');
+        utils.getHash('large eggs', version).should.equal('9144dec50b8df5bc5cc24ba008823cafd6616faf2f268af84daf49ac1d24feb0');
+        utils.getHash('sugar', version).should.equal('afa3c89d0f6a61de6805314c9bd7c52d020425a3a3c7bbdfa7c0daec594e5ef1');
+    });
+    it('correctly hashes objects', () => {
+        utils.getHash({toppings: [
+            {name: 'raspberries', optional: false},
+            {name: 'ground cinnamon', optional: true}
+        ]}).should.equal('e205d63abd5db363086621fdc62c4c23a51b733bac5855985a8b56642d570491');
     });
 });
