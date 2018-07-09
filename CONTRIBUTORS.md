@@ -50,3 +50,4 @@ From oldest to newest contributor, we would like to thank:
 - [Corentin Jabot](https://github.com/cor3ntin)
 - [Ethan Smith](https://github.com/ethanhs)
 - [Shubham Rawat](https://github.com/shubhdev)
+- [AMS21](https://github.com/AMS21)
