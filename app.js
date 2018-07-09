@@ -185,7 +185,7 @@ function loadSources() {
 
 const fileSources = loadSources();
 const ClientOptionsHandler = require('./lib/options-handler');
-const clientOptionsHandler = new ClientOptionsHandler(fileSources, languages, compilerProps, defArgs);
+const clientOptionsHandler = new ClientOptionsHandler(fileSources, compilerProps, defArgs);
 const CompilationEnvironment = require('./lib/compilation-env');
 const compilationEnvironment = new CompilationEnvironment(compilerProps, defArgs.doCache);
 const CompileHandler = require('./lib/handlers/compile').Handler;
@@ -195,8 +195,7 @@ const apiHandler = new ApiHandler(compileHandler, ceProps);
 const SourceHandler = require('./lib/handlers/source').Handler;
 const sourceHandler = new SourceHandler(fileSources, staticHeaders);
 const CompilerFinder = require('./lib/compiler-finder');
-const compilerFinder = new CompilerFinder(compileHandler, compilerProps, awsProps,
-    languages, defArgs);
+const compilerFinder = new CompilerFinder(compileHandler, compilerProps, awsProps, defArgs);
 
 function shortUrlHandler(req, res, next) {
     const resolver = new google.ShortLinkResolver(aws.getConfig('googleApiKey'));

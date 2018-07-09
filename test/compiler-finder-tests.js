@@ -44,7 +44,7 @@ const compilerProps = new properties.CompilerProps(languages, properties.fakePro
 
 describe('Compiler-finder', function () {
     it('should not hang for undefined groups (Bug #860)', () => {
-        const finder = new CompilerFinder({}, compilerProps, properties.fakeProps({}), languages, {});
+        const finder = new CompilerFinder({}, compilerProps, properties.fakeProps({}), {});
         return Promise.all(finder.getCompilers()).should.eventually.have.lengthOf(2);
     })
 });

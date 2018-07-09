@@ -53,7 +53,7 @@ const libProps = {
 
 const compilerProps = new properties.CompilerProps(languages, properties.fakeProps(libProps));
 
-const optionsHandler = new OptionsHandler([], languages, compilerProps, {});
+const optionsHandler = new OptionsHandler([], compilerProps, {});
 
 
 const makeFakeCompilerInfo = (id, lang, group, semver, isSemver) => {
