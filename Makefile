@@ -96,9 +96,9 @@ run: prereqs
 	$(NODE) ./node_modules/.bin/supervisor -w app.js,lib,etc/config -e 'js|node|properties' --exec $(NODE) $(NODE_ARGS) -- ./app.js $(EXTRA_ARGS)
 
 dev: export NODE_ENV=DEV
-dev: prereqs
+dev: prereqs install-git-hooks
 	 $(NODE) ./node_modules/.bin/supervisor -w app.js,lib,etc/config -e 'js|node|properties' --exec $(NODE) $(NODE_ARGS) -- ./app.js $(EXTRA_ARGS)
-	
+
 
 HASH := $(shell git rev-parse HEAD)
 dist: export WEBPACK_ARGS=-p
