@@ -38,6 +38,38 @@ const languages = {
 let compilerProps = new properties.CompilerProps(languages, properties.fakeProps({}));
 compilerProps = compilerProps.get.bind(compilerProps);
 
+describe('llvm-ir getSourceLineNumber', function () {
+    const llvmIrParser = new LlvmIrParser(compilerProps);
+    const debugInfo = {
+        '!10': { line: 10 },
+        '!20': { line: 20, scope: '!10' },
+        '!11': { scope: '!10' },
+        '!12': { line: 0, scope: '!10' },
+        '!14': { },
+        '!15': { scope: '!14' },
+        '!16': { scope: '!42' }
+    }
+
+    it('should return a line number', function () {
+        expect(llvmIrParser.getSourceLineNumber(debugInfo, '!10')).to.equal(10);
+        expect(llvmIrParser.getSourceLineNumber(debugInfo, '!20')).to.equal(20);
+    });
+
+    it('should return the line number of its parent scope', function () {
+        expect(llvmIrParser.getSourceLineNumber(debugInfo, '!11')).to.equal(10);
+        expect(llvmIrParser.getSourceLineNumber(debugInfo, '!12')).to.equal(10);
+    });
+
+    it('should return null on non-existend node', function () {
+        expect(llvmIrParser.getSourceLineNumber(debugInfo, '!16')).to.equal(null);
+    });
+
+    it('should return null if no higher scope has a line', function () {
+        expect(llvmIrParser.getSourceLineNumber(debugInfo, '!14')).to.equal(null);
+        expect(llvmIrParser.getSourceLineNumber(debugInfo, '!15')).to.equal(null);
+    });
+});
+
 describe('llvm-ir getFileName', function () {
     const llvmIrParser = new LlvmIrParser(compilerProps);
     const debugInfo = {
