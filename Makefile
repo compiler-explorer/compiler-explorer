@@ -57,7 +57,7 @@ endif
 ifneq "" "$(shell which cargo)"
 rust/bin/rustfilt: rust/src/main.rs rust/Cargo.lock rust/Cargo.toml
 	cd rust && cargo build --release && cargo install --root . --force && cargo clean
-optional-rust-support: rust/bin/rustfilt 
+optional-rust-support: rust/bin/rustfilt
 else
 optional-rust-support:
 	@echo "Rust language support disabled"
@@ -96,7 +96,7 @@ run: prereqs
 	$(NODE) ./node_modules/.bin/supervisor -w app.js,lib,etc/config -e 'js|node|properties' --exec $(NODE) $(NODE_ARGS) -- ./app.js $(EXTRA_ARGS)
 
 dev: export NODE_ENV=DEV
-dev: prereqs
+dev: prereqs install-git-hooks
 	 $(NODE) ./node_modules/.bin/supervisor -w app.js,lib,etc/config -e 'js|node|properties' --exec $(NODE) $(NODE_ARGS) -- ./app.js $(EXTRA_ARGS)
 	
 
