@@ -38,6 +38,62 @@ const languages = {
 let compilerProps = new properties.CompilerProps(languages, properties.fakeProps({}));
 compilerProps = compilerProps.get.bind(compilerProps);
 
+describe('llvm-ir parseMetaNode', function () {
+    const llvmIrParser = new LlvmIrParser(compilerProps);
+
+    it('should parse DILocation node', function () {
+        llvmIrParser.parseMetaNode('!60 = !DILocation(line: 9, column: 15, scope: !58)').should.deep.equal({
+            metaType: 'Location',
+            metaId: '!60',
+            line: '9',
+            column: '15',
+            scope: '!58',
+        });
+    });
+
+    it('should parse distinct DILexicalBlock', function () {
+        llvmIrParser.parseMetaNode('!50 = distinct !DILexicalBlock(scope: !44, file: !1, line: 8, column: 5)').should.deep.equal({
+            metaType: 'LexicalBlock',
+            metaId: '!50',
+            scope: '!44',
+            file: '!1',
+            line: '8',
+            column: '5'
+        });
+    });
+
+    it('should parse distinct DISubprogram', function () {
+        llvmIrParser.parseMetaNode('!44 = distinct !DISubprogram(name: "maxArr6ay", linkageName: "_name_here", ' +
+            'scope: !1, file: !1, line: 7, type: !8, isLocal: false, isDefinition: true, scopeLine: 7, flags: ' +
+            'DIFlagPrototyped, isOptimized: false, unit: !0, variables: !2)').should.deep.equal({
+            metaType: 'Subprogram',
+            metaId: '!44',
+            name: 'maxArr6ay',
+            unit: '!0',
+            file: '!1',
+            line: '7',
+            type: '!8',
+            scope: '!1',
+            scopeLine: '7',
+            variables: '!2',
+            isLocal: 'false',
+            isOptimized: 'false',
+            isDefinition: 'true',
+            linkageName: '_name_here',
+            flags: 'DIFlagPrototyped'
+        });
+    });
+
+    it('should parse distinct DILexicalBlock', function () {
+        llvmIrParser.parseMetaNode('!1 = !DIFile(filename: "/tmp/example.cpp", directory: "/home/compiler-explorer")').should.deep.equal({
+            metaType: 'File',
+            metaId: '!1',
+            filename: '/tmp/example.cpp',
+            directory: '/home/compiler-explorer'
+        });
+    });
+});
+
 describe('llvm-ir getSourceLineNumber', function () {
     const llvmIrParser = new LlvmIrParser(compilerProps);
     const debugInfo = {
