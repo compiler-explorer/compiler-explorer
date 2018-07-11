@@ -352,3 +352,7 @@ pre.content.wrap {
     border: 7px solid transparent;
     margin-right: 2px;
 }
+
+.share-disabled {
+    cursor: not-allowed;
+}

@@ -63,11 +63,14 @@ html(lang="en")
                 li#changes: a(href="#") Changelog
                 if sharingEnabled
                   li#socialshare
-            li.dropdown
-              a.dropdown-toggle(href="#" data-toggle="dropdown") Policies#[b.caret]
-              ul.dropdown-menu.menu-other
-                li#cookies: a(href="#") Cookie policy
-                li#privacy: a(href="#") Privacy policy
+            if policies.cookies.enabled || policies.privacy.enabled
+              li.dropdown
+                a.dropdown-toggle(href="#" data-toggle="dropdown") Policies#[b.caret]
+                ul.dropdown-menu.menu-other
+                  if policies.cookies.enabled
+                    li#cookies: a(href="#") Cookie policy
+                  if policies.privacy.enabled
+                    li#privacy: a(href="#") Privacy policy
 
     #root
 

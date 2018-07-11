@@ -88,6 +88,7 @@ require("monaco-loader")().then(function () {
                 (cookieconsent.hasConsented() ? 'Granted' : 'Denied') + '</span></p>';
         };
         var openCookiePolicy = function () {
+            // This should use options.policies.cookies.path
             cookiemodal = alertSystem.ask(getCookieTitle(), $(require('./cookies.html')), {
                 yes: function () {
                     cookieconsent.doConsent.apply(cookieconsent);
@@ -105,7 +106,7 @@ require("monaco-loader")().then(function () {
                 }
             });
         };
-        window.cookieconsent.status.allow = options.hashs.cookies;
+        window.cookieconsent.status.allow = options.policies.cookies.hash;
         window.cookieconsent.status.dismiss = window.cookieconsent.status.deny;
         var cookieconsent = window.cookieconsent.initialise({
             palette: {
@@ -166,6 +167,7 @@ require("monaco-loader")().then(function () {
         $('#cookies').click(openCookiePolicy);
         $('.cookies').click(openCookiePolicy);
         $('#privacy').click(function () {
+            // This should use options.policies.privacy.path
             alertSystem.alert("Privacy policy", $(require('./privacy.html')));
         });
     }

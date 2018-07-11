@@ -32,6 +32,7 @@ var url = require('./url');
 
 var shareServices = {
     twitter: {
+        embedValid: false,
         cssClass: 'share-twitter',
         getLink: function (title, url) {
             return "https://twitter.com/intent/tweet?text=" +
@@ -40,6 +41,7 @@ var shareServices = {
         text: 'Tweet'
     },
     reddit: {
+        embedValid: false,
         cssClass: 'share-reddit',
         getLink: function (title, url) {
             return 'http://www.reddit.com/submit?url=' +
@@ -103,6 +105,7 @@ function updateShares(container, url) {
         newElement
             .prop('href', service.getLink('Compiler Explorer', url))
             .addClass(service.cssClass)
+            .toggleClass('share-no-embeddable', !service.embedValid)
             .appendTo(container);
     });
 }
@@ -134,6 +137,13 @@ function initShareButton(getLink, layout) {
                 var socialSharing = $(popoverId).find('.socialsharing');
                 socialSharing.empty();
                 updateShares(socialSharing, url || "https://godbolt.org");
+                // Disable the links for every share item which does not support embed html as links
+                if (!(currentBind === 'Full' || currentBind === 'Short')) {
+                    socialSharing.children('.share-no-embeddable')
+                        .addClass('share-disabled')
+                        .prop('title', 'Embed links are not supported in this service')
+                        .on('click', false);
+                }
             }
             if (!currentBind) return;
             root.find('.current').text(currentBind);

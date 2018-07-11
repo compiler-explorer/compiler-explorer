@@ -342,7 +342,7 @@ Promise.all([compilerFinder.find(), aws.initConfig(awsProps)])
 
         morgan.token('gdpr_ip', req => utils.anonymizeIp(req.ip));
 
-        // Based on combined format, but: GDPR compilant IP, no timestamp & no unused fields for our usecase
+        // Based on combined format, but: GDPR compliant IP, no timestamp & no unused fields for our usecase
         const morganFormat = isDevMode() ? 'dev' : ':gdpr_ip ":method :url" :status';
 
         webServer
@@ -351,15 +351,21 @@ Promise.all([compilerFinder.find(), aws.initConfig(awsProps)])
             .set('view engine', 'pug')
             // before morgan so healthchecks aren't logged
             .use('/healthcheck', new healthCheck.HealthCheckHandler().handle)
-            // Skip for non errors (2xx, 3xx)
-            .use(morgan(morganFormat, {stream: logger.stream, skip: (req, res) => res.statusCode >= 400}))
-            // Skip for non user errors (4xx)
+            .use(morgan(morganFormat, {
+                stream: logger.stream,
+                // Skip for non errors (2xx, 3xx)
+                skip: (req, res) => res.statusCode >= 400
+            }))
             .use(morgan(morganFormat, {
                 stream: logger.warnStream,
-                skip: (req, res) => res.statusCode < 400 && res.statusCode >= 500
+                // Skip for non user errors (4xx)
+                skip: (req, res) => res.statusCode < 400 || res.statusCode >= 500
             }))
-            // Skip for non server errors (5xx)
-            .use(morgan(morganFormat, {stream: logger.errStream, skip: (req, res) => res.statusCode < 500}))
+            .use(morgan(morganFormat, {
+                stream: logger.errStream,
+                // Skip for non server errors (5xx)
+                skip: (req, res) => res.statusCode < 500
+            }))
             .use(compression())
             .get('/', (req, res) => {
                 staticHeaders(res);

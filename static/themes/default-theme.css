@@ -208,3 +208,7 @@ body {
     background-color: #ff4500;
     color: #cee3f8;
 }
+
+.share-disabled {
+    color: gray;
+}
