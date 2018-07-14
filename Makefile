@@ -110,7 +110,7 @@ dist: prereqs
 	cp -r static/vs/ out/dist/
 
 travis-dist: dist
-	tar --exclude './.travis-compilers' --exclude './.git' --exclude './static' -Jcf /tmp/ce-build.tar.xz . 
+	tar --exclude './.travis-compilers' --exclude './.git' --exclude './static/ext' --exclude './static/vs' --exclude './static/dist' -Jcf /tmp/ce-build.tar.xz .
 	rm -rf out/dist-bin
 	mkdir -p out/dist-bin
 	mv /tmp/ce-build.tar.xz out/dist-bin/${TRAVIS_BUILD_NUMBER}.tar.xz
