@@ -29,7 +29,6 @@ var options = require('options');
 var shortenURL = require('./urlshorten-' + options.urlShortenService);
 var Components = require('components');
 var url = require('./url');
-var local = require('./local');
 
 var shareServices = {
     twitter: {
@@ -51,15 +50,6 @@ var shareServices = {
         text: 'Share on Reddit'
     }
 };
-
-/**
- * Has the user already seen the current version of the privacy policy? (Also true if the policy is disabled)
- * @returns {boolean}
- */
-function hasUserSeenPrivacyPolicy() {
-    return !options.policies.privacy.enabled ||
-        options.policies.privacy.hash === local.get(options.policies.privacy.key);
-}
 
 function configFromEmbedded(embeddedUrl) {
     // Old-style link?
@@ -134,10 +124,6 @@ function initShareButton(getLink, layout) {
     }).click(function () {
         getLink.popover('show');
     }).on('inserted.bs.popover', function () {
-        if (!hasUserSeenPrivacyPolicy()) {
-            // Passs a slightly
-            $('#privacy').trigger('click', {title: 'New Privacy Policy. Please take a moment to read it'});
-        }
         var root = $('.urls-container:visible');
         var urls = {Short: 'Loading...'};
         if (!currentBind) currentBind = $(root.find('.sources a')[0]).data().bind;

@@ -297,6 +297,13 @@ require("monaco-loader")().then(function () {
             var element = $(hashPart);
             if (element) element.click();
         }
+
+        if (options.policies.privacy.enabled &&
+            options.policies.privacy.hash !== local.get(options.policies.privacy.key)) {
+            $('#privacy').trigger('click', {
+                title: 'New Privacy Policy. Please take a moment to read it'
+            });
+        }
     }
 
     $(start);
