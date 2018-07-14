@@ -120,7 +120,7 @@ function updateShares(container, url) {
     });
 }
 
-function initShareButton(getLink, layout, alertSystem) {
+function initShareButton(getLink, layout) {
     var html = $('.template .urls').html();
     var currentBind = '';
     var title = getLink.attr('title'); // preserve before popover/tooltip breaks it
@@ -135,9 +135,8 @@ function initShareButton(getLink, layout, alertSystem) {
         getLink.popover('show');
     }).on('inserted.bs.popover', function () {
         if (!hasUserSeenPrivacyPolicy()) {
-            // TODO: Better class. Warning?
-            alertSystem.notify('Please, take a moment to read the new privacy policy.' +
-                '&nbsp;<a href="#privacy">More info here</a>', {group: 'policy'});
+            // Passs a slightly
+            $('#privacy').trigger('click', {title: 'New Privacy Policy. Please take a moment to read it'});
         }
         var root = $('.urls-container:visible');
         var urls = {Short: 'Loading...'};

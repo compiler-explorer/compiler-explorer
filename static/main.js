@@ -77,7 +77,9 @@ require("monaco-loader")().then(function () {
         });
     }
 
-    function setupButtons(options, alertSystem) {
+    function setupButtons(options) {
+        var alertSystem = new Alert();
+
         if (options.policies.cookies.enabled) {
             var cookiemodal = null;
 
@@ -150,6 +152,21 @@ require("monaco-loader")().then(function () {
                     analytics.toggle(this.hasConsented());
                 }
             });
+
+
+            $('#cookies').click(openCookiePolicy);
+            $('.cookies').click(openCookiePolicy);
+        }
+
+        // I'd like for this to be the only function used, but it gets messy to pass the callback function around,
+        // so we instead trigger a click here when we want it to open with this effect. Sorry!
+        if (options.policies.privacy.enabled) {
+            $('#privacy').click(function (event, data) {
+                alertSystem.alert(data && data.title ? data.title : "Privacy policy", require('./privacy.html'));
+                if (options.policies.privacy.enabled) {
+                    local.set(options.policies.privacy.key, options.policies.privacy.hash);
+                }
+            });
         }
 
         $('#ui-reset').click(function () {
@@ -163,14 +180,6 @@ require("monaco-loader")().then(function () {
             alertSystem.alert("Changelog", $(require('./changelog.html')));
         });
 
-        $('#cookies').click(openCookiePolicy);
-        $('.cookies').click(openCookiePolicy);
-        $('#privacy').click(function () {
-            alertSystem.alert("Privacy policy", $(require('./privacy.html')));
-            if (options.policies.privacy.enabled) {
-                local.set(options.policies.privacy.key, options.policies.privacy.hash);
-            }
-        });
     }
 
     function start() {
@@ -266,10 +275,9 @@ require("monaco-loader")().then(function () {
         new clipboard('.btn.clippy');
 
         setupSettings(hub);
+        setupButtons(options);
 
-        var alertSystem = new Alert();
-
-        sharing.initShareButton($('#share'), layout, alertSystem);
+        sharing.initShareButton($('#share'), layout);
 
         function setupAdd(thing, func) {
             layout.createDragSource(thing, func);
@@ -284,8 +292,6 @@ require("monaco-loader")().then(function () {
         setupAdd($('#add-editor'), function () {
             return Components.getEditor();
         });
-
-        setupButtons(options, alertSystem);
 
         if (hashPart) {
             var element = $(hashPart);
