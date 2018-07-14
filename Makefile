@@ -108,7 +108,7 @@ dist: prereqs
 	mkdir -p out/dist/vs
 	cp -r static/dist/ out/dist/
 	cp -r static/vs/ out/dist/
-	cp static/*.html out/dist/
+	cp -r static/policies/ out/dist/
 
 travis-dist: dist
 	tar --exclude './.travis-compilers' --exclude './.git' --exclude './static' -Jcf /tmp/ce-build.tar.xz .
