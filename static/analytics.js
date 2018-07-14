@@ -55,9 +55,9 @@ function GAProxy() {
                     a.src = g;
                     m.parentNode.insertBefore(a, m);
                 })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
-                ga('set', 'anonymizeIp', true);
-                ga('create', options.googleAnalyticsAccount, 'auto');
-                ga('send', 'pageview');
+                window.ga('set', 'anonymizeIp', true);
+                window.ga('create', options.googleAnalyticsAccount, 'auto');
+                window.ga('send', 'pageview');
             }
             this.proxy = function () {
                 window.ga.apply(window.ga, arguments);
