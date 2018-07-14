@@ -77,9 +77,7 @@ require("monaco-loader")().then(function () {
         });
     }
 
-    function setupButtons(options) {
-        var alertSystem = new Alert();
-
+    function setupButtons(options, alertSystem) {
         var cookiemodal = null;
 
         var getCookieTitle = function () {
@@ -169,6 +167,9 @@ require("monaco-loader")().then(function () {
         $('#privacy').click(function () {
             // This should use options.policies.privacy.path
             alertSystem.alert("Privacy policy", $(require('./privacy.html')));
+            if (options.policies.privacy.enabled) {
+                local.set(options.policies.privacy.key, options.policies.privacy.hash);
+            }
         });
     }
 
@@ -264,7 +265,9 @@ require("monaco-loader")().then(function () {
 
         setupSettings(hub);
 
-        sharing.initShareButton($('#share'), layout);
+        var alertSystem = new Alert();
+
+        sharing.initShareButton($('#share'), layout, alertSystem);
 
         function setupAdd(thing, func) {
             layout.createDragSource(thing, func);
@@ -280,7 +283,7 @@ require("monaco-loader")().then(function () {
             return Components.getEditor();
         });
 
-        setupButtons(options);
+        setupButtons(options, alertSystem);
 
         if (hashPart) {
             var element = $(hashPart);
