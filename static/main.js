@@ -89,7 +89,7 @@ require("monaco-loader")().then(function () {
                     (cookieconsent.hasConsented() ? 'Granted' : 'Denied') + '</span></p>';
             };
             var openCookiePolicy = function () {
-                cookiemodal = alertSystem.ask(getCookieTitle(), $(require('./cookies.html')), {
+                cookiemodal = alertSystem.ask(getCookieTitle(), $(require('./policies/cookies.html')), {
                     yes: function () {
                         cookieconsent.doConsent.apply(cookieconsent);
                         analytics.toggle(true);
@@ -162,7 +162,10 @@ require("monaco-loader")().then(function () {
         // so we instead trigger a click here when we want it to open with this effect. Sorry!
         if (options.policies.privacy.enabled) {
             $('#privacy').click(function (event, data) {
-                alertSystem.alert(data && data.title ? data.title : "Privacy policy", require('./privacy.html'));
+                alertSystem.alert(
+                    data && data.title ? data.title : "Privacy policy",
+                    require('./policies/privacy.html')
+                );
                 if (options.policies.privacy.enabled) {
                     local.set(options.policies.privacy.key, options.policies.privacy.hash);
                 }
