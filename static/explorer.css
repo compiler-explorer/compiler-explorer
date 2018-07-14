@@ -244,6 +244,18 @@ pre.content.wrap {
     border-radius: 3px;
 }
 
+@media (min-width: 1200px) {
+    .modal-dialog {
+        width: 1000px;
+    }
+}
+
+@media (min-width: 1400px) {
+    .modal-dialog {
+        width: 1200px;
+    }
+}
+
 #notifications {
     max-width: 33%;
     position: fixed;
