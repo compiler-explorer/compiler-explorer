@@ -78,78 +78,79 @@ require("monaco-loader")().then(function () {
     }
 
     function setupButtons(options, alertSystem) {
-        var cookiemodal = null;
+        if (options.policies.cookies.enabled) {
+            var cookiemodal = null;
 
-        var getCookieTitle = function () {
-            return 'Cookies & related technologies policy<br><p>Current consent status: <span style="color:' +
-                (cookieconsent.hasConsented() ? 'green':'red') +  '">' +
-                (cookieconsent.hasConsented() ? 'Granted' : 'Denied') + '</span></p>';
-        };
-        var openCookiePolicy = function () {
-            // This should use options.policies.cookies.path
-            cookiemodal = alertSystem.ask(getCookieTitle(), $(require('./cookies.html')), {
-                yes: function () {
-                    cookieconsent.doConsent.apply(cookieconsent);
-                    analytics.toggle(true);
+            var getCookieTitle = function () {
+                return 'Cookies & related technologies policy<br><p>Current consent status: <span style="color:' +
+                    (cookieconsent.hasConsented() ? 'green' : 'red') + '">' +
+                    (cookieconsent.hasConsented() ? 'Granted' : 'Denied') + '</span></p>';
+            };
+            var openCookiePolicy = function () {
+                cookiemodal = alertSystem.ask(getCookieTitle(), $(require('./cookies.html')), {
+                    yes: function () {
+                        cookieconsent.doConsent.apply(cookieconsent);
+                        analytics.toggle(true);
+                    },
+                    yesHtml: 'Consent',
+                    no: function () {
+                        analytics.toggle(false);
+                        cookieconsent.doOppose.apply(cookieconsent);
+                    },
+                    noHtml: 'Do NOT consent',
+                    onClose: function () {
+                        // Remove modal ref so we don't try to update its title if the consent changes
+                        cookiemodal = null;
+                    }
+                });
+            };
+            window.cookieconsent.status.allow = options.policies.cookies.hash;
+            window.cookieconsent.status.dismiss = window.cookieconsent.status.deny;
+            var cookieconsent = window.cookieconsent.initialise({
+                palette: {
+                    popup: {
+                        background: "#eaf7f7",
+                        text: "#5c7291"
+                    },
+                    button: {
+                        background: "#56cbdb",
+                        text: "#ffffff"
+                    }
                 },
-                yesHtml: 'Consent',
-                no: function () {
-                    analytics.toggle(false);
-                    cookieconsent.doOppose.apply(cookieconsent);
+                theme: "edgeless",
+                type: "opt-in",
+                // We handle the revoking elsewhere
+                revokable: false,
+                forceRevokable: false,
+                content: {
+                    // We use onClick handlers to open the popup without reloading
+                    link: 'Check our cookie policy',
+                    href: "#",
+                    message: "Compiler Explorer uses cookies & related technologies.",
+                    dismiss: 'Do NOT allow nonessential cookies'
                 },
-                noHtml: 'Do NOT consent',
-                onClose: function () {
-                    // Remove modal ref so we don't try to update its title if the consent changes
-                    cookiemodal = null;
+                elements: {
+                    messagelink: '<span id="cookieconsent:desc" class="cc-message">' +
+                    '{{message}} <a aria-label="learn more about cookies" tabindex="0" class="cc-link cookies" ' +
+                    'href="{{href}}">{{link}}</a></span>',
+                    link: '<a aria-label="learn more about cookies" tabindex="0" ' +
+                    'class="cc-link cookies" href="{{href}}">{{link}}</a>'
+                },
+                onStatusChange: function () {
+                    if (cookiemodal) {
+                        // Change the title based on the current consent status
+                        cookiemodal.find('.modal-title').html(getCookieTitle());
+                    }
+                    // Toggle GA if the user consents, disable if not.
+                    // analytics.toggle has internal checks for when we initialize without being turned off first
+                    analytics.toggle(this.hasConsented());
+                },
+                onInitialise: function () {
+                    // Toggle GA on if the user has already consented
+                    analytics.toggle(this.hasConsented());
                 }
             });
-        };
-        window.cookieconsent.status.allow = options.policies.cookies.hash;
-        window.cookieconsent.status.dismiss = window.cookieconsent.status.deny;
-        var cookieconsent = window.cookieconsent.initialise({
-            palette: {
-                popup: {
-                    background: "#eaf7f7",
-                    text: "#5c7291"
-                },
-                button: {
-                    background: "#56cbdb",
-                    text: "#ffffff"
-                }
-            },
-            theme: "edgeless",
-            type: "opt-in",
-            // We handle the revoking elsewhere
-            revokable: false,
-            forceRevokable: false,
-            content: {
-                // We use onClick handlers to open the popup without reloading
-                link: 'Check our cookie policy',
-                href: "#",
-                message: "Compiler Explorer uses cookies & related technologies.",
-                dismiss: 'Do NOT allow nonessential cookies'
-            },
-            elements: {
-                messagelink: '<span id="cookieconsent:desc" class="cc-message">' +
-                '{{message}} <a aria-label="learn more about cookies" tabindex="0" class="cc-link cookies" ' +
-                'href="{{href}}">{{link}}</a></span>',
-                link: '<a aria-label="learn more about cookies" tabindex="0" class="cc-link cookies" href="{{href}}">' +
-                '{{link}}</a>'
-            },
-            onStatusChange: function () {
-                if (cookiemodal) {
-                    // Change the title based on the current consent status
-                    cookiemodal.find('.modal-title').html(getCookieTitle());
-                }
-                // Toggle GA if the user consents, disable if not.
-                // analytics.toggle has internal checks for when we initialize without being turned off first
-                analytics.toggle(this.hasConsented());
-            },
-            onInitialise: function () {
-                // Toggle GA on if the user has already consented
-                analytics.toggle(this.hasConsented());
-            }
-        });
+        }
 
         $('#ui-reset').click(function () {
             local.remove('gl');
@@ -165,7 +166,6 @@ require("monaco-loader")().then(function () {
         $('#cookies').click(openCookiePolicy);
         $('.cookies').click(openCookiePolicy);
         $('#privacy').click(function () {
-            // This should use options.policies.privacy.path
             alertSystem.alert("Privacy policy", $(require('./privacy.html')));
             if (options.policies.privacy.enabled) {
                 local.set(options.policies.privacy.key, options.policies.privacy.hash);
@@ -220,11 +220,13 @@ require("monaco-loader")().then(function () {
                 config = savedState !== null ? JSON.parse(savedState) : defaultConfig;
             }
         } else {
-            config = _.extend(defaultConfig, {settings: {
-                showMaximiseIcon: false,
-                showCloseIcon: false,
-                hasHeaders: false
-            }}, sharing.configFromEmbedded(window.location.hash.substr(1)));
+            config = _.extend(defaultConfig, {
+                settings: {
+                    showMaximiseIcon: false,
+                    showCloseIcon: false,
+                    hasHeaders: false
+                }
+            }, sharing.configFromEmbedded(window.location.hash.substr(1)));
         }
 
         var root = $("#root");
