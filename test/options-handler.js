@@ -37,9 +37,23 @@ const languages = {
     }
 };
 
-const compilerProps = new properties.CompilerProps(languages, properties.fakeProps({}));
+const libProps = {
+    libs: 'fakelib',
+    'libs.fakelib.name': 'fake lib',
+    'libs.fakelib.description': 'Its is a real, fake lib!',
+    'libs.fakelib.versions': 'onePath:twoPaths:noPaths',
+    'libs.fakelib.url': 'https://godbolt.org',
+    'libs.fakelib.versions.onePath.version': 'one path',
+    'libs.fakelib.versions.onePath.path': '/dev/null',
+    'libs.fakelib.versions.twoPaths.version': 'two paths',
+    'libs.fakelib.versions.twoPaths.path': '/dev/null:/dev/urandom',
+    'libs.fakelib.versions.noPaths.version': 'no paths',
+    'libs.fakelib.versions.noPaths.path': ''
+};
 
-const optionsHandler = new OptionsHandler([], languages, compilerProps, {});
+const compilerProps = new properties.CompilerProps(languages, properties.fakeProps(libProps));
+
+const optionsHandler = new OptionsHandler([], compilerProps, {});
 
 
 const makeFakeCompilerInfo = (id, lang, group, semver, isSemver) => {
@@ -55,7 +69,25 @@ const makeFakeCompilerInfo = (id, lang, group, semver, isSemver) => {
 };
 
 describe('Options handler', () => {
-    it('should order libraries as expected', () => {
+    it('should always return an array of paths', () => {
+        const libs = optionsHandler.parseLibraries({'fake': libProps.libs});
+        _.each(libs[languages.fake.id]['fakelib'].versions, version => {
+            Array.isArray(version.path).should.equal(true);
+        });
+        libs.should.deep.equal({"fake": {
+            "fakelib": {
+                "description": "Its is a real, fake lib!",
+                "name": "fake lib",
+                "url": "https://godbolt.org",
+                "versions": {
+                        "noPaths": {"path": [], "version": "no paths"},
+                        "onePath": {"path": ["/dev/null"], "version": "one path"},
+                        "twoPaths": {"path": ["/dev/null", "/dev/urandom"], "version": "two paths"}
+                }
+            }
+        }});
+    });
+    it('should order compilers as expected', () => {
         const compilers = [
             makeFakeCompilerInfo('a1', languages.fake.id, 'a', '0.0.1', true),
             makeFakeCompilerInfo('a2', languages.fake.id, 'a', '0.2.0', true),
@@ -106,5 +138,6 @@ describe('Options handler', () => {
         _.each(optionsHandler.get().compilers, compiler => {
             should.equal(compiler['$order'], expectedOrder[compiler.group][compiler.id]);
         });
+        optionsHandler.setCompilers([]);
     });
 });
