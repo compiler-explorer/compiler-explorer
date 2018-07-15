@@ -136,4 +136,12 @@ describe('Properties', () => {
     it('should report the default value if an unknown language is used', () => {
         should.equal(compilerProps.get('b', 'foo', '0'), '0');
     });
+    it('should not check ceProps for falsey values', () => {
+        // Set bar to be falsey in the language specific setting.
+        compilerProps.propsByLangId[languages.a.id] = properties.fakeProps({bar: false});
+        // Now query it with a default of true. We should see false...
+        should.equal(compilerProps.get('a', 'bar', true), false);
+        compilerProps.get(languages, 'bar', true, undefined).should.deep.equal({a: false});
+        compilerProps.propsByLangId[languages.a.id] = undefined;
+    });
 });
