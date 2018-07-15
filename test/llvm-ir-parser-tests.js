@@ -62,25 +62,20 @@ describe('llvm-ir parseMetaNode', function () {
         });
     });
 
-    it('should parse distinct DISubprogram', function () {
-        llvmIrParser.parseMetaNode('!44 = distinct !DISubprogram(name: "maxArr6ay", linkageName: "_name_here", ' +
-            'scope: !1, file: !1, line: 7, type: !8, isLocal: false, isDefinition: true, scopeLine: 7, flags: ' +
-            'DIFlagPrototyped, isOptimized: false, unit: !0, variables: !2)').should.deep.equal({
+    it('should parse all value types', function () {
+        llvmIrParser.parseMetaNode('!44 = distinct !DISubprogram(name: "func<int, int>", ' +
+            'scope: !1, line: 7, isLocal: false, isDefinition: true, flags: ' +
+            'DIFlagPrototyped, ceEmpty: "", ceTest: "a:b\\"c,d")').should.deep.equal({
             metaType: 'Subprogram',
             metaId: '!44',
-            name: 'maxArr6ay',
-            unit: '!0',
-            file: '!1',
+            name: 'func<int, int>',
             line: '7',
-            type: '!8',
             scope: '!1',
-            scopeLine: '7',
-            variables: '!2',
             isLocal: 'false',
-            isOptimized: 'false',
             isDefinition: 'true',
-            linkageName: '_name_here',
-            flags: 'DIFlagPrototyped'
+            flags: 'DIFlagPrototyped',
+            ceTest: 'a:b\\"c,d',
+            ceEmpty: ''
         });
     });
 
