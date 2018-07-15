@@ -38,7 +38,8 @@ const nopt = require('nopt'),
     express = require('express'),
     Raven = require('raven'),
     logger = require('./lib/logger').logger,
-    webpackDevMiddleware = require("webpack-dev-middleware");
+    webpackDevMiddleware = require("webpack-dev-middleware"),
+    utils = require('./lib/utils');
 
 
 // Parse arguments from command line 'node ./app.js args...'
@@ -338,13 +339,32 @@ Promise.all([compilerFinder.find(), aws.initConfig(awsProps)])
             webServer.use(express.static(defArgs.staticDir, {maxAge: staticMaxAgeSecs * 1000}));
         }
 
+        morgan.token('gdpr_ip', req => utils.anonymizeIp(req.ip));
+
+        // Based on combined format, but: GDPR compliant IP, no timestamp & no unused fields for our usecase
+        const morganFormat = isDevMode() ? 'dev' : ':gdpr_ip ":method :url" :status';
+
         webServer
             .use(Raven.requestHandler())
             .set('trust proxy', true)
             .set('view engine', 'pug')
             // before morgan so healthchecks aren't logged
             .use('/healthcheck', new healthCheck.HealthCheckHandler().handle)
-            .use(morgan('combined', {stream: logger.stream}))
+            .use(morgan(morganFormat, {
+                stream: logger.stream,
+                // Skip for non errors (2xx, 3xx)
+                skip: (req, res) => res.statusCode >= 400
+            }))
+            .use(morgan(morganFormat, {
+                stream: logger.warnStream,
+                // Skip for non user errors (4xx)
+                skip: (req, res) => res.statusCode < 400 || res.statusCode >= 500
+            }))
+            .use(morgan(morganFormat, {
+                stream: logger.errStream,
+                // Skip for non server errors (5xx)
+                skip: (req, res) => res.statusCode < 500
+            }))
             .use(compression())
             .get('/', (req, res) => {
                 staticHeaders(res);

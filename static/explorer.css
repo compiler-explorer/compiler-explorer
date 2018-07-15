@@ -1,3 +1,5 @@
+@import url("~cookieconsent/build/cookieconsent.min.css");
+
 /* TEMP HACK: https://github.com/Microsoft/monaco-editor/issues/349 */
 .quick-open-tree .row {
     margin-left: 0;
@@ -242,6 +244,18 @@ pre.content.wrap {
     border-radius: 3px;
 }
 
+@media (min-width: 1200px) {
+    .modal-dialog {
+        width: 1000px;
+    }
+}
+
+@media (min-width: 1400px) {
+    .modal-dialog {
+        width: 1200px;
+    }
+}
+
 #notifications {
     max-width: 33%;
     position: fixed;
@@ -349,4 +363,8 @@ pre.content.wrap {
     height: 0;
     border: 7px solid transparent;
     margin-right: 2px;
+}
+
+.share-disabled {
+    cursor: not-allowed;
 }

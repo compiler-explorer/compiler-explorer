@@ -25,7 +25,7 @@
 'use strict';
 var $ = require('jquery');
 var _ = require('underscore');
-var ga = require('analytics').ga;
+var ga = require('analytics');
 var colour = require('colour');
 var Toggles = require('toggles');
 var FontScale = require('fontscale');
@@ -128,7 +128,7 @@ function Compiler(hub, container, state) {
     }).on('change', _.bind(function (e) {
         var val = $(e.target).val();
         if (val) {
-            ga('send', {
+            ga.proxy('send', {
                 hitType: 'event',
                 eventCategory: 'SelectCompiler',
                 eventAction: val
@@ -537,14 +537,14 @@ Compiler.prototype.onCompileResponse = function (request, result, cached) {
     var timeTaken = Math.max(0, Date.now() - this.pendingRequestSentAt);
     var wasRealReply = this.pendingRequestSentAt > 0;
     this.pendingRequestSentAt = 0;
-    ga('send', {
+    ga.proxy('send', {
         hitType: 'event',
         eventCategory: 'Compile',
         eventAction: request.compiler,
         eventLabel: request.options.userArguments,
         eventValue: cached ? 1 : 0
     });
-    ga('send', {
+    ga.proxy('send', {
         hitType: 'timing',
         timingCategory: 'Compile',
         timingVar: request.compiler,

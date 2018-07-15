@@ -25,7 +25,7 @@ html(lang="en")
             li.dropdown
               a.dropdown-toggle(href="#" data-toggle="dropdown") More#[b.caret]
               ul.dropdown-menu
-                li: a(href="#" data-target="#settings" data-toggle="modal") Settings
+                li: a#setting(href="#" data-target="#settings" data-toggle="modal") Settings
                 li.divider
                 li: a#ui-reset(href="#") Reset (code and UI layout)
           ul.nav.navbar-nav.navbar-right
@@ -36,7 +36,7 @@ html(lang="en")
             li: a#share(href="#") Share#[b.caret]
             li.dropdown
               a.dropdown-toggle(href="#" data-toggle="dropdown") Other#[b.caret]
-              ul.dropdown-menu
+              ul.dropdown-menu.menu-other
                 li
                   a(href="https://www.patreon.com/bePatron?u=3691963"
                   title="Help Compiler Explorer - become a Patron" target="_blank" rel="noopener")
@@ -62,9 +62,18 @@ html(lang="en")
                 li: a(href="https://xania.org/MattGodbolt" rel="author" target="_blank") About the author
                 li#changes: a(href="#") Changelog
                 if sharingEnabled
-                  li.tweet: a.twitter-share-button(href="https://twitter.com/share" data-via="mattgodbolt")
+                  li#socialshare
+            if policies.cookies.enabled || policies.privacy.enabled
+              li.dropdown
+                a.dropdown-toggle(href="#" data-toggle="dropdown") Policies#[b.caret]
+                ul.dropdown-menu.menu-other
+                  if policies.cookies.enabled
+                    li#cookies: a(href="#") Cookie policy
+                  if policies.privacy.enabled
+                    li#privacy: a(href="#") Privacy policy
 
     #root
+
 
     include templates.pug
 

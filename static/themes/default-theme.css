@@ -185,3 +185,30 @@ body {
 .lib-arrow-down.lib-arrow-used {
     border-top-color: green;
 }
+
+.consent-cookie-yes {
+    background-color: #c1e2b3;
+}
+
+.consent-cookie-no {
+    background-color: #f44336;
+    color: #ffffff;
+}
+
+#socialshare .share-twitter, .share-twitter {
+    display: block;
+    overflow: auto;
+    background-color: #1da1f2;
+    color: #f5f8fa;
+}
+
+#socialshare .share-reddit, .share-reddit {
+    display: block;
+    overflow: auto;
+    background-color: #ff4500;
+    color: #cee3f8;
+}
+
+.share-disabled {
+    color: gray;
+}
