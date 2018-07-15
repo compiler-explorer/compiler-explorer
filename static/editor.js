@@ -32,6 +32,7 @@ var monaco = require('monaco');
 var options = require('options');
 var Alert = require('alert');
 var local = require('./local');
+var ga = require('./analytics');
 require('./cppp-mode');
 require('./d-mode');
 require('./rust-mode');
@@ -145,6 +146,12 @@ function Editor(hub, state, container) {
 
     this.updateTitle();
     this.updateState();
+    ga.proxy('send', {
+        hitType: 'event',
+        eventCategory: 'ViewPane',
+        eventAction: 'Open',
+        eventValue: 'Editor'
+    });
 }
 
 // If compilerId is undefined, every compiler will be pinged

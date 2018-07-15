@@ -27,6 +27,7 @@ var FontScale = require('fontscale');
 var monaco = require('monaco');
 var _ = require('underscore');
 var $ = require('jquery');
+var ga = require('./analytics');
 
 function Ast(hub, container, state) {
     this.container = container;
@@ -60,6 +61,13 @@ function Ast(hub, container, state) {
         this.showAstResults(state.astOutput);
     }
     this.setTitle();
+
+    ga.proxy('send', {
+        hitType: 'event',
+        eventCategory: 'ViewPane',
+        eventAction: 'Open',
+        eventValue: 'Ast'
+    });
 }
 
 Ast.prototype.initButtons = function (state) {

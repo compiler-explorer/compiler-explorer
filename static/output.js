@@ -29,6 +29,7 @@ var $ = require('jquery');
 var FontScale = require('fontscale');
 var AnsiToHtml = require('ansi-to-html');
 var Toggles = require('toggles');
+var ga = require('./analytics');
 
 function makeAnsiToHtml(color) {
     return new AnsiToHtml({
@@ -70,6 +71,12 @@ function Output(hub, container, state) {
 
     this.onOptionsChange();
     this.updateCompilerName();
+    ga.proxy('send', {
+        hitType: 'event',
+        eventCategory: 'ViewPane',
+        eventAction: 'Open',
+        eventValue: 'Output'
+    });
 }
 
 Output.prototype.getEffectiveOptions = function () {

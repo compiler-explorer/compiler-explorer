@@ -59,10 +59,26 @@ require("monaco-loader")().then(function () {
         };
         var currentSettings = JSON.parse(local.get('settings', null)) || defaultSettings;
 
-        function onChange(settings) {
-            currentSettings = settings;
-            local.set('settings', JSON.stringify(settings));
-            eventHub.emit('settingsChange', settings);
+        function onChange(newSettings) {
+            if (currentSettings.theme !== newSettings.theme) {
+                analytics.proxy('send', {
+                    hitType: 'event',
+                    eventCategory: 'Settings',
+                    eventAction: 'ThemeChange',
+                    eventValue: newSettings.theme
+                });
+            }
+            if (currentSettings.colourScheme !== newSettings.colourScheme) {
+                analytics.proxy('send', {
+                    hitType: 'event',
+                    eventCategory: 'Settings',
+                    eventAction: 'ColourSchemeChange',
+                    eventValue: newSettings.colourScheme
+                });
+            }
+            currentSettings = newSettings;
+            local.set('settings', JSON.stringify(newSettings));
+            eventHub.emit('settingsChange', newSettings);
         }
 
         new themer.Themer(eventHub, currentSettings);

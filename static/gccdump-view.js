@@ -30,6 +30,7 @@ var Toggles = require('toggles');
 require('gccdump-rtl-gimple-mode');
 var _ = require('underscore');
 var $ = require('jquery');
+var ga = require('./analytics');
 
 require('selectize');
 
@@ -95,6 +96,12 @@ function GccDump(hub, container, state) {
     // UI is ready, request compilation to get passes list and
     // current output (if any)
     this.eventHub.emit('gccDumpUIInit', this.state._compilerid);
+    ga.proxy('send', {
+        hitType: 'event',
+        eventCategory: 'ViewPane',
+        eventAction: 'Open',
+        eventValue: 'GccDump'
+    });
 }
 
 GccDump.prototype.initButtons = function (state) {

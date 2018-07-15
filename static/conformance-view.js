@@ -28,6 +28,7 @@ var options = require('options');
 var _ = require('underscore');
 var $ = require('jquery');
 var Promise = require('es6-promise').Promise;
+var ga = require('./analytics');
 
 require('selectize');
 
@@ -54,6 +55,12 @@ function Conformance(hub, container, state) {
     this.initCallbacks();
     this.initFromState(state);
     this.handleToolbarUI();
+    ga.proxy('send', {
+        hitType: 'event',
+        eventCategory: 'ViewPane',
+        eventAction: 'Open',
+        eventValue: 'ConfView'
+    });
 }
 
 Conformance.prototype.initButtons = function () {

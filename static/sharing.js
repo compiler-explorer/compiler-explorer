@@ -29,6 +29,7 @@ var options = require('options');
 var shortenURL = require('./urlshorten-' + options.urlShortenService);
 var Components = require('components');
 var url = require('./url');
+var ga = require('./analytics');
 
 var shareServices = {
     twitter: {
@@ -124,6 +125,12 @@ function initShareButton(getLink, layout) {
     }).click(function () {
         getLink.popover('show');
     }).on('inserted.bs.popover', function () {
+        ga.proxy('send', {
+            hitType: 'event',
+            eventCategory: 'ModalPane',
+            eventAction: 'Open',
+            eventValue: 'Sharingy'
+        });
         var root = $('.urls-container:visible');
         var urls = {Short: 'Loading...'};
         if (!currentBind) currentBind = $(root.find('.sources a')[0]).data().bind;

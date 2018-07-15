@@ -28,6 +28,7 @@ var FontScale = require('fontscale');
 var monaco = require('monaco');
 var _ = require('underscore');
 var $ = require('jquery');
+var ga = require('./analytics');
 
 require('asm-mode');
 require('selectize');
@@ -104,6 +105,12 @@ function Diff(hub, container, state) {
 
     this.updateCompilerNames();
     this.updateCompilers();
+    ga.proxy('send', {
+        hitType: 'event',
+        eventCategory: 'ViewPane',
+        eventAction: 'Open',
+        eventValue: 'Diff'
+    });
 }
 
 // TODO: de-dupe with compiler etc

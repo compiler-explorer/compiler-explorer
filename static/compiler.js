@@ -151,6 +151,12 @@ function Compiler(hub, container, state) {
     this.updateButtons();
     this.updateLibsDropdown();
     this.saveState();
+    ga.proxy('send', {
+        hitType: 'event',
+        eventCategory: 'ViewPane',
+        eventAction: 'Open',
+        eventValue: 'Compiler'
+    });
 }
 
 Compiler.prototype.clearEditorsLinkedLines = function () {
