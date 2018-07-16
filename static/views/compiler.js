@@ -461,8 +461,14 @@ Compiler.prototype.sendCompile = function (request) {
         })
         .catch(function (x) {
             clearTimeout(progress);
+            var message = "Unknown error";
+            if (_.isString(x)) {
+                message = x;
+            } else if (x) {
+                message = x.error || x.code;
+            }
             onCompilerResponse(request,
-                errorResult('<Compilation failed: ' + x ? (x.code ? x.code : x) : "Unknown error" + '>'), false);
+                errorResult('<Compilation failed: ' + message + '>'), false);
         });
 };
 
