@@ -51,3 +51,5 @@ From oldest to newest contributor, we would like to thank:
 - [Ethan Smith](https://github.com/ethanhs)
 - [Shubham Rawat](https://github.com/shubhdev)
 - [AMS21](https://github.com/AMS21)
+- [Darcy Beurle](https://github.com/dbeurle)
+- [Michael Bradshaw](https://github.com/mjbshaw)

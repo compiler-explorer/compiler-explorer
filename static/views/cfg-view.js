@@ -27,11 +27,10 @@
 var $ = require('jquery');
 var vis = require('vis');
 var _ = require('underscore');
-var Toggles = require('./toggles');
-var ga = require('./analytics');
+var Toggles = require('../toggles');
+var ga = require('../analytics');
 
 require('selectize');
-require("vis/dist/vis.css");
 
 function Cfg(hub, container, state) {
     this.container = container;
@@ -383,4 +382,3 @@ Cfg.prototype.currentState = function () {
 module.exports = {
     Cfg: Cfg
 };
-

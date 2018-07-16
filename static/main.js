@@ -30,7 +30,7 @@ require("monaco-loader")().then(function () {
     require('cookieconsent');
 
     var analytics = require('analytics');
-    var sharing = require('sharing');
+    var sharing = require('./views/sharing');
     var _ = require('underscore');
     var $ = require('jquery');
     var GoldenLayout = require('goldenlayout');
@@ -39,9 +39,9 @@ require("monaco-loader")().then(function () {
     var clipboard = require('clipboard');
     var Hub = require('hub');
     var Raven = require('raven-js');
-    var settings = require('./settings');
+    var settings = require('./views/settings');
     var local = require('./local');
-    var Alert = require('./alert');
+    var Alert = require('./views/alert');
     var themer = require('./themes');
 
     //css

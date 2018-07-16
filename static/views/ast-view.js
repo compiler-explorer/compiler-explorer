@@ -23,11 +23,11 @@
 // POSSIBILITY OF SUCH DAMAGE.
 "use strict";
 
-var FontScale = require('fontscale');
-var monaco = require('monaco');
+var FontScale = require('../fontscale');
+var monaco = require('../monaco');
 var _ = require('underscore');
 var $ = require('jquery');
-var ga = require('./analytics');
+var ga = require('../analytics');
 
 function Ast(hub, container, state) {
     this.container = container;

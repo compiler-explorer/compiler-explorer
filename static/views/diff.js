@@ -24,13 +24,13 @@
 
 "use strict";
 
-var FontScale = require('fontscale');
-var monaco = require('monaco');
+var FontScale = require('../fontscale');
+var monaco = require('../monaco');
 var _ = require('underscore');
 var $ = require('jquery');
-var ga = require('./analytics');
+var ga = require('../analytics');
 
-require('asm-mode');
+require('../modes/asm-mode');
 require('selectize');
 
 function State(id, model) {

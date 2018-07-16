@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 'use strict';
 
-var monaco = require('monaco');
+var monaco = require('../monaco');
 
 function definition() {
     // Object-Pascal language definition

@@ -24,11 +24,11 @@
 
 "use strict";
 
-var options = require('options');
+var options = require('../options');
 var _ = require('underscore');
 var $ = require('jquery');
 var Promise = require('es6-promise').Promise;
-var ga = require('./analytics');
+var ga = require('../analytics');
 
 require('selectize');
 

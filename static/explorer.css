@@ -1,4 +1,5 @@
 @import url("~cookieconsent/build/cookieconsent.min.css");
+@import url("~vis/dist/vis.css");
 
 /* TEMP HACK: https://github.com/Microsoft/monaco-editor/issues/349 */
 .quick-open-tree .row {

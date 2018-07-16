@@ -24,13 +24,13 @@
 
 'use strict';
 
-var FontScale = require('fontscale');
-var monaco = require('monaco');
-var Toggles = require('toggles');
-require('gccdump-rtl-gimple-mode');
+var FontScale = require('../fontscale');
+var monaco = require('../monaco');
+var Toggles = require('../toggles');
+require('../modes/gccdump-rtl-gimple-mode');
 var _ = require('underscore');
 var $ = require('jquery');
-var ga = require('./analytics');
+var ga = require('../analytics');
 
 require('selectize');
 

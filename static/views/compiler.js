@@ -25,20 +25,20 @@
 'use strict';
 var $ = require('jquery');
 var _ = require('underscore');
-var ga = require('analytics');
-var colour = require('colour');
-var Toggles = require('toggles');
-var FontScale = require('fontscale');
+var ga = require('../analytics');
+var colour = require('../colour');
+var Toggles = require('../toggles');
+var FontScale = require('../fontscale');
 var Promise = require('es6-promise').Promise;
-var Components = require('components');
+var Components = require('../components');
 var LruCache = require('lru-cache');
-var options = require('options');
-var monaco = require('monaco');
-var Alert = require('alert');
+var options = require('../options');
+var monaco = require('../monaco');
+var Alert = require('./alert');
 var bigInt = require('big-integer');
-var local = require('./local');
+var local = require('../local');
 var Raven = require('raven-js');
-require('asm-mode');
+require('../modes/asm-mode');
 
 require('selectize');
 
