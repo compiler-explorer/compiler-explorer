@@ -25,11 +25,11 @@ const manifestPlugin = new ManifestPlugin({
 
 const assetEntries = glob.sync(`${assetPath}/**/*.*`).reduce((obj, p) => {
     const key = path.basename(p);
-    obj[key] = p; 
+    obj[key] = p;
     return obj;
 }, {});
 
-let plugins = [ 
+let plugins = [
     new CopyWebpackPlugin([{
         from: 'node_modules/monaco-editor/min/vs',
         to: vsPath,

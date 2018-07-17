@@ -29,21 +29,20 @@ require("monaco-loader")().then(function () {
     require('bootstrap-slider');
     require('cookieconsent');
 
-    var analytics = require('analytics');
+    var analytics = require('./analytics');
     var sharing = require('./sharing');
     var _ = require('underscore');
     var $ = require('jquery');
     var GoldenLayout = require('goldenlayout');
-    var Components = require('components');
+    var Components = require('./components');
     var url = require('./url');
     var clipboard = require('clipboard');
-    var Hub = require('hub');
+    var Hub = require('./hub');
     var Raven = require('raven-js');
     var settings = require('./settings');
     var local = require('./local');
     var Alert = require('./alert');
     var themer = require('./themes');
-
     //css
     require("bootstrap/dist/css/bootstrap.min.css");
     require("goldenlayout/src/css/goldenlayout-base.css");

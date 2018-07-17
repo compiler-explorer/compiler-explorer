@@ -30,7 +30,7 @@ var Components = require('./components');
 var url = require('./url');
 var ga = require('./analytics');
 
-var shortenURL = require('../urlshorten-' + options.urlShortenService);
+var shortenURL = require('./urlshorten-' + options.urlShortenService);
 
 var shareServices = {
     twitter: {
