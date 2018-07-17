@@ -25,9 +25,9 @@
 "use strict";
 var $ = require('jquery');
 var _ = require('underscore');
-var colour = require('../colour');
-var themes = require('../themes').themes;
-var options = require('../options');
+var colour = require('./colour');
+var themes = require('./themes').themes;
+var options = require('./options');
 
 function Setting(elem, name, Control, param) {
     this.elem = elem;

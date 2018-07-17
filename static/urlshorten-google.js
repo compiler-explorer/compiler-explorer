@@ -24,7 +24,7 @@
 
 "use strict";
 var options = require('options');
-var Alert = require('./views/alert');
+var Alert = require('./alert');
 var $ = require('jquery');
 
 function googleJSClientLoaded() {

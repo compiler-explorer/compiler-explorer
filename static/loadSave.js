@@ -27,9 +27,9 @@ var $ = require('jquery');
 var _ = require('underscore');
 var saveAs = require('filesaver');
 var Alert = require('./alert');
-var local = require('../local');
+var local = require('./local');
 var Promise = require('es6-promise').Promise;
-var ga = require('../analytics');
+var ga = require('./analytics');
 
 function getLocalFiles() {
     return JSON.parse(local.get('files', "{}"));

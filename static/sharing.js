@@ -25,10 +25,10 @@
 "use strict";
 var $ = require('jquery');
 var _ = require('underscore');
-var options = require('../options');
-var Components = require('../components');
-var url = require('../url');
-var ga = require('../analytics');
+var options = require('./options');
+var Components = require('./components');
+var url = require('./url');
+var ga = require('./analytics');
 
 var shortenURL = require('../urlshorten-' + options.urlShortenService);
 

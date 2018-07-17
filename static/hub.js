@@ -27,16 +27,16 @@
 
 var _ = require('underscore');
 var Raven = require('raven-js');
-var editor = require('./views/editor');
-var compiler = require('./views/compiler');
-var output = require('./views/output');
+var editor = require('./panes/editor');
+var compiler = require('./panes/compiler');
+var output = require('./panes/output');
 var Components = require('components');
-var diff = require('./views/diff');
-var optView = require('./views/opt-view');
-var astView = require('./views/ast-view');
-var gccDumpView = require('./views/gccdump-view');
-var cfgView = require('./views/cfg-view');
-var conformanceView = require('./views/conformance-view');
+var diff = require('./panes/diff');
+var optView = require('./panes/opt-view');
+var astView = require('./panes/ast-view');
+var gccDumpView = require('./panes/gccdump-view');
+var cfgView = require('./panes/cfg-view');
+var conformanceView = require('./panes/conformance-view');
 var CompilerService = require('compiler-service');
 
 function Ids() {
