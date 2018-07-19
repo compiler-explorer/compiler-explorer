@@ -196,15 +196,11 @@ body {
 }
 
 #socialshare .share-twitter, .share-twitter {
-    display: block;
-    overflow: auto;
     background-color: #1da1f2;
     color: #f5f8fa;
 }
 
 #socialshare .share-reddit, .share-reddit {
-    display: block;
-    overflow: auto;
     background-color: #ff4500;
     color: #cee3f8;
 }
