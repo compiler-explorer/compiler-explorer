@@ -1,0 +1,16 @@
+{
+  "motd": "",
+  "ads": [
+    {
+      "html": "<a href=\"http://localhost\" target=\"_blank\">Yay</a> this is an ad",
+      "filter": "c++"
+    },
+    {
+      "html": "This is a general ad"
+    },
+    {
+      "html": "<a href=\"http://localhost\" target=\"_blank\">Yay</a> this is an ad for Rust",
+      "filter": "rust"
+    }
+  ]
+}

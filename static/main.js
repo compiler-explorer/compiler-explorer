@@ -43,6 +43,7 @@ require("monaco-loader")().then(function () {
     var local = require('./local');
     var Alert = require('./alert');
     var themer = require('./themes');
+    var motd = require('./motd');
     //css
     require("bootstrap/dist/css/bootstrap.min.css");
     require("goldenlayout/src/css/goldenlayout-base.css");
@@ -90,6 +91,7 @@ require("monaco-loader")().then(function () {
         eventHub.on('modifySettings', function (newSettings) {
             setSettings(_.extend(currentSettings, newSettings));
         });
+        return currentSettings;
     }
 
     function setupButtons(options) {
@@ -292,7 +294,7 @@ require("monaco-loader")().then(function () {
 
         new clipboard('.btn.clippy');
 
-        setupSettings(hub);
+        var settings = setupSettings(hub);
         setupButtons(options);
 
         sharing.initShareButton($('#share'), layout);
@@ -322,6 +324,8 @@ require("monaco-loader")().then(function () {
                 title: 'New Privacy Policy. Please take a moment to read it'
             });
         }
+
+        motd.initialise(options.motdUrl, $('#motd'), settings.defaultLanguage);
     }
 
     $(start);
