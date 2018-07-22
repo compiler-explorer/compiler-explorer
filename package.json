@@ -84,7 +84,11 @@
     "webpack-manifest-plugin": "^1.3.2"
   },
   "scripts": {
-    "test": "mocha --recursive && make test",
+    "lint-client": "eslint --config static/.eslintrc --ignore-path static/.eslintignore --fix ./static/*.js ./static/panes/*.js ./static/modes/*.js",
+    "lint-server": "eslint --config .eslintrc --ignore-path .eslintignore ./app.js ./lib/**",
+    "lint": "yarn run lint-client && yarn run lint-server",
+    "test": "mocha --recursive",
+    "check": "yarn run lint && yarn run test",
     "dev": "cross-env NODE_ENV=DEV node app.js",
     "start": "npx webpack && cross-env NODE_ENV=LOCAL node app.js",
     "codecov": "istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec --recursive && codecov",
