@@ -85,7 +85,7 @@
   },
   "scripts": {
     "lint-client": "eslint --config static/.eslintrc --ignore-path static/.eslintignore --fix ./static/*.js ./static/panes/*.js ./static/modes/*.js",
-    "lint-server": "eslint --config .eslintrc --ignore-path .eslintignore ./app.js ./lib/**",
+    "lint-server": "eslint --config .eslintrc --ignore-path .eslintignore --fix ./app.js ./lib/**",
     "lint": "yarn run lint-client && yarn run lint-server",
     "test": "mocha --recursive",
     "check": "yarn run lint && yarn run test",
