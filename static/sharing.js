@@ -124,7 +124,13 @@ function initShareButton(getLink, layout) {
         placement: 'bottom',
         trigger: 'manual'
     }).click(function () {
-        getLink.popover('show');
+        // load opposite state on click to prevent unnecessary popover rendering
+        if (getLink.data('bs.popover').tip().is(':visible')) {
+            getLink.popover('hide');
+        }
+        else {
+            getLink.popover('show');
+        }
     }).on('inserted.bs.popover', function () {
         ga.proxy('send', {
             hitType: 'event',
