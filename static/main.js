@@ -181,6 +181,7 @@ require("monaco-loader")().then(function () {
                     data && data.title ? data.title : "Privacy policy",
                     require('./policies/privacy.html')
                 );
+                // I can't remember why this check is here as it seems superfluous
                 if (options.policies.privacy.enabled) {
                     local.set(options.policies.privacy.key, options.policies.privacy.hash);
                 }
@@ -293,7 +294,11 @@ require("monaco-loader")().then(function () {
         new clipboard('.btn.clippy');
 
         setupSettings(hub);
-        setupButtons(options);
+
+        // We assume no consent for embed users
+        if (!options.embedded) {
+            setupButtons(options);
+        }
 
         sharing.initShareButton($('#share'), layout);
 
