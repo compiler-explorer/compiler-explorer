@@ -63,8 +63,9 @@ if (opts.debug) logger.level = 'debug';
 
 // AP: Detect if we're running under Windows Subsystem for Linux. Temporary modification
 // of process.env is allowed: https://nodejs.org/api/process.html#process_process_env
-if ((process.platform === "win32") || child_process.execSync('uname -a').toString().indexOf('Microsoft') > -1)
+if (process.platform === "linux" && child_process.execSync('uname -a').toString().indexOf('Microsoft') > -1) {
     process.env.wsl = true;
+}
 
 // AP: Allow setting of tmpDir (used in lib/base-compiler.js & lib/exec.js) through opts.
 // WSL requires a directory on a Windows volume. Set that to Windows %TEMP% if no tmpDir supplied.
@@ -72,8 +73,7 @@ if ((process.platform === "win32") || child_process.execSync('uname -a').toStrin
 if (opts.tmpDir) {
     process.env.tmpDir = opts.tmpDir;
     process.env.winTmp = opts.tmpDir;
-}
-else if (process.env.wsl) {
+} else if (process.env.wsl) {
     // Dec 2017 preview builds of WSL include /bin/wslpath; do the parsing work for now.
     // Parsing example %TEMP% is C:\Users\apardoe\AppData\Local\Temp
     const windowsTemp = child_process.execSync('cmd.exe /c echo %TEMP%').toString().replace(/\\/g, "/");

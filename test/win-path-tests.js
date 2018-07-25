@@ -24,8 +24,8 @@
 
 const chai = require('chai');
 
-const WslCL = require('../lib/compilers/WSL-CL');
-const WineCL = require('../lib/compilers/Wine-CL');
+const WslCL = require('../lib/compilers/WSL-VC');
+const WineCL = require('../lib/compilers/Wine-VC');
 const CompilationEnvironment = require('../lib/compilation-env');
 const properties = require('../lib/properties');
 
@@ -48,7 +48,9 @@ describe('Paths', () => {
         const env = new CompilationEnvironment(compilerProps);
 
         const compiler = new WineCL(info, env);
-        compiler.filename("/tmp/123456/output.s").should.equal("Z:/tmp/123456/output.s");
+        if (process.platform === 'linux' || process.platform === 'darwin') {
+            compiler.filename("/tmp/123456/output.s").should.equal("Z:/tmp/123456/output.s");
+        }
     });
 
     it('Linux -> Windows path', function () {
@@ -63,6 +65,8 @@ describe('Paths', () => {
         process.env.winTmp = "/mnt/c/tmp";
 
         const compiler = new WslCL(info, env);
-        compiler.filename("/mnt/c/tmp/123456/output.s").should.equal("c:/tmp/123456/output.s");
+        if (process.platform === 'linux' || process.platform === 'darwin') {
+            compiler.filename("/mnt/c/tmp/123456/output.s").should.equal("c:/tmp/123456/output.s");
+        }
     });
 });
