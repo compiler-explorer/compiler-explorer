@@ -124,7 +124,7 @@ function initShareButton(getLink, layout) {
         placement: 'bottom',
         trigger: 'manual'
     }).click(function () {
-        getLink.popover('show');
+        getLink.popover('toggle');
     }).on('inserted.bs.popover', function () {
         ga.proxy('send', {
             hitType: 'event',
@@ -184,7 +184,7 @@ function initShareButton(getLink, layout) {
 
     // Dismiss on any click that isn't either in the opening element, inside
     // the popover or on any alert
-    $(document).on('click.editable', function (e) {
+    $(document).on('mouseup', function (e) {
         var target = $(e.target);
         if (!target.is(getLink) && getLink.has(target).length === 0 && target.closest('.popover').length === 0)
             getLink.popover("hide");
