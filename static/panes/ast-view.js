@@ -64,9 +64,8 @@ function Ast(hub, container, state) {
 
     ga.proxy('send', {
         hitType: 'event',
-        eventCategory: 'ViewPane',
-        eventAction: 'Open',
-        eventValue: 'Ast'
+        eventCategory: 'OpenViewPane',
+        eventAction: 'Ast'
     });
 }
 

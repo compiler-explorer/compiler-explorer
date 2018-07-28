@@ -153,9 +153,8 @@ function Compiler(hub, container, state) {
     this.saveState();
     ga.proxy('send', {
         hitType: 'event',
-        eventCategory: 'ViewPane',
-        eventAction: 'Open',
-        eventValue: 'Compiler'
+        eventCategory: 'OpenViewPane',
+        eventAction: 'Compiler'
     });
 }
 

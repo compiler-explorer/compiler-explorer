@@ -57,9 +57,8 @@ function Conformance(hub, container, state) {
     this.handleToolbarUI();
     ga.proxy('send', {
         hitType: 'event',
-        eventCategory: 'ViewPane',
-        eventAction: 'Open',
-        eventValue: 'ConfView'
+        eventCategory: 'OpenViewPane',
+        eventAction: 'Conformance'
     });
 }
 

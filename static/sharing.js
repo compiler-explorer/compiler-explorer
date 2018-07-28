@@ -128,9 +128,8 @@ function initShareButton(getLink, layout) {
     }).on('inserted.bs.popover', function () {
         ga.proxy('send', {
             hitType: 'event',
-            eventCategory: 'ModalPane',
-            eventAction: 'Open',
-            eventValue: 'Sharingy'
+            eventCategory: 'OpenModalPane',
+            eventAction: 'Sharing'
         });
         var root = $('.urls-container:visible');
         var urls = {Short: 'Loading...'};

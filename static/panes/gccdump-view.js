@@ -98,9 +98,8 @@ function GccDump(hub, container, state) {
     this.eventHub.emit('gccDumpUIInit', this.state._compilerid);
     ga.proxy('send', {
         hitType: 'event',
-        eventCategory: 'ViewPane',
-        eventAction: 'Open',
-        eventValue: 'GccDump'
+        eventCategory: 'OpenViewPane',
+        eventAction: 'GccDump'
     });
 }
 

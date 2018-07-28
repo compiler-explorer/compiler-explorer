@@ -146,9 +146,8 @@ function Editor(hub, state, container) {
     this.updateState();
     ga.proxy('send', {
         hitType: 'event',
-        eventCategory: 'ViewPane',
-        eventAction: 'Open',
-        eventValue: 'Editor'
+        eventCategory: 'OpenViewPane',
+        eventAction: 'Editor'
     });
 }
 

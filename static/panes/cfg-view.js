@@ -131,9 +131,8 @@ function Cfg(hub, container, state) {
     this.setTitle();
     ga.proxy('send', {
         hitType: 'event',
-        eventCategory: 'ViewPane',
-        eventAction: 'Open',
-        eventValue: 'Cfg'
+        eventCategory: 'OpenViewPane',
+        eventAction: 'Cfg'
     });
 }
 

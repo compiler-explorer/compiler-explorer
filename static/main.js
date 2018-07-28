@@ -62,17 +62,15 @@ require("monaco-loader")().then(function () {
             if (currentSettings.theme !== newSettings.theme) {
                 analytics.proxy('send', {
                     hitType: 'event',
-                    eventCategory: 'Settings',
-                    eventAction: 'ThemeChange',
-                    eventValue: newSettings.theme
+                    eventCategory: 'ThemeChange',
+                    eventAction: newSettings.theme
                 });
             }
             if (currentSettings.colourScheme !== newSettings.colourScheme) {
                 analytics.proxy('send', {
                     hitType: 'event',
-                    eventCategory: 'Settings',
-                    eventAction: 'ColourSchemeChange',
-                    eventValue: newSettings.colourScheme
+                    eventCategory: 'ColourSchemeChange',
+                    eventAction: newSettings.colourScheme
                 });
             }
             currentSettings = newSettings;
