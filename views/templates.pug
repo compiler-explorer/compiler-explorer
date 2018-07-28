@@ -110,6 +110,9 @@
           button.dropdown-item.btn.btn-light.btn-sm.view-ast(title="Show AST output")
             span.fas.fa-leaf
             | &nbsp;AST output
+          button.dropdown-item.btn.btn-light.btn-sm.view-ir(title="Show IR output")
+            span.fas.fa-align-center
+            | &nbsp;IR output
           button.dropdown-item.btn.btn-light.btn-sm.view-gccdump(title="Show Tree/RTL dump (GCC only)")
             span.fas.fa-tree
             | &nbsp;GCC Tree/RTL output
@@ -199,6 +202,11 @@
     .monaco-placeholder
 
   #ast
+    .top-bar.btn-toolbar.bg-light(role="toolbar")
+      include font-size.pug
+    .monaco-placeholder
+
+  #ir
     .top-bar.btn-toolbar.bg-light(role="toolbar")
       include font-size.pug
     .monaco-placeholder
