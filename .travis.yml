@@ -10,11 +10,8 @@ node_js:
 
 before_script:
     - export PATH=$PATH:$PWD/.travis-compilers/ghc/bin
-    - ghc --version
     - export PATH=$PATH:$PWD/.travis-compilers/gdc/x86_64-pc-linux-gnu/bin
-    - gdc --version
     - export PATH=$PATH:$PWD/.travis-compilers/rust/bin
-    - rustc --version
 
 cache:
     directories:
