@@ -23,8 +23,8 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 const fs = require('fs');
-const asm = require('../lib/asm');
-const asmCl = require('../lib/asm-cl');
+const AsmParser = require('../lib/asm-parser');
+const AsmParserVC = require('../lib/asm-parser-vc');
 const utils = require('../lib/utils');
 require('chai').should();
 
@@ -32,9 +32,9 @@ function processAsm(filename, filters) {
     const file = fs.readFileSync(filename, 'utf-8');
     let parser;
     if (file.indexOf('Microsoft') >= 0)
-        parser = new asmCl.AsmParser();
+        parser = new AsmParserVC();
     else
-        parser = new asm.AsmParser();
+        parser = new AsmParser();
     return parser.process(file, filters);
 }
 
@@ -95,14 +95,10 @@ function testFilter(filename, suffix, filters) {
 // bless("cases/gcc-arm-sum.asm", "cases/gcc-arm-sum.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
 // bless("cases/gcc-avr-sum.asm", "cases/gcc-avr-sum.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
 // bless("cases/cl-regex.asm", "cases/cl-regex.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
-// bless("cases/cl-regex.asm", "cases/cl-regex.asm.dlcb.json", {directives: true, labels: true, commentOnly: true, binary:true});
-// bless("cases/cl-maxarray.asm", "cases/cl-maxarray.asm.dlcb.json", {directives: true, labels: true, commentOnly: true, binary:true});
-// bless("cases/cl64-sum.asm", "cases/cl64-sum.asm.dlcb.json", {directives: true, labels: true, commentOnly: true, binary:true});
 // bless("cases/cl-main-opt-out.asm", "cases/cl-main-opt-out.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
 // bless("cases/avr-loop.asm", "cases/avr-loop.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
 // bless("cases/bug-192.asm", "cases/bug-192.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
 // bless("cases/arm-moose.asm", "cases/arm-moose.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
-// bless("cases/arm-moose.asm", "cases/arm-moose.asm.dlcb.json", {directives: true, labels: true, commentOnly: true, binary: true});
 // bless("cases/gcc-x86-vector.asm", "cases/gcc-x86-vector.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
 // bless("cases/clang-on-mac.asm", "cases/clang-on-mac.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
 // bless("cases/bug-349.asm", "cases/bug-349.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
@@ -133,12 +129,6 @@ describe('Filter test cases', function () {
         cases.forEach(function (x) {
             testFilter(x, ".directives.labels.comments",
                 {directives: true, labels: true, commentOnly: true});
-        });
-    });
-    describe('Directives, labels, comments and binary mode', function () {
-        cases.forEach(function (x) {
-            testFilter(x, ".dlcb",
-                {directives: true, labels: true, commentOnly: true, binary: true});
         });
     });
 });
