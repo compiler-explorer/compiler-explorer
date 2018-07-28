@@ -33,6 +33,7 @@ var Components = require('components');
 var diff = require('./panes/diff');
 var optView = require('./panes/opt-view');
 var astView = require('./panes/ast-view');
+var irView = require('./panes/ir-view');
 var gccDumpView = require('./panes/gccdump-view');
 var cfgView = require('./panes/cfg-view');
 var conformanceView = require('./panes/conformance-view');
@@ -97,6 +98,10 @@ function Hub(layout, subLangId) {
     layout.registerComponent(Components.getAstView().componentName,
         function (container, state) {
             return self.astViewFactory(container, state);
+        });
+    layout.registerComponent(Components.getIrView().componentName,
+        function (container, state) {
+            return self.irViewFactory(container, state);
         });
     layout.registerComponent(Components.getGccDumpView().componentName,
         function (container, state) {
@@ -175,6 +180,11 @@ Hub.prototype.optViewFactory = function (container, state) {
 Hub.prototype.astViewFactory = function (container, state) {
     return new astView.Ast(this, container, state);
 };
+
+Hub.prototype.irViewFactory = function (container, state) {
+    return new irView.Ir(this, container, state);
+};
+
 Hub.prototype.gccDumpViewFactory = function (container, state) {
     return new gccDumpView.GccDump(this, container, state);
 };

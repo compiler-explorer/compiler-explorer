@@ -97,6 +97,9 @@
             button.btn.btn-godbolt.btn-sm.view-ast(title="Show AST output")
               span.glyphicon.glyphicon-tree-deciduous
               | &nbsp;AST output
+            button.btn.btn-godbolt.btn-sm.view-ir(title="Show IR output")
+              span.glyphicon.glyphicon-align-center
+              | &nbsp;IR output
             button.btn.btn-godbolt.btn-sm.view-gccdump(title="Show Tree/RTL dump (GCC only)")
               span.glyphicon.glyphicon-tree-conifer
               | &nbsp;GCC Tree/RTL output
@@ -147,6 +150,11 @@
     .monaco-placeholder
 
   #ast
+    .top-bar.btn-toolbar(role="toolbar")
+      include font-size.pug
+    .monaco-placeholder
+
+  #ir
     .top-bar.btn-toolbar(role="toolbar")
       include font-size.pug
     .monaco-placeholder
