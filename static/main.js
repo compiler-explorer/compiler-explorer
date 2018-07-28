@@ -240,7 +240,6 @@ require("monaco-loader")().then(function () {
                 // replace anything in the default config with that from the hash
                 config = _.extend(defaultConfig, config);
             }
-
             if (!config) {
                 var savedState = local.get('gl', null);
                 config = savedState !== null ? JSON.parse(savedState) : defaultConfig;
