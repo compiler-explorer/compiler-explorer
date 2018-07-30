@@ -114,6 +114,11 @@ function testFilter(filename, suffix, filters) {
 // });
 
 describe('Filter test cases', function () {
+    describe('No filters', function() {
+        cases.forEach(function (x) {
+            testFilter(x, ".none", {});
+        });
+    });
     describe('Directive filters', function () {
         cases.forEach(function (x) {
             testFilter(x, ".directives", {directives: true});
