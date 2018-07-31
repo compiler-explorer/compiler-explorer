@@ -63,7 +63,7 @@
           | preserved as part of shared URLs, and are persisted locally using browser
           | local storage.
         .well.well-sm
-          h4 Editor
+          h4 Site behaviour
           .form-group(role="group")
             label
               | Default language&nbsp;
@@ -76,17 +76,15 @@
                 | Use last selected language when opening new Editors
             .checkbox
               label
+                input.enableCommunityAds(type="checkbox")
+                | Show community events
+        .well.well-sm
+          h4 Editor
+          .form-group(role="group")
+            .checkbox
+              label
                 input.autoCloseBrackets(type="checkbox")
                 | Automatically insert matching brackets and parentheses
-            div
-              .checkbox
-                label
-                  input.compileOnChange(type="checkbox")
-                  | Compile automatically when source changes
-              div Delay before compiling:&nbsp;
-                b 0.25s&nbsp;
-                .slider.slider-horizontal.delay
-                b &nbsp;3s
             .checkbox
               label
                 input.hoverShowSource(type="checkbox")
@@ -121,6 +119,15 @@
         .well.well-sm
           h4 Compilation
           .form-group(role="group")
+            div
+              .checkbox
+                label
+                  input.compileOnChange(type="checkbox")
+                  | Compile automatically when source changes
+              div Delay before compiling:&nbsp;
+                b 0.25s&nbsp;
+                .slider.slider-horizontal.delay
+                b &nbsp;3s
             .checkbox
               label
                 input.colourise(type="checkbox")

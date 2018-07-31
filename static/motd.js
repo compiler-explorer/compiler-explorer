@@ -25,29 +25,39 @@
 "use strict";
 var $ = require('jquery'),
     Raven = require('raven-js'),
-    _ = require('underscore'),
-    local = require('./local');
+    _ = require('underscore');
 
-function handleMotd(motd, motdNode, defaultLanguage) {
-    console.log(defaultLanguage);
+function handleMotd(motd, motdNode, defaultLanguage, adsEnabled, onHide) {
     if (motd.motd) {
         motdNode.find(".content").html(motd.motd);
-        motdNode.removeClass("hide");
+        motdNode.removeClass('hide');
+        motdNode.prop('title', 'Hide this message');
         return;
     }
-    var applicableAds = _.chain(motd.ads)
-        .filter(function (ad) {
-            return !ad.filter || ad.filter === defaultLanguage;
-        })
-        .value();
-    console.log(applicableAds);
+    if (adsEnabled) {
+        var applicableAds = _.chain(motd.ads)
+            .filter(function (ad) {
+                return !ad.filter || ad.filter === defaultLanguage;
+            })
+            .value();
+        if (applicableAds.length === 0) return;
+        var randomAd = applicableAds[_.random(applicableAds.length - 1)];
+        if (randomAd) {
+            motdNode.find(".content").html(randomAd.html);
+            motdNode.find(".close").on('click', function () {
+                motdNode.addClass('hide');
+                onHide();
+            });
+            motdNode.removeClass('hide');
+        }
+    }
 }
 
-function initialise(url, motdNode, defaultLanguage) {
+function initialise(url, motdNode, defaultLanguage, adsEnabled, onHide) {
     if (!url) return;
     $.getJSON(url)
         .then(function (res) {
-            handleMotd(res, motdNode, defaultLanguage);
+            handleMotd(res, motdNode, defaultLanguage, adsEnabled, onHide);
         })
         .catch(function (xhr, error, exc) {
             Raven.captureException(exc);

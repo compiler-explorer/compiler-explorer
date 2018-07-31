@@ -30,10 +30,9 @@ html(lang="en")
                 li: a#ui-reset(href="#") Reset (code and UI layout)
           ul#motd.nav.navbar-nav.navbar-center.community-advert.hide
             span.content
-              a(href="https://www.meetingcpp.com/") Meeting C++ 2018
-              | &nbsp; is from the 15th - 17th November in Berlin!
-            span.community-hide(title="Hide and never show again")
-              button.close(type="button" aria-hidden="true") &times; Hide
+              | Thanks for using Compiler Explorer
+            span.community-hide(title="Hide and never show again" aria-label="Close")
+              button.close(type="button" aria-hidden="true") &times;
           ul.nav.navbar-nav.navbar-right
             if extraBodyClass === "beta"
               li: a(href="https://github.com/mattgodbolt/compiler-explorer/issues" target="_blank" rel="noopener")

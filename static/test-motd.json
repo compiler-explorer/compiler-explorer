@@ -2,15 +2,8 @@
   "motd": "",
   "ads": [
     {
-      "html": "<a href=\"http://localhost\" target=\"_blank\">Yay</a> this is an ad",
+      "html": "<a href=\"https://www.meetingcpp.com/\" target=\"_blank\">Meeting C++ 2018</a>&nbsp; From the 15th - 17th November in Berlin!",
       "filter": "c++"
-    },
-    {
-      "html": "This is a general ad"
-    },
-    {
-      "html": "<a href=\"http://localhost\" target=\"_blank\">Yay</a> this is an ad for Rust",
-      "filter": "rust"
     }
   ]
 }

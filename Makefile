@@ -66,7 +66,7 @@ endif
 
 NODE_MODULES=.yarn-updated
 $(NODE_MODULES): package.json yarn-installed
-	$(YARN) install --offline
+	$(YARN) install
 	@touch $@
 
 webpack: $(NODE_MODULES)

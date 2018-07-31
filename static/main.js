@@ -324,8 +324,12 @@ require("monaco-loader")().then(function () {
                 title: 'New Privacy Policy. Please take a moment to read it'
             });
         }
-
-        motd.initialise(options.motdUrl, $('#motd'), settings.defaultLanguage);
+        var onHide = function () {
+            hub.layout.eventHub.emit('modifySettings', {
+                enableCommunityAds: false
+            });
+        };
+        motd.initialise(options.motdUrl, $('#motd'), settings.defaultLanguage, settings.enableCommunityAds, onHide);
     }
 
     $(start);
