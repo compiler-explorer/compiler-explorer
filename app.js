@@ -197,6 +197,8 @@ const SourceHandler = require('./lib/handlers/source').Handler;
 const sourceHandler = new SourceHandler(fileSources, staticHeaders);
 const CompilerFinder = require('./lib/compiler-finder');
 const compilerFinder = new CompilerFinder(compileHandler, compilerProps, awsProps, defArgs);
+const StorageHandler = require('./lib/storage/storage');
+const storageHandler = new StorageHandler(compilerProps);
 
 function shortUrlHandler(req, res, next) {
     const resolver = new google.ShortLinkResolver(aws.getConfig('googleApiKey'));
@@ -369,7 +371,14 @@ Promise.all([compilerFinder.find(), aws.initConfig(awsProps)])
             .get('/', (req, res) => {
                 staticHeaders(res);
                 contentPolicyHeader(res);
-                res.render('index', renderConfig({embedded: false}));
+                if (req.query.s) {
+                    storageHandler.expandId(req.query.s, config => {
+                        logger.info(config);
+                        res.render('index', renderConfig({embedded: false, config: JSON.parse(config)}));
+                    });
+                } else {
+                    res.render('index', renderConfig({embedded: false}));
+                }
             })
             .get('/e', embeddedHandler)
             // legacy. not a 301 to prevent any redirect loops between old e links and embed.html
@@ -396,7 +405,8 @@ Promise.all([compilerFinder.find(), aws.initConfig(awsProps)])
             .use(restreamer())
             .use('/source', sourceHandler.handle.bind(sourceHandler))
             .use('/api', apiHandler.handle)
-            .use('/g', shortUrlHandler);
+            .use('/g', shortUrlHandler)
+            .post('/s', storageHandler.handler.bind(storageHandler));
         if (!defArgs.doCache) {
             logger.info("  not caching due to --noCache parameter being present");
         }

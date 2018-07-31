@@ -240,7 +240,12 @@ require("monaco-loader")().then(function () {
 
         var config;
         if (!options.embedded) {
-            config = url.deserialiseState(window.location.hash.substr(1));
+            if (options.config) {
+                config = options.config;
+            } else {
+                config = url.deserialiseState(window.location.hash.substr(1));
+            }
+
             if (config) {
                 // replace anything in the default config with that from the hash
                 config = _.extend(defaultConfig, config);

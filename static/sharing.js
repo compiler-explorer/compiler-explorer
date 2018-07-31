@@ -30,7 +30,7 @@ var Components = require('./components');
 var url = require('./url');
 var ga = require('./analytics');
 
-var shortenURL = require('./urlshorten-' + options.urlShortenService);
+// var shortenURL = require('./urlshorten-' + options.urlShortenService);
 
 var shareServices = {
     twitter: {
@@ -84,11 +84,11 @@ function configFromEmbedded(embeddedUrl) {
     }
 }
 
-function getEmbeddedUrl(layout, readOnly) {
+function getEmbeddedUrl(shortId, readOnly) {
     var location = window.location.origin + window.location.pathname;
     if (location[location.length - 1] !== '/') location += '/';
-    var path = readOnly ? 'embed-ro#' : 'e#';
-    return location + path + url.serialiseState(layout.toConfig());
+    var path = readOnly ? 'embed-ro' : 'e';
+    return location + path + '?s=' + shortId;
 }
 
 function updateShares(container, url) {
@@ -132,7 +132,7 @@ function initShareButton(getLink, layout) {
             eventAction: 'Sharing'
         });
         var root = $('.urls-container:visible');
-        var urls = {Short: 'Loading...'};
+        var urls = {};
         if (!currentBind) currentBind = $(root.find('.sources a')[0]).data().bind;
 
         function update() {
@@ -145,7 +145,7 @@ function initShareButton(getLink, layout) {
                 socialSharing.empty();
                 updateShares(socialSharing, url || "https://godbolt.org");
                 // Disable the links for every share item which does not support embed html as links
-                if (!(currentBind === 'Full' || currentBind === 'Short')) {
+                if (currentBind !== 'Full') {
                     socialSharing.children('.share-no-embeddable')
                         .addClass('share-disabled')
                         .prop('title', 'Embed links are not supported in this service')
@@ -194,19 +194,28 @@ function initShareButton(getLink, layout) {
     }
 }
 
-function permalink(layout) {
-    return window.location.href.split('#')[0] + '#' + url.serialiseState(layout.toConfig());
-}
-
 function getLinks(layout, done) {
-    var result = {
-        Full: permalink(layout),
-        Embed: '<iframe width="800px" height="200px" src="' + getEmbeddedUrl(layout, false) + '"></iframe>',
-        'Embed (RO)': '<iframe width="800px" height="200px" src="' + getEmbeddedUrl(layout, true) + '"></iframe>'
-    };
-    shortenURL(result.Full, function (shorter) {
-        result.Short = shorter;
-        done(result);
+    var data = JSON.stringify({
+        config: layout.toConfig()
+    });
+    $.ajax({
+        type: 'POST',
+        url: '/s',
+        dataType: 'json',  // Expected
+        contentType: 'application/json',  // Sent
+        data: data,
+        success: _.bind(function (result) {
+            var newUrl = window.location.origin + window.location.pathname + '?s=' + result.storedId;
+            done({Full: newUrl,
+                Embed: '<iframe width="800px" height="200px" src="' +
+                    getEmbeddedUrl(result.storedId, false) + '"></iframe>',
+                'Embed (RO)': '<iframe width="800px" height="200px" src="' +
+                    getEmbeddedUrl(result.storedId, true) + '"></iframe>'});
+        }, this),
+        error: _.bind(function () {
+            // TODO: Handle errorss
+        }, this),
+        cache: true
     });
 }
 
