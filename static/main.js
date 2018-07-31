@@ -121,6 +121,7 @@ require("monaco-loader")().then(function () {
             };
             window.cookieconsent.status.allow = options.policies.cookies.hash;
             window.cookieconsent.status.dismiss = window.cookieconsent.status.deny;
+            window.cookieconsent.hasTransition = false;
             var cookieconsent = window.cookieconsent.initialise({
                 palette: {
                     popup: {
@@ -132,6 +133,7 @@ require("monaco-loader")().then(function () {
                         text: "#ffffff"
                     }
                 },
+                position: "bottom",
                 theme: "edgeless",
                 type: "opt-in",
                 // We handle the revoking elsewhere
@@ -163,6 +165,9 @@ require("monaco-loader")().then(function () {
                 onInitialise: function () {
                     // Toggle GA on if the user has already consented
                     analytics.toggle(this.hasConsented());
+                },
+                onPopupClose: function () {
+                    $(window).resize();
                 }
             });
 
@@ -240,7 +245,6 @@ require("monaco-loader")().then(function () {
                 // replace anything in the default config with that from the hash
                 config = _.extend(defaultConfig, config);
             }
-
             if (!config) {
                 var savedState = local.get('gl', null);
                 config = savedState !== null ? JSON.parse(savedState) : defaultConfig;
@@ -281,13 +285,12 @@ require("monaco-loader")().then(function () {
         });
 
         function sizeRoot() {
-            var height = $(window).height() - (root.position().top || 0);
+            var height = $(window).height() - (root.position().top || 0) - ($('.cc-window:visible').height() || 0);
             root.height(height);
             layout.updateSize();
         }
 
         $(window).resize(sizeRoot);
-        sizeRoot();
 
         new clipboard('.btn.clippy');
 
@@ -325,6 +328,7 @@ require("monaco-loader")().then(function () {
                 title: 'New Privacy Policy. Please take a moment to read it'
             });
         }
+        sizeRoot();
     }
 
     $(start);

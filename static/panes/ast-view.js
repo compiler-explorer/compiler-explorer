@@ -106,7 +106,7 @@ Ast.prototype.onCompileResult = function (id, compiler, result, lang) {
     if (result.hasAstOutput) {
         this.showAstResults(result.astOutput);
     }
-    else if (result.supportsAstView) {
+    else if (compiler.supportsAstView) {
         this.showAstResults("<No output>");
     }
 
