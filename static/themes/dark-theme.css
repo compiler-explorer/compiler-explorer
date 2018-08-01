@@ -296,3 +296,17 @@ input.permalink {
 .lib-arrow-down.lib-arrow-used {
     border-top-color: green !important;
 }
+
+#socialshare .share-twitter, .share-twitter {
+    background-color: #1da1f2;
+    color: #f5f8fa;
+}
+
+#socialshare .share-reddit, .share-reddit {
+    background-color: #ff4500;
+    color: #cee3f8;
+}
+
+.share-disabled {
+    color: #333 !important;
+}

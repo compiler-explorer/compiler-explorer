@@ -66,25 +66,24 @@ endif
 
 NODE_MODULES=.yarn-updated
 $(NODE_MODULES): package.json yarn-installed
-	$(YARN) install
+	$(YARN) install $(YARN_FLAGS)
 	@touch $@
 
 webpack: $(NODE_MODULES)
 	$(NODE) node_modules/webpack/bin/webpack.js ${WEBPACK_ARGS}
 
 lint: $(NODE_MODULES)
-	$(NODE) ./node_modules/.bin/eslint --config .eslintrc --ignore-path .eslintignore --fix app.js $(shell find lib -name '*.js' -not -path 'lib/handlers/asm-docs.js')
-	$(NODE) ./node_modules/.bin/eslint --config static/.eslintrc --ignore-path static/.eslintignore --fix $(shell find static -name '*.js' -not -path 'static/dist/*' -not -path 'static/vs/*' -not -path 'static/ext/*')
+	$(YARN) run lint
 
 node_modules: $(NODE_MODULES)
 webpack: $(WEBPACK)
 
-test: $(NODE_MODULES) lint
-	$(MAKE) -C c-preload test
+test: $(NODE_MODULES)
+	$(YARN) run test
+	-$(MAKE) -C c-preload test
 	@echo Tests pass
 
-check: $(NODE_MODULES) lint
-	$(NODE) ./node_modules/.bin/mocha --recursive
+check: $(NODE_MODULES) test lint
 
 clean:
 	rm -rf node_modules .*-updated .*-bin out static/dist static/vs

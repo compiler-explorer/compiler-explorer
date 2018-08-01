@@ -64,9 +64,8 @@ function Ast(hub, container, state) {
 
     ga.proxy('send', {
         hitType: 'event',
-        eventCategory: 'ViewPane',
-        eventAction: 'Open',
-        eventValue: 'Ast'
+        eventCategory: 'OpenViewPane',
+        eventAction: 'Ast'
     });
 }
 
@@ -107,7 +106,7 @@ Ast.prototype.onCompileResult = function (id, compiler, result, lang) {
     if (result.hasAstOutput) {
         this.showAstResults(result.astOutput);
     }
-    else if (result.supportsAstView) {
+    else if (compiler.supportsAstView) {
         this.showAstResults("<No output>");
     }
 

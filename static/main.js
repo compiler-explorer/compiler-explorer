@@ -63,17 +63,15 @@ require("monaco-loader")().then(function () {
             if (currentSettings.theme !== newSettings.theme) {
                 analytics.proxy('send', {
                     hitType: 'event',
-                    eventCategory: 'Settings',
-                    eventAction: 'ThemeChange',
-                    eventValue: newSettings.theme
+                    eventCategory: 'ThemeChange',
+                    eventAction: newSettings.theme
                 });
             }
             if (currentSettings.colourScheme !== newSettings.colourScheme) {
                 analytics.proxy('send', {
                     hitType: 'event',
-                    eventCategory: 'Settings',
-                    eventAction: 'ColourSchemeChange',
-                    eventValue: newSettings.colourScheme
+                    eventCategory: 'ColourSchemeChange',
+                    eventAction: newSettings.colourScheme
                 });
             }
             currentSettings = newSettings;
@@ -125,6 +123,7 @@ require("monaco-loader")().then(function () {
             };
             window.cookieconsent.status.allow = options.policies.cookies.hash;
             window.cookieconsent.status.dismiss = window.cookieconsent.status.deny;
+            window.cookieconsent.hasTransition = false;
             var cookieconsent = window.cookieconsent.initialise({
                 palette: {
                     popup: {
@@ -136,6 +135,7 @@ require("monaco-loader")().then(function () {
                         text: "#ffffff"
                     }
                 },
+                position: "bottom",
                 theme: "edgeless",
                 type: "opt-in",
                 // We handle the revoking elsewhere
@@ -167,6 +167,9 @@ require("monaco-loader")().then(function () {
                 onInitialise: function () {
                     // Toggle GA on if the user has already consented
                     analytics.toggle(this.hasConsented());
+                },
+                onPopupClose: function () {
+                    $(window).resize();
                 }
             });
 
@@ -183,6 +186,7 @@ require("monaco-loader")().then(function () {
                     data && data.title ? data.title : "Privacy policy",
                     require('./policies/privacy.html')
                 );
+                // I can't remember why this check is here as it seems superfluous
                 if (options.policies.privacy.enabled) {
                     local.set(options.policies.privacy.key, options.policies.privacy.hash);
                 }
@@ -243,7 +247,6 @@ require("monaco-loader")().then(function () {
                 // replace anything in the default config with that from the hash
                 config = _.extend(defaultConfig, config);
             }
-
             if (!config) {
                 var savedState = local.get('gl', null);
                 config = savedState !== null ? JSON.parse(savedState) : defaultConfig;
@@ -284,18 +287,21 @@ require("monaco-loader")().then(function () {
         });
 
         function sizeRoot() {
-            var height = $(window).height() - (root.position().top || 0);
+            var height = $(window).height() - (root.position().top || 0) - ($('.cc-window:visible').height() || 0);
             root.height(height);
             layout.updateSize();
         }
 
         $(window).resize(sizeRoot);
-        sizeRoot();
 
         new clipboard('.btn.clippy');
 
         var settings = setupSettings(hub);
-        setupButtons(options);
+
+        // We assume no consent for embed users
+        if (!options.embedded) {
+            setupButtons(options);
+        }
 
         sharing.initShareButton($('#share'), layout);
 
@@ -330,6 +336,7 @@ require("monaco-loader")().then(function () {
             });
         };
         motd.initialise(options.motdUrl, $('#motd'), settings.defaultLanguage, settings.enableCommunityAds, onHide);
+        sizeRoot();
     }
 
     $(start);

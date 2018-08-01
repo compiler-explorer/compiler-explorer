@@ -137,9 +137,8 @@ LoadSave.prototype.run = function (onLoad, editorText, currentLanguage) {
     }, this));
     ga.proxy('send', {
         hitType: 'event',
-        eventCategory: 'ModalPane',
-        eventAction: 'Open',
-        eventValue: 'LoadSave'
+        eventCategory: 'OpenModalPane',
+        eventAction: 'LoadSave'
     });
 };
 

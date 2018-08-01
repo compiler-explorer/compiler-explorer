@@ -71,9 +71,8 @@ function Opt(hub, container, state) {
     this.eventHub.emit("optViewOpened", this._compilerid);
     ga.proxy('send', {
         hitType: 'event',
-        eventCategory: 'ViewPane',
-        eventAction: 'Open',
-        eventValue: 'Opt'
+        eventCategory: 'OpenViewPane',
+        eventAction: 'Opt'
     });
 }
 

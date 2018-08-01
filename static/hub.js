@@ -22,7 +22,6 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-
 'use strict';
 
 var _ = require('underscore');
@@ -46,9 +45,11 @@ function Ids() {
 Ids.prototype.add = function (id) {
     this.used[id] = true;
 };
+
 Ids.prototype.remove = function (id) {
     delete this.used[id];
 };
+
 Ids.prototype.next = function () {
     for (var i = 1; i < 100000; ++i) {
         if (!this.used[i]) {
@@ -142,6 +143,7 @@ Hub.prototype.undefer = function () {
 Hub.prototype.nextEditorId = function () {
     return this.editorIds.next();
 };
+
 Hub.prototype.nextCompilerId = function () {
     return this.compilerIds.next();
 };
@@ -161,21 +163,26 @@ Hub.prototype.compilerFactory = function (container, state) {
 Hub.prototype.outputFactory = function (container, state) {
     return new output.Output(this, container, state);
 };
+
 Hub.prototype.diffFactory = function (container, state) {
     return new diff.Diff(this, container, state);
 };
+
 Hub.prototype.optViewFactory = function (container, state) {
     return new optView.Opt(this, container, state);
 };
+
 Hub.prototype.astViewFactory = function (container, state) {
     return new astView.Ast(this, container, state);
 };
 Hub.prototype.gccDumpViewFactory = function (container, state) {
     return new gccDumpView.GccDump(this, container, state);
 };
+
 Hub.prototype.cfgViewFactory = function (container, state) {
     return new cfgView.Cfg(this, container, state);
 };
+
 Hub.prototype.confomanceFactory = function (container, state) {
     return new conformanceView.Conformance(this, container, state);
 };
@@ -195,10 +202,12 @@ WrappedEventHub.prototype.emit = function () {
         this.eventHub.emit.apply(this.eventHub, arguments);
     }
 };
+
 WrappedEventHub.prototype.on = function (event, callback, context) {
     this.eventHub.on(event, callback, context);
     this.subscriptions.push({evt: event, fn: callback, ctx: context});
 };
+
 WrappedEventHub.prototype.unsubscribe = function () {
     _.each(this.subscriptions, _.bind(function (obj) {
         try {

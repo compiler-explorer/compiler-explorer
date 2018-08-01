@@ -73,9 +73,8 @@ function Output(hub, container, state) {
     this.updateCompilerName();
     ga.proxy('send', {
         hitType: 'event',
-        eventCategory: 'ViewPane',
-        eventAction: 'Open',
-        eventValue: 'Output'
+        eventCategory: 'OpenViewPane',
+        eventAction: 'Output'
     });
 }
 

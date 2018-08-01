@@ -107,9 +107,8 @@ function Diff(hub, container, state) {
     this.updateCompilers();
     ga.proxy('send', {
         hitType: 'event',
-        eventCategory: 'ViewPane',
-        eventAction: 'Open',
-        eventValue: 'Diff'
+        eventCategory: 'OpenViewPane',
+        eventAction: 'Diff'
     });
 }
 

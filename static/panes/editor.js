@@ -146,9 +146,13 @@ function Editor(hub, state, container) {
     this.updateState();
     ga.proxy('send', {
         hitType: 'event',
-        eventCategory: 'ViewPane',
-        eventAction: 'Open',
-        eventValue: 'Editor'
+        eventCategory: 'OpenViewPane',
+        eventAction: 'Editor'
+    });
+    ga.proxy('send', {
+        hitType: 'event',
+        eventCategory: 'LanguageChange',
+        eventAction: this.currentLanguage.id
     });
 }
 
@@ -693,6 +697,11 @@ Editor.prototype.onLanguageChange = function (newLangId) {
             // Broadcast the change to other panels
             this.eventHub.emit("languageChange", this.id, newLangId);
             this.maybeEmitChange(true);
+            ga.proxy('send', {
+                hitType: 'event',
+                eventCategory: 'LanguageChange',
+                eventAction: 'newLangId'
+            });
         }
         this.waitingForLanguage = false;
     }

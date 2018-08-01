@@ -418,3 +418,8 @@ pre.content.wrap {
 .share-disabled {
     cursor: not-allowed;
 }
+
+.share-item {
+    display: block;
+    overflow: auto;
+}
