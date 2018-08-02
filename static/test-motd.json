@@ -1,9 +1,0 @@
-{
-  "motd": "",
-  "ads": [
-    {
-      "html": "<a href=\"https://www.meetingcpp.com/\" target=\"_blank\">Meeting C++ 2018</a>&nbsp; From the 15th - 17th November in Berlin!",
-      "filter": "c++"
-    }
-  ]
-}
