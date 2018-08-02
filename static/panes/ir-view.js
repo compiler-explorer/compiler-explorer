@@ -29,6 +29,7 @@ var monaco = require('../monaco');
 var _ = require('underscore');
 var $ = require('jquery');
 var ga = require('../analytics');
+var colour = require('../colour');
 
 function Ir(hub, container, state) {
     this.container = container;
@@ -36,7 +37,7 @@ function Ir(hub, container, state) {
     this.domRoot = container.getElement();
     this.domRoot.html($('#ir').html());
     this._currentDecorations = [];
-    this.astEditor = monaco.editor.create(this.domRoot.find(".monaco-placeholder")[0], {
+    this.irEditor = monaco.editor.create(this.domRoot.find(".monaco-placeholder")[0], {
         value: "",
         scrollBeyondLastLine: false,
         language: 'plaintext',
@@ -55,11 +56,15 @@ function Ir(hub, container, state) {
     this._compilerName = state.compilerName;
     this._editorid = state.editorid;
 
+    this.colours = [];
+    this.ir = [];
+
+    this.initEditorActions();
     this.initButtons(state);
     this.initCallbacks();
 
-    if (state && state.astOutput) {
-        this.showAstResults(state.astOutput);
+    if (state && state.irOutput) {
+        this.showIrResults(state.irOutput);
     }
     this.setTitle();
 
@@ -70,8 +75,30 @@ function Ir(hub, container, state) {
     });
 }
 
+Ir.prototype.initEditorActions = function () {
+    this.irEditor.addAction({
+        id: 'viewsource',
+        label: 'Scroll to source',
+        keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.F10],
+        keybindingContext: null,
+        contextMenuGroupId: 'navigation',
+        contextMenuOrder: 1.5,
+        run: _.bind(function (ed) {
+            var desiredLine = ed.getPosition().lineNumber - 1;
+            var source = this.ir[desiredLine].source;
+            if (source.file === null) {
+                // a null file means it was the user's source
+                this.eventHub.emit('editorSetDecoration', this.sourceEditorId, source.line, true);
+            } else {
+                // TODO: some indication this asm statement came from elsewhere
+                this.eventHub.emit('editorSetDecoration', this.sourceEditorId, -1, false);
+            }
+        }, this)
+    });
+};
+
 Ir.prototype.initButtons = function (state) {
-    this.fontScale = new FontScale(this.domRoot, state, this.astEditor);
+    this.fontScale = new FontScale(this.domRoot, state, this.irEditor);
 
     this.topBar = this.domRoot.find(".top-bar");
 };
@@ -85,6 +112,7 @@ Ir.prototype.initCallbacks = function () {
     this.eventHub.on('compiler', this.onCompiler, this);
     this.eventHub.on('compilerClose', this.onCompilerClose, this);
     this.eventHub.on('settingsChange', this.onSettingsChange, this);
+    this.eventHub.on('colours', this.onColours, this);
     this.eventHub.emit('irViewOpened', this._compilerid);
     this.eventHub.emit('requestSettings');
 
@@ -92,10 +120,21 @@ Ir.prototype.initCallbacks = function () {
     this.container.on('shown', this.resize, this);
 };
 
-// TODO: de-dupe with compiler etc
+Ir.prototype.onColours = function (editorid, colours, scheme) {
+    if (editorid === this._editorid) {
+        var irColours = {};
+        _.each(this.assembly, function (x, index) {
+            if (x.source && x.source.file === null && x.source.line > 0) {
+                irColours[index] = colours[x.source.line - 1];
+            }
+        });
+        this.colours = colour.applyColours(this.irEditor, irColours, scheme, this.colours);
+    }
+};
+
 Ir.prototype.resize = function () {
     var topBarHeight = this.topBar.outerHeight(true);
-    this.astEditor.layout({
+    this.irEditor.layout({
         width: this.domRoot.width(),
         height: this.domRoot.height() - topBarHeight
     });
@@ -104,20 +143,22 @@ Ir.prototype.resize = function () {
 Ir.prototype.onCompileResult = function (id, compiler, result, lang) {
     if (this._compilerid !== id) return;
     if (result.hasIrOutput) {
+        this.ir = result.irOutput;
         this.showIrResults(result.irOutput);
     }
     else if (compiler.supportsIrView) {
+        this.ir = {};
         this.showIrResults("<No output>");
     }
 
     if (lang && lang.monaco && this.getCurrentEditorLanguage() !== lang.monaco) {
-        monaco.editor.setModelLanguage(this.astEditor.getModel(), lang.monaco);
+        monaco.editor.setModelLanguage(this.irEditor.getModel(), lang.monaco);
     }
 };
 
 // Monaco language id of the current editor
 Ir.prototype.getCurrentEditorLanguage = function () {
-    return this.astEditor.getModel().getModeId();
+    return this.irEditor.getModel().getModeId();
 };
 
 Ir.prototype.setTitle = function () {
@@ -127,7 +168,9 @@ Ir.prototype.setTitle = function () {
 };
 
 Ir.prototype.showIrResults = function (results) {
-    this.astEditor.setValue(results);
+    var currentTopLine = this.irEditor.getCompletelyVisibleLinesRangeInViewport().startLineNumber;
+    this.irEditor.setValue(_.map(results, function (line) {return line.text;}).join('\n'));
+    this.irEditor.revealLine(currentTopLine);
 };
 
 Ir.prototype.onCompiler = function (id, compiler, options, editorid) {
@@ -135,8 +178,8 @@ Ir.prototype.onCompiler = function (id, compiler, options, editorid) {
         this._compilerName = compiler ? compiler.name : '';
         this._editorid = editorid;
         this.setTitle();
-        if (compiler && !compiler.supportsAstView) {
-            this.astEditor.setValue("<AST output is not supported for this compiler>");
+        if (compiler && !compiler.supportsIrView) {
+            this.irEditor.setValue("<IR output is not supported for this compiler>");
         }
     }
 };
@@ -176,7 +219,7 @@ Ir.prototype.onCompilerClose = function (id) {
 };
 
 Ir.prototype.onSettingsChange = function (newSettings) {
-    this.astEditor.updateOptions({
+    this.irEditor.updateOptions({
         contextmenu: newSettings.useCustomContextMenu,
         minimap: {
             enabled: newSettings.showMinimap
@@ -186,8 +229,8 @@ Ir.prototype.onSettingsChange = function (newSettings) {
 
 Ir.prototype.close = function () {
     this.eventHub.unsubscribe();
-    this.eventHub.emit("astViewClosed", this._compilerid);
-    this.astEditor.dispose();
+    this.eventHub.emit("irViewClosed", this._compilerid);
+    this.irEditor.dispose();
 };
 
 module.exports = {

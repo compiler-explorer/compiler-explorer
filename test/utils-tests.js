@@ -230,3 +230,27 @@ describe('Hash interface', () => {
         ]}).should.equal('e205d63abd5db363086621fdc62c4c23a51b733bac5855985a8b56642d570491');
     });
 });
+
+describe('Trim Lines', () => {
+    it('handles empty input', () => {
+        utils.trimLine('').should.equals('');
+        utils.trimLine(' ').should.equals('');
+        utils.trimLine('    ').should.equals('');
+    });
+    it('handles leading spaces', () => {
+        utils.trimLine(' abc').should.equals(' abc');
+        utils.trimLine('   abc').should.equals('  abc');
+        utils.trimLine('       abc').should.equals('  abc');
+    });
+    it('handles interline spaces', () => {
+        utils.trimLine('abc abc').should.equals('abc abc');
+        utils.trimLine('abc   abc').should.equals('abc abc');
+        utils.trimLine('abc     abc').should.equals('abc abc');
+    });
+    it('handles leading and interline spaces', () => {
+        utils.trimLine(' abc  abc').should.equals(' abc abc');
+        utils.trimLine('  abc abc').should.equals('  abc abc');
+        utils.trimLine('  abc     abc').should.equals('  abc abc');
+        utils.trimLine('    abc   abc').should.equals('  abc abc');
+    });
+});
