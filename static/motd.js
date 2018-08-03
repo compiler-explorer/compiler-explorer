@@ -62,7 +62,8 @@ function handleMotd(motd, motdNode, defaultLanguage, adsEnabled, onHide) {
                 ga.proxy('send', {
                     hitType: 'event',
                     eventCategory: 'Ads',
-                    eventAction: 'Click'
+                    eventAction: 'Click',
+                    eventLabel: this.href
                 });
             });
             motdNode.removeClass('hide');
