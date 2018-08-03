@@ -25,13 +25,18 @@
 "use strict";
 var $ = require('jquery'),
     Raven = require('raven-js'),
-    _ = require('underscore');
+    _ = require('underscore'),
+    ga = require('analytics');
 
 function handleMotd(motd, motdNode, defaultLanguage, adsEnabled, onHide) {
     if (motd.motd) {
         motdNode.find(".content").html(motd.motd);
         motdNode.removeClass('hide');
-        motdNode.prop('title', 'Hide this message');
+        motdNode.find(".close")
+            .on('click', function () {
+                motdNode.addClass('hide');
+            })
+            .prop('title', 'Hide this message');
         return;
     }
     if (adsEnabled) {
@@ -45,8 +50,20 @@ function handleMotd(motd, motdNode, defaultLanguage, adsEnabled, onHide) {
         if (randomAd) {
             motdNode.find(".content").html(randomAd.html);
             motdNode.find(".close").on('click', function () {
+                ga.proxy('send', {
+                    hitType: 'event',
+                    eventCategory: 'Ads',
+                    eventAction: 'Hide'
+                });
                 motdNode.addClass('hide');
                 onHide();
+            });
+            motdNode.find('a').on('click', function () {
+                ga.proxy('send', {
+                    hitType: 'event',
+                    eventCategory: 'Ads',
+                    eventAction: 'Click'
+                });
             });
             motdNode.removeClass('hide');
         }
