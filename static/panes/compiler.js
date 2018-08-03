@@ -349,7 +349,7 @@ Compiler.prototype.initEditorActions = function () {
 
     this.outputEditor.addAction({
         id: 'viewasmdoc',
-        label: 'View asm doc',
+        label: 'View x86-64 opcode doc',
         keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.F8],
         keybindingContext: null,
         contextMenuGroupId: 'help',
@@ -1259,38 +1259,46 @@ Compiler.prototype.onMouseMove = function (e) {
             this.updateDecorations();
         }
 
-        var getTokensForLine = function (model, line) {
-            //Force line's state to be accurate
-            if (line > model.getLineCount()) return [];
-            model.getLineTokens(line, /*inaccurateTokensAcceptable*/false);
-            // Get the tokenization state at the beginning of this line
-            var state = model._lines[line - 1].getState();
-            if (!state) return [];
-            var freshState = model._lines[line - 1].getState().clone();
-            // Get the human readable tokens on this line
-            return model._tokenizationSupport.tokenize(model.getLineContent(line), freshState, 0).tokens;
-        };
+        if (!this.filterIntelButton.prop('disabled')) {
+            var lineTokens = function (model, line) {
+                //Force line's state to be accurate
+                if (line > model.getLineCount()) return [];
+                model.getLineTokens(line, /*inaccurateTokensAcceptable*/false);
+                // Get the tokenization state at the beginning of this line
+                var state = model._lines[line - 1].getState();
+                if (!state) return [];
+                var freshState = model._lines[line - 1].getState().clone();
+                // Get the human readable tokens on this line
+                return model._tokenizationSupport.tokenize(model.getLineContent(line), freshState, 0).tokens;
+            };
 
-        if (this.settings.hoverShowAsmDoc === true &&
-            _.some(getTokensForLine(this.outputEditor.getModel(), currentWord.range.startLineNumber), function (t) {
-                return t.offset + 1 === currentWord.startColumn && t.type === 'keyword.asm';
-            })) {
-            getAsmInfo(currentWord.word).then(_.bind(function (response) {
-                if (!response) return;
-                this.decorations.asmToolTip = {
-                    range: currentWord.range,
-                    options: {
-                        isWholeLine: false,
-                        hoverMessage: [response.tooltip + '\n\nMore information available in the context menu.']
-                    }
-                };
-                this.updateDecorations();
-            }, this));
+            if (this.settings.hoverShowAsmDoc === true &&
+                _.some(lineTokens(this.outputEditor.getModel(), currentWord.range.startLineNumber), function (t) {
+                    return t.offset + 1 === currentWord.startColumn && t.type === 'keyword.asm';
+                })) {
+                getAsmInfo(currentWord.word).then(_.bind(function (response) {
+                    if (!response) return;
+                    this.decorations.asmToolTip = {
+                        range: currentWord.range,
+                        options: {
+                            isWholeLine: false,
+                            hoverMessage: [response.tooltip + '\n\nMore information available in the context menu.']
+                        }
+                    };
+                    this.updateDecorations();
+                }, this));
+            }
         }
     }
 };
 
 Compiler.prototype.onAsmToolTip = function (ed) {
+    ga.proxy('send', {
+        hitType: 'event',
+        eventCategory: 'OpenModalPane',
+        eventAction: 'AsmDocs'
+    });
+    if (this.filterIntelButton.prop('disabled')) return;
     var pos = ed.getPosition();
     var word = ed.getModel().getWordAtPosition(pos);
     if (!word || !word.word) return;

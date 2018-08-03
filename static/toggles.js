@@ -27,9 +27,9 @@ var _ = require('underscore');
 var $ = require('jquery');
 var EventEmitter = require('events');
 
-function get(domRoot) {
+function get(buttons) {
     var result = {};
-    _.each(domRoot.find(".btn"), function (a) {
+    _.each(buttons, function (a) {
         var obj = $(a);
         result[obj.data().bind] = obj.hasClass("active");
     });
@@ -39,8 +39,9 @@ function get(domRoot) {
 function Toggles(root, state) {
     EventEmitter.call(this);
     this.domRoot = root;
-    state = _.extend(get(this.domRoot), state);
-    this.domRoot.find('.btn')
+    this.buttons = this.domRoot.find('.btn');
+    state = _.extend(get(this.buttons), state);
+    this.buttons
         .click(_.bind(this.onClick, this))
         .each(function () {
             $(this).toggleClass('active', !!state[$(this).data().bind]);
@@ -70,9 +71,9 @@ Toggles.prototype.onClick = function (event) {
     var button = $(event.currentTarget);
     if (button.hasClass("disabled")) return;
     button.toggleClass('active');
-    this._change(function () {
-        this.state = get(this.domRoot);
-    }.bind(this));
+    this._change(_.bind(function () {
+        this.state = get(this.buttons);
+    }, this));
 };
 
 module.exports = Toggles;

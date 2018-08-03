@@ -30,7 +30,7 @@ const
     chaiAsPromised = require('chai-as-promised'),
     SymbolStore = require('../lib/symbol-store').SymbolStore,
     Demangler = require('../lib/demangler-cpp').Demangler,
-    DemanglerCL = require('../lib/cl-support').Demangler,
+    DemanglerWin32 = require('../lib/demangler-win32').Demangler,
     exec = require('../lib/exec'),
     logger = require('../lib/logger').logger;
 
@@ -46,6 +46,12 @@ class DummyCompiler {
         return exec.execute(command, args, options);
     }
 }
+
+const catchCppfiltNonexistence = err => {
+    if (!err.message.startsWith('spawn c++filt')) {
+        throw err;
+    }
+};
 
 describe('Basic demangling', function () {
     it('One line of asm', function () {
@@ -73,10 +79,12 @@ describe('Basic demangling', function () {
         demangler.demanglerArguments = ['-n'];
 
         return Promise.all([
-            demangler.process(result).then((output) => {
+            demangler.process(result)
+            .then((output) => {
                 output.asm[0].text.should.equal("square(int):");
                 output.asm[1].text.should.equal("  ret");
             })
+            .catch(catchCppfiltNonexistence)
         ]);
     });
 
@@ -95,6 +103,7 @@ describe('Basic demangling', function () {
                 output.asm[0].text.should.equal("square(int):");
                 output.asm[1].text.should.equal("  mov eax, $square(int)");
             })
+            .catch(catchCppfiltNonexistence)
         ]);
     });
 
@@ -115,13 +124,13 @@ describe('Basic demangling', function () {
         const demangler = new Demangler(cppfiltpath, new DummyCompiler());
         demangler.demanglerArguments = ['-n'];
 
-        return Promise.all([
-            demangler.process(result).then((output) => {
+        return demangler.process(result)
+            .then((output) => {
                 output.asm[0].text.should.equal("Normal::~Normal() [deleting destructor]:");
                 output.asm[1].text.should.equal("  callq operator delete(void*)");
                 output.asm[6].text.should.equal("  jmp operator delete(void*, unsigned long)");
             })
-        ]);
+            .catch(catchCppfiltNonexistence)
     });
 
     it('Should ignore comments (CL)', function () {
@@ -130,12 +139,12 @@ describe('Basic demangling', function () {
             {"text": "        call     ??3@YAXPEAX_K@Z                ; operator delete"}
         ];
 
-        const demangler = new DemanglerCL(cppfiltpath, new DummyCompiler());
+        const demangler = new DemanglerWin32(cppfiltpath, new DummyCompiler());
         demangler.result = result;
         demangler.symbolstore = new SymbolStore();
         demangler.collectLabels();
 
-        const output = demangler.othersymbols.listSymbols();
+        const output = demangler.win32RawSymbols;
         output.should.deep.equal(
             [
                 "??3@YAXPEAX_K@Z"
@@ -183,18 +192,18 @@ describe('Basic demangling', function () {
         );
     });
     
-    it('Should NOT handle normal labels without PROC suffix', () => {
+    it('Should NOT handle undecorated labels', () => {
         const result = {};
         result.asm = [
             {"text": "$LN3@caller2:"}
         ];
 
-        const demangler = new DemanglerCL(cppfiltpath, new DummyCompiler());
+        const demangler = new DemanglerWin32(cppfiltpath, new DummyCompiler());
         demangler.result = result;
         demangler.symbolstore = new SymbolStore();
         demangler.collectLabels();
 
-        const output = demangler.symbolstore.listSymbols();
+        const output = demangler.win32RawSymbols;
         output.should.deep.equal(
             [
             ]
@@ -223,9 +232,9 @@ function DoDemangleTest(root, filename) {
 
                 const demangler = new Demangler(cppfiltpath, new DummyCompiler());
                 demangler.demanglerArguments = ['-n'];
-                resolve(demangler.process(resultIn).then((output) => {
-                    output.should.deep.equal(resultOut);
-                }));
+                resolve(demangler.process(resultIn)
+                    .then((output) => { output.should.deep.equal(resultOut); })
+                    .catch(catchCppfiltNonexistence));
             });
         });
     });
@@ -245,7 +254,7 @@ describe('File demangling', function() {
                     }
                 });
 
-                resolve(Promise.all(testResults));
+                resolve(Promise.all(testResults).catch(catchCppfiltNonexistence));
             });
         });
     });

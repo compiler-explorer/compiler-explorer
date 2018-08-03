@@ -60,6 +60,8 @@ function shortenURL(url, done) {
         // Advanced debugging technique right here...
         if (t && t.result && t.result.error) {
             var report = t.result.error;
+            // Custom error message when url is too big
+            if (url.length >= 8000) report.message = 'URL length exceeds goo.gl limits';
             new Alert().notify("Url shortener: Error #" + report.code + ": " + report.message, {
                 group: "shortlink-error",
                 alertClass: "notification-error"

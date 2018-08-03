@@ -28,11 +28,12 @@ html(lang="en")
                 li: a#setting(href="#" data-target="#settings" data-toggle="modal") Settings
                 li.divider
                 li: a#ui-reset(href="#") Reset (code and UI layout)
+          ul#motd.nav.navbar-nav.navbar-center.community-advert.hide
+            span.content
+              | Thanks for using Compiler Explorer
+            span.community-hide(title="Hide and never show again" aria-label="Close")
+              button.close(type="button" aria-hidden="true") &times;
           ul.nav.navbar-nav.navbar-right
-            if extraBodyClass === "beta"
-              li: a(href="https://github.com/mattgodbolt/compiler-explorer/issues" target="_blank" rel="noopener")
-                img(height="20" width="20" src=require("GitHub-Mark-20px.png"))
-                | &nbsp;Report an issue
             li: a#share(href="#") Share#[b.caret]
             li.dropdown
               a.dropdown-toggle(href="#" data-toggle="dropdown") Other#[b.caret]

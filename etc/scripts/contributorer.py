@@ -11,15 +11,17 @@ AUTH_TOKEN = 'MISSING AUTH TOKEN'
 IS_DEBUG = False
 REPOSITORY = ''
 
+
 def dprint(msg):
     if IS_DEBUG:
         print(msg)
+
 
 def get_oauth(url, **kwargs):
     return requests.get(url, headers={'Authorization': 'token {}'.format(AUTH_TOKEN)}, **kwargs)
 
 
-def collaborators():
+def contributors():
     contributors = []
     link = 'https://api.github.com/repos/{}/contributors'.format(REPOSITORY)
     while link is not None:
@@ -42,6 +44,31 @@ def collaborators():
             contributors.append(contributor)
     return contributors
 
+
+def collaborators():
+    collaborators = []
+    link = 'https://api.github.com/repos/{}/collaborators'.format(REPOSITORY)
+    while link is not None:
+        print(link)
+        result = get_oauth(link, params={'per_page': 80})
+        links = result.headers.get('link')
+        if links is None:
+            link = None
+        else:
+            splits = links.split(',')
+            for split in splits:
+                bits = split.split(';')
+                # If there is a next rel link, follow it
+                if len(bits) == 2 and bits[1].strip() == 'rel="next"':
+                    link = bits[0].strip()[1:-1]
+                else:
+                    link = None
+
+        for collaborator in result.json():
+            collaborators.append(collaborator)
+    return collaborators
+
+
 parser = argparse.ArgumentParser(description='Creates a CONTRIBUTORS.md file')
 parser.add_argument('-t', '--token', type=str, help='GitHub token (Only needs public_repo access)', required=True)
 parser.add_argument('-d', '--debug', action='store_true', help='Print debug information')
@@ -54,13 +81,19 @@ if __name__ == '__main__':
     IS_DEBUG = args.debug
     REPOSITORY = args.repository
     repository_safe = "".join([c for c in REPOSITORY if re.match(r'\w', c)])
-    data = collaborators()
-    # People already listed somewhere else
-    contributors = [contributor for contributor in data if contributor['login'].lower() not in [
-        'mattgodbolt', 'rabsrincon', 'jaredwy', 'partouf', 'cppchedy', 'tartanllama', 'filcab',
-        'voxelf', 'johanengelen', 'jsheard', 'dkm', 'andrewpardoe', 'jaredadobe'
-    ]]
-    print('Found {} contributors'.format(len(contributors)))
+    collabs_data = collaborators()
+    skippable = set([collab['login'].lower() for collab in collabs_data])
+    # Remove people that are in CONTRIBUTORS for some reason or another
+    skippable.discard('lefticus')
+    skippable.discard('ubsan')
+    # Added in the thanks to section of the readme
+    skippable.update(['filcab', 'voxelf', 'johanengelen', 'jsheard', 'dkm', 'andrewpardoe'])
+    # Duplicated people under different accounts
+    skippable.add('jaredadobe')
+    data = contributors()
+    # People already listed somewhere else. Use set diff?
+    contributors = [contributor for contributor in data if contributor['login'].lower() not in skippable]
+    print('Found {} contributors. Skipping {} collaborators'.format(len(contributors), len(skippable)))
     # Create cache folder, which can be cleared at any moment
     cache_dir_base = 'contributorer-cache-{}'.format(repository_safe)
     if not os.path.isdir(cache_dir_base):
