@@ -127,6 +127,7 @@ function setupSettings(root, settings, onChange, langId) {
             return (x / 1000.0).toFixed(2) + "s";
         }
     });
+    add(root.find('.enableCommunityAds'), 'enableCommunityAds', true, Checkbox);
     add(root.find('.hoverShowSource'), 'hoverShowSource', true, Checkbox);
     add(root.find('.hoverShowAsmDoc'), 'hoverShowAsmDoc', true, Checkbox);
     var themeSelect = root.find('.theme');

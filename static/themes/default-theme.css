@@ -208,3 +208,8 @@ body {
 .share-disabled {
     color: gray;
 }
+
+.community-advert {
+    background: #f0f0f0;
+    border-color: #67c52a;
+}

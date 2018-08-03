@@ -310,3 +310,7 @@ input.permalink {
 .share-disabled {
     color: #333 !important;
 }
+
+.community-advert {
+    background: #a1a1a1 !important;
+}
