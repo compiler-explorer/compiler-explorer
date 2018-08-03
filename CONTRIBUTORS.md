@@ -53,3 +53,7 @@ From oldest to newest contributor, we would like to thank:
 - [AMS21](https://github.com/AMS21)
 - [Darcy Beurle](https://github.com/dbeurle)
 - [Michael Bradshaw](https://github.com/mjbshaw)
+- [Matthew Webb](https://github.com/Noviv)
+- [phuclv90](https://github.com/phuclv90)
+- [Nicole Mazzuca](https://github.com/ubsan)
+- [Jameson Nash](https://github.com/vtjnash)
