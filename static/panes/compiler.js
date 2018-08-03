@@ -1293,6 +1293,12 @@ Compiler.prototype.onMouseMove = function (e) {
 };
 
 Compiler.prototype.onAsmToolTip = function (ed) {
+    ga.proxy('send', {
+        hitType: 'event',
+        eventCategory: 'OpenModalPane',
+        eventAction: 'AsmDocs'
+    });
+    if (this.filterIntelButton.props('disabled')) return;
     var pos = ed.getPosition();
     var word = ed.getModel().getWordAtPosition(pos);
     if (!word || !word.word) return;
