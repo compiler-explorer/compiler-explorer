@@ -42,7 +42,7 @@ function handleMotd(motd, motdNode, defaultLanguage, adsEnabled, onHide) {
     if (adsEnabled) {
         var applicableAds = _.chain(motd.ads)
             .filter(function (ad) {
-                return !ad.filter || ad.filter.indexOf(defaultLanguage) >= 0;
+                return !ad.filter || ad.filter.length === 0 || ad.filter.indexOf(defaultLanguage) >= 0;
             })
             .value();
         if (applicableAds.length === 0) return;
