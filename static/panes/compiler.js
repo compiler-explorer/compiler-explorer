@@ -1298,7 +1298,7 @@ Compiler.prototype.onAsmToolTip = function (ed) {
         eventCategory: 'OpenModalPane',
         eventAction: 'AsmDocs'
     });
-    if (this.filterIntelButton.props('disabled')) return;
+    if (this.filterIntelButton.prop('disabled')) return;
     var pos = ed.getPosition();
     var word = ed.getModel().getWordAtPosition(pos);
     if (!word || !word.word) return;
