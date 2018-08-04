@@ -204,6 +204,13 @@ require("monaco-loader")().then(function () {
             alertSystem.alert("Changelog", $(require('./changelog.html')));
         });
 
+        if (options.message) {
+            alertSystem.notify(options.message, {
+                group: 'resstatus',
+                collapseSimilar: false,
+                alertClass: "notification-info"
+            });
+        }
     }
 
     function start() {

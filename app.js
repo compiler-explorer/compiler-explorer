@@ -372,10 +372,13 @@ Promise.all([compilerFinder.find(), aws.initConfig(awsProps)])
                 staticHeaders(res);
                 contentPolicyHeader(res);
                 if (req.query.s) {
-                    storageHandler.expandId(req.query.s, config => {
-                        logger.info(config);
-                        res.render('index', renderConfig({embedded: false, config: JSON.parse(config)}));
-                    });
+                    storageHandler.expandId(req.query.s)
+                        .then(config => {
+                            res.render('index', renderConfig({embedded: false, config: JSON.parse(config)}));
+                        })
+                        .catch(() => {
+                            res.render('index', renderConfig({embedded: false, message: 'Link not found'}));
+                        });
                 } else {
                     res.render('index', renderConfig({embedded: false}));
                 }
