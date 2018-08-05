@@ -327,13 +327,13 @@ Promise.all([compilerFinder.find(), aws.initConfig(awsProps)])
             res.render('embed', renderConfig({embedded: true}));
         };
         const healthCheck = require('./lib/handlers/health-check');
-
         if (isDevMode()) {
             webServer.use(webpackDevMiddleware(webpackCompiler, {
                 publicPath: webpackConfig.output.publicPath,
                 logger: logger
             }));
             webServer.use(express.static(defArgs.staticDir));
+            logger.info("  using webpack dev middleware");
         } else {
             /* Assume that anything not dev is just production.
              * This gives sane defaults for anyone who isn't messing with this */
