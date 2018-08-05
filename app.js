@@ -198,7 +198,7 @@ const sourceHandler = new SourceHandler(fileSources, staticHeaders);
 const CompilerFinder = require('./lib/compiler-finder');
 const compilerFinder = new CompilerFinder(compileHandler, compilerProps, awsProps, defArgs);
 const StorageHandler = require('./lib/storage/storage');
-const storageHandler = new StorageHandler(compilerProps);
+const storageHandler = StorageHandler.storageFactory(compilerProps);
 
 function shortUrlHandler(req, res, next) {
     const resolver = new google.ShortLinkResolver(aws.getConfig('googleApiKey'));

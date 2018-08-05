@@ -208,7 +208,7 @@ require("monaco-loader")().then(function () {
             alertSystem.notify(options.message, {
                 group: 'resstatus',
                 collapseSimilar: false,
-                alertClass: "notification-info"
+                alertClass: "notification-error"
             });
         }
     }

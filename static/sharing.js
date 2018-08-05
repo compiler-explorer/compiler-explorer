@@ -213,7 +213,7 @@ function getLinks(layout, done) {
                     getEmbeddedUrl(result.storedId, true) + '"></iframe>'});
         }, this),
         error: _.bind(function () {
-            // TODO: Handle errorss
+            // TODO: Handle errors
         }, this),
         cache: true
     });
