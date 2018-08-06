@@ -98,7 +98,9 @@ function Compiler(hub, container, state) {
 
     this.linkedFadeTimeoutId = -1;
 
-    this.outputEditor = monaco.editor.create(this.domRoot.find('.monaco-placeholder')[0], {
+    this.initButtons(state);
+
+    this.outputEditor = monaco.editor.create(this.monacoPlaceholder[0], {
         scrollBeyondLastLine: false,
         readOnly: true,
         language: 'asm',
@@ -111,7 +113,8 @@ function Compiler(hub, container, state) {
         lineNumbersMinChars: options.embedded ? 1 : 5
     });
 
-    this.initButtons(state);
+    this.fontScale = new FontScale(this.domRoot, state, this.outputEditor);
+
     this.compilerPicker.selectize({
         sortField: [
             {field: '$order'},
@@ -745,7 +748,6 @@ Compiler.prototype.onCfgViewClosed = function (id) {
 
 Compiler.prototype.initButtons = function (state) {
     this.filters = new Toggles(this.domRoot.find('.filters'), patchOldFilters(state.filters));
-    this.fontScale = new FontScale(this.domRoot, state, this.outputEditor);
 
     this.optButton = this.domRoot.find('.btn.view-optimization');
     this.astButton = this.domRoot.find('.btn.view-ast');
@@ -802,6 +804,8 @@ Compiler.prototype.initButtons = function (state) {
     this.statusLabel = this.domRoot.find('.status');
 
     this.hideable = this.domRoot.find('.hideable');
+
+    this.monacoPlaceholder = this.domRoot.find('.monaco-placeholder');
 
     this.initPanerButtons();
 };

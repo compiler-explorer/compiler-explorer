@@ -36,7 +36,7 @@ function handleMotd(motd, motdNode, defaultLanguage, adsEnabled, onHide) {
             .on('click', function () {
                 motdNode.addClass('hide');
             })
-            .prop('title', 'Hide this message');
+            .prop('title', 'Hide all ad messages');
         return;
     }
     if (adsEnabled) {
@@ -53,6 +53,7 @@ function handleMotd(motd, motdNode, defaultLanguage, adsEnabled, onHide) {
                 ga.proxy('send', {
                     hitType: 'event',
                     eventCategory: 'Ads',
+                    eventLabel: 'Visibility',
                     eventAction: 'Hide'
                 });
                 motdNode.addClass('hide');
