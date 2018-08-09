@@ -53,7 +53,7 @@
     "temp": "0.8.x",
     "tree-kill": "^1.2.0",
     "uglifyjs-webpack-plugin": "^1.1.8",
-    "underscore": "^1.8.3",
+    "underscore": "1.9.1",
     "vis": "4.20.1",
     "winston": "^2.4.0",
     "wolfy87-eventemitter": "^5.2.3",
