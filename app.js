@@ -176,249 +176,262 @@ function contentPolicyHeader(res) {
 
 const awsProps = props.propsFor("aws");
 
-// function to load internal binaries (i.e. lib/source/*.js)
-function loadSources() {
-    const sourcesDir = "lib/sources";
-    return fs.readdirSync(sourcesDir)
-        .filter(file => file.match(/.*\.js$/))
-        .map(file => require("./" + path.join(sourcesDir, file)));
-}
-
-const fileSources = loadSources();
-const ClientOptionsHandler = require('./lib/options-handler');
-const clientOptionsHandler = new ClientOptionsHandler(fileSources, compilerProps, defArgs);
-const CompilationEnvironment = require('./lib/compilation-env');
-const compilationEnvironment = new CompilationEnvironment(compilerProps, defArgs.doCache);
-const CompileHandler = require('./lib/handlers/compile').Handler;
-const compileHandler = new CompileHandler(compilationEnvironment);
-const ApiHandler = require('./lib/handlers/api').Handler;
-const apiHandler = new ApiHandler(compileHandler, ceProps);
-const SourceHandler = require('./lib/handlers/source').Handler;
-const sourceHandler = new SourceHandler(fileSources, staticHeaders);
-const CompilerFinder = require('./lib/compiler-finder');
-const compilerFinder = new CompilerFinder(compileHandler, compilerProps, awsProps, defArgs);
-const StorageHandler = require('./lib/storage/storage');
-const storageHandler = StorageHandler.storageFactory(compilerProps);
-
-function shortUrlHandler(req, res, next) {
-    const resolver = new google.ShortLinkResolver(aws.getConfig('googleApiKey'));
-    const bits = req.url.split("/");
-    if (bits.length !== 2 || req.method !== "GET") return next();
-    const googleUrl = `http://goo.gl/${encodeURIComponent(bits[1])}`;
-    resolver.resolve(googleUrl)
-        .then(resultObj => {
-            const parsed = url.parse(resultObj.longUrl);
-            const allowedRe = new RegExp(ceProps('allowedShortUrlHostRe'));
-            if (parsed.host.match(allowedRe) === null) {
-                logger.warn(`Denied access to short URL ${bits[1]} - linked to ${resultObj.longUrl}`);
-                return next();
-            }
-            res.writeHead(301, {
-                Location: resultObj.id,
-                'Cache-Control': 'public'
-            });
-            res.end();
-        })
-        .catch(e => {
-            logger.error(`Failed to expand ${googleUrl} - ${e}`);
-            next();
-        });
-}
-
-function startListening(server) {
-    const ss = systemdSocket();
-    let _port;
-    if (ss) {
-        // ms (5 min default)
-        const timeout = (typeof process.env.IDLE_TIMEOUT !== 'undefined' ? process.env.IDLE_TIMEOUT : 300) * 1000;
-        if (timeout) {
-            let exit = () => {
-                logger.info("Inactivity timeout reached, exiting.");
-                process.exit(0);
-            };
-            let idleTimer = setTimeout(exit, timeout);
-            let reset = () => {
-                clearTimeout(idleTimer);
-                idleTimer = setTimeout(exit, timeout);
-            };
-            server.all('*', reset);
-        }
-        _port = ss;
-    } else {
-        _port = defArgs.port;
-    }
-    logger.info(`  Listening on http://${defArgs.hostname || 'localhost'}:${_port}/`);
-    logger.info("=======================================");
-    server.listen(_port, defArgs.hostname);
-}
-
-Promise.all([compilerFinder.find(), aws.initConfig(awsProps)])
-    .then(args => {
-        let compilers = args[0];
-        let prevCompilers;
-
-        const ravenPrivateEndpoint = aws.getConfig('ravenPrivateEndpoint');
-        if (ravenPrivateEndpoint) {
-            Raven.config(ravenPrivateEndpoint, {
-                release: gitReleaseName,
-                environment: defArgs.env
-            }).install();
-            logger.info("Configured with raven endpoint", ravenPrivateEndpoint);
-        } else {
-            Raven.config(false).install();
+aws.initConfig(awsProps)
+    .then(() => {
+        // function to load internal binaries (i.e. lib/source/*.js)
+        function loadSources() {
+            const sourcesDir = "lib/sources";
+            return fs.readdirSync(sourcesDir)
+                .filter(file => file.match(/.*\.js$/))
+                .map(file => require("./" + path.join(sourcesDir, file)));
         }
 
-        function onCompilerChange(compilers) {
-            if (JSON.stringify(prevCompilers) === JSON.stringify(compilers)) {
-                return;
-            }
-            logger.debug("Compilers:", compilers);
-            if (compilers.length === 0) {
-                logger.error("#### No compilers found: no compilation will be done!");
-            }
-            prevCompilers = compilers;
-            clientOptionsHandler.setCompilers(compilers);
-            apiHandler.setCompilers(compilers);
-            apiHandler.setLanguages(languages);
+        const fileSources = loadSources();
+        const ClientOptionsHandler = require('./lib/options-handler');
+        const clientOptionsHandler = new ClientOptionsHandler(fileSources, compilerProps, defArgs);
+        const CompilationEnvironment = require('./lib/compilation-env');
+        const compilationEnvironment = new CompilationEnvironment(compilerProps, defArgs.doCache);
+        const CompileHandler = require('./lib/handlers/compile').Handler;
+        const compileHandler = new CompileHandler(compilationEnvironment);
+        const ApiHandler = require('./lib/handlers/api').Handler;
+        const apiHandler = new ApiHandler(compileHandler, ceProps);
+        const SourceHandler = require('./lib/handlers/source').Handler;
+        const sourceHandler = new SourceHandler(fileSources, staticHeaders);
+        const CompilerFinder = require('./lib/compiler-finder');
+        const compilerFinder = new CompilerFinder(compileHandler, compilerProps, awsProps, defArgs);
+        const StorageHandler = require('./lib/storage/storage');
+        const storageHandler = StorageHandler.storageFactory(compilerProps, awsProps);
+
+        function shortUrlHandler(req, res, next) {
+            const resolver = new google.ShortLinkResolver(aws.getConfig('googleApiKey'));
+            const bits = req.url.split("/");
+            if (bits.length !== 2 || req.method !== "GET") return next();
+            const googleUrl = `http://goo.gl/${encodeURIComponent(bits[1])}`;
+            resolver.resolve(googleUrl)
+                .then(resultObj => {
+                    const parsed = url.parse(resultObj.longUrl);
+                    const allowedRe = new RegExp(ceProps('allowedShortUrlHostRe'));
+                    if (parsed.host.match(allowedRe) === null) {
+                        logger.warn(`Denied access to short URL ${bits[1]} - linked to ${resultObj.longUrl}`);
+                        return next();
+                    }
+                    res.writeHead(301, {
+                        Location: resultObj.id,
+                        'Cache-Control': 'public'
+                    });
+                    res.end();
+                })
+                .catch(e => {
+                    logger.error(`Failed to expand ${googleUrl} - ${e}`);
+                    next();
+                });
         }
 
-        onCompilerChange(compilers);
-
-        const rescanCompilerSecs = ceProps('rescanCompilerSecs', 0);
-        if (rescanCompilerSecs) {
-            logger.info(`Rescanning compilers every ${rescanCompilerSecs} secs`);
-            setInterval(() => compilerFinder.find().then(onCompilerChange),
-                rescanCompilerSecs * 1000);
-        }
-
-        const webServer = express(),
-            sFavicon = require('serve-favicon'),
-            bodyParser = require('body-parser'),
-            morgan = require('morgan'),
-            compression = require('compression'),
-            restreamer = require('./lib/restreamer');
-
-        logger.info("=======================================");
-        if (gitReleaseName) logger.info(`  git release ${gitReleaseName}`);
-
-        function renderConfig(extra) {
-            const options = _.extend(extra, clientOptionsHandler.get());
-            options.compilerExplorerOptions = JSON.stringify(options);
-            options.extraBodyClass = extraBodyClass;
-            options.require = function (path) {
-                if (isDevMode()) {
-                    //this will break assets in dev mode for now
-                    return '/dist/' + path;
+        function startListening(server) {
+            const ss = systemdSocket();
+            let _port;
+            if (ss) {
+                // ms (5 min default)
+                const idleTimeout = process.env.IDLE_TIMEOUT;
+                const timeout = (typeof idleTimeout !== 'undefined' ? idleTimeout : 300) * 1000;
+                if (idleTimeout) {
+                    let exit = () => {
+                        logger.info("Inactivity timeout reached, exiting.");
+                        process.exit(0);
+                    };
+                    let idleTimer = setTimeout(exit, timeout);
+                    let reset = () => {
+                        clearTimeout(idleTimer);
+                        idleTimer = setTimeout(exit, timeout);
+                    };
+                    server.all('*', reset);
+                    logger.info(`  IDLE_TIMEOUT: ${idleTimeout}`);
                 }
-                if (staticManifest.hasOwnProperty(path)) {
-                    return "dist/" + staticManifest[path];
-                }
-                if (assetManifest.hasOwnProperty(path)) {
-                    return "dist/assets/" + assetManifest[path];
-                }
-                logger.warn("Requested an asset I don't know about");
-            };
-            return options;
+                _port = ss;
+            } else {
+                _port = defArgs.port;
+            }
+            logger.info(`  Listening on http://${defArgs.hostname || 'localhost'}:${_port}/`);
+            logger.info("=======================================");
+            server.listen(_port, defArgs.hostname);
         }
 
-        const embeddedHandler = function (req, res) {
-            staticHeaders(res);
-            contentPolicyHeader(res);
-            res.render('embed', renderConfig({embedded: true}));
-        };
-        const healthCheck = require('./lib/handlers/health-check');
-        if (isDevMode()) {
-            webServer.use(webpackDevMiddleware(webpackCompiler, {
-                publicPath: webpackConfig.output.publicPath,
-                logger: logger
-            }));
-            webServer.use(express.static(defArgs.staticDir));
-            logger.info("  using webpack dev middleware");
-        } else {
-            /* Assume that anything not dev is just production.
-             * This gives sane defaults for anyone who isn't messing with this */
-            logger.info("  serving static files from '" + defArgs.staticDir + "'");
-            webServer.use(express.static(defArgs.staticDir, {maxAge: staticMaxAgeSecs * 1000}));
-        }
+        compilerFinder.find()
+            .then(compilers => {
+                let prevCompilers;
 
-        morgan.token('gdpr_ip', req => utils.anonymizeIp(req.ip));
-
-        // Based on combined format, but: GDPR compliant IP, no timestamp & no unused fields for our usecase
-        const morganFormat = isDevMode() ? 'dev' : ':gdpr_ip ":method :url" :status';
-
-        webServer
-            .use(Raven.requestHandler())
-            .set('trust proxy', true)
-            .set('view engine', 'pug')
-            // before morgan so healthchecks aren't logged
-            .use('/healthcheck', new healthCheck.HealthCheckHandler().handle)
-            .use(morgan(morganFormat, {
-                stream: logger.stream,
-                // Skip for non errors (2xx, 3xx)
-                skip: (req, res) => res.statusCode >= 400
-            }))
-            .use(morgan(morganFormat, {
-                stream: logger.warnStream,
-                // Skip for non user errors (4xx)
-                skip: (req, res) => res.statusCode < 400 || res.statusCode >= 500
-            }))
-            .use(morgan(morganFormat, {
-                stream: logger.errStream,
-                // Skip for non server errors (5xx)
-                skip: (req, res) => res.statusCode < 500
-            }))
-            .use(compression())
-            .get('/', (req, res) => {
-                staticHeaders(res);
-                contentPolicyHeader(res);
-                if (req.query.s) {
-                    storageHandler.expandId(req.query.s)
-                        .then(config => {
-                            res.render('index', renderConfig({embedded: false, config: JSON.parse(config)}));
-                        })
-                        .catch(() => {
-                            res.render('index', renderConfig({embedded: false, message: 'Link not found'}));
-                        });
+                const ravenPrivateEndpoint = aws.getConfig('ravenPrivateEndpoint');
+                if (ravenPrivateEndpoint) {
+                    Raven.config(ravenPrivateEndpoint, {
+                        release: gitReleaseName,
+                        environment: defArgs.env
+                    }).install();
+                    logger.info("Configured with raven endpoint", ravenPrivateEndpoint);
                 } else {
-                    res.render('index', renderConfig({embedded: false}));
+                    Raven.config(false).install();
                 }
-            })
-            .get('/e', embeddedHandler)
-            // legacy. not a 301 to prevent any redirect loops between old e links and embed.html
-            .get('/embed.html', embeddedHandler)
-            .get('/embed-ro', (req, res) => {
-                staticHeaders(res);
-                contentPolicyHeader(res);
-                res.render('embed', renderConfig({embedded: true, readOnly: true}));
-            })
-            .get('/robots.txt', (req, res) => {
-                staticHeaders(res);
-                res.end('User-agent: *\nSitemap: https://godbolt.org/sitemap.xml');
-            })
-            .get('/sitemap.xml', (req, res) => {
-                staticHeaders(res);
-                res.set('Content-Type', 'application/xml');
-                res.render('sitemap');
-            })
-            .use(sFavicon(path.join(defArgs.staticDir, webpackConfig.output.publicPath, 'favicon.ico')));
 
-        webServer
-            .use(bodyParser.json({limit: ceProps('bodyParserLimit', maxUploadSize)}))
-            .use(bodyParser.text({limit: ceProps('bodyParserLimit', maxUploadSize), type: () => true}))
-            .use(restreamer())
-            .use('/source', sourceHandler.handle.bind(sourceHandler))
-            .use('/api', apiHandler.handle)
-            .use('/g', shortUrlHandler)
-            .post('/s', storageHandler.handler.bind(storageHandler));
-        if (!defArgs.doCache) {
-            logger.info("  not caching due to --noCache parameter being present");
-        }
-        webServer.use(Raven.errorHandler());
-        webServer.on('error', err => logger.error('Caught error:', err, "(in web error handler; continuing)"));
+                function onCompilerChange(compilers) {
+                    if (JSON.stringify(prevCompilers) === JSON.stringify(compilers)) {
+                        return;
+                    }
+                    logger.debug("Compilers:", compilers);
+                    if (compilers.length === 0) {
+                        logger.error("#### No compilers found: no compilation will be done!");
+                    }
+                    prevCompilers = compilers;
+                    clientOptionsHandler.setCompilers(compilers);
+                    apiHandler.setCompilers(compilers);
+                    apiHandler.setLanguages(languages);
+                }
 
-        startListening(webServer);
+                onCompilerChange(compilers);
+
+                const rescanCompilerSecs = ceProps('rescanCompilerSecs', 0);
+                if (rescanCompilerSecs) {
+                    logger.info(`Rescanning compilers every ${rescanCompilerSecs} secs`);
+                    setInterval(() => compilerFinder.find().then(onCompilerChange),
+                        rescanCompilerSecs * 1000);
+                }
+
+                const webServer = express(),
+                    sFavicon = require('serve-favicon'),
+                    bodyParser = require('body-parser'),
+                    morgan = require('morgan'),
+                    compression = require('compression'),
+                    restreamer = require('./lib/restreamer');
+
+                logger.info("=======================================");
+                if (gitReleaseName) logger.info(`  git release ${gitReleaseName}`);
+
+                function renderConfig(extra) {
+                    const options = _.extend(extra, clientOptionsHandler.get());
+                    options.compilerExplorerOptions = JSON.stringify(options);
+                    options.extraBodyClass = extraBodyClass;
+                    options.require = function (path) {
+                        if (isDevMode()) {
+                            //this will break assets in dev mode for now
+                            return '/dist/' + path;
+                        }
+                        if (staticManifest.hasOwnProperty(path)) {
+                            return "dist/" + staticManifest[path];
+                        }
+                        if (assetManifest.hasOwnProperty(path)) {
+                            return "dist/assets/" + assetManifest[path];
+                        }
+                        logger.warn("Requested an asset I don't know about");
+                    };
+                    return options;
+                }
+
+                const embeddedHandler = function (req, res) {
+                    staticHeaders(res);
+                    contentPolicyHeader(res);
+                    res.render('embed', renderConfig({embedded: true}));
+                };
+                const healthCheck = require('./lib/handlers/health-check');
+                if (isDevMode()) {
+                    webServer.use(webpackDevMiddleware(webpackCompiler, {
+                        publicPath: webpackConfig.output.publicPath,
+                        logger: logger
+                    }));
+                    webServer.use(express.static(defArgs.staticDir));
+                    logger.info("  using webpack dev middleware");
+                } else {
+                    /* Assume that anything not dev is just production.
+                     * This gives sane defaults for anyone who isn't messing with this */
+                    logger.info("  serving static files from '" + defArgs.staticDir + "'");
+                    webServer.use(express.static(defArgs.staticDir, {maxAge: staticMaxAgeSecs * 1000}));
+                }
+
+                morgan.token('gdpr_ip', req => utils.anonymizeIp(req.ip));
+
+                // Based on combined format, but: GDPR compliant IP, no timestamp & no unused fields for our usecase
+                const morganFormat = isDevMode() ? 'dev' : ':gdpr_ip ":method :url" :status';
+
+                webServer
+                    .use(Raven.requestHandler())
+                    .set('trust proxy', true)
+                    .set('view engine', 'pug')
+                    // before morgan so healthchecks aren't logged
+                    .use('/healthcheck', new healthCheck.HealthCheckHandler().handle)
+                    .use(morgan(morganFormat, {
+                        stream: logger.stream,
+                        // Skip for non errors (2xx, 3xx)
+                        skip: (req, res) => res.statusCode >= 400
+                    }))
+                    .use(morgan(morganFormat, {
+                        stream: logger.warnStream,
+                        // Skip for non user errors (4xx)
+                        skip: (req, res) => res.statusCode < 400 || res.statusCode >= 500
+                    }))
+                    .use(morgan(morganFormat, {
+                        stream: logger.errStream,
+                        // Skip for non server errors (5xx)
+                        skip: (req, res) => res.statusCode < 500
+                    }))
+                    .use(compression())
+                    .get('/', (req, res) => {
+                        staticHeaders(res);
+                        contentPolicyHeader(res);
+                        logger.warn(req.xhr);
+                        if (req.query.s) {
+                            logger.warn('Something to expand');
+                            storageHandler.expandId(req.query.s)
+                                .then(config => {
+                                    logger.warn('Expand successful');
+                                    res.render('index', renderConfig({embedded: false, config: JSON.parse(config)}));
+                                })
+                                .catch(() => {
+                                    logger.warn('Error thrown');
+                                    res.render('index', renderConfig({embedded: false, message: 'Link not found'}));
+                                });
+                        } else {
+                            logger.warn('Nothing to expand');
+                            res.render('index', renderConfig({embedded: false}));
+                        }
+                    })
+                    .get('/e', embeddedHandler)
+                    // legacy. not a 301 to prevent any redirect loops between old e links and embed.html
+                    .get('/embed.html', embeddedHandler)
+                    .get('/embed-ro', (req, res) => {
+                        staticHeaders(res);
+                        contentPolicyHeader(res);
+                        res.render('embed', renderConfig({embedded: true, readOnly: true}));
+                    })
+                    .get('/robots.txt', (req, res) => {
+                        staticHeaders(res);
+                        res.end('User-agent: *\nSitemap: https://godbolt.org/sitemap.xml');
+                    })
+                    .get('/sitemap.xml', (req, res) => {
+                        staticHeaders(res);
+                        res.set('Content-Type', 'application/xml');
+                        res.render('sitemap');
+                    })
+                    .use(sFavicon(path.join(defArgs.staticDir, webpackConfig.output.publicPath, 'favicon.ico')));
+
+                webServer
+                    .use(bodyParser.json({limit: ceProps('bodyParserLimit', maxUploadSize)}))
+                    .use(bodyParser.text({limit: ceProps('bodyParserLimit', maxUploadSize), type: () => true}))
+                    .use(restreamer())
+                    .use('/source', sourceHandler.handle.bind(sourceHandler))
+                    .use('/api', apiHandler.handle)
+                    .use('/g', shortUrlHandler)
+                    .post('/s', storageHandler.handler.bind(storageHandler));
+                if (!defArgs.doCache) {
+                    logger.info("  with disabled caching");
+                }
+                webServer.use(Raven.errorHandler());
+                webServer.on('error', err => logger.error('Caught error:', err, "(in web handler; continuing)"));
+
+                startListening(webServer);
+            })
+            .catch(err => {
+                logger.error("Promise error:", err, "(shutting down)");
+                process.exit(1);
+            });
     })
     .catch(err => {
-        logger.error("Promise error:", err, "(shutting down)");
+        logger.error("AWS Init Promise error", err, "(shutting down)");
         process.exit(1);
     });
