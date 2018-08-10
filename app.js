@@ -379,11 +379,11 @@ aws.initConfig(awsProps)
                             logger.warn('Something to expand');
                             storageHandler.expandId(req.query.s)
                                 .then(config => {
-                                    logger.warn('Expand successful');
+                                    logger.warn('Expand successful', config);
                                     res.render('index', renderConfig({embedded: false, config: JSON.parse(config)}));
                                 })
-                                .catch(() => {
-                                    logger.warn('Error thrown');
+                                .catch(err => {
+                                    logger.warn(err);
                                     res.render('index', renderConfig({embedded: false, message: 'Link not found'}));
                                 });
                         } else {
