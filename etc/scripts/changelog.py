@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright (c) 2018, Compiler Explorer Authors
 # All rights reserved.
 #

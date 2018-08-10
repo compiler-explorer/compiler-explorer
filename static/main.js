@@ -335,7 +335,8 @@ require("monaco-loader")().then(function () {
             var element = $(hashPart);
             if (element) element.click();
         }
-
+        // Ensure old cookies are removed, to avoid user confusion
+        document.cookie = 'fs_uid=;expires=Thu, 01 Jan 1970 00:00:01 GMT;';
         if (options.policies.privacy.enabled &&
             options.policies.privacy.hash !== local.get(options.policies.privacy.key)) {
             $('#privacy').trigger('click', {

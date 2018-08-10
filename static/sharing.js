@@ -97,8 +97,12 @@ function updateShares(container, url) {
         var newElement = baseTemplate.children('a.share-item').clone();
         var logoPath = baseTemplate.data('logo-' + serviceName);
         if (logoPath) {
-            newElement.children('img.share-item-logo')
-                .prop('src', logoPath);
+            newElement.prepend($('<img>')
+                .addClass('share-item-logo')
+                .prop('src', logoPath))
+                .prop('width', '20px')
+                .prop('height', '20px')
+                .prop('alt', serviceName + ' icon');
         }
         if (service.text) {
             newElement.children('span.share-item-text')

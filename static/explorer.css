@@ -302,7 +302,9 @@ pre.content.wrap {
 }
 
 .community-hide button {
-    font-size: x-small;
+    font-size: small;
+    opacity: 1;
+    color: #67c52a;
 }
 
 #notifications {
@@ -421,4 +423,15 @@ pre.content.wrap {
 .share-item {
     display: block;
     overflow: auto;
+    padding: 3px;
 }
+
+.share-item:last-child  {
+    border-radius: 0px 0px 3px 3px;
+}
+
+.share-item-logo {
+    margin-left: 5px;
+    margin-right: 5px
+}
+
