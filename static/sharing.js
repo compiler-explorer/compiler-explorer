@@ -100,8 +100,8 @@ function updateShares(container, url) {
             newElement.prepend($('<img>')
                 .addClass('share-item-logo')
                 .prop('src', logoPath))
-                .prop('width', '20px')
-                .prop('height', '20px')
+                .width('20px')
+                .height('20px')
                 .prop('alt', serviceName + ' icon');
         }
         if (service.text) {
