@@ -239,11 +239,10 @@ require("monaco-loader")().then(function () {
             if (window.location.hash.substr(1)) window.location.reload();
         });
 
-        var hashPart = null;
         // Which buttons act as a linkable popup
         var linkablePopups = ['#thanks-to', '#changes', '#cookies', '#setting', '#privacy'];
-        if (linkablePopups.indexOf(window.location.hash) > -1) {
-            hashPart = window.location.hash;
+        var hashPart = linkablePopups.indexOf(window.location.hash) > -1 ? hashPart = window.location.hash : null;
+        if (hashPart) {
             window.location.hash = "";
         }
 

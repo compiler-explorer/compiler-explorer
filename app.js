@@ -376,8 +376,17 @@ aws.initConfig(awsProps)
                         contentPolicyHeader(res);
                         if (req.query.s) {
                             storageHandler.expandId(req.query.s)
-                                .then(config => {
-                                    res.render('index', renderConfig({embedded: false, config: JSON.parse(config)}));
+                                .then(result => {
+                                    const metadata = {
+                                        ogDescription: result.metadata ? result.metadata.description.S : null,
+                                        ogAuthor: result.metadata ? result.metadata.author.S : null,
+                                        ogTitle: result.metadata ? result.metadata.title.S : null
+                                    };
+                                    res.render('index', renderConfig({
+                                        embedded: false,
+                                        config: JSON.parse(result.config),
+                                        metadata: metadata
+                                    }));
                                 })
                                 .catch(() => {
                                     res.render('index', renderConfig({embedded: false, message: 'Link not found'}));
@@ -396,7 +405,7 @@ aws.initConfig(awsProps)
                     })
                     .get('/robots.txt', (req, res) => {
                         staticHeaders(res);
-                        res.end('User-agent: *\nSitemap: https://godbolt.org/sitemap.xml');
+                        res.end('User-agent: *\nSitemap: https://godbolt.org/sitemap.xml\nDisallow:');
                     })
                     .get('/sitemap.xml', (req, res) => {
                         staticHeaders(res);
