@@ -195,6 +195,7 @@ require("monaco-loader")().then(function () {
 
         $('#ui-reset').click(function () {
             local.remove('gl');
+            window.history.replaceState(null, null, window.location.pathname);
             window.location.reload();
         });
         $('#thanks-to').click(function () {
@@ -235,8 +236,7 @@ require("monaco-loader")().then(function () {
 
         $(window).bind('hashchange', function () {
             // punt on hash events and just reload the page if there's a hash
-            if (window.location.hash.substr(1))
-                window.location.reload();
+            if (window.location.hash.substr(1)) window.location.reload();
         });
 
         var hashPart = null;

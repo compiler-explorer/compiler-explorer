@@ -374,20 +374,15 @@ aws.initConfig(awsProps)
                     .get('/', (req, res) => {
                         staticHeaders(res);
                         contentPolicyHeader(res);
-                        logger.warn(req.xhr);
                         if (req.query.s) {
-                            logger.warn('Something to expand');
                             storageHandler.expandId(req.query.s)
                                 .then(config => {
-                                    logger.warn('Expand successful', config);
                                     res.render('index', renderConfig({embedded: false, config: JSON.parse(config)}));
                                 })
-                                .catch(err => {
-                                    logger.warn(err);
+                                .catch(() => {
                                     res.render('index', renderConfig({embedded: false, message: 'Link not found'}));
                                 });
                         } else {
-                            logger.warn('Nothing to expand');
                             res.render('index', renderConfig({embedded: false}));
                         }
                     })
