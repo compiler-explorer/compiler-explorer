@@ -200,7 +200,7 @@ function getLinks(layout, done) {
     });
     $.ajax({
         type: 'POST',
-        url: '/s',
+        url: '/shortener',
         dataType: 'json',  // Expected
         contentType: 'application/json',  // Sent
         data: data,

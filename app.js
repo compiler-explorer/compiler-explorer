@@ -412,7 +412,7 @@ aws.initConfig(awsProps)
                     .use('/source', sourceHandler.handle.bind(sourceHandler))
                     .use('/api', apiHandler.handle)
                     .use('/g', shortUrlHandler)
-                    .post('/s', storageHandler.handler.bind(storageHandler));
+                    .post('/shortener', storageHandler.handler.bind(storageHandler));
                 if (!defArgs.doCache) {
                     logger.info("  with disabled caching");
                 }
