@@ -187,29 +187,41 @@ describe('On disk caches', () => {
 });
 
 const S3FS = {};
-AWS.mock('S3', 'getObject', (params, callback) => {
-    params.Bucket.should.equal("test.bucket");
-    const result = S3FS[params.Key];
-    if (!result) {
-        const error = new Error("Not found");
-        error.code = "NoSuchKey";
-        callback(error);
-    } else {
-        callback(null, {Body: result});
-    }
-});
-AWS.mock('S3', 'putObject', (params, callback) => {
-    params.Bucket.should.equal("test.bucket");
-    S3FS[params.Key] = params.Body;
-    callback(null, {});
-});
+
+function setup() {
+    beforeEach(() => {
+        AWS.mock('S3', 'getObject', (params, callback) => {
+            params.Bucket.should.equal("test.bucket");
+            const result = S3FS[params.Key];
+            if (!result) {
+                const error = new Error("Not found");
+                error.code = "NoSuchKey";
+                callback(error);
+            } else {
+                callback(null, {Body: result});
+            }
+        });
+        AWS.mock('S3', 'putObject', (params, callback) => {
+            params.Bucket.should.equal("test.bucket");
+            S3FS[params.Key] = params.Body;
+            callback(null, {});
+        });
+
+    });
+    afterEach(() => {
+        AWS.restore();
+    });
+}
+
 describe('S3 tests', () => {
+    setup();
     basicTests(() => new S3Cache('test.bucket', 'cache', 'uk-north-1'));
     // BE VERY CAREFUL - the below can be used with sufficient permissions to test on prod (With mocks off)...
     // basicTests(() => new S3Cache('storage.godbolt.org', 'cache', 'us-east-1'));
 });
 
 describe('Config tests', () => {
+    setup();
     it('should create null cache on empty config', () => {
         const cache = FromConfig.create("");
         cache.constructor.should.eql(NullCache);
