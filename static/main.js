@@ -150,10 +150,10 @@ require("monaco-loader")().then(function () {
                 },
                 elements: {
                     messagelink: '<span id="cookieconsent:desc" class="cc-message">' +
-                    '{{message}} <a aria-label="learn more about cookies" tabindex="0" class="cc-link cookies" ' +
-                    'href="{{href}}">{{link}}</a></span>',
+                        '{{message}} <a aria-label="learn more about cookies" tabindex="0" class="cc-link cookies" ' +
+                        'href="{{href}}">{{link}}</a></span>',
                     link: '<a aria-label="learn more about cookies" tabindex="0" ' +
-                    'class="cc-link cookies" href="{{href}}">{{link}}</a>'
+                        'class="cc-link cookies" href="{{href}}">{{link}}</a>'
                 },
                 onStatusChange: function () {
                     if (cookiemodal) {
@@ -233,7 +233,7 @@ require("monaco-loader")().then(function () {
 
         // Which buttons act as a linkable popup
         var linkablePopups = ['#thanks-to', '#changes', '#cookies', '#setting', '#privacy'];
-        var hashPart = linkablePopups.indexOf(window.location.hash) > -1 ? hashPart = window.location.hash : null;
+        var hashPart = linkablePopups.indexOf(window.location.hash) > -1 ? window.location.hash : null;
         if (hashPart) {
             window.location.hash = "";
         }
