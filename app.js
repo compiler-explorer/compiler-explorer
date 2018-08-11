@@ -159,6 +159,7 @@ const compilerProps = new props.CompilerProps(languages, ceProps);
 const staticMaxAgeSecs = ceProps('staticMaxAgeSecs', 0);
 const maxUploadSize = ceProps('maxUploadSize', '1mb');
 const extraBodyClass = ceProps('extraBodyClass', '');
+const httpRoot = ceProps('httpRoot', '/');
 
 function staticHeaders(res) {
     if (staticMaxAgeSecs) {
@@ -202,7 +203,7 @@ aws.initConfig(awsProps)
         const StorageHandler = require('./lib/storage/storage');
         const storageHandler = StorageHandler.storageFactory(compilerProps, awsProps);
 
-        function shortUrlHandler(req, res, next) {
+        function oldGoogleUrlHandler(req, res, next) {
             const resolver = new google.ShortLinkResolver(aws.getConfig('googleApiKey'));
             const bits = req.url.split("/");
             if (bits.length !== 2 || req.method !== "GET") return next();
@@ -308,6 +309,7 @@ aws.initConfig(awsProps)
                     const options = _.extend(extra, clientOptionsHandler.get());
                     options.compilerExplorerOptions = JSON.stringify(options);
                     options.extraBodyClass = extraBodyClass;
+                    options.httpRoot = httpRoot;
                     options.require = function (path) {
                         if (isDevMode()) {
                             //this will break assets in dev mode for now
@@ -322,6 +324,27 @@ aws.initConfig(awsProps)
                         logger.warn("Requested an asset I don't know about");
                     };
                     return options;
+                }
+
+                function storedStateHandler(req, res, next) {
+                    const bits = req.url.split("/");
+                    if (bits.length !== 2 || req.method !== "GET") return next();
+                    storageHandler.expandId(bits[1])
+                        .then(result => {
+                            const metadata = {
+                                ogDescription: result.metadata ? result.metadata.description.S : null,
+                                ogAuthor: result.metadata ? result.metadata.author.S : null,
+                                ogTitle: result.metadata ? result.metadata.title.S : null
+                            };
+                            staticHeaders(res);
+                            contentPolicyHeader(res);
+                            res.render('index', renderConfig({
+                                embedded: false,
+                                config: JSON.parse(result.config),
+                                metadata: metadata
+                            }));
+                        })
+                        .catch(e => next(e));
                 }
 
                 const embeddedHandler = function (req, res) {
@@ -374,26 +397,7 @@ aws.initConfig(awsProps)
                     .get('/', (req, res) => {
                         staticHeaders(res);
                         contentPolicyHeader(res);
-                        if (req.query.s) {
-                            storageHandler.expandId(req.query.s)
-                                .then(result => {
-                                    const metadata = {
-                                        ogDescription: result.metadata ? result.metadata.description.S : null,
-                                        ogAuthor: result.metadata ? result.metadata.author.S : null,
-                                        ogTitle: result.metadata ? result.metadata.title.S : null
-                                    };
-                                    res.render('index', renderConfig({
-                                        embedded: false,
-                                        config: JSON.parse(result.config),
-                                        metadata: metadata
-                                    }));
-                                })
-                                .catch(() => {
-                                    res.render('index', renderConfig({embedded: false, message: 'Link not found'}));
-                                });
-                        } else {
-                            res.render('index', renderConfig({embedded: false}));
-                        }
+                        res.render('index', renderConfig({embedded: false}));
                     })
                     .get('/e', embeddedHandler)
                     // legacy. not a 301 to prevent any redirect loops between old e links and embed.html
@@ -420,7 +424,8 @@ aws.initConfig(awsProps)
                     .use(restreamer())
                     .use('/source', sourceHandler.handle.bind(sourceHandler))
                     .use('/api', apiHandler.handle)
-                    .use('/g', shortUrlHandler)
+                    .use('/g', oldGoogleUrlHandler)
+                    .use('/z', storedStateHandler)
                     .post('/shortener', storageHandler.handler.bind(storageHandler));
                 if (!defArgs.doCache) {
                     logger.info("  with disabled caching");

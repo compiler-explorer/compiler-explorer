@@ -209,12 +209,16 @@ function getLinks(layout, done) {
         contentType: 'application/json',  // Sent
         data: data,
         success: _.bind(function (result) {
-            var newUrl = window.location.origin + window.location.pathname + '?s=' + result.storedId;
-            done({Full: newUrl,
+            var root = window.httpRoot;
+            if (!root.endsWith("/")) root += "/";
+            var newUrl = window.location.origin + root + 'z/' + result.storedId;
+            done({
+                Full: newUrl,
                 Embed: '<iframe width="800px" height="200px" src="' +
                     getEmbeddedUrl(result.storedId, false) + '"></iframe>',
                 'Embed (RO)': '<iframe width="800px" height="200px" src="' +
-                    getEmbeddedUrl(result.storedId, true) + '"></iframe>'});
+                    getEmbeddedUrl(result.storedId, true) + '"></iframe>'
+            });
         }, this),
         error: _.bind(function () {
             // TODO: Handle errors
