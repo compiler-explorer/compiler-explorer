@@ -84,13 +84,6 @@ function configFromEmbedded(embeddedUrl) {
     }
 }
 
-function getEmbeddedUrl(shortId, readOnly) {
-    var location = window.location.origin + window.location.pathname;
-    if (location[location.length - 1] !== '/') location += '/';
-    var path = readOnly ? 'embed-ro' : 'e';
-    return location + path + '/z/' + shortId;
-}
-
 function updateShares(container, url) {
     var baseTemplate = $('#share-item');
     _.each(shareServices, function (service, serviceName) {
@@ -100,7 +93,7 @@ function updateShares(container, url) {
             newElement.prepend($('<img>')
                 .addClass('share-item-logo')
                 .prop('src', logoPath)
-                .prop('alt', serviceName + ' icon'));
+                .prop('alt', serviceName));
         }
         if (service.text) {
             newElement.children('span.share-item-text')
@@ -115,7 +108,9 @@ function updateShares(container, url) {
 }
 
 function initShareButton(getLink, layout) {
+    var baseUrl = window.location.protocol + '//' + window.location.hostname;
     var html = $('.template .urls').html();
+    var currentNode = null;
     var currentBind = '';
     var title = getLink.attr('title'); // preserve before popover/tooltip breaks it
 
@@ -134,8 +129,16 @@ function initShareButton(getLink, layout) {
             eventAction: 'Sharing'
         });
         var root = $('.urls-container:visible');
+        var label = root.find('.current');
+        var permalink = $(".permalink:visible");
         var urls = {};
-        if (!currentBind) currentBind = $(root.find('.sources a')[0]).data().bind;
+        if (!currentNode) currentNode = $(root.find('.sources a[data-bind="Full"]')[0]);
+        if (!currentBind) currentBind = currentNode.data().bind;
+
+        function setCurrent(node) {
+            currentNode = node;
+            currentBind = node.data().bind;
+        }
 
         function update() {
             var url = currentBind ? urls[currentBind] || "" : "";
@@ -145,9 +148,9 @@ function initShareButton(getLink, layout) {
                 var popoverId = '#' + getLink.attr('aria-describedby');
                 var socialSharing = $(popoverId).find('.socialsharing');
                 socialSharing.empty();
-                updateShares(socialSharing, url || "https://godbolt.org");
+                updateShares(socialSharing, url || baseUrl);
                 // Disable the links for every share item which does not support embed html as links
-                if (currentBind !== 'Full') {
+                if (currentBind !== 'Full' && currentBind !== 'Short') {
                     socialSharing.children('.share-no-embeddable')
                         .addClass('share-disabled')
                         .prop('title', 'Embed links are not supported in this service')
@@ -155,26 +158,32 @@ function initShareButton(getLink, layout) {
                 }
             }
             if (!currentBind) return;
-            root.find('.current').text(currentBind);
-            $(".permalink:visible").val(url);
+            permalink.prop('disabled', false);
+            if (!urls[currentBind]) {
+                label.text(currentNode.text());
+                permalink.val('');
+                getLinks(layout, currentBind, function (url) {
+                    urls[currentBind] = url;
+                    label.text(currentBind);
+                    if (url) {
+                        permalink.val(url);
+                    } else {
+                        permalink.prop('disabled', true);
+                        permalink.val('Error providing URL');
+                    }
+                });
+            } else {
+                label.text(currentBind);
+                permalink.val(url);
+            }
         }
 
         root.find('.sources a').on('click', function () {
-            currentBind = $(this).data().bind;
-            update();
-        });
-
-        getLinks(layout, function (theUrls) {
-            urls = theUrls;
-            if (!urls[currentBind])
-                currentBind = 'Full';
-            root.find('.sources a').each(function () {
-                $(this).toggle(!!urls[$(this).data().bind]);
-            });
+            setCurrent($(this));
             update();
         });
         update();
-    }).attr('title', title);
+    }).prop('title', title);
 
     // Dismiss the popover on escape.
     $(document).on('keyup.editable', function (e) {
@@ -192,13 +201,23 @@ function initShareButton(getLink, layout) {
     });
 
     if (options.sharingEnabled) {
-        updateShares($('#socialshare'), 'https://godbolt.org');
+        updateShares($('#socialshare'), baseUrl);
     }
 }
 
-function getLinks(layout, done) {
+function getEmbeddedUrl(config, root, readOnly) {
+    var location = window.location.origin + root;
+    var path = readOnly ? 'embed-ro#' : 'e#';
+    return location + path + url.serialiseState(config);
+}
+
+function getEmbeddedHtml(config, root, isReadOnly) {
+    return '<iframe width="800px" height="200px" src="' + getEmbeddedUrl(config, root, isReadOnly) + '"></iframe>';
+}
+
+function getShortLink(config, root, done) {
     var data = JSON.stringify({
-        config: layout.toConfig()
+        config: config
     });
     $.ajax({
         type: 'POST',
@@ -207,22 +226,38 @@ function getLinks(layout, done) {
         contentType: 'application/json',  // Sent
         data: data,
         success: _.bind(function (result) {
-            var root = window.httpRoot;
-            if (!root.endsWith("/")) root += "/";
-            var newUrl = window.location.origin + root + 'z/' + result.storedId;
-            done({
-                Full: newUrl,
-                Embed: '<iframe width="800px" height="200px" src="' +
-                    getEmbeddedUrl(result.storedId, false) + '"></iframe>',
-                'Embed (RO)': '<iframe width="800px" height="200px" src="' +
-                    getEmbeddedUrl(result.storedId, true) + '"></iframe>'
-            });
+            done(window.location.origin + root + 'z/' + result.storedId);
         }, this),
         error: _.bind(function () {
-            // TODO: Handle errors
+            // Notify the user that we ran into trouble?
+            done(null);
         }, this),
         cache: true
     });
+}
+
+function getLinks(layout, currentBind, done) {
+    var config = layout.toConfig();
+    var root = window.httpRoot;
+    if (!root.endsWith("/")) root += "/";
+    var readOnly = true;
+    switch (currentBind) {
+        case 'Short':
+            getShortLink(config, root, done);
+            return;
+        case 'Full':
+            done(window.location.origin + root + '#' + url.serialiseState(config));
+            return;
+        case 'Embed':
+            readOnly = false;
+            // fallthrough
+        case 'Embed (RO)':
+            done(getEmbeddedHtml(config, root, readOnly));
+            return;
+        default:
+            // Hmmm
+            done(null);
+    }
 }
 
 module.exports = {
