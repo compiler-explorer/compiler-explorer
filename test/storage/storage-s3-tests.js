@@ -167,7 +167,6 @@ describe('Stores to s3', () => {
 
         const ran = {s3: false, dynamo: false};
         s3PutObjectHandlers.push((q) => {
-            console.log(q);
             q.Bucket.should.equal('bucket');
             q.Key.should.equal('prefix/ABCDEFGHIJKLMNOP');
             q.Body.should.equal('yo');
@@ -180,12 +179,17 @@ describe('Stores to s3', () => {
                 prefix: {S: 'ABCDEF'},
                 unique_subhash: {S: 'ABCDEFG'},
                 full_hash: {S: 'ABCDEFGHIJKLMNOP'},
-                clicks: {N: '0'}
+                stats: {M: {clicks: {N: '0'}}},
+                metadata: {M: {
+                    ip_creator: {S: 'localhost'},
+                    // Cheat the date
+                    date_creation: {S: q.Item.metadata.M.date_creation.S}
+                }}
             });
             ran.dynamo = true;
             return {};
         });
-        return storage.storeItem(object).then(() => {
+        return storage.storeItem(object, {ip: 'localhost'}).then(() => {
             ran.should.deep.equal({s3: true, dynamo: true});
         });
     });
