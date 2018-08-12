@@ -159,7 +159,7 @@ Output.prototype.add = function (msg, lineNum) {
     if (lineNum) {
         elem.html(
             $('<a></a>')
-                .prop('href', '#')
+                .prop('href', 'javascript:;')
                 .html(msg)
                 .click(_.bind(function (e) {
                     this.eventHub.emit('editorSetDecoration', this.editorId, lineNum, true);
