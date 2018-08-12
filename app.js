@@ -304,7 +304,7 @@ aws.initConfig(awsProps)
 
                 logger.info("=======================================");
                 if (gitReleaseName) logger.info(`  git release ${gitReleaseName}`);
-
+                const httpRootDir = httpRoot.endsWith('/') ? httpRoot : (httpRoot + '/');
                 function renderConfig(extra) {
                     const options = _.extend(extra, clientOptionsHandler.get());
                     options.compilerExplorerOptions = JSON.stringify(options);
@@ -316,10 +316,10 @@ aws.initConfig(awsProps)
                             return '/dist/' + path;
                         }
                         if (staticManifest.hasOwnProperty(path)) {
-                            return "dist/" + staticManifest[path];
+                            return `${httpRootDir}dist/${staticManifest[path]}`;
                         }
                         if (assetManifest.hasOwnProperty(path)) {
-                            return "dist/assets/" + assetManifest[path];
+                            return `${httpRootDir}dist/assets/${assetManifest[path]}`;
                         }
                         logger.warn("Requested an asset I don't know about");
                     };
