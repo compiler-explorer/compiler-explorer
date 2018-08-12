@@ -111,8 +111,13 @@ function initShareButton(getLink, layout) {
     var baseUrl = window.location.protocol + '//' + window.location.hostname;
     var html = $('.template .urls').html();
     var currentNode = null;
+    // Explicit because webstorm gets confused about the type of this variable.
+    /***
+     * Current URL bind
+     * @type {string}
+     */
     var currentBind = '';
-    var title = getLink.attr('title'); // preserve before popover/tooltip breaks it
+    var title = getLink.prop('title'); // preserve before popover/tooltip breaks it
 
     getLink.popover({
         container: 'body',
@@ -140,33 +145,36 @@ function initShareButton(getLink, layout) {
             currentBind = node.data().bind;
         }
 
-        function update() {
-            var url = currentBind ? urls[currentBind] || "" : "";
+        function setSocialSharing(element, sharedUrl) {
             if (options.sharingEnabled) {
-                // Is there a better way to get the popup object? There's a field with the element in getLink, but
-                // it's under a jQueryXXXXXX field which I guess changes name for each version?
-                var popoverId = '#' + getLink.attr('aria-describedby');
-                var socialSharing = $(popoverId).find('.socialsharing');
-                socialSharing.empty();
-                updateShares(socialSharing, url || baseUrl);
+                updateShares(element, sharedUrl);
                 // Disable the links for every share item which does not support embed html as links
                 if (currentBind !== 'Full' && currentBind !== 'Short') {
-                    socialSharing.children('.share-no-embeddable')
+                    element.children('.share-no-embeddable')
                         .addClass('share-disabled')
                         .prop('title', 'Embed links are not supported in this service')
                         .on('click', false);
                 }
             }
+        }
+
+        function update() {
+            // Is there a better way to get the popup object? There's a field with the element in getLink, but
+            // it's under a jQueryXXXXXX field which I guess changes name for each version?
+            var popoverId = '#' + getLink.attr('aria-describedby');
+            var socialSharing = $(popoverId).find('.socialsharing');
+            socialSharing.empty();
             if (!currentBind) return;
             permalink.prop('disabled', false);
             if (!urls[currentBind]) {
                 label.text(currentNode.text());
                 permalink.val('');
-                getLinks(layout, currentBind, function (url) {
-                    urls[currentBind] = url;
+                getLinks(layout, currentBind, function (newUrl) {
+                    urls[currentBind] = newUrl;
                     label.text(currentBind);
-                    if (url) {
-                        permalink.val(url);
+                    if (newUrl) {
+                        permalink.val(newUrl);
+                        setSocialSharing(socialSharing, newUrl);
                     } else {
                         permalink.prop('disabled', true);
                         permalink.val('Error providing URL');
@@ -174,7 +182,8 @@ function initShareButton(getLink, layout) {
                 });
             } else {
                 label.text(currentBind);
-                permalink.val(url);
+                permalink.val(urls[currentBind]);
+                setSocialSharing(socialSharing, urls[currentBind]);
             }
         }
 
@@ -221,7 +230,7 @@ function getShortLink(config, root, done) {
     });
     $.ajax({
         type: 'POST',
-        url: '/shortener',
+        url: window.location.origin + root + 'shortener',
         dataType: 'json',  // Expected
         contentType: 'application/json',  // Sent
         data: data,

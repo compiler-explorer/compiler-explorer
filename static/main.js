@@ -195,7 +195,7 @@ require("monaco-loader")().then(function () {
 
         $('#ui-reset').click(function () {
             local.remove('gl');
-            window.history.replaceState(null, null, window.location.pathname);
+            window.history.replaceState(null, null, options.httpRoot);
             window.location.reload();
         });
         $('#thanks-to').click(function () {

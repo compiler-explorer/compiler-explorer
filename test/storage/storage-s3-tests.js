@@ -187,7 +187,7 @@ describe('Stores to s3', () => {
             ran.dynamo = true;
             return {};
         });
-        return storage.storeItem(object, {ip: 'localhost'}).then(() => {
+        return storage.storeItem(object, {get: () => 'localhost'}).then(() => {
             ran.should.deep.equal({s3: true, dynamo: true});
         });
     });
