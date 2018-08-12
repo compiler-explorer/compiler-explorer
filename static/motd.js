@@ -36,10 +36,8 @@ function handleMotd(motd, motdNode, defaultLanguage, adsEnabled, onHide) {
             .on('click', function () {
                 motdNode.addClass('hide');
             })
-            .prop('title', 'Hide all ad messages');
-        return;
-    }
-    if (adsEnabled) {
+            .prop('title', 'Hide message');
+    } else if (adsEnabled) {
         var applicableAds = _.chain(motd.ads)
             .filter(function (ad) {
                 return !ad.filter || ad.filter.length === 0 || ad.filter.indexOf(defaultLanguage) >= 0;
