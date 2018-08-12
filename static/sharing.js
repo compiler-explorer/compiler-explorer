@@ -88,7 +88,7 @@ function getEmbeddedUrl(shortId, readOnly) {
     var location = window.location.origin + window.location.pathname;
     if (location[location.length - 1] !== '/') location += '/';
     var path = readOnly ? 'embed-ro' : 'e';
-    return location + path + '?s=' + shortId;
+    return location + path + '/z/' + shortId;
 }
 
 function updateShares(container, url) {

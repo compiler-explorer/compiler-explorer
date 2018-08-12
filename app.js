@@ -326,10 +326,9 @@ aws.initConfig(awsProps)
                     return options;
                 }
 
-                function storedStateHandler(req, res, next) {
-                    const bits = req.url.split("/");
-                    if (bits.length !== 2 || req.method !== "GET") return next();
-                    storageHandler.expandId(bits[1])
+                function storedStateHandler(req, res) {
+                    const id = req.params.id;
+                    storageHandler.expandId(id)
                         .then(result => {
                             const metadata = {
                                 ogDescription: result.metadata ? result.metadata.description.S : null,
@@ -344,7 +343,10 @@ aws.initConfig(awsProps)
                                 metadata: metadata
                             }));
                         })
-                        .catch(e => next(e));
+                        .catch(e => {
+                            res.status(404);
+                            res.send(e.message);
+                        });
                 }
 
                 const embeddedHandler = function (req, res) {
@@ -425,7 +427,7 @@ aws.initConfig(awsProps)
                     .use('/source', sourceHandler.handle.bind(sourceHandler))
                     .use('/api', apiHandler.handle)
                     .use('/g', oldGoogleUrlHandler)
-                    .use('/z', storedStateHandler)
+                    .get('/z/:id', storedStateHandler)
                     .post('/shortener', storageHandler.handler.bind(storageHandler));
                 if (!defArgs.doCache) {
                     logger.info("  with disabled caching");
