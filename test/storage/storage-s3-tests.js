@@ -180,11 +180,9 @@ describe('Stores to s3', () => {
                 unique_subhash: {S: 'ABCDEFG'},
                 full_hash: {S: 'ABCDEFGHIJKLMNOP'},
                 stats: {M: {clicks: {N: '0'}}},
-                metadata: {M: {
-                    ip_creator: {S: 'localhost'},
-                    // Cheat the date
-                    date_creation: {S: q.Item.metadata.M.date_creation.S}
-                }}
+                creation_ip: {S: 'localhost'},
+                // Cheat the date
+                creation_date: {S: q.Item.creation_date.S}
             });
             ran.dynamo = true;
             return {};
