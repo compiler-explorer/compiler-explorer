@@ -283,8 +283,7 @@ require("monaco-loader")().then(function () {
                 local.set('gl', JSON.stringify(config));
             } else {
                 var strippedToLast = window.location.pathname;
-                strippedToLast = strippedToLast.substr(0,
-                    strippedToLast.lastIndexOf('/') + 1);
+                strippedToLast = strippedToLast.substr(0, strippedToLast.lastIndexOf('/') + 1);
                 $('a.link').attr('href', strippedToLast + '#' + url.serialiseState(config));
             }
         });
