@@ -304,8 +304,10 @@ Editor.prototype.initButtons = function (state) {
     this.initLoadSaver();
     $(this.domRoot).keydown(_.bind(function (event) {
         if ((event.ctrlKey || event.metaKey) && String.fromCharCode(event.which).toLowerCase() === 's') {
-            event.preventDefault();
             this.showLoadSaver();
+            if (loadSave.onSaveToFile(this.id)) {
+                event.preventDefault();
+            }
         }
     }, this));
 };

@@ -206,6 +206,35 @@ require("monaco-loader")().then(function () {
         });
     }
 
+    function findConfig(defaultConfig, options) {
+        var config = null;
+        if (!options.embedded) {
+            if (options.config) {
+                config = options.config;
+            } else {
+                config = url.deserialiseState(window.location.hash.substr(1));
+            }
+
+            if (config) {
+                // replace anything in the default config with that from the hash
+                config = _.extend(defaultConfig, config);
+            }
+            if (!config) {
+                var savedState = local.get('gl', null);
+                config = savedState !== null ? JSON.parse(savedState) : defaultConfig;
+            }
+        } else {
+            config = _.extend(defaultConfig, {
+                settings: {
+                    showMaximiseIcon: false,
+                    showCloseIcon: false,
+                    hasHeaders: false
+                }
+            }, sharing.configFromEmbedded(window.location.hash.substr(1)));
+        }
+        return config;
+    }
+
     function start() {
         var options = require('options');
 
@@ -238,31 +267,7 @@ require("monaco-loader")().then(function () {
             window.location.hash = "";
         }
 
-        var config;
-        if (!options.embedded) {
-            if (options.config) {
-                config = options.config;
-            } else {
-                config = url.deserialiseState(window.location.hash.substr(1));
-            }
-
-            if (config) {
-                // replace anything in the default config with that from the hash
-                config = _.extend(defaultConfig, config);
-            }
-            if (!config) {
-                var savedState = local.get('gl', null);
-                config = savedState !== null ? JSON.parse(savedState) : defaultConfig;
-            }
-        } else {
-            config = _.extend(defaultConfig, {
-                settings: {
-                    showMaximiseIcon: false,
-                    showCloseIcon: false,
-                    hasHeaders: false
-                }
-            }, sharing.configFromEmbedded(window.location.hash.substr(1)));
-        }
+        var config = findConfig(defaultConfig, options);
 
         var root = $("#root");
 
@@ -276,12 +281,22 @@ require("monaco-loader")().then(function () {
             layout = new GoldenLayout(defaultConfig, root);
             hub = new Hub(layout, subLangId);
         }
+
+        var lastState = null;
+
         layout.on('stateChanged', function () {
             // Only preserve state in localStorage in non-embedded mode.
+            var config = JSON.stringify(layout.toConfig());
+            if (config !== lastState) {
+                lastState = config;
+                if (window.location.pathname !== window.httpRoot) {
+                    window.history.pushState(null, null, window.httpRoot);
+                }
+            }
             if (options.embedded) {
                 var strippedToLast = window.location.pathname;
                 strippedToLast = strippedToLast.substr(0, strippedToLast.lastIndexOf('/') + 1);
-                $('a.link').attr('href', strippedToLast + '#' + url.serialiseState(layout.toConfig()));
+                $('a.link').attr('href', strippedToLast + '#' + url.serialiseState(config));
             }
         });
 
@@ -343,6 +358,7 @@ require("monaco-loader")().then(function () {
         };
         motd.initialise(options.motdUrl, $('#motd'), settings.defaultLanguage, settings.enableCommunityAds, onHide);
         sizeRoot();
+        lastState = JSON.stringify(layout.toConfig());
     }
 
     $(start);
