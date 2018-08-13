@@ -277,14 +277,11 @@ require("monaco-loader")().then(function () {
             hub = new Hub(layout, subLangId);
         }
         layout.on('stateChanged', function () {
-            var config = layout.toConfig();
             // Only preserve state in localStorage in non-embedded mode.
-            if (!options.embedded) {
-                local.set('gl', JSON.stringify(config));
-            } else {
+            if (options.embedded) {
                 var strippedToLast = window.location.pathname;
                 strippedToLast = strippedToLast.substr(0, strippedToLast.lastIndexOf('/') + 1);
-                $('a.link').attr('href', strippedToLast + '#' + url.serialiseState(config));
+                $('a.link').attr('href', strippedToLast + '#' + url.serialiseState(layout.toConfig()));
             }
         });
 
@@ -294,7 +291,13 @@ require("monaco-loader")().then(function () {
             layout.updateSize();
         }
 
-        $(window).resize(sizeRoot);
+        $(window)
+            .resize(sizeRoot)
+            .on('beforeunload', function () {
+                if (!options.embedded) {
+                    local.set('gl', JSON.stringify(layout.toConfig()));
+                }
+            });
 
         new clipboard('.btn.clippy');
 

@@ -169,12 +169,15 @@ function initShareButton(getLink, layout) {
             if (!urls[currentBind]) {
                 label.text(currentNode.text());
                 permalink.val('');
-                getLinks(layout, currentBind, function (error, newUrl) {
+                getLinks(layout, currentBind, function (error, newUrl, extra) {
                     if (error || !newUrl) {
                         permalink.prop('disabled', true);
                         permalink.val(error || 'Error providing URL');
                     } else {
                         urls[currentBind] = newUrl;
+                        if (currentBind === 'Short') {
+                            window.history.pushState(null, null, extra);
+                        }
                         label.text(currentBind);
                         permalink.val(newUrl);
                         setSocialSharing(socialSharing, newUrl);
@@ -235,7 +238,8 @@ function getShortLink(config, root, done) {
         contentType: 'application/json',  // Sent
         data: data,
         success: _.bind(function (result) {
-            done(null, window.location.origin + root + 'z/' + result.storedId);
+            var newPath = root + 'z/' + result.storedId;
+            done(null, window.location.origin + newPath, newPath);
         }, this),
         error: _.bind(function (err) {
             // Notify the user that we ran into trouble?
