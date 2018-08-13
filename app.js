@@ -326,7 +326,7 @@ aws.initConfig(awsProps)
                     return options;
                 }
 
-                function storedStateHandler(req, res) {
+                function storedStateHandler(req, res, next) {
                     const id = req.params.id;
                     storageHandler.expandId(id)
                         .then(result => {
@@ -343,9 +343,11 @@ aws.initConfig(awsProps)
                                 metadata: metadata
                             }));
                         })
-                        .catch(e => {
-                            res.status(404);
-                            res.send(e.message);
+                        .catch(() => {
+                            next({
+                                statusCode: 404,
+                                message: `ID "${id}" could not be found`
+                            });
                         });
                 }
 
@@ -418,9 +420,7 @@ aws.initConfig(awsProps)
                         res.set('Content-Type', 'application/xml');
                         res.render('sitemap');
                     })
-                    .use(sFavicon(path.join(defArgs.staticDir, webpackConfig.output.publicPath, 'favicon.ico')));
-
-                webServer
+                    .use(sFavicon(path.join(defArgs.staticDir, webpackConfig.output.publicPath, 'favicon.ico')))
                     .use(bodyParser.json({limit: ceProps('bodyParserLimit', maxUploadSize)}))
                     .use(bodyParser.text({limit: ceProps('bodyParserLimit', maxUploadSize), type: () => true}))
                     .use(restreamer())
@@ -428,13 +428,29 @@ aws.initConfig(awsProps)
                     .use('/api', apiHandler.handle)
                     .use('/g', oldGoogleUrlHandler)
                     .get('/z/:id', storedStateHandler)
-                    .post('/shortener', storageHandler.handler.bind(storageHandler));
+                    .post('/shortener', storageHandler.handler.bind(storageHandler))
+                    .use((req, res, next) => {
+                        next({status: 404, message: 'page could not be found'});
+                    })
+                    .use((err, req, res, next) => {
+                        Raven.errorHandler()(err, req, res, next);
+                    })
+                    // eslint-disable-next-line no-unused-vars
+                    .use((err, req, res, next) => {
+                        const status =
+                            err.status ||
+                            err.statusCode ||
+                            err.status_code ||
+                            (err.output && err.output.statusCode) ||
+                            500;
+                        const message = err.message || 'Internal Server Error';
+                        res.status(status);
+                        res.render('error', renderConfig({ error: {code: status, message: message} }));
+                    })
+                    .on('error', err => logger.error('Caught error:', err, "(in web handler; continuing)"));
                 if (!defArgs.doCache) {
                     logger.info("  with disabled caching");
                 }
-                webServer.use(Raven.errorHandler());
-                webServer.on('error', err => logger.error('Caught error:', err, "(in web handler; continuing)"));
-
                 startListening(webServer);
             })
             .catch(err => {
