@@ -283,15 +283,19 @@ require("monaco-loader")().then(function () {
         }
 
         var lastState = null;
+        var storedPaths = {};
 
         layout.on('stateChanged', function () {
             // Only preserve state in localStorage in non-embedded mode.
             var config = JSON.stringify(layout.toConfig());
             if (config !== lastState) {
-                lastState = config;
-                if (window.location.pathname !== window.httpRoot) {
+                storedPaths[lastState] = window.location.pathname;
+                if (storedPaths[config]) {
+                    window.history.replaceState(null, null, storedPaths[config]);
+                } else if (window.location.pathname !== window.httpRoot) {
                     window.history.pushState(null, null, window.httpRoot);
                 }
+                lastState = config;
             }
             if (options.embedded) {
                 var strippedToLast = window.location.pathname;
