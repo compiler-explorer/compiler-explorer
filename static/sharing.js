@@ -169,15 +169,15 @@ function initShareButton(getLink, layout) {
             if (!urls[currentBind]) {
                 label.text(currentNode.text());
                 permalink.val('');
-                getLinks(layout, currentBind, function (newUrl) {
-                    urls[currentBind] = newUrl;
-                    label.text(currentBind);
-                    if (newUrl) {
+                getLinks(layout, currentBind, function (error, newUrl) {
+                    if (error || !newUrl) {
+                        permalink.prop('disabled', true);
+                        permalink.val(error || 'Error providing URL');
+                    } else {
+                        urls[currentBind] = newUrl;
+                        label.text(currentBind);
                         permalink.val(newUrl);
                         setSocialSharing(socialSharing, newUrl);
-                    } else {
-                        permalink.prop('disabled', true);
-                        permalink.val('Error providing URL');
                     }
                 });
             } else {
@@ -235,11 +235,11 @@ function getShortLink(config, root, done) {
         contentType: 'application/json',  // Sent
         data: data,
         success: _.bind(function (result) {
-            done(window.location.origin + root + 'z/' + result.storedId);
+            done(null, window.location.origin + root + 'z/' + result.storedId);
         }, this),
-        error: _.bind(function () {
+        error: _.bind(function (err) {
             // Notify the user that we ran into trouble?
-            done(null);
+            done(err.statusText, null);
         }, this),
         cache: true
     });
@@ -255,17 +255,17 @@ function getLinks(layout, currentBind, done) {
             getShortLink(config, root, done);
             return;
         case 'Full':
-            done(window.location.origin + root + '#' + url.serialiseState(config));
+            done(null, window.location.origin + root + '#' + url.serialiseState(config));
             return;
         case 'Embed':
             readOnly = false;
             // fallthrough
         case 'Embed (RO)':
-            done(getEmbeddedHtml(config, root, readOnly));
+            done(null, getEmbeddedHtml(config, root, readOnly));
             return;
         default:
             // Hmmm
-            done(null);
+            done('Unknown link type', null);
     }
 }
 
