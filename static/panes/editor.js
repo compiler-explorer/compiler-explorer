@@ -700,7 +700,7 @@ Editor.prototype.onLanguageChange = function (newLangId) {
             ga.proxy('send', {
                 hitType: 'event',
                 eventCategory: 'LanguageChange',
-                eventAction: 'newLangId'
+                eventAction: newLangId
             });
         }
         this.waitingForLanguage = false;
