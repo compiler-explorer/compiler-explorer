@@ -137,7 +137,7 @@ function initShareButton(getLink, layout) {
         var label = root.find('.current');
         var permalink = $(".permalink:visible");
         var urls = {};
-        if (!currentNode) currentNode = $(root.find('.sources a[data-bind="Full"]')[0]);
+        if (!currentNode) currentNode = $(root.find('.sources a')[0]);
         if (!currentBind) currentBind = currentNode.data().bind;
 
         function setCurrent(node) {
