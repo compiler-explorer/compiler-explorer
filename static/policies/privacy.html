@@ -54,13 +54,13 @@ Be aware: modifying this file in any way will cause a pop-up to users telling th
 <h4>Short links</h4>
 
 <p>
-    If you choose to share your code using the "Share" dropdown, then the the user interface state including the source
-    code is stored. For a "Full" link, this information is encoded into the URL as a URL hash (e.g.
+    If you choose to share your code using the "Share" dropdown, then the user interface state including the source code
+    is stored. For a "Full" link, this information is encoded into the URL as a URL hash (e.g.
     <code>https://godbolt.org/#ui_state_and_code</code>). For short URLs, the interface state is stored on Compiler
     Explorer's servers, and a shortened name uniquely referring to this data is returned. The shortened name comes from
     a secure hash of the state, and without knowing the name it is infeasible to access the data. Only Compiler Explorer
-    administrators can access this data. An obfuscated IP address is stored alongside this data, to enable spam
-    detection. Links of this form look like <code>https://godbolt.org/z/SHORTNAME</code>.
+    administrators can access this data directly . Obfuscated IP addresses and creation time are stored alongside this
+    data, to enable spam detection. Links of this form look like <code>https://godbolt.org/z/SHORTNAME</code>.
 </p>
 
 <p>
