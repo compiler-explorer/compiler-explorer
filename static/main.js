@@ -52,6 +52,10 @@ require("monaco-loader")().then(function () {
     require("./colours.css");
     require("./explorer.css");
 
+    // Check to see if the current unload is a UI reset.
+    // Forgive me the global usage here
+    var hasUIBeenReset = false;
+
     function setupSettings(hub) {
         var eventHub = hub.layout.eventHub;
         var defaultSettings = {
@@ -195,6 +199,7 @@ require("monaco-loader")().then(function () {
 
         $('#ui-reset').click(function () {
             local.remove('gl');
+            hasUIBeenReset = true;
             window.history.replaceState(null, null, window.httpRoot);
             window.location.reload();
         });
@@ -313,7 +318,7 @@ require("monaco-loader")().then(function () {
         $(window)
             .resize(sizeRoot)
             .on('beforeunload', function () {
-                if (!options.embedded) {
+                if (!options.embedded && !hasUIBeenReset) {
                     local.set('gl', JSON.stringify(layout.toConfig()));
                 }
             });
