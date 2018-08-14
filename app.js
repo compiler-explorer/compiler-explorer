@@ -430,7 +430,7 @@ aws.initConfig(awsProps)
                     .get('/z/:id', storedStateHandler)
                     .post('/shortener', storageHandler.handler.bind(storageHandler))
                     .use((req, res, next) => {
-                        next({status: 404, message: 'page could not be found'});
+                        next({status: 404, message: `page "${req.path}" could not be found`});
                     })
                     .use((err, req, res, next) => {
                         Raven.errorHandler()(err, req, res, next);
