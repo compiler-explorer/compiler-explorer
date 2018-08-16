@@ -209,6 +209,46 @@ describe('Basic demangling', function () {
             ]
         );
     });
+
+    it('Should ignore comments after jmps', function () {
+        const result = {};
+        result.asm = [
+            {"text": "  jmp _Z1fP6mytype # TAILCALL"}
+        ];
+
+        const demangler = new Demangler(cppfiltpath, new DummyCompiler());
+        demangler.demanglerArguments = ['-n'];
+        demangler.result = result;
+        demangler.symbolstore = new SymbolStore();
+        demangler.collectLabels();
+
+        const output = demangler.othersymbols.listSymbols();
+        output.should.deep.equal(
+            [
+                "_Z1fP6mytype"
+            ]
+        );
+    });
+
+    it('Should still work with normal jmps', function () {
+        const result = {};
+        result.asm = [
+            {"text": "  jmp _Z1fP6mytype"}
+        ];
+
+        const demangler = new Demangler(cppfiltpath, new DummyCompiler());
+        demangler.demanglerArguments = ['-n'];
+        demangler.result = result;
+        demangler.symbolstore = new SymbolStore();
+        demangler.collectLabels();
+
+        const output = demangler.othersymbols.listSymbols();
+        output.should.deep.equal(
+            [
+                "_Z1fP6mytype"
+            ]
+        );
+    });
 });
 
 function DoDemangleTest(root, filename) {
