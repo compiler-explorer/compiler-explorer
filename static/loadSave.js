@@ -25,7 +25,7 @@
 "use strict";
 var $ = require('jquery');
 var _ = require('underscore');
-var saveAs = require('filesaver');
+var saveAs = require('file-saver').saveAs;
 var Alert = require('./alert');
 var local = require('./local');
 var Promise = require('es6-promise').Promise;
@@ -164,18 +164,23 @@ LoadSave.prototype.onSaveToBrowserStorage = function () {
     }
 };
 
-LoadSave.prototype.onSaveToFile = function () {
+LoadSave.prototype.onSaveToFile = function (fileEditor) {
     try {
+        var fileLang = this.currentLanguage.name;
+        var name = fileLang !== undefined && fileEditor !== undefined ?
+            (fileLang +" Editor #" + fileEditor + ' ') : '';
         saveAs(new Blob(
             [this.editorText],
             {type: "text/plain;charset=utf-8"}),
-        "Compiler Explorer Code" + this.extension);
+        "Compiler Explorer " + name + "Code" + this.extension);
+        return true;
     } catch (e) {
         this.alertSystem.notify('Error while saving your code. Use the clipboard instead.', {
             group: "savelocalerror",
             alertClass: "notification-error",
             dismissTime: 5000
         });
+        return false;
     }
 };
 

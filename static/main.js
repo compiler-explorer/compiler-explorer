@@ -52,6 +52,10 @@ require("monaco-loader")().then(function () {
     require("./colours.css");
     require("./explorer.css");
 
+    // Check to see if the current unload is a UI reset.
+    // Forgive me the global usage here
+    var hasUIBeenReset = false;
+
     function setupSettings(hub) {
         var eventHub = hub.layout.eventHub;
         var defaultSettings = {
@@ -150,10 +154,10 @@ require("monaco-loader")().then(function () {
                 },
                 elements: {
                     messagelink: '<span id="cookieconsent:desc" class="cc-message">' +
-                    '{{message}} <a aria-label="learn more about cookies" tabindex="0" class="cc-link cookies" ' +
-                    'href="{{href}}">{{link}}</a></span>',
+                        '{{message}} <a aria-label="learn more about cookies" tabindex="0" class="cc-link cookies" ' +
+                        'href="{{href}}">{{link}}</a></span>',
                     link: '<a aria-label="learn more about cookies" tabindex="0" ' +
-                    'class="cc-link cookies" href="{{href}}">{{link}}</a>'
+                        'class="cc-link cookies" href="{{href}}">{{link}}</a>'
                 },
                 onStatusChange: function () {
                     if (cookiemodal) {
@@ -195,6 +199,8 @@ require("monaco-loader")().then(function () {
 
         $('#ui-reset').click(function () {
             local.remove('gl');
+            hasUIBeenReset = true;
+            window.history.replaceState(null, null, window.httpRoot);
             window.location.reload();
         });
         $('#thanks-to').click(function () {
@@ -203,7 +209,35 @@ require("monaco-loader")().then(function () {
         $('#changes').click(function () {
             alertSystem.alert("Changelog", $(require('./changelog.html')));
         });
+    }
 
+    function findConfig(defaultConfig, options) {
+        var config = null;
+        if (!options.embedded) {
+            if (options.config) {
+                config = options.config;
+            } else {
+                config = url.deserialiseState(window.location.hash.substr(1));
+            }
+
+            if (config) {
+                // replace anything in the default config with that from the hash
+                config = _.extend(defaultConfig, config);
+            }
+            if (!config) {
+                var savedState = local.get('gl', null);
+                config = savedState !== null ? JSON.parse(savedState) : defaultConfig;
+            }
+        } else {
+            config = _.extend(defaultConfig, {
+                settings: {
+                    showMaximiseIcon: false,
+                    showCloseIcon: false,
+                    hasHeaders: false
+                }
+            }, sharing.configFromEmbedded(window.location.hash.substr(1)));
+        }
+        return config;
     }
 
     function start() {
@@ -228,38 +262,17 @@ require("monaco-loader")().then(function () {
 
         $(window).bind('hashchange', function () {
             // punt on hash events and just reload the page if there's a hash
-            if (window.location.hash.substr(1))
-                window.location.reload();
+            if (window.location.hash.substr(1)) window.location.reload();
         });
 
-        var hashPart = null;
         // Which buttons act as a linkable popup
         var linkablePopups = ['#thanks-to', '#changes', '#cookies', '#setting', '#privacy'];
-        if (linkablePopups.indexOf(window.location.hash) > -1) {
-            hashPart = window.location.hash;
+        var hashPart = linkablePopups.indexOf(window.location.hash) > -1 ? window.location.hash : null;
+        if (hashPart) {
             window.location.hash = "";
         }
 
-        var config;
-        if (!options.embedded) {
-            config = url.deserialiseState(window.location.hash.substr(1));
-            if (config) {
-                // replace anything in the default config with that from the hash
-                config = _.extend(defaultConfig, config);
-            }
-            if (!config) {
-                var savedState = local.get('gl', null);
-                config = savedState !== null ? JSON.parse(savedState) : defaultConfig;
-            }
-        } else {
-            config = _.extend(defaultConfig, {
-                settings: {
-                    showMaximiseIcon: false,
-                    showCloseIcon: false,
-                    hasHeaders: false
-                }
-            }, sharing.configFromEmbedded(window.location.hash.substr(1)));
-        }
+        var config = findConfig(defaultConfig, options);
 
         var root = $("#root");
 
@@ -273,15 +286,23 @@ require("monaco-loader")().then(function () {
             layout = new GoldenLayout(defaultConfig, root);
             hub = new Hub(layout, subLangId);
         }
+
+        var lastState = null;
+        var storedPaths = {};  // TODO maybe make this an LRU cache?
+
         layout.on('stateChanged', function () {
-            var config = layout.toConfig();
-            // Only preserve state in localStorage in non-embedded mode.
-            if (!options.embedded) {
-                local.set('gl', JSON.stringify(config));
-            } else {
+            var config = JSON.stringify(layout.toConfig());
+            if (config !== lastState) {
+                if (storedPaths[config]) {
+                    window.history.replaceState(null, null, storedPaths[config]);
+                } else if (window.location.pathname !== window.httpRoot) {
+                    window.history.pushState(null, null, window.httpRoot);
+                }
+                lastState = config;
+            }
+            if (options.embedded) {
                 var strippedToLast = window.location.pathname;
-                strippedToLast = strippedToLast.substr(0,
-                    strippedToLast.lastIndexOf('/') + 1);
+                strippedToLast = strippedToLast.substr(0, strippedToLast.lastIndexOf('/') + 1);
                 $('a.link').attr('href', strippedToLast + '#' + url.serialiseState(config));
             }
         });
@@ -292,7 +313,14 @@ require("monaco-loader")().then(function () {
             layout.updateSize();
         }
 
-        $(window).resize(sizeRoot);
+        $(window)
+            .resize(sizeRoot)
+            .on('beforeunload', function () {
+                // Only preserve state in localStorage in non-embedded mode.
+                if (!options.embedded && !hasUIBeenReset) {
+                    local.set('gl', JSON.stringify(layout.toConfig()));
+                }
+            });
 
         new clipboard('.btn.clippy');
 
@@ -303,7 +331,10 @@ require("monaco-loader")().then(function () {
             setupButtons(options);
         }
 
-        sharing.initShareButton($('#share'), layout);
+        sharing.initShareButton($('#share'), layout, function (config, extra) {
+            window.history.pushState(null, null, extra);
+            storedPaths[JSON.stringify(config)] = extra;
+        });
 
         function setupAdd(thing, func) {
             layout.createDragSource(thing, func);
@@ -338,6 +369,7 @@ require("monaco-loader")().then(function () {
         };
         motd.initialise(options.motdUrl, $('#motd'), settings.defaultLanguage, settings.enableCommunityAds, onHide);
         sizeRoot();
+        lastState = JSON.stringify(layout.toConfig());
     }
 
     $(start);

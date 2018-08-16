@@ -96,7 +96,7 @@ Alert.prototype.ask = function (title, question, handlers) {
 /***
  * Notifies the user of something by a popup which can be stacked, autodismissed etc... based on options
  *
- * @param body {HTML} Inner message html
+ * @param body {string} Inner message html
  * @param options {object} Object containing some extra settings
  * @param options.group {string} What group this notification is from. Sets data-group's value.
  *  Default: ""
