@@ -30,8 +30,6 @@ var Components = require('./components');
 var url = require('./url');
 var ga = require('./analytics');
 
-// var shortenURL = require('./urlshorten-' + options.urlShortenService);
-
 var shareServices = {
     twitter: {
         embedValid: false,
@@ -107,7 +105,7 @@ function updateShares(container, url) {
     });
 }
 
-function initShareButton(getLink, layout) {
+function initShareButton(getLink, layout, noteNewState) {
     var baseUrl = window.location.protocol + '//' + window.location.hostname;
     var html = $('.template .urls').html();
     var currentNode = null;
@@ -158,6 +156,15 @@ function initShareButton(getLink, layout) {
             }
         }
 
+        function onUpdate(socialSharing, config, bind, result) {
+            if (result.updateState) {
+                noteNewState(config, result.extra);
+            }
+            label.text(bind);
+            permalink.val(result.url);
+            setSocialSharing(socialSharing, result.url);
+        }
+
         function update() {
             // Is there a better way to get the popup object? There's a field with the element in getLink, but
             // it's under a jQueryXXXXXX field which I guess changes name for each version?
@@ -166,27 +173,25 @@ function initShareButton(getLink, layout) {
             socialSharing.empty();
             if (!currentBind) return;
             permalink.prop('disabled', false);
+            var config = layout.toConfig();
             if (!urls[currentBind]) {
                 label.text(currentNode.text());
                 permalink.val('');
-                getLinks(layout, currentBind, function (error, newUrl, extra) {
+                getLinks(config, currentBind, function (error, newUrl, extra, updateState) {
                     if (error || !newUrl) {
                         permalink.prop('disabled', true);
                         permalink.val(error || 'Error providing URL');
                     } else {
-                        urls[currentBind] = newUrl;
-                        if (currentBind === 'Short') {
-                            window.history.pushState(null, null, extra);
-                        }
-                        label.text(currentBind);
-                        permalink.val(newUrl);
-                        setSocialSharing(socialSharing, newUrl);
+                        urls[currentBind] = {
+                            updateState: updateState,
+                            extra: extra,
+                            url: newUrl
+                        };
+                        onUpdate(socialSharing, config, currentBind, urls[currentBind]);
                     }
                 });
             } else {
-                label.text(currentBind);
-                permalink.val(urls[currentBind]);
-                setSocialSharing(socialSharing, urls[currentBind]);
+                onUpdate(socialSharing, config, currentBind, urls[currentBind]);
             }
         }
 
@@ -239,18 +244,17 @@ function getShortLink(config, root, done) {
         data: data,
         success: _.bind(function (result) {
             var newPath = root + 'z/' + result.storedId;
-            done(null, window.location.origin + newPath, newPath);
+            done(null, window.location.origin + newPath, newPath, true);
         }, this),
         error: _.bind(function (err) {
             // Notify the user that we ran into trouble?
-            done(err.statusText, null);
+            done(err.statusText, null, false);
         }, this),
         cache: true
     });
 }
 
-function getLinks(layout, currentBind, done) {
-    var config = layout.toConfig();
+function getLinks(config, currentBind, done) {
     var root = window.httpRoot;
     if (!root.endsWith("/")) root += "/";
     var readOnly = true;
@@ -259,13 +263,13 @@ function getLinks(layout, currentBind, done) {
             getShortLink(config, root, done);
             return;
         case 'Full':
-            done(null, window.location.origin + root + '#' + url.serialiseState(config));
+            done(null, window.location.origin + root + '#' + url.serialiseState(config), false);
             return;
         case 'Embed':
             readOnly = false;
-            // fallthrough
+        // fallthrough
         case 'Embed (RO)':
-            done(null, getEmbeddedHtml(config, root, readOnly));
+            done(null, getEmbeddedHtml(config, root, readOnly), false);
             return;
         default:
             // Hmmm

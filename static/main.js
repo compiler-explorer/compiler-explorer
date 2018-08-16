@@ -288,13 +288,11 @@ require("monaco-loader")().then(function () {
         }
 
         var lastState = null;
-        var storedPaths = {};
+        var storedPaths = {};  // TODO maybe make this an LRU cache?
 
         layout.on('stateChanged', function () {
-            // Only preserve state in localStorage in non-embedded mode.
             var config = JSON.stringify(layout.toConfig());
             if (config !== lastState) {
-                storedPaths[lastState] = window.location.pathname;
                 if (storedPaths[config]) {
                     window.history.replaceState(null, null, storedPaths[config]);
                 } else if (window.location.pathname !== window.httpRoot) {
@@ -318,6 +316,7 @@ require("monaco-loader")().then(function () {
         $(window)
             .resize(sizeRoot)
             .on('beforeunload', function () {
+                // Only preserve state in localStorage in non-embedded mode.
                 if (!options.embedded && !hasUIBeenReset) {
                     local.set('gl', JSON.stringify(layout.toConfig()));
                 }
@@ -332,7 +331,10 @@ require("monaco-loader")().then(function () {
             setupButtons(options);
         }
 
-        sharing.initShareButton($('#share'), layout);
+        sharing.initShareButton($('#share'), layout, function (config, extra) {
+            window.history.pushState(null, null, extra);
+            storedPaths[JSON.stringify(config)] = extra;
+        });
 
         function setupAdd(thing, func) {
             layout.createDragSource(thing, func);
