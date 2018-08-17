@@ -342,9 +342,10 @@ aws.initConfig(awsProps)
                                 ogTitle: result.specialMetadata ? result.specialMetadata.title.S : "Compiler Explorer"
                             };
                             if (!metadata.ogDescription) {
-                                if (result.metadata && result.metadata.single_code && result.metadata.single_code.M) {
-                                    const lang = languages[result.metadata.single_code.M.language.S];
-                                    metadata.ogDescription = result.metadata.single_code.M.source.S;
+                                const sources = utils.glGetEditorSources(config.content);
+                                if (sources.length === 1) {
+                                    const lang = languages[sources[0].language];
+                                    metadata.ogDescription = sources[0].source;
                                     if (lang) {
                                         metadata.ogTitle += ` - ${lang.name}`;
                                     }
