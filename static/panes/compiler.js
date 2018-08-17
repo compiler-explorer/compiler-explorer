@@ -1209,10 +1209,14 @@ function getAsmInfo(opcode) {
     if (cached) {
         return Promise.resolve(cached.found ? cached.result : null);
     }
+    var base = window.httpRoot;
+    if (!base.endsWith('/')) {
+        base += '/';
+    }
     return new Promise(function (resolve, reject) {
         $.ajax({
             type: 'GET',
-            url: 'api/asm/' + opcode,
+            url: window.location.origin + base + 'api/asm/' + opcode,
             dataType: 'json',  // Expected,
             contentType: 'text/plain',  // Sent
             success: function (result) {
@@ -1243,7 +1247,7 @@ Compiler.prototype.onMouseMove = function (e) {
         var startColumn = currentWord.startColumn;
         // Avoid throwing an exception if somehow (How?) we have a non existent lineNumber.
         // c.f. https://sentry.io/matt-godbolt/compiler-explorer/issues/285270358/
-        if (e.target.position.lineNumber < this.outputEditor.getModel().getLineCount()) {
+        if (e.target.position.lineNumber <= this.outputEditor.getModel().getLineCount()) {
             // Hacky workaround to check for negative numbers.
             // c.f. https://github.com/mattgodbolt/compiler-explorer/issues/434
             var lineContent = this.outputEditor.getModel().getLineContent(e.target.position.lineNumber);

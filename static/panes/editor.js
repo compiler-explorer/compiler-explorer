@@ -57,7 +57,10 @@ function Editor(hub, state, container) {
     // Should probably be its own function somewhere
     this.settings = JSON.parse(local.get('settings', '{}'));
     this.ourCompilers = {};
-
+    this.httpRoot = window.httpRoot;
+    if (!this.httpRoot.endsWith('/')) {
+        this.httpRoot += '/';
+    }
     this.widgetsByCompiler = {};
     this.asmByCompiler = {};
     this.busyCompilers = {};
@@ -326,8 +329,7 @@ Editor.prototype.tryCompilerLinkLine = function (thisLineNumber, reveal) {
     _.each(this.asmByCompiler, _.bind(function (asms, compilerId) {
         var targetLines = [];
         _.each(asms, function (asmLine, i) {
-            if (asmLine.source && asmLine.source.file === null &&
-                asmLine.source.line === thisLineNumber) {
+            if (asmLine.source && asmLine.source.file === null && asmLine.source.line === thisLineNumber) {
                 targetLines.push(i + 1);
             }
         });
@@ -416,7 +418,7 @@ Editor.prototype.formatCurrentText = function () {
     var currentPosition = this.editor.getPosition();
     $.ajax({
         type: 'POST',
-        url: 'api/format/clangformat',
+        url: window.location.origin + this.httpRoot + 'api/format/clangformat',
         dataType: 'json',  // Expected
         contentType: 'application/json',  // Sent
         data: JSON.stringify({

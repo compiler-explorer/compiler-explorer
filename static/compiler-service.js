@@ -30,6 +30,10 @@ var options = require('options');
 var Promise = require('es6-promise').Promise;
 
 function CompilerService() {
+    this.base = window.httpRoot;
+    if (!this.base.endsWith('/')) {
+        this.base += '/';
+    }
     this.cache = new LruCache({
         max: 200 * 1024,
         length: function (n) {
@@ -74,9 +78,10 @@ CompilerService.prototype.submit = function (request) {
         }
     }
     return new Promise(_.bind(function (resolve, reject) {
+        var compilerId = encodeURIComponent(request.compiler);
         $.ajax({
             type: 'POST',
-            url: 'api/compiler/' + encodeURIComponent(request.compiler) + '/compile',
+            url: window.location.origin + this.base + 'api/compiler/' + compilerId + '/compile',
             dataType: 'json',
             contentType: 'application/json',
             data: jsonRequest,

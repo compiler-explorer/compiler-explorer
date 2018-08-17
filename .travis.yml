@@ -24,7 +24,7 @@ script:
     - yarn test
     - yarn run codecov
     - make changelog
-    - make travis-dist
+    - make -j$(nproc) travis-dist
 
 deploy:
     on:
