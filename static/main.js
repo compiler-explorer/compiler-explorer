@@ -296,7 +296,7 @@ require("monaco-loader")().then(function () {
                 if (storedPaths[config]) {
                     window.history.replaceState(null, null, storedPaths[config]);
                 } else if (window.location.pathname !== window.httpRoot) {
-                    window.history.pushState(null, null, window.httpRoot);
+                    window.history.replaceState(null, null, window.httpRoot);
                 }
                 lastState = config;
             }
