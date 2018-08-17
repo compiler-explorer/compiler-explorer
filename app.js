@@ -326,20 +326,38 @@ aws.initConfig(awsProps)
                     return options;
                 }
 
+                function getEditorCode(config) {
+                    const editors = _.chain(config.content)
+                        .pluck("content")
+                        .reduce()
+                        .pluck("content")
+                        .map(stack => _.reduce(stack))
+                        .filter(component => component.componentName === 'codeEditor')
+                        .value();
+                    if (editors && editors.length === 1) {
+                        const state = editors[0].componentState;
+                        return {source: state.source, lang: languages[state.lang].name};
+                    } else {
+                        return null;
+                    }
+                }
+
                 function storedStateHandler(req, res, next) {
                     const id = req.params.id;
                     storageHandler.expandId(id)
                         .then(result => {
+                            const config = JSON.parse(result.config);
                             const metadata = {
                                 ogDescription: result.metadata ? result.metadata.description.S : null,
                                 ogAuthor: result.metadata ? result.metadata.author.S : null,
-                                ogTitle: result.metadata ? result.metadata.title.S : null
+                                ogTitle: result.metadata ? result.metadata.title.S : null,
+                                code: getEditorCode(config)
                             };
                             staticHeaders(res);
                             contentPolicyHeader(res);
                             res.render('index', renderConfig({
                                 embedded: false,
-                                config: JSON.parse(result.config),
+                                config: config,
                                 metadata: metadata
                             }));
                         })

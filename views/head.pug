@@ -4,11 +4,16 @@ meta(http-equiv="X-UA-Compatible" content="IE=edge")
 
 if metadata && metadata.ogDescription
   meta(name="description" content=metadata.ogDescription)
+  meta(property="og:site_name" content="Compiler Explorer")
   if metadata.ogAuthor && metadata.ogAuthor !== '.'
     meta(property="og:description" content=metadata.ogDescription + ". Author(s): " + metadata.ogAuthor)
   else
     meta(property="og:description" content=metadata.ogDescription)
+else if metadata && metadata.code
+  meta(property="og:site_name" content="Compiler Explorer " + metadata.code.lang)
+  meta(property="og:description" content=metadata.code.source)
 else
+  meta(property="og:site_name" content="Compiler Explorer")
   meta(name="description" content="Compiler Explorer is an interactive online compiler which shows the assembly output of compiled C, C++, Rust, Go, D, Haskell, Swift & Pascal code.")
 
 if metadata && metadata.ogTitle
@@ -19,7 +24,6 @@ else
 
 meta(name="twitter:card" content="summary")
 meta(name="twitter:site" content="@mattgodbolt")
-meta(property="og:site_name" content="Compiler Explorer")
 meta(property="og:image" content=require("ce-icon.png"))
 meta(property="og:image:secure_url" content=require("ce-icon.png"))
 meta(property="og:image:type" content="image/png")
