@@ -1,32 +1,23 @@
 link(rel="icon" href="favicon.ico?v=1")
 meta(charset="utf-8")
 meta(http-equiv="X-UA-Compatible" content="IE=edge")
-
-if metadata && metadata.ogDescription
-  meta(name="description" content=metadata.ogDescription)
-  meta(property="og:site_name" content="Compiler Explorer")
-  if metadata.ogAuthor && metadata.ogAuthor !== '.'
-    meta(property="og:description" content=metadata.ogDescription + ". Author(s): " + metadata.ogAuthor)
-  else
-    meta(property="og:description" content=metadata.ogDescription)
-else if metadata && metadata.code
-  meta(property="og:site_name" content="Compiler Explorer " + metadata.code.lang)
-  meta(property="og:description" content=metadata.code.source)
-else
-  meta(property="og:site_name" content="Compiler Explorer")
-  meta(name="description" content="Compiler Explorer is an interactive online compiler which shows the assembly output of compiled C, C++, Rust, Go, D, Haskell, Swift & Pascal code.")
-
-if metadata && metadata.ogTitle
+title Compiler Explorer
+if metadata
   meta(property="og:title" content=metadata.ogTitle)
-  title Compiler Explorer - #{metadata.ogTitle}
+  if metadata.ogDescription
+    meta(name="description" content=metadata.ogDescription)
+    meta(property="og:description" content=metadata.ogDescription)
+  else
+    meta(name="description" content="Compiler Explorer is an interactive online compiler which shows the assembly output of compiled C, C++, Rust, Go, D, Haskell, Swift, Pascal & CUDA code.")
+    meta(property="og:description" content="Compiler Explorer is an interactive online compiler which shows the assembly output of compiled C, C++, Rust, Go, D, Haskell, Swift, Pascal & CUDA code.")
 else
-  title Compiler Explorer
-
+  meta(name="description" content="Compiler Explorer is an interactive online compiler which shows the assembly output of compiled C, C++, Rust, Go, D, Haskell, Swift, Pascal & CUDA code.")
+  meta(property="og:title" content="Compiler Explorer")
 meta(name="twitter:card" content="summary")
 meta(name="twitter:site" content="@mattgodbolt")
 meta(property="og:image" content=require("ce-icon.png"))
 meta(property="og:image:secure_url" content=require("ce-icon.png"))
-meta(property="og:image:type" content="image/png")
+meta(property="og:image:type" content="image/jpg")
 meta(property="og:image:width" content="145")
 meta(property="og:image:height" content="145")
 meta(name="author" content="Matt Godbolt")

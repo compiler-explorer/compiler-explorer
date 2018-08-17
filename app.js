@@ -331,33 +331,27 @@ aws.initConfig(awsProps)
                     return options;
                 }
 
-                function getEditorCode(config) {
-                    const editors = _.chain(config.content)
-                        .pluck("content")
-                        .reduce()
-                        .pluck("content")
-                        .map(stack => _.reduce(stack))
-                        .filter(component => component.componentName === 'codeEditor')
-                        .value();
-                    if (editors && editors.length === 1) {
-                        const state = editors[0].componentState;
-                        return {source: state.source, lang: languages[state.lang].name};
-                    } else {
-                        return null;
-                    }
-                }
-
                 function storedStateHandler(req, res, next) {
                     const id = req.params.id;
                     storageHandler.expandId(id)
                         .then(result => {
                             const config = JSON.parse(result.config);
                             const metadata = {
-                                ogDescription: result.metadata ? result.metadata.description.S : null,
-                                ogAuthor: result.metadata ? result.metadata.author.S : null,
-                                ogTitle: result.metadata ? result.metadata.title.S : null,
-                                code: getEditorCode(config)
+                                ogDescription: result.special_metadata ? result.special_metadata.description.S : null,
+                                ogAuthor: result.special_metadata ? result.special_metadata.author.S : null,
+                                ogTitle: result.special_metadata ? result.special_metadata.title.S : "Compiler Explorer"
                             };
+                            if (!metadata.ogDescription) {
+                                if (result.metadata && result.metadata.single_code && result.metadata.single_code.M) {
+                                    const lang = languages[result.metadata.single_code.M.language.S];
+                                    metadata.ogDescription = result.metadata.single_code.M.source.S;
+                                    if (lang) {
+                                        metadata.ogTitle += ` - ${lang.name}`;
+                                    }
+                                }
+                            } else if (metadata.ogAuthor && metadata.ogAuthor !== '.') {
+                                metadata.ogDescription += `\nAuthor(s): ${metadata.ogAuthor}`;
+                            }
                             staticHeaders(res);
                             contentPolicyHeader(res);
                             res.render('index', renderConfig({

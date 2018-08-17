@@ -162,14 +162,14 @@ describe('Stores to s3', () => {
             prefix: "ABCDEF",
             uniqueSubHash: "ABCDEFG",
             fullHash: "ABCDEFGHIJKLMNOP",
-            config: "yo"
+            config: '{"contents": []}'
         };
 
         const ran = {s3: false, dynamo: false};
         s3PutObjectHandlers.push((q) => {
             q.Bucket.should.equal('bucket');
             q.Key.should.equal('prefix/ABCDEFGHIJKLMNOP');
-            q.Body.should.equal('yo');
+            q.Body.should.equal('{"contents": []}');
             ran.s3 = true;
             return {};
         });
@@ -182,7 +182,8 @@ describe('Stores to s3', () => {
                 stats: {M: {clicks: {N: '0'}}},
                 creation_ip: {S: 'localhost'},
                 // Cheat the date
-                creation_date: {S: q.Item.creation_date.S}
+                creation_date: {S: q.Item.creation_date.S},
+                metadata: {M: {editor_count: {N: "0"}}}
             });
             ran.dynamo = true;
             return {};
