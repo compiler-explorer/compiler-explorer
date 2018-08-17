@@ -345,8 +345,7 @@ aws.initConfig(awsProps)
                                 const sources = utils.glGetEditorSources(config.content);
                                 if (sources.length === 1) {
                                     const lang = languages[sources[0].language];
-                                    metadata.ogDescription = '```' + lang.id + '\n' + sources[0].source + '\n```';
-                                    //metadata.ogDescription = sources[0].source;
+                                    metadata.ogDescription = sources[0].source;
                                     if (lang) {
                                         metadata.ogTitle += ` - ${lang.name}`;
                                     }
