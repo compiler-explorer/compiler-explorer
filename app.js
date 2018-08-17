@@ -337,9 +337,9 @@ aws.initConfig(awsProps)
                         .then(result => {
                             const config = JSON.parse(result.config);
                             const metadata = {
-                                ogDescription: result.special_metadata ? result.special_metadata.description.S : null,
-                                ogAuthor: result.special_metadata ? result.special_metadata.author.S : null,
-                                ogTitle: result.special_metadata ? result.special_metadata.title.S : "Compiler Explorer"
+                                ogDescription: result.specialMetadata ? result.specialMetadata.description.S : null,
+                                ogAuthor: result.specialMetadata ? result.specialMetadata.author.S : null,
+                                ogTitle: result.specialMetadata ? result.specialMetadata.title.S : "Compiler Explorer"
                             };
                             if (!metadata.ogDescription) {
                                 if (result.metadata && result.metadata.single_code && result.metadata.single_code.M) {
