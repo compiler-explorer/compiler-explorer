@@ -1243,7 +1243,7 @@ Compiler.prototype.onMouseMove = function (e) {
         var startColumn = currentWord.startColumn;
         // Avoid throwing an exception if somehow (How?) we have a non existent lineNumber.
         // c.f. https://sentry.io/matt-godbolt/compiler-explorer/issues/285270358/
-        if (e.target.position.lineNumber < this.outputEditor.getModel().getLineCount()) {
+        if (e.target.position.lineNumber <= this.outputEditor.getModel().getLineCount()) {
             // Hacky workaround to check for negative numbers.
             // c.f. https://github.com/mattgodbolt/compiler-explorer/issues/434
             var lineContent = this.outputEditor.getModel().getLineContent(e.target.position.lineNumber);
