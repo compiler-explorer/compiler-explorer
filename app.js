@@ -312,6 +312,11 @@ aws.initConfig(awsProps)
                     options.httpRoot = httpRoot;
                     options.require = function (path) {
                         if (isDevMode()) {
+                            if (fs.existsSync('static/dist/' + path)) {
+                                return '/dist/' + path;
+                            } else if (fs.existsSync('static/assets/' + path)) {
+                                return '/assets/' + path;
+                            }
                             //this will break assets in dev mode for now
                             return '/dist/' + path;
                         }
