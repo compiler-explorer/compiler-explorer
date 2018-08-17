@@ -53,12 +53,17 @@ function LoadSave() {
     this.modal.find('.save-button').click(_.bind(this.onSaveToBrowserStorage, this));
     this.modal.find('.save-file').click(_.bind(this.onSaveToFile, this));
 
+    this.base = window.httpRoot;
+    if (!this.base.endsWith('/')) {
+        this.base += '/';
+    }
+
     this.fetchBuiltins();
 }
 
 LoadSave.prototype.fetchBuiltins = function () {
     return new Promise(_.bind(function (resolve) {
-        $.getJSON('source/builtin/list', function (list) {
+        $.getJSON(window.location.origin + this.base + 'source/builtin/list', function (list) {
             resolve(list);
         });
     }, this));
@@ -186,7 +191,7 @@ LoadSave.prototype.onSaveToFile = function (fileEditor) {
 
 LoadSave.prototype.doLoad = function (element) {
     // TODO: handle errors. consider promises...
-    $.getJSON('source/builtin/load/' + element.lang + '/' + element.file,
+    $.getJSON(window.location.origin + this.base + 'source/builtin/load/' + element.lang + '/' + element.file,
         _.bind(function (response) {
             this.onLoad(response.file);
         }, this));
