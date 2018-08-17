@@ -1209,10 +1209,14 @@ function getAsmInfo(opcode) {
     if (cached) {
         return Promise.resolve(cached.found ? cached.result : null);
     }
+    var base = window.httpRoot;
+    if (!base.endsWith('/')) {
+        base += '/';
+    }
     return new Promise(function (resolve, reject) {
         $.ajax({
             type: 'GET',
-            url: 'api/asm/' + opcode,
+            url: window.location.origin + base + 'api/asm/' + opcode,
             dataType: 'json',  // Expected,
             contentType: 'text/plain',  // Sent
             success: function (result) {

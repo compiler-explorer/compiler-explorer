@@ -78,9 +78,10 @@ CompilerService.prototype.submit = function (request) {
         }
     }
     return new Promise(_.bind(function (resolve, reject) {
+        var compilerId = encodeURIComponent(request.compiler);
         $.ajax({
             type: 'POST',
-            url: this.base + 'api/compiler/' + encodeURIComponent(request.compiler) + '/compile',
+            url: window.location.origin + this.base + 'api/compiler/' + compilerId + '/compile',
             dataType: 'json',
             contentType: 'application/json',
             data: jsonRequest,
