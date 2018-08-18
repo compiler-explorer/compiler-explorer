@@ -335,16 +335,29 @@ aws.initConfig(awsProps)
                     const id = req.params.id;
                     storageHandler.expandId(id)
                         .then(result => {
+                            const config = JSON.parse(result.config);
                             const metadata = {
-                                ogDescription: result.metadata ? result.metadata.description.S : null,
-                                ogAuthor: result.metadata ? result.metadata.author.S : null,
-                                ogTitle: result.metadata ? result.metadata.title.S : null
+                                ogDescription: result.specialMetadata ? result.specialMetadata.description.S : null,
+                                ogAuthor: result.specialMetadata ? result.specialMetadata.author.S : null,
+                                ogTitle: result.specialMetadata ? result.specialMetadata.title.S : "Compiler Explorer"
                             };
+                            if (!metadata.ogDescription) {
+                                const sources = utils.glGetEditorSources(config.content);
+                                if (sources.length === 1) {
+                                    const lang = languages[sources[0].language];
+                                    metadata.ogDescription = sources[0].source;
+                                    if (lang) {
+                                        metadata.ogTitle += ` - ${lang.name}`;
+                                    }
+                                }
+                            } else if (metadata.ogAuthor && metadata.ogAuthor !== '.') {
+                                metadata.ogDescription += `\nAuthor(s): ${metadata.ogAuthor}`;
+                            }
                             staticHeaders(res);
                             contentPolicyHeader(res);
                             res.render('index', renderConfig({
                                 embedded: false,
-                                config: JSON.parse(result.config),
+                                config: config,
                                 metadata: metadata
                             }));
                         })

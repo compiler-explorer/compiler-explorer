@@ -162,7 +162,7 @@ describe('Stores to s3', () => {
             prefix: "ABCDEF",
             uniqueSubHash: "ABCDEFG",
             fullHash: "ABCDEFGHIJKLMNOP",
-            config: "yo"
+            config: 'yo'
         };
 
         const ran = {s3: false, dynamo: false};
