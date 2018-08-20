@@ -437,3 +437,7 @@ pre.content.wrap {
     height: 20px;
 }
 
+/* While we find a better solution, lets up this a bit */
+.selectize-dropdown-content {
+    max-height: 300px !important;
+}
