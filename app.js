@@ -342,12 +342,28 @@ aws.initConfig(awsProps)
                                 ogTitle: result.specialMetadata ? result.specialMetadata.title.S : "Compiler Explorer"
                             };
                             if (!metadata.ogDescription) {
-                                const sources = utils.glGetEditorSources(config.content);
-                                if (sources.length === 1) {
-                                    const lang = languages[sources[0].language];
-                                    metadata.ogDescription = sources[0].source;
+                                const sources = utils.glGetMainContents(config.content);
+                                if (sources.editors.length === 1) {
+                                    const editor = sources.editors[0];
+                                    const lang = languages[editor.language];
                                     if (lang) {
+                                        let code = editor.source;
+                                        if (lang.previewFilter) {
+                                            code = _.filter(code.split('\n'), line => {
+                                                return !line.match(lang.previewFilter);
+                                            }).join('\n');
+                                        }
+                                        metadata.ogDescription = code;
                                         metadata.ogTitle += ` - ${lang.name}`;
+                                        if (sources.compilers.length === 1) {
+                                            const compilerId = sources.compilers[0].compiler;
+                                            const compiler = apiHandler.compilers.find(c => c.id === compilerId);
+                                            if (compiler) {
+                                                metadata.ogTitle += ` (${compiler.name})`;
+                                            }
+                                        }
+                                    } else {
+                                        metadata.ogDescription = editor.source;
                                     }
                                 }
                             } else if (metadata.ogAuthor && metadata.ogAuthor !== '.') {
@@ -361,7 +377,8 @@ aws.initConfig(awsProps)
                                 metadata: metadata
                             }));
                         })
-                        .catch(() => {
+                        .catch(err => {
+                            logger.warn(`Exception thrown when expanding ${id}: `, err);
                             next({
                                 statusCode: 404,
                                 message: `ID "${id}" could not be found`

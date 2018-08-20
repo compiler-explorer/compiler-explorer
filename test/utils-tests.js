@@ -24,7 +24,8 @@
 
 const chai = require('chai'),
     utils = require('../lib/utils'),
-    logger = require('../lib/logger').logger;
+    logger = require('../lib/logger').logger,
+    fs = require('fs-extra');
 
 chai.should();
 
@@ -229,4 +230,28 @@ describe('Hash interface', () => {
             {name: 'ground cinnamon', optional: true}
         ]}).should.equal('e205d63abd5db363086621fdc62c4c23a51b733bac5855985a8b56642d570491');
     });
+});
+
+describe('GoldenLayout utils', () => {
+    it('finds every editor & compiler', () => {
+        fs.readJson('test/example-states/default-state.json')
+            .then(state => {
+                const contents = utils.glGetMainContents(state.content);
+                contents.should.deep.equal({
+                    editors: [
+                        {source: 'Editor 1', language: 'c++'},
+                        {source: 'Editor 2', language: 'c++'},
+                        {source: 'Editor 3', language: 'c++'},
+                        {source: 'Editor 4', language: 'c++'}
+                    ],
+                    compilers: [
+                        {compiler: 'clang_trunk'},
+                        {compiler: 'gsnapshot'},
+                        {compiler: 'clang_trunk'},
+                        {compiler: 'gsnapshot'},
+                        {compiler: 'rv32clang'}
+                    ]
+                })
+            });
+    })
 });
