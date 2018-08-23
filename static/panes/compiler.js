@@ -166,12 +166,16 @@ Compiler.prototype.clearEditorsLinkedLines = function () {
 };
 
 Compiler.prototype.getGroupsInUse = function () {
-    var currentLangCompilers = _.map(this.getCurrentLangCompilers(), _.identity);
-    return _.sortBy(_.map(_.uniq(currentLangCompilers, false, function (compiler) {
-        return compiler.group;
-    }), function (compiler) {
-        return {value: compiler.group, label: compiler.groupName || compiler.group};
-    }), 'label');
+    return _.chain(this.getCurrentLangCompilers())
+        .map()
+        .uniq(false, function (compiler) {
+            return compiler.group;
+        })
+        .map(function (compiler) {
+            return {value: compiler.group, label: compiler.groupName || compiler.group};
+        })
+        .sortBy('label')
+        .value();
 };
 
 Compiler.prototype.close = function () {
@@ -836,6 +840,7 @@ Compiler.prototype.updateAvailableLibs = function () {
 
 Compiler.prototype.initLangDefaultLibs = function () {
     var defaultLibs = options.defaultLibs[this.currentLangId];
+    if (!defaultLibs) return;
     _.each(defaultLibs.split(':'), _.bind(function (libPair) {
         var pairSplits = libPair.split('.');
         if (pairSplits.length === 2) {
