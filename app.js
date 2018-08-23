@@ -331,6 +331,33 @@ aws.initConfig(awsProps)
                     return options;
                 }
 
+                function escapeLine(req, line) {
+                    const userAgent = req.get('User-Agent');
+                    if (userAgent.includes('Discordbot/2.0')) {
+                        return line.replace(/&/g, '&amp;')
+                            .replace(/</g, '&lt;')
+                            .replace(/>/g, '&gt;');
+                    } else if (userAgent === 'Twitterbot/1.0') {
+                        // TODO: Escape to something Twitter likes
+                        return line;
+                    } else if (userAgent === 'Slackbot-LinkExpanding 1.0') {
+                        // TODO: Escape to something Slack likes
+                        return line;
+                    }
+                    return line;
+                }
+
+                function filterCode(req, code, lang) {
+                    if (lang.previewFilter) {
+                        return _.chain(code.split('\n'))
+                            .filter(line => !line.match(lang.previewFilter))
+                            .map(line => escapeLine(req, line))
+                            .value()
+                            .join('\n');
+                    }
+                    return code;
+                }
+
                 function storedStateHandler(req, res, next) {
                     const id = req.params.id;
                     storageHandler.expandId(id)
@@ -347,13 +374,7 @@ aws.initConfig(awsProps)
                                     const editor = sources.editors[0];
                                     const lang = languages[editor.language];
                                     if (lang) {
-                                        let code = editor.source;
-                                        if (lang.previewFilter) {
-                                            code = _.filter(code.split('\n'), line => {
-                                                return !line.match(lang.previewFilter);
-                                            }).join('\n');
-                                        }
-                                        metadata.ogDescription = code;
+                                        metadata.ogDescription = filterCode(req, editor.source, lang);
                                         metadata.ogTitle += ` - ${lang.name}`;
                                         if (sources.compilers.length === 1) {
                                             const compilerId = sources.compilers[0].compiler;
