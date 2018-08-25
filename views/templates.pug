@@ -181,6 +181,10 @@
         button.btn.btn-godbolt.btn-sm.add-compiler(title="Add compiler")
           span.glyphicon.glyphicon-plus-sign
           span.hideable &nbsp;Add new compiler
+        button.btn.btn-godbolt.btn-sm.show-libs.dropdown-toggle
+          span.glyphicon.glyphicon-book(title="Include libs")
+          span.hideable &nbsp;Libraries
+          | #[b.caret]
     .conformance-wrapper
       table.compiler-list
 

@@ -52,6 +52,8 @@ function Conformance(hub, container, state) {
     this.stateByLang = {};
 
     this.initButtons();
+    this.initLibraries(state);
+    this.updateLibsDropdown();
     this.initCallbacks();
     this.initFromState(state);
     this.handleToolbarUI();
@@ -60,14 +62,203 @@ function Conformance(hub, container, state) {
         eventCategory: 'OpenViewPane',
         eventAction: 'Conformance'
     });
+
+    // Dismiss the popover on escape.
+    $(document).on('keyup.editable', _.bind(function (e) {
+        if (e.which === 27) {
+            this.libsButton.popover('hide');
+        }
+    }, this));
+
+    // Dismiss on any click that isn't either in the opening element, inside
+    // the popover or on any alert
+    $(document).on('click', _.bind(function (e) {
+        var elem = this.libsButton;
+        var target = $(e.target);
+        if (!target.is(elem) && elem.has(target).length === 0 && target.closest('.popover').length === 0) {
+            elem.popover('hide');
+        }
+    }, this));
 }
+
+Conformance.prototype.initLibraries = function (state) {
+    this.availableLibs = {};
+    this.updateAvailableLibs();
+    _.each(state.libs, _.bind(function (lib) {
+        this.markLibraryAsUsed(lib.name, lib.ver);
+    }, this));
+};
+
+Conformance.prototype.updateAvailableLibs = function () {
+    if (!this.availableLibs[this.langId]) {
+        this.availableLibs[this.langId] = $.extend(true, {}, options.libs[this.langId]);
+        this.initLangDefaultLibs();
+    }
+};
+
+Conformance.prototype.initLangDefaultLibs = function () {
+    var defaultLibs = options.defaultLibs[this.langId];
+    if (!defaultLibs) return;
+    _.each(defaultLibs.split(':'), _.bind(function (libPair) {
+        var pairSplits = libPair.split('.');
+        if (pairSplits.length === 2) {
+            var lib = pairSplits[0];
+            var ver = pairSplits[1];
+            this.markLibraryAsUsed(lib, ver);
+        }
+    }, this));
+};
+
+Conformance.prototype.updateLibsDropdown = function () {
+    this.updateAvailableLibs();
+    this.libsButton.popover({
+        container: 'body',
+        content: _.bind(function () {
+            var libsCount = _.keys(this.availableLibs[this.langId]).length;
+            if (libsCount === 0) return this.noLibsPanel;
+            var columnCount = Math.ceil(libsCount / 5);
+            var currentLibIndex = -1;
+
+            var libLists = [];
+            for (var i = 0; i < columnCount; i++) {
+                libLists.push($('<ul></ul>').addClass('lib-list'));
+            }
+
+            // Utility function so we can iterate indefinitely over our lists
+            var getNextList = function () {
+                currentLibIndex = (currentLibIndex + 1) % columnCount;
+                return libLists[currentLibIndex];
+            };
+
+            var handleArrow = function (libGroup, libArrow) {
+                var anyInUse = _.any(libGroup.children().children('input'), function (element) {
+                    return $(element).prop('checked');
+                });
+                var isVisible = libGroup.is(":visible");
+
+                libArrow.toggleClass('lib-arrow-up', isVisible);
+                libArrow.toggleClass('lib-arrow-down', !isVisible);
+                libArrow.toggleClass('lib-arrow-used', anyInUse);
+            };
+
+            var onChecked = _.bind(function (e) {
+                var elem = $(e.target);
+                // Uncheck every lib checkbox with the same name if we're checking the target
+                if (elem.prop('checked')) {
+                    _.each(e.data.group.children().children('input'), function (other) {
+                        $(other).prop('checked', false);
+                    });
+                    // Recheck the targeted one
+                    elem.prop('checked', true);
+                }
+                // And now do the same with the availableLibs object
+                _.each(this.availableLibs[this.langId][elem.prop('data-lib')].versions, function (version) {
+                    version.used = false;
+                });
+                this.availableLibs[this.langId][elem.prop('data-lib')]
+                    .versions[elem.prop('data-version')].used = elem.prop('checked');
+
+                handleArrow(e.data.group, e.data.arrow);
+
+                this.saveState();
+                this.compileAll();
+            }, this);
+
+            _.each(this.availableLibs[this.langId], function (lib, libKey) {
+                var libsList = getNextList();
+                var libArrow = $('<div></div>').addClass('lib-arrow');
+                var libName = $('<span></span>').text(lib.name);
+                var libHeader = $('<span></span>')
+                    .addClass('lib-header')
+                    .append(libArrow)
+                    .append(libName);
+                if (lib.url && lib.url.length > 0) {
+                    libHeader.append($('<a></a>')
+                        .css("float", "right")
+                        .addClass('opens-new-window')
+                        .prop('href', lib.url)
+                        .prop('target', '_blank')
+                        .prop('rel', 'noopener noreferrer')
+                        .append($('<sup></sup>')
+                            .addClass('glyphicon glyphicon-new-window')
+                        )
+                    );
+                }
+                if (lib.description && lib.description.length > 0) {
+                    libName
+                        .addClass('lib-described')
+                        .prop('title', lib.description);
+                }
+                var libCat = $('<li></li>')
+                    .append(libHeader)
+                    .addClass('lib-item');
+
+                var libGroup = $('<div></div>');
+
+                if (libsList.children().length > 0)
+                    libsList.append($('<hr>').addClass('lib-separator'));
+
+                _.each(lib.versions, function (version, vKey) {
+                    var verCheckbox = $('<input type="checkbox">')
+                        .addClass('lib-checkbox')
+                        .prop('data-lib', libKey)
+                        .prop('data-version', vKey)
+                        .prop('checked', version.used)
+                        .prop('name', libKey)
+                        .on('change', {arrow: libArrow, group: libGroup}, onChecked);
+                    libGroup
+                        .append($('<div></div>')
+                            .append(verCheckbox)
+                            .append($('<label></label>')
+                                .addClass('lib-label')
+                                .text(version.version)
+                                .on('click', function () {
+                                    verCheckbox.trigger('click');
+                                })
+                            )
+                        );
+                });
+
+                libGroup.hide();
+                handleArrow(libGroup, libArrow);
+
+                libHeader.on('click', function () {
+                    libGroup.toggle();
+                    handleArrow(libGroup, libArrow);
+                });
+
+                libGroup.appendTo(libCat);
+                libCat.appendTo(libsList);
+            });
+            return $('<div></div>').addClass('libs-container').append(libLists);
+        }, this),
+        html: true,
+        placement: 'bottom',
+        trigger: 'manual'
+    }).click(_.bind(function () {
+        this.libsButton.popover('show');
+    }, this)).on('show.bs.popover', function () {
+        $(this).data('bs.popover').tip().css('max-width', '100%').css('width', 'auto');
+    });
+};
+
+Conformance.prototype.markLibraryAsUsed = function (name, version) {
+    if (this.availableLibs[this.langId] &&
+        this.availableLibs[this.langId][name] &&
+        this.availableLibs[this.langId][name].versions[version]) {
+
+        this.availableLibs[this.langId][name].versions[version].used = true;
+    }
+};
 
 Conformance.prototype.initButtons = function () {
     this.selectorList = this.domRoot.find('.compiler-list');
     this.addCompilerButton = this.domRoot.find('.add-compiler');
     this.selectorTemplate = $('#compiler-selector').find('.compiler-row');
     this.topBar = this.domRoot.find('.top-bar');
-
+    this.libsButton = this.topBar.find('.show-libs');
+    this.libsTemplates = $('.template #libs-dropdown');
+    this.noLibsPanel = this.libsTemplates.children('.no-libs');
     this.hideable = this.domRoot.find('.hideable');
 };
 
@@ -102,12 +293,16 @@ Conformance.prototype.setTitle = function (compilerCount) {
 };
 
 Conformance.prototype.getGroupsInUse = function () {
-    var currentLangCompilers = _.map(this.compilerService.getCompilersForLang(this.langId), _.identity);
-    return _.map(_.uniq(currentLangCompilers, false, function (compiler) {
-        return compiler.group;
-    }), function (compiler) {
-        return {value: compiler.group, label: compiler.groupName || compiler.group};
-    });
+    return _.chain(this.compilerService.getCompilersForLang(this.langId))
+        .map()
+        .uniq(false, function (compiler) {
+            return compiler.group;
+        })
+        .map(function (compiler) {
+            return {value: compiler.group, label: compiler.groupName || compiler.group};
+        })
+        .sortBy('label')
+        .value();
 };
 
 Conformance.prototype.addCompilerSelector = function (config) {
@@ -242,16 +437,28 @@ Conformance.prototype.compileChild = function (child) {
         code: 4, // Compiling code
         text: "Compiling"
     });
+
     this.expandSource().then(_.bind(function (expandedSource) {
         var request = {
             source: expandedSource,
             compiler: picker.val(),
             options: {
-                userArguments: child.find(".options").val(),
+                userArguments: child.find(".options").val() || "",
                 filters: {},
                 compilerOptions: {produceAst: false, produceOptInfo: false}
             }
         };
+        var compiler = this.compilerService.findCompiler(this.langId, picker.val());
+        var includeFlag = compiler ? compiler.includeFlag : '-I';
+        _.each(this.availableLibs[this.langId], function (lib) {
+            _.each(lib.versions, function (version) {
+                if (version.used) {
+                    _.each(version.path, function (path) {
+                        request.options.userArguments += ' ' + includeFlag + path;
+                    });
+                }
+            });
+        });
         // This error function ensures that the user will know we had a problem (As we don't save asm)
         this.compilerService.submit(request)
             .then(_.bind(function (x) {
@@ -315,21 +522,27 @@ Conformance.prototype.handleStatusIcon = function (element, status) {
 };
 
 Conformance.prototype.currentState = function () {
-    var state = {
+    var libs = [];
+    _.each(this.availableLibs[this.langId], function (library, name) {
+        _.each(library.versions, function (version, ver) {
+            if (library.versions[ver].used) {
+                libs.push({name: name, ver: ver});
+            }
+        });
+    });
+    var compilers = _.map(this.selectorList.children(), function (child) {
+        child = $(child);
+        return {
+            compilerId: child.find('.compiler-picker').val() || "",
+            options: child.find(".options").val() || ""
+        };
+    });
+    return {
         editorid: this.editorId,
         langId: this.langId,
-        compilers: []
+        compilers: compilers,
+        libs: libs
     };
-    _.each(this.selectorList.children(), _.bind(function (child) {
-        child = $(child);
-        state.compilers.push({
-            // Compiler which is being used
-            compilerId: child.find('.compiler-picker').val() || "",
-            // Options which are in use
-            options: child.find(".options").val() || ""
-        });
-    }, this));
-    return state;
 };
 
 Conformance.prototype.saveState = function () {
@@ -352,9 +565,9 @@ Conformance.prototype.onLanguageChange = function (editorId, newLangId) {
 
         this.langId = newLangId;
         this.selectorList.children().remove();
-        if (this.stateByLang[newLangId]) {
-            this.initFromState(this.stateByLang[newLangId]);
-        }
+        var langState = this.stateByLang[newLangId];
+        this.initFromState(langState);
+        this.updateLibsDropdown();
         this.handleToolbarUI();
         this.saveState();
     }
@@ -366,7 +579,7 @@ Conformance.prototype.close = function () {
 };
 
 Conformance.prototype.initFromState = function (state) {
-    if (state.compilers) {
+    if (state && state.compilers) {
         _.each(state.compilers, _.bind(this.addCompilerSelector, this));
     }
 };

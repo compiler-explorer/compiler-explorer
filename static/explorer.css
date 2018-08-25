@@ -438,6 +438,10 @@ pre.content.wrap {
 }
 
 /* While we find a better solution, lets up this a bit */
-.selectize-dropdown-content {
+.compiler-picker .selectize-dropdown-content {
     max-height: 300px !important;
+}
+
+.compiler-picker .selectize-dropdown-content .option {
+    padding: 0 10px;
 }
