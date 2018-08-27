@@ -28,6 +28,6 @@ meta(id="meta-theme" name="theme-color" content="#f2f2f2")
 link(href=require("main.css") rel="stylesheet")
 style#theme
 
-script window.compilerExplorerOptions = !{compilerExplorerOptions};
+script window.compilerExplorerOptions = JSON.parse(!{JSON.stringify(compilerExplorerOptions)});
 script window.httpRoot = '#{httpRoot}';
 script(src=require("main.js"))
