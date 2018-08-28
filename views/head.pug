@@ -28,6 +28,9 @@ meta(id="meta-theme" name="theme-color" content="#f2f2f2")
 link(href=require("main.css") rel="stylesheet")
 style#theme
 
-script window.compilerExplorerOptions = JSON.parse(!{JSON.stringify(compilerExplorerOptions)});
+// The atob/base64 stuff below is to prevent any XSS attacks: now we have user content in the options (from
+// short links), it's possible to do XSS attacks, by leaving <script> tags in the source etc, which can be
+// interpreted by the browser.
+script window.compilerExplorerOptions = JSON.parse(atob("!{Buffer.from(compilerExplorerOptions).toString('base64')}"));
 script window.httpRoot = '#{httpRoot}';
 script(src=require("main.js"))
