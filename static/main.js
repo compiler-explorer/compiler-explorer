@@ -291,14 +291,16 @@ require("monaco-loader")().then(function () {
         var storedPaths = {};  // TODO maybe make this an LRU cache?
 
         layout.on('stateChanged', function () {
-            var config = JSON.stringify(layout.toConfig());
-            if (config !== lastState) {
+            var config = layout.toConfig();
+            var stringifiedConfig = JSON.stringify(config);
+            if (stringifiedConfig !== lastState) {
                 if (storedPaths[config]) {
-                    window.history.replaceState(null, null, storedPaths[config]);
+                    window.history.replaceState(null, null, storedPaths[stringifiedConfig]);
                 } else if (window.location.pathname !== window.httpRoot) {
                     window.history.replaceState(null, null, window.httpRoot);
+                    // TODO: Add this state to storedPaths, but with a upper bound on the stored state count
                 }
-                lastState = config;
+                lastState = stringifiedConfig;
             }
             if (options.embedded) {
                 var strippedToLast = window.location.pathname;
