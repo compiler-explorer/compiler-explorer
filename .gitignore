@@ -5,7 +5,6 @@ newrelic_agent.log
 /.yarn-updated
 /.node-bin
 /.yarn-bin
-*.vscode
 /out
 *.heapsnapshot
 etc/config/*.local.properties
