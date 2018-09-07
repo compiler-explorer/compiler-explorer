@@ -57,3 +57,4 @@ From oldest to newest contributor, we would like to thank:
 - [phuclv90](https://github.com/phuclv90)
 - [Nicole Mazzuca](https://github.com/ubsan)
 - [Jameson Nash](https://github.com/vtjnash)
+- [Marc Tiehuis](https://github.com/tiehuis)
