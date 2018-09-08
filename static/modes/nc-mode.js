@@ -25,8 +25,8 @@
 var $ = require('jquery');
 var cpp = require('vs/basic-languages/src/cpp');
 
-// We need to create a new definition for cpp so we can remove invalid keywords
-
+// We need to ensure we use proper keywords for the Monaco Editor matcher. Note how
+// https://github.com/Microsoft/monaco-languages/ lacks, as far as I can tell, proper C support. We cheat and use C++
 function definition() {
     var nc = $.extend(true, {}, cpp.language); // deep copy
     // https://en.cppreference.com/w/c/keyword
