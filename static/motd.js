@@ -28,7 +28,7 @@ var $ = require('jquery'),
     _ = require('underscore'),
     ga = require('analytics');
 
-function handleMotd(motd, motdNode, defaultLanguage, adsEnabled, onHide) {
+function handleMotd(motd, motdNode, subLang, adsEnabled, onHide) {
     if (motd.motd) {
         motdNode.find(".content").html(motd.motd);
         motdNode.removeClass('hide');
@@ -40,7 +40,7 @@ function handleMotd(motd, motdNode, defaultLanguage, adsEnabled, onHide) {
     } else if (adsEnabled) {
         var applicableAds = _.chain(motd.ads)
             .filter(function (ad) {
-                return !ad.filter || ad.filter.length === 0 || ad.filter.indexOf(defaultLanguage) >= 0;
+                return !subLang || !ad.filter || ad.filter.length === 0 || ad.filter.indexOf(subLang) >= 0;
             })
             .value();
         if (applicableAds.length === 0) return;
