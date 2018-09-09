@@ -369,7 +369,7 @@ require("monaco-loader")().then(function () {
                 enableCommunityAds: false
             });
         };
-        motd.initialise(options.motdUrl, $('#motd'), settings.defaultLanguage, settings.enableCommunityAds, onHide);
+        motd.initialise(options.motdUrl, $('#motd'), subLangId, settings.enableCommunityAds, onHide);
         sizeRoot();
         lastState = JSON.stringify(layout.toConfig());
     }
