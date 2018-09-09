@@ -41,6 +41,7 @@ require('../modes/haskell-mode');
 require('../modes/pascal-mode');
 require('../modes/cuda-mode');
 require('../modes/zig-mode');
+require('../modes/nc-mode');
 require('selectize');
 
 var loadSave = new loadSaveLib.LoadSave();
