@@ -29,10 +29,12 @@ var _ = require('underscore');
 var $ = require('jquery');
 var Promise = require('es6-promise').Promise;
 var ga = require('../analytics');
+var Components = require('../components');
 
 require('selectize');
 
 function Conformance(hub, container, state) {
+    this.hub = hub;
     this.container = container;
     this.eventHub = hub.createEventHub();
     this.compilerService = hub.compilerService;
@@ -322,7 +324,7 @@ Conformance.prototype.addCompilerSelector = function (config) {
         this.compileChild(newEntry);
     }, this), 800);
 
-    newEntry.find('.options')
+    var optionsField = newEntry.find('.options')
         .val(config.options)
         .on("change", onOptionsChange)
         .on("keyup", onOptionsChange);
@@ -353,7 +355,7 @@ Conformance.prototype.addCompilerSelector = function (config) {
         }
     }, this);
 
-    newEntry.find('.compiler-picker')
+    var compilerPicker = newEntry.find('.compiler-picker')
         .selectize({
             sortField: [
                 {field: '$order'},
@@ -372,6 +374,26 @@ Conformance.prototype.addCompilerSelector = function (config) {
             this.compileChild(newEntry);
         }, this));
     onCompilerChange(config.compilerId);
+
+    var popCompilerButton = $('<td></td>')
+        .append($('<button></button>')
+            .addClass('close glyphicon glyphicon-share-alt')
+        );
+    newEntry.append(popCompilerButton);
+    var getCompilerConfig = _.bind(function () {
+        return Components.getCompilerWith(
+            this.editorId, undefined, optionsField.val(), compilerPicker.val(), this.langId, this.lastState.libs);
+    }, this);
+
+    this.container.layoutManager
+        .createDragSource(popCompilerButton, getCompilerConfig);
+
+    popCompilerButton.click(_.bind(function () {
+        var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
+            this.container.layoutManager.root.contentItems[0];
+        insertPoint.addChild(getCompilerConfig);
+    }, this));
+
     this.handleToolbarUI();
     this.saveState();
 };
@@ -503,7 +525,7 @@ Conformance.prototype.handleStatusIcon = function (element, status) {
     function color(code) {
         if (code === 4) return "black";
         if (code === 3) return "red";
-        if (code === 2) return "yellow";
+        if (code === 2) return "#BBBB00";
         return "green";
     }
 
@@ -546,7 +568,8 @@ Conformance.prototype.currentState = function () {
 };
 
 Conformance.prototype.saveState = function () {
-    this.container.setState(this.currentState());
+    this.lastState = this.currentState();
+    this.container.setState(this.lastState);
 };
 
 Conformance.prototype.resize = function () {
@@ -580,7 +603,10 @@ Conformance.prototype.close = function () {
 
 Conformance.prototype.initFromState = function (state) {
     if (state && state.compilers) {
+        this.lastState = state;
         _.each(state.compilers, _.bind(this.addCompilerSelector, this));
+    } else {
+        this.lastState = this.currentState();
     }
 };
 module.exports = {

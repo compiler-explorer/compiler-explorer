@@ -32,7 +32,7 @@ module.exports = {
             componentState: {source: editorId, lang: lang}
         };
     },
-    getCompilerWith: function (editorId, filters, options, compilerId) {
+    getCompilerWith: function (editorId, filters, options, compilerId, langId, libs) {
         return {
             type: 'component',
             componentName: 'compiler',
@@ -40,7 +40,9 @@ module.exports = {
                 source: editorId,
                 filters: filters,
                 options: options,
-                compiler: compilerId
+                compiler: compilerId,
+                lang: langId,
+                libs: libs
             }
         };
     },
