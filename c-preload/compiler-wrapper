@@ -3,7 +3,7 @@
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 export LD_PRELOAD=${DIR}/libpreload.so
-export ALLOWED_FOR_CREATE=/tmp 
+export ALLOWED_FOR_CREATE=/tmp:/dev/null
 export ALLOWED_FOR_READ=/usr/local/include:/usr/include:/usr/lib:/lib:/lib64:/usr/msp430:/usr/arm-linux-gnueabi:/tmp:/opt/:/dev/urandom:/etc/lsb-release:/etc/debian_version:/proc/cpuinfo:/proc/self:/proc/self/maps:/usr/arm-linux-gnueabihf:/usr/aarch64-linux-gnu:/usr/powerpc-linux-gnu/include:/usr/lib/x86_64-linux-gnu:/usr/mips-linux-gnu:/usr/mipsel-linux-gnu:/usr/mips64-linux-gnuabi64:/usr/mips64el-linux-gnuabi64:/gcc-explorer:/compiler-explorer:/usr/glibc-compat/lib
 export DENIED=/proc/self/cwd:/proc/self/root:/proc/self/exe
 # Wine configuration
