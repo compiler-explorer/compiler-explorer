@@ -39,7 +39,9 @@ const nopt = require('nopt'),
     Raven = require('raven'),
     logger = require('./lib/logger').logger,
     webpackDevMiddleware = require("webpack-dev-middleware"),
-    utils = require('./lib/utils');
+    utils = require('./lib/utils'),
+    clientStateGoldenifier = require('./lib/clientstate-normalizer').ClientStateGoldenifier,
+    clientStateNormalizer = require('./lib/clientstate-normalizer').ClientStateNormalizer;
 
 
 // Parse arguments from command line 'node ./app.js args...'
@@ -357,6 +359,92 @@ aws.initConfig(awsProps)
                     return code;
                 }
 
+                function shortlinkInfoHandler(req, res, next) {
+                    const id = req.params.id;
+                    storageHandler.expandId(id)
+                        .then(result => {
+                            const config = JSON.parse(result.config);
+
+                            if (config.content) {
+                                const normalizer = new clientStateNormalizer();
+                                normalizer.fromGoldenLayout(config);
+
+                                res.set('Content-Type', 'application/json');
+                                res.end(JSON.stringify(normalizer.normalized));
+                            } else {
+                                res.set('Content-Type', 'application/json');
+                                res.end(JSON.stringify(config));
+                            }
+                        })
+                        .catch(err => {
+                            logger.warn(`Exception thrown when expanding ${id}: `, err);
+                            next({
+                                statusCode: 404,
+                                message: `ID "${id}" could not be found`
+                            });
+                        });
+                }
+
+                function storedStateHandlerRebuilt(req, res, next) {
+                    const id = req.params.id;
+                    storageHandler.expandId(id)
+                        .then(result => {
+                            let config = JSON.parse(result.config);
+
+                            if (config.content) {
+                                const normalizer = new clientStateNormalizer();
+                                normalizer.fromGoldenLayout(config);
+                                config = normalizer.normalized;
+                            }
+
+                            const goldenifier = new clientStateGoldenifier();
+                            goldenifier.fromClientState(config);
+                            config = goldenifier.golden;
+
+                            const metadata = {
+                                ogDescription: result.specialMetadata ? result.specialMetadata.description.S : null,
+                                ogAuthor: result.specialMetadata ? result.specialMetadata.author.S : null,
+                                ogTitle: result.specialMetadata ? result.specialMetadata.title.S : "Compiler Explorer"
+                            };
+                            if (!metadata.ogDescription) {
+                                const sources = utils.glGetMainContents(config.content);
+                                if (sources.editors.length === 1) {
+                                    const editor = sources.editors[0];
+                                    const lang = languages[editor.language];
+                                    if (lang) {
+                                        metadata.ogDescription = filterCode(req, editor.source, lang);
+                                        metadata.ogTitle += ` - ${lang.name}`;
+                                        if (sources.compilers.length === 1) {
+                                            const compilerId = sources.compilers[0].compiler;
+                                            const compiler = apiHandler.compilers.find(c => c.id === compilerId);
+                                            if (compiler) {
+                                                metadata.ogTitle += ` (${compiler.name})`;
+                                            }
+                                        }
+                                    } else {
+                                        metadata.ogDescription = editor.source;
+                                    }
+                                }
+                            } else if (metadata.ogAuthor && metadata.ogAuthor !== '.') {
+                                metadata.ogDescription += `\nAuthor(s): ${metadata.ogAuthor}`;
+                            }
+                            staticHeaders(res);
+                            contentPolicyHeader(res);
+                            res.render('index', renderConfig({
+                                embedded: false,
+                                config: config,
+                                metadata: metadata
+                            }));
+                        })
+                        .catch(err => {
+                            logger.warn(`Exception thrown when expanding ${id}: `, err);
+                            next({
+                                statusCode: 404,
+                                message: `ID "${id}" could not be found`
+                            });
+                        });
+                }
+
                 function storedStateHandler(req, res, next) {
                     const id = req.params.id;
                     storageHandler.expandId(id)
@@ -483,6 +571,8 @@ aws.initConfig(awsProps)
                     .use('/api', apiHandler.handle)
                     .use('/g', oldGoogleUrlHandler)
                     .get('/z/:id', storedStateHandler)
+                    .get('/y/:id', storedStateHandlerRebuilt)
+                    .get('/shortlinkinfo/:id', shortlinkInfoHandler)
                     .post('/shortener', storageHandler.handler.bind(storageHandler))
                     .use((req, res, next) => {
                         next({status: 404, message: `page "${req.path}" could not be found`});
