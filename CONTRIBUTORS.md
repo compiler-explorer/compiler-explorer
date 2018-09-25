@@ -58,3 +58,4 @@ From oldest to newest contributor, we would like to thank:
 - [Nicole Mazzuca](https://github.com/ubsan)
 - [Jameson Nash](https://github.com/vtjnash)
 - [Marc Tiehuis](https://github.com/tiehuis)
+- [Petter Wahlman](https://github.com/ilAYAli)
