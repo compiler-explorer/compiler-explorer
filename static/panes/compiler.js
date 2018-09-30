@@ -610,14 +610,7 @@ Compiler.prototype.onCompileResponse = function (request, result, cached) {
 
     this.eventHub.emit('compileResult', this.id, this.compiler, result, languages[this.currentLangId]);
     this.updateButtons();
-    if (result.compilationOptions) {
-        this.prependOptions.prop('title', result.compilationOptions.join(' '));
-        this.prependOptions.show();
-    } else {
-        this.prependOptions.prop('title', '');
-        this.prependOptions.hide();
-    }
-
+    this.prependOptions.prop('title', result.compilationOptions ? result.compilationOptions.join(' ') : '');
     if (this.nextRequest) {
         var next = this.nextRequest;
         this.nextRequest = null;
@@ -1045,7 +1038,6 @@ Compiler.prototype.updateCompilerInfo = function () {
             });
         }
         this.prependOptions.prop('title', this.compiler.options);
-        this.prependOptions.toggle(!!this.compiler.options);
     }
 };
 
@@ -1080,7 +1072,8 @@ Compiler.prototype.onEditorClose = function (editor) {
 };
 
 Compiler.prototype.onFilterChange = function () {
-    this.eventHub.emit('filtersChange', this.id, this.getEffectiveFilters());
+    var filters = this.getEffectiveFilters();
+    this.eventHub.emit('filtersChange', this.id, filters);
     this.saveState();
     this.compile();
     this.updateButtons();

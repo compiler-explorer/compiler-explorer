@@ -18,89 +18,92 @@
         button.btn.btn-godbolt.btn-sm.clippy(
         type="button" data-clipboard-target=".popover .permalink"
         title="Copy to clipboard")
-          span.glyphicon.glyphicon-copy(style="width:13px")
+          span.fa.fa-clipboard(style="width:13px")
     if sharingEnabled
       .socialsharing
 
   #codeEditor
-    .top-bar.btn-toolbar(role="toolbar")
-      include font-size.pug
-      if !embedded
-        .btn-group.btn-group-sm
-          button.btn.btn-godbolt.btn-sm.load-save(title="Load or save text")
-            span.glyphicon.glyphicon-floppy-disk
-            span.hideable &nbsp;Save/Load
-        .btn-group.btn-group-sm.dropdown
-          button.btn.btn-godbolt.btn-sm.dropdown-toggle.add-pane(type="button" title="Add a new pane" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
-            span.glyphicon.glyphicon-plus
-            span.hideable &nbsp;Add new...
-            | #[b.caret]
-          div.dropdown-menu.pane-dropdown(aria-labelledby="add-pane")
-            button.btn.btn-godbolt.btn-sm.add-compiler(title="Add a new compiler for this source" aria-label="Compiler")
-              span.glyphicon.glyphicon-open
-              | &nbsp;Compiler
-            button.btn.btn-godbolt.btn-sm.conformance(title="Add a new conformance view" aria-label="Conformance view")
-              span.glyphicon.glyphicon-list-alt
-              | &nbsp;Conf. view
-      .btn-group.btn-group-sm.pull-right
-        select.change-language(title="Change this editor's (and associated panels) language" disabled=embedded && readOnly)
+    .top-bar.btn-toolbar.bg-light(role="toolbar")
+        ul.nav.nav-pills.nav-left.bg-light.mr-auto
+          include font-size.pug
+          if !embedded
+            li.nav-item
+              button.nav-link.btn.btn-light.btn-sm.load-save(title="Load or save text")
+                span.fa.fa-save
+                span.hideable &nbsp;Save/Load
+            li.nav-item.dropdown
+              button.nav-link.dropdown-toggle.btn.btn-light.btn-sm.add-pane(type="button" title="Add a new pane" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
+                span.fa.fa-plus
+                span.hideable &nbsp;Add new...
+                | #[b.caret]
+              .dropdown-menu(aria-labelledby="add-pane")
+                button.dropdown-item.btn.btn-light.btn-sm.add-compiler(title="Add a new compiler for this source" aria-label="Compiler")
+                  span.fa.fa-cogs
+                  | &nbsp;Compiler
+                button.dropdown-item.btn.btn-light.btn-sm.conformance(title="Add a new conformance view" aria-label="Conformance view")
+                  span.fa.fa-list
+                  | &nbsp;Conf. view
+        ul.nav.nav-right
+          li.nav-item
+            select.change-language(title="Change this editor's (and associated panels) language" disabled=embedded && readOnly)
     .monaco-placeholder
 
   #compiler
-    .top-bar.btn-toolbar(role="toolbar")
-      table
-        tr
-          td: select.compiler-picker(placeholder="Select a compiler...")
-          td: input.options.form-control(type="text" placeholder="Compiler options..." size="256" autocorrect="off" autocapitalize="off" spellcheck="false")
-          td: span.glyphicon.glyphicon-info-sign.prepend-options
-      if !embedded
+    .top-bar.btn-toolbar.bg-light(role="toolbar")
+      .form-row
+        .col-auto
+          select.compiler-picker(placeholder="Select a compiler...")
+        .col
+          .input-group.mb-auto
+            .input-group-prepend.prepend-options
+              span.input-group-text
+                | ...
+            input.options.form-control(type="text" placeholder="Compiler options..." size="256" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false")
+      div.btn-group.btn-group-sm.filters(role="group" data-toggle="buttons" aria-label="Filters")
         include font-size.pug
-      div.btn-group.btn-group-sm.filters(data-toggle="buttons")
         // TODO store these in the app and drive from there?
         // Make a dropdown? With more options?
-        button.btn.btn-godbolt.btn-sm(title="Compile to binary and disassemble the output" data-bind="binary")
+        button.btn.btn-light.btn-sm(type="button" title="Compile to binary and disassemble the output" data-bind="binary" aria-pressed="false" data-toggle="button")
           span 11010
-        button.btn.btn-godbolt.btn-sm(title="Execute the binary" data-bind="execute")
+        button.btn.btn-light.btn-sm(type="button" title="Execute the binary" data-bind="execute" aria-pressed="false" data-toggle="button")
           span ./a.out
-        button.btn.btn-godbolt.btn-sm.active.nonbinary(title="Filter unused labels from the output" data-bind="labels")
+        button.btn.btn-light.btn-sm.active.nonbinary(type="button" title="Filter unused labels from the output" data-bind="labels" aria-pressed="true" data-toggle="button")
           span .LX0:
-        button.btn.btn-godbolt.btn-sm.active.nonbinary(title="Filter all assembler directives from the output" data-bind="directives")
+        button.btn.btn-light.btn-sm.active.nonbinary(type="button" title="Filter all assembler directives from the output" data-bind="directives" aria-pressed="true" data-toggle="button")
           span .text
-        button.btn.btn-godbolt.btn-sm.active.nonbinary(title="Remove all lines which are only comments from the output" data-bind="commentOnly")
+        button.btn.btn-light.btn-sm.active.nonbinary(type="button" title="Remove all lines which are only comments from the output" data-bind="commentOnly" aria-pressed="true" data-toggle="button")
           span //
-        button.btn.btn-godbolt.btn-sm(title="Trim intra-line whitespace" data-bind="trim")
+        button.btn.btn-light.btn-sm(type="button" title="Trim intra-line whitespace" data-bind="trim" aria-pressed="false" data-toggle="button")
           span \s+
-        button.btn.btn-godbolt.btn-sm.active(title="Output disassembly in Intel syntax" data-bind="intel")
+        button.btn.btn-light.btn-sm.active(type="button" title="Output disassembly in Intel syntax" data-bind="intel" aria-pressed="true" data-toggle="button")
           span Intel
-        button.btn.btn-godbolt.btn-sm.active(title="Demangle output" data-bind="demangle")
+        button.btn.btn-light.btn-sm.active(type="button" title="Demangle output" data-bind="demangle" aria-pressed="true" data-toggle="button")
           span Demangle
-        if embedded
-          include font-size.pug
       .btn-group.btn-group-sm
-        button.btn.btn-godbolt.btn-sm.show-libs.dropdown-toggle
-          span.glyphicon.glyphicon-book(title="Include libs")
+        button.btn.btn-light.btn-sm.show-libs.dropdown-toggle
+          span.fas.fa-book(title="Include libs")
           span.hideable &nbsp;Libraries
           | #[b.caret]
       if !embedded
         .btn-group.btn-group-sm.dropdown
           button.btn.btn-godbolt.btn-sm.dropdown-toggle.add-pane(type="button" title="Add a new pane" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
-            span.glyphicon.glyphicon-plus
+            span.fas.fa-plus
             span.hideable &nbsp;Add new...
             | #[b.caret]
-          div.dropdown-menu.pane-dropdown(aria-labelledby="add-pane")
-            button.btn.btn-godbolt.btn-sm.add-compiler(title="Clone this compiler window (click or drag)")
-              span.glyphicon.glyphicon-new-window
+          div.dropdown-menu.dropdown-menu-right(aria-labelledby="add-pane")
+            button.dropdown-item.btn.btn-light.btn-sm.add-compiler(title="Clone this compiler window (click or drag)")
+              span.far.fa-clone
               | &nbsp;Clone compiler
-            button.btn.btn-godbolt.btn-sm.view-optimization(title="Show optimization output")
+            button.dropdown-item.btn.btn-light.btn-sm.view-optimization(title="Show optimization output")
               span.glyphicon.glyphicon-scale
               | &nbsp;Optimization output
-            button.btn.btn-godbolt.btn-sm.view-ast(title="Show AST output")
+            button.dropdown-item.btn.btn-light.btn-sm.view-ast(title="Show AST output")
               span.glyphicon.glyphicon-tree-deciduous
               | &nbsp;AST output
-            button.btn.btn-godbolt.btn-sm.view-gccdump(title="Show Tree/RTL dump (GCC only)")
-              span.glyphicon.glyphicon-tree-conifer
+            button.dropdown-item.btn.btn-light.btn-sm.view-gccdump(title="Show Tree/RTL dump (GCC only)")
+              span.fas.fa-tree
               | &nbsp;GCC Tree/RTL output
-            button.btn.btn-godbolt.btn-sm.view-cfg(title="Show Graph Output")
+            button.dropdown-item.btn.btn-light.btn-sm.view-cfg(title="Show Graph Output")
               span.glyphicon.glyphicon-lamp
               | &nbsp;Graph output
     .monaco-placeholder
@@ -108,7 +111,7 @@
       if !embedded
         .btn-group.btn-group-sm
           button.btn.btn-godbolt.btn-sm.output-btn
-            span.glyphicon.glyphicon-alert.status
+            span.far.fa-file-alt.status
             | &nbsp;Output
             span.output-count
               | &nbsp;(
@@ -121,14 +124,15 @@
         span.full-compiler-name
         span.compile-time
         button.btn.btn-godbolt.btn-sm.clear-cache(title="Clear cache & recompile")
-          span.glyphicon.glyphicon-refresh
+          span.fas.fa-redo
 
   #compiler-output
-    .top-bar.btn-toolbar.options-toolbar(role="toolbar")
-      include font-size
-      div.btn-group.btn-group-sm.options(data-toggle="buttons")
-        button.btn.btn-godbolt.btn-sm.wrap-lines(title="Wrap lines" data-bind="wrap")
-          | Wrap lines
+    .top-bar.btn-toolbar.options-toolbar.bg-light(role="toolbar")
+      ul.nav.nav-pills.nav-left.bg-light.mr-auto
+        include font-size
+        li.nav-item
+          button.btn.nav-link.btn-light.btn-sm.wrap-lines(title="Wrap lines" data-bind="wrap" data-toggle="button")
+            | Wrap lines
     pre.content
 
   #diff
@@ -178,11 +182,11 @@
   #conformance
     .top-bar.tn-toolbar(role="toolbar")
       .btn-group.btn-group-sm
-        button.btn.btn-godbolt.btn-sm.add-compiler(title="Add compiler")
-          span.glyphicon.glyphicon-plus-sign
+        button.btn.btn-light.btn-sm.add-compiler(title="Add compiler")
+          span.fas.fa-plus
           span.hideable &nbsp;Add new compiler
-        button.btn.btn-godbolt.btn-sm.show-libs.dropdown-toggle
-          span.glyphicon.glyphicon-book(title="Include libs")
+        button.btn.btn-light.btn-sm.show-libs.dropdown-toggle
+          span.fas.fa-book(title="Include libs")
           span.hideable &nbsp;Libraries
           | #[b.caret]
     .conformance-wrapper
@@ -209,8 +213,8 @@
       p No libs configured for this language yet.
       a(target="_blank" rel="noopener noreferrer" href="https://github.com/mattgodbolt/compiler-explorer/issues/new")
         | You can suggest us one at any time&nbsp;
-        sup.glyphicon.glyphicon-new-window.opens-new-window(title="Opens in a new window")
+        sup.fas.fa-external-link-alt.opens-new-window(title="Opens in a new window")
 
-  #share-item(data-logo-twitter=require("Twitter_Logo_WhiteOnBlue.svg") data-logo-reddit=require("Reddit_Icon.png"))
+  #share-item
     a.share-item(href="javascript:;" rel="noopener noreferrer" target="_blank")
       span.share-item-text

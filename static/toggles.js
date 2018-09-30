@@ -39,7 +39,7 @@ function get(buttons) {
 function Toggles(root, state) {
     EventEmitter.call(this);
     this.domRoot = root;
-    this.buttons = this.domRoot.find('.btn');
+    this.buttons = this.domRoot.find('.btn').not('.fs-button').not('.font-option');
     state = _.extend(get(this.buttons), state);
     this.buttons
         .click(_.bind(this.onClick, this))
@@ -69,8 +69,7 @@ Toggles.prototype._change = function (update) {
 
 Toggles.prototype.onClick = function (event) {
     var button = $(event.currentTarget);
-    if (button.hasClass("disabled")) return;
-    button.toggleClass('active');
+    if (button.hasClass('disabled')) return;
     this._change(_.bind(function () {
         this.state = get(this.buttons);
     }, this));

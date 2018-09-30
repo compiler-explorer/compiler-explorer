@@ -1,3 +1,4 @@
+@import url("~@fortawesome/fontawesome-free/css/all.min.css");
 @import url("~cookieconsent/build/cookieconsent.min.css");
 @import url("~vis/dist/vis.css");
 
@@ -23,24 +24,12 @@ body {
     padding-right: 5px;
 }
 
-.navbar-default {
-    border: none;
-    border-radius: 0;
-    margin-bottom: 1px;
+.navbar-godbolt {
+    padding-left: 0;
 }
 
 .navbar-brand {
     padding: 0;
-    position: relative;
-    width: 185px;
-}
-
-.navbar-brand img {
-    position: absolute;
-}
-
-.navbar-brand img.inverse {
-    display: none;
 }
 
 .navbar-brand img.beta-overlay {
@@ -48,11 +37,19 @@ body {
 }
 
 .beta .navbar-brand img.beta-overlay {
+    position: absolute;
+    top: 0;
     display: block;
 }
 
-.nav.nav-tabs {
-    margin-bottom: 3px !important;
+.navbar-brand img.dev-overlay {
+    display: none;
+}
+
+.dev .navbar-brand img.dev-overlay {
+    position: absolute;
+    top: 0;
+    display: block;
 }
 
 .float-link {
@@ -116,12 +113,6 @@ li.tweet {
     padding: 0;
     display: inline;
     margin: 0 10px 0 0;
-}
-
-input.options {
-    width: 98%;
-    margin-left: 0.25em;
-    margin-right: 0.25em;
 }
 
 #root {
@@ -358,11 +349,6 @@ pre.content.wrap {
     min-width: 100px !important;
 }
 
-.pane-dropdown button {
-    width: 100%;
-    text-align: left;
-}
-
 .full-compiler-name {
     padding-left: 3px;
 }
@@ -426,7 +412,7 @@ pre.content.wrap {
     padding: 3px;
 }
 
-.share-item:last-child  {
+.share-item:last-child {
     border-radius: 0 0 3px 3px;
 }
 

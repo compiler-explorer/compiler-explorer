@@ -24,7 +24,7 @@
 "use strict";
 
 require("monaco-loader")().then(function () {
-
+    require('popper.js');
     require('bootstrap');
     require('bootstrap-slider');
     require('cookieconsent');
