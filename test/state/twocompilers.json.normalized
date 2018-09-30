@@ -18,7 +18,8 @@
                         "trim": false,
                         "intel": true
                     },
-                    "libs": []
+                    "libs": [],
+                    "specialoutputs": []
                 }
             ]
         },
@@ -40,7 +41,8 @@
                         "trim": false,
                         "intel": true
                     },
-                    "libs": []
+                    "libs": [],
+                    "specialoutputs": []
                 }
             ]
         }
