@@ -40,4 +40,16 @@ describe("Normalizing clientstate", () => {
 
         normalizer.normalized.should.deep.equal(resultdata);
     });
+
+    it("Should recognize everything and kitchensink as well", () => {
+        const normalizer = new ClientStateNormalizer();
+
+        const data =  JSON.parse(fs.readFileSync("test/state/andthekitchensink.json"));
+
+        normalizer.fromGoldenLayout(data);
+
+        const resultdata = JSON.parse(fs.readFileSync("test/state/andthekitchensink.json.normalized"));
+
+        normalizer.normalized.should.deep.equal(resultdata);
+    });
 });
