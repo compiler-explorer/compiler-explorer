@@ -196,14 +196,14 @@ aws.initConfig(awsProps)
         const compilationEnvironment = new CompilationEnvironment(compilerProps, defArgs.doCache);
         const CompileHandler = require('./lib/handlers/compile').Handler;
         const compileHandler = new CompileHandler(compilationEnvironment);
+        const StorageHandler = require('./lib/storage/storage');
+        const storageHandler = StorageHandler.storageFactory(compilerProps, awsProps);
         const ApiHandler = require('./lib/handlers/api').Handler;
-        const apiHandler = new ApiHandler(compileHandler, ceProps);
+        const apiHandler = new ApiHandler(compileHandler, ceProps, storageHandler);
         const SourceHandler = require('./lib/handlers/source').Handler;
         const sourceHandler = new SourceHandler(fileSources, staticHeaders);
         const CompilerFinder = require('./lib/compiler-finder');
         const compilerFinder = new CompilerFinder(compileHandler, compilerProps, awsProps, defArgs);
-        const StorageHandler = require('./lib/storage/storage');
-        const storageHandler = StorageHandler.storageFactory(compilerProps, awsProps);
 
         function oldGoogleUrlHandler(req, res, next) {
             const resolver = new google.ShortLinkResolver(aws.getConfig('googleApiKey'));
@@ -357,32 +357,6 @@ aws.initConfig(awsProps)
                             .join('\n');
                     }
                     return code;
-                }
-
-                function shortlinkInfoHandler(req, res, next) {
-                    const id = req.params.id;
-                    storageHandler.expandId(id)
-                        .then(result => {
-                            const config = JSON.parse(result.config);
-
-                            if (config.content) {
-                                const normalizer = new clientStateNormalizer();
-                                normalizer.fromGoldenLayout(config);
-
-                                res.set('Content-Type', 'application/json');
-                                res.end(JSON.stringify(normalizer.normalized));
-                            } else {
-                                res.set('Content-Type', 'application/json');
-                                res.end(JSON.stringify(config));
-                            }
-                        })
-                        .catch(err => {
-                            logger.warn(`Exception thrown when expanding ${id}: `, err);
-                            next({
-                                statusCode: 404,
-                                message: `ID "${id}" could not be found`
-                            });
-                        });
                 }
 
                 function storedStateHandlerRebuilt(req, res, next) {
@@ -572,7 +546,6 @@ aws.initConfig(awsProps)
                     .use('/g', oldGoogleUrlHandler)
                     .get('/z/:id', storedStateHandler)
                     .get('/y/:id', storedStateHandlerRebuilt)
-                    .get('/shortlinkinfo/:id', shortlinkInfoHandler)
                     .post('/shortener', storageHandler.handler.bind(storageHandler))
                     .use((req, res, next) => {
                         next({status: 404, message: `page "${req.path}" could not be found`});
