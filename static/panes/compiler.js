@@ -1469,7 +1469,6 @@ Compiler.prototype.updateLibsDropdown = function () {
     }).click(_.bind(function () {
         this.libsButton.popover('show');
     }, this)).on('show.bs.popover', function () {
-        $(this).data('bs.popover').tip().css('max-width', '100%').css('width', 'auto');
     });
 };
 

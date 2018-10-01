@@ -152,13 +152,14 @@
     pre.content
 
   #diff
-    .top-bar.tn-toolbar(role="toolbar")
-      table
-        tr
-          td.header-fontscale
-            include font-size.pug
-          td: select.diff-picker.lhs(placeholder="Select compiler output...")
-          td: select.diff-picker.rhs(placeholder="Select compiler output...")
+    .top-bar.btn-toolbar.bg-light(role="toolbar")
+      .form-row
+        .col-1.header-fontscale
+          include font-size.pug
+        .col-auto
+          select.diff-picker.lhs(placeholder="Select compiler...")
+        .col-auto
+          select.diff-picker.rhs(placeholder="Select compiler...")
     .monaco-placeholder
 
   #opt

@@ -123,7 +123,8 @@ function initShareButton(getLink, layout, noteNewState) {
         content: html,
         html: true,
         placement: 'bottom',
-        trigger: 'manual'
+        trigger: 'manual',
+        title: 'Share this page'
     }).click(function () {
         getLink.popover('toggle');
     }).on('inserted.bs.popover', function () {
