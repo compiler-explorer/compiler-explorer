@@ -23,7 +23,9 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 const chai = require('chai'),
-    utils = require('../lib/utils');
+    utils = require('../lib/utils'),
+    logger = require('../lib/logger').logger,
+    fs = require('fs-extra');
 
 chai.should();
 
@@ -183,4 +185,73 @@ describe('Pads right', () => {
         utils.padRight('abcd', 4).should.equal('abcd');
         utils.padRight('abcd', 2).should.equal('abcd');
     });
+});
+
+describe('Anonymizes all kind of IPs', () => {
+    it('Ignores localhost', () => {
+        utils.anonymizeIp('localhost').should.equal('localhost');
+        utils.anonymizeIp('localhost:42').should.equal('localhost:42');
+    });
+    it('Removes last octet from IPv4 addresses', () => {
+        utils.anonymizeIp('127.0.0.0').should.equal('127.0.0.0');
+        utils.anonymizeIp('127.0.0.10').should.equal('127.0.0.0');
+        utils.anonymizeIp('127.0.0.255').should.equal('127.0.0.0');
+    });
+    it('Removes last 3 hextets from IPv6 addresses', () => {
+        // Not necessarily valid addresses, we're interested in the format
+        utils.anonymizeIp('ffff:aaaa:dead:beef').should.equal('ffff:0:0:0');
+        utils.anonymizeIp('bad:c0de::').should.equal('bad:0:0:0');
+        utils.anonymizeIp(':1d7e::c0fe').should.equal(':0:0:0');
+    });
+});
+
+describe('Logger functionality', () => {
+    it('has info stream with a write function', () => {
+        logger.stream.write.should.a("function");
+    });
+    it('has warning stream with a write function', () => {
+        logger.warnStream.write.should.a("function");
+    });
+    it('has error stream with a write function', () => {
+        logger.errStream.write.should.a("function");
+    });
+});
+
+describe('Hash interface', () => {
+    it('correctly hashes strings', () => {
+        const version = 'Compiler Explorer Tests Version 0';
+        utils.getHash('cream cheese', version).should.equal('cfff2d1f7a213e314a67cce8399160ae884f794a3ee9d4a01cd37a8c22c67d94');
+        utils.getHash('large eggs', version).should.equal('9144dec50b8df5bc5cc24ba008823cafd6616faf2f268af84daf49ac1d24feb0');
+        utils.getHash('sugar', version).should.equal('afa3c89d0f6a61de6805314c9bd7c52d020425a3a3c7bbdfa7c0daec594e5ef1');
+    });
+    it('correctly hashes objects', () => {
+        utils.getHash({toppings: [
+            {name: 'raspberries', optional: false},
+            {name: 'ground cinnamon', optional: true}
+        ]}).should.equal('e205d63abd5db363086621fdc62c4c23a51b733bac5855985a8b56642d570491');
+    });
+});
+
+describe('GoldenLayout utils', () => {
+    it('finds every editor & compiler', () => {
+        fs.readJson('test/example-states/default-state.json')
+            .then(state => {
+                const contents = utils.glGetMainContents(state.content);
+                contents.should.deep.equal({
+                    editors: [
+                        {source: 'Editor 1', language: 'c++'},
+                        {source: 'Editor 2', language: 'c++'},
+                        {source: 'Editor 3', language: 'c++'},
+                        {source: 'Editor 4', language: 'c++'}
+                    ],
+                    compilers: [
+                        {compiler: 'clang_trunk'},
+                        {compiler: 'gsnapshot'},
+                        {compiler: 'clang_trunk'},
+                        {compiler: 'gsnapshot'},
+                        {compiler: 'rv32clang'}
+                    ]
+                })
+            });
+    })
 });

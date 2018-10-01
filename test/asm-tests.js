@@ -22,12 +22,12 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-const asmCl = require('../lib/asm-cl');
+const AsmParser = require('../lib/asm-parser-vc');
 require('chai').should();
 
 describe('ASM CL parser', () => {
     it('should work for error documents', () => {
-        const parser = new asmCl.AsmParser();
+        const parser = new AsmParser();
         parser.process("<Compilation failed>", {directives: true})
             .should.deep.equal([{
                 "source": null,

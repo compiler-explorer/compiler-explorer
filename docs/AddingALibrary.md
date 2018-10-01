@@ -56,7 +56,7 @@ libs.kvasir.name=Kvasir::mpl
 libs.kvasir.versions=trunk
 libs.kvasir.url=https://github.com/kvasir-io/Kvasir
 
-libs.kvasir.versions.trunk.name=trunk
+libs.kvasir.versions.trunk.version=trunk
 # Note how there are 2 paths defined for Kvasir in our case (Example usage!)
 libs.kvasir.versions.trunk.path=/opt/compiler-explorer/libs/kvasir/mpl/trunk/src/kvasir:/opt/compiler-explorer/libs/kvasir/mpl/trunk/src
 
@@ -65,8 +65,8 @@ libs.boost.name=Boost
 libs.boost.versions=164:165
 libs.boost.url=http://www.boost.org/
 
-libs.boost.versions.164.name=1.64
-libs.boost.versions.165.name=1.65
+libs.boost.versions.164.version=1.64
+libs.boost.versions.165.version=1.65
 
 libs.boost.versions.164.path=/opt/compiler-explorer/libs/boost_1_64_0
 libs.boost.versions.165.path=/opt/compiler-explorer/libs/boost_1_65_0
@@ -76,12 +76,22 @@ libs.rangesv3.name=range-v3
 libs.rangesv3.versions=trunk:030
 libs.rangesv3.url=https://github.com/ericniebler/range-v3
 
-libs.rangesv3.versions.trunk.name=trunk
-libs.rangesv3.versions.030.name=0.3.0
+libs.rangesv3.versions.trunk.version=trunk
+libs.rangesv3.versions.030.version=0.3.0
 
 libs.rangesv3.versions.trunk.path=/opt/compiler-explorer/libs/rangesv3/trunk/include
 libs.rangesv3.versions.030.path=/opt/compiler-explorer/libs/rangesv3/0.3.0/include
 ```
+
+## Setting default libraries
+
+The `defaultLibs` key specifies an array of libs/versions which will be enabled by default when the user visits the site.
+The expected format is:
+```
+defaultLibs=libKeyA.version:libKeyB.version:libKeyC.version
+```
+Where `libKey` is the key of the library to be enabled by default, and `version` is the version key to load.
+Note that the site won't complain if invalid key/version pairs are set. Repeating a lib key more than once is supported.
 
 ## Adding a new library locally
 

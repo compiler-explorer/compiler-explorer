@@ -127,6 +127,7 @@ function setupSettings(root, settings, onChange, langId) {
             return (x / 1000.0).toFixed(2) + "s";
         }
     });
+    add(root.find('.enableCommunityAds'), 'enableCommunityAds', true, Checkbox);
     add(root.find('.hoverShowSource'), 'hoverShowSource', true, Checkbox);
     add(root.find('.hoverShowAsmDoc'), 'hoverShowAsmDoc', true, Checkbox);
     var themeSelect = root.find('.theme');
@@ -185,6 +186,13 @@ function setupSettings(root, settings, onChange, langId) {
     }
 
     add(root.find('.newEditorLastLang'), 'newEditorLastLang', true, Checkbox);
+
+    var formats = ["Google", "LLVM", "Mozilla", "Chromium", "WebKit"];
+    add(root.find('.formatBase'), 'formatBase', formats[0], Select,
+        _.map(formats, function (format) {
+            return {label: format, desc: format};
+        }));
+    //add(root.find('.formatOverrides'), 'formatOverrides', "", TextAreaInput);
 
     function setSettings(settings) {
         onSettingsChange(settings);

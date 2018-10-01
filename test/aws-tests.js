@@ -63,33 +63,40 @@ const instanceD = {
     ]
 };
 
-AWS.mock('EC2', 'describeInstances', {
-    Reservations: [
-        {
-            Instances: [
-                instanceA,
-                instanceB,
-                instanceC,
-                instanceD
+function setup() {
+    beforeEach(() => {
+        AWS.mock('EC2', 'describeInstances', {
+            Reservations: [
+                {
+                    Instances: [
+                        instanceA,
+                        instanceB,
+                        instanceC,
+                        instanceD
+                    ]
+                }
             ]
-        }
-    ]
-});
+        });
 
-AWS.mock('SSM', 'getParametersByPath', {
-    Parameters: [
-        {
-            Name: '/compiler-explorer/configValue',
-            Value: 'fromAws'
-        },
-        {
-            Name: '/compiler-explorer/onlyOnAws',
-            Value: 'bibble'
-        }
-    ]
-});
+        AWS.mock('SSM', 'getParametersByPath', {
+            Parameters: [
+                {
+                    Name: '/compiler-explorer/configValue',
+                    Value: 'fromAws'
+                },
+                {
+                    Name: '/compiler-explorer/onlyOnAws',
+                    Value: 'bibble'
+                }
+            ]
+        });
+
+    });
+    afterEach(() => AWS.restore());
+}
 
 describe('AWS instance fetcher tests', () => {
+    setup();
     it('Fetches Bob', () => {
         const fakeProps = {
             region: 'not-a-region',
@@ -112,6 +119,7 @@ describe('AWS instance fetcher tests', () => {
 });
 
 describe('AWS config tests', () => {
+    setup();
     it('Doesn\'t fetch unless region is configured', () => {
         const fakeProps = {
             region: '',

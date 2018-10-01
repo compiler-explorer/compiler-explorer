@@ -1,5 +1,5 @@
 const path = require('path'),
-    webpack = require('webpack'),    
+    webpack = require('webpack'),
     CopyWebpackPlugin = require('copy-webpack-plugin'),
     ExtractTextPlugin = require('extract-text-webpack-plugin'),
     ManifestPlugin = require('webpack-manifest-plugin'),
@@ -15,7 +15,7 @@ const distPath = path.join(staticPath, outputPathRelative);
 const vsPath = path.join(staticPath, 'vs/');
 const assetPath = path.join(staticPath, "assets");
 const manifestPath = 'manifest.json';  //if you change this, you also need to update it in the app.js
-const outputname =isDev ? 'main.js' : 'bundle.[hash].js';
+const outputname = isDev ? 'main.js' : 'bundle.[hash].js';
 const cssName = isDev ? '[name].css' :  "[name].[contenthash].css";
 const publicPath = isDev ? '/dist/' :  'dist/';
 const manifestPlugin = new ManifestPlugin({
@@ -25,11 +25,11 @@ const manifestPlugin = new ManifestPlugin({
 
 const assetEntries = glob.sync(`${assetPath}/**/*.*`).reduce((obj, p) => {
     const key = path.basename(p);
-    obj[key] = p; 
+    obj[key] = p;
     return obj;
 }, {});
 
-let plugins = [ 
+let plugins = [
     new CopyWebpackPlugin([{
         from: 'node_modules/monaco-editor/min/vs',
         to: vsPath,
@@ -57,8 +57,8 @@ if(!isDev) {
 module.exports = [
     //if you change the order of this, make sure to update the config variable in app.js
     //server side stuff
-    // currently we just want to shove a cache path onto the static assets so we can get the hash onto the filename 
-    //this means we can set the cache for eternity 
+    // currently we just want to shove a cache path onto the static assets so we can get the hash onto the filename
+    //this means we can set the cache for eternity
     {
         entry: assetEntries,
         output: {
@@ -67,21 +67,21 @@ module.exports = [
         },
         module: {
             rules: [
-                { 
-                    test: /\.(png|woff|woff2|eot|ttf|svg)$/, 
+                {
+                    test: /\.(png|woff|woff2|eot|ttf|svg)$/,
                     use: [{
                         loader: 'file-loader',
-                        options: {   
+                        options: {
                              name: '[name].[hash].[ext]'
-                        }  
-                    }]                
+                        }
+                    }]
                 },
             ],
         },
         plugins:[
             manifestPlugin
         ]
-    }, 
+    },
     //this is the client side
     {
         entry: './static/main.js',
@@ -118,11 +118,11 @@ module.exports = [
                     include: path.resolve(__dirname, 'static/themes/'),
                     use: ['css-loader']
                 },
-                { 
-                    test: /\.(png|woff|woff2|eot|ttf|svg)$/, 
-                    loader: 'url-loader?limit=8192' 
+                {
+                    test: /\.(png|woff|woff2|eot|ttf|svg)$/,
+                    loader: 'url-loader?limit=8192'
                 },
-                { 
+                {
                     test: /\.(html)$/,
                     loader: 'html-loader',
                     options: {

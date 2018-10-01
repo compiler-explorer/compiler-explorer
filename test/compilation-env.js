@@ -23,44 +23,43 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 const chai = require('chai');
+const chaiAsPromised = require("chai-as-promised");
 const CompilationEnvironment = require('../lib/compilation-env');
+const properties = require('../lib/properties');
 
-const should = chai.should();
+chai.use(chaiAsPromised);
+chai.should();
 
-const props = (key, deflt) => {
-    switch (key) {
-        case 'optionsWhitelistRe':
-            return '.*';
-        case 'optionsBlacklistRe':
-            return '^(-W[alp],)?((-wrapper|-fplugin.*|-specs|-load|-plugin|(@.*)|-I|-i)(=.*)?|--)$';
-        case 'cacheMb':
-            return 10;
-    }
-    return deflt;
+const props = {
+    optionsWhitelistRe: '.*',
+    optionsBlacklistRe: '^(-W[alp],)?((-wrapper|-fplugin.*|-specs|-load|-plugin|(@.*)|-I|-i)(=.*)?|--)$',
+    cacheConfig: 'InMemory(10)'
 };
+
+const compilerProps = new properties.CompilerProps({}, properties.fakeProps(props));
 
 describe('Compilation environment', () => {
     it('Should cache by default', () => {
-        const ce = new CompilationEnvironment(props, () => {});
-        should.not.exist(ce.cacheGet('foo'));
-        ce.cachePut('foo', 'bar');
-        should.equal(ce.cacheGet('foo'), 'bar');
-        should.not.exist(ce.cacheGet('baz'));
+        const ce = new CompilationEnvironment(compilerProps);
+        return ce.cacheGet('foo').should.eventually.equal(null)
+            .then(() => ce.cachePut('foo', {res: 'bar'}))
+            .then(() => ce.cacheGet('foo').should.eventually.eql({res: 'bar'}))
+            .then(() => ce.cacheGet('baz').should.eventually.equal(null));
     });
     it('Should cache when asked', () => {
-        const ce = new CompilationEnvironment(props, () => {}, true);
-        should.not.exist(ce.cacheGet('foo'));
-        ce.cachePut('foo', 'bar');
-        should.equal(ce.cacheGet('foo'), 'bar');
-        should.not.exist(ce.cacheGet('baz'));
+        const ce = new CompilationEnvironment(compilerProps, true);
+        return ce.cacheGet('foo').should.eventually.equal(null)
+            .then(() => ce.cachePut('foo', {res: 'bar'}))
+            .then(() => ce.cacheGet('foo').should.eventually.eql({res: 'bar'}));
     });
     it('Shouldn\'t cache when asked', () => {
-        const ce = new CompilationEnvironment(props, () => {}, false);
-        ce.cachePut('foo', 'bar');
-        should.not.exist(ce.cacheGet('foo'));
+        const ce = new CompilationEnvironment(compilerProps, false);
+        return ce.cacheGet('foo').should.eventually.equal(null)
+            .then(() => ce.cachePut('foo', {res: 'bar'}))
+            .then(() => ce.cacheGet('foo').should.eventually.equal(null));
     });
     it('Should filter bad options', () => {
-        const ce = new CompilationEnvironment(props, () => {});
+        const ce = new CompilationEnvironment(compilerProps);
         ce.findBadOptions(['-O3', '-flto']).should.be.empty;
         ce.findBadOptions(['-O3', '-plugin']).should.eql(['-plugin']);
     });

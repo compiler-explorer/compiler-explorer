@@ -24,7 +24,7 @@
 
 "use strict";
 var options = require('options');
-var Alert = require('alert');
+var Alert = require('./alert');
 var $ = require('jquery');
 
 function googleJSClientLoaded() {
@@ -60,15 +60,18 @@ function shortenURL(url, done) {
         // Advanced debugging technique right here...
         if (t && t.result && t.result.error) {
             var report = t.result.error;
-            new Alert().notify("Error #" + report.code + ": " + report.message, {
+            // Custom error message when url is too big
+            if (url.length >= 8000) report.message = 'URL length exceeds goo.gl limits';
+            new Alert().notify("Url shortener: Error #" + report.code + ": " + report.message, {
                 group: "shortlink-error",
                 alertClass: "notification-error"
             });
         } else {
-            new Alert().notify("Unknown error while trying to query Google ShortLink Services.", {
-                group: "shortlink-error",
-                alertClass: "notification-error"
-            });
+            new Alert().notify("Url shortener: Unknown error while trying to query Google ShortLink Services.",
+                {
+                    group: "shortlink-error",
+                    alertClass: "notification-error"
+                });
         }
 
         done(null);

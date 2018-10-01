@@ -7,9 +7,9 @@
 //     * Redistributions of source code must retain the above copyright notice,
 //       this list of conditions and the following disclaimer.
 //     * Redistributions in binary form must reproduce the above copyright
-//       notice, this list of conditions and the following disclaimer in the 
+//       notice, this list of conditions and the following disclaimer in the
 //       documentation and/or other materials provided with the distribution.
-// 
+//
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -30,12 +30,14 @@ var themes = {
         path: "default",
         id: "default",
         name: "Default",
+        "main-color": "#f2f2f2",
         monaco: "vs" // Optional field
     },
     dark: {
         path: "dark",
         id: "dark",
         name: "Dark",
+        "main-color": "#333333",
         monaco: "vs-dark"
     }
 };
@@ -48,6 +50,7 @@ function Themer(eventHub, initialSettings) {
         if (this.currentTheme === theme) return;
         var cssData = require('./themes/' + theme.path + "-theme.css");
         $('#theme').html(cssData.toString());
+        $('#meta-theme').prop('content', theme["main-color"]);
         monaco.editor.setTheme(theme.monaco);
         this.eventHub.emit('resize');
         this.currentTheme = theme;

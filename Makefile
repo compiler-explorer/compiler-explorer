@@ -1,5 +1,7 @@
 default: run
 
+export XZ_OPT=-1 -T 0
+
 # If you see "node-not-found" or "yarn-not-found" then you need to depend
 # on either node-installed or yarn-installed.
 NODE:=node-not-found
@@ -55,7 +57,7 @@ endif
 ifneq "" "$(shell which cargo)"
 rust/bin/rustfilt: rust/src/main.rs rust/Cargo.lock rust/Cargo.toml
 	cd rust && cargo build --release && cargo install --root . --force && cargo clean
-optional-rust-support: rust/bin/rustfilt 
+optional-rust-support: rust/bin/rustfilt
 else
 optional-rust-support:
 	@echo "Rust language support disabled"
@@ -64,25 +66,24 @@ endif
 
 NODE_MODULES=.yarn-updated
 $(NODE_MODULES): package.json yarn-installed
-	$(YARN) install
+	$(YARN) install $(YARN_FLAGS)
 	@touch $@
 
 webpack: $(NODE_MODULES)
 	$(NODE) node_modules/webpack/bin/webpack.js ${WEBPACK_ARGS}
 
 lint: $(NODE_MODULES)
-	$(NODE) ./node_modules/.bin/eslint --config .eslintrc --ignore-path .eslintignore --fix app.js $(shell find lib -name '*.js' -not -path 'lib/handlers/asm-docs.js')
-	$(NODE) ./node_modules/.bin/eslint --config static/.eslintrc --ignore-path static/.eslintignore --fix $(shell find static -name '*.js' -not -path 'static/dist/*' -not -path 'static/vs/*' -not -path 'static/ext/*')
+	$(YARN) run lint
 
 node_modules: $(NODE_MODULES)
 webpack: $(WEBPACK)
 
-test: $(NODE_MODULES) lint
-	$(MAKE) -C c-preload test
+test: $(NODE_MODULES)
+	$(YARN) run test
+	-$(MAKE) -C c-preload test
 	@echo Tests pass
 
-check: $(NODE_MODULES) lint
-	$(NODE) ./node_modules/.bin/mocha --recursive
+check: $(NODE_MODULES) test lint
 
 clean:
 	rm -rf node_modules .*-updated .*-bin out static/dist static/vs
@@ -94,9 +95,9 @@ run: prereqs
 	$(NODE) ./node_modules/.bin/supervisor -w app.js,lib,etc/config -e 'js|node|properties' --exec $(NODE) $(NODE_ARGS) -- ./app.js $(EXTRA_ARGS)
 
 dev: export NODE_ENV=DEV
-dev: prereqs
+dev: prereqs install-git-hooks
 	 $(NODE) ./node_modules/.bin/supervisor -w app.js,lib,etc/config -e 'js|node|properties' --exec $(NODE) $(NODE_ARGS) -- ./app.js $(EXTRA_ARGS)
-	
+
 
 HASH := $(shell git rev-parse HEAD)
 dist: export WEBPACK_ARGS=-p
@@ -106,9 +107,10 @@ dist: prereqs
 	mkdir -p out/dist/vs
 	cp -r static/dist/ out/dist/
 	cp -r static/vs/ out/dist/
+	cp -r static/policies/ out/dist/
 
 travis-dist: dist
-	tar --exclude './.travis-compilers' --exclude './.git' --exclude './static' -Jcf /tmp/ce-build.tar.xz . 
+	tar --exclude './.travis-compilers' --exclude './.git' --exclude './static' -Jcf /tmp/ce-build.tar.xz .
 	rm -rf out/dist-bin
 	mkdir -p out/dist-bin
 	mv /tmp/ce-build.tar.xz out/dist-bin/${TRAVIS_BUILD_NUMBER}.tar.xz

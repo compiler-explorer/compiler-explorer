@@ -1,3 +1,6 @@
+@import url("~cookieconsent/build/cookieconsent.min.css");
+@import url("~vis/dist/vis.css");
+
 /* TEMP HACK: https://github.com/Microsoft/monaco-editor/issues/349 */
 .quick-open-tree .row {
     margin-left: 0;
@@ -242,6 +245,68 @@ pre.content.wrap {
     border-radius: 3px;
 }
 
+@media (min-width: 1200px) {
+    .modal-dialog {
+        width: 1000px;
+    }
+}
+
+@media (min-width: 1400px) {
+    .modal-dialog {
+        width: 1200px;
+    }
+}
+
+.navbar-nav.navbar-center {
+    float: left; /* by default */
+}
+
+@media (min-width: 1300px) {
+    .navbar-nav.navbar-center {
+        float: none;
+        position: absolute;
+        left: 50%;
+        transform: translatex(-50%);
+    }
+}
+
+.community-advert {
+    display: none;
+    max-width: 300px;
+    height: 44px;
+    margin-top: 3px;
+    margin-bottom: 3px;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    border: 2px solid;
+    border-radius: 8px;
+    padding-left: 4px;
+    padding-right: 4px;
+}
+
+@media (min-width: 1000px) {
+    .community-advert {
+        display: flex;
+    }
+}
+
+@media (min-width: 1200px) {
+    .community-advert {
+        max-width: 500px;
+    }
+}
+
+.community-hide {
+    padding-left: 5px;
+}
+
+.community-hide button {
+    font-size: small;
+    opacity: 1;
+    color: #67c52a;
+}
+
 #notifications {
     max-width: 33%;
     position: fixed;
@@ -332,4 +397,51 @@ pre.content.wrap {
 
 .modal-footer {
     border-top: none;
+}
+
+.program-exec-output {
+    font-family: "Courier New", Courier, monospace;
+    padding-left: 2%;
+}
+
+.dropdown-menu .btn-godbolt {
+    margin-left: 0 !important;
+}
+
+.lib-arrow {
+    display: inline-table;
+    width: 0;
+    height: 0;
+    border: 7px solid transparent;
+    margin-right: 2px;
+}
+
+.share-disabled {
+    cursor: not-allowed;
+}
+
+.share-item {
+    display: block;
+    overflow: auto;
+    padding: 3px;
+}
+
+.share-item:last-child  {
+    border-radius: 0 0 3px 3px;
+}
+
+.share-item-logo {
+    margin-left: 5px;
+    margin-right: 5px;
+    width: 20px;
+    height: 20px;
+}
+
+/* While we find a better solution, lets up this a bit */
+.compiler-picker .selectize-dropdown-content {
+    max-height: 300px !important;
+}
+
+.compiler-picker .selectize-dropdown-content .option {
+    padding: 0 10px;
 }

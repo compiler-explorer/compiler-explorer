@@ -126,12 +126,6 @@ body {
     color: #fff !important;
 }
 
-.popover {
-    background-color: #333 !important;
-    color: #fff !important;
-    border: 2px solid #464545 !important;
-}
-
 .font-option {
     color: #eee !important;
     background: #303030 !important;
@@ -272,4 +266,58 @@ input.permalink {
 
 .commit-entry:nth-child(even) {
     background-color: #424242 !important;
+}
+
+.popover {
+    color: #fff !important;
+    border: 2px solid #464545 !important;
+}
+
+.popover, .popover-content, .libs-container, .lib-list {
+    background-color: #333 !important;
+}
+
+.lib-item {
+    background-color: #333 !important;
+}
+
+.lib-arrow-up {
+    border-bottom-color: gray !important;
+}
+
+.lib-arrow-up.lib-arrow-used {
+    border-bottom-color: green !important;
+}
+
+.lib-arrow-down {
+    border-top-color: gray !important;
+}
+
+.lib-arrow-down.lib-arrow-used {
+    border-top-color: green !important;
+}
+
+#socialshare .share-twitter, .share-twitter {
+    background-color: #1da1f2;
+    color: white;
+}
+
+#socialshare .share-reddit, .share-reddit {
+    background-color: #ff4500;
+    color: white;
+}
+
+.share-disabled {
+    color: #333 !important;
+}
+
+.community-advert {
+    background: #a1a1a1 !important;
+    border-color: #006400
+}
+
+.community-advert button {
+    opacity: 1;
+    color: #006400;
+    text-shadow: none;
 }

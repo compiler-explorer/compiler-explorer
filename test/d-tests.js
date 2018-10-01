@@ -27,18 +27,23 @@ const chaiAsPromised = require("chai-as-promised");
 const LDCCompiler = require('../lib/compilers/ldc');
 const DMDCompiler = require('../lib/compilers/dmd');
 const CompilationEnvironment = require('../lib/compilation-env');
+const properties = require('../lib/properties');
 
 chai.use(chaiAsPromised);
 chai.should();
 
-const props = (key, deflt) => deflt;
+const languages = {
+    d: {id: 'd'}
+};
+
+const compilerProps = new properties.CompilerProps(languages, properties.fakeProps({}));
 
 describe('D', () => {
-    const ce = new CompilationEnvironment(props, () => "");
+    const ce = new CompilationEnvironment(compilerProps);
     const info = {
         exe: null,
         remote: true,
-        lang: "d"
+        lang: languages.d.id
     };
 
     it('LDC should not allow -run parameter', () => {
@@ -55,5 +60,6 @@ describe('D', () => {
         compiler.couldSupportASTDump("LDC - the LLVM D compiler (1.3.0)").should.equal(false);
         compiler.couldSupportASTDump("LDC - the LLVM D compiler (1.4.0)").should.equal(true);
         compiler.couldSupportASTDump("LDC - the LLVM D compiler (1.8.0git-d54d25b-dirty)").should.equal(true);
+        compiler.couldSupportASTDump("LDC - the LLVM D compiler (1.10.0)").should.equal(true);
     });
 });

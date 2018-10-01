@@ -1,12 +1,36 @@
-title Compiler Explorer
 link(rel="icon" href="favicon.ico?v=1")
 meta(charset="utf-8")
 meta(http-equiv="X-UA-Compatible" content="IE=edge")
-meta(name="description" content="Compiler Explorer is an interactive online compiler which shows the assembly output of compiled C, C++, Rust, Go, D, Haskell, Swift & Pascal code.")
+title Compiler Explorer
+if metadata
+  meta(property="og:title" content=metadata.ogTitle)
+  if metadata.ogDescription
+    meta(name="description" content=metadata.ogDescription)
+    meta(property="og:description" content=metadata.ogDescription)
+  else
+    meta(name="description" content="Compiler Explorer is an interactive online compiler which shows the assembly output of compiled C++, Rust, Go (and many more) code.")
+    meta(property="og:description" content="Compiler Explorer is an interactive online compiler which shows the assembly output of compiled C++, Rust, Go (and many more) code.")
+else
+  meta(name="description" content="Compiler Explorer is an interactive online compiler which shows the assembly output of compiled C++, Rust, Go (and many more) code.")
+  meta(property="og:title" content="Compiler Explorer")
+meta(name="twitter:card" content="summary")
+meta(name="twitter:site" content="@mattgodbolt")
+meta(property="og:image" content="https://github.com/mattgodbolt/compiler-explorer-image/blob/master/logo/favicon.png?raw=true")
+meta(property="og:image:secure_url" content="https://github.com/mattgodbolt/compiler-explorer-image/blob/master/logo/favicon.png?raw=true")
+meta(property="og:image:type" content="image/png")
+meta(property="og:image:width" content="145")
+meta(property="og:image:height" content="145")
 meta(name="author" content="Matt Godbolt")
 meta(name="google" content="nositelinkssearchbox")
 meta(name="google" content="notranslate")
+meta(id="meta-theme" name="theme-color" content="#f2f2f2")
+
 link(href=require("main.css") rel="stylesheet")
 style#theme
-script window.compilerExplorerOptions = !{compilerExplorerOptions}
+
+// The atob/base64 stuff below is to prevent any XSS attacks: now we have user content in the options (from
+// short links), it's possible to do XSS attacks, by leaving <script> tags in the source etc, which can be
+// interpreted by the browser.
+script window.compilerExplorerOptions = JSON.parse(decodeURIComponent("!{encodeURIComponent(compilerExplorerOptions)}"))
+script window.httpRoot = '#{httpRoot}';
 script(src=require("main.js"))

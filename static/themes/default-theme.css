@@ -162,6 +162,54 @@ body {
     background-color: #f2f2f2;
 }
 
-.popover-content {
-    background-color: #f0f0f0;
+.popover, .popover-content, .libs-container, .lib-list {
+    background-color: #fefefe;
+}
+
+.lib-item {
+    background-color: #fefefe;
+}
+
+.lib-arrow-up {
+    border-bottom-color: black;
+}
+
+.lib-arrow-up.lib-arrow-used {
+    border-bottom-color: green;
+}
+
+.lib-arrow-down {
+    border-top-color: black;
+}
+
+.lib-arrow-down.lib-arrow-used {
+    border-top-color: green;
+}
+
+.consent-cookie-yes {
+    background-color: #c1e2b3;
+}
+
+.consent-cookie-no {
+    background-color: #f44336;
+    color: #ffffff;
+}
+
+#socialshare .share-twitter, .share-twitter {
+    background-color: #1da1f2;
+    color: white;
+}
+
+#socialshare .share-reddit, .share-reddit {
+    background-color: #ff4500;
+    color: white;
+}
+
+.share-disabled {
+    color: gray;
+}
+
+.community-advert {
+    background: #f0f0f0;
+    border-color: #67c52a;
 }

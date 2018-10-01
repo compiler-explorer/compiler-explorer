@@ -46,6 +46,12 @@ describe('Properties', () => {
     it('Handles empty properties as empty strings', () => {
         should.equal(casesProps("emptyProperty"), "");
     });
+    it('Handles bad numbers properties as strings', () => {
+        should.equal(casesProps("001string"), "001");
+    });
+    it('Handles bad numbers properties as strings', () => {
+        should.equal(casesProps("0985string"), "0985");
+    });
     it('Ignores commented out properties', () => {
         should.equal(casesProps("commentedProperty"), undefined);
     });
@@ -105,5 +111,37 @@ describe('Properties', () => {
     });
     it('Should fall back from overridden', () => {
         should.equal(overridingProps("localProperty"), 11235813);
+    });
+    const languages = {
+        a: {id: 'a'}
+    };
+    const compilerProps = new properties.CompilerProps(languages, properties.fakeProps({
+        foo: '1'
+    }));
+    it('should have an identity function if none provided', () => {
+        should.equal(compilerProps.get('a', 'foo', '0', undefined), '1');
+        compilerProps.get(languages, 'foo', '0', undefined).should.deep.equal({a: '1'});
+    });
+    it('should return an object of languages if the languages arg is an object itself', () => {
+        compilerProps.get(languages, 'foo', '0').should.deep.equal({a: '1'});
+    });
+    it('should return a direct result if the language is an ID', () => {
+        compilerProps.propsByLangId[languages.a.id] = properties.fakeProps({foo: 'b'});
+        should.equal(compilerProps.get('a', 'foo', '0'), 'b');
+        compilerProps.propsByLangId[languages.a.id] = undefined;
+    });
+    it('should have backwards compatibility compilerProps behaviour', () => {
+        should.equal(compilerProps.get('', 'foo', '0'), '1');
+    });
+    it('should report the default value if an unknown language is used', () => {
+        should.equal(compilerProps.get('b', 'foo', '0'), '0');
+    });
+    it('should not check ceProps for falsey values', () => {
+        // Set bar to be falsey in the language specific setting.
+        compilerProps.propsByLangId[languages.a.id] = properties.fakeProps({bar: false});
+        // Now query it with a default of true. We should see false...
+        should.equal(compilerProps.get('a', 'bar', true), false);
+        compilerProps.get(languages, 'bar', true, undefined).should.deep.equal({a: false});
+        compilerProps.propsByLangId[languages.a.id] = undefined;
     });
 });

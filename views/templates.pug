@@ -8,10 +8,10 @@
             span.current Short
             span.caret
           ul.dropdown-menu.sources
-            li: a(href="#" data-bind="Short") Short
-            li: a(href="#" data-bind="Full") Full
-            li: a(href="#" data-bind="Embed") Embed
-            li: a(href="#" data-bind="Embed (RO)") Embed (read only)
+            li: a(href="javascript:;" data-bind="Short") Short
+            li: a(href="javascript:;" data-bind="Full") Full
+            li: a(href="javascript:;" data-bind="Embed") Embed
+            li: a(href="javascript:;" data-bind="Embed (RO)") Embed (read only)
       input.form-control.input-sm.permalink(
       type="text" placeholder="Loading" readonly size="1024")
       span.input-group-btn
@@ -19,19 +19,23 @@
         type="button" data-clipboard-target=".popover .permalink"
         title="Copy to clipboard")
           span.glyphicon.glyphicon-copy(style="width:13px")
+    if sharingEnabled
+      .socialsharing
+
   #codeEditor
     .top-bar.btn-toolbar(role="toolbar")
       include font-size.pug
-      .btn-group.btn-group-sm
-        button.btn.btn-godbolt.btn-sm.load-save(title="Load or save text")
-          span.glyphicon.glyphicon-floppy-disk
-          | &nbsp;Save/Load
       if !embedded
+        .btn-group.btn-group-sm
+          button.btn.btn-godbolt.btn-sm.load-save(title="Load or save text")
+            span.glyphicon.glyphicon-floppy-disk
+            span.hideable &nbsp;Save/Load
         .btn-group.btn-group-sm.dropdown
           button.btn.btn-godbolt.btn-sm.dropdown-toggle.add-pane(type="button" title="Add a new pane" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
             span.glyphicon.glyphicon-plus
-            | &nbsp;Add new...#[b.caret]
-          div.dropdown-menu.pane-dropdown(aria-labbeledby="add-pane")
+            span.hideable &nbsp;Add new...
+            | #[b.caret]
+          div.dropdown-menu.pane-dropdown(aria-labelledby="add-pane")
             button.btn.btn-godbolt.btn-sm.add-compiler(title="Add a new compiler for this source" aria-label="Compiler")
               span.glyphicon.glyphicon-open
               | &nbsp;Compiler
@@ -64,7 +68,7 @@
           span .text
         button.btn.btn-godbolt.btn-sm.active.nonbinary(title="Remove all lines which are only comments from the output" data-bind="commentOnly")
           span //
-        button.btn.btn-godbolt.btn-sm.active(title="Trim intra-line whitespace" data-bind="trim")
+        button.btn.btn-godbolt.btn-sm(title="Trim intra-line whitespace" data-bind="trim")
           span \s+
         button.btn.btn-godbolt.btn-sm.active(title="Output disassembly in Intel syntax" data-bind="intel")
           span Intel
@@ -75,13 +79,15 @@
       .btn-group.btn-group-sm
         button.btn.btn-godbolt.btn-sm.show-libs.dropdown-toggle
           span.glyphicon.glyphicon-book(title="Include libs")
-          | &nbsp;Libraries#[b.caret]
+          span.hideable &nbsp;Libraries
+          | #[b.caret]
       if !embedded
         .btn-group.btn-group-sm.dropdown
           button.btn.btn-godbolt.btn-sm.dropdown-toggle.add-pane(type="button" title="Add a new pane" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
             span.glyphicon.glyphicon-plus
-            | &nbsp;Add new...#[b.caret]
-          div.dropdown-menu.pane-dropdown(aria-labbeledby="add-pane")
+            span.hideable &nbsp;Add new...
+            | #[b.caret]
+          div.dropdown-menu.pane-dropdown(aria-labelledby="add-pane")
             button.btn.btn-godbolt.btn-sm.add-compiler(title="Clone this compiler window (click or drag)")
               span.glyphicon.glyphicon-new-window
               | &nbsp;Clone compiler
@@ -174,6 +180,11 @@
       .btn-group.btn-group-sm
         button.btn.btn-godbolt.btn-sm.add-compiler(title="Add compiler")
           span.glyphicon.glyphicon-plus-sign
+          span.hideable &nbsp;Add new compiler
+        button.btn.btn-godbolt.btn-sm.show-libs.dropdown-toggle
+          span.glyphicon.glyphicon-book(title="Include libs")
+          span.hideable &nbsp;Libraries
+          | #[b.caret]
     .conformance-wrapper
       table.compiler-list
 
@@ -187,6 +198,8 @@
         td
           input.options.form-control(type="text" size="256" placeholder="Compiler options..." autocorrect="off" autocapitalize="off" spellcheck="false")
         td
+          span.glyphicon.glyphicon-info-sign.prepend-options
+        td
           button.close(aria-label="Close")
             span(aria-hidden="true")
               | &times;
@@ -197,3 +210,7 @@
       a(target="_blank" rel="noopener noreferrer" href="https://github.com/mattgodbolt/compiler-explorer/issues/new")
         | You can suggest us one at any time&nbsp;
         sup.glyphicon.glyphicon-new-window.opens-new-window(title="Opens in a new window")
+
+  #share-item(data-logo-twitter=require("Twitter_Logo_WhiteOnBlue.svg") data-logo-reddit=require("Reddit_Icon.png"))
+    a.share-item(href="javascript:;" rel="noopener noreferrer" target="_blank")
+      span.share-item-text

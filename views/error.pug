@@ -1,0 +1,12 @@
+doctype html
+html(lang="en")
+  head
+    base(href=httpRoot)
+    title Error #{error.code}
+  body(style="background-color:#f2f2f2;display:flex;align-items: center;justify-content: center;")
+    div(style="")
+      a(href=httpRoot title="Go to main site")
+        img.normal(src=require("site-logo.svg") height="50" width="165" alt="Compiler Explorer")
+      p Whoops, #{error.message}
+      hr
+      a(href=httpRoot) Main site

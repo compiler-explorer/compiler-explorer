@@ -10,18 +10,21 @@ node_js:
 
 before_script:
     - export PATH=$PATH:$PWD/.travis-compilers/ghc/bin
+    - ghc --version
     - export PATH=$PATH:$PWD/.travis-compilers/gdc/x86_64-pc-linux-gnu/bin
+    - gdc --version
     - export PATH=$PATH:$PWD/.travis-compilers/rust/bin
+    - rustc --version
 
 cache:
     directories:
         - .travis-compilers
 
 script:
-    - npm test
-    - npm run codecov
+    - yarn test
+    - yarn run codecov
     - make changelog
-    - make travis-dist
+    - make -j$(nproc) travis-dist
 
 deploy:
     on:

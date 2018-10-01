@@ -14,11 +14,11 @@
             #load-examples.tab-pane.active(role="tabpanel")
               h4 Load from examples:
               ul.examples.small-v-scrollable
-                li.template: a(href="#")
+                li.template: a(href="javascript:;")
             #load-browser-local.tab-pane(role="tabpanel")
               h4 Load from browser-local storage:
               ul.local-storage.small-v-scrollable
-                li.template: a(href="#")
+                li.template: a(href="javascript:;")
               .form-group
                 input.save-name(type="text" size="20")
                 button.btn.btn-godbolt.save-button(type="button") Save to browser-local storage
@@ -63,30 +63,32 @@
           | preserved as part of shared URLs, and are persisted locally using browser
           | local storage.
         .well.well-sm
-          h4 Editor
+          h4 Site behaviour
           .form-group(role="group")
             label
               | Default language&nbsp;
               small
                 span.glyphicon.glyphicon-info-sign(title="New editors only (Reset UI to clear yours)" aria-label="New editors only (Reset UI to clear yours)")
               select.defaultLanguage
+            div
+              label
+                | Theme&nbsp;
+                select.theme
             .checkbox
               label
                 input.newEditorLastLang(type="checkbox")
                 | Use last selected language when opening new Editors
             .checkbox
               label
+                input.enableCommunityAds(type="checkbox")
+                | Show community events
+        .well.well-sm
+          h4 Editor
+          .form-group(role="group")
+            .checkbox
+              label
                 input.autoCloseBrackets(type="checkbox")
                 | Automatically insert matching brackets and parentheses
-            div
-              .checkbox
-                label
-                  input.compileOnChange(type="checkbox")
-                  | Compile automatically when source changes
-              div Delay before compiling:&nbsp;
-                b 0.25s&nbsp;
-                .slider.slider-horizontal.delay
-                b &nbsp;3s
             .checkbox
               label
                 input.hoverShowSource(type="checkbox")
@@ -109,15 +111,24 @@
                 | Show editor minimap
             div
               label
-                | Theme&nbsp;
-                select.theme
-              label
                 | &nbsp;Tab width&nbsp;
                 select.tabWidth
-
+            div
+              label
+                | Format based on&nbsp;
+                select.formatBase
         .well.well-sm
           h4 Compilation
           .form-group(role="group")
+            div
+              .checkbox
+                label
+                  input.compileOnChange(type="checkbox")
+                  | Compile automatically when source changes
+              div Delay before compiling:&nbsp;
+                b 0.25s&nbsp;
+                .slider.slider-horizontal.delay
+                b &nbsp;3s
             .checkbox
               label
                 input.colourise(type="checkbox")

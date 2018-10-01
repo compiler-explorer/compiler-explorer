@@ -34,11 +34,12 @@ const nopt = require('nopt'),
     fs = require('fs-extra'),
     systemdSocket = require('systemd-socket'),
     url = require('url'),
-    _ = require('underscore-node'),
+    _ = require('underscore'),
     express = require('express'),
     Raven = require('raven'),
     logger = require('./lib/logger').logger,
-    webpackDevMiddleware = require("webpack-dev-middleware");
+    webpackDevMiddleware = require("webpack-dev-middleware"),
+    utils = require('./lib/utils');
 
 
 // Parse arguments from command line 'node ./app.js args...'
@@ -62,8 +63,9 @@ if (opts.debug) logger.level = 'debug';
 
 // AP: Detect if we're running under Windows Subsystem for Linux. Temporary modification
 // of process.env is allowed: https://nodejs.org/api/process.html#process_process_env
-if ((process.platform === "win32") || child_process.execSync('uname -a').toString().indexOf('Microsoft') > -1)
+if (process.platform === "linux" && child_process.execSync('uname -a').toString().indexOf('Microsoft') > -1) {
     process.env.wsl = true;
+}
 
 // AP: Allow setting of tmpDir (used in lib/base-compiler.js & lib/exec.js) through opts.
 // WSL requires a directory on a Windows volume. Set that to Windows %TEMP% if no tmpDir supplied.
@@ -71,8 +73,7 @@ if ((process.platform === "win32") || child_process.execSync('uname -a').toStrin
 if (opts.tmpDir) {
     process.env.tmpDir = opts.tmpDir;
     process.env.winTmp = opts.tmpDir;
-}
-else if (process.env.wsl) {
+} else if (process.env.wsl) {
     // Dec 2017 preview builds of WSL include /bin/wslpath; do the parsing work for now.
     // Parsing example %TEMP% is C:\Users\apardoe\AppData\Local\Temp
     const windowsTemp = child_process.execSync('cmd.exe /c echo %TEMP%').toString().replace(/\\/g, "/");
@@ -153,43 +154,12 @@ if (languages.length === 0) {
     logger.error("Trying to start Compiler Explorer without a language");
 }
 
-// Instantiate a function to access records concerning the chosen language
-// in hidden object props.properties
-let compilerPropsFuncsL = {};
-_.each(languages, lang => compilerPropsFuncsL[lang.id] = props.propsFor(lang.id));
-
-// Get a property from the specified langId, and if not found, use defaults from CE,
-// and at last return whatever default value was set by the caller
-function compilerPropsL(lang, property, defaultValue) {
-    const forLanguage = compilerPropsFuncsL[lang];
-    if (forLanguage) {
-        const forCompiler = forLanguage(property);
-        if (forCompiler !== undefined) return forCompiler;
-    }
-    return ceProps(property, defaultValue);
-}
-
-// For every lang passed, get its corresponding compiler property
-function compilerPropsA(langs, property, defaultValue) {
-    let forLanguages = {};
-    _.each(langs, lang => {
-        forLanguages[lang.id] = compilerPropsL(lang.id, property, defaultValue);
-    });
-    return forLanguages;
-}
-
-// Same as A version, but transfroms each value by fn(original, lang)
-function compilerPropsAT(langs, transform, property, defaultValue) {
-    let forLanguages = {};
-    _.each(langs, lang => {
-        forLanguages[lang.id] = transform(compilerPropsL(lang.id, property, defaultValue), lang);
-    });
-    return forLanguages;
-}
+const compilerProps = new props.CompilerProps(languages, ceProps);
 
 const staticMaxAgeSecs = ceProps('staticMaxAgeSecs', 0);
 const maxUploadSize = ceProps('maxUploadSize', '1mb');
-let extraBodyClass = ceProps('extraBodyClass', '');
+const extraBodyClass = ceProps('extraBodyClass', '');
+const httpRoot = ceProps('httpRoot', '/');
 
 function staticHeaders(res) {
     if (staticMaxAgeSecs) {
@@ -207,303 +177,343 @@ function contentPolicyHeader(res) {
 
 const awsProps = props.propsFor("aws");
 
-// function to load internal binaries (i.e. lib/source/*.js)
-function loadSources() {
-    const sourcesDir = "lib/sources";
-    return fs.readdirSync(sourcesDir)
-        .filter(file => file.match(/.*\.js$/))
-        .map(file => require("./" + path.join(sourcesDir, file)));
-}
+aws.initConfig(awsProps)
+    .then(() => {
+        // function to load internal binaries (i.e. lib/source/*.js)
+        function loadSources() {
+            const sourcesDir = "lib/sources";
+            return fs.readdirSync(sourcesDir)
+                .filter(file => file.match(/.*\.js$/))
+                .map(file => require("./" + path.join(sourcesDir, file)));
+        }
 
-const fileSources = loadSources();
-const clientOptionsHandler = new ClientOptionsHandler(fileSources);
-const CompilationEnvironment = require('./lib/compilation-env');
-const compilationEnvironment = new CompilationEnvironment(ceProps, compilerPropsL, defArgs.doCache);
-const CompileHandler = require('./lib/handlers/compile').Handler;
-const compileHandler = new CompileHandler(compilationEnvironment);
-const ApiHandler = require('./lib/handlers/api').Handler;
-const apiHandler = new ApiHandler(compileHandler);
-const SourceHandler = require('./lib/handlers/source').Handler;
-const sourceHandler = new SourceHandler(fileSources, staticHeaders);
-const CompilerFinder = require('./lib/compiler-finder');
-const compilerFinder = new CompilerFinder(compileHandler, compilerPropsL, compilerPropsAT, ceProps, awsProps,
-    languages, defArgs);
+        const fileSources = loadSources();
+        const ClientOptionsHandler = require('./lib/options-handler');
+        const clientOptionsHandler = new ClientOptionsHandler(fileSources, compilerProps, defArgs);
+        const CompilationEnvironment = require('./lib/compilation-env');
+        const compilationEnvironment = new CompilationEnvironment(compilerProps, defArgs.doCache);
+        const CompileHandler = require('./lib/handlers/compile').Handler;
+        const compileHandler = new CompileHandler(compilationEnvironment);
+        const ApiHandler = require('./lib/handlers/api').Handler;
+        const apiHandler = new ApiHandler(compileHandler, ceProps);
+        const SourceHandler = require('./lib/handlers/source').Handler;
+        const sourceHandler = new SourceHandler(fileSources, staticHeaders);
+        const CompilerFinder = require('./lib/compiler-finder');
+        const compilerFinder = new CompilerFinder(compileHandler, compilerProps, awsProps, defArgs);
+        const StorageHandler = require('./lib/storage/storage');
+        const storageHandler = StorageHandler.storageFactory(compilerProps, awsProps);
 
-function ClientOptionsHandler(fileSources) {
-    const sources = _.sortBy(fileSources.map(source => {
-        return {name: source.name, urlpart: source.urlpart};
-    }), 'name');
-
-    const supportsBinary = compilerPropsAT(languages, res => !!res, 'supportsBinary', true);
-    const supportsExecutePerLanguage = compilerPropsAT(languages, (res, lang) => {
-        return supportsBinary[lang.id] && !!res;
-    }, 'supportsExecute', true);
-    const supportsExecute = Object.values(supportsExecutePerLanguage).some((value) => value);
-
-    const libs = {};
-    const baseLibs = compilerPropsA(languages, 'libs');
-    _.each(baseLibs, (forLang, lang) => {
-        if (lang && forLang) {
-            libs[lang] = {};
-            _.each(forLang.split(':'), lib => {
-                const libBaseName = `libs.${lib}`;
-                libs[lang][lib] = {
-                    name: compilerPropsL(lang, libBaseName + '.name'),
-                    url: compilerPropsL(lang, libBaseName + '.url'),
-                    description: compilerPropsL(lang, libBaseName + '.description')
-                };
-                libs[lang][lib].versions = {};
-                const listedVersions = `${compilerPropsL(lang, libBaseName + '.versions')}`;
-                if (listedVersions) {
-                    _.each(listedVersions.split(':'), version => {
-                        const libVersionName = libBaseName + `.versions.${version}`;
-                        libs[lang][lib].versions[version] = {};
-                        libs[lang][lib].versions[version].version = compilerPropsL(lang, libVersionName + '.version');
-                        libs[lang][lib].versions[version].path = [];
-                        const includes = compilerPropsL(lang, libVersionName + '.path');
-                        if (includes) {
-                            _.each(includes.split(':'), path => libs[lang][lib].versions[version].path.push(path));
-                        } else {
-                            logger.warn(`No paths found for ${lib} - ${version}`);
-                        }
+        function oldGoogleUrlHandler(req, res, next) {
+            const resolver = new google.ShortLinkResolver(aws.getConfig('googleApiKey'));
+            const bits = req.url.split("/");
+            if (bits.length !== 2 || req.method !== "GET") return next();
+            const googleUrl = `http://goo.gl/${encodeURIComponent(bits[1])}`;
+            resolver.resolve(googleUrl)
+                .then(resultObj => {
+                    const parsed = url.parse(resultObj.longUrl);
+                    const allowedRe = new RegExp(ceProps('allowedShortUrlHostRe'));
+                    if (parsed.host.match(allowedRe) === null) {
+                        logger.warn(`Denied access to short URL ${bits[1]} - linked to ${resultObj.longUrl}`);
+                        return next();
+                    }
+                    res.writeHead(301, {
+                        Location: resultObj.id,
+                        'Cache-Control': 'public'
                     });
+                    res.end();
+                })
+                .catch(e => {
+                    logger.error(`Failed to expand ${googleUrl} - ${e}`);
+                    next();
+                });
+        }
+
+        function startListening(server) {
+            const ss = systemdSocket();
+            let _port;
+            if (ss) {
+                // ms (5 min default)
+                const idleTimeout = process.env.IDLE_TIMEOUT;
+                const timeout = (typeof idleTimeout !== 'undefined' ? idleTimeout : 300) * 1000;
+                if (idleTimeout) {
+                    let exit = () => {
+                        logger.info("Inactivity timeout reached, exiting.");
+                        process.exit(0);
+                    };
+                    let idleTimer = setTimeout(exit, timeout);
+                    let reset = () => {
+                        clearTimeout(idleTimer);
+                        idleTimer = setTimeout(exit, timeout);
+                    };
+                    server.all('*', reset);
+                    logger.info(`  IDLE_TIMEOUT: ${idleTimeout}`);
+                }
+                _port = ss;
+            } else {
+                _port = defArgs.port;
+            }
+            logger.info(`  Listening on http://${defArgs.hostname || 'localhost'}:${_port}/`);
+            logger.info("=======================================");
+            server.listen(_port, defArgs.hostname);
+        }
+
+        compilerFinder.find()
+            .then(compilers => {
+                let prevCompilers;
+
+                const ravenPrivateEndpoint = aws.getConfig('ravenPrivateEndpoint');
+                if (ravenPrivateEndpoint) {
+                    Raven.config(ravenPrivateEndpoint, {
+                        release: gitReleaseName,
+                        environment: defArgs.env
+                    }).install();
+                    logger.info("Configured with raven endpoint", ravenPrivateEndpoint);
                 } else {
-                    logger.warn(`No versions found for ${lib} library`);
+                    Raven.config(false).install();
                 }
-            });
-        }
-    });
-    const options = {
-        googleAnalyticsAccount: ceProps('clientGoogleAnalyticsAccount', 'UA-55180-6'),
-        googleAnalyticsEnabled: ceProps('clientGoogleAnalyticsEnabled', false),
-        sharingEnabled: ceProps('clientSharingEnabled', true),
-        githubEnabled: ceProps('clientGitHubRibbonEnabled', true),
-        gapiKey: ceProps('googleApiKey', ''),
-        googleShortLinkRewrite: ceProps('googleShortLinkRewrite', '').split('|'),
-        urlShortenService: ceProps('urlShortenService', 'none'),
-        defaultSource: ceProps('defaultSource', ''),
-        compilers: [],
-        libs: libs,
-        defaultCompiler: compilerPropsA(languages, 'defaultCompiler', ''),
-        compileOptions: compilerPropsA(languages, 'defaultOptions', ''),
-        supportsBinary: supportsBinary,
-        supportsExecute: supportsExecute,
-        languages: languages,
-        sources: sources,
-        raven: ceProps('ravenUrl', ''),
-        release: gitReleaseName,
-        environment: defArgs.env,
-        localStoragePrefix: ceProps('localStoragePrefix'),
-        cvCompilerCountMax: ceProps('cvCompilerCountMax', 6),
-        defaultFontScale: ceProps('defaultFontScale', 1.0),
-        doCache: defArgs.doCache
-    };
-    this.setCompilers = compilers => {
-        const blacklistedKeys = ['exe', 'versionFlag', 'versionRe', 'compilerType', 'demangler', 'objdumper',
-            'postProcess'];
-        const copiedCompilers = JSON.parse(JSON.stringify(compilers));
-        _.each(options.compilers, (compiler, compilersKey) => {
-            _.each(compiler, (_, propKey) => {
-                if (blacklistedKeys.includes(propKey)) {
-                    delete copiedCompilers[compilersKey][propKey];
+
+                function onCompilerChange(compilers) {
+                    if (JSON.stringify(prevCompilers) === JSON.stringify(compilers)) {
+                        return;
+                    }
+                    logger.debug("Compilers:", compilers);
+                    if (compilers.length === 0) {
+                        logger.error("#### No compilers found: no compilation will be done!");
+                    }
+                    prevCompilers = compilers;
+                    clientOptionsHandler.setCompilers(compilers);
+                    apiHandler.setCompilers(compilers);
+                    apiHandler.setLanguages(languages);
                 }
-            });
-        });
-        options.compilers = copiedCompilers;
-    };
-    this.setCompilers([]);
-    this.get = () => options;
-}
 
-function shortUrlHandler(req, res, next) {
-    const resolver = new google.ShortLinkResolver(aws.getConfig('googleApiKey'));
-    const bits = req.url.split("/");
-    if (bits.length !== 2 || req.method !== "GET") return next();
-    const googleUrl = `http://goo.gl/${encodeURIComponent(bits[1])}`;
-    resolver.resolve(googleUrl)
-        .then(resultObj => {
-            const parsed = url.parse(resultObj.longUrl);
-            const allowedRe = new RegExp(ceProps('allowedShortUrlHostRe'));
-            if (parsed.host.match(allowedRe) === null) {
-                logger.warn(`Denied access to short URL ${bits[1]} - linked to ${resultObj.longUrl}`);
-                return next();
-            }
-            res.writeHead(301, {
-                Location: resultObj.id,
-                'Cache-Control': 'public'
-            });
-            res.end();
-        })
-        .catch(e => {
-            logger.error(`Failed to expand ${googleUrl} - ${e}`);
-            next();
-        });
-}
+                onCompilerChange(compilers);
 
-function startListening(server) {
-    const ss = systemdSocket();
-    let _port;
-    if (ss) {
-        // ms (5 min default)
-        const timeout = (typeof process.env.IDLE_TIMEOUT !== 'undefined' ? process.env.IDLE_TIMEOUT : 300) * 1000;
-        if (timeout) {
-            let exit = () => {
-                logger.info("Inactivity timeout reached, exiting.");
-                process.exit(0);
-            };
-            let idleTimer = setTimeout(exit, timeout);
-            let reset = () => {
-                clearTimeout(idleTimer);
-                idleTimer = setTimeout(exit, timeout);
-            };
-            server.all('*', reset);
-        }
-        _port = ss;
-    } else {
-        _port = defArgs.port;
-    }
-    logger.info(`  Listening on http://${defArgs.hostname || 'localhost'}:${_port}/`);
-    logger.info("=======================================");
-    server.listen(_port, defArgs.hostname);
-}
+                const rescanCompilerSecs = ceProps('rescanCompilerSecs', 0);
+                if (rescanCompilerSecs) {
+                    logger.info(`Rescanning compilers every ${rescanCompilerSecs} secs`);
+                    setInterval(() => compilerFinder.find().then(onCompilerChange),
+                        rescanCompilerSecs * 1000);
+                }
 
-Promise.all([compilerFinder.find(), aws.initConfig(awsProps)])
-    .then(args => {
-        let compilers = args[0];
-        let prevCompilers;
+                const webServer = express(),
+                    sFavicon = require('serve-favicon'),
+                    bodyParser = require('body-parser'),
+                    morgan = require('morgan'),
+                    compression = require('compression'),
+                    restreamer = require('./lib/restreamer');
 
-        const ravenPrivateEndpoint = aws.getConfig('ravenPrivateEndpoint');
-        if (ravenPrivateEndpoint) {
-            Raven.config(ravenPrivateEndpoint, {
-                release: gitReleaseName,
-                environment: defArgs.env
-            }).install();
-            logger.info("Configured with raven endpoint", ravenPrivateEndpoint);
-        } else {
-            Raven.config(false).install();
-        }
+                logger.info("=======================================");
+                if (gitReleaseName) logger.info(`  git release ${gitReleaseName}`);
+                const httpRootDir = httpRoot.endsWith('/') ? httpRoot : (httpRoot + '/');
+                function renderConfig(extra) {
+                    const options = _.extend(extra, clientOptionsHandler.get());
+                    options.compilerExplorerOptions = JSON.stringify(options);
+                    options.extraBodyClass = extraBodyClass;
+                    options.httpRoot = httpRoot;
+                    options.require = function (path) {
+                        if (isDevMode()) {
+                            if (fs.existsSync('static/assets/' + path)) {
+                                return '/assets/' + path;
+                            } else {
+                                //this will break assets in dev mode for now
+                                return '/dist/' + path;
+                            }
+                        }
+                        if (staticManifest.hasOwnProperty(path)) {
+                            return `${httpRootDir}dist/${staticManifest[path]}`;
+                        }
+                        if (assetManifest.hasOwnProperty(path)) {
+                            return `${httpRootDir}dist/assets/${assetManifest[path]}`;
+                        }
+                        logger.warn("Requested an asset I don't know about");
+                    };
+                    return options;
+                }
 
-        function onCompilerChange(compilers) {
-            if (JSON.stringify(prevCompilers) === JSON.stringify(compilers)) {
-                return;
-            }
-            logger.debug("Compilers:", compilers);
-            if (compilers.length === 0) {
-                logger.error("#### No compilers found: no compilation will be done!");
-            }
-            prevCompilers = compilers;
-            clientOptionsHandler.setCompilers(compilers);
-            apiHandler.setCompilers(compilers);
-            apiHandler.setLanguages(languages);
-        }
+                function escapeLine(req, line) {
+                    const userAgent = req.get('User-Agent');
+                    if (userAgent.includes('Discordbot/2.0')) {
+                        return line.replace(/&/g, '&amp;')
+                            .replace(/</g, '&lt;')
+                            .replace(/>/g, '&gt;');
+                    } else if (userAgent === 'Twitterbot/1.0') {
+                        // TODO: Escape to something Twitter likes
+                        return line;
+                    } else if (userAgent === 'Slackbot-LinkExpanding 1.0') {
+                        // TODO: Escape to something Slack likes
+                        return line;
+                    }
+                    return line;
+                }
 
-        onCompilerChange(compilers);
+                function filterCode(req, code, lang) {
+                    if (lang.previewFilter) {
+                        return _.chain(code.split('\n'))
+                            .filter(line => !line.match(lang.previewFilter))
+                            .map(line => escapeLine(req, line))
+                            .value()
+                            .join('\n');
+                    }
+                    return code;
+                }
 
-        const rescanCompilerSecs = ceProps('rescanCompilerSecs', 0);
-        if (rescanCompilerSecs) {
-            logger.info(`Rescanning compilers every ${rescanCompilerSecs} secs`);
-            setInterval(() => compilerFinder.find().then(onCompilerChange),
-                rescanCompilerSecs * 1000);
-        }
+                function storedStateHandler(req, res, next) {
+                    const id = req.params.id;
+                    storageHandler.expandId(id)
+                        .then(result => {
+                            const config = JSON.parse(result.config);
+                            const metadata = {
+                                ogDescription: result.specialMetadata ? result.specialMetadata.description.S : null,
+                                ogAuthor: result.specialMetadata ? result.specialMetadata.author.S : null,
+                                ogTitle: result.specialMetadata ? result.specialMetadata.title.S : "Compiler Explorer"
+                            };
+                            if (!metadata.ogDescription) {
+                                const sources = utils.glGetMainContents(config.content);
+                                if (sources.editors.length === 1) {
+                                    const editor = sources.editors[0];
+                                    const lang = languages[editor.language];
+                                    if (lang) {
+                                        metadata.ogDescription = filterCode(req, editor.source, lang);
+                                        metadata.ogTitle += ` - ${lang.name}`;
+                                        if (sources.compilers.length === 1) {
+                                            const compilerId = sources.compilers[0].compiler;
+                                            const compiler = apiHandler.compilers.find(c => c.id === compilerId);
+                                            if (compiler) {
+                                                metadata.ogTitle += ` (${compiler.name})`;
+                                            }
+                                        }
+                                    } else {
+                                        metadata.ogDescription = editor.source;
+                                    }
+                                }
+                            } else if (metadata.ogAuthor && metadata.ogAuthor !== '.') {
+                                metadata.ogDescription += `\nAuthor(s): ${metadata.ogAuthor}`;
+                            }
+                            staticHeaders(res);
+                            contentPolicyHeader(res);
+                            res.render('index', renderConfig({
+                                embedded: false,
+                                config: config,
+                                metadata: metadata
+                            }));
+                        })
+                        .catch(err => {
+                            logger.warn(`Exception thrown when expanding ${id}: `, err);
+                            next({
+                                statusCode: 404,
+                                message: `ID "${id}" could not be found`
+                            });
+                        });
+                }
 
-        const webServer = express(),
-            sFavicon = require('serve-favicon'),
-            bodyParser = require('body-parser'),
-            morgan = require('morgan'),
-            compression = require('compression'),
-            restreamer = require('./lib/restreamer');
-
-        logger.info("=======================================");
-        if (gitReleaseName) logger.info(`  git release ${gitReleaseName}`);
-
-        function renderConfig(extra) {
-            const options = _.extend(extra, clientOptionsHandler.get());
-            options.compilerExplorerOptions = JSON.stringify(options);
-            options.extraBodyClass = extraBodyClass;
-            options.require = function (path) {
+                const embeddedHandler = function (req, res) {
+                    staticHeaders(res);
+                    contentPolicyHeader(res);
+                    res.render('embed', renderConfig({embedded: true}));
+                };
+                const healthCheck = require('./lib/handlers/health-check');
                 if (isDevMode()) {
-                    //this will break assets in dev mode for now
-                    return '/dist/' + path;
+                    webServer.use(webpackDevMiddleware(webpackCompiler, {
+                        publicPath: webpackConfig.output.publicPath,
+                        logger: logger
+                    }));
+                    webServer.use(express.static(defArgs.staticDir));
+                    logger.info("  using webpack dev middleware");
+                } else {
+                    /* Assume that anything not dev is just production.
+                     * This gives sane defaults for anyone who isn't messing with this */
+                    logger.info("  serving static files from '" + defArgs.staticDir + "'");
+                    webServer.use(express.static(defArgs.staticDir, {maxAge: staticMaxAgeSecs * 1000}));
                 }
-                if (staticManifest.hasOwnProperty(path)) {
-                    return "dist/" + staticManifest[path];
+
+                morgan.token('gdpr_ip', req => utils.anonymizeIp(req.ip));
+
+                // Based on combined format, but: GDPR compliant IP, no timestamp & no unused fields for our usecase
+                const morganFormat = isDevMode() ? 'dev' : ':gdpr_ip ":method :url" :status';
+
+                webServer
+                    .use(Raven.requestHandler())
+                    .set('trust proxy', true)
+                    .set('view engine', 'pug')
+                    // before morgan so healthchecks aren't logged
+                    .use('/healthcheck', new healthCheck.HealthCheckHandler().handle)
+                    .use(morgan(morganFormat, {
+                        stream: logger.stream,
+                        // Skip for non errors (2xx, 3xx)
+                        skip: (req, res) => res.statusCode >= 400
+                    }))
+                    .use(morgan(morganFormat, {
+                        stream: logger.warnStream,
+                        // Skip for non user errors (4xx)
+                        skip: (req, res) => res.statusCode < 400 || res.statusCode >= 500
+                    }))
+                    .use(morgan(morganFormat, {
+                        stream: logger.errStream,
+                        // Skip for non server errors (5xx)
+                        skip: (req, res) => res.statusCode < 500
+                    }))
+                    .use(compression())
+                    .get('/', (req, res) => {
+                        staticHeaders(res);
+                        contentPolicyHeader(res);
+                        res.render('index', renderConfig({embedded: false}));
+                    })
+                    .get('/e', embeddedHandler)
+                    // legacy. not a 301 to prevent any redirect loops between old e links and embed.html
+                    .get('/embed.html', embeddedHandler)
+                    .get('/embed-ro', (req, res) => {
+                        staticHeaders(res);
+                        contentPolicyHeader(res);
+                        res.render('embed', renderConfig({embedded: true, readOnly: true}));
+                    })
+                    .get('/robots.txt', (req, res) => {
+                        staticHeaders(res);
+                        res.end('User-agent: *\nSitemap: https://godbolt.org/sitemap.xml\nDisallow:');
+                    })
+                    .get('/sitemap.xml', (req, res) => {
+                        staticHeaders(res);
+                        res.set('Content-Type', 'application/xml');
+                        res.render('sitemap');
+                    })
+                    .use(sFavicon(path.join(defArgs.staticDir, webpackConfig.output.publicPath, 'favicon.ico')))
+                    .use(bodyParser.json({limit: ceProps('bodyParserLimit', maxUploadSize)}))
+                    .use(bodyParser.text({limit: ceProps('bodyParserLimit', maxUploadSize), type: () => true}))
+                    .use(restreamer())
+                    .use('/source', sourceHandler.handle.bind(sourceHandler))
+                    .use('/api', apiHandler.handle)
+                    .use('/g', oldGoogleUrlHandler)
+                    .get('/z/:id', storedStateHandler)
+                    .post('/shortener', storageHandler.handler.bind(storageHandler))
+                    .use((req, res, next) => {
+                        next({status: 404, message: `page "${req.path}" could not be found`});
+                    })
+                    .use((err, req, res, next) => {
+                        Raven.errorHandler()(err, req, res, next);
+                    })
+                    // eslint-disable-next-line no-unused-vars
+                    .use((err, req, res, next) => {
+                        const status =
+                            err.status ||
+                            err.statusCode ||
+                            err.status_code ||
+                            (err.output && err.output.statusCode) ||
+                            500;
+                        const message = err.message || 'Internal Server Error';
+                        res.status(status);
+                        res.render('error', renderConfig({ error: {code: status, message: message} }));
+                    })
+                    .on('error', err => logger.error('Caught error:', err, "(in web handler; continuing)"));
+                if (!defArgs.doCache) {
+                    logger.info("  with disabled caching");
                 }
-                if (assetManifest.hasOwnProperty(path)) {
-                    return "dist/assets/" + assetManifest[path];
-                }
-                logger.warn("Requested an asset I don't know about");
-            };
-            return options;
-        }
-
-        const embeddedHandler = function (req, res) {
-            staticHeaders(res);
-            contentPolicyHeader(res);
-            res.render('embed', renderConfig({embedded: true}));
-        };
-        const healthCheck = require('./lib/handlers/health-check');
-
-        if (isDevMode()) {
-            webServer.use(webpackDevMiddleware(webpackCompiler, {
-                publicPath: webpackConfig.output.publicPath,
-                logger: logger
-            }));
-            webServer.use(express.static(defArgs.staticDir));
-        } else {
-            /* Assume that anything not dev is just production.
-             * This gives sane defaults for anyone who isn't messing with this */
-            logger.info("  serving static files from '" + defArgs.staticDir + "'");
-            webServer.use(express.static(defArgs.staticDir, {maxAge: staticMaxAgeSecs * 1000}));
-        }
-
-        webServer
-            .use(Raven.requestHandler())
-            .set('trust proxy', true)
-            .set('view engine', 'pug')
-            // before morgan so healthchecks aren't logged
-            .use('/healthcheck', new healthCheck.HealthCheckHandler().handle)
-            .use(morgan('combined', {stream: logger.stream}))
-            .use(compression())
-            .get('/', (req, res) => {
-                staticHeaders(res);
-                contentPolicyHeader(res);
-                res.render('index', renderConfig({embedded: false}));
+                startListening(webServer);
             })
-            .get('/e', embeddedHandler)
-            // legacy. not a 301 to prevent any redirect loops between old e links and embed.html
-            .get('/embed.html', embeddedHandler)
-            .get('/embed-ro', (req, res) => {
-                staticHeaders(res);
-                contentPolicyHeader(res);
-                res.render('embed', renderConfig({embedded: true, readOnly: true}));
-            })
-            .get('/robots.txt', (req, res) => {
-                staticHeaders(res);
-                res.end('User-agent: *\nSitemap: https://godbolt.org/sitemap.xml');
-            })
-            .get('/sitemap.xml', (req, res) => {
-                staticHeaders(res);
-                res.set('Content-Type', 'application/xml');
-                res.render('sitemap');
-            })
-            .use(sFavicon(path.join(defArgs.staticDir, webpackConfig.output.publicPath, 'favicon.ico')));
-
-        webServer
-            .use(bodyParser.json({limit: ceProps('bodyParserLimit', maxUploadSize)}))
-            .use(bodyParser.text({limit: ceProps('bodyParserLimit', maxUploadSize), type: () => true}))
-            .use(restreamer())
-            .use('/source', sourceHandler.handle.bind(sourceHandler))
-            .use('/api', apiHandler.handle)
-            .use('/g', shortUrlHandler);
-        if (!defArgs.doCache) {
-            logger.info("  not caching due to --noCache parameter being present");
-        }
-        webServer.use(Raven.errorHandler());
-        webServer.on('error', err => logger.error('Caught error:', err, "(in web error handler; continuing)"));
-
-        startListening(webServer);
+            .catch(err => {
+                logger.error("Promise error:", err, "(shutting down)");
+                process.exit(1);
+            });
     })
     .catch(err => {
-        logger.error("Promise error:", err, "(shutting down)");
+        logger.error("AWS Init Promise error", err, "(shutting down)");
         process.exit(1);
     });
