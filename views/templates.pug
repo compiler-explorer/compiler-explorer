@@ -223,9 +223,8 @@
           input.options.form-control(type="text" placeholder="Compiler options..." size="256" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false")
       .col-1
         span.btn.btn-light.btn-sm.status
-        button.close(aria-label="Close")
-          span(aria-hidden="true")
-            | &times;
+        button.fas.fa-times.close(aria-label="Close" title="Close")
+        button.fas.fa-share.close.extract-compiler(aria-label="Pop compiler" title="Show compiler")
 
   #libs-dropdown
     .no-libs

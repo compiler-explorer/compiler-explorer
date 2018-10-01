@@ -329,7 +329,7 @@ Conformance.prototype.addCompilerSelector = function (config) {
         .on("change", onOptionsChange)
         .on("keyup", onOptionsChange);
 
-    newEntry.find('.close')
+    newEntry.find('.close').not('.extract-compiler')
         .on("click", _.bind(function () {
             this.removeCompilerSelector(newEntry);
         }, this));
@@ -343,11 +343,14 @@ Conformance.prototype.addCompilerSelector = function (config) {
         return compiler.lang === langId;
     };
 
+    var popCompilerButton = newEntry.find('.extract-compiler');
+
     var onCompilerChange = _.bind(function (compilerId) {
+        popCompilerButton.toggleClass('d-none', !compilerId);
         // Hide the results icon when a new compiler is selected
         this.handleStatusIcon(status, {code: 0, text: ""});
         var compiler = this.compilerService.findCompiler(langId, compilerId);
-        prependOptions.prop('title', compiler.options);
+        if (compiler) prependOptions.prop('title', compiler.options);
     }, this);
 
     var compilerPicker = newEntry.find('.compiler-picker')
@@ -370,11 +373,7 @@ Conformance.prototype.addCompilerSelector = function (config) {
         }, this));
     onCompilerChange(config.compilerId);
 
-    var popCompilerButton = $('<td></td>')
-        .append($('<button></button>')
-            .addClass('close glyphicon glyphicon-share-alt')
-        );
-    newEntry.append(popCompilerButton);
+
     var getCompilerConfig = _.bind(function () {
         return Components.getCompilerWith(
             this.editorId, undefined, optionsField.val(), compilerPicker.val(), this.langId, this.lastState.libs);
