@@ -35,7 +35,7 @@ function makeFontSizeDropdown(elem, interval, obj, buttonDropdown) {
 
     var onWheelEvent = function (e) {
         e.preventDefault();
-        var selectedId = elem.find('.font-option-active').index();
+        var selectedId = elem.find('.active').index();
         if (e.originalEvent.deltaY >= 0 && selectedId < elem.children().length - 1) {
             selectedId++;
         } else if (e.originalEvent.deltaY < 0 && selectedId > 0) {
@@ -47,8 +47,8 @@ function makeFontSizeDropdown(elem, interval, obj, buttonDropdown) {
     var onClickEvent = function () {
         // Toggle off the selection of the others
         $(this)
-            .addClass('font-option-active')
-            .siblings().removeClass('font-option-active');
+            .addClass('active')
+            .siblings().removeClass('active');
         // Send the data
         obj.scale = $(this).data('value');
         obj.apply();
@@ -62,7 +62,7 @@ function makeFontSizeDropdown(elem, interval, obj, buttonDropdown) {
         newElement.addClass('font-option dropdown-item btn btn-light btn-sm');
         if (!found && (i === obj.scale || Math.floor(i) === obj.scale)) {
             found = true;
-            newElement.addClass('font-option-active');
+            newElement.addClass('active');
         }
         newElement.text(Math.round(i * factor));
         newElement

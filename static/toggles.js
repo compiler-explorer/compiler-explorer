@@ -1,4 +1,4 @@
-// Copyright (c) 2016, Matt Godbolt
+// Copyright (c) 2018, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -27,52 +27,88 @@ var _ = require('underscore');
 var $ = require('jquery');
 var EventEmitter = require('events');
 
-function get(buttons) {
-    var result = {};
-    _.each(buttons, function (a) {
-        var obj = $(a);
-        result[obj.data().bind] = obj.hasClass("active");
-    });
-    return result;
-}
 
-function Toggles(root, state) {
+function Togglesv2(root, state) {
     EventEmitter.call(this);
-    this.domRoot = root;
-    this.buttons = this.domRoot.find('.btn').not('.fs-button').not('.font-option');
-    state = _.extend(get(this.buttons), state);
-    this.buttons
-        .click(_.bind(this.onClick, this))
-        .each(function () {
-            $(this).toggleClass('active', !!state[$(this).data().bind]);
+    var buttons = root.find('.button-checkbox');
+    var self = this;
+    this.state = _.extend({}, state);
+    // Based on https://bootsnipp.com/snippets/featured/jquery-checkbox-buttons
+    buttons.each(function () {
+        // Settings
+        var $widget = $(this),
+            $button = $widget.find('button'),
+            $checkbox = $widget.find('input:checkbox'),
+            bind = $button.data('bind'),
+            settings = {
+                on: {
+                    icon: 'far fa-check-square'
+                },
+                off: {
+                    icon: 'far fa-square'
+                }
+            };
+
+        // Event Handlers
+        $button.on('click', function () {
+            $checkbox.prop('checked', !$checkbox.is(':checked'));
+            $checkbox.triggerHandler('change');
+            updateDisplay();
         });
-    this.state = state;
+        $checkbox.on('change', function () {
+            self.set(bind, $checkbox.is(':checked'));
+            updateDisplay();
+        });
+
+        // Actions
+        function updateDisplay(forcedState) {
+            if (forcedState !== undefined) {
+                $checkbox.prop('checked', forcedState);
+            }
+            var isChecked = $checkbox.is(':checked');
+
+
+            // Set the button's state
+            $button.data('state', (isChecked) ? "on" : "off");
+
+            // Set the button's icon
+            $button.find('.state-icon')
+                .removeClass()
+                .addClass('state-icon ' + settings[$button.data('state')].icon);
+
+            // Update the button's color
+            $button.toggleClass('active', isChecked);
+        }
+
+        // Initialization
+        function init() {
+            updateDisplay(self.state[bind]);
+
+            // Inject the icon if applicable
+            if ($button.find('.state-icon').length === 0) {
+                $button.prepend('<i class="state-icon ' + settings[$button.data('state')].icon + '"></i> ');
+            }
+        }
+        init();
+    });
 }
 
-_.extend(Toggles.prototype, EventEmitter.prototype);
+_.extend(Togglesv2.prototype, EventEmitter.prototype);
 
-Toggles.prototype.get = function () {
+Togglesv2.prototype.get = function () {
     return _.clone(this.state);
 };
 
-Toggles.prototype.set = function (key, value) {
+Togglesv2.prototype.set = function (key, value) {
     this._change(function () {
         this.state[key] = value;
     }.bind(this));
 };
 
-Toggles.prototype._change = function (update) {
+Togglesv2.prototype._change = function (update) {
     var before = this.get();
     update();
     this.emit('change', before, this.get());
 };
 
-Toggles.prototype.onClick = function (event) {
-    var button = $(event.currentTarget);
-    if (button.hasClass('disabled')) return;
-    this._change(_.bind(function () {
-        this.state = get(this.buttons);
-    }, this));
-};
-
-module.exports = Toggles;
+module.exports = Togglesv2;
