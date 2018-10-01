@@ -256,7 +256,7 @@ Conformance.prototype.markLibraryAsUsed = function (name, version) {
 Conformance.prototype.initButtons = function () {
     this.selectorList = this.domRoot.find('.compiler-list');
     this.addCompilerButton = this.domRoot.find('.add-compiler');
-    this.selectorTemplate = $('#compiler-selector').find('.compiler-row');
+    this.selectorTemplate = $('#compiler-selector').find('.form-row');
     this.topBar = this.domRoot.find('.top-bar');
     this.libsButton = this.topBar.find('.show-libs');
     this.libsTemplates = $('.template #libs-dropdown');
@@ -347,12 +347,7 @@ Conformance.prototype.addCompilerSelector = function (config) {
         // Hide the results icon when a new compiler is selected
         this.handleStatusIcon(status, {code: 0, text: ""});
         var compiler = this.compilerService.findCompiler(langId, compilerId);
-        if (compiler) {
-            prependOptions.prop('title', compiler.options);
-            prependOptions.toggle(!!compiler.options);
-        } else {
-            prependOptions.hide();
-        }
+        prependOptions.prop('title', compiler.options);
     }, this);
 
     var compilerPicker = newEntry.find('.compiler-picker')
@@ -443,7 +438,6 @@ Conformance.prototype.onCompileResponse = function (child, result) {
     };
 
     child.find('.prepend-options')
-        .toggle(!!result.compilationOptions)
         .prop('title', result.compilationOptions ? result.compilationOptions.join(' ') : '');
 
     this.handleStatusIcon(child.find('.status'), status);
@@ -530,17 +524,18 @@ Conformance.prototype.handleStatusIcon = function (element, status) {
     }
 
     element
-        .toggleClass('status', true)
+        .removeClass()
+        .addClass('status fas')
         .css("color", color(status.code))
         .toggle(status.code !== 0)
         .prop("title", status.text)
         .prop("aria-label", ariaLabel(status.code))
         .prop("data-status", status.code);
 
-    element.toggleClass('glyphicon-tasks', status.code === 4);
-    element.toggleClass('glyphicon-remove-sign', status.code === 3);
-    element.toggleClass('glyphicon-info-sign', status.code === 2);
-    element.toggleClass('glyphicon-ok-sign', status.code === 1);
+    element.toggleClass('fa-spinner', status.code === 4);
+    element.toggleClass('fa-minus-circle', status.code === 3);
+    element.toggleClass('fa-exclamation-circle', status.code === 2);
+    element.toggleClass('fa-check-circle', status.code === 1);
 };
 
 Conformance.prototype.currentState = function () {

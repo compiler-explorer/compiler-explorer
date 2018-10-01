@@ -53,10 +53,8 @@ function Togglesv2(root, state) {
         $button.on('click', function () {
             $checkbox.prop('checked', !$checkbox.is(':checked'));
             $checkbox.triggerHandler('change');
-            updateDisplay();
         });
         $checkbox.on('change', function () {
-            self.set(bind, $checkbox.is(':checked'));
             updateDisplay();
         });
 
@@ -66,7 +64,6 @@ function Togglesv2(root, state) {
                 $checkbox.prop('checked', forcedState);
             }
             var isChecked = $checkbox.is(':checked');
-
 
             // Set the button's state
             $button.data('state', (isChecked) ? "on" : "off");
@@ -78,6 +75,9 @@ function Togglesv2(root, state) {
 
             // Update the button's color
             $button.toggleClass('active', isChecked);
+            if (forcedState === undefined) {
+                self.set(bind, isChecked);
+            }
         }
 
         // Initialization

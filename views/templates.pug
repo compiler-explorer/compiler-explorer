@@ -42,7 +42,7 @@
                   | &nbsp;Compiler
                 button.dropdown-item.btn.btn-light.btn-sm.conformance(title="Add a new conformance view" aria-label="Conformance view")
                   span.fa.fa-list
-                  | &nbsp;Conf. view
+                  | &nbsp;Conformance view
         ul.nav.nav-right
           li.nav-item
             select.change-language(title="Change this editor's (and associated panels) language" disabled=embedded && readOnly)
@@ -144,9 +144,11 @@
     .top-bar.btn-toolbar.options-toolbar.bg-light(role="toolbar")
       ul.nav.nav-pills.nav-left.bg-light.mr-auto
         include font-size
-        li.nav-item
-          button.btn.nav-link.btn-light.btn-sm.wrap-lines(title="Wrap lines" data-bind="wrap" data-toggle="button")
-            | Wrap lines
+        li.nav-item.options
+          .button-checkbox
+            button.nav-link.btn.btn-light.btn-sm.wrap-lines(type="button" title="Wrap lines" data-bind="wrap" aria-pressed="false" data-toggle="button")
+              span Wrap lines
+            input.d-none(type="checkbox" checked=false)
     pre.content
 
   #diff
@@ -194,33 +196,36 @@
     div.graph-placeholder
 
   #conformance
-    .top-bar.tn-toolbar(role="toolbar")
-      .btn-group.btn-group-sm
-        button.btn.btn-light.btn-sm.add-compiler(title="Add compiler")
-          span.fas.fa-plus
-          span.hideable &nbsp;Add new compiler
-        button.btn.btn-light.btn-sm.show-libs.dropdown-toggle
-          span.fas.fa-book(title="Include libs")
-          span.hideable &nbsp;Libraries
-          | #[b.caret]
+    .top-bar.btn-toolbar.options-toolbar.bg-light(role="toolbar")
+      ul.nav.nav-pills.nav-left.bg-light.mr-auto
+        li.nav-item
+          button.nav-link.btn.btn-light.btn-sm.add-compiler(title="Add compiler")
+            span.fas.fa-plus
+            span.hideable &nbsp;Add compiler
+        li.nav-item
+          button.nav-link.btn.btn-light.btn-sm.show-libs.dropdown-toggle(title="Include libs" aria-pressed="false")
+            span.fas.fa-book
+            span.hideable &nbsp;Libraries
+            | #[b.caret]
+
     .conformance-wrapper
       table.compiler-list
 
   #compiler-selector
-    table
-      tr.compiler-row
-        td
-          span.status.glyphicon
-        td
-          select.compiler-picker(placeholder="Select a compiler...")
-        td
-          input.options.form-control(type="text" size="256" placeholder="Compiler options..." autocorrect="off" autocapitalize="off" spellcheck="false")
-        td
-          span.glyphicon.glyphicon-info-sign.prepend-options
-        td
-          button.close(aria-label="Close")
-            span(aria-hidden="true")
-              | &times;
+    .form-row
+      .col-auto
+        select.compiler-picker(placeholder="Select a compiler...")
+      .col
+        .input-group.mb-auto
+          .input-group-prepend.prepend-options
+            span.input-group-text
+              | ...
+          input.options.form-control(type="text" placeholder="Compiler options..." size="256" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false")
+      .col-1
+        span.btn.btn-light.btn-sm.status
+        button.close(aria-label="Close")
+          span(aria-hidden="true")
+            | &times;
 
   #libs-dropdown
     .no-libs
