@@ -40,6 +40,7 @@ const nopt = require('nopt'),
     logger = require('./lib/logger').logger,
     webpackDevMiddleware = require("webpack-dev-middleware"),
     utils = require('./lib/utils'),
+    clientState = require('./lib/clientstate'),
     clientStateGoldenifier = require('./lib/clientstate-normalizer').ClientStateGoldenifier,
     clientStateNormalizer = require('./lib/clientstate-normalizer').ClientStateNormalizer;
 
@@ -175,6 +176,12 @@ function contentPolicyHeader(res) {
     if (csp) {
         res.setHeader('Content-Security-Policy', csp);
     }
+}
+
+function getGoldenLayoutFromClientState(state) {
+    const goldenifier = new clientStateGoldenifier();
+    goldenifier.fromClientState(state);
+    return goldenifier.golden;
 }
 
 const awsProps = props.propsFor("aws");
@@ -369,11 +376,11 @@ aws.initConfig(awsProps)
                                 const normalizer = new clientStateNormalizer();
                                 normalizer.fromGoldenLayout(config);
                                 config = normalizer.normalized;
+                            } else {
+                                config = new clientState.State(config);
                             }
 
-                            const goldenifier = new clientStateGoldenifier();
-                            goldenifier.fromClientState(config);
-                            config = goldenifier.golden;
+                            config = getGoldenLayoutFromClientState(config);
 
                             const metadata = {
                                 ogDescription: result.specialMetadata ? result.specialMetadata.description.S : null,
@@ -423,7 +430,10 @@ aws.initConfig(awsProps)
                     const id = req.params.id;
                     storageHandler.expandId(id)
                         .then(result => {
-                            const config = JSON.parse(result.config);
+                            let config = JSON.parse(result.config);
+                            if (config.sessions) {
+                                config = getGoldenLayoutFromClientState(new clientState.State(config))
+                            }
                             const metadata = {
                                 ogDescription: result.specialMetadata ? result.specialMetadata.description.S : null,
                                 ogAuthor: result.specialMetadata ? result.specialMetadata.author.S : null,
