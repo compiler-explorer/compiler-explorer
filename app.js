@@ -432,7 +432,7 @@ aws.initConfig(awsProps)
                         .then(result => {
                             let config = JSON.parse(result.config);
                             if (config.sessions) {
-                                config = getGoldenLayoutFromClientState(new clientState.State(config))
+                                config = getGoldenLayoutFromClientState(new clientState.State(config));
                             }
                             const metadata = {
                                 ogDescription: result.specialMetadata ? result.specialMetadata.description.S : null,
