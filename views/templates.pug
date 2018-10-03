@@ -23,103 +23,96 @@
       .socialsharing
 
   #codeEditor
-    .top-bar.btn-toolbar.bg-light(role="toolbar")
-        ul.nav.nav-pills.nav-left.bg-light.mr-auto
-          include font-size.pug
-          if !embedded
-            li.nav-item
-              button.nav-link.btn.btn-light.btn-sm.load-save(title="Load or save text")
-                span.fa.fa-save
-                span.hideable &nbsp;Save/Load
-            li.nav-item.dropdown
-              button.nav-link.dropdown-toggle.btn.btn-light.btn-sm.add-pane(type="button" title="Add a new pane" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
-                span.fa.fa-plus
-                span.hideable &nbsp;Add new...
-                | #[b.caret]
-              .dropdown-menu(aria-labelledby="add-pane")
-                button.dropdown-item.btn.btn-light.btn-sm.add-compiler(title="Add a new compiler for this source" aria-label="Compiler")
-                  span.fa.fa-cogs
-                  | &nbsp;Compiler
-                button.dropdown-item.btn.btn-light.btn-sm.conformance(title="Add a new conformance view" aria-label="Conformance view")
-                  span.fa.fa-list
-                  | &nbsp;Conformance view
-        ul.nav.nav-right
-          li.nav-item
-            select.change-language(title="Change this editor's (and associated panels) language" disabled=embedded && readOnly)
+    .top-bar.btn-toolbar.bg-light(role="toolbar" aria-label="Editor toolbar")
+      include font-size.pug
+      .btn-group.btn-group-sm(role="group" aria-label="Editor settings")
+        button.btn.btn-light.load-save(title="Load or save text" aria-label="Load or save text")
+          span.fa.fa-save
+          span.hideable &nbsp;Save/Load
+        button.dropdown-toggle.btn.btn-light.add-pane(type="button" title="Add a new pane" aria-label="Add a new pane" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
+          span.fa.fa-plus
+          span.hideable &nbsp;Add new...
+          | #[b.caret]
+        .dropdown-menu
+          button.dropdown-item.btn.btn-sm.btn-light.add-compiler(title="Add a new compiler for this source" aria-label="New compiler")
+            span.fa.fa-cogs
+            | &nbsp;Compiler
+          button.dropdown-item.btn.btn-sm.btn-light.conformance(title="Add a new conformance view" aria-label="New conformance view")
+            span.fa.fa-list
+            | &nbsp;Conformance view
+      .btn-group.btn-group-sm(role="group" aria-label="Editor language")
+        select.change-language(title="Change this editor's (and associated panels) language" disabled=embedded && readOnly)
     .monaco-placeholder
 
   #compiler
     .top-bar.btn-toolbar.bg-light(role="toolbar")
-      .form-row
-        .col-auto
-          select.compiler-picker(placeholder="Select a compiler...")
-        .col
-          .input-group.mb-auto
-            .input-group-prepend.prepend-options
-              span.input-group-text
-                | ...
-            input.options.form-control(type="text" placeholder="Compiler options..." size="256" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false")
-      div.btn-group.btn-group-sm.filters(role="group" data-toggle="buttons" aria-label="Filters")
-        include font-size.pug
+      .btn-group.btn-group-sm(role="group" aria-label="Compiler picker")
+        select.compiler-picker(placeholder="Select a compiler...")
+        .input-group.mb-auto
+          .input-group-prepend.prepend-options
+            span.input-group-text
+              | ...
+          input.options.form-control(type="text" placeholder="Compiler options..." size="256" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false")
+      include font-size
+      .btn-group.btn-group-sm.filters(role="group" aria-label="Compiler filters")
         .button-checkbox
-          button.nav-link.btn.btn-light.btn-sm(type="button" title="Compile to binary and disassemble the output" data-bind="binary" aria-pressed="false" data-toggle="button")
+          button.btn.btn-light.btn-sm(type="button" title="Compile to binary and disassemble the output" data-bind="binary" aria-pressed="false")
             span 11010
           input.d-none(type="checkbox")
         .button-checkbox
-          button.nav-link.nav-link-sm.btn.btn-light.btn-sm(type="button" title="Execute the binary" data-bind="execute" aria-pressed="false" data-toggle="button")
+          button.nav-link-sm.btn.btn-light.btn-sm(type="button" title="Execute the binary" data-bind="execute" aria-pressed="false")
             span ./a.out
           input.d-none(type="checkbox")
         .button-checkbox
-          button.nav-link.btn.btn-light.btn-sm.active.nonbinary(type="button" title="Filter unused labels from the output" data-bind="labels" aria-pressed="true" data-toggle="button")
+          button.btn.btn-light.btn-sm.active.nonbinary(type="button" title="Filter unused labels from the output" data-bind="labels" aria-pressed="true")
             span .LX0:
           input.d-none(type="checkbox" checked=true)
         .button-checkbox
-          button.nav-link.btn.btn-light.btn-sm.active.nonbinary(type="button" title="Filter all assembler directives from the output" data-bind="directives" aria-pressed="true" data-toggle="button")
+          button.btn.btn-light.btn-sm.active.nonbinary(type="button" title="Filter all assembler directives from the output" data-bind="directives" aria-pressed="true")
             span .text
           input.d-none(type="checkbox" checked=true)
         .button-checkbox
-          button.nav-link.btn.btn-light.btn-sm.active.nonbinary(type="button" title="Remove all lines which are only comments from the output" data-bind="commentOnly" aria-pressed="true" data-toggle="button")
+          button.btn.btn-light.btn-sm.active.nonbinary(type="button" title="Remove all lines which are only comments from the output" data-bind="commentOnly" aria-pressed="true")
             span //
           input.d-none(type="checkbox" checked=true)
         .button-checkbox
-          button.nav-link.btn.btn-light.btn-sm(type="button" title="Trim intra-line whitespace" data-bind="trim" aria-pressed="false" data-toggle="button")
+          button.btn.btn-light.btn-sm(type="button" title="Trim intra-line whitespace" data-bind="trim" aria-pressed="false")
             span \s+
           input.d-none(type="checkbox")
         .button-checkbox
-          button.nav-link.btn.btn-light.btn-sm.active(type="button" title="Output disassembly in Intel syntax" data-bind="intel" aria-pressed="true" data-toggle="button")
+          button.btn.btn-light.btn-sm.active(type="button" title="Output disassembly in Intel syntax" data-bind="intel" aria-pressed="true")
             span Intel
           input.d-none(type="checkbox" checked=true)
         .button-checkbox
-          button.nav-link.btn.btn-light.btn-sm.active(type="button" title="Demangle output" data-bind="demangle" aria-pressed="true" data-toggle="button")
+          button.btn.btn-light.btn-sm.active(type="button" title="Demangle output" data-bind="demangle" aria-pressed="true")
             span Demangle
           input.d-none(type="checkbox" checked=true)
-      .btn-group.btn-group-sm
+      .btn-group.btn-group-sm(role="group" aria-label="Compiler additions")
         button.btn.btn-light.btn-sm.show-libs.dropdown-toggle
           span.fas.fa-book(title="Include libs")
           span.hideable &nbsp;Libraries
           | #[b.caret]
-      if !embedded
-        .btn-group.btn-group-sm.dropdown
-          button.btn.btn-light.btn-sm.dropdown-toggle.add-pane(type="button" title="Add a new pane" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
-            span.fas.fa-plus
-            span.hideable &nbsp;Add new...
-            | #[b.caret]
-          div.dropdown-menu.dropdown-menu-right(aria-labelledby="add-pane")
-            button.dropdown-item.btn.btn-light.btn-sm.add-compiler(title="Clone this compiler window (click or drag)")
-              span.far.fa-clone
-              | &nbsp;Clone compiler
-            button.dropdown-item.btn.btn-light.btn-sm.view-optimization(title="Show optimization output")
-              span.fas.fa-weight
-              | &nbsp;Optimization output
-            button.dropdown-item.btn.btn-light.btn-sm.view-ast(title="Show AST output")
-              span.fas.fa-leaf
-              | &nbsp;AST output
-            button.dropdown-item.btn.btn-light.btn-sm.view-gccdump(title="Show Tree/RTL dump (GCC only)")
-              span.fas.fa-tree
-              | &nbsp;GCC Tree/RTL output
-            button.dropdown-item.btn.btn-light.btn-sm.view-cfg(title="Show Graph Output")
-              span.fas.fa-exchange-alt
-              | &nbsp;Graph output
+        button.btn.btn-light.btn-sm.dropdown-toggle.add-pane(type="button" title="Add a new pane" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Add new element for this compiler")
+          span.fas.fa-plus
+          span.hideable &nbsp;Add new...
+          | #[b.caret]
+        .dropdown-menu.dropdown-menu-right
+          button.dropdown-item.btn.btn-light.btn-sm.add-compiler(title="Clone this compiler window (click or drag)")
+            span.far.fa-clone
+            | &nbsp;Clone compiler
+          button.dropdown-item.btn.btn-light.btn-sm.view-optimization(title="Show optimization output")
+            span.fas.fa-weight
+            | &nbsp;Optimization output
+          button.dropdown-item.btn.btn-light.btn-sm.view-ast(title="Show AST output")
+            span.fas.fa-leaf
+            | &nbsp;AST output
+          button.dropdown-item.btn.btn-light.btn-sm.view-gccdump(title="Show Tree/RTL dump (GCC only)")
+            span.fas.fa-tree
+            | &nbsp;GCC Tree/RTL output
+          button.dropdown-item.btn.btn-light.btn-sm.view-cfg(title="Show Graph Output")
+            span.fas.fa-exchange-alt
+            | &nbsp;Graph output
+
     .monaco-placeholder
     .bottom-bar
       if !embedded
