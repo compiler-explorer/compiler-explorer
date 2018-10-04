@@ -26,6 +26,7 @@ From oldest to newest contributor, we would like to thank:
 - [Alexander Monakov](https://github.com/amonakov)
 - [David Nadlinger](https://github.com/klickverbot)
 - [Carlos van Rooijen](https://github.com/CvRXX)
+- [Kaartic Sivaraam](https://github.com/sivaraam)
 - [Lilian A. Moraru](https://github.com/lilianmoraru)
 - [Tim Rakowski](https://github.com/racko)
 - [Hana Dusíková](https://github.com/hanickadot)
