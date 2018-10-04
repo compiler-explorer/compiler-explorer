@@ -3,7 +3,7 @@
     .input-group.urls-container
       .input-group-btn
         .btn-group.btn-group-sm
-          button.btn.btn-godbolt.btn-sm.dropdown-toggle(
+          button.btn.btn-light.btn-sm.dropdown-toggle(
           data-toggle="dropdown" type="button" aria-haspopup="true" aria-expanded="false")
             span.current Short
             span.caret
@@ -15,7 +15,7 @@
       input.form-control.input-sm.permalink(
       type="text" placeholder="Loading" readonly size="1024")
       span.input-group-btn
-        button.btn.btn-godbolt.btn-sm.clippy(
+        button.btn.btn-light.btn-sm.clippy(
         type="button" data-clipboard-target=".popover .permalink"
         title="Copy to clipboard")
           span.fa.fa-clipboard(style="width:13px")
@@ -49,7 +49,7 @@
       .btn-group.btn-group-sm(role="group" aria-label="Compiler picker")
         select.compiler-picker(placeholder="Select a compiler...")
         .input-group.mb-auto
-          .input-group-prepend.prepend-options
+          .input-group-prepend.prepend-options(style="cursor: help;")
             span.input-group-text
               | ...
           input.options.form-control(type="text" placeholder="Compiler options..." size="256" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false")
@@ -117,7 +117,7 @@
     .bottom-bar
       if !embedded
         .btn-group.btn-group-sm
-          button.btn.btn-godbolt.btn-sm.output-btn
+          button.btn.btn-light.btn-sm.output-btn
             span.fas.fa-receipt.status
             | &nbsp;Output
             span.output-count
@@ -130,7 +130,7 @@
               | )
         span.full-compiler-name
         span.compile-time
-        button.btn.btn-godbolt.btn-sm.clear-cache(title="Clear cache & recompile")
+        button.btn.btn-light.btn-sm.clear-cache(title="Clear cache & recompile")
           span.fas.fa-redo
 
   #compiler-output
@@ -171,9 +171,9 @@
         tr: td: select.gccdump-pass-picker(placeholder="Select a pass...")
       include font-size
       div.btn-group.btn-group-sm.dump-filters(data-toggle="buttons")
-          button.btn.btn-godbolt.btn-sm.active(title="Tree" data-bind="treeDump")
+          button.btn.btn-light.btn-sm.active(title="Tree" data-bind="treeDump")
             span Tree pass
-          button.btn.btn-godbolt.btn-sm.active(title="RTL" data-bind="rtlDump")
+          button.btn.btn-light.btn-sm.active(title="RTL" data-bind="rtlDump")
             span RTL pass
     .monaco-placeholder
 
@@ -183,9 +183,9 @@
         tr
           td: select.function-picker
       div.btn-group.btn-group-sm.options(data-toggle="buttons")
-        button.btn.btn-godbolt.btn-sm.toggle-navigation(title="Toggle navigation buttons" data-bind="navigation")
+        button.btn.btn-light.btn-sm.toggle-navigation(title="Toggle navigation buttons" data-bind="navigation")
           span Navigation
-        button.btn.btn-godbolt.btn-sm.toggle-physics(title="Toggle physics to nodes" data-bind="physics")
+        button.btn.btn-light.btn-sm.toggle-physics(title="Toggle physics to nodes" data-bind="physics")
           span Physics
     div.graph-placeholder
 
@@ -211,7 +211,7 @@
         select.compiler-picker(placeholder="Select a compiler...")
       .col
         .input-group.mb-auto
-          .input-group-prepend.prepend-options
+          .input-group-prepend.prepend-options(style="cursor: help;")
             span.input-group-text
               | ...
           input.options.form-control(type="text" placeholder="Compiler options..." size="256" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false")

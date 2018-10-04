@@ -1,142 +1,158 @@
 #load-save.modal.fade.gl_keep(tabindex="-1" role="dialog")
-  .modal-dialog
+  .modal-dialog.modal-lg
     .modal-content
       .modal-header
-        button.close(type="button" data-dismiss="modal" aria-hidden="true") &times;
-        h3.modal-title Load and save editor text
+        h5.modal-title Load and save editor text
+        button.close(type="button" data-dismiss="modal" aria-hidden="true" aria-label="Close")
+          span(aria-hidden="true")
+            | &times;
       .modal-body
-        div
-          ul.nav.nav-tabs(role="tablist")
-            li.active(role="presentation"): a(href="#load-examples" role="tab" data-toggle="tab") Examples
-            li(role="presentation"): a(href="#load-browser-local" role="tab" data-toggle="tab") Browser-local storage
-            li(role="presentation"): a(href="#load-file-system" role="tab" data-toggle="tab") File system
-          div.tab-content
+        .card
+          .card-header
+            ul.nav.nav-tabs.card-header-tabs(role="tablist")
+              li.nav-item.active(role="presentation"): a(href="#load-examples" role="tab" data-toggle="tab") Examples
+              li.nav-item(role="presentation"): a(href="#load-browser-local" role="tab" data-toggle="tab") Browser-local storage
+              li.nav-item(role="presentation"): a(href="#load-file-system" role="tab" data-toggle="tab") File system
+          .card-body.tab-content
             #load-examples.tab-pane.active(role="tabpanel")
-              h4 Load from examples:
+              h4.card-title Load from examples:
               ul.examples.small-v-scrollable
                 li.template: a(href="javascript:;")
             #load-browser-local.tab-pane(role="tabpanel")
-              h4 Load from browser-local storage:
+              h4.card-title Load from browser-local storage:
               ul.local-storage.small-v-scrollable
                 li.template: a(href="javascript:;")
               .form-group
                 input.save-name(type="text" size="20")
-                button.btn.btn-godbolt.save-button(type="button") Save to browser-local storage
+                button.btn.btn-light.save-button(type="button") Save to browser-local storage
             #load-file-system.tab-pane(role="tabpanel")
-              label.btn.btn-godbolt.btn-file Load from a local file
+              h4.card-title Load/save to your system
+              label.btn.btn-light.btn-file Load from a local file
                 input.local-file(type="file")
-              label.btn.btn-godbolt.btn-file.save-btn Save to file
+              label.btn.btn-light.btn-file.save-btn Save to file
                 input.save-file(type="button")
       .modal-footer
-        button.btn.btn-godbolt(type="button" data-dismiss="modal") Close
+        button.btn.btn-light(type="button" data-dismiss="modal" aria-label="Close") Close
 
 #alert.modal.fade.gl_keep(tabindex="-1" role="dialog")
-  .modal-dialog
+  .modal-dialog.modal-lg
     .modal-content
       .modal-header
-        button.close(type="button" data-dismiss="modal" aria-hidden="true") &times;
-        h3.modal-title Something alert worthy
+        h5.modal-title Something alert worthy
+        button.close(type="button" data-dismiss="modal" aria-hidden="true" aria-label="Close")
+          span(aria-hidden="true")
+            | &times;
       .modal-body
       .modal-footer
-        button.btn.btn-godbolt(type="button" data-dismiss="modal") Close
+        button.btn.btn-light(type="button" data-dismiss="modal") Close
 
 #yes-no.modal.fade.gl_keep(tabindex="-1" role="dialog")
-  .modal-dialog
+  .modal-dialog.modal-lg
     .modal-content
       .modal-header
-        button.close(type="button" data-dismiss="modal" aria-hidden="true") &times;
-        h3.modal-title Well, do you or not?
+        h5.modal-title Well, do you or not?
+        button.close(type="button" data-dismiss="modal" aria-hidden="true" aria-label="Close")
+          span(aria-hidden="true")
+            | &times;
       .modal-body
       .modal-footer
-        button.btn.btn-godbolt.no(type="button" data-dismiss="modal") No
-        button.btn.btn-godbolt.yes(type="button" data-dismiss="modal") Yes
+        button.btn.btn-light.no(type="button" data-dismiss="modal") No
+        button.btn.btn-light.yes(type="button" data-dismiss="modal") Yes
 
 #settings.modal.fade.gl_keep(tabindex="-1" role="dialog")
-  .modal-dialog
+  .modal-dialog.modal-lg
     .modal-content
       .modal-header
-        button.close(type="button" data-dismiss="modal" aria-hidden="true") &times;
-        h3.modal-title Compiler Explorer Settings
+        h5.modal-title Compiler Explorer Settings
+        button.close(type="button" data-dismiss="modal" aria-hidden="true" aria-label="Close")
+          span(aria-hidden="true")
+            | &times;
       .modal-body
-        .well.well-sm
-          | These settings control how Compiler Explorer acts for you. They are not
-          | preserved as part of shared URLs, and are persisted locally using browser
-          | local storage.
-        .well.well-sm
-          h4 Site behaviour
-          .form-group(role="group")
-            label
-              | Default language&nbsp;
-              small
-                span.glyphicon.glyphicon-info-sign(title="New editors only (Reset UI to clear yours)" aria-label="New editors only (Reset UI to clear yours)")
-              select.defaultLanguage
-            div
+        .card
+          .card-header
+            | These settings control how Compiler Explorer acts for you. They are not
+            | preserved as part of shared URLs, and are persisted locally using browser
+            | local storage.
+          .card-body
+            .card-title
+              h4 Site behaviour
+            .form-group(role="group")
               label
-                | Theme&nbsp;
-                select.theme
-            .checkbox
-              label
-                input.newEditorLastLang(type="checkbox")
-                | Use last selected language when opening new Editors
-            .checkbox
-              label
-                input.enableCommunityAds(type="checkbox")
-                | Show community events
-        .well.well-sm
-          h4 Editor
-          .form-group(role="group")
-            .checkbox
-              label
-                input.autoCloseBrackets(type="checkbox")
-                | Automatically insert matching brackets and parentheses
-            .checkbox
-              label
-                input.hoverShowSource(type="checkbox")
-                | Highlight linked code lines on hover
-            .checkbox
-              label
-                input.hoverShowAsmDoc(type="checkbox")
-                | Show asm description on hover
-            .checkbox
-              label
-                input.showQuickSuggestions(type="checkbox")
-                | Show quick suggestions
-            .checkbox
-              label
-                input.useCustomContextMenu(type="checkbox")
-                | Use custom context menu
-            .checkbox
-              label
-                input.showMinimap(type="checkbox")
-                | Show editor minimap
-            div
-              label
-                | &nbsp;Tab width&nbsp;
-                select.tabWidth
-            div
-              label
-                | Format based on&nbsp;
-                select.formatBase
-        .well.well-sm
-          h4 Compilation
-          .form-group(role="group")
-            div
+                | Default language&nbsp;
+                small
+                  span.glyphicon.glyphicon-info-sign(title="New editors only (Reset UI to clear yours)" aria-label="New editors only (Reset UI to clear yours)")
+                select.defaultLanguage
+              div
+                label
+                  | Theme&nbsp;
+                  select.theme
               .checkbox
                 label
-                  input.compileOnChange(type="checkbox")
-                  | Compile automatically when source changes
-              div Delay before compiling:&nbsp;
-                b 0.25s&nbsp;
-                .slider.slider-horizontal.delay
-                b &nbsp;3s
-            .checkbox
+                  input.newEditorLastLang(type="checkbox")
+                  | Use last selected language when opening new Editors
+              .checkbox
+                label
+                  input.enableCommunityAds(type="checkbox")
+                  | Show community events
+        .card
+          .card-body
+            .card-title
+              h4 Editor
+            .form-group(role="group")
+              .checkbox
+                label
+                  input.autoCloseBrackets(type="checkbox")
+                  | Automatically insert matching brackets and parentheses
+              .checkbox
+                label
+                  input.hoverShowSource(type="checkbox")
+                  | Highlight linked code lines on hover
+              .checkbox
+                label
+                  input.hoverShowAsmDoc(type="checkbox")
+                  | Show asm description on hover
+              .checkbox
+                label
+                  input.showQuickSuggestions(type="checkbox")
+                  | Show quick suggestions
+              .checkbox
+                label
+                  input.useCustomContextMenu(type="checkbox")
+                  | Use custom context menu
+              .checkbox
+                label
+                  input.showMinimap(type="checkbox")
+                  | Show editor minimap
+              div
+                label
+                  | &nbsp;Tab width&nbsp;
+                  select.tabWidth
+              div
+                label
+                  | Format based on&nbsp;
+                  select.formatBase
+        .card
+          .card-body
+            .card-title
+              h4 Compilation
+            .form-group(role="group")
+              div
+                .checkbox
+                  label
+                    input.compileOnChange(type="checkbox")
+                    | Compile automatically when source changes
+                div Delay before compiling:&nbsp;
+                  b 0.25s&nbsp;
+                  .slider.slider-horizontal.delay
+                  b &nbsp;3s
+              .checkbox
+                label
+                  input.colourise(type="checkbox")
+                  | Colourise lines to show how the source maps to the output
               label
-                input.colourise(type="checkbox")
-                | Colourise lines to show how the source maps to the output
-            label
-              | Colour scheme&nbsp;
-              select.colourScheme
+                | Colour scheme&nbsp;
+                select.colourScheme
       .modal-footer
-        button.btn.btn-godbolt(type="button" data-dismiss="modal") Close
+        button.btn.btn-light(type="button" data-dismiss="modal") Close
 
 #notifications
