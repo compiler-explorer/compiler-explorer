@@ -335,7 +335,7 @@ Conformance.prototype.addCompilerSelector = function (config) {
 
     this.selectorList.append(newEntry);
 
-    var status = newEntry.find('.status');
+    var status = newEntry.find('.status-icon');
     var prependOptions = newEntry.find('.prepend-options');
     var langId = this.langId;
     var isVisible = function (compiler) {
@@ -347,9 +347,9 @@ Conformance.prototype.addCompilerSelector = function (config) {
     var onCompilerChange = _.bind(function (compilerId) {
         popCompilerButton.toggleClass('d-none', !compilerId);
         // Hide the results icon when a new compiler is selected
-        this.handleStatusIcon(status, {code: 0, text: ""});
+        this.handleStatusIcon(status, {code: 0});
         var compiler = this.compilerService.findCompiler(langId, compilerId);
-        if (compiler) prependOptions.prop('title', compiler.options);
+        if (compiler) this.setCompilationOptionsPopover(prependOptions, compiler.options);
     }, this);
 
     var compilerPicker = newEntry.find('.compiler-picker')
@@ -391,6 +391,17 @@ Conformance.prototype.addCompilerSelector = function (config) {
     this.saveState();
 };
 
+Conformance.prototype.setCompilationOptionsPopover = function (element, content) {
+    element.popover('dispose');
+    element.popover({
+        content: content || 'No options in use',
+        template: '<div class="popover' +
+            (content ? ' compiler-options-popover' : '')  +
+            '" role="tooltip"><div class="arrow"></div>' +
+            '<h3 class="popover-header"></h3><div class="popover-body"></div></div>'
+    });
+};
+
 Conformance.prototype.removeCompilerSelector = function (element) {
     if (element) element.remove();
     this.handleToolbarUI();
@@ -430,15 +441,13 @@ Conformance.prototype.onCompileResponse = function (child, result) {
     var allText = _.pluck((result.stdout || []).concat(result.stderr || []), 'text').join("\n");
     var failed = result.code !== 0;
     var warns = !failed && !!allText;
-    var status = {
-        text: allText.replace(/\x1b\\[[0-9;]*m/, ''),
-        code: failed ? 3 : (warns ? 2 : 1)
-    };
 
-    child.find('.prepend-options')
-        .prop('title', result.compilationOptions ? result.compilationOptions.join(' ') : '');
-
-    this.handleStatusIcon(child.find('.status'), status);
+    this.setCompilationOptionsPopover(child.find('.prepend-options'),
+        result.compilationOptions ? result.compilationOptions.join(' ') : '');
+    child.find('.compiler-out')
+        .prop('title', allText.replace(/\x1b\[[0-9;]*m(.\[K)?/g, ''))
+        .toggleClass('d-none', !allText);
+    this.handleStatusIcon(child.find('.status-icon'), {code: failed ? 3 : (warns ? 2 : 1)});
     this.saveState();
 };
 
@@ -447,10 +456,8 @@ Conformance.prototype.compileChild = function (child) {
     var picker = child.find('.compiler-picker');
 
     if (!picker || !picker.val()) return;
-    this.handleStatusIcon(child.find('.status'), {
-        code: 4, // Compiling code
-        text: "Compiling"
-    });
+
+    this.handleStatusIcon(child.find('.status-icon'), {code: 4});
 
     this.expandSource().then(_.bind(function (expandedSource) {
         var request = {
@@ -523,17 +530,15 @@ Conformance.prototype.handleStatusIcon = function (element, status) {
 
     element
         .removeClass()
-        .addClass('status fas')
+        .addClass('status-icon fas fa-minus-circle')
         .css("color", color(status.code))
-        .toggle(status.code !== 0)
-        .prop("title", status.text)
         .prop("aria-label", ariaLabel(status.code))
-        .prop("data-status", status.code);
-
-    element.toggleClass('fa-spinner', status.code === 4);
-    element.toggleClass('fa-minus-circle', status.code === 3);
-    element.toggleClass('fa-exclamation-circle', status.code === 2);
-    element.toggleClass('fa-check-circle', status.code === 1);
+        .prop("data-status", status.code)
+        .toggle(status.code !== 0)
+        .toggleClass('fa-spinner', status.code === 4)
+        .toggleClass('fa-minus-circle', status.code === 3)
+        .toggleClass('fa-exclamation-circle', status.code === 2)
+        .toggleClass('fa-check-circle', status.code === 1);
 };
 
 Conformance.prototype.currentState = function () {

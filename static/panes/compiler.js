@@ -454,6 +454,8 @@ Compiler.prototype.sendCompile = function (request) {
         return;
     }
     this.eventHub.emit('compiling', this.id, this.compiler);
+    // Display the spinner
+    this.handleCompilationStatus({code: 4});
     this.pendingRequestSentAt = Date.now();
     // After a short delay, give the user some indication that we're working on their
     // compilation.
@@ -585,9 +587,7 @@ Compiler.prototype.onCompileResponse = function (request, result, cached) {
     var allText = _.pluck(stdout.concat(stderr), 'text').join('\n');
     var failed = result.code !== 0;
     var warns = !failed && !!allText;
-    this.statusLabel
-        .toggleClass('error', failed)
-        .toggleClass('warning', warns);
+    this.handleCompilationStatus({code: failed ? 3 : (warns ? 2 : 1)});
     this.outputTextCount.text(stdout.length);
     this.outputErrorCount.text(stderr.length);
     if (this.isOutputOpened) {
@@ -610,7 +610,7 @@ Compiler.prototype.onCompileResponse = function (request, result, cached) {
 
     this.eventHub.emit('compileResult', this.id, this.compiler, result, languages[this.currentLangId]);
     this.updateButtons();
-    this.prependOptions.prop('title', result.compilationOptions ? result.compilationOptions.join(' ') : '');
+    this.setCompilationOptionsPopover(result.compilationOptions ? result.compilationOptions.join(' ') : '');
     if (this.nextRequest) {
         var next = this.nextRequest;
         this.nextRequest = null;
@@ -764,6 +764,7 @@ Compiler.prototype.initButtons = function (state) {
 
     this.optionsField = this.domRoot.find('.options');
     this.prependOptions = this.domRoot.find('.prepend-options');
+    this.setCompilationOptionsPopover();
 
     this.filterBinaryButton = this.domRoot.find("[data-bind='binary']");
     this.filterBinaryTitle = this.filterBinaryButton.prop('title');
@@ -798,9 +799,10 @@ Compiler.prototype.initButtons = function (state) {
 
     this.topBar = this.domRoot.find('.top-bar');
     this.bottomBar = this.domRoot.find('.bottom-bar');
-    this.statusLabel = this.domRoot.find('.status');
+    this.statusLabel = this.domRoot.find('.status-text');
 
     this.hideable = this.domRoot.find('.hideable');
+    this.statusIcon = this.domRoot.find('.status-icon');
 
     this.monacoPlaceholder = this.domRoot.find('.monaco-placeholder');
 
@@ -912,7 +914,7 @@ Compiler.prototype.onFontScale = function () {
     this.saveState();
 };
 
-Compiler.prototype.initCallbacks = function () {
+Compiler.prototype.initListeners = function () {
     this.filters.on('change', _.bind(this.onFilterChange, this));
     this.fontScale.on('change', _.bind(this.onFontScale, this));
 
@@ -957,6 +959,10 @@ Compiler.prototype.initCallbacks = function () {
         }
     }, this);
     this.eventHub.on('languageChange', this.onLanguageChange, this);
+};
+
+Compiler.prototype.initCallbacks = function () {
+    this.initListeners();
 
     var optionsChange = _.debounce(_.bind(function (e) {
         this.onOptionsChange($(e.target).val());
@@ -1037,7 +1043,7 @@ Compiler.prototype.updateCompilerInfo = function () {
                 dismissTime: 5000
             });
         }
-        this.prependOptions.prop('title', this.compiler.options);
+        this.prependOptions.data('content', this.compiler.options);
     }
 };
 
@@ -1164,6 +1170,17 @@ Compiler.prototype.onCompilerSetDecorations = function (id, lineNums, revealLine
         });
         this.updateDecorations();
     }
+};
+
+Compiler.prototype.setCompilationOptionsPopover = function (content) {
+    this.prependOptions.popover('dispose');
+    this.prependOptions.popover({
+        content: content || 'No options in use',
+        template: '<div class="popover' +
+            (content ? ' compiler-options-popover' : '')  +
+            '" role="tooltip"><div class="arrow"></div>' +
+            '<h3 class="popover-header"></h3><div class="popover-body"></div></div>'
+    });
 };
 
 Compiler.prototype.onSettingsChange = function (newSettings) {
@@ -1470,6 +1487,42 @@ Compiler.prototype.updateLibsDropdown = function () {
         this.libsButton.popover('show');
     }, this)).on('show.bs.popover', function () {
     });
+};
+
+Compiler.prototype.handleCompilationStatus = function (status) {
+    if (!this.statusLabel || !this.statusIcon) return;
+
+    function ariaLabel(code) {
+        if (code === 4) return "Compiling";
+        if (code === 3) return "Compilation failed";
+        if (code === 2) return "Compiled with warnings";
+        return "Compiled without warnings";
+    }
+
+    function color(code) {
+        if (code === 4) return "black";
+        if (code === 3) return "red";
+        if (code === 2) return "#BBBB00";
+        return "green";
+    }
+
+    this.statusIcon
+        .removeClass()
+        .addClass('status-icon fas')
+        .css('color', color(status.code))
+        .toggle(status.code !== 0)
+        .prop('aria-label', ariaLabel(status.code))
+        .prop('data-status', status.code);
+
+    this.statusIcon
+        .toggleClass('fa-spinner', status.code === 4)
+        .toggleClass('fa-minus-circle', status.code === 3)
+        .toggleClass('fa-exclamation-circle', status.code === 2)
+        .toggleClass('fa-check-circle', status.code === 1);
+
+    this.statusLabel
+        .toggleClass('error', status === 3)
+        .toggleClass('warning', status === 2);
 };
 
 Compiler.prototype.onLanguageChange = function (editorId, newLangId) {

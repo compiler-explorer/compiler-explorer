@@ -49,9 +49,9 @@
       .btn-group.btn-group-sm(role="group" aria-label="Compiler picker")
         select.compiler-picker(placeholder="Select a compiler...")
         .input-group.mb-auto
-          .input-group-prepend.prepend-options(style="cursor: help;")
-            span.input-group-text
-              | ...
+          .input-group-prepend(title="Show all compilation options")
+            a.input-group-text.prepend-options(tabindex="0" data-trigger="focus" style="cursor: pointer;" role="button" title="All compilation options")
+              span.btn.btn-light.btn-sm.status-icon
           input.options.form-control(type="text" placeholder="Compiler options..." size="256" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false")
       include font-size
       .btn-group.btn-group-sm.filters(role="group" aria-label="Compiler filters")
@@ -118,7 +118,7 @@
       if !embedded
         .btn-group.btn-group-sm
           button.btn.btn-light.btn-sm.output-btn
-            span.fas.fa-receipt.status
+            span.fas.fa-receipt.status-text
             | &nbsp;Output
             span.output-count
               | &nbsp;(
@@ -177,30 +177,30 @@
     .monaco-placeholder
 
   #cfg
-    .top-bar.btn-toolbar.cfg-toolbar(role="toolbar")
-      table
-        tr
-          td: select.function-picker
-      div.btn-group.btn-group-sm.options(data-toggle="buttons")
-        button.btn.btn-light.btn-sm.toggle-navigation(title="Toggle navigation buttons" data-bind="navigation")
-          span Navigation
-        button.btn.btn-light.btn-sm.toggle-physics(title="Toggle physics to nodes" data-bind="physics")
-          span Physics
-    div.graph-placeholder
+    .top-bar.btn-toolbar.bg-light.cfg-toolbar(role="toolbar")
+      .btn-group.btn-group-sm(role="group")
+        select.function-picker
+      .btn-group.btn-group-sm.options(role="group")
+        .button-checkbox
+          button.btn.btn-light.btn-sm.toggle-navigation(type="button" title="Toggle navigation buttons" aria-pressed="false" data-bind="navigation")
+            span Nav
+          input.d-none(type="checkbox")
+        .button-checkbox
+          button.btn.btn-light.btn-sm.toggle-physics(type="button" title="Toggle physics to nodes" aria-pressed="false" data-bind="physics")
+            span Physics
+          input.d-none(type="checkbox")
+    .graph-placeholder
 
   #conformance
     .top-bar.btn-toolbar.options-toolbar.bg-light(role="toolbar")
-      ul.nav.nav-pills.nav-left.bg-light.mr-auto
-        li.nav-item
-          button.nav-link.btn.btn-light.btn-sm.add-compiler(title="Add compiler")
-            span.fas.fa-plus
-            span.hideable &nbsp;Add compiler
-        li.nav-item
-          button.nav-link.btn.btn-light.btn-sm.show-libs.dropdown-toggle(title="Include libs" aria-pressed="false")
-            span.fas.fa-book
-            span.hideable &nbsp;Libraries
-            | #[b.caret]
-
+      .btn-group.btn-group-sm(role="group")
+        button.btn.btn-light.btn-sm.add-compiler(title="Add compiler")
+          span.fas.fa-plus
+          span.hideable &nbsp;Add compiler
+        button.btn.btn-light.btn-sm.show-libs.dropdown-toggle(title="Include libs" aria-label="Toggle libraries dropdown" aria-pressed="false" aria-haspopup="true")
+          span.fas.fa-book
+          span.hideable &nbsp;Libraries
+          | #[b.caret]
     .conformance-wrapper
       table.compiler-list
 
@@ -210,12 +210,12 @@
         select.compiler-picker(placeholder="Select a compiler...")
       .col
         .input-group.mb-auto
-          .input-group-prepend.prepend-options(style="cursor: help;")
-            span.input-group-text
-              | ...
+          .input-group-prepend(title="Show all compilation options")
+            a.input-group-text.prepend-options(tabindex="0" data-trigger="focus" style="cursor: pointer;" role="button" title="All compilation options")
+              span.btn.btn-light.btn-sm.status-icon
           input.options.form-control(type="text" placeholder="Compiler options..." size="256" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false")
       .col-1
-        span.btn.btn-light.btn-sm.status
+        span.fas.fa-receipt.d-none.compiler-out(style="cursor: help;")
         button.fas.fa-times.close(aria-label="Close" title="Close")
         button.fas.fa-share.close.extract-compiler(aria-label="Pop compiler" title="Show compiler")
 

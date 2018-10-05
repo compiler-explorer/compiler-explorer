@@ -431,3 +431,7 @@ pre.content.wrap {
 .compiler-picker .selectize-dropdown-content .option {
     padding: 0 10px;
 }
+
+.compiler-options-popover {
+    font-family: monospace;
+}
