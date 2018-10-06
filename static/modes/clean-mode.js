@@ -1,4 +1,4 @@
-// Copyright (c) 2017, Rubén Rincón
+// Copyright (c) 2018, Compiler Explorer Team
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -124,5 +124,5 @@ function definition() {
     };
 }
 
-monaco.languages.register({id: 'haskell'});
-monaco.languages.setMonarchTokensProvider('haskell', definition());
+monaco.languages.register({id: 'clean'});
+monaco.languages.setMonarchTokensProvider('clean', definition());
