@@ -52,7 +52,7 @@ function definition() {
 
                 [/(\w*)(\s?)(::)/, ['keyword', 'white', 'operators']],
 
-                [/[+\-*/=<>]/, 'operators'],
+                [/[+\-*/=<>$]/, 'operators'],
 
                 [/[a-zA-Z_][a-zA-Z0-9_]*/, {
                     cases: {
