@@ -28,7 +28,8 @@ function definition() {
         defaultToken: 'invalid',
 
         keywords: [
-            'module', 'import', 'Start', 'where', 'otherwise', 'definition', 'implementation', 'from', 'class', 'instance', 'abort'
+            'module', 'import', 'Start', 'where', 'otherwise',
+            'definition', 'implementation', 'from', 'class', 'instance', 'abort'
         ],
 
         builtintypes: [
@@ -51,7 +52,7 @@ function definition() {
 
                 [/(\w*)(\s?)(::)/, ['keyword', 'white', 'operators']],
 
-                [/[+\-*\/=<>]/, 'operators'],
+                [/[+\-*/=<>]/, 'operators'],
 
                 [/[a-zA-Z_][a-zA-Z0-9_]*/, {
                     cases: {
@@ -61,7 +62,7 @@ function definition() {
                     }
                 }],
 
-                [/[()\[\],:]/, 'delimiter'],
+                [/[()[\],:]/, 'delimiter'],
 
                 [/@numbers/, 'number'],
 
