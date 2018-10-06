@@ -12,9 +12,11 @@
      - save example.extension to the new folder, the full path to this is the **inputFilename**
      - the **outputFilename** is determined by the `getOutputFilename()` method
      - execute the compiler.exe with the arguments from `OptionsForFilter()` and adding **inputFilename**
-  - if the compiler has problems with various paths, you could try to:
-     - override the `runCompiler()` method and add a **customCwd** parameter to execOptions
-     - add an **env** parameter if it requires special environment variables
+  - if the compiler has problems with the defaults, you will have to override the `runCompiler()` method
+  - when overriding `runCompiler()`, here are some ideas:
+     - set **execOptions.customCwd** parameter if the working directory needs to be somewhere else
+     - set **execOptions.env** parameter if the compiler requires special environment variables
+     - manipulate **options**, but make sure the user can still add their own arguments in CE
   - test with node app.js --debug so you see all execution arguments
 
 * Add static/modes/language-mode.js and *require* it in static/panes/editor.js
