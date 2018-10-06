@@ -28,7 +28,7 @@ function definition() {
         defaultToken: 'invalid',
 
         keywords: [
-            'module', 'import', 'Start', 'where', 'otherwise',
+            'module', 'import', 'main', 'where', 'otherwise',
             'definition', 'implementation', 'from', 'class', 'instance', 'abort'
         ],
 
@@ -37,7 +37,7 @@ function definition() {
         ],
 
         operators: [
-            '=', '==', '>=', '<=', '+', '-', '*', '/', '::', '->', '=:', '=>', '|'
+            '=', '==', '>=', '<=', '+', '-', '*', '/', '::', '->', '=:', '=>', '|', '$'
         ],
 
         numbers: /-?[0-9.]/,
