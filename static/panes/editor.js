@@ -38,6 +38,7 @@ require('../modes/d-mode');
 require('../modes/rust-mode');
 require('../modes/ispc-mode');
 require('../modes/haskell-mode');
+require('../modes/clean-mode');
 require('../modes/pascal-mode');
 require('../modes/cuda-mode');
 require('../modes/zig-mode');
