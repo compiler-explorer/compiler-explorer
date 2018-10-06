@@ -60,7 +60,7 @@
             span 11010
           input.d-none(type="checkbox")
         .button-checkbox
-          button.nav-link-sm.btn.btn-light.btn-sm(type="button" title="Execute the binary" data-bind="execute" aria-pressed="false")
+          button.btn.btn-light.btn-sm(type="button" title="Execute the binary" data-bind="execute" aria-pressed="false")
             span ./a.out
           input.d-none(type="checkbox")
         .button-checkbox
@@ -92,6 +92,7 @@
           span.fas.fa-book(title="Include libs")
           span.hideable &nbsp;Libraries
           | #[b.caret]
+      .btn-group.btn-group-sm(role="group")
         button.btn.btn-light.btn-sm.dropdown-toggle.add-pane(type="button" title="Add a new pane" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Add new element for this compiler")
           span.fas.fa-plus
           span.hideable &nbsp;Add new...

@@ -66,6 +66,10 @@ body {
     box-shadow: 0 0 0 0.2rem rgba(248, 249, 250, 0.5);
 }
 
+pre.content {
+    background-color: #f5f5f5;
+}
+
 .opcode {
     color: #066;
 }

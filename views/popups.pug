@@ -10,9 +10,9 @@
         .card
           .card-header
             ul.nav.nav-tabs.card-header-tabs(role="tablist")
-              li.nav-item.active(role="presentation"): a(href="#load-examples" role="tab" data-toggle="tab") Examples
-              li.nav-item(role="presentation"): a(href="#load-browser-local" role="tab" data-toggle="tab") Browser-local storage
-              li.nav-item(role="presentation"): a(href="#load-file-system" role="tab" data-toggle="tab") File system
+              li.nav-item(role="presentation"): a.nav-link.active(href="#load-examples" role="tab" data-toggle="tab") Examples
+              li.nav-item(role="presentation"): a.nav-link(href="#load-browser-local" role="tab" data-toggle="tab") Browser-local storage
+              li.nav-item(role="presentation"): a.nav-link(href="#load-file-system" role="tab" data-toggle="tab") File system
           .card-body.tab-content
             #load-examples.tab-pane.active(role="tabpanel")
               h4.card-title Load from examples:
@@ -27,9 +27,9 @@
                 button.btn.btn-light.save-button(type="button") Save to browser-local storage
             #load-file-system.tab-pane(role="tabpanel")
               h4.card-title Load/save to your system
-              label.btn.btn-light.btn-file Load from a local file
+              label.btn.btn-outline-secondary.btn-file(role="button") Load from a local file
                 input.local-file(type="file")
-              label.btn.btn-light.btn-file.save-btn Save to file
+              label.btn.btn-outline-secondary.btn-file.save-btn(role="button") Save to file
                 input.save-file(type="button")
       .modal-footer
         button.btn.btn-light(type="button" data-dismiss="modal" aria-label="Close") Close
