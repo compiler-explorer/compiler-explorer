@@ -25,8 +25,6 @@
 
 function definition() {
     return {
-        defaultToken: 'invalid',
-
         keywords: [
             'module', 'import', 'main', 'where', 'otherwise',
             'definition', 'implementation', 'from', 'class', 'instance', 'abort'
