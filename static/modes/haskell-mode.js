@@ -26,7 +26,7 @@
 function definition() {
     return {
         keywords: [
-            'module', 'import', 'main', 'where', 'otherwise',
+            'module', 'import', 'main', 'where', 'otherwise', 'newtype',
             'definition', 'implementation', 'from', 'class', 'instance', 'abort'
         ],
 
@@ -76,7 +76,8 @@ function definition() {
             whitespace: [
                 [/[ \t\r\n]+/, 'white'],
                 [/\/\*/, 'comment', '@comment'],
-                [/\/\/.*$/, 'comment']
+                [/\/\/.*$/, 'comment'],
+                [/--.*$/, 'comment']
             ],
         }
     };
