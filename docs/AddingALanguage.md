@@ -17,6 +17,8 @@
      - add an **env** parameter if it requires special environment variables
   - test with node app.js --debug so you see all execution arguments
 
+* Add static/modes/language-mode.js and *require* it in static/panes/editor.js
+
 * Add a basic lib/compilers/language.js (and reference to it in etc/config/language.defaults.properties as the **compilerType**)
 
 * You can check http://127.0.0.1:10240/api/compilers to be sure your language and compiler are there
