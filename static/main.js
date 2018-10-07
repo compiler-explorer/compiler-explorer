@@ -240,7 +240,19 @@ require("monaco-loader")().then(function () {
         return config;
     }
 
+    function initializeResetLayoutLink() {
+        var currentUrl = document.URL;
+        if (currentUrl.includes("/z/")) {
+            $("#ui-brokenlink").attr("href", currentUrl.replace("/z/", "/resetlayout/"));
+            $("#ui-brokenlink").show();
+        } else {
+            $("#ui-brokenlink").hide();
+        }
+    }
+
     function start() {
+        initializeResetLayoutLink();
+
         var options = require('options');
 
         var subdomainPart = window.location.hostname.split('.')[0];

@@ -366,7 +366,7 @@ aws.initConfig(awsProps)
                     return code;
                 }
 
-                function storedStateHandlerRebuilt(req, res, next) {
+                function storedStateHandlerResetLayout(req, res, next) {
                     const id = req.params.id;
                     storageHandler.expandId(id)
                         .then(result => {
@@ -555,7 +555,7 @@ aws.initConfig(awsProps)
                     .use('/api', apiHandler.handle)
                     .use('/g', oldGoogleUrlHandler)
                     .get('/z/:id', storedStateHandler)
-                    .get('/y/:id', storedStateHandlerRebuilt)
+                    .get('/resetlayout/:id', storedStateHandlerResetLayout)
                     .post('/shortener', storageHandler.handler.bind(storageHandler))
                     .use((req, res, next) => {
                         next({status: 404, message: `page "${req.path}" could not be found`});
