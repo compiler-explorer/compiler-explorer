@@ -295,6 +295,11 @@ require("monaco-loader")().then(function () {
             hub = new Hub(layout, subLangId);
         } catch (e) {
             Raven.captureException(e);
+
+            if (document.URL.includes("/z/")) {
+                document.location = document.URL.replace("/z/", "/resetlayout/");
+            }
+
             layout = new GoldenLayout(defaultConfig, root);
             hub = new Hub(layout, subLangId);
         }
