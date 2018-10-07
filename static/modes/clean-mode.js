@@ -27,11 +27,12 @@ function definition() {
     return {
         keywords: [
             'module', 'import', 'Start', 'where', 'otherwise',
-            'definition', 'implementation', 'from', 'class', 'instance', 'abort'
+            'definition', 'implementation', 'from', 'class', 'instance', 'abort',
+            'infix', 'infixl', 'infixr', 'if', 'True', 'False'
         ],
 
         builtintypes: [
-            'Int', 'Real', 'String', 'Char', 'Complex'
+            'Int', 'Real', 'String', 'Char', 'Complex', 'Bool'
         ],
 
         operators: [

@@ -2,8 +2,8 @@ module example
 
 import StdInt
 
-sumOverArray::[Int] -> Int
-sumOverArray [x:xs] = x + sumOverArray xs
-sumOverArray [] =  0
+square :: Int -> Int
+square n = n * n
 
-Start = sumOverArray [1,3,4]
+Start :: Int
+Start = square 3
