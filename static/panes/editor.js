@@ -128,7 +128,8 @@ function Editor(hub, state, container) {
         labelField: 'name',
         searchField: ['name'],
         options: _.map(usableLanguages, _.identity),
-        items: [this.currentLanguage.id]
+        items: [this.currentLanguage.id],
+        dropdownParent: 'body'
     }).on('change', _.bind(function (e) {
         this.onLanguageChange($(e.target).val());
     }, this));

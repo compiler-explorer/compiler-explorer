@@ -127,7 +127,8 @@ function Compiler(hub, container, state) {
         optgroups: this.getGroupsInUse(),
         lockOptgroupOrder: true,
         options: _.map(this.getCurrentLangCompilers(), _.identity),
-        items: this.compiler ? [this.compiler.id] : []
+        items: this.compiler ? [this.compiler.id] : [],
+        dropdownParent: 'body'
     }).on('change', _.bind(function (e) {
         var val = $(e.target).val();
         if (val) {
@@ -1330,7 +1331,7 @@ Compiler.prototype.onAsmToolTip = function (ed) {
     function appendInfo(url) {
         return '<br><br>For more information, visit <a href="' + url +
             '" target="_blank" rel="noopener noreferrer">the ' + opcode +
-            ' documentation <sup><small class="glyphicon glyphicon-new-window opens-new-window"' +
+            ' documentation <sup><small class="fas fa-external-link-alt opens-new-window"' +
             ' title="Opens in a new window"></small></sup></a>.';
     }
 
@@ -1428,7 +1429,7 @@ Compiler.prototype.updateLibsDropdown = function () {
                         .prop('target', '_blank')
                         .prop('rel', 'noopener noreferrer')
                         .append($('<sup></sup>')
-                            .addClass('glyphicon glyphicon-new-window')
+                            .addClass('fas fa-external-link-alt ')
                         )
                     );
                 }

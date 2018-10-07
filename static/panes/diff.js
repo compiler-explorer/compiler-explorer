@@ -85,7 +85,8 @@ function Diff(hub, container, state) {
                     '<li class="compilerId">Compiler #' + escape(item.id) + '</li>' +
                     '</ul></div>';
             }
-        }
+        },
+        dropdownParent: 'body'
     }).on('change', _.bind(function (e) {
         var target = $(e.target);
         var compiler = this.compilers[target.val()];

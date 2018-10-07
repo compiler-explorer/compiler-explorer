@@ -182,7 +182,7 @@ Conformance.prototype.updateLibsDropdown = function () {
                         .prop('target', '_blank')
                         .prop('rel', 'noopener noreferrer')
                         .append($('<sup></sup>')
-                            .addClass('glyphicon glyphicon-new-window')
+                            .addClass('fas fa-external-link-alt ')
                         )
                     );
                 }
@@ -364,7 +364,8 @@ Conformance.prototype.addCompilerSelector = function (config) {
             optgroupField: 'group',
             optgroups: this.getGroupsInUse(),
             options: _.filter(options.compilers, isVisible),
-            items: config.compilerId ? [config.compilerId] : []
+            items: config.compilerId ? [config.compilerId] : [],
+            dropdownParent: 'body'
         })
         .on('change', _.bind(function (e) {
             onCompilerChange($(e.target).val());

@@ -53,7 +53,8 @@ function GccDump(hub, container, state) {
         minimap: {
             maxColumn: 80
         },
-        lineNumbersMinChars: 3
+        lineNumbersMinChars: 3,
+        dropdownParent: 'body'
     });
 
     this.initButtons(state);
