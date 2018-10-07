@@ -12,6 +12,7 @@
      - save example.extension to the new folder, the full path to this is the **inputFilename**
      - the **outputFilename** is determined by the `getOutputFilename()` method
      - execute the compiler.exe with the arguments from `OptionsForFilter()` and adding **inputFilename**
+     - be aware that the the language class is only instanced once, so storing state is not possible
   - if the compiler has problems with the defaults, you will have to override the `runCompiler()` method
   - when overriding `runCompiler()`, here are some ideas:
      - set **execOptions.customCwd** parameter if the working directory needs to be somewhere else
