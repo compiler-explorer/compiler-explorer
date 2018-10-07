@@ -2,10 +2,6 @@ module example
 
 import StdEnv
 
-max :: Real Real -> Real
-max a b
-= if (a>=b) a b
-
 maxArray :: [Real] [Real] -> [Real]
 maxArray list1 list2
  = [ (max e1 e2)
