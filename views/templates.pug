@@ -1,26 +1,29 @@
 .gl_keep.template
   .urls
-    .input-group.urls-container
-      .input-group-btn
-        .btn-group.btn-group-sm
-          button.btn.btn-light.btn-sm.dropdown-toggle(
-          data-toggle="dropdown" type="button" aria-haspopup="true" aria-expanded="false")
-            span.current Short
-            span.caret
-          ul.dropdown-menu.sources
-            li: a(href="javascript:;" data-bind="Short") Short
-            li: a(href="javascript:;" data-bind="Full") Full
-            li: a(href="javascript:;" data-bind="Embed") Embed
-            li: a(href="javascript:;" data-bind="Embed (RO)") Embed (read only)
-      input.form-control.input-sm.permalink(
-      type="text" placeholder="Loading" readonly size="1024")
-      span.input-group-btn
-        button.btn.btn-light.btn-sm.clippy(
-        type="button" data-clipboard-target=".popover .permalink"
-        title="Copy to clipboard")
-          span.fa.fa-clipboard(style="width:13px")
-    if sharingEnabled
-      .socialsharing
+    .card
+      .card-body
+        .urls-container
+          .btn-group.btn-group-sm
+            .input-group.input-group-sm
+              .input-group-prepend
+                button.btn.btn-outline-secondary.btn-sm.dropdown-toggle(data-toggle="dropdown" type="button" aria-haspopup="true" aria-expanded="false")
+                  span.current Short #[b.caret]
+                ul.dropdown-menu.sources
+                  button.dropdown-item.btn.btn-light.btn-sm(data-bind="Short")
+                    | Short
+                  button.dropdown-item.btn.btn-light.btn-sm(data-bind="Full")
+                    | Full
+                  button.dropdown-item.btn.btn-light.btn-sm(data-bind="Embed")
+                    | Embed
+                  button.dropdown-item.btn.btn-light.btn-sm(data-bind="Embed (RO)")
+                    | Embed (read only)
+              input.form-control.input-sm.permalink(type="text" placeholder="Loading" readonly size="1024" style="font-size: 10px")
+              .input-group-append
+                button.input-group-btn.btn.btn-outline-secondary.btn-sm.clippy(type="button" data-clipboard-target=".popover .permalink" title="Copy to clipboard")
+                  span.fa.fa-clipboard
+      if sharingEnabled
+        .card-footer
+          .socialsharing
 
   #codeEditor
     .top-bar.btn-toolbar.bg-light(role="toolbar" aria-label="Editor toolbar")
@@ -156,12 +159,12 @@
     .monaco-placeholder
 
   #opt
-    .top-bar.btn-toolbar(role="toolbar")
+    .top-bar.btn-toolbar.bg-light(role="toolbar")
       include font-size.pug
     .monaco-placeholder
 
   #ast
-    .top-bar.btn-toolbar(role="toolbar")
+    .top-bar.btn-toolbar.bg-light(role="toolbar")
       include font-size.pug
     .monaco-placeholder
 

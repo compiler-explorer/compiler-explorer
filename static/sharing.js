@@ -123,8 +123,7 @@ function initShareButton(getLink, layout, noteNewState) {
         content: html,
         html: true,
         placement: 'bottom',
-        trigger: 'manual',
-        title: 'Share this page'
+        trigger: 'manual'
     }).click(function () {
         getLink.popover('toggle');
     }).on('inserted.bs.popover', function () {
@@ -137,7 +136,7 @@ function initShareButton(getLink, layout, noteNewState) {
         var label = root.find('.current');
         var permalink = $(".permalink:visible");
         var urls = {};
-        if (!currentNode) currentNode = $(root.find('.sources a')[0]);
+        if (!currentNode) currentNode = $(root.find('.sources button')[0]);
         if (!currentBind) currentBind = currentNode.data().bind;
 
         function setCurrent(node) {
@@ -197,7 +196,7 @@ function initShareButton(getLink, layout, noteNewState) {
             }
         }
 
-        root.find('.sources a').on('click', function () {
+        root.find('.sources button').on('click', function () {
             setCurrent($(this));
             update();
         });
