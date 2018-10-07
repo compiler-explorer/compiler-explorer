@@ -7,6 +7,7 @@
 * Add language to lib/languages.js
   - start with the basics, *class LanguageCompiler extends BaseCompiler* and implement the `OptionsForFilter` method
   - comment out the line saying `fs.remove(result.dirPath);` in base-compiler.js, so the latest CE compile attempt remains on disk for you to review
+     - remember to undo this change before opening a PR
   - for reference, the basic behaviour of the BaseCompiler is:
      - make a random temporary folder
      - save example.extension to the new folder, the full path to this is the **inputFilename**
