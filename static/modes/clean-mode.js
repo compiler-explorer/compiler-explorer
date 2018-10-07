@@ -31,7 +31,7 @@ function definition() {
         ],
 
         builtintypes: [
-            'Int', 'Real', 'String', 'Char'
+            'Int', 'Real', 'String', 'Char', 'Complex'
         ],
 
         operators: [
