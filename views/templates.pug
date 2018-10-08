@@ -116,26 +116,29 @@
           button.dropdown-item.btn.btn-light.btn-sm.view-cfg(title="Show Graph Output")
             span.fas.fa-exchange-alt
             | &nbsp;Graph output
-
     .monaco-placeholder
-    .bottom-bar
+    .bottom-bar.bg-light
       if !embedded
         .btn-group.btn-group-sm
-          button.btn.btn-light.btn-sm.output-btn
-            span.fas.fa-receipt.status-text
-            | &nbsp;Output
-            span.output-count
-              | &nbsp;(
-              span.text-count
-                | 0
-              | /
-              span.err-count
-                | 0
-              | )
-        span.full-compiler-name
-        span.compile-time
-        button.btn.btn-light.btn-sm.clear-cache(title="Clear cache & recompile")
-          span.fas.fa-redo
+          .input-group
+            .input-group-prepend
+              button.btn.btn-light.btn-sm.clear-cache(title="Clear cache & recompile")
+                span.fas.fa-redo
+            button.btn.btn-light.btn-sm.output-btn
+              span.fas.fa-receipt.status-text
+              | &nbsp;Output
+              span.output-count
+                | &nbsp;(
+                span.text-count
+                  | 0
+                | /
+                span.err-count
+                  | 0
+                | )
+        span.short-compiler-name
+        a.full-compiler-name(tabindex="0" data-trigger="focus" style="cursor: pointer;" role="button" title="Full compiler version")
+          span.btn.btn-light.fas.fa-info
+        span.compile-time(title="Compilation time (Result size)")
 
   #compiler-output
     .top-bar.btn-toolbar.options-toolbar.bg-light(role="toolbar")
@@ -169,15 +172,19 @@
     .monaco-placeholder
 
   #gccdump
-    .top-bar.btn-toolbar(role="toolbar")
-      table
-        tr: td: select.gccdump-pass-picker(placeholder="Select a pass...")
+    .top-bar.btn-toolbar.bg-light(role="toolbar")
+      .btn-group.btn-group-sm(role="group")
+        select.gccdump-pass-picker(placeholder="Select a pass...")
       include font-size
-      div.btn-group.btn-group-sm.dump-filters(data-toggle="buttons")
-          button.btn.btn-light.btn-sm.active(title="Tree" data-bind="treeDump")
+      .btn-group.btn-group-sm.dump-filters
+        .button-checkbox
+          button.btn.btn-light.btn-sm.active(type="button" title="Show Tree pass" data-bind="treeDump" aria-pressed="true")
             span Tree pass
-          button.btn.btn-light.btn-sm.active(title="RTL" data-bind="rtlDump")
+          input.d-none(type="checkbox" checked=true)
+        .button-checkbox
+          button.btn.btn-light.btn-sm.active(type="button" title="Show RTL pass" data-bind="rtlDump" aria-pressed="true")
             span RTL pass
+          input.d-none(type="checkbox" checked=true)
     .monaco-placeholder
 
   #cfg

@@ -349,7 +349,8 @@ pre.content.wrap {
     min-width: 100px !important;
 }
 
-.full-compiler-name {
+.short-compiler-name {
+    font-size: 12px;
     padding-left: 3px;
 }
 

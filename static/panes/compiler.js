@@ -795,8 +795,10 @@ Compiler.prototype.initButtons = function (state) {
     this.filterExecuteButton.toggle(options.supportsExecute);
     this.optionsField.val(this.options);
 
+    this.shortCompilerName = this.domRoot.find('.short-compiler-name');
     this.fullCompilerName = this.domRoot.find('.full-compiler-name');
     this.compilerPicker = this.domRoot.find('.compiler-picker');
+    this.setCompilerVersionPopover('');
 
     this.topBar = this.domRoot.find('.top-bar');
     this.bottomBar = this.domRoot.find('.bottom-bar');
@@ -1134,7 +1136,8 @@ Compiler.prototype.updateCompilerName = function () {
     var compilerName = this.getCompilerName();
     var compilerVersion = this.compiler ? this.compiler.version : '';
     this.container.setTitle(compilerName + ' (Editor #' + this.sourceEditorId + ', Compiler #' + this.id + ') ' + name);
-    this.fullCompilerName.text(compilerVersion);
+    this.shortCompilerName.text(compilerName);
+    this.setCompilerVersionPopover(compilerVersion);
 };
 
 Compiler.prototype.resendResult = function () {
@@ -1179,6 +1182,17 @@ Compiler.prototype.setCompilationOptionsPopover = function (content) {
         content: content || 'No options in use',
         template: '<div class="popover' +
             (content ? ' compiler-options-popover' : '')  +
+            '" role="tooltip"><div class="arrow"></div>' +
+            '<h3 class="popover-header"></h3><div class="popover-body"></div></div>'
+    });
+};
+
+Compiler.prototype.setCompilerVersionPopover = function (version) {
+    this.fullCompilerName.popover('dispose');
+    this.fullCompilerName.popover({
+        content: version || '',
+        template: '<div class="popover' +
+            (version ? ' compiler-options-popover' : '')  +
             '" role="tooltip"><div class="arrow"></div>' +
             '<h3 class="popover-header"></h3><div class="popover-body"></div></div>'
     });
