@@ -395,10 +395,6 @@ pre.content.wrap {
     padding-left: 2%;
 }
 
-.dropdown-menu .btn-godbolt {
-    margin-left: 0 !important;
-}
-
 .lib-arrow {
     display: inline-table;
     width: 0;
