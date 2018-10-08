@@ -73,6 +73,10 @@ body {
     min-width: 14em;
 }
 
+.compiler-picker .selectize-input {
+    text-align: center;
+}
+
 .function-picker {
     min-width: 14em;
     width: 99%;
@@ -89,7 +93,7 @@ li.tweet {
 
 .diff-picker {
     max-width: 20em;
-    width: 20em;
+    min-width: 14em;
 }
 
 .diff-picker .compiler {
