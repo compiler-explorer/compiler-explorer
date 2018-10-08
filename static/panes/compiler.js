@@ -38,6 +38,7 @@ var Alert = require('../alert');
 var bigInt = require('big-integer');
 var local = require('../local');
 var Raven = require('raven-js');
+var Libraries = require('../libs-widget');
 require('../modes/asm-mode');
 
 require('selectize');
@@ -153,7 +154,6 @@ function Compiler(hub, container, state) {
     this.sendCompiler();
     this.updateCompilerInfo();
     this.updateButtons();
-    this.updateLibsDropdown();
     this.saveState();
     ga.proxy('send', {
         hitType: 'event',
@@ -421,13 +421,9 @@ Compiler.prototype.compile = function () {
         filters: this.getEffectiveFilters()
     };
     var includeFlag = this.compiler ? this.compiler.includeFlag : '-I';
-    _.each(this.availableLibs[this.currentLangId], function (lib) {
-        _.each(lib.versions, function (version) {
-            if (version.used) {
-                _.each(version.path, function (path) {
-                    options.userArguments += ' ' + includeFlag + path;
-                });
-            }
+    _.each(this.libsWidget.getLibsInUse(), function (item) {
+        _.each(item.path, function (path) {
+            options.userArguments += ' ' + includeFlag + path;
         });
     });
     this.compilerService.expand(this.source).then(_.bind(function (expanded) {
@@ -760,9 +756,6 @@ Compiler.prototype.initButtons = function (state) {
     this.outputTextCount = this.domRoot.find('span.text-count');
     this.outputErrorCount = this.domRoot.find('span.err-count');
 
-    this.libsTemplates = $('.template #libs-dropdown');
-    this.noLibsPanel = this.libsTemplates.children('.no-libs');
-
     this.optionsField = this.domRoot.find('.options');
     this.prependOptions = this.domRoot.find('.prepend-options');
     this.setCompilationOptionsPopover();
@@ -812,41 +805,8 @@ Compiler.prototype.initButtons = function (state) {
     this.initPanerButtons();
 };
 
-Compiler.prototype.markLibraryAsUsed = function (name, version) {
-    if (this.availableLibs[this.currentLangId] &&
-        this.availableLibs[this.currentLangId][name] &&
-        this.availableLibs[this.currentLangId][name].versions[version]) {
-
-        this.availableLibs[this.currentLangId][name].versions[version].used = true;
-    }
-};
-
 Compiler.prototype.initLibraries = function (state) {
-    this.availableLibs = {};
-    this.updateAvailableLibs();
-    _.each(state.libs, _.bind(function (lib) {
-        this.markLibraryAsUsed(lib.name, lib.ver);
-    }, this));
-};
-
-Compiler.prototype.updateAvailableLibs = function () {
-    if (!this.availableLibs[this.currentLangId]) {
-        this.availableLibs[this.currentLangId] = $.extend(true, {}, options.libs[this.currentLangId]);
-        this.initLangDefaultLibs();
-    }
-};
-
-Compiler.prototype.initLangDefaultLibs = function () {
-    var defaultLibs = options.defaultLibs[this.currentLangId];
-    if (!defaultLibs) return;
-    _.each(defaultLibs.split(':'), _.bind(function (libPair) {
-        var pairSplits = libPair.split('.');
-        if (pairSplits.length === 2) {
-            var lib = pairSplits[0];
-            var ver = pairSplits[1];
-            this.markLibraryAsUsed(lib, ver);
-        }
-    }, this));
+    this.libsWidget = new Libraries.Widget(this.currentLangId, this.libsButton, state);
 };
 
 Compiler.prototype.updateButtons = function () {
@@ -1089,14 +1049,6 @@ Compiler.prototype.onFilterChange = function () {
 };
 
 Compiler.prototype.currentState = function () {
-    var libs = [];
-    _.each(this.availableLibs[this.currentLangId], function (library, name) {
-        _.each(library.versions, function (version, ver) {
-            if (library.versions[ver].used) {
-                libs.push({name: name, ver: ver});
-            }
-        });
-    });
     var state = {
         compiler: this.compiler ? this.compiler.id : '',
         source: this.sourceEditorId,
@@ -1104,7 +1056,7 @@ Compiler.prototype.currentState = function () {
         // NB must *not* be effective filters
         filters: this.filters.get(),
         wantOptInfo: this.wantOptInfo,
-        libs: libs,
+        libs: this.libsWidget.get(),
         lang: this.currentLangId
     };
     this.fontScale.addState(state);
@@ -1372,138 +1324,6 @@ Compiler.prototype.onAsmToolTip = function (ed) {
     }, this));
 };
 
-Compiler.prototype.updateLibsDropdown = function () {
-    this.updateAvailableLibs();
-    this.libsButton.popover({
-        container: 'body',
-        content: _.bind(function () {
-            var libsCount = _.keys(this.availableLibs[this.currentLangId]).length;
-            if (libsCount === 0) return this.noLibsPanel;
-            var columnCount = Math.ceil(libsCount / 5);
-            var currentLibIndex = -1;
-
-            var libLists = [];
-            for (var i = 0; i < columnCount; i++) {
-                libLists.push($('<ul></ul>').addClass('lib-list'));
-            }
-
-            // Utility function so we can iterate indefinitely over our lists
-            var getNextList = function () {
-                currentLibIndex = (currentLibIndex + 1) % columnCount;
-                return libLists[currentLibIndex];
-            };
-
-            var handleArrow = function (libGroup, libArrow) {
-                var anyInUse = _.any(libGroup.children().children('input'), function (element) {
-                    return $(element).prop('checked');
-                });
-                var isVisible = libGroup.is(":visible");
-
-                libArrow.toggleClass('lib-arrow-up', isVisible);
-                libArrow.toggleClass('lib-arrow-down', !isVisible);
-                libArrow.toggleClass('lib-arrow-used', anyInUse);
-            };
-
-            var onChecked = _.bind(function (e) {
-                var elem = $(e.target);
-                // Uncheck every lib checkbox with the same name if we're checking the target
-                if (elem.prop('checked')) {
-                    _.each(e.data.group.children().children('input'), function (other) {
-                        $(other).prop('checked', false);
-                    });
-                    // Recheck the targeted one
-                    elem.prop('checked', true);
-                }
-                // And now do the same with the availableLibs object
-                _.each(this.availableLibs[this.currentLangId][elem.prop('data-lib')].versions, function (version) {
-                    version.used = false;
-                });
-                this.availableLibs[this.currentLangId][elem.prop('data-lib')]
-                    .versions[elem.prop('data-version')].used = elem.prop('checked');
-
-                handleArrow(e.data.group, e.data.arrow);
-
-                this.saveState();
-                this.compile();
-            }, this);
-
-            _.each(this.availableLibs[this.currentLangId], function (lib, libKey) {
-                var libsList = getNextList();
-                var libArrow = $('<div></div>').addClass('lib-arrow');
-                var libName = $('<span></span>').text(lib.name);
-                var libHeader = $('<span></span>')
-                    .addClass('lib-header')
-                    .append(libArrow)
-                    .append(libName);
-                if (lib.url && lib.url.length > 0) {
-                    libHeader.append($('<a></a>')
-                        .css("float", "right")
-                        .addClass('opens-new-window')
-                        .prop('href', lib.url)
-                        .prop('target', '_blank')
-                        .prop('rel', 'noopener noreferrer')
-                        .append($('<sup></sup>')
-                            .addClass('fas fa-external-link-alt ')
-                        )
-                    );
-                }
-                if (lib.description && lib.description.length > 0) {
-                    libName
-                        .addClass('lib-described')
-                        .prop('title', lib.description);
-                }
-                var libCat = $('<li></li>')
-                    .append(libHeader)
-                    .addClass('lib-item');
-
-                var libGroup = $('<div></div>');
-
-                if (libsList.children().length > 0)
-                    libsList.append($('<hr>').addClass('lib-separator'));
-
-                _.each(lib.versions, function (version, vKey) {
-                    var verCheckbox = $('<input type="checkbox">')
-                        .addClass('lib-checkbox')
-                        .prop('data-lib', libKey)
-                        .prop('data-version', vKey)
-                        .prop('checked', version.used)
-                        .prop('name', libKey)
-                        .on('change', {arrow: libArrow, group: libGroup}, onChecked);
-                    libGroup
-                        .append($('<div></div>')
-                            .append(verCheckbox)
-                            .append($('<label></label>')
-                                .addClass('lib-label')
-                                .text(version.version)
-                                .on('click', function () {
-                                    verCheckbox.trigger('click');
-                                })
-                            )
-                        );
-                });
-
-                libGroup.hide();
-                handleArrow(libGroup, libArrow);
-
-                libHeader.on('click', function () {
-                    libGroup.toggle();
-                    handleArrow(libGroup, libArrow);
-                });
-
-                libGroup.appendTo(libCat);
-                libCat.appendTo(libsList);
-            });
-            return $('<div></div>').addClass('libs-container').append(libLists);
-        }, this),
-        html: true,
-        placement: 'bottom',
-        trigger: 'manual'
-    }).click(_.bind(function () {
-        this.libsButton.popover('show');
-    }, this)).on('show.bs.popover', function () {
-    });
-};
-
 Compiler.prototype.handleCompilationStatus = function (status) {
     if (!this.statusLabel || !this.statusIcon) return;
 
@@ -1549,7 +1369,7 @@ Compiler.prototype.onLanguageChange = function (editorId, newLangId) {
             compiler: this.compiler && this.compiler.id ? this.compiler.id : options.defaultCompiler[oldLangId],
             options: this.options
         };
-        this.updateLibsDropdown();
+        this.libsWidget.setNewLangId(newLangId);
         this.updateCompilersSelector();
         this.updateCompilerUI();
         this.sendCompiler();
