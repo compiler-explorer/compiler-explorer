@@ -129,7 +129,8 @@ function Compiler(hub, container, state) {
         lockOptgroupOrder: true,
         options: _.map(this.getCurrentLangCompilers(), _.identity),
         items: this.compiler ? [this.compiler.id] : [],
-        dropdownParent: 'body'
+        dropdownParent: 'body',
+        closeAfterSelect: true
     }).on('change', _.bind(function (e) {
         var val = $(e.target).val();
         if (val) {
@@ -805,8 +806,14 @@ Compiler.prototype.initButtons = function (state) {
     this.initPanerButtons();
 };
 
+Compiler.prototype.onLibsChanged = function () {
+    this.saveState();
+    this.compile();
+};
+
 Compiler.prototype.initLibraries = function (state) {
-    this.libsWidget = new Libraries.Widget(this.currentLangId, this.libsButton, state);
+    this.libsWidget = new Libraries.Widget(this.currentLangId, this.libsButton,
+        state, _.bind(this.onLibsChanged, this));
 };
 
 Compiler.prototype.updateButtons = function () {

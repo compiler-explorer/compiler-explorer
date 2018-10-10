@@ -83,8 +83,13 @@ function Conformance(hub, container, state) {
     }, this));
 }
 
+Conformance.prototype.onLibsChanged = function () {
+    this.saveState();
+    this.compileAll();
+};
+
 Conformance.prototype.initLibraries = function (state) {
-    this.libsWidget = new Libraries.Widget(this.langId, this.libsButton, state);
+    this.libsWidget = new Libraries.Widget(this.langId, this.libsButton, state, _.bind(this.onLibsChanged, this));
 };
 
 Conformance.prototype.initButtons = function () {

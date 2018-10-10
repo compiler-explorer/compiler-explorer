@@ -28,12 +28,12 @@ var options = require('options'),
     _ = require('underscore'),
     $ = require('jquery');
 
-function LibsWidget(langId, dropdownButton, state) {
+function LibsWidget(langId, dropdownButton, state, onChangeCallback) {
     this.dropdownButton = dropdownButton;
-    this.state = state;
     this.currentLangId = langId;
     this.initButtons();
-
+    this.domRoot = null;
+    this.onChangeCallback = onChangeCallback;
     this.availableLibs = {};
     this.updateAvailableLibs(langId);
     _.each(state.libs, _.bind(function (lib) {
@@ -43,7 +43,7 @@ function LibsWidget(langId, dropdownButton, state) {
 
 LibsWidget.prototype.initButtons = function () {
     this.noLibsPanel = $('#libs-dropdown .no-libs');
-    this.libsEntry = $('#libs-entry .card');
+    this.libsEntry = $('#libs-entry .input-group');
 };
 
 LibsWidget.prototype.initLangDefaultLibs = function () {
@@ -71,41 +71,87 @@ LibsWidget.prototype.setNewLangId = function (langId) {
     this.currentLangId = langId;
 };
 
+LibsWidget.prototype.lazyDropdownLoad = function () {
+    var libsCount = _.keys(this.availableLibs[this.currentLangId]).length;
+    if (libsCount === 0) {
+        return this.noLibsPanel;
+    }
+    if (this.domRoot === null) {
+        var MAX_COLUMNS = 3;
+        this.domRoot = $('<div></div>');
+
+        var libsPanel = $('<div></div>')
+            .addClass('card-columns');
+        var currentColumn = -1;
+        var getOrCreateNextColumn = function () {
+            var column = null;
+            currentColumn++;
+            if (libsPanel.children()[currentColumn] != null) {
+                column = $(libsPanel.children()[currentColumn]);
+            } else {
+                column = $('<div></div>')
+                    .addClass('card');
+                libsPanel.append(column);
+            }
+            if (currentColumn >= MAX_COLUMNS - 1) currentColumn = -1;
+            return column;
+        };
+        var libsInUse = this.listUsedLibs();
+        _.each(this.availableLibs[this.currentLangId], _.bind(function (libEntry, id) {
+            var newLibCard = this.libsEntry.clone();
+            var label = newLibCard.find('.input-group-prepend label')
+                .text(libEntry.name)
+                .prop('title', libEntry.description || '')
+                .prop('for', id);
+            var select = newLibCard.find('select')
+                .prop('id', id)
+                .append($('<option>', {
+                    value: '-',
+                    text: '-'
+                }));
+            _.each(libEntry.versions, _.bind(function (version, versionId) {
+                select.append($('<option>', {
+                    value: versionId,
+                    text: version.version,
+                    selected: libsInUse[id] && libsInUse[id] === versionId
+                }));
+            }, this));
+            label.toggleClass('bg-success text-white', select.val() !== '-');
+            select.on('change', _.bind(function () {
+                var newVal = select.val();
+                label.toggleClass('bg-success text-white', newVal !== '-');
+                // Disable every version for this lib
+                _.each(libEntry.versions, _.bind(function (version, verId) {
+                    this.markLibrary(id, verId, false);
+                }, this));
+                if (newVal !== '-') {
+                    this.markLibrary(id, newVal, true);
+                }
+                this.onChangeCallback();
+            }, this));
+            var column = getOrCreateNextColumn();
+            column.append(newLibCard);
+        }, this));
+        this.domRoot.append(libsPanel);
+        return this.domRoot;
+    }
+    return this.domRoot;
+};
+
 LibsWidget.prototype.updateLibsDropdown = function () {
     this.dropdownButton.popover({
         container: 'body',
-        content: _.bind(function () {
-            var libsCount = _.keys(this.availableLibs[this.currentLangId]).length;
-            if (libsCount === 0) return this.noLibsPanel;
-            var libsPanel = $('<div class="card-columns"></div>');
-            _.each(this.availableLibs[this.currentLangId], _.bind(function (libEntry) {
-                var newLibCard = this.libsEntry.clone();
-                newLibCard.find('.card-header')
-                    .text(libEntry.name)
-                    .prop('title', libEntry.description || '');
-                _.each(libEntry.versions, function (version) {
-                    newLibCard.find('.card-body')
-                        .append($('<span></span>').text(version.version));
-                });
-                newLibCard.find('.card-footer').append($('<a></a>')
-                    .prop('href', libEntry.url)
-                    .text(libEntry.url)
-                );
-                libsPanel.append(newLibCard);
-            }, this));
-            return libsPanel;
-        }, this),
+        content: _.bind(this.lazyDropdownLoad, this),
         html: true,
         placement: 'bottom',
-        trigger: 'manual'
-    }).click(_.bind(function () {
-        this.dropdownButton.popover('show');
-    }, this)).on('shown.bs.popover', function () {
-        $($(this).data('bs.popover').tip).css({
-            'max-width': '600px',
-            'max-height': '250px'
+        trigger: 'click'
+    }).on('shown.bs.popover', _.bind(function () {
+        $(this.dropdownButton.data('bs.popover').tip).css({
+            'max-width': '800px',
+            'max-height': '300px'
         });
-    });
+        this.dropdownButton.popover('update');
+    }, this));
 };
 
 LibsWidget.prototype.markLibrary = function (name, version, used) {
@@ -118,9 +164,22 @@ LibsWidget.prototype.markLibrary = function (name, version, used) {
 };
 
 LibsWidget.prototype.get = function () {
-    return _.map(this.getLibsInUse(), function (item) {
-        return {name: item.name, ver: item.version};
+    return _.map(this.listUsedLibs(), function (item, libId) {
+        return {name: libId, ver: item};
     });
+};
+
+LibsWidget.prototype.listUsedLibs = function () {
+    var libs = {};
+    _.each(this.availableLibs[this.currentLangId], function (library, libId) {
+        _.each(library.versions, function (version, ver) {
+            if (library.versions[ver].used) {
+                // We trust the invariant of only 1 used version at any given time per lib
+                libs[libId] = ver;
+            }
+        });
+    });
+    return libs;
 };
 
 LibsWidget.prototype.getLibsInUse = function () {
@@ -128,6 +187,7 @@ LibsWidget.prototype.getLibsInUse = function () {
     _.each(this.availableLibs[this.currentLangId], function (library) {
         _.each(library.versions, function (version, ver) {
             if (library.versions[ver].used) {
+                // We trust the invariant of only 1 used version at any given time per lib
                 libs.push(library.versions[ver]);
             }
         });
