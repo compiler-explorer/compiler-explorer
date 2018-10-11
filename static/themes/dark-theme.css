@@ -22,11 +22,11 @@ body {
     background-color: #23272b !important;
 }
 
-.navbar-brand img.inverse {
+a.navbar-brand img.logo.inverse {
     display: block !important;
 }
 
-.navbar-brand img.normal {
+a.navbar-brand img.logo.normal {
     display: none !important;
 }
 
@@ -59,9 +59,6 @@ body {
 .modal-header {
     color: #eee !important;
     background-color: #333 !important;
-    -webkit-border-radius: 3px 3px 0px 0px;
-    -moz-border-radius: 3px 3px 0px 0px;
-    border-radius: 3px 3px 0px 0px;
 }
 
 .modal-body {
@@ -76,9 +73,6 @@ body {
 
 .modal-footer {
     background-color: #333 !important;
-    -webkit-border-radius: 0px 0px 3px 3px;
-    -moz-border-radius: 0px 0px 3px 3px;
-    border-radius: 0px 0px 3px 3px;
 }
 
 .linked-code-decoration-margin {
@@ -187,8 +181,12 @@ input {
     border: 0 !important;
 }
 
-input.permalink {
-    margin-top: 1px !important;
+.bg-light {
+    background-color: #333 !important;
+}
+
+.btn-light {
+    background-color: #474747 !important;
 }
 
 .analysis,
@@ -236,7 +234,7 @@ input.permalink {
 
 .popover {
     color: #fff !important;
-    border: 2px solid #464545 !important;
+    border-color: #464545 !important;
 }
 
 .popover, .popover-content, .libs-container, .lib-list {

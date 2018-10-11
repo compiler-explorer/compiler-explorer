@@ -144,14 +144,11 @@ LibsWidget.prototype.updateLibsDropdown = function () {
         content: _.bind(this.lazyDropdownLoad, this),
         html: true,
         placement: 'bottom',
-        trigger: 'click'
-    }).on('shown.bs.popover', _.bind(function () {
-        $(this.dropdownButton.data('bs.popover').tip).css({
-            'max-width': '800px',
-            'max-height': '300px'
-        });
-        this.dropdownButton.popover('update');
-    }, this));
+        trigger: 'click',
+        template: '<div class="popover libs-popover" role="tooltip"><div class="arrow"></div>' +
+            '<h3 class="popover-header"></h3>' +
+            '<div class="popover-body"></div></div>'
+    });
 };
 
 LibsWidget.prototype.markLibrary = function (name, version, used) {

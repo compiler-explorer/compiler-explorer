@@ -36,6 +36,14 @@ pre.content {
     background-color: #f5f5f5;
 }
 
+a.navbar-brand img.logo.inverse {
+    display: none !important;
+}
+
+a.navbar-brand img.logo.normal {
+    display: block !important;
+}
+
 .opcode {
     color: #066;
 }

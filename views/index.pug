@@ -7,7 +7,8 @@ html(lang="en")
   body(class=extraBodyClass)
     nav.navbar.navbar-godbolt.navbar-expand-md.navbar-light.bg-light
       a.navbar-brand(href="javascript:;" title="Compiler Explorer")
-        img.normal.align-top(src=require("site-logo.svg") height="50" width="165" alt="Compiler Explorer")
+        img.logo.normal.align-top(src=require("site-logo.svg") height="50" width="165" alt="Compiler Explorer")
+        img.logo.inverse.align-top(src=require("site-logo-inverse.svg") height="50" width="165" alt="Compiler Explorer" style="display: none")
         if extraBodyClass === "beta"
           img.beta-overlay.align-top(src=require("site-logo-beta.svg") height="50" width="165")
         else if extraBodyClass === "dev"

@@ -65,6 +65,11 @@ body {
     border-radius: 5px;
 }
 
+.popover.libs-popover {
+    max-width: 800px !important;
+    max-height: 300px !important;
+}
+
 .template {
     display: none;
 }
