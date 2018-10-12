@@ -24,7 +24,7 @@
 
 const chai = require('chai');
 const chaiAsPromised = require("chai-as-promised");
-const LlvmIrParser = require("../lib/llvm-ir").LlvmIrParser;
+const LlvmIrParser = require("../lib/llvm-ir");
 const properties = require('../lib/properties');
 
 chai.use(chaiAsPromised);

@@ -28,6 +28,7 @@ var FontScale = require('../fontscale');
 var monaco = require('../monaco');
 var _ = require('underscore');
 var $ = require('jquery');
+var colour = require('../colour');
 var ga = require('../analytics');
 
 function Ir(hub, container, state) {
@@ -36,11 +37,13 @@ function Ir(hub, container, state) {
     this.domRoot = container.getElement();
     this.domRoot.html($('#ir').html());
     this._currentDecorations = [];
-    this.astEditor = monaco.editor.create(this.domRoot.find(".monaco-placeholder")[0], {
+    this.irEditor = monaco.editor.create(this.domRoot.find(".monaco-placeholder")[0], {
+        fontFamily: 'Consolas, "Liberation Mono", Courier, monospace',
         value: "",
         scrollBeyondLastLine: false,
         language: 'plaintext',
         readOnly: true,
+        folding: true,
         glyphMargin: true,
         fontFamily: 'Consolas, "Liberation Mono", Courier, monospace',
         quickSuggestions: false,
@@ -55,11 +58,16 @@ function Ir(hub, container, state) {
     this._compilerName = state.compilerName;
     this._editorid = state.editorid;
 
+    this.colours = [];
+    this.irCode = [];
+    this.lastColours = [];
+    this.lastColourScheme = {};
+
     this.initButtons(state);
     this.initCallbacks();
 
-    if (state && state.astOutput) {
-        this.showAstResults(state.astOutput);
+    if (state && state.irOutput) {
+        this.showIrResults(state.irOutput);
     }
     this.setTitle();
 
@@ -71,7 +79,7 @@ function Ir(hub, container, state) {
 }
 
 Ir.prototype.initButtons = function (state) {
-    this.fontScale = new FontScale(this.domRoot, state, this.astEditor);
+    this.fontScale = new FontScale(this.domRoot, state, this.irEditor);
 
     this.topBar = this.domRoot.find(".top-bar");
 };
@@ -81,8 +89,9 @@ Ir.prototype.initCallbacks = function () {
 
     this.container.on('destroy', this.close, this);
 
-    this.eventHub.on('compileResult', this.onCompileResult, this);
+    this.eventHub.on('compileResult', this.onCompileResponse, this);
     this.eventHub.on('compiler', this.onCompiler, this);
+    this.eventHub.on('colours', this.onColours, this);
     this.eventHub.on('compilerClose', this.onCompilerClose, this);
     this.eventHub.on('settingsChange', this.onSettingsChange, this);
     this.eventHub.emit('irViewOpened', this._compilerid);
@@ -95,29 +104,32 @@ Ir.prototype.initCallbacks = function () {
 // TODO: de-dupe with compiler etc
 Ir.prototype.resize = function () {
     var topBarHeight = this.topBar.outerHeight(true);
-    this.astEditor.layout({
+    this.irEditor.layout({
         width: this.domRoot.width(),
         height: this.domRoot.height() - topBarHeight
     });
 };
 
-Ir.prototype.onCompileResult = function (id, compiler, result, lang) {
+Ir.prototype.onCompileResponse = function (id, compiler, result, lang) {
     if (this._compilerid !== id) return;
     if (result.hasIrOutput) {
         this.showIrResults(result.irOutput);
     }
     else if (compiler.supportsIrView) {
-        this.showIrResults("<No output>");
+        this.showIrResults([{text:"<No output>"}]);
     }
 
     if (lang && lang.monaco && this.getCurrentEditorLanguage() !== lang.monaco) {
-        monaco.editor.setModelLanguage(this.astEditor.getModel(), lang.monaco);
+        monaco.editor.setModelLanguage(this.irEditor.getModel(), lang.monaco);
     }
+    // Why call this explicitly instead of just listening to the "colours" event?
+    // Because the recolouring happens before this editors value is set using "showIrResults".
+    this.onColours(this._compilerid, this.lastColours, this.lastColourScheme);
 };
 
 // Monaco language id of the current editor
 Ir.prototype.getCurrentEditorLanguage = function () {
-    return this.astEditor.getModel().getModeId();
+    return this.irEditor.getModel().getModeId();
 };
 
 Ir.prototype.setTitle = function () {
@@ -126,8 +138,10 @@ Ir.prototype.setTitle = function () {
     );
 };
 
-Ir.prototype.showIrResults = function (results) {
-    this.astEditor.setValue(results);
+Ir.prototype.showIrResults = function (irCode) {
+    if (!this.irEditor) return;
+    this.irCode = irCode;
+    this.irEditor.getModel().setValue(irCode.length ? _.pluck(irCode, 'text').join('\n') : "<No IR generated>");
 };
 
 Ir.prototype.onCompiler = function (id, compiler, options, editorid) {
@@ -135,9 +149,24 @@ Ir.prototype.onCompiler = function (id, compiler, options, editorid) {
         this._compilerName = compiler ? compiler.name : '';
         this._editorid = editorid;
         this.setTitle();
-        if (compiler && !compiler.supportsAstView) {
-            this.astEditor.setValue("<AST output is not supported for this compiler>");
+        if (compiler && !compiler.supportsIrView) {
+            this.irEditor.setValue("<IR output is not supported for this compiler>");
         }
+    }
+};
+
+Ir.prototype.onColours = function (id, colours, scheme) {
+    this.lastColours = colours;
+    this.lastColourScheme = scheme;
+
+    if (id === this._compilerid) {
+        var irColours = {};
+        _.each(this.irCode, function (x, index) {
+            if (x.source && x.source.file === null && x.source.line > 0 && colours[x.source.line - 1] !== undefined) {
+                irColours[index] = colours[x.source.line - 1];
+            }
+        });
+        this.colours = colour.applyColours(this.irEditor, irColours, scheme, this.colours);
     }
 };
 
@@ -176,7 +205,7 @@ Ir.prototype.onCompilerClose = function (id) {
 };
 
 Ir.prototype.onSettingsChange = function (newSettings) {
-    this.astEditor.updateOptions({
+    this.irEditor.updateOptions({
         contextmenu: newSettings.useCustomContextMenu,
         minimap: {
             enabled: newSettings.showMinimap
@@ -186,8 +215,8 @@ Ir.prototype.onSettingsChange = function (newSettings) {
 
 Ir.prototype.close = function () {
     this.eventHub.unsubscribe();
-    this.eventHub.emit("astViewClosed", this._compilerid);
-    this.astEditor.dispose();
+    this.eventHub.emit("irViewClosed", this._compilerid);
+    this.irEditor.dispose();
 };
 
 module.exports = {
