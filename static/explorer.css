@@ -19,13 +19,8 @@ body {
     overflow: hidden;
 }
 
-.container-fluid {
-    padding-left: 5px;
-    padding-right: 5px;
-}
-
 .navbar-godbolt {
-    padding-left: 0;
+    padding: 0;
 }
 
 .navbar-brand {
@@ -50,6 +45,10 @@ body {
     position: absolute;
     top: 0;
     display: block;
+}
+
+.btn-light:focus {
+    box-shadow: none !important;
 }
 
 .float-link {

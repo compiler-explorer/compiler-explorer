@@ -4,20 +4,20 @@ body {
     background-color: #333 !important;
 }
 
-.navbar-default {
+.navbar-light {
     background-color: #333 !important;
 }
 
-.navbar-default .navbar-nav li a {
+.navbar-light .navbar-nav li a {
     color: #fff !important;
 }
 
-.navbar-default .navbar-nav li a:hover {
+.navbar-light .navbar-nav li a:hover {
     color: #fff !important;
     background-color: #23272b !important;
 }
 
-.navbar-default ul.nav li:hover {
+.navbar-light ul.nav li:hover {
     color: #fff !important;
     background-color: #23272b !important;
 }
@@ -92,27 +92,27 @@ a.navbar-brand img.logo.normal {
 }
 
 .selectize-control.single .selectize-input {
-    color: #eee !important;
+    color: #f2f2f2 !important;
     background: #666 linear-gradient(to bottom, #555, #222) !important;
 }
 
 .selectize-dropdown {
-    color: #aaa !important;
+    color: #f2f2f2 !important;
     background-color: #666 !important;
 }
 
 .selectize-control.single .selectize-input.disabled {
-    color: #eee !important;
+    color: #f2f2f2 !important;
     background: #000 !important;
 }
 
 .dropdown-menu {
-    color: #eee !important;
+    color: #f2f2f2 !important;
     background-color: #303030 !important;
 }
 
 .dropdown-menu li a {
-    color: #eee !important;
+    color: #f2f2f2 !important;
 }
 
 .dropdown-menu li a:hover {
@@ -186,6 +186,20 @@ input {
 }
 
 .btn-light {
+    color: #e2e2e2 !important;
+    background-color: #474747 !important;
+    border-color: #272727 !important;
+}
+
+.btn-light.active {
+    color: #f2f2f2 !important;
+}
+
+.btn-light.disabled {
+    color: #aaa !important;
+}
+
+.card {
     background-color: #474747 !important;
 }
 
@@ -284,4 +298,13 @@ input {
     opacity: 1;
     color: #006400;
     text-shadow: none;
+}
+
+.input-group-text {
+    background-color: #a1a1a1 !important;
+    border-color: #818181 !important;
+}
+
+.custom-select {
+    background-color: #818181 !important;
 }

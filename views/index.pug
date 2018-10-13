@@ -34,7 +34,7 @@ html(lang="en")
             button.close(type="button" aria-hidden="true") &times;
         ul.navbar-nav.navbar-right
           li.nav-item
-            a.nav-link#share(href="javascript:;") Share
+            a.nav-link#share(href="javascript:;") Share#[b.caret]
           li.nav-item.dropdown
             a.nav-link.dropdown-toggle#otherDropdown(href="javascript:;" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") Other#[b.caret]
             div.dropdown-menu.dropdown-menu-right(aria-labelledby="otherDropdown")
@@ -61,7 +61,7 @@ html(lang="en")
           if policies.cookies.enabled || policies.privacy.enabled
             li.nav-item.dropdown
               a.nav-link.dropdown-toggle#policiesDropdown(href="javascript:;" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") Policies#[b.caret]
-              div.dropdown-menu(aria-labelledby="policiesDropdown")
+              div.dropdown-menu.dropdown-menu-right(aria-labelledby="policiesDropdown")
                 a.dropdown-item#cookiesa(href="javascript:;") Cookie policy
                 a.dropdown-item#privacy(href="javascript:;") Privacy policy
     #root
