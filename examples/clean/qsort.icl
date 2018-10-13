@@ -1,4 +1,4 @@
-module test
+module example
 
 import StdEnv
 
