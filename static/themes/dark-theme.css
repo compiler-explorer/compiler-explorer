@@ -247,32 +247,23 @@ input {
 }
 
 .popover {
-    color: #fff !important;
+    color: #f2f2f2 !important;
+    background-color: #a1a1a1;
     border-color: #464545 !important;
 }
 
+.popover-header {
+    background-color: #929292 !important;
+    color: #000000 !important;
+}
+
 .popover, .popover-content, .libs-container, .lib-list {
-    background-color: #333 !important;
+    background-color: #737373 !important;
+    color: #f2f2f2 !important;
 }
 
 .lib-item {
     background-color: #333 !important;
-}
-
-.lib-arrow-up {
-    border-bottom-color: gray !important;
-}
-
-.lib-arrow-up.lib-arrow-used {
-    border-bottom-color: green !important;
-}
-
-.lib-arrow-down {
-    border-top-color: gray !important;
-}
-
-.lib-arrow-down.lib-arrow-used {
-    border-top-color: green !important;
 }
 
 #socialshare .share-twitter, .share-twitter {
