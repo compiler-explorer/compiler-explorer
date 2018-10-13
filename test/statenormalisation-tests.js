@@ -52,4 +52,16 @@ describe("Normalizing clientstate", () => {
 
         normalizer.normalized.should.deep.equal(resultdata);
     });
+
+    it("Should support conformanceview", () => {
+        const normalizer = new ClientStateNormalizer();
+
+        const data =  JSON.parse(fs.readFileSync("test/state/conformanceview.json"));
+
+        normalizer.fromGoldenLayout(data);
+
+        const resultdata = JSON.parse(fs.readFileSync("test/state/conformanceview.json.normalized"));
+
+        normalizer.normalized.should.deep.equal(resultdata);
+    });
 });
