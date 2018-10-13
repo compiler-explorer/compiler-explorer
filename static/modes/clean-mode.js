@@ -1,4 +1,4 @@
-// Copyright (c) 2017, Rubén Rincón
+// Copyright (c) 2018, Compiler Explorer Team
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -26,16 +26,17 @@
 function definition() {
     return {
         keywords: [
-            'module', 'import', 'main', 'where', 'otherwise', 'newtype',
-            'definition', 'implementation', 'from', 'class', 'instance', 'abort'
+            'module', 'import', 'Start', 'where', 'otherwise',
+            'definition', 'implementation', 'from', 'class', 'instance', 'abort',
+            'infix', 'infixl', 'infixr', 'if', 'True', 'False'
         ],
 
         builtintypes: [
-            'Int', 'Real', 'String'
+            'Int', 'Real', 'String', 'Char', 'Complex', 'Bool'
         ],
 
         operators: [
-            '=', '==', '>=', '<=', '+', '-', '*', '/', '::', '->', '=:', '=>', '|', '$'
+            '=', '==', '>=', '<=', '+', '-', '*', '/', '::', ':==', '->', '=:', '=>', '|', '\\\\'
         ],
 
         numbers: /-?[0-9.]/,
@@ -50,7 +51,7 @@ function definition() {
 
                 [/(\w*)(\s?)(::)/, ['keyword', 'white', 'operators']],
 
-                [/[+\-*/=<>$]/, 'operators'],
+                [/[+\-*/=<>\\]/, 'operators'],
 
                 [/[a-zA-Z_][a-zA-Z0-9_]*/, {
                     cases: {
@@ -76,12 +77,11 @@ function definition() {
             whitespace: [
                 [/[ \t\r\n]+/, 'white'],
                 [/\/\*/, 'comment', '@comment'],
-                [/\/\/.*$/, 'comment'],
-                [/--.*$/, 'comment']
+                [/\/\/.*$/, 'comment']
             ],
         }
     };
 }
 
-monaco.languages.register({id: 'haskell'});
-monaco.languages.setMonarchTokensProvider('haskell', definition());
+monaco.languages.register({ id: 'clean' });
+monaco.languages.setMonarchTokensProvider('clean', definition());
