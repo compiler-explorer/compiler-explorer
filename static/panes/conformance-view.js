@@ -371,9 +371,8 @@ Conformance.prototype.handleStatusIcon = function (element, status) {
         .prop("data-status", status.code)
         .toggle(status.code !== 0)
         .toggleClass('fa-spinner', status.code === 4)
-        .toggleClass('fa-minus-circle', status.code === 3)
-        .toggleClass('fa-exclamation-circle', status.code === 2)
-        .toggleClass('fa-check-circle', status.code === 1);
+        .toggleClass('fa-times-circle', status.code === 3)
+        .toggleClass('fa-check-circle', status.code === 1 || status.code === 2);
 };
 
 Conformance.prototype.currentState = function () {

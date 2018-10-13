@@ -1354,13 +1354,10 @@ Compiler.prototype.handleCompilationStatus = function (status) {
         .css('color', color(status.code))
         .toggle(status.code !== 0)
         .prop('aria-label', ariaLabel(status.code))
-        .prop('data-status', status.code);
-
-    this.statusIcon
+        .prop('data-status', status.code)
         .toggleClass('fa-spinner', status.code === 4)
-        .toggleClass('fa-minus-circle', status.code === 3)
-        .toggleClass('fa-exclamation-circle', status.code === 2)
-        .toggleClass('fa-check-circle', status.code === 1);
+        .toggleClass('fa-times-circle', status.code === 3)
+        .toggleClass('fa-check-circle', status.code === 1 || status.code === 2);
 
     this.statusLabel
         .toggleClass('error', status === 3)
