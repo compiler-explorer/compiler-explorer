@@ -240,7 +240,19 @@ require("monaco-loader")().then(function () {
         return config;
     }
 
+    function initializeResetLayoutLink() {
+        var currentUrl = document.URL;
+        if (currentUrl.includes("/z/")) {
+            $("#ui-brokenlink").attr("href", currentUrl.replace("/z/", "/resetlayout/"));
+            $("#ui-brokenlink").show();
+        } else {
+            $("#ui-brokenlink").hide();
+        }
+    }
+
     function start() {
+        initializeResetLayoutLink();
+
         var options = require('options');
 
         var subdomainPart = window.location.hostname.split('.')[0];
@@ -283,6 +295,11 @@ require("monaco-loader")().then(function () {
             hub = new Hub(layout, subLangId);
         } catch (e) {
             Raven.captureException(e);
+
+            if (document.URL.includes("/z/")) {
+                document.location = document.URL.replace("/z/", "/resetlayout/");
+            }
+
             layout = new GoldenLayout(defaultConfig, root);
             hub = new Hub(layout, subLangId);
         }
