@@ -63,3 +63,4 @@ From oldest to newest contributor, we would like to thank:
 - [Miguel Ojeda](https://github.com/ojeda)
 - [Niek J. Bouman](https://github.com/niekbouman)
 - [Erik Little](https://github.com/nuclearace)
+- [Jülich Supercomputing Centre](https://github.com/FZJ-JSC)
