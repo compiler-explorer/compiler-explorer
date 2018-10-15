@@ -293,6 +293,7 @@ aws.initConfig(awsProps)
                     clientOptionsHandler.setCompilers(compilers);
                     apiHandler.setCompilers(compilers);
                     apiHandler.setLanguages(languages);
+                    apiHandler.setOptions(clientOptionsHandler);
                 }
 
                 onCompilerChange(compilers);
