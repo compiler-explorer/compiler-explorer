@@ -191,6 +191,10 @@ input {
     border-color: #272727 !important;
 }
 
+.btn-light:hover {
+    background-color: #383838 !important;
+}
+
 .btn-light.active {
     color: #f2f2f2 !important;
 }

@@ -440,3 +440,11 @@ pre.content.wrap {
 .compiler-options-popover {
     font-family: monospace;
 }
+
+.navbar-nav a.nav-link {
+    font-size: 14px;
+}
+
+.navbar-nav a.nav-link:hover {
+    border-radius: 5px;
+}

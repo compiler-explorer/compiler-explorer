@@ -44,6 +44,10 @@ a.navbar-brand img.logo.normal {
     display: block !important;
 }
 
+.button-checkbox button:disabled {
+    background-color: #dae5e0 !important;
+}
+
 .opcode {
     color: #066;
 }
@@ -176,11 +180,6 @@ a.navbar-brand img.logo.normal {
     border-color: #67c52a;
 }
 
-.navbar-nav a.nav-link {
-    font-size: 14px;
-}
-
 .navbar-nav a.nav-link:hover {
     background-color: #d8d9da;
-    border-radius: 5px;
 }
