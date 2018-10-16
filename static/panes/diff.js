@@ -61,7 +61,6 @@ function Diff(hub, container, state) {
         scrollBeyondLastLine: false,
         readOnly: true,
         language: 'asm'
-        // renderSideBySide: false
     });
 
     this.lhs = new State(state.lhs, monaco.editor.createModel('', 'asm'));
