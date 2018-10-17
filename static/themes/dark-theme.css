@@ -103,7 +103,7 @@ a.navbar-brand img.logo.normal {
 
 .selectize-control.single .selectize-input.disabled {
     color: #f2f2f2 !important;
-    background: #000 !important;
+    background-color: #383838 !important;
 }
 
 .dropdown-menu {
@@ -199,8 +199,20 @@ input {
     color: #f2f2f2 !important;
 }
 
-.btn-light.disabled {
+.btn-light:disabled {
     color: #aaa !important;
+}
+
+.btn-light:disabled:hover {
+    background-color: #474747 !important;
+}
+
+.top-bar.btn-toolbar.bg-light {
+    border-bottom: 1px solid #202122;
+}
+
+.bottom-bar.bg-light {
+    border-top: 1px solid #202122;
 }
 
 .card {

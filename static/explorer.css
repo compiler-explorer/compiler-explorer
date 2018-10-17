@@ -378,6 +378,10 @@ pre.content.wrap {
     margin-left: 5px;
 }
 
+button.dropdown-item.btn.btn-light.btn-sm {
+    margin-left: 0 !important;
+}
+
 .opens-new-window {
     width: 16px;
     height: 16px;

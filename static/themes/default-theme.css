@@ -46,10 +46,19 @@ a.navbar-brand img.logo.normal {
 
 .button-checkbox button:disabled {
     background-color: #dae5e0 !important;
+    border-color: #aae3e0 !important;
 }
 
 .opcode {
     color: #066;
+}
+
+.top-bar.btn-toolbar.bg-light {
+    border-bottom: 1px solid #d2d3d4;
+}
+
+.bottom-bar.bg-light {
+    border-top: 1px solid #d2d3d4;
 }
 
 .opcode:nth-child(odd) {
