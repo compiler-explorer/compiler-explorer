@@ -159,6 +159,9 @@ function handleDisplay(stack, code, options) {
         1: function _() {
             return pushTag(stack, 'b');
         },
+        2: function _() {
+            return pushStyle(stack, 'opacity:0.6');
+        },
         3: function _() {
             return pushTag(stack, 'i');
         },
