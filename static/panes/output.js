@@ -88,10 +88,7 @@ Output.prototype.resize = function () {
 
 Output.prototype.onOptionsChange = function () {
     var options = this.getEffectiveOptions();
-    //this.contentRoot.css('white-space', options.wrap ? 'initial' : 'nowrap');
-    //this.contentRoot.css('overflow-x', options.wrap ? 'initial' : 'auto');
     this.contentRoot.toggleClass('wrap', options.wrap);
-    //this.contentRoot.toggleClass('scroll', !options.wrap);
     this.wrapButton.prop('title', '[' + (options.wrap ? 'ON' : 'OFF') + '] ' + this.wrapTitle);
 
     this.saveState();

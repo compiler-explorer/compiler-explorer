@@ -1,216 +1,254 @@
 .gl_keep.template
   .urls
-    .input-group.urls-container
-      .input-group-btn
-        .btn-group.btn-group-sm
-          button.btn.btn-godbolt.btn-sm.dropdown-toggle(
-          data-toggle="dropdown" type="button" aria-haspopup="true" aria-expanded="false")
-            span.current Short
-            span.caret
-          ul.dropdown-menu.sources
-            li: a(href="javascript:;" data-bind="Short") Short
-            li: a(href="javascript:;" data-bind="Full") Full
-            li: a(href="javascript:;" data-bind="Embed") Embed
-            li: a(href="javascript:;" data-bind="Embed (RO)") Embed (read only)
-      input.form-control.input-sm.permalink(
-      type="text" placeholder="Loading" readonly size="1024")
-      span.input-group-btn
-        button.btn.btn-godbolt.btn-sm.clippy(
-        type="button" data-clipboard-target=".popover .permalink"
-        title="Copy to clipboard")
-          span.glyphicon.glyphicon-copy(style="width:13px")
-    if sharingEnabled
-      .socialsharing
+    .card
+      .card-body
+        .urls-container
+          .btn-group.btn-group-sm
+            .input-group.input-group-sm
+              .input-group-prepend
+                button.btn.btn-outline-secondary.btn-sm.dropdown-toggle(data-toggle="dropdown" type="button" aria-haspopup="true" aria-expanded="false")
+                  span.current Short #[b.caret]
+                ul.dropdown-menu.sources
+                  button.dropdown-item.btn.btn-light.btn-sm(data-bind="Short")
+                    | Short
+                  button.dropdown-item.btn.btn-light.btn-sm(data-bind="Full")
+                    | Full
+                  button.dropdown-item.btn.btn-light.btn-sm(data-bind="Embed")
+                    | Embed
+                  button.dropdown-item.btn.btn-light.btn-sm(data-bind="Embed (RO)")
+                    | Embed (read only)
+              input.form-control.input-sm.permalink(type="text" placeholder="Loading" readonly size="1024" style="font-size: 10px")
+              .input-group-append
+                button.input-group-btn.btn.btn-outline-secondary.btn-sm.clippy(type="button" data-clipboard-target=".popover .permalink" title="Copy to clipboard")
+                  span.fa.fa-clipboard
+      if sharingEnabled
+        .card-footer
+          .socialsharing
 
   #codeEditor
-    .top-bar.btn-toolbar(role="toolbar")
+    .top-bar.btn-toolbar.bg-light(role="toolbar" aria-label="Editor toolbar")
       include font-size.pug
-      if !embedded
-        .btn-group.btn-group-sm
-          button.btn.btn-godbolt.btn-sm.load-save(title="Load or save text")
-            span.glyphicon.glyphicon-floppy-disk
-            span.hideable &nbsp;Save/Load
-        .btn-group.btn-group-sm.dropdown
-          button.btn.btn-godbolt.btn-sm.dropdown-toggle.add-pane(type="button" title="Add a new pane" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
-            span.glyphicon.glyphicon-plus
-            span.hideable &nbsp;Add new...
-            | #[b.caret]
-          div.dropdown-menu.pane-dropdown(aria-labelledby="add-pane")
-            button.btn.btn-godbolt.btn-sm.add-compiler(title="Add a new compiler for this source" aria-label="Compiler")
-              span.glyphicon.glyphicon-open
-              | &nbsp;Compiler
-            button.btn.btn-godbolt.btn-sm.conformance(title="Add a new conformance view" aria-label="Conformance view")
-              span.glyphicon.glyphicon-list-alt
-              | &nbsp;Conf. view
-      .btn-group.btn-group-sm.pull-right
+      .btn-group.btn-group-sm(role="group" aria-label="Editor settings")
+        button.btn.btn-light.load-save(title="Load or save text" aria-label="Load or save text")
+          span.fa.fa-save
+          span.hideable &nbsp;Save/Load
+        button.dropdown-toggle.btn.btn-light.add-pane(type="button" title="Add a new pane" aria-label="Add a new pane" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
+          span.fa.fa-plus
+          span.hideable &nbsp;Add new...
+          | #[b.caret]
+        .dropdown-menu
+          button.dropdown-item.btn.btn-sm.btn-light.add-compiler(title="Add a new compiler for this source" aria-label="New compiler")
+            span.fa.fa-cogs
+            | &nbsp;Compiler
+          button.dropdown-item.btn.btn-sm.btn-light.conformance(title="Add a new conformance view" aria-label="New conformance view")
+            span.fa.fa-list
+            | &nbsp;Conformance view
+      .btn-group.btn-group-sm.ml-auto(role="group" aria-label="Editor language")
         select.change-language(title="Change this editor's (and associated panels) language" disabled=embedded && readOnly)
     .monaco-placeholder
 
   #compiler
-    .top-bar.btn-toolbar(role="toolbar")
-      table
-        tr
-          td: select.compiler-picker(placeholder="Select a compiler...")
-          td: input.options.form-control(type="text" placeholder="Compiler options..." size="256" autocorrect="off" autocapitalize="off" spellcheck="false")
-          td: span.glyphicon.glyphicon-info-sign.prepend-options
-      if !embedded
-        include font-size.pug
-      div.btn-group.btn-group-sm.filters(data-toggle="buttons")
-        // TODO store these in the app and drive from there?
-        // Make a dropdown? With more options?
-        button.btn.btn-godbolt.btn-sm(title="Compile to binary and disassemble the output" data-bind="binary")
-          span 11010
-        button.btn.btn-godbolt.btn-sm(title="Execute the binary" data-bind="execute")
-          span ./a.out
-        button.btn.btn-godbolt.btn-sm.active.nonbinary(title="Filter unused labels from the output" data-bind="labels")
-          span .LX0:
-        button.btn.btn-godbolt.btn-sm.active.nonbinary(title="Filter all assembler directives from the output" data-bind="directives")
-          span .text
-        button.btn.btn-godbolt.btn-sm.active.nonbinary(title="Remove all lines which are only comments from the output" data-bind="commentOnly")
-          span //
-        button.btn.btn-godbolt.btn-sm(title="Trim intra-line whitespace" data-bind="trim")
-          span \s+
-        button.btn.btn-godbolt.btn-sm.active(title="Output disassembly in Intel syntax" data-bind="intel")
-          span Intel
-        button.btn.btn-godbolt.btn-sm.active(title="Demangle output" data-bind="demangle")
-          span Demangle
-        if embedded
-          include font-size.pug
-      .btn-group.btn-group-sm
-        button.btn.btn-godbolt.btn-sm.show-libs.dropdown-toggle
-          span.glyphicon.glyphicon-book(title="Include libs")
+    .top-bar.btn-toolbar.bg-light(role="toolbar")
+      .btn-group.btn-group-sm(role="group" aria-label="Compiler picker")
+        select.compiler-picker(placeholder="Select a compiler...")
+        .input-group.mb-auto
+          .input-group-prepend(title="Show all compilation options")
+            a.input-group-text.prepend-options(tabindex="0" data-trigger="focus" style="cursor: pointer;" role="button" title="All compilation options")
+              span.btn.btn-light.btn-sm.status-icon
+          input.options.form-control(type="text" placeholder="Compiler options..." size="256" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false")
+      include font-size
+      .btn-group.btn-group-sm.filters(role="group" aria-label="Compiler filters")
+        .button-checkbox
+          button.btn.btn-light.btn-sm(type="button" title="Compile to binary and disassemble the output" data-bind="binary" aria-pressed="false")
+            span 11010
+          input.d-none(type="checkbox")
+        .button-checkbox
+          button.btn.btn-light.btn-sm(type="button" title="Execute the binary" data-bind="execute" aria-pressed="false")
+            span ./a.out
+          input.d-none(type="checkbox")
+        .button-checkbox
+          button.btn.btn-light.btn-sm.active.nonbinary(type="button" title="Filter unused labels from the output" data-bind="labels" aria-pressed="true")
+            span .LX0:
+          input.d-none(type="checkbox" checked=true)
+        .button-checkbox
+          button.btn.btn-light.btn-sm.active.nonbinary(type="button" title="Filter all assembler directives from the output" data-bind="directives" aria-pressed="true")
+            span .text
+          input.d-none(type="checkbox" checked=true)
+        .button-checkbox
+          button.btn.btn-light.btn-sm.active.nonbinary(type="button" title="Remove all lines which are only comments from the output" data-bind="commentOnly" aria-pressed="true")
+            span //
+          input.d-none(type="checkbox" checked=true)
+        .button-checkbox
+          button.btn.btn-light.btn-sm(type="button" title="Trim intra-line whitespace" data-bind="trim" aria-pressed="false")
+            span \s+
+          input.d-none(type="checkbox")
+        .button-checkbox
+          button.btn.btn-light.btn-sm.active(type="button" title="Output disassembly in Intel syntax" data-bind="intel" aria-pressed="true")
+            span Intel
+          input.d-none(type="checkbox" checked=true)
+        .button-checkbox
+          button.btn.btn-light.btn-sm.active(type="button" title="Demangle output" data-bind="demangle" aria-pressed="true")
+            span Demangle
+          input.d-none(type="checkbox" checked=true)
+      .btn-group.btn-group-sm(role="group" aria-label="Compiler additions")
+        button.btn.btn-light.btn-sm.show-libs
+          span.fas.fa-book(title="Include libs")
           span.hideable &nbsp;Libraries
           | #[b.caret]
-      if !embedded
-        .btn-group.btn-group-sm.dropdown
-          button.btn.btn-godbolt.btn-sm.dropdown-toggle.add-pane(type="button" title="Add a new pane" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
-            span.glyphicon.glyphicon-plus
-            span.hideable &nbsp;Add new...
-            | #[b.caret]
-          div.dropdown-menu.pane-dropdown(aria-labelledby="add-pane")
-            button.btn.btn-godbolt.btn-sm.add-compiler(title="Clone this compiler window (click or drag)")
-              span.glyphicon.glyphicon-new-window
-              | &nbsp;Clone compiler
-            button.btn.btn-godbolt.btn-sm.view-optimization(title="Show optimization output")
-              span.glyphicon.glyphicon-scale
-              | &nbsp;Optimization output
-            button.btn.btn-godbolt.btn-sm.view-ast(title="Show AST output")
-              span.glyphicon.glyphicon-tree-deciduous
-              | &nbsp;AST output
-            button.btn.btn-godbolt.btn-sm.view-gccdump(title="Show Tree/RTL dump (GCC only)")
-              span.glyphicon.glyphicon-tree-conifer
-              | &nbsp;GCC Tree/RTL output
-            button.btn.btn-godbolt.btn-sm.view-cfg(title="Show Graph Output")
-              span.glyphicon.glyphicon-lamp
-              | &nbsp;Graph output
+      .btn-group.btn-group-sm(role="group")
+        button.btn.btn-light.btn-sm.dropdown-toggle.add-pane(type="button" title="Add a new pane" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Add new element for this compiler")
+          span.fas.fa-plus
+          span.hideable &nbsp;Add new...
+          | #[b.caret]
+        .dropdown-menu.dropdown-menu-right
+          button.dropdown-item.btn.btn-light.btn-sm.add-compiler(title="Clone this compiler window (click or drag)")
+            span.far.fa-clone
+            | &nbsp;Clone compiler
+          button.dropdown-item.btn.btn-light.btn-sm.view-optimization(title="Show optimization output")
+            span.fas.fa-weight
+            | &nbsp;Optimization output
+          button.dropdown-item.btn.btn-light.btn-sm.view-ast(title="Show AST output")
+            span.fas.fa-leaf
+            | &nbsp;AST output
+          button.dropdown-item.btn.btn-light.btn-sm.view-gccdump(title="Show Tree/RTL dump (GCC only)")
+            span.fas.fa-tree
+            | &nbsp;GCC Tree/RTL output
+          button.dropdown-item.btn.btn-light.btn-sm.view-cfg(title="Show Graph Output")
+            span.fas.fa-exchange-alt
+            | &nbsp;Graph output
     .monaco-placeholder
-    .bottom-bar
+    .bottom-bar.bg-light
       if !embedded
         .btn-group.btn-group-sm
-          button.btn.btn-godbolt.btn-sm.output-btn
-            span.glyphicon.glyphicon-alert.status
-            | &nbsp;Output
-            span.output-count
-              | &nbsp;(
-              span.text-count
-                | 0
-              | /
-              span.err-count
-                | 0
-              | )
-        span.full-compiler-name
-        span.compile-time
-        button.btn.btn-godbolt.btn-sm.clear-cache(title="Clear cache & recompile")
-          span.glyphicon.glyphicon-refresh
+          .input-group
+            .input-group-prepend
+              button.btn.btn-light.btn-sm.clear-cache(title="Clear cache & recompile")
+                span.fas.fa-redo
+            button.btn.btn-light.btn-sm.output-btn
+              span.fas.fa-receipt.status-text
+              | &nbsp;Output
+              span.output-count
+                | &nbsp;(
+                span.text-count
+                  | 0
+                | /
+                span.err-count
+                  | 0
+                | )
+        span.short-compiler-name
+        a.full-compiler-name(tabindex="0" data-trigger="focus" style="cursor: pointer;" role="button" title="Full compiler version")
+          span.btn.btn-light.btn-sm.fas.fa-info
+        span.compile-time(title="Compilation time (Result size)")
 
   #compiler-output
-    .top-bar.btn-toolbar.options-toolbar(role="toolbar")
+    .top-bar.btn-toolbar.options-toolbar.bg-light(role="toolbar")
       include font-size
-      div.btn-group.btn-group-sm.options(data-toggle="buttons")
-        button.btn.btn-godbolt.btn-sm.wrap-lines(title="Wrap lines" data-bind="wrap")
-          | Wrap lines
+      .btn-group.btn-group-sm.options(role="group" aria-label="Output options")
+        .button-checkbox
+          button.btn.btn-light.btn-sm.wrap-lines(type="button" title="Wrap lines" data-bind="wrap" aria-pressed="false" aria-label="Wrap lines")
+            span Wrap lines
+          input.d-none(type="checkbox" checked=false)
     pre.content
 
   #diff
-    .top-bar.tn-toolbar(role="toolbar")
-      table
-        tr
-          td.header-fontscale
-            include font-size.pug
-          td: select.diff-picker.lhs(placeholder="Select compiler output...")
-          td: select.diff-picker.rhs(placeholder="Select compiler output...")
+    .top-bar.btn-toolbar.bg-light(role="toolbar")
+      include font-size.pug
+      .btn-group.btn-group-sm
+        .input-group.input-group-sm.mb-auto
+          .input-group-prepend
+            label.input-group-text
+              | Left:&nbsp;
+          select.diff-picker.lhs(placeholder="Select compiler...")
+      .btn-group.btn-group-sm.ml-4
+        .input-group.input-group-sm.mb-auto
+          .input-group-prepend
+            label.input-group-text
+              | Right:&nbsp;
+          select.diff-picker.rhs(placeholder="Select compiler...")
     .monaco-placeholder
 
   #opt
-    .top-bar.btn-toolbar(role="toolbar")
+    .top-bar.btn-toolbar.bg-light(role="toolbar")
       include font-size.pug
     .monaco-placeholder
 
   #ast
-    .top-bar.btn-toolbar(role="toolbar")
+    .top-bar.btn-toolbar.bg-light(role="toolbar")
       include font-size.pug
     .monaco-placeholder
 
   #gccdump
-    .top-bar.btn-toolbar(role="toolbar")
-      table
-        tr: td: select.gccdump-pass-picker(placeholder="Select a pass...")
+    .top-bar.btn-toolbar.bg-light(role="toolbar")
       include font-size
-      div.btn-group.btn-group-sm.dump-filters(data-toggle="buttons")
-          button.btn.btn-godbolt.btn-sm.active(title="Tree" data-bind="treeDump")
+      .btn-group.btn-group-sm(role="group")
+        select.gccdump-pass-picker(placeholder="Select a pass...")
+      .btn-group.btn-group-sm.dump-filters
+        .button-checkbox
+          button.btn.btn-light.btn-sm.active(type="button" title="Show Tree pass" data-bind="treeDump" aria-pressed="true")
             span Tree pass
-          button.btn.btn-godbolt.btn-sm.active(title="RTL" data-bind="rtlDump")
+          input.d-none(type="checkbox" checked=true)
+        .button-checkbox
+          button.btn.btn-light.btn-sm.active(type="button" title="Show RTL pass" data-bind="rtlDump" aria-pressed="true")
             span RTL pass
+          input.d-none(type="checkbox" checked=true)
     .monaco-placeholder
 
   #cfg
-    .top-bar.btn-toolbar.cfg-toolbar(role="toolbar")
-      table
-        tr
-          td: select.function-picker
-      div.btn-group.btn-group-sm.options(data-toggle="buttons")
-        button.btn.btn-godbolt.btn-sm.toggle-navigation(title="Toggle navigation buttons" data-bind="navigation")
-          span Navigation
-        button.btn.btn-godbolt.btn-sm.toggle-physics(title="Toggle physics to nodes" data-bind="physics")
-          span Physics
-    div.graph-placeholder
+    .top-bar.btn-toolbar.bg-light.cfg-toolbar(role="toolbar")
+      .btn-group.btn-group-sm(role="group")
+        select.function-picker
+      .btn-group.btn-group-sm.options(role="group")
+        .button-checkbox
+          button.btn.btn-light.btn-sm.toggle-navigation(type="button" title="Toggle navigation buttons" aria-pressed="false" data-bind="navigation")
+            span Nav
+          input.d-none(type="checkbox")
+        .button-checkbox
+          button.btn.btn-light.btn-sm.toggle-physics(type="button" title="Toggle physics to nodes" aria-pressed="false" data-bind="physics")
+            span Physics
+          input.d-none(type="checkbox")
+    .graph-placeholder
 
   #conformance
-    .top-bar.tn-toolbar(role="toolbar")
-      .btn-group.btn-group-sm
-        button.btn.btn-godbolt.btn-sm.add-compiler(title="Add compiler")
-          span.glyphicon.glyphicon-plus-sign
-          span.hideable &nbsp;Add new compiler
-        button.btn.btn-godbolt.btn-sm.show-libs.dropdown-toggle
-          span.glyphicon.glyphicon-book(title="Include libs")
+    .top-bar.btn-toolbar.options-toolbar.bg-light(role="toolbar")
+      .btn-group.btn-group-sm(role="group")
+        button.btn.btn-light.btn-sm.add-compiler(title="Add compiler")
+          span.fas.fa-plus
+          span.hideable &nbsp;Add compiler
+        button.btn.btn-light.btn-sm.show-libs.dropdown-toggle(title="Include libs" aria-label="Toggle libraries dropdown" aria-pressed="false" aria-haspopup="true")
+          span.fas.fa-book
           span.hideable &nbsp;Libraries
           | #[b.caret]
     .conformance-wrapper
       table.compiler-list
 
   #compiler-selector
-    table
-      tr.compiler-row
-        td
-          span.status.glyphicon
-        td
-          select.compiler-picker(placeholder="Select a compiler...")
-        td
-          input.options.form-control(type="text" size="256" placeholder="Compiler options..." autocorrect="off" autocapitalize="off" spellcheck="false")
-        td
-          span.glyphicon.glyphicon-info-sign.prepend-options
-        td
-          button.close(aria-label="Close")
-            span(aria-hidden="true")
-              | &times;
+    .form-row
+      .col-auto
+        select.compiler-picker(placeholder="Select a compiler...")
+      .col
+        .input-group.mb-auto
+          .input-group-prepend(title="Show all compilation options")
+            a.input-group-text.prepend-options(tabindex="0" data-trigger="focus" style="cursor: pointer;" role="button" title="All compilation options")
+              span.btn.btn-light.btn-sm.status-icon
+          input.options.form-control(type="text" placeholder="Compiler options..." size="256" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false")
+      .col-1
+        span.fas.fa-receipt.d-none.compiler-out(style="cursor: help;")
+        button.fas.fa-times.close(aria-label="Close" title="Close")
+        button.fas.fa-share.close.extract-compiler(aria-label="Pop compiler" title="Show compiler")
 
   #libs-dropdown
     .no-libs
       p No libs configured for this language yet.
       a(target="_blank" rel="noopener noreferrer" href="https://github.com/mattgodbolt/compiler-explorer/issues/new")
         | You can suggest us one at any time&nbsp;
-        sup.glyphicon.glyphicon-new-window.opens-new-window(title="Opens in a new window")
+        sup.fas.fa-external-link-alt.opens-new-window(title="Opens in a new window")
 
-  #share-item(data-logo-twitter=require("Twitter_Logo_WhiteOnBlue.svg") data-logo-reddit=require("Reddit_Icon.png"))
+  #libs-entry
+    .input-group.input-group-sm
+      .input-group-prepend
+        label.input-group-text
+      select.custom-select.custom-select-sm
+
+  #share-item
     a.share-item(href="javascript:;" rel="noopener noreferrer" target="_blank")
       span.share-item-text

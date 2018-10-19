@@ -34,16 +34,13 @@ function handleMotd(motd, motdNode, subLang, adsEnabled, onHide) {
         motdNode.removeClass('hide');
         motdNode.find(".close")
             .on('click', function () {
-                motdNode.addClass('hide');
+                motdNode.addClass('d-none');
             })
             .prop('title', 'Hide message');
     } else if (adsEnabled) {
-        var applicableAds = _.chain(motd.ads)
-            .filter(function (ad) {
-                return !subLang || !ad.filter || ad.filter.length === 0 || ad.filter.indexOf(subLang) >= 0;
-            })
-            .value();
-        if (applicableAds.length === 0) return;
+        var applicableAds = _.filter(motd.ads, function (ad) {
+            return !subLang || !ad.filter || ad.filter.length === 0 || ad.filter.indexOf(subLang) >= 0;
+        });
         var randomAd = applicableAds[_.random(applicableAds.length - 1)];
         if (randomAd) {
             motdNode.find(".content").html(randomAd.html);
@@ -65,7 +62,7 @@ function handleMotd(motd, motdNode, subLang, adsEnabled, onHide) {
                     eventLabel: this.href
                 });
             });
-            motdNode.removeClass('hide');
+            motdNode.removeClass('d-none');
         }
     }
 }
