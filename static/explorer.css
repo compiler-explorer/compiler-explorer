@@ -51,6 +51,11 @@ body {
     box-shadow: none !important;
 }
 
+.top-bar .btn-light:disabled,
+.bottom-bar .btn-light:disabled {
+    cursor: not-allowed;
+}
+
 .float-link {
     z-index: 100;
     position: absolute;

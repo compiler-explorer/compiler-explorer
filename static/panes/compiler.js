@@ -849,32 +849,10 @@ Compiler.prototype.updateButtons = function () {
     this.filterTrimButton.prop('disabled', this.compiler.disabledFilters.indexOf('trim') !== -1);
     formatFilterTitle(this.filterTrimButton, this.filterTrimTitle);
 
-    // If its already open, we should turn it off.
-    // The pane will update with error text
-    // Otherwise we just disable the button.
-    if (!this.optViewOpen) {
-        this.optButton.prop('disabled', !this.compiler.supportsOptOutput);
-    } else {
-        this.optButton.prop('disabled', true);
-    }
-
-    if (!this.astViewOpen) {
-        this.astButton.prop('disabled', !this.compiler.supportsAstView);
-    } else {
-        this.astButton.prop('disabled', true);
-    }
-
-    if (!this.cfgViewOpen) {
-        this.cfgButton.prop('disabled', !this.compiler.supportsCfg);
-    } else {
-        this.cfgButton.prop('disabled', true);
-    }
-
-    if (!this.gccDumpViewOpen) {
-        this.gccDumpButton.prop('disabled', !this.compiler.supportsGccDump);
-    } else {
-        this.gccDumpButton.prop('disabled', true);
-    }
+    this.optButton.prop('disabled', !this.compiler.supportsOptOutput);
+    this.astButton.prop('disabled', !this.compiler.supportsAstView);
+    this.cfgButton.prop('disabled', !this.compiler.supportsCfg);
+    this.gccDumpButton.prop('disabled', !this.compiler.supportsGccDump);
 };
 
 Compiler.prototype.onFontScale = function () {
