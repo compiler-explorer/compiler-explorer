@@ -585,7 +585,7 @@ Compiler.prototype.onCompileResponse = function (request, result, cached) {
     var allText = _.pluck(stdout.concat(stderr), 'text').join('\n');
     var failed = result.code !== 0;
     var warns = !failed && !!allText;
-    this.handleCompilationStatus({code: failed ? 3 : (warns ? 2 : 1)});
+    this.handleCompilationStatus({code: failed ? 3 : (warns ? 2 : 1), compilerOut: result.code});
     this.outputTextCount.text(stdout.length);
     this.outputErrorCount.text(stderr.length);
     if (this.isOutputOpened) {
@@ -1312,26 +1312,48 @@ Compiler.prototype.onAsmToolTip = function (ed) {
 Compiler.prototype.handleCompilationStatus = function (status) {
     if (!this.statusLabel || !this.statusIcon) return;
 
-    function ariaLabel(code) {
-        if (code === 4) return "Compiling";
-        if (code === 3) return "Compilation failed";
-        if (code === 2) return "Compiled with warnings";
-        return "Compiled without warnings";
+    function ariaLabel() {
+        // Compiling...
+        if (status.code === 4) return "Compiling";
+        if (status.compilerOut === 0) {
+            // StdErr.length > 0
+            if (status.code === 3) return "Compilation succeeded with errors";
+            // StdOut.length > 0
+            if (status.code === 2) return "Compilation succeeded with warnings";
+            return "Compilation succeeded";
+        } else {
+            // StdErr.length > 0
+            if (status.code === 3) return "Compilation failed with errors";
+            // StdOut.length > 0
+            if (status.code === 2) return "Compilation failed with warnings";
+            return "Compilation failed";
+        }
     }
 
-    function color(code) {
-        if (code === 4) return "black";
-        if (code === 3) return "red";
-        if (code === 2) return "#BBBB00";
-        return "green";
+    function color() {
+        // Compiling...
+        if (status.code === 4) return "black";
+        if (status.compilerOut === 0) {
+            // StdErr.length > 0
+            if (status.code === 3) return "#FF6767";
+            // StdOut.length > 0
+            if (status.code === 2) return "#BBFF00";
+            return "#FFFF67";
+        } else {
+            // StdErr.length > 0
+            if (status.code === 3) return "#FF1212";
+            // StdOut.length > 0
+            if (status.code === 2) return "#FF6700";
+            return "#FFFF12";
+        }
     }
 
     this.statusIcon
         .removeClass()
         .addClass('status-icon fas')
-        .css('color', color(status.code))
+        .css('color', color())
         .toggle(status.code !== 0)
-        .prop('aria-label', ariaLabel(status.code))
+        .prop('aria-label', ariaLabel())
         .prop('data-status', status.code)
         .toggleClass('fa-spinner', status.code === 4)
         .toggleClass('fa-times-circle', status.code === 3)
