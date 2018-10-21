@@ -286,7 +286,7 @@ Conformance.prototype.onCompileResponse = function (child, result) {
     child.find('.compiler-out')
         .prop('title', allText.replace(/\x1b\[[0-9;]*m(.\[K)?/g, ''))
         .toggleClass('d-none', !allText);
-    this.handleStatusIcon(child.find('.status-icon'), {code: failed ? 3 : (warns ? 2 : 1)});
+    this.handleStatusIcon(child.find('.status-icon'), {code: failed ? 3 : (warns ? 2 : 1), compilerOut: result.code});
     this.saveState();
 };
 
@@ -349,27 +349,49 @@ Conformance.prototype.handleToolbarUI = function () {
 Conformance.prototype.handleStatusIcon = function (element, status) {
     if (!element) return;
 
-    function ariaLabel(code) {
-        if (code === 4) return "Compiling";
-        if (code === 3) return "Compilation failed";
-        if (code === 2) return "Compiled with warnings";
-        return "Compiled without warnings";
+    function ariaLabel() {
+        // Compiling...
+        if (status.code === 4) return "Compiling";
+        if (status.compilerOut === 0) {
+            // StdErr.length > 0
+            if (status.code === 3) return "Compilation succeeded with errors";
+            // StdOut.length > 0
+            if (status.code === 2) return "Compilation succeeded with warnings";
+            return "Compilation succeeded";
+        } else {
+            // StdErr.length > 0
+            if (status.code === 3) return "Compilation failed with errors";
+            // StdOut.length > 0
+            if (status.code === 2) return "Compilation failed with warnings";
+            return "Compilation failed";
+        }
     }
 
-    function color(code) {
-        if (code === 4) return "black";
-        if (code === 3) return "red";
-        if (code === 2) return "#BBBB00";
-        return "green";
+    function color() {
+        // Compiling...
+        if (status.code === 4) return "black";
+        if (status.compilerOut === 0) {
+            // StdErr.length > 0
+            if (status.code === 3) return "#FF6645";
+            // StdOut.length > 0
+            if (status.code === 2) return "#FF6500";
+            return "#12BB12";
+        } else {
+            // StdErr.length > 0
+            if (status.code === 3) return "#FF1212";
+            // StdOut.length > 0
+            if (status.code === 2) return "#BB8700";
+            return "#FF6645";
+        }
     }
 
     element
         .removeClass()
-        .addClass('status-icon fas fa-minus-circle')
-        .css("color", color(status.code))
-        .prop("aria-label", ariaLabel(status.code))
-        .prop("data-status", status.code)
+        .addClass('status-icon fas')
+        .css('color', color())
         .toggle(status.code !== 0)
+        .prop('aria-label', ariaLabel())
+        .prop('data-status', status.code)
         .toggleClass('fa-spinner', status.code === 4)
         .toggleClass('fa-times-circle', status.code === 3)
         .toggleClass('fa-check-circle', status.code === 1 || status.code === 2);

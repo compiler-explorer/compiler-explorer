@@ -1335,16 +1335,16 @@ Compiler.prototype.handleCompilationStatus = function (status) {
         if (status.code === 4) return "black";
         if (status.compilerOut === 0) {
             // StdErr.length > 0
-            if (status.code === 3) return "#FF6767";
+            if (status.code === 3) return "#FF6645";
             // StdOut.length > 0
-            if (status.code === 2) return "#BBFF00";
-            return "#FFFF67";
+            if (status.code === 2) return "#FF6500";
+            return "#12BB12";
         } else {
             // StdErr.length > 0
             if (status.code === 3) return "#FF1212";
             // StdOut.length > 0
-            if (status.code === 2) return "#FF6700";
-            return "#FFFF12";
+            if (status.code === 2) return "#BB8700";
+            return "#FF6645";
         }
     }
 
