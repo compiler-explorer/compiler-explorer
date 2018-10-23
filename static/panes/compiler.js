@@ -399,7 +399,7 @@ Compiler.prototype.getEffectiveFilters = function () {
     return filters;
 };
 
-Compiler.prototype.compile = function () {
+Compiler.prototype.compile = function (bypassCache) {
     if (this.deferCompiles) {
         this.needsCompile = true;
         return;
@@ -434,6 +434,7 @@ Compiler.prototype.compile = function () {
             options: options,
             lang: this.currentLangId
         };
+        if (bypassCache) request.bypassCache = true;
         if (!this.compiler) {
             this.onCompileResponse(request, errorResult('<Please select a compiler>'), false);
         } else {
@@ -950,7 +951,7 @@ Compiler.prototype.initCallbacks = function () {
 
     this.compileClearCache.on('click', _.bind(function () {
         this.compilerService.cache.reset();
-        this.compile();
+        this.compile(true);
     }, this));
 
     // Dismiss the popover on escape.
