@@ -44,6 +44,7 @@ require("monaco-loader")().then(function () {
     var Alert = require('./alert');
     var themer = require('./themes');
     var motd = require('./motd');
+    var jsCookie = require('js-cookie');
     //css
     require("bootstrap/dist/css/bootstrap.min.css");
     require("goldenlayout/src/css/goldenlayout-base.css");
@@ -192,7 +193,7 @@ require("monaco-loader")().then(function () {
                 );
                 // I can't remember why this check is here as it seems superfluous
                 if (options.policies.privacy.enabled) {
-                    local.set(options.policies.privacy.key, options.policies.privacy.hash);
+                    jsCookie.set(options.policies.privacy.key, options.policies.privacy.hash);
                 }
             });
         }
@@ -260,6 +261,16 @@ require("monaco-loader")().then(function () {
             return lang.id === subdomainPart || lang.alias.indexOf(subdomainPart) >= 0;
         });
         var subLangId = langBySubdomain ? langBySubdomain.id : undefined;
+
+        // Cookie domains are matched as a RE against the window location. This allows a flexible
+        // way that works across multiple domains (e.g. godbolt.org and compiler-explorer.com).
+        // We allow this to be configurable so that (for example), gcc.godbolt.org and d.godbolt.org
+        // share the same cookie domain for some settings.
+        var cookieDomain = new RegExp(options.cookieDomainRe).exec(window.location.hostname);
+        if (cookieDomain && cookieDomain[0]) {
+            cookieDomain = cookieDomain[0];
+            jsCookie.defaults.domain = cookieDomain;
+        }
 
         var defaultConfig = {
             settings: {showPopoutIcon: false},
@@ -376,7 +387,7 @@ require("monaco-loader")().then(function () {
         // Ensure old cookies are removed, to avoid user confusion
         document.cookie = 'fs_uid=;expires=Thu, 01 Jan 1970 00:00:01 GMT;';
         if (options.policies.privacy.enabled &&
-            options.policies.privacy.hash !== local.get(options.policies.privacy.key)) {
+            options.policies.privacy.hash !== jsCookie.get(options.policies.privacy.key)) {
             $('#privacy').trigger('click', {
                 title: 'New Privacy Policy. Please take a moment to read it'
             });
