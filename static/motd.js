@@ -51,7 +51,7 @@ function handleMotd(motd, motdNode, subLang, adsEnabled, onHide) {
                     eventLabel: 'Visibility',
                     eventAction: 'Hide'
                 });
-                motdNode.addClass('hide');
+                motdNode.addClass('d-none');
                 onHide();
             });
             motdNode.find('a').on('click', function () {
