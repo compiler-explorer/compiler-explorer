@@ -108,7 +108,7 @@ CompilerService.prototype.submit = function (request) {
                         case "error":
                             if (xhr.status === 504)
                             {
-                                error = `Gateway timeout; returned statusCode: ${xhr.statusCode}`
+                                error = `Gateway timeout; returned statusCode: ${xhr.status}`
                                 break;
                             }
                         default:
