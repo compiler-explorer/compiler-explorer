@@ -278,6 +278,8 @@ Compiler.prototype.initPanerButtons = function () {
             this.container.layoutManager.root.contentItems[0];
         insertPoint.addChild(createCfgView);
     }, this));
+
+    this.initToolButtons(togglePannerAdder);
 };
 
 Compiler.prototype.undefer = function () {
@@ -399,6 +401,32 @@ Compiler.prototype.getEffectiveFilters = function () {
     return filters;
 };
 
+Compiler.prototype.findTools = function (content, tools) {
+    if (content.componentName === "tool") {
+        if (
+            (content.componentState.editor === this.sourceEditorId) &&
+            (content.componentState.compiler === this.id))
+        {
+            tools.push({
+                id: content.componentState.toolId,
+                args: content.componentState.args
+            });
+        }
+    } else if (content.content) {
+        _.each(content.content, function (subcontent) {
+            tools = this.findTools(subcontent, tools);
+        }, this);
+    }
+
+    return tools;
+};
+
+Compiler.prototype.getActiveTools = function () {
+    if (!this.compiler) return {};
+
+    return this.findTools(this.container.layoutManager.toConfig(), []);
+};
+
 Compiler.prototype.compile = function (bypassCache) {
     if (this.deferCompiles) {
         this.needsCompile = true;
@@ -419,7 +447,8 @@ Compiler.prototype.compile = function (bypassCache) {
             produceOptInfo: this.wantOptInfo,
             produceCfg: this.cfgViewOpen
         },
-        filters: this.getEffectiveFilters()
+        filters: this.getEffectiveFilters(),
+        tools: this.getActiveTools()
     };
     var includeFlag = this.compiler ? this.compiler.includeFlag : '-I';
     _.each(this.libsWidget.getLibsInUse(), function (item) {
@@ -635,6 +664,12 @@ Compiler.prototype.onEditorChange = function (editor, source, langId, compilerId
     }
 };
 
+Compiler.prototype.onToolUIInit = function (compilerId) {
+    if (this.id === compilerId) {
+        this.compile();
+    }
+};
+
 Compiler.prototype.onOutputOpened = function (compilerId) {
     if (this.id === compilerId) {
         this.isOutputOpened = true;
@@ -662,6 +697,12 @@ Compiler.prototype.onAstViewOpened = function (id) {
     if (this.id === id) {
         this.astButton.prop('disabled', true);
         this.astViewOpen = true;
+        this.compile();
+    }
+};
+
+Compiler.prototype.onToolSettingsChange = function (id) {
+    if (this.id === id) {
         this.compile();
     }
 };
@@ -825,6 +866,38 @@ Compiler.prototype.initLibraries = function (state) {
         state, _.bind(this.onLibsChanged, this));
 };
 
+Compiler.prototype.supportsTool = function (toolId) {
+    if (!this.compiler) return;
+
+    return _.find(this.compiler.tools, function (tool) {
+        return (tool.tool.id === toolId);
+    });
+};
+
+Compiler.prototype.initToolButton = function (togglePannerAdder, button, toolId) {
+    var createToolView = _.bind(function () {
+        return Components.getToolViewWith(this.id, this.sourceEditorId, toolId, "");
+    }, this);
+
+    this.container.layoutManager
+        .createDragSource(button, createToolView)
+        ._dragListener.on('dragStart', togglePannerAdder);
+
+    button.click(_.bind(function () {
+        var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
+            this.container.layoutManager.root.contentItems[0];
+        insertPoint.addChild(createToolView);
+    }, this));
+};
+
+Compiler.prototype.initToolButtons = function (togglePannerAdder) {
+    this.clangtidyToolButton = this.domRoot.find('.view-clangtidytool');
+    this.llvmmcaToolButton = this.domRoot.find('.view-llvmmcatool');
+
+    this.initToolButton(togglePannerAdder, this.clangtidyToolButton, "clangtidytrunk");
+    this.initToolButton(togglePannerAdder, this.llvmmcaToolButton, "llvm-mcatrunk");
+};
+
 Compiler.prototype.updateButtons = function () {
     if (!this.compiler) return;
     var filters = this.getEffectiveFilters();
@@ -862,6 +935,9 @@ Compiler.prototype.updateButtons = function () {
     this.astButton.prop('disabled', !this.compiler.supportsAstView);
     this.cfgButton.prop('disabled', !this.compiler.supportsCfg);
     this.gccDumpButton.prop('disabled', !this.compiler.supportsGccDump);
+
+    this.clangtidyToolButton.prop('disabled', !this.supportsTool("clangtidytrunk"));
+    this.llvmmcaToolButton.prop('disabled', !this.supportsTool("llvm-mcatrunk"));
 };
 
 Compiler.prototype.onFontScale = function () {
@@ -888,6 +964,9 @@ Compiler.prototype.initListeners = function () {
     this.eventHub.on('findCompilers', this.sendCompiler, this);
     this.eventHub.on('compilerSetDecorations', this.onCompilerSetDecorations, this);
     this.eventHub.on('settingsChange', this.onSettingsChange, this);
+
+    this.eventHub.on('toolSettingsChange', this.onToolSettingsChange, this);
+    this.eventHub.on('toolUIInit', this.onToolUIInit, this);
 
     this.eventHub.on('optViewOpened', this.onOptViewOpened, this);
     this.eventHub.on('optViewClosed', this.onOptViewClosed, this);
