@@ -137,4 +137,10 @@ describe('Filter test cases', function () {
                 {directives: true, labels: true, commentOnly: true});
         });
     });
+    describe('Directives and comments', function () {
+        cases.forEach(function (x) {
+            testFilter(x, ".directives.comments",
+                {directives: true, commentOnly: true});
+        });
+    });
 });
