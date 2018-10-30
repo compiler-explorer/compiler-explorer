@@ -53,7 +53,7 @@
         select.compiler-picker(placeholder="Select a compiler...")
         .input-group.mb-auto
           .input-group-prepend(title="Show all compilation options")
-            a.input-group-text.prepend-options(tabindex="0" data-trigger="focus" style="cursor: pointer;" role="button" title="All compilation options")
+            button.input-group-text.prepend-options(data-trigger="click" style="cursor: pointer;" role="button" title="All compilation options")
               span.btn.btn-light.btn-sm.status-icon
           input.options.form-control(type="text" placeholder="Compiler options..." size="256" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false")
       include font-size

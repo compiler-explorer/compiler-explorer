@@ -760,6 +760,14 @@ Compiler.prototype.initButtons = function (state) {
     this.optionsField = this.domRoot.find('.options');
     this.prependOptions = this.domRoot.find('.prepend-options');
     this.setCompilationOptionsPopover(this.compiler ? this.compiler.options : null);
+    // Dismiss on any click that isn't either in the opening element, inside
+    // the popover or on any alert
+    $(document).on('mouseup', _.bind(function (e) {
+        var target = $(e.target);
+        if (!target.is(this.prependOptions) && this.prependOptions.has(target).length === 0 &&
+            target.closest('.popover').length === 0)
+            this.prependOptions.popover("hide");
+    }, this));
 
     this.filterBinaryButton = this.domRoot.find("[data-bind='binary']");
     this.filterBinaryTitle = this.filterBinaryButton.prop('title');
@@ -1118,7 +1126,7 @@ Compiler.prototype.setCompilationOptionsPopover = function (content) {
     this.prependOptions.popover({
         content: content || 'No options in use',
         template: '<div class="popover' +
-            (content ? ' compiler-options-popover' : '')  +
+            (content ? ' compiler-options-popover' : '') +
             '" role="tooltip"><div class="arrow"></div>' +
             '<h3 class="popover-header"></h3><div class="popover-body"></div></div>'
     });
@@ -1129,7 +1137,7 @@ Compiler.prototype.setCompilerVersionPopover = function (version) {
     this.fullCompilerName.popover({
         content: version || '',
         template: '<div class="popover' +
-            (version ? ' compiler-options-popover' : '')  +
+            (version ? ' compiler-options-popover' : '') +
             '" role="tooltip"><div class="arrow"></div>' +
             '<h3 class="popover-header"></h3><div class="popover-body"></div></div>'
     });
