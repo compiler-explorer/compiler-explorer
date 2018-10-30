@@ -759,7 +759,7 @@ Compiler.prototype.initButtons = function (state) {
 
     this.optionsField = this.domRoot.find('.options');
     this.prependOptions = this.domRoot.find('.prepend-options');
-    this.setCompilationOptionsPopover();
+    this.setCompilationOptionsPopover(this.compiler ? this.compiler.options : null);
 
     this.filterBinaryButton = this.domRoot.find("[data-bind='binary']");
     this.filterBinaryTitle = this.filterBinaryButton.prop('title');

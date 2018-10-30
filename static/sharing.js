@@ -132,6 +132,8 @@ function initShareButton(getLink, layout, noteNewState) {
             eventCategory: 'OpenModalPane',
             eventAction: 'Sharing'
         });
+        var popoverElement = $($(this).data('bs.popover').tip);
+        var socialSharingElements = popoverElement.find('.socialsharing');
         var root = $('.urls-container:visible');
         var label = root.find('.current');
         var permalink = $(".permalink:visible");
@@ -167,10 +169,7 @@ function initShareButton(getLink, layout, noteNewState) {
         }
 
         function update() {
-            // Is there a better way to get the popup object? There's a field with the element in getLink, but
-            // it's under a jQueryXXXXXX field which I guess changes name for each version?
-            var popoverId = '#' + getLink.attr('aria-describedby');
-            var socialSharing = $(popoverId).find('.socialsharing');
+            var socialSharing = socialSharingElements;
             socialSharing.empty();
             if (!currentBind) return;
             permalink.prop('disabled', false);
