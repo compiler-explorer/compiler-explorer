@@ -419,7 +419,8 @@ aws.initConfig(awsProps)
                             }));
                         })
                         .catch(err => {
-                            logger.warn(`Exception thrown when expanding ${id}: `, err);
+                            logger.warn(`Exception thrown when expanding ${id}`);
+                            logger.debug('Exception value:', err);
                             next({
                                 statusCode: 404,
                                 message: `ID "${id}" could not be found`
@@ -471,7 +472,8 @@ aws.initConfig(awsProps)
                             }));
                         })
                         .catch(err => {
-                            logger.warn(`Exception thrown when expanding ${id}: `, err);
+                            logger.warn(`Exception thrown when expanding ${id}`);
+                            logger.debug('Exception value:', err);
                             next({
                                 statusCode: 404,
                                 message: `ID "${id}" could not be found`
