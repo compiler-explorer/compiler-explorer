@@ -421,13 +421,21 @@ Compiler.prototype.findTools = function (content, tools) {
     return tools;
 };
 
-Compiler.prototype.getActiveTools = function () {
+Compiler.prototype.getActiveTools = function (newToolSettings) {
     if (!this.compiler) return {};
 
-    return this.findTools(this.container.layoutManager.toConfig(), []);
+    var tools = [];
+    if (newToolSettings) {
+        tools.push({
+            id: newToolSettings.toolId,
+            args: newToolSettings.args
+        });
+    }
+
+    return this.findTools(this.container.layoutManager.toConfig(), tools);
 };
 
-Compiler.prototype.compile = function (bypassCache) {
+Compiler.prototype.compile = function (bypassCache, newTools) {
     if (this.deferCompiles) {
         this.needsCompile = true;
         return;
@@ -448,7 +456,7 @@ Compiler.prototype.compile = function (bypassCache) {
             produceCfg: this.cfgViewOpen
         },
         filters: this.getEffectiveFilters(),
-        tools: this.getActiveTools()
+        tools: this.getActiveTools(newTools)
     };
     var includeFlag = this.compiler ? this.compiler.includeFlag : '-I';
     _.each(this.libsWidget.getLibsInUse(), function (item) {
@@ -664,9 +672,9 @@ Compiler.prototype.onEditorChange = function (editor, source, langId, compilerId
     }
 };
 
-Compiler.prototype.onToolUIInit = function (compilerId) {
+Compiler.prototype.onToolOpened = function (compilerId, toolSettings) {
     if (this.id === compilerId) {
-        this.compile();
+        this.compile(false, toolSettings);
     }
 };
 
@@ -966,7 +974,7 @@ Compiler.prototype.initListeners = function () {
     this.eventHub.on('settingsChange', this.onSettingsChange, this);
 
     this.eventHub.on('toolSettingsChange', this.onToolSettingsChange, this);
-    this.eventHub.on('toolUIInit', this.onToolUIInit, this);
+    this.eventHub.on('toolOpened', this.onToolOpened, this);
 
     this.eventHub.on('optViewOpened', this.onOptViewOpened, this);
     this.eventHub.on('optViewClosed', this.onOptViewClosed, this);

@@ -74,7 +74,6 @@ function Tool(hub, container, state) {
 
     this.eventHub.on('compileResult', this.onCompileResult, this);
     this.eventHub.on('compilerClose', this.onCompilerClose, this);
-    this.eventHub.emit('toolOpened', this.compilerId);
 
     this.onOptionsChange();
     this.updateCompilerName();
@@ -84,6 +83,8 @@ function Tool(hub, container, state) {
         eventCategory: 'OpenViewPane',
         eventAction: 'Tool'
     });
+
+    this.eventHub.emit('toolOpened', this.compilerId, this.currentState());
 }
 
 Tool.prototype.initArgs = function (state) {
