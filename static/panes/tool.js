@@ -160,7 +160,7 @@ Tool.prototype.onCompileResult = function (id, compiler, result) {
     if (result && result.tools) {
         toolResult = _.find(result.tools, function (tool) {
             return (tool.id === this.toolId);
-        });
+        }, this);
     }
 
     if (toolResult) {
