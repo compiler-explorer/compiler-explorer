@@ -125,4 +125,8 @@ install-git-hooks:
 
 changelog:
 	python ./etc/scripts/changelog.py
+
+policies:
+	python ./etc/scripts/politic.py
+
 .PHONY: changelog
