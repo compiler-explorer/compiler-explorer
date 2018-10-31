@@ -129,10 +129,13 @@ To specify a compilation request as a JSON document, post it as the appropriate
     }
 }
 ``` 
+
 The filters are a JSON object with `true`/`false` values. If not supplied,
  defaults are used. If supplied, the filters are used as-is.
  The `compilerOptions` is used to pass extra arguments to the back end, and is
  probably not useful for most REST users.
+
+To force a cache bypass, set `bypassCache` in the root of the request to `true`.
 
 A text compilation request has the source as the body of the post, and uses
  query parameters to pass the options and filters. Filters are supplied as a
