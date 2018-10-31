@@ -106,10 +106,18 @@ CompilerService.prototype.submit = function (request) {
                             error = "Request was aborted";
                             break;
                         case "error":
-                            if (xhr.status === 504) {
-                                error = "Gateway timeout; returned statusCode: " + xhr.status;
-                                break;
+                            switch (xhr.status) {
+                                case 500:
+                                    error = "Request failed: internal server error";
+                                    break;
+                                case 504:
+                                    error = "Request failed: gateway timeout";
+                                    break;
+                                default:
+                                    error = "Request failed: HTTP error code " + xhr.status;
+                                    break;
                             }
+                            break;
                         default:
                             error = "Error sending request";
                             break;
