@@ -224,3 +224,4 @@ We would like to thank [JetBrains](https://www.jetbrains.com/) for their support
  and for donating licenses to their excellent products to develop **Compiler Explorer**.
 
 ![JetBrains](docs/jetbrains.svg)
+
