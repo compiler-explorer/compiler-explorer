@@ -175,7 +175,7 @@ Tool.prototype.onCompileResult = function (id, compiler, result) {
         this.updateCompilerName();
 
         if (toolResult.sourcechanged) {
-            this.hub.emit('newSource', this.editorId, toolResult.newsource);
+            this.eventHub.emit('newSource', this.editorId, toolResult.newsource);
         }
     } else {
         this.add("No tool result");
