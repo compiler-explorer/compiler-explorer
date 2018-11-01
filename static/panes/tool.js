@@ -173,6 +173,10 @@ Tool.prototype.onCompileResult = function (id, compiler, result) {
         this.add(this.toolName + " returned: " + toolResult.code);
     
         this.updateCompilerName();
+
+        if (toolResult.sourcechanged) {
+            this.hub.emit('newSource', this.editorId, toolResult.newsource);
+        }
     } else {
         this.add("No tool result");
     }

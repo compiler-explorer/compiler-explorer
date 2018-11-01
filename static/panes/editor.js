@@ -186,6 +186,12 @@ Editor.prototype.setSource = function (newSource) {
     this.editor.getModel().setValue(newSource);
 };
 
+Editor.prototype.onNewSource = function (editorId, newSource) {
+    if (this.id === editorId) {
+        this.setSource(newSource);
+    }
+};
+
 Editor.prototype.getSource = function () {
     return this.editor.getModel().getValue();
 };
@@ -227,6 +233,7 @@ Editor.prototype.initCallbacks = function () {
     this.eventHub.on('conformanceViewOpen', this.onConformanceViewOpen, this);
     this.eventHub.on('conformanceViewClose', this.onConformanceViewClose, this);
     this.eventHub.on('resize', this.resize, this);
+    this.eventHub.on('newSource', this.onNewSource, this);
 
     this.editor.getModel().onDidChangeContent(_.bind(function () {
         this.debouncedEmitChange();
