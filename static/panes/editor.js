@@ -37,6 +37,7 @@ require('../modes/cppp-mode');
 require('../modes/d-mode');
 require('../modes/rust-mode');
 require('../modes/ispc-mode');
+require('../modes/llvm-ir-mode');
 require('../modes/haskell-mode');
 require('../modes/clean-mode');
 require('../modes/pascal-mode');
