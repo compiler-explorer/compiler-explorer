@@ -432,10 +432,10 @@ Compiler.prototype.getActiveTools = function (newToolSettings) {
         });
     }
 
-    try {
+    if (this.container.layoutManager.isInitialised) {
         var config = this.container.layoutManager.toConfig();
         return this.findTools(config, tools);
-    } catch(ex) {
+    } else {
         return tools;
     }
 };
