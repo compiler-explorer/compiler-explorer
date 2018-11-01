@@ -80,7 +80,7 @@ function definition() {
 
         tokenizer: {
             root: [
-                [/[,(){}<>\[\]]/, 'delimiters'],
+                [/[,(){}<>[\]]/, 'delimiters'],
                 [/i\d+\**/, 'type'], // llvmType
 
                 // Misc syntax.
