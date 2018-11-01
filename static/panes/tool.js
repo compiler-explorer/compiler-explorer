@@ -215,7 +215,7 @@ Tool.prototype.onCompilerClose = function (id) {
 };
 
 Tool.prototype.close = function () {
-    this.eventHub.emit('toolClosed', this.compilerId);
+    this.eventHub.emit('toolClosed', this.compilerId, this.currentState());
     this.eventHub.unsubscribe();
 };
 

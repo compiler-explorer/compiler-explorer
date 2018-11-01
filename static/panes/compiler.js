@@ -432,7 +432,18 @@ Compiler.prototype.getActiveTools = function (newToolSettings) {
         });
     }
 
-    return this.findTools(this.container.layoutManager.toConfig(), tools);
+    try {
+        var config = this.container.layoutManager.toConfig();
+        return this.findTools(config, tools);
+    } catch(ex) {
+        return tools;
+    }
+};
+
+Compiler.prototype.isToolActive = function (activetools, toolId) {
+    return _.find(activetools, function (tool) {
+        return tool.id === toolId;
+    });
 };
 
 Compiler.prototype.compile = function (bypassCache, newTools) {
@@ -674,7 +685,25 @@ Compiler.prototype.onEditorChange = function (editor, source, langId, compilerId
 
 Compiler.prototype.onToolOpened = function (compilerId, toolSettings) {
     if (this.id === compilerId) {
+        var toolId = toolSettings.toolId;
+        if (toolId === "clangtidytrunk") {
+            this.clangtidyToolButton.prop('disabled', true);
+        } else if (toolId === "llvm-mcatrunk") {
+            this.llvmmcaToolButton.prop('disabled', true);
+        }
+
         this.compile(false, toolSettings);
+    }
+};
+
+Compiler.prototype.onToolClosed = function (compilerId, toolSettings) {
+    if (this.id === compilerId) {
+        var toolId = toolSettings.toolId;
+        if (toolId === "clangtidytrunk") {
+            this.clangtidyToolButton.prop('disabled', !this.supportsTool(toolId));
+        } else if (toolId === "llvm-mcatrunk") {
+            this.llvmmcaToolButton.prop('disabled', !this.supportsTool(toolId));
+        }
     }
 };
 
@@ -944,8 +973,11 @@ Compiler.prototype.updateButtons = function () {
     this.cfgButton.prop('disabled', !this.compiler.supportsCfg);
     this.gccDumpButton.prop('disabled', !this.compiler.supportsGccDump);
 
-    this.clangtidyToolButton.prop('disabled', !this.supportsTool("clangtidytrunk"));
-    this.llvmmcaToolButton.prop('disabled', !this.supportsTool("llvm-mcatrunk"));
+    var activeTools = this.getActiveTools();
+    this.clangtidyToolButton.prop('disabled',
+        !(this.supportsTool("clangtidytrunk") && !this.isToolActive(activeTools, "clangtidytrunk")));
+    this.llvmmcaToolButton.prop('disabled',
+        !(this.supportsTool("llvm-mcatrunk") && !this.isToolActive(activeTools, "llvm-mcatrunk")));
 };
 
 Compiler.prototype.onFontScale = function () {
@@ -975,6 +1007,7 @@ Compiler.prototype.initListeners = function () {
 
     this.eventHub.on('toolSettingsChange', this.onToolSettingsChange, this);
     this.eventHub.on('toolOpened', this.onToolOpened, this);
+    this.eventHub.on('toolClosed', this.onToolClosed, this);
 
     this.eventHub.on('optViewOpened', this.onOptViewOpened, this);
     this.eventHub.on('optViewClosed', this.onOptViewClosed, this);
