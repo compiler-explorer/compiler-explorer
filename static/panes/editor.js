@@ -312,10 +312,11 @@ Editor.prototype.initButtons = function (state) {
     this.loadSaveButton = this.domRoot.find('.load-save');
     this.initLoadSaver();
     $(this.domRoot).keydown(_.bind(function (event) {
+        event.preventDefault();
+        if (!this.settings.enableCtrlS) return;
         if ((event.ctrlKey || event.metaKey) && String.fromCharCode(event.which).toLowerCase() === 's') {
-            this.showLoadSaver();
-            if (loadSave.onSaveToFile(this.id)) {
-                event.preventDefault();
+            if (!loadSave.onSaveToFile(this.id)) {
+                this.showLoadSaver();
             }
         }
     }, this));

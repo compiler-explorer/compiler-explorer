@@ -192,3 +192,9 @@ a.navbar-brand img.logo.normal {
 .navbar-nav a.nav-link:hover {
     background-color: #d8d9da;
 }
+
+kbd {
+    color: black;
+    border-color: #ccc;
+    background-color: #f7f7f7;
+}
