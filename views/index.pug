@@ -22,7 +22,7 @@ html(lang="en")
           li.nav-item
             a.nav-link#add-diff(href="javascript:;" title="Click or drag to desired destination") Diff View
           li.nav-item.dropdown
-            a.nav-link.dropdown-toggle#moreDropdown(href="javascript:;" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") More#[b.caret]
+            a.nav-link.dropdown-toggle#moreDropdown(href="javascript:;" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") More
             div.dropdown-menu(aria-labelledby="moreDropdown")
               a.dropdown-item#setting(href="javascript:;" data-target="#settings" data-toggle="modal") Settings
               div.dropdown-divider
@@ -35,9 +35,10 @@ html(lang="en")
             button.close(type="button" aria-hidden="true") &times;
         ul.navbar-nav.navbar-right
           li.nav-item
-            a.nav-link#share(href="javascript:;") Share#[b.caret]
+            a.nav-link#share(href="javascript:;") Share
+              b.fas.fa-caret-down
           li.nav-item.dropdown
-            a.nav-link.dropdown-toggle#otherDropdown(href="javascript:;" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") Other#[b.caret]
+            a.nav-link.dropdown-toggle#otherDropdown(href="javascript:;" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") Other
             div.dropdown-menu.dropdown-menu-right(aria-labelledby="otherDropdown")
               a.dropdown-item(href="https://www.patreon.com/bePatron?u=3691963" title="Help Compiler Explorer - become a Patron" target="_blank" rel="noopener")
                 span.fab.fa-patreon
@@ -61,7 +62,7 @@ html(lang="en")
                 a.dropdown-item#socialshare
           if policies.cookies.enabled || policies.privacy.enabled
             li.nav-item.dropdown
-              a.nav-link.dropdown-toggle#policiesDropdown(href="javascript:;" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") Policies#[b.caret]
+              a.nav-link.dropdown-toggle#policiesDropdown(href="javascript:;" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") Policies
               div.dropdown-menu.dropdown-menu-right(aria-labelledby="policiesDropdown")
                 a.dropdown-item#cookies(href="javascript:;") Cookie policy
                 a.dropdown-item#privacy(href="javascript:;") Privacy policy

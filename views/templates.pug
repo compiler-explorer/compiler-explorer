@@ -7,7 +7,7 @@
             .input-group.input-group-sm
               .input-group-prepend
                 button.btn.btn-outline-secondary.btn-sm.dropdown-toggle(data-toggle="dropdown" type="button" aria-haspopup="true" aria-expanded="false")
-                  span.current Short #[b.caret]
+                  span.current Short
                 ul.dropdown-menu.sources
                   button.dropdown-item.btn.btn-light.btn-sm(data-bind="Short")
                     | Short
@@ -35,7 +35,6 @@
         button.dropdown-toggle.btn.btn-light.add-pane(type="button" title="Add a new pane" aria-label="Add a new pane" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
           span.fa.fa-plus
           span.hideable &nbsp;Add new...
-          | #[b.caret]
         .dropdown-menu
           button.dropdown-item.btn.btn-sm.btn-light.add-compiler(title="Add a new compiler for this source" aria-label="New compiler")
             span.fa.fa-cogs
@@ -94,12 +93,11 @@
         button.btn.btn-light.btn-sm.show-libs
           span.fas.fa-book(title="Include libs")
           span.hideable &nbsp;Libraries
-          | #[b.caret]
+          b.fas.fa-caret-down
       .btn-group.btn-group-sm(role="group")
         button.btn.btn-light.btn-sm.dropdown-toggle.add-pane(type="button" title="Add a new pane" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Add new element for this compiler")
           span.fas.fa-plus
           span.hideable &nbsp;Add new...
-          | #[b.caret]
         .dropdown-menu.dropdown-menu-right
           button.dropdown-item.btn.btn-light.btn-sm.add-compiler(title="Clone this compiler window (click or drag)")
             span.far.fa-clone
@@ -217,7 +215,7 @@
         button.btn.btn-light.btn-sm.show-libs.dropdown-toggle(title="Include libs" aria-label="Toggle libraries dropdown" aria-pressed="false" aria-haspopup="true")
           span.fas.fa-book
           span.hideable &nbsp;Libraries
-          | #[b.caret]
+          b.fas.fa-caret-down
     .conformance-wrapper
       table.compiler-list
 
