@@ -116,12 +116,17 @@
           button.dropdown-item.btn.btn-light.btn-sm.view-cfg(title="Show Graph Output")
             span.fas.fa-exchange-alt
             | &nbsp;Graph output
-          .dropdown-divider
+      .btn-group.btn-group-sm(role="group")
+        button.btn.btn-light.btn-sm.dropdown-toggle.add-tool(type="button" title="Add tool" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Add tooling to this editor and compiler")
+          span.fas.fa-cogs
+          span.hideable &nbsp;Add tool...
+          | #[b.caret]
+        .dropdown-menu.dropdown-menu-right
           button.dropdown-item.btn.btn-light.btn-sm.view-clangtidytool(title="Clang-tidy")
-            span.fas.fa-cogs
+            span.fas.fa-cog
             | &nbsp;Clang-tidy
           button.dropdown-item.btn.btn-light.btn-sm.view-llvmmcatool(title="LLVM MCA")
-            span.fas.fa-cogs
+            span.fas.fa-cog
             | &nbsp;LLVM MCA
     .monaco-placeholder
     .bottom-bar.bg-light
