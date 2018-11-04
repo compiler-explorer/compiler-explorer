@@ -204,7 +204,7 @@ function setupSettings(root, settings, onChange, langId) {
             return {label: size, desc: size};
         })
     );
-
+    add(root.find('.enableCtrlS'), 'enableCtrlS', true, Checkbox);
 
     setSettings(settings);
     handleThemes();

@@ -1,5 +1,61 @@
 [
     {
+        "text": "$SG39290 DB     'Some people,  when confronted with a problem, think \"I k'",
+        "source": null
+    },
+    {
+        "text": "        DB      'now, I''ll use regular expressions.\" Now they have two proble'",
+        "source": null
+    },
+    {
+        "text": "        DB      'ms.', 00H",
+        "source": null
+    },
+    {
+        "text": "$SG39291 DB     'REGULAR EXPRESSIONS', 00H",
+        "source": null
+    },
+    {
+        "text": "__unwindtable$?regexTest@@YAXXZ DD 0ffffffffH",
+        "source": null
+    },
+    {
+        "text": "        DD      FLAT:__unwindfunclet$?regexTest@@YAXXZ$0",
+        "source": null
+    },
+    {
+        "text": "__ehfuncinfo$?regexTest@@YAXXZ DD 019930522H",
+        "source": null
+    },
+    {
+        "text": "        DD      01H",
+        "source": null
+    },
+    {
+        "text": "        DD      FLAT:__unwindtable$?regexTest@@YAXXZ",
+        "source": null
+    },
+    {
+        "text": "        DD      2 DUP(00H)",
+        "source": null
+    },
+    {
+        "text": "        DD      2 DUP(00H)",
+        "source": null
+    },
+    {
+        "text": "        DD      00H",
+        "source": null
+    },
+    {
+        "text": "        DD      01H",
+        "source": null
+    },
+    {
+        "text": "",
+        "source": null
+    },
+    {
         "text": "_self_regex$ = -60                                  ; size = 20",
         "source": null
     },

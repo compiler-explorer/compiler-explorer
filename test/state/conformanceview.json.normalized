@@ -1,0 +1,101 @@
+{
+    "sessions": [
+        {
+            "id": 1,
+            "language": "c++",
+            "source": "// Type your code here, or load an example.\r\nint square(int num) {\r\n    return num * num;\r\n}",
+            "conformanceview": {
+                "libs": [],
+                "compilers": [
+                    {
+                        "id": "vc2017_32",
+                        "options": "-O3",
+                        "filters": {
+                            "binary": false,
+                            "commentOnly": true,
+                            "demangle": true,
+                            "directives": true,
+                            "execute": false,
+                            "intel": true,
+                            "labels": true,
+                            "trim": false
+                        },
+                        "libs": [],
+                        "specialoutputs": [],
+                        "tools": []
+                    },
+                    {
+                        "id": "vc2017_64",
+                        "options": "-O2",
+                        "filters": {
+                            "binary": false,
+                            "commentOnly": true,
+                            "demangle": true,
+                            "directives": true,
+                            "execute": false,
+                            "intel": true,
+                            "labels": true,
+                            "trim": false
+                        },
+                        "libs": [],
+                        "specialoutputs": [],
+                        "tools": []
+                    }
+                ]
+            },
+            "compilers": [
+                {
+                    "id": "vc2017_64",
+                    "options": "",
+                    "filters": {
+                        "binary": false,
+                        "commentOnly": true,
+                        "demangle": true,
+                        "directives": true,
+                        "execute": false,
+                        "intel": true,
+                        "labels": true,
+                        "trim": false
+                    },
+                    "libs": [],
+                    "specialoutputs": [],
+                    "tools": []
+                },
+                {
+                    "id": "vc2017_32",
+                    "options": "-O3",
+                    "filters": {
+                        "binary": false,
+                        "commentOnly": true,
+                        "demangle": true,
+                        "directives": true,
+                        "execute": false,
+                        "intel": true,
+                        "labels": true,
+                        "trim": false
+                    },
+                    "libs": [],
+                    "specialoutputs": [],
+                    "tools": []
+                },
+                {
+                    "id": "vc2017_64",
+                    "options": "-O2",
+                    "filters": {
+                        "binary": false,
+                        "commentOnly": true,
+                        "demangle": true,
+                        "directives": true,
+                        "execute": false,
+                        "intel": true,
+                        "labels": true,
+                        "trim": false
+                    },
+                    "libs": [],
+                    "specialoutputs": [],
+                    "tools": []
+                }
+            ]
+        }
+    ]
+}

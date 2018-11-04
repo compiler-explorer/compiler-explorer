@@ -39,7 +39,10 @@ const nopt = require('nopt'),
     Raven = require('raven'),
     logger = require('./lib/logger').logger,
     webpackDevMiddleware = require("webpack-dev-middleware"),
-    utils = require('./lib/utils');
+    utils = require('./lib/utils'),
+    clientState = require('./lib/clientstate'),
+    clientStateGoldenifier = require('./lib/clientstate-normalizer').ClientStateGoldenifier,
+    clientStateNormalizer = require('./lib/clientstate-normalizer').ClientStateNormalizer;
 
 
 // Parse arguments from command line 'node ./app.js args...'
@@ -175,6 +178,12 @@ function contentPolicyHeader(res) {
     }
 }
 
+function getGoldenLayoutFromClientState(state) {
+    const goldenifier = new clientStateGoldenifier();
+    goldenifier.fromClientState(state);
+    return goldenifier.golden;
+}
+
 const awsProps = props.propsFor("aws");
 
 aws.initConfig(awsProps)
@@ -194,14 +203,15 @@ aws.initConfig(awsProps)
         const compilationEnvironment = new CompilationEnvironment(compilerProps, defArgs.doCache);
         const CompileHandler = require('./lib/handlers/compile').Handler;
         const compileHandler = new CompileHandler(compilationEnvironment);
+        const StorageHandler = require('./lib/storage/storage');
+        const storageHandler = StorageHandler.storageFactory(compilerProps, awsProps);
         const ApiHandler = require('./lib/handlers/api').Handler;
-        const apiHandler = new ApiHandler(compileHandler, ceProps);
+        const apiHandler = new ApiHandler(compileHandler, ceProps, storageHandler);
         const SourceHandler = require('./lib/handlers/source').Handler;
         const sourceHandler = new SourceHandler(fileSources, staticHeaders);
         const CompilerFinder = require('./lib/compiler-finder');
-        const compilerFinder = new CompilerFinder(compileHandler, compilerProps, awsProps, defArgs);
-        const StorageHandler = require('./lib/storage/storage');
-        const storageHandler = StorageHandler.storageFactory(compilerProps, awsProps);
+        const compilerFinder = new CompilerFinder(compileHandler, compilerProps, awsProps, defArgs,
+            clientOptionsHandler);
 
         function oldGoogleUrlHandler(req, res, next) {
             const resolver = new google.ShortLinkResolver(aws.getConfig('googleApiKey'));
@@ -284,6 +294,7 @@ aws.initConfig(awsProps)
                     clientOptionsHandler.setCompilers(compilers);
                     apiHandler.setCompilers(compilers);
                     apiHandler.setLanguages(languages);
+                    apiHandler.setOptions(clientOptionsHandler);
                 }
 
                 onCompilerChange(compilers);
@@ -357,11 +368,22 @@ aws.initConfig(awsProps)
                     return code;
                 }
 
-                function storedStateHandler(req, res, next) {
+                function storedStateHandlerResetLayout(req, res, next) {
                     const id = req.params.id;
                     storageHandler.expandId(id)
                         .then(result => {
-                            const config = JSON.parse(result.config);
+                            let config = JSON.parse(result.config);
+
+                            if (config.content) {
+                                const normalizer = new clientStateNormalizer();
+                                normalizer.fromGoldenLayout(config);
+                                config = normalizer.normalized;
+                            } else {
+                                config = new clientState.State(config);
+                            }
+
+                            config = getGoldenLayoutFromClientState(config);
+
                             const metadata = {
                                 ogDescription: result.specialMetadata ? result.specialMetadata.description.S : null,
                                 ogAuthor: result.specialMetadata ? result.specialMetadata.author.S : null,
@@ -398,7 +420,61 @@ aws.initConfig(awsProps)
                             }));
                         })
                         .catch(err => {
-                            logger.warn(`Exception thrown when expanding ${id}: `, err);
+                            logger.warn(`Exception thrown when expanding ${id}`);
+                            logger.debug('Exception value:', err);
+                            next({
+                                statusCode: 404,
+                                message: `ID "${id}" could not be found`
+                            });
+                        });
+                }
+
+                function storedStateHandler(req, res, next) {
+                    const id = req.params.id;
+                    storageHandler.expandId(id)
+                        .then(result => {
+                            let config = JSON.parse(result.config);
+                            if (config.sessions) {
+                                config = getGoldenLayoutFromClientState(new clientState.State(config));
+                            }
+                            const metadata = {
+                                ogDescription: result.specialMetadata ? result.specialMetadata.description.S : null,
+                                ogAuthor: result.specialMetadata ? result.specialMetadata.author.S : null,
+                                ogTitle: result.specialMetadata ? result.specialMetadata.title.S : "Compiler Explorer"
+                            };
+                            if (!metadata.ogDescription) {
+                                const sources = utils.glGetMainContents(config.content);
+                                if (sources.editors.length === 1) {
+                                    const editor = sources.editors[0];
+                                    const lang = languages[editor.language];
+                                    if (lang) {
+                                        metadata.ogDescription = filterCode(req, editor.source, lang);
+                                        metadata.ogTitle += ` - ${lang.name}`;
+                                        if (sources.compilers.length === 1) {
+                                            const compilerId = sources.compilers[0].compiler;
+                                            const compiler = apiHandler.compilers.find(c => c.id === compilerId);
+                                            if (compiler) {
+                                                metadata.ogTitle += ` (${compiler.name})`;
+                                            }
+                                        }
+                                    } else {
+                                        metadata.ogDescription = editor.source;
+                                    }
+                                }
+                            } else if (metadata.ogAuthor && metadata.ogAuthor !== '.') {
+                                metadata.ogDescription += `\nAuthor(s): ${metadata.ogAuthor}`;
+                            }
+                            staticHeaders(res);
+                            contentPolicyHeader(res);
+                            res.render('index', renderConfig({
+                                embedded: false,
+                                config: config,
+                                metadata: metadata
+                            }));
+                        })
+                        .catch(err => {
+                            logger.warn(`Exception thrown when expanding ${id}`);
+                            logger.debug('Exception value:', err);
                             next({
                                 statusCode: 404,
                                 message: `ID "${id}" could not be found`
@@ -483,6 +559,7 @@ aws.initConfig(awsProps)
                     .use('/api', apiHandler.handle)
                     .use('/g', oldGoogleUrlHandler)
                     .get('/z/:id', storedStateHandler)
+                    .get('/resetlayout/:id', storedStateHandlerResetLayout)
                     .post('/shortener', storageHandler.handler.bind(storageHandler))
                     .use((req, res, next) => {
                         next({status: 404, message: `page "${req.path}" could not be found`});

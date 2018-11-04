@@ -1,0 +1,54 @@
+{
+    "sessions": [
+        {
+            "conformanceview": false,
+            "id": 1,
+            "language": "c++",
+            "source": "// Type your code here, or load an example.\r\nint square(int num) {\r\n    return num * num + 3;\r\n}\r\n\r\n",
+            "compilers": [
+                {
+                    "id": "vc2017_64",
+                    "options": "-O2",
+                    "filters": {
+                        "binary": false,
+                        "execute": false,
+                        "labels": true,
+                        "directives": true,
+                        "commentOnly": true,
+                        "demangle": true,
+                        "trim": false,
+                        "intel": true
+                    },
+                    "libs": [],
+                    "specialoutputs": [],
+                    "tools": []
+                }
+            ]
+        },
+        {
+            "conformanceview": false,
+            "id": 2,
+            "language": "c++",
+            "source": "// Type your code here, or load an example.\r\nint square(int num) {\r\n    return num * num;\r\n}",
+            "compilers": [
+                {
+                    "id": "vc2017_32",
+                    "options": "-O3",
+                    "filters": {
+                        "binary": false,
+                        "execute": false,
+                        "labels": true,
+                        "directives": true,
+                        "commentOnly": true,
+                        "demangle": true,
+                        "trim": false,
+                        "intel": true
+                    },
+                    "libs": [],
+                    "specialoutputs": [],
+                    "tools": []
+                }
+            ]
+        }
+    ]
+}

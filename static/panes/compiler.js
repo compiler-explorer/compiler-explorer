@@ -38,6 +38,7 @@ var Alert = require('../alert');
 var bigInt = require('big-integer');
 var local = require('../local');
 var Raven = require('raven-js');
+var Libraries = require('../libs-widget');
 require('../modes/asm-mode');
 
 require('selectize');
@@ -127,7 +128,9 @@ function Compiler(hub, container, state) {
         optgroups: this.getGroupsInUse(),
         lockOptgroupOrder: true,
         options: _.map(this.getCurrentLangCompilers(), _.identity),
-        items: this.compiler ? [this.compiler.id] : []
+        items: this.compiler ? [this.compiler.id] : [],
+        dropdownParent: 'body',
+        closeAfterSelect: true
     }).on('change', _.bind(function (e) {
         var val = $(e.target).val();
         if (val) {
@@ -152,7 +155,6 @@ function Compiler(hub, container, state) {
     this.sendCompiler();
     this.updateCompilerInfo();
     this.updateButtons();
-    this.updateLibsDropdown();
     this.saveState();
     ga.proxy('send', {
         hitType: 'event',
@@ -276,6 +278,8 @@ Compiler.prototype.initPanerButtons = function () {
             this.container.layoutManager.root.contentItems[0];
         insertPoint.addChild(createCfgView);
     }, this));
+
+    this.initToolButtons(togglePannerAdder);
 };
 
 Compiler.prototype.undefer = function () {
@@ -397,7 +401,52 @@ Compiler.prototype.getEffectiveFilters = function () {
     return filters;
 };
 
-Compiler.prototype.compile = function () {
+Compiler.prototype.findTools = function (content, tools) {
+    if (content.componentName === "tool") {
+        if (
+            (content.componentState.editor === this.sourceEditorId) &&
+            (content.componentState.compiler === this.id))
+        {
+            tools.push({
+                id: content.componentState.toolId,
+                args: content.componentState.args
+            });
+        }
+    } else if (content.content) {
+        _.each(content.content, function (subcontent) {
+            tools = this.findTools(subcontent, tools);
+        }, this);
+    }
+
+    return tools;
+};
+
+Compiler.prototype.getActiveTools = function (newToolSettings) {
+    if (!this.compiler) return {};
+
+    var tools = [];
+    if (newToolSettings) {
+        tools.push({
+            id: newToolSettings.toolId,
+            args: newToolSettings.args
+        });
+    }
+
+    if (this.container.layoutManager.isInitialised) {
+        var config = this.container.layoutManager.toConfig();
+        return this.findTools(config, tools);
+    } else {
+        return tools;
+    }
+};
+
+Compiler.prototype.isToolActive = function (activetools, toolId) {
+    return _.find(activetools, function (tool) {
+        return tool.id === toolId;
+    });
+};
+
+Compiler.prototype.compile = function (bypassCache, newTools) {
     if (this.deferCompiles) {
         this.needsCompile = true;
         return;
@@ -417,16 +466,13 @@ Compiler.prototype.compile = function () {
             produceOptInfo: this.wantOptInfo,
             produceCfg: this.cfgViewOpen
         },
-        filters: this.getEffectiveFilters()
+        filters: this.getEffectiveFilters(),
+        tools: this.getActiveTools(newTools)
     };
     var includeFlag = this.compiler ? this.compiler.includeFlag : '-I';
-    _.each(this.availableLibs[this.currentLangId], function (lib) {
-        _.each(lib.versions, function (version) {
-            if (version.used) {
-                _.each(version.path, function (path) {
-                    options.userArguments += ' ' + includeFlag + path;
-                });
-            }
+    _.each(this.libsWidget.getLibsInUse(), function (item) {
+        _.each(item.path, function (path) {
+            options.userArguments += ' ' + includeFlag + path;
         });
     });
     this.compilerService.expand(this.source).then(_.bind(function (expanded) {
@@ -436,6 +482,7 @@ Compiler.prototype.compile = function () {
             options: options,
             lang: this.currentLangId
         };
+        if (bypassCache) request.bypassCache = true;
         if (!this.compiler) {
             this.onCompileResponse(request, errorResult('<Please select a compiler>'), false);
         } else {
@@ -454,6 +501,8 @@ Compiler.prototype.sendCompile = function (request) {
         return;
     }
     this.eventHub.emit('compiling', this.id, this.compiler);
+    // Display the spinner
+    this.handleCompilationStatus({code: 4});
     this.pendingRequestSentAt = Date.now();
     // After a short delay, give the user some indication that we're working on their
     // compilation.
@@ -585,9 +634,7 @@ Compiler.prototype.onCompileResponse = function (request, result, cached) {
     var allText = _.pluck(stdout.concat(stderr), 'text').join('\n');
     var failed = result.code !== 0;
     var warns = !failed && !!allText;
-    this.statusLabel
-        .toggleClass('error', failed)
-        .toggleClass('warning', warns);
+    this.handleCompilationStatus({code: failed ? 3 : (warns ? 2 : 1), compilerOut: result.code});
     this.outputTextCount.text(stdout.length);
     this.outputErrorCount.text(stderr.length);
     if (this.isOutputOpened) {
@@ -610,14 +657,7 @@ Compiler.prototype.onCompileResponse = function (request, result, cached) {
 
     this.eventHub.emit('compileResult', this.id, this.compiler, result, languages[this.currentLangId]);
     this.updateButtons();
-    if (result.compilationOptions) {
-        this.prependOptions.prop('title', result.compilationOptions.join(' '));
-        this.prependOptions.show();
-    } else {
-        this.prependOptions.prop('title', '');
-        this.prependOptions.hide();
-    }
-
+    this.setCompilationOptionsPopover(result.compilationOptions ? result.compilationOptions.join(' ') : '');
     if (this.nextRequest) {
         var next = this.nextRequest;
         this.nextRequest = null;
@@ -640,6 +680,30 @@ Compiler.prototype.onEditorChange = function (editor, source, langId, compilerId
         (compilerId === undefined || compilerId === this.id)) {
         this.source = source;
         this.compile();
+    }
+};
+
+Compiler.prototype.onToolOpened = function (compilerId, toolSettings) {
+    if (this.id === compilerId) {
+        var toolId = toolSettings.toolId;
+        if (toolId === "clangtidytrunk") {
+            this.clangtidyToolButton.prop('disabled', true);
+        } else if (toolId === "llvm-mcatrunk") {
+            this.llvmmcaToolButton.prop('disabled', true);
+        }
+
+        this.compile(false, toolSettings);
+    }
+};
+
+Compiler.prototype.onToolClosed = function (compilerId, toolSettings) {
+    if (this.id === compilerId) {
+        var toolId = toolSettings.toolId;
+        if (toolId === "clangtidytrunk") {
+            this.clangtidyToolButton.prop('disabled', !this.supportsTool(toolId));
+        } else if (toolId === "llvm-mcatrunk") {
+            this.llvmmcaToolButton.prop('disabled', !this.supportsTool(toolId));
+        }
     }
 };
 
@@ -670,6 +734,12 @@ Compiler.prototype.onAstViewOpened = function (id) {
     if (this.id === id) {
         this.astButton.prop('disabled', true);
         this.astViewOpen = true;
+        this.compile();
+    }
+};
+
+Compiler.prototype.onToolSettingsChange = function (id) {
+    if (this.id === id) {
         this.compile();
     }
 };
@@ -766,11 +836,17 @@ Compiler.prototype.initButtons = function (state) {
     this.outputTextCount = this.domRoot.find('span.text-count');
     this.outputErrorCount = this.domRoot.find('span.err-count');
 
-    this.libsTemplates = $('.template #libs-dropdown');
-    this.noLibsPanel = this.libsTemplates.children('.no-libs');
-
     this.optionsField = this.domRoot.find('.options');
     this.prependOptions = this.domRoot.find('.prepend-options');
+    this.setCompilationOptionsPopover(this.compiler ? this.compiler.options : null);
+    // Dismiss on any click that isn't either in the opening element, inside
+    // the popover or on any alert
+    $(document).on('mouseup', _.bind(function (e) {
+        var target = $(e.target);
+        if (!target.is(this.prependOptions) && this.prependOptions.has(target).length === 0 &&
+            target.closest('.popover').length === 0)
+            this.prependOptions.popover("hide");
+    }, this));
 
     this.filterBinaryButton = this.domRoot.find("[data-bind='binary']");
     this.filterBinaryTitle = this.filterBinaryButton.prop('title');
@@ -800,55 +876,63 @@ Compiler.prototype.initButtons = function (state) {
     this.filterExecuteButton.toggle(options.supportsExecute);
     this.optionsField.val(this.options);
 
+    this.shortCompilerName = this.domRoot.find('.short-compiler-name');
     this.fullCompilerName = this.domRoot.find('.full-compiler-name');
     this.compilerPicker = this.domRoot.find('.compiler-picker');
+    this.setCompilerVersionPopover('');
 
     this.topBar = this.domRoot.find('.top-bar');
     this.bottomBar = this.domRoot.find('.bottom-bar');
-    this.statusLabel = this.domRoot.find('.status');
+    this.statusLabel = this.domRoot.find('.status-text');
 
     this.hideable = this.domRoot.find('.hideable');
+    this.statusIcon = this.domRoot.find('.status-icon');
 
     this.monacoPlaceholder = this.domRoot.find('.monaco-placeholder');
 
     this.initPanerButtons();
 };
 
-Compiler.prototype.markLibraryAsUsed = function (name, version) {
-    if (this.availableLibs[this.currentLangId] &&
-        this.availableLibs[this.currentLangId][name] &&
-        this.availableLibs[this.currentLangId][name].versions[version]) {
-
-        this.availableLibs[this.currentLangId][name].versions[version].used = true;
-    }
+Compiler.prototype.onLibsChanged = function () {
+    this.saveState();
+    this.compile();
 };
 
 Compiler.prototype.initLibraries = function (state) {
-    this.availableLibs = {};
-    this.updateAvailableLibs();
-    _.each(state.libs, _.bind(function (lib) {
-        this.markLibraryAsUsed(lib.name, lib.ver);
+    this.libsWidget = new Libraries.Widget(this.currentLangId, this.libsButton,
+        state, _.bind(this.onLibsChanged, this));
+};
+
+Compiler.prototype.supportsTool = function (toolId) {
+    if (!this.compiler) return;
+
+    return _.find(this.compiler.tools, function (tool) {
+        return (tool.tool.id === toolId);
+    });
+};
+
+Compiler.prototype.initToolButton = function (togglePannerAdder, button, toolId) {
+    var createToolView = _.bind(function () {
+        return Components.getToolViewWith(this.id, this.sourceEditorId, toolId, "");
+    }, this);
+
+    this.container.layoutManager
+        .createDragSource(button, createToolView)
+        ._dragListener.on('dragStart', togglePannerAdder);
+
+    button.click(_.bind(function () {
+        var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
+            this.container.layoutManager.root.contentItems[0];
+        insertPoint.addChild(createToolView);
     }, this));
 };
 
-Compiler.prototype.updateAvailableLibs = function () {
-    if (!this.availableLibs[this.currentLangId]) {
-        this.availableLibs[this.currentLangId] = $.extend(true, {}, options.libs[this.currentLangId]);
-        this.initLangDefaultLibs();
-    }
-};
+Compiler.prototype.initToolButtons = function (togglePannerAdder) {
+    this.clangtidyToolButton = this.domRoot.find('.view-clangtidytool');
+    this.llvmmcaToolButton = this.domRoot.find('.view-llvmmcatool');
 
-Compiler.prototype.initLangDefaultLibs = function () {
-    var defaultLibs = options.defaultLibs[this.currentLangId];
-    if (!defaultLibs) return;
-    _.each(defaultLibs.split(':'), _.bind(function (libPair) {
-        var pairSplits = libPair.split('.');
-        if (pairSplits.length === 2) {
-            var lib = pairSplits[0];
-            var ver = pairSplits[1];
-            this.markLibraryAsUsed(lib, ver);
-        }
-    }, this));
+    this.initToolButton(togglePannerAdder, this.clangtidyToolButton, "clangtidytrunk");
+    this.initToolButton(togglePannerAdder, this.llvmmcaToolButton, "llvm-mcatrunk");
 };
 
 Compiler.prototype.updateButtons = function () {
@@ -864,7 +948,7 @@ Compiler.prototype.updateButtons = function () {
     this.filterIntelButton.prop('disabled', isIntelFilterDisabled);
     formatFilterTitle(this.filterIntelButton, this.filterIntelTitle);
     // Disable binary support on compilers that don't work with it.
-    this.filterBinaryButton.prop('disabled', !this.compiler.supportsBinary);
+    this.filterBinaryButton.prop('disabled', !this.compiler.supportsBinary || filters.execute);
     formatFilterTitle(this.filterBinaryButton, this.filterBinaryTitle);
     this.filterExecuteButton.prop('disabled', !this.compiler.supportsExecute);
     formatFilterTitle(this.filterExecuteButton, this.filterExecuteTitle);
@@ -884,32 +968,16 @@ Compiler.prototype.updateButtons = function () {
     this.filterTrimButton.prop('disabled', this.compiler.disabledFilters.indexOf('trim') !== -1);
     formatFilterTitle(this.filterTrimButton, this.filterTrimTitle);
 
-    // If its already open, we should turn it off.
-    // The pane will update with error text
-    // Otherwise we just disable the button.
-    if (!this.optViewOpen) {
-        this.optButton.prop('disabled', !this.compiler.supportsOptOutput);
-    } else {
-        this.optButton.prop('disabled', true);
-    }
+    this.optButton.prop('disabled', !this.compiler.supportsOptOutput);
+    this.astButton.prop('disabled', !this.compiler.supportsAstView);
+    this.cfgButton.prop('disabled', !this.compiler.supportsCfg);
+    this.gccDumpButton.prop('disabled', !this.compiler.supportsGccDump);
 
-    if (!this.astViewOpen) {
-        this.astButton.prop('disabled', !this.compiler.supportsAstView);
-    } else {
-        this.astButton.prop('disabled', true);
-    }
-
-    if (!this.cfgViewOpen) {
-        this.cfgButton.prop('disabled', !this.compiler.supportsCfg);
-    } else {
-        this.cfgButton.prop('disabled', true);
-    }
-
-    if (!this.gccDumpViewOpen) {
-        this.gccDumpButton.prop('disabled', !this.compiler.supportsGccDump);
-    } else {
-        this.gccDumpButton.prop('disabled', true);
-    }
+    var activeTools = this.getActiveTools();
+    this.clangtidyToolButton.prop('disabled',
+        !(this.supportsTool("clangtidytrunk") && !this.isToolActive(activeTools, "clangtidytrunk")));
+    this.llvmmcaToolButton.prop('disabled',
+        !(this.supportsTool("llvm-mcatrunk") && !this.isToolActive(activeTools, "llvm-mcatrunk")));
 };
 
 Compiler.prototype.onFontScale = function () {
@@ -919,7 +987,7 @@ Compiler.prototype.onFontScale = function () {
     this.saveState();
 };
 
-Compiler.prototype.initCallbacks = function () {
+Compiler.prototype.initListeners = function () {
     this.filters.on('change', _.bind(this.onFilterChange, this));
     this.fontScale.on('change', _.bind(this.onFontScale, this));
 
@@ -936,6 +1004,10 @@ Compiler.prototype.initCallbacks = function () {
     this.eventHub.on('findCompilers', this.sendCompiler, this);
     this.eventHub.on('compilerSetDecorations', this.onCompilerSetDecorations, this);
     this.eventHub.on('settingsChange', this.onSettingsChange, this);
+
+    this.eventHub.on('toolSettingsChange', this.onToolSettingsChange, this);
+    this.eventHub.on('toolOpened', this.onToolOpened, this);
+    this.eventHub.on('toolClosed', this.onToolClosed, this);
 
     this.eventHub.on('optViewOpened', this.onOptViewOpened, this);
     this.eventHub.on('optViewClosed', this.onOptViewClosed, this);
@@ -964,6 +1036,10 @@ Compiler.prototype.initCallbacks = function () {
         }
     }, this);
     this.eventHub.on('languageChange', this.onLanguageChange, this);
+};
+
+Compiler.prototype.initCallbacks = function () {
+    this.initListeners();
 
     var optionsChange = _.debounce(_.bind(function (e) {
         this.onOptionsChange($(e.target).val());
@@ -1003,7 +1079,7 @@ Compiler.prototype.initCallbacks = function () {
 
     this.compileClearCache.on('click', _.bind(function () {
         this.compilerService.cache.reset();
-        this.compile();
+        this.compile(true);
     }, this));
 
     // Dismiss the popover on escape.
@@ -1044,8 +1120,7 @@ Compiler.prototype.updateCompilerInfo = function () {
                 dismissTime: 5000
             });
         }
-        this.prependOptions.prop('title', this.compiler.options);
-        this.prependOptions.toggle(!!this.compiler.options);
+        this.prependOptions.data('content', this.compiler.options);
     }
 };
 
@@ -1080,21 +1155,23 @@ Compiler.prototype.onEditorClose = function (editor) {
 };
 
 Compiler.prototype.onFilterChange = function () {
-    this.eventHub.emit('filtersChange', this.id, this.getEffectiveFilters());
+    var filters = this.getEffectiveFilters();
+    if (filters.execute && this.compiler.supportsBinary && !filters.binary) {
+        this.filterBinaryButton.click();
+        this.alertSystem.notify('We enabled binary mode automatically', {
+            group: 'autobinary',
+            alertClass: 'notification-info',
+            dismissTime: 5000
+        });
+        return;
+    }
+    this.eventHub.emit('filtersChange', this.id, filters);
     this.saveState();
     this.compile();
     this.updateButtons();
 };
 
 Compiler.prototype.currentState = function () {
-    var libs = [];
-    _.each(this.availableLibs[this.currentLangId], function (library, name) {
-        _.each(library.versions, function (version, ver) {
-            if (library.versions[ver].used) {
-                libs.push({name: name, ver: ver});
-            }
-        });
-    });
     var state = {
         compiler: this.compiler ? this.compiler.id : '',
         source: this.sourceEditorId,
@@ -1102,7 +1179,7 @@ Compiler.prototype.currentState = function () {
         // NB must *not* be effective filters
         filters: this.filters.get(),
         wantOptInfo: this.wantOptInfo,
-        libs: libs,
+        libs: this.libsWidget.get(),
         lang: this.currentLangId
     };
     this.fontScale.addState(state);
@@ -1134,7 +1211,8 @@ Compiler.prototype.updateCompilerName = function () {
     var compilerName = this.getCompilerName();
     var compilerVersion = this.compiler ? this.compiler.version : '';
     this.container.setTitle(compilerName + ' (Editor #' + this.sourceEditorId + ', Compiler #' + this.id + ') ' + name);
-    this.fullCompilerName.text(compilerVersion);
+    this.shortCompilerName.text(compilerName);
+    this.setCompilerVersionPopover(compilerVersion);
 };
 
 Compiler.prototype.resendResult = function () {
@@ -1171,6 +1249,28 @@ Compiler.prototype.onCompilerSetDecorations = function (id, lineNums, revealLine
         });
         this.updateDecorations();
     }
+};
+
+Compiler.prototype.setCompilationOptionsPopover = function (content) {
+    this.prependOptions.popover('dispose');
+    this.prependOptions.popover({
+        content: content || 'No options in use',
+        template: '<div class="popover' +
+            (content ? ' compiler-options-popover' : '') +
+            '" role="tooltip"><div class="arrow"></div>' +
+            '<h3 class="popover-header"></h3><div class="popover-body"></div></div>'
+    });
+};
+
+Compiler.prototype.setCompilerVersionPopover = function (version) {
+    this.fullCompilerName.popover('dispose');
+    this.fullCompilerName.popover({
+        content: version || '',
+        template: '<div class="popover' +
+            (version ? ' compiler-options-popover' : '') +
+            '" role="tooltip"><div class="arrow"></div>' +
+            '<h3 class="popover-header"></h3><div class="popover-body"></div></div>'
+    });
 };
 
 Compiler.prototype.onSettingsChange = function (newSettings) {
@@ -1320,7 +1420,7 @@ Compiler.prototype.onAsmToolTip = function (ed) {
     function appendInfo(url) {
         return '<br><br>For more information, visit <a href="' + url +
             '" target="_blank" rel="noopener noreferrer">the ' + opcode +
-            ' documentation <sup><small class="glyphicon glyphicon-new-window opens-new-window"' +
+            ' documentation <sup><small class="fas fa-external-link-alt opens-new-window"' +
             ' title="Opens in a new window"></small></sup></a>.';
     }
 
@@ -1347,137 +1447,59 @@ Compiler.prototype.onAsmToolTip = function (ed) {
     }, this));
 };
 
-Compiler.prototype.updateLibsDropdown = function () {
-    this.updateAvailableLibs();
-    this.libsButton.popover({
-        container: 'body',
-        content: _.bind(function () {
-            var libsCount = _.keys(this.availableLibs[this.currentLangId]).length;
-            if (libsCount === 0) return this.noLibsPanel;
-            var columnCount = Math.ceil(libsCount / 5);
-            var currentLibIndex = -1;
+Compiler.prototype.handleCompilationStatus = function (status) {
+    if (!this.statusLabel || !this.statusIcon) return;
 
-            var libLists = [];
-            for (var i = 0; i < columnCount; i++) {
-                libLists.push($('<ul></ul>').addClass('lib-list'));
-            }
+    function ariaLabel() {
+        // Compiling...
+        if (status.code === 4) return "Compiling";
+        if (status.compilerOut === 0) {
+            // StdErr.length > 0
+            if (status.code === 3) return "Compilation succeeded with errors";
+            // StdOut.length > 0
+            if (status.code === 2) return "Compilation succeeded with warnings";
+            return "Compilation succeeded";
+        } else {
+            // StdErr.length > 0
+            if (status.code === 3) return "Compilation failed with errors";
+            // StdOut.length > 0
+            if (status.code === 2) return "Compilation failed with warnings";
+            return "Compilation failed";
+        }
+    }
 
-            // Utility function so we can iterate indefinitely over our lists
-            var getNextList = function () {
-                currentLibIndex = (currentLibIndex + 1) % columnCount;
-                return libLists[currentLibIndex];
-            };
+    function color() {
+        // Compiling...
+        if (status.code === 4) return "black";
+        if (status.compilerOut === 0) {
+            // StdErr.length > 0
+            if (status.code === 3) return "#FF6645";
+            // StdOut.length > 0
+            if (status.code === 2) return "#FF6500";
+            return "#12BB12";
+        } else {
+            // StdErr.length > 0
+            if (status.code === 3) return "#FF1212";
+            // StdOut.length > 0
+            if (status.code === 2) return "#BB8700";
+            return "#FF6645";
+        }
+    }
 
-            var handleArrow = function (libGroup, libArrow) {
-                var anyInUse = _.any(libGroup.children().children('input'), function (element) {
-                    return $(element).prop('checked');
-                });
-                var isVisible = libGroup.is(":visible");
+    this.statusIcon
+        .removeClass()
+        .addClass('status-icon fas')
+        .css('color', color())
+        .toggle(status.code !== 0)
+        .prop('aria-label', ariaLabel())
+        .prop('data-status', status.code)
+        .toggleClass('fa-spinner', status.code === 4)
+        .toggleClass('fa-times-circle', status.code === 3)
+        .toggleClass('fa-check-circle', status.code === 1 || status.code === 2);
 
-                libArrow.toggleClass('lib-arrow-up', isVisible);
-                libArrow.toggleClass('lib-arrow-down', !isVisible);
-                libArrow.toggleClass('lib-arrow-used', anyInUse);
-            };
-
-            var onChecked = _.bind(function (e) {
-                var elem = $(e.target);
-                // Uncheck every lib checkbox with the same name if we're checking the target
-                if (elem.prop('checked')) {
-                    _.each(e.data.group.children().children('input'), function (other) {
-                        $(other).prop('checked', false);
-                    });
-                    // Recheck the targeted one
-                    elem.prop('checked', true);
-                }
-                // And now do the same with the availableLibs object
-                _.each(this.availableLibs[this.currentLangId][elem.prop('data-lib')].versions, function (version) {
-                    version.used = false;
-                });
-                this.availableLibs[this.currentLangId][elem.prop('data-lib')]
-                    .versions[elem.prop('data-version')].used = elem.prop('checked');
-
-                handleArrow(e.data.group, e.data.arrow);
-
-                this.saveState();
-                this.compile();
-            }, this);
-
-            _.each(this.availableLibs[this.currentLangId], function (lib, libKey) {
-                var libsList = getNextList();
-                var libArrow = $('<div></div>').addClass('lib-arrow');
-                var libName = $('<span></span>').text(lib.name);
-                var libHeader = $('<span></span>')
-                    .addClass('lib-header')
-                    .append(libArrow)
-                    .append(libName);
-                if (lib.url && lib.url.length > 0) {
-                    libHeader.append($('<a></a>')
-                        .css("float", "right")
-                        .addClass('opens-new-window')
-                        .prop('href', lib.url)
-                        .prop('target', '_blank')
-                        .prop('rel', 'noopener noreferrer')
-                        .append($('<sup></sup>')
-                            .addClass('glyphicon glyphicon-new-window')
-                        )
-                    );
-                }
-                if (lib.description && lib.description.length > 0) {
-                    libName
-                        .addClass('lib-described')
-                        .prop('title', lib.description);
-                }
-                var libCat = $('<li></li>')
-                    .append(libHeader)
-                    .addClass('lib-item');
-
-                var libGroup = $('<div></div>');
-
-                if (libsList.children().length > 0)
-                    libsList.append($('<hr>').addClass('lib-separator'));
-
-                _.each(lib.versions, function (version, vKey) {
-                    var verCheckbox = $('<input type="checkbox">')
-                        .addClass('lib-checkbox')
-                        .prop('data-lib', libKey)
-                        .prop('data-version', vKey)
-                        .prop('checked', version.used)
-                        .prop('name', libKey)
-                        .on('change', {arrow: libArrow, group: libGroup}, onChecked);
-                    libGroup
-                        .append($('<div></div>')
-                            .append(verCheckbox)
-                            .append($('<label></label>')
-                                .addClass('lib-label')
-                                .text(version.version)
-                                .on('click', function () {
-                                    verCheckbox.trigger('click');
-                                })
-                            )
-                        );
-                });
-
-                libGroup.hide();
-                handleArrow(libGroup, libArrow);
-
-                libHeader.on('click', function () {
-                    libGroup.toggle();
-                    handleArrow(libGroup, libArrow);
-                });
-
-                libGroup.appendTo(libCat);
-                libCat.appendTo(libsList);
-            });
-            return $('<div></div>').addClass('libs-container').append(libLists);
-        }, this),
-        html: true,
-        placement: 'bottom',
-        trigger: 'manual'
-    }).click(_.bind(function () {
-        this.libsButton.popover('show');
-    }, this)).on('show.bs.popover', function () {
-        $(this).data('bs.popover').tip().css('max-width', '100%').css('width', 'auto');
-    });
+    this.statusLabel
+        .toggleClass('error', status === 3)
+        .toggleClass('warning', status === 2);
 };
 
 Compiler.prototype.onLanguageChange = function (editorId, newLangId) {
@@ -1489,7 +1511,7 @@ Compiler.prototype.onLanguageChange = function (editorId, newLangId) {
             compiler: this.compiler && this.compiler.id ? this.compiler.id : options.defaultCompiler[oldLangId],
             options: this.options
         };
-        this.updateLibsDropdown();
+        this.libsWidget.setNewLangId(newLangId);
         this.updateCompilersSelector();
         this.updateCompilerUI();
         this.sendCompiler();

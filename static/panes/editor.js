@@ -37,9 +37,12 @@ require('../modes/cppp-mode');
 require('../modes/d-mode');
 require('../modes/rust-mode');
 require('../modes/ispc-mode');
+require('../modes/llvm-ir-mode');
 require('../modes/haskell-mode');
+require('../modes/clean-mode');
 require('../modes/pascal-mode');
 require('../modes/cuda-mode');
+require('../modes/fortran-mode');
 require('../modes/zig-mode');
 require('../modes/nc-mode');
 require('selectize');
@@ -128,7 +131,8 @@ function Editor(hub, state, container) {
         labelField: 'name',
         searchField: ['name'],
         options: _.map(usableLanguages, _.identity),
-        items: [this.currentLanguage.id]
+        items: [this.currentLanguage.id],
+        dropdownParent: 'body'
     }).on('change', _.bind(function (e) {
         this.onLanguageChange($(e.target).val());
     }, this));
@@ -183,6 +187,12 @@ Editor.prototype.setSource = function (newSource) {
     this.editor.getModel().setValue(newSource);
 };
 
+Editor.prototype.onNewSource = function (editorId, newSource) {
+    if (this.id === editorId) {
+        this.setSource(newSource);
+    }
+};
+
 Editor.prototype.getSource = function () {
     return this.editor.getModel().getValue();
 };
@@ -224,6 +234,7 @@ Editor.prototype.initCallbacks = function () {
     this.eventHub.on('conformanceViewOpen', this.onConformanceViewOpen, this);
     this.eventHub.on('conformanceViewClose', this.onConformanceViewClose, this);
     this.eventHub.on('resize', this.resize, this);
+    this.eventHub.on('newSource', this.onNewSource, this);
 
     this.editor.getModel().onDidChangeContent(_.bind(function () {
         this.debouncedEmitChange();
@@ -309,9 +320,11 @@ Editor.prototype.initButtons = function (state) {
     this.initLoadSaver();
     $(this.domRoot).keydown(_.bind(function (event) {
         if ((event.ctrlKey || event.metaKey) && String.fromCharCode(event.which).toLowerCase() === 's') {
-            this.showLoadSaver();
-            if (loadSave.onSaveToFile(this.id)) {
-                event.preventDefault();
+            event.preventDefault();
+            if (this.settings.enableCtrlS) {
+                if (!loadSave.onSaveToFile(this.id)) {
+                    this.showLoadSaver();
+                }
             }
         }
     }, this));

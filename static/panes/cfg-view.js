@@ -106,7 +106,8 @@ function Cfg(hub, container, state) {
         sortField: 'name',
         valueField: 'name',
         labelField: 'name',
-        searchField: ['name']
+        searchField: ['name'],
+        dropdownParent: 'body'
     }).on('change', _.bind(function (e) {
         var selectedFn = this.functions[e.target.value];
         if (selectedFn) {

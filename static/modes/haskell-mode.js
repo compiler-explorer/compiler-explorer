@@ -21,7 +21,67 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-
 "use strict";
 
+function definition() {
+    return {
+        keywords: [
+            'module', 'import', 'main', 'where', 'otherwise', 'newtype',
+            'definition', 'implementation', 'from', 'class', 'instance', 'abort'
+        ],
+
+        builtintypes: [
+            'Int', 'Real', 'String'
+        ],
+
+        operators: [
+            '=', '==', '>=', '<=', '+', '-', '*', '/', '::', '->', '=:', '=>', '|', '$'
+        ],
+
+        numbers: /-?[0-9.]/,
+
+        tokenizer: {
+            root: [
+                { include: '@whitespace' },
+
+                [/->/, 'operators'],
+
+                [/\|/, 'operators'],
+
+                [/(\w*)(\s?)(::)/, ['keyword', 'white', 'operators']],
+
+                [/[+\-*/=<>$]/, 'operators'],
+
+                [/[a-zA-Z_][a-zA-Z0-9_]*/, {
+                    cases: {
+                        '@builtintypes': 'type',
+                        '@keywords': 'keyword',
+                        '@default': ''
+                    }
+                }],
+
+                [/[()[\],:]/, 'delimiter'],
+
+                [/@numbers/, 'number'],
+
+                [/(")(.*)(")/, ['string', 'string', 'string']]
+            ],
+
+            comment: [
+                [/[^/*]+/, 'comment'],
+                [/\*\//, 'comment', '@pop'],
+                [/[/*]/, 'comment']
+            ],
+
+            whitespace: [
+                [/[ \t\r\n]+/, 'white'],
+                [/\/\*/, 'comment', '@comment'],
+                [/\/\/.*$/, 'comment'],
+                [/--.*$/, 'comment']
+            ],
+        }
+    };
+}
+
 monaco.languages.register({id: 'haskell'});
+monaco.languages.setMonarchTokensProvider('haskell', definition());

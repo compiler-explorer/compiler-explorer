@@ -33,21 +33,23 @@ var ga = require('./analytics');
 var shareServices = {
     twitter: {
         embedValid: false,
+        logoClass: 'fab fa-twitter',
         cssClass: 'share-twitter',
         getLink: function (title, url) {
             return "https://twitter.com/intent/tweet?text=" +
                 encodeURIComponent(title) + '&url=' + encodeURIComponent(url) + '&via=mattgodbolt';
         },
-        text: 'Tweet'
+        text: ' Tweet'
     },
     reddit: {
         embedValid: false,
+        logoClass: 'fab fa-reddit',
         cssClass: 'share-reddit',
         getLink: function (title, url) {
             return 'http://www.reddit.com/submit?url=' +
                 encodeURIComponent(url) + '&title=' + encodeURIComponent(title);
         },
-        text: 'Share on Reddit'
+        text: ' Share on Reddit'
     }
 };
 
@@ -86,12 +88,11 @@ function updateShares(container, url) {
     var baseTemplate = $('#share-item');
     _.each(shareServices, function (service, serviceName) {
         var newElement = baseTemplate.children('a.share-item').clone();
-        var logoPath = baseTemplate.data('logo-' + serviceName);
-        if (logoPath) {
-            newElement.prepend($('<img>')
-                .addClass('share-item-logo')
-                .prop('src', logoPath)
-                .prop('alt', serviceName));
+        if (service.logoClass) {
+            newElement.prepend($('<span>')
+                .addClass(service.logoClass)
+                .prop('title', serviceName)
+            );
         }
         if (service.text) {
             newElement.children('span.share-item-text')
@@ -131,11 +132,13 @@ function initShareButton(getLink, layout, noteNewState) {
             eventCategory: 'OpenModalPane',
             eventAction: 'Sharing'
         });
+        var popoverElement = $($(this).data('bs.popover').tip);
+        var socialSharingElements = popoverElement.find('.socialsharing');
         var root = $('.urls-container:visible');
         var label = root.find('.current');
         var permalink = $(".permalink:visible");
         var urls = {};
-        if (!currentNode) currentNode = $(root.find('.sources a')[0]);
+        if (!currentNode) currentNode = $(root.find('.sources button')[0]);
         if (!currentBind) currentBind = currentNode.data().bind;
 
         function setCurrent(node) {
@@ -166,10 +169,7 @@ function initShareButton(getLink, layout, noteNewState) {
         }
 
         function update() {
-            // Is there a better way to get the popup object? There's a field with the element in getLink, but
-            // it's under a jQueryXXXXXX field which I guess changes name for each version?
-            var popoverId = '#' + getLink.attr('aria-describedby');
-            var socialSharing = $(popoverId).find('.socialsharing');
+            var socialSharing = socialSharingElements;
             socialSharing.empty();
             if (!currentBind) return;
             permalink.prop('disabled', false);
@@ -195,7 +195,7 @@ function initShareButton(getLink, layout, noteNewState) {
             }
         }
 
-        root.find('.sources a').on('click', function () {
+        root.find('.sources button').on('click', function () {
             setCurrent($(this));
             update();
         });
