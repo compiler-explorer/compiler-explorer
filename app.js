@@ -210,7 +210,8 @@ aws.initConfig(awsProps)
         const SourceHandler = require('./lib/handlers/source').Handler;
         const sourceHandler = new SourceHandler(fileSources, staticHeaders);
         const CompilerFinder = require('./lib/compiler-finder');
-        const compilerFinder = new CompilerFinder(compileHandler, compilerProps, awsProps, defArgs);
+        const compilerFinder = new CompilerFinder(compileHandler, compilerProps, awsProps, defArgs,
+            clientOptionsHandler);
 
         function oldGoogleUrlHandler(req, res, next) {
             const resolver = new google.ShortLinkResolver(aws.getConfig('googleApiKey'));
