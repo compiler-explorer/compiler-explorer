@@ -60,6 +60,7 @@ From oldest to newest contributor, we would like to thank:
 - [Raul Tambre](https://github.com/tambry)
 - [Dominic Kempf](https://github.com/dokempf)
 - [Marc Tiehuis](https://github.com/tiehuis)
+- [Petter Wahlman](https://github.com/ilAYAli)
 - [Miguel Ojeda](https://github.com/ojeda)
 - [Niek J. Bouman](https://github.com/niekbouman)
 - [Erik Little](https://github.com/nuclearace)
