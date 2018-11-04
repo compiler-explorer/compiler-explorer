@@ -1036,6 +1036,10 @@ Compiler.prototype.onEditorClose = function (editor) {
 
 Compiler.prototype.onFilterChange = function () {
     var filters = this.getEffectiveFilters();
+    if (filters.execute && this.compiler.supportsBinary && !filters.binary) {
+        this.filterBinaryButton.click();
+        return;
+    }
     this.eventHub.emit('filtersChange', this.id, filters);
     this.saveState();
     this.compile();
