@@ -948,7 +948,7 @@ Compiler.prototype.updateButtons = function () {
     this.filterIntelButton.prop('disabled', isIntelFilterDisabled);
     formatFilterTitle(this.filterIntelButton, this.filterIntelTitle);
     // Disable binary support on compilers that don't work with it.
-    this.filterBinaryButton.prop('disabled', !this.compiler.supportsBinary || filters.execute);
+    this.filterBinaryButton.prop('disabled', !this.compiler.supportsBinary);
     formatFilterTitle(this.filterBinaryButton, this.filterBinaryTitle);
     this.filterExecuteButton.prop('disabled', !this.compiler.supportsExecute);
     formatFilterTitle(this.filterExecuteButton, this.filterExecuteTitle);
@@ -1156,15 +1156,6 @@ Compiler.prototype.onEditorClose = function (editor) {
 
 Compiler.prototype.onFilterChange = function () {
     var filters = this.getEffectiveFilters();
-    if (filters.execute && this.compiler.supportsBinary && !filters.binary) {
-        this.filterBinaryButton.click();
-        this.alertSystem.notify('We enabled binary mode automatically', {
-            group: 'autobinary',
-            alertClass: 'notification-info',
-            dismissTime: 5000
-        });
-        return;
-    }
     this.eventHub.emit('filtersChange', this.id, filters);
     this.saveState();
     this.compile();
