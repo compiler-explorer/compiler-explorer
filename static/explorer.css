@@ -466,3 +466,18 @@ kbd {
     margin: 0 0.2em;
     box-shadow: 0 1px 0px rgba(0, 0, 0, 0.2), 0 0 0 2px #fff inset;
 }
+
+#simplecook {
+    align-items: center;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+#simplecook .message {
+    display: block;
+    flex: 1 1 auto;
+    max-width: 100%;
+    margin-right: 1em;
+    color: black;
+}
