@@ -198,3 +198,7 @@ kbd {
     border-color: #ccc;
     background-color: #f7f7f7;
 }
+
+.prepend-options {
+    background-color: #e9ecef;
+}

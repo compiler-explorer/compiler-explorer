@@ -320,3 +320,12 @@ kbd {
     border-color: #818181 !important;
     background-color: #979797 !important;
 }
+
+.prepend-options {
+    border-color: #444 !important;
+    background-color: #444 !important;
+}
+
+.modal-content .card-body {
+    background-color: #373737 !important;
+}
