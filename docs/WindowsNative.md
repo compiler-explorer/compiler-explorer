@@ -56,7 +56,42 @@ and you should be done!
 You only have to run `yarn install` the first time;
 every time after that, you should just be able to run `yarn start`.
 
-### Current Limitations
 
-  - Execution support doesn't yet exist
-  - Binary disassembly doesn't work yet
+### Setting up binary mode and execution
+
+To create executables with Visual C++, it's required to install the Windows SDK.
+
+You can find the Windows 10 SDK [here](https://developer.microsoft.com/en-US/windows/downloads/windows-10-sdk)
+
+When you've installed the SDK, you'll need to setup the library and include paths in Compilers Explorer.
+Make sure that in the previously discussed c++.local.properties you have added at least:
+ * to includePath
+   - Windows Kits/10/include/*version*/ucrt
+   - Windows Kits/10/include/*version*/shared
+   - Windows Kits/10/include/*version*/um
+ * to libPath (for the x64 compiler)
+   - Windows Kits/10/Lib/*version*/um/x64
+   - Windows Kits/10/Lib/*version*/ucrt/x64
+   - VC installation path/lib/x64
+
+If needed, you can set in your properties file: ```supportsExecute=true```
+
+#### Binary mode
+
+For binary mode, you will need a Windows version of Objdump. There are various
+versions of MingW available that will offer binutils including objdump.
+
+The version of objdump that we have tested with is shipped with MingW-64,
+you can find it for download [here](https://sourceforge.net/projects/mingw-w64/)
+
+When you use the installer for MingW-64, make sure you select the right architecture during installation.
+
+When you use the zipped version, after unzipping you will need to add the bin folder to your Windows PATHS environment variable.
+
+When you have everything installed, you can add to your properties file the following:
+```
+supportsBinary=true
+objdumper=mingw path/mingw64/x86_64-w64-mingw32/bin/objdump.exe
+```
+
+*Note that the 32 bit version of MingW does not support 64 bit binaries.*
