@@ -480,3 +480,8 @@ kbd {
     margin-right: 1em;
     color: black;
 }
+
+.new-cookie-msg {
+    display: inline;
+    margin: 0 2px 0 2px;
+}

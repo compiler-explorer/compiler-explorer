@@ -128,11 +128,9 @@ require("monaco-loader")().then(function () {
                 alertSystem.ask(getCookieTitle(), $(require('./policies/cookies.html')), {
                     yes: function () {
                         simpleCooks.callDoConsent.apply(simpleCooks);
-                        analytics.toggle(true);
                     },
                     yesHtml: 'Consent',
                     no: function () {
-                        analytics.toggle(false);
                         simpleCooks.callDontConsent.apply(simpleCooks);
                     },
                     noHtml: 'Do NOT consent'
@@ -206,8 +204,10 @@ require("monaco-loader")().then(function () {
         }
         simpleCooks.onDoConsent = function () {
             jsCookie.set(options.policies.cookies.key, options.policies.cookies.hash);
+            analytics.toggle(true);
         };
         simpleCooks.onDontConsent = function () {
+            analytics.toggle(false);
             jsCookie.set(options.policies.cookies.key, '');
         };
         simpleCooks.onHide = function () {
