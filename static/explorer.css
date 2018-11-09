@@ -451,6 +451,10 @@ button.dropdown-item.btn.btn-light.btn-sm {
 
 .navbar-nav a.nav-link {
     font-size: 14px;
+    border: rgb(140, 140, 140) 1px solid;
+    border-radius: 5px;
+    margin-left: 1px;
+    margin-right: 1px;
 }
 
 .navbar-nav a.nav-link:hover {
