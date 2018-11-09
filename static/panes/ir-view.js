@@ -41,7 +41,7 @@ function Ir(hub, container, state) {
         fontFamily: 'Consolas, "Liberation Mono", Courier, monospace',
         value: "",
         scrollBeyondLastLine: false,
-        language: 'plaintext',
+        language: 'llvm-ir',
         readOnly: true,
         folding: true,
         glyphMargin: true,
