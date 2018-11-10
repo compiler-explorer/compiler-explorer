@@ -55,6 +55,9 @@ describe('API handling', () => {
     const apiHandler = new ApiHandler({
         handle: res => {
             res.end("compile");
+        },
+        handlePopularArguments: res => {
+            res.end("ok");
         }
     }, (key, def) => {
         switch (key) {

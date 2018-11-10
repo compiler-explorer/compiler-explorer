@@ -27,6 +27,7 @@ const chai = require('chai'),
     CompilationEnvironment = require('../../lib/compilation-env'),
     chaiAsPromised = require("chai-as-promised"),
     parsers = require('../../lib/compilers/argument-parsers'),
+    CompilerArguments = require('../../lib/compiler-arguments'),
     properties = require('../../lib/properties');
 chai.use(chaiAsPromised);
 const should = chai.should();
@@ -42,6 +43,7 @@ function makeCompiler(stdout, stderr, code) {
     const env = new CompilationEnvironment(compilerProps);
     const compiler = new FakeCompiler({lang: languages['c++'].id, remote: true}, env);
     compiler.exec = () => Promise.resolve({code: code, stdout: stdout || "", stderr: stderr || ""});
+    compiler.possibleArguments = new CompilerArguments("g82");
     return compiler;
 }
 
@@ -54,17 +56,17 @@ describe('option parser', () => {
         return parsers.Base.getOptions(makeCompiler()).should.eventually.deep.equals({});
     });
     it('should parse single-dash options', () => {
-        return parsers.Base.getOptions(makeCompiler("-foo\n")).should.eventually.deep.equals({'-foo': true});
+        return parsers.Base.getOptions(makeCompiler("-foo\n")).should.eventually.deep.equals({'-foo': {"description": "", "timesused": 0}});
     });
     it('should parse double-dash options', () => {
-        return parsers.Base.getOptions(makeCompiler("--foo\n")).should.eventually.deep.equals({'--foo': true});
+        return parsers.Base.getOptions(makeCompiler("--foo\n")).should.eventually.deep.equals({'--foo': {"description": "", "timesused": 0}});
     });
     it('should parse stderr options', () => {
-        return parsers.Base.getOptions(makeCompiler("", "--bar=monkey\n")).should.eventually.deep.equals({'--bar': true});
+        return parsers.Base.getOptions(makeCompiler("", "--bar=monkey\n")).should.eventually.deep.equals({'--bar=monkey': {"description": "", "timesused": 0}});
     });
     it('handles non-option text', () => {
         return parsers.Base.getOptions(makeCompiler("-foo=123\nthis is a fish\n-badger=123")).should.eventually.deep.equals(
-            {'-foo': true, '-badger': true});
+            {'-foo=123': {"description": "this is a fish", "timesused": 0}, '-badger=123': {"description": "", "timesused": 0}});
     });
     it('should ignore if errors occur', () => {
         return parsers.Base.getOptions(makeCompiler("--foo\n", "--bar\n", 1)).should.eventually.deep.equals({});
