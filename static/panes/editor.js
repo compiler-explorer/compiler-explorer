@@ -267,67 +267,76 @@ Editor.prototype.initCallbacks = function () {
 };
 
 Editor.prototype.initButtons = function (state) {
-    this.fontScale = new FontScale(this.domRoot, state, this.editor);
-    this.languageBtn = this.domRoot.find('.change-language');
+    var scopedThis = this;
+
+    scopedThis.fontScale = new FontScale(scopedThis.domRoot, state, scopedThis.editor);
+    scopedThis.languageBtn = scopedThis.domRoot.find('.change-language');
     // Ensure that the button is disabled if we don't have nothing to select
     // Note that is might be disabled for other reasons beforehand
-    if (this.langKeys.length <= 1) {
-        this.languageBtn.prop("disabled", true);
+    if (scopedThis.langKeys.length <= 1) {
+        scopedThis.languageBtn.prop("disabled", true);
     }
-    var addCompilerButton = this.domRoot.find('.btn.add-compiler');
-    var paneAdderDropdown = this.domRoot.find('.add-pane');
+    scopedThis.topBar = scopedThis.domRoot.find('.top-bar');
+    scopedThis.hideable = scopedThis.domRoot.find('.hideable');
+
+    scopedThis.loadSaveButton = scopedThis.domRoot.find('.load-save');
+    var paneAdderDropdown = scopedThis.domRoot.find('.add-pane');
+    var addCompilerButton = scopedThis.domRoot.find('.btn.add-compiler');
+    scopedThis.conformanceViewerButton = scopedThis.domRoot.find('.btn.conformance');
+    var addEditorButton = scopedThis.domRoot.find('.btn.add-editor');
 
     var togglePaneAdder = function () {
         paneAdderDropdown.dropdown('toggle');
     };
-    this.topBar = this.domRoot.find('.top-bar');
 
     // NB a new compilerConfig needs to be created every time; else the state is shared
     // between all compilers created this way. That leads to some nasty-to-find state
     // bugs e.g. https://github.com/mattgodbolt/compiler-explorer/issues/225
     var getCompilerConfig = _.bind(function () {
-        return Components.getCompiler(this.id, this.currentLanguage.id);
+        return Components.getCompiler(scopedThis.id, scopedThis.currentLanguage.id);
     }, this);
 
     var getConformanceConfig = _.bind(function () {
-        return Components.getConformanceView(this.id, this.getSource());
+        return Components.getConformanceView(scopedThis.id, scopedThis.getSource());
     }, this);
 
-    this.container.layoutManager
-        .createDragSource(addCompilerButton, getCompilerConfig)
-        ._dragListener.on('dragStart', togglePaneAdder);
+    var getEditorConfig = _.bind(function () {
+        return Components.getEditor();
+    }, this);
 
-    addCompilerButton.click(_.bind(function () {
-        var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
-            this.container.layoutManager.root.contentItems[0];
-        insertPoint.addChild(getCompilerConfig);
-    }, this));
+    function addDragListener(dragSource, dragConfig) {
+        scopedThis.container.layoutManager
+            .createDragSource(dragSource, dragConfig)
+            ._dragListener.on('dragStart', togglePaneAdder);
+    }
 
-    this.conformanceViewerButton = this.domRoot.find('.btn.conformance');
+    addDragListener(addCompilerButton, getCompilerConfig);
+    addDragListener(scopedThis.conformanceViewerButton, getConformanceConfig);
+    addDragListener(addEditorButton, getEditorConfig);
 
-    this.container.layoutManager
-        .createDragSource(this.conformanceViewerButton, getConformanceConfig)
-        ._dragListener.on('dragStart', togglePaneAdder);
-    this.conformanceViewerButton.click(_.bind(function () {
-        var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
-            this.container.layoutManager.root.contentItems[0];
-        insertPoint.addChild(getConformanceConfig);
-    }, this));
+    function bindClickEvent(dragSource, dragConfig) {
+        dragSource.click(_.bind(function () {
+            var insertPoint = scopedThis.hub.findParentRowOrColumn(scopedThis.container) ||
+                scopedThis.container.layoutManager.root.contentItems[0];
+            insertPoint.addChild(dragConfig);
+        }, this));
+    }
 
-    this.hideable = this.domRoot.find('.hideable');
+    bindClickEvent(addCompilerButton, getCompilerConfig);
+    bindClickEvent(scopedThis.conformanceViewerButton, getConformanceConfig);
+    bindClickEvent(addEditorButton, getEditorConfig);
 
-    this.loadSaveButton = this.domRoot.find('.load-save');
-    this.initLoadSaver();
-    $(this.domRoot).keydown(_.bind(function (event) {
+    scopedThis.initLoadSaver();
+    $(scopedThis.domRoot).keydown(_.bind(function (event) {
         if ((event.ctrlKey || event.metaKey) && String.fromCharCode(event.which).toLowerCase() === 's') {
             event.preventDefault();
-            if (this.settings.enableCtrlS) {
-                if (!loadSave.onSaveToFile(this.id)) {
-                    this.showLoadSaver();
+            if (scopedThis.settings.enableCtrlS) {
+                if (!loadSave.onSaveToFile(scopedThis.id)) {
+                    scopedThis.showLoadSaver();
                 }
             }
         }
-    }, this));
+    }, scopedThis));
 };
 
 Editor.prototype.changeLanguage = function (newLang) {
