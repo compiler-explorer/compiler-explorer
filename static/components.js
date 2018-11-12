@@ -67,6 +67,18 @@ module.exports = {
             componentState: {compiler: compiler, editor: editor}
         };
     },
+    getToolViewWith: function (compiler, editor, toolId, args) {
+        return {
+            type: 'component',
+            componentName: 'tool',
+            componentState: {
+                compiler: compiler,
+                editor: editor,
+                toolId: toolId,
+                args: args
+            }
+        };
+    },
     getDiff: function () {
         return {
             type: 'component',

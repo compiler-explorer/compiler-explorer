@@ -29,6 +29,7 @@ var Raven = require('raven-js');
 var editor = require('./panes/editor');
 var compiler = require('./panes/compiler');
 var output = require('./panes/output');
+var tool = require('./panes/tool');
 var Components = require('components');
 var diff = require('./panes/diff');
 var optView = require('./panes/opt-view');
@@ -85,6 +86,10 @@ function Hub(layout, subLangId) {
     layout.registerComponent(Components.getOutput().componentName,
         function (container, state) {
             return self.outputFactory(container, state);
+        });
+    layout.registerComponent(Components.getToolViewWith().componentName,
+        function (container, state) {
+            return self.toolFactory(container, state);
         });
     layout.registerComponent(diff.getComponent().componentName,
         function (container, state) {
@@ -162,6 +167,10 @@ Hub.prototype.compilerFactory = function (container, state) {
 
 Hub.prototype.outputFactory = function (container, state) {
     return new output.Output(this, container, state);
+};
+
+Hub.prototype.toolFactory = function (container, state) {
+    return new tool.Tool(this, container, state);
 };
 
 Hub.prototype.diffFactory = function (container, state) {

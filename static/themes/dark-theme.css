@@ -315,3 +315,35 @@ input {
 .custom-select {
     background-color: #818181 !important;
 }
+
+kbd {
+    border-color: #818181 !important;
+    background-color: #979797 !important;
+}
+
+.prepend-options {
+    border-color: #444 !important;
+    background-color: #444 !important;
+}
+
+.modal-content .card-body {
+    background-color: #373737 !important;
+}
+
+#simplecook {
+    background-color: #474747 !important;
+}
+
+.consent-cookie-yes {
+    background-color: #c1e2b3 !important;
+    color: black !important;
+}
+
+.consent-cookie-no {
+    background-color: #f44336 !important;
+    color: #ffffff !important;
+}
+
+.new-cookie-msg {
+    color: white;
+}

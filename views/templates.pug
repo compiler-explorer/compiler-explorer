@@ -7,7 +7,7 @@
             .input-group.input-group-sm
               .input-group-prepend
                 button.btn.btn-outline-secondary.btn-sm.dropdown-toggle(data-toggle="dropdown" type="button" aria-haspopup="true" aria-expanded="false")
-                  span.current Short #[b.caret]
+                  span.current Short
                 ul.dropdown-menu.sources
                   button.dropdown-item.btn.btn-light.btn-sm(data-bind="Short")
                     | Short
@@ -35,7 +35,6 @@
         button.dropdown-toggle.btn.btn-light.add-pane(type="button" title="Add a new pane" aria-label="Add a new pane" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
           span.fa.fa-plus
           span.hideable &nbsp;Add new...
-          | #[b.caret]
         .dropdown-menu
           button.dropdown-item.btn.btn-sm.btn-light.add-compiler(title="Add a new compiler for this source" aria-label="New compiler")
             span.fa.fa-cogs
@@ -53,7 +52,7 @@
         select.compiler-picker(placeholder="Select a compiler...")
         .input-group.mb-auto
           .input-group-prepend(title="Show all compilation options")
-            a.input-group-text.prepend-options(tabindex="0" data-trigger="focus" style="cursor: pointer;" role="button" title="All compilation options")
+            button.input-group-text.prepend-options(data-trigger="click" style="cursor: pointer;" role="button" title="All compilation options")
               span.btn.btn-light.btn-sm.status-icon
           input.options.form-control(type="text" placeholder="Compiler options..." size="256" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false")
           .input-group-append(title="Popular arguments")
@@ -98,12 +97,11 @@
         button.btn.btn-light.btn-sm.show-libs
           span.fas.fa-book(title="Include libs")
           span.hideable &nbsp;Libraries
-          | #[b.caret]
+          b.fas.fa-caret-down
       .btn-group.btn-group-sm(role="group")
         button.btn.btn-light.btn-sm.dropdown-toggle.add-pane(type="button" title="Add a new pane" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Add new element for this compiler")
           span.fas.fa-plus
           span.hideable &nbsp;Add new...
-          | #[b.caret]
         .dropdown-menu.dropdown-menu-right
           button.dropdown-item.btn.btn-light.btn-sm.add-compiler(title="Clone this compiler window (click or drag)")
             span.far.fa-clone
@@ -120,6 +118,18 @@
           button.dropdown-item.btn.btn-light.btn-sm.view-cfg(title="Show Graph Output")
             span.fas.fa-exchange-alt
             | &nbsp;Graph output
+      .btn-group.btn-group-sm(role="group")
+        button.btn.btn-light.btn-sm.dropdown-toggle.add-tool(type="button" title="Add tool" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Add tooling to this editor and compiler")
+          span.fas.fa-cogs
+          span.hideable &nbsp;Add tool...
+          | #[b.caret]
+        .dropdown-menu.dropdown-menu-right
+          button.dropdown-item.btn.btn-light.btn-sm.view-clangtidytool(title="Clang-tidy")
+            span.fas.fa-cog
+            | &nbsp;Clang-tidy
+          button.dropdown-item.btn.btn-light.btn-sm.view-llvmmcatool(title="LLVM MCA")
+            span.fas.fa-cog
+            | &nbsp;LLVM MCA
     .monaco-placeholder
     .bottom-bar.bg-light
       if !embedded
@@ -152,6 +162,18 @@
           button.btn.btn-light.btn-sm.wrap-lines(type="button" title="Wrap lines" data-bind="wrap" aria-pressed="false" aria-label="Wrap lines")
             span Wrap lines
           input.d-none(type="checkbox" checked=false)
+    pre.content
+
+  #tool-output
+    .top-bar.btn-toolbar.options-toolbar.bg-light(role="toolbar")
+      .btn-group.btn-group-sm.options(role="group" aria-label="Tool options")
+        .input-group.input-group-sm.mb-auto
+          include font-size
+          .button-checkbox
+            button.btn.btn-light.btn-sm.wrap-lines(type="button" title="Wrap lines" data-bind="wrap" aria-pressed="false" aria-label="Wrap lines")
+              span Wrap lines
+            input.d-none(type="checkbox" checked=false)
+          input.options.form-control(type="text" placeholder="Tool options..." size="256" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false")
     pre.content
 
   #diff
@@ -221,7 +243,7 @@
         button.btn.btn-light.btn-sm.show-libs.dropdown-toggle(title="Include libs" aria-label="Toggle libraries dropdown" aria-pressed="false" aria-haspopup="true")
           span.fas.fa-book
           span.hideable &nbsp;Libraries
-          | #[b.caret]
+          b.fas.fa-caret-down
     .conformance-wrapper
       table.compiler-list
 

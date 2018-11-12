@@ -27,7 +27,6 @@ require("monaco-loader")().then(function () {
     require('popper.js');
     require('bootstrap');
     require('bootstrap-slider');
-    require('cookieconsent');
 
     var analytics = require('./analytics');
     var sharing = require('./sharing');
@@ -44,6 +43,8 @@ require("monaco-loader")().then(function () {
     var Alert = require('./alert');
     var themer = require('./themes');
     var motd = require('./motd');
+    var jsCookie = require('js-cookie');
+    var SimpleCook = require('./simplecook');
     //css
     require("bootstrap/dist/css/bootstrap.min.css");
     require("goldenlayout/src/css/goldenlayout-base.css");
@@ -55,6 +56,7 @@ require("monaco-loader")().then(function () {
     // Check to see if the current unload is a UI reset.
     // Forgive me the global usage here
     var hasUIBeenReset = false;
+    var simpleCooks = new SimpleCook();
 
     function setupSettings(hub) {
         var eventHub = hub.layout.eventHub;
@@ -99,89 +101,6 @@ require("monaco-loader")().then(function () {
     function setupButtons(options) {
         var alertSystem = new Alert();
 
-        if (options.policies.cookies.enabled) {
-            var cookiemodal = null;
-
-            var getCookieTitle = function () {
-                return 'Cookies & related technologies policy<br><p>Current consent status: <span style="color:' +
-                    (cookieconsent.hasConsented() ? 'green' : 'red') + '">' +
-                    (cookieconsent.hasConsented() ? 'Granted' : 'Denied') + '</span></p>';
-            };
-            var openCookiePolicy = function () {
-                cookiemodal = alertSystem.ask(getCookieTitle(), $(require('./policies/cookies.html')), {
-                    yes: function () {
-                        cookieconsent.doConsent.apply(cookieconsent);
-                        analytics.toggle(true);
-                    },
-                    yesHtml: 'Consent',
-                    no: function () {
-                        analytics.toggle(false);
-                        cookieconsent.doOppose.apply(cookieconsent);
-                    },
-                    noHtml: 'Do NOT consent',
-                    onClose: function () {
-                        // Remove modal ref so we don't try to update its title if the consent changes
-                        cookiemodal = null;
-                    }
-                });
-            };
-            window.cookieconsent.status.allow = options.policies.cookies.hash;
-            window.cookieconsent.status.dismiss = window.cookieconsent.status.deny;
-            window.cookieconsent.hasTransition = false;
-            var cookieconsent = window.cookieconsent.initialise({
-                palette: {
-                    popup: {
-                        background: "#eaf7f7",
-                        text: "#5c7291"
-                    },
-                    button: {
-                        background: "#56cbdb",
-                        text: "#ffffff"
-                    }
-                },
-                position: "bottom",
-                theme: "edgeless",
-                type: "opt-in",
-                // We handle the revoking elsewhere
-                revokable: false,
-                forceRevokable: false,
-                content: {
-                    // We use onClick handlers to open the popup without reloading
-                    link: 'Check our cookie policy',
-                    href: "#",
-                    message: "Compiler Explorer uses cookies & related technologies.",
-                    dismiss: 'Do NOT allow nonessential cookies'
-                },
-                elements: {
-                    messagelink: '<span id="cookieconsent:desc" class="cc-message">' +
-                        '{{message}} <a aria-label="learn more about cookies" tabindex="0" class="cc-link cookies" ' +
-                        'href="{{href}}">{{link}}</a></span>',
-                    link: '<a aria-label="learn more about cookies" tabindex="0" ' +
-                        'class="cc-link cookies" href="{{href}}">{{link}}</a>'
-                },
-                onStatusChange: function () {
-                    if (cookiemodal) {
-                        // Change the title based on the current consent status
-                        cookiemodal.find('.modal-title').html(getCookieTitle());
-                    }
-                    // Toggle GA if the user consents, disable if not.
-                    // analytics.toggle has internal checks for when we initialize without being turned off first
-                    analytics.toggle(this.hasConsented());
-                },
-                onInitialise: function () {
-                    // Toggle GA on if the user has already consented
-                    analytics.toggle(this.hasConsented());
-                },
-                onPopupClose: function () {
-                    $(window).resize();
-                }
-            });
-
-
-            $('#cookies').click(openCookiePolicy);
-            $('.cookies').click(openCookiePolicy);
-        }
-
         // I'd like for this to be the only function used, but it gets messy to pass the callback function around,
         // so we instead trigger a click here when we want it to open with this effect. Sorry!
         if (options.policies.privacy.enabled) {
@@ -192,8 +111,30 @@ require("monaco-loader")().then(function () {
                 );
                 // I can't remember why this check is here as it seems superfluous
                 if (options.policies.privacy.enabled) {
-                    local.set(options.policies.privacy.key, options.policies.privacy.hash);
+                    jsCookie.set(options.policies.privacy.key, options.policies.privacy.hash);
                 }
+            });
+        }
+        var hasCookieConsented = function () {
+            return jsCookie.get(options.policies.cookies.key) === options.policies.cookies.hash;
+        };
+        if (options.policies.cookies.enabled) {
+            var getCookieTitle = function () {
+                return 'Cookies & related technologies policy<br><p>Current consent status: <span style="color:' +
+                    (hasCookieConsented() ? 'green' : 'red') + '">' +
+                    (hasCookieConsented() ? 'Granted' : 'Denied') + '</span></p>';
+            };
+            $('#cookies').click(function () {
+                alertSystem.ask(getCookieTitle(), $(require('./policies/cookies.html')), {
+                    yes: function () {
+                        simpleCooks.callDoConsent.apply(simpleCooks);
+                    },
+                    yesHtml: 'Consent',
+                    no: function () {
+                        simpleCooks.callDontConsent.apply(simpleCooks);
+                    },
+                    noHtml: 'Do NOT consent'
+                });
             });
         }
 
@@ -250,6 +191,36 @@ require("monaco-loader")().then(function () {
         }
     }
 
+    function initPolicies(options) {
+        // Ensure old cookies are removed, to avoid user confusion
+
+        jsCookie.remove('fs_uid');
+        jsCookie.remove('cookieconsent_status');
+        if (options.policies.privacy.enabled &&
+            options.policies.privacy.hash !== jsCookie.get(options.policies.privacy.key)) {
+            $('#privacy').trigger('click', {
+                title: 'New Privacy Policy. Please take a moment to read it'
+            });
+        }
+        simpleCooks.onDoConsent = function () {
+            jsCookie.set(options.policies.cookies.key, options.policies.cookies.hash);
+            analytics.toggle(true);
+        };
+        simpleCooks.onDontConsent = function () {
+            analytics.toggle(false);
+            jsCookie.set(options.policies.cookies.key, '');
+        };
+        simpleCooks.onHide = function () {
+            $(window).trigger('resize');
+        };
+        // '' means no consent. Hash match means consent of old. Null means new user!
+        var storedCookieConsent = jsCookie.get(options.policies.cookies.key);
+        if (options.policies.cookies.enabled && storedCookieConsent !== '' &&
+            options.policies.cookies.hash !== storedCookieConsent) {
+            simpleCooks.show();
+        }
+    }
+
     function start() {
         initializeResetLayoutLink();
 
@@ -260,6 +231,16 @@ require("monaco-loader")().then(function () {
             return lang.id === subdomainPart || lang.alias.indexOf(subdomainPart) >= 0;
         });
         var subLangId = langBySubdomain ? langBySubdomain.id : undefined;
+
+        // Cookie domains are matched as a RE against the window location. This allows a flexible
+        // way that works across multiple domains (e.g. godbolt.org and compiler-explorer.com).
+        // We allow this to be configurable so that (for example), gcc.godbolt.org and d.godbolt.org
+        // share the same cookie domain for some settings.
+        var cookieDomain = new RegExp(options.cookieDomainRe).exec(window.location.hostname);
+        if (cookieDomain && cookieDomain[0]) {
+            cookieDomain = cookieDomain[0];
+            jsCookie.defaults.domain = cookieDomain;
+        }
 
         var defaultConfig = {
             settings: {showPopoutIcon: false},
@@ -327,7 +308,7 @@ require("monaco-loader")().then(function () {
         });
 
         function sizeRoot() {
-            var height = $(window).height() - (root.position().top || 0) - ($('.cc-window:visible').height() || 0);
+            var height = $(window).height() - (root.position().top || 0) - ($('#simplecook:visible').height() || 0);
             root.height(height);
             layout.updateSize();
         }
@@ -373,20 +354,13 @@ require("monaco-loader")().then(function () {
             var element = $(hashPart);
             if (element) element.click();
         }
-        // Ensure old cookies are removed, to avoid user confusion
-        document.cookie = 'fs_uid=;expires=Thu, 01 Jan 1970 00:00:01 GMT;';
-        if (options.policies.privacy.enabled &&
-            options.policies.privacy.hash !== local.get(options.policies.privacy.key)) {
-            $('#privacy').trigger('click', {
-                title: 'New Privacy Policy. Please take a moment to read it'
-            });
-        }
-        var onHide = function () {
+        initPolicies(options);
+
+        motd.initialise(options.motdUrl, $('#motd'), subLangId, settings.enableCommunityAds, function () {
             hub.layout.eventHub.emit('modifySettings', {
                 enableCommunityAds: false
             });
-        };
-        motd.initialise(options.motdUrl, $('#motd'), subLangId, settings.enableCommunityAds, onHide);
+        });
         sizeRoot();
         lastState = JSON.stringify(layout.toConfig());
     }

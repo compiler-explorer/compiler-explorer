@@ -1037,10 +1037,6 @@ cookie@0.3.1:
   version "0.3.1"
   resolved "https://registry.yarnpkg.com/cookie/-/cookie-0.3.1.tgz#e7e0a1f9ef43b4c8ba925c5c5a96e806d16873bb"
 
-cookieconsent@RabsRincon/cookieconsent#^3.1.2:
-  version "3.1.2"
-  resolved "https://codeload.github.com/RabsRincon/cookieconsent/tar.gz/512f19f6dbe4c53dfbd3b539b57f10e0165b9075"
-
 cookiejar@2.0.x:
   version "2.0.6"
   resolved "https://registry.yarnpkg.com/cookiejar/-/cookiejar-2.0.6.tgz#0abf356ad00d1c5a219d88d44518046dd026acfe"
@@ -2937,6 +2933,10 @@ jquery@*, jquery@^3.3.1:
 js-base64@^2.1.9:
   version "2.4.2"
   resolved "https://registry.yarnpkg.com/js-base64/-/js-base64-2.4.2.tgz#1896da010ef8862f385d8887648e9b6dc4a7a2e9"
+
+js-cookie@^2.2.0:
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/js-cookie/-/js-cookie-2.2.0.tgz#1b2c279a6eece380a12168b92485265b35b1effb"
 
 js-stringify@^1.0.1:
   version "1.0.2"

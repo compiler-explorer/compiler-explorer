@@ -278,6 +278,8 @@ Compiler.prototype.initPanerButtons = function () {
             this.container.layoutManager.root.contentItems[0];
         insertPoint.addChild(createCfgView);
     }, this));
+
+    this.initToolButtons(togglePannerAdder);
 };
 
 Compiler.prototype.undefer = function () {
@@ -399,7 +401,52 @@ Compiler.prototype.getEffectiveFilters = function () {
     return filters;
 };
 
-Compiler.prototype.compile = function () {
+Compiler.prototype.findTools = function (content, tools) {
+    if (content.componentName === "tool") {
+        if (
+            (content.componentState.editor === this.sourceEditorId) &&
+            (content.componentState.compiler === this.id))
+        {
+            tools.push({
+                id: content.componentState.toolId,
+                args: content.componentState.args
+            });
+        }
+    } else if (content.content) {
+        _.each(content.content, function (subcontent) {
+            tools = this.findTools(subcontent, tools);
+        }, this);
+    }
+
+    return tools;
+};
+
+Compiler.prototype.getActiveTools = function (newToolSettings) {
+    if (!this.compiler) return {};
+
+    var tools = [];
+    if (newToolSettings) {
+        tools.push({
+            id: newToolSettings.toolId,
+            args: newToolSettings.args
+        });
+    }
+
+    if (this.container.layoutManager.isInitialised) {
+        var config = this.container.layoutManager.toConfig();
+        return this.findTools(config, tools);
+    } else {
+        return tools;
+    }
+};
+
+Compiler.prototype.isToolActive = function (activetools, toolId) {
+    return _.find(activetools, function (tool) {
+        return tool.id === toolId;
+    });
+};
+
+Compiler.prototype.compile = function (bypassCache, newTools) {
     if (this.deferCompiles) {
         this.needsCompile = true;
         return;
@@ -419,7 +466,8 @@ Compiler.prototype.compile = function () {
             produceOptInfo: this.wantOptInfo,
             produceCfg: this.cfgViewOpen
         },
-        filters: this.getEffectiveFilters()
+        filters: this.getEffectiveFilters(),
+        tools: this.getActiveTools(newTools)
     };
     var includeFlag = this.compiler ? this.compiler.includeFlag : '-I';
     _.each(this.libsWidget.getLibsInUse(), function (item) {
@@ -434,6 +482,7 @@ Compiler.prototype.compile = function () {
             options: options,
             lang: this.currentLangId
         };
+        if (bypassCache) request.bypassCache = true;
         if (!this.compiler) {
             this.onCompileResponse(request, errorResult('<Please select a compiler>'), false);
         } else {
@@ -634,6 +683,30 @@ Compiler.prototype.onEditorChange = function (editor, source, langId, compilerId
     }
 };
 
+Compiler.prototype.onToolOpened = function (compilerId, toolSettings) {
+    if (this.id === compilerId) {
+        var toolId = toolSettings.toolId;
+        if (toolId === "clangtidytrunk") {
+            this.clangtidyToolButton.prop('disabled', true);
+        } else if (toolId === "llvm-mcatrunk") {
+            this.llvmmcaToolButton.prop('disabled', true);
+        }
+
+        this.compile(false, toolSettings);
+    }
+};
+
+Compiler.prototype.onToolClosed = function (compilerId, toolSettings) {
+    if (this.id === compilerId) {
+        var toolId = toolSettings.toolId;
+        if (toolId === "clangtidytrunk") {
+            this.clangtidyToolButton.prop('disabled', !this.supportsTool(toolId));
+        } else if (toolId === "llvm-mcatrunk") {
+            this.llvmmcaToolButton.prop('disabled', !this.supportsTool(toolId));
+        }
+    }
+};
+
 Compiler.prototype.onOutputOpened = function (compilerId) {
     if (this.id === compilerId) {
         this.isOutputOpened = true;
@@ -661,6 +734,12 @@ Compiler.prototype.onAstViewOpened = function (id) {
     if (this.id === id) {
         this.astButton.prop('disabled', true);
         this.astViewOpen = true;
+        this.compile();
+    }
+};
+
+Compiler.prototype.onToolSettingsChange = function (id) {
+    if (this.id === id) {
         this.compile();
     }
 };
@@ -759,7 +838,15 @@ Compiler.prototype.initButtons = function (state) {
 
     this.optionsField = this.domRoot.find('.options');
     this.prependOptions = this.domRoot.find('.prepend-options');
-    this.setCompilationOptionsPopover();
+    this.setCompilationOptionsPopover(this.compiler ? this.compiler.options : null);
+    // Dismiss on any click that isn't either in the opening element, inside
+    // the popover or on any alert
+    $(document).on('mouseup', _.bind(function (e) {
+        var target = $(e.target);
+        if (!target.is(this.prependOptions) && this.prependOptions.has(target).length === 0 &&
+            target.closest('.popover').length === 0)
+            this.prependOptions.popover("hide");
+    }, this));
 
     this.filterBinaryButton = this.domRoot.find("[data-bind='binary']");
     this.filterBinaryTitle = this.filterBinaryButton.prop('title');
@@ -816,6 +903,38 @@ Compiler.prototype.initLibraries = function (state) {
         state, _.bind(this.onLibsChanged, this));
 };
 
+Compiler.prototype.supportsTool = function (toolId) {
+    if (!this.compiler) return;
+
+    return _.find(this.compiler.tools, function (tool) {
+        return (tool.tool.id === toolId);
+    });
+};
+
+Compiler.prototype.initToolButton = function (togglePannerAdder, button, toolId) {
+    var createToolView = _.bind(function () {
+        return Components.getToolViewWith(this.id, this.sourceEditorId, toolId, "");
+    }, this);
+
+    this.container.layoutManager
+        .createDragSource(button, createToolView)
+        ._dragListener.on('dragStart', togglePannerAdder);
+
+    button.click(_.bind(function () {
+        var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
+            this.container.layoutManager.root.contentItems[0];
+        insertPoint.addChild(createToolView);
+    }, this));
+};
+
+Compiler.prototype.initToolButtons = function (togglePannerAdder) {
+    this.clangtidyToolButton = this.domRoot.find('.view-clangtidytool');
+    this.llvmmcaToolButton = this.domRoot.find('.view-llvmmcatool');
+
+    this.initToolButton(togglePannerAdder, this.clangtidyToolButton, "clangtidytrunk");
+    this.initToolButton(togglePannerAdder, this.llvmmcaToolButton, "llvm-mcatrunk");
+};
+
 Compiler.prototype.updateButtons = function () {
     if (!this.compiler) return;
     var filters = this.getEffectiveFilters();
@@ -853,6 +972,12 @@ Compiler.prototype.updateButtons = function () {
     this.astButton.prop('disabled', !this.compiler.supportsAstView);
     this.cfgButton.prop('disabled', !this.compiler.supportsCfg);
     this.gccDumpButton.prop('disabled', !this.compiler.supportsGccDump);
+
+    var activeTools = this.getActiveTools();
+    this.clangtidyToolButton.prop('disabled',
+        !(this.supportsTool("clangtidytrunk") && !this.isToolActive(activeTools, "clangtidytrunk")));
+    this.llvmmcaToolButton.prop('disabled',
+        !(this.supportsTool("llvm-mcatrunk") && !this.isToolActive(activeTools, "llvm-mcatrunk")));
 };
 
 Compiler.prototype.onFontScale = function () {
@@ -879,6 +1004,10 @@ Compiler.prototype.initListeners = function () {
     this.eventHub.on('findCompilers', this.sendCompiler, this);
     this.eventHub.on('compilerSetDecorations', this.onCompilerSetDecorations, this);
     this.eventHub.on('settingsChange', this.onSettingsChange, this);
+
+    this.eventHub.on('toolSettingsChange', this.onToolSettingsChange, this);
+    this.eventHub.on('toolOpened', this.onToolOpened, this);
+    this.eventHub.on('toolClosed', this.onToolClosed, this);
 
     this.eventHub.on('optViewOpened', this.onOptViewOpened, this);
     this.eventHub.on('optViewClosed', this.onOptViewClosed, this);
@@ -950,7 +1079,7 @@ Compiler.prototype.initCallbacks = function () {
 
     this.compileClearCache.on('click', _.bind(function () {
         this.compilerService.cache.reset();
-        this.compile();
+        this.compile(true);
     }, this));
 
     // Dismiss the popover on escape.
@@ -1118,7 +1247,7 @@ Compiler.prototype.setCompilationOptionsPopover = function (content) {
     this.prependOptions.popover({
         content: content || 'No options in use',
         template: '<div class="popover' +
-            (content ? ' compiler-options-popover' : '')  +
+            (content ? ' compiler-options-popover' : '') +
             '" role="tooltip"><div class="arrow"></div>' +
             '<h3 class="popover-header"></h3><div class="popover-body"></div></div>'
     });
@@ -1129,7 +1258,7 @@ Compiler.prototype.setCompilerVersionPopover = function (version) {
     this.fullCompilerName.popover({
         content: version || '',
         template: '<div class="popover' +
-            (version ? ' compiler-options-popover' : '')  +
+            (version ? ' compiler-options-popover' : '') +
             '" role="tooltip"><div class="arrow"></div>' +
             '<h3 class="popover-header"></h3><div class="popover-body"></div></div>'
     });

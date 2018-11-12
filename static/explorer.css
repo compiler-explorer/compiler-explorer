@@ -1,5 +1,4 @@
 @import url("~@fortawesome/fontawesome-free/css/all.min.css");
-@import url("~cookieconsent/build/cookieconsent.min.css");
 @import url("~vis/dist/vis.css");
 
 /* TEMP HACK: https://github.com/Microsoft/monaco-editor/issues/349 */
@@ -456,4 +455,31 @@ button.dropdown-item.btn.btn-light.btn-sm {
 
 .navbar-nav a.nav-link:hover {
     border-radius: 5px;
+}
+
+kbd {
+    display: inline-block;
+    border: 1px solid;
+    border-radius: 4px;
+    padding: 0.1em 0.5em;
+    margin: 0 0.2em;
+    box-shadow: 0 1px 0px rgba(0, 0, 0, 0.2), 0 0 0 2px #fff inset;
+}
+
+#simplecook {
+    align-items: center;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+#simplecook .message {
+    display: block;
+    flex: 1 1 auto;
+    max-width: 100%;
+}
+
+.new-cookie-msg {
+    display: inline;
+    margin: 0 2px 0 2px;
 }

@@ -21,7 +21,8 @@
                             "trim": false
                         },
                         "libs": [],
-                        "specialoutputs": []
+                        "specialoutputs": [],
+                        "tools": []
                     },
                     {
                         "id": "vc2017_64",
@@ -37,7 +38,8 @@
                             "trim": false
                         },
                         "libs": [],
-                        "specialoutputs": []
+                        "specialoutputs": [],
+                        "tools": []
                     }
                 ]
             },
@@ -56,7 +58,8 @@
                         "trim": false
                     },
                     "libs": [],
-                    "specialoutputs": []
+                    "specialoutputs": [],
+                    "tools": []
                 },
                 {
                     "id": "vc2017_32",
@@ -72,7 +75,8 @@
                         "trim": false
                     },
                     "libs": [],
-                    "specialoutputs": []
+                    "specialoutputs": [],
+                    "tools": []
                 },
                 {
                     "id": "vc2017_64",
@@ -88,7 +92,8 @@
                         "trim": false
                     },
                     "libs": [],
-                    "specialoutputs": []
+                    "specialoutputs": [],
+                    "tools": []
                 }
             ]
         }

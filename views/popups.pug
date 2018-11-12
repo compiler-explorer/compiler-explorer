@@ -22,9 +22,10 @@
               h4.card-title Load from browser-local storage:
               ul.local-storage.small-v-scrollable
                 li.template: a(href="javascript:;")
-              .form-group
-                input.save-name(type="text" size="20")
-                button.btn.btn-light.save-button(type="button") Save to browser-local storage
+              .input-group
+                input.save-name(type="text" size="20" placeholder="Set name of state")
+                .input-group-append
+                  button.btn.btn-light.save-button(type="button") Save to browser-local storage
             #load-file-system.tab-pane(role="tabpanel")
               h4.card-title Load/save to your system
               label.btn.btn-outline-secondary.btn-file(role="button") Load from a local file
@@ -131,6 +132,13 @@
                 label
                   | Format based on&nbsp;
                   select.formatBase
+              .checkbox
+                label
+                  input.enableCtrlS(type="checkbox")
+                  | Enable
+                  kbd Ctrl
+                  | +
+                  kbd S
         .card
           .card-body
             .card-title
@@ -154,5 +162,20 @@
                 select.colourScheme
       .modal-footer
         button.btn.btn-light(type="button" data-dismiss="modal") Close
+
+#simplecook.gl_keep(tabindex="-1" role="dialog" style="display:none")
+  .message
+    .btn-group.btn-group-sm
+      button.btn.btn-light.btn-sm.cookies(title="Read cookie policy" aria-label="Read new cookie policy")
+        span.fas.fa-info-circle
+        | &nbsp;Read the new cookie policy
+      p.new-cookie-msg Compiler Explorer uses cookies and other related techs to serve you
+    .btn-group.btn-group-sm(role="group" aria-label="Consent options" style="float:right")
+      button.btn.btn-light.btn-sm.cook-do-consent.consent-cookie-yes(title="Consent cookie policy" aria-label="Consent cookie policy")
+        span.fas.fa-thumbs-up
+        | &nbsp;Consent
+      button.btn.btn-light.btn-sm.cook-dont-consent.consent-cookie-no(title="Do not consent cookie policy" aria-label="Oppose cookie policy")
+        span.fas.fa-thumbs-down
+        | &nbsp;Don't consent
 
 #notifications

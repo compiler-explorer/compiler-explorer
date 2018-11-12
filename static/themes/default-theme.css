@@ -192,3 +192,21 @@ a.navbar-brand img.logo.normal {
 .navbar-nav a.nav-link:hover {
     background-color: #d8d9da;
 }
+
+kbd {
+    color: black;
+    border-color: #ccc;
+    background-color: #f7f7f7;
+}
+
+.prepend-options {
+    background-color: #e9ecef;
+}
+
+#simplecook {
+    background-color: #f4f4f4;
+}
+
+.new-cookie-msg {
+    color: black;
+}
