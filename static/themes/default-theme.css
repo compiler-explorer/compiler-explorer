@@ -20,6 +20,10 @@ body {
     background-color: #eee;
 }
 
+.navbar-nav a.nav-link {
+    border: rgb(140,140,140) 1px solid;
+}
+
 .float-link {
     background-color: rgba(128, 128, 128, 0.5);
 }
