@@ -982,7 +982,7 @@ Compiler.prototype.updateButtons = function () {
     this.fillPopularArgumentsMenu();
 };
 
-Compiler.prototype.fillPopularArgumentsMenu = function() {
+Compiler.prototype.fillPopularArgumentsMenu = function () {
     var popularArgumentsMenu = this.domRoot.find("div.populararguments div.dropdown-menu");
     popularArgumentsMenu.html("");
 
