@@ -45,7 +45,6 @@ function Ir(hub, container, state) {
         readOnly: true,
         folding: true,
         glyphMargin: true,
-        fontFamily: 'Consolas, "Liberation Mono", Courier, monospace',
         quickSuggestions: false,
         fixedOverflowWidgets: true,
         minimap: {
