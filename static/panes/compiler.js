@@ -978,6 +978,42 @@ Compiler.prototype.updateButtons = function () {
         !(this.supportsTool("clangtidytrunk") && !this.isToolActive(activeTools, "clangtidytrunk")));
     this.llvmmcaToolButton.prop('disabled',
         !(this.supportsTool("llvm-mcatrunk") && !this.isToolActive(activeTools, "llvm-mcatrunk")));
+
+    this.fillPopularArgumentsMenu();
+};
+
+Compiler.prototype.fillPopularArgumentsMenu = function() {
+    var popularArgumentsMenu = this.domRoot.find("div.populararguments div.dropdown-menu");
+    popularArgumentsMenu.html("");
+
+    if (this.compiler) {
+        this.compilerService.requestPopularArguments(this.compiler.id)
+            .then(_.bind(function (x) {
+                if (x.result) {
+                    _.forEach(x.result, _.bind(function (arg, key) {
+                        var argumentButton = $(document.createElement("button"));
+                        argumentButton.addClass('dropdown-item btn btn-light btn-sm');
+                        argumentButton.attr("title", arg.description);
+                        argumentButton.data("arg", key);
+                        argumentButton.html(_.escape(key));
+
+                        argumentButton.click(_.bind(function (event) {
+                            var button = $(event.target);
+                            var curOptions = this.optionsField.val();
+                            if (curOptions.length > 0) {
+                                this.optionsField.val(curOptions + " " + button.data("arg"));
+                            } else {
+                                this.optionsField.val(button.data("arg"));
+                            }
+
+                            this.optionsField.change();
+                        }, this));
+
+                        popularArgumentsMenu.append(argumentButton);
+                    }, this));
+                }
+            }, this));
+    }
 };
 
 Compiler.prototype.onFontScale = function () {
