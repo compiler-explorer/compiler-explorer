@@ -111,7 +111,7 @@ require("monaco-loader")().then(function () {
                 );
                 // I can't remember why this check is here as it seems superfluous
                 if (options.policies.privacy.enabled) {
-                    jsCookie.set(options.policies.privacy.key, options.policies.privacy.hash);
+                    jsCookie.set(options.policies.privacy.key, options.policies.privacy.hash, {expires: 365});
                 }
             });
         }
@@ -203,7 +203,7 @@ require("monaco-loader")().then(function () {
             });
         }
         simpleCooks.onDoConsent = function () {
-            jsCookie.set(options.policies.cookies.key, options.policies.cookies.hash);
+            jsCookie.set(options.policies.cookies.key, options.policies.cookies.hash, {expires: 365});
             analytics.toggle(true);
         };
         simpleCooks.onDontConsent = function () {
