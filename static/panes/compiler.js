@@ -1363,7 +1363,7 @@ Compiler.prototype.onMouseMove = function (e) {
             this.updateDecorations();
         }
 
-        if (!this.filterIntelButton.prop('disabled')) {
+        if (this.getEffectiveFilters().intel) {
             var lineTokens = function (model, line) {
                 //Force line's state to be accurate
                 if (line > model.getLineCount()) return [];
@@ -1402,7 +1402,7 @@ Compiler.prototype.onAsmToolTip = function (ed) {
         eventCategory: 'OpenModalPane',
         eventAction: 'AsmDocs'
     });
-    if (this.filterIntelButton.prop('disabled')) return;
+    if (!this.getEffectiveFilters().intel) return;
     var pos = ed.getPosition();
     var word = ed.getModel().getWordAtPosition(pos);
     if (!word || !word.word) return;
