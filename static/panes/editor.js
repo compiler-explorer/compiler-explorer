@@ -267,7 +267,6 @@ Editor.prototype.initCallbacks = function () {
 };
 
 Editor.prototype.initButtons = function (state) {
-    this.location = "PARENT"
     this.fontScale = new FontScale(this.domRoot, state, this.editor);
     this.languageBtn = this.domRoot.find('.change-language');
     // Ensure that the button is disabled if we don't have nothing to select
