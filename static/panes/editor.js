@@ -45,6 +45,7 @@ require('../modes/cuda-mode');
 require('../modes/fortran-mode');
 require('../modes/zig-mode');
 require('../modes/nc-mode');
+require('../modes/ada-mode');
 require('selectize');
 
 var loadSave = new loadSaveLib.LoadSave();
