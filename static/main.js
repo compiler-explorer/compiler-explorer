@@ -354,9 +354,6 @@ require("monaco-loader")().then(function () {
         setupAdd($('#add-editor'), function () {
             return Components.getEditor();
         });
-        setupAdd($('#add-compiler'), function () {
-            return Components.getCompiler();
-        });
 
         if (hashPart) {
             var element = $(hashPart);
