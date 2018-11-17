@@ -144,6 +144,11 @@ require("monaco-loader")().then(function () {
             window.history.replaceState(null, null, window.httpRoot);
             window.location.reload();
         });
+
+        $('#ui-duplicate').click(function () {
+            window.open('/', '_blank')
+        });
+
         $('#thanks-to').click(function () {
             alertSystem.alert("Special thanks to", $(require('./thanks.html')));
         });
@@ -347,6 +352,9 @@ require("monaco-loader")().then(function () {
             return Components.getDiff();
         });
         setupAdd($('#add-editor'), function () {
+            return Components.getEditor();
+        });
+        setupAdd($('#add-compiler'), function () {
             return Components.getEditor();
         });
 

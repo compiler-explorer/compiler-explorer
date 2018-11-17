@@ -267,23 +267,22 @@ Editor.prototype.initCallbacks = function () {
 };
 
 Editor.prototype.initButtons = function (state) {
-    var scopedThis = this;
-
-    scopedThis.fontScale = new FontScale(scopedThis.domRoot, state, scopedThis.editor);
-    scopedThis.languageBtn = scopedThis.domRoot.find('.change-language');
+    this.location = "PARENT"
+    this.fontScale = new FontScale(this.domRoot, state, this.editor);
+    this.languageBtn = this.domRoot.find('.change-language');
     // Ensure that the button is disabled if we don't have nothing to select
     // Note that is might be disabled for other reasons beforehand
-    if (scopedThis.langKeys.length <= 1) {
-        scopedThis.languageBtn.prop("disabled", true);
+    if (this.langKeys.length <= 1) {
+        this.languageBtn.prop("disabled", true);
     }
-    scopedThis.topBar = scopedThis.domRoot.find('.top-bar');
-    scopedThis.hideable = scopedThis.domRoot.find('.hideable');
+    this.topBar = this.domRoot.find('.top-bar');
+    this.hideable = this.domRoot.find('.hideable');
 
-    scopedThis.loadSaveButton = scopedThis.domRoot.find('.load-save');
-    var paneAdderDropdown = scopedThis.domRoot.find('.add-pane');
-    var addCompilerButton = scopedThis.domRoot.find('.btn.add-compiler');
-    scopedThis.conformanceViewerButton = scopedThis.domRoot.find('.btn.conformance');
-    var addEditorButton = scopedThis.domRoot.find('.btn.add-editor');
+    this.loadSaveButton = this.domRoot.find('.load-save');
+    var paneAdderDropdown = this.domRoot.find('.add-pane');
+    var addCompilerButton = this.domRoot.find('.btn.add-compiler');
+    this.conformanceViewerButton = this.domRoot.find('.btn.conformance');
+    var addEditorButton = this.domRoot.find('.btn.add-editor');
 
     var togglePaneAdder = function () {
         paneAdderDropdown.dropdown('toggle');
@@ -293,50 +292,50 @@ Editor.prototype.initButtons = function (state) {
     // between all compilers created this way. That leads to some nasty-to-find state
     // bugs e.g. https://github.com/mattgodbolt/compiler-explorer/issues/225
     var getCompilerConfig = _.bind(function () {
-        return Components.getCompiler(scopedThis.id, scopedThis.currentLanguage.id);
+        return Components.getCompiler(this.id, this.currentLanguage.id);
     }, this);
 
     var getConformanceConfig = _.bind(function () {
-        return Components.getConformanceView(scopedThis.id, scopedThis.getSource());
+        return Components.getConformanceView(this.id, this.getSource());
     }, this);
 
     var getEditorConfig = _.bind(function () {
         return Components.getEditor();
     }, this);
 
-    function addDragListener(dragSource, dragConfig) {
-        scopedThis.container.layoutManager
+    var addDragListener = _.bind(function(dragSource, dragConfig) {
+        this.container.layoutManager
             .createDragSource(dragSource, dragConfig)
             ._dragListener.on('dragStart', togglePaneAdder);
-    }
+    }, this);
 
     addDragListener(addCompilerButton, getCompilerConfig);
-    addDragListener(scopedThis.conformanceViewerButton, getConformanceConfig);
+    addDragListener(this.conformanceViewerButton, getConformanceConfig);
     addDragListener(addEditorButton, getEditorConfig);
 
-    function bindClickEvent(dragSource, dragConfig) {
+    var bindClickEvent = _.bind(function(dragSource, dragConfig) {
         dragSource.click(_.bind(function () {
-            var insertPoint = scopedThis.hub.findParentRowOrColumn(scopedThis.container) ||
-                scopedThis.container.layoutManager.root.contentItems[0];
+            var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
+                this.container.layoutManager.root.contentItems[0];
             insertPoint.addChild(dragConfig);
         }, this));
-    }
+    }, this);
 
     bindClickEvent(addCompilerButton, getCompilerConfig);
-    bindClickEvent(scopedThis.conformanceViewerButton, getConformanceConfig);
+    bindClickEvent(this.conformanceViewerButton, getConformanceConfig);
     bindClickEvent(addEditorButton, getEditorConfig);
 
-    scopedThis.initLoadSaver();
-    $(scopedThis.domRoot).keydown(_.bind(function (event) {
+    this.initLoadSaver();
+    $(this.domRoot).keydown(_.bind(function (event) {
         if ((event.ctrlKey || event.metaKey) && String.fromCharCode(event.which).toLowerCase() === 's') {
             event.preventDefault();
-            if (scopedThis.settings.enableCtrlS) {
-                if (!loadSave.onSaveToFile(scopedThis.id)) {
-                    scopedThis.showLoadSaver();
+            if (this.settings.enableCtrlS) {
+                if (!loadSave.onSaveToFile(this.id)) {
+                    this.showLoadSaver();
                 }
             }
         }
-    }, scopedThis));
+    }, this));
 };
 
 Editor.prototype.changeLanguage = function (newLang) {
