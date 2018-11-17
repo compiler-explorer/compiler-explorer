@@ -348,11 +348,11 @@ require("monaco-loader")().then(function () {
             });
         }
 
-        setupAdd($('#add-diff'), function () {
-            return Components.getDiff();
-        });
         setupAdd($('#add-editor'), function () {
             return Components.getEditor();
+        });
+        setupAdd($('#add-diff'), function () {
+            return Components.getDiff();
         });
 
         if (hashPart) {
