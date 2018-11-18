@@ -393,6 +393,9 @@ Compiler.prototype.getEffectiveFilters = function () {
     if (filters.execute && !this.compiler.supportsExecute) {
         delete filters.execute;
     }
+    if (filters.libraryCode && !this.compiler.supportsLibraryCodeFilter) {
+        delete filters.libraryCode;
+    }
     _.each(this.compiler.disabledFilters, function (filter) {
         if (filters[filter]) {
             delete filters[filter];
@@ -860,6 +863,9 @@ Compiler.prototype.initButtons = function (state) {
     this.filterDirectivesButton = this.domRoot.find("[data-bind='directives']");
     this.filterDirectivesTitle = this.filterDirectivesButton.prop('title');
 
+    this.filterLibraryCodeButton = this.domRoot.find("[data-bind='libraryCode']");
+    this.filterLibraryCodeTitle = this.filterLibraryCodeButton.prop('title');
+
     this.filterCommentsButton = this.domRoot.find("[data-bind='commentOnly']");
     this.filterCommentsTitle = this.filterCommentsButton.prop('title');
 
@@ -874,6 +880,7 @@ Compiler.prototype.initButtons = function (state) {
 
     this.noBinaryFiltersButtons = this.domRoot.find('.nonbinary');
     this.filterExecuteButton.toggle(options.supportsExecute);
+    this.filterLibraryCodeButton.toggle(options.supportsLibraryCodeFilter);
     this.optionsField.val(this.options);
 
     this.shortCompilerName = this.domRoot.find('.short-compiler-name');
@@ -958,6 +965,9 @@ Compiler.prototype.updateButtons = function () {
     // Disable any of the options which don't make sense in binary mode.
     var noBinaryFiltersDisabled = !!filters.binary && !this.compiler.supportsFiltersInBinary;
     this.noBinaryFiltersButtons.prop('disabled', noBinaryFiltersDisabled);
+
+    this.filterLibraryCodeButton.prop('disabled', !this.compiler.supportsLibraryCodeFilter);
+    formatFilterTitle(this.filterLibraryCodeButton, this.filterLibraryCodeTitle);
 
     this.filterLabelsButton.prop('disabled', this.compiler.disabledFilters.indexOf('labels') !== -1);
     formatFilterTitle(this.filterLabelsButton, this.filterLabelsTitle);
