@@ -37,7 +37,7 @@ var shareServices = {
         cssClass: 'share-twitter',
         getLink: function (title, url) {
             return "https://twitter.com/intent/tweet?text=" +
-                encodeURIComponent(title) + '&url=' + encodeURIComponent(url) + '&via=CompileExplore;
+                encodeURIComponent(title) + '&url=' + encodeURIComponent(url) + '&via=CompileExplore';
         },
         text: ' Tweet'
     },
