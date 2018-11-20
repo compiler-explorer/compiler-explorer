@@ -17,10 +17,11 @@ html(lang="en")
         span.navbar-toggler-icon
       .collapse.navbar-collapse#navbarContent
         ul.navbar-nav.navbar-left.mr-auto
-          li.nav-item
-            a.nav-link#add-editor(href="javascript:;" title="Click or drag to desired destination") Editor
-          li.nav-item
-            a.nav-link#add-diff(href="javascript:;" title="Click or drag to desired destination") Diff View
+          li.nav-item.dropdown
+            a.nav-link.dropdown-toggle#addDropdown(href="javascript:;" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") Add... 
+            div.dropdown-menu(aria-labelledby="moreDropdown")
+              a.dropdown-item#add-editor(href="javascript:;" title="Click or drag to desired destination") Source Editor
+              a.dropdown-item#add-diff(href="javascript:;" title="Click or drag to desired destination") Diff View
           li.nav-item.dropdown
             a.nav-link.dropdown-toggle#moreDropdown(href="javascript:;" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") More
             div.dropdown-menu(aria-labelledby="moreDropdown")
@@ -28,6 +29,7 @@ html(lang="en")
               div.dropdown-divider
               a.dropdown-item#ui-brokenlink(href="javascript:;") Reset UI layout
               a.dropdown-item#ui-reset(href="javascript:;") Reset code and UI layout
+              a.dropdown-item#ui-duplicate(href="javascript:;") Open new tab 
         ul#motd.navbar-nav.navbar-center.mr-auto.community-advert.d-none
           span.content
             | Thanks for using Compiler Explorer

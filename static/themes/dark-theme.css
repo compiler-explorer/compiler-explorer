@@ -22,6 +22,10 @@ body {
     background-color: #23272b !important;
 }
 
+.navbar-light a.nav-link {
+    border: rgb(140,140,140) 1px solid;
+}
+
 a.navbar-brand img.logo.inverse {
     display: block !important;
 }
