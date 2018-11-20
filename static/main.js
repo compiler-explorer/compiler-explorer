@@ -146,7 +146,7 @@ require("monaco-loader")().then(function () {
         });
 
         $('#ui-duplicate').click(function () {
-            window.open('/', '_blank')
+            window.open('/', '_blank');
         });
 
         $('#thanks-to').click(function () {

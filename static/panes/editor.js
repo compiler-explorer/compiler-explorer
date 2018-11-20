@@ -302,7 +302,7 @@ Editor.prototype.initButtons = function (state) {
         return Components.getEditor();
     }, this);
 
-    var addDragListener = _.bind(function(dragSource, dragConfig) {
+    var addDragListener = _.bind(function (dragSource, dragConfig) {
         this.container.layoutManager
             .createDragSource(dragSource, dragConfig)
             ._dragListener.on('dragStart', togglePaneAdder);
@@ -312,7 +312,7 @@ Editor.prototype.initButtons = function (state) {
     addDragListener(this.conformanceViewerButton, getConformanceConfig);
     addDragListener(addEditorButton, getEditorConfig);
 
-    var bindClickEvent = _.bind(function(dragSource, dragConfig) {
+    var bindClickEvent = _.bind(function (dragSource, dragConfig) {
         dragSource.click(_.bind(function () {
             var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
                 this.container.layoutManager.root.contentItems[0];
