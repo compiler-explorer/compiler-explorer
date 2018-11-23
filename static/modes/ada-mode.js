@@ -27,7 +27,6 @@ var monaco = require('../monaco');
 
 function definition() {
     // Ada 2012 Language Definition
-
     return {
         keywords: [
             'abort',
@@ -139,15 +138,13 @@ function definition() {
         symbols: /[=><!~&|+\-*/^]+/,
         delimiters: /[;=.:,`]/,
         escapes: /\\(?:[abfnrtv\\'\n\r]|x[0-9A-Fa-f]{2}|[0-7]{3}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8}|N\{\w+\})/,
-        // rawpre: /(?:[rR]|ur|Ur|uR|UR|br|Br|bR|BR)/,
-        // strpre: /(?:[buBU])/,
-
+        
         // The main tokenizer for our languages
         tokenizer: {
             root: [
-                [/[a-z_$][\w$]*/, {
+                [/[a-zA-Z_][a-zA-Z0-9_]*/, {
                     cases: {
-                        '@standardTypes': 'keyword',
+                        '@standardTypes': 'type',
                         '@keywords': 'keyword',
                         '@default': 'identifier'
                     }
@@ -156,19 +153,12 @@ function definition() {
                 {include: '@whitespace'},
 
                 [/[()[\]]/, '@brackets'],
-                [/@symbols/, {
-                    cases: {
-                        '@keywords': 'keyword',
-                        '@operators': 'operator',
-                        '@default': ''
-                    }
-                }],
 
                 // Numbers
                 // See https://regex101.com/r/dflfeQ/2 for examples from the 2012 ARM (http://www.ada-auth.org/standards/12rm/html/RM-2-4-1.html#S0009)
-                [/[0-9_.]+(E[+-]?\d+)?/, 'number.decimal'],
+                [/[0-9_.]+(E[+-]?\d+)?/, 'number.float'],
                 // // See https://regex101.com/r/dSSADT/3 for examples from the 2012 ARM (http://www.ada-auth.org/standards/12rm/html/RM-2-4-2.html#S0011)
-                [/[0-9]+\#[0-9A-Fa-f_.]+\#(E[+-]?\d+)?/, 'number.based'],
+                [/[0-9]+\#[0-9A-Fa-f_.]+\#(E[+-]?\d+)?/, 'number.hex'],
 
                 [/@delimiters/, {
                     cases: {
