@@ -329,6 +329,7 @@ Editor.prototype.initButtons = function (state) {
         if ((event.ctrlKey || event.metaKey) && String.fromCharCode(event.which).toLowerCase() === 's') {
             event.preventDefault();
             if (this.settings.enableCtrlS) {
+                loadSave.setMinimalOptions(this.getSource(), this.currentLanguage);
                 if (!loadSave.onSaveToFile(this.id)) {
                     this.showLoadSaver();
                 }
