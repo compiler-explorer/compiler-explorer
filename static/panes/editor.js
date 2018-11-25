@@ -496,6 +496,9 @@ Editor.prototype.resize = function () {
         width: this.domRoot.width(),
         height: this.domRoot.height() - topBarHeight
     });
+    this.editor.updateOptions({
+        wordWrapColumn: this.editor.getLayoutInfo().viewportColumn
+    });
 };
 
 Editor.prototype.updateAndCalcTopBarHeight = function () {
@@ -531,7 +534,8 @@ Editor.prototype.onSettingsChange = function (newSettings) {
         contextmenu: this.settings.useCustomContextMenu,
         minimap: {
             enabled: this.settings.showMinimap && !options.embedded
-        }
+        },
+        wordWrap: this.settings.wordWrap ? 'bounded' : 'off'
     });
 
     // * Turn off auto.
