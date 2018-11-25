@@ -496,9 +496,12 @@ Editor.prototype.resize = function () {
         width: this.domRoot.width(),
         height: this.domRoot.height() - topBarHeight
     });
-    this.editor.updateOptions({
-        wordWrapColumn: this.editor.getLayoutInfo().viewportColumn
-    });
+    // Only update the options if needed
+    if (this.settings.wordWrap) {
+        this.editor.updateOptions({
+            wordWrapColumn: this.editor.getLayoutInfo().viewportColumn
+        });
+    }
 };
 
 Editor.prototype.updateAndCalcTopBarHeight = function () {
@@ -535,7 +538,8 @@ Editor.prototype.onSettingsChange = function (newSettings) {
         minimap: {
             enabled: this.settings.showMinimap && !options.embedded
         },
-        wordWrap: this.settings.wordWrap ? 'bounded' : 'off'
+        wordWrap: this.settings.wordWrap ? 'bounded' : 'off',
+        wordWrapColumn: this.editor.getLayoutInfo().viewportColumn // Ensure the column count is up to date
     });
 
     // * Turn off auto.
