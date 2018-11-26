@@ -361,11 +361,14 @@ require("monaco-loader")().then(function () {
         }
         initPolicies(options);
 
-        motd.initialise(options.motdUrl, $('#motd'), subLangId, settings.enableCommunityAds, function () {
-            hub.layout.eventHub.emit('modifySettings', {
-                enableCommunityAds: false
+        // Don't fetch the motd on embedded mode
+        if (!options.embedded) {
+            motd.initialise(options.motdUrl, $('#motd'), subLangId, settings.enableCommunityAds, function () {
+                hub.layout.eventHub.emit('modifySettings', {
+                    enableCommunityAds: false
+                });
             });
-        });
+        }
         sizeRoot();
         lastState = JSON.stringify(layout.toConfig());
     }
