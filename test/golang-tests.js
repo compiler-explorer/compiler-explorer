@@ -49,7 +49,7 @@ function testGoAsm(basefilename) {
     const asmLines = utils.splitLines(fs.readFileSync(basefilename + ".asm").toString());
 
     const result = {
-        stdout: asmLines.map((line) => {
+        stderr: asmLines.map((line) => {
             return {
                 text: line
             };
@@ -63,7 +63,8 @@ function testGoAsm(basefilename) {
 
         return output.should.deep.equal({
             asm: expectedOutput.join("\n"),
-            stdout: []
+            stdout: [],
+            stderr: null
         });
     });
 }
