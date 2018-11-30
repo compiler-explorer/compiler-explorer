@@ -482,7 +482,7 @@ aws.initConfig(awsProps)
                         })
                         .catch(err => {
                             logger.warn(`Exception thrown when expanding ${id}`);
-                            logger.debug('Exception value:', err);
+                            logger.warn('Exception value:', err);
                             next({
                                 statusCode: 404,
                                 message: `ID "${id}" could not be found`
