@@ -55,11 +55,16 @@ const opts = nopt({
     debug: [Boolean],
     static: [String],
     archivedVersions: [String],
+    // Ignore fetch marks and assume every compiler is found locally
     noRemoteFetch: [Boolean],
     tmpDir: [String],
     wsl: [Boolean],
+    // If specified, only loads the specified language, resulting in faster loadup/iteration times
     language: [String],
-    noCache: [Boolean]
+    // Do not use caching for compilation results (Requests might still be cached by the client's browser)
+    noCache: [Boolean],
+    // Don't cleanly run if two or more compilers have clashing ids
+    ensureNoIdClash: [Boolean]
 });
 
 if (opts.debug) logger.level = 'debug';
@@ -103,7 +108,8 @@ const defArgs = {
     gitReleaseName: gitReleaseName,
     wantedLanguage: opts.language || null,
     doCache: !opts.noCache,
-    fetchCompilersFromRemote: !opts.noRemoteFetch
+    fetchCompilersFromRemote: !opts.noRemoteFetch,
+    ensureNoCompilerClash: opts.ensureNoIdClash
 };
 
 const webpackConfig = require('./webpack.config.js')[1],
@@ -268,8 +274,18 @@ aws.initConfig(awsProps)
         }
 
         compilerFinder.find()
-            .then(compilers => {
+            .then(result => {
+                let compilers = result.compilers;
                 let prevCompilers;
+                if (defArgs.ensureNoCompilerClash)  {
+                    logger.warn('Ensuring no compiler ids clash');
+                    if (result.foundClash) {
+                        // If we are forced to have no clashes, throw an error with some explanation
+                        throw new Error('Clashing compilers in the current environment found!');
+                    } else {
+                        logger.info('No clashing ids found, continuing normally...');
+                    }
+                }
 
                 const ravenPrivateEndpoint = aws.getConfig('ravenPrivateEndpoint');
                 if (ravenPrivateEndpoint) {
