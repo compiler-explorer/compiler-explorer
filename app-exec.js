@@ -35,6 +35,7 @@ const nopt = require('nopt'),
     _ = require('underscore'),
     express = require('express'),
     Raven = require('raven'),
+    {execScript} = require("./lib/exec"),
     logger = require('./lib/logger').logger,
     utils = require('./lib/utils');
 
@@ -85,10 +86,37 @@ if (opts.propDebug) props.setDebug(true);
 // *All* files in config dir are parsed
 props.initialize(defArgs.rootDir + '/config', propHierarchy);
 
+const ceProps = props.propsFor("compiler-explorer");
+const maxUploadSize = ceProps('maxUploadSize', '1mb');
+
 // Now load up our libraries.
 const aws = require('./lib/aws');
 
 const awsProps = props.propsFor("aws");
+
+class ExecHandler {
+    constructor() {
+    }
+
+    handle(req, res, next) {
+        if (!req.is('json')) return next();
+        res.set('Content-Type', 'application/json');
+        if (!req.body.script) {
+            const response = {ok: false, result: {}, error: "Missing script"};
+            res.end(JSON.stringify(response));
+        }
+        execScript(req.body.script)
+            .then(result => {
+                const response = {ok: true, result: result || {}, error: null};
+                res.end(JSON.stringify(response));
+            })
+            .catch(error => {
+                logger.error("Error handling", req.body.script, ":\n", error);
+                const response = {ok: false, result: {}, error: error.message};
+                res.end(JSON.stringify(response));
+            });
+    }
+}
 
 aws.initConfig(awsProps)
     .then(() => {
@@ -135,6 +163,7 @@ aws.initConfig(awsProps)
 
         const webServer = express(),
             morgan = require('morgan'),
+            bodyParser = require('body-parser'),
             compression = require('compression');
 
         logger.info("=======================================");
@@ -146,6 +175,10 @@ aws.initConfig(awsProps)
 
         // Based on combined format, but: GDPR compliant IP, no timestamp & no unused fields for our usecase
         const morganFormat = isDevMode() ? 'dev' : ':gdpr_ip ":method :url" :status';
+
+        const handler = express.Router();
+        const execHandler = new ExecHandler();
+        handler.post('/execute', execHandler.handle.bind(execHandler));
 
         webServer
             .use(Raven.requestHandler())
@@ -168,11 +201,25 @@ aws.initConfig(awsProps)
                 skip: (req, res) => res.statusCode < 500
             }))
             .use(compression())
+            .use(bodyParser.json({limit: ceProps('bodyParserLimit', maxUploadSize)}))
+            .use('/', handler)
             .use((req, res, next) => {
                 next({status: 404, message: `page "${req.path}" could not be found`});
             })
             .use((err, req, res, next) => {
                 Raven.errorHandler()(err, req, res, next);
+            })
+            // eslint-disable-next-line no-unused-vars
+            .use((err, req, res, next) => {
+                const status =
+                    err.status ||
+                    err.statusCode ||
+                    err.status_code ||
+                    (err.output && err.output.statusCode) ||
+                    500;
+                const message = err.message || 'Internal Server Error';
+                res.status(status);
+                res.end(`Error ${status}\n${message}`);
             })
             .on('error', err => logger.error('Caught error:', err, "(in web handler; continuing)"));
         startListening(webServer);
