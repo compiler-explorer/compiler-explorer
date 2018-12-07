@@ -277,7 +277,7 @@ aws.initConfig(awsProps)
             .then(result => {
                 let compilers = result.compilers;
                 let prevCompilers;
-                if (defArgs.ensureNoCompilerClash)  {
+                if (defArgs.ensureNoCompilerClash) {
                     logger.warn('Ensuring no compiler ids clash');
                     if (result.foundClash) {
                         // If we are forced to have no clashes, throw an error with some explanation
@@ -318,7 +318,7 @@ aws.initConfig(awsProps)
                 const rescanCompilerSecs = ceProps('rescanCompilerSecs', 0);
                 if (rescanCompilerSecs) {
                     logger.info(`Rescanning compilers every ${rescanCompilerSecs} secs`);
-                    setInterval(() => compilerFinder.find().then(onCompilerChange),
+                    setInterval(() => compilerFinder.find().then(result => onCompilerChange(result.compilers)),
                         rescanCompilerSecs * 1000);
                 }
 
@@ -332,6 +332,7 @@ aws.initConfig(awsProps)
                 logger.info("=======================================");
                 if (gitReleaseName) logger.info(`  git release ${gitReleaseName}`);
                 const httpRootDir = httpRoot.endsWith('/') ? httpRoot : (httpRoot + '/');
+
                 function renderConfig(extra) {
                     const options = _.extend(extra, clientOptionsHandler.get());
                     options.compilerExplorerOptions = JSON.stringify(options);
@@ -593,7 +594,7 @@ aws.initConfig(awsProps)
                             500;
                         const message = err.message || 'Internal Server Error';
                         res.status(status);
-                        res.render('error', renderConfig({ error: {code: status, message: message} }));
+                        res.render('error', renderConfig({error: {code: status, message: message}}));
                     })
                     .on('error', err => logger.error('Caught error:', err, "(in web handler; continuing)"));
                 if (!defArgs.doCache) {
