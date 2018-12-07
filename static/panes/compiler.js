@@ -37,7 +37,7 @@ var monaco = require('../monaco');
 var Alert = require('../alert');
 var bigInt = require('big-integer');
 var local = require('../local');
-var Raven = require('raven-js');
+var Sentry = require('@sentry/browser');
 var Libraries = require('../libs-widget');
 require('../modes/asm-mode');
 
@@ -405,8 +405,7 @@ Compiler.prototype.findTools = function (content, tools) {
     if (content.componentName === "tool") {
         if (
             (content.componentState.editor === this.sourceEditorId) &&
-            (content.componentState.compiler === this.id))
-        {
+            (content.componentState.compiler === this.id)) {
             tools.push({
                 id: content.componentState.toolId,
                 args: content.componentState.args
@@ -1559,7 +1558,7 @@ Compiler.prototype.langOfCompiler = function (compilerId) {
         return compiler.id === compilerId || compiler.alias === compilerId;
     });
     if (!compiler) {
-        Raven.captureMessage('Unable to find compiler id "' + compilerId + '"');
+        Sentry.captureMessage('Unable to find compiler id "' + compilerId + '"');
         compiler = options.compilers[0];
     }
     return compiler.lang;

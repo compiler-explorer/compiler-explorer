@@ -24,7 +24,7 @@
 
 "use strict";
 var $ = require('jquery'),
-    Raven = require('raven-js'),
+    Sentry = require('@sentry/browser'),
     _ = require('underscore'),
     ga = require('analytics');
 
@@ -73,8 +73,8 @@ function initialise(url, motdNode, defaultLanguage, adsEnabled, onHide) {
         .then(function (res) {
             handleMotd(res, motdNode, defaultLanguage, adsEnabled, onHide);
         })
-        .catch(function (xhr, error, exc) {
-            Raven.captureException(exc);
+        .catch(function (exc) {
+            Sentry.captureException(exc);
         });
 }
 

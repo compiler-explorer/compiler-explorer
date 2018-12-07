@@ -17,6 +17,8 @@
   "main": "./app.js",
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.3.1",
+    "@sentry/browser": "4.4.1",
+    "@sentry/node": "4.4.1",
     "aws-sdk": "^2.177.0",
     "big-integer": "^1.6.25",
     "body-parser": "^1.18.2",
@@ -45,8 +47,6 @@
     "popper.js": "^1.14.4",
     "promise-queue": "2.2.3",
     "pug": "^2.0.1",
-    "raven": "^2.2.1",
-    "raven-js": "^3.19.1",
     "selectize": "^0.12.4",
     "semver": "^5.5.0",
     "serve-favicon": "^2.4.5",
