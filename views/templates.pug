@@ -150,8 +150,7 @@
                   | 0
                 | )
         span.short-compiler-name
-        a.full-compiler-name(tabindex="0" data-trigger="focus" style="cursor: pointer;" role="button" title="Full compiler version")
-          span.btn.btn-light.btn-sm.fas.fa-info
+        button.btn.btn-light.btn-sm.fas.fa-info.full-compiler-name(data-trigger="click" style="cursor: pointer;" role="button" title="Full compiler version")
         span.compile-time(title="Compilation time (Result size)")
 
   #compiler-output

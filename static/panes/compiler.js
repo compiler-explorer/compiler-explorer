@@ -841,6 +841,7 @@ Compiler.prototype.initButtons = function (state) {
 
     this.optionsField = this.domRoot.find('.options');
     this.prependOptions = this.domRoot.find('.prepend-options');
+    this.fullCompilerName = this.domRoot.find('.full-compiler-name');
     this.setCompilationOptionsPopover(this.compiler ? this.compiler.options : null);
     // Dismiss on any click that isn't either in the opening element, inside
     // the popover or on any alert
@@ -849,6 +850,11 @@ Compiler.prototype.initButtons = function (state) {
         if (!target.is(this.prependOptions) && this.prependOptions.has(target).length === 0 &&
             target.closest('.popover').length === 0)
             this.prependOptions.popover("hide");
+
+        if (!target.is(this.fullCompilerName) && this.fullCompilerName.has(target).length === 0 &&
+            target.closest('.popover').length === 0)
+            this.fullCompilerName.popover("hide");
+
     }, this));
 
     this.filterBinaryButton = this.domRoot.find("[data-bind='binary']");
@@ -880,7 +886,6 @@ Compiler.prototype.initButtons = function (state) {
     this.optionsField.val(this.options);
 
     this.shortCompilerName = this.domRoot.find('.short-compiler-name');
-    this.fullCompilerName = this.domRoot.find('.full-compiler-name');
     this.compilerPicker = this.domRoot.find('.compiler-picker');
     this.setCompilerVersionPopover('');
 
