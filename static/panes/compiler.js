@@ -854,7 +854,6 @@ Compiler.prototype.initButtons = function (state) {
         if (!target.is(this.fullCompilerName) && this.fullCompilerName.has(target).length === 0 &&
             target.closest('.popover').length === 0)
             this.fullCompilerName.popover("hide");
-
     }, this));
 
     this.filterBinaryButton = this.domRoot.find("[data-bind='binary']");
