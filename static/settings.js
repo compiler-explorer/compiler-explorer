@@ -193,6 +193,7 @@ function setupSettings(root, settings, onChange, langId) {
             return {label: format, desc: format};
         }));
     //add(root.find('.formatOverrides'), 'formatOverrides', "", TextAreaInput);
+    add(root.find('.wordWrap'), 'wordWrap', false, Checkbox);
 
     function setSettings(settings) {
         onSettingsChange(settings);

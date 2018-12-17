@@ -57,5 +57,5 @@ if [[ ! -d ${OPT}/gdc/x86_64-pc-linux-gnu/bin ]]; then
     get_gdc 5.2.0 2.066.1
 fi
 if [[ ! -d ${OPT}/rust/bin ]]; then
-    install_new_rust nightly
+    install_new_rust 1.30.0
 fi

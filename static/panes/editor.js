@@ -274,13 +274,18 @@ Editor.prototype.initButtons = function (state) {
     if (this.langKeys.length <= 1) {
         this.languageBtn.prop("disabled", true);
     }
-    var addCompilerButton = this.domRoot.find('.btn.add-compiler');
+    this.topBar = this.domRoot.find('.top-bar');
+    this.hideable = this.domRoot.find('.hideable');
+
+    this.loadSaveButton = this.domRoot.find('.load-save');
     var paneAdderDropdown = this.domRoot.find('.add-pane');
+    var addCompilerButton = this.domRoot.find('.btn.add-compiler');
+    this.conformanceViewerButton = this.domRoot.find('.btn.conformance');
+    var addEditorButton = this.domRoot.find('.btn.add-editor');
 
     var togglePaneAdder = function () {
         paneAdderDropdown.dropdown('toggle');
     };
-    this.topBar = this.domRoot.find('.top-bar');
 
     // NB a new compilerConfig needs to be created every time; else the state is shared
     // between all compilers created this way. That leads to some nasty-to-find state
@@ -293,35 +298,38 @@ Editor.prototype.initButtons = function (state) {
         return Components.getConformanceView(this.id, this.getSource());
     }, this);
 
-    this.container.layoutManager
-        .createDragSource(addCompilerButton, getCompilerConfig)
-        ._dragListener.on('dragStart', togglePaneAdder);
+    var getEditorConfig = _.bind(function () {
+        return Components.getEditor();
+    }, this);
 
-    addCompilerButton.click(_.bind(function () {
-        var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
-            this.container.layoutManager.root.contentItems[0];
-        insertPoint.addChild(getCompilerConfig);
-    }, this));
+    var addDragListener = _.bind(function (dragSource, dragConfig) {
+        this.container.layoutManager
+            .createDragSource(dragSource, dragConfig)
+            ._dragListener.on('dragStart', togglePaneAdder);
+    }, this);
 
-    this.conformanceViewerButton = this.domRoot.find('.btn.conformance');
+    addDragListener(addCompilerButton, getCompilerConfig);
+    addDragListener(this.conformanceViewerButton, getConformanceConfig);
+    addDragListener(addEditorButton, getEditorConfig);
 
-    this.container.layoutManager
-        .createDragSource(this.conformanceViewerButton, getConformanceConfig)
-        ._dragListener.on('dragStart', togglePaneAdder);
-    this.conformanceViewerButton.click(_.bind(function () {
-        var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
-            this.container.layoutManager.root.contentItems[0];
-        insertPoint.addChild(getConformanceConfig);
-    }, this));
+    var bindClickEvent = _.bind(function (dragSource, dragConfig) {
+        dragSource.click(_.bind(function () {
+            var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
+                this.container.layoutManager.root.contentItems[0];
+            insertPoint.addChild(dragConfig);
+        }, this));
+    }, this);
 
-    this.hideable = this.domRoot.find('.hideable');
+    bindClickEvent(addCompilerButton, getCompilerConfig);
+    bindClickEvent(this.conformanceViewerButton, getConformanceConfig);
+    bindClickEvent(addEditorButton, getEditorConfig);
 
-    this.loadSaveButton = this.domRoot.find('.load-save');
     this.initLoadSaver();
     $(this.domRoot).keydown(_.bind(function (event) {
         if ((event.ctrlKey || event.metaKey) && String.fromCharCode(event.which).toLowerCase() === 's') {
             event.preventDefault();
             if (this.settings.enableCtrlS) {
+                loadSave.setMinimalOptions(this.getSource(), this.currentLanguage);
                 if (!loadSave.onSaveToFile(this.id)) {
                     this.showLoadSaver();
                 }
@@ -488,6 +496,12 @@ Editor.prototype.resize = function () {
         width: this.domRoot.width(),
         height: this.domRoot.height() - topBarHeight
     });
+    // Only update the options if needed
+    if (this.settings.wordWrap) {
+        this.editor.updateOptions({
+            wordWrapColumn: this.editor.getLayoutInfo().viewportColumn
+        });
+    }
 };
 
 Editor.prototype.updateAndCalcTopBarHeight = function () {
@@ -523,7 +537,9 @@ Editor.prototype.onSettingsChange = function (newSettings) {
         contextmenu: this.settings.useCustomContextMenu,
         minimap: {
             enabled: this.settings.showMinimap && !options.embedded
-        }
+        },
+        wordWrap: this.settings.wordWrap ? 'bounded' : 'off',
+        wordWrapColumn: this.editor.getLayoutInfo().viewportColumn // Ensure the column count is up to date
     });
 
     // * Turn off auto.

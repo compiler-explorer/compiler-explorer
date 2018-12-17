@@ -37,7 +37,7 @@ require("monaco-loader")().then(function () {
     var url = require('./url');
     var clipboard = require('clipboard');
     var Hub = require('./hub');
-    var Raven = require('raven-js');
+    var Sentry = require('@sentry/browser');
     var settings = require('./settings');
     var local = require('./local');
     var Alert = require('./alert');
@@ -144,6 +144,11 @@ require("monaco-loader")().then(function () {
             window.history.replaceState(null, null, window.httpRoot);
             window.location.reload();
         });
+
+        $('#ui-duplicate').click(function () {
+            window.open('/', '_blank');
+        });
+
         $('#thanks-to').click(function () {
             alertSystem.alert("Special thanks to", $(require('./thanks.html')));
         });
@@ -275,7 +280,7 @@ require("monaco-loader")().then(function () {
             layout = new GoldenLayout(config, root);
             hub = new Hub(layout, subLangId);
         } catch (e) {
-            Raven.captureException(e);
+            Sentry.captureException(e);
 
             if (document.URL.includes("/z/")) {
                 document.location = document.URL.replace("/z/", "/resetlayout/");
@@ -343,11 +348,11 @@ require("monaco-loader")().then(function () {
             });
         }
 
-        setupAdd($('#add-diff'), function () {
-            return Components.getDiff();
-        });
         setupAdd($('#add-editor'), function () {
             return Components.getEditor();
+        });
+        setupAdd($('#add-diff'), function () {
+            return Components.getDiff();
         });
 
         if (hashPart) {
@@ -356,11 +361,14 @@ require("monaco-loader")().then(function () {
         }
         initPolicies(options);
 
-        motd.initialise(options.motdUrl, $('#motd'), subLangId, settings.enableCommunityAds, function () {
-            hub.layout.eventHub.emit('modifySettings', {
-                enableCommunityAds: false
+        // Don't fetch the motd on embedded mode
+        if (!options.embedded) {
+            motd.initialise(options.motdUrl, $('#motd'), subLangId, settings.enableCommunityAds, function () {
+                hub.layout.eventHub.emit('modifySettings', {
+                    enableCommunityAds: false
+                });
             });
-        });
+        }
         sizeRoot();
         lastState = JSON.stringify(layout.toConfig());
     }

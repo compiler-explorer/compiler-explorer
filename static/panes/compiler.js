@@ -37,7 +37,7 @@ var monaco = require('../monaco');
 var Alert = require('../alert');
 var bigInt = require('big-integer');
 var local = require('../local');
-var Raven = require('raven-js');
+var Sentry = require('@sentry/browser');
 var Libraries = require('../libs-widget');
 require('../modes/asm-mode');
 
@@ -408,8 +408,7 @@ Compiler.prototype.findTools = function (content, tools) {
     if (content.componentName === "tool") {
         if (
             (content.componentState.editor === this.sourceEditorId) &&
-            (content.componentState.compiler === this.id))
-        {
+            (content.componentState.compiler === this.id)) {
             tools.push({
                 id: content.componentState.toolId,
                 args: content.componentState.args
@@ -693,6 +692,8 @@ Compiler.prototype.onToolOpened = function (compilerId, toolSettings) {
             this.clangtidyToolButton.prop('disabled', true);
         } else if (toolId === "llvm-mcatrunk") {
             this.llvmmcaToolButton.prop('disabled', true);
+        } else if (toolId === "pahole") {
+            this.paholeToolButton.prop('disabled', true);
         }
 
         this.compile(false, toolSettings);
@@ -706,6 +707,8 @@ Compiler.prototype.onToolClosed = function (compilerId, toolSettings) {
             this.clangtidyToolButton.prop('disabled', !this.supportsTool(toolId));
         } else if (toolId === "llvm-mcatrunk") {
             this.llvmmcaToolButton.prop('disabled', !this.supportsTool(toolId));
+        } else if (toolId === "pahole") {
+            this.paholeToolButton.prop('disabled', !this.supportsTool(toolId));
         }
     }
 };
@@ -841,6 +844,7 @@ Compiler.prototype.initButtons = function (state) {
 
     this.optionsField = this.domRoot.find('.options');
     this.prependOptions = this.domRoot.find('.prepend-options');
+    this.fullCompilerName = this.domRoot.find('.full-compiler-name');
     this.setCompilationOptionsPopover(this.compiler ? this.compiler.options : null);
     // Dismiss on any click that isn't either in the opening element, inside
     // the popover or on any alert
@@ -849,6 +853,10 @@ Compiler.prototype.initButtons = function (state) {
         if (!target.is(this.prependOptions) && this.prependOptions.has(target).length === 0 &&
             target.closest('.popover').length === 0)
             this.prependOptions.popover("hide");
+
+        if (!target.is(this.fullCompilerName) && this.fullCompilerName.has(target).length === 0 &&
+            target.closest('.popover').length === 0)
+            this.fullCompilerName.popover("hide");
     }, this));
 
     this.filterBinaryButton = this.domRoot.find("[data-bind='binary']");
@@ -884,7 +892,6 @@ Compiler.prototype.initButtons = function (state) {
     this.optionsField.val(this.options);
 
     this.shortCompilerName = this.domRoot.find('.short-compiler-name');
-    this.fullCompilerName = this.domRoot.find('.full-compiler-name');
     this.compilerPicker = this.domRoot.find('.compiler-picker');
     this.setCompilerVersionPopover('');
 
@@ -937,9 +944,11 @@ Compiler.prototype.initToolButton = function (togglePannerAdder, button, toolId)
 Compiler.prototype.initToolButtons = function (togglePannerAdder) {
     this.clangtidyToolButton = this.domRoot.find('.view-clangtidytool');
     this.llvmmcaToolButton = this.domRoot.find('.view-llvmmcatool');
+    this.paholeToolButton = this.domRoot.find('.view-pahole');
 
     this.initToolButton(togglePannerAdder, this.clangtidyToolButton, "clangtidytrunk");
     this.initToolButton(togglePannerAdder, this.llvmmcaToolButton, "llvm-mcatrunk");
+    this.initToolButton(togglePannerAdder, this.paholeToolButton, "pahole");
 };
 
 Compiler.prototype.updateButtons = function () {
@@ -988,6 +997,8 @@ Compiler.prototype.updateButtons = function () {
         !(this.supportsTool("clangtidytrunk") && !this.isToolActive(activeTools, "clangtidytrunk")));
     this.llvmmcaToolButton.prop('disabled',
         !(this.supportsTool("llvm-mcatrunk") && !this.isToolActive(activeTools, "llvm-mcatrunk")));
+    this.paholeToolButton.prop('disabled',
+        !(this.supportsTool("pahole") && !this.isToolActive(activeTools, "pahole")));
 };
 
 Compiler.prototype.onFontScale = function () {
@@ -1561,7 +1572,7 @@ Compiler.prototype.langOfCompiler = function (compilerId) {
         return compiler.id === compilerId || compiler.alias === compilerId;
     });
     if (!compiler) {
-        Raven.captureMessage('Unable to find compiler id "' + compilerId + '"');
+        Sentry.captureMessage('Unable to find compiler id "' + compilerId + '"');
         compiler = options.compilers[0];
     }
     return compiler.lang;

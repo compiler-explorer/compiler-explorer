@@ -130,10 +130,7 @@ LoadSave.prototype.onLocalFile = function (event) {
 LoadSave.prototype.run = function (onLoad, editorText, currentLanguage) {
     this.populateLocalStorage();
     this.onLoad = onLoad;
-    this.editorText = editorText;
-    // In case we don't send anything...
-    this.currentLanguage = currentLanguage;
-    this.extension = currentLanguage.extensions[0] || '.txt';
+    this.setMinimalOptions(editorText, currentLanguage);
     this.modal.find('.local-file').attr('accept', _.map(currentLanguage.extensions, function (extension) {
         return extension + ', ';
     }, this));
@@ -167,6 +164,12 @@ LoadSave.prototype.onSaveToBrowserStorage = function () {
         done();
         this.modal.modal('hide');
     }
+};
+
+LoadSave.prototype.setMinimalOptions = function (editorText, currentLanguage) {
+    this.editorText = editorText;
+    this.currentLanguage = currentLanguage;
+    this.extension = currentLanguage.extensions[0] || '.txt';
 };
 
 LoadSave.prototype.onSaveToFile = function (fileEditor) {
