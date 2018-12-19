@@ -1,0 +1,82 @@
+[
+  {
+    "text": "",
+    "source": null
+  },
+  {
+    "text": "",
+    "source": null
+  },
+  {
+    "text": "",
+    "source": null
+  },
+  {
+    "text": ".visible .entry _Z6vecAddPfS_S_i(",
+    "source": null
+  },
+  {
+    "text": "        .param .u64 _Z6vecAddPfS_S_i_param_0,",
+    "source": null
+  },
+  {
+    "text": "        .param .u64 _Z6vecAddPfS_S_i_param_1,",
+    "source": null
+  },
+  {
+    "text": "        .param .u64 _Z6vecAddPfS_S_i_param_2,",
+    "source": null
+  },
+  {
+    "text": "        .param .u32 _Z6vecAddPfS_S_i_param_3",
+    "source": null
+  },
+  {
+    "text": ")",
+    "source": null
+  },
+  {
+    "text": "{",
+    "source": null
+  },
+  {
+    "text": "",
+    "source": null
+  },
+  {
+    "text": "",
+    "source": null
+  },
+  {
+    "text": "        ld.param.u64    %rd1, [_Z6vecAddPfS_S_i_param_0];",
+    "source": null
+  },
+  {
+    "text": "        ld.param.u64    %rd2, [_Z6vecAddPfS_S_i_param_1];",
+    "source": null
+  },
+  {
+    "text": "        ld.param.u64    %rd3, [_Z6vecAddPfS_S_i_param_2];",
+    "source": null
+  },
+  {
+    "text": "        ld.param.u32    %r2, [_Z6vecAddPfS_S_i_param_3];",
+    "source": null
+  },
+  {
+    "text": "",
+    "source": null
+  },
+  {
+    "text": "",
+    "source": null
+  },
+  {
+    "text": "}",
+    "source": null
+  },
+  {
+    "text": "",
+    "source": null
+  }
+]

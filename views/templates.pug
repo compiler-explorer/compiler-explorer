@@ -73,6 +73,10 @@
             span .LX0:
           input.d-none(type="checkbox" checked=true)
         .button-checkbox
+          button.btn.btn-light.btn-sm.active.nonbinary(title="Filter functions from other libraries from the output" data-bind="libraryCode" aria-pressed="true")
+            span lib.f:
+          input.d-none(type="checkbox")
+        .button-checkbox
           button.btn.btn-light.btn-sm.active.nonbinary(type="button" title="Filter all assembler directives from the output" data-bind="directives" aria-pressed="true")
             span .text
           input.d-none(type="checkbox" checked=true)
