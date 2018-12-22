@@ -66,3 +66,4 @@ From oldest to newest contributor, we would like to thank:
 - [Erik Little](https://github.com/nuclearace)
 - [Jülich Supercomputing Centre](https://github.com/FZJ-JSC)
 - [Niall Douglas](https://github.com/ned14)
+- [Daniel Black](https://github.com/grooverdan)

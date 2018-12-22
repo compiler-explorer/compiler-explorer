@@ -42,7 +42,7 @@
     "lz-string": "^1.4.4",
     "mkdirp": "^0.5.1",
     "monaco-editor": "0.10.1",
-    "morgan": "^1.9.0",
+    "morgan": "^1.9.1",
     "nopt": "3.0.x",
     "popper.js": "^1.14.4",
     "promise-queue": "2.2.3",
