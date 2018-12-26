@@ -88,7 +88,7 @@ function Editor(hub, state, container) {
     this.editor = monaco.editor.create(root[0], {
         scrollBeyondLastLine: false,
         language: this.currentLanguage.monaco,
-        fontFamily: 'Consolas, "Liberation Mono", Courier, monospace',
+        fontFamily: this.settings.editorsFFont,
         readOnly: !!options.readOnly || legacyReadOnly,
         glyphMargin: !options.embedded,
         quickSuggestions: false,
@@ -538,6 +538,7 @@ Editor.prototype.onSettingsChange = function (newSettings) {
         minimap: {
             enabled: this.settings.showMinimap && !options.embedded
         },
+        fontFamily: this.settings.editorsFFont,
         wordWrap: this.settings.wordWrap ? 'bounded' : 'off',
         wordWrapColumn: this.editor.getLayoutInfo().viewportColumn // Ensure the column count is up to date
     });

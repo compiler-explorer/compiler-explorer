@@ -105,7 +105,7 @@ function Compiler(hub, container, state) {
         scrollBeyondLastLine: false,
         readOnly: true,
         language: 'asm',
-        fontFamily: 'Consolas, "Liberation Mono", Courier, monospace',
+        fontFamily: this.settings.editorsFFont,
         glyphMargin: !options.embedded,
         fixedOverflowWidgets: true,
         minimap: {
@@ -1295,7 +1295,8 @@ Compiler.prototype.onSettingsChange = function (newSettings) {
         contextmenu: this.settings.useCustomContextMenu,
         minimap: {
             enabled: this.settings.showMinimap && !options.embedded
-        }
+        },
+        fontFamily: this.settings.editorsFFont
     });
 };
 
