@@ -42,6 +42,9 @@
           button.dropdown-item.btn.btn-sm.btn-light.conformance(title="Add a new conformance view" aria-label="New conformance view")
             span.fa.fa-list
             | &nbsp;Conformance view
+          button.dropdown-item.btn.btn-sm.btn-light.add-editor(title="Add a new source editor view" aria-label="New source editor")
+            span.fa.fa-code
+            | &nbsp;Source editor
       .btn-group.btn-group-sm.ml-auto(role="group" aria-label="Editor language")
         select.change-language(title="Change this editor's (and associated panels) language" disabled=embedded && readOnly)
     .monaco-placeholder
@@ -74,6 +77,10 @@
             span .LX0:
           input.d-none(type="checkbox" checked=true)
         .button-checkbox
+          button.btn.btn-light.btn-sm.active.nonbinary(title="Filter functions from other libraries from the output" data-bind="libraryCode" aria-pressed="true")
+            span lib.f:
+          input.d-none(type="checkbox")
+        .button-checkbox
           button.btn.btn-light.btn-sm.active.nonbinary(type="button" title="Filter all assembler directives from the output" data-bind="directives" aria-pressed="true")
             span .text
           input.d-none(type="checkbox" checked=true)
@@ -94,10 +101,9 @@
             span Demangle
           input.d-none(type="checkbox" checked=true)
       .btn-group.btn-group-sm(role="group" aria-label="Compiler additions")
-        button.btn.btn-light.btn-sm.show-libs
-          span.fas.fa-book(title="Include libs")
+        button.btn.btn-light.btn-sm.show-libs.dropdown-toggle(title="Include libs" aria-label="Toggle libraries dropdown" aria-pressed="false" aria-haspopup="true")
+          span.fas.fa-book
           span.hideable &nbsp;Libraries
-          b.fas.fa-caret-down
       .btn-group.btn-group-sm(role="group")
         button.btn.btn-light.btn-sm.dropdown-toggle.add-pane(type="button" title="Add a new pane" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Add new element for this compiler")
           span.fas.fa-plus
@@ -122,7 +128,6 @@
         button.btn.btn-light.btn-sm.dropdown-toggle.add-tool(type="button" title="Add tool" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Add tooling to this editor and compiler")
           span.fas.fa-cogs
           span.hideable &nbsp;Add tool...
-          | #[b.caret]
         .dropdown-menu.dropdown-menu-right
           button.dropdown-item.btn.btn-light.btn-sm.view-clangtidytool(title="Clang-tidy")
             span.fas.fa-cog
@@ -130,6 +135,9 @@
           button.dropdown-item.btn.btn-light.btn-sm.view-llvmmcatool(title="LLVM MCA")
             span.fas.fa-cog
             | &nbsp;LLVM MCA
+          button.dropdown-item.btn.btn-light.btn-sm.view-pahole(title="Pahole")
+            span.fas.fa-cog
+            | &nbsp;Pahole
     .monaco-placeholder
     .bottom-bar.bg-light
       if !embedded
@@ -150,8 +158,7 @@
                   | 0
                 | )
         span.short-compiler-name
-        a.full-compiler-name(tabindex="0" data-trigger="focus" style="cursor: pointer;" role="button" title="Full compiler version")
-          span.btn.btn-light.btn-sm.fas.fa-info
+        button.btn.btn-light.btn-sm.fas.fa-info.full-compiler-name(data-trigger="click" style="cursor: pointer;" role="button" title="Full compiler version")
         span.compile-time(title="Compilation time (Result size)")
 
   #compiler-output
@@ -243,7 +250,6 @@
         button.btn.btn-light.btn-sm.show-libs.dropdown-toggle(title="Include libs" aria-label="Toggle libraries dropdown" aria-pressed="false" aria-haspopup="true")
           span.fas.fa-book
           span.hideable &nbsp;Libraries
-          b.fas.fa-caret-down
     .conformance-wrapper
       table.compiler-list
 

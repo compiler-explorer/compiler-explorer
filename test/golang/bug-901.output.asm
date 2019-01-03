@@ -5,8 +5,10 @@
 	funcdata	$1, gclocals·33cdeccccebe80329f1fdbee7f5874cb(SB)
 	xorl	AX, AX
 	.loc 1 4 0
-	jmp	7
+	jmp	Fun_pc7
+Fun_pc4:
 	incq	AX
+Fun_pc7:
 	cmpq	AX, $10
-	jlt	4
+	jlt	Fun_pc4
 	ret
