@@ -30,7 +30,7 @@ get_gdc() {
     build=$2
     mkdir ${OPT}/gdc
     pushd ${OPT}/gdc
-    fetch ftp://ftp.gdcproject.org/binaries/${vers}/x86_64-linux-gnu/gdc-${vers}+${build}.tar.xz | tar Jxf -
+    fetch https://s3.amazonaws.com/compiler-explorer/public/gdc-${vers}+${build}.tar.xz | tar Jxf -
     popd
 }
 
