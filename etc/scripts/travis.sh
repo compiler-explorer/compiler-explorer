@@ -7,7 +7,7 @@ mkdir -p ${OPT}
 mkdir -p ${OPT}/tmp
 
 fetch() {
-    curl --disable-epsv -v ${http_proxy:+--proxy $http_proxy} -L "$*"
+    curl -v ${http_proxy:+--proxy $http_proxy} -L "$*"
 }
 
 get_ghc() {
@@ -30,7 +30,7 @@ get_gdc() {
     build=$2
     mkdir ${OPT}/gdc
     pushd ${OPT}/gdc
-    fetch ftp://ftp.gdcproject.org/binaries/${vers}/x86_64-linux-gnu/gdc-${vers}+${build}.tar.xz | tar Jxf -
+    fetch https://gdcproject.org/downloads/binaries/${vers}/x86_64-linux-gnu/gdc-${vers}+${build}.tar.xz | tar Jxf -
     popd
 }
 
