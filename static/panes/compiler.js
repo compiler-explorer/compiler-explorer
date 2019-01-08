@@ -1038,6 +1038,12 @@ Compiler.prototype.fillPopularArgumentsMenu = function () {
                         popularArgumentsMenu.append(argumentButton);
                         addedOption = true;
                     }, this));
+
+                    if (!addedOption) {
+                        $("div.populararguments").hide();
+                    } else {
+                        $("div.populararguments").show();
+                    }
                 }
             }, this));
     }
