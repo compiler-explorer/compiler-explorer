@@ -1023,7 +1023,7 @@ Compiler.prototype.fillPopularArgumentsMenu = function () {
                             "<span class='argdescription'>" + arg.description + "</span>" +
                             "</div>");
 
-                        argumentButton.click(_.bind(function (event) {
+                        argumentButton.click(_.bind(function () {
                             var button = argumentButton;
                             var curOptions = this.optionsField.val();
                             if (curOptions.length > 0) {
