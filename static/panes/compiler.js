@@ -905,6 +905,7 @@ Compiler.prototype.initButtons = function (state) {
     this.monacoPlaceholder = this.domRoot.find('.monaco-placeholder');
 
     this.initPanerButtons();
+    this.fillPopularArgumentsMenu();
 };
 
 Compiler.prototype.onLibsChanged = function () {
@@ -999,8 +1000,6 @@ Compiler.prototype.updateButtons = function () {
         !(this.supportsTool("llvm-mcatrunk") && !this.isToolActive(activeTools, "llvm-mcatrunk")));
     this.paholeToolButton.prop('disabled',
         !(this.supportsTool("pahole") && !this.isToolActive(activeTools, "pahole")));
-
-    this.fillPopularArgumentsMenu();
 };
 
 Compiler.prototype.fillPopularArgumentsMenu = function () {
@@ -1011,15 +1010,21 @@ Compiler.prototype.fillPopularArgumentsMenu = function () {
         this.compilerService.requestPopularArguments(this.compiler.id)
             .then(_.bind(function (x) {
                 if (x.result) {
+                    var addedOption = false;
+
                     _.forEach(x.result, _.bind(function (arg, key) {
                         var argumentButton = $(document.createElement("button"));
                         argumentButton.addClass('dropdown-item btn btn-light btn-sm');
                         argumentButton.attr("title", arg.description);
                         argumentButton.data("arg", key);
-                        argumentButton.html(_.escape(key));
+                        argumentButton.html(
+                            "<div class='argmenuitem'>" +
+                            "<span class='argtitle'>" + _.escape(key) + "</span>" +
+                            "<span class='argdescription'>" + arg.description + "</span>" +
+                            "</div>");
 
                         argumentButton.click(_.bind(function (event) {
-                            var button = $(event.target);
+                            var button = argumentButton;
                             var curOptions = this.optionsField.val();
                             if (curOptions.length > 0) {
                                 this.optionsField.val(curOptions + " " + button.data("arg"));
@@ -1031,6 +1036,7 @@ Compiler.prototype.fillPopularArgumentsMenu = function () {
                         }, this));
 
                         popularArgumentsMenu.append(argumentButton);
+                        addedOption = true;
                     }, this));
                 }
             }, this));
@@ -1194,6 +1200,7 @@ Compiler.prototype.onCompilerChange = function (value) {
     this.compile();
     this.updateCompilerUI();
     this.sendCompiler();
+    this.fillPopularArgumentsMenu();
 };
 
 Compiler.prototype.sendCompiler = function () {
