@@ -7,7 +7,7 @@ mkdir -p ${OPT}
 mkdir -p ${OPT}/tmp
 
 fetch() {
-    curl -v ${http_proxy:+--proxy $http_proxy} -L "$*"
+    curl --disable-epsv -v ${http_proxy:+--proxy $http_proxy} -L "$*"
 }
 
 get_ghc() {
