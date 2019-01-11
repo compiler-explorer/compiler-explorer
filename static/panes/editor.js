@@ -184,7 +184,7 @@ Editor.prototype.updateState = function () {
 };
 
 Editor.prototype.setSource = function (newSource) {
-    this.editor.getModel().setValue(newSource);
+    this.updateSource(newSource);
 };
 
 Editor.prototype.onNewSource = function (editorId, newSource) {
@@ -436,9 +436,27 @@ Editor.prototype.confirmOverwrite = function (yes) {
         {yes: yes, no: null});
 };
 
+Editor.prototype.updateSource = function (newSource) {
+    // Create something that looks like an edit operation for the whole text
+    var operation = {
+        range: this.editor.getModel().getFullModelRange(),
+        forceMoveMarkers: true,
+        text: newSource
+    };
+    var nullFn = function () {
+        return null;
+    };
+    var viewState = this.editor.saveViewState();
+    // Add a undo stop so we don't go back further than expected
+    this.editor.pushUndoStop();
+    // Apply de edit. Note that we lose cursor position, but I've not found a better alternative yet
+    this.editor.getModel().pushEditOperations(viewState.cursorState, [operation], nullFn);
+    this.numberUsedLines();
+};
+
 Editor.prototype.formatCurrentText = function () {
     var previousSource = this.getSource();
-    var currentPosition = this.editor.getPosition();
+
     $.ajax({
         type: 'POST',
         url: window.location.origin + this.httpRoot + 'api/format/clangformat',
@@ -451,14 +469,10 @@ Editor.prototype.formatCurrentText = function () {
         success: _.bind(function (result) {
             if (result.exit === 0) {
                 if (this.doesMatchEditor(previousSource)) {
-                    this.setSource(result.answer);
-                    this.numberUsedLines();
-                    this.editor.setPosition(currentPosition);
+                    this.updateSource(result.answer);
                 } else {
                     this.confirmOverwrite(_.bind(function () {
-                        this.setSource(result.answer);
-                        this.numberUsedLines();
-                        this.editor.setPosition(currentPosition);
+                        this.updateSource(result.answer);
                     }, this), null);
                 }
             } else {
