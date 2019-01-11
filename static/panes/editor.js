@@ -438,7 +438,24 @@ Editor.prototype.confirmOverwrite = function (yes) {
 
 Editor.prototype.formatCurrentText = function () {
     var previousSource = this.getSource();
-    var currentPosition = this.editor.getPosition();
+    var updateSource = _.bind(function (newSource) {
+        // Create something that looks like an edit operation for the whole text
+        var operation = {
+            range: this.editor.getModel().getFullModelRange(),
+            forceMoveMarkers: true,
+            text: newSource
+        };
+        var nullFn = function () {
+            return null;
+        };
+        var viewState = this.editor.saveViewState();
+        // Add a undo stop so we don't go back further than expected
+        this.editor.pushUndoStop();
+        // Apply de edit. Note that we lose cursor position, but I've not found a better alternative yet
+        this.editor.getModel().pushEditOperations(viewState.cursorState, [operation], nullFn);
+        this.numberUsedLines();
+    }, this);
+
     $.ajax({
         type: 'POST',
         url: window.location.origin + this.httpRoot + 'api/format/clangformat',
@@ -451,14 +468,10 @@ Editor.prototype.formatCurrentText = function () {
         success: _.bind(function (result) {
             if (result.exit === 0) {
                 if (this.doesMatchEditor(previousSource)) {
-                    this.setSource(result.answer);
-                    this.numberUsedLines();
-                    this.editor.setPosition(currentPosition);
+                    updateSource(result.answer);
                 } else {
                     this.confirmOverwrite(_.bind(function () {
-                        this.setSource(result.answer);
-                        this.numberUsedLines();
-                        this.editor.setPosition(currentPosition);
+                        updateSource(result.answer);
                     }, this), null);
                 }
             } else {
