@@ -1576,6 +1576,7 @@ Compiler.prototype.onLanguageChange = function (editorId, newLangId) {
         this.libsWidget.setNewLangId(newLangId);
         this.updateCompilersSelector();
         this.updateCompilerUI();
+        this.fillPopularArgumentsMenu();
         this.sendCompiler();
         this.saveState();
     }
