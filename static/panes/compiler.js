@@ -909,7 +909,6 @@ Compiler.prototype.initButtons = function (state) {
     this.monacoPlaceholder = this.domRoot.find('.monaco-placeholder');
 
     this.initPanerButtons();
-    this.fillPopularArgumentsMenu();
 };
 
 Compiler.prototype.onLibsChanged = function () {
@@ -1045,18 +1044,6 @@ Compiler.prototype.handlePopularArgumentsResult = function (result) {
         } else {
             $("div.populararguments").show();
         }
-    }
-};
-
-Compiler.prototype.fillPopularArgumentsMenu = function () {
-    var popularArgumentsMenu = this.domRoot.find("div.populararguments div.dropdown-menu");
-    popularArgumentsMenu.html("");
-
-    if (this.compiler) {
-        this.compilerService.requestPopularArguments(this.compiler.id)
-            .then(_.bind(function (x) {
-                this.handlePopularArgumentsResult(x.result);
-            }, this));
     }
 };
 
@@ -1217,7 +1204,6 @@ Compiler.prototype.onCompilerChange = function (value) {
     this.compile();
     this.updateCompilerUI();
     this.sendCompiler();
-    this.fillPopularArgumentsMenu();
 };
 
 Compiler.prototype.sendCompiler = function () {
@@ -1587,7 +1573,6 @@ Compiler.prototype.onLanguageChange = function (editorId, newLangId) {
         this.libsWidget.setNewLangId(newLangId);
         this.updateCompilersSelector();
         this.updateCompilerUI();
-        this.fillPopularArgumentsMenu();
         this.sendCompiler();
         this.saveState();
     }
