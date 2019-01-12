@@ -657,6 +657,10 @@ Compiler.prototype.onCompileResponse = function (request, result, cached) {
 
     this.compileTimeLabel.text(timeLabelText);
 
+    if (result.popularArguments) {
+        this.handlePopularArgumentsResult(result.popularArguments);
+    }
+
     this.eventHub.emit('compileResult', this.id, this.compiler, result, languages[this.currentLangId]);
     this.updateButtons();
     this.setCompilationOptionsPopover(result.compilationOptions ? result.compilationOptions.join(' ') : '');
@@ -1002,6 +1006,48 @@ Compiler.prototype.updateButtons = function () {
         !(this.supportsTool("pahole") && !this.isToolActive(activeTools, "pahole")));
 };
 
+Compiler.prototype.handlePopularArgumentsResult = function (result) {
+    var popularArgumentsMenu = this.domRoot.find("div.populararguments div.dropdown-menu");
+    popularArgumentsMenu.html("");
+
+    if (result) {
+        var addedOption = false;
+
+        _.forEach(result, _.bind(function (arg, key) {
+            var argumentButton = $(document.createElement("button"));
+            argumentButton.addClass('dropdown-item btn btn-light btn-sm');
+            argumentButton.attr("title", arg.description);
+            argumentButton.data("arg", key);
+            argumentButton.html(
+                "<div class='argmenuitem'>" +
+                "<span class='argtitle'>" + _.escape(key) + "</span>" +
+                "<span class='argdescription'>" + arg.description + "</span>" +
+                "</div>");
+
+            argumentButton.click(_.bind(function () {
+                var button = argumentButton;
+                var curOptions = this.optionsField.val();
+                if (curOptions.length > 0) {
+                    this.optionsField.val(curOptions + " " + button.data("arg"));
+                } else {
+                    this.optionsField.val(button.data("arg"));
+                }
+
+                this.optionsField.change();
+            }, this));
+
+            popularArgumentsMenu.append(argumentButton);
+            addedOption = true;
+        }, this));
+
+        if (!addedOption) {
+            $("div.populararguments").hide();
+        } else {
+            $("div.populararguments").show();
+        }
+    }
+};
+
 Compiler.prototype.fillPopularArgumentsMenu = function () {
     var popularArgumentsMenu = this.domRoot.find("div.populararguments div.dropdown-menu");
     popularArgumentsMenu.html("");
@@ -1009,42 +1055,7 @@ Compiler.prototype.fillPopularArgumentsMenu = function () {
     if (this.compiler) {
         this.compilerService.requestPopularArguments(this.compiler.id)
             .then(_.bind(function (x) {
-                if (x.result) {
-                    var addedOption = false;
-
-                    _.forEach(x.result, _.bind(function (arg, key) {
-                        var argumentButton = $(document.createElement("button"));
-                        argumentButton.addClass('dropdown-item btn btn-light btn-sm');
-                        argumentButton.attr("title", arg.description);
-                        argumentButton.data("arg", key);
-                        argumentButton.html(
-                            "<div class='argmenuitem'>" +
-                            "<span class='argtitle'>" + _.escape(key) + "</span>" +
-                            "<span class='argdescription'>" + arg.description + "</span>" +
-                            "</div>");
-
-                        argumentButton.click(_.bind(function () {
-                            var button = argumentButton;
-                            var curOptions = this.optionsField.val();
-                            if (curOptions.length > 0) {
-                                this.optionsField.val(curOptions + " " + button.data("arg"));
-                            } else {
-                                this.optionsField.val(button.data("arg"));
-                            }
-
-                            this.optionsField.change();
-                        }, this));
-
-                        popularArgumentsMenu.append(argumentButton);
-                        addedOption = true;
-                    }, this));
-
-                    if (!addedOption) {
-                        $("div.populararguments").hide();
-                    } else {
-                        $("div.populararguments").show();
-                    }
-                }
+                this.handlePopularArgumentsResult(x.result);
             }, this));
     }
 };
