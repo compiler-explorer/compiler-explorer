@@ -121,3 +121,39 @@ describe('clang parser', () => {
             });
     });
 });
+
+describe('popular compiler arguments', () => {
+    let compiler = makeCompiler("-fsave-optimization-record\n-x\n-g\n-fcolor-diagnostics\n-O<number> optimization level\n-std=<c++11,c++14,c++17z>")
+
+    it('should return 5 arguments', () => {
+        return parsers.Clang.parse(compiler).then(compiler => {
+            return compiler.should.satisfy(compiler => {
+                return Promise.all([
+                    compiler.possibleArguments.getPopularArguments().should.deep.equal({
+                        "-O<number>": {description: "optimization level", timesused: 0},
+                        "-fcolor-diagnostics": {"description": "", "timesused": 0},
+                        "-fsave-optimization-record": {"description": "", "timesused": 0},
+                        "-g": {"description": "", "timesused": 0},
+                        "-x": {"description": "", "timesused": 0}
+                    })
+                ]);
+            });
+        })
+    });
+
+    it('should return arguments except the ones excluded', () => {
+        return parsers.Clang.parse(compiler).then(compiler => {
+            return compiler.should.satisfy(compiler => {
+                return Promise.all([
+                    compiler.possibleArguments.getPopularArguments(["-O3", "--hello"]).should.deep.equal({
+                        "-fcolor-diagnostics": {"description": "", "timesused": 0},
+                        "-fsave-optimization-record": {"description": "", "timesused": 0},
+                        "-g": {"description": "", "timesused": 0},
+                        "-x": {"description": "", "timesused": 0},
+                        "-std=<c++11,c++14,c++17z>": {"description": "", "timesused": 0}
+                    })
+                ]);
+            });
+        })
+    });
+});
