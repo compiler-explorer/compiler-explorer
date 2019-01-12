@@ -156,4 +156,19 @@ describe('popular compiler arguments', () => {
             });
         })
     });
+
+    it('should be able to exclude special params with assignments', () => {
+        return parsers.Clang.parse(compiler).then(compiler => {
+            return compiler.should.satisfy(compiler => {
+                return Promise.all([
+                    compiler.possibleArguments.getPopularArguments(["-std=c++14", "-g", "--hello"]).should.deep.equal({
+                        "-O<number>": {description: "optimization level", timesused: 0},
+                        "-fcolor-diagnostics": {"description": "", "timesused": 0},
+                        "-fsave-optimization-record": {"description": "", "timesused": 0},
+                        "-x": {"description": "", "timesused": 0}
+                    })
+                ]);
+            });
+        })
+    });
 });
