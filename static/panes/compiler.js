@@ -659,6 +659,8 @@ Compiler.prototype.onCompileResponse = function (request, result, cached) {
 
     if (result.popularArguments) {
         this.handlePopularArgumentsResult(result.popularArguments);
+    } else {
+        this.handlePopularArgumentsResult();
     }
 
     this.eventHub.emit('compileResult', this.id, this.compiler, result, languages[this.currentLangId]);
@@ -1044,6 +1046,8 @@ Compiler.prototype.handlePopularArgumentsResult = function (result) {
         } else {
             $("div.populararguments").show();
         }
+    } else {
+        $("div.populararguments").hide();
     }
 };
 
