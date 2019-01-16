@@ -1,0 +1,141 @@
+{
+  "asm": [
+    {
+      "text": "foo(int, int):",
+      "source": null
+    },
+    {
+      "text": "        retq",
+      "source": null
+    },
+    {
+      "text": "        .data",
+      "source": null
+    },
+    {
+      "text": "foo2:",
+      "source": null
+    },
+    {
+      "text": "        .long   23 ",
+      "source": null
+    },
+    {
+      "text": "foo22:",
+      "source": null
+    },
+    {
+      "text": "        .long   24 ",
+      "source": null
+    },
+    {
+      "text": "        .section        .text.foo3(int,int),\"ax\",@progbits",
+      "source": null
+    },
+    {
+      "text": "foo3(int, int):",
+      "source": null
+    },
+    {
+      "text": "        retq",
+      "source": null
+    },
+    {
+      "text": "        .section .data",
+      "source": null
+    },
+    {
+      "text": "foo4:",
+      "source": null
+    },
+    {
+      "text": "        .long   23 ",
+      "source": null
+    },
+    {
+      "text": "        .text",
+      "source": null
+    },
+    {
+      "text": "foo5(int, int):",
+      "source": null
+    },
+    {
+      "text": "        retq",
+      "source": null
+    },
+    {
+      "text": "foo6::<impl something for rust>::foo:",
+      "source": null
+    },
+    {
+      "text": "        retq",
+      "source": null
+    },
+    {
+      "text": "type metadata accessor for [Swift.Int]:",
+      "source": null
+    },
+    {
+      "text": "        retq",
+      "source": null
+    }
+  ],
+  "cfg": {
+    "foo(int, int):": {
+      "nodes": [
+        {
+          "id": "foo(int, int):",
+          "label": "foo(int, int):\n        retq",
+          "color": "#99ccff",
+          "shape": "box"
+        }
+      ],
+      "edges": []
+    },
+    "foo3(int, int):": {
+      "nodes": [
+        {
+          "id": "foo3(int, int):",
+          "label": "foo3(int, int):\n        retq",
+          "color": "#99ccff",
+          "shape": "box"
+        }
+      ],
+      "edges": []
+    },
+    "foo5(int, int):": {
+      "nodes": [
+        {
+          "id": "foo5(int, int):",
+          "label": "foo5(int, int):\n        retq",
+          "color": "#99ccff",
+          "shape": "box"
+        }
+      ],
+      "edges": []
+    },
+    "foo6::<impl something for rust>::foo:": {
+      "nodes": [
+        {
+          "id": "foo6::<impl something for rust>::foo:",
+          "label": "foo6::<impl something for rust>::foo:\n        retq",
+          "color": "#99ccff",
+          "shape": "box"
+        }
+      ],
+      "edges": []
+    },
+    "type metadata accessor for [Swift.Int]:": {
+      "nodes": [
+        {
+          "id": "type metadata accessor for [Swift.Int]:",
+          "label": "type metadata accessor for [Swift.Int]:\n        retq",
+          "color": "#99ccff",
+          "shape": "box"
+        }
+      ],
+      "edges": []
+    }
+  }
+}
