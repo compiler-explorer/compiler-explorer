@@ -479,6 +479,7 @@ aws.initConfig(awsProps)
                                         metadata.ogDescription = editor.source;
                                     }
                                 }
+                            // A dot means a lack of authors but a named link. Could use a flag, really
                             } else if (metadata.ogAuthor && metadata.ogAuthor !== '.') {
                                 metadata.ogDescription += `\nAuthor(s): ${metadata.ogAuthor}`;
                             }
@@ -489,10 +490,16 @@ aws.initConfig(awsProps)
                                 config: config,
                                 metadata: metadata
                             }));
+                            // And finally, increment the view count
+                            // If any errors pop up, they are just logged, but the response should still be valid
+                            // It's really  unlikely that it happens as a result of the id not being there though,
+                            // but can be triggered with a missing implementation for a derived storage (s3/local...)
+                            storageHandler.incrementViewCount(id).catch(err => {
+                                logger.error(`Error incrementing view counts for ${id} - ${err}`);
+                            });
                         })
                         .catch(err => {
-                            logger.warn(`Exception thrown when expanding ${id}`);
-                            logger.debug('Exception value:', err);
+                            logger.warn(`Could not expand ${id}: ${err}`);
                             next({
                                 statusCode: 404,
                                 message: `ID "${id}" could not be found`
