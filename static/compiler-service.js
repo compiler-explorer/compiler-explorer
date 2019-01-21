@@ -132,12 +132,16 @@ CompilerService.prototype.submit = function (request) {
     }, this));
 };
 
-CompilerService.prototype.requestPopularArguments = function (compilerId) {
+CompilerService.prototype.requestPopularArguments = function (compilerId, options) {
     return new Promise(_.bind(function (resolve, reject) {
         $.ajax({
-            type: 'GET',
+            type: 'POST',
             url: window.location.origin + this.base + 'api/popularArguments/' + compilerId,
             dataType: 'json',
+            data: JSON.stringify({
+                usedOptions: options,
+                presplit: false
+            }),
             success: _.bind(function (result) {
                 resolve({
                     request: compilerId,

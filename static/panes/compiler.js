@@ -660,7 +660,13 @@ Compiler.prototype.onCompileResponse = function (request, result, cached) {
     if (result.popularArguments) {
         this.handlePopularArgumentsResult(result.popularArguments);
     } else {
-        this.handlePopularArgumentsResult();
+        this.compilerService.requestPopularArguments(this.compiler.id, request.options.userArguments).then(
+            _.bind(function (result) {
+                if (result && result.result) {
+                    this.handlePopularArgumentsResult(result.result);
+                }
+            }, this)
+        );
     }
 
     this.eventHub.emit('compileResult', this.id, this.compiler, result, languages[this.currentLangId]);
