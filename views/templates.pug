@@ -58,6 +58,10 @@
             button.input-group-text.prepend-options(data-trigger="click" style="cursor: pointer;" role="button" title="All compilation options")
               span.btn.btn-light.btn-sm.status-icon
           input.options.form-control(type="text" placeholder="Compiler options..." size="256" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false")
+          .input-group-append.populararguments(title="Popular arguments")
+            button.btn.btn-outline-secondary.dropdown-toggle.dropdown-toggle-split(type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
+              span.sr-only Popular arguments
+            div.dropdown-menu.dropdown-menu-right
       include font-size
       .btn-group.btn-group-sm.filters(role="group" aria-label="Compiler filters")
         .button-checkbox

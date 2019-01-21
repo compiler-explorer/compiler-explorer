@@ -208,7 +208,7 @@ aws.initConfig(awsProps)
         const CompilationEnvironment = require('./lib/compilation-env');
         const compilationEnvironment = new CompilationEnvironment(compilerProps, defArgs.doCache);
         const CompileHandler = require('./lib/handlers/compile').Handler;
-        const compileHandler = new CompileHandler(compilationEnvironment);
+        const compileHandler = new CompileHandler(compilationEnvironment, awsProps);
         const StorageHandler = require('./lib/storage/storage');
         const storageHandler = StorageHandler.storageFactory(compilerProps, awsProps);
         const ApiHandler = require('./lib/handlers/api').Handler;
