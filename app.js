@@ -36,7 +36,7 @@ const nopt = require('nopt'),
     url = require('url'),
     _ = require('underscore'),
     express = require('express'),
-    Raven = require('raven'),
+    Sentry = require('@sentry/node'),
     logger = require('./lib/logger').logger,
     webpackDevMiddleware = require("webpack-dev-middleware"),
     utils = require('./lib/utils'),
@@ -55,11 +55,16 @@ const opts = nopt({
     debug: [Boolean],
     static: [String],
     archivedVersions: [String],
+    // Ignore fetch marks and assume every compiler is found locally
     noRemoteFetch: [Boolean],
     tmpDir: [String],
     wsl: [Boolean],
+    // If specified, only loads the specified language, resulting in faster loadup/iteration times
     language: [String],
-    noCache: [Boolean]
+    // Do not use caching for compilation results (Requests might still be cached by the client's browser)
+    noCache: [Boolean],
+    // Don't cleanly run if two or more compilers have clashing ids
+    ensureNoIdClash: [Boolean]
 });
 
 if (opts.debug) logger.level = 'debug';
@@ -103,7 +108,8 @@ const defArgs = {
     gitReleaseName: gitReleaseName,
     wantedLanguage: opts.language || null,
     doCache: !opts.noCache,
-    fetchCompilersFromRemote: !opts.noRemoteFetch
+    fetchCompilersFromRemote: !opts.noRemoteFetch,
+    ensureNoCompilerClash: opts.ensureNoIdClash
 };
 
 const webpackConfig = require('./webpack.config.js')[1],
@@ -202,7 +208,7 @@ aws.initConfig(awsProps)
         const CompilationEnvironment = require('./lib/compilation-env');
         const compilationEnvironment = new CompilationEnvironment(compilerProps, defArgs.doCache);
         const CompileHandler = require('./lib/handlers/compile').Handler;
-        const compileHandler = new CompileHandler(compilationEnvironment);
+        const compileHandler = new CompileHandler(compilationEnvironment, awsProps);
         const StorageHandler = require('./lib/storage/storage');
         const storageHandler = StorageHandler.storageFactory(compilerProps, awsProps);
         const ApiHandler = require('./lib/handlers/api').Handler;
@@ -268,18 +274,29 @@ aws.initConfig(awsProps)
         }
 
         compilerFinder.find()
-            .then(compilers => {
+            .then(result => {
+                let compilers = result.compilers;
                 let prevCompilers;
+                if (defArgs.ensureNoCompilerClash) {
+                    logger.warn('Ensuring no compiler ids clash');
+                    if (result.foundClash) {
+                        // If we are forced to have no clashes, throw an error with some explanation
+                        throw new Error('Clashing compilers in the current environment found!');
+                    } else {
+                        logger.info('No clashing ids found, continuing normally...');
+                    }
+                }
 
-                const ravenPrivateEndpoint = aws.getConfig('ravenPrivateEndpoint');
-                if (ravenPrivateEndpoint) {
-                    Raven.config(ravenPrivateEndpoint, {
+                const sentryDsn = aws.getConfig('sentryDsn');
+                if (sentryDsn) {
+                    Sentry.init({
+                        dsn: sentryDsn,
                         release: gitReleaseName,
                         environment: defArgs.env
-                    }).install();
-                    logger.info("Configured with raven endpoint", ravenPrivateEndpoint);
+                    });
+                    logger.info("Configured with Sentry endpoint", sentryDsn);
                 } else {
-                    Raven.config(false).install();
+                    logger.info("Not configuring sentry");
                 }
 
                 function onCompilerChange(compilers) {
@@ -302,7 +319,7 @@ aws.initConfig(awsProps)
                 const rescanCompilerSecs = ceProps('rescanCompilerSecs', 0);
                 if (rescanCompilerSecs) {
                     logger.info(`Rescanning compilers every ${rescanCompilerSecs} secs`);
-                    setInterval(() => compilerFinder.find().then(onCompilerChange),
+                    setInterval(() => compilerFinder.find().then(result => onCompilerChange(result.compilers)),
                         rescanCompilerSecs * 1000);
                 }
 
@@ -316,6 +333,7 @@ aws.initConfig(awsProps)
                 logger.info("=======================================");
                 if (gitReleaseName) logger.info(`  git release ${gitReleaseName}`);
                 const httpRootDir = httpRoot.endsWith('/') ? httpRoot : (httpRoot + '/');
+
                 function renderConfig(extra) {
                     const options = _.extend(extra, clientOptionsHandler.get());
                     options.compilerExplorerOptions = JSON.stringify(options);
@@ -515,7 +533,7 @@ aws.initConfig(awsProps)
                 const morganFormat = isDevMode() ? 'dev' : ':gdpr_ip ":method :url" :status';
 
                 webServer
-                    .use(Raven.requestHandler())
+                    .use(Sentry.Handlers.requestHandler())
                     .set('trust proxy', true)
                     .set('view engine', 'pug')
                     // before morgan so healthchecks aren't logged
@@ -571,9 +589,7 @@ aws.initConfig(awsProps)
                     .use((req, res, next) => {
                         next({status: 404, message: `page "${req.path}" could not be found`});
                     })
-                    .use((err, req, res, next) => {
-                        Raven.errorHandler()(err, req, res, next);
-                    })
+                    .use(Sentry.Handlers.errorHandler)
                     // eslint-disable-next-line no-unused-vars
                     .use((err, req, res, next) => {
                         const status =
@@ -584,7 +600,7 @@ aws.initConfig(awsProps)
                             500;
                         const message = err.message || 'Internal Server Error';
                         res.status(status);
-                        res.render('error', renderConfig({ error: {code: status, message: message} }));
+                        res.render('error', renderConfig({error: {code: status, message: message}}));
                     })
                     .on('error', err => logger.error('Caught error:', err, "(in web handler; continuing)"));
                 if (!defArgs.doCache) {

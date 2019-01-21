@@ -224,7 +224,8 @@ Opt.prototype.onSettingsChange = function (newSettings) {
         contextmenu: newSettings.useCustomContextMenu,
         minimap: {
             enabled: newSettings.showMinimap
-        }
+        },
+        fontFamily: newSettings.editorsFFont
     });
 };
 

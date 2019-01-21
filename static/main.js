@@ -37,7 +37,7 @@ require("monaco-loader")().then(function () {
     var url = require('./url');
     var clipboard = require('clipboard');
     var Hub = require('./hub');
-    var Raven = require('raven-js');
+    var Sentry = require('@sentry/browser');
     var settings = require('./settings');
     var local = require('./local');
     var Alert = require('./alert');
@@ -280,7 +280,7 @@ require("monaco-loader")().then(function () {
             layout = new GoldenLayout(config, root);
             hub = new Hub(layout, subLangId);
         } catch (e) {
-            Raven.captureException(e);
+            Sentry.captureException(e);
 
             if (document.URL.includes("/z/")) {
                 document.location = document.URL.replace("/z/", "/resetlayout/");
