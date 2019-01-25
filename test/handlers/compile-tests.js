@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+require('../../lib/handlers/compile').SetTestMode();
+
 const chai = require('chai'),
     CompilationEnvironment = require('../../lib/compilation-env'),
     CompileHandler = require('../../lib/handlers/compile').Handler,
@@ -49,10 +51,8 @@ describe('Compiler tests', () => {
     it('throws for unknown compilers', () => {
         return chai.request(app)
             .post('/NOT_A_COMPILER/compile')
-            .then(() => {
-                throw "Shouldn't succeeed";
-            }, (e) => {
-                e.should.have.status(404);
+            .then((res) => {
+                res.should.have.status(404);
             });
     });
 

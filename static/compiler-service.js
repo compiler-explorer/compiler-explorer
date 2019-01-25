@@ -132,6 +132,60 @@ CompilerService.prototype.submit = function (request) {
     }, this));
 };
 
+CompilerService.prototype.requestPopularArguments = function (compilerId, options) {
+    return new Promise(_.bind(function (resolve, reject) {
+        $.ajax({
+            type: 'POST',
+            url: window.location.origin + this.base + 'api/popularArguments/' + compilerId,
+            dataType: 'json',
+            data: JSON.stringify({
+                usedOptions: options,
+                presplit: false
+            }),
+            success: _.bind(function (result) {
+                resolve({
+                    request: compilerId,
+                    result: result,
+                    localCacheHit: false
+                });
+            }, this),
+            error: function (xhr, textStatus, errorThrown) {
+                var error = errorThrown;
+                if (!error) {
+                    switch (textStatus) {
+                        case "timeout":
+                            error = "Request timed out";
+                            break;
+                        case "abort":
+                            error = "Request was aborted";
+                            break;
+                        case "error":
+                            switch (xhr.status) {
+                                case 500:
+                                    error = "Request failed: internal server error";
+                                    break;
+                                case 504:
+                                    error = "Request failed: gateway timeout";
+                                    break;
+                                default:
+                                    error = "Request failed: HTTP error code " + xhr.status;
+                                    break;
+                            }
+                            break;
+                        default:
+                            error = "Error sending request";
+                            break;
+                    }
+                }
+                reject({
+                    request: compilerId,
+                    error: error
+                });
+            }
+        });
+    }, this));
+};
+
 CompilerService.prototype.expand = function (source) {
     var includeFind = /^\s*#\s*include\s*["<](https?:\/\/[^>"]+)[>"]/;
     var lines = source.split("\n");

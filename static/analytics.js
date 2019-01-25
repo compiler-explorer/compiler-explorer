@@ -24,13 +24,14 @@
 
 "use strict";
 var options = require('options');
-var Raven = require('raven-js');
+var Sentry = require('@sentry/browser');
 
-if (options.raven) {
-    Raven.config(options.raven, {
+if (options.sentryDsn) {
+    Sentry.init({
+        dsn: options.sentryDsn,
         release: options.release,
         environment: options.environment.join("/")
-    }).install();
+    });
 }
 
 function GAProxy() {

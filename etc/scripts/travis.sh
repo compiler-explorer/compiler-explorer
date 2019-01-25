@@ -30,7 +30,7 @@ get_gdc() {
     build=$2
     mkdir ${OPT}/gdc
     pushd ${OPT}/gdc
-    fetch ftp://ftp.gdcproject.org/binaries/${vers}/x86_64-linux-gnu/gdc-${vers}+${build}.tar.xz | tar Jxf -
+    fetch https://gdcproject.org/downloads/binaries/${vers}/x86_64-linux-gnu/gdc-${vers}+${build}.tar.xz | tar Jxf -
     popd
 }
 
@@ -57,5 +57,5 @@ if [[ ! -d ${OPT}/gdc/x86_64-pc-linux-gnu/bin ]]; then
     get_gdc 5.2.0 2.066.1
 fi
 if [[ ! -d ${OPT}/rust/bin ]]; then
-    install_new_rust nightly
+    install_new_rust 1.30.0
 fi
