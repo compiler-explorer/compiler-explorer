@@ -103,6 +103,7 @@ function Editor(hub, state, container) {
         emptySelectionClipboard: true,
         autoIndent: true
     });
+    this.editor.getModel().setEOL(monaco.editor.EndOfLineSequence.LF);
 
     if (state.source !== undefined) {
         this.setSource(state.source);
