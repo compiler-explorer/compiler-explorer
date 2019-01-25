@@ -144,4 +144,16 @@ describe('Filter test cases', function () {
                 {directives: true, commentOnly: true});
         });
     });
+    describe('Directives and library code', function () {
+        cases.forEach(function (x) {
+            testFilter(x, ".directives.library",
+                {directives: true, libraryCode: true});
+        });
+    });
+    describe('Directives, labels, comments and library code', function () {
+        cases.forEach(function (x) {
+            testFilter(x, ".directives.labels.comments.library",
+                {directives: true, labels: true, commentOnly: true, libraryCode: true});
+        });
+    });
 });

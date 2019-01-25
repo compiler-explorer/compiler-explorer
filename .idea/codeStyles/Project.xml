@@ -1,6 +1,6 @@
 <component name="ProjectCodeStyleConfiguration">
   <code_scheme name="Project" version="173">
-    <JSCodeStyleSettings>
+    <JSCodeStyleSettings version="0">
       <option name="FORCE_SEMICOLON_STYLE" value="true" />
       <option name="ENFORCE_TRAILING_COMMA" value="Remove" />
     </JSCodeStyleSettings>

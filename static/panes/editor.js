@@ -39,12 +39,14 @@ require('../modes/rust-mode');
 require('../modes/ispc-mode');
 require('../modes/llvm-ir-mode');
 require('../modes/haskell-mode');
+require('../modes/ocaml-mode');
 require('../modes/clean-mode');
 require('../modes/pascal-mode');
 require('../modes/cuda-mode');
 require('../modes/fortran-mode');
 require('../modes/zig-mode');
 require('../modes/nc-mode');
+require('../modes/ada-mode');
 require('selectize');
 
 var loadSave = new loadSaveLib.LoadSave();
@@ -88,7 +90,7 @@ function Editor(hub, state, container) {
     this.editor = monaco.editor.create(root[0], {
         scrollBeyondLastLine: false,
         language: this.currentLanguage.monaco,
-        fontFamily: 'Consolas, "Liberation Mono", Courier, monospace',
+        fontFamily: this.settings.editorsFFont,
         readOnly: !!options.readOnly || legacyReadOnly,
         glyphMargin: !options.embedded,
         quickSuggestions: false,
@@ -184,7 +186,7 @@ Editor.prototype.updateState = function () {
 };
 
 Editor.prototype.setSource = function (newSource) {
-    this.editor.getModel().setValue(newSource);
+    this.updateSource(newSource);
 };
 
 Editor.prototype.onNewSource = function (editorId, newSource) {
@@ -274,13 +276,18 @@ Editor.prototype.initButtons = function (state) {
     if (this.langKeys.length <= 1) {
         this.languageBtn.prop("disabled", true);
     }
-    var addCompilerButton = this.domRoot.find('.btn.add-compiler');
+    this.topBar = this.domRoot.find('.top-bar');
+    this.hideable = this.domRoot.find('.hideable');
+
+    this.loadSaveButton = this.domRoot.find('.load-save');
     var paneAdderDropdown = this.domRoot.find('.add-pane');
+    var addCompilerButton = this.domRoot.find('.btn.add-compiler');
+    this.conformanceViewerButton = this.domRoot.find('.btn.conformance');
+    var addEditorButton = this.domRoot.find('.btn.add-editor');
 
     var togglePaneAdder = function () {
         paneAdderDropdown.dropdown('toggle');
     };
-    this.topBar = this.domRoot.find('.top-bar');
 
     // NB a new compilerConfig needs to be created every time; else the state is shared
     // between all compilers created this way. That leads to some nasty-to-find state
@@ -293,35 +300,38 @@ Editor.prototype.initButtons = function (state) {
         return Components.getConformanceView(this.id, this.getSource());
     }, this);
 
-    this.container.layoutManager
-        .createDragSource(addCompilerButton, getCompilerConfig)
-        ._dragListener.on('dragStart', togglePaneAdder);
+    var getEditorConfig = _.bind(function () {
+        return Components.getEditor();
+    }, this);
 
-    addCompilerButton.click(_.bind(function () {
-        var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
-            this.container.layoutManager.root.contentItems[0];
-        insertPoint.addChild(getCompilerConfig);
-    }, this));
+    var addDragListener = _.bind(function (dragSource, dragConfig) {
+        this.container.layoutManager
+            .createDragSource(dragSource, dragConfig)
+            ._dragListener.on('dragStart', togglePaneAdder);
+    }, this);
 
-    this.conformanceViewerButton = this.domRoot.find('.btn.conformance');
+    addDragListener(addCompilerButton, getCompilerConfig);
+    addDragListener(this.conformanceViewerButton, getConformanceConfig);
+    addDragListener(addEditorButton, getEditorConfig);
 
-    this.container.layoutManager
-        .createDragSource(this.conformanceViewerButton, getConformanceConfig)
-        ._dragListener.on('dragStart', togglePaneAdder);
-    this.conformanceViewerButton.click(_.bind(function () {
-        var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
-            this.container.layoutManager.root.contentItems[0];
-        insertPoint.addChild(getConformanceConfig);
-    }, this));
+    var bindClickEvent = _.bind(function (dragSource, dragConfig) {
+        dragSource.click(_.bind(function () {
+            var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
+                this.container.layoutManager.root.contentItems[0];
+            insertPoint.addChild(dragConfig);
+        }, this));
+    }, this);
 
-    this.hideable = this.domRoot.find('.hideable');
+    bindClickEvent(addCompilerButton, getCompilerConfig);
+    bindClickEvent(this.conformanceViewerButton, getConformanceConfig);
+    bindClickEvent(addEditorButton, getEditorConfig);
 
-    this.loadSaveButton = this.domRoot.find('.load-save');
     this.initLoadSaver();
     $(this.domRoot).keydown(_.bind(function (event) {
         if ((event.ctrlKey || event.metaKey) && String.fromCharCode(event.which).toLowerCase() === 's') {
             event.preventDefault();
             if (this.settings.enableCtrlS) {
+                loadSave.setMinimalOptions(this.getSource(), this.currentLanguage);
                 if (!loadSave.onSaveToFile(this.id)) {
                     this.showLoadSaver();
                 }
@@ -428,9 +438,27 @@ Editor.prototype.confirmOverwrite = function (yes) {
         {yes: yes, no: null});
 };
 
+Editor.prototype.updateSource = function (newSource) {
+    // Create something that looks like an edit operation for the whole text
+    var operation = {
+        range: this.editor.getModel().getFullModelRange(),
+        forceMoveMarkers: true,
+        text: newSource
+    };
+    var nullFn = function () {
+        return null;
+    };
+    var viewState = this.editor.saveViewState();
+    // Add a undo stop so we don't go back further than expected
+    this.editor.pushUndoStop();
+    // Apply de edit. Note that we lose cursor position, but I've not found a better alternative yet
+    this.editor.getModel().pushEditOperations(viewState.cursorState, [operation], nullFn);
+    this.numberUsedLines();
+};
+
 Editor.prototype.formatCurrentText = function () {
     var previousSource = this.getSource();
-    var currentPosition = this.editor.getPosition();
+
     $.ajax({
         type: 'POST',
         url: window.location.origin + this.httpRoot + 'api/format/clangformat',
@@ -443,14 +471,10 @@ Editor.prototype.formatCurrentText = function () {
         success: _.bind(function (result) {
             if (result.exit === 0) {
                 if (this.doesMatchEditor(previousSource)) {
-                    this.setSource(result.answer);
-                    this.numberUsedLines();
-                    this.editor.setPosition(currentPosition);
+                    this.updateSource(result.answer);
                 } else {
                     this.confirmOverwrite(_.bind(function () {
-                        this.setSource(result.answer);
-                        this.numberUsedLines();
-                        this.editor.setPosition(currentPosition);
+                        this.updateSource(result.answer);
                     }, this), null);
                 }
             } else {
@@ -488,6 +512,12 @@ Editor.prototype.resize = function () {
         width: this.domRoot.width(),
         height: this.domRoot.height() - topBarHeight
     });
+    // Only update the options if needed
+    if (this.settings.wordWrap) {
+        this.editor.updateOptions({
+            wordWrapColumn: this.editor.getLayoutInfo().viewportColumn
+        });
+    }
 };
 
 Editor.prototype.updateAndCalcTopBarHeight = function () {
@@ -523,7 +553,10 @@ Editor.prototype.onSettingsChange = function (newSettings) {
         contextmenu: this.settings.useCustomContextMenu,
         minimap: {
             enabled: this.settings.showMinimap && !options.embedded
-        }
+        },
+        fontFamily: this.settings.editorsFFont,
+        wordWrap: this.settings.wordWrap ? 'bounded' : 'off',
+        wordWrapColumn: this.editor.getLayoutInfo().viewportColumn // Ensure the column count is up to date
     });
 
     // * Turn off auto.

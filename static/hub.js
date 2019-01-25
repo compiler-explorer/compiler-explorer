@@ -25,7 +25,7 @@
 'use strict';
 
 var _ = require('underscore');
-var Raven = require('raven-js');
+var Sentry = require('@sentry/browser');
 var editor = require('./panes/editor');
 var compiler = require('./panes/compiler');
 var output = require('./panes/output');
@@ -222,7 +222,8 @@ WrappedEventHub.prototype.unsubscribe = function () {
         try {
             this.eventHub.off(obj.evt, obj.fn, obj.ctx);
         } catch (e) {
-            Raven.captureMessage('Can not unsubscribe from ' + obj.evt.toString() + ' :"' + e.msg + '"');
+            Sentry.captureMessage('Can not unsubscribe from ' + obj.evt.toString());
+            Sentry.captureException(e);
         }
     }, this));
     this.subscriptions = [];

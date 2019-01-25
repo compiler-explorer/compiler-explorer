@@ -108,6 +108,7 @@ dist: prereqs
 	cp -r static/dist/ out/dist/
 	cp -r static/vs/ out/dist/
 	cp -r static/policies/ out/dist/
+	echo ${HASH} > out/dist/git_hash
 
 travis-dist: dist
 	tar --exclude './.travis-compilers' --exclude './.git' --exclude './static' -Jcf /tmp/ce-build.tar.xz .
