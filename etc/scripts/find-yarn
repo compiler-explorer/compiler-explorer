@@ -1,11 +1,11 @@
-#!/bin/bash
+#!/bin/sh
 
 set -e
 OUT="$1"
 
 YARN=$(pwd)/node_modules/.bin/yarn
 
-if [[ ! -x "${YARN}" ]]; then
+if test ! -x "${YARN}"; then
     # Ensure any npm output goes to stderr and doesn't affect our
     # echo output below
     >&2 npm install yarn
