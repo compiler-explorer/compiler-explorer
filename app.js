@@ -368,7 +368,7 @@ aws.initConfig(awsProps)
                     } else if (userAgent === 'Twitterbot/1.0') {
                         // TODO: Escape to something Twitter likes
                         return line;
-                    } else if (userAgent === 'Slackbot-LinkExpanding 1.0') {
+                    } else if (userAgent.includes('Slackbot-LinkExpanding 1.0')) {
                         // TODO: Escape to something Slack likes
                         return line;
                     }
