@@ -59,7 +59,8 @@
     "vis": "4.20.1",
     "winston": "^2.4.0",
     "wolfy87-eventemitter": "^5.2.3",
-    "yarn": "^1.13.0"
+    "yarn": "^1.13.0",
+    "node-targz": "^0.2.0"
   },
   "devDependencies": {
     "aws-sdk-mock": "^1.7.0",
