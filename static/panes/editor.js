@@ -228,6 +228,8 @@ Editor.prototype.initCallbacks = function () {
     this.container.layoutManager.on('initialised', function () {
         // Once initialized, let everyone know what text we have.
         this.maybeEmitChange();
+        // And maybe ask for a compilation (Will hit the cache most of the time)
+        this.requestCompilation();
     }, this);
 
     this.eventHub.on('compilerOpen', this.onCompilerOpen, this);
@@ -366,6 +368,10 @@ Editor.prototype.tryCompilerLinkLine = function (thisLineNumber, reveal) {
     }, this));
 };
 
+Editor.prototype.requestCompilation = function () {
+    this.eventHub.emit('requestCompilation', this.id);
+};
+
 Editor.prototype.initEditorActions = function () {
     this.editor.addAction({
         id: 'compile',
@@ -375,7 +381,9 @@ Editor.prototype.initEditorActions = function () {
         contextMenuGroupId: 'navigation',
         contextMenuOrder: 1.5,
         run: _.bind(function () {
+            // This change request is mostly superfluous
             this.maybeEmitChange();
+            this.requestCompilation();
         }, this)
     });
 
@@ -563,21 +571,10 @@ Editor.prototype.onSettingsChange = function (newSettings) {
         wordWrapColumn: this.editor.getLayoutInfo().viewportColumn // Ensure the column count is up to date
     });
 
-    // * Turn off auto.
-    // * edit code
-    // * change compiler or compiler options (out of date code is used)
-    var bDac = before.compileOnChange ? before.delayAfterChange : 0;
-    var aDac = after.compileOnChange ? after.delayAfterChange : 0;
-    if (bDac !== aDac || !this.debouncedEmitChange) {
-        if (aDac) {
-            this.debouncedEmitChange = _.debounce(_.bind(function () {
-                this.maybeEmitChange();
-            }, this), after.delayAfterChange);
-            this.maybeEmitChange(true);
-        } else {
-            this.debouncedEmitChange = _.noop;
-        }
-    }
+    // Unconditionally send editor changes. The compiler only compiles when needed
+    this.debouncedEmitChange = _.debounce(_.bind(function () {
+        this.maybeEmitChange();
+    }, this), after.delayAfterChange);
 
     if (before.hoverShowSource && !after.hoverShowSource) {
         this.onEditorSetDecoration(this.id, -1, false);
@@ -732,7 +729,8 @@ Editor.prototype.initLoadSaver = function () {
             loadSave.run(_.bind(function (text) {
                 this.setSource(text);
                 this.updateState();
-                this.maybeEmitChange();
+                this.maybeEmitChange(true);
+                this.requestCompilation();
             }, this), this.getSource(), this.currentLanguage);
         }, this));
 };
@@ -753,6 +751,7 @@ Editor.prototype.onLanguageChange = function (newLangId) {
             // Broadcast the change to other panels
             this.eventHub.emit("languageChange", this.id, newLangId);
             this.maybeEmitChange(true);
+            this.requestCompilation();
             ga.proxy('send', {
                 hitType: 'event',
                 eventCategory: 'LanguageChange',

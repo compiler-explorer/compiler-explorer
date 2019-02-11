@@ -602,6 +602,8 @@ Compiler.prototype.onCompileResponse = function (request, result, cached) {
         });
         result.asm.splice(indexToDiscard + 1, result.asm.length - indexToDiscard);
     }
+    // Save which source produced this change. It should probably be saved earlier though
+    result.source = this.source;
     this.lastResult = result;
     var timeTaken = Math.max(0, Date.now() - this.pendingRequestSentAt);
     var wasRealReply = this.pendingRequestSentAt > 0;
@@ -693,7 +695,9 @@ Compiler.prototype.onEditorChange = function (editor, source, langId, compilerId
     if (editor === this.sourceEditorId && langId === this.currentLangId &&
         (compilerId === undefined || compilerId === this.id)) {
         this.source = source;
-        this.compile();
+        if (this.settings.compileOnChange) {
+            this.compile();
+        }
     }
 };
 
@@ -1081,6 +1085,7 @@ Compiler.prototype.initListeners = function () {
     this.eventHub.on('findCompilers', this.sendCompiler, this);
     this.eventHub.on('compilerSetDecorations', this.onCompilerSetDecorations, this);
     this.eventHub.on('settingsChange', this.onSettingsChange, this);
+    this.eventHub.on('requestCompilation', this.onRequestCompilation, this);
 
     this.eventHub.on('toolSettingsChange', this.onToolSettingsChange, this);
     this.eventHub.on('toolOpened', this.onToolOpened, this);
@@ -1339,6 +1344,12 @@ Compiler.prototype.setCompilerVersionPopover = function (version) {
             '" role="tooltip"><div class="arrow"></div>' +
             '<h3 class="popover-header"></h3><div class="popover-body"></div></div>'
     });
+};
+
+Compiler.prototype.onRequestCompilation = function (editorId) {
+    if (editorId === this.sourceEditorId) {
+        this.compile();
+    }
 };
 
 Compiler.prototype.onSettingsChange = function (newSettings) {

@@ -76,13 +76,6 @@ function Opt(hub, container, state) {
     });
 }
 
-Opt.prototype.onEditorChange = function (id, source) {
-    if (this._editorid === id) {
-        this.code = source;
-        if (!this.isCompilerSupported) this.optEditor.setValue(source);
-    }
-};
-
 Opt.prototype.initButtons = function (state) {
     this.fontScale = new FontScale(this.domRoot, state, this.optEditor);
 
@@ -95,7 +88,6 @@ Opt.prototype.initCallbacks = function () {
     this.eventHub.on('compileResult', this.onCompileResult, this);
     this.eventHub.on('compiler', this.onCompiler, this);
     this.eventHub.on('compilerClose', this.onCompilerClose, this);
-    this.eventHub.on('editorChange', this.onEditorChange, this);
     this.eventHub.on('settingsChange', this.onSettingsChange, this);
     this.eventHub.on('resize', this.resize, this);
     this.container.on('destroy', this.close, this);
@@ -106,7 +98,9 @@ Opt.prototype.initCallbacks = function () {
 };
 
 Opt.prototype.onCompileResult = function (id, compiler, result, lang) {
-    if (this._compilerid !== id) return;
+    if (this._compilerid !== id || !this.isCompilerSupported) return;
+    this.code = result.source;
+    this.optEditor.setValue(this.code);
     if (result.hasOptOutput) {
         this.showOptResults(result.optOutput);
     }
@@ -169,15 +163,12 @@ Opt.prototype.onCompiler = function (id, compiler, options, editorid) {
     if (id === this._compilerid) {
         this._compilerName = compiler ? compiler.name : '';
         this.setTitle();
-        if (!compiler || !compiler.supportsOptOutput) {
-            if (!this.isCompilerSupported) this.code = this.optEditor.getValue();
-            this.optEditor.setValue("<OPT output is not supported for this compiler>");
-            this.isCompilerSupported = true;
-            return;
-        }
         this._editorid = editorid;
-        this.optEditor.setValue(this.code);
-        this.isCompilerSupported = false;
+        if (compiler) {
+            this.isCompilerSupported = compiler.supportsOptOutput;
+            if (!this.isCompilerSupported)
+                this.optEditor.setValue("<OPT output is not supported for this compiler>");
+        }
     }
 };
 
