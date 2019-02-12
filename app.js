@@ -386,6 +386,61 @@ aws.initConfig(awsProps)
                     return code;
                 }
 
+                function renderGoldenLayout(config, metadata, res) {
+                    staticHeaders(res);
+                    contentPolicyHeader(res);
+                    res.render('index', renderConfig({
+                        embedded: false,
+                        config: config,
+                        metadata: metadata
+                    }));
+                }
+
+                function renderClientState(clientstate, metadata, res) {
+                    const config = getGoldenLayoutFromClientState(clientstate);
+
+                    renderGoldenLayout(config, metadata, res);
+                }
+
+                function getMetaDataFromLink(req, link, config) {
+                    const metadata = {
+                        ogDescription: null,
+                        ogAuthor: null,
+                        ogTitle: "Compiler Explorer"
+                    };
+
+                    if (link) {
+                        metadata.ogDescription = link.specialMetadata ? link.specialMetadata.description.S : null;
+                        metadata.ogAuthor = link.specialMetadata ? link.specialMetadata.author.S : null;
+                        metadata.ogTitle = link.specialMetadata ? link.specialMetadata.title.S : "Compiler Explorer";
+                    }
+
+                    if (!metadata.ogDescription) {
+                        const sources = utils.glGetMainContents(config.content);
+                        if (sources.editors.length === 1) {
+                            const editor = sources.editors[0];
+                            const lang = languages[editor.language];
+                            if (lang) {
+                                metadata.ogDescription = filterCode(req, editor.source, lang);
+                                metadata.ogTitle += ` - ${lang.name}`;
+                                if (sources.compilers.length === 1) {
+                                    const compilerId = sources.compilers[0].compiler;
+                                    const compiler = apiHandler.compilers.find(c => c.id === compilerId);
+                                    if (compiler) {
+                                        metadata.ogTitle += ` (${compiler.name})`;
+                                    }
+                                }
+                            } else {
+                                metadata.ogDescription = editor.source;
+                            }
+                        }
+                    } else if (metadata.ogAuthor && metadata.ogAuthor !== '.') {
+                        metadata.ogDescription += `\nAuthor(s): ${metadata.ogAuthor}`;
+                    }
+
+                    return metadata;
+                }
+
                 function storedStateHandlerResetLayout(req, res, next) {
                     const id = req.params.id;
                     storageHandler.expandId(id)
@@ -400,42 +455,8 @@ aws.initConfig(awsProps)
                                 config = new clientState.State(config);
                             }
 
-                            config = getGoldenLayoutFromClientState(config);
-
-                            const metadata = {
-                                ogDescription: result.specialMetadata ? result.specialMetadata.description.S : null,
-                                ogAuthor: result.specialMetadata ? result.specialMetadata.author.S : null,
-                                ogTitle: result.specialMetadata ? result.specialMetadata.title.S : "Compiler Explorer"
-                            };
-                            if (!metadata.ogDescription) {
-                                const sources = utils.glGetMainContents(config.content);
-                                if (sources.editors.length === 1) {
-                                    const editor = sources.editors[0];
-                                    const lang = languages[editor.language];
-                                    if (lang) {
-                                        metadata.ogDescription = filterCode(req, editor.source, lang);
-                                        metadata.ogTitle += ` - ${lang.name}`;
-                                        if (sources.compilers.length === 1) {
-                                            const compilerId = sources.compilers[0].compiler;
-                                            const compiler = apiHandler.compilers.find(c => c.id === compilerId);
-                                            if (compiler) {
-                                                metadata.ogTitle += ` (${compiler.name})`;
-                                            }
-                                        }
-                                    } else {
-                                        metadata.ogDescription = editor.source;
-                                    }
-                                }
-                            } else if (metadata.ogAuthor && metadata.ogAuthor !== '.') {
-                                metadata.ogDescription += `\nAuthor(s): ${metadata.ogAuthor}`;
-                            }
-                            staticHeaders(res);
-                            contentPolicyHeader(res);
-                            res.render('index', renderConfig({
-                                embedded: false,
-                                config: config,
-                                metadata: metadata
-                            }));
+                            const metadata = getMetaDataFromLink(req, result, config);
+                            renderClientState(config, metadata, res);
                         })
                         .catch(err => {
                             logger.warn(`Exception thrown when expanding ${id}`);
@@ -447,6 +468,14 @@ aws.initConfig(awsProps)
                         });
                 }
 
+                function unstoredStateHandler(req, res) {
+                    const state = JSON.parse(Buffer.from(req.params.clientstatebase64, 'base64').toString());
+                    const config = getGoldenLayoutFromClientState(new clientState.State(state));
+                    const metadata = getMetaDataFromLink(req, null, config);
+
+                    renderGoldenLayout(config, metadata, res);
+                }
+
                 function storedStateHandler(req, res, next) {
                     const id = req.params.id;
                     storageHandler.expandId(id)
@@ -455,41 +484,8 @@ aws.initConfig(awsProps)
                             if (config.sessions) {
                                 config = getGoldenLayoutFromClientState(new clientState.State(config));
                             }
-                            const metadata = {
-                                ogDescription: result.specialMetadata ? result.specialMetadata.description.S : null,
-                                ogAuthor: result.specialMetadata ? result.specialMetadata.author.S : null,
-                                ogTitle: result.specialMetadata ? result.specialMetadata.title.S : "Compiler Explorer"
-                            };
-                            if (!metadata.ogDescription) {
-                                const sources = utils.glGetMainContents(config.content);
-                                if (sources.editors.length === 1) {
-                                    const editor = sources.editors[0];
-                                    const lang = languages[editor.language];
-                                    if (lang) {
-                                        metadata.ogDescription = filterCode(req, editor.source, lang);
-                                        metadata.ogTitle += ` - ${lang.name}`;
-                                        if (sources.compilers.length === 1) {
-                                            const compilerId = sources.compilers[0].compiler;
-                                            const compiler = apiHandler.compilers.find(c => c.id === compilerId);
-                                            if (compiler) {
-                                                metadata.ogTitle += ` (${compiler.name})`;
-                                            }
-                                        }
-                                    } else {
-                                        metadata.ogDescription = editor.source;
-                                    }
-                                }
-                            // A dot means a lack of authors but a named link. Could use a flag, really
-                            } else if (metadata.ogAuthor && metadata.ogAuthor !== '.') {
-                                metadata.ogDescription += `\nAuthor(s): ${metadata.ogAuthor}`;
-                            }
-                            staticHeaders(res);
-                            contentPolicyHeader(res);
-                            res.render('index', renderConfig({
-                                embedded: false,
-                                config: config,
-                                metadata: metadata
-                            }));
+                            const metadata = getMetaDataFromLink(result, config);
+                            renderGoldenLayout(config, metadata, res);
                             // And finally, increment the view count
                             // If any errors pop up, they are just logged, but the response should still be valid
                             // It's really  unlikely that it happens as a result of the id not being there though,
@@ -585,6 +581,7 @@ aws.initConfig(awsProps)
                     .use('/g', oldGoogleUrlHandler)
                     .get('/z/:id', storedStateHandler)
                     .get('/resetlayout/:id', storedStateHandlerResetLayout)
+                    .get('/clientstate/:clientstatebase64', unstoredStateHandler)
                     .post('/shortener', storageHandler.handler.bind(storageHandler))
                     .use((req, res, next) => {
                         next({status: 404, message: `page "${req.path}" could not be found`});
