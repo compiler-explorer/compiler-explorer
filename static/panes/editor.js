@@ -344,6 +344,23 @@ Editor.prototype.initButtons = function (state) {
             }
         }
     }, this));
+
+    this.domRoot.find(".open-in-cppinsights").on("focus", _.bind(function() {
+        this.updateOpenInCppInsights();
+    }, this));
+};
+
+Editor.prototype.b64UTFEncode = function(str) {
+    return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function(match, v) {
+        return String.fromCharCode(parseInt(v, 16));
+    }));
+};
+  
+Editor.prototype.updateOpenInCppInsights = function() {
+    var cppStd = 'cpp2a'; // if a compiler is linked, maybe we can find this out?
+    var link = 'https://cppinsights.io/lnk?code=' + this.b64UTFEncode(this.getSource()) + '&std=' + cppStd + '&rev=1.0';
+
+    this.domRoot.find(".open-in-cppinsights").attr("href", link);
 };
 
 Editor.prototype.changeLanguage = function (newLang) {
