@@ -484,7 +484,7 @@ aws.initConfig(awsProps)
                             if (config.sessions) {
                                 config = getGoldenLayoutFromClientState(new clientState.State(config));
                             }
-                            const metadata = getMetaDataFromLink(result, config);
+                            const metadata = getMetaDataFromLink(req, result, config);
                             renderGoldenLayout(config, metadata, res);
                             // And finally, increment the view count
                             // If any errors pop up, they are just logged, but the response should still be valid
