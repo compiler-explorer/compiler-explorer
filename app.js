@@ -169,6 +169,7 @@ const staticMaxAgeSecs = ceProps('staticMaxAgeSecs', 0);
 const maxUploadSize = ceProps('maxUploadSize', '1mb');
 const extraBodyClass = ceProps('extraBodyClass', '');
 const httpRoot = ceProps('httpRoot', '/');
+const httpRootDir = httpRoot.endsWith('/') ? httpRoot : (httpRoot + '/');
 
 function staticHeaders(res) {
     if (staticMaxAgeSecs) {
@@ -328,17 +329,39 @@ aws.initConfig(awsProps)
                     bodyParser = require('body-parser'),
                     morgan = require('morgan'),
                     compression = require('compression'),
-                    restreamer = require('./lib/restreamer');
+                    restreamer = require('./lib/restreamer'),
+                    router = express.Router();
+                webServer
+                    .set('trust proxy', true)
+                    .set('view engine', 'pug')
+                    .on('error', err => logger.error('Caught error:', err, "(in web handler; continuing)"))
+                    .use(httpRootDir, router)
+                    .use((req, res, next) => {
+                        next({status: 404, message: `page "${req.path}" could not be found`});
+                    })
+                    .use(Sentry.Handlers.errorHandler)
+                    // eslint-disable-next-line no-unused-vars
+                    .use((err, req, res, next) => {
+                        const status =
+                            err.status ||
+                            err.statusCode ||
+                            err.status_code ||
+                            (err.output && err.output.statusCode) ||
+                            500;
+                        const message = err.message || 'Internal Server Error';
+                        res.status(status);
+                        res.render('error', renderConfig({error: {code: status, message: message}}));
+                    });
 
                 logger.info("=======================================");
                 if (gitReleaseName) logger.info(`  git release ${gitReleaseName}`);
-                const httpRootDir = httpRoot.endsWith('/') ? httpRoot : (httpRoot + '/');
 
                 function renderConfig(extra) {
                     const options = _.extend(extra, clientOptionsHandler.get());
                     options.compilerExplorerOptions = JSON.stringify(options);
                     options.extraBodyClass = extraBodyClass;
                     options.httpRoot = httpRoot;
+                    options.httpRootDir = httpRootDir;
                     options.require = function (path) {
                         if (isDevMode()) {
                             if (fs.existsSync('static/assets/' + path)) {
@@ -514,17 +537,17 @@ aws.initConfig(awsProps)
                 };
                 const healthCheck = require('./lib/handlers/health-check');
                 if (isDevMode()) {
-                    webServer.use(webpackDevMiddleware(webpackCompiler, {
+                    router.use(webpackDevMiddleware(webpackCompiler, {
                         publicPath: webpackConfig.output.publicPath,
                         logger: logger
                     }));
-                    webServer.use(express.static(defArgs.staticDir));
+                    router.use(express.static(defArgs.staticDir));
                     logger.info("  using webpack dev middleware");
                 } else {
                     /* Assume that anything not dev is just production.
                      * This gives sane defaults for anyone who isn't messing with this */
                     logger.info("  serving static files from '" + defArgs.staticDir + "'");
-                    webServer.use(express.static(defArgs.staticDir, {maxAge: staticMaxAgeSecs * 1000}));
+                    router.use(express.static(defArgs.staticDir, {maxAge: staticMaxAgeSecs * 1000}));
                 }
 
                 morgan.token('gdpr_ip', req => utils.anonymizeIp(req.ip));
@@ -532,10 +555,8 @@ aws.initConfig(awsProps)
                 // Based on combined format, but: GDPR compliant IP, no timestamp & no unused fields for our usecase
                 const morganFormat = isDevMode() ? 'dev' : ':gdpr_ip ":method :url" :status';
 
-                webServer
+                router
                     .use(Sentry.Handlers.requestHandler())
-                    .set('trust proxy', true)
-                    .set('view engine', 'pug')
                     // before morgan so healthchecks aren't logged
                     .use('/healthcheck', new healthCheck.HealthCheckHandler().handle)
                     .use(morgan(morganFormat, {
@@ -585,24 +606,7 @@ aws.initConfig(awsProps)
                     .use('/g', oldGoogleUrlHandler)
                     .get('/z/:id', storedStateHandler)
                     .get('/resetlayout/:id', storedStateHandlerResetLayout)
-                    .post('/shortener', storageHandler.handler.bind(storageHandler))
-                    .use((req, res, next) => {
-                        next({status: 404, message: `page "${req.path}" could not be found`});
-                    })
-                    .use(Sentry.Handlers.errorHandler)
-                    // eslint-disable-next-line no-unused-vars
-                    .use((err, req, res, next) => {
-                        const status =
-                            err.status ||
-                            err.statusCode ||
-                            err.status_code ||
-                            (err.output && err.output.statusCode) ||
-                            500;
-                        const message = err.message || 'Internal Server Error';
-                        res.status(status);
-                        res.render('error', renderConfig({error: {code: status, message: message}}));
-                    })
-                    .on('error', err => logger.error('Caught error:', err, "(in web handler; continuing)"));
+                    .post('/shortener', storageHandler.handler.bind(storageHandler));
                 if (!defArgs.doCache) {
                     logger.info("  with disabled caching");
                 }
