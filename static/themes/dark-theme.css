@@ -376,3 +376,7 @@ div.argmenuitem span.argdescription {
     overflow-anchor: visible;
     overflow-y: hidden;
 }
+
+.open-in-cppinsights * {
+    vertical-align: middle;
+}
