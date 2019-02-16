@@ -31,7 +31,7 @@ var $ = require('jquery'),
 function handleMotd(motd, motdNode, subLang, adsEnabled, onHide) {
     if (motd.motd) {
         motdNode.find(".content").html(motd.motd);
-        motdNode.removeClass('hide');
+        motdNode.removeClass('d-none');
         motdNode.find(".close")
             .on('click', function () {
                 motdNode.addClass('d-none');
