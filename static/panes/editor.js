@@ -187,6 +187,8 @@ Editor.prototype.updateState = function () {
     };
     this.fontScale.addState(state);
     this.container.setState(state);
+
+    this.updateButtons();
 };
 
 Editor.prototype.setSource = function (newSource) {
@@ -344,6 +346,32 @@ Editor.prototype.initButtons = function (state) {
             }
         }
     }, this));
+
+    this.cppInsightsButton = this.domRoot.find('.open-in-cppinsights');
+    this.cppInsightsButton.on('mousedown', _.bind(function () {
+        this.updateOpenInCppInsights();
+    }, this));
+};
+
+Editor.prototype.updateButtons = function() {
+    if (this.currentLanguage.id === 'c++') {
+        this.cppInsightsButton.show();
+    } else {
+        this.cppInsightsButton.hide();
+    }
+};
+
+Editor.prototype.b64UTFEncode = function (str) {
+    return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function (match, v) {
+        return String.fromCharCode(parseInt(v, 16));
+    }));
+};
+
+Editor.prototype.updateOpenInCppInsights = function () {
+    var cppStd = 'cpp2a'; // if a compiler is linked, maybe we can find this out?
+    var link = 'https://cppinsights.io/lnk?code=' + this.b64UTFEncode(this.getSource()) + '&std=' + cppStd + '&rev=1.0';
+
+    this.domRoot.find(".open-in-cppinsights").attr("href", link);
 };
 
 Editor.prototype.changeLanguage = function (newLang) {

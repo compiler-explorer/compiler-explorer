@@ -45,6 +45,9 @@
           button.dropdown-item.btn.btn-sm.btn-light.add-editor(title="Add a new source editor view" aria-label="New source editor")
             span.fa.fa-code
             | &nbsp;Source editor
+        a.btn.btn-light.open-in-cppinsights(href="https://cppinsights.io/" target="_blank" title="Open in Cppinsights" arial-label="Open in Cppinsights")
+          img(height="16" width="16" src=require("cppinsights16.png"))
+          span.hideable &nbsp;CppInsights
       .btn-group.btn-group-sm.ml-auto(role="group" aria-label="Editor language")
         select.change-language(title="Change this editor's (and associated panels) language" disabled=embedded && readOnly)
     .monaco-placeholder
