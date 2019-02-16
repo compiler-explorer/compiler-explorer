@@ -187,6 +187,8 @@ Editor.prototype.updateState = function () {
     };
     this.fontScale.addState(state);
     this.container.setState(state);
+
+    this.updateButtons();
 };
 
 Editor.prototype.setSource = function (newSource) {
@@ -345,9 +347,18 @@ Editor.prototype.initButtons = function (state) {
         }
     }, this));
 
-    this.domRoot.find(".open-in-cppinsights").on("click", _.bind(function () {
+    this.cppInsightsButton = this.domRoot.find('.open-in-cppinsights');
+    this.cppInsightsButton.on('mousedown', _.bind(function () {
         this.updateOpenInCppInsights();
     }, this));
+};
+
+Editor.prototype.updateButtons = function() {
+    if (this.currentLanguage.id === 'c++') {
+        this.cppInsightsButton.show();
+    } else {
+        this.cppInsightsButton.hide();
+    }
 };
 
 Editor.prototype.b64UTFEncode = function (str) {
