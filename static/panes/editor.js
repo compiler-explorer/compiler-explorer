@@ -353,7 +353,7 @@ Editor.prototype.initButtons = function (state) {
     }, this));
 };
 
-Editor.prototype.updateButtons = function() {
+Editor.prototype.updateButtons = function () {
     if (this.currentLanguage.id === 'c++') {
         this.cppInsightsButton.show();
     } else {
