@@ -330,11 +330,15 @@ aws.initConfig(awsProps)
                     morgan = require('morgan'),
                     compression = require('compression'),
                     restreamer = require('./lib/restreamer'),
-                    router = express.Router();
+                    router = express.Router(),
+                    healthCheck = require('./lib/handlers/health-check');
+
                 webServer
                     .set('trust proxy', true)
                     .set('view engine', 'pug')
                     .on('error', err => logger.error('Caught error:', err, "(in web handler; continuing)"))
+                    // Handle healthchecks at the root, as they're not expected from the outside world
+                    .use('/healthcheck', new healthCheck.HealthCheckHandler().handle)
                     .use(httpRootDir, router)
                     .use((req, res, next) => {
                         next({status: 404, message: `page "${req.path}" could not be found`});
@@ -531,7 +535,6 @@ aws.initConfig(awsProps)
                     contentPolicyHeader(res);
                     res.render('embed', renderConfig({embedded: true}));
                 };
-                const healthCheck = require('./lib/handlers/health-check');
                 if (isDevMode()) {
                     router.use(webpackDevMiddleware(webpackCompiler, {
                         publicPath: webpackConfig.output.publicPath,
@@ -553,8 +556,6 @@ aws.initConfig(awsProps)
 
                 router
                     .use(Sentry.Handlers.requestHandler())
-                    // before morgan so healthchecks aren't logged
-                    .use('/healthcheck', new healthCheck.HealthCheckHandler().handle)
                     .use(morgan(morganFormat, {
                         stream: logger.stream,
                         // Skip for non errors (2xx, 3xx)
