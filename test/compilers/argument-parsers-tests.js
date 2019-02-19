@@ -120,6 +120,24 @@ describe('clang parser', () => {
                 ]);
             });
     });
+    it("should add -fno-crash-diagnostics if supported", () => {
+        const compiler = new FakeCompiler({});
+        compiler.possibleArguments = new CompilerArguments("fake");
+        compiler.exec = () => Promise.resolve({
+          code: 0,
+          stdout: "-O3\n-fno-crash-diagnostics\n-Wall\n",
+          stderr: ""
+        });
+
+        return parsers.Clang.parse(compiler)
+            .should.eventually.satisfy(result => {
+                return Promise.all([
+                    result.compiler.options.includes("-fno-crash-diagnostics").should.be.true,
+                    result.compiler.options.includes("-fcolor-diagnostics").should.be.false,
+                    result.compiler.options.includes("-Wall").should.be.false,
+                ]);
+            });
+    });
 });
 
 describe('popular compiler arguments', () => {
