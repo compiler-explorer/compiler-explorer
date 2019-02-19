@@ -120,7 +120,7 @@ describe('clang parser', () => {
                 ]);
             });
     });
-    it("should add -fno-crash-diagnostics if supported", () => {
+    it("should add '-fno-crash-diagnostics' and '-fcolor-diagnostics' when supported", () => {
         const compiler = new FakeCompiler({});
         compiler.possibleArguments = new CompilerArguments("fake");
         compiler.exec = () => Promise.resolve({
