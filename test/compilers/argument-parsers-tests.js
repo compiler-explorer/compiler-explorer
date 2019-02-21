@@ -111,12 +111,15 @@ describe('clang parser', () => {
         });
     });
     it('should handle options', () => {
-        return parsers.Clang.parse(makeCompiler("-fsave-optimization-record\n-fcolor-diagnostics"))
+        return parsers.Clang.parse(makeCompiler("-fno-crash-diagnostics\n-fsave-optimization-record\n-fcolor-diagnostics"))
             .should.eventually.satisfy(result => {
                 return Promise.all([
                     result.compiler.supportsOptOutput.should.equals(true),
                     result.compiler.optArg.should.equals('-fsave-optimization-record'),
-                    result.compiler.options.should.equals('-fcolor-diagnostics')
+
+                    result.compiler.options.should.include("-fcolor-diagnostics"),
+                    result.compiler.options.should.include("-fno-crash-diagnostics"),
+                    result.compiler.options.should.not.include("-fsave-optimization-record"),
                 ]);
             });
     });

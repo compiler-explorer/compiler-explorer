@@ -68,3 +68,4 @@ From oldest to newest contributor, we would like to thank:
 - [Niall Douglas](https://github.com/ned14)
 - [Daniel Black](https://github.com/grooverdan)
 - [Gennadiy Civil](https://github.com/gennadiycivil)
+- [Paul Scharnofske](https://github.com/asynts)
