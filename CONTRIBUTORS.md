@@ -25,6 +25,7 @@ From oldest to newest contributor, we would like to thank:
 - [Brian Cain](https://github.com/androm3da)
 - [Alexander Monakov](https://github.com/amonakov)
 - [David Nadlinger](https://github.com/klickverbot)
+- [Marc Poulhiès](https://github.com/dkm)
 - [Carlos van Rooijen](https://github.com/CvRXX)
 - [Kaartic Sivaraam](https://github.com/sivaraam)
 - [Lilian A. Moraru](https://github.com/lilianmoraru)
