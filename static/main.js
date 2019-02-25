@@ -226,6 +226,7 @@ require("monaco-loader")().then(function () {
         }
     }
 
+    // eslint-disable-next-line max-statements
     function start() {
         initializeResetLayoutLink();
 
@@ -361,13 +362,22 @@ require("monaco-loader")().then(function () {
         }
         initPolicies(options);
 
-        // Don't fetch the motd on embedded mode
+        // Skip some steps if using embedded mode
         if (!options.embedded) {
+            // Don't fetch the motd
             motd.initialise(options.motdUrl, $('#motd'), subLangId, settings.enableCommunityAds, function () {
                 hub.layout.eventHub.emit('modifySettings', {
                     enableCommunityAds: false
                 });
             });
+
+            // Don't try to update Version tree link
+            var release = window.compilerExplorerOptions.release;
+            var versionLink = 'https://github.com/mattgodbolt/compiler-explorer/';
+            if (release) {
+                versionLink += 'tree/' +  release;
+            }
+            $('#version-tree').prop('href', versionLink);
         }
         sizeRoot();
         lastState = JSON.stringify(layout.toConfig());
