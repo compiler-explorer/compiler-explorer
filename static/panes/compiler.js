@@ -338,6 +338,8 @@ Compiler.prototype.initCompiler = function (state) {
 };
 
 Compiler.prototype.initEditorActions = function () {
+    var docname = this.compiler.docname;
+
     this.outputEditor.addAction({
         id: 'viewsource',
         label: 'Scroll to source',
@@ -360,7 +362,7 @@ Compiler.prototype.initEditorActions = function () {
 
     this.outputEditor.addAction({
         id: 'viewasmdoc',
-        label: 'View x86-64 opcode doc',
+        label: 'View ' + docname + ' opcode doc',
         keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.F8],
         keybindingContext: null,
         contextMenuGroupId: 'help',
@@ -1388,7 +1390,7 @@ function getNumericToolTip(value) {
     return null;
 }
 
-function getAsmInfo(opcode) {
+function getAsmInfo(opcode, docname) {
     var cacheName = 'asm/' + opcode;
     var cached = OpcodeCache.get(cacheName);
     if (cached) {
@@ -1401,7 +1403,7 @@ function getAsmInfo(opcode) {
     return new Promise(function (resolve, reject) {
         $.ajax({
             type: 'GET',
-            url: window.location.origin + base + 'api/asm/' + opcode,
+            url: window.location.origin + base + 'api/asm/' + docname + '/' + opcode,
             dataType: 'json',  // Expected,
             contentType: 'text/plain',  // Sent
             success: function (result) {
@@ -1469,7 +1471,7 @@ Compiler.prototype.onMouseMove = function (e) {
                 _.some(lineTokens(this.outputEditor.getModel(), currentWord.range.startLineNumber), function (t) {
                     return t.offset + 1 === currentWord.startColumn && t.type === 'keyword.asm';
                 })) {
-                getAsmInfo(currentWord.word).then(_.bind(function (response) {
+                getAsmInfo(currentWord.word, this.compiler.docname).then(_.bind(function (response) {
                     if (!response) return;
                     this.decorations.asmToolTip = {
                         range: currentWord.range,
@@ -1504,7 +1506,7 @@ Compiler.prototype.onAsmToolTip = function (ed) {
             ' title="Opens in a new window"></small></sup></a>.';
     }
 
-    getAsmInfo(word.word).then(_.bind(function (asmHelp) {
+    getAsmInfo(word.word, this.compiler.docname).then(_.bind(function (asmHelp) {
         if (asmHelp) {
             this.alertSystem.alert(opcode + ' help', asmHelp.html + appendInfo(asmHelp.url), function () {
                 ed.focus();
