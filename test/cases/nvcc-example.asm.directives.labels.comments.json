@@ -99,6 +99,13 @@
     }
   },
   {
+    "text": "        @%p1 bra        BB0_2;",
+    "source": {
+      "file": "/tmp/moo.cu",
+      "line": 12
+    }
+  },
+  {
     "text": "",
     "source": null
   },
