@@ -9,7 +9,7 @@
                 button.btn.btn-outline-secondary.btn-sm.dropdown-toggle(data-toggle="dropdown" type="button" aria-haspopup="true" aria-expanded="false")
                   span.current Short
                 ul.dropdown-menu.sources
-                  if storageSolution != "null"
+                  if storageSolution !== "null"
                       button.dropdown-item.btn.btn-light.btn-sm(data-bind="Short")
                         | Short
                   button.dropdown-item.btn.btn-light.btn-sm(data-bind="Full")
