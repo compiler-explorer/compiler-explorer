@@ -168,6 +168,7 @@ const compilerProps = new props.CompilerProps(languages, ceProps);
 const staticMaxAgeSecs = ceProps('staticMaxAgeSecs', 0);
 const maxUploadSize = ceProps('maxUploadSize', '1mb');
 const extraBodyClass = ceProps('extraBodyClass', '');
+const storageSolution = compilerProps.ceProps('storageSolution', 'local');
 const httpRoot = ceProps('httpRoot', '/');
 const httpRootDir = httpRoot.endsWith('/') ? httpRoot : (httpRoot + '/');
 
@@ -366,6 +367,7 @@ aws.initConfig(awsProps)
                     options.extraBodyClass = extraBodyClass;
                     options.httpRoot = httpRoot;
                     options.httpRootDir = httpRootDir;
+                    options.storageSolution = storageSolution;
                     options.require = function (path) {
                         if (isDevMode()) {
                             if (fs.existsSync('static/assets/' + path)) {
@@ -605,6 +607,7 @@ aws.initConfig(awsProps)
                     .get('/resetlayout/:id', storedStateHandlerResetLayout)
                     .get('/clientstate/:clientstatebase64', unstoredStateHandler)
                     .post('/shortener', storageHandler.handler.bind(storageHandler));
+
                 if (!defArgs.doCache) {
                     logger.info("  with disabled caching");
                 }
