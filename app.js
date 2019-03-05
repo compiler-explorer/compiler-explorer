@@ -330,7 +330,6 @@ aws.initConfig(awsProps)
                     bodyParser = require('body-parser'),
                     morgan = require('morgan'),
                     compression = require('compression'),
-                    restreamer = require('./lib/restreamer'),
                     router = express.Router(),
                     healthCheck = require('./lib/handlers/health-check');
 
@@ -599,7 +598,6 @@ aws.initConfig(awsProps)
                     .use(sFavicon(path.join(defArgs.staticDir, webpackConfig.output.publicPath, 'favicon.ico')))
                     .use(bodyParser.json({limit: ceProps('bodyParserLimit', maxUploadSize)}))
                     .use(bodyParser.text({limit: ceProps('bodyParserLimit', maxUploadSize), type: () => true}))
-                    .use(restreamer())
                     .use('/source', sourceHandler.handle.bind(sourceHandler))
                     .use('/api', apiHandler.handle)
                     .use('/g', oldGoogleUrlHandler)
