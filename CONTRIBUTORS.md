@@ -70,3 +70,4 @@ From oldest to newest contributor, we would like to thank:
 - [Daniel Black](https://github.com/grooverdan)
 - [Gennadiy Civil](https://github.com/gennadiycivil)
 - [Paul Scharnofske](https://github.com/asynts)
+- [Sebastian Staffa](https://github.com/Staff-d)
