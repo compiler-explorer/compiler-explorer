@@ -40,6 +40,7 @@ var local = require('../local');
 var Sentry = require('@sentry/browser');
 var Libraries = require('../libs-widget');
 require('../modes/asm-mode');
+require('../modes/ptx-mode');
 
 require('selectize');
 
@@ -104,7 +105,7 @@ function Compiler(hub, container, state) {
     this.outputEditor = monaco.editor.create(this.monacoPlaceholder[0], {
         scrollBeyondLastLine: false,
         readOnly: true,
-        language: 'asm',
+        language: languages[this.currentLangId].monacoDisassembly || 'asm',
         fontFamily: this.settings.editorsFFont,
         glyphMargin: !options.embedded,
         fixedOverflowWidgets: true,

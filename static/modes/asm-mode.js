@@ -119,5 +119,8 @@ function definition() {
     };
 }
 
+var def = definition();
 monaco.languages.register({id: 'asm'});
-monaco.languages.setMonarchTokensProvider('asm', definition());
+monaco.languages.setMonarchTokensProvider('asm', def);
+
+module.exports = def;
