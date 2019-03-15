@@ -23,10 +23,11 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 const fs = require('fs-extra');
+const exec = require('child_process').exec;
 const AsmParser = require('../lib/asm-parser');
 const AsmParserVC = require('../lib/asm-parser-vc');
 const utils = require('../lib/utils');
-require('chai').should();
+const should = require('chai').should();
 
 function bless(filename, output, filters) {
     const result = processAsm(__dirname + '/' + filename, filters);
@@ -82,6 +83,12 @@ const filesInCaseDir = files.map(x => 'filters-cases/' + x);
 
 const cases = filesInCaseDir.filter(x => x.endsWith(".asm"));
 
+function isCorrect(filename, file, result) {
+    it(filename, function () {
+        result.should.deep.equal(file, `${filename} case error`);
+    });
+}
+
 function testFilter(filename, suffix, filters) {
     const expected = filename + suffix;
     const json = filesInCaseDir.includes(expected + '.json');
@@ -104,14 +111,16 @@ function testFilter(filename, suffix, filters) {
     } else {
         file = utils.splitLines(file);
     }
-
-    it(filename, () => {
-        if (json) {
-            result.should.deep.equal(file, `${filename} case error`);
-        } else {
-            result.asm.map(x => x.text).should.deep.equal(file, `${filename} case error`);
-        }
-    });
+    // through javascript API
+    var result = processAsm(filename, filters);
+    if (!json) result = result.map(x => x.text);
+    isCorrect(filename, file, result);
+    // through CLI
+    exec(__dirname + '/../lib/tooling/asm-file-parser.js < ' + filename, (err, stdout, stderr) => {
+        if (stderr != '') console.error(stderr);
+        should.not.exist(err);
+        isCorrect(filename, file, stdout);
+    })
 }
 
 /*
