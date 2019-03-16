@@ -24,8 +24,7 @@
 
 'use strict';
 
-import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
-
+var monaco = require('monaco-editor/esm/vs/editor/editor.api');
 
 var FontScale = require('../fontscale');
 var Toggles = require('../toggles');

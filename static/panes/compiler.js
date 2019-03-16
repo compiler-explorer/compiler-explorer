@@ -23,8 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 'use strict';
-import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
-
+var monaco = require('monaco-editor/esm/vs/editor/editor.api');
 var $ = require('jquery');
 var _ = require('underscore');
 var ga = require('../analytics');
