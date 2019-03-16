@@ -368,14 +368,6 @@ aws.initConfig(awsProps)
                     options.httpRootDir = httpRootDir;
                     options.storageSolution = storageSolution;
                     options.require = function (path) {
-                        if (isDevMode()) {
-                            if (fs.existsSync('static/assets/' + path)) {
-                                return '/assets/' + path;
-                            } else {
-                                //this will break assets in dev mode for now
-                                return '/dist/' + path;
-                            }
-                        }
                         if (staticManifest.hasOwnProperty(path)) {
                             return `${staticManifest[path]}`;
                         }
