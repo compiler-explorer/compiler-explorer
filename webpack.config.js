@@ -15,7 +15,7 @@ const distPath =  path.resolve(__dirname, 'dist')
 const manifestPath = 'manifest.json';  //if you change this, you also need to update it in the app.js
 const outputName = isDev ? 'main.js' : 'bundle.[hash].js';
 const cssName = isDev ? '[name].css' :  "[name].[contenthash].css";
-const publicPath = './'
+const publicPath = '/'
 const manifestPlugin = new ManifestPlugin({
     fileName: manifestPath
 });
@@ -91,7 +91,7 @@ module.exports = [
         output: {
             filename: outputName,
             path: distPath,
-          //  publicPath: publicPath
+            publicPath: publicPath
         },
         resolve: {
             modules: ['./static', "./node_modules"],

@@ -368,6 +368,9 @@ aws.initConfig(awsProps)
                     options.httpRootDir = httpRootDir;
                     options.storageSolution = storageSolution;
                     options.require = function (path) {
+                        if(isDevMode) {
+                            return path;
+                        }
                         if (staticManifest.hasOwnProperty(path)) {
                             return `${staticManifest[path]}`;
                         }
