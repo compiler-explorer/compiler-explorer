@@ -24,8 +24,10 @@
 
 'use strict';
 
+import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
+
+
 var FontScale = require('../fontscale');
-var monaco = require('../monaco');
 var Toggles = require('../toggles');
 require('../modes/gccdump-rtl-gimple-mode');
 var _ = require('underscore');

@@ -23,6 +23,8 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 'use strict';
+import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
+
 var $ = require('jquery');
 var _ = require('underscore');
 var ga = require('../analytics');
@@ -33,7 +35,6 @@ var Promise = require('es6-promise').Promise;
 var Components = require('../components');
 var LruCache = require('lru-cache');
 var options = require('../options');
-var monaco = require('../monaco');
 var Alert = require('../alert');
 var bigInt = require('big-integer');
 var local = require('../local');

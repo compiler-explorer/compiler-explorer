@@ -4,20 +4,18 @@ const path = require('path'),
     MiniCssExtractPlugin = require("mini-css-extract-plugin"),
     ManifestPlugin = require('webpack-manifest-plugin'),
     glob = require("glob"),
-    UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+    TerserPlugin = require('terser-webpack-plugin');
+    MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
 
 const isDev = process.env.NODE_ENV  === "DEV";
 
-const outputPathRelative = 'dist/';
-const staticRelative = 'static/';
-const staticPath = path.resolve(__dirname, staticRelative);
-const distPath = path.join(staticPath, outputPathRelative);
-const vsPath = path.join(staticPath, 'vs/');
+const staticPath = path.resolve(__dirname, "static");
 const assetPath = path.join(staticPath, "assets");
+const distPath =  path.resolve(__dirname, 'dist')
 const manifestPath = 'manifest.json';  //if you change this, you also need to update it in the app.js
-const outputname = isDev ? 'main.js' : 'bundle.[hash].js';
+const outputName = isDev ? 'main.js' : 'bundle.[hash].js';
 const cssName = isDev ? '[name].css' :  "[name].[contenthash].css";
-const publicPath = isDev ? '/dist/' :  'dist/';
+const publicPath = './'
 const manifestPlugin = new ManifestPlugin({
     fileName: manifestPath
 });
@@ -31,10 +29,6 @@ const assetEntries = glob.sync(`${assetPath}/**/*.*`).reduce((obj, p) => {
 
 let plugins = [
     new CopyWebpackPlugin([{
-        from: 'node_modules/monaco-editor/min/vs',
-        to: vsPath,
-    },
-    {
         from: path.join(staticPath, "favicon.ico"),
         to: distPath,
     },
@@ -44,21 +38,29 @@ let plugins = [
         jQuery: 'jquery'
     }),
     new MiniCssExtractPlugin(cssName),
+    new MonacoWebpackPlugin({
+        languages: ['clojure', 'cpp', 'csharp', 'csp', 'fsharp', 'go', 'html', 'java', 'objective', 'perl', 'php', 'python', 'r', 'ruby', 'rust', 'scheme', 'swift'],
+
+    }),
     manifestPlugin
 ];
-
+const minimizer = []
 if(!isDev) {
-    plugins.push(new UglifyJsPlugin({
-        sourceMap: true
+    minimizer.push(new TerserPlugin({
+        parallel:true,
+        sourceMap: true,
+        terserOptions: {
+            ecma: 8,
+        }
     }));
 }
 
 
 module.exports = [
-    //if you change the order of this, make sure to update the config variable in app.js
-    //server side stuff
+    // if you change the order of this, make sure to update the config variable in app.js
+    // server side stuff
     // currently we just want to shove a cache path onto the static assets so we can get the hash onto the filename
-    //this means we can set the cache for eternity
+    // this means we can set the cache for eternity
     {
         mode: isDev ? 'development' : 'production',
         entry: assetEntries,
@@ -85,14 +87,11 @@ module.exports = [
     },
     //this is the client side
     {
-        entry:  {
-          "app": './static/main.js',
-          "editor.worker": 'monaco-editor/esm/vs/editor/editor.worker.js',
-        },
+        entry: path.join(staticPath, 'main.js'),
         output: {
-            filename: outputname,
+            filename: outputName,
             path: distPath,
-            publicPath: publicPath
+          //  publicPath: publicPath
         },
         resolve: {
             modules: ['./static', "./node_modules"],
@@ -100,17 +99,16 @@ module.exports = [
                 //is this safe?
                 goldenlayout:  path.resolve(__dirname, 'node_modules/golden-layout/'),
                 lzstring:  path.resolve(__dirname, 'node_modules/lz-string/'),
-                filesaver:  path.resolve(__dirname, 'node_modules/file-saver/'),
-                vs: path.resolve(__dirname, 'node_modules/monaco-editor/min/vs')
+                filesaver:  path.resolve(__dirname, 'node_modules/file-saver/')
             }
         },
-        stats: "errors-only",
+        stats: "verbose",
         devtool: 'source-map',
         module: {
             rules: [
                 {
                     test: /\.css$/,
-                    exclude: path.resolve(__dirname, 'static/themes/'),
+                    exclude: path.join(staticPath, 'themes'),
                     use: [
                         {
                          loader: MiniCssExtractPlugin.loader,
@@ -123,7 +121,7 @@ module.exports = [
                 },
                 {
                     test: /\.css$/,
-                    include: path.resolve(__dirname, 'static/themes/'),
+                    include: path.join(staticPath, 'themes'),
                     use: ['css-loader']
                 },
                 {
@@ -138,6 +136,9 @@ module.exports = [
                     }
                 }
             ]},
+            optimization: {
+                minimizer: minimizer
+            },
             plugins: plugins
         },
 

@@ -22,13 +22,14 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 "use strict";
+import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
+
 var _ = require('underscore');
 var $ = require('jquery');
 var colour = require('../colour');
 var loadSaveLib = require('../loadSave');
 var FontScale = require('../fontscale');
 var Components = require('../components');
-var monaco = require('../monaco');
 var options = require('../options');
 var Alert = require('../alert');
 var local = require('../local');

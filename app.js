@@ -104,7 +104,7 @@ const defArgs = {
     env: opts.env || ['dev'],
     hostname: opts.host,
     port: opts.port || 10240,
-    staticDir: opts.static || 'static',
+    staticDir: 'dist',
     gitReleaseName: gitReleaseName,
     wantedLanguage: opts.language || null,
     doCache: !opts.noCache,
@@ -115,7 +115,7 @@ const defArgs = {
 const webpackConfig = require('./webpack.config.js')[1],
     webpackCompiler = require('webpack')(webpackConfig),
     manifestName = 'manifest.json',
-    staticManifestPath = path.join(__dirname, defArgs.staticDir, webpackConfig.output.publicPath),
+    staticManifestPath = path.join(__dirname, "dist"),
     assetManifestPath = path.join(staticManifestPath, 'assets'),
     staticManifest = require(path.join(staticManifestPath, manifestName)),
     assetManifest = require(path.join(assetManifestPath, manifestName));
@@ -171,7 +171,7 @@ const extraBodyClass = ceProps('extraBodyClass', '');
 const storageSolution = compilerProps.ceProps('storageSolution', 'local');
 const httpRoot = ceProps('httpRoot', '/');
 const httpRootDir = httpRoot.endsWith('/') ? httpRoot : (httpRoot + '/');
-
+console.log(httpRootDir)
 function staticHeaders(res) {
     if (staticMaxAgeSecs) {
         res.setHeader('Cache-Control', 'public, max-age=' + staticMaxAgeSecs + ', must-revalidate');
@@ -377,12 +377,12 @@ aws.initConfig(awsProps)
                             }
                         }
                         if (staticManifest.hasOwnProperty(path)) {
-                            return `${httpRootDir}dist/${staticManifest[path]}`;
+                            return `${staticManifest[path]}`;
                         }
                         if (assetManifest.hasOwnProperty(path)) {
-                            return `${httpRootDir}dist/assets/${assetManifest[path]}`;
+                            return `assets/${assetManifest[path]}`;
                         }
-                        logger.warn("Requested an asset I don't know about");
+                        logger.warn(`Requested an asset I don't know about: ${path}`);
                     };
                     return options;
                 }
@@ -595,7 +595,7 @@ aws.initConfig(awsProps)
                         res.set('Content-Type', 'application/xml');
                         res.render('sitemap');
                     })
-                    .use(sFavicon(path.join(defArgs.staticDir, webpackConfig.output.publicPath, 'favicon.ico')))
+                    .use(sFavicon(path.join("static", 'favicon.ico')))
                     .use(bodyParser.json({limit: ceProps('bodyParserLimit', maxUploadSize)}))
                     .use(bodyParser.text({limit: ceProps('bodyParserLimit', maxUploadSize), type: () => true}))
                     .use('/source', sourceHandler.handle.bind(sourceHandler))
