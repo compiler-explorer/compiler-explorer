@@ -1,7 +1,7 @@
 const path = require('path'),
     webpack = require('webpack'),
     CopyWebpackPlugin = require('copy-webpack-plugin'),
-    ExtractTextPlugin = require('extract-text-webpack-plugin'),
+    MiniCssExtractPlugin = require("mini-css-extract-plugin"),
     ManifestPlugin = require('webpack-manifest-plugin'),
     glob = require("glob"),
     UglifyJsPlugin = require('uglifyjs-webpack-plugin');
@@ -43,7 +43,7 @@ let plugins = [
         $: 'jquery',
         jQuery: 'jquery'
     }),
-    new ExtractTextPlugin(cssName),
+    new MiniCssExtractPlugin(cssName),
     manifestPlugin
 ];
 
@@ -60,6 +60,7 @@ module.exports = [
     // currently we just want to shove a cache path onto the static assets so we can get the hash onto the filename
     //this means we can set the cache for eternity
     {
+        mode: isDev ? 'development' : 'production',
         entry: assetEntries,
         output: {
             path: path.join(distPath, 'assets'),
@@ -84,7 +85,10 @@ module.exports = [
     },
     //this is the client side
     {
-        entry: './static/main.js',
+        entry:  {
+          "app": './static/main.js',
+          "editor.worker": 'monaco-editor/esm/vs/editor/editor.worker.js',
+        },
         output: {
             filename: outputname,
             path: distPath,
@@ -107,11 +111,15 @@ module.exports = [
                 {
                     test: /\.css$/,
                     exclude: path.resolve(__dirname, 'static/themes/'),
-                    use: ExtractTextPlugin.extract({
-                        fallback: 'style-loader',
-                        use: 'css-loader',
-                        publicPath: './'
-                    })
+                    use: [
+                        {
+                         loader: MiniCssExtractPlugin.loader,
+                          options: {
+                            publicPath: publicPath
+                          }
+                        },
+                        "css-loader"
+                      ]
                 },
                 {
                     test: /\.css$/,
