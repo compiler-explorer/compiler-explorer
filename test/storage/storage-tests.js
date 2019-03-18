@@ -23,11 +23,13 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 const chai = require('chai'),
+    sinon = require('sinon'),
     {StorageBase} = require('../../lib/storage/storage');
 
-chai.should();
+const should = chai.should();
 
 describe('Hash tests', () => {
+    afterEach(() => sinon.restore());
     it('should never generate invalid characters', () => {
         for (let i = 0; i < 256; ++i) {
             const buf = new Buffer([i]);
@@ -35,5 +37,31 @@ describe('Hash tests', () => {
             as64.should.not.contain("/");
             as64.should.not.contain("+");
         }
+    });
+    const badResult = 'R0Rapeabcdefghio1327698asdhjkJJklQp'; // An unfortunate hash, see https://github.com/mattgodbolt/compiler-explorer/issues/1297
+    it('should detect profanities in hashes', () => {
+        StorageBase.isCleanText("I am the very model of a major general").should.be.true;
+        StorageBase.isCleanText(badResult).should.be.false;
+    });
+    it('should avoid profanities in hashes', () => {
+        const testCase = {some: "test"};
+        const goodResult = 'B0B0Mon1efjwCXKJ_2340-3sjfwe';
+        const callback = sinon.stub()
+            .onFirstCall().returns(badResult)
+            .onSecondCall().returns(badResult) // force nonce to update a couple of times
+            .returns(goodResult);
+        sinon.replace(StorageBase, 'safe64Encoded', callback);
+        const {config, configHash} = StorageBase.getSafeHash(testCase);
+        configHash.should.not.equal(badResult);
+        configHash.should.equal(goodResult);
+        const asObj = JSON.parse(config);
+        should.exist(asObj.nonce);
+        asObj.nonce.should.equal(2);
+    });
+    it('should not modify ok hashes', () => {
+        const testCase = {some: "test"};
+        const {config, configHash} = StorageBase.getSafeHash(testCase);
+        const asObj = JSON.parse(config);
+        should.not.exist(asObj.nonce);
     });
 });
