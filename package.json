@@ -53,6 +53,7 @@
     "semver": "^5.5.0",
     "serve-favicon": "^2.4.5",
     "shell-quote": "1.6.x",
+    "sinon": "^7.2.7",
     "systemd-socket": "0.0.0",
     "temp": "0.8.x",
     "tree-kill": "^1.2.0",
