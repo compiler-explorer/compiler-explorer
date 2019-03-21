@@ -168,13 +168,14 @@ module.exports = {
             }
         };
     },
-    getConformanceView: function (editorid, source) {
+    getConformanceView: function (editorid, source, langId) {
         return {
             type: 'component',
             componentName: 'conformance',
             componentState: {
                 editorid: editorid,
-                source: source
+                source: source,
+                langId: langId
             }
         };
     }

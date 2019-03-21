@@ -305,7 +305,7 @@ Editor.prototype.initButtons = function (state) {
     }, this);
 
     var getConformanceConfig = _.bind(function () {
-        return Components.getConformanceView(this.id, this.getSource());
+        return Components.getConformanceView(this.id, this.getSource(), this.currentLanguage.id);
     }, this);
 
     var getEditorConfig = _.bind(function () {
