@@ -90,8 +90,8 @@ function definition() {
                 [/-?\d+/, 'number'],                                   // llvmNumber
                 [/\b(true|false)\b/, 'keyword'],                       // llvmBoolean
                 [/\b(zeroinitializer|undef|null|none)\b/, 'constant'], // llvmConstant
-                [/"([^"\\]|\\.)*$/, 'string.invalid' ],                // non-teminated string
-                [/"/,  'string', '@string'],                           // push to string state
+                [/"([^"\\]|\\.)*$/, 'string.invalid'],                 // non-terminated string
+                [/"/, 'string', '@string'],                            // push to string state
                 [/[-a-zA-Z$._][-a-zA-Z$._0-9]*:/, 'tag'],              // llvmLabel
                 [/[%@][-a-zA-Z$._][-a-zA-Z$._0-9]*/, 'variable.name'], // llvmIdentifier
 
@@ -127,10 +127,10 @@ function definition() {
 
             ],
             string: [
-                [/[^\\"]+/,  'string'],
+                [/[^\\"]+/, 'string'],
                 [/@escapes/, 'string.escape'],
-                [/\\./,      'string.escape.invalid'],
-                [/"/,  'string', '@pop' ]
+                [/\\./, 'string.escape.invalid'],
+                [/"/, 'string', '@pop']
             ]
         }
     };

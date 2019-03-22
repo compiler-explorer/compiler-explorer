@@ -109,7 +109,7 @@ Ir.prototype.resize = function () {
     });
 };
 
-Ir.prototype.onCompileResponse = function (id, compiler, result, lang) {
+Ir.prototype.onCompileResponse = function (id, compiler, result) {
     if (this._compilerid !== id) return;
     if (result.hasIrOutput) {
         this.showIrResults(result.irOutput);
@@ -118,17 +118,9 @@ Ir.prototype.onCompileResponse = function (id, compiler, result, lang) {
         this.showIrResults([{text:"<No output>"}]);
     }
 
-    if (lang && lang.monaco && this.getCurrentEditorLanguage() !== lang.monaco) {
-        monaco.editor.setModelLanguage(this.irEditor.getModel(), lang.monaco);
-    }
     // Why call this explicitly instead of just listening to the "colours" event?
     // Because the recolouring happens before this editors value is set using "showIrResults".
     this.onColours(this._compilerid, this.lastColours, this.lastColourScheme);
-};
-
-// Monaco language id of the current editor
-Ir.prototype.getCurrentEditorLanguage = function () {
-    return this.irEditor.getModel().getModeId();
 };
 
 Ir.prototype.setTitle = function () {
