@@ -1,31 +1,25 @@
 # Compiler Explorer Road Map
-
-CE was started in 2012 to serve my needs at [my previous employer](https://drw.com) to show how
-C++ constructs translated to assembly code. It started out as a `tmux` session with `vi` running in one
-pane and `watch gcc -S foo.cc -o -` running in the other. Since then, it became a public website
-serving the C++, Rust, Go, Haskell, Ispc, D, Swift and Pascal communities and performs around 50,000 compilations per day.
-
 This document is an attempt to capture thoughts on the future direction of Compiler Explorer.
 
 ## Areas to improve
 
 ### Mobile client support
 
-CE's UI doesn't work well with mobile clients. The [editor](https://github.com/Microsoft/monaco-editor) doesn't support mobile clients, and the
-layout doesn't lend itself well to small screens.
+CE's UI doesn't work well with mobile clients. The [editor](https://github.com/Microsoft/monaco-editor)
+ doesn't support mobile clients, and the layout doesn't lend itself well to small screens.
 
 Ideas for improving mobile support include automatically folding up all the panes into a single tab upon
-detection of a mobile client. This would require a bunch of fixes in the 
-underlying [UI library](http://golden-layout.com) as this doesn't properly work with mobile and tabs.
+ detection of a mobile client. This would require a bunch of fixes in the
+ underlying [UI library](http://golden-layout.com) as this doesn't properly work with mobile and tabs.
 
 Perhaps a read-only simplified view would work better: the main reason one brings up the CE website is to
-look at tweeted links rather than author novel content.
+ look at tweeted links rather than author novel content. Note that there have been some tentative work
+ on an app-based solution, but nothing has solidified yet.
 
 ### UI improvements
 
-The UI has a number of things that need improving:
-
-- [ ] Handling the loss of data if one has a work-in-progress CE window open and then clicks another CE link.
+The UI has a number of things that need improving, but one of the things we are looking at is how to
+ handle the loss of data that happens if one has a work-in-progress CE window open and then clicks another CE link.
 
 ### Execution support
 
@@ -36,10 +30,6 @@ a backend system that caches the executables (and makes them downloadable; at le
 license allows), and stores the binaries in ephemeral, shared storage. This same backend system could also 
 be used to store code, and could be part of a whole new way of sending and sharing code (if made permanent
 storage).
-
-### Saved state storage
-
-In April 2018, Google announced they were mothballing goo.gl, which is the URL shortening service Compiler Explorer ultimately uses to store its current data. As such a solution to stored state - whether as part of the execution support, or independent of it - is required anyway.
 
 ### Support more compilers
 
@@ -62,10 +52,9 @@ That also means that URLs should live forever once they are created
 CE will remain ad-free, open-source and non-commercial. There's no plans at all to add "freemium" content,
 despite the Patreon site where folks can help support the cost of running the servers.
 
-## 2018 goals
+## 2019 goals
 
 With all this in mind, the tentative goals for 2018 are:
-- [ ] Replace goo.gl with our own storage solution. ([Project Link](https://github.com/mattgodbolt/compiler-explorer/projects))
 - [ ] Design an API that can handle remote code execution and download needs
 - [ ] Implement remote execution UIs
 

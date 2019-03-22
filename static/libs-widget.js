@@ -78,26 +78,30 @@ LibsWidget.prototype.lazyDropdownLoad = function () {
     }
     if (this.domRoot === null) {
         var MAX_COLUMNS = 3;
+        var currentColumn = null;
+        var currentColumnItemCount = 0;
+        var libsKeys = _.keys(this.availableLibs[this.currentLangId]).sort();
+        var itemsPerColumn = Math.ceil(libsKeys.length / MAX_COLUMNS);
         this.domRoot = $('<div></div>');
-
         var libsPanel = $('<div></div>')
             .addClass('card-columns');
-        var currentColumn = -1;
         var getOrCreateNextColumn = function () {
-            var column = null;
-            currentColumn++;
-            if (libsPanel.children()[currentColumn] != null) {
-                column = $(libsPanel.children()[currentColumn]);
-            } else {
-                column = $('<div></div>')
-                    .addClass('card');
-                libsPanel.append(column);
+            if (currentColumn === null || currentColumnItemCount >= itemsPerColumn) {
+                currentColumn = $('<div></div>').addClass('card');
+                libsPanel.append(currentColumn);
+                currentColumnItemCount = 0;
             }
-            if (currentColumn >= MAX_COLUMNS - 1) currentColumn = -1;
-            return column;
+            return currentColumn;
+        };
+        var addLibCardToColumn = function (libCard) {
+            var column = getOrCreateNextColumn();
+            column.append(libCard);
+            currentColumnItemCount++;
         };
         var libsInUse = this.listUsedLibs();
-        _.each(this.availableLibs[this.currentLangId], _.bind(function (libEntry, id) {
+
+        _.each(libsKeys, _.bind(function (id) {
+            var libEntry = this.availableLibs[this.currentLangId][id];
             var newLibCard = this.libsEntry.clone();
             var label = newLibCard.find('.input-group-prepend label')
                 .text(libEntry.name)
@@ -129,8 +133,7 @@ LibsWidget.prototype.lazyDropdownLoad = function () {
                 }
                 this.onChangeCallback();
             }, this));
-            var column = getOrCreateNextColumn();
-            column.append(newLibCard);
+            addLibCardToColumn(newLibCard);
         }, this));
         this.domRoot.append(libsPanel);
         return this.domRoot;

@@ -39,12 +39,14 @@ require('../modes/rust-mode');
 require('../modes/ispc-mode');
 require('../modes/llvm-ir-mode');
 require('../modes/haskell-mode');
+require('../modes/ocaml-mode');
 require('../modes/clean-mode');
 require('../modes/pascal-mode');
 require('../modes/cuda-mode');
 require('../modes/fortran-mode');
 require('../modes/zig-mode');
 require('../modes/nc-mode');
+require('../modes/ada-mode');
 require('selectize');
 
 var loadSave = new loadSaveLib.LoadSave();
@@ -88,7 +90,7 @@ function Editor(hub, state, container) {
     this.editor = monaco.editor.create(root[0], {
         scrollBeyondLastLine: false,
         language: this.currentLanguage.monaco,
-        fontFamily: 'Consolas, "Liberation Mono", Courier, monospace',
+        fontFamily: this.settings.editorsFFont,
         readOnly: !!options.readOnly || legacyReadOnly,
         glyphMargin: !options.embedded,
         quickSuggestions: false,
@@ -101,6 +103,7 @@ function Editor(hub, state, container) {
         emptySelectionClipboard: true,
         autoIndent: true
     });
+    this.editor.getModel().setEOL(monaco.editor.EndOfLineSequence.LF);
 
     if (state.source !== undefined) {
         this.setSource(state.source);
@@ -113,7 +116,10 @@ function Editor(hub, state, container) {
         // With reference to https://github.com/Microsoft/monaco-editor/issues/115
         // I tried that and it didn't work, but a delay of 500 seems to "be enough".
         setTimeout(_.bind(function () {
+            this.editor.setSelection(new monaco.Selection(1, 1, 1, 1));
+            this.editor.focus();
             this.editor.getAction("editor.fold").run();
+            this.editor.clearSelection();
         }, this), 500);
     }
 
@@ -181,10 +187,12 @@ Editor.prototype.updateState = function () {
     };
     this.fontScale.addState(state);
     this.container.setState(state);
+
+    this.updateButtons();
 };
 
 Editor.prototype.setSource = function (newSource) {
-    this.editor.getModel().setValue(newSource);
+    this.updateSource(newSource);
 };
 
 Editor.prototype.onNewSource = function (editorId, newSource) {
@@ -222,6 +230,8 @@ Editor.prototype.initCallbacks = function () {
     this.container.layoutManager.on('initialised', function () {
         // Once initialized, let everyone know what text we have.
         this.maybeEmitChange();
+        // And maybe ask for a compilation (Will hit the cache most of the time)
+        this.requestCompilation();
     }, this);
 
     this.eventHub.on('compilerOpen', this.onCompilerOpen, this);
@@ -295,7 +305,7 @@ Editor.prototype.initButtons = function (state) {
     }, this);
 
     var getConformanceConfig = _.bind(function () {
-        return Components.getConformanceView(this.id, this.getSource());
+        return Components.getConformanceView(this.id, this.getSource(), this.currentLanguage.id);
     }, this);
 
     var getEditorConfig = _.bind(function () {
@@ -336,6 +346,32 @@ Editor.prototype.initButtons = function (state) {
             }
         }
     }, this));
+
+    this.cppInsightsButton = this.domRoot.find('.open-in-cppinsights');
+    this.cppInsightsButton.on('mousedown', _.bind(function () {
+        this.updateOpenInCppInsights();
+    }, this));
+};
+
+Editor.prototype.updateButtons = function () {
+    if (this.currentLanguage.id === 'c++') {
+        this.cppInsightsButton.show();
+    } else {
+        this.cppInsightsButton.hide();
+    }
+};
+
+Editor.prototype.b64UTFEncode = function (str) {
+    return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function (match, v) {
+        return String.fromCharCode(parseInt(v, 16));
+    }));
+};
+
+Editor.prototype.updateOpenInCppInsights = function () {
+    var cppStd = 'cpp2a'; // if a compiler is linked, maybe we can find this out?
+    var link = 'https://cppinsights.io/lnk?code=' + this.b64UTFEncode(this.getSource()) + '&std=' + cppStd + '&rev=1.0';
+
+    this.domRoot.find(".open-in-cppinsights").attr("href", link);
 };
 
 Editor.prototype.changeLanguage = function (newLang) {
@@ -360,6 +396,10 @@ Editor.prototype.tryCompilerLinkLine = function (thisLineNumber, reveal) {
     }, this));
 };
 
+Editor.prototype.requestCompilation = function () {
+    this.eventHub.emit('requestCompilation', this.id);
+};
+
 Editor.prototype.initEditorActions = function () {
     this.editor.addAction({
         id: 'compile',
@@ -369,7 +409,9 @@ Editor.prototype.initEditorActions = function () {
         contextMenuGroupId: 'navigation',
         contextMenuOrder: 1.5,
         run: _.bind(function () {
+            // This change request is mostly superfluous
             this.maybeEmitChange();
+            this.requestCompilation();
         }, this)
     });
 
@@ -436,9 +478,27 @@ Editor.prototype.confirmOverwrite = function (yes) {
         {yes: yes, no: null});
 };
 
+Editor.prototype.updateSource = function (newSource) {
+    // Create something that looks like an edit operation for the whole text
+    var operation = {
+        range: this.editor.getModel().getFullModelRange(),
+        forceMoveMarkers: true,
+        text: newSource
+    };
+    var nullFn = function () {
+        return null;
+    };
+    var viewState = this.editor.saveViewState();
+    // Add a undo stop so we don't go back further than expected
+    this.editor.pushUndoStop();
+    // Apply de edit. Note that we lose cursor position, but I've not found a better alternative yet
+    this.editor.getModel().pushEditOperations(viewState.cursorState, [operation], nullFn);
+    this.numberUsedLines();
+};
+
 Editor.prototype.formatCurrentText = function () {
     var previousSource = this.getSource();
-    var currentPosition = this.editor.getPosition();
+
     $.ajax({
         type: 'POST',
         url: window.location.origin + this.httpRoot + 'api/format/clangformat',
@@ -451,14 +511,10 @@ Editor.prototype.formatCurrentText = function () {
         success: _.bind(function (result) {
             if (result.exit === 0) {
                 if (this.doesMatchEditor(previousSource)) {
-                    this.setSource(result.answer);
-                    this.numberUsedLines();
-                    this.editor.setPosition(currentPosition);
+                    this.updateSource(result.answer);
                 } else {
                     this.confirmOverwrite(_.bind(function () {
-                        this.setSource(result.answer);
-                        this.numberUsedLines();
-                        this.editor.setPosition(currentPosition);
+                        this.updateSource(result.answer);
                     }, this), null);
                 }
             } else {
@@ -538,25 +594,15 @@ Editor.prototype.onSettingsChange = function (newSettings) {
         minimap: {
             enabled: this.settings.showMinimap && !options.embedded
         },
+        fontFamily: this.settings.editorsFFont,
         wordWrap: this.settings.wordWrap ? 'bounded' : 'off',
         wordWrapColumn: this.editor.getLayoutInfo().viewportColumn // Ensure the column count is up to date
     });
 
-    // * Turn off auto.
-    // * edit code
-    // * change compiler or compiler options (out of date code is used)
-    var bDac = before.compileOnChange ? before.delayAfterChange : 0;
-    var aDac = after.compileOnChange ? after.delayAfterChange : 0;
-    if (bDac !== aDac || !this.debouncedEmitChange) {
-        if (aDac) {
-            this.debouncedEmitChange = _.debounce(_.bind(function () {
-                this.maybeEmitChange();
-            }, this), after.delayAfterChange);
-            this.maybeEmitChange(true);
-        } else {
-            this.debouncedEmitChange = _.noop;
-        }
-    }
+    // Unconditionally send editor changes. The compiler only compiles when needed
+    this.debouncedEmitChange = _.debounce(_.bind(function () {
+        this.maybeEmitChange();
+    }, this), after.delayAfterChange);
 
     if (before.hoverShowSource && !after.hoverShowSource) {
         this.onEditorSetDecoration(this.id, -1, false);
@@ -711,7 +757,8 @@ Editor.prototype.initLoadSaver = function () {
             loadSave.run(_.bind(function (text) {
                 this.setSource(text);
                 this.updateState();
-                this.maybeEmitChange();
+                this.maybeEmitChange(true);
+                this.requestCompilation();
             }, this), this.getSource(), this.currentLanguage);
         }, this));
 };
@@ -732,6 +779,7 @@ Editor.prototype.onLanguageChange = function (newLangId) {
             // Broadcast the change to other panels
             this.eventHub.emit("languageChange", this.id, newLangId);
             this.maybeEmitChange(true);
+            this.requestCompilation();
             ga.proxy('send', {
                 hitType: 'event',
                 eventCategory: 'LanguageChange',

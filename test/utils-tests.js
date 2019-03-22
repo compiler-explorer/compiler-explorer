@@ -187,6 +187,16 @@ describe('Pads right', () => {
     });
 });
 
+describe('Trim right', () => {
+    it('works', () => {
+        utils.trimRight('  ').should.equal('');
+        utils.trimRight('').should.equal('');
+        utils.trimRight(' ab ').should.equal(' ab');
+        utils.trimRight(' a  b ').should.equal(' a  b');
+        utils.trimRight('a    ').should.equal('a');
+    });
+});
+
 describe('Anonymizes all kind of IPs', () => {
     it('Ignores localhost', () => {
         utils.anonymizeIp('localhost').should.equal('localhost');

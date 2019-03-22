@@ -214,3 +214,32 @@ kbd {
 .new-cookie-msg {
     color: black;
 }
+
+div.argmenuitem {
+    max-width: 250px;
+}
+
+div.argmenuitem span.argtitle {
+    font-weight: bold;
+    display: block;
+    overflow-x: hidden;
+    overflow-anchor: visible;
+    text-overflow: ellipsis;
+}
+
+div.argmenuitem span.argdescription {
+    max-height: 150px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    font-style: italic;
+    font-size: smaller;
+    display: block;
+    white-space: normal;
+    text-overflow: ellipsis;
+    overflow-anchor: visible;
+    overflow-y: hidden;
+}
+
+.open-in-cppinsights * {
+    vertical-align: middle;
+}

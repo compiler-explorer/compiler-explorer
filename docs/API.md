@@ -139,6 +139,42 @@ If JSON is present in the request's `Accept` header, the compilation results
 }
 ```
 
+# Not-so-RESTful API's
+
+### `POST /shortener` - saves given state *forever* to a shortlink and returns the unique id for the link
+
+The body of this post should be in the format of a [ClientState](https://github.com/mattgodbolt/compiler-explorer/blob/master/lib/clientstate.js)
+
+An example of one the easiest forms of a clientstate:
+```
+{
+  sessions: [
+    {
+      id: 1,
+      language: 'c++',
+      source: 'int main() { return 42; }',
+      compilers: [
+        {
+          id: 'g82',
+          options: '-O3'
+        }
+      ]
+    }
+  ]
+}
+```
+
+Returns:
+`{"storedId":"abcdef"}`
+
+The storedId can be used in the api call /api/shortlinkinfo/<id> and to open in the website with a /z/<id> shortlink.
+
+### `GET /clientstate/<base64>` - Opens the website in a given state
+
+This call is to open the website with a given state (without having to store the state first with /shortener)
+Instead of sending the ClientState JSON in the post body, it will have to be encoded with base64 and attached directly onto the URL.
+
+
 # Implementations
 
 Here are some examples of projects using the Compiler Explorer API:

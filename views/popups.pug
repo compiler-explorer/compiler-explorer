@@ -100,6 +100,10 @@
             .card-title
               h4 Editor
             .form-group(role="group")
+              div
+                label
+                  | Desired Font Family in editors
+                input.editorsFFont(type="text" style="width:100%")
               .checkbox
                 label
                   input.autoCloseBrackets(type="checkbox")
@@ -139,6 +143,7 @@
                   kbd Ctrl
                   | +
                   kbd S
+                  | &nbsp;(Save editor to file)
               .checkbox
                 label
                   input.wordWrap(type="checkbox")

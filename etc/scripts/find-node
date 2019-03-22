@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 set -e
 OUT="$1"
@@ -9,13 +9,13 @@ find_node() {
     local SYS_NODE="$(which node 2>/dev/null)"
     local SYS_NODEJS="$(which nodejs 2>/dev/null)"
 
-    if [[ -x "${NODE}" ]]; then
+    if test -x "${NODE}"; then
         echo "${NODE}"
-    elif [[ -x "${CE_NODE}" ]]; then
+    elif test -x "${CE_NODE}"; then
         echo "${CE_NODE}"
-    elif [[ -x "${SYS_NODE}" ]]; then
+    elif test -x "${SYS_NODE}"; then
         echo "${SYS_NODE}"
-    elif [[ -x "${SYS_NODEJS}" ]]; then
+    elif test -x "${SYS_NODEJS}"; then
         echo "${SYS_NODEJS}"
     else
         >&2 echo "Unable to find a node"
@@ -28,14 +28,14 @@ NODE_VERSION_USED=8
 NODE_VERSION=$(${NODE} --version)
 NODE_MAJOR_VERSION=$(echo ${NODE_VERSION} | cut -f1 -d. | sed 's/^v//g')
 
-if [[ ${NODE_MAJOR_VERSION} -lt ${NODE_VERSION_USED} ]]; then
+if test ${NODE_MAJOR_VERSION} -lt ${NODE_VERSION_USED}; then
     >&2 echo Compiler Explorer needs node v${NODE_VERSION_USED}.x, but ${NODE_VERSION} was found.
     >&2 echo Visit https://nodejs.org/ for installation instructions
     >&2 echo To configure where we look for node, set NODE_DIR to its installation base
     exit 1
 fi
 
-if [[ ${NODE_MAJOR_VERSION} -gt ${NODE_VERSION_USED} ]]; then
+if test ${NODE_MAJOR_VERSION} -gt ${NODE_VERSION_USED}; then
     >&2 echo Compiler Explorer needs node v${NODE_VERSION_USED}.x, but ${NODE_VERSION} was found.
     >&2 echo The higher node version might work but it has not been tested.
 fi

@@ -15,7 +15,7 @@ else
   meta(name="description" content="Compiler Explorer is an interactive online compiler which shows the assembly output of compiled C++, Rust, Go (and many more) code.")
   meta(property="og:title" content="Compiler Explorer")
 meta(name="twitter:card" content="summary")
-meta(name="twitter:site" content="@mattgodbolt")
+meta(name="twitter:site" content="@CompileExplore")
 meta(property="og:image" content="https://github.com/mattgodbolt/compiler-explorer-image/blob/master/logo/favicon.png?raw=true")
 meta(property="og:image:secure_url" content="https://github.com/mattgodbolt/compiler-explorer-image/blob/master/logo/favicon.png?raw=true")
 meta(property="og:image:type" content="image/png")
@@ -33,5 +33,5 @@ style#theme
 // short links), it's possible to do XSS attacks, by leaving <script> tags in the source etc, which can be
 // interpreted by the browser.
 script window.compilerExplorerOptions = JSON.parse(decodeURIComponent("!{encodeURIComponent(compilerExplorerOptions)}"))
-script window.httpRoot = '#{httpRoot}';
+script window.httpRoot = '#{httpRoot}'; window.httpRootDir = '#{httpRootDir}';
 script(src=require("main.js"))

@@ -9,8 +9,9 @@
                 button.btn.btn-outline-secondary.btn-sm.dropdown-toggle(data-toggle="dropdown" type="button" aria-haspopup="true" aria-expanded="false")
                   span.current Short
                 ul.dropdown-menu.sources
-                  button.dropdown-item.btn.btn-light.btn-sm(data-bind="Short")
-                    | Short
+                  if storageSolution !== "null"
+                      button.dropdown-item.btn.btn-light.btn-sm(data-bind="Short")
+                        | Short
                   button.dropdown-item.btn.btn-light.btn-sm(data-bind="Full")
                     | Full
                   button.dropdown-item.btn.btn-light.btn-sm(data-bind="Embed")
@@ -45,6 +46,9 @@
           button.dropdown-item.btn.btn-sm.btn-light.add-editor(title="Add a new source editor view" aria-label="New source editor")
             span.fa.fa-code
             | &nbsp;Source editor
+        a.btn.btn-light.open-in-cppinsights(href="https://cppinsights.io/" target="_blank" title="Open in Cppinsights" arial-label="Open in Cppinsights")
+          img(height="16" width="16" src=require("cppinsights16.png"))
+          span.hideable &nbsp;CppInsights
       .btn-group.btn-group-sm.ml-auto(role="group" aria-label="Editor language")
         select.change-language(title="Change this editor's (and associated panels) language" disabled=embedded && readOnly)
     .monaco-placeholder
@@ -58,6 +62,10 @@
             button.input-group-text.prepend-options(data-trigger="click" style="cursor: pointer;" role="button" title="All compilation options")
               span.btn.btn-light.btn-sm.status-icon
           input.options.form-control(type="text" placeholder="Compiler options..." size="256" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false")
+          .input-group-append.populararguments(title="Popular arguments")
+            button.btn.btn-outline-secondary.dropdown-toggle.dropdown-toggle-split(type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
+              span.sr-only Popular arguments
+            div.dropdown-menu.dropdown-menu-right
       include font-size
       .btn-group.btn-group-sm.filters(role="group" aria-label="Compiler filters")
         .button-checkbox
@@ -72,6 +80,10 @@
           button.btn.btn-light.btn-sm.active.nonbinary(type="button" title="Filter unused labels from the output" data-bind="labels" aria-pressed="true")
             span .LX0:
           input.d-none(type="checkbox" checked=true)
+        .button-checkbox
+          button.btn.btn-light.btn-sm.active.nonbinary(title="Filter functions from other libraries from the output" data-bind="libraryCode" aria-pressed="true")
+            span lib.f:
+          input.d-none(type="checkbox")
         .button-checkbox
           button.btn.btn-light.btn-sm.active.nonbinary(type="button" title="Filter all assembler directives from the output" data-bind="directives" aria-pressed="true")
             span .text
@@ -153,8 +165,7 @@
                   | 0
                 | )
         span.short-compiler-name
-        a.full-compiler-name(tabindex="0" data-trigger="focus" style="cursor: pointer;" role="button" title="Full compiler version")
-          span.btn.btn-light.btn-sm.fas.fa-info
+        button.btn.btn-light.btn-sm.fas.fa-info.full-compiler-name(data-trigger="click" style="cursor: pointer;" role="button" title="Full compiler version")
         span.compile-time(title="Compilation time (Result size)")
 
   #compiler-output

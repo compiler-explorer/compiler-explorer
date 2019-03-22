@@ -24,14 +24,14 @@
 
 "use strict";
 var $ = require('jquery'),
-    Raven = require('raven-js'),
+    Sentry = require('@sentry/browser'),
     _ = require('underscore'),
     ga = require('analytics');
 
 function handleMotd(motd, motdNode, subLang, adsEnabled, onHide) {
     if (motd.motd) {
         motdNode.find(".content").html(motd.motd);
-        motdNode.removeClass('hide');
+        motdNode.removeClass('d-none');
         motdNode.find(".close")
             .on('click', function () {
                 motdNode.addClass('d-none');
@@ -73,8 +73,8 @@ function initialise(url, motdNode, defaultLanguage, adsEnabled, onHide) {
         .then(function (res) {
             handleMotd(res, motdNode, defaultLanguage, adsEnabled, onHide);
         })
-        .catch(function (xhr, error, exc) {
-            Raven.captureException(exc);
+        .catch(function (exc) {
+            Sentry.captureException(exc);
         });
 }
 

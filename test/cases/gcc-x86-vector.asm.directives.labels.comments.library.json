@@ -1,0 +1,66 @@
+[
+  {
+    "text": "_Z3sumRKSt6vectorIiSaIiEE:",
+    "source": null
+  },
+  {
+    "text": "        movl    $0, %ecx",
+    "source": {
+      "file": null,
+      "line": 5
+    }
+  },
+  {
+    "text": "        movl    $0, %eax",
+    "source": {
+      "file": null,
+      "line": 4
+    }
+  },
+  {
+    "text": "        cmpq    %rdx, %rcx",
+    "source": {
+      "file": null,
+      "line": 6
+    }
+  },
+  {
+    "text": "        jnb     .L1",
+    "source": {
+      "file": null,
+      "line": 6
+    }
+  },
+  {
+    "text": "        addl    (%rsi,%rcx,4), %eax",
+    "source": {
+      "file": null,
+      "line": 8
+    }
+  },
+  {
+    "text": "        addq    $1, %rcx",
+    "source": {
+      "file": null,
+      "line": 5
+    }
+  },
+  {
+    "text": "        jmp     .L3",
+    "source": {
+      "file": null,
+      "line": 5
+    }
+  },
+  {
+    "text": ".L1:",
+    "source": null
+  },
+  {
+    "text": "        rep ret",
+    "source": {
+      "file": null,
+      "line": 10
+    }
+  }
+]

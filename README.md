@@ -7,7 +7,7 @@ Compiler Explorer
 ------------
 
 **Compiler Explorer** is an interactive compiler. The left-hand pane shows
- editable C, C++, Rust, Go, D, Haskell, Swift and Pascal code.
+ editable C, C++, Rust, Go, D, Haskell, Swift, Pascal (and some more!) code.
 The right, the assembly output of having compiled the code with a given
  compiler and settings. Multiple compilers are supported, and the UI layout
  is configurable (thanks to [GoldenLayout](https://www.golden-layout.com/)).
@@ -21,16 +21,21 @@ You can support [this project on Patreon](https://patreon.com/mattgodbolt).
 **Compiler Explorer** follows a [Code of Conduct](CODE_OF_CONDUCT.md) which
  aims to foster an open and welcoming environment.
 
+**Compiler Explorer** was started in 2012 to serve my needs at [my previous employer](https://drw.com) to show how
+ C++ constructs translated to assembly code. It started out as a `tmux` session with `vi` running in one
+ pane and `watch gcc -S foo.cc -o -` running in the other.
+Since then, it has become a public website serving around 140,000 compilations per day.
+
 ##### Contact us
 
-For general discussion, please join the mailing list at
- https://groups.google.com/forum/#!forum/compiler-explorer-discussion or the
- [cpplang](https://cpplang.now.sh/) slack channel `#compiler_explorer`.
+For general discussion, please join the
+ [cpplang](https://cpplang.now.sh/) slack channel `#compiler_explorer` or
+ [the public mailing list](https://groups.google.com/forum/#!forum/compiler-explorer-discussion)
 
 If you are interested in developing, or want to see the discussions between
- existing developers, feel free to join the mailing list at
- https://groups.google.com/forum/#!forum/compiler-explorer-development or the
- [cpplang](https://cpplang.now.sh/) slack channel `#ce_implementation`.
+ existing developers, feel free to join the [cpplang](https://cpplang.now.sh/)
+ slack channel `#ce_implementation` or
+ [the development mailing list](https://groups.google.com/forum/#!forum/compiler-explorer-development)
  
 Feel free to raise an issue on
  [github](https://github.com/mattgodbolt/compiler-explorer/issues) or
@@ -55,7 +60,6 @@ Running with `make EXTRA_ARGS='--language LANG'` will allow you to load
  third party libraries needed to run; using `yarn` to install server-side and
  client side components.
 
-
 The config system leaves a lot to be desired. Work has been done on porting
  [CCS](https://github.com/hellige/ccs-cpp) to Javascript and then something
  more rational can be used.
@@ -68,7 +72,7 @@ A [Road map](Roadmap.md) is available which gives a little insight into
 
 If you want to point it at your own GCC or similar binaries, either edit the
  `etc/config/LANG.defaults.properties` or else make a new one with
- the name `LANG.local.properties`, subsituting `LANG` as needed.
+ the name `LANG.local.properties`, substituting `LANG` as needed.
  `*.local.properties` files have the highest priority when loading properties.
 
 When running in a corporate setting the URL shortening service can be replaced
