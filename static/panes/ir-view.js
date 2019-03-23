@@ -36,7 +36,10 @@ function Ir(hub, container, state) {
     this.eventHub = hub.createEventHub();
     this.domRoot = container.getElement();
     this.domRoot.html($('#ir').html());
-    this._currentDecorations = [];
+
+    this.decorations = {};
+    this.prevDecorations = [];
+
     this.irEditor = monaco.editor.create(this.domRoot.find(".monaco-placeholder")[0], {
         fontFamily: 'Consolas, "Liberation Mono", Courier, monospace',
         value: "",
@@ -56,6 +59,8 @@ function Ir(hub, container, state) {
     this._compilerid = state.id;
     this._compilerName = state.compilerName;
     this._editorid = state.editorid;
+
+    this.settings = {};
 
     this.colours = [];
     this.irCode = [];
@@ -84,6 +89,12 @@ Ir.prototype.initButtons = function (state) {
 };
 
 Ir.prototype.initCallbacks = function () {
+    this.linkedFadeTimeoutId = -1;
+    this.mouseMoveThrottledFunction = _.throttle(_.bind(this.onMouseMove, this), 250);
+    this.irEditor.onMouseMove(_.bind(function (e) {
+        this.mouseMoveThrottledFunction(e);
+    }, this));
+
     this.fontScale.on('change', _.bind(this.updateState, this));
 
     this.container.on('destroy', this.close, this);
@@ -91,6 +102,7 @@ Ir.prototype.initCallbacks = function () {
     this.eventHub.on('compileResult', this.onCompileResponse, this);
     this.eventHub.on('compiler', this.onCompiler, this);
     this.eventHub.on('colours', this.onColours, this);
+    this.eventHub.on('panesLinkLine', this.onPanesLinkLine, this);
     this.eventHub.on('compilerClose', this.onCompilerClose, this);
     this.eventHub.on('settingsChange', this.onSettingsChange, this);
     this.eventHub.emit('irViewOpened', this._compilerid);
@@ -196,12 +208,69 @@ Ir.prototype.onCompilerClose = function (id) {
 };
 
 Ir.prototype.onSettingsChange = function (newSettings) {
+    this.settings = newSettings;
     this.irEditor.updateOptions({
         contextmenu: newSettings.useCustomContextMenu,
         minimap: {
             enabled: newSettings.showMinimap
-        }
+        },
+        fontFamily: newSettings.editorsFFont
     });
+};
+
+Ir.prototype.onMouseMove = function (e) {
+    if (e === null || e.target === null || e.target.position === null) return;
+    if (this.settings.hoverShowSource === true && this.irCode) {
+        this.clearLinkedLines();
+        var hoverCode = this.irCode[e.target.position.lineNumber - 1];
+        if (hoverCode) {
+            // We check that we actually have something to show at this point!
+            var sourceLine =  hoverCode.source && !hoverCode.source.file ? hoverCode.source.line : -1;
+            this.eventHub.emit('editorLinkLine', this._editorid, sourceLine, false);
+            this.eventHub.emit('panesLinkLine', this._compilerid, sourceLine, false, this);
+        }
+    }
+};
+
+Ir.prototype.updateDecorations = function () {
+    this.prevDecorations = this.irEditor.deltaDecorations(
+        this.prevDecorations, _.flatten(_.values(this.decorations)));
+};
+
+Ir.prototype.clearLinkedLines = function () {
+    this.decorations.linkedCode = [];
+    this.updateDecorations();
+};
+
+Ir.prototype.onPanesLinkLine = function (compilerId, lineNumber, revealLine, sender) {
+    if (Number(compilerId) === this._compilerid) {
+        var lineNums = [];
+        _.each(this.irCode, function (irLine, i) {
+            if (irLine.source && irLine.source.file === null && irLine.source.line === lineNumber) {
+                lineNums.push(i + 1);
+            }
+        });
+        if (revealLine && lineNums[0]) this.irEditor.revealLineInCenter(lineNums[0]);
+        var inlineClass = sender !== this ? 'linked-code-decoration-inline' : '';
+        this.decorations.linkedCode = _.map(lineNums, function (line) {
+            return {
+                range: new monaco.Range(line, 1, line, 1),
+                options: {
+                    isWholeLine: true,
+                    linesDecorationsClassName: 'linked-code-decoration-margin',
+                    inlineClassName: inlineClass
+                }
+            };
+        });
+        if (this.linkedFadeTimeoutId !== -1) {
+            clearTimeout(this.linkedFadeTimeoutId);
+        }
+        this.linkedFadeTimeoutId = setTimeout(_.bind(function () {
+            this.clearLinkedLines();
+            this.linkedFadeTimeoutId = -1;
+        }, this), 5000);
+        this.updateDecorations();
+    }
 };
 
 Ir.prototype.close = function () {

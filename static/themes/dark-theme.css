@@ -79,6 +79,10 @@ a.navbar-brand img.logo.normal {
     background-color: #333 !important;
 }
 
+.linked-code-decoration-inline {
+    background: #121212 !important;
+}
+
 .linked-code-decoration-margin {
     background: #433b4b !important;
 }
