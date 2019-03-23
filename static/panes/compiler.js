@@ -120,6 +120,7 @@ function Compiler(hub, container, state) {
     this.compilerPicker.selectize({
         sortField: [
             {field: '$order'},
+            {field: '$score'},
             {field: 'name'}
         ],
         valueField: 'id',
