@@ -37,7 +37,7 @@ def check_policy_file(police_name):
     if len(privacy_output) == 0:
         print('No need to update {}'.format(policy_path))
         return
-    print('Updating {} -> {}'.format(policy_path, privacy_output))
+    print('Setting policy {} last updated time to {}'.format(policy_path, privacy_output))
     f = open(policy_path, 'r')
     file_lines = f.readlines()
     f.close()
