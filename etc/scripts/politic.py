@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018, Compiler Explorer Authors
+# Copyright (c) 2019, Compiler Explorer Authors
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -26,13 +26,13 @@
 import subprocess
 import re
 
-
-date_placeholder_regex = re.compile('<p id="changed-date">.*</p>')
+date_placeholder = '<time id="changed-date">.*</time>'
+date_placeholder_regex = re.compile(date_placeholder)
 
 
 def check_policy_file(police_name):
     policy_path = 'static/policies/{}.html'.format(police_name)
-    privacy_output = subprocess.check_output(['git', 'show', '-s', '--format=%ci', 'HEAD', '--', policy_path]).decode('utf-8').rstrip()
+    privacy_output = subprocess.check_output(['git', 'log', '-1', '--format=%cd', policy_path]).decode('utf-8').rstrip()
 
     if len(privacy_output) == 0:
         print('No need to update {}'.format(policy_path))
@@ -44,7 +44,7 @@ def check_policy_file(police_name):
     with open(policy_path, 'w') as f:
         for line in file_lines:
             if re.match(date_placeholder_regex, line):
-                f.write(re.sub('<p id="changed-date">.*</p>', '<p id="changed-date">Last changed on: {}</p>'.format(privacy_output), line))
+                f.write(re.sub(date_placeholder_regex, '<time id="changed-date">Last changed on: {}</time>'.format(privacy_output), line))
             else:
                 f.write(line)
 
