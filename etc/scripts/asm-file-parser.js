@@ -2,8 +2,8 @@
 'use strict';
 
 const getStdin = require('get-stdin');
-const parser = new (require('../asm-parser'))();
-const compiler = require('../base-compiler');
+const parser = new (require('../../lib/asm-parser'))();
+const compiler = require('../../lib/base-compiler');
 
 getStdin(str => {
     for (let line of parser.processAsm(str, compiler.getDefaultFilters())) {

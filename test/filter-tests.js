@@ -116,7 +116,7 @@ function testFilter(filename, suffix, filters) {
     if (!json) result = result.map(x => x.text);
     isCorrect(filename, file, result);
     // through CLI
-    exec(__dirname + '/../lib/tooling/asm-file-parser.js < ' + filename, (err, stdout, stderr) => {
+    exec(__dirname + '/../etc/scripts/asm-file-parser.js < ' + filename, (err, stdout, stderr) => {
         if (stderr != '') console.error(stderr);
         should.not.exist(err);
         isCorrect(filename, file, stdout);
