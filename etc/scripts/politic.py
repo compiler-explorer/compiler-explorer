@@ -26,7 +26,7 @@
 import subprocess
 import re
 
-date_placeholder = '<time id="changed-date">.*</time>'
+date_placeholder = '(<time id="changed-date">).*(</time>)'
 date_placeholder_regex = re.compile(date_placeholder)
 
 
@@ -44,7 +44,7 @@ def check_policy_file(police_name):
     with open(policy_path, 'w') as f:
         for line in file_lines:
             if re.match(date_placeholder_regex, line):
-                f.write(re.sub(date_placeholder_regex, '<time id="changed-date">Last changed on: {}</time>'.format(privacy_output), line))
+                f.write(re.sub(date_placeholder_regex, '\\1Last changed on: {}\\2'.format(privacy_output), line))
             else:
                 f.write(line)
 
