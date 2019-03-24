@@ -24,7 +24,8 @@
                         "ast",
                         "opt",
                         "cfg"
-                    ]
+                    ],
+                    "tools": []
                 },
                 {
                     "id": "g82",
@@ -42,7 +43,8 @@
                     "libs": [],
                     "specialoutputs": [
                         "gccdump"
-                    ]
+                    ],
+                    "tools": []
                 }
             ]
         }

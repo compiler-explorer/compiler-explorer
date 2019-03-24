@@ -20,6 +20,10 @@ body {
     background-color: #eee;
 }
 
+.navbar-nav a.nav-link {
+    border: rgb(140,140,140) 1px solid;
+}
+
 .float-link {
     background-color: rgba(128, 128, 128, 0.5);
 }
@@ -191,4 +195,51 @@ a.navbar-brand img.logo.normal {
 
 .navbar-nav a.nav-link:hover {
     background-color: #d8d9da;
+}
+
+kbd {
+    color: black;
+    border-color: #ccc;
+    background-color: #f7f7f7;
+}
+
+.prepend-options {
+    background-color: #e9ecef;
+}
+
+#simplecook {
+    background-color: #f4f4f4;
+}
+
+.new-cookie-msg {
+    color: black;
+}
+
+div.argmenuitem {
+    max-width: 250px;
+}
+
+div.argmenuitem span.argtitle {
+    font-weight: bold;
+    display: block;
+    overflow-x: hidden;
+    overflow-anchor: visible;
+    text-overflow: ellipsis;
+}
+
+div.argmenuitem span.argdescription {
+    max-height: 150px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    font-style: italic;
+    font-size: smaller;
+    display: block;
+    white-space: normal;
+    text-overflow: ellipsis;
+    overflow-anchor: visible;
+    overflow-y: hidden;
+}
+
+.open-in-cppinsights * {
+    vertical-align: middle;
 }

@@ -162,7 +162,7 @@ def instr_name(i):
 
 
 def get_description_paragraphs(document_soup):
-    description_header_node = document_soup.find(id="Description")
+    description_header_node = document_soup.find(id="description")
     i = 0
     description_paragraph_node = description_header_node.next_sibling.next_sibling
     description_paragraphs = []

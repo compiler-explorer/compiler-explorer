@@ -39,12 +39,14 @@ require('../modes/rust-mode');
 require('../modes/ispc-mode');
 require('../modes/llvm-ir-mode');
 require('../modes/haskell-mode');
+require('../modes/ocaml-mode');
 require('../modes/clean-mode');
 require('../modes/pascal-mode');
 require('../modes/cuda-mode');
 require('../modes/fortran-mode');
 require('../modes/zig-mode');
 require('../modes/nc-mode');
+require('../modes/ada-mode');
 require('selectize');
 
 var loadSave = new loadSaveLib.LoadSave();
@@ -88,7 +90,7 @@ function Editor(hub, state, container) {
     this.editor = monaco.editor.create(root[0], {
         scrollBeyondLastLine: false,
         language: this.currentLanguage.monaco,
-        fontFamily: 'Consolas, "Liberation Mono", Courier, monospace',
+        fontFamily: this.settings.editorsFFont,
         readOnly: !!options.readOnly || legacyReadOnly,
         glyphMargin: !options.embedded,
         quickSuggestions: false,
@@ -101,6 +103,7 @@ function Editor(hub, state, container) {
         emptySelectionClipboard: true,
         autoIndent: true
     });
+    this.editor.getModel().setEOL(monaco.editor.EndOfLineSequence.LF);
 
     if (state.source !== undefined) {
         this.setSource(state.source);
@@ -113,7 +116,10 @@ function Editor(hub, state, container) {
         // With reference to https://github.com/Microsoft/monaco-editor/issues/115
         // I tried that and it didn't work, but a delay of 500 seems to "be enough".
         setTimeout(_.bind(function () {
+            this.editor.setSelection(new monaco.Selection(1, 1, 1, 1));
+            this.editor.focus();
             this.editor.getAction("editor.fold").run();
+            this.editor.clearSelection();
         }, this), 500);
     }
 
@@ -181,10 +187,18 @@ Editor.prototype.updateState = function () {
     };
     this.fontScale.addState(state);
     this.container.setState(state);
+
+    this.updateButtons();
 };
 
 Editor.prototype.setSource = function (newSource) {
-    this.editor.getModel().setValue(newSource);
+    this.updateSource(newSource);
+};
+
+Editor.prototype.onNewSource = function (editorId, newSource) {
+    if (this.id === editorId) {
+        this.setSource(newSource);
+    }
 };
 
 Editor.prototype.getSource = function () {
@@ -216,6 +230,8 @@ Editor.prototype.initCallbacks = function () {
     this.container.layoutManager.on('initialised', function () {
         // Once initialized, let everyone know what text we have.
         this.maybeEmitChange();
+        // And maybe ask for a compilation (Will hit the cache most of the time)
+        this.requestCompilation();
     }, this);
 
     this.eventHub.on('compilerOpen', this.onCompilerOpen, this);
@@ -228,6 +244,7 @@ Editor.prototype.initCallbacks = function () {
     this.eventHub.on('conformanceViewOpen', this.onConformanceViewOpen, this);
     this.eventHub.on('conformanceViewClose', this.onConformanceViewClose, this);
     this.eventHub.on('resize', this.resize, this);
+    this.eventHub.on('newSource', this.onNewSource, this);
 
     this.editor.getModel().onDidChangeContent(_.bind(function () {
         this.debouncedEmitChange();
@@ -267,13 +284,18 @@ Editor.prototype.initButtons = function (state) {
     if (this.langKeys.length <= 1) {
         this.languageBtn.prop("disabled", true);
     }
-    var addCompilerButton = this.domRoot.find('.btn.add-compiler');
+    this.topBar = this.domRoot.find('.top-bar');
+    this.hideable = this.domRoot.find('.hideable');
+
+    this.loadSaveButton = this.domRoot.find('.load-save');
     var paneAdderDropdown = this.domRoot.find('.add-pane');
+    var addCompilerButton = this.domRoot.find('.btn.add-compiler');
+    this.conformanceViewerButton = this.domRoot.find('.btn.conformance');
+    var addEditorButton = this.domRoot.find('.btn.add-editor');
 
     var togglePaneAdder = function () {
         paneAdderDropdown.dropdown('toggle');
     };
-    this.topBar = this.domRoot.find('.top-bar');
 
     // NB a new compilerConfig needs to be created every time; else the state is shared
     // between all compilers created this way. That leads to some nasty-to-find state
@@ -283,42 +305,73 @@ Editor.prototype.initButtons = function (state) {
     }, this);
 
     var getConformanceConfig = _.bind(function () {
-        return Components.getConformanceView(this.id, this.getSource());
+        return Components.getConformanceView(this.id, this.getSource(), this.currentLanguage.id);
     }, this);
 
-    this.container.layoutManager
-        .createDragSource(addCompilerButton, getCompilerConfig)
-        ._dragListener.on('dragStart', togglePaneAdder);
+    var getEditorConfig = _.bind(function () {
+        return Components.getEditor();
+    }, this);
 
-    addCompilerButton.click(_.bind(function () {
-        var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
-            this.container.layoutManager.root.contentItems[0];
-        insertPoint.addChild(getCompilerConfig);
-    }, this));
+    var addDragListener = _.bind(function (dragSource, dragConfig) {
+        this.container.layoutManager
+            .createDragSource(dragSource, dragConfig)
+            ._dragListener.on('dragStart', togglePaneAdder);
+    }, this);
 
-    this.conformanceViewerButton = this.domRoot.find('.btn.conformance');
+    addDragListener(addCompilerButton, getCompilerConfig);
+    addDragListener(this.conformanceViewerButton, getConformanceConfig);
+    addDragListener(addEditorButton, getEditorConfig);
 
-    this.container.layoutManager
-        .createDragSource(this.conformanceViewerButton, getConformanceConfig)
-        ._dragListener.on('dragStart', togglePaneAdder);
-    this.conformanceViewerButton.click(_.bind(function () {
-        var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
-            this.container.layoutManager.root.contentItems[0];
-        insertPoint.addChild(getConformanceConfig);
-    }, this));
+    var bindClickEvent = _.bind(function (dragSource, dragConfig) {
+        dragSource.click(_.bind(function () {
+            var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
+                this.container.layoutManager.root.contentItems[0];
+            insertPoint.addChild(dragConfig);
+        }, this));
+    }, this);
 
-    this.hideable = this.domRoot.find('.hideable');
+    bindClickEvent(addCompilerButton, getCompilerConfig);
+    bindClickEvent(this.conformanceViewerButton, getConformanceConfig);
+    bindClickEvent(addEditorButton, getEditorConfig);
 
-    this.loadSaveButton = this.domRoot.find('.load-save');
     this.initLoadSaver();
     $(this.domRoot).keydown(_.bind(function (event) {
         if ((event.ctrlKey || event.metaKey) && String.fromCharCode(event.which).toLowerCase() === 's') {
-            this.showLoadSaver();
-            if (loadSave.onSaveToFile(this.id)) {
-                event.preventDefault();
+            event.preventDefault();
+            if (this.settings.enableCtrlS) {
+                loadSave.setMinimalOptions(this.getSource(), this.currentLanguage);
+                if (!loadSave.onSaveToFile(this.id)) {
+                    this.showLoadSaver();
+                }
             }
         }
     }, this));
+
+    this.cppInsightsButton = this.domRoot.find('.open-in-cppinsights');
+    this.cppInsightsButton.on('mousedown', _.bind(function () {
+        this.updateOpenInCppInsights();
+    }, this));
+};
+
+Editor.prototype.updateButtons = function () {
+    if (this.currentLanguage.id === 'c++') {
+        this.cppInsightsButton.show();
+    } else {
+        this.cppInsightsButton.hide();
+    }
+};
+
+Editor.prototype.b64UTFEncode = function (str) {
+    return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function (match, v) {
+        return String.fromCharCode(parseInt(v, 16));
+    }));
+};
+
+Editor.prototype.updateOpenInCppInsights = function () {
+    var cppStd = 'cpp2a'; // if a compiler is linked, maybe we can find this out?
+    var link = 'https://cppinsights.io/lnk?code=' + this.b64UTFEncode(this.getSource()) + '&std=' + cppStd + '&rev=1.0';
+
+    this.domRoot.find(".open-in-cppinsights").attr("href", link);
 };
 
 Editor.prototype.changeLanguage = function (newLang) {
@@ -343,6 +396,10 @@ Editor.prototype.tryCompilerLinkLine = function (thisLineNumber, reveal) {
     }, this));
 };
 
+Editor.prototype.requestCompilation = function () {
+    this.eventHub.emit('requestCompilation', this.id);
+};
+
 Editor.prototype.initEditorActions = function () {
     this.editor.addAction({
         id: 'compile',
@@ -352,7 +409,9 @@ Editor.prototype.initEditorActions = function () {
         contextMenuGroupId: 'navigation',
         contextMenuOrder: 1.5,
         run: _.bind(function () {
+            // This change request is mostly superfluous
             this.maybeEmitChange();
+            this.requestCompilation();
         }, this)
     });
 
@@ -419,9 +478,27 @@ Editor.prototype.confirmOverwrite = function (yes) {
         {yes: yes, no: null});
 };
 
+Editor.prototype.updateSource = function (newSource) {
+    // Create something that looks like an edit operation for the whole text
+    var operation = {
+        range: this.editor.getModel().getFullModelRange(),
+        forceMoveMarkers: true,
+        text: newSource
+    };
+    var nullFn = function () {
+        return null;
+    };
+    var viewState = this.editor.saveViewState();
+    // Add a undo stop so we don't go back further than expected
+    this.editor.pushUndoStop();
+    // Apply de edit. Note that we lose cursor position, but I've not found a better alternative yet
+    this.editor.getModel().pushEditOperations(viewState.cursorState, [operation], nullFn);
+    this.numberUsedLines();
+};
+
 Editor.prototype.formatCurrentText = function () {
     var previousSource = this.getSource();
-    var currentPosition = this.editor.getPosition();
+
     $.ajax({
         type: 'POST',
         url: window.location.origin + this.httpRoot + 'api/format/clangformat',
@@ -434,14 +511,10 @@ Editor.prototype.formatCurrentText = function () {
         success: _.bind(function (result) {
             if (result.exit === 0) {
                 if (this.doesMatchEditor(previousSource)) {
-                    this.setSource(result.answer);
-                    this.numberUsedLines();
-                    this.editor.setPosition(currentPosition);
+                    this.updateSource(result.answer);
                 } else {
                     this.confirmOverwrite(_.bind(function () {
-                        this.setSource(result.answer);
-                        this.numberUsedLines();
-                        this.editor.setPosition(currentPosition);
+                        this.updateSource(result.answer);
                     }, this), null);
                 }
             } else {
@@ -479,6 +552,12 @@ Editor.prototype.resize = function () {
         width: this.domRoot.width(),
         height: this.domRoot.height() - topBarHeight
     });
+    // Only update the options if needed
+    if (this.settings.wordWrap) {
+        this.editor.updateOptions({
+            wordWrapColumn: this.editor.getLayoutInfo().viewportColumn
+        });
+    }
 };
 
 Editor.prototype.updateAndCalcTopBarHeight = function () {
@@ -514,24 +593,16 @@ Editor.prototype.onSettingsChange = function (newSettings) {
         contextmenu: this.settings.useCustomContextMenu,
         minimap: {
             enabled: this.settings.showMinimap && !options.embedded
-        }
+        },
+        fontFamily: this.settings.editorsFFont,
+        wordWrap: this.settings.wordWrap ? 'bounded' : 'off',
+        wordWrapColumn: this.editor.getLayoutInfo().viewportColumn // Ensure the column count is up to date
     });
 
-    // * Turn off auto.
-    // * edit code
-    // * change compiler or compiler options (out of date code is used)
-    var bDac = before.compileOnChange ? before.delayAfterChange : 0;
-    var aDac = after.compileOnChange ? after.delayAfterChange : 0;
-    if (bDac !== aDac || !this.debouncedEmitChange) {
-        if (aDac) {
-            this.debouncedEmitChange = _.debounce(_.bind(function () {
-                this.maybeEmitChange();
-            }, this), after.delayAfterChange);
-            this.maybeEmitChange(true);
-        } else {
-            this.debouncedEmitChange = _.noop;
-        }
-    }
+    // Unconditionally send editor changes. The compiler only compiles when needed
+    this.debouncedEmitChange = _.debounce(_.bind(function () {
+        this.maybeEmitChange();
+    }, this), after.delayAfterChange);
 
     if (before.hoverShowSource && !after.hoverShowSource) {
         this.onEditorSetDecoration(this.id, -1, false);
@@ -686,7 +757,8 @@ Editor.prototype.initLoadSaver = function () {
             loadSave.run(_.bind(function (text) {
                 this.setSource(text);
                 this.updateState();
-                this.maybeEmitChange();
+                this.maybeEmitChange(true);
+                this.requestCompilation();
             }, this), this.getSource(), this.currentLanguage);
         }, this));
 };
@@ -707,6 +779,7 @@ Editor.prototype.onLanguageChange = function (newLangId) {
             // Broadcast the change to other panels
             this.eventHub.emit("languageChange", this.id, newLangId);
             this.maybeEmitChange(true);
+            this.requestCompilation();
             ga.proxy('send', {
                 hitType: 'event',
                 eventCategory: 'LanguageChange',

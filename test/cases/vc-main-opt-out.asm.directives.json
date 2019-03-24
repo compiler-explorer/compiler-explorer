@@ -8,6 +8,38 @@
     "source": null
   },
   {
+    "text": "$pdata$main DD  imagerel $LN3",
+    "source": null
+  },
+  {
+    "text": "        DD      imagerel $LN3+142",
+    "source": null
+  },
+  {
+    "text": "        DD      imagerel $unwind$main",
+    "source": null
+  },
+  {
+    "text": "$unwind$main DD 011319H",
+    "source": null
+  },
+  {
+    "text": "        DD      0c204H",
+    "source": null
+  },
+  {
+    "text": "        DD      imagerel __GSHandlerCheck",
+    "source": null
+  },
+  {
+    "text": "        DD      050H",
+    "source": null
+  },
+  {
+    "text": "",
+    "source": null
+  },
+  {
     "text": "; Function compile flags: /Odtp",
     "source": null
   },

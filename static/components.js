@@ -67,6 +67,18 @@ module.exports = {
             componentState: {compiler: compiler, editor: editor}
         };
     },
+    getToolViewWith: function (compiler, editor, toolId, args) {
+        return {
+            type: 'component',
+            componentName: 'tool',
+            componentState: {
+                compiler: compiler,
+                editor: editor,
+                toolId: toolId,
+                args: args
+            }
+        };
+    },
     getDiff: function () {
         return {
             type: 'component',
@@ -156,13 +168,34 @@ module.exports = {
             }
         };
     },
-    getConformanceView: function (editorid, source) {
+    getConformanceView: function (editorid, source, langId) {
         return {
             type: 'component',
             componentName: 'conformance',
             componentState: {
                 editorid: editorid,
-                source: source
+                source: source,
+                langId: langId
+            }
+        };
+    },
+    getIrView: function () {
+        return {
+            type: 'component',
+            componentName: 'ir',
+            componentState: {}
+        };
+    },
+    getIrViewWith: function (id, source, irOutput, compilerName, editorid) {
+        return {
+            type: 'component',
+            componentName: 'ir',
+            componentState: {
+                id: id,
+                source: source,
+                irOutput: irOutput,
+                compilerName: compilerName,
+                editorid: editorid
             }
         };
     }

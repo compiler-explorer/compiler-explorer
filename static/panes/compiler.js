@@ -37,9 +37,10 @@ var monaco = require('../monaco');
 var Alert = require('../alert');
 var bigInt = require('big-integer');
 var local = require('../local');
-var Raven = require('raven-js');
+var Sentry = require('@sentry/browser');
 var Libraries = require('../libs-widget');
 require('../modes/asm-mode');
+require('../modes/ptx-mode');
 
 require('selectize');
 
@@ -104,8 +105,8 @@ function Compiler(hub, container, state) {
     this.outputEditor = monaco.editor.create(this.monacoPlaceholder[0], {
         scrollBeyondLastLine: false,
         readOnly: true,
-        language: 'asm',
-        fontFamily: 'Consolas, "Liberation Mono", Courier, monospace',
+        language: languages[this.currentLangId].monacoDisassembly || 'asm',
+        fontFamily: this.settings.editorsFFont,
         glyphMargin: !options.embedded,
         fixedOverflowWidgets: true,
         minimap: {
@@ -119,6 +120,7 @@ function Compiler(hub, container, state) {
     this.compilerPicker.selectize({
         sortField: [
             {field: '$order'},
+            {field: '$score'},
             {field: 'name'}
         ],
         valueField: 'id',
@@ -215,6 +217,11 @@ Compiler.prototype.initPanerButtons = function () {
             this.sourceEditorId);
     }, this);
 
+    var createIrView = _.bind(function () {
+        return Components.getIrViewWith(this.id, this.source, this.lastResult.irOutput, this.getCompilerName(),
+            this.sourceEditorId);
+    }, this);
+
     var createGccDumpView = _.bind(function () {
         return Components.getGccDumpViewWith(this.id, this.getCompilerName(), this.sourceEditorId,
             this.lastResult.gccDumpOutput);
@@ -260,6 +267,16 @@ Compiler.prototype.initPanerButtons = function () {
     }, this));
 
     this.container.layoutManager
+        .createDragSource(this.irButton, createIrView)
+        ._dragListener.on('dragStart', togglePannerAdder);
+
+    this.irButton.click(_.bind(function () {
+        var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
+            this.container.layoutManager.root.contentItems[0];
+        insertPoint.addChild(createIrView);
+    }, this));
+
+    this.container.layoutManager
         .createDragSource(this.gccDumpButton, createGccDumpView)
         ._dragListener.on('dragStart', togglePannerAdder);
 
@@ -278,6 +295,8 @@ Compiler.prototype.initPanerButtons = function () {
             this.container.layoutManager.root.contentItems[0];
         insertPoint.addChild(createCfgView);
     }, this));
+
+    this.initToolButtons(togglePannerAdder);
 };
 
 Compiler.prototype.undefer = function () {
@@ -391,6 +410,9 @@ Compiler.prototype.getEffectiveFilters = function () {
     if (filters.execute && !this.compiler.supportsExecute) {
         delete filters.execute;
     }
+    if (filters.libraryCode && !this.compiler.supportsLibraryCodeFilter) {
+        delete filters.libraryCode;
+    }
     _.each(this.compiler.disabledFilters, function (filter) {
         if (filters[filter]) {
             delete filters[filter];
@@ -399,7 +421,51 @@ Compiler.prototype.getEffectiveFilters = function () {
     return filters;
 };
 
-Compiler.prototype.compile = function (bypassCache) {
+Compiler.prototype.findTools = function (content, tools) {
+    if (content.componentName === "tool") {
+        if (
+            (content.componentState.editor === this.sourceEditorId) &&
+            (content.componentState.compiler === this.id)) {
+            tools.push({
+                id: content.componentState.toolId,
+                args: content.componentState.args
+            });
+        }
+    } else if (content.content) {
+        _.each(content.content, function (subcontent) {
+            tools = this.findTools(subcontent, tools);
+        }, this);
+    }
+
+    return tools;
+};
+
+Compiler.prototype.getActiveTools = function (newToolSettings) {
+    if (!this.compiler) return {};
+
+    var tools = [];
+    if (newToolSettings) {
+        tools.push({
+            id: newToolSettings.toolId,
+            args: newToolSettings.args
+        });
+    }
+
+    if (this.container.layoutManager.isInitialised) {
+        var config = this.container.layoutManager.toConfig();
+        return this.findTools(config, tools);
+    } else {
+        return tools;
+    }
+};
+
+Compiler.prototype.isToolActive = function (activetools, toolId) {
+    return _.find(activetools, function (tool) {
+        return tool.id === toolId;
+    });
+};
+
+Compiler.prototype.compile = function (bypassCache, newTools) {
     if (this.deferCompiles) {
         this.needsCompile = true;
         return;
@@ -417,9 +483,11 @@ Compiler.prototype.compile = function (bypassCache) {
                 rtlDump: this.rtlDumpEnabled
             },
             produceOptInfo: this.wantOptInfo,
-            produceCfg: this.cfgViewOpen
+            produceCfg: this.cfgViewOpen,
+            produceIr: this.irViewOpen
         },
-        filters: this.getEffectiveFilters()
+        filters: this.getEffectiveFilters(),
+        tools: this.getActiveTools(newTools)
     };
     var includeFlag = this.compiler ? this.compiler.includeFlag : '-I';
     _.each(this.libsWidget.getLibsInUse(), function (item) {
@@ -552,6 +620,8 @@ Compiler.prototype.onCompileResponse = function (request, result, cached) {
         });
         result.asm.splice(indexToDiscard + 1, result.asm.length - indexToDiscard);
     }
+    // Save which source produced this change. It should probably be saved earlier though
+    result.source = this.source;
     this.lastResult = result;
     var timeTaken = Math.max(0, Date.now() - this.pendingRequestSentAt);
     var wasRealReply = this.pendingRequestSentAt > 0;
@@ -607,6 +677,18 @@ Compiler.prototype.onCompileResponse = function (request, result, cached) {
 
     this.compileTimeLabel.text(timeLabelText);
 
+    if (result.popularArguments) {
+        this.handlePopularArgumentsResult(result.popularArguments);
+    } else {
+        this.compilerService.requestPopularArguments(this.compiler.id, request.options.userArguments).then(
+            _.bind(function (result) {
+                if (result && result.result) {
+                    this.handlePopularArgumentsResult(result.result);
+                }
+            }, this)
+        );
+    }
+
     this.eventHub.emit('compileResult', this.id, this.compiler, result, languages[this.currentLangId]);
     this.updateButtons();
     this.setCompilationOptionsPopover(result.compilationOptions ? result.compilationOptions.join(' ') : '');
@@ -631,7 +713,37 @@ Compiler.prototype.onEditorChange = function (editor, source, langId, compilerId
     if (editor === this.sourceEditorId && langId === this.currentLangId &&
         (compilerId === undefined || compilerId === this.id)) {
         this.source = source;
-        this.compile();
+        if (this.settings.compileOnChange) {
+            this.compile();
+        }
+    }
+};
+
+Compiler.prototype.onToolOpened = function (compilerId, toolSettings) {
+    if (this.id === compilerId) {
+        var toolId = toolSettings.toolId;
+        if (toolId === "clangtidytrunk") {
+            this.clangtidyToolButton.prop('disabled', true);
+        } else if (toolId === "llvm-mcatrunk") {
+            this.llvmmcaToolButton.prop('disabled', true);
+        } else if (toolId === "pahole") {
+            this.paholeToolButton.prop('disabled', true);
+        }
+
+        this.compile(false, toolSettings);
+    }
+};
+
+Compiler.prototype.onToolClosed = function (compilerId, toolSettings) {
+    if (this.id === compilerId) {
+        var toolId = toolSettings.toolId;
+        if (toolId === "clangtidytrunk") {
+            this.clangtidyToolButton.prop('disabled', !this.supportsTool(toolId));
+        } else if (toolId === "llvm-mcatrunk") {
+            this.llvmmcaToolButton.prop('disabled', !this.supportsTool(toolId));
+        } else if (toolId === "pahole") {
+            this.paholeToolButton.prop('disabled', !this.supportsTool(toolId));
+        }
     }
 };
 
@@ -666,10 +778,32 @@ Compiler.prototype.onAstViewOpened = function (id) {
     }
 };
 
+Compiler.prototype.onToolSettingsChange = function (id) {
+    if (this.id === id) {
+        this.compile();
+    }
+};
+
 Compiler.prototype.onAstViewClosed = function (id) {
     if (this.id === id) {
         this.astButton.prop('disabled', false);
         this.astViewOpen = false;
+    }
+};
+
+Compiler.prototype.onIrViewOpened = function (id) {
+    if (this.id === id) {
+        this.irButton.prop('disabled', true);
+        this.irViewOpen = true;
+        this.compile();
+    }
+};
+
+Compiler.prototype.onIrViewClosed = function (id) {
+    if (this.id === id) {
+        this.irButton.prop('disabled', true);
+        this.irViewOpen = false;
+        this.compile();
     }
 };
 
@@ -747,6 +881,7 @@ Compiler.prototype.initButtons = function (state) {
 
     this.optButton = this.domRoot.find('.btn.view-optimization');
     this.astButton = this.domRoot.find('.btn.view-ast');
+    this.irButton = this.domRoot.find('.btn.view-ir');
     this.gccDumpButton = this.domRoot.find('.btn.view-gccdump');
     this.cfgButton = this.domRoot.find('.btn.view-cfg');
     this.libsButton = this.domRoot.find('.btn.show-libs');
@@ -760,6 +895,7 @@ Compiler.prototype.initButtons = function (state) {
 
     this.optionsField = this.domRoot.find('.options');
     this.prependOptions = this.domRoot.find('.prepend-options');
+    this.fullCompilerName = this.domRoot.find('.full-compiler-name');
     this.setCompilationOptionsPopover(this.compiler ? this.compiler.options : null);
     // Dismiss on any click that isn't either in the opening element, inside
     // the popover or on any alert
@@ -768,6 +904,10 @@ Compiler.prototype.initButtons = function (state) {
         if (!target.is(this.prependOptions) && this.prependOptions.has(target).length === 0 &&
             target.closest('.popover').length === 0)
             this.prependOptions.popover("hide");
+
+        if (!target.is(this.fullCompilerName) && this.fullCompilerName.has(target).length === 0 &&
+            target.closest('.popover').length === 0)
+            this.fullCompilerName.popover("hide");
     }, this));
 
     this.filterBinaryButton = this.domRoot.find("[data-bind='binary']");
@@ -781,6 +921,9 @@ Compiler.prototype.initButtons = function (state) {
 
     this.filterDirectivesButton = this.domRoot.find("[data-bind='directives']");
     this.filterDirectivesTitle = this.filterDirectivesButton.prop('title');
+
+    this.filterLibraryCodeButton = this.domRoot.find("[data-bind='libraryCode']");
+    this.filterLibraryCodeTitle = this.filterLibraryCodeButton.prop('title');
 
     this.filterCommentsButton = this.domRoot.find("[data-bind='commentOnly']");
     this.filterCommentsTitle = this.filterCommentsButton.prop('title');
@@ -796,10 +939,10 @@ Compiler.prototype.initButtons = function (state) {
 
     this.noBinaryFiltersButtons = this.domRoot.find('.nonbinary');
     this.filterExecuteButton.toggle(options.supportsExecute);
+    this.filterLibraryCodeButton.toggle(options.supportsLibraryCodeFilter);
     this.optionsField.val(this.options);
 
     this.shortCompilerName = this.domRoot.find('.short-compiler-name');
-    this.fullCompilerName = this.domRoot.find('.full-compiler-name');
     this.compilerPicker = this.domRoot.find('.compiler-picker');
     this.setCompilerVersionPopover('');
 
@@ -823,6 +966,40 @@ Compiler.prototype.onLibsChanged = function () {
 Compiler.prototype.initLibraries = function (state) {
     this.libsWidget = new Libraries.Widget(this.currentLangId, this.libsButton,
         state, _.bind(this.onLibsChanged, this));
+};
+
+Compiler.prototype.supportsTool = function (toolId) {
+    if (!this.compiler) return;
+
+    return _.find(this.compiler.tools, function (tool) {
+        return (tool.tool.id === toolId);
+    });
+};
+
+Compiler.prototype.initToolButton = function (togglePannerAdder, button, toolId) {
+    var createToolView = _.bind(function () {
+        return Components.getToolViewWith(this.id, this.sourceEditorId, toolId, "");
+    }, this);
+
+    this.container.layoutManager
+        .createDragSource(button, createToolView)
+        ._dragListener.on('dragStart', togglePannerAdder);
+
+    button.click(_.bind(function () {
+        var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
+            this.container.layoutManager.root.contentItems[0];
+        insertPoint.addChild(createToolView);
+    }, this));
+};
+
+Compiler.prototype.initToolButtons = function (togglePannerAdder) {
+    this.clangtidyToolButton = this.domRoot.find('.view-clangtidytool');
+    this.llvmmcaToolButton = this.domRoot.find('.view-llvmmcatool');
+    this.paholeToolButton = this.domRoot.find('.view-pahole');
+
+    this.initToolButton(togglePannerAdder, this.clangtidyToolButton, "clangtidytrunk");
+    this.initToolButton(togglePannerAdder, this.llvmmcaToolButton, "llvm-mcatrunk");
+    this.initToolButton(togglePannerAdder, this.paholeToolButton, "pahole");
 };
 
 Compiler.prototype.updateButtons = function () {
@@ -849,6 +1026,9 @@ Compiler.prototype.updateButtons = function () {
     var noBinaryFiltersDisabled = !!filters.binary && !this.compiler.supportsFiltersInBinary;
     this.noBinaryFiltersButtons.prop('disabled', noBinaryFiltersDisabled);
 
+    this.filterLibraryCodeButton.prop('disabled', !this.compiler.supportsLibraryCodeFilter);
+    formatFilterTitle(this.filterLibraryCodeButton, this.filterLibraryCodeTitle);
+
     this.filterLabelsButton.prop('disabled', this.compiler.disabledFilters.indexOf('labels') !== -1);
     formatFilterTitle(this.filterLabelsButton, this.filterLabelsTitle);
     this.filterDirectivesButton.prop('disabled', this.compiler.disabledFilters.indexOf('directives') !== -1);
@@ -860,8 +1040,61 @@ Compiler.prototype.updateButtons = function () {
 
     this.optButton.prop('disabled', !this.compiler.supportsOptOutput);
     this.astButton.prop('disabled', !this.compiler.supportsAstView);
+    this.irButton.prop('disabled', !this.compiler.supportsIrView);
     this.cfgButton.prop('disabled', !this.compiler.supportsCfg);
     this.gccDumpButton.prop('disabled', !this.compiler.supportsGccDump);
+
+    var activeTools = this.getActiveTools();
+    this.clangtidyToolButton.prop('disabled',
+        !(this.supportsTool("clangtidytrunk") && !this.isToolActive(activeTools, "clangtidytrunk")));
+    this.llvmmcaToolButton.prop('disabled',
+        !(this.supportsTool("llvm-mcatrunk") && !this.isToolActive(activeTools, "llvm-mcatrunk")));
+    this.paholeToolButton.prop('disabled',
+        !(this.supportsTool("pahole") && !this.isToolActive(activeTools, "pahole")));
+};
+
+Compiler.prototype.handlePopularArgumentsResult = function (result) {
+    var popularArgumentsMenu = this.domRoot.find("div.populararguments div.dropdown-menu");
+    popularArgumentsMenu.html("");
+
+    if (result) {
+        var addedOption = false;
+
+        _.forEach(result, _.bind(function (arg, key) {
+            var argumentButton = $(document.createElement("button"));
+            argumentButton.addClass('dropdown-item btn btn-light btn-sm');
+            argumentButton.attr("title", arg.description);
+            argumentButton.data("arg", key);
+            argumentButton.html(
+                "<div class='argmenuitem'>" +
+                "<span class='argtitle'>" + _.escape(key) + "</span>" +
+                "<span class='argdescription'>" + arg.description + "</span>" +
+                "</div>");
+
+            argumentButton.click(_.bind(function () {
+                var button = argumentButton;
+                var curOptions = this.optionsField.val();
+                if (curOptions.length > 0) {
+                    this.optionsField.val(curOptions + " " + button.data("arg"));
+                } else {
+                    this.optionsField.val(button.data("arg"));
+                }
+
+                this.optionsField.change();
+            }, this));
+
+            popularArgumentsMenu.append(argumentButton);
+            addedOption = true;
+        }, this));
+
+        if (!addedOption) {
+            $("div.populararguments").hide();
+        } else {
+            $("div.populararguments").show();
+        }
+    } else {
+        $("div.populararguments").hide();
+    }
 };
 
 Compiler.prototype.onFontScale = function () {
@@ -888,11 +1121,18 @@ Compiler.prototype.initListeners = function () {
     this.eventHub.on('findCompilers', this.sendCompiler, this);
     this.eventHub.on('compilerSetDecorations', this.onCompilerSetDecorations, this);
     this.eventHub.on('settingsChange', this.onSettingsChange, this);
+    this.eventHub.on('requestCompilation', this.onRequestCompilation, this);
+
+    this.eventHub.on('toolSettingsChange', this.onToolSettingsChange, this);
+    this.eventHub.on('toolOpened', this.onToolOpened, this);
+    this.eventHub.on('toolClosed', this.onToolClosed, this);
 
     this.eventHub.on('optViewOpened', this.onOptViewOpened, this);
     this.eventHub.on('optViewClosed', this.onOptViewClosed, this);
     this.eventHub.on('astViewOpened', this.onAstViewOpened, this);
     this.eventHub.on('astViewClosed', this.onAstViewClosed, this);
+    this.eventHub.on('irViewOpened', this.onIrViewOpened, this);
+    this.eventHub.on('irViewClosed', this.onIrViewClosed, this);
     this.eventHub.on('outputOpened', this.onOutputOpened, this);
     this.eventHub.on('outputClosed', this.onOutputClosed, this);
 
@@ -1144,6 +1384,12 @@ Compiler.prototype.setCompilerVersionPopover = function (version) {
     });
 };
 
+Compiler.prototype.onRequestCompilation = function (editorId) {
+    if (editorId === this.sourceEditorId) {
+        this.compile();
+    }
+};
+
 Compiler.prototype.onSettingsChange = function (newSettings) {
     var before = this.settings;
     this.settings = _.clone(newSettings);
@@ -1154,7 +1400,8 @@ Compiler.prototype.onSettingsChange = function (newSettings) {
         contextmenu: this.settings.useCustomContextMenu,
         minimap: {
             enabled: this.settings.showMinimap && !options.embedded
-        }
+        },
+        fontFamily: this.settings.editorsFFont
     });
 };
 
@@ -1243,7 +1490,7 @@ Compiler.prototype.onMouseMove = function (e) {
             this.updateDecorations();
         }
 
-        if (!this.filterIntelButton.prop('disabled')) {
+        if (this.getEffectiveFilters().intel) {
             var lineTokens = function (model, line) {
                 //Force line's state to be accurate
                 if (line > model.getLineCount()) return [];
@@ -1282,7 +1529,7 @@ Compiler.prototype.onAsmToolTip = function (ed) {
         eventCategory: 'OpenModalPane',
         eventAction: 'AsmDocs'
     });
-    if (this.filterIntelButton.prop('disabled')) return;
+    if (!this.getEffectiveFilters().intel) return;
     var pos = ed.getPosition();
     var word = ed.getModel().getWordAtPosition(pos);
     if (!word || !word.word) return;
@@ -1431,7 +1678,7 @@ Compiler.prototype.langOfCompiler = function (compilerId) {
         return compiler.id === compilerId || compiler.alias === compilerId;
     });
     if (!compiler) {
-        Raven.captureMessage('Unable to find compiler id "' + compilerId + '"');
+        Sentry.captureMessage('Unable to find compiler id "' + compilerId + '"');
         compiler = options.compilers[0];
     }
     return compiler.lang;

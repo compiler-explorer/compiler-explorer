@@ -25,14 +25,16 @@
 'use strict';
 
 var _ = require('underscore');
-var Raven = require('raven-js');
+var Sentry = require('@sentry/browser');
 var editor = require('./panes/editor');
 var compiler = require('./panes/compiler');
 var output = require('./panes/output');
+var tool = require('./panes/tool');
 var Components = require('components');
 var diff = require('./panes/diff');
 var optView = require('./panes/opt-view');
 var astView = require('./panes/ast-view');
+var irView = require('./panes/ir-view');
 var gccDumpView = require('./panes/gccdump-view');
 var cfgView = require('./panes/cfg-view');
 var conformanceView = require('./panes/conformance-view');
@@ -86,6 +88,10 @@ function Hub(layout, subLangId) {
         function (container, state) {
             return self.outputFactory(container, state);
         });
+    layout.registerComponent(Components.getToolViewWith().componentName,
+        function (container, state) {
+            return self.toolFactory(container, state);
+        });
     layout.registerComponent(diff.getComponent().componentName,
         function (container, state) {
             return self.diffFactory(container, state);
@@ -97,6 +103,10 @@ function Hub(layout, subLangId) {
     layout.registerComponent(Components.getAstView().componentName,
         function (container, state) {
             return self.astViewFactory(container, state);
+        });
+    layout.registerComponent(Components.getIrView().componentName,
+        function (container, state) {
+            return self.irViewFactory(container, state);
         });
     layout.registerComponent(Components.getGccDumpView().componentName,
         function (container, state) {
@@ -164,6 +174,10 @@ Hub.prototype.outputFactory = function (container, state) {
     return new output.Output(this, container, state);
 };
 
+Hub.prototype.toolFactory = function (container, state) {
+    return new tool.Tool(this, container, state);
+};
+
 Hub.prototype.diffFactory = function (container, state) {
     return new diff.Diff(this, container, state);
 };
@@ -175,6 +189,11 @@ Hub.prototype.optViewFactory = function (container, state) {
 Hub.prototype.astViewFactory = function (container, state) {
     return new astView.Ast(this, container, state);
 };
+
+Hub.prototype.irViewFactory = function (container, state) {
+    return new irView.Ir(this, container, state);
+};
+
 Hub.prototype.gccDumpViewFactory = function (container, state) {
     return new gccDumpView.GccDump(this, container, state);
 };
@@ -213,7 +232,8 @@ WrappedEventHub.prototype.unsubscribe = function () {
         try {
             this.eventHub.off(obj.evt, obj.fn, obj.ctx);
         } catch (e) {
-            Raven.captureMessage('Can not unsubscribe from ' + obj.evt.toString() + ' :"' + e.msg + '"');
+            Sentry.captureMessage('Can not unsubscribe from ' + obj.evt.toString());
+            Sentry.captureException(e);
         }
     }, this));
     this.subscriptions = [];

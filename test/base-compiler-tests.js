@@ -64,6 +64,10 @@ describe('Basic compiler invariants', function () {
         compiler.isCfgCompiler("g++ (GCC-Explorer-Build) 8.0.1 20180223 (experimental)").should.equal(true);
         compiler.isCfgCompiler("g++ (GCC) 4.1.2").should.equal(true);
 
+        compiler.isCfgCompiler("foo-bar-g++ (GCC-Explorer-Build) 4.9.4").should.equal(true);
+        compiler.isCfgCompiler("foo-bar-gcc (GCC-Explorer-Build) 4.9.4").should.equal(true);
+        compiler.isCfgCompiler("foo-bar-gdc (GCC-Explorer-Build) 4.9.4").should.equal(true);
+
         compiler.isCfgCompiler("fake-for-test (Based on g++)").should.equal(false);
 
         compiler.isCfgCompiler("gdc (crosstool-NG 203be35 - 20160205-2.066.1-e95a735b97) 5.2.0").should.equal(true);

@@ -20,7 +20,8 @@
                         "intel": true
                     },
                     "libs": [],
-                    "specialoutputs": []
+                    "specialoutputs": [],
+                    "tools": []
                 }
             ]
         },
@@ -44,7 +45,8 @@
                         "intel": true
                     },
                     "libs": [],
-                    "specialoutputs": []
+                    "specialoutputs": [],
+                    "tools": []
                 }
             ]
         }

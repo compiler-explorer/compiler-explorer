@@ -27,6 +27,7 @@ const chai = require('chai'),
     CompilationEnvironment = require('../../lib/compilation-env'),
     chaiAsPromised = require("chai-as-promised"),
     parsers = require('../../lib/compilers/argument-parsers'),
+    CompilerArguments = require('../../lib/compiler-arguments'),
     properties = require('../../lib/properties');
 chai.use(chaiAsPromised);
 const should = chai.should();
@@ -42,6 +43,7 @@ function makeCompiler(stdout, stderr, code) {
     const env = new CompilationEnvironment(compilerProps);
     const compiler = new FakeCompiler({lang: languages['c++'].id, remote: true}, env);
     compiler.exec = () => Promise.resolve({code: code, stdout: stdout || "", stderr: stderr || ""});
+    compiler.possibleArguments = new CompilerArguments("g82");
     return compiler;
 }
 
@@ -54,17 +56,17 @@ describe('option parser', () => {
         return parsers.Base.getOptions(makeCompiler()).should.eventually.deep.equals({});
     });
     it('should parse single-dash options', () => {
-        return parsers.Base.getOptions(makeCompiler("-foo\n")).should.eventually.deep.equals({'-foo': true});
+        return parsers.Base.getOptions(makeCompiler("-foo\n")).should.eventually.deep.equals({'-foo': {"description": "", "timesused": 0}});
     });
     it('should parse double-dash options', () => {
-        return parsers.Base.getOptions(makeCompiler("--foo\n")).should.eventually.deep.equals({'--foo': true});
+        return parsers.Base.getOptions(makeCompiler("--foo\n")).should.eventually.deep.equals({'--foo': {"description": "", "timesused": 0}});
     });
     it('should parse stderr options', () => {
-        return parsers.Base.getOptions(makeCompiler("", "--bar=monkey\n")).should.eventually.deep.equals({'--bar': true});
+        return parsers.Base.getOptions(makeCompiler("", "--bar=monkey\n")).should.eventually.deep.equals({'--bar=monkey': {"description": "", "timesused": 0}});
     });
     it('handles non-option text', () => {
         return parsers.Base.getOptions(makeCompiler("-foo=123\nthis is a fish\n-badger=123")).should.eventually.deep.equals(
-            {'-foo': true, '-badger': true});
+            {'-foo=123': {"description": "this is a fish", "timesused": 0}, '-badger=123': {"description": "", "timesused": 0}});
     });
     it('should ignore if errors occur', () => {
         return parsers.Base.getOptions(makeCompiler("--foo\n", "--bar\n", 1)).should.eventually.deep.equals({});
@@ -109,13 +111,67 @@ describe('clang parser', () => {
         });
     });
     it('should handle options', () => {
-        return parsers.Clang.parse(makeCompiler("-fsave-optimization-record\n-fcolor-diagnostics"))
+        return parsers.Clang.parse(makeCompiler("-fno-crash-diagnostics\n-fsave-optimization-record\n-fcolor-diagnostics"))
             .should.eventually.satisfy(result => {
                 return Promise.all([
                     result.compiler.supportsOptOutput.should.equals(true),
                     result.compiler.optArg.should.equals('-fsave-optimization-record'),
-                    result.compiler.options.should.equals('-fcolor-diagnostics')
+
+                    result.compiler.options.should.include("-fcolor-diagnostics"),
+                    result.compiler.options.should.include("-fno-crash-diagnostics"),
+                    result.compiler.options.should.not.include("-fsave-optimization-record"),
                 ]);
             });
+    });
+});
+
+describe('popular compiler arguments', () => {
+    let compiler = makeCompiler("-fsave-optimization-record\n-x\n-g\n-fcolor-diagnostics\n-O<number> optimization level\n-std=<c++11,c++14,c++17z>")
+
+    it('should return 5 arguments', () => {
+        return parsers.Clang.parse(compiler).then(compiler => {
+            return compiler.should.satisfy(compiler => {
+                return Promise.all([
+                    compiler.possibleArguments.getPopularArguments().should.deep.equal({
+                        "-O<number>": {description: "optimization level", timesused: 0},
+                        "-fcolor-diagnostics": {"description": "", "timesused": 0},
+                        "-fsave-optimization-record": {"description": "", "timesused": 0},
+                        "-g": {"description": "", "timesused": 0},
+                        "-x": {"description": "", "timesused": 0}
+                    })
+                ]);
+            });
+        })
+    });
+
+    it('should return arguments except the ones excluded', () => {
+        return parsers.Clang.parse(compiler).then(compiler => {
+            return compiler.should.satisfy(compiler => {
+                return Promise.all([
+                    compiler.possibleArguments.getPopularArguments(["-O3", "--hello"]).should.deep.equal({
+                        "-fcolor-diagnostics": {"description": "", "timesused": 0},
+                        "-fsave-optimization-record": {"description": "", "timesused": 0},
+                        "-g": {"description": "", "timesused": 0},
+                        "-x": {"description": "", "timesused": 0},
+                        "-std=<c++11,c++14,c++17z>": {"description": "", "timesused": 0}
+                    })
+                ]);
+            });
+        })
+    });
+
+    it('should be able to exclude special params with assignments', () => {
+        return parsers.Clang.parse(compiler).then(compiler => {
+            return compiler.should.satisfy(compiler => {
+                return Promise.all([
+                    compiler.possibleArguments.getPopularArguments(["-std=c++14", "-g", "--hello"]).should.deep.equal({
+                        "-O<number>": {description: "optimization level", timesused: 0},
+                        "-fcolor-diagnostics": {"description": "", "timesused": 0},
+                        "-fsave-optimization-record": {"description": "", "timesused": 0},
+                        "-x": {"description": "", "timesused": 0}
+                    })
+                ]);
+            });
+        })
     });
 });

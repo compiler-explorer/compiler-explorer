@@ -17,3 +17,4 @@ etc/config/*.local.properties
 static/dist
 static/vs
 lib/storage/data
+f.out
