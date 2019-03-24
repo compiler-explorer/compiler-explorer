@@ -797,8 +797,12 @@ Editor.prototype.onLanguageChange = function (newLangId) {
     }
 };
 
+Editor.prototype.getPaneName = function () {
+    return this.currentLanguage.name + " source #" + this.id;
+};
+
 Editor.prototype.updateTitle = function () {
-    this.container.setTitle(this.currentLanguage.name + " source #" + this.id);
+    this.container.setTitle(this.getPaneName());
 };
 
 // Called every time we change language, so we get the relevant code

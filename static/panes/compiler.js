@@ -1297,11 +1297,22 @@ Compiler.prototype.getCompilerName = function () {
     return this.compiler ? this.compiler.name : 'No compiler set';
 };
 
+
+Compiler.prototype.getLanguageName = function () {
+    var lang = options.languages[this.currentLangId];
+    return lang ? lang.name : '?';
+};
+
+Compiler.prototype.getPaneName = function () {
+    var langName = this.getLanguageName();
+    var compName = this.getCompilerName();
+    return compName + ' (Editor #' + this.sourceEditorId + ', Compiler #' + this.id + ') ' + langName;
+};
+
 Compiler.prototype.updateCompilerName = function () {
-    var name = options.languages[this.currentLangId].name;
     var compilerName = this.getCompilerName();
     var compilerVersion = this.compiler ? this.compiler.version : '';
-    this.container.setTitle(compilerName + ' (Editor #' + this.sourceEditorId + ', Compiler #' + this.id + ') ' + name);
+    this.container.setTitle(this.getPaneName());
     this.shortCompilerName.text(compilerName);
     this.setCompilerVersionPopover(compilerVersion);
 };
@@ -1339,7 +1350,7 @@ Compiler.prototype.onPanesLinkLine = function (compilerId, lineNumber, revealLin
             }
         });
         if (revealLine && lineNums[0]) this.outputEditor.revealLineInCenter(lineNums[0]);
-        var inlineClass = sender !== this ? 'linked-code-decoration-inline' : '';
+        var inlineClass = sender !== this.getPaneName() ? 'linked-code-decoration-inline' : '';
         this.decorations.linkedCode = _.map(lineNums, function (line) {
             return {
                 range: new monaco.Range(line, 1, line, 1),
@@ -1479,7 +1490,7 @@ Compiler.prototype.onMouseMove = function (e) {
             // We check that we actually have something to show at this point!
             var sourceLine = hoverAsm.source && !hoverAsm.source.file ? hoverAsm.source.line : -1;
             this.eventHub.emit('editorLinkLine', this.sourceEditorId, sourceLine, false);
-            this.eventHub.emit('panesLinkLine', this.id, sourceLine, false, this);
+            this.eventHub.emit('panesLinkLine', this.id, sourceLine, false, this.getPaneName());
         }
     }
     var currentWord = this.outputEditor.getModel().getWordAtPosition(e.target.position);

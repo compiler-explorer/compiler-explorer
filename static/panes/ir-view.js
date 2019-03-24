@@ -135,10 +135,12 @@ Ir.prototype.onCompileResponse = function (id, compiler, result) {
     this.onColours(this._compilerid, this.lastColours, this.lastColourScheme);
 };
 
+Ir.prototype.getPaneName = function () {
+    return this._compilerName + " IR Viewer (Editor #" + this._editorid + ", Compiler #" + this._compilerid + ")";
+};
+
 Ir.prototype.setTitle = function () {
-    this.container.setTitle(
-        this._compilerName + " IR Viewer (Editor #" + this._editorid + ", Compiler #" + this._compilerid + ")"
-    );
+    this.container.setTitle(this.getPaneName());
 };
 
 Ir.prototype.showIrResults = function (irCode) {
@@ -227,7 +229,7 @@ Ir.prototype.onMouseMove = function (e) {
             // We check that we actually have something to show at this point!
             var sourceLine =  hoverCode.source && !hoverCode.source.file ? hoverCode.source.line : -1;
             this.eventHub.emit('editorLinkLine', this._editorid, sourceLine, false);
-            this.eventHub.emit('panesLinkLine', this._compilerid, sourceLine, false, this);
+            this.eventHub.emit('panesLinkLine', this._compilerid, sourceLine, false, this.getPaneName());
         }
     }
 };
@@ -251,7 +253,7 @@ Ir.prototype.onPanesLinkLine = function (compilerId, lineNumber, revealLine, sen
             }
         });
         if (revealLine && lineNums[0]) this.irEditor.revealLineInCenter(lineNums[0]);
-        var inlineClass = sender !== this ? 'linked-code-decoration-inline' : '';
+        var inlineClass = sender !== this.getPaneName() ? 'linked-code-decoration-inline' : '';
         this.decorations.linkedCode = _.map(lineNums, function (line) {
             return {
                 range: new monaco.Range(line, 1, line, 1),
