@@ -1350,14 +1350,14 @@ Compiler.prototype.onPanesLinkLine = function (compilerId, lineNumber, revealLin
             }
         });
         if (revealLine && lineNums[0]) this.outputEditor.revealLineInCenter(lineNums[0]);
-        var inlineClass = sender !== this.getPaneName() ? 'linked-code-decoration-inline' : '';
+        var lineClass = sender !== this.getPaneName() ? 'linked-code-decoration-line' : '';
         this.decorations.linkedCode = _.map(lineNums, function (line) {
             return {
                 range: new monaco.Range(line, 1, line, 1),
                 options: {
                     isWholeLine: true,
                     linesDecorationsClassName: 'linked-code-decoration-margin',
-                    inlineClassName: inlineClass
+                    className: lineClass
                 }
             };
         });

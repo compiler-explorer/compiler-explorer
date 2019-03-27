@@ -125,9 +125,8 @@ Ir.prototype.onCompileResponse = function (id, compiler, result) {
     if (this._compilerid !== id) return;
     if (result.hasIrOutput) {
         this.showIrResults(result.irOutput);
-    }
-    else if (compiler.supportsIrView) {
-        this.showIrResults([{text:"<No output>"}]);
+    } else if (compiler.supportsIrView) {
+        this.showIrResults([{text: "<No output>"}]);
     }
 
     // Why call this explicitly instead of just listening to the "colours" event?
@@ -227,7 +226,7 @@ Ir.prototype.onMouseMove = function (e) {
         var hoverCode = this.irCode[e.target.position.lineNumber - 1];
         if (hoverCode) {
             // We check that we actually have something to show at this point!
-            var sourceLine =  hoverCode.source && !hoverCode.source.file ? hoverCode.source.line : -1;
+            var sourceLine = hoverCode.source && !hoverCode.source.file ? hoverCode.source.line : -1;
             this.eventHub.emit('editorLinkLine', this._editorid, sourceLine, false);
             this.eventHub.emit('panesLinkLine', this._compilerid, sourceLine, false, this.getPaneName());
         }
@@ -249,18 +248,19 @@ Ir.prototype.onPanesLinkLine = function (compilerId, lineNumber, revealLine, sen
         var lineNums = [];
         _.each(this.irCode, function (irLine, i) {
             if (irLine.source && irLine.source.file === null && irLine.source.line === lineNumber) {
-                lineNums.push(i + 1);
+                var line = i + 1;
+                lineNums.push(line);
             }
         });
         if (revealLine && lineNums[0]) this.irEditor.revealLineInCenter(lineNums[0]);
-        var inlineClass = sender !== this.getPaneName() ? 'linked-code-decoration-inline' : '';
+        var lineClass = sender !== this.getPaneName() ? 'linked-code-decoration-line' : '';
         this.decorations.linkedCode = _.map(lineNums, function (line) {
             return {
                 range: new monaco.Range(line, 1, line, 1),
                 options: {
                     isWholeLine: true,
                     linesDecorationsClassName: 'linked-code-decoration-margin',
-                    inlineClassName: inlineClass
+                    className: lineClass
                 }
             };
         });

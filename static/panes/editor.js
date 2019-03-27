@@ -441,7 +441,7 @@ Editor.prototype.initEditorActions = function () {
 
     this.editor.addAction({
         id: 'viewasm',
-        label: 'Scroll to assembly',
+        label: 'Reveal linked code',
         keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.F10],
         keybindingContext: null,
         contextMenuGroupId: 'navigation',
@@ -706,7 +706,7 @@ Editor.prototype.onEditorLinkLine = function (editorId, lineNum, reveal) {
             options: {
                 isWholeLine: true,
                 linesDecorationsClassName: 'linked-code-decoration-margin',
-                inlineClassName: 'linked-code-decoration-inline'
+                className: 'linked-code-decoration-line'
             }
         }];
 
