@@ -698,7 +698,7 @@ Editor.prototype.onSelectLine = function (id, lineNum) {
     }
 };
 
-Editor.prototype.onEditorLinkLine = function (editorId, lineNum, reveal) {
+Editor.prototype.onEditorLinkLine = function (editorId, lineNum, columnNum, reveal) {
     if (Number(editorId) === this.id) {
         if (reveal && lineNum) this.editor.revealLineInCenter(lineNum);
         this.decorations.linkedCode = lineNum === -1 || !lineNum ? [] : [{
@@ -709,6 +709,16 @@ Editor.prototype.onEditorLinkLine = function (editorId, lineNum, reveal) {
                 className: 'linked-code-decoration-line'
             }
         }];
+
+        if (lineNum > 0 && columnNum !== -1) {
+            this.decorations.linkedCode.push({
+                range: new monaco.Range(lineNum, columnNum, lineNum, columnNum + 1),
+                options: {
+                    isWholeLine: false,
+                    inlineClassName: 'linked-code-decoration-column'
+                }
+            });
+        }
 
         if (this.fadeTimeoutId !== -1) {
             clearTimeout(this.fadeTimeoutId);

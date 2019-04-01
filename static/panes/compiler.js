@@ -1489,7 +1489,7 @@ Compiler.prototype.onMouseMove = function (e) {
         if (hoverAsm) {
             // We check that we actually have something to show at this point!
             var sourceLine = hoverAsm.source && !hoverAsm.source.file ? hoverAsm.source.line : -1;
-            this.eventHub.emit('editorLinkLine', this.sourceEditorId, sourceLine, false);
+            this.eventHub.emit('editorLinkLine', this.sourceEditorId, sourceLine, -1, false);
             this.eventHub.emit('panesLinkLine', this.id, sourceLine, false, this.getPaneName());
         }
     }
