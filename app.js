@@ -220,13 +220,13 @@ aws.initConfig(awsProps)
         const CompilerFinder = require('./lib/compiler-finder');
         const compilerFinder = new CompilerFinder(compileHandler, compilerProps, awsProps, defArgs,
             clientOptionsHandler);
+        const googleShortUrlResolver = new google.ShortLinkResolver();
 
         function oldGoogleUrlHandler(req, res, next) {
-            const resolver = new google.ShortLinkResolver(aws.getConfig('googleApiKey'));
             const bits = req.url.split("/");
             if (bits.length !== 2 || req.method !== "GET") return next();
-            const googleUrl = `http://goo.gl/${encodeURIComponent(bits[1])}`;
-            resolver.resolve(googleUrl)
+            const googleUrl = `https://goo.gl/${encodeURIComponent(bits[1])}`;
+            googleShortUrlResolver.resolve(googleUrl)
                 .then(resultObj => {
                     const parsed = url.parse(resultObj.longUrl);
                     const allowedRe = new RegExp(ceProps('allowedShortUrlHostRe'));
@@ -235,7 +235,7 @@ aws.initConfig(awsProps)
                         return next();
                     }
                     res.writeHead(301, {
-                        Location: resultObj.id,
+                        Location: resultObj.longUrl,
                         'Cache-Control': 'public'
                     });
                     res.end();
