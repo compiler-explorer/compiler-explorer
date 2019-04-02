@@ -194,6 +194,8 @@ function getGoldenLayoutFromClientState(state) {
 
 const awsProps = props.propsFor("aws");
 
+const request = require('request');
+
 aws.initConfig(awsProps)
     .then(() => {
         // function to load internal binaries (i.e. lib/source/*.js)
@@ -222,27 +224,26 @@ aws.initConfig(awsProps)
             clientOptionsHandler);
 
         function oldGoogleUrlHandler(req, res, next) {
-            const resolver = new google.ShortLinkResolver(aws.getConfig('googleApiKey'));
+            //const resolver = new google.ShortLinkResolver(aws.getConfig('googleApiKey'));
             const bits = req.url.split("/");
             if (bits.length !== 2 || req.method !== "GET") return next();
-            const googleUrl = `http://goo.gl/${encodeURIComponent(bits[1])}`;
-            resolver.resolve(googleUrl)
-                .then(resultObj => {
-                    const parsed = url.parse(resultObj.longUrl);
-                    const allowedRe = new RegExp(ceProps('allowedShortUrlHostRe'));
-                    if (parsed.host.match(allowedRe) === null) {
-                        logger.warn(`Denied access to short URL ${bits[1]} - linked to ${resultObj.longUrl}`);
-                        return next();
+            const allowedRe = new RegExp(ceProps('allowedShortUrlHostRe'));
+            request({method: 'HEAD', uri: `https://goo.gl/${encodeURIComponent(bits[1])}`, followRedirect: false},
+                (err, resp) => {
+                    const requestedLocation = resp.headers['location'];
+                    if (!err && resp.statusCode === 302) {
+                        if (requestedLocation.match(allowedRe) === null) {
+                            logger.warn(`Denied access to short URL ${bits[1]} - linked to ${requestedLocation}`);
+                            return next();
+                        }
+                        res.writeHead(301, {
+                            Location: requestedLocation,
+                            'Cache-Control': 'public'
+                        });
+                        res.end();
+                        return;
                     }
-                    res.writeHead(301, {
-                        Location: resultObj.id,
-                        'Cache-Control': 'public'
-                    });
-                    res.end();
-                })
-                .catch(e => {
-                    logger.error(`Failed to expand ${googleUrl} - ${e}`);
-                    next();
+                    return next();
                 });
         }
 
