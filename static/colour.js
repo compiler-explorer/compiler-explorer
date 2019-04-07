@@ -45,7 +45,7 @@ function applyColours(editor, colours, schemeName, prevDecorations) {
             range: new monaco.Range(line, 1, line, 1),
             options: {
                 isWholeLine: true,
-                className: scheme.name + "-" + (ordinal % scheme.count)
+                className: "line-linkage " + scheme.name + "-" + (ordinal % scheme.count)
             }
         };
     });
