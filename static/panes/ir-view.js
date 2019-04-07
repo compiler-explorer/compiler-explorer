@@ -69,6 +69,7 @@ function Ir(hub, container, state) {
 
     this.initButtons(state);
     this.initCallbacks();
+    this.initEditorActions();
 
     if (state && state.irOutput) {
         this.showIrResults(state.irOutput);
@@ -81,6 +82,25 @@ function Ir(hub, container, state) {
         eventAction: 'Ir'
     });
 }
+
+Ir.prototype.initEditorActions = function () {
+    this.irEditor.addAction({
+        id: 'viewsource',
+        label: 'Scroll to source',
+        keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.F10],
+        keybindingContext: null,
+        contextMenuGroupId: 'navigation',
+        contextMenuOrder: 1.5,
+        run: _.bind(function (ed) {
+            var desiredLine = ed.getPosition().lineNumber - 1;
+            var source = this.irCode[desiredLine].source;
+            if (source !== null && source.file === null) {
+                // a null file means it was the user's source
+                this.eventHub.emit('editorLinkLine', this._editorid, source.line, -1, true);
+            }
+        }, this)
+    });
+};
 
 Ir.prototype.initButtons = function (state) {
     this.fontScale = new FontScale(this.domRoot, state, this.irEditor);

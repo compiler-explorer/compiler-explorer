@@ -361,12 +361,9 @@ Compiler.prototype.initEditorActions = function () {
         run: _.bind(function (ed) {
             var desiredLine = ed.getPosition().lineNumber - 1;
             var source = this.assembly[desiredLine].source;
-            if (source.file === null) {
+            if (source !== null && source.file === null) {
                 // a null file means it was the user's source
-                this.eventHub.emit('editorSetDecoration', this.sourceEditorId, source.line, true);
-            } else {
-                // TODO: some indication this asm statement came from elsewhere
-                this.eventHub.emit('editorSetDecoration', this.sourceEditorId, -1, false);
+                this.eventHub.emit('editorLinkLine', this.sourceEditorId, source.line, -1, true);
             }
         }, this)
     });
