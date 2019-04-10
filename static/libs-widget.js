@@ -69,6 +69,8 @@ LibsWidget.prototype.updateAvailableLibs = function () {
 
 LibsWidget.prototype.setNewLangId = function (langId) {
     this.currentLangId = langId;
+    this.updateAvailableLibs();
+
 };
 
 LibsWidget.prototype.lazyDropdownLoad = function () {
