@@ -32,7 +32,7 @@ describe('Hash tests', () => {
     afterEach(() => sinon.restore());
     it('should never generate invalid characters', () => {
         for (let i = 0; i < 256; ++i) {
-            const buf = new Buffer([i]);
+            const buf = Buffer.of(i);
             const as64 = StorageBase.safe64Encoded(buf);
             as64.should.not.contain("/");
             as64.should.not.contain("+");
