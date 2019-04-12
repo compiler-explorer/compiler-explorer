@@ -26,7 +26,7 @@ CE is built on node.js ("node"). The easiest way to install node is using NVM, t
 - `curl https://raw.githubusercontent.com/creationix/nvm/v0.33.8/install.sh | bash` to install NVM
 - `source ~/.profile` to reload your profile, bringing NVM into your environment
 - `nvm ls-remote -lts` to show the latest long-term supported (LTS) version of node.js
-- `nvm install 8.9.3`, substituting the latest LTS version, to install node.js
+- `nvm install 10.15.3`, substituting the latest LTS version, to install node.js
 
 At this point you can change into the directory where you cloned CE and `make`. `make` will install a bunch of node packages and will finish with a message similar to this:
 
