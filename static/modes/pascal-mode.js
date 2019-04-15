@@ -27,10 +27,11 @@ var monaco = require('../monaco');
 
 function definition() {
     // Object-Pascal language definition
-
+    
     return {
         keywords: [
             'unit', 'interface', 'implementation', 'uses',
+            'initialization', 'finalization',
             'function', 'procedure', 'const', 'begin', 'end', 'not', 'while',
             'as', 'for', 'with',
             'else', 'if',
@@ -60,7 +61,7 @@ function definition() {
         // The main tokenizer for our languages
         tokenizer: {
             root: [
-                // strings: need to check first due to the prefix
+                {include: '@comment'},
                 [/@strpre?(''')/, {token: 'string.delim', bracket: '@open', next: '@mstring.$1'}],
                 [/@strpre?'([^'\\]|\\.)*$/, 'string.invalid'],  // non-teminated string
                 [/@strpre?(['])/, {token: 'string.delim', bracket: '@open', next: '@string.$1'}],
@@ -102,10 +103,11 @@ function definition() {
                 }]
             ],
             comment: [
-                [/[^/*]+/, 'comment'],
-                [/\/\*/, 'comment', '@push'],    // nested comment
-                ["\\*/", 'comment', '@pop'],
-                [/[/*]/, 'comment']
+                [/\/\/.*/, 'comment'],
+                [/\(\*.*/, 'comment', '@push'],
+                [/\{.*$/, 'comment', '@push'],
+                [/.*\}/, 'comment', '@pop'],
+                [/.*\*\)/, 'comment', '@pop']
             ],
             mstring: [
                 {include: '@strcontent'},
@@ -162,7 +164,6 @@ function definition() {
             ],
             whitespace: [
                 [/[ \t\r\n]+/, 'white'],
-                [/#.*$/, 'comment']
             ]
         }
     };
