@@ -109,9 +109,10 @@ function testFilter(filename, suffix, filters) {
 // bless("cases/bug-995.asm", "cases/bug-995.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
 // bless("cases/arm-jump-table.asm", "cases/arm-jump-table.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
 // bless("cases/bug-1179.asm", "cases/bug-1179.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
+// bless("cases/6502-square.asm", "cases/6502-square.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
 // describe('A test', function() {
 //     it('should work', function(){
-//         console.log(processAsm(__dirname + '/cases/bug-1179.asm', {directives: true, labels: true, commentOnly: true}));
+//         console.log(processAsm(__dirname + '/cases/6502-square.asm', {directives: true, labels: true, commentOnly: true}));
 //     });
 // });
 
@@ -142,6 +143,18 @@ describe('Filter test cases', function () {
         cases.forEach(function (x) {
             testFilter(x, ".directives.comments",
                 {directives: true, commentOnly: true});
+        });
+    });
+    describe('Directives and library code', function () {
+        cases.forEach(function (x) {
+            testFilter(x, ".directives.library",
+                {directives: true, libraryCode: true});
+        });
+    });
+    describe('Directives, labels, comments and library code', function () {
+        cases.forEach(function (x) {
+            testFilter(x, ".directives.labels.comments.library",
+                {directives: true, labels: true, commentOnly: true, libraryCode: true});
         });
     });
 });

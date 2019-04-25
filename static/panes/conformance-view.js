@@ -194,6 +194,7 @@ Conformance.prototype.addCompilerSelector = function (config) {
         .selectize({
             sortField: [
                 {field: '$order'},
+                {field: '$score'},
                 {field: 'name'}
             ],
             valueField: 'id',

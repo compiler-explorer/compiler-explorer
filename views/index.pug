@@ -18,7 +18,7 @@ html(lang="en")
       .collapse.navbar-collapse#navbarContent
         ul.navbar-nav.navbar-left.mr-auto
           li.nav-item.dropdown
-            a.nav-link.dropdown-toggle#addDropdown(href="javascript:;" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") Add... 
+            a.nav-link.dropdown-toggle#addDropdown(href="javascript:;" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") Add...
             div.dropdown-menu(aria-labelledby="moreDropdown")
               a.dropdown-item#add-editor(href="javascript:;" title="Click or drag to desired destination")
                 span.fa.fa-code
@@ -33,7 +33,7 @@ html(lang="en")
               div.dropdown-divider
               a.dropdown-item#ui-brokenlink(href="javascript:;") Reset UI layout
               a.dropdown-item#ui-reset(href="javascript:;") Reset code and UI layout
-              a.dropdown-item#ui-duplicate(href="javascript:;") Open new tab 
+              a.dropdown-item#ui-duplicate(href="javascript:;") Open new tab
         ul#motd.navbar-nav.navbar-center.mr-auto.community-advert.d-none
           span.content
             | Thanks for using Compiler Explorer
@@ -56,7 +56,7 @@ html(lang="en")
               a.dropdown-item(href="https://groups.google.com/forum/#!forum/compiler-explorer-discussion" title="Join Compiler Explorer Public Google Group" target="_blank" rel="noopener")
                 img(height="20" width="20" src=require("Google-Groups-20px.png"))
                 | &nbsp; Mailing list
-              a.dropdown-item(href="https://github.com/mattgodbolt/compiler-explorer/wiki/Installed-libraries" target="_blank" rel="noopener") Installed libraries
+              a.dropdown-item(href="https://godbolt.org/admin/libraries.html" target="_blank" rel="noopener") Installed libraries
               a.dropdown-item(href="https://github.com/mattgodbolt/compiler-explorer/wiki" target="_blank" rel="noopener") Wiki
               a.dropdown-item(href="https://github.com/mattgodbolt/compiler-explorer/issues" target="_blank" rel="noopener") Report an issue
               a.dropdown-item#thanks-to(href="javascript:;") Thanks to...
@@ -64,6 +64,7 @@ html(lang="en")
               a.dropdown-item(href="mailto:matt@godbolt.org" target="_blank" rel="noopener noreferrer") Contact the author
               a.dropdown-item(href="https://xania.org/MattGodbolt" rel="author" target="_blank") About the author
               a.dropdown-item#changes(href="javascript:;") Changelog
+              a.dropdown-item#version-tree(href="javascript:;" target="_blank") Version tree
               if sharingEnabled
                 a.dropdown-item#socialshare
           if policies.cookies.enabled || policies.privacy.enabled

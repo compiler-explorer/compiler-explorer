@@ -39,6 +39,7 @@ var waitForMonaco = function () {
             return window.monaco;
         }
 
+        window.require.config({ baseUrl: window.httpRootDir });
         window.require(['vs/editor/editor.main'], function () {
             resolve(window.monaco);
         });

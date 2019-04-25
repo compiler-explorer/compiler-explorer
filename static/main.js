@@ -37,7 +37,7 @@ require("monaco-loader")().then(function () {
     var url = require('./url');
     var clipboard = require('clipboard');
     var Hub = require('./hub');
-    var Raven = require('raven-js');
+    var Sentry = require('@sentry/browser');
     var settings = require('./settings');
     var local = require('./local');
     var Alert = require('./alert');
@@ -226,6 +226,7 @@ require("monaco-loader")().then(function () {
         }
     }
 
+    // eslint-disable-next-line max-statements
     function start() {
         initializeResetLayoutLink();
 
@@ -280,7 +281,7 @@ require("monaco-loader")().then(function () {
             layout = new GoldenLayout(config, root);
             hub = new Hub(layout, subLangId);
         } catch (e) {
-            Raven.captureException(e);
+            Sentry.captureException(e);
 
             if (document.URL.includes("/z/")) {
                 document.location = document.URL.replace("/z/", "/resetlayout/");
@@ -361,13 +362,22 @@ require("monaco-loader")().then(function () {
         }
         initPolicies(options);
 
-        // Don't fetch the motd on embedded mode
+        // Skip some steps if using embedded mode
         if (!options.embedded) {
+            // Don't fetch the motd
             motd.initialise(options.motdUrl, $('#motd'), subLangId, settings.enableCommunityAds, function () {
                 hub.layout.eventHub.emit('modifySettings', {
                     enableCommunityAds: false
                 });
             });
+
+            // Don't try to update Version tree link
+            var release = window.compilerExplorerOptions.release;
+            var versionLink = 'https://github.com/mattgodbolt/compiler-explorer/';
+            if (release) {
+                versionLink += 'tree/' +  release;
+            }
+            $('#version-tree').prop('href', versionLink);
         }
         sizeRoot();
         lastState = JSON.stringify(layout.toConfig());

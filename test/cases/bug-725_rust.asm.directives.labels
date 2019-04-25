@@ -6,4 +6,3 @@ _ZN95_$LT$example..Bla$LT$$u27$a$GT$$u20$as$u20$core..convert..Into$LT$alloc..st
         popq    %rbx
         retq
 
-

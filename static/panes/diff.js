@@ -239,7 +239,8 @@ Diff.prototype.onSettingsChange =  function (newSettings) {
     this.outputEditor.updateOptions({
         minimap: {
             enabled: newSettings.showMinimap
-        }
+        },
+        fontFamily: newSettings.editorsFFont
     });
 };
 

@@ -187,6 +187,16 @@ describe('Pads right', () => {
     });
 });
 
+describe('Trim right', () => {
+    it('works', () => {
+        utils.trimRight('  ').should.equal('');
+        utils.trimRight('').should.equal('');
+        utils.trimRight(' ab ').should.equal(' ab');
+        utils.trimRight(' a  b ').should.equal(' a  b');
+        utils.trimRight('a    ').should.equal('a');
+    });
+});
+
 describe('Anonymizes all kind of IPs', () => {
     it('Ignores localhost', () => {
         utils.anonymizeIp('localhost').should.equal('localhost');
@@ -225,10 +235,12 @@ describe('Hash interface', () => {
         utils.getHash('sugar', version).should.equal('afa3c89d0f6a61de6805314c9bd7c52d020425a3a3c7bbdfa7c0daec594e5ef1');
     });
     it('correctly hashes objects', () => {
-        utils.getHash({toppings: [
-            {name: 'raspberries', optional: false},
-            {name: 'ground cinnamon', optional: true}
-        ]}).should.equal('e205d63abd5db363086621fdc62c4c23a51b733bac5855985a8b56642d570491');
+        utils.getHash({
+            toppings: [
+                {name: 'raspberries', optional: false},
+                {name: 'ground cinnamon', optional: true}
+            ]
+        }).should.equal('e205d63abd5db363086621fdc62c4c23a51b733bac5855985a8b56642d570491');
     });
 });
 
@@ -251,7 +263,31 @@ describe('GoldenLayout utils', () => {
                         {compiler: 'gsnapshot'},
                         {compiler: 'rv32clang'}
                     ]
-                })
+                });
             });
-    })
+    });
+});
+
+describe('squashes horizontal whitespace', () => {
+    it('handles empty input', () => {
+        utils.squashHorizontalWhitespace('').should.equals('');
+        utils.squashHorizontalWhitespace(' ').should.equals('');
+        utils.squashHorizontalWhitespace('    ').should.equals('');
+    });
+    it('handles leading spaces', () => {
+        utils.squashHorizontalWhitespace(' abc').should.equals(' abc');
+        utils.squashHorizontalWhitespace('   abc').should.equals('  abc');
+        utils.squashHorizontalWhitespace('       abc').should.equals('  abc');
+    });
+    it('handles interline spaces', () => {
+        utils.squashHorizontalWhitespace('abc abc').should.equals('abc abc');
+        utils.squashHorizontalWhitespace('abc   abc').should.equals('abc abc');
+        utils.squashHorizontalWhitespace('abc     abc').should.equals('abc abc');
+    });
+    it('handles leading and interline spaces', () => {
+        utils.squashHorizontalWhitespace(' abc  abc').should.equals(' abc abc');
+        utils.squashHorizontalWhitespace('  abc abc').should.equals('  abc abc');
+        utils.squashHorizontalWhitespace('  abc     abc').should.equals('  abc abc');
+        utils.squashHorizontalWhitespace('    abc   abc').should.equals('  abc abc');
+    });
 });
