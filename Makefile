@@ -1,5 +1,8 @@
 default: run
 
+help: # with thanks to Ben Rady
+	@grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
+
 export XZ_OPT=-1 -T 0
 
 # If you see "node-not-found" or "yarn-not-found" then you need to depend
@@ -26,7 +29,7 @@ node-installed: .node-bin
 yarn-installed: .yarn-bin
 	@$(eval YARN:=$(shell cat .yarn-bin))
 
-debug: node-installed yarn-installed
+debug: node-installed yarn-installed ## print out some useful variables
 	@echo Using node from $(NODE)
 	@echo Using yarn from $(YARN)
 	@echo PATH is $(PATH)
@@ -69,39 +72,39 @@ $(NODE_MODULES): package.json yarn-installed
 	$(YARN) install $(YARN_FLAGS)
 	@touch $@
 
-webpack: $(NODE_MODULES)
+webpack: $(NODE_MODULES)  ## Runs webpack (useful only for debugging webpack)
 	$(NODE) node_modules/webpack/bin/webpack.js ${WEBPACK_ARGS}
 
-lint: $(NODE_MODULES)
+lint: $(NODE_MODULES)  ## Ensures everything matches code conventions
 	$(YARN) run lint
 
 node_modules: $(NODE_MODULES)
 webpack: $(WEBPACK)
 
-test: $(NODE_MODULES)
+test: $(NODE_MODULES)  ## Runs the tests
 	$(YARN) run test
 	-$(MAKE) -C c-preload test
 	@echo Tests pass
 
-check: $(NODE_MODULES) test lint
+check: $(NODE_MODULES) test lint  ## Runs all checks required before committing
 
-clean:
+clean:  ## Cleans up everything
 	rm -rf node_modules .*-updated .*-bin out static/dist static/vs
 	$(MAKE) -C d clean
 	$(MAKE) -C c-preload clean
 
 run: export NODE_ENV=LOCAL WEBPACK_ARGS="-p"
-run: prereqs
+run: prereqs  ## Runs the site normally
 	$(NODE) ./node_modules/.bin/supervisor -w app.js,lib,etc/config -e 'js|node|properties' --exec $(NODE) $(NODE_ARGS) -- ./app.js $(EXTRA_ARGS)
 
 dev: export NODE_ENV=DEV
-dev: prereqs install-git-hooks
+dev: prereqs install-git-hooks ## Runs the site as a developer; including live reload support and installation of git hooks
 	 $(NODE) ./node_modules/.bin/supervisor -w app.js,lib,etc/config -e 'js|node|properties' --exec $(NODE) $(NODE_ARGS) -- ./app.js $(EXTRA_ARGS)
 
 
 HASH := $(shell git rev-parse HEAD)
 dist: export WEBPACK_ARGS=-p
-dist: prereqs
+dist: prereqs  ## Creates a distribution
 	rm -rf out/dist/
 	mkdir -p out/dist
 	mkdir -p out/dist/vs
@@ -110,20 +113,20 @@ dist: prereqs
 	cp -r static/policies/ out/dist/
 	echo ${HASH} > out/dist/git_hash
 
-travis-dist: dist
+travis-dist: dist  ## Creates a distribution as if we were running on travis
 	tar --exclude './.travis-compilers' --exclude './.git' --exclude './static' -Jcf /tmp/ce-build.tar.xz .
 	rm -rf out/dist-bin
 	mkdir -p out/dist-bin
 	mv /tmp/ce-build.tar.xz out/dist-bin/${TRAVIS_BUILD_NUMBER}.tar.xz
 	echo ${HASH} > out/dist-bin/${TRAVIS_BUILD_NUMBER}.txt
 
-c-preload:
+c-preload:  ## Makes the (dreadful, to be deprecated soon) preload hooks
 	$(MAKE) -C c-preload
 
-install-git-hooks:
+install-git-hooks:  ## Install git hooks that will ensure code is linted and tests are run before allowing a check in
 	ln -sf $(shell pwd)/etc/scripts/pre-commit .git/hooks/pre-commit
 .PHONY: install-git-hooks
 
-changelog:
+changelog:  ## Create the changelog
 	python ./etc/scripts/changelog.py
 .PHONY: changelog
