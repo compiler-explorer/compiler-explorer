@@ -18,6 +18,38 @@
     }
   },
   {
+    "source": null,
+    "text": ".L3:"
+  },
+  {
+    "source": {
+      "file": "/opt/compiler-explorer/gcc-7.1.0/include/c++/7.1.0/bits/stl_vector.h",
+      "line": 671
+    },
+    "text": "        movq    (%rdi), %rsi"
+  },
+  {
+    "source": {
+      "file": "/opt/compiler-explorer/gcc-7.1.0/include/c++/7.1.0/bits/stl_vector.h",
+      "line": 671
+    },
+    "text": "        movq    8(%rdi), %rdx"
+  },
+  {
+    "source": {
+      "file": "/opt/compiler-explorer/gcc-7.1.0/include/c++/7.1.0/bits/stl_vector.h",
+      "line": 671
+    },
+    "text": "        subq    %rsi, %rdx"
+  },
+  {
+    "source": {
+      "file": "/opt/compiler-explorer/gcc-7.1.0/include/c++/7.1.0/bits/stl_vector.h",
+      "line": 671
+    },
+    "text": "        sarq    $2, %rdx"
+  },
+  {
     "text": "        cmpq    %rdx, %rcx",
     "source": {
       "file": null,
