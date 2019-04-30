@@ -9,7 +9,7 @@ find_node() {
     local SYS_NODE="$(which node 2>/dev/null)"
     local SYS_NODEJS="$(which nodejs 2>/dev/null)"
 
-    if test -x "${NODE}"; then
+    if test -x "${NODE}" -a -n "${NODE_DIR}"; then
         echo "${NODE}"
     elif test -x "${CE_NODE}"; then
         echo "${CE_NODE}"
