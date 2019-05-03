@@ -57,7 +57,7 @@ Assuming you have a compatible version of `node` installed, simply running
 Running with `make EXTRA_ARGS='--language LANG'` will allow you to load
  `LANG` exclusively, where `LANG` is one for the language ids/aliases defined
  in `lib/languages.js`. The `Makefile` will automatically install all the
- third party libraries needed to run; using `yarn` to install server-side and
+ third party libraries needed to run; using `npm` to install server-side and
  client side components.
 
 The config system leaves a lot to be desired. Work has been done on porting

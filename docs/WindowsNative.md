@@ -35,9 +35,8 @@ you can `cd` into the `compiler-explorer` directory,
 then run
 
 ```bat
-npm install yarn
-node_modules\.bin\yarn install
-node_modules\.bin\yarn start
+npm install
+npm start
 ```
 
 Eventually, you'll see something that looks like
@@ -53,8 +52,8 @@ info: =======================================
 Now point your favorite web browser at http://localhost:10240
 and you should be done!
 
-You only have to run `yarn install` the first time;
-every time after that, you should just be able to run `yarn start`.
+You only have to run `npm install` the first time;
+every time after that, you should just be able to run `npm start`.
 
 
 ### Setting up binary mode and execution

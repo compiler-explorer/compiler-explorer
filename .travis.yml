@@ -21,8 +21,8 @@ cache:
         - .travis-compilers
 
 script:
-    - yarn run check
-    - yarn run codecov
+    - npm run check
+    - npm run codecov
     - make changelog
     - make -j$(nproc) travis-dist
 

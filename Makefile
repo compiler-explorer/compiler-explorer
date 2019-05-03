@@ -5,10 +5,9 @@ help: # with thanks to Ben Rady
 
 export XZ_OPT=-1 -T 0
 
-# If you see "node-not-found" or "yarn-not-found" then you need to depend
-# on either node-installed or yarn-installed.
+# If you see "node-not-found" then you need to depend on node-installed.
 NODE:=node-not-found
-YARN:=yarn-not-found
+NPM:=npm-not-found
 
 # These 'find' scripts cache their results in a dotfile.
 # Doing it this way instead of NODE:=$(shell etc/script/find-node) means
@@ -16,22 +15,17 @@ YARN:=yarn-not-found
 # way to get make to fail if a sub-shell command fails.
 .node-bin: etc/scripts/find-node
 	@etc/scripts/find-node .node-bin
-.yarn-bin: etc/scripts/find-yarn node-installed
-	@etc/scripts/find-yarn .yarn-bin
 
 # All targets that need node must depend on this to ensure the NODE variable
-# is appropriately set, and that PATH is updated so that yarn etc will use this
-# node and not any other random node on the PATH.
+# is appropriately set, and that PATH is updated.
 node-installed: .node-bin
 	@$(eval NODE:=$(shell cat .node-bin))
+	@$(eval NPM:=$(shell dirname $(shell cat .node-bin))/npm)
 	@$(eval PATH=$(shell dirname $(realpath $(NODE))):${PATH})
-# All targets that need yarn must depend on this to ensure YARN is set.
-yarn-installed: .yarn-bin
-	@$(eval YARN:=$(shell cat .yarn-bin))
 
-debug: node-installed yarn-installed ## print out some useful variables
+debug: node-installed ## print out some useful variables
 	@echo Using node from $(NODE)
-	@echo Using yarn from $(YARN)
+	@echo Using npm from $(NPM)
 	@echo PATH is $(PATH)
 
 .PHONY: clean run test run-amazon c-preload optional-haskell-support optional-d-support optional-rust-support
@@ -67,22 +61,22 @@ optional-rust-support:
 endif
 
 
-NODE_MODULES=.yarn-updated
-$(NODE_MODULES): package.json yarn-installed
-	$(YARN) install $(YARN_FLAGS)
+NODE_MODULES=.npm-updated
+$(NODE_MODULES): package.json | node-installed
+	$(NPM) install $(NPM_FLAGS)
 	@touch $@
 
 webpack: $(NODE_MODULES)  ## Runs webpack (useful only for debugging webpack)
 	$(NODE) node_modules/webpack/bin/webpack.js ${WEBPACK_ARGS}
 
 lint: $(NODE_MODULES)  ## Ensures everything matches code conventions
-	$(YARN) run lint
+	$(NPM) run lint
 
 node_modules: $(NODE_MODULES)
 webpack: $(WEBPACK)
 
 test: $(NODE_MODULES)  ## Runs the tests
-	$(YARN) run test
+	$(NPM) run test
 	-$(MAKE) -C c-preload test
 	@echo Tests pass
 

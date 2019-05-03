@@ -49,6 +49,7 @@
     "profanities": "2.10.2",
     "promise-queue": "2.2.3",
     "pug": "2.0.3",
+    "request": "^2.88.0",
     "selectize": "^0.12.4",
     "semver": "^5.5.0",
     "serve-favicon": "^2.4.5",
@@ -61,8 +62,7 @@
     "underscore": "1.9.1",
     "vis": "4.20.1",
     "winston": "^2.4.0",
-    "wolfy87-eventemitter": "^5.2.3",
-    "yarn": "^1.15.2"
+    "wolfy87-eventemitter": "^5.2.3"
   },
   "devDependencies": {
     "aws-sdk-mock": "^1.7.0",
@@ -80,8 +80,8 @@
     "nock": "^9.1.4",
     "requirejs": "2.3.6",
     "style-loader": "^0.19.0",
-    "supervisor": "*",
-    "uglify-js": "*",
+    "supervisor": "^0.12.0",
+    "uglify-js": "^3.5.10",
     "url-loader": "^0.6.2",
     "webpack": "^3.6.0",
     "webpack-dev-middleware": "^1.12.0",
@@ -91,9 +91,9 @@
   "scripts": {
     "lint-client": "eslint --config static/.eslintrc --ignore-path static/.eslintignore --fix ./static/*.js ./static/panes/*.js ./static/modes/*.js",
     "lint-server": "eslint --config .eslintrc --ignore-path .eslintignore --fix ./app.js ./lib/**",
-    "lint": "yarn run lint-client && yarn run lint-server",
+    "lint": "npm run lint-client && npm run lint-server",
     "test": "mocha --recursive",
-    "check": "yarn run lint && yarn run test",
+    "check": "npm run lint && npm run test",
     "dev": "cross-env NODE_ENV=DEV node app.js",
     "start": "npx webpack && cross-env NODE_ENV=LOCAL node app.js",
     "codecov": "istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec --recursive && codecov",
