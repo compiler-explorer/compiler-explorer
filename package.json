@@ -50,7 +50,7 @@
     "promise-queue": "2.2.3",
     "pug": "2.0.3",
     "request": "^2.88.0",
-    "selectize": "^0.12.4",
+    "selectize": "0.12.4",
     "semver": "^5.5.0",
     "serve-favicon": "^2.4.5",
     "shell-quote": "1.6.x",
