@@ -73,8 +73,8 @@ function initialise(url, motdNode, defaultLanguage, adsEnabled, onHide) {
         .then(function (res) {
             handleMotd(res, motdNode, defaultLanguage, adsEnabled, onHide);
         })
-        .catch(function (exc) {
-            Sentry.captureException(exc);
+        .catch(function (jqXHR, textStatus, errorThrown) {
+            Sentry.captureMessage("MOTD error for " + url + " - " + textStatus + " - " + errorThrown, "warning");
         });
 }
 
