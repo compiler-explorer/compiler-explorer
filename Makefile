@@ -52,7 +52,7 @@ optional-haskell-support:
 endif
 
 ifneq "" "$(shell which cargo)"
-rust/bin/rustfilt: rust/src/main.rs rust/Cargo.lock rust/Cargo.toml
+rust/bin/rustfilt: rust/src/main.rs rust/Cargo.toml
 	cd rust && cargo build --release && cargo install --root . --force && cargo clean
 optional-rust-support: rust/bin/rustfilt
 else
