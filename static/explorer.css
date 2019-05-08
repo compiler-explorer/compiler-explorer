@@ -26,21 +26,7 @@ body {
     padding: 0;
 }
 
-.navbar-brand img.beta-overlay {
-    display: none;
-}
-
-.beta .navbar-brand img.beta-overlay {
-    position: absolute;
-    top: 0;
-    display: block;
-}
-
-.navbar-brand img.dev-overlay {
-    display: none;
-}
-
-.dev .navbar-brand img.dev-overlay {
+.navbar-brand img.logo-overlay {
     position: absolute;
     top: 0;
     display: block;

@@ -10,9 +10,11 @@ html(lang="en")
         img.logo.normal.align-top(src=require("site-logo.svg") height="50" width="165" alt="Compiler Explorer")
         img.logo.inverse.align-top(src=require("site-logo-inverse.svg") height="50" width="165" alt="Compiler Explorer" style="display: none")
         if extraBodyClass === "beta"
-          img.beta-overlay.align-top(src=require("site-logo-beta.svg") height="50" width="165")
+          img.logo-overlay.align-top(src=require("site-logo-beta.svg") height="50" width="165")
+        else if extraBodyClass === "staging"
+          img.logo-overlay.align-top(src=require("site-logo-staging.svg") height="50" width="165")
         else if extraBodyClass === "dev"
-          img.dev-overlay(src=require("site-logo-dev.png") height="50" width="165")
+          img.logo-overlay(src=require("site-logo-dev.png") height="50" width="165")
       button.navbar-toggler(type="button" data-toggle="collapse" data-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation")
         span.navbar-toggler-icon
       .collapse.navbar-collapse#navbarContent
