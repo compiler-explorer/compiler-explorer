@@ -23,7 +23,6 @@ x11 none
 
 shell none
 disable-mnt
-memory-deny-write-execute
 
 blacklist /lost+found
 blacklist /var

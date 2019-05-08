@@ -2,6 +2,7 @@ include etc/firejail/standard.inc
 
 private-bin none
 private-etc none
+memory-deny-write-execute
 
 # TODO: we would ideally allow ptrace to allow for address sanitizer/debuggers etc
 # But can't find a way to blacklist everything in the default list *except* ptrace.
