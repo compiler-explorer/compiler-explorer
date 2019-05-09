@@ -167,7 +167,7 @@ const compilerProps = new props.CompilerProps(languages, ceProps);
 
 const staticMaxAgeSecs = ceProps('staticMaxAgeSecs', 0);
 const maxUploadSize = ceProps('maxUploadSize', '1mb');
-const extraBodyClass = ceProps('extraBodyClass', '');
+const extraBodyClass = ceProps('extraBodyClass', isDevMode() ? 'dev' : '');
 const storageSolution = compilerProps.ceProps('storageSolution', 'local');
 const httpRoot = ceProps('httpRoot', '/');
 const httpRootDir = httpRoot.endsWith('/') ? httpRoot : (httpRoot + '/');
