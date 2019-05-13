@@ -1,5 +1,6 @@
 include etc/firejail/standard.inc
 
+private-tmp
 private-bin none
 private-etc none
 memory-deny-write-execute

@@ -41,6 +41,7 @@ const nopt = require('nopt'),
     webpackDevMiddleware = require("webpack-dev-middleware"),
     utils = require('./lib/utils'),
     clientState = require('./lib/clientstate'),
+    initialiseWine = require('./lib/exec').initialiseWine,
     clientStateGoldenifier = require('./lib/clientstate-normalizer').ClientStateGoldenifier,
     clientStateNormalizer = require('./lib/clientstate-normalizer').ClientStateNormalizer;
 
@@ -195,6 +196,7 @@ function getGoldenLayoutFromClientState(state) {
 const awsProps = props.propsFor("aws");
 
 aws.initConfig(awsProps)
+    .then(initialiseWine)
     .then(() => {
         // function to load internal binaries (i.e. lib/source/*.js)
         function loadSources() {

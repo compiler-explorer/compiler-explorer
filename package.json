@@ -43,6 +43,7 @@
     "mkdirp": "^0.5.1",
     "monaco-editor": "0.10.1",
     "morgan": "^1.9.1",
+    "node-graceful": "git://github.com/mrbar42/node-graceful.git#e8b715e3e8f44cf1621111568ea1c43747dc0421",
     "node-targz": "^0.2.0",
     "nopt": "3.0.x",
     "popper.js": "^1.14.4",

@@ -6,7 +6,6 @@ hostname ce-node
 ipc-namespace
 netfilter
 private-dev
-private-tmp
 net none
 no3d
 nodbus
