@@ -37,7 +37,7 @@ const nopt = require('nopt'),
     _ = require('underscore'),
     express = require('express'),
     Sentry = require('@sentry/node'),
-    logger = require('./lib/logger').logger,
+    {logger, logToPapertrail, suppressConsoleLog} = require('./lib/logger'),
     webpackDevMiddleware = require("webpack-dev-middleware"),
     utils = require('./lib/utils'),
     clientState = require('./lib/clientstate'),
@@ -65,7 +65,10 @@ const opts = nopt({
     // Do not use caching for compilation results (Requests might still be cached by the client's browser)
     noCache: [Boolean],
     // Don't cleanly run if two or more compilers have clashing ids
-    ensureNoIdClash: [Boolean]
+    ensureNoIdClash: [Boolean],
+    logHost: [String],
+    logPort: [Number],
+    suppressConsoleLog: [Boolean]
 });
 
 if (opts.debug) logger.level = 'debug';
@@ -110,8 +113,18 @@ const defArgs = {
     wantedLanguage: opts.language || null,
     doCache: !opts.noCache,
     fetchCompilersFromRemote: !opts.noRemoteFetch,
-    ensureNoCompilerClash: opts.ensureNoIdClash
+    ensureNoCompilerClash: opts.ensureNoIdClash,
+    suppressConsoleLog: opts.suppressConsoleLog || false
 };
+
+if (opts.logHost && opts.logPort) {
+    logToPapertrail(opts.logHost, opts.logPort, defArgs.env.join("."));
+}
+
+if (defArgs.suppressConsoleLog) {
+    logger.info("Disabling further console logging");
+    suppressConsoleLog();
+}
 
 const webpackConfig = require('./webpack.config.js')[1],
     webpackCompiler = require('webpack')(webpackConfig),
