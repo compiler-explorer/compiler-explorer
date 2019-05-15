@@ -1,6 +1,3 @@
-include disable-common.inc
-include disable-programs.inc
-
 caps.drop all
 hostname ce-node
 ipc-namespace
@@ -27,10 +24,19 @@ disable-mnt
 # this forces firejail to chdir("~") before running, which we rely on. Also good hygiene in
 # general, even though the image is pretty much open source.
 blacklist /compiler-explorer-image
+
+blacklist /sbin
+blacklist /usr/local/sbin
+blacklist /initrd*
+blacklist /vmlinuz*
+blacklist /usr/sbin
+blacklist ${PATH}/su
+blacklist ${PATH}/sudo
 blacklist /lost+found
 blacklist /var
 blacklist /snap
 blacklist /srv
+
 whitelist /opt/compiler-explorer
 read-only /opt/compiler-explorer
 
