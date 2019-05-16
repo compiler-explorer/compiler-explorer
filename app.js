@@ -311,7 +311,7 @@ aws.initConfig(awsProps)
                         release: gitReleaseName,
                         environment: defArgs.env
                     });
-                    logger.info("Configured with Sentry endpoint", sentryDsn);
+                    logger.info(`Configured with Sentry endpoint ${sentryDsn}`);
                 } else {
                     logger.info("Not configuring sentry");
                 }
@@ -353,24 +353,24 @@ aws.initConfig(awsProps)
                     .set('view engine', 'pug')
                     .on('error', err => logger.error('Caught error in web handler; continuing:', err))
                     // Handle healthchecks at the root, as they're not expected from the outside world
-                        .use('/healthcheck', new healthCheck.HealthCheckHandler().handle)
-                        .use(httpRootDir, router)
-                        .use((req, res, next) => {
-                            next({status: 404, message: `page "${req.path}" could not be found`});
-                        })
-                        .use(Sentry.Handlers.errorHandler)
-                        // eslint-disable-next-line no-unused-vars
-                        .use((err, req, res, next) => {
-                            const status =
+                    .use('/healthcheck', new healthCheck.HealthCheckHandler().handle)
+                    .use(httpRootDir, router)
+                    .use((req, res, next) => {
+                        next({status: 404, message: `page "${req.path}" could not be found`});
+                    })
+                    .use(Sentry.Handlers.errorHandler)
+                // eslint-disable-next-line no-unused-vars
+                    .use((err, req, res, next) => {
+                        const status =
                                 err.status ||
                                 err.statusCode ||
                                 err.status_code ||
                                 (err.output && err.output.statusCode) ||
                                 500;
-                            const message = err.message || 'Internal Server Error';
-                            res.status(status);
-                            res.render('error', renderConfig({error: {code: status, message: message}}));
-                        });
+                        const message = err.message || 'Internal Server Error';
+                        res.status(status);
+                        res.render('error', renderConfig({error: {code: status, message: message}}));
+                    });
 
                 logger.info("=======================================");
                 if (gitReleaseName) logger.info(`  git release ${gitReleaseName}`);
