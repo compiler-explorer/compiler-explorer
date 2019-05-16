@@ -28,9 +28,9 @@ debug: node-installed ## print out some useful variables
 	@echo Using npm from $(NPM)
 	@echo PATH is $(PATH)
 
-.PHONY: clean run test run-amazon c-preload optional-haskell-support optional-d-support optional-rust-support
+.PHONY: clean run test run-amazon optional-haskell-support optional-d-support optional-rust-support
 .PHONY: dist lint prereqs node_modules travis-dist
-prereqs: optional-haskell-support optional-d-support optional-rust-support node_modules webpack c-preload
+prereqs: optional-haskell-support optional-d-support optional-rust-support node_modules webpack
 GDC?=gdc
 DMD?=dmd
 LDC?=ldc2
@@ -77,7 +77,6 @@ webpack: $(WEBPACK)
 
 test: $(NODE_MODULES)  ## Runs the tests
 	$(NPM) run test
-	-$(MAKE) -C c-preload test
 	@echo Tests pass
 
 check: $(NODE_MODULES) test lint  ## Runs all checks required before committing
@@ -85,7 +84,7 @@ check: $(NODE_MODULES) test lint  ## Runs all checks required before committing
 clean:  ## Cleans up everything
 	rm -rf node_modules .*-updated .*-bin out static/dist static/vs
 	$(MAKE) -C d clean
-	$(MAKE) -C c-preload clean
+	$(MAKE) -C clean
 
 run: export NODE_ENV=LOCAL WEBPACK_ARGS="-p"
 run: prereqs  ## Runs the site normally
@@ -113,9 +112,6 @@ travis-dist: dist  ## Creates a distribution as if we were running on travis
 	mkdir -p out/dist-bin
 	mv /tmp/ce-build.tar.xz out/dist-bin/${TRAVIS_BUILD_NUMBER}.tar.xz
 	echo ${HASH} > out/dist-bin/${TRAVIS_BUILD_NUMBER}.txt
-
-c-preload:  ## Makes the (dreadful, to be deprecated soon) preload hooks
-	$(MAKE) -C c-preload
 
 install-git-hooks:  ## Install git hooks that will ensure code is linted and tests are run before allowing a check in
 	ln -sf $(shell pwd)/etc/scripts/pre-commit .git/hooks/pre-commit
