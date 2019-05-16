@@ -139,11 +139,11 @@ const isDevMode = () => process.env.NODE_ENV === "DEV";
 const propHierarchy = _.flatten([
     'defaults',
     defArgs.env,
-    _.map(defArgs.env, e => e + '.' + process.platform),
+    _.map(defArgs.env, e => `${e}.${process.platform}`),
     process.platform,
     os.hostname(),
     'local']);
-logger.info("properties hierarchy: " + propHierarchy.join(', '));
+logger.info(`properties hierarchy: ${propHierarchy.join(', ')}`);
 
 // Propagate debug mode if need be
 if (opts.propDebug) props.setDebug(true);
@@ -351,26 +351,26 @@ aws.initConfig(awsProps)
                 webServer
                     .set('trust proxy', true)
                     .set('view engine', 'pug')
-                    .on('error', err => logger.error('Caught error:', err, "(in web handler; continuing)"))
+                    .on('error', err => logger.error('Caught error in web handler; continuing:', err)
                     // Handle healthchecks at the root, as they're not expected from the outside world
-                    .use('/healthcheck', new healthCheck.HealthCheckHandler().handle)
-                    .use(httpRootDir, router)
-                    .use((req, res, next) => {
-                        next({status: 404, message: `page "${req.path}" could not be found`});
-                    })
-                    .use(Sentry.Handlers.errorHandler)
-                    // eslint-disable-next-line no-unused-vars
-                    .use((err, req, res, next) => {
-                        const status =
-                            err.status ||
-                            err.statusCode ||
-                            err.status_code ||
-                            (err.output && err.output.statusCode) ||
-                            500;
-                        const message = err.message || 'Internal Server Error';
-                        res.status(status);
-                        res.render('error', renderConfig({error: {code: status, message: message}}));
-                    });
+                        .use('/healthcheck', new healthCheck.HealthCheckHandler().handle)
+                        .use(httpRootDir, router)
+                        .use((req, res, next) => {
+                            next({status: 404, message: `page "${req.path}" could not be found`});
+                        })
+                        .use(Sentry.Handlers.errorHandler)
+                        // eslint-disable-next-line no-unused-vars
+                        .use((err, req, res, next) => {
+                            const status =
+                                err.status ||
+                                err.statusCode ||
+                                err.status_code ||
+                                (err.output && err.output.statusCode) ||
+                                500;
+                            const message = err.message || 'Internal Server Error';
+                            res.status(status);
+                            res.render('error', renderConfig({error: {code: status, message: message}}));
+                        }));
 
                 logger.info("=======================================");
                 if (gitReleaseName) logger.info(`  git release ${gitReleaseName}`);
@@ -561,7 +561,7 @@ aws.initConfig(awsProps)
                 } else {
                     /* Assume that anything not dev is just production.
                      * This gives sane defaults for anyone who isn't messing with this */
-                    logger.info("  serving static files from '" + defArgs.staticDir + "'");
+                    logger.info(`  serving static files from '${defArgs.staticDir}'`);
                     router.use(express.static(defArgs.staticDir, {maxAge: staticMaxAgeSecs * 1000}));
                 }
 
@@ -627,11 +627,11 @@ aws.initConfig(awsProps)
                 startListening(webServer);
             })
             .catch(err => {
-                logger.error("Promise error:", err, "(shutting down)");
+                logger.error("Promise error (shutting down):", err);
                 process.exit(1);
             });
     })
     .catch(err => {
-        logger.error("AWS Init Promise error", err, "(shutting down)");
+        logger.error("AWS Init Promise error (shutting down)", err);
         process.exit(1);
     });
