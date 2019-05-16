@@ -351,7 +351,7 @@ aws.initConfig(awsProps)
                 webServer
                     .set('trust proxy', true)
                     .set('view engine', 'pug')
-                    .on('error', err => logger.error('Caught error in web handler; continuing:', err)
+                    .on('error', err => logger.error('Caught error in web handler; continuing:', err))
                     // Handle healthchecks at the root, as they're not expected from the outside world
                         .use('/healthcheck', new healthCheck.HealthCheckHandler().handle)
                         .use(httpRootDir, router)
@@ -370,7 +370,7 @@ aws.initConfig(awsProps)
                             const message = err.message || 'Internal Server Error';
                             res.status(status);
                             res.render('error', renderConfig({error: {code: status, message: message}}));
-                        }));
+                        });
 
                 logger.info("=======================================");
                 if (gitReleaseName) logger.info(`  git release ${gitReleaseName}`);
