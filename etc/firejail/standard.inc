@@ -1,5 +1,6 @@
 caps.drop all
 hostname ce-node
+ipc-namespace
 netfilter
 private-dev
 net none

@@ -4,7 +4,6 @@ private-tmp
 private-bin none
 private-etc none
 memory-deny-write-execute
-ipc-namespace
 
 # TODO: we would ideally allow ptrace to allow for address sanitizer/debuggers etc
 # But can't find a way to blacklist everything in the default list *except* ptrace.
