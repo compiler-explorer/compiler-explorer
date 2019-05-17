@@ -97,6 +97,7 @@ function Compiler(hub, container, state) {
     this.prevDecorations = [];
     this.alertSystem = new Alert();
     this.alertSystem.prefixMessage = "Compiler #" + this.id + ": ";
+    this.unwiseOptions = ["-march=native"];
 
     this.linkedFadeTimeoutId = -1;
 
@@ -1224,10 +1225,26 @@ Compiler.prototype.initCallbacks = function () {
 
 Compiler.prototype.onOptionsChange = function (options) {
     this.options = options;
+    this.checkForProblems();
     this.saveState();
     this.compile();
     this.updateButtons();
     this.sendCompiler();
+};
+
+Compiler.prototype.checkForProblems = function () {
+    var optionsArray = this.options.split(/\s/);
+    // Check if any options are in the unwiseOptions array and remember them
+    var unwiseOptions = _.intersection(optionsArray, this.unwiseOptions);
+
+    var options = unwiseOptions.length === 1 ? "Option " : "Options ";
+    var names = unwiseOptions.join(", ");
+    var are = unwiseOptions.length === 1 ? " is " : " are ";
+    var msg = options + names + are + "not recommended, as behaviour might change based on server hardware.";
+
+    if (unwiseOptions.length > 0) {
+        this.alertSystem.notify(msg);
+    }
 };
 
 Compiler.prototype.updateCompilerInfo = function () {
