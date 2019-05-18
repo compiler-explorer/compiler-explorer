@@ -1163,7 +1163,7 @@ Compiler.prototype.initCallbacks = function () {
         .on('change', optionsChange)
         .on('keyup', optionsChange);
 
-    this.mouseMoveThrottledFunction = _.throttle(_.bind(this.onMouseMove, this), 250);
+    this.mouseMoveThrottledFunction = _.throttle(_.bind(this.onMouseMove, this), 50);
     this.outputEditor.onMouseMove(_.bind(function (e) {
         this.mouseMoveThrottledFunction(e);
     }, this));

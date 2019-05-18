@@ -252,7 +252,7 @@ Editor.prototype.initCallbacks = function () {
         this.updateState();
     }, this));
 
-    this.mouseMoveThrottledFunction = _.throttle(_.bind(this.onMouseMove, this), 250);
+    this.mouseMoveThrottledFunction = _.throttle(_.bind(this.onMouseMove, this), 50);
 
     this.editor.onMouseMove(_.bind(function (e) {
         this.mouseMoveThrottledFunction(e);

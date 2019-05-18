@@ -110,7 +110,7 @@ Ir.prototype.initButtons = function (state) {
 
 Ir.prototype.initCallbacks = function () {
     this.linkedFadeTimeoutId = -1;
-    this.mouseMoveThrottledFunction = _.throttle(_.bind(this.onMouseMove, this), 250);
+    this.mouseMoveThrottledFunction = _.throttle(_.bind(this.onMouseMove, this), 50);
     this.irEditor.onMouseMove(_.bind(function (e) {
         this.mouseMoveThrottledFunction(e);
     }, this));
