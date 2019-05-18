@@ -1243,7 +1243,7 @@ Compiler.prototype.checkForProblems = function () {
     var msg = options + names + are + "not recommended, as behaviour might change based on server hardware.";
 
     if (unwiseOptions.length > 0) {
-        this.alertSystem.notify(msg);
+        this.alertSystem.notify(msg, {group: 'unwiseOption', collapseSimilar: true});
     }
 };
 
