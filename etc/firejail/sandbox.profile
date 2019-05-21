@@ -11,7 +11,8 @@ memory-deny-write-execute
 #seccomp.keep ptrace
 
 # Remove some env vars, mostly to stop people emailing me about them
-rmenv SUDO_COMMAND # this is one with actual somewhat sensitive info)
+# SUDO_COMMAND is one with actual somewhat sensitive info
+rmenv SUDO_COMMAND
 rmenv SUDO_USER
 rmenv SUDO_UID
 rmenv SUDO_GID
