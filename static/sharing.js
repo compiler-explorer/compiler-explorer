@@ -244,8 +244,7 @@ function getShortLink(config, root, done) {
         contentType: 'application/json',  // Sent
         data: data,
         success: _.bind(function (result) {
-            var newPath = root + 'z/' + result.storedId;
-            done(null, window.location.origin + newPath, newPath, true);
+            done(null, result.url, result.url, true);
         }, this),
         error: _.bind(function (err) {
             // Notify the user that we ran into trouble?
