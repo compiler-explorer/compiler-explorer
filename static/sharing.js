@@ -234,8 +234,11 @@ function getEmbeddedHtml(config, root, isReadOnly) {
 }
 
 function getShortLink(config, root, done) {
+    var useExternalShortener = options.urlShortenService !== 'default';
     var data = JSON.stringify({
-        config: config
+        config: useExternalShortener
+            ? url.serialiseState(config)
+            : config
     });
     $.ajax({
         type: 'POST',
@@ -244,7 +247,8 @@ function getShortLink(config, root, done) {
         contentType: 'application/json',  // Sent
         data: data,
         success: _.bind(function (result) {
-            done(null, result.url, result.url, true);
+            var pushState = useExternalShortener ? null : result.url;
+            done(null, result.url, pushState, true);
         }, this),
         error: _.bind(function (err) {
             // Notify the user that we ran into trouble?
