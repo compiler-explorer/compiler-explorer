@@ -75,3 +75,4 @@ From oldest to newest contributor, we would like to thank:
 - [Andreas Jonson](https://github.com/andjo403)
 - [Sam Clegg](https://github.com/sbc100)
 - [Austin Morton](https://github.com/apmorton)
+- [Matt Hammerly](https://github.com/mhammerly)
