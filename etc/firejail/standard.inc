@@ -20,11 +20,6 @@ x11 none
 shell none
 disable-mnt
 
-# blacklisting this directory to ensure the "cwd" of the process is not valid when executed.
-# this forces firejail to chdir("~") before running, which we rely on. Also good hygiene in
-# general, even though the image is pretty much open source.
-blacklist /compiler-explorer-image
-
 blacklist /sbin
 blacklist /usr/local/sbin
 blacklist /initrd*

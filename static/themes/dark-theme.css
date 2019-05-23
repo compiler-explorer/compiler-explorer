@@ -79,6 +79,14 @@ a.navbar-brand img.logo.normal {
     background-color: #333 !important;
 }
 
+.linked-code-decoration-line {
+    background: rgb(40, 80, 116) !important;
+}
+
+.linked-code-decoration-inline {
+    background: #121212 !important;
+}
+
 .linked-code-decoration-margin {
     background: #433b4b !important;
 }
@@ -98,6 +106,7 @@ a.navbar-brand img.logo.normal {
 .selectize-control.single .selectize-input {
     color: #f2f2f2 !important;
     background: #666 linear-gradient(to bottom, #555, #222) !important;
+    text-shadow: none !important;
 }
 
 .selectize-dropdown {
@@ -301,8 +310,9 @@ input {
 }
 
 .community-advert {
-    background: #a1a1a1 !important;
-    border-color: #006400
+    color: white;
+    background: #474747 !important;
+    border-color: #006400;
 }
 
 .community-advert button {

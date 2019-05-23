@@ -68,7 +68,7 @@
   },
   "devDependencies": {
     "aws-sdk-mock": "^1.7.0",
-    "chai": "3.5.x",
+    "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "chai-http": "^4.2.1",
     "codecov": "^3.0.0",

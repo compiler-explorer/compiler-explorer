@@ -72,3 +72,4 @@ From oldest to newest contributor, we would like to thank:
 - [Paul Scharnofske](https://github.com/asynts)
 - [Sebastian Staffa](https://github.com/Staff-d)
 - [Andreas Jonson](https://github.com/andjo403)
+- [Sam Clegg](https://github.com/sbc100)

@@ -240,6 +240,7 @@ Editor.prototype.initCallbacks = function () {
     this.eventHub.on('compileResult', this.onCompileResponse, this);
     this.eventHub.on('selectLine', this.onSelectLine, this);
     this.eventHub.on('editorSetDecoration', this.onEditorSetDecoration, this);
+    this.eventHub.on('editorLinkLine', this.onEditorLinkLine, this);
     this.eventHub.on('settingsChange', this.onSettingsChange, this);
     this.eventHub.on('conformanceViewOpen', this.onConformanceViewOpen, this);
     this.eventHub.on('conformanceViewClose', this.onConformanceViewClose, this);
@@ -251,29 +252,19 @@ Editor.prototype.initCallbacks = function () {
         this.updateState();
     }, this));
 
-    this.editor.onMouseLeave(_.bind(function () {
-        this.fadeTimeoutId = setTimeout(_.bind(function () {
-            this.clearCompilerLinkedLines();
-            this.fadeTimeoutId = -1;
-        }, this), 5000);
-    }, this));
-
-    this.mouseMoveThrottledFunction = _.throttle(_.bind(function (e) {
-        if (e !== null && e.target !== null && this.settings.hoverShowSource && e.target.position !== null) {
-            this.tryCompilerLinkLine(e.target.position.lineNumber, false);
-        }
-    }, this), 250);
+    this.mouseMoveThrottledFunction = _.throttle(_.bind(this.onMouseMove, this), 50);
 
     this.editor.onMouseMove(_.bind(function (e) {
         this.mouseMoveThrottledFunction(e);
-        // This can't be throttled or we can clear a timeout where we're already outside
-        if (this.fadeTimeoutId !== -1) {
-            clearTimeout(this.fadeTimeoutId);
-            this.fadeTimeoutId = -1;
-        }
     }, this));
 
     this.eventHub.on('initialised', this.maybeEmitChange, this);
+};
+
+Editor.prototype.onMouseMove = function (e) {
+    if (e !== null && e.target !== null && this.settings.hoverShowSource && e.target.position !== null) {
+        this.tryPanesLinkLine(e.target.position.lineNumber, false);
+    }
 };
 
 Editor.prototype.initButtons = function (state) {
@@ -378,21 +369,14 @@ Editor.prototype.changeLanguage = function (newLang) {
     this.selectize.setValue(newLang);
 };
 
-Editor.prototype.clearCompilerLinkedLines = function () {
-    _.each(this.asmByCompiler, _.bind(function (asms, compilerId) {
-        this.eventHub.emit('compilerSetDecorations', compilerId, -1, false);
-    }, this));
+Editor.prototype.clearLinkedLine = function () {
+    this.decorations.linkedCode = [];
+    this.updateDecorations();
 };
 
-Editor.prototype.tryCompilerLinkLine = function (thisLineNumber, reveal) {
+Editor.prototype.tryPanesLinkLine = function (thisLineNumber, reveal) {
     _.each(this.asmByCompiler, _.bind(function (asms, compilerId) {
-        var targetLines = [];
-        _.each(asms, function (asmLine, i) {
-            if (asmLine.source && asmLine.source.file === null && asmLine.source.line === thisLineNumber) {
-                targetLines.push(i + 1);
-            }
-        });
-        this.eventHub.emit('compilerSetDecorations', compilerId, targetLines, reveal);
+        this.eventHub.emit('panesLinkLine', compilerId, thisLineNumber, reveal);
     }, this));
 };
 
@@ -457,13 +441,13 @@ Editor.prototype.initEditorActions = function () {
 
     this.editor.addAction({
         id: 'viewasm',
-        label: 'Scroll to assembly',
+        label: 'Reveal linked code',
         keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.F10],
         keybindingContext: null,
         contextMenuGroupId: 'navigation',
         contextMenuOrder: 1.5,
         run: _.bind(function (ed) {
-            this.tryCompilerLinkLine(ed.getPosition().lineNumber, true);
+            this.tryPanesLinkLine(ed.getPosition().lineNumber, true);
         }, this)
     });
 };
@@ -714,10 +698,43 @@ Editor.prototype.onSelectLine = function (id, lineNum) {
     }
 };
 
+Editor.prototype.onEditorLinkLine = function (editorId, lineNum, columnNum, reveal) {
+    if (Number(editorId) === this.id) {
+        if (reveal && lineNum) this.editor.revealLineInCenter(lineNum);
+        this.decorations.linkedCode = lineNum === -1 || !lineNum ? [] : [{
+            range: new monaco.Range(lineNum, 1, lineNum, 1),
+            options: {
+                isWholeLine: true,
+                linesDecorationsClassName: 'linked-code-decoration-margin',
+                className: 'linked-code-decoration-line'
+            }
+        }];
+
+        if (lineNum > 0 && columnNum !== -1) {
+            this.decorations.linkedCode.push({
+                range: new monaco.Range(lineNum, columnNum, lineNum, columnNum + 1),
+                options: {
+                    isWholeLine: false,
+                    inlineClassName: 'linked-code-decoration-column'
+                }
+            });
+        }
+
+        if (this.fadeTimeoutId !== -1) {
+            clearTimeout(this.fadeTimeoutId);
+        }
+        this.fadeTimeoutId = setTimeout(_.bind(function () {
+            this.clearLinkedLine();
+            this.fadeTimeoutId = -1;
+        }, this), 5000);
+
+        this.updateDecorations();
+    }
+};
+
 Editor.prototype.onEditorSetDecoration = function (id, lineNum, reveal) {
     if (Number(id) === this.id) {
-        if (reveal && lineNum)
-            this.editor.revealLineInCenter(lineNum);
+        if (reveal && lineNum) this.editor.revealLineInCenter(lineNum);
         this.decorations.linkedCode = lineNum === -1 || !lineNum ? [] : [{
             range: new monaco.Range(lineNum, 1, lineNum, 1),
             options: {
@@ -790,8 +807,12 @@ Editor.prototype.onLanguageChange = function (newLangId) {
     }
 };
 
+Editor.prototype.getPaneName = function () {
+    return this.currentLanguage.name + " source #" + this.id;
+};
+
 Editor.prototype.updateTitle = function () {
-    this.container.setTitle(this.currentLanguage.name + " source #" + this.id);
+    this.container.setTitle(this.getPaneName());
 };
 
 // Called every time we change language, so we get the relevant code

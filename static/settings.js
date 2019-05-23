@@ -143,7 +143,13 @@ function setupSettings(root, settings, onChange, langId) {
     add(root.find('.hoverShowSource'), 'hoverShowSource', true, Checkbox);
     add(root.find('.hoverShowAsmDoc'), 'hoverShowAsmDoc', true, Checkbox);
     var themeSelect = root.find('.theme');
-    add(themeSelect, 'theme', themes.default.id, Select,
+
+    var defaultThemeId = themes.default.id;
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        defaultThemeId = themes.dark.id;
+    }
+
+    add(themeSelect, 'theme', defaultThemeId, Select,
         _.map(themes, function (theme) {
             return {label: theme.id, desc: theme.name};
         })
