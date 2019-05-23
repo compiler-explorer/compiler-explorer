@@ -155,17 +155,17 @@
 
 /* Gray shades */
 .gray-shade-0 {
-    background: rgba(190, 190, 190, 0.35);
+    background: rgba(190, 190, 190, 0.15);
 }
 
 .gray-shade-1 {
-    background: rgba(150, 150, 150, 0.35);
+    background: rgba(150, 150, 150, 0.15);
 }
 
 .gray-shade-2 {
-    background: rgba(110, 110, 110, 0.35);
+    background: rgba(110, 110, 110, 0.15);
 }
 
 .gray-shade-3 {
-    background: rgba(70, 70, 70, 0.35);
+    background: rgba(70, 70, 70, 0.15);
 }
