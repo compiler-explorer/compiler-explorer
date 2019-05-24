@@ -1,5 +1,8 @@
 include etc/firejail/standard.inc
 
+# Prevent modification of anything left over from the rootfs
+read-only /
+
 private-tmp
 private-bin none
 private-etc none

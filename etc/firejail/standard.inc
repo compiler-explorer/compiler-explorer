@@ -20,9 +20,6 @@ x11 none
 shell none
 disable-mnt
 
-# Prevent modification of anything left over from the rootfs
-read-only /
-
 blacklist /boot
 blacklist /sbin
 blacklist /usr/local/sbin
@@ -41,5 +38,8 @@ blacklist /srv
 
 whitelist /opt/compiler-explorer
 read-only /opt/compiler-explorer
+
+read-only /celibs
+read-only /compiler-explorer-image
 
 noexec /tmp
