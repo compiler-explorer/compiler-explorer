@@ -7,6 +7,8 @@ memory-deny-write-execute
 
 nice 19
 
+blacklist /celibs
+
 # Remove some env vars, mostly to stop people emailing me about them
 # SUDO_COMMAND is one with actual somewhat sensitive info
 rmenv SUDO_COMMAND

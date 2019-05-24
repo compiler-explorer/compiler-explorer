@@ -20,6 +20,7 @@ x11 none
 shell none
 disable-mnt
 
+blacklist /boot
 blacklist /sbin
 blacklist /usr/local/sbin
 blacklist /initrd*
@@ -28,6 +29,9 @@ blacklist /usr/sbin
 blacklist ${PATH}/su
 blacklist ${PATH}/sudo
 blacklist /lost+found
+blacklist /media
+blacklist /mnt
+blacklist /root
 blacklist /var
 blacklist /snap
 blacklist /srv
