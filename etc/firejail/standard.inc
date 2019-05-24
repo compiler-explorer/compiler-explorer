@@ -20,6 +20,9 @@ x11 none
 shell none
 disable-mnt
 
+# Prevent modification of anything left over from the rootfs
+read-only /
+
 blacklist /boot
 blacklist /sbin
 blacklist /usr/local/sbin
