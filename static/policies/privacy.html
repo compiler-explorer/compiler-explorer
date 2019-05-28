@@ -35,10 +35,11 @@ No need to update this! It's done by the CLI build process
 <h3>Your data</h3>
 
 <p>
-    In order to process the compilation requests, your browser sends the source code you typed in the editor window
-    along with your chosen compiler and options to the Compiler Explorer servers. There, the source code is written to
-    disk and your chosen compiler is invoked on it. The results are processed and sent back to your web browser, where
-    they're shown. Once the compiler has completed, your source code is deleted from disk.
+    In order to process compilation and execution requests, your browser sends the source code you typed in the editor
+    window along with your chosen compiler and options to the Compiler Explorer servers. There, the source code is
+    written to disk and your chosen compiler is invoked on it. If your request was to have your code executed, the
+    resulting executable is run. The outputs from compilation and execution are processed and sent back to your web
+    browser, where they're shown. Once this process completed, your source code is deleted from disk.
 </p>
 
 <p>
@@ -50,10 +51,10 @@ No need to update this! It's done by the CLI build process
 <p>
     The source code and options are also subject to a one-way hash, which is used to cache the results to speed up
     subsequent compilations of the same code. The cache is in-memory and on-disk. It's impossible to reconstruct the
-    source code from the hash; but the resulting assembly code (the compilation result) is stored as plain text. There's
-    no way to enumerate the in-memory cache contents. In exceptional cases, administrator members of the Compiler
-    Explorer team may be able to enumerate the disk caches and retrieve the assembly code, but with no way to trace it
-    back to the source code.
+    source code from the hash; but the resulting assembly code or binary output (the compilation result) is stored as
+    plain text. There's no way to enumerate the in-memory cache contents. In exceptional cases, administrator members of
+    the Compiler Explorer team may be able to enumerate the disk caches and retrieve the compilation output, but with no
+    way to trace it back to the source code.
 </p>
 
 <p>
@@ -94,7 +95,16 @@ No need to update this! It's done by the CLI build process
 <p>
     In order to debug and diagnose Compiler Explorer, to help track down and block Denial of Service attacks, and to
     gather statistics about Compiler Explorer's performance and usage, the web logs are archived. These logs are kept
-    for 5 years, after which they are permanently deleted.
+    for one month, after which they are permanently deleted.
+</p>
+
+<h4>Executing your code</h4>
+
+<p>
+    For certain configurations, we may support executing the results of your compilation on the Compiler Explorer
+    servers. Execution occurs in a heavily locked-down, isolated environment. We have made reasonable efforts to protect
+    both the Compiler Explorer site and other concurrently-processed requests from information leakage due to rogue
+    executions.
 </p>
 
 <h4>Cookies</h4>
@@ -139,7 +149,7 @@ No need to update this! It's done by the CLI build process
     Matt Godbolt<br>
     2626 Orrington Ave<br>
     Evanston IL 60201 USA<br>
-    +1 3127927931<br>
+    +1 312 792-7931<br>
     matt@godbolt.org
 </div>
 
