@@ -326,19 +326,6 @@ Executor.prototype.onCompileResponse = function (request, result, cached) {
     }
     this.compileTimeLabel.text(timeLabelText);
 
-    /*if (result.popularArguments) {
-        this.handlePopularArgumentsResult(result.popularArguments);
-    } else {
-        this.compilerService.requestPopularArguments(this.compiler.id, request.options.userArguments).then(
-            _.bind(function (result) {
-                if (result && result.result) {
-                    this.handlePopularArgumentsResult(result.result);
-                }
-            }, this)
-        );
-    }*/
-
-
     this.updateButtons();
     this.setCompilationOptionsPopover(result.compilationOptions ? result.compilationOptions.join(' ') : '');
 
@@ -417,50 +404,6 @@ Executor.prototype.initLibraries = function (state) {
 
 Executor.prototype.updateButtons = function () {
     if (!this.compiler) return;
-};
-
-Executor.prototype.handlePopularArgumentsResult = function (result) {
-    var popularArgumentsMenu = this.domRoot.find("div.populararguments div.dropdown-menu");
-    popularArgumentsMenu.html("");
-
-    if (result) {
-        var addedOption = false;
-
-        _.forEach(result, _.bind(function (arg, key) {
-            var argumentButton = $(document.createElement("button"));
-            argumentButton.addClass('dropdown-item btn btn-light btn-sm');
-            argumentButton.attr("title", arg.description);
-            argumentButton.data("arg", key);
-            argumentButton.html(
-                "<div class='argmenuitem'>" +
-                "<span class='argtitle'>" + _.escape(key) + "</span>" +
-                "<span class='argdescription'>" + arg.description + "</span>" +
-                "</div>");
-
-            argumentButton.click(_.bind(function () {
-                var button = argumentButton;
-                var curOptions = this.optionsField.val();
-                if (curOptions.length > 0) {
-                    this.optionsField.val(curOptions + " " + button.data("arg"));
-                } else {
-                    this.optionsField.val(button.data("arg"));
-                }
-
-                this.optionsField.change();
-            }, this));
-
-            popularArgumentsMenu.append(argumentButton);
-            addedOption = true;
-        }, this));
-
-        if (!addedOption) {
-            $("div.populararguments").hide();
-        } else {
-            $("div.populararguments").show();
-        }
-    } else {
-        $("div.populararguments").hide();
-    }
 };
 
 Executor.prototype.onFontScale = function () {
