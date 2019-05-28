@@ -1,7 +1,7 @@
 include etc/firejail/standard.inc
 
 private-tmp
-private-etc passwd
+private-etc passwd,ld.so.conf.d,ld.so.conf
 
 # Prevent modification of anything left over from the rootfs
 read-only /
