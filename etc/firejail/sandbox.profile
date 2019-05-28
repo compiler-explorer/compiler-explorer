@@ -81,7 +81,7 @@ rmenv SUDO_UID
 rmenv SUDO_GID
 rmenv DBUS_SESSION_BUS_ADDRESS
 
-# TODO are these appropriate values?
+# These seem to work reasonably well...
 rlimit-nproc 4
 rlimit-fsize 16777216
 rlimit-nofile 4
