@@ -40,6 +40,9 @@
           button.dropdown-item.btn.btn-sm.btn-light.add-compiler(title="Add a new compiler for this source" aria-label="New compiler")
             span.fa.fa-cogs
             | &nbsp;Compiler
+          button.dropdown-item.btn.btn-sm.btn-light.add-executor(title="Add a new executor for this source" aria-label="New executor")
+            span.fas.fa-microchip
+            | &nbsp;Execution only
           button.dropdown-item.btn.btn-sm.btn-light.conformance(title="Add a new conformance view" aria-label="New conformance view")
             span.fa.fa-list
             | &nbsp;Conformance view
@@ -167,6 +170,31 @@
         span.short-compiler-name
         button.btn.btn-light.btn-sm.fas.fa-info.full-compiler-name(data-trigger="click" style="cursor: pointer;" role="button" title="Full compiler version")
         span.compile-time(title="Compilation time (Result size)")
+
+  #executor
+    .top-bar.btn-toolbar.bg-light(role="toolbar")
+      .btn-group.btn-group-sm(role="group" aria-label="Compiler picker")
+        select.compiler-picker(placeholder="Select a compiler...")
+        .input-group.mb-auto
+          .input-group-prepend(title="Show all compilation options")
+            button.input-group-text.prepend-options(data-trigger="click" style="cursor: pointer;" role="button" title="All compilation options")
+              span.btn.btn-light.btn-sm.status-icon
+          input.compilation-options.form-control(type="text" placeholder="Compiler options..." size="256" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false")
+          .input-group-append.populararguments(title="Popular arguments")
+            button.btn.btn-outline-secondary.dropdown-toggle.dropdown-toggle-split(type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
+              span.sr-only Popular arguments
+            div.dropdown-menu.dropdown-menu-right
+          input.execution-arguments.form-control(type="text" placeholder="Execution arguments..." size="256" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false")
+      include font-size
+      .btn-group.btn-group-sm(role="group" aria-label="Compiler additions")
+        button.btn.btn-light.btn-sm.show-libs.dropdown-toggle(title="Include libs" aria-label="Toggle libraries dropdown" aria-pressed="false" aria-haspopup="true")
+          span.fas.fa-book
+          span.hideable &nbsp;Libraries
+    .pre
+    .bottom-bar.bg-light
+      span.short-compiler-name
+      button.btn.btn-light.btn-sm.fas.fa-info.full-compiler-name(data-trigger="click" style="cursor: pointer;" role="button" title="Full compiler version")
+      span.compile-time(title="Compilation time (Result size)")
 
   #compiler-output
     .top-bar.btn-toolbar.options-toolbar.bg-light(role="toolbar")
