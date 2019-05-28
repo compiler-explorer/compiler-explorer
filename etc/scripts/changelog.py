@@ -57,6 +57,7 @@ def format_commit(url, commit):
     except:
         return ''
 
+
 def get_commits(repo):
     coms = subprocess.check_output(['git', 'log', '--date=local', '--after="3 months ago"', '--grep=^\* ', '--oneline'])
     with open('static/changelog.html', 'w') as f:
