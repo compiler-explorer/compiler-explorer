@@ -251,3 +251,7 @@ div.argmenuitem span.argdescription {
 .open-in-cppinsights * {
     vertical-align: middle;
 }
+
+.execution-stdout {
+    color: black;
+}

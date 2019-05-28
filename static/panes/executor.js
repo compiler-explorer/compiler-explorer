@@ -80,7 +80,7 @@ function Executor(hub, container, state) {
     this.errorAnsiToHtml = makeAnsiToHtml('red');
 
     this.initButtons(state);
-
+    this.outputContentRoot = this.domRoot.find('pre.content');
 
     this.fontScale = new FontScale(this.domRoot, state, '.pre');
 
@@ -120,9 +120,7 @@ function Executor(hub, container, state) {
     this.initCallbacks();
     // Handle initial settings
     this.onSettingsChange(this.settings);
-    //this.sendCompiler();
     this.updateCompilerInfo();
-    this.updateButtons();
     this.saveState();
     ga.proxy('send', {
         hitType: 'event',
@@ -177,8 +175,7 @@ Executor.prototype.updateAndCalcTopBarHeight = function () {
 Executor.prototype.resize = function () {
     var topBarHeight = this.updateAndCalcTopBarHeight();
     var bottomBarHeight = this.bottomBar.outerHeight(true);
-    var content = this.domRoot.find('.pre');
-    content.outerHeight(this.domRoot.height() - topBarHeight - bottomBarHeight);
+    this.outputContentRoot.outerHeight(this.domRoot.height() - topBarHeight - bottomBarHeight);
 
 };
 
@@ -300,21 +297,23 @@ Executor.prototype.onCompileResponse = function (request, result, cached) {
         timingVar: request.compiler,
         timingValue: timeTaken
     });
-    var contentRoot = this.domRoot.find('.pre');
-    contentRoot.empty();
+
+    this.outputContentRoot.empty();
     var execStdout = result.stdout || [];
     var execStderr = result.stderr || [];
-    contentRoot.append($('<p></p>').text('Program returned: ' + result.code));
+    this.outputContentRoot.append($('<p></p>').text('Program returned: ' + result.code));
     if (execStdout.length > 0) {
-        $('<pre class="card"></pre>')
+        this.outputContentRoot.append($('<p></p>').text('Program stdout'));
+        $('<pre class="card execution-stdout"></pre>')
             .text(_.pluck(execStdout, 'text').join('\n'))
-            .appendTo(contentRoot);
+            .appendTo(this.outputContentRoot);
     }
     if (execStderr.length > 0) {
+        this.outputContentRoot.append($('<p></p>').text('Program stderr'));
         $('<pre class="card"></pre>')
             .text(_.pluck(execStderr, 'text').join('\n'))
             .css({color: 'red'})
-            .appendTo(contentRoot);
+            .appendTo(this.outputContentRoot);
     }
 
     this.handleCompilationStatus({code: 1, compilerOut: result.code});
@@ -326,7 +325,6 @@ Executor.prototype.onCompileResponse = function (request, result, cached) {
     }
     this.compileTimeLabel.text(timeLabelText);
 
-    this.updateButtons();
     this.setCompilationOptionsPopover(result.compilationOptions ? result.compilationOptions.join(' ') : '');
 
     if (this.nextRequest) {
@@ -402,10 +400,6 @@ Executor.prototype.initLibraries = function (state) {
         state, _.bind(this.onLibsChanged, this));
 };
 
-Executor.prototype.updateButtons = function () {
-    if (!this.compiler) return;
-};
-
 Executor.prototype.onFontScale = function () {
     this.saveState();
 };
@@ -477,15 +471,12 @@ Executor.prototype.onOptionsChange = function (options) {
     this.options = options;
     this.saveState();
     this.compile();
-    this.updateButtons();
-    //this.sendCompiler();
 };
 
 Executor.prototype.onExecArgsChange = function (args) {
     this.executionArguments = args;
     this.saveState();
     this.compile();
-    this.updateButtons();
 };
 
 Executor.prototype.updateCompilerInfo = function () {
@@ -503,7 +494,6 @@ Executor.prototype.updateCompilerInfo = function () {
 };
 
 Executor.prototype.updateCompilerUI = function () {
-    this.updateButtons();
     this.updateCompilerInfo();
     // Resize in case the new compiler name is too big
     this.resize();
@@ -592,7 +582,6 @@ Executor.prototype.setCompilerVersionPopover = function (version) {
 };
 
 Executor.prototype.onSettingsChange = function (newSettings) {
-    // var before = this.settings;
     this.settings = _.clone(newSettings);
 };
 

@@ -175,7 +175,7 @@ a.navbar-brand img.logo.normal {
 }
 
 pre.content {
-    color: #aaa !important;
+    color: #f2f2f2 !important;
     background-color: #333 !important;
 }
 
@@ -389,4 +389,8 @@ div.argmenuitem span.argdescription {
 
 .open-in-cppinsights * {
     vertical-align: middle;
+}
+
+.execution-stdout {
+    color: white !important;
 }
