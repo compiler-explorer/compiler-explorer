@@ -181,6 +181,9 @@
               span.btn.btn-light.btn-sm.status-icon
           input.compilation-options.form-control(type="text" placeholder="Compiler options..." size="256" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false")
           input.execution-arguments.form-control(type="text" placeholder="Execution arguments..." size="256" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false")
+      .btn-group.btn-group-sm(role="group" aria-label="Standard Input")
+        .input-group.mb-auto
+          input.execution-stdin.form-control(type="text" placeholder="Execution stdin..." size="1024" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" multiline="true")
       include font-size
       .btn-group.btn-group-sm(role="group" aria-label="Compiler additions")
         button.btn.btn-light.btn-sm.show-libs.dropdown-toggle(title="Include libs" aria-label="Toggle libraries dropdown" aria-pressed="false" aria-haspopup="true")

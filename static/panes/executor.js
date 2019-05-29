@@ -68,6 +68,7 @@ function Executor(hub, container, state) {
     this.needsCompile = false;
     this.options = state.options || options.compileOptions[this.currentLangId];
     this.executionArguments = state.execArgs || '';
+    this.executionStdin = state.execStdin || '';
     this.source = '';
     this.lastResult = {};
     this.pendingRequestSentAt = 0;
@@ -218,7 +219,10 @@ Executor.prototype.compile = function (bypassCache) {
     this.compileTimeLabel.text(' - Compiling...');
     var options = {
         userArguments: this.options,
-        executeParameters: this.executionArguments,
+        executeParameters: {
+            args: this.executionArguments,
+            stdin: this.executionStdin
+        },
         compilerOptions: {
             executorRequest: true
         },
@@ -353,6 +357,7 @@ Executor.prototype.initButtons = function (state) {
 
     this.optionsField = this.domRoot.find('.compilation-options');
     this.execArgsField = this.domRoot.find('.execution-arguments');
+    this.execStdinField = this.domRoot.find('.execution-stdin');
     this.prependOptions = this.domRoot.find('.prepend-options');
     this.fullCompilerName = this.domRoot.find('.full-compiler-name');
     this.setCompilationOptionsPopover(this.compiler ? this.compiler.options : null);
@@ -375,6 +380,7 @@ Executor.prototype.initButtons = function (state) {
 
     this.optionsField.val(this.options);
     this.execArgsField.val(this.executionArguments);
+    this.execStdinField.val(this.executionStdin);
 
     this.shortCompilerName = this.domRoot.find('.short-compiler-name');
     this.compilerPicker = this.domRoot.find('.compiler-picker');
@@ -434,6 +440,10 @@ Executor.prototype.initCallbacks = function () {
         this.onExecArgsChange($(e.target).val());
     }, this), 800);
 
+    var execStdinChange = _.debounce(_.bind(function (e) {
+        this.onExecStdinChange($(e.target).val());
+    }, this), 800);
+
     this.optionsField
         .on('change', optionsChange)
         .on('keyup', optionsChange);
@@ -441,6 +451,10 @@ Executor.prototype.initCallbacks = function () {
     this.execArgsField
         .on('change', execArgsChange)
         .on('keyup', execArgsChange);
+
+    this.execStdinField
+        .on('change', execStdinChange)
+        .on('keyup', execStdinChange);
 
     this.compileClearCache.on('click', _.bind(function () {
         this.compilerService.cache.reset();
@@ -475,6 +489,12 @@ Executor.prototype.onOptionsChange = function (options) {
 
 Executor.prototype.onExecArgsChange = function (args) {
     this.executionArguments = args;
+    this.saveState();
+    this.compile();
+};
+
+Executor.prototype.onExecStdinChange = function (newStdin) {
+    this.executionStdin = newStdin;
     this.saveState();
     this.compile();
 };
@@ -524,6 +544,7 @@ Executor.prototype.currentState = function () {
         source: this.sourceEditorId,
         options: this.options,
         execArgs: this.executionArguments,
+        execStdin: this.executionStdin,
         libs: this.libsWidget.get(),
         lang: this.currentLangId
     };
@@ -648,7 +669,8 @@ Executor.prototype.onLanguageChange = function (editorId, newLangId) {
         this.infoByLang[oldLangId] = {
             compiler: this.compiler && this.compiler.id ? this.compiler.id : options.defaultCompiler[oldLangId],
             options: this.options,
-            execArgs: this.executionArguments
+            execArgs: this.executionArguments,
+            execStdin: this.executionStdin
         };
         this.libsWidget.setNewLangId(newLangId);
         this.updateCompilersSelector();
@@ -686,10 +708,12 @@ Executor.prototype.updateCompilersSelector = function () {
     var info = this.infoByLang[this.currentLangId] || {};
     this.compiler = this.findCompiler(this.currentLangId, info.compiler || defaultOrFirst());
     this.compilerSelecrizer.setValue([this.compiler ? this.compiler.id : null], true);
-    this.options = info.options || "";
+    this.options = info.options || '';
     this.optionsField.val(this.options);
-    this.executionArguments = info.execArgs || "";
+    this.executionArguments = info.execArgs || '';
     this.execArgsField.val(this.executionArguments);
+    this.executionStdin = info.execStdin || '';
+    this.execStdinField.val(this.executionStdin);
 };
 
 Executor.prototype.findCompiler = function (langId, compilerId) {
