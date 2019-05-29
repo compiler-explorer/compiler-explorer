@@ -121,7 +121,9 @@ Output.prototype.onCompileResult = function (id, compiler, result) {
     this.contentRoot.empty();
 
     _.each((result.stdout || []).concat(result.stderr || []), function (obj) {
-        this.add(this.normalAnsiToHtml.toHtml(obj.text), obj.tag ? obj.tag.line : obj.line);
+        var lineNumber = obj.tag ? obj.tag.line : obj.line;
+        var columnNumber = obj.tag ? obj.tag.column : -1;
+        this.add(this.normalAnsiToHtml.toHtml(obj.text), lineNumber, columnNumber);
     }, this);
 
     this.add("Compiler returned: " + result.code);
@@ -151,7 +153,7 @@ Output.prototype.programOutput = function (msg, color) {
         elem.css("color", color);
 };
 
-Output.prototype.add = function (msg, lineNum) {
+Output.prototype.add = function (msg, lineNum, column) {
     var elem = $('<p></p>').appendTo(this.contentRoot);
     if (lineNum) {
         elem.html(
@@ -159,14 +161,14 @@ Output.prototype.add = function (msg, lineNum) {
                 .prop('href', 'javascript:;')
                 .html(msg)
                 .click(_.bind(function (e) {
-                    this.eventHub.emit('editorSetDecoration', this.editorId, lineNum, true);
+                    this.eventHub.emit('editorLinkLine', this.editorId, lineNum, column, true);
                     // do not bring user to the top of index.html
                     // http://stackoverflow.com/questions/3252730
                     e.preventDefault();
                     return false;
                 }, this))
                 .on('mouseover', _.bind(function () {
-                    this.eventHub.emit('editorSetDecoration', this.editorId, lineNum, false);
+                    this.eventHub.emit('editorLinkLine', this.editorId, lineNum,  column, false);
                 }, this))
         );
     } else {

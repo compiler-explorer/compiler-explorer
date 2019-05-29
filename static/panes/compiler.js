@@ -166,10 +166,6 @@ function Compiler(hub, container, state) {
     });
 }
 
-Compiler.prototype.clearEditorsLinkedLines = function () {
-    this.eventHub.emit('editorSetDecoration', this.sourceEditorId, -1, false);
-};
-
 Compiler.prototype.getGroupsInUse = function () {
     return _.chain(this.getCurrentLangCompilers())
         .map()
@@ -366,12 +362,9 @@ Compiler.prototype.initEditorActions = function () {
         run: _.bind(function (ed) {
             var desiredLine = ed.getPosition().lineNumber - 1;
             var source = this.assembly[desiredLine].source;
-            if (source.file === null) {
+            if (source !== null && source.file === null) {
                 // a null file means it was the user's source
-                this.eventHub.emit('editorSetDecoration', this.sourceEditorId, source.line, true);
-            } else {
-                // TODO: some indication this asm statement came from elsewhere
-                this.eventHub.emit('editorSetDecoration', this.sourceEditorId, -1, false);
+                this.eventHub.emit('editorLinkLine', this.sourceEditorId, source.line, -1, true);
             }
         }, this)
     });
@@ -1121,6 +1114,7 @@ Compiler.prototype.initListeners = function () {
     this.eventHub.on('resendCompilation', this.onResendCompilation, this);
     this.eventHub.on('findCompilers', this.sendCompiler, this);
     this.eventHub.on('compilerSetDecorations', this.onCompilerSetDecorations, this);
+    this.eventHub.on('panesLinkLine', this.onPanesLinkLine, this);
     this.eventHub.on('settingsChange', this.onSettingsChange, this);
     this.eventHub.on('requestCompilation', this.onRequestCompilation, this);
 
@@ -1170,26 +1164,9 @@ Compiler.prototype.initCallbacks = function () {
         .on('change', optionsChange)
         .on('keyup', optionsChange);
 
-    this.mouseMoveThrottledFunction = _.throttle(_.bind(this.onMouseMove, this), 250);
+    this.mouseMoveThrottledFunction = _.throttle(_.bind(this.onMouseMove, this), 50);
     this.outputEditor.onMouseMove(_.bind(function (e) {
         this.mouseMoveThrottledFunction(e);
-        if (this.linkedFadeTimeoutId !== -1) {
-            clearTimeout(this.linkedFadeTimeoutId);
-            this.linkedFadeTimeoutId = -1;
-        }
-    }, this));
-
-    this.outputEditor.onMouseLeave(_.bind(function () {
-        this.linkedFadeTimeoutId = setTimeout(_.bind(function () {
-            this.clearEditorsLinkedLines();
-            this.linkedFadeTimeoutId = -1;
-        }, this), 5000);
-    }, this));
-
-    this.outputEditor.onMouseUp(_.bind(function () {
-        if (this.getEffectiveFilters().binary) {
-            this.setBinaryMargin();
-        }
     }, this));
 
     this.outputEditor.onContextMenu(_.bind(function () {
@@ -1334,11 +1311,22 @@ Compiler.prototype.getCompilerName = function () {
     return this.compiler ? this.compiler.name : 'No compiler set';
 };
 
+
+Compiler.prototype.getLanguageName = function () {
+    var lang = options.languages[this.currentLangId];
+    return lang ? lang.name : '?';
+};
+
+Compiler.prototype.getPaneName = function () {
+    var langName = this.getLanguageName();
+    var compName = this.getCompilerName();
+    return compName + ' (Editor #' + this.sourceEditorId + ', Compiler #' + this.id + ') ' + langName;
+};
+
 Compiler.prototype.updateCompilerName = function () {
-    var name = options.languages[this.currentLangId].name;
     var compilerName = this.getCompilerName();
     var compilerVersion = this.compiler ? this.compiler.version : '';
-    this.container.setTitle(compilerName + ' (Editor #' + this.sourceEditorId + ', Compiler #' + this.id + ') ' + name);
+    this.container.setTitle(this.getPaneName());
     this.shortCompilerName.text(compilerName);
     this.setCompilerVersionPopover(compilerVersion);
 };
@@ -1360,6 +1348,42 @@ Compiler.prototype.onResendCompilation = function (id) {
 Compiler.prototype.updateDecorations = function () {
     this.prevDecorations = this.outputEditor.deltaDecorations(
         this.prevDecorations, _.flatten(_.values(this.decorations)));
+};
+
+Compiler.prototype.clearLinkedLines = function () {
+    this.decorations.linkedCode = [];
+    this.updateDecorations();
+};
+
+Compiler.prototype.onPanesLinkLine = function (compilerId, lineNumber, revealLine, sender) {
+    if (Number(compilerId) === this.id) {
+        var lineNums = [];
+        _.each(this.assembly, function (asmLine, i) {
+            if (asmLine.source && asmLine.source.file === null && asmLine.source.line === lineNumber) {
+                lineNums.push(i + 1);
+            }
+        });
+        if (revealLine && lineNums[0]) this.outputEditor.revealLineInCenter(lineNums[0]);
+        var lineClass = sender !== this.getPaneName() ? 'linked-code-decoration-line' : '';
+        this.decorations.linkedCode = _.map(lineNums, function (line) {
+            return {
+                range: new monaco.Range(line, 1, line, 1),
+                options: {
+                    isWholeLine: true,
+                    linesDecorationsClassName: 'linked-code-decoration-margin',
+                    className: lineClass
+                }
+            };
+        });
+        if (this.linkedFadeTimeoutId !== -1) {
+            clearTimeout(this.linkedFadeTimeoutId);
+        }
+        this.linkedFadeTimeoutId = setTimeout(_.bind(function () {
+            this.clearLinkedLines();
+            this.linkedFadeTimeoutId = -1;
+        }, this), 5000);
+        this.updateDecorations();
+    }
 };
 
 Compiler.prototype.onCompilerSetDecorations = function (id, lineNums, revealLine) {
@@ -1474,11 +1498,13 @@ function getAsmInfo(opcode) {
 Compiler.prototype.onMouseMove = function (e) {
     if (e === null || e.target === null || e.target.position === null) return;
     if (this.settings.hoverShowSource === true && this.assembly) {
+        this.clearLinkedLines();
         var hoverAsm = this.assembly[e.target.position.lineNumber - 1];
         if (hoverAsm) {
             // We check that we actually have something to show at this point!
-            this.eventHub.emit('editorSetDecoration', this.sourceEditorId, hoverAsm.source && !hoverAsm.source.file ?
-                hoverAsm.source.line : -1, false);
+            var sourceLine = hoverAsm.source && !hoverAsm.source.file ? hoverAsm.source.line : -1;
+            this.eventHub.emit('editorLinkLine', this.sourceEditorId, sourceLine, -1, false);
+            this.eventHub.emit('panesLinkLine', this.id, sourceLine, false, this.getPaneName());
         }
     }
     var currentWord = this.outputEditor.getModel().getWordAtPosition(e.target.position);

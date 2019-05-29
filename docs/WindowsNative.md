@@ -85,12 +85,12 @@ you can find it for download [here](https://sourceforge.net/projects/mingw-w64/)
 
 When you use the installer for MingW-64, make sure you select the right architecture during installation.
 
-When you use the zipped version, after unzipping you will need to add the bin folder to your Windows PATHS environment variable.
+When you use the zipped version, after unzipping you will need to add the bin folder to your Windows PATHS environment variable. Be aware that this PATH needs to be added before any other folders that might contain an objdump. You cannot just point to the .exe as the objdumper without having the proper PATH set, it will not work.
 
 When you have everything installed, you can add to your properties file the following:
 ```
 supportsBinary=true
-objdumper=mingw path/mingw64/x86_64-w64-mingw32/bin/objdump.exe
+objdumper=objdump
 ```
 
 *Note that the 32 bit version of MingW does not support 64 bit binaries.*

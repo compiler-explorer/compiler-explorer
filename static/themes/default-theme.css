@@ -73,6 +73,14 @@ a.navbar-brand img.logo.normal {
     background: lightblue;
 }
 
+.linked-code-decoration-inline {
+    background: lightblue;
+}
+
+.linked-code-decoration-line {
+    background: lightblue !important;
+}
+
 .font-option {
     background: white;
 }

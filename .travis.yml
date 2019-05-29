@@ -24,6 +24,7 @@ script:
     - npm run check
     - npm run codecov
     - make changelog
+    - make policies
     - make -j$(nproc) travis-dist
 
 deploy:

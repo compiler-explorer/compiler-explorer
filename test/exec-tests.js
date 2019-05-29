@@ -22,26 +22,36 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-var chai = require('chai'),
+const chai = require('chai'),
     chaiAsPromised = require("chai-as-promised"),
     exec = require('../lib/exec');
 
 chai.use(chaiAsPromised);
 chai.should();
 
+function testExecOutput(x) {
+    // Work around chai not being able to deepEquals with a function
+    x.filenameTransform.should.be.a('function');
+    delete x.filenameTransform;
+    return x;
+}
+
 if (process.platform !== 'win32') { // POSIX
     describe('Executes external commands', () => {
         it('supports output', () => {
-            return exec.execute('echo', ['hello', 'world'], {}).should.eventually.deep.equals(
-                {
-                    code: 0,
-                    okToCache: true,
-                    stderr: "",
-                    stdout: "hello world\n"
-                });
+            return exec.execute('echo', ['hello', 'world'], {})
+                .then(testExecOutput)
+                .should.eventually.deep.equals(
+                    {
+                        code: 0,
+                        okToCache: true,
+                        stderr: "",
+                        stdout: "hello world\n"
+                    });
         });
         it('limits output', () => {
             return exec.execute('echo', ['A very very very very very long string'], {maxOutput: 10})
+                .then(testExecOutput)
                 .should.eventually.deep.equals(
                     {
                         code: 0,
@@ -52,6 +62,7 @@ if (process.platform !== 'win32') { // POSIX
         });
         it('handles failing commands', () => {
             return exec.execute('false', [], {})
+                .then(testExecOutput)
                 .should.eventually.deep.equals(
                     {
                         code: 1,
@@ -62,6 +73,7 @@ if (process.platform !== 'win32') { // POSIX
         });
         it('handles timouts', () => {
             return exec.execute('sleep', ['5'], {timeoutMs: 10})
+                .then(testExecOutput)
                 .should.eventually.deep.equals(
                     {
                         code: -1,
@@ -75,7 +87,9 @@ if (process.platform !== 'win32') { // POSIX
                 .should.be.rejectedWith("ENOENT");
         });
         it('handles input', () => {
-            return exec.execute('cat', [], {input: "this is stdin"}).should.eventually.deep.equals(
+            return exec.execute('cat', [], {input: "this is stdin"})
+                .then(testExecOutput)
+                .should.eventually.deep.equals(
                 {
                     code: 0,
                     okToCache: true,
@@ -88,7 +102,9 @@ if (process.platform !== 'win32') { // POSIX
     describe('Executes external commands', () => {
         // note: we use powershell, since echo is a builtin, and false doesn't exist
         it('supports output', () => {
-            return exec.execute('powershell', ['-Command', 'echo "hello world"'], {}).should.eventually.deep.equals(
+            return exec.execute('powershell', ['-Command', 'echo "hello world"'], {})
+                .then(testExecOutput)
+                .should.eventually.deep.equals(
                 {
                     code: 0,
                     okToCache: true,
@@ -98,6 +114,7 @@ if (process.platform !== 'win32') { // POSIX
         });
         it('limits output', () => {
             return exec.execute('powershell', ['-Command', 'echo "A very very very very very long string"'], {maxOutput: 10})
+                .then(testExecOutput)
                 .should.eventually.deep.equals(
                     {
                         code: 0,
@@ -108,6 +125,7 @@ if (process.platform !== 'win32') { // POSIX
         });
         it('handles failing commands', () => {
             return exec.execute('powershell', ['-Command', 'function Fail { exit 1 }; Fail'], {})
+                .then(testExecOutput)
                 .should.eventually.deep.equals(
                     {
                         code: 1,
@@ -118,6 +136,7 @@ if (process.platform !== 'win32') { // POSIX
         });
         it('handles timouts', () => {
             return exec.execute('powershell', ['-Command', '"sleep 5"'], {timeoutMs: 10})
+                .then(testExecOutput)
                 .should.eventually.deep.equals(
                     {
                         code: 1,

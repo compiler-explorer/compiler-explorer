@@ -36,7 +36,10 @@ function Ir(hub, container, state) {
     this.eventHub = hub.createEventHub();
     this.domRoot = container.getElement();
     this.domRoot.html($('#ir').html());
-    this._currentDecorations = [];
+
+    this.decorations = {};
+    this.prevDecorations = [];
+
     this.irEditor = monaco.editor.create(this.domRoot.find(".monaco-placeholder")[0], {
         fontFamily: 'Consolas, "Liberation Mono", Courier, monospace',
         value: "",
@@ -57,6 +60,8 @@ function Ir(hub, container, state) {
     this._compilerName = state.compilerName;
     this._editorid = state.editorid;
 
+    this.settings = {};
+
     this.colours = [];
     this.irCode = [];
     this.lastColours = [];
@@ -64,6 +69,7 @@ function Ir(hub, container, state) {
 
     this.initButtons(state);
     this.initCallbacks();
+    this.initEditorActions();
 
     if (state && state.irOutput) {
         this.showIrResults(state.irOutput);
@@ -77,6 +83,25 @@ function Ir(hub, container, state) {
     });
 }
 
+Ir.prototype.initEditorActions = function () {
+    this.irEditor.addAction({
+        id: 'viewsource',
+        label: 'Scroll to source',
+        keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.F10],
+        keybindingContext: null,
+        contextMenuGroupId: 'navigation',
+        contextMenuOrder: 1.5,
+        run: _.bind(function (ed) {
+            var desiredLine = ed.getPosition().lineNumber - 1;
+            var source = this.irCode[desiredLine].source;
+            if (source !== null && source.file === null) {
+                // a null file means it was the user's source
+                this.eventHub.emit('editorLinkLine', this._editorid, source.line, -1, true);
+            }
+        }, this)
+    });
+};
+
 Ir.prototype.initButtons = function (state) {
     this.fontScale = new FontScale(this.domRoot, state, this.irEditor);
 
@@ -84,6 +109,12 @@ Ir.prototype.initButtons = function (state) {
 };
 
 Ir.prototype.initCallbacks = function () {
+    this.linkedFadeTimeoutId = -1;
+    this.mouseMoveThrottledFunction = _.throttle(_.bind(this.onMouseMove, this), 50);
+    this.irEditor.onMouseMove(_.bind(function (e) {
+        this.mouseMoveThrottledFunction(e);
+    }, this));
+
     this.fontScale.on('change', _.bind(this.updateState, this));
 
     this.container.on('destroy', this.close, this);
@@ -91,6 +122,7 @@ Ir.prototype.initCallbacks = function () {
     this.eventHub.on('compileResult', this.onCompileResponse, this);
     this.eventHub.on('compiler', this.onCompiler, this);
     this.eventHub.on('colours', this.onColours, this);
+    this.eventHub.on('panesLinkLine', this.onPanesLinkLine, this);
     this.eventHub.on('compilerClose', this.onCompilerClose, this);
     this.eventHub.on('settingsChange', this.onSettingsChange, this);
     this.eventHub.emit('irViewOpened', this._compilerid);
@@ -113,9 +145,8 @@ Ir.prototype.onCompileResponse = function (id, compiler, result) {
     if (this._compilerid !== id) return;
     if (result.hasIrOutput) {
         this.showIrResults(result.irOutput);
-    }
-    else if (compiler.supportsIrView) {
-        this.showIrResults([{text:"<No output>"}]);
+    } else if (compiler.supportsIrView) {
+        this.showIrResults([{text: "<No output>"}]);
     }
 
     // Why call this explicitly instead of just listening to the "colours" event?
@@ -123,10 +154,12 @@ Ir.prototype.onCompileResponse = function (id, compiler, result) {
     this.onColours(this._compilerid, this.lastColours, this.lastColourScheme);
 };
 
+Ir.prototype.getPaneName = function () {
+    return this._compilerName + " IR Viewer (Editor #" + this._editorid + ", Compiler #" + this._compilerid + ")";
+};
+
 Ir.prototype.setTitle = function () {
-    this.container.setTitle(
-        this._compilerName + " IR Viewer (Editor #" + this._editorid + ", Compiler #" + this._compilerid + ")"
-    );
+    this.container.setTitle(this.getPaneName());
 };
 
 Ir.prototype.showIrResults = function (irCode) {
@@ -196,12 +229,70 @@ Ir.prototype.onCompilerClose = function (id) {
 };
 
 Ir.prototype.onSettingsChange = function (newSettings) {
+    this.settings = newSettings;
     this.irEditor.updateOptions({
         contextmenu: newSettings.useCustomContextMenu,
         minimap: {
             enabled: newSettings.showMinimap
-        }
+        },
+        fontFamily: newSettings.editorsFFont
     });
+};
+
+Ir.prototype.onMouseMove = function (e) {
+    if (e === null || e.target === null || e.target.position === null) return;
+    if (this.settings.hoverShowSource === true && this.irCode) {
+        this.clearLinkedLines();
+        var hoverCode = this.irCode[e.target.position.lineNumber - 1];
+        if (hoverCode) {
+            // We check that we actually have something to show at this point!
+            var sourceLine = hoverCode.source && !hoverCode.source.file ? hoverCode.source.line : -1;
+            this.eventHub.emit('editorLinkLine', this._editorid, sourceLine, -1, false);
+            this.eventHub.emit('panesLinkLine', this._compilerid, sourceLine, false, this.getPaneName());
+        }
+    }
+};
+
+Ir.prototype.updateDecorations = function () {
+    this.prevDecorations = this.irEditor.deltaDecorations(
+        this.prevDecorations, _.flatten(_.values(this.decorations)));
+};
+
+Ir.prototype.clearLinkedLines = function () {
+    this.decorations.linkedCode = [];
+    this.updateDecorations();
+};
+
+Ir.prototype.onPanesLinkLine = function (compilerId, lineNumber, revealLine, sender) {
+    if (Number(compilerId) === this._compilerid) {
+        var lineNums = [];
+        _.each(this.irCode, function (irLine, i) {
+            if (irLine.source && irLine.source.file === null && irLine.source.line === lineNumber) {
+                var line = i + 1;
+                lineNums.push(line);
+            }
+        });
+        if (revealLine && lineNums[0]) this.irEditor.revealLineInCenter(lineNums[0]);
+        var lineClass = sender !== this.getPaneName() ? 'linked-code-decoration-line' : '';
+        this.decorations.linkedCode = _.map(lineNums, function (line) {
+            return {
+                range: new monaco.Range(line, 1, line, 1),
+                options: {
+                    isWholeLine: true,
+                    linesDecorationsClassName: 'linked-code-decoration-margin',
+                    className: lineClass
+                }
+            };
+        });
+        if (this.linkedFadeTimeoutId !== -1) {
+            clearTimeout(this.linkedFadeTimeoutId);
+        }
+        this.linkedFadeTimeoutId = setTimeout(_.bind(function () {
+            this.clearLinkedLines();
+            this.linkedFadeTimeoutId = -1;
+        }, this), 5000);
+        this.updateDecorations();
+    }
 };
 
 Ir.prototype.close = function () {
