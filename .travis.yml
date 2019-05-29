@@ -21,6 +21,7 @@ cache:
         - .travis-compilers
 
 script:
+    - make -j$(nproc) node_modules
     - npm run check
     - npm run codecov
     - make changelog
