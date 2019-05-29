@@ -24,6 +24,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+const startTime = new Date();
+
 // Initialise options and properties. Don't load any handlers here; they
 // may need an initialised properties library.
 const nopt = require('nopt'),
@@ -286,6 +288,7 @@ aws.initConfig(awsProps)
                 _port = defArgs.port;
             }
             logger.info(`  Listening on http://${defArgs.hostname || 'localhost'}:${_port}/`);
+            logger.info(`  Startup duration: ${new Date() - startTime}ms`);
             logger.info("=======================================");
             server.listen(_port, defArgs.hostname);
         }

@@ -22,6 +22,6 @@
     "quote-props": ["error", "as-needed"]
   },
   "parserOptions": {
-    "ecmaVersion": 6
+    "ecmaVersion": 2017
   }
 }

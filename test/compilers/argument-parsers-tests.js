@@ -43,6 +43,7 @@ function makeCompiler(stdout, stderr, code) {
     const env = new CompilationEnvironment(compilerProps);
     const compiler = new FakeCompiler({lang: languages['c++'].id, remote: true}, env);
     compiler.exec = () => Promise.resolve({code: code, stdout: stdout || "", stderr: stderr || ""});
+    compiler.execCompilerCached = compiler.exec;
     compiler.possibleArguments = new CompilerArguments("g82");
     return compiler;
 }
