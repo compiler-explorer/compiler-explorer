@@ -83,7 +83,7 @@ function Executor(hub, container, state) {
     this.initButtons(state);
     this.outputContentRoot = this.domRoot.find('pre.content');
 
-    this.fontScale = new FontScale(this.domRoot, state, '.pre');
+    this.fontScale = new FontScale(this.domRoot, state, 'pre.content');
 
     this.compilerPicker.selectize({
         sortField: [
