@@ -573,6 +573,8 @@ aws.initConfig(awsProps)
                 // Based on combined format, but: GDPR compliant IP, no timestamp & no unused fields for our usecase
                 const morganFormat = isDevMode() ? 'dev' : ':gdpr_ip ":method :url" :status';
 
+                var shortener = require('./lib/shortener-' + ceProps('urlShortenService', 'default'));
+
                 router
                     .use(Sentry.Handlers.requestHandler())
                     .use(morgan(morganFormat, {
@@ -622,7 +624,7 @@ aws.initConfig(awsProps)
                     .get('/z/:id', storedStateHandler)
                     .get('/resetlayout/:id', storedStateHandlerResetLayout)
                     .get('/clientstate/:clientstatebase64', unstoredStateHandler)
-                    .post('/shortener', storageHandler.handler.bind(storageHandler));
+                    .post('/shortener', shortener);
 
                 if (!defArgs.doCache) {
                     logger.info("  with disabled caching");
