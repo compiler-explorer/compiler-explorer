@@ -229,7 +229,7 @@ aws.initConfig(awsProps)
         const CompileHandler = require('./lib/handlers/compile').Handler;
         const compileHandler = new CompileHandler(compilationEnvironment, awsProps);
         const StorageHandler = require('./lib/storage/storage');
-        const storageHandler = StorageHandler.storageFactory(compilerProps, awsProps);
+        const storageHandler = StorageHandler.storageFactory(storageSolution, compilerProps, awsProps, httpRootDir);
         const ApiHandler = require('./lib/handlers/api').Handler;
         const apiHandler = new ApiHandler(compileHandler, ceProps, storageHandler);
         const SourceHandler = require('./lib/handlers/source').Handler;
@@ -573,7 +573,8 @@ aws.initConfig(awsProps)
                 // Based on combined format, but: GDPR compliant IP, no timestamp & no unused fields for our usecase
                 const morganFormat = isDevMode() ? 'dev' : ':gdpr_ip ":method :url" :status';
 
-                const shortener = require(`./lib/shortener-${clientOptionsHandler.options.urlShortenService}`);
+                const shortenerLib = require(`./lib/shortener-${clientOptionsHandler.options.urlShortenService}`);
+                const shortener = shortenerLib({storageHandler});
 
                 router
                     .use(Sentry.Handlers.requestHandler())
