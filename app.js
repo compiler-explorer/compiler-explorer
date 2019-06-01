@@ -362,14 +362,14 @@ aws.initConfig(awsProps)
                         next({status: 404, message: `page "${req.path}" could not be found`});
                     })
                     .use(Sentry.Handlers.errorHandler)
-                // eslint-disable-next-line no-unused-vars
+                    // eslint-disable-next-line no-unused-vars
                     .use((err, req, res, next) => {
                         const status =
-                                err.status ||
-                                err.statusCode ||
-                                err.status_code ||
-                                (err.output && err.output.statusCode) ||
-                                500;
+                            err.status ||
+                            err.statusCode ||
+                            err.status_code ||
+                            (err.output && err.output.statusCode) ||
+                            500;
                         const message = err.message || 'Internal Server Error';
                         res.status(status);
                         res.render('error', renderConfig({error: {code: status, message: message}}));
@@ -573,7 +573,7 @@ aws.initConfig(awsProps)
                 // Based on combined format, but: GDPR compliant IP, no timestamp & no unused fields for our usecase
                 const morganFormat = isDevMode() ? 'dev' : ':gdpr_ip ":method :url" :status';
 
-                var shortener = require('./lib/shortener-' + ceProps('urlShortenService', 'default'));
+                const shortener = require(`./lib/shortener-${clientOptionsHandler.options.urlShortenService}`);
 
                 router
                     .use(Sentry.Handlers.requestHandler())
