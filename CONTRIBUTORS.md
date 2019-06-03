@@ -71,5 +71,8 @@ From oldest to newest contributor, we would like to thank:
 - [Gennadiy Civil](https://github.com/gennadiycivil)
 - [Paul Scharnofske](https://github.com/asynts)
 - [Sebastian Staffa](https://github.com/Staff-d)
+- [Luka Prebil Grintal](https://github.com/LukaPrebil)
 - [Andreas Jonson](https://github.com/andjo403)
 - [Sam Clegg](https://github.com/sbc100)
+- [Austin Morton](https://github.com/apmorton)
+- [Matt Hammerly](https://github.com/mhammerly)
