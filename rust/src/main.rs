@@ -2,11 +2,11 @@
 
 use lazy_static::lazy_static;
 
+use regex::Captures;
+use regex::Regex;
+use rustc_demangle::demangle;
 use std::io;
 use std::io::prelude::*;
-use regex::Regex;
-use regex::Captures;
-use rustc_demangle::demangle;
 
 fn demangle_line(line: &str) -> String {
     lazy_static! {
@@ -15,7 +15,8 @@ fn demangle_line(line: &str) -> String {
 
     RE.replace_all(line, |caps: &Captures<'_>| {
         format!("{:#}", demangle(caps.get(0).unwrap().as_str()))
-    }).to_string()
+    })
+    .to_string()
 }
 
 #[cfg(test)]
@@ -23,15 +24,17 @@ mod tests {
     #[test]
     fn passes_text() {
         assert_eq!(
-        crate::demangle_line("mo fo\tboom      hello  "),
-        "mo fo\tboom      hello  ");
+            crate::demangle_line("mo fo\tboom      hello  "),
+            "mo fo\tboom      hello  "
+        );
     }
 
     #[test]
     fn demangles() {
         assert_eq!(
-        crate::demangle_line("_ZN7example4main17h0db00b8b32acffd5E:"),
-        "example::main:");
+            crate::demangle_line("_ZN7example4main17h0db00b8b32acffd5E:"),
+            "example::main:"
+        );
     }
 
     #[test]
@@ -44,8 +47,9 @@ mod tests {
     #[test]
     fn handles_call_plt() {
         assert_eq!(
-        crate::demangle_line("        call    _ZN3std2io5stdio6_print17he48522be5b0a80d9E@PLT"),
-        "        call    std::io::stdio::_print@PLT");
+            crate::demangle_line("        call    _ZN3std2io5stdio6_print17he48522be5b0a80d9E@PLT"),
+            "        call    std::io::stdio::_print@PLT"
+        );
     }
 }
 
