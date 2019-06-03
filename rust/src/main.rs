@@ -1,6 +1,6 @@
-#[macro_use] extern crate lazy_static;
-extern crate rustc_demangle;
-extern crate regex;
+#![deny(rust_2018_idioms)]
+
+use lazy_static::lazy_static;
 
 use std::io;
 use std::io::prelude::*;
@@ -13,7 +13,7 @@ fn demangle_line(line: &str) -> String {
         static ref RE: Regex = Regex::new(r"[_a-zA-Z$][_a-zA-Z$0-9.]*").unwrap();
     }
 
-    RE.replace_all(line, |caps: &Captures| {
+    RE.replace_all(line, |caps: &Captures<'_>| {
         format!("{:#}", demangle(caps.get(0).unwrap().as_str()))
     }).to_string()
 }
