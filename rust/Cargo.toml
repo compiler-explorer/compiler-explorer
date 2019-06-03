@@ -2,6 +2,7 @@
 name = "rustfilt"
 version = "0.1.1"
 authors = ["Matt Godbolt <matt@godbolt.org>"]
+edition = "2018"
 
 [dependencies]
 lazy_static = "1.3.0"

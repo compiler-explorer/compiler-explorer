@@ -23,28 +23,28 @@ mod tests {
     #[test]
     fn passes_text() {
         assert_eq!(
-        ::demangle_line("mo fo\tboom      hello  "),
+        crate::demangle_line("mo fo\tboom      hello  "),
         "mo fo\tboom      hello  ");
     }
 
     #[test]
     fn demangles() {
         assert_eq!(
-        ::demangle_line("_ZN7example4main17h0db00b8b32acffd5E:"),
+        crate::demangle_line("_ZN7example4main17h0db00b8b32acffd5E:"),
         "example::main:");
     }
 
     #[test]
     fn handles_mid_demangling() {
         assert_eq!(
-        ::demangle_line("        lea     rax, [rip + _ZN55_$LT$$RF$$u27$a$u20$T$u20$as$u20$core..fmt..Display$GT$3fmt17h510ed05e72307174E]"),
+        crate::demangle_line("        lea     rax, [rip + _ZN55_$LT$$RF$$u27$a$u20$T$u20$as$u20$core..fmt..Display$GT$3fmt17h510ed05e72307174E]"),
         "        lea     rax, [rip + <&\'a T as core::fmt::Display>::fmt]");
     }
 
     #[test]
     fn handles_call_plt() {
         assert_eq!(
-        ::demangle_line("        call    _ZN3std2io5stdio6_print17he48522be5b0a80d9E@PLT"),
+        crate::demangle_line("        call    _ZN3std2io5stdio6_print17he48522be5b0a80d9E@PLT"),
         "        call    std::io::stdio::_print@PLT");
     }
 }
