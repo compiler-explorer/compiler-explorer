@@ -63,6 +63,7 @@ function mockerise(service, method) {
 describe('Find unique subhash tests', () => {
     const dynamoDbQueryHandlers = mockerise('DynamoDB', 'query');
     const compilerProps = properties.fakeProps({});
+    const httpRootDir = '/';
     const awsProps = properties.fakeProps({
         region: 'not-a-region',
         storageBucket: 'bucket',
@@ -70,7 +71,7 @@ describe('Find unique subhash tests', () => {
         storageDynamoTable: 'table'
     });
     it('works when empty', () => {
-        const storage = new s3s(compilerProps, awsProps);
+        const storage = new s3s(httpRootDir, compilerProps, awsProps);
         dynamoDbQueryHandlers.push((q) => {
             q.TableName.should.equal('table');
             return {};
@@ -84,7 +85,7 @@ describe('Find unique subhash tests', () => {
         );
     });
     it('works when not empty', () => {
-        const storage = new s3s(compilerProps, awsProps);
+        const storage = new s3s(httpRootDir, compilerProps, awsProps);
         dynamoDbQueryHandlers.push(() => {
             return {
                 Items: [
@@ -104,7 +105,7 @@ describe('Find unique subhash tests', () => {
         );
     });
     it('works when there\' a collision', () => {
-        const storage = new s3s(compilerProps, awsProps);
+        const storage = new s3s(httpRootDir, compilerProps, awsProps);
         dynamoDbQueryHandlers.push(() => {
             return {
                 Items: [
@@ -124,7 +125,7 @@ describe('Find unique subhash tests', () => {
         );
     });
     it('finds an existing match', () => {
-        const storage = new s3s(compilerProps, awsProps);
+        const storage = new s3s(httpRootDir, compilerProps, awsProps);
         dynamoDbQueryHandlers.push(() => {
             return {
                 Items: [
@@ -149,6 +150,7 @@ describe('Find unique subhash tests', () => {
 describe('Stores to s3', () => {
     const dynamoDbPutItemHandlers = mockerise('DynamoDB', 'putItem');
     const s3PutObjectHandlers = mockerise('S3', 'putObject');
+    const httpRootDir = '/';
     const compilerProps = properties.fakeProps({});
     const awsProps = properties.fakeProps({
         region: 'not-a-region',
@@ -157,7 +159,7 @@ describe('Stores to s3', () => {
         storageDynamoTable: 'table'
     });
     it('and works ok', () => {
-        const storage = new s3s(compilerProps, awsProps);
+        const storage = new s3s(httpRootDir, compilerProps, awsProps);
         const object = {
             prefix: "ABCDEF",
             uniqueSubHash: "ABCDEFG",

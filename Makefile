@@ -84,7 +84,7 @@ check: $(NODE_MODULES) test lint  ## Runs all checks required before committing
 clean:  ## Cleans up everything
 	rm -rf node_modules .*-updated .*-bin out static/dist static/vs
 	$(MAKE) -C d clean
-	$(MAKE) -C clean
+	$(MAKE) -C haskell clean
 
 run: export NODE_ENV=LOCAL WEBPACK_ARGS="-p"
 run: prereqs  ## Runs the site normally
@@ -119,4 +119,8 @@ install-git-hooks:  ## Install git hooks that will ensure code is linted and tes
 
 changelog:  ## Create the changelog
 	python ./etc/scripts/changelog.py
+
+policies:
+	python ./etc/scripts/politic.py
+
 .PHONY: changelog

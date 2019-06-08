@@ -24,6 +24,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+const startTime = new Date();
+
 // Initialise options and properties. Don't load any handlers here; they
 // may need an initialised properties library.
 const nopt = require('nopt'),
@@ -227,7 +229,7 @@ aws.initConfig(awsProps)
         const CompileHandler = require('./lib/handlers/compile').Handler;
         const compileHandler = new CompileHandler(compilationEnvironment, awsProps);
         const StorageHandler = require('./lib/storage/storage');
-        const storageHandler = StorageHandler.storageFactory(compilerProps, awsProps);
+        const storageHandler = StorageHandler.storageFactory(storageSolution, compilerProps, awsProps, httpRootDir);
         const ApiHandler = require('./lib/handlers/api').Handler;
         const apiHandler = new ApiHandler(compileHandler, ceProps, storageHandler);
         const SourceHandler = require('./lib/handlers/source').Handler;
@@ -286,6 +288,7 @@ aws.initConfig(awsProps)
                 _port = defArgs.port;
             }
             logger.info(`  Listening on http://${defArgs.hostname || 'localhost'}:${_port}/`);
+            logger.info(`  Startup duration: ${new Date() - startTime}ms`);
             logger.info("=======================================");
             server.listen(_port, defArgs.hostname);
         }
@@ -359,14 +362,14 @@ aws.initConfig(awsProps)
                         next({status: 404, message: `page "${req.path}" could not be found`});
                     })
                     .use(Sentry.Handlers.errorHandler)
-                // eslint-disable-next-line no-unused-vars
+                    // eslint-disable-next-line no-unused-vars
                     .use((err, req, res, next) => {
                         const status =
-                                err.status ||
-                                err.statusCode ||
-                                err.status_code ||
-                                (err.output && err.output.statusCode) ||
-                                500;
+                            err.status ||
+                            err.statusCode ||
+                            err.status_code ||
+                            (err.output && err.output.statusCode) ||
+                            500;
                         const message = err.message || 'Internal Server Error';
                         res.status(status);
                         res.render('error', renderConfig({error: {code: status, message: message}}));
@@ -570,6 +573,9 @@ aws.initConfig(awsProps)
                 // Based on combined format, but: GDPR compliant IP, no timestamp & no unused fields for our usecase
                 const morganFormat = isDevMode() ? 'dev' : ':gdpr_ip ":method :url" :status';
 
+                const shortenerLib = require(`./lib/shortener-${clientOptionsHandler.options.urlShortenService}`);
+                const shortener = shortenerLib({storageHandler});
+
                 router
                     .use(Sentry.Handlers.requestHandler())
                     .use(morgan(morganFormat, {
@@ -619,7 +625,7 @@ aws.initConfig(awsProps)
                     .get('/z/:id', storedStateHandler)
                     .get('/resetlayout/:id', storedStateHandlerResetLayout)
                     .get('/clientstate/:clientstatebase64', unstoredStateHandler)
-                    .post('/shortener', storageHandler.handler.bind(storageHandler));
+                    .post('/shortener', shortener);
 
                 if (!defArgs.doCache) {
                     logger.info("  with disabled caching");
