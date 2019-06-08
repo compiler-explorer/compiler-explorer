@@ -803,9 +803,8 @@ Compiler.prototype.onIrViewOpened = function (id) {
 
 Compiler.prototype.onIrViewClosed = function (id) {
     if (this.id === id) {
-        this.irButton.prop('disabled', true);
+        this.irButton.prop('disabled', false);
         this.irViewOpen = false;
-        this.compile();
     }
 };
 
