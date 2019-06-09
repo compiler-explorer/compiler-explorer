@@ -76,3 +76,5 @@ From oldest to newest contributor, we would like to thank:
 - [Sam Clegg](https://github.com/sbc100)
 - [Austin Morton](https://github.com/apmorton)
 - [Matt Hammerly](https://github.com/mhammerly)
+- [Christian Vonrüti](https://github.com/alshain)
+
