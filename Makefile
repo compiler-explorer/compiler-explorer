@@ -28,38 +28,9 @@ debug: node-installed ## print out some useful variables
 	@echo Using npm from $(NPM)
 	@echo PATH is $(PATH)
 
-.PHONY: clean run test run-amazon optional-haskell-support optional-d-support optional-rust-support
+.PHONY: clean run test run-amazon
 .PHONY: dist lint prereqs node_modules travis-dist
-prereqs: optional-haskell-support optional-d-support optional-rust-support node_modules webpack
-GDC?=gdc
-DMD?=dmd
-LDC?=ldc2
-ifneq "" "$(shell which $(GDC) 2>/dev/null || which $(DMD) 2>/dev/null || which $(LDC) 2>/dev/null)"
-optional-d-support:
-	$(MAKE) -C d
-else
-optional-d-support:
-	@echo "D language support disabled"
-endif
-
-GHC?=ghc
-ifneq "" "$(shell which $(GHC) 2>/dev/null)"
-optional-haskell-support:
-	$(MAKE) -C haskell
-else
-optional-haskell-support:
-	@echo "Haskell language support disabled"
-endif
-
-ifneq "" "$(shell which cargo)"
-rust/bin/rustfilt: rust/src/main.rs rust/Cargo.lock rust/Cargo.toml
-	cd rust && cargo build --release && cargo install --root . --force && cargo clean
-optional-rust-support: rust/bin/rustfilt
-else
-optional-rust-support:
-	@echo "Rust language support disabled"
-endif
-
+prereqs: node_modules webpack
 
 NODE_MODULES=.npm-updated
 $(NODE_MODULES): package.json | node-installed
@@ -83,8 +54,6 @@ check: $(NODE_MODULES) test lint  ## Runs all checks required before committing
 
 clean:  ## Cleans up everything
 	rm -rf node_modules .*-updated .*-bin out static/dist static/vs
-	$(MAKE) -C d clean
-	$(MAKE) -C haskell clean
 
 run: export NODE_ENV=LOCAL WEBPACK_ARGS="-p"
 run: prereqs  ## Runs the site normally

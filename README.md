@@ -53,12 +53,15 @@ Assuming you have a compatible version of `node` installed, simply running
  (_v10_) installed, either on the path or at `NODE_DIR`
  (an environment variable or `make` parameter).
 
-
 Running with `make EXTRA_ARGS='--language LANG'` will allow you to load
  `LANG` exclusively, where `LANG` is one for the language ids/aliases defined
  in `lib/languages.js`. The `Makefile` will automatically install all the
  third party libraries needed to run; using `npm` to install server-side and
  client side components.
+
+Some languages need extra tools to demangle them, e.g. `rust`, `d`, or `haskell`.
+ Such tools are kept separately in the
+ [tools repo](https://github.com/mattgodbolt/compiler-explorer-tools).
 
 The config system leaves a lot to be desired. Work has been done on porting
  [CCS](https://github.com/hellige/ccs-cpp) to Javascript and then something
