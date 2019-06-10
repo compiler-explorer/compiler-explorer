@@ -97,7 +97,6 @@ function Compiler(hub, container, state) {
     this.prevDecorations = [];
     this.alertSystem = new Alert();
     this.alertSystem.prefixMessage = "Compiler #" + this.id + ": ";
-    this.unwiseOptions = ["-march=native"];
 
     this.linkedFadeTimeoutId = -1;
 
@@ -298,7 +297,9 @@ Compiler.prototype.initPanerButtons = function () {
 
 Compiler.prototype.undefer = function () {
     this.deferCompiles = false;
-    if (this.needsCompile) this.compile();
+    if (this.needsCompile) {
+        this.compile();
+    }
 };
 
 Compiler.prototype.updateAndCalcTopBarHeight = function () {
@@ -671,6 +672,17 @@ Compiler.prototype.onCompileResponse = function (request, result, cached) {
 
     this.compileTimeLabel.text(timeLabelText);
 
+    this.postCompilationResult(request, result);
+    this.eventHub.emit('compileResult', this.id, this.compiler, result, languages[this.currentLangId]);
+
+    if (this.nextRequest) {
+        var next = this.nextRequest;
+        this.nextRequest = null;
+        this.sendCompile(next);
+    }
+};
+
+Compiler.prototype.postCompilationResult = function (request, result) {
     if (result.popularArguments) {
         this.handlePopularArgumentsResult(result.popularArguments);
     } else {
@@ -683,14 +695,10 @@ Compiler.prototype.onCompileResponse = function (request, result, cached) {
         );
     }
 
-    this.eventHub.emit('compileResult', this.id, this.compiler, result, languages[this.currentLangId]);
     this.updateButtons();
+
+    this.checkForUnwiseArguments(result.compilationOptions);
     this.setCompilationOptionsPopover(result.compilationOptions ? result.compilationOptions.join(' ') : '');
-    if (this.nextRequest) {
-        var next = this.nextRequest;
-        this.nextRequest = null;
-        this.sendCompile(next);
-    }
 };
 
 Compiler.prototype.setBinaryMargin = function () {
@@ -795,9 +803,8 @@ Compiler.prototype.onIrViewOpened = function (id) {
 
 Compiler.prototype.onIrViewClosed = function (id) {
     if (this.id === id) {
-        this.irButton.prop('disabled', true);
+        this.irButton.prop('disabled', false);
         this.irViewOpen = false;
-        this.compile();
     }
 };
 
@@ -1201,18 +1208,18 @@ Compiler.prototype.initCallbacks = function () {
 };
 
 Compiler.prototype.onOptionsChange = function (options) {
-    this.options = options;
-    this.checkForProblems();
-    this.saveState();
-    this.compile();
-    this.updateButtons();
-    this.sendCompiler();
+    if (this.options !== options) {
+        this.options = options;
+        this.saveState();
+        this.compile();
+        this.updateButtons();
+        this.sendCompiler();
+    }
 };
 
-Compiler.prototype.checkForProblems = function () {
-    var optionsArray = this.options.split(/\s/);
+Compiler.prototype.checkForUnwiseArguments = function (optionsArray) {
     // Check if any options are in the unwiseOptions array and remember them
-    var unwiseOptions = _.intersection(optionsArray, this.unwiseOptions);
+    var unwiseOptions = _.intersection(optionsArray, this.compiler.unwiseOptions);
 
     var options = unwiseOptions.length === 1 ? "Option " : "Options ";
     var names = unwiseOptions.join(", ");

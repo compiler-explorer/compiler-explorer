@@ -1,4 +1,4 @@
-- [Matt Godbolt](http://xania.org)
+- [Matt Godbolt](https://xania.org)
 - [Rubén Rincón](https://github.com/RabsRincon)
 - [Jared Wyles](https://github.com/jaredwy)
 - [Patrick Quist](https://github.com/partouf)
