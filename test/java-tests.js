@@ -30,6 +30,11 @@ const fs = require('fs-extra');
 const utils = require('../lib/utils');
 const properties = require('../lib/properties');
 
+// TODO!!!
+return;     // Temporarily disabled: see #1438
+// TODO!!!
+
+
 chai.use(chaiAsPromised);
 chai.should();
 
@@ -58,13 +63,13 @@ function testJava(baseFolder, ...classNames) {
                 text: match[2],
                 source: {
                     line: parseInt(match[1]),
-                    file: null,
+                    file: null
                 }
             };
         }
         return {
             text: line,
-            source: null,
+            source: null
         };
     });
 
@@ -73,14 +78,13 @@ function testJava(baseFolder, ...classNames) {
     };
 
     const processed = compiler.processAsm(result);
-    processed.should.deep.equal(expectedSegments)
+    processed.should.deep.equal(expectedSegments);
 }
 
 
-
 describe("Basic compiler setup", function () {
-    it("Should not crash on instantiation", function() {
-        new JavaCompiler(info, ce)
+    it("Should not crash on instantiation", function () {
+        new JavaCompiler(info, ce);
     });
 
 
@@ -95,7 +99,7 @@ describe("Basic compiler setup", function () {
         }
     });
 
-    describe("Forbidden compiler arguments", function() {
+    describe("Forbidden compiler arguments", function () {
         it("JavaCompiler should not allow -d parameter", () => {
             const compiler = new JavaCompiler(info, ce);
             compiler.filterUserOptions(['hello', '-d', '--something', '--something-else']).should.deep.equal(
@@ -155,7 +159,7 @@ describe("javap parsing", () => {
 
     it("should handle errors", () => {
         const result = {
-            asm: '<Compilation failed>',
+            asm: '<Compilation failed>'
         };
 
         compiler.processAsm(result).should.deep.equal([
@@ -165,7 +169,7 @@ describe("javap parsing", () => {
 
     it("Parses simple class with one method", () => {
         return Promise.all([
-            testJava('test/java/square', 'javap-square'),
+            testJava('test/java/square', 'javap-square')
         ]);
     });
 
