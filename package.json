@@ -19,7 +19,7 @@
     "@fortawesome/fontawesome-free": "5.8.1",
     "@sentry/browser": "^5.1.0",
     "@sentry/node": "^5.1.0",
-    "aws-sdk": "^2.177.0",
+    "aws-sdk": "^2.472.0",
     "big-integer": "1.6.43",
     "body-parser": "^1.18.2",
     "bootstrap": "^4.3.1",
