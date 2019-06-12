@@ -281,6 +281,28 @@ Executor.prototype.sendCompile = function (request) {
         });
 };
 
+Executor.prototype.addCompilerOutputLine = function (msg, container, lineNum, column) {
+    var elem = $('<p></p>').appendTo(container);
+    if (lineNum) {
+        elem.html(
+            $('<span class="linked-compiler-output-line"></span>')
+                .html(msg)
+                .click(_.bind(function (e) {
+                    this.eventHub.emit('editorLinkLine', this.sourceEditorId, lineNum, column, true);
+                    // do not bring user to the top of index.html
+                    // http://stackoverflow.com/questions/3252730
+                    e.preventDefault();
+                    return false;
+                }, this))
+                .on('mouseover', _.bind(function () {
+                    this.eventHub.emit('editorLinkLine', this.sourceEditorId, lineNum,  column, false);
+                }, this))
+        );
+    } else {
+        elem.html(msg);
+    }
+};
+
 Executor.prototype.onCompileResponse = function (request, result, cached) {
     // Save which source produced this change. It should probably be saved earlier though
     result.source = this.source;
@@ -305,20 +327,44 @@ Executor.prototype.onCompileResponse = function (request, result, cached) {
     this.outputContentRoot.empty();
     var execStdout = result.stdout || [];
     var execStderr = result.stderr || [];
-    this.outputContentRoot.append($('<p></p>').text('Program returned: ' + result.code));
-    if (execStdout.length > 0) {
-        this.outputContentRoot.append($('<p></p>').text('Program stdout'));
-        $('<pre class="card execution-stdout"></pre>')
-            .text(_.pluck(execStdout, 'text').join('\n'))
-            .appendTo(this.outputContentRoot);
+    if (result.didExecute) {
+        this.outputContentRoot.append($('<p></p>').text('Program returned: ' + result.code));
+        if (execStdout.length > 0) {
+            this.outputContentRoot.append($('<p></p>').text('Program stdout'));
+            $('<pre class="card execution-stdout"></pre>')
+                .text(_.pluck(execStdout, 'text').join('\n'))
+                .appendTo(this.outputContentRoot);
+        }
+        if (execStderr.length > 0) {
+            this.outputContentRoot.append($('<p></p>').text('Program stderr'));
+            $('<pre class="card"></pre>')
+                .text(_.pluck(execStderr, 'text').join('\n'))
+                .css({color: 'red'})
+                .appendTo(this.outputContentRoot);
+        }
+    } else {
+        this.outputContentRoot.append($('<p></p>').text('Could not execute the program'));
+        this.outputContentRoot.append($('<p></p>').text('Compiler returned: ' + result.code));
+        if (execStdout.length > 0) {
+            this.outputContentRoot.append($('<p></p>').text('Compiler stdout'));
+            var outElem = $('<pre class="card"></pre>').appendTo(this.outputContentRoot);
+            _.each(execStdout, function (obj) {
+                var lineNumber = obj.tag ? obj.tag.line : obj.line;
+                var columnNumber = obj.tag ? obj.tag.column : -1;
+                this.addCompilerOutputLine(this.normalAnsiToHtml.toHtml(obj.text), outElem, lineNumber, columnNumber);
+            }, this);
+        }
+        if (execStderr.length > 0) {
+            this.outputContentRoot.append($('<p></p>').text('Compiler stderr'));
+            var errElem = $('<pre class="card"></pre>').appendTo(this.outputContentRoot);
+            _.each(execStderr, function (obj) {
+                var lineNumber = obj.tag ? obj.tag.line : obj.line;
+                var columnNumber = obj.tag ? obj.tag.column : -1;
+                this.addCompilerOutputLine(this.errorAnsiToHtml.toHtml(obj.text), errElem, lineNumber, columnNumber);
+            }, this);
+        }
     }
-    if (execStderr.length > 0) {
-        this.outputContentRoot.append($('<p></p>').text('Program stderr'));
-        $('<pre class="card"></pre>')
-            .text(_.pluck(execStderr, 'text').join('\n'))
-            .css({color: 'red'})
-            .appendTo(this.outputContentRoot);
-    }
+
 
     this.handleCompilationStatus({code: 1, compilerOut: result.code});
     var timeLabelText = '';

@@ -472,3 +472,7 @@ kbd {
     display: inline;
     margin: 0 2px 0 2px;
 }
+
+.linked-compiler-output-line {
+    cursor: pointer;
+}

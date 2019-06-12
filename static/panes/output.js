@@ -128,7 +128,7 @@ Output.prototype.onCompileResult = function (id, compiler, result) {
 
     this.add("Compiler returned: " + result.code);
 
-    if (result.execResult) {
+    if (result.execResult && result.execResult.didExecute) {
         this.add("Program returned: " + result.execResult.code);
         if (result.execResult.stderr.length || result.execResult.stdout.length) {
             _.each(result.execResult.stderr, function (obj) {
@@ -157,8 +157,7 @@ Output.prototype.add = function (msg, lineNum, column) {
     var elem = $('<p></p>').appendTo(this.contentRoot);
     if (lineNum) {
         elem.html(
-            $('<a></a>')
-                .prop('href', 'javascript:;')
+            $('<span class="linked-compiler-output-line"></span>')
                 .html(msg)
                 .click(_.bind(function (e) {
                     this.eventHub.emit('editorLinkLine', this.editorId, lineNum, column, true);

@@ -255,3 +255,7 @@ div.argmenuitem span.argdescription {
 .execution-stdout {
     color: black;
 }
+
+.linked-compiler-output-line {
+    color: #007bfd;
+}
