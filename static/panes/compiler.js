@@ -558,9 +558,10 @@ Compiler.prototype.getBinaryForLine = function (line) {
 Compiler.prototype.setAssembly = function (asm) {
     this.assembly = asm;
     if (!this.outputEditor || !this.outputEditor.getModel()) return;
-    var currentTopLine = this.outputEditor.getCompletelyVisibleLinesRangeInViewport().startLineNumber;
+    var currentTopLine = this.outputEditor.getVisibleRanges()[0].startLineNumber;
     this.outputEditor.getModel().setValue(asm.length ? _.pluck(asm, 'text').join('\n') : "<No assembly generated>");
     this.outputEditor.revealLine(currentTopLine);
+    
     var addrToAddrDiv = {};
     var decorations = [];
     _.each(this.assembly, _.bind(function (obj, line) {
@@ -582,7 +583,7 @@ Compiler.prototype.setAssembly = function (asm) {
                     range: new monaco.Range(line, link.offset, line, link.offset + link.length),
                     options: {}
                 });
-                // var editor = this.outputEditor;
+                // var editor = this.output;
                 // thing.hover(function (e) {
                 //     var entered = e.type == "mouseenter";
                 //     dest.div.toggleClass("highlighted", entered);
