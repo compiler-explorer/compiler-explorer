@@ -122,7 +122,7 @@ function Executor(hub, container, state) {
     // Handle initial settings
     this.onSettingsChange(this.settings);
     this.updateCompilerInfo();
-    this.saveState();
+    this.compile();
     ga.proxy('send', {
         hitType: 'event',
         eventCategory: 'OpenViewPane',
@@ -146,11 +146,6 @@ Executor.prototype.getGroupsInUse = function () {
 Executor.prototype.close = function () {
     this.eventHub.unsubscribe();
     this.eventHub.emit('executorClose', this.id);
-    //this.outputEditor.dispose();
-};
-
-Executor.prototype.initPanerButtons = function () {
-
 };
 
 Executor.prototype.undefer = function () {
