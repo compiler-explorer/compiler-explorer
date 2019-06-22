@@ -122,7 +122,7 @@ function Executor(hub, container, state) {
     // Handle initial settings
     this.onSettingsChange(this.settings);
     this.updateCompilerInfo();
-    this.compile();
+    this.saveState();
     ga.proxy('send', {
         hitType: 'event',
         eventCategory: 'OpenViewPane',
@@ -433,8 +433,6 @@ Executor.prototype.initButtons = function (state) {
 
     this.hideable = this.domRoot.find('.hideable');
     this.statusIcon = this.domRoot.find('.status-icon');
-
-    this.initPanerButtons();
 };
 
 Executor.prototype.onLibsChanged = function () {
@@ -464,7 +462,7 @@ Executor.prototype.initListeners = function () {
     this.eventHub.on('editorChange', this.onEditorChange, this);
     this.eventHub.on('editorClose', this.onEditorClose, this);
     this.eventHub.on('settingsChange', this.onSettingsChange, this);
-
+    this.eventHub.on('requestCompilation', this.onRequestCompilation, this);
     this.eventHub.on('resize', this.resize, this);
 
     this.eventHub.on('languageChange', this.onLanguageChange, this);
@@ -538,6 +536,12 @@ Executor.prototype.onExecStdinChange = function (newStdin) {
     this.executionStdin = newStdin;
     this.saveState();
     this.compile();
+};
+
+Executor.prototype.onRequestCompilation = function (editorId) {
+    if (editorId === this.sourceEditorId) {
+        this.compile();
+    }
 };
 
 Executor.prototype.updateCompilerInfo = function () {
