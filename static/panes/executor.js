@@ -165,6 +165,16 @@ Executor.prototype.updateAndCalcTopBarHeight = function () {
         this.hideable.show();
     }
 
+    if (!this.panelCompilation.hasClass('d-none')) {
+        topBarHeight += this.panelCompilation.outerHeight(true);
+    }
+    if (!this.panelArgs.hasClass('d-none')) {
+        topBarHeight += this.panelArgs.outerHeight(true);
+    }
+    if (!this.panelStdin.hasClass('d-none')) {
+        topBarHeight += this.panelStdin.outerHeight(true);
+    }
+
     return topBarHeight;
 };
 
@@ -433,6 +443,14 @@ Executor.prototype.initButtons = function (state) {
 
     this.hideable = this.domRoot.find('.hideable');
     this.statusIcon = this.domRoot.find('.status-icon');
+
+    this.panelCompilation = this.domRoot.find('.panel-compilation');
+    this.panelArgs = this.domRoot.find('.panel-args');
+    this.panelStdin = this.domRoot.find('.panel-stdin');
+
+    this.toggleCompilation = this.domRoot.find('.toggle-compilation');
+    this.toggleArgs = this.domRoot.find('.toggle-args');
+    this.toggleStdin = this.domRoot.find('.toggle-stdin');
 };
 
 Executor.prototype.onLibsChanged = function () {
@@ -466,6 +484,18 @@ Executor.prototype.initListeners = function () {
     this.eventHub.on('resize', this.resize, this);
 
     this.eventHub.on('languageChange', this.onLanguageChange, this);
+};
+
+Executor.prototype.togglePanel = function (button, panel) {
+    if (panel.hasClass('d-none')) {
+        panel.removeClass('d-none');
+        button.addClass('active');
+    } else {
+        panel.addClass('d-none');
+        button.removeClass('active');
+    }
+
+    this.resize();
 };
 
 Executor.prototype.initCallbacks = function () {
@@ -505,6 +535,18 @@ Executor.prototype.initCallbacks = function () {
         if (e.which === 27) {
             this.libsButton.popover('hide');
         }
+    }, this));
+
+    this.toggleCompilation.on('click', _.bind(function () {
+        this.togglePanel(this.toggleCompilation, this.panelCompilation);
+    }, this));
+
+    this.toggleArgs.on('click', _.bind(function() {
+        this.togglePanel(this.toggleArgs, this.panelArgs)
+    }, this));
+
+    this.toggleStdin.on('click', _.bind(function() {
+        this.togglePanel(this.toggleStdin, this.panelStdin);
     }, this));
 
     // Dismiss on any click that isn't either in the opening element, inside
