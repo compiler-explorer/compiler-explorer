@@ -173,7 +173,11 @@
 
   #executor
     .top-bar.btn-toolbar.bg-light(role="toolbar")
-      button.btn.btn-light.btn-sm.toggle-compilation
+      include font-size
+        button.btn.btn-light.btn-sm.show-libs.dropdown-toggle(title="Include libs" aria-label="Toggle libraries dropdown" aria-pressed="false" aria-haspopup="true")
+          span.fas.fa-book
+          span.hideable &nbsp;Libraries
+      button.btn.btn-light.btn-sm.toggle-compilation.active
         span.fas.fa-cogs
         span.hideable &nbsp;Compilation
       button.btn.btn-light.btn-sm.toggle-args
@@ -182,14 +186,10 @@
       button.btn.btn-light.btn-sm.toggle-stdin
         span.fas.fa-sign-in-alt
         span.hideable &nbsp;Stdin
-      button.btn.btn-light.btn-sm.toggle-stdout.active
+      button.btn.btn-light.btn-sm.toggle-stdout.active.disabled
         span.fas.fa-sign-out-alt
         span.hideable &nbsp;Stdout
-      include font-size
-      button.btn.btn-light.btn-sm.show-libs.dropdown-toggle(title="Include libs" aria-label="Toggle libraries dropdown" aria-pressed="false" aria-haspopup="true")
-        span.fas.fa-book
-        span.hideable &nbsp;Libraries
-    .top-bar.btn-toolbar.bg-light.panel-compilation.d-none(role="toolbar")
+    .top-bar.btn-toolbar.bg-light.panel-compilation(role="toolbar")
       .btn-group.btn-group-sm(role="group" aria-label="Compiler picker")
         select.compiler-picker(placeholder="Select a compiler...")
         .input-group.mb-auto

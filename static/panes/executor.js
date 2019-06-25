@@ -81,7 +81,6 @@ function Executor(hub, container, state) {
     this.errorAnsiToHtml = makeAnsiToHtml('red');
 
     this.initButtons(state);
-    this.outputContentRoot = this.domRoot.find('pre.content');
 
     this.fontScale = new FontScale(this.domRoot, state, 'pre.content');
 
@@ -371,7 +370,7 @@ Executor.prototype.onCompileResponse = function (request, result, cached) {
     }
 
 
-    this.handleCompilationStatus({code: 1, compilerOut: result.code});
+    this.handleCompilationStatus({code: 1, didExecute: result.didExecute});
     var timeLabelText = '';
     if (cached) {
         timeLabelText = ' - cached';
@@ -404,7 +403,7 @@ Executor.prototype.initButtons = function (state) {
     this.filters = new Toggles(this.domRoot.find('.filters'), state.filters);
 
     this.compileClearCache = this.domRoot.find('.clear-cache');
-
+    this.outputContentRoot = this.domRoot.find('pre.content');
 
     this.optionsField = this.domRoot.find('.compilation-options');
     this.execArgsField = this.domRoot.find('.execution-arguments');
@@ -451,6 +450,24 @@ Executor.prototype.initButtons = function (state) {
     this.toggleCompilation = this.domRoot.find('.toggle-compilation');
     this.toggleArgs = this.domRoot.find('.toggle-args');
     this.toggleStdin = this.domRoot.find('.toggle-stdin');
+
+    this.initToggleButtons(state);
+};
+
+Executor.prototype.initToggleButtons = function (state) {
+
+    if (state.compilationPanelShown === false) {
+        this.hidePanel(this.toggleCompilation, this.panelCompilation);
+    }
+
+    if (state.argsPanelShown === true) {
+        this.showPanel(this.toggleArgs, this.panelArgs);
+    }
+
+    if (state.stdinPanelShown === true) {
+        this.showPanel(this.toggleStdin, this.panelStdin);
+    }
+
 };
 
 Executor.prototype.onLibsChanged = function () {
@@ -486,16 +503,25 @@ Executor.prototype.initListeners = function () {
     this.eventHub.on('languageChange', this.onLanguageChange, this);
 };
 
+Executor.prototype.showPanel = function (button, panel) {
+    panel.removeClass('d-none');
+    button.addClass('active');
+    this.resize();
+};
+
+Executor.prototype.hidePanel = function (button, panel) {
+    panel.addClass('d-none');
+    button.removeClass('active');
+    this.resize();
+};
+
 Executor.prototype.togglePanel = function (button, panel) {
     if (panel.hasClass('d-none')) {
-        panel.removeClass('d-none');
-        button.addClass('active');
+        this.showPanel(button, panel);
     } else {
-        panel.addClass('d-none');
-        button.removeClass('active');
+        this.hidePanel(button, panel);
     }
-
-    this.resize();
+    this.saveState();
 };
 
 Executor.prototype.initCallbacks = function () {
@@ -541,11 +567,11 @@ Executor.prototype.initCallbacks = function () {
         this.togglePanel(this.toggleCompilation, this.panelCompilation);
     }, this));
 
-    this.toggleArgs.on('click', _.bind(function() {
-        this.togglePanel(this.toggleArgs, this.panelArgs)
+    this.toggleArgs.on('click', _.bind(function () {
+        this.togglePanel(this.toggleArgs, this.panelArgs);
     }, this));
 
-    this.toggleStdin.on('click', _.bind(function() {
+    this.toggleStdin.on('click', _.bind(function () {
         this.togglePanel(this.toggleStdin, this.panelStdin);
     }, this));
 
@@ -633,7 +659,10 @@ Executor.prototype.currentState = function () {
         execArgs: this.executionArguments,
         execStdin: this.executionStdin,
         libs: this.libsWidget.get(),
-        lang: this.currentLangId
+        lang: this.currentLangId,
+        compilationPanelShown: !this.panelCompilation.hasClass('d-none'),
+        argsPanelShown: !this.panelArgs.hasClass('d-none'),
+        stdinPanelShown: !this.panelStdin.hasClass('d-none')
     };
     this.fontScale.addState(state);
     return state;
@@ -699,37 +728,18 @@ Executor.prototype.handleCompilationStatus = function (status) {
     function ariaLabel() {
         // Compiling...
         if (status.code === 4) return "Compiling";
-        if (status.compilerOut === 0) {
-            // StdErr.length > 0
-            if (status.code === 3) return "Compilation succeeded with errors";
-            // StdOut.length > 0
-            if (status.code === 2) return "Compilation succeeded with warnings";
-            return "Compilation succeeded";
+        if (status.didExecute) {
+            return "Program compiled & executed";
         } else {
-            // StdErr.length > 0
-            if (status.code === 3) return "Compilation failed with errors";
-            // StdOut.length > 0
-            if (status.code === 2) return "Compilation failed with warnings";
-            return "Compilation failed";
+            return "Program could not be executed";
         }
     }
 
     function color() {
         // Compiling...
         if (status.code === 4) return "black";
-        if (status.compilerOut === 0) {
-            // StdErr.length > 0
-            if (status.code === 3) return "#FF6645";
-            // StdOut.length > 0
-            if (status.code === 2) return "#FF6500";
-            return "#12BB12";
-        } else {
-            // StdErr.length > 0
-            if (status.code === 3) return "#FF1212";
-            // StdOut.length > 0
-            if (status.code === 2) return "#BB8700";
-            return "#FF6645";
-        }
+        if (status.didExecute) return "#12BB12";
+        return "#FF1212";
     }
 
     this.statusIcon
@@ -740,12 +750,8 @@ Executor.prototype.handleCompilationStatus = function (status) {
         .prop('aria-label', ariaLabel())
         .prop('data-status', status.code)
         .toggleClass('fa-spinner', status.code === 4)
-        .toggleClass('fa-times-circle', status.code === 3)
-        .toggleClass('fa-check-circle', status.code === 1 || status.code === 2);
-
-    this.statusLabel
-        .toggleClass('error', status === 3)
-        .toggleClass('warning', status === 2);
+        .toggleClass('fa-times-circle', status.code !== 4 && !status.didExecute)
+        .toggleClass('fa-check-circle', status.code !== 4 && status.didExecute);
 };
 
 Executor.prototype.onLanguageChange = function (editorId, newLangId) {
