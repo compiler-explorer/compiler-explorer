@@ -299,7 +299,7 @@ Executor.prototype.addCompilerOutputLine = function (msg, container, lineNum, co
                     return false;
                 }, this))
                 .on('mouseover', _.bind(function () {
-                    this.eventHub.emit('editorLinkLine', this.sourceEditorId, lineNum,  column, false);
+                    this.eventHub.emit('editorLinkLine', this.sourceEditorId, lineNum, column, false);
                 }, this))
         );
     } else {
@@ -329,8 +329,32 @@ Executor.prototype.onCompileResponse = function (request, result, cached) {
     });
 
     this.outputContentRoot.empty();
+    var compileStdout = result.buildResult.stdout || [];
+    var compileStderr = result.buildResult.stderr || [];
     var execStdout = result.stdout || [];
     var execStderr = result.stderr || [];
+    if (!result.didExecute) {
+        this.outputContentRoot.append($('<p></p>').text('Could not execute the program'));
+        this.outputContentRoot.append($('<p></p>').text('Compiler returned: ' + result.buildResult.code));
+    }
+    if (compileStdout.length > 0) {
+        this.outputContentRoot.append($('<p></p>').text('Compiler stdout'));
+        var outElem = $('<pre class="card"></pre>').appendTo(this.outputContentRoot);
+        _.each(compileStdout, function (obj) {
+            var lineNumber = obj.tag ? obj.tag.line : obj.line;
+            var columnNumber = obj.tag ? obj.tag.column : -1;
+            this.addCompilerOutputLine(this.normalAnsiToHtml.toHtml(obj.text), outElem, lineNumber, columnNumber);
+        }, this);
+    }
+    if (compileStderr.length > 0) {
+        this.outputContentRoot.append($('<p></p>').text('Compiler stderr'));
+        var errElem = $('<pre class="card"></pre>').appendTo(this.outputContentRoot);
+        _.each(compileStderr, function (obj) {
+            var lineNumber = obj.tag ? obj.tag.line : obj.line;
+            var columnNumber = obj.tag ? obj.tag.column : -1;
+            this.addCompilerOutputLine(this.errorAnsiToHtml.toHtml(obj.text), errElem, lineNumber, columnNumber);
+        }, this);
+    }
     if (result.didExecute) {
         this.outputContentRoot.append($('<p></p>').text('Program returned: ' + result.code));
         if (execStdout.length > 0) {
@@ -345,27 +369,6 @@ Executor.prototype.onCompileResponse = function (request, result, cached) {
                 .text(_.pluck(execStderr, 'text').join('\n'))
                 .css({color: 'red'})
                 .appendTo(this.outputContentRoot);
-        }
-    } else {
-        this.outputContentRoot.append($('<p></p>').text('Could not execute the program'));
-        this.outputContentRoot.append($('<p></p>').text('Compiler returned: ' + result.code));
-        if (execStdout.length > 0) {
-            this.outputContentRoot.append($('<p></p>').text('Compiler stdout'));
-            var outElem = $('<pre class="card"></pre>').appendTo(this.outputContentRoot);
-            _.each(execStdout, function (obj) {
-                var lineNumber = obj.tag ? obj.tag.line : obj.line;
-                var columnNumber = obj.tag ? obj.tag.column : -1;
-                this.addCompilerOutputLine(this.normalAnsiToHtml.toHtml(obj.text), outElem, lineNumber, columnNumber);
-            }, this);
-        }
-        if (execStderr.length > 0) {
-            this.outputContentRoot.append($('<p></p>').text('Compiler stderr'));
-            var errElem = $('<pre class="card"></pre>').appendTo(this.outputContentRoot);
-            _.each(execStderr, function (obj) {
-                var lineNumber = obj.tag ? obj.tag.line : obj.line;
-                var columnNumber = obj.tag ? obj.tag.column : -1;
-                this.addCompilerOutputLine(this.errorAnsiToHtml.toHtml(obj.text), errElem, lineNumber, columnNumber);
-            }, this);
         }
     }
 
