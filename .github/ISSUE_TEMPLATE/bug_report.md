@@ -3,7 +3,7 @@ name: Bug report
 about: Create a report to help us improve
 title: "[BUG]"
 labels: bug
-assignees: cjdb
+assignees:
 
 ---
 
@@ -15,6 +15,9 @@ Steps to reproduce the behavior:
 
 **Expected behavior**
 A clear and concise description of what you expected to happen.
+
+**Link**
+If applicable, please provide a link to Compiler Explorer to help explain your problem.
 
 **Screenshots**
 If applicable, add screenshots to help explain your problem.
