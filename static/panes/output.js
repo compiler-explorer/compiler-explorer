@@ -132,11 +132,21 @@ Output.prototype.onCompileResult = function (id, compiler, result) {
         this.add("Program returned: " + result.execResult.code);
         if (result.execResult.stderr.length || result.execResult.stdout.length) {
             _.each(result.execResult.stderr, function (obj) {
-                this.programOutput(this.normalAnsiToHtml.toHtml(obj.text), "red");
+                // Conserve empty lines as they are discarded by ansiToHtml
+                if (obj.text === "") {
+                    this.programOutput('<br/>');
+                } else {
+                    this.programOutput(this.errorAnsiToHtml.toHtml(obj.text), "red");
+                }
             }, this);
 
             _.each(result.execResult.stdout, function (obj) {
-                this.programOutput(this.errorAnsiToHtml.toHtml(obj.text));
+                // Conserve empty lines as they are discarded by ansiToHtml
+                if (obj.text === "") {
+                    this.programOutput('<br/>');
+                } else {
+                    this.programOutput(this.normalAnsiToHtml.toHtml(obj.text));
+                }
             }, this);
         }
     }
