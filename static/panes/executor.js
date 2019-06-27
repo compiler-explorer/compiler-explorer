@@ -341,18 +341,26 @@ Executor.prototype.onCompileResponse = function (request, result, cached) {
         this.outputContentRoot.append($('<p></p>').text('Compiler stdout'));
         var outElem = $('<pre class="card"></pre>').appendTo(this.outputContentRoot);
         _.each(compileStdout, function (obj) {
-            var lineNumber = obj.tag ? obj.tag.line : obj.line;
-            var columnNumber = obj.tag ? obj.tag.column : -1;
-            this.addCompilerOutputLine(this.normalAnsiToHtml.toHtml(obj.text), outElem, lineNumber, columnNumber);
+            if (obj.test === "") {
+                this.addCompilerOutputLine("<br/>", outElem);
+            } else {
+                var lineNumber = obj.tag ? obj.tag.line : obj.line;
+                var columnNumber = obj.tag ? obj.tag.column : -1;
+                this.addCompilerOutputLine(this.normalAnsiToHtml.toHtml(obj.text), outElem, lineNumber, columnNumber);
+            }
         }, this);
     }
     if (compileStderr.length > 0) {
         this.outputContentRoot.append($('<p></p>').text('Compiler stderr'));
         var errElem = $('<pre class="card"></pre>').appendTo(this.outputContentRoot);
         _.each(compileStderr, function (obj) {
-            var lineNumber = obj.tag ? obj.tag.line : obj.line;
-            var columnNumber = obj.tag ? obj.tag.column : -1;
-            this.addCompilerOutputLine(this.errorAnsiToHtml.toHtml(obj.text), errElem, lineNumber, columnNumber);
+            if (obj.test === "") {
+                this.addCompilerOutputLine("<br/>", errElem);
+            } else {
+                var lineNumber = obj.tag ? obj.tag.line : obj.line;
+                var columnNumber = obj.tag ? obj.tag.column : -1;
+                this.addCompilerOutputLine(this.errorAnsiToHtml.toHtml(obj.text), errElem, lineNumber, columnNumber);
+            }
         }, this);
     }
     if (result.didExecute) {
