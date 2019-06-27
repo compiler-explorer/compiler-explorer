@@ -24,7 +24,7 @@
 
 const chai = require('chai');
 const chaiAsPromised = require("chai-as-promised");
-const PascalDemangler = require('../lib/pascal-support').Demangler;
+const PascalDemangler = require('../lib/demangler-pascal').Demangler;
 const PascalCompiler = require('../lib/compilers/pascal');
 const CompilationEnvironment = require('../lib/compilation-env');
 const fs = require('fs-extra');
