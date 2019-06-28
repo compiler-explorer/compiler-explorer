@@ -392,6 +392,8 @@ Executor.prototype.onCompileResponse = function (request, result, cached) {
 
     this.setCompilationOptionsPopover(result.compilationOptions ? result.compilationOptions.join(' ') : '');
 
+    this.eventHub.emit('compileResult', this.id, this.compiler, result.buildResult, languages[this.currentLangId]);
+
     if (this.nextRequest) {
         var next = this.nextRequest;
         this.nextRequest = null;
