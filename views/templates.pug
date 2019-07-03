@@ -186,9 +186,9 @@
       button.btn.btn-light.btn-sm.toggle-stdin
         span.fas.fa-sign-in-alt
         span.hideable &nbsp;Stdin
-      button.btn.btn-light.btn-sm.toggle-stdout.active.disabled
+      button.btn.btn-light.btn-sm.toggle-compilerout.active
         span.fas.fa-sign-out-alt
-        span.hideable &nbsp;Stdout
+        span.hideable &nbsp;Compiler output
     .top-bar.btn-toolbar.bg-light.panel-compilation(role="toolbar")
       .btn-group.btn-group-sm(role="group" aria-label="Compiler picker")
         select.compiler-picker(placeholder="Select a compiler...")
@@ -202,6 +202,9 @@
     .top-bar.btn-toolbar.bg-light.panel-stdin.d-none(role="toolbar")
       textarea.execution-stdin.form-control(placeholder="Execution stdin..." cols="1024" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" aria-multiline="false" style="resize: none")
     pre.content
+      .execution-status
+      .compiler-output
+      .execution-output
     .bottom-bar.bg-light
       span.short-compiler-name
       button.btn.btn-light.btn-sm.fas.fa-info.full-compiler-name(data-trigger="click" style="cursor: pointer;" role="button" title="Full compiler version")

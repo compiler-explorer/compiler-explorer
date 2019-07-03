@@ -307,6 +307,12 @@ Executor.prototype.addCompilerOutputLine = function (msg, container, lineNum, co
     }
 };
 
+Executor.prototype.clearPreviousOutput = function () {
+    this.executionStatusSection.empty();
+    this.compilerOutputSection.empty();
+    this.executionOutputSection.empty();
+};
+
 Executor.prototype.onCompileResponse = function (request, result, cached) {
     // Save which source produced this change. It should probably be saved earlier though
     result.source = this.source;
@@ -328,18 +334,18 @@ Executor.prototype.onCompileResponse = function (request, result, cached) {
         timingValue: timeTaken
     });
 
-    this.outputContentRoot.empty();
+    this.clearPreviousOutput();
     var compileStdout = result.buildResult.stdout || [];
     var compileStderr = result.buildResult.stderr || [];
     var execStdout = result.stdout || [];
     var execStderr = result.stderr || [];
     if (!result.didExecute) {
-        this.outputContentRoot.append($('<p></p>').text('Could not execute the program'));
-        this.outputContentRoot.append($('<p></p>').text('Compiler returned: ' + result.buildResult.code));
+        this.executionStatusSection.append($('<p></p>').text('Could not execute the program'));
+        this.executionStatusSection.append($('<p></p>').text('Compiler returned: ' + result.buildResult.code));
     }
     if (compileStdout.length > 0) {
-        this.outputContentRoot.append($('<p></p>').text('Compiler stdout'));
-        var outElem = $('<pre class="card"></pre>').appendTo(this.outputContentRoot);
+        this.compilerOutputSection.append($('<p></p>').text('Compiler stdout'));
+        var outElem = $('<pre class="card"></pre>').appendTo(this.compilerOutputSection);
         _.each(compileStdout, function (obj) {
             if (obj.test === "") {
                 this.addCompilerOutputLine("<br/>", outElem);
@@ -351,8 +357,8 @@ Executor.prototype.onCompileResponse = function (request, result, cached) {
         }, this);
     }
     if (compileStderr.length > 0) {
-        this.outputContentRoot.append($('<p></p>').text('Compiler stderr'));
-        var errElem = $('<pre class="card"></pre>').appendTo(this.outputContentRoot);
+        this.compilerOutputSection.append($('<p></p>').text('Compiler stderr'));
+        var errElem = $('<pre class="card"></pre>').appendTo(this.compilerOutputSection);
         _.each(compileStderr, function (obj) {
             if (obj.test === "") {
                 this.addCompilerOutputLine("<br/>", errElem);
@@ -364,19 +370,19 @@ Executor.prototype.onCompileResponse = function (request, result, cached) {
         }, this);
     }
     if (result.didExecute) {
-        this.outputContentRoot.append($('<p></p>').text('Program returned: ' + result.code));
+        this.executionOutputSection.append($('<p></p>').text('Program returned: ' + result.code));
         if (execStdout.length > 0) {
             this.outputContentRoot.append($('<p></p>').text('Program stdout'));
             $('<pre class="card execution-stdout"></pre>')
                 .text(_.pluck(execStdout, 'text').join('\n'))
-                .appendTo(this.outputContentRoot);
+                .appendTo(this.executionOutputSection);
         }
         if (execStderr.length > 0) {
-            this.outputContentRoot.append($('<p></p>').text('Program stderr'));
+            this.executionOutputSection.append($('<p></p>').text('Program stderr'));
             $('<pre class="card"></pre>')
                 .text(_.pluck(execStderr, 'text').join('\n'))
                 .css({color: 'red'})
-                .appendTo(this.outputContentRoot);
+                .appendTo(this.executionOutputSection);
         }
     }
 
@@ -417,6 +423,9 @@ Executor.prototype.initButtons = function (state) {
 
     this.compileClearCache = this.domRoot.find('.clear-cache');
     this.outputContentRoot = this.domRoot.find('pre.content');
+    this.executionStatusSection = this.outputContentRoot.find('.execution-status');
+    this.compilerOutputSection = this.outputContentRoot.find('.compiler-output');
+    this.executionOutputSection = this.outputContentRoot.find('.execution-output');
 
     this.optionsField = this.domRoot.find('.compilation-options');
     this.execArgsField = this.domRoot.find('.execution-arguments');
@@ -460,14 +469,14 @@ Executor.prototype.initButtons = function (state) {
     this.panelArgs = this.domRoot.find('.panel-args');
     this.panelStdin = this.domRoot.find('.panel-stdin');
 
-    this.toggleCompilation = this.domRoot.find('.toggle-compilation');
-    this.toggleArgs = this.domRoot.find('.toggle-args');
-    this.toggleStdin = this.domRoot.find('.toggle-stdin');
-
     this.initToggleButtons(state);
 };
 
 Executor.prototype.initToggleButtons = function (state) {
+    this.toggleCompilation = this.domRoot.find('.toggle-compilation');
+    this.toggleArgs = this.domRoot.find('.toggle-args');
+    this.toggleStdin = this.domRoot.find('.toggle-stdin');
+    this.toggleCompilerOut = this.domRoot.find('.toggle-compilerout');
 
     if (state.compilationPanelShown === false) {
         this.hidePanel(this.toggleCompilation, this.panelCompilation);
@@ -481,6 +490,9 @@ Executor.prototype.initToggleButtons = function (state) {
         this.showPanel(this.toggleStdin, this.panelStdin);
     }
 
+    if (state.compilerOutShown === false) {
+        this.hidePanel(this.toggleCompilerOut, this.compilerOutputSection);
+    }
 };
 
 Executor.prototype.onLibsChanged = function () {
@@ -588,6 +600,10 @@ Executor.prototype.initCallbacks = function () {
         this.togglePanel(this.toggleStdin, this.panelStdin);
     }, this));
 
+    this.toggleCompilerOut.on('click', _.bind(function () {
+        this.togglePanel(this.toggleCompilerOut, this.compilerOutputSection);
+    }, this));
+
     // Dismiss on any click that isn't either in the opening element, inside
     // the popover or on any alert
     $(document).on('click', _.bind(function (e) {
@@ -674,6 +690,7 @@ Executor.prototype.currentState = function () {
         libs: this.libsWidget.get(),
         lang: this.currentLangId,
         compilationPanelShown: !this.panelCompilation.hasClass('d-none'),
+        compilerOutShown: !this.compilerOutputSection.hasClass('d-none'),
         argsPanelShown: !this.panelArgs.hasClass('d-none'),
         stdinPanelShown: !this.panelStdin.hasClass('d-none')
     };
