@@ -28,7 +28,6 @@ require("monaco-loader")().then(function () {
     require('bootstrap');
     require('bootstrap-slider');
 
-
     var analytics = require('./analytics');
     var sharing = require('./sharing');
     var _ = require('underscore');
