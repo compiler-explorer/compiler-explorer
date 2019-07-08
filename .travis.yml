@@ -6,8 +6,8 @@ node_js:
     - "10"
 
 script:
-    - npm run check
-    - npm run codecov
+    - npm run ci-lint
+    - npm run test
     - make changelog
     - make policies
     - make -j$(nproc) travis-dist
@@ -22,3 +22,5 @@ deploy:
     acl: public_read
     local_dir: out/dist-bin
     upload-dir: dist/travis/${TRAVIS_BRANCH}
+
+after_success: npm run codecov
