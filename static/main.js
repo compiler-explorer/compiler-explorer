@@ -27,7 +27,8 @@ require("monaco-loader")().then(function () {
     require('popper.js');
     require('bootstrap');
     require('bootstrap-slider');
-    console.log("Forcing tests not to pass on CI with this.");
+
+
     var analytics = require('./analytics');
     var sharing = require('./sharing');
     var _ = require('underscore');
