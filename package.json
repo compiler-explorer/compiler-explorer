@@ -91,6 +91,8 @@
     "webpack-manifest-plugin": "^1.3.2"
   },
   "scripts": {
+    "ci-lint": "eslint --config static/.eslintrc --ignore-path static/.eslintignore ./static/*.js ./static/panes/*.js ./static/modes/*.js && eslint --config .eslintrc --ignore-path .eslintignore ./app.js ./lib/**",
+    "ci-test": "nyc --reporter=lcov mocha --recursive",
     "lint-client": "eslint --config static/.eslintrc --ignore-path static/.eslintignore --fix ./static/*.js ./static/panes/*.js ./static/modes/*.js",
     "lint-server": "eslint --config .eslintrc --ignore-path .eslintignore --fix ./app.js ./lib/**",
     "lint": "npm run lint-client && npm run lint-server",
@@ -98,9 +100,7 @@
     "check": "npm run lint && npm run test",
     "dev": "cross-env NODE_ENV=DEV node app.js",
     "start": "npx webpack && cross-env NODE_ENV=LOCAL node app.js",
-    "codecov": "nyc --report lcovonly mocha -R spec --recursive && codecov",
-    "coverage": "nyc --report lcovonly mocha -R spec --recursive",
-    "localcoverage": "nyc --report html mocha -R spec --recursive"
+    "codecov": "codecov"
   },
   "license": "BSD-2-Clause"
 }

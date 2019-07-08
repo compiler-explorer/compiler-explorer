@@ -76,7 +76,7 @@ dist: prereqs  ## Creates a distribution
 	echo ${HASH} > out/dist/git_hash
 
 travis-dist: dist  ## Creates a distribution as if we were running on travis
-	tar --exclude './.travis-compilers' --exclude './.git' --exclude './static' -Jcf /tmp/ce-build.tar.xz .
+	tar --exclude './.travis-compilers' --exclude './.git' --exclude './static' --exclude './.github' --exclude './.idea' --exclude './.nyc_output' --exclude './coverage' --exclude './test' -Jcf /tmp/ce-build.tar.xz .
 	rm -rf out/dist-bin
 	mkdir -p out/dist-bin
 	mv /tmp/ce-build.tar.xz out/dist-bin/${TRAVIS_BUILD_NUMBER}.tar.xz
