@@ -7,14 +7,14 @@ html(lang="en")
   body(class=extraBodyClass)
     nav.navbar.navbar-godbolt.navbar-expand-md.navbar-light.bg-light
       a.navbar-brand(href="javascript:;" title="Compiler Explorer")
-        img.logo.normal.align-top(src=require("site-logo.svg") height="50" width="165" alt="Compiler Explorer")
-        img.logo.inverse.align-top(src=require("site-logo-inverse.svg") height="50" width="165" alt="Compiler Explorer" style="display: none")
-        if extraBodyClass === "beta"
-          img.logo-overlay.align-top(src=require("site-logo-beta.svg") height="50" width="165")
-        else if extraBodyClass === "staging"
-          img.logo-overlay.align-top(src=require("site-logo-staging.svg") height="50" width="165")
-        else if extraBodyClass === "dev"
-          img.logo-overlay(src=require("site-logo-dev.png") height="50" width="165")
+        svg.logo.align-top(height="50" width="165")
+          include resources/site-logo.svg
+          if extraBodyClass === "beta"
+            include resources/site-logo-beta.svg
+          else if extraBodyClass === "staging"
+            include resources/site-logo-staging.svg
+          else if extraBodyClass === "dev"
+            include resources/site-logo-dev.svg
       button.navbar-toggler(type="button" data-toggle="collapse" data-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation")
         span.navbar-toggler-icon
       .collapse.navbar-collapse#navbarContent

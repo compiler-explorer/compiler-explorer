@@ -390,3 +390,11 @@ div.argmenuitem span.argdescription {
 .open-in-cppinsights * {
     vertical-align: middle;
 }
+
+.logo-pri {
+    fill: #67c52a
+}
+
+.logo-sec {
+    fill: #999999
+}
