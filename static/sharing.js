@@ -39,7 +39,7 @@ var shareServices = {
             return "https://twitter.com/intent/tweet?text=" +
                 encodeURIComponent(title) + '&url=' + encodeURIComponent(url) + '&via=CompileExplore';
         },
-        text: ' Tweet'
+        text: 'Tweet'
     },
     reddit: {
         embedValid: false,
@@ -49,7 +49,7 @@ var shareServices = {
             return 'http://www.reddit.com/submit?url=' +
                 encodeURIComponent(url) + '&title=' + encodeURIComponent(title);
         },
-        text: ' Share on Reddit'
+        text: 'Share on Reddit'
     }
 };
 

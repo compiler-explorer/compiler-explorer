@@ -474,5 +474,11 @@ kbd {
 }
 
 .dropdown-icon {
-    width: 21px;
+    width: 25px;
+    text-align: center;
+    margin-right: 6px;
+}
+
+#socialshare {
+    margin-left: -3px;
 }

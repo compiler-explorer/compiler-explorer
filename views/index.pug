@@ -24,10 +24,10 @@ html(lang="en")
             div.dropdown-menu(aria-labelledby="moreDropdown")
               a.dropdown-item#add-editor(href="javascript:;" title="Click or drag to desired destination")
                 span.dropdown-icon.fa.fa-code
-                | &nbsp;Source Editor
+                | Source Editor
               a.dropdown-item#add-diff(href="javascript:;" title="Click or drag to desired destination")
                 span.dropdown-icon.fas.fa-exchange-alt
-                | &nbsp;Diff View
+                | Diff View
           li.nav-item.dropdown
             a.nav-link.dropdown-toggle#moreDropdown(href="javascript:;" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") More
             div.dropdown-menu(aria-labelledby="moreDropdown")
@@ -50,41 +50,41 @@ html(lang="en")
             div.dropdown-menu.dropdown-menu-right(aria-labelledby="otherDropdown")
               a.dropdown-item(href="https://www.patreon.com/bePatron?u=3691963" title="Help Compiler Explorer - become a Patron" target="_blank" rel="noopener")
                 span.dropdown-icon.fab.fa-patreon
-                | &nbsp; Become a Patron
+                | Become a Patron
               if githubEnabled
                 a.dropdown-item(href="https://github.com/mattgodbolt/compiler-explorer" title="View the source on GitHub" target="_blank" rel="noopener")
                   span.dropdown-icon.fab.fa-github
-                  | &nbsp; Source on GitHub
+                  | Source on GitHub
               a.dropdown-item(href="https://groups.google.com/forum/#!forum/compiler-explorer-discussion" title="Join Compiler Explorer Public Google Group" target="_blank" rel="noopener")
                 span.dropdown-icon.fas.fa-envelope
-                | &nbsp; Mailing list
+                | Mailing list
               a.dropdown-item(href="https://godbolt.org/admin/libraries.html" target="_blank" rel="noopener")
                 span.dropdown-icon.fas.fa-book
-                | &nbsp; Installed libraries
+                | Installed libraries
               a.dropdown-item(href="https://github.com/mattgodbolt/compiler-explorer/wiki" target="_blank" rel="noopener")
                 span.dropdown-icon.fas.fa-book-open
-                | &nbsp; Wiki
+                | Wiki
               a.dropdown-item(href="https://github.com/mattgodbolt/compiler-explorer/issues" target="_blank" rel="noopener")
                 span.dropdown-icon.fas.fa-exclamation-circle
-                | &nbsp; Report an issue
+                | Report an issue
               a.dropdown-item#thanks-to(href="javascript:;")
                 span.dropdown-icon.fas.fa-users
-                | &nbsp; Thanks to...
+                | Thanks to...
               a.dropdown-item(href="https://xania.org/201609/how-compiler-explorer-runs-on-amazon" target="_blank")
                 span.dropdown-icon.fas.fa-cloud-meatball
-                | &nbsp; How it works
+                | How it works
               a.dropdown-item(href="mailto:matt@godbolt.org" target="_blank" rel="noopener noreferrer")
                 span.dropdown-icon.fas.fa-paper-plane
-                | &nbsp; Contact the author
+                | Contact the author
               a.dropdown-item(href="https://xania.org/MattGodbolt" rel="author" target="_blank")
                 span.dropdown-icon.fas.fa-user
-                | &nbsp; About the author
+                | About the author
               a.dropdown-item#changes(href="javascript:;")
                 span.dropdown-icon.fas.fa-sticky-note
-                | &nbsp; Changelog
+                | Changelog
               a.dropdown-item#version-tree(href="javascript:;" target="_blank")
                 span.dropdown-icon.fas.fa-code-branch
-                | &nbsp; Version tree
+                | Version tree
               if sharingEnabled
                 a.dropdown-item#socialshare
           if policies.cookies.enabled || policies.privacy.enabled
@@ -93,10 +93,10 @@ html(lang="en")
               div.dropdown-menu.dropdown-menu-right(aria-labelledby="policiesDropdown")
                 a.dropdown-item#cookies(href="javascript:;")
                   span.dropdown-icon.fas.fa-cookie-bite
-                  | &nbsp; Cookie policy
+                  | Cookie policy
                 a.dropdown-item#privacy(href="javascript:;")
                   span.dropdown-icon.fas.fa-user-lock
-                  | &nbsp; Privacy policy
+                  | Privacy policy
     #root
 
     include templates.pug
