@@ -112,7 +112,8 @@ function Compiler(hub, container, state) {
         minimap: {
             maxColumn: 80
         },
-        lineNumbersMinChars: options.embedded ? 1 : 5
+        lineNumbersMinChars: options.embedded ? 1 : 5,
+        renderIndentGuides: false
     });
 
     this.fontScale = new FontScale(this.domRoot, state, this.outputEditor);
@@ -558,7 +559,8 @@ Compiler.prototype.getBinaryForLine = function (line) {
 Compiler.prototype.setAssembly = function (asm) {
     this.assembly = asm;
     if (!this.outputEditor || !this.outputEditor.getModel()) return;
-    var currentTopLine = this.outputEditor.getCompletelyVisibleLinesRangeInViewport().startLineNumber;
+    var visibleRanges = this.outputEditor.getVisibleRanges();
+    var currentTopLine = visibleRanges.length > 0 ? visibleRanges[0].startLineNumber : 1;
     this.outputEditor.getModel().setValue(asm.length ? _.pluck(asm, 'text').join('\n') : "<No assembly generated>");
     this.outputEditor.revealLine(currentTopLine);
     var addrToAddrDiv = {};
