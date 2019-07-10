@@ -372,7 +372,7 @@ Executor.prototype.onCompileResponse = function (request, result, cached) {
     if (result.didExecute) {
         this.executionOutputSection.append($('<p></p>').text('Program returned: ' + result.code));
         if (execStdout.length > 0) {
-            this.outputContentRoot.append($('<p></p>').text('Program stdout'));
+            this.executionOutputSection.append($('<p></p>').text('Program stdout'));
             $('<pre class="card execution-stdout"></pre>')
                 .text(_.pluck(execStdout, 'text').join('\n'))
                 .appendTo(this.executionOutputSection);
