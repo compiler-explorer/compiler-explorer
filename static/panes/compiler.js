@@ -1535,23 +1535,23 @@ Compiler.prototype.onMouseMove = function (e) {
         if (numericToolTip) {
             this.decorations.numericToolTip = {
                 range: currentWord.range,
-                options: {isWholeLine: false, hoverMessage: ['`' + numericToolTip + '`']}
+                options: {
+                    isWholeLine: false, hoverMessage: [{
+                        value: '`' + numericToolTip + '`'
+                    }]
+                }
             };
             this.updateDecorations();
         }
 
         if (this.getEffectiveFilters().intel) {
-            var lineTokens = function (model, line) {
+            var lineTokens = _.bind(function (model, line) {
                 //Force line's state to be accurate
                 if (line > model.getLineCount()) return [];
-                model.getLineTokens(line, /*inaccurateTokensAcceptable*/false);
-                // Get the tokenization state at the beginning of this line
-                var state = model._lines[line - 1].getState();
-                if (!state) return [];
-                var freshState = model._lines[line - 1].getState().clone();
-                // Get the human readable tokens on this line
-                return model._tokenizationSupport.tokenize(model.getLineContent(line), freshState, 0).tokens;
-            };
+                var flavour = model.getModeId();
+                var tokens = monaco.editor.tokenize(model.getLineContent(line), flavour);
+                return tokens.length > 0 ? tokens[0] : [];
+            }, this);
 
             if (this.settings.hoverShowAsmDoc === true &&
                 _.some(lineTokens(this.outputEditor.getModel(), currentWord.range.startLineNumber), function (t) {
@@ -1563,7 +1563,10 @@ Compiler.prototype.onMouseMove = function (e) {
                         range: currentWord.range,
                         options: {
                             isWholeLine: false,
-                            hoverMessage: [response.tooltip + '\n\nMore information available in the context menu.']
+                            hoverMessage: [{
+                                value: response.tooltip + '\n\nMore information available in the context menu.',
+                                isTrusted: true
+                            }]
                         }
                     };
                     this.updateDecorations();
