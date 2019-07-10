@@ -394,3 +394,11 @@ div.argmenuitem span.argdescription {
 .execution-stdout {
     color: white !important;
 }
+
+.logo-pri {
+    fill: #67c52a !important;
+}
+
+.logo-sec {
+    fill: #999999 !important;
+}
