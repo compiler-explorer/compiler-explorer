@@ -31,11 +31,19 @@ html(lang="en")
           li.nav-item.dropdown
             a.nav-link.dropdown-toggle#moreDropdown(href="javascript:;" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") More
             div.dropdown-menu(aria-labelledby="moreDropdown")
-              a.dropdown-item#setting(href="javascript:;" data-target="#settings" data-toggle="modal") Settings
+              a.dropdown-item#setting(href="javascript:;" data-target="#settings" data-toggle="modal")
+                span.dropdown-icon.fas.fa-sliders-h
+                | Settings
               div.dropdown-divider
-              a.dropdown-item#ui-brokenlink(href="javascript:;") Reset UI layout
-              a.dropdown-item#ui-reset(href="javascript:;") Reset code and UI layout
-              a.dropdown-item#ui-duplicate(href="javascript:;") Open new tab
+              a.dropdown-item#ui-brokenlink(href="javascript:;")
+                span.dropdown-icon.fas.fa-undo-alt
+                | Reset UI layout
+              a.dropdown-item#ui-reset(href="javascript:;")
+                span.dropdown-icon.fas.fa-trash-alt
+                | Reset code and UI layout
+              a.dropdown-item#ui-duplicate(href="javascript:;")
+                span.dropdown-icon.fas.fa-external-link-alt
+                | Open new tab
         ul#motd.navbar-nav.navbar-center.mr-auto.community-advert.d-none
           span.content
             | Thanks for using Compiler Explorer
@@ -77,7 +85,7 @@ html(lang="en")
                 span.dropdown-icon.fas.fa-paper-plane
                 | Contact the author
               a.dropdown-item(href="https://xania.org/MattGodbolt" rel="author" target="_blank")
-                span.dropdown-icon.fas.fa-user
+                span.dropdown-icon.fas.fa-address-card
                 | About the author
               a.dropdown-item#changes(href="javascript:;")
                 span.dropdown-icon.fas.fa-sticky-note
