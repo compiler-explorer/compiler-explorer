@@ -1,7 +1,7 @@
 const path = require('path'),
     webpack = require('webpack'),
     CopyWebpackPlugin = require('copy-webpack-plugin'),
-    ExtractTextPlugin = require('extract-text-webpack-plugin'),
+    MiniCssExtractPlugin = require('mini-css-extract-plugin'),
     ManifestPlugin = require('webpack-manifest-plugin'),
     glob = require("glob"),
     UglifyJsPlugin = require('uglifyjs-webpack-plugin');
@@ -19,7 +19,8 @@ const outputname = isDev ? 'main.js' : 'bundle.[hash].js';
 const cssName = isDev ? '[name].css' :  "[name].[contenthash].css";
 const publicPath = isDev ? '/dist/' :  'dist/';
 const manifestPlugin = new ManifestPlugin({
-    fileName: manifestPath
+    fileName: manifestPath,
+    publicPath: './'
 });
 
 
@@ -43,16 +44,12 @@ let plugins = [
         $: 'jquery',
         jQuery: 'jquery'
     }),
-    new ExtractTextPlugin(cssName),
+    new MiniCssExtractPlugin({
+        filename: cssName,
+
+    }),
     manifestPlugin
 ];
-
-if(!isDev) {
-    plugins.push(new UglifyJsPlugin({
-        sourceMap: true
-    }));
-}
-
 
 module.exports = [
     //if you change the order of this, make sure to update the config variable in app.js
@@ -60,6 +57,7 @@ module.exports = [
     // currently we just want to shove a cache path onto the static assets so we can get the hash onto the filename
     //this means we can set the cache for eternity
     {
+        mode: isDev ? 'development' : 'production',
         entry: assetEntries,
         output: {
             path: path.join(distPath, 'assets'),
@@ -84,6 +82,7 @@ module.exports = [
     },
     //this is the client side
     {
+        mode: isDev ? 'development' : 'production',
         entry: './static/main.js',
         output: {
             filename: outputname,
@@ -102,16 +101,33 @@ module.exports = [
         },
         stats: "errors-only",
         devtool: 'source-map',
+        optimization: {
+            minimize: !isDev,
+            minimizer: [new UglifyJsPlugin({
+                parallel: true,
+                uglifyOptions: {
+                    output: {
+                        comments: false,
+                        beautify: false
+                    }
+                }
+            })]
+        },
         module: {
             rules: [
                 {
                     test: /\.css$/,
                     exclude: path.resolve(__dirname, 'static/themes/'),
-                    use: ExtractTextPlugin.extract({
-                        fallback: 'style-loader',
-                        use: 'css-loader',
-                        publicPath: './'
-                    })
+                    use: [
+                        {
+                            loader: MiniCssExtractPlugin.loader,
+                            options: {
+                                publicPath: './',
+                                hmr: isDev
+                            }
+                        },
+                        'css-loader'
+                    ]
                 },
                 {
                     test: /\.css$/,

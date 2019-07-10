@@ -38,7 +38,7 @@ $(NODE_MODULES): package.json | node-installed
 	@touch $@
 
 webpack: $(NODE_MODULES)  ## Runs webpack (useful only for debugging webpack)
-	$(NODE) node_modules/webpack/bin/webpack.js ${WEBPACK_ARGS}
+	$(NODE) node_modules/webpack-cli/bin/cli.js ${WEBPACK_ARGS}
 
 lint: $(NODE_MODULES)  ## Ensures everything matches code conventions
 	$(NPM) run lint
@@ -61,7 +61,7 @@ run: prereqs  ## Runs the site normally
 
 dev: export NODE_ENV=DEV
 dev: prereqs install-git-hooks ## Runs the site as a developer; including live reload support and installation of git hooks
-	 $(NODE) ./node_modules/.bin/supervisor -w app.js,lib,etc/config -e 'js|node|properties' --exec $(NODE) $(NODE_ARGS) -- ./app.js $(EXTRA_ARGS)
+	$(NODE) ./node_modules/.bin/supervisor -w app.js,lib,etc/config -e 'js|node|properties' --exec $(NODE) $(NODE_ARGS) -- ./app.js $(EXTRA_ARGS)
 
 
 HASH := $(shell git rev-parse HEAD)
@@ -76,7 +76,7 @@ dist: prereqs  ## Creates a distribution
 	echo ${HASH} > out/dist/git_hash
 
 travis-dist: dist  ## Creates a distribution as if we were running on travis
-	tar --exclude './.travis-compilers' --exclude './.git' --exclude './static' --exclude './.github' --exclude './.idea' --exclude './.nyc_output' --exclude './coverage' --exclude './test' -Jcf /tmp/ce-build.tar.xz .
+	tar --exclude './.travis-compilers' --exclude './.git' --exclude './static' --exclude './.github' --exclude './.idea' --exclude './.nyc_output' --exclude './coverage' --exclude './test' --exclude './docs' -Jcf /tmp/ce-build.tar.xz .
 	rm -rf out/dist-bin
 	mkdir -p out/dist-bin
 	mv /tmp/ce-build.tar.xz out/dist-bin/${TRAVIS_BUILD_NUMBER}.tar.xz
