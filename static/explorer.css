@@ -472,3 +472,7 @@ kbd {
     display: inline;
     margin: 0 2px 0 2px;
 }
+
+.dropdown-icon {
+    width: 21px;
+}

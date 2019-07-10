@@ -90,6 +90,7 @@ function updateShares(container, url) {
         var newElement = baseTemplate.children('a.share-item').clone();
         if (service.logoClass) {
             newElement.prepend($('<span>')
+                .addClass('dropdown-icon')
                 .addClass(service.logoClass)
                 .prop('title', serviceName)
             );
