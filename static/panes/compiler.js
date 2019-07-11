@@ -115,6 +115,7 @@ function Compiler(hub, container, state) {
         lineNumbersMinChars: options.embedded ? 1 : 5
     });
 
+    this.codeLensProvider = null;
     this.fontScale = new FontScale(this.domRoot, state, this.outputEditor);
 
     this.compilerPicker.selectize({
@@ -542,61 +543,71 @@ Compiler.prototype.sendCompile = function (request) {
         });
 };
 
-Compiler.prototype.getBinaryForLine = function (line) {
-    var obj = this.assembly[line - 1];
-    if (!obj) return '<div class="address">????</div><div class="opcodes"><span class="opcode">????</span></div>';
-    var address = obj.address ? obj.address.toString(16) : '';
-    var opcodes = '<div class="opcodes" title="' + (obj.opcodes || []).join(' ') + '">';
-    _.each(obj.opcodes, function (op) {
-        opcodes += ('<span class="opcode">' + op + '</span>');
+Compiler.prototype.setNormalMargin = function () {
+    this.outputEditor.updateOptions({
+        lineNumbers: true
     });
-    return '<div class="binary-side"><div class="address">' + address + '</div>' + opcodes + '</div></div>';
 };
 
-// TODO: use ContentWidgets? OverlayWidgets?
-// Use highlight providers? hover providers? highlight providers?
+Compiler.prototype.setBinaryMargin = function () {
+    this.outputEditor.updateOptions({
+        lineNumbers: _.bind(this.getBinaryForLine, this)
+    });
+};
+
+Compiler.prototype.getBinaryForLine = function (line) {
+    var obj = this.assembly[line - 1];
+    if (obj) {
+        return obj.address ? obj.address.toString(16) : '';
+    } else {
+        return '???';
+    }
+};
+
 Compiler.prototype.setAssembly = function (asm) {
     this.assembly = asm;
     if (!this.outputEditor || !this.outputEditor.getModel()) return;
     var currentTopLine = this.outputEditor.getCompletelyVisibleLinesRangeInViewport().startLineNumber;
     this.outputEditor.getModel().setValue(asm.length ? _.pluck(asm, 'text').join('\n') : "<No assembly generated>");
     this.outputEditor.revealLine(currentTopLine);
-    var addrToAddrDiv = {};
-    var decorations = [];
-    _.each(this.assembly, _.bind(function (obj, line) {
-        var address = obj.address ? obj.address.toString(16) : '';
-        //     var div = $("<div class='address cm-number'>" + address + "</div>");
-        addrToAddrDiv[address] = {div: 'moo', line: line};
-    }, this));
-
-    _.each(this.assembly, _.bind(function (obj, line) {
-        if (!obj.links) return;
-        _.each(obj.links, _.bind(function (link) {
-            var address = link.to.toString(16);
-            // var thing = $("<a href='#' class='cm-number'>" + address + "</a>");
-            // this.outputEditor.markText(
-            //     from, to, {replacedWith: thing[0], handleMouseEvents: false});
-            var dest = addrToAddrDiv[address];
-            if (dest) {
-                decorations.push({
-                    range: new monaco.Range(line, link.offset, line, link.offset + link.length),
-                    options: {}
+    if (this.getEffectiveFilters().binary) {
+        this.setBinaryMargin();
+        if (this.codeLensProvider !== null) {
+            this.codeLensProvider.dispose();
+        }
+        var codeLenses = [];
+        _.each(this.assembly, _.bind(function (obj, line) {
+            if (obj.opcodes) {
+                var address = obj.address ? obj.address.toString(16) : '';
+                codeLenses.push({
+                    range: {
+                        startLineNumber: line + 1,
+                        startColumn: 1,
+                        endLineNumber: line + 2,
+                        endColumn: 1
+                    },
+                    id: address,
+                    command: {
+                        title: obj.opcodes.join(' ')
+                    }
                 });
-                // var editor = this.outputEditor;
-                // thing.hover(function (e) {
-                //     var entered = e.type == "mouseenter";
-                //     dest.div.toggleClass("highlighted", entered);
-                //     thing.toggleClass("highlighted", entered);
-                // });
-                // thing.on('click', function (e) {
-                //     editor.scrollIntoView({line: dest.line, ch: 0}, 30);
-                //     dest.div.toggleClass("highlighted", false);
-                //     thing.toggleClass("highlighted", false);
-                //     e.preventDefault();
-                // });
             }
         }, this));
-    }, this));
+        var currentAsmLang = languages[this.currentLangId].monacoDisassembly || 'asm';
+        this.codeLensProvider = monaco.languages.registerCodeLensProvider(currentAsmLang, {
+            provideCodeLenses: function () {
+                return codeLenses;
+            },
+            resolveCodeLens: function (model, codeLens) {
+                return codeLens;
+            }
+        });
+    } else {
+        this.setNormalMargin();
+        if (this.codeLensProvider !== null) {
+            this.codeLensProvider.dispose();
+        }
+    }
 };
 
 function errorResult(text) {
@@ -636,15 +647,7 @@ Compiler.prototype.onCompileResponse = function (request, result, cached) {
     });
 
     this.setAssembly(result.asm || fakeAsm('<No output>'));
-    if (request.options.filters.binary) {
-        this.setBinaryMargin();
-    } else {
-        this.outputEditor.updateOptions({
-            lineNumbers: true,
-            lineNumbersMinChars: options.embedded ? 1 : 5,
-            glyphMargin: true
-        });
-    }
+
     var stdout = result.stdout || [];
     var stderr = result.stderr || [];
 
@@ -699,16 +702,6 @@ Compiler.prototype.postCompilationResult = function (request, result) {
 
     this.checkForUnwiseArguments(result.compilationOptions);
     this.setCompilationOptionsPopover(result.compilationOptions ? result.compilationOptions.join(' ') : '');
-};
-
-Compiler.prototype.setBinaryMargin = function () {
-    this.outputEditor.updateOptions({
-        lineNumbers: _.bind(this.getBinaryForLine, this),
-        lineNumbersMinChars: 20,
-        glyphMargin: false
-    });
-    this.outputEditor._configuration._validatedOptions.lineNumbersMinChars = 20;
-    this.outputEditor._configuration._recomputeOptions();
 };
 
 Compiler.prototype.onEditorChange = function (editor, source, langId, compilerId) {
@@ -1099,9 +1092,6 @@ Compiler.prototype.handlePopularArgumentsResult = function (result) {
 };
 
 Compiler.prototype.onFontScale = function () {
-    if (this.getEffectiveFilters().binary) {
-        this.setBinaryMargin();
-    }
     this.saveState();
 };
 
@@ -1174,12 +1164,6 @@ Compiler.prototype.initCallbacks = function () {
     this.mouseMoveThrottledFunction = _.throttle(_.bind(this.onMouseMove, this), 50);
     this.outputEditor.onMouseMove(_.bind(function (e) {
         this.mouseMoveThrottledFunction(e);
-    }, this));
-
-    this.outputEditor.onContextMenu(_.bind(function () {
-        if (this.getEffectiveFilters().binary) {
-            this.setBinaryMargin();
-        }
     }, this));
 
     this.compileClearCache.on('click', _.bind(function () {

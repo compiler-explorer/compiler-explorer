@@ -120,29 +120,6 @@ li.tweet {
     overflow: hidden;
 }
 
-.address {
-    display: inline;
-}
-
-.opcodes {
-    display: inline;
-}
-
-.opcode {
-    margin-right: 0.2em;
-}
-
-.binary-side {
-    text-align: left;
-    float: left;
-    clear: none;
-    width: 100%;
-}
-
-.highlighted {
-    font-weight: bold;
-}
-
 .lm_splitter.lm_vertical .lm_drag_handle {
     height: 10px;
     top: -2.5px;

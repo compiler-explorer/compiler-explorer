@@ -91,14 +91,6 @@ a.navbar-brand img.logo.normal {
     background: #433b4b !important;
 }
 
-.opcode {
-    color: #066 !important;
-}
-
-.opcode:nth-child(odd) {
-    color: #060 !important;
-}
-
 .linked-code-decoration {
     background: #555657 !important;
 }
