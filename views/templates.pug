@@ -38,14 +38,14 @@
           span.hideable &nbsp;Add new...
         .dropdown-menu
           button.dropdown-item.btn.btn-sm.btn-light.add-compiler(title="Add a new compiler for this source" aria-label="New compiler")
-            span.fa.fa-cogs
-            | &nbsp;Compiler
+            span.dropdown-icon.fa.fa-cogs
+            | Compiler
           button.dropdown-item.btn.btn-sm.btn-light.conformance(title="Add a new conformance view" aria-label="New conformance view")
-            span.fa.fa-list
-            | &nbsp;Conformance view
+            span.dropdown-icon.fa.fa-list
+            | Conformance view
           button.dropdown-item.btn.btn-sm.btn-light.add-editor(title="Add a new source editor view" aria-label="New source editor")
-            span.fa.fa-code
-            | &nbsp;Source editor
+            span.dropdown-icon.fa.fa-code
+            | Source editor
         a.btn.btn-light.open-in-cppinsights(href="https://cppinsights.io/" target="_blank" title="Open in Cppinsights" arial-label="Open in Cppinsights")
           img(height="16" width="16" src=require("cppinsights16.png"))
           span.hideable &nbsp;CppInsights
@@ -114,37 +114,37 @@
           span.hideable &nbsp;Add new...
         .dropdown-menu.dropdown-menu-right
           button.dropdown-item.btn.btn-light.btn-sm.add-compiler(title="Clone this compiler window (click or drag)")
-            span.far.fa-clone
-            | &nbsp;Clone compiler
+            span.dropdown-icon.far.fa-clone
+            | Clone compiler
           button.dropdown-item.btn.btn-light.btn-sm.view-optimization(title="Show optimization output")
-            span.fas.fa-weight
-            | &nbsp;Optimization output
+            span.dropdown-icon.fas.fa-weight
+            | Optimization output
           button.dropdown-item.btn.btn-light.btn-sm.view-ast(title="Show AST output")
-            span.fas.fa-leaf
-            | &nbsp;AST output
+            span.dropdown-icon.fas.fa-leaf
+            | AST output
           button.dropdown-item.btn.btn-light.btn-sm.view-ir(title="Show IR output")
-            span.fas.fa-align-center
-            | &nbsp;IR output
+            span.dropdown-icon.fas.fa-align-center
+            | IR output
           button.dropdown-item.btn.btn-light.btn-sm.view-gccdump(title="Show Tree/RTL dump (GCC only)")
-            span.fas.fa-tree
-            | &nbsp;GCC Tree/RTL output
+            span.dropdown-icon.fas.fa-tree
+            | GCC Tree/RTL output
           button.dropdown-item.btn.btn-light.btn-sm.view-cfg(title="Show Graph Output")
-            span.fas.fa-exchange-alt
-            | &nbsp;Graph output
+            span.dropdown-icon.fas.fa-exchange-alt
+            | Graph output
       .btn-group.btn-group-sm(role="group")
         button.btn.btn-light.btn-sm.dropdown-toggle.add-tool(type="button" title="Add tool" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Add tooling to this editor and compiler")
           span.fas.fa-cogs
           span.hideable &nbsp;Add tool...
         .dropdown-menu.dropdown-menu-right
           button.dropdown-item.btn.btn-light.btn-sm.view-clangtidytool(title="Clang-tidy")
-            span.fas.fa-cog
-            | &nbsp;Clang-tidy
+            span.dropdown-icon.fas.fa-cog
+            | Clang-tidy
           button.dropdown-item.btn.btn-light.btn-sm.view-llvmmcatool(title="LLVM MCA")
-            span.fas.fa-cog
-            | &nbsp;LLVM MCA
+            span.dropdown-icon.fas.fa-cog
+            | LLVM MCA
           button.dropdown-item.btn.btn-light.btn-sm.view-pahole(title="Pahole")
-            span.fas.fa-cog
-            | &nbsp;Pahole
+            span.dropdown-icon.fas.fa-cog
+            | Pahole
     .monaco-placeholder
     .bottom-bar.bg-light
       if !embedded

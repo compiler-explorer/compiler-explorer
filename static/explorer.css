@@ -449,3 +449,13 @@ kbd {
     display: inline;
     margin: 0 2px 0 2px;
 }
+
+.dropdown-icon {
+    width: 25px;
+    text-align: center;
+    margin-right: 6px;
+}
+
+#socialshare {
+    margin-left: -3px;
+}
