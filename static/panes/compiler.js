@@ -567,8 +567,9 @@ Compiler.prototype.getBinaryForLine = function (line) {
 Compiler.prototype.setAssembly = function (asm) {
     this.assembly = asm;
     if (!this.outputEditor || !this.outputEditor.getModel()) return;
+    var editorModel = this.outputEditor.getModel();
     var currentTopLine = this.outputEditor.getCompletelyVisibleLinesRangeInViewport().startLineNumber;
-    this.outputEditor.getModel().setValue(asm.length ? _.pluck(asm, 'text').join('\n') : "<No assembly generated>");
+    editorModel.setValue(asm.length ? _.pluck(asm, 'text').join('\n') : "<No assembly generated>");
     this.outputEditor.revealLine(currentTopLine);
     if (this.getEffectiveFilters().binary) {
         this.setBinaryMargin();
@@ -593,7 +594,7 @@ Compiler.prototype.setAssembly = function (asm) {
                 });
             }
         }, this));
-        var currentAsmLang = languages[this.currentLangId].monacoDisassembly || 'asm';
+        var currentAsmLang = editorModel.getModeId();
         this.codeLensProvider = monaco.languages.registerCodeLensProvider(currentAsmLang, {
             provideCodeLenses: function () {
                 return codeLenses;
