@@ -1,0 +1,6 @@
+g():
+        subq    $8, %rsp
+        call    *foo::baz+8(%rip)
+        xorl    %eax, %eax
+        addq    $8, %rsp
+        ret

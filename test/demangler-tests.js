@@ -251,31 +251,35 @@ describe('Basic demangling', function () {
     });
 });
 
-function DoDemangleTest(root, filename) {
-    return new Promise(function(resolve, reject) {
-        fs.readFile(path.join(root, filename), function(err, dataIn) {
+function DoDemangleTest(root, filename, resolve, reject) {
+    fs.readFile(path.join(root, filename), function(err, dataIn) {
+        if (err) reject(err);
+
+        let resultIn = {"asm": []};
+        
+        resultIn.asm = utils.splitLines(dataIn.toString()).map(function(line) {
+            return {"text": line};
+        });
+
+        fs.readFile(path.join(root, filename + ".demangle"), function(err, dataOut) {
             if (err) reject(err);
 
-            let resultIn = {"asm": []};
-            
-            resultIn.asm = utils.splitLines(dataIn.toString()).map(function(line) {
+            let resultOut = {"asm": []};
+            resultOut.asm = utils.splitLines(dataOut.toString()).map(function(line) {
                 return {"text": line};
             });
 
-            fs.readFile(path.join(root, filename + ".demangle"), function(err, dataOut) {
-                if (err) reject(err);
-
-                let resultOut = {"asm": []};
-                resultOut.asm = utils.splitLines(dataOut.toString()).map(function(line) {
-                    return {"text": line};
+            const demangler = new Demangler(cppfiltpath, new DummyCompiler());
+            demangler.demanglerArguments = ['-n'];
+            demangler.process(resultIn)
+                .then((output) => {
+                    try {
+                        output.should.deep.equal(resultOut);
+                        resolve();
+                    } catch(err) {
+                        reject(err);
+                    }
                 });
-
-                const demangler = new Demangler(cppfiltpath, new DummyCompiler());
-                demangler.demanglerArguments = ['-n'];
-                resolve(demangler.process(resultIn)
-                    .then((output) => { output.should.deep.equal(resultOut); })
-                    .catch(catchCppfiltNonexistence));
-            });
         });
     });
 }
@@ -283,19 +287,13 @@ function DoDemangleTest(root, filename) {
 describe('File demangling', function() {
     const testcasespath = __dirname + '/demangle-cases';
 
-    it('Does things', function() {
-        return new Promise(function(resolve, reject) {
-            fs.readdir(testcasespath, function(err, files) {
-                let testResults = [];
+    files = fs.readdirSync(testcasespath);
 
-                files.forEach((filename) => {
-                    if (filename.endsWith(".asm")) {
-                        testResults.push(DoDemangleTest(testcasespath, filename));
-                    }
-                });
-
-                resolve(Promise.all(testResults).catch(catchCppfiltNonexistence));
+    files.forEach((filename) => {
+        if (filename.endsWith(".asm")) {
+            it(filename, (done) => {
+                DoDemangleTest(testcasespath, filename, () => done(), (err) => done(err));
             });
-        });
+        }
     });
 });
