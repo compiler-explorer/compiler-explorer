@@ -53,20 +53,12 @@ a.navbar-brand img.logo.normal {
     border-color: #aae3e0 !important;
 }
 
-.opcode {
-    color: #066;
-}
-
 .top-bar.btn-toolbar.bg-light {
     border-bottom: 1px solid #d2d3d4;
 }
 
 .bottom-bar.bg-light {
     border-top: 1px solid #d2d3d4;
-}
-
-.opcode:nth-child(odd) {
-    color: #060;
 }
 
 .linked-code-decoration {
@@ -250,4 +242,21 @@ div.argmenuitem span.argdescription {
 
 .open-in-cppinsights * {
     vertical-align: middle;
+}
+
+
+.execution-stdout {
+    color: black;
+}
+
+.linked-compiler-output-line {
+    color: #007bfd;
+}
+
+.logo-pri {
+    fill: #67c52a;
+}
+
+.logo-sec {
+    fill: #3c3c3f;
 }

@@ -91,14 +91,6 @@ a.navbar-brand img.logo.normal {
     background: #433b4b !important;
 }
 
-.opcode {
-    color: #066 !important;
-}
-
-.opcode:nth-child(odd) {
-    color: #060 !important;
-}
-
 .linked-code-decoration {
     background: #555657 !important;
 }
@@ -175,7 +167,7 @@ a.navbar-brand img.logo.normal {
 }
 
 pre.content {
-    color: #aaa !important;
+    color: #f2f2f2 !important;
     background-color: #333 !important;
 }
 
@@ -389,4 +381,16 @@ div.argmenuitem span.argdescription {
 
 .open-in-cppinsights * {
     vertical-align: middle;
+}
+
+.execution-stdout {
+    color: white !important;
+}
+
+.logo-pri {
+    fill: #67c52a !important;
+}
+
+.logo-sec {
+    fill: #999999 !important;
 }

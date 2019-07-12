@@ -280,6 +280,7 @@ Editor.prototype.initButtons = function (state) {
     this.loadSaveButton = this.domRoot.find('.load-save');
     var paneAdderDropdown = this.domRoot.find('.add-pane');
     var addCompilerButton = this.domRoot.find('.btn.add-compiler');
+    var addExecutorButton = this.domRoot.find('.btn.add-executor');
     this.conformanceViewerButton = this.domRoot.find('.btn.conformance');
     var addEditorButton = this.domRoot.find('.btn.add-editor');
 
@@ -292,6 +293,10 @@ Editor.prototype.initButtons = function (state) {
     // bugs e.g. https://github.com/mattgodbolt/compiler-explorer/issues/225
     var getCompilerConfig = _.bind(function () {
         return Components.getCompiler(this.id, this.currentLanguage.id);
+    }, this);
+
+    var getExecutorConfig = _.bind(function () {
+        return Components.getExecutor(this.id, this.currentLanguage.id);
     }, this);
 
     var getConformanceConfig = _.bind(function () {
@@ -309,6 +314,7 @@ Editor.prototype.initButtons = function (state) {
     }, this);
 
     addDragListener(addCompilerButton, getCompilerConfig);
+    addDragListener(addExecutorButton, getExecutorConfig);
     addDragListener(this.conformanceViewerButton, getConformanceConfig);
     addDragListener(addEditorButton, getEditorConfig);
 
@@ -321,6 +327,7 @@ Editor.prototype.initButtons = function (state) {
     }, this);
 
     bindClickEvent(addCompilerButton, getCompilerConfig);
+    bindClickEvent(addExecutorButton, getExecutorConfig);
     bindClickEvent(this.conformanceViewerButton, getConformanceConfig);
     bindClickEvent(addEditorButton, getEditorConfig);
 
