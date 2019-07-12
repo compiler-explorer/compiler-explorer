@@ -120,7 +120,10 @@ Opt.prototype.setTitle = function () {
 };
 
 Opt.prototype.getDisplayableOpt = function (optResult) {
-    return "**" + optResult.optType + "** - " + optResult.displayString;
+    return {
+        value: "**" + optResult.optType + "** - " + optResult.displayString,
+        isTrusted: false
+    };
 };
 
 Opt.prototype.showOptResults = function (results) {
