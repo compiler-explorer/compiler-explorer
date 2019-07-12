@@ -64,7 +64,7 @@ function definition() {
     function patchAnnotation(root) {
         for (var i = 0; i < root.length; ++i) {
             if (root[i][1] === 'annotation') {
-                root[i][0] = /\[\s*\[.*]\s*]/;
+                root[i][0] = /\[\s*\[[^\]]*]\s*]/;
             }
         }
     }
