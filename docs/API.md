@@ -36,7 +36,9 @@ Returns a list of compilers for the provided language id. In text form,
 Returns a list of libraries and library versions available for the provided language id.
  This request only returns data in JSON.
 
-You can use the given include paths to supply in the userArguments for compilation.
+You can use the given include paths to supply in the userArguments for compilation. *(deprecated)*
+
+You will need the library id's and the version id's to supply to **compile** if you want to include libraries during compilation.
 
 ###  `GET /api/shortlinkinfo/<linkid>` - return information about a given link
 
@@ -56,7 +58,8 @@ To specify a compilation request as a JSON document, post it as the appropriate
         "filters": {
             "filter": true
         },
-        "tools": []
+        "tools": [],
+        "libraries": []
     }
 }
 ``` 
@@ -82,6 +85,9 @@ With the tools array you can ask CE to execute certain tools available for
  the current compiler, and also supply arguments for this tool.
  For example: ```"tools": [{"id":"clangtidytrunk","args":"-checks=*"}]```
  to execute clang-tidy with all checks enabled.
+
+Libraries can be included by supplying the library id and versions in an array, for example:
+ ```[{"id": "range-v3", "version": "trunk"}, {"id": "fmt", "version": "400"}]```
 
 The text request is designed for simplicity for command-line clients like `curl`
 
