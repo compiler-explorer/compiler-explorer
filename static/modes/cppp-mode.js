@@ -60,8 +60,16 @@ function definition() {
     addKeywords(["alignas", "alignof", "and", "and_eq", "asm", "bitand", "bitor", "char16_t", "char32_t", "compl",
         "not", "not_eq", "or", "or_eq", "xor", "xor_eq"]);
 
-    // #880
-    cppp.tokenizer.root[2] = [/\[\s*\[.*]\s*]/, 'annotation'];
+    // #880, patch annotations to handle [ [ something ] ]
+    function patchAnnotation(root) {
+        for (var i = 0; i < root.length; ++i) {
+            if (root[i][1] === 'annotation') {
+                root[i][0] = /\[\s*\[.*]\s*]/;
+            }
+        }
+    }
+
+    patchAnnotation(cppp.tokenizer.root);
 
     return cppp;
 }
