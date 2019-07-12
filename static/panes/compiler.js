@@ -484,14 +484,17 @@ Compiler.prototype.compile = function (bypassCache, newTools) {
             produceIr: this.irViewOpen
         },
         filters: this.getEffectiveFilters(),
-        tools: this.getActiveTools(newTools)
+        tools: this.getActiveTools(newTools),
+        libraries: []
     };
-    var includeFlag = this.compiler ? this.compiler.includeFlag : '-I';
+
     _.each(this.libsWidget.getLibsInUse(), function (item) {
-        _.each(item.path, function (path) {
-            options.userArguments += ' ' + includeFlag + path;
+        options.libraries.push({
+            id: item.libId,
+            version: item.versionId
         });
     });
+
     this.compilerService.expand(this.source).then(_.bind(function (expanded) {
         var request = {
             source: expanded || '',
