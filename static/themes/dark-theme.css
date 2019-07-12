@@ -167,7 +167,7 @@ a.navbar-brand img.logo.normal {
 }
 
 pre.content {
-    color: #aaa !important;
+    color: #f2f2f2 !important;
     background-color: #333 !important;
 }
 
@@ -383,10 +383,14 @@ div.argmenuitem span.argdescription {
     vertical-align: middle;
 }
 
+.execution-stdout {
+    color: white !important;
+}
+
 .logo-pri {
-    fill: #67c52a
+    fill: #67c52a !important;
 }
 
 .logo-sec {
-    fill: #999999
+    fill: #999999 !important;
 }

@@ -57,7 +57,7 @@ describe('Packager', function () {
             writeTestFile(executablePath).then(() => {
                 const targzPath = path.join(dirPath, "package.tgz");
 
-                return pack.package(executablePath, targzPath).then(() => {
+                return pack.package(dirPath, targzPath).then(() => {
                     return fs.existsSync(targzPath).should.equal(true);
                 }).catch(err => {
                     throw err;
@@ -73,7 +73,7 @@ describe('Packager', function () {
             return writeTestFile(executablePath).then(() => {
                 const targzPath = path.join(dirPath, "package.tgz");
 
-                return pack.package(executablePath, targzPath).then(() => {
+                return pack.package(dirPath, targzPath).then(() => {
                     return newTempDir().then((unpackPath) => {
 
                         const pack2 = new Packager();

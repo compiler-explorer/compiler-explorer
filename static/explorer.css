@@ -459,3 +459,7 @@ kbd {
 #socialshare {
     margin-left: -3px;
 }
+
+.linked-compiler-output-line {
+    cursor: pointer;
+}

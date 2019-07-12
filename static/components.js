@@ -46,6 +46,13 @@ module.exports = {
             }
         };
     },
+    getExecutor: function (editorId, lang) {
+        return {
+            type: 'component',
+            componentName: 'executor',
+            componentState: {source: editorId, lang: lang}
+        };
+    },
     getEditor: function (id, langId) {
         return {
             type: 'component',

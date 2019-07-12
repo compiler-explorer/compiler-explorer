@@ -28,6 +28,7 @@ var _ = require('underscore');
 var Sentry = require('@sentry/browser');
 var editor = require('./panes/editor');
 var compiler = require('./panes/compiler');
+var executor = require('./panes/executor');
 var output = require('./panes/output');
 var tool = require('./panes/tool');
 var Components = require('components');
@@ -83,6 +84,10 @@ function Hub(layout, subLangId) {
     layout.registerComponent(Components.getCompiler().componentName,
         function (container, state) {
             return self.compilerFactory(container, state);
+        });
+    layout.registerComponent(Components.getExecutor().componentName,
+        function (container, state) {
+            return self.executorFactory(container, state);
         });
     layout.registerComponent(Components.getOutput().componentName,
         function (container, state) {
@@ -168,6 +173,10 @@ Hub.prototype.codeEditorFactory = function (container, state) {
 
 Hub.prototype.compilerFactory = function (container, state) {
     return new compiler.Compiler(this, container, state);
+};
+
+Hub.prototype.executorFactory = function (container, state) {
+    return new executor.Executor(this, container, state);
 };
 
 Hub.prototype.outputFactory = function (container, state) {

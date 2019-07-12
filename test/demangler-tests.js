@@ -256,7 +256,7 @@ function DoDemangleTest(root, filename, resolve, reject) {
         if (err) reject(err);
 
         let resultIn = {"asm": []};
-        
+
         resultIn.asm = utils.splitLines(dataIn.toString()).map(function(line) {
             return {"text": line};
         });

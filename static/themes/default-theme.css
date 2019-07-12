@@ -244,10 +244,20 @@ div.argmenuitem span.argdescription {
     vertical-align: middle;
 }
 
+
+.execution-stdout {
+    color: black;
+}
+
+.linked-compiler-output-line {
+    color: #007bfd;
+}
+
 .logo-pri {
-    fill: #67c52a
+    fill: #67c52a;
 }
 
 .logo-sec {
-    fill: #3c3c3f
+    fill: #3c3c3f;
 }
+
