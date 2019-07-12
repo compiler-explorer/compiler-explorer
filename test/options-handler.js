@@ -51,6 +51,10 @@ const libProps = {
     'libs.fakelib.versions.noPaths.path': ''
 };
 
+if (process.platform === "win32") {
+    libProps['libs.fakelib.versions.twoPaths.path'] = '/dev/null;/dev/urandom';
+}
+
 const compilerProps = new properties.CompilerProps(languages, properties.fakeProps(libProps));
 
 const optionsHandler = new OptionsHandler([], compilerProps, {});
