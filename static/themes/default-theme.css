@@ -1,5 +1,26 @@
 @import url("~golden-layout/src/css/goldenlayout-light-theme.css");
 
+/*
+ * replace low res golden-layout icons with svg recreations to improve high DPI displays
+ * not all icons in golden-layout are used, so we don't replace all of them
+ */
+.lm_header .lm_tab .lm_close_tab {
+    background-image: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 9 9"%3E%3Cpath fill="%23000" d="M.45713 8.5429l-.44426-.44438 3.5955-3.5956L.00697.90152l.8944-.89463 3.6016 3.6015 3.6014-3.6015.88867.88867-3.6014 3.6015 3.6014 3.6015-.89449.89449-3.6015-3.6014-3.5957 3.5956z"/%3E%3C/svg%3E') !important;
+    background-size: 9px !important;
+}
+.lm_controls .lm_maximise {
+    background-image: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 9 9"%3E%3Cpath fill="%23000" d="M0 4.5V0h9v9H0zM8 5V2H1v6h7z"/%3E%3C/svg%3E') !important;
+    background-size: 9px !important;
+}
+.lm_controls .lm_close {
+    background-image: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 9 9"%3E%3Cpath fill="%23000" d="M.45713 8.5429l-.44426-.44438 3.5955-3.5956L.00697.90152l.8944-.89463 3.6016 3.6015 3.6014-3.6015.88867.88867-3.6014 3.6015 3.6014 3.6015-.89449.89449-3.6015-3.6014-3.5957 3.5956z"/%3E%3C/svg%3E') !important;
+    background-size: 9px !important;
+}
+.lm_maximised .lm_controls .lm_maximise {
+    background-image: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 9 9"%3E%3Cpath fill="%23000" d="M1.0096 8.0019v-.99809h6.9807v1.9962H1.0096z"/%3E%3C/svg%3E') !important;
+    background-size: 9px !important;
+}
+
 body {
     background-color: #FFFFFF;
 }
