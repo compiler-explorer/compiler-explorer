@@ -48,10 +48,9 @@ require('../modes/nc-mode');
 require('../modes/ada-mode');
 require('selectize');
 
+var monacoVim = require('monaco-vim');
 var loadSave = new loadSaveLib.LoadSave();
-
 var languages = options.languages;
-
 
 function Editor(hub, state, container) {
     this.id = state.id || hub.nextEditorId();
@@ -104,6 +103,9 @@ function Editor(hub, state, container) {
     });
     this.editor.getModel().setEOL(monaco.editor.EndOfLineSequence.LF);
 
+    if (this.useVim)
+        this.vimMode = monacoVim.initVimMode(this.editor, document.getElementById('vim-status'));
+        
     if (state.source !== undefined) {
         this.setSource(state.source);
     } else {
@@ -578,6 +580,7 @@ Editor.prototype.onSettingsChange = function (newSettings) {
 
     this.editor.updateOptions({
         autoClosingBrackets: this.settings.autoCloseBrackets,
+        useVim: this.settings.useVim,
         tabSize: this.settings.tabWidth,
         quickSuggestions: this.settings.showQuickSuggestions,
         contextmenu: this.settings.useCustomContextMenu,
@@ -598,6 +601,17 @@ Editor.prototype.onSettingsChange = function (newSettings) {
         this.onEditorSetDecoration(this.id, -1, false);
     }
 
+    if (before.useVim !== after.useVim) {
+        if (this.vimMode) {
+            this.vimMode.dispose();
+        }
+        document.getElementById('vim-status').innerHTML='';
+
+        if (after.useVim)
+            this.vimMode = monacoVim.initVimMode(this.editor, document.getElementById('vim-status'));
+        else
+            this.vimMode = null;
+    }
     this.numberUsedLines();
 };
 
