@@ -386,6 +386,7 @@ aws.initConfig(awsProps)
                     options.httpRoot = httpRoot;
                     options.httpRootDir = httpRootDir;
                     options.storageSolution = storageSolution;
+                    options.gitRelease = gitReleaseName;
                     options.require = function (path) {
                         if (isDevMode()) {
                             if (fs.existsSync('static/assets/' + path)) {
