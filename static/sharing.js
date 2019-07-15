@@ -261,7 +261,10 @@ function getShortLink(config, root, done) {
 
 function getLinks(config, currentBind, done) {
     var root = window.httpRoot;
-    if (!root.endsWith("/")) root += "/";
+    if (root[root.length - 1] !== '/') {
+        root += '/';
+    }
+
     var readOnly = true;
     switch (currentBind) {
         case 'Short':

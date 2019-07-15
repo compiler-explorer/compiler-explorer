@@ -188,7 +188,7 @@ require("monaco-loader")().then(function () {
 
     function initializeResetLayoutLink() {
         var currentUrl = document.URL;
-        if (currentUrl.includes("/z/")) {
+        if (currentUrl.indexOf("/z/") !== -1) {
             $("#ui-brokenlink").attr("href", currentUrl.replace("/z/", "/resetlayout/"));
             $("#ui-brokenlink").show();
         } else {

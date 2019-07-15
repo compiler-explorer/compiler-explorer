@@ -54,7 +54,7 @@ function LoadSave() {
     this.modal.find('.save-file').click(_.bind(this.onSaveToFile, this));
 
     this.base = window.httpRoot;
-    if (!this.base.endsWith('/')) {
+    if (this.base[this.base.length - 1] !== '/') {
         this.base += '/';
     }
 
