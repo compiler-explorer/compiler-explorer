@@ -381,12 +381,12 @@ aws.initConfig(awsProps)
                 function renderConfig(extra) {
                     const extraJson = JSON.stringify(extra);
                     const options = _.extend(extra, clientOptionsHandler.get());
+                    options.optionsHash = clientOptionsHandler.getHash();
                     options.compilerExplorerOptions = extraJson;
                     options.extraBodyClass = extraBodyClass;
                     options.httpRoot = httpRoot;
                     options.httpRootDir = httpRootDir;
                     options.storageSolution = storageSolution;
-                    options.gitRelease = gitReleaseName;
                     options.require = function (path) {
                         if (isDevMode()) {
                             if (fs.existsSync('static/assets/' + path)) {
