@@ -347,7 +347,7 @@ Executor.prototype.onCompileResponse = function (request, result, cached) {
         this.compilerOutputSection.append($('<p></p>').text('Compiler stdout'));
         var outElem = $('<pre class="card"></pre>').appendTo(this.compilerOutputSection);
         _.each(compileStdout, function (obj) {
-            if (obj.test === "") {
+            if (obj.text === "") {
                 this.addCompilerOutputLine("<br/>", outElem);
             } else {
                 var lineNumber = obj.tag ? obj.tag.line : obj.line;
@@ -360,7 +360,7 @@ Executor.prototype.onCompileResponse = function (request, result, cached) {
         this.compilerOutputSection.append($('<p></p>').text('Compiler stderr'));
         var errElem = $('<pre class="card"></pre>').appendTo(this.compilerOutputSection);
         _.each(compileStderr, function (obj) {
-            if (obj.test === "") {
+            if (obj.text === "") {
                 this.addCompilerOutputLine("<br/>", errElem);
             } else {
                 var lineNumber = obj.tag ? obj.tag.line : obj.line;
