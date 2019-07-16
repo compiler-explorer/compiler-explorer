@@ -283,7 +283,7 @@ require("monaco-loader")().then(function () {
         } catch (e) {
             Sentry.captureException(e);
 
-            if (document.URL.includes("/z/")) {
+            if (document.URL.indexOf("/z/") !== -1) {
                 document.location = document.URL.replace("/z/", "/resetlayout/");
             }
 
