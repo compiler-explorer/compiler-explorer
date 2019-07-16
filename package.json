@@ -79,6 +79,7 @@
     "file-loader": "^1.1.5",
     "mini-css-extract-plugin": "^0.7.0",
     "mocha": "^5.2.0",
+    "mock-fs": "^4.10.1",
     "nock": "^9.1.4",
     "nyc": "^14.1.1",
     "requirejs": "2.3.6",

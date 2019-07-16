@@ -351,12 +351,14 @@ aws.initConfig(awsProps)
                     router = express.Router(),
                     healthCheck = require('./lib/handlers/health-check');
 
+                const healthCheckFilePath = ceProps("healthCheckFilePath", false);
+
                 webServer
                     .set('trust proxy', true)
                     .set('view engine', 'pug')
                     .on('error', err => logger.error('Caught error in web handler; continuing:', err))
                     // Handle healthchecks at the root, as they're not expected from the outside world
-                    .use('/healthcheck', new healthCheck.HealthCheckHandler().handle)
+                    .use('/healthcheck', new healthCheck.HealthCheckHandler(healthCheckFilePath).handle)
                     .use(httpRootDir, router)
                     .use((req, res, next) => {
                         next({status: 404, message: `page "${req.path}" could not be found`});
