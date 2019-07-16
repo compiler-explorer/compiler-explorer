@@ -36,7 +36,9 @@ Returns a list of compilers for the provided language id. In text form,
 Returns a list of libraries and library versions available for the provided language id.
  This request only returns data in JSON.
 
-You can use the given include paths to supply in the userArguments for compilation.
+You can use the given include paths to supply in the userArguments for compilation. *(deprecated)*
+
+You will need the library id's and the version id's to supply to **compile** if you want to include libraries during compilation.
 
 ###  `GET /api/shortlinkinfo/<linkid>` - return information about a given link
 
@@ -54,12 +56,26 @@ To specify a compilation request as a JSON document, post it as the appropriate
         "userArguments": "Compiler flags",
         "compilerOptions": {},
         "filters": {
-            "filter": true
+             "binary": false,
+             "commentOnly": true,
+             "demangle": true,
+             "directives": true,
+             "execute": false,
+             "intel": true,
+             "labels": true,
+             "libraryCode": false,
+             "trim": false
         },
-        "tools": []
+        "tools": [
+             {"id":"clangtidytrunk", "args":"-checks=*"}
+        ],
+        "libraries": [
+             {"id": "range-v3", "version": "trunk"},
+             {"id": "fmt", "version": "400"}
+        ]
     }
 }
-``` 
+```
 
 The filters are a JSON object with `true`/`false` values. If not supplied,
  defaults are used. If supplied, the filters are used as-is.
@@ -68,20 +84,29 @@ The filters are a JSON object with `true`/`false` values. If not supplied,
 
 To force a cache bypass, set `bypassCache` in the root of the request to `true`.
 
+Filters include `binary`, `labels`, `intel`, `directives` and
+ `demangle`, which correspond to the UI buttons on the HTML version.
+
+With the tools array you can ask CE to execute certain tools available for
+ the current compiler, and also supply arguments for this tool.
+
+Libraries can be marked to have their directories available when including
+ their header files. The can be listed by supplying the library ids and versions in an array.
+ The id's to supply can be found with the `/api/libraries/<language-id>`
+
+
+# Non-REST API's
+
+### `POST /api/compiler/<compiler-id>/compile` - perform a compilation
+
+This is same endpoint as for compilation using JSON.
+
 A text compilation request has the source as the body of the post, and uses
  query parameters to pass the options and filters. Filters are supplied as a
  comma-separated string. Use the query parameter `filters=XX` to set the
  filters directly, else `addFilters=XX` to add a filter to defaults,
  or `removeFilters` to remove from defaults.
  Compiler parameters should be passed as `options=-O2` and default to empty.
-
-Filters include `binary`, `labels`, `intel`, `comments`, `directives` and
- `demangle`, which correspond to the UI buttons on the HTML version.
-
-With the tools array you can ask CE to execute certain tools available for
- the current compiler, and also supply arguments for this tool.
- For example: ```"tools": [{"id":"clangtidytrunk","args":"-checks=*"}]```
- to execute clang-tidy with all checks enabled.
 
 The text request is designed for simplicity for command-line clients like `curl`
 
@@ -138,8 +163,6 @@ If JSON is present in the request's `Accept` header, the compilation results
      }
 }
 ```
-
-# Not-so-RESTful API's
 
 ### `POST /shortener` - saves given state *forever* to a shortlink and returns the unique id for the link
 

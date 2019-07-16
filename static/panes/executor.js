@@ -231,14 +231,17 @@ Executor.prototype.compile = function (bypassCache) {
             executorRequest: true
         },
         filters: {execute: true},
-        tools: []
+        tools: [],
+        libraries: []
     };
-    var includeFlag = this.compiler ? this.compiler.includeFlag : '-I';
+
     _.each(this.libsWidget.getLibsInUse(), function (item) {
-        _.each(item.path, function (path) {
-            options.userArguments += ' ' + includeFlag + path;
+        options.libraries.push({
+            id: item.libId,
+            version: item.versionId
         });
     });
+
     this.compilerService.expand(this.source).then(_.bind(function (expanded) {
         var request = {
             source: expanded || '',
