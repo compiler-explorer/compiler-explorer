@@ -39,6 +39,10 @@ let plugins = [
         from: path.join(staticPath, "favicon.ico"),
         to: distPath,
     },
+    {
+        from: 'node_modules/es6-shim/es6-shim.min.js',
+        to: distPath,
+    },
     ]),
     new webpack.ProvidePlugin({
         $: 'jquery',

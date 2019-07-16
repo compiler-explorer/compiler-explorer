@@ -23,7 +23,6 @@
 // POSSIBILITY OF SUCH DAMAGE
 "use strict";
 
-require('es6-shim');
 require("monaco-loader")().then(function () {
     require('popper.js');
     require('bootstrap');
