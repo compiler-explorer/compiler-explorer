@@ -415,3 +415,11 @@ div.argmenuitem span.argdescription {
 .logo-sec {
     fill: #999999 !important;
 }
+
+textarea.tool-stdin {
+    resize: vertical !important;
+}
+
+textarea.execution-stdin {
+    resize: vertical !important;
+}

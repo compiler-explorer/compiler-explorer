@@ -61,7 +61,7 @@ function Tool(hub, container, state) {
     this.errorAnsiToHtml = makeAnsiToHtml('red');
 
     this.optionsField = this.domRoot.find('input.options');
-    this.stdinField = this.domRoot.find('textarea.stdin');
+    this.stdinField = this.domRoot.find('textarea.tool-stdin');
 
     this.initButtons(state);
     this.options = new Toggles(this.domRoot.find('.options'), state);
