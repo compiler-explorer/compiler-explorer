@@ -61,8 +61,9 @@ function Tool(hub, container, state) {
     this.errorAnsiToHtml = makeAnsiToHtml('red');
 
     this.optionsField = this.domRoot.find('input.options');
+    this.stdinField = this.domRoot.find('textarea.stdin');
 
-    this.initButtons();
+    this.initButtons(state);
     this.options = new Toggles(this.domRoot.find('.options'), state);
     this.options.on('change', _.bind(this.onOptionsChange, this));
 
@@ -85,16 +86,28 @@ function Tool(hub, container, state) {
     });
 
     this.eventHub.emit('toolOpened', this.compilerId, this.currentState());
+
+    this.initCallbacks();
 }
 
+Tool.prototype.initCallbacks = function () {
+    this.toggleArgs.on('click', _.bind(function () {
+        this.togglePanel(this.toggleArgs, this.panelArgs);
+    }, this));
+
+    this.toggleStdin.on('click', _.bind(function () {
+        this.togglePanel(this.toggleStdin, this.panelStdin);
+    }, this));
+};
+
 Tool.prototype.initArgs = function (state) {
+    var optionsChange = _.debounce(_.bind(function (e) {
+        this.onOptionsChange($(e.target).val());
+
+        this.eventHub.emit('toolSettingsChange', this.compilerId);
+    }, this), 800);
+
     if (this.optionsField) {
-        var optionsChange = _.debounce(_.bind(function (e) {
-            this.onOptionsChange($(e.target).val());
-
-            this.eventHub.emit('toolSettingsChange', this.compilerId);
-        }, this), 800);
-
         this.optionsField
             .on('change', optionsChange)
             .on('keyup', optionsChange);
@@ -103,11 +116,29 @@ Tool.prototype.initArgs = function (state) {
             this.optionsField.val(state.args);
         }
     }
+
+    if (this.stdinField) {
+        this.stdinField
+            .on('change', optionsChange)
+            .on('keyup', optionsChange);
+
+        if (state.stdin) {
+            this.stdinField.val(state.stdin);
+        }
+    }
 };
 
 Tool.prototype.getInputArgs = function () {
     if (this.optionsField) {
         return this.optionsField.val();
+    } else {
+        return "";
+    }
+};
+
+Tool.prototype.getInputStdin = function () {
+    if (this.stdinField) {
+        return this.stdinField.val();
     } else {
         return "";
     }
@@ -129,9 +160,48 @@ Tool.prototype.onOptionsChange = function () {
     this.saveState();
 };
 
-Tool.prototype.initButtons = function () {
+Tool.prototype.initButtons = function (state) {
     this.wrapButton = this.domRoot.find('.wrap-lines');
     this.wrapTitle = this.wrapButton.prop('title');
+
+    this.panelArgs = this.domRoot.find('.panel-args');
+    this.panelStdin = this.domRoot.find('.panel-stdin');
+
+    this.initToggleButtons(state);
+};
+
+Tool.prototype.initToggleButtons = function (state) {
+    this.toggleArgs = this.domRoot.find('.toggle-args');
+    this.toggleStdin = this.domRoot.find('.toggle-stdin');
+
+    if (state.argsPanelShown === true) {
+        this.showPanel(this.toggleArgs, this.panelArgs);
+    }
+
+    if (state.stdinPanelShown === true) {
+        this.showPanel(this.toggleStdin, this.panelStdin);
+    }
+};
+
+Tool.prototype.showPanel = function (button, panel) {
+    panel.removeClass('d-none');
+    button.addClass('active');
+    this.resize();
+};
+
+Tool.prototype.hidePanel = function (button, panel) {
+    panel.addClass('d-none');
+    button.removeClass('active');
+    this.resize();
+};
+
+Tool.prototype.togglePanel = function (button, panel) {
+    if (panel.hasClass('d-none')) {
+        this.showPanel(button, panel);
+    } else {
+        this.hidePanel(button, panel);
+    }
+    this.saveState();
 };
 
 Tool.prototype.currentState = function () {
@@ -141,7 +211,8 @@ Tool.prototype.currentState = function () {
         editor: this.editorId,
         wrap: options.wrap,
         toolId: this.toolId,
-        args: this.getInputArgs()
+        args: this.getInputArgs(),
+        stdin: this.getInputStdin()
     };
     this.fontScale.addState(state);
     return state;
