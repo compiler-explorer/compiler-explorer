@@ -381,8 +381,10 @@ aws.initConfig(awsProps)
                 if (gitReleaseName) logger.info(`  git release ${gitReleaseName}`);
 
                 function renderConfig(extra) {
+                    const extraJson = JSON.stringify(extra);
                     const options = _.extend(extra, clientOptionsHandler.get());
-                    options.compilerExplorerOptions = JSON.stringify(options);
+                    options.optionsHash = clientOptionsHandler.getHash();
+                    options.compilerExplorerOptions = extraJson;
                     options.extraBodyClass = extraBodyClass;
                     options.httpRoot = httpRoot;
                     options.httpRootDir = httpRootDir;
@@ -619,6 +621,12 @@ aws.initConfig(awsProps)
                         res.render('sitemap');
                     })
                     .use(sFavicon(path.join(defArgs.staticDir, webpackConfig.output.publicPath, 'favicon.ico')))
+                    .get('/client-options.js', (req, res) => {
+                        staticHeaders(res);
+                        res.set('Content-Type', 'application/javascript');
+                        const options = JSON.stringify(clientOptionsHandler.get());
+                        res.end(`window.compilerExplorerOptions = ${options};`);
+                    })
                     .use(bodyParser.json({limit: ceProps('bodyParserLimit', maxUploadSize)}))
                     .use(bodyParser.text({limit: ceProps('bodyParserLimit', maxUploadSize), type: () => true}))
                     .use('/source', sourceHandler.handle.bind(sourceHandler))
