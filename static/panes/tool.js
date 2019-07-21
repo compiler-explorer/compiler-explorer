@@ -306,7 +306,8 @@ Tool.prototype.onCompileResult = function (id, compiler, result) {
             this.setEditorContent("No tool result");
         }
     } catch(e) {
-        console.error(e);
+        this.setLanguage(false);
+        this.add("javascript error: " + e.message);
     }
 };
 
@@ -331,7 +332,7 @@ Tool.prototype.add = function (msg, lineNum) {
     }
 };
 
-Tool.prototype.setEditorContent = function(content) {
+Tool.prototype.setEditorContent = function (content) {
     if (!this.outputEditor || !this.outputEditor.getModel()) return;
     var editorModel = this.outputEditor.getModel();
     var visibleRanges = this.outputEditor.getVisibleRanges();
@@ -341,7 +342,7 @@ Tool.prototype.setEditorContent = function(content) {
     this.setNormalContent();
 };
 
-Tool.prototype.setNormalContent = function() {
+Tool.prototype.setNormalContent = function () {
     this.outputEditor.updateOptions({
         lineNumbers: true,
         codeLens: false
