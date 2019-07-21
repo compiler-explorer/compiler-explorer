@@ -30,6 +30,7 @@ var FontScale = require('../fontscale');
 var AnsiToHtml = require('../ansi-to-html');
 var Toggles = require('../toggles');
 var ga = require('../analytics');
+var monaco = require('../monaco');
 
 function makeAnsiToHtml(color) {
     return new AnsiToHtml({
@@ -50,18 +51,34 @@ function Tool(hub, container, state) {
     this.eventHub = hub.createEventHub();
     this.domRoot = container.getElement();
     this.domRoot.html($('#tool-output').html());
-    this.contentRoot = this.domRoot.find('.content');
+    this.editorContentRoot = this.domRoot.find('.monaco-placeholder');
+    this.plainContentRoot = this.domRoot.find('pre.content');
     this.optionsToolbar = this.domRoot.find('.options-toolbar');
     this.compilerName = "";
-    this.fontScale = new FontScale(this.domRoot, state, ".content");
-    this.fontScale.on('change', _.bind(function () {
-        this.saveState();
-    }, this));
     this.normalAnsiToHtml = makeAnsiToHtml();
     this.errorAnsiToHtml = makeAnsiToHtml('red');
 
     this.optionsField = this.domRoot.find('input.options');
     this.stdinField = this.domRoot.find('textarea.tool-stdin');
+
+    this.outputEditor = monaco.editor.create(this.editorContentRoot[0], {
+        scrollBeyondLastLine: false,
+        readOnly: true,
+        language: 'text',
+        fontFamily: "courier new",
+        glyphMargin: true,
+        fixedOverflowWidgets: true,
+        minimap: {
+            maxColumn: 80
+        },
+        lineNumbersMinChars: 5,
+        renderIndentGuides: false
+    });
+
+    this.fontScale = new FontScale(this.domRoot, state, ".content,.monaco-editor");
+    this.fontScale.on('change', _.bind(function () {
+        this.saveState();
+    }, this));
 
     this.initButtons(state);
     this.options = new Toggles(this.domRoot.find('.options'), state);
@@ -149,12 +166,25 @@ Tool.prototype.getEffectiveOptions = function () {
 };
 
 Tool.prototype.resize = function () {
-    this.contentRoot.height(this.domRoot.height() - this.optionsToolbar.height() - 5);
+    var barsHeight = this.optionsToolbar.outerHeight() + 2;
+    if (!this.panelArgs.hasClass("d-none")) {
+        barsHeight += this.panelArgs.outerHeight();
+    }
+    if (!this.panelStdin.hasClass("d-none")) {
+        barsHeight += this.panelStdin.outerHeight();
+    }
+
+    this.outputEditor.layout({
+        width: this.domRoot.width(),
+        height: this.domRoot.height() - barsHeight
+    });
+
+    this.plainContentRoot.height(this.domRoot.height() - barsHeight);
 };
 
 Tool.prototype.onOptionsChange = function () {
     var options = this.getEffectiveOptions();
-    this.contentRoot.toggleClass('wrap', options.wrap);
+    this.plainContentRoot.toggleClass('wrap', options.wrap);
     this.wrapButton.prop('title', '[' + (options.wrap ? 'ON' : 'OFF') + '] ' + this.wrapTitle);
 
     this.saveState();
@@ -222,39 +252,66 @@ Tool.prototype.saveState = function () {
     this.container.setState(this.currentState());
 };
 
-Tool.prototype.onCompileResult = function (id, compiler, result) {
-    if (id !== this.compilerId) return;
-    if (compiler) this.compilerName = compiler.name;
-
-    this.contentRoot.empty();
-
-    var toolResult = null;
-    if (result && result.tools) {
-        toolResult = _.find(result.tools, function (tool) {
-            return (tool.id === this.toolId);
-        }, this);
-    }
-
-    if (toolResult) {
-        _.each((toolResult.stdout || []).concat(toolResult.stderr || []), function (obj) {
-            this.add(this.normalAnsiToHtml.toHtml(obj.text), obj.tag ? obj.tag.line : obj.line);
-        }, this);
-    
-        this.toolName = toolResult.name;
-        this.add(this.toolName + " returned: " + toolResult.code);
-    
-        this.updateCompilerName();
-
-        if (toolResult.sourcechanged) {
-            this.eventHub.emit('newSource', this.editorId, toolResult.newsource);
-        }
+Tool.prototype.setLanguage = function (languageId) {
+    if (languageId) {
+        this.options.enableToggle("wrap", false);
+        monaco.editor.setModelLanguage(this.outputEditor.getModel(), languageId);
+        this.outputEditor.setValue("");
+        $(this.plainContentRoot).hide();
+        $(this.editorContentRoot).show();
     } else {
-        this.add("No tool result");
+        this.options.enableToggle("wrap", true);
+        this.plainContentRoot.empty();
+        $(this.editorContentRoot).hide();
+        $(this.plainContentRoot).show();
+    }
+};
+
+Tool.prototype.onCompileResult = function (id, compiler, result) {
+    try{
+        if (id !== this.compilerId) return;
+        if (compiler) this.compilerName = compiler.name;
+
+        var toolResult = null;
+        if (result && result.tools) {
+            toolResult = _.find(result.tools, function (tool) {
+                return (tool.id === this.toolId);
+            }, this);
+        }
+
+        if (toolResult) {
+            if (toolResult.languageId && (toolResult.languageId === "stderr")) {
+                toolResult.languageId = false;
+            }
+
+            this.setLanguage(toolResult.languageId);
+
+            if (toolResult.languageId) {
+                this.setEditorContent(_.pluck(toolResult.stdout, 'text').join('\n'));
+            } else {
+                _.each((toolResult.stdout || []).concat(toolResult.stderr || []), function (obj) {
+                    this.add(this.normalAnsiToHtml.toHtml(obj.text), obj.tag ? obj.tag.line : obj.line);
+                }, this);
+
+                this.toolName = toolResult.name;
+                //this.add(this.toolName + " returned: " + toolResult.code);
+
+                this.updateCompilerName();
+            }
+
+            if (toolResult.sourcechanged) {
+                this.eventHub.emit('newSource', this.editorId, toolResult.newsource);
+            }
+        } else {
+            this.setEditorContent("No tool result");
+        }
+    } catch(e) {
+        console.error(e);
     }
 };
 
 Tool.prototype.add = function (msg, lineNum) {
-    var elem = $('<p></p>').appendTo(this.contentRoot);
+    var elem = $('<p></p>').appendTo(this.plainContentRoot);
     if (lineNum) {
         elem.html(
             $('<a></a>')
@@ -271,6 +328,26 @@ Tool.prototype.add = function (msg, lineNum) {
         );
     } else {
         elem.html(msg);
+    }
+};
+
+Tool.prototype.setEditorContent = function(content) {
+    if (!this.outputEditor || !this.outputEditor.getModel()) return;
+    var editorModel = this.outputEditor.getModel();
+    var visibleRanges = this.outputEditor.getVisibleRanges();
+    var currentTopLine = visibleRanges.length > 0 ? visibleRanges[0].startLineNumber : 1;
+    editorModel.setValue(content);
+    this.outputEditor.revealLine(currentTopLine);
+    this.setNormalContent();
+};
+
+Tool.prototype.setNormalContent = function() {
+    this.outputEditor.updateOptions({
+        lineNumbers: true,
+        codeLens: false
+    });
+    if (this.codeLensProvider) {
+        this.codeLensProvider.dispose();
     }
 };
 
@@ -292,6 +369,7 @@ Tool.prototype.onCompilerClose = function (id) {
 Tool.prototype.close = function () {
     this.eventHub.emit('toolClosed', this.compilerId, this.currentState());
     this.eventHub.unsubscribe();
+    this.outputEditor.dispose();
 };
 
 module.exports = {
