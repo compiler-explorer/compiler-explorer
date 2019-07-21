@@ -279,6 +279,21 @@ Tool.prototype.onCompileResult = function (id, compiler, result) {
             }, this);
         }
 
+        var toolInfo = null;
+        if (compiler && compiler.tools) {
+            toolInfo = _.find(compiler.tools, function (tool) {
+                return (tool.tool.id === this.toolId);
+            }, this);
+        }
+
+        if (toolInfo) {
+            if (toolInfo.tool.stdinHint) {
+                this.stdinField.prop("placeholder", toolInfo.tool.stdinHint);
+            } else {
+                this.stdinField.prop("placeholder", "Tool stdin...");
+            }
+        }
+
         if (toolResult) {
             if (toolResult.languageId && (toolResult.languageId === "stderr")) {
                 toolResult.languageId = false;
