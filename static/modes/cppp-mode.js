@@ -24,8 +24,15 @@
 'use strict';
 var $ = require('jquery');
 var cpp = require('vs/basic-languages/cpp/cpp');
+var Sentry = require('@sentry/browser');
 
 // We need to create a new definition for cpp so we can remove invalid keywords
+try {
+    cpp.conf.brackets.push(['<', '>']);
+} catch (e) {
+    // This is a minimal feature, but log it just in case
+    Sentry.captureException(e);
+}
 
 function definition() {
     var cppp = $.extend(true, {}, cpp.language); // deep copy
