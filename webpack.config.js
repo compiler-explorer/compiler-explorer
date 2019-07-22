@@ -13,10 +13,9 @@ const outputPathRelative = 'dist/';
 const staticRelative = 'static/';
 const staticPath = path.resolve(__dirname, staticRelative);
 const distPath = path.join(staticPath, outputPathRelative);
-const vsPath = path.join(staticPath, 'vs/');
 const assetPath = path.join(staticPath, "assets");
 const manifestPath = 'manifest.json';  //if you change this, you also need to update it in the app.js
-const outputname = isDev ? 'main.js' : 'bundle.[hash].js';
+const outputName = isDev ? 'main.js' : 'bundle.[hash].js';
 const cssName = isDev ? '[name].css' : "[name].[contenthash].css";
 const publicPath = isDev ? '/dist/' : 'dist/';
 const manifestPlugin = new ManifestPlugin({
@@ -90,7 +89,7 @@ module.exports = [
         mode: isDev ? 'development' : 'production',
         entry: './static/main.js',
         output: {
-            filename: outputname,
+            filename: outputName,
             path: distPath,
             publicPath: publicPath
         },

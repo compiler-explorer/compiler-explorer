@@ -23,6 +23,8 @@
 // POSSIBILITY OF SUCH DAMAGE
 "use strict";
 
+__webpack_public_path__ = window.httpRootDir + 'dist/';
+window.__webpack_public_path__ = __webpack_public_path__;
 
 require('popper.js');
 require('bootstrap');

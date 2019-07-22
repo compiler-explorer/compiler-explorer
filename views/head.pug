@@ -37,4 +37,10 @@ script
   | var extraOptions = JSON.parse(decodeURIComponent("!{encodeURIComponent(compilerExplorerOptions)}"));
   | for (k in extraOptions) { window.compilerExplorerOptions[k] = extraOptions[k]; }
 script window.httpRoot = '#{httpRoot}'; window.httpRootDir = '#{httpRootDir}';
+script
+  | if (window.navigator.userAgent.indexOf("Trident/") > 0) {
+  |   var s = document.createElement("script");
+  |   s.src = "#{httpRootDir}dist/es6-shim.min.js";
+  |   document.head.appendChild(s);
+  | }
 script(src=require("main.js"))
