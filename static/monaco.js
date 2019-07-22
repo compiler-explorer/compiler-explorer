@@ -24,4 +24,5 @@
 
 'use strict';
 //until webpack can support monaco properly it exists on the window
-module.exports = monaco;
+var monacoEditor = require('monaco-editor');
+module.exports = monacoEditor;
