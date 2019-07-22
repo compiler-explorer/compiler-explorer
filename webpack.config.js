@@ -104,7 +104,7 @@ module.exports = [
                 filesaver: path.resolve(__dirname, 'node_modules/file-saver/')
             }
         },
-        stats: "verbose",
+        stats: "normal",
         devtool: 'source-map',
         optimization: {
             minimize: !isDev,
