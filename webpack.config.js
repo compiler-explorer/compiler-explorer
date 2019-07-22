@@ -33,7 +33,6 @@ const assetEntries = glob.sync(`${assetPath}/**/*.*`).reduce((obj, p) => {
 
 let plugins = [
     new MonacoEditorWebpackPlugin({
-        output: vsPath,
         languages: ['cpp', 'go', 'rust', 'swift']
     }),
     new CopyWebpackPlugin([
