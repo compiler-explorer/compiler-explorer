@@ -101,8 +101,7 @@ module.exports = [
                 //is this safe?
                 goldenlayout: path.resolve(__dirname, 'node_modules/golden-layout/'),
                 lzstring: path.resolve(__dirname, 'node_modules/lz-string/'),
-                filesaver: path.resolve(__dirname, 'node_modules/file-saver/'),
-                vs: path.resolve(__dirname, 'node_modules/monaco-editor/min/vs')
+                filesaver: path.resolve(__dirname, 'node_modules/file-saver/')
             }
         },
         stats: "verbose",
