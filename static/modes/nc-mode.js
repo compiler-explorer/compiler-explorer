@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 'use strict';
 var $ = require('jquery');
+var monaco = require('monaco-editor');
 var cpp = require('monaco-editor/esm/vs/basic-languages/cpp/cpp');
 
 // We need to ensure we use proper keywords for the Monaco Editor matcher. Note how

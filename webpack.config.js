@@ -108,7 +108,6 @@ module.exports = [
         optimization: {
             minimize: !isDev,
             minimizer: [new UglifyJsPlugin({
-                exclude: /\/vs/,
                 parallel: true,
                 uglifyOptions: {
                     output: {
