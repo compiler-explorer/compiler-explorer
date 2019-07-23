@@ -1001,7 +1001,7 @@ Compiler.prototype.initToolButton = function (togglePannerAdder, button, toolId)
 
 Compiler.prototype.initToolButtons = function (togglePannerAdder) {
     this.toolsMenu = this.domRoot.find('.toolsmenu');
-    this.toolsMenu.html("");
+    this.toolsMenu.empty();
 
     if (!this.compiler) return;
 
