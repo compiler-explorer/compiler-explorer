@@ -1012,12 +1012,18 @@ Compiler.prototype.initToolButtons = function (togglePannerAdder) {
         btn.append("<span class='dropdown-icon fas fa-cog' />" + title);
         this.toolsMenu.append(btn);
 
-        this.initToolButton(togglePannerAdder, btn, toolName);
+        if (toolName !== "none") {
+            this.initToolButton(togglePannerAdder, btn, toolName);
+        }
     }, this);
 
-    _.each(this.compiler.tools, function (tool) {
-        addTool(tool.tool.id, tool.tool.name);
-    });
+    if (_.isEmpty(this.compiler.tools)) {
+        addTool("none", "No tools available");
+    } else {
+        _.each(this.compiler.tools, function (tool) {
+            addTool(tool.tool.id, tool.tool.name);
+        });
+    }
 };
 
 Compiler.prototype.enableToolButtons = function () {
@@ -1261,7 +1267,11 @@ Compiler.prototype.updateCompilerInfo = function () {
 };
 
 Compiler.prototype.updateCompilerUI = function () {
-    this.initToolButtons();
+    var panerDropdown = this.domRoot.find('.pane-dropdown');
+    var togglePannerAdder = function () {
+        panerDropdown.dropdown('toggle');
+    };
+    this.initToolButtons(togglePannerAdder);
     this.updateButtons();
     this.updateCompilerInfo();
     // Resize in case the new compiler name is too big
