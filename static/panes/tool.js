@@ -307,12 +307,10 @@ Tool.prototype.onCompileResult = function (id, compiler, result) {
                 _.each((toolResult.stdout || []).concat(toolResult.stderr || []), function (obj) {
                     this.add(this.normalAnsiToHtml.toHtml(obj.text), obj.tag ? obj.tag.line : obj.line);
                 }, this);
-
-                this.toolName = toolResult.name;
-                //this.add(this.toolName + " returned: " + toolResult.code);
-
-                this.updateCompilerName();
             }
+
+            this.toolName = toolResult.name;
+            this.updateCompilerName();
 
             if (toolResult.sourcechanged) {
                 this.eventHub.emit('newSource', this.editorId, toolResult.newsource);
