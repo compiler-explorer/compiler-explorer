@@ -1001,6 +1001,9 @@ Compiler.prototype.initToolButton = function (togglePannerAdder, button, toolId)
 
 Compiler.prototype.initToolButtons = function (togglePannerAdder) {
     this.toolsMenu = this.domRoot.find('.toolsmenu');
+    this.toolsMenu.html("");
+
+    if (!this.compiler) return;
 
     var addTool = _.bind(function (toolName, title) {
         var btn = $("<button class='dropdown-item btn btn-light btn-sm'>");
@@ -1258,6 +1261,7 @@ Compiler.prototype.updateCompilerInfo = function () {
 };
 
 Compiler.prototype.updateCompilerUI = function () {
+    this.initToolButtons();
     this.updateButtons();
     this.updateCompilerInfo();
     // Resize in case the new compiler name is too big
