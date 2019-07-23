@@ -2,6 +2,9 @@ sudo: false
 
 language: node_js
 
+git:
+    depth: false # Get all depth so our git-based version/change tracking of policies works
+
 node_js:
     - "10"
 
