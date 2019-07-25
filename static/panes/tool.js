@@ -85,13 +85,7 @@ function Tool(hub, container, state) {
     this.options.on('change', _.bind(this.onOptionsChange, this));
 
     this.initArgs(state);
-
-    this.container.on('resize', this.resize, this);
-    this.container.on('shown', this.resize, this);
-    this.container.on('destroy', this.close, this);
-
-    this.eventHub.on('compileResult', this.onCompileResult, this);
-    this.eventHub.on('compilerClose', this.onCompilerClose, this);
+    this.initCallbacks();
 
     this.onOptionsChange();
     this.updateCompilerName();
@@ -103,11 +97,16 @@ function Tool(hub, container, state) {
     });
 
     this.eventHub.emit('toolOpened', this.compilerId, this.currentState());
-
-    this.initCallbacks();
 }
 
 Tool.prototype.initCallbacks = function () {
+    this.container.on('resize', this.resize, this);
+    this.container.on('shown', this.resize, this);
+    this.container.on('destroy', this.close, this);
+
+    this.eventHub.on('compileResult', this.onCompileResult, this);
+    this.eventHub.on('compilerClose', this.onCompilerClose, this);
+
     this.toggleArgs.on('click', _.bind(function () {
         this.togglePanel(this.toggleArgs, this.panelArgs);
     }, this));
@@ -242,7 +241,9 @@ Tool.prototype.currentState = function () {
         wrap: options.wrap,
         toolId: this.toolId,
         args: this.getInputArgs(),
-        stdin: this.getInputStdin()
+        stdin: this.getInputStdin(),
+        stdinPanelShown: !this.panelStdin.hasClass('d-none'),
+        argsPanelShow: !this.panelArgs.hasClass('d-none')
     };
     this.fontScale.addState(state);
     return state;
@@ -310,7 +311,11 @@ Tool.prototype.onCompileResult = function (id, compiler, result) {
                 this.setEditorContent(_.pluck(toolResult.stdout, 'text').join('\n'));
             } else {
                 _.each((toolResult.stdout || []).concat(toolResult.stderr || []), function (obj) {
-                    this.add(this.normalAnsiToHtml.toHtml(obj.text), obj.tag ? obj.tag.line : obj.line);
+                    if (obj.text === "") {
+                        this.add('<br/>');
+                    } else {
+                        this.add(this.normalAnsiToHtml.toHtml(obj.text), obj.tag ? obj.tag.line : obj.line);
+                    }
                 }, this);
             }
 
