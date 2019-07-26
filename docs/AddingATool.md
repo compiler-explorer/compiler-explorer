@@ -13,6 +13,7 @@ tools.rewritecpp.type=independent
 tools.rewritecpp.exclude=
 tools.rewritecpp.class=base-tool
 tools.rewritecpp.stdinHint=disabled
+tools.rewritecpp.languageId=cppp
 ```
 
 The `name` and `exe` are what they say they are, this is the display name for within CE and the tool executable that will be used.
@@ -30,6 +31,8 @@ Should you want to deviate from the standard behaviour of `base-tool`, which run
 you should add a new class that extends from `base-tool`.
 
 The `stdinHint` is there to show the user a hint as to what the stdin field is used for in the tool. To disable stdin you can use _disabled_ here.
+
+The `languageId` can be used to highlight the output of the tool according to a language known within CE. For example `cppp` will highlight c++ output. Leaving `languageId` empty will use the terminal-like output.
 
 # compilationInfo
 
