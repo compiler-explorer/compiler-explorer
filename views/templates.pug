@@ -139,16 +139,7 @@
         button.btn.btn-light.btn-sm.dropdown-toggle.add-tool(type="button" title="Add tool" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Add tooling to this editor and compiler")
           span.fas.fa-cogs
           span.hideable &nbsp;Add tool...
-        .dropdown-menu.dropdown-menu-right
-          button.dropdown-item.btn.btn-light.btn-sm.view-clangtidytool(title="Clang-tidy")
-            span.dropdown-icon.fas.fa-cog
-            | Clang-tidy
-          button.dropdown-item.btn.btn-light.btn-sm.view-llvmmcatool(title="LLVM MCA")
-            span.dropdown-icon.fas.fa-cog
-            | LLVM MCA
-          button.dropdown-item.btn.btn-light.btn-sm.view-pahole(title="Pahole")
-            span.dropdown-icon.fas.fa-cog
-            | Pahole
+        .dropdown-menu.dropdown-menu-right.toolsmenu
     .monaco-placeholder
     .bottom-bar.bg-light
       if !embedded
@@ -201,7 +192,7 @@
     .top-bar.btn-toolbar.bg-light.panel-args.d-none(role="toolbar")
       input.execution-arguments.form-control(type="text" placeholder="Execution arguments..." size="256" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false")
     .top-bar.btn-toolbar.bg-light.panel-stdin.d-none(role="toolbar")
-      textarea.execution-stdin.form-control(placeholder="Execution stdin..." cols="1024" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" aria-multiline="false" style="resize: none")
+      textarea.execution-stdin.form-control(placeholder="Execution stdin..." cols="1024" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" aria-multiline="false" style="resize: vertical")
     pre.content
       .execution-status
       .compiler-output
@@ -230,8 +221,18 @@
             button.btn.btn-light.btn-sm.wrap-lines(type="button" title="Wrap lines" data-bind="wrap" aria-pressed="false" aria-label="Wrap lines")
               span Wrap lines
             input.d-none(type="checkbox" checked=false)
-          input.options.form-control(type="text" placeholder="Tool options..." size="256" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false")
+        button.btn.btn-light.btn-sm.toggle-args
+          span.fas.fa-terminal
+          span.hideable &nbsp;Arguments
+        button.btn.btn-light.btn-sm.toggle-stdin
+          span.fas.fa-sign-in-alt
+          span.hideable &nbsp;Stdin
+    .top-bar.btn-toolbar.bg-light.panel-args.d-none(role="toolbar")
+      input.options.form-control(type="text" placeholder="Tool arguments..." size="256" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false")
+    .top-bar.btn-toolbar.bg-light.panel-stdin.d-none(role="toolbar")
+      textarea.tool-stdin.form-control(placeholder="Tool stdin..." cols="1024" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" aria-multiline="false" style="resize: vertical")
     pre.content
+    .monaco-placeholder
 
   #diff
     .top-bar.btn-toolbar.bg-light(role="toolbar")
