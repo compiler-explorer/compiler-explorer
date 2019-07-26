@@ -993,6 +993,7 @@ Compiler.prototype.initToolButton = function (togglePannerAdder, button, toolId)
         ._dragListener.on('dragStart', togglePannerAdder);
 
     button.click(_.bind(function () {
+        button.prop("disabled", true);
         var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
             this.container.layoutManager.root.contentItems[0];
         insertPoint.addChild(createToolView);
