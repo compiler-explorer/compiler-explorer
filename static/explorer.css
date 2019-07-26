@@ -468,11 +468,3 @@ kbd {
 .linked-compiler-output-line {
     cursor: pointer;
 }
-
-textarea.tool-stdin {
-    resize: vertical !important;
-}
-
-textarea.execution-stdin {
-    resize: vertical !important;
-}

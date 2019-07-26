@@ -618,6 +618,12 @@ Executor.prototype.initCallbacks = function () {
     }, this));
 
     this.eventHub.on('initialised', this.undefer, this);
+
+    if (MutationObserver !== undefined) {
+        new MutationObserver(_.bind(this.resize, this)).observe(this.execStdinField[0], {
+            attributes: true, attributeFilter: ["style"]
+        });
+    }
 };
 
 Executor.prototype.onOptionsChange = function (options) {

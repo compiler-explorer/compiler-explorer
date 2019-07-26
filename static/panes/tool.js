@@ -114,6 +114,12 @@ Tool.prototype.initCallbacks = function () {
     this.toggleStdin.on('click', _.bind(function () {
         this.togglePanel(this.toggleStdin, this.panelStdin);
     }, this));
+
+    if (MutationObserver !== undefined) {
+        new MutationObserver(_.bind(this.resize, this)).observe(this.stdinField[0], {
+            attributes: true, attributeFilter: ["style"]
+        });
+    }
 };
 
 Tool.prototype.initArgs = function (state) {
