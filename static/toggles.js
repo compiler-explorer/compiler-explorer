@@ -32,6 +32,7 @@ function Togglesv2(root, state) {
     EventEmitter.call(this);
     var buttons = root.find('.button-checkbox');
     var self = this;
+    this.buttons = buttons;
     this.state = _.extend({}, state);
     // Based on https://bootsnipp.com/snippets/featured/jquery-checkbox-buttons
     buttons.each(function () {
@@ -103,6 +104,17 @@ Togglesv2.prototype.set = function (key, value) {
     this._change(function () {
         this.state[key] = value;
     }.bind(this));
+};
+
+Togglesv2.prototype.enableToggle = function (key, enable) {
+    this.buttons.each(function () {
+        var widget = $(this);
+        var button = $(widget.find('button'));
+        var bind = button.data('bind');
+        if (bind === key) {
+            button.prop("disabled", !enable);
+        }
+    });
 };
 
 Togglesv2.prototype._change = function (update) {
