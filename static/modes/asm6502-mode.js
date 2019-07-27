@@ -24,6 +24,8 @@
 
 "use strict";
 
+var monaco = require('monaco-editor');
+
 function definition() {
     return {
         tokenizer: {
@@ -38,7 +40,7 @@ function definition() {
             opcode: [
                 [/[a-zA-Z]+$/, { token: 'keyword', next: '@root' }],
                 [/[a-zA-Z]+\s*/, { token: 'keyword', next: '@arguments' }],
-                [/;.*$/, { token: 'comment', next: '@root' }],
+                [/;.*$/, { token: 'comment', next: '@root' }]
             ],
 
             arguments: [
@@ -53,9 +55,9 @@ function definition() {
                 [/#[0-9]+/, { token: 'number', next: '@root' }],
                 [/[a-zA-Z_][a-zA-Z_0-9]*/, { token: 'type.identifier', next: '@root' }],
                 [/[0-9]+/, { token: 'number', next: '@root' }],
-                [/;.*$/, { token: 'comment', next: '@root' }],
+                [/;.*$/, { token: 'comment', next: '@root' }]
             ]
-        },
+        }
     };
 }
 
