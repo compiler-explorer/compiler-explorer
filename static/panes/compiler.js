@@ -40,6 +40,7 @@ var local = require('../local');
 var Sentry = require('@sentry/browser');
 var Libraries = require('../libs-widget');
 require('../modes/asm-mode');
+require('../modes/asm6502-mode');
 require('../modes/ptx-mode');
 
 require('selectize');
