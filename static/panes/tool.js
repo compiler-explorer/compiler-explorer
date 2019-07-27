@@ -31,6 +31,7 @@ var AnsiToHtml = require('../ansi-to-html');
 var Toggles = require('../toggles');
 var ga = require('../analytics');
 var monaco = require('monaco-editor');
+require('../modes/asm6502-mode');
 
 function makeAnsiToHtml(color) {
     return new AnsiToHtml({
@@ -97,6 +98,7 @@ function Tool(hub, container, state) {
     });
 
     this.eventHub.emit('toolOpened', this.compilerId, this.currentState());
+    this.eventHub.emit('requestSettings');
 }
 
 Tool.prototype.initCallbacks = function () {
@@ -106,6 +108,7 @@ Tool.prototype.initCallbacks = function () {
 
     this.eventHub.on('compileResult', this.onCompileResult, this);
     this.eventHub.on('compilerClose', this.onCompilerClose, this);
+    this.eventHub.on('settingsChange', this.onSettingsChange, this);
 
     this.toggleArgs.on('click', _.bind(function () {
         this.togglePanel(this.toggleArgs, this.panelArgs);
@@ -120,6 +123,16 @@ Tool.prototype.initCallbacks = function () {
             attributes: true, attributeFilter: ["style"]
         });
     }
+};
+
+Tool.prototype.onSettingsChange = function (newSettings) {
+    this.outputEditor.updateOptions({
+        contextmenu: newSettings.useCustomContextMenu,
+        minimap: {
+            enabled: newSettings.showMinimap
+        },
+        fontFamily: newSettings.editorsFFont
+    });
 };
 
 Tool.prototype.initArgs = function (state) {
