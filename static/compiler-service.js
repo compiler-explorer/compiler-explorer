@@ -64,7 +64,7 @@ CompilerService.prototype.processFromLangAndCompiler = function (languageId, com
                 compilerId = this.getDefaultCompilerForLang(langId);
             }
 
-            foundCompiler = this.findCompiler(langId, compilerId)
+            foundCompiler = this.findCompiler(langId, compilerId);
             if (!foundCompiler) {
                 var compilers = this.getCompilersForLang(langId);
                 foundCompiler = compilers[_.first(_.keys(compilers))];
