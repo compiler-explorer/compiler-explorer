@@ -4,20 +4,20 @@ const path = require('path'),
     MiniCssExtractPlugin = require('mini-css-extract-plugin'),
     ManifestPlugin = require('webpack-manifest-plugin'),
     glob = require("glob"),
-    UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+    UglifyJsPlugin = require('uglifyjs-webpack-plugin'),
+    MonacoEditorWebpackPlugin = require('monaco-editor-webpack-plugin');
 
-const isDev = process.env.NODE_ENV  === "DEV";
+const isDev = process.env.NODE_ENV === "DEV";
 
 const outputPathRelative = 'dist/';
 const staticRelative = 'static/';
 const staticPath = path.resolve(__dirname, staticRelative);
 const distPath = path.join(staticPath, outputPathRelative);
-const vsPath = path.join(staticPath, 'vs/');
 const assetPath = path.join(staticPath, "assets");
 const manifestPath = 'manifest.json';  //if you change this, you also need to update it in the app.js
-const outputname = isDev ? 'main.js' : 'bundle.[hash].js';
-const cssName = isDev ? '[name].css' :  "[name].[contenthash].css";
-const publicPath = isDev ? '/dist/' :  'dist/';
+const outputName = isDev ? 'main.js' : 'bundle.[hash].js';
+const cssName = isDev ? '[name].css' : "[name].[contenthash].css";
+const publicPath = isDev ? '/dist/' : 'dist/';
 const manifestPlugin = new ManifestPlugin({
     fileName: manifestPath,
     publicPath: './'
@@ -31,25 +31,25 @@ const assetEntries = glob.sync(`${assetPath}/**/*.*`).reduce((obj, p) => {
 }, {});
 
 let plugins = [
-    new CopyWebpackPlugin([{
-        from: 'node_modules/monaco-editor/min/vs',
-        to: vsPath,
-    },
-    {
-        from: path.join(staticPath, "favicon.ico"),
-        to: distPath,
-    },
-    {
-        from: 'node_modules/es6-shim/es6-shim.min.js',
-        to: distPath,
-    },
+    new MonacoEditorWebpackPlugin({
+        languages: ['cpp', 'go', 'rust', 'swift']
+    }),
+    new CopyWebpackPlugin([
+        {
+            from: path.join(staticPath, "favicon.ico"),
+            to: distPath
+        },
+        {
+            from: 'node_modules/es6-shim/es6-shim.min.js',
+            to: distPath
+        }
     ]),
     new webpack.ProvidePlugin({
         $: 'jquery',
         jQuery: 'jquery'
     }),
     new MiniCssExtractPlugin({
-        filename: cssName,
+        filename: cssName
 
     }),
     manifestPlugin
@@ -65,7 +65,7 @@ module.exports = [
         entry: assetEntries,
         output: {
             path: path.join(distPath, 'assets'),
-            filename: '.[name].ignoreme',
+            filename: '.[name].ignoreme'
         },
         module: {
             rules: [
@@ -74,13 +74,13 @@ module.exports = [
                     use: [{
                         loader: 'file-loader',
                         options: {
-                             name: '[name].[hash].[ext]'
+                            name: '[name].[hash].[ext]'
                         }
                     }]
-                },
-            ],
+                }
+            ]
         },
-        plugins:[
+        plugins: [
             manifestPlugin
         ]
     },
@@ -89,7 +89,7 @@ module.exports = [
         mode: isDev ? 'development' : 'production',
         entry: './static/main.js',
         output: {
-            filename: outputname,
+            filename: outputName,
             path: distPath,
             publicPath: publicPath
         },
@@ -97,13 +97,12 @@ module.exports = [
             modules: ['./static', "./node_modules"],
             alias: {
                 //is this safe?
-                goldenlayout:  path.resolve(__dirname, 'node_modules/golden-layout/'),
-                lzstring:  path.resolve(__dirname, 'node_modules/lz-string/'),
-                filesaver:  path.resolve(__dirname, 'node_modules/file-saver/'),
-                vs: path.resolve(__dirname, 'node_modules/monaco-editor/min/vs')
+                goldenlayout: path.resolve(__dirname, 'node_modules/golden-layout/'),
+                lzstring: path.resolve(__dirname, 'node_modules/lz-string/'),
+                filesaver: path.resolve(__dirname, 'node_modules/file-saver/')
             }
         },
-        stats: "errors-only",
+        stats: "normal",
         devtool: 'source-map',
         optimization: {
             minimize: !isDev,
@@ -149,8 +148,9 @@ module.exports = [
                         minimize: !isDev
                     }
                 }
-            ]},
-            plugins: plugins
+            ]
         },
+        plugins: plugins
+    }
 
-    ];
+];

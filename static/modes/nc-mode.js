@@ -23,7 +23,8 @@
 // POSSIBILITY OF SUCH DAMAGE.
 'use strict';
 var $ = require('jquery');
-var cpp = require('vs/basic-languages/cpp/cpp');
+var monaco = require('monaco-editor');
+var cpp = require('monaco-editor/esm/vs/basic-languages/cpp/cpp');
 
 // We need to ensure we use proper keywords for the Monaco Editor matcher. Note how
 // https://github.com/Microsoft/monaco-languages/ lacks, as far as I can tell, proper C support. We cheat and use C++

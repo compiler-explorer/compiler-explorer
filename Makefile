@@ -69,9 +69,7 @@ dist: export WEBPACK_ARGS=-p
 dist: prereqs  ## Creates a distribution
 	rm -rf out/dist/
 	mkdir -p out/dist
-	mkdir -p out/dist/vs
 	cp -r static/dist/ out/dist/
-	cp -r static/vs/ out/dist/
 	cp -r static/policies/ out/dist/
 	echo ${HASH} > out/dist/git_hash
 

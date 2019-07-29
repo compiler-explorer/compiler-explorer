@@ -33,7 +33,7 @@ var Promise = require('es6-promise').Promise;
 var Components = require('../components');
 var LruCache = require('lru-cache');
 var options = require('../options');
-var monaco = require('../monaco');
+var monaco = require('monaco-editor');
 var Alert = require('../alert');
 var bigInt = require('big-integer');
 var local = require('../local');
@@ -98,6 +98,7 @@ function Compiler(hub, container, state) {
     this.alertSystem.prefixMessage = "Compiler #" + this.id + ": ";
 
     this.linkedFadeTimeoutId = -1;
+    this.toolsMenu = null;
 
     this.initButtons(state);
 
@@ -393,7 +394,8 @@ Compiler.prototype.findTools = function (content, tools) {
             (content.componentState.compiler === this.id)) {
             tools.push({
                 id: content.componentState.toolId,
-                args: content.componentState.args
+                args: content.componentState.args,
+                stdin: content.componentState.stdin
             });
         }
     } else if (content.content) {
@@ -412,7 +414,8 @@ Compiler.prototype.getActiveTools = function (newToolSettings) {
     if (newToolSettings) {
         tools.push({
             id: newToolSettings.toolId,
-            args: newToolSettings.args
+            args: newToolSettings.args,
+            stdin: newToolSettings.stdin
         });
     }
 
@@ -691,13 +694,15 @@ Compiler.prototype.onEditorChange = function (editor, source, langId, compilerId
 Compiler.prototype.onToolOpened = function (compilerId, toolSettings) {
     if (this.id === compilerId) {
         var toolId = toolSettings.toolId;
-        if (toolId === "clangtidytrunk") {
-            this.clangtidyToolButton.prop('disabled', true);
-        } else if (toolId === "llvm-mcatrunk") {
-            this.llvmmcaToolButton.prop('disabled', true);
-        } else if (toolId === "pahole") {
-            this.paholeToolButton.prop('disabled', true);
-        }
+
+        var buttons = this.toolsMenu.find('button');
+        $(buttons).each(_.bind(function (idx, button) {
+            var toolButton = $(button);
+            var toolName = toolButton.data('toolname');
+            if (toolId === toolName) {
+                toolButton.prop('disabled', true);
+            }
+        }, this));
 
         this.compile(false, toolSettings);
     }
@@ -706,13 +711,15 @@ Compiler.prototype.onToolOpened = function (compilerId, toolSettings) {
 Compiler.prototype.onToolClosed = function (compilerId, toolSettings) {
     if (this.id === compilerId) {
         var toolId = toolSettings.toolId;
-        if (toolId === "clangtidytrunk") {
-            this.clangtidyToolButton.prop('disabled', !this.supportsTool(toolId));
-        } else if (toolId === "llvm-mcatrunk") {
-            this.llvmmcaToolButton.prop('disabled', !this.supportsTool(toolId));
-        } else if (toolId === "pahole") {
-            this.paholeToolButton.prop('disabled', !this.supportsTool(toolId));
-        }
+
+        var buttons = this.toolsMenu.find('button');
+        $(buttons).each(_.bind(function (idx, button) {
+            var toolButton = $(button);
+            var toolName = toolButton.data('toolname');
+            if (toolId === toolName) {
+                toolButton.prop('disabled', !this.supportsTool(toolId));
+            }
+        }, this));
     }
 };
 
@@ -954,6 +961,7 @@ Compiler.prototype.initToolButton = function (togglePannerAdder, button, toolId)
         ._dragListener.on('dragStart', togglePannerAdder);
 
     button.click(_.bind(function () {
+        button.prop("disabled", true);
         var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
             this.container.layoutManager.root.contentItems[0];
         insertPoint.addChild(createToolView);
@@ -961,13 +969,43 @@ Compiler.prototype.initToolButton = function (togglePannerAdder, button, toolId)
 };
 
 Compiler.prototype.initToolButtons = function (togglePannerAdder) {
-    this.clangtidyToolButton = this.domRoot.find('.view-clangtidytool');
-    this.llvmmcaToolButton = this.domRoot.find('.view-llvmmcatool');
-    this.paholeToolButton = this.domRoot.find('.view-pahole');
+    this.toolsMenu = this.domRoot.find('.toolsmenu');
+    this.toolsMenu.empty();
 
-    this.initToolButton(togglePannerAdder, this.clangtidyToolButton, "clangtidytrunk");
-    this.initToolButton(togglePannerAdder, this.llvmmcaToolButton, "llvm-mcatrunk");
-    this.initToolButton(togglePannerAdder, this.paholeToolButton, "pahole");
+    if (!this.compiler) return;
+
+    var addTool = _.bind(function (toolName, title) {
+        var btn = $("<button class='dropdown-item btn btn-light btn-sm'>");
+        btn.addClass('.view-' + toolName);
+        btn.data('toolname', toolName);
+        btn.append("<span class='dropdown-icon fas fa-cog' />" + title);
+        this.toolsMenu.append(btn);
+
+        if (toolName !== "none") {
+            this.initToolButton(togglePannerAdder, btn, toolName);
+        }
+    }, this);
+
+    if (_.isEmpty(this.compiler.tools)) {
+        addTool("none", "No tools available");
+    } else {
+        _.each(this.compiler.tools, function (tool) {
+            addTool(tool.tool.id, tool.tool.name);
+        });
+    }
+};
+
+Compiler.prototype.enableToolButtons = function () {
+    var activeTools = this.getActiveTools();
+
+    var buttons = this.toolsMenu.find('button');
+    $(buttons).each(_.bind(function (idx, button) {
+        var toolButton = $(button);
+        var toolName = toolButton.data('toolname');
+        toolButton.prop('disabled',
+            !(this.supportsTool(toolName)
+            && !this.isToolActive(activeTools, toolName)));
+    }, this));
 };
 
 Compiler.prototype.updateButtons = function () {
@@ -1012,13 +1050,7 @@ Compiler.prototype.updateButtons = function () {
     this.cfgButton.prop('disabled', !this.compiler.supportsCfg);
     this.gccDumpButton.prop('disabled', !this.compiler.supportsGccDump);
 
-    var activeTools = this.getActiveTools();
-    this.clangtidyToolButton.prop('disabled',
-        !(this.supportsTool("clangtidytrunk") && !this.isToolActive(activeTools, "clangtidytrunk")));
-    this.llvmmcaToolButton.prop('disabled',
-        !(this.supportsTool("llvm-mcatrunk") && !this.isToolActive(activeTools, "llvm-mcatrunk")));
-    this.paholeToolButton.prop('disabled',
-        !(this.supportsTool("pahole") && !this.isToolActive(activeTools, "pahole")));
+    this.enableToolButtons();
 };
 
 Compiler.prototype.handlePopularArgumentsResult = function (result) {
@@ -1204,6 +1236,11 @@ Compiler.prototype.updateCompilerInfo = function () {
 };
 
 Compiler.prototype.updateCompilerUI = function () {
+    var panerDropdown = this.domRoot.find('.pane-dropdown');
+    var togglePannerAdder = function () {
+        panerDropdown.dropdown('toggle');
+    };
+    this.initToolButtons(togglePannerAdder);
     this.updateButtons();
     this.updateCompilerInfo();
     // Resize in case the new compiler name is too big
