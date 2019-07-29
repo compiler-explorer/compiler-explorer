@@ -1,9 +1,0 @@
-// this must come before the monaco loader because otherwise the es6-shim script
-// detects the monaco loader's AMD module stuff and doesn't actually execute
-script
-  | if (window.navigator.userAgent.indexOf("Trident/") > 0) {
-  |   var s = document.createElement("script");
-  |   s.src = "#{httpRootDir}dist/es6-shim.min.js";
-  |   document.head.appendChild(s);
-  | }
-script(src=httpRootDir + "vs/loader.js")

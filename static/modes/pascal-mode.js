@@ -22,8 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 'use strict';
-
-var monaco = require('../monaco');
+var monaco = require('monaco-editor');
 
 function definition() {
     // Object-Pascal language definition

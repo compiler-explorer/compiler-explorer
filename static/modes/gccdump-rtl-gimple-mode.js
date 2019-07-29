@@ -28,7 +28,7 @@
 // this is mostly based on 'mylang' example from https://microsoft.github.io/monaco-editor/monarch.html
 
 "use strict";
-var monaco = require('../monaco');
+var monaco = require('monaco-editor');
 
 function definition() {
     return {

@@ -23,7 +23,8 @@
 // POSSIBILITY OF SUCH DAMAGE.
 'use strict';
 var $ = require('jquery');
-var cpp = require('vs/basic-languages/cpp/cpp');
+var monaco = require('monaco-editor');
+var cpp = require('monaco-editor/esm/vs/basic-languages/cpp/cpp');
 
 // We need to create a new definition for cpp so we can remove invalid keywords
 
