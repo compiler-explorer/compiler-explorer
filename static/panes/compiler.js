@@ -129,7 +129,7 @@ function Compiler(hub, container, state) {
         labelField: 'name',
         searchField: ['name'],
         optgroupField: 'group',
-        optgroups: this.compilerService.getGroupsInUse(),
+        optgroups: this.compilerService.getGroupsInUse(this.currentLangId),
         lockOptgroupOrder: true,
         options: _.map(this.getCurrentLangCompilers(), _.identity),
         items: this.compiler ? [this.compiler.id] : [],
@@ -1694,7 +1694,7 @@ Compiler.prototype.getCurrentLangCompilers = function () {
 Compiler.prototype.updateCompilersSelector = function (info) {
     this.compilerSelectizer.clearOptions(true);
     this.compilerSelectizer.clearOptionGroups();
-    _.each(this.compilerService.getGroupsInUse(), function (group) {
+    _.each(this.compilerService.getGroupsInUse(this.currentLangId), function (group) {
         this.compilerSelectizer.addOptionGroup(group.value, {label: group.label});
     }, this);
     this.compilerSelectizer.load(_.bind(function (callback) {
