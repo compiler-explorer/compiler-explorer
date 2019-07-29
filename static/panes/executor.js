@@ -31,7 +31,6 @@ var FontScale = require('../fontscale');
 var options = require('../options');
 var Alert = require('../alert');
 var local = require('../local');
-var Sentry = require('@sentry/browser');
 var Libraries = require('../libs-widget');
 var AnsiToHtml = require('../ansi-to-html');
 require('../modes/asm-mode');
@@ -61,8 +60,7 @@ function Executor(hub, container, state) {
     this.domRoot.html($('#executor').html());
     this.sourceEditorId = state.source || 1;
     this.settings = JSON.parse(local.get('settings', '{}'));
-    this.initLang(state);
-    this.initCompiler(state);
+    this.initLangAndCompiler(state);
     this.infoByLang = {};
     this.deferCompiles = hub.deferred;
     this.needsCompile = false;
@@ -94,7 +92,7 @@ function Executor(hub, container, state) {
         labelField: 'name',
         searchField: ['name'],
         optgroupField: 'group',
-        optgroups: this.getGroupsInUse(),
+        optgroups: this.compilerService.getGroupsInUse(this.currentLangId),
         lockOptgroupOrder: true,
         options: _.map(this.getCurrentLangCompilers(), _.identity),
         items: this.compiler ? [this.compiler.id] : [],
@@ -112,11 +110,9 @@ function Executor(hub, container, state) {
         }
     }, this));
 
-    this.compilerSelecrizer = this.compilerPicker[0].selectize;
+    this.compilerSelectizer = this.compilerPicker[0].selectize;
 
     this.initLibraries(state);
-
-
     this.initCallbacks();
     // Handle initial settings
     this.onSettingsChange(this.settings);
@@ -129,17 +125,12 @@ function Executor(hub, container, state) {
     });
 }
 
-Executor.prototype.getGroupsInUse = function () {
-    return _.chain(this.getCurrentLangCompilers())
-        .map()
-        .uniq(false, function (compiler) {
-            return compiler.group;
-        })
-        .map(function (compiler) {
-            return {value: compiler.group, label: compiler.groupName || compiler.group};
-        })
-        .sortBy('label')
-        .value();
+Executor.prototype.initLangAndCompiler = function (state) {
+    var langId = state.lang;
+    var compilerId = state.compiler;
+    var result = this.compilerService.processFromLangAndCompiler(langId, compilerId);
+    this.compiler = result.compiler;
+    this.currentLangId = result.langId;
 };
 
 Executor.prototype.close = function () {
@@ -182,32 +173,6 @@ Executor.prototype.resize = function () {
     var bottomBarHeight = this.bottomBar.outerHeight(true);
     this.outputContentRoot.outerHeight(this.domRoot.height() - topBarHeight - bottomBarHeight);
 
-};
-
-Executor.prototype.initLang = function (state) {
-    // If we don't have a language, but a compiler, find the corresponding language.
-    this.currentLangId = state.lang;
-    if (!this.currentLangId && state.compiler) {
-        this.currentLangId = this.langOfCompiler(state.compiler);
-    }
-    if (!this.currentLangId && languages[this.settings.defaultLanguage]) {
-        this.currentLangId = languages[this.settings.defaultLanguage].id;
-    }
-    if (!this.currentLangId) {
-        this.currentLangId = _.keys(languages)[0];
-    }
-};
-
-Executor.prototype.initCompiler = function (state) {
-    this.originalCompilerId = state.compiler;
-    if (state.compiler)
-        this.compiler = this.findCompiler(this.currentLangId, state.compiler);
-    else
-        this.compiler = this.findCompiler(this.currentLangId, options.defaultCompiler[this.currentLangId]);
-    if (!this.compiler) {
-        var compilers = this.compilerService.compilersByLang[this.currentLangId];
-        if (compilers) this.compiler = _.values(compilers)[0];
-    }
 };
 
 function errorResult(message) {
@@ -388,7 +353,6 @@ Executor.prototype.onCompileResponse = function (request, result, cached) {
                 .appendTo(this.executionOutputSection);
         }
     }
-
 
     this.handleCompilationStatus({code: 1, didExecute: result.didExecute});
     var timeLabelText = '';
@@ -805,9 +769,10 @@ Executor.prototype.onLanguageChange = function (editorId, newLangId) {
             execStdin: this.executionStdin
         };
         this.libsWidget.setNewLangId(newLangId);
-        this.updateCompilersSelector();
+        var info = this.infoByLang[this.currentLangId] || {};
+        this.initLangAndCompiler({lang: newLangId, compiler: info.compiler});
+        this.updateCompilersSelector(info);
         this.updateCompilerUI();
-        //this.sendCompiler();
         this.saveState();
     }
 };
@@ -816,51 +781,22 @@ Executor.prototype.getCurrentLangCompilers = function () {
     return this.compilerService.getCompilersForLang(this.currentLangId);
 };
 
-Executor.prototype.updateCompilersSelector = function () {
-    this.compilerSelecrizer.clearOptions(true);
-    this.compilerSelecrizer.clearOptionGroups();
-    _.each(this.getGroupsInUse(), function (group) {
-        this.compilerSelecrizer.addOptionGroup(group.value, {label: group.label});
+Executor.prototype.updateCompilersSelector = function (info) {
+    this.compilerSelectizer.clearOptions(true);
+    this.compilerSelectizer.clearOptionGroups();
+    _.each(this.compilerService.getGroupsInUse(), function (group) {
+        this.compilerSelectizer.addOptionGroup(group.value, {label: group.label});
     }, this);
-    this.compilerSelecrizer.load(_.bind(function (callback) {
+    this.compilerSelectizer.load(_.bind(function (callback) {
         callback(_.map(this.getCurrentLangCompilers(), _.identity));
     }, this));
-    var defaultOrFirst = _.bind(function () {
-        // If the default is a valid compiler, return it
-        var defaultCompiler = options.defaultCompiler[this.currentLangId];
-        if (defaultCompiler) return defaultCompiler;
-        // Else try to find the first one for this language
-        var value = _.find(options.compilers, _.bind(function (compiler) {
-            return compiler.lang === this.currentLangId;
-        }, this));
-
-        // Return the first, or an empty string if none found (Should prob report this one...)
-        return value && value.id ? value.id : "";
-    }, this);
-    var info = this.infoByLang[this.currentLangId] || {};
-    this.compiler = this.findCompiler(this.currentLangId, info.compiler || defaultOrFirst());
-    this.compilerSelecrizer.setValue([this.compiler ? this.compiler.id : null], true);
+    this.compilerSelectizer.setValue([this.compiler ? this.compiler.id : null], true);
     this.options = info.options || '';
     this.optionsField.val(this.options);
     this.executionArguments = info.execArgs || '';
     this.execArgsField.val(this.executionArguments);
     this.executionStdin = info.execStdin || '';
     this.execStdinField.val(this.executionStdin);
-};
-
-Executor.prototype.findCompiler = function (langId, compilerId) {
-    return this.compilerService.findCompiler(langId, compilerId);
-};
-
-Executor.prototype.langOfCompiler = function (compilerId) {
-    var compiler = _.find(options.compilers, function (compiler) {
-        return compiler.id === compilerId || compiler.alias === compilerId;
-    });
-    if (!compiler) {
-        Sentry.captureMessage('Unable to find compiler id "' + compilerId + '"');
-        compiler = options.compilers[0];
-    }
-    return compiler.lang;
 };
 
 module.exports = {
