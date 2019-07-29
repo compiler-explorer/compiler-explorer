@@ -60,45 +60,42 @@ CompilerService.prototype.processFromLangAndCompiler = function (languageId, com
     var foundCompiler = null;
     try {
         if (langId) {
-            var compilers = this.getCompilersForLang(langId);
             if (!compilerId) {
                 compilerId = this.getDefaultCompilerForLang(langId);
             }
-            var firstCompiler = null;
-            // We make sure we can find it (We might have been given a bad compiler)
-            foundCompiler = _.find(compilers, function (compiler) {
-                if (!firstCompiler) {
-                    firstCompiler = compiler;
-                }
-                return compiler.id === compilerId || compiler.alias === compilerId;
-            });
+
+            foundCompiler = this.findCompiler(langId, compilerId)
             if (!foundCompiler) {
-                foundCompiler = firstCompiler;
+                var compilers = this.getCompilersForLang(langId);
+                foundCompiler = compilers[_.first(_.keys(compilers))];
             }
         } else if (compilerId) {
-            var languages = options.languages;
-            _.any(languages, function (lang) {
-                var compilers = this.getCompilersForLang(lang.id);
-                var compiler = _.find(compilers, function (comp) {
-                    return comp.id === compilerId || comp.alias === compilerId;
-                });
+            var matchingCompilers =_.map(options.languages, function (lang) {
+                var compiler = this.findCompiler(lang.id, compilerId);
                 if (compiler) {
-                    foundCompiler = compiler;
-                    langId = lang.id;
+                    return {
+                        langId: lang.id,
+                        compiler: compiler
+                    };
                 }
-                return compiler != null;
+                return null;
             }, this);
+
+            var match = _.find(matchingCompilers, function (match) {
+                return (match !== null);
+            });
+
+            return match;
         } else {
-            var firstLang = _.values(options.languages)[0];
+            var firstLang = _.first(_.values(options.languages));
             if (firstLang) {
-                var result = this.processFromLangAndCompiler(firstLang.id, compilerId);
-                langId = result.langId;
-                foundCompiler = result.compiler;
+                return this.processFromLangAndCompiler(firstLang.id, compilerId);
             }
         }
     } catch (e) {
         Sentry.captureException(e);
     }
+
     return {
         langId: langId,
         compiler: foundCompiler
@@ -122,15 +119,19 @@ CompilerService.prototype.getCompilersForLang = function (langId) {
     return this.compilersByLang[langId] || {};
 };
 
-CompilerService.prototype.findCompiler = function (langId, compilerId) {
-    if (!compilerId) return null;
-    var compilers = this.getCompilersForLang(langId);
+CompilerService.prototype.findCompilerInList = function (compilers, compilerId) {
     if (compilers && compilers[compilerId]) {
         return compilers[compilerId];
     }
     return _.find(compilers, function (compiler) {
         return compiler.alias === compilerId;
     });
+};
+
+CompilerService.prototype.findCompiler = function (langId, compilerId) {
+    if (!compilerId) return null;
+    var compilers = this.getCompilersForLang(langId);
+    return this.findCompilerInList(compilers, compilerId);
 };
 
 function handleRequestError(request, reject, xhr, textStatus, errorThrown) {
