@@ -784,7 +784,7 @@ Executor.prototype.getCurrentLangCompilers = function () {
 Executor.prototype.updateCompilersSelector = function (info) {
     this.compilerSelectizer.clearOptions(true);
     this.compilerSelectizer.clearOptionGroups();
-    _.each(this.compilerService.getGroupsInUse(), function (group) {
+    _.each(this.compilerService.getGroupsInUse(this.currentLangId), function (group) {
         this.compilerSelectizer.addOptionGroup(group.value, {label: group.label});
     }, this);
     this.compilerSelectizer.load(_.bind(function (callback) {
