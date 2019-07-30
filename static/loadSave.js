@@ -55,7 +55,6 @@ function LoadSave() {
     }
 
     this.fetchBuiltins();
-    this.initializeIfNeeded();
 }
 
 LoadSave.prototype.initializeIfNeeded = function () {
