@@ -108,6 +108,7 @@ module.exports = [
             minimize: !isDev,
             minimizer: [new UglifyJsPlugin({
                 parallel: true,
+                sourceMap: true,
                 uglifyOptions: {
                     output: {
                         comments: false,
