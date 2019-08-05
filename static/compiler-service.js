@@ -174,8 +174,8 @@ function handleRequestError(request, reject, xhr, textStatus, errorThrown) {
 }
 
 CompilerService.prototype.submit = function (request) {
-    var jsonRequest = JSON.stringify(request);
     request.allowStoreCodeDebug = this.allowStoreCodeDebug;
+    var jsonRequest = JSON.stringify(request);
     if (options.doCache) {
         var cachedResult = this.cache.get(jsonRequest);
         if (cachedResult) {
