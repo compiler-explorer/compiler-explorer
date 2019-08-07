@@ -30,8 +30,9 @@ var LruCache = require('lru-cache');
 var options = require('./options');
 var Promise = require('es6-promise').Promise;
 
-function CompilerService() {
+function CompilerService(eventHub) {
     this.base = window.httpRoot;
+    this.allowStoreCodeDebug = true;
     if (!this.base.endsWith('/')) {
         this.base += '/';
     }
@@ -48,6 +49,10 @@ function CompilerService() {
         if (compiler.alias) {
             this.compilersByLang[compiler.lang][compiler.alias] = compiler;
         }
+    }, this);
+    // settingsChange is triggered on page load
+    eventHub.on('settingsChange', function (newSettings) {
+        this.allowStoreCodeDebug = newSettings.allowStoreCodeDebug;
     }, this);
 }
 
@@ -169,6 +174,7 @@ function handleRequestError(request, reject, xhr, textStatus, errorThrown) {
 }
 
 CompilerService.prototype.submit = function (request) {
+    request.allowStoreCodeDebug = this.allowStoreCodeDebug;
     var jsonRequest = JSON.stringify(request);
     if (options.doCache) {
         var cachedResult = this.cache.get(jsonRequest);

@@ -39,7 +39,10 @@ No need to update this! It's done by the CLI build process
     window along with your chosen compiler and options to the Compiler Explorer servers. There, the source code is
     written to disk and your chosen compiler is invoked on it. If your request was to have your code executed, the
     resulting executable is run. The outputs from compilation and execution are processed and sent back to your web
-    browser, where they're shown. Once this process completed, your source code is deleted from disk.
+    browser, where they're shown. Shortly after this process completes, your source code is deleted from disk. If, in
+    processing your query, an issue with Compiler Explorer is found, your code may be kept for up to a week in order to
+    help debug and diagnose the problem. Only the Compiler Explorer team will have access to your code, and only for the
+    purposes of debugging the site: we will never share your code with anyone.
 </p>
 
 <p>
@@ -59,7 +62,8 @@ No need to update this! It's done by the CLI build process
 
 <p>
     In short: your source code is stored in plaintext for the minimum time feasible to be able to process your request.
-    After that, it is discarded and is inaccessible.
+    After that, it is discarded and is inaccessible. In very rare cases your code may be kept for a little longer (at
+    most a week) to help debug issues in Compiler Explorer.
 </p>
 
 <h4>Short links</h4>
