@@ -1583,11 +1583,20 @@ Compiler.prototype.onAsmToolTip = function (ed) {
     if (!word || !word.word) return;
     var opcode = word.word.toUpperCase();
 
+    function newGitHubIssueUrl() {
+        return 'https://github.com/mattgodbolt/compiler-explorer/issues/new?title=' +
+            encodeURIComponent("[BUG] Problem with " + opcode + " opcode");
+    }
+
     function appendInfo(url) {
         return '<br><br>For more information, visit <a href="' + url +
             '" target="_blank" rel="noopener noreferrer">the ' + opcode +
             ' documentation <sup><small class="fas fa-external-link-alt opens-new-window"' +
-            ' title="Opens in a new window"></small></sup></a>.';
+            ' title="Opens in a new window"></small></sup></a>.' +
+            '<br>If the documentation for this opcode is wrong or broken in some way, ' +
+            'please feel free to <a href="' + newGitHubIssueUrl() + '" target="_blank" rel="noopener noreferrer">' +
+            'open an issue on GitHub <sup><small class="fas fa-external-link-alt opens-new-window" ' +
+            'title="Opens in a new window"></small></sup></a>.';
     }
 
     getAsmInfo(word.word).then(_.bind(function (asmHelp) {
