@@ -58,8 +58,9 @@ function definition() {
         "generic", "in", "initonly", "interface", "interior_ptr", "internal", "literal", "partial", "pascal",
         "pin_ptr", "property", "ref", "restrict", "safe_cast", "sealed", "title_static", "where"]);
 
-    addKeywords(["alignas", "alignof", "and", "and_eq", "asm", "bitand", "bitor", "char16_t", "char32_t", "compl",
-        "not", "not_eq", "or", "or_eq", "xor", "xor_eq"]);
+    addKeywords(["alignas", "alignof", "and", "and_eq", "asm", "bitand", "bitor", "char8_t", "char16_t",
+        "char32_t", "compl", "concept", "consteval", "co_await", "co_return", "co_yield", "not", "not_eq", "or",
+        "or_eq", "requires", "xor", "xor_eq"]);
 
     // #880, patch annotations to handle [ [ something ] ]
     function patchAnnotation(root) {
