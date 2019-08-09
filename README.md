@@ -26,6 +26,12 @@ You can support [this project on Patreon](https://patreon.com/mattgodbolt).
  pane and `watch gcc -S foo.cc -o -` running in the other.
 Since then, it has become a public website serving around 140,000 compilations per day.
 
+##### FAQ
+
+There is now a FAQ section [in the repository wiki](https://github.com/mattgodbolt/compiler-explorer/wiki/FAQ).
+ If your question is not present, please contact us as described below so we can help you.
+ If you find that the FAQ is lacking some important point, please free to contribute to it and/or ask us to clarify it.
+
 ##### Contact us
 
 For general discussion, please join the
@@ -63,7 +69,8 @@ Some languages need extra tools to demangle them, e.g. `rust`, `d`, or `haskell`
  Such tools are kept separately in the
  [tools repo](https://github.com/mattgodbolt/compiler-explorer-tools).
 
-The config system leaves a lot to be desired. Work has been done on porting
+The config system leaves a lot to be desired.
+ [Work has been done](https://github.com/rabsrincon/ccs-js) on porting
  [CCS](https://github.com/hellige/ccs-cpp) to Javascript and then something
  more rational can be used.
 
