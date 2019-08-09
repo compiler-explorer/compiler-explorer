@@ -83,11 +83,7 @@ function Executor(hub, container, state) {
     this.fontScale = new FontScale(this.domRoot, state, 'pre.content');
 
     this.compilerPicker.selectize({
-        sortField: [
-            {field: '$order'},
-            {field: '$score'},
-            {field: 'name'}
-        ],
+        sortField: this.compilerService.getSelectizerOrder(),
         valueField: 'id',
         labelField: 'name',
         searchField: ['name'],
@@ -639,7 +635,6 @@ Executor.prototype.onCompilerChange = function (value) {
     this.saveState();
     this.compile();
     this.updateCompilerUI();
-    //this.sendCompiler();
 };
 
 Executor.prototype.onEditorClose = function (editor) {

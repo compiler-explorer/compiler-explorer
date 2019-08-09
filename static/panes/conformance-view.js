@@ -131,26 +131,13 @@ Conformance.prototype.setTitle = function (compilerCount) {
     ));
 };
 
-Conformance.prototype.getGroupsInUse = function () {
-    return _.chain(this.compilerService.getCompilersForLang(this.langId))
-        .map()
-        .uniq(false, function (compiler) {
-            return compiler.group;
-        })
-        .map(function (compiler) {
-            return {value: compiler.group, label: compiler.groupName || compiler.group};
-        })
-        .sortBy('label')
-        .value();
-};
-
 Conformance.prototype.addCompilerSelector = function (config) {
     if (!config) {
         config = {
             // Compiler id which is being used
             compilerId: "",
             // Options which are in use
-            options: ""
+            options: options.compileOptions[this.langId]
         };
     }
 
@@ -175,41 +162,32 @@ Conformance.prototype.addCompilerSelector = function (config) {
 
     var status = newEntry.find('.status-icon');
     var prependOptions = newEntry.find('.prepend-options');
-    var langId = this.langId;
-    var isVisible = function (compiler) {
-        return compiler.lang === langId;
-    };
-
     var popCompilerButton = newEntry.find('.extract-compiler');
 
     var onCompilerChange = _.bind(function (compilerId) {
         popCompilerButton.toggleClass('d-none', !compilerId);
         // Hide the results icon when a new compiler is selected
         this.handleStatusIcon(status, {code: 0});
-        var compiler = this.compilerService.findCompiler(langId, compilerId);
+        var compiler = this.compilerService.findCompiler(this.langId, compilerId);
         if (compiler) this.setCompilationOptionsPopover(prependOptions, compiler.options);
     }, this);
 
-    var compilerPicker = newEntry.find('.compiler-picker')
-        .selectize({
-            sortField: [
-                {field: '$order'},
-                {field: '$score'},
-                {field: 'name'}
-            ],
-            valueField: 'id',
-            labelField: 'name',
-            searchField: ['name'],
-            optgroupField: 'group',
-            optgroups: this.getGroupsInUse(),
-            options: _.filter(options.compilers, isVisible),
-            items: config.compilerId ? [config.compilerId] : [],
-            dropdownParent: 'body'
-        })
-        .on('change', _.bind(function (e) {
-            onCompilerChange($(e.target).val());
-            this.compileChild(newEntry);
-        }, this));
+    var compilerPicker = newEntry.find('.compiler-picker').selectize({
+        sortField: this.compilerService.getSelectizerOrder(),
+        valueField: 'id',
+        labelField: 'name',
+        searchField: ['name'],
+        optgroupField: 'group',
+        optgroups: this.compilerService.getGroupsInUse(this.langId),
+        lockOptgroupOrder: true,
+        options: _.map(this.getCurrentLangCompilers(), _.identity),
+        items: config.compilerId ? [config.compilerId] : [],
+        dropdownParent: 'body',
+        closeAfterSelect: true
+    }).on('change', _.bind(function (e) {
+        onCompilerChange($(e.target).val());
+        this.compileChild(newEntry);
+    }, this));
     onCompilerChange(config.compilerId);
 
 
@@ -231,12 +209,16 @@ Conformance.prototype.addCompilerSelector = function (config) {
     this.saveState();
 };
 
+Conformance.prototype.getCurrentLangCompilers = function () {
+    return this.compilerService.getCompilersForLang(this.langId);
+};
+
 Conformance.prototype.setCompilationOptionsPopover = function (element, content) {
     element.popover('dispose');
     element.popover({
         content: content || 'No options in use',
         template: '<div class="popover' +
-            (content ? ' compiler-options-popover' : '')  +
+            (content ? ' compiler-options-popover' : '') +
             '" role="tooltip"><div class="arrow"></div>' +
             '<h3 class="popover-header"></h3><div class="popover-body"></div></div>'
     });
@@ -317,7 +299,7 @@ Conformance.prototype.compileChild = function (child) {
                 version: item.versionId
             });
         });
-    
+
         // This error function ensures that the user will know we had a problem (As we don't save asm)
         this.compilerService.submit(request)
             .then(_.bind(function (x) {

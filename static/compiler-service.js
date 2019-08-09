@@ -259,4 +259,12 @@ CompilerService.prototype.expand = function (source) {
     });
 };
 
+CompilerService.prototype.getSelectizerOrder = function () {
+    return [
+        {field: '$order'},
+        {field: '$score'},
+        {field: 'name'}
+    ];
+};
+
 module.exports = CompilerService;
