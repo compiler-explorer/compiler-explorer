@@ -45,14 +45,21 @@ const libProps = {
     'libs.fakelib.url': 'https://godbolt.org',
     'libs.fakelib.versions.onePath.version': 'one path',
     'libs.fakelib.versions.onePath.path': '/dev/null',
+    'libs.fakelib.versions.onePath.libpath': '/lib/null',
+    'libs.fakelib.versions.onePath.liblink': 'hello',
     'libs.fakelib.versions.twoPaths.version': 'two paths',
     'libs.fakelib.versions.twoPaths.path': '/dev/null:/dev/urandom',
+    'libs.fakelib.versions.twoPaths.libpath': '/lib/null:/lib/urandom',
+    'libs.fakelib.versions.twoPaths.liblink': 'hello1:hello2',
     'libs.fakelib.versions.noPaths.version': 'no paths',
     'libs.fakelib.versions.noPaths.path': ''
 };
 
 if (process.platform === "win32") {
-    libProps['libs.fakelib.versions.twoPaths.path'] = '/dev/null;/dev/urandom';
+    libProps['libs.fakelib.versions.twoPaths.path'] =
+        libProps['libs.fakelib.versions.twoPaths.path'].replace(':', ';');
+    libProps['libs.fakelib.versions.twoPaths.libpath'] = 
+        libProps['libs.fakelib.versions.twoPaths.libpath'].replace(':', ';');
 }
 
 const compilerProps = new properties.CompilerProps(languages, properties.fakeProps(libProps));
@@ -84,9 +91,13 @@ describe('Options handler', () => {
                 "name": "fake lib",
                 "url": "https://godbolt.org",
                 "versions": {
-                        "noPaths": {"path": [], "version": "no paths"},
-                        "onePath": {"path": ["/dev/null"], "version": "one path"},
-                        "twoPaths": {"path": ["/dev/null", "/dev/urandom"], "version": "two paths"}
+                        "noPaths": {"path": [], "version": "no paths", "liblink": [], "libpath": []},
+                        "onePath": {"path": ["/dev/null"], "version": "one path",
+                            "liblink": ["hello"],
+                            "libpath": ["/lib/null"]},
+                        "twoPaths": {"path": ["/dev/null", "/dev/urandom"],
+                            "liblink": ["hello1", "hello2"],
+                            "libpath": ["/lib/null", "/lib/urandom"], "version": "two paths"}
                 }
             }
         }});
