@@ -40,7 +40,7 @@ For general discussion, please join the
 
 If you are interested in developing, or want to see the discussions between
  existing developers, feel free to join the [cpplang](https://cpplang.now.sh/)
- slack channel `#ce_implementation` or
+ slack channel `#compiler_explorer-development` or
  [the development mailing list](https://groups.google.com/forum/#!forum/compiler-explorer-development)
  
 Feel free to raise an issue on
