@@ -120,11 +120,7 @@ function Compiler(hub, container, state) {
     this.fontScale = new FontScale(this.domRoot, state, this.outputEditor);
 
     this.compilerPicker.selectize({
-        sortField: [
-            {field: '$order'},
-            {field: '$score'},
-            {field: 'name'}
-        ],
+        sortField: this.compilerService.getSelectizerOrder(),
         valueField: 'id',
         labelField: 'name',
         searchField: ['name'],
