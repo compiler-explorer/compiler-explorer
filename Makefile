@@ -23,7 +23,7 @@ node-installed: .node-bin
 	@$(eval NPM:=$(shell dirname $(shell cat .node-bin))/npm)
 	@$(eval PATH=$(shell dirname $(realpath $(NODE))):${PATH})
 
-debug: node-installed ## print out some useful variables
+info: node-installed ## print out some useful variables
 	@echo Using node from $(NODE)
 	@echo Using npm from $(NPM)
 	@echo PATH is $(PATH)
@@ -63,6 +63,9 @@ dev: export NODE_ENV=DEV
 dev: prereqs install-git-hooks ## Runs the site as a developer; including live reload support and installation of git hooks
 	$(NODE) ./node_modules/.bin/supervisor -w app.js,lib,etc/config -e 'js|node|properties' --exec $(NODE) $(NODE_ARGS) -- ./app.js $(EXTRA_ARGS)
 
+debug: export NODE_ENV=DEV
+debug: prereqs install-git-hooks ## Runs the site as a developer with full debugging; including live reload support and installation of git hooks
+	$(NODE) ./node_modules/.bin/supervisor -w app.js,lib,etc/config -e 'js|node|properties' --exec $(NODE) $(NODE_ARGS) -- ./app.js --debug $(EXTRA_ARGS)
 
 HASH := $(shell git rev-parse HEAD)
 dist: export WEBPACK_ARGS=-p
