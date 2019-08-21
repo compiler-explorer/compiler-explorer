@@ -145,3 +145,23 @@ describe('Properties', () => {
         compilerProps.propsByLangId[languages.a.id] = undefined;
     });
 });
+
+describe('Properties blob parsing', () => {
+    it('Normal properties', () => {
+        const props = properties.parseProperties(
+            "hello = test \n" +
+            "etc=123\n" +
+            "mybool=false\n");
+        props.hello.should.equal("test");
+        props.etc.should.equal(123);
+        props.mybool.should.equal(false);
+    });
+
+    it('Escaped values', () => {
+        const props = properties.parseProperties(
+            "myflag=-L${space}\n" +
+            "mypath=${exePath}../lib64\n");
+        props.myflag.should.equal("-L ");
+        props.mypath.should.equal("${exePath}../lib64");
+    });
+});
