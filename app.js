@@ -588,10 +588,22 @@ aws.initConfig(awsProps)
                         });
                 }
 
+                const getExtraOptions = function (req) {
+                    const options = {};
+                    if (req.query.hideEditorToolbars === "true") {
+                        options.hideEditorToolbars = true;
+                    }
+                    if (req.query.readOnly === "true") {
+                        options.readOnly = true;
+                    }
+                    return options;
+                };
+
                 const embeddedHandler = function (req, res) {
                     staticHeaders(res);
                     contentPolicyHeader(res);
-                    res.render('embed', renderConfig({embedded: true}));
+                    const options = _.extend({embedded: true}, getExtraOptions(req));
+                    res.render('embed', renderConfig(options));
                 };
                 if (isDevMode()) {
                     router.use(webpackDevMiddleware(webpackCompiler, {
@@ -636,7 +648,8 @@ aws.initConfig(awsProps)
                     .get('/', (req, res) => {
                         staticHeaders(res);
                         contentPolicyHeader(res);
-                        res.render('index', renderConfig({embedded: false}));
+                        const options = _.extend({embedded: false}, getExtraOptions(req));
+                        res.render('index', renderConfig(options));
                     })
                     .get('/e', embeddedHandler)
                     // legacy. not a 301 to prevent any redirect loops between old e links and embed.html
@@ -644,7 +657,8 @@ aws.initConfig(awsProps)
                     .get('/embed-ro', (req, res) => {
                         staticHeaders(res);
                         contentPolicyHeader(res);
-                        res.render('embed', renderConfig({embedded: true, readOnly: true}));
+                        const options = _.extend({embedded: true, readOnly: true}, getExtraOptions(req));
+                        res.render('embed', renderConfig(options));
                     })
                     .get('/robots.txt', (req, res) => {
                         staticHeaders(res);
