@@ -229,7 +229,7 @@ function getEmbeddedUrl(config, root, readOnly, extraOptions) {
     var path = "";
     var parameters = "";
 
-    _.forEach(extraOptions, (value, key) => {
+    _.forEach(extraOptions, function (value, key) {
         if (parameters === "") {
             parameters = "?";
         } else {
@@ -249,7 +249,8 @@ function getEmbeddedUrl(config, root, readOnly, extraOptions) {
 }
 
 function getEmbeddedHtml(config, root, isReadOnly, extraOptions) {
-    return '<iframe width="800px" height="200px" src="' + getEmbeddedUrl(config, root, isReadOnly, extraOptions) + '"></iframe>';
+    return '<iframe width="800px" height="200px" src="' +
+        getEmbeddedUrl(config, root, isReadOnly, extraOptions) + '"></iframe>';
 }
 
 function getShortLink(config, root, done) {
@@ -296,7 +297,7 @@ function getLinks(config, currentBind, done) {
             return;
         case 'Embed (hide Tb)':
             var options = {
-                "hideEditorToolbars": true
+                hideEditorToolbars: true
             };
             done(null, getEmbeddedHtml(config, root, false, options), false);
             return;
