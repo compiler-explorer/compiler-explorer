@@ -224,14 +224,32 @@ function initShareButton(getLink, layout, noteNewState) {
     }
 }
 
-function getEmbeddedUrl(config, root, readOnly) {
+function getEmbeddedUrl(config, root, readOnly, extraOptions) {
     var location = window.location.origin + root;
-    var path = readOnly ? 'embed-ro#' : 'e#';
+    var path = "";
+    var parameters = "";
+
+    _.forEach(extraOptions, (value, key) => {
+        if (parameters === "") {
+            parameters = "?";
+        } else {
+            parameters += "&";
+        }
+
+        parameters += key + "=" + value;
+    });
+
+    if (readOnly) {
+        path = 'embed-ro' + parameters + '#';
+    } else {
+        path = 'e' + parameters + '#';
+    }
+
     return location + path + url.serialiseState(config);
 }
 
-function getEmbeddedHtml(config, root, isReadOnly) {
-    return '<iframe width="800px" height="200px" src="' + getEmbeddedUrl(config, root, isReadOnly) + '"></iframe>';
+function getEmbeddedHtml(config, root, isReadOnly, extraOptions) {
+    return '<iframe width="800px" height="200px" src="' + getEmbeddedUrl(config, root, isReadOnly, extraOptions) + '"></iframe>';
 }
 
 function getShortLink(config, root, done) {
@@ -275,6 +293,12 @@ function getLinks(config, currentBind, done) {
         // fallthrough
         case 'Embed (RO)':
             done(null, getEmbeddedHtml(config, root, readOnly), false);
+            return;
+        case 'Embed (hide Tb)':
+            var options = {
+                "hideEditorToolbars": true
+            };
+            done(null, getEmbeddedHtml(config, root, false, options), false);
             return;
         default:
             // Hmmm
