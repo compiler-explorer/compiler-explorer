@@ -277,6 +277,8 @@ function start() {
 
     var root = $("#root");
 
+    var hideEditorToolbar = config.hideEditorToolbar;
+
     var layout;
     var hub;
     try {
@@ -381,6 +383,11 @@ function start() {
         }
         $('#version-tree').prop('href', versionLink);
     }
+
+    if (options.embedded && hideEditorToolbar === "true") {
+        $('[name="editor-btn-toolbar"]').addClass("d-none");
+    }
+
     sizeRoot();
     lastState = JSON.stringify(layout.toConfig());
 }
