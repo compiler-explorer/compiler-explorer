@@ -138,7 +138,7 @@ function initShareButton(getLink, layout, noteNewState) {
         var socialSharingElements = popoverElement.find('.socialsharing');
         var root = $('.urls-container:visible');
         var label = root.find('.current');
-        var permalink = $(".permalink:visible");
+        var permalink = $(".permalink");
         var urls = {};
         if (!currentNode) currentNode = $(root.find('.sources button')[0]);
         if (!currentBind) currentBind = currentNode.data().bind;
@@ -176,7 +176,15 @@ function initShareButton(getLink, layout, noteNewState) {
             if (!currentBind) return;
             permalink.prop('disabled', false);
             var config = layout.toConfig();
-            if (!urls[currentBind]) {
+            var cacheLinkId = currentBind;
+            if (cacheLinkId === "Embed" && $("#shareembedlink input:checked").length > 0) {
+                cacheLinkId += "|" + $("#shareembedlink input:checked").map(function() {
+                    return $(this).prop("class");
+                  })
+                  .get()
+                  .join();
+            }
+            if (!urls[cacheLinkId]) {
                 label.text(currentNode.text());
                 permalink.val('');
                 getLinks(config, currentBind, function (error, newUrl, extra, updateState) {
@@ -184,16 +192,16 @@ function initShareButton(getLink, layout, noteNewState) {
                         permalink.prop('disabled', true);
                         permalink.val(error || 'Error providing URL');
                     } else {
-                        urls[currentBind] = {
+                        urls[cacheLinkId] = {
                             updateState: updateState,
                             extra: extra,
                             url: newUrl
                         };
-                        onUpdate(socialSharing, config, currentBind, urls[currentBind]);
+                        onUpdate(socialSharing, config, currentBind, urls[cacheLinkId]);
                     }
                 });
             } else {
-                onUpdate(socialSharing, config, currentBind, urls[currentBind]);
+                onUpdate(socialSharing, config, currentBind, urls[cacheLinkId]);
             }
         }
 
@@ -201,6 +209,12 @@ function initShareButton(getLink, layout, noteNewState) {
             setCurrent($(this));
             update();
         });
+
+        $(document).find('#embedsettings input').on('click', function() {
+            setCurrent(root.find('.sources [data-bind="Embed"]'));
+            update();
+        });
+
         update();
     }).prop('title', title);
 
@@ -281,7 +295,6 @@ function getShortLink(config, root, done) {
 function getLinks(config, currentBind, done) {
     var root = window.httpRoot;
     if (!root.endsWith("/")) root += "/";
-    var readOnly = true;
     switch (currentBind) {
         case 'Short':
             getShortLink(config, root, done);
@@ -289,19 +302,15 @@ function getLinks(config, currentBind, done) {
         case 'Full':
             done(null, window.location.origin + root + '#' + url.serialiseState(config), false);
             return;
-        case 'Embed':
-            readOnly = false;
-        // fallthrough
-        case 'Embed (RO)':
-            done(null, getEmbeddedHtml(config, root, readOnly), false);
-            return;
-        case 'Embed (hide Tb)':
-            var options = {
-                hideEditorToolbars: true
-            };
-            done(null, getEmbeddedHtml(config, root, false, options), false);
-            return;
         default:
+            if (currentBind.substr(0, 5) === "Embed") {
+                var options = {};
+                $("#shareembedlink input:checked").each(function() {
+                    options[$(this).prop("class")] = true;
+                  });
+                done(null, getEmbeddedHtml(config, root, false, options), false);
+                return;
+            }
             // Hmmm
             done('Unknown link type', null);
     }

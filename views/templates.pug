@@ -14,12 +14,8 @@
                         | Short
                   button.dropdown-item.btn.btn-light.btn-sm(data-bind="Full")
                     | Full
-                  button.dropdown-item.btn.btn-light.btn-sm(data-bind="Embed")
+                  button.dropdown-item.btn.btn-light.btn-sm(data-bind="Embed" href="javascript:;" data-target="#shareembedlink" data-toggle="modal")
                     | Embed
-                  button.dropdown-item.btn.btn-light.btn-sm(data-bind="Embed (RO)")
-                    | Embed (read only)
-                  button.dropdown-item.btn.btn-light.btn-sm(data-bind="Embed (hide Tb)")
-                    | Embed (hidden toolbars)
               input.form-control.input-sm.permalink(type="text" placeholder="Loading" readonly size="1024" style="font-size: 10px")
               .input-group-append
                 button.input-group-btn.btn.btn-outline-secondary.btn-sm.clippy(type="button" data-clipboard-target=".popover .permalink" title="Copy to clipboard")
