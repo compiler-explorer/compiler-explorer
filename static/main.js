@@ -234,11 +234,19 @@ function start() {
 
     var options = require('options');
 
-    var subdomainPart = window.location.hostname.split('.')[0];
-    var langBySubdomain = _.find(options.languages, function (lang) {
-        return lang.id === subdomainPart || lang.alias.indexOf(subdomainPart) >= 0;
-    });
-    var subLangId = langBySubdomain ? langBySubdomain.id : undefined;
+    var hostnameParts = window.location.hostname.split('.');
+    var subLangId = options.languages["c++"].id;
+    if (hostnameParts.length > 0) {
+        var subdomainPart = hostnameParts[0];
+        var langBySubdomain = _.find(options.languages, function (lang) {
+            return lang.id === subdomainPart || _.any(lang.alias, function (alias) {
+                return alias.indexOf(subdomainPart) >= 0;
+            });
+        });
+        if (langBySubdomain) {
+            subLangId = langBySubdomain.id;
+        }
+    }
 
     // Cookie domains are matched as a RE against the window location. This allows a flexible
     // way that works across multiple domains (e.g. godbolt.org and compiler-explorer.com).

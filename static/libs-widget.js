@@ -69,8 +69,9 @@ LibsWidget.prototype.updateAvailableLibs = function () {
 
 LibsWidget.prototype.setNewLangId = function (langId) {
     this.currentLangId = langId;
+    // Clear the dom Root so it gets rebuilt with the new language libraries
+    this.domRoot = null;
     this.updateAvailableLibs();
-
 };
 
 LibsWidget.prototype.lazyDropdownLoad = function () {
@@ -144,6 +145,7 @@ LibsWidget.prototype.lazyDropdownLoad = function () {
 };
 
 LibsWidget.prototype.updateLibsDropdown = function () {
+    this.dropdownButton.popover('dispose');
     this.dropdownButton.popover({
         container: 'body',
         content: _.bind(this.lazyDropdownLoad, this),
