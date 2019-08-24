@@ -1,4 +1,4 @@
-// Copyright (c) 2018, Jared Wyles
+// Copyright (c) 2017, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,29 +22,16 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-"use strict";
+const chai = require('chai');
+    should = chai.should(),
+    assert = chai.assert,
+    LabelReconstructor = require('../lib/pe32-support').labelReconstructor,
+    logger = require('../lib/logger').logger;
 
-var Promise = require('es6-promise').Promise,
-    _loadPromise = null;
-
-// Returns promise that will be fulfilled when monaco is available
-var waitForMonaco = function () {
-    if (_loadPromise) {
-        return _loadPromise;
-    }
-
-    _loadPromise = new Promise(function (resolve) {
-        if (typeof(window.monaco) === 'object') {
-            resolve(window.monaco);
-            return window.monaco;
-        }
-
-        window.require.config({ baseUrl: window.httpRootDir });
-        window.require(['vs/editor/editor.main'], function () {
-            resolve(window.monaco);
-        });
+describe('Basic reconstructions', function () {
+    it('No lines', function () {
+        const lines = [];
+        const reconstructor = new LabelReconstructor(lines, false, false);
+        reconstructor.asmLines.length.should.equal(0);
     });
-    return _loadPromise;
-};
-
-module.exports = waitForMonaco;
+});

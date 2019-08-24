@@ -23,14 +23,16 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 "use strict";
+var Sentry = require('@sentry/browser');
 var $ = require('jquery');
 var _ = require('underscore');
 var LruCache = require('lru-cache');
-var options = require('options');
+var options = require('./options');
 var Promise = require('es6-promise').Promise;
 
-function CompilerService() {
+function CompilerService(eventHub) {
     this.base = window.httpRoot;
+    this.allowStoreCodeDebug = true;
     if (!this.base.endsWith('/')) {
         this.base += '/';
     }
@@ -48,15 +50,81 @@ function CompilerService() {
             this.compilersByLang[compiler.lang][compiler.alias] = compiler;
         }
     }, this);
+    // settingsChange is triggered on page load
+    eventHub.on('settingsChange', function (newSettings) {
+        this.allowStoreCodeDebug = newSettings.allowStoreCodeDebug;
+    }, this);
 }
+
+CompilerService.prototype.getDefaultCompilerForLang = function (langId) {
+    return options.defaultCompiler[langId];
+};
+
+CompilerService.prototype.processFromLangAndCompiler = function (languageId, compilerId) {
+    var langId = languageId;
+    var foundCompiler = null;
+    try {
+        if (langId) {
+            if (!compilerId) {
+                compilerId = this.getDefaultCompilerForLang(langId);
+            }
+
+            foundCompiler = this.findCompiler(langId, compilerId);
+            if (!foundCompiler) {
+                var compilers = this.getCompilersForLang(langId);
+                foundCompiler = compilers[_.first(_.keys(compilers))];
+            }
+        } else if (compilerId) {
+            var matchingCompilers =_.map(options.languages, function (lang) {
+                var compiler = this.findCompiler(lang.id, compilerId);
+                if (compiler) {
+                    return {
+                        langId: lang.id,
+                        compiler: compiler
+                    };
+                }
+                return null;
+            }, this);
+
+            var match = _.find(matchingCompilers, function (match) {
+                return (match !== null);
+            });
+
+            return match;
+        } else {
+            var firstLang = _.first(_.values(options.languages));
+            if (firstLang) {
+                return this.processFromLangAndCompiler(firstLang.id, compilerId);
+            }
+        }
+    } catch (e) {
+        Sentry.captureException(e);
+    }
+
+    return {
+        langId: langId,
+        compiler: foundCompiler
+    };
+};
+
+CompilerService.prototype.getGroupsInUse = function (langId) {
+    return _.chain(this.getCompilersForLang(langId))
+        .map()
+        .uniq(false, function (compiler) {
+            return compiler.group;
+        })
+        .map(function (compiler) {
+            return {value: compiler.group, label: compiler.groupName || compiler.group};
+        })
+        .sortBy('label')
+        .value();
+};
 
 CompilerService.prototype.getCompilersForLang = function (langId) {
     return this.compilersByLang[langId] || {};
 };
 
-CompilerService.prototype.findCompiler = function (langId, compilerId) {
-    if (!compilerId) return null;
-    var compilers = this.getCompilersForLang(langId);
+CompilerService.prototype.findCompilerInList = function (compilers, compilerId) {
     if (compilers && compilers[compilerId]) {
         return compilers[compilerId];
     }
@@ -65,7 +133,48 @@ CompilerService.prototype.findCompiler = function (langId, compilerId) {
     });
 };
 
+CompilerService.prototype.findCompiler = function (langId, compilerId) {
+    if (!compilerId) return null;
+    var compilers = this.getCompilersForLang(langId);
+    return this.findCompilerInList(compilers, compilerId);
+};
+
+function handleRequestError(request, reject, xhr, textStatus, errorThrown) {
+    var error = errorThrown;
+    if (!error) {
+        switch (textStatus) {
+            case "timeout":
+                error = "Request timed out";
+                break;
+            case "abort":
+                error = "Request was aborted";
+                break;
+            case "error":
+                switch (xhr.status) {
+                    case 500:
+                        error = "Request failed: internal server error";
+                        break;
+                    case 504:
+                        error = "Request failed: gateway timeout";
+                        break;
+                    default:
+                        error = "Request failed: HTTP error code " + xhr.status;
+                        break;
+                }
+                break;
+            default:
+                error = "Error sending request";
+                break;
+        }
+    }
+    reject({
+        request: request,
+        error: error
+    });
+}
+
 CompilerService.prototype.submit = function (request) {
+    request.allowStoreCodeDebug = this.allowStoreCodeDebug;
     var jsonRequest = JSON.stringify(request);
     if (options.doCache) {
         var cachedResult = this.cache.get(jsonRequest);
@@ -78,6 +187,7 @@ CompilerService.prototype.submit = function (request) {
         }
     }
     return new Promise(_.bind(function (resolve, reject) {
+        var bindHandler = _.partial(handleRequestError, request, reject);
         var compilerId = encodeURIComponent(request.compiler);
         $.ajax({
             type: 'POST',
@@ -95,45 +205,14 @@ CompilerService.prototype.submit = function (request) {
                     localCacheHit: false
                 });
             }, this),
-            error: function (xhr, textStatus, errorThrown) {
-                var error = errorThrown;
-                if (!error) {
-                    switch (textStatus) {
-                        case "timeout":
-                            error = "Request timed out";
-                            break;
-                        case "abort":
-                            error = "Request was aborted";
-                            break;
-                        case "error":
-                            switch (xhr.status) {
-                                case 500:
-                                    error = "Request failed: internal server error";
-                                    break;
-                                case 504:
-                                    error = "Request failed: gateway timeout";
-                                    break;
-                                default:
-                                    error = "Request failed: HTTP error code " + xhr.status;
-                                    break;
-                            }
-                            break;
-                        default:
-                            error = "Error sending request";
-                            break;
-                    }
-                }
-                reject({
-                    request: request,
-                    error: error
-                });
-            }
+            error: bindHandler
         });
     }, this));
 };
 
 CompilerService.prototype.requestPopularArguments = function (compilerId, options) {
     return new Promise(_.bind(function (resolve, reject) {
+        var bindHandler = _.partial(handleRequestError, compilerId, reject);
         $.ajax({
             type: 'POST',
             url: window.location.origin + this.base + 'api/popularArguments/' + compilerId,
@@ -149,39 +228,7 @@ CompilerService.prototype.requestPopularArguments = function (compilerId, option
                     localCacheHit: false
                 });
             }, this),
-            error: function (xhr, textStatus, errorThrown) {
-                var error = errorThrown;
-                if (!error) {
-                    switch (textStatus) {
-                        case "timeout":
-                            error = "Request timed out";
-                            break;
-                        case "abort":
-                            error = "Request was aborted";
-                            break;
-                        case "error":
-                            switch (xhr.status) {
-                                case 500:
-                                    error = "Request failed: internal server error";
-                                    break;
-                                case 504:
-                                    error = "Request failed: gateway timeout";
-                                    break;
-                                default:
-                                    error = "Request failed: HTTP error code " + xhr.status;
-                                    break;
-                            }
-                            break;
-                        default:
-                            error = "Error sending request";
-                            break;
-                    }
-                }
-                reject({
-                    request: compilerId,
-                    error: error
-                });
-            }
+            error: bindHandler
         });
     }, this));
 };
@@ -210,6 +257,14 @@ CompilerService.prototype.expand = function (source) {
     return Promise.all(promises).then(function () {
         return lines.join("\n");
     });
+};
+
+CompilerService.prototype.getSelectizerOrder = function () {
+    return [
+        {field: '$order'},
+        {field: '$score'},
+        {field: 'name'}
+    ];
 };
 
 module.exports = CompilerService;

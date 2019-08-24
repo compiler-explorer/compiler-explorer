@@ -33,6 +33,7 @@ const nopt = require('nopt'),
     props = require('./lib/properties'),
     child_process = require('child_process'),
     path = require('path'),
+    process = require('process'),
     fs = require('fs-extra'),
     systemdSocket = require('systemd-socket'),
     url = require('url'),
@@ -208,6 +209,40 @@ function getGoldenLayoutFromClientState(state) {
     return goldenifier.golden;
 }
 
+function measureEventLoopLag(delayMs) {
+    return new Promise((resolve) => {
+        const start = process.hrtime.bigint();
+        setTimeout(() => {
+            const elapsed = process.hrtime.bigint() - start;
+            const delta = elapsed - BigInt(delayMs * 1000000);
+            return resolve(Number(delta) / 1000000.0);
+        }, delayMs);
+    });
+}
+
+function setupEventLoopLagLogging() {
+    const lagIntervalMs = ceProps('eventLoopMeasureIntervalMs', 0);
+    const thresWarn = ceProps('eventLoopLagThresholdWarn', 0);
+    const thresErr = ceProps('eventLoopLagThresholdErr', 0);
+
+    async function eventLoopLagHandler() {
+        const lagMs = await measureEventLoopLag(lagIntervalMs);
+
+        if (thresErr && lagMs >= thresErr) {
+            logger.error(`Event Loop Lag: ${lagMs} ms`);
+        }
+        else if (thresWarn && lagMs >= thresWarn) {
+            logger.warn(`Event Loop Lag: ${lagMs} ms`);
+        }
+
+        setImmediate(eventLoopLagHandler);
+    }
+
+    if (lagIntervalMs > 0) {
+        setImmediate(eventLoopLagHandler);
+    }
+}
+
 const awsProps = props.propsFor("aws");
 
 aws.initConfig(awsProps)
@@ -351,12 +386,14 @@ aws.initConfig(awsProps)
                     router = express.Router(),
                     healthCheck = require('./lib/handlers/health-check');
 
+                const healthCheckFilePath = ceProps("healthCheckFilePath", false);
+
                 webServer
                     .set('trust proxy', true)
                     .set('view engine', 'pug')
                     .on('error', err => logger.error('Caught error in web handler; continuing:', err))
                     // Handle healthchecks at the root, as they're not expected from the outside world
-                    .use('/healthcheck', new healthCheck.HealthCheckHandler().handle)
+                    .use('/healthcheck', new healthCheck.HealthCheckHandler(healthCheckFilePath).handle)
                     .use(httpRootDir, router)
                     .use((req, res, next) => {
                         next({status: 404, message: `page "${req.path}" could not be found`});
@@ -379,8 +416,10 @@ aws.initConfig(awsProps)
                 if (gitReleaseName) logger.info(`  git release ${gitReleaseName}`);
 
                 function renderConfig(extra) {
+                    const extraJson = JSON.stringify(extra);
                     const options = _.extend(extra, clientOptionsHandler.get());
-                    options.compilerExplorerOptions = JSON.stringify(options);
+                    options.optionsHash = clientOptionsHandler.getHash();
+                    options.compilerExplorerOptions = extraJson;
                     options.extraBodyClass = extraBodyClass;
                     options.httpRoot = httpRoot;
                     options.httpRootDir = httpRootDir;
@@ -617,6 +656,12 @@ aws.initConfig(awsProps)
                         res.render('sitemap');
                     })
                     .use(sFavicon(path.join(defArgs.staticDir, webpackConfig.output.publicPath, 'favicon.ico')))
+                    .get('/client-options.js', (req, res) => {
+                        staticHeaders(res);
+                        res.set('Content-Type', 'application/javascript');
+                        const options = JSON.stringify(clientOptionsHandler.get());
+                        res.end(`window.compilerExplorerOptions = ${options};`);
+                    })
                     .use(bodyParser.json({limit: ceProps('bodyParserLimit', maxUploadSize)}))
                     .use(bodyParser.text({limit: ceProps('bodyParserLimit', maxUploadSize), type: () => true}))
                     .use('/source', sourceHandler.handle.bind(sourceHandler))
@@ -630,6 +675,7 @@ aws.initConfig(awsProps)
                 if (!defArgs.doCache) {
                     logger.info("  with disabled caching");
                 }
+                setupEventLoopLagLogging();
                 startListening(webServer);
             })
             .catch(err => {

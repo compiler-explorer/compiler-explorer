@@ -311,6 +311,8 @@ describe('Pascal ASM line number injection', function () {
     };
 
     const compiler = new PascalCompiler(info, ce);
+    compiler.demanglerClass = require("../lib/demangler-pascal").Demangler;
+    compiler.demangler = new compiler.demanglerClass(null, compiler);
 
     it('Should have line numbering', function () {
         return new Promise(function (resolve, reject) {

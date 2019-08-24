@@ -58,6 +58,9 @@ describe('API handling', () => {
         },
         handlePopularArguments: res => {
             res.end("ok");
+        },
+        handleOptimizationArguments: res => {
+            res.end("ok");
         }
     }, (key, def) => {
         switch (key) {

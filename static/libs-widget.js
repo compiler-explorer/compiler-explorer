@@ -186,11 +186,11 @@ LibsWidget.prototype.listUsedLibs = function () {
 
 LibsWidget.prototype.getLibsInUse = function () {
     var libs = [];
-    _.each(this.availableLibs[this.currentLangId], function (library) {
+    _.each(this.availableLibs[this.currentLangId], function (library, libId) {
         _.each(library.versions, function (version, ver) {
             if (library.versions[ver].used) {
-                // We trust the invariant of only 1 used version at any given time per lib
-                libs.push(library.versions[ver]);
+                var libVer = Object.assign({libId: libId, versionId: ver}, library.versions[ver]);
+                libs.push(libVer);
             }
         });
     });

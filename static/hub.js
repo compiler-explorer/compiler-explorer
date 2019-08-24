@@ -67,7 +67,7 @@ function Hub(layout, subLangId) {
     this.layout = layout;
     this.editorIds = new Ids();
     this.compilerIds = new Ids();
-    this.compilerService = new CompilerService();
+    this.compilerService = new CompilerService(layout.eventHub);
     this.deferred = true;
     this.deferredEmissions = [];
     this.lastOpenedLangId = null;

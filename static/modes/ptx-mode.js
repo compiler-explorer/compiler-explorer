@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 'use strict';
 var $ = require('jquery');
+var monaco = require('monaco-editor');
 var asm = require('./asm-mode');
 
 function definition() {

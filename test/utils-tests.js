@@ -177,6 +177,34 @@ describe('Pascal compiler output', () => {
     });
 });
 
+describe('Tool output', () => {
+    it('removes the relative path', () => {
+        utils.parseOutput('./example.cpp:1:1: Fatal: There were 1 errors compiling module, stopping', './example.cpp').should.deep.equals([
+            {
+                tag: {
+                    column: 1,
+                    line: 1,
+                    text: 'Fatal: There were 1 errors compiling module, stopping'
+                },
+                text: '<source>:1:1: Fatal: There were 1 errors compiling module, stopping'
+            }
+        ]);
+    });
+
+    it('removes the jailed path', () => {
+        utils.parseOutput('/home/ubuntu/example.cpp:1:1: Fatal: There were 1 errors compiling module, stopping', './example.cpp').should.deep.equals([
+            {
+                tag: {
+                    column: 1,
+                    line: 1,
+                    text: 'Fatal: There were 1 errors compiling module, stopping'
+                },
+                text: '<source>:1:1: Fatal: There were 1 errors compiling module, stopping'
+            }
+        ]);
+    });
+});
+
 describe('Pads right', () => {
     it('works', () => {
         utils.padRight('abcd', 8).should.equal('abcd    ');

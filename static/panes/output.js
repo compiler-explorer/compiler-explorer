@@ -118,7 +118,11 @@ Output.prototype.addOutputLines = function (result) {
     _.each((result.stdout || []).concat(result.stderr || []), function (obj) {
         var lineNumber = obj.tag ? obj.tag.line : obj.line;
         var columnNumber = obj.tag ? obj.tag.column : -1;
-        this.add(this.normalAnsiToHtml.toHtml(obj.text), lineNumber, columnNumber);
+        if (obj.text === "") {
+            this.add('<br/>');
+        } else {
+            this.add(this.normalAnsiToHtml.toHtml(obj.text), lineNumber, columnNumber);
+        }
     }, this);
 };
 

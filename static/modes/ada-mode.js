@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 'use strict';
 
-var monaco = require('../monaco');
+var monaco = require('monaco-editor');
 
 function definition() {
     // Ada 2012 Language Definition
@@ -122,7 +122,7 @@ function definition() {
             'Constraint_Error',
             'Program_Error',
             'Storage_Error',
-            'Tasking_Error',
+            'Tasking_Error'
         ],
 
         operators: [
