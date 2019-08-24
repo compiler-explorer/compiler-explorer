@@ -1,0 +1,6 @@
+<svg viewBox="0 0 165 50" xmlns="http://www.w3.org/2000/svg">
+  <g transform="translate(110,50)rotate(-35)" font-weight="bold" font-family="sans-serif" font-size="20">
+    <text textLength="65" lengthAdjust="spacingAndGlyphs">STAGING</text>
+    <text textLength="65" lengthAdjust="spacingAndGlyphs" fill="#f093a3" dx="-1.5" dy="-2">STAGING</text>
+  </g>
+</svg>

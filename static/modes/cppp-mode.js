@@ -23,7 +23,8 @@
 // POSSIBILITY OF SUCH DAMAGE.
 'use strict';
 var $ = require('jquery');
-var cpp = require('vs/basic-languages/cpp/cpp');
+var monaco = require('monaco-editor');
+var cpp = require('monaco-editor/esm/vs/basic-languages/cpp/cpp');
 
 // We need to create a new definition for cpp so we can remove invalid keywords
 
@@ -57,11 +58,20 @@ function definition() {
         "generic", "in", "initonly", "interface", "interior_ptr", "internal", "literal", "partial", "pascal",
         "pin_ptr", "property", "ref", "restrict", "safe_cast", "sealed", "title_static", "where"]);
 
-    addKeywords(["alignas", "alignof", "and", "and_eq", "asm", "bitand", "bitor", "char16_t", "char32_t", "compl",
-        "not", "not_eq", "or", "or_eq", "xor", "xor_eq"]);
+    addKeywords(["alignas", "alignof", "and", "and_eq", "asm", "bitand", "bitor", "char8_t", "char16_t",
+        "char32_t", "compl", "concept", "consteval", "constinit", "co_await", "co_return", "co_yield", "not", "not_eq",
+        "or", "or_eq", "requires", "xor", "xor_eq"]);
 
-    // #880
-    cppp.tokenizer.root[2] = [/\[\s*\[.*]\s*]/, 'annotation'];
+    // #880, patch annotations to handle [ [ something ] ]
+    function patchAnnotation(root) {
+        for (var i = 0; i < root.length; ++i) {
+            if (root[i][1] === 'annotation') {
+                root[i][0] = /\[\s*\[[^\]]*]\s*]/;
+            }
+        }
+    }
+
+    patchAnnotation(cppp.tokenizer.root);
 
     return cppp;
 }

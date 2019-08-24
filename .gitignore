@@ -1,3 +1,4 @@
+*code-workspace
 *.swp
 /node_modules
 newrelic_agent.log
@@ -16,3 +17,4 @@ static/vs
 lib/storage/data
 f.out
 /.nyc_output
+/coverage

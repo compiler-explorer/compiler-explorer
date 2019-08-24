@@ -2,12 +2,15 @@ sudo: false
 
 language: node_js
 
+git:
+    depth: false # Get all depth so our git-based version/change tracking of policies works
+
 node_js:
     - "10"
 
 script:
-    - npm run check
-    - npm run codecov
+    - npm run ci-lint
+    - npm run ci-test
     - make changelog
     - make policies
     - make -j$(nproc) travis-dist
@@ -22,3 +25,5 @@ deploy:
     acl: public_read
     local_dir: out/dist-bin
     upload-dir: dist/travis/${TRAVIS_BRANCH}
+
+after_success: npm run codecov

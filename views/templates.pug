@@ -38,16 +38,20 @@
           span.hideable &nbsp;Add new...
         .dropdown-menu
           button.dropdown-item.btn.btn-sm.btn-light.add-compiler(title="Add a new compiler for this source" aria-label="New compiler")
-            span.fa.fa-cogs
-            | &nbsp;Compiler
+            span.dropdown-icon.fa.fa-cogs
+            | Compiler
+          button.dropdown-item.btn.btn-sm.btn-light.add-executor(title="Add a new executor for this source" aria-label="New executor")
+            span.dropdown-icon.fas.fa-microchip
+            | Execution only
           button.dropdown-item.btn.btn-sm.btn-light.conformance(title="Add a new conformance view" aria-label="New conformance view")
-            span.fa.fa-list
-            | &nbsp;Conformance view
+            span.dropdown-icon.fa.fa-list
+            | Conformance view
           button.dropdown-item.btn.btn-sm.btn-light.add-editor(title="Add a new source editor view" aria-label="New source editor")
-            span.fa.fa-code
-            | &nbsp;Source editor
+            span.dropdown-icon.fa.fa-code
+            | Source editor
         a.btn.btn-light.open-in-cppinsights(href="https://cppinsights.io/" target="_blank" title="Open in Cppinsights" arial-label="Open in Cppinsights")
-          img(height="16" width="16" src=require("cppinsights16.png"))
+          svg(height="16" width="16")
+            include resources/cppinsights.svg
           span.hideable &nbsp;CppInsights
       .btn-group.btn-group-sm.ml-auto(role="group" aria-label="Editor language")
         select.change-language(title="Change this editor's (and associated panels) language" disabled=embedded && readOnly)
@@ -114,37 +118,28 @@
           span.hideable &nbsp;Add new...
         .dropdown-menu.dropdown-menu-right
           button.dropdown-item.btn.btn-light.btn-sm.add-compiler(title="Clone this compiler window (click or drag)")
-            span.far.fa-clone
-            | &nbsp;Clone compiler
+            span.dropdown-icon.far.fa-clone
+            | Clone compiler
           button.dropdown-item.btn.btn-light.btn-sm.view-optimization(title="Show optimization output")
-            span.fas.fa-weight
-            | &nbsp;Optimization output
+            span.dropdown-icon.fas.fa-weight
+            | Optimization output
           button.dropdown-item.btn.btn-light.btn-sm.view-ast(title="Show AST output")
-            span.fas.fa-leaf
-            | &nbsp;AST output
+            span.dropdown-icon.fas.fa-leaf
+            | AST output
           button.dropdown-item.btn.btn-light.btn-sm.view-ir(title="Show IR output")
-            span.fas.fa-align-center
-            | &nbsp;IR output
+            span.dropdown-icon.fas.fa-align-center
+            | IR output
           button.dropdown-item.btn.btn-light.btn-sm.view-gccdump(title="Show Tree/RTL dump (GCC only)")
-            span.fas.fa-tree
-            | &nbsp;GCC Tree/RTL output
+            span.dropdown-icon.fas.fa-tree
+            | GCC Tree/RTL output
           button.dropdown-item.btn.btn-light.btn-sm.view-cfg(title="Show Graph Output")
-            span.fas.fa-exchange-alt
-            | &nbsp;Graph output
+            span.dropdown-icon.fas.fa-exchange-alt
+            | Graph output
       .btn-group.btn-group-sm(role="group")
         button.btn.btn-light.btn-sm.dropdown-toggle.add-tool(type="button" title="Add tool" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Add tooling to this editor and compiler")
           span.fas.fa-cogs
           span.hideable &nbsp;Add tool...
-        .dropdown-menu.dropdown-menu-right
-          button.dropdown-item.btn.btn-light.btn-sm.view-clangtidytool(title="Clang-tidy")
-            span.fas.fa-cog
-            | &nbsp;Clang-tidy
-          button.dropdown-item.btn.btn-light.btn-sm.view-llvmmcatool(title="LLVM MCA")
-            span.fas.fa-cog
-            | &nbsp;LLVM MCA
-          button.dropdown-item.btn.btn-light.btn-sm.view-pahole(title="Pahole")
-            span.fas.fa-cog
-            | &nbsp;Pahole
+        .dropdown-menu.dropdown-menu-right.toolsmenu
     .monaco-placeholder
     .bottom-bar.bg-light
       if !embedded
@@ -168,6 +163,45 @@
         button.btn.btn-light.btn-sm.fas.fa-info.full-compiler-name(data-trigger="click" style="cursor: pointer;" role="button" title="Full compiler version")
         span.compile-time(title="Compilation time (Result size)")
 
+  #executor
+    .top-bar.btn-toolbar.bg-light(role="toolbar")
+      include font-size
+        button.btn.btn-light.btn-sm.show-libs.dropdown-toggle(title="Include libs" aria-label="Toggle libraries dropdown" aria-pressed="false" aria-haspopup="true")
+          span.fas.fa-book
+          span.hideable &nbsp;Libraries
+      button.btn.btn-light.btn-sm.toggle-compilation.active
+        span.fas.fa-cogs
+        span.hideable &nbsp;Compilation
+      button.btn.btn-light.btn-sm.toggle-args
+        span.fas.fa-terminal
+        span.hideable &nbsp;Arguments
+      button.btn.btn-light.btn-sm.toggle-stdin
+        span.fas.fa-sign-in-alt
+        span.hideable &nbsp;Stdin
+      button.btn.btn-light.btn-sm.toggle-compilerout.active
+        span.fas.fa-sign-out-alt
+        span.hideable &nbsp;Compiler output
+    .top-bar.btn-toolbar.bg-light.panel-compilation(role="toolbar")
+      .btn-group.btn-group-sm(role="group" aria-label="Compiler picker")
+        select.compiler-picker(placeholder="Select a compiler...")
+        .input-group.mb-auto
+          .input-group-prepend(title="Show all compilation options")
+            button.input-group-text.prepend-options(data-trigger="click" style="cursor: pointer;" role="button" title="All compilation options")
+              span.btn.btn-light.btn-sm.status-icon
+          input.compilation-options.form-control(type="text" placeholder="Compiler options..." size="256" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false")
+    .top-bar.btn-toolbar.bg-light.panel-args.d-none(role="toolbar")
+      input.execution-arguments.form-control(type="text" placeholder="Execution arguments..." size="256" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false")
+    .top-bar.btn-toolbar.bg-light.panel-stdin.d-none(role="toolbar")
+      textarea.execution-stdin.form-control(placeholder="Execution stdin..." cols="1024" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" aria-multiline="false" style="resize: vertical")
+    pre.content
+      .execution-status
+      .compiler-output
+      .execution-output
+    .bottom-bar.bg-light
+      span.short-compiler-name
+      button.btn.btn-light.btn-sm.fas.fa-info.full-compiler-name(data-trigger="click" style="cursor: pointer;" role="button" title="Full compiler version")
+      span.compile-time(title="Compilation time (Result size)")
+
   #compiler-output
     .top-bar.btn-toolbar.options-toolbar.bg-light(role="toolbar")
       include font-size
@@ -187,8 +221,18 @@
             button.btn.btn-light.btn-sm.wrap-lines(type="button" title="Wrap lines" data-bind="wrap" aria-pressed="false" aria-label="Wrap lines")
               span Wrap lines
             input.d-none(type="checkbox" checked=false)
-          input.options.form-control(type="text" placeholder="Tool options..." size="256" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false")
+        button.btn.btn-light.btn-sm.toggle-args
+          span.fas.fa-terminal
+          span.hideable &nbsp;Arguments
+        button.btn.btn-light.btn-sm.toggle-stdin
+          span.fas.fa-sign-in-alt
+          span.hideable &nbsp;Stdin
+    .top-bar.btn-toolbar.bg-light.panel-args.d-none(role="toolbar")
+      input.options.form-control(type="text" placeholder="Tool arguments..." size="256" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false")
+    .top-bar.btn-toolbar.bg-light.panel-stdin.d-none(role="toolbar")
+      textarea.tool-stdin.form-control(placeholder="Tool stdin..." cols="1024" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" aria-multiline="false" style="resize: vertical")
     pre.content
+    .monaco-placeholder
 
   #diff
     .top-bar.btn-toolbar.bg-light(role="toolbar")

@@ -6,6 +6,11 @@
     margin-left: 0;
 }
 
+/* workaround high DPI issues in monaco. SEE: https://github.com/mattgodbolt/compiler-explorer/issues/1488 */
+.monaco-editor .margin-view-overlays .line-numbers {
+    cursor: default !important;
+}
+
 /*
  * https://github.com/Microsoft/monaco-editor/issues/417
  * Safari 10.1, fails inherit correct visibility from parent when we change the visibility of parent element from hidden to inherit, in this particular case.
@@ -120,29 +125,6 @@ li.tweet {
     overflow: hidden;
 }
 
-.address {
-    display: inline;
-}
-
-.opcodes {
-    display: inline;
-}
-
-.opcode {
-    margin-right: 0.2em;
-}
-
-.binary-side {
-    text-align: left;
-    float: left;
-    clear: none;
-    width: 100%;
-}
-
-.highlighted {
-    font-weight: bold;
-}
-
 .lm_splitter.lm_vertical .lm_drag_handle {
     height: 10px;
     top: -2.5px;
@@ -236,13 +218,13 @@ pre.content.wrap {
 
 @media (min-width: 1200px) {
     .modal-dialog {
-        width: 1000px;
+        max-width: 1000px;
     }
 }
 
 @media (min-width: 1400px) {
     .modal-dialog {
-        width: 1200px;
+        max-width: 1200px;
     }
 }
 
@@ -471,4 +453,18 @@ kbd {
 .new-cookie-msg {
     display: inline;
     margin: 0 2px 0 2px;
+}
+
+.dropdown-icon {
+    width: 25px;
+    text-align: center;
+    margin-right: 6px;
+}
+
+#socialshare {
+    margin-left: -3px;
+}
+
+.linked-compiler-output-line {
+    cursor: pointer;
 }

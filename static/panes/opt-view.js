@@ -24,7 +24,7 @@
 "use strict";
 
 var FontScale = require('../fontscale');
-var monaco = require('../monaco');
+var monaco = require('monaco-editor');
 var _ = require('underscore');
 var $ = require('jquery');
 var ga = require('../analytics');
@@ -120,7 +120,10 @@ Opt.prototype.setTitle = function () {
 };
 
 Opt.prototype.getDisplayableOpt = function (optResult) {
-    return "**" + optResult.optType + "** - " + optResult.displayString;
+    return {
+        value: "**" + optResult.optType + "** - " + optResult.displayString,
+        isTrusted: false
+    };
 };
 
 Opt.prototype.showOptResults = function (results) {

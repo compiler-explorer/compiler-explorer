@@ -89,7 +89,6 @@ Textbox.prototype.putUi = function (elem, value) {
     elem.val(value);
 };
 
-
 function setupSettings(root, settings, onChange, langId) {
     settings = settings || {};
     // Ensure the default language is not "null" but undefined. Temporary patch for a previous bug :(
@@ -142,6 +141,8 @@ function setupSettings(root, settings, onChange, langId) {
     add(root.find('.enableCommunityAds'), 'enableCommunityAds', true, Checkbox);
     add(root.find('.hoverShowSource'), 'hoverShowSource', true, Checkbox);
     add(root.find('.hoverShowAsmDoc'), 'hoverShowAsmDoc', true, Checkbox);
+    add(root.find('.useVim'), 'useVim', false, Checkbox);
+
     var themeSelect = root.find('.theme');
 
     var defaultThemeId = themes.default.id;
@@ -225,6 +226,7 @@ function setupSettings(root, settings, onChange, langId) {
     );
     add(root.find('.enableCtrlS'), 'enableCtrlS', true, Checkbox);
     add(root.find('.editorsFFont'), 'editorsFFont', 'Consolas, "Liberation Mono", Courier, monospace', Textbox);
+    add(root.find('.allowStoreCodeDebug'), 'allowStoreCodeDebug', true, Checkbox);
 
     setSettings(settings);
     handleThemes();

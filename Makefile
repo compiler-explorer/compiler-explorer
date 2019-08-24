@@ -23,7 +23,7 @@ node-installed: .node-bin
 	@$(eval NPM:=$(shell dirname $(shell cat .node-bin))/npm)
 	@$(eval PATH=$(shell dirname $(realpath $(NODE))):${PATH})
 
-debug: node-installed ## print out some useful variables
+info: node-installed ## print out some useful variables
 	@echo Using node from $(NODE)
 	@echo Using npm from $(NPM)
 	@echo PATH is $(PATH)
@@ -38,7 +38,7 @@ $(NODE_MODULES): package.json | node-installed
 	@touch $@
 
 webpack: $(NODE_MODULES)  ## Runs webpack (useful only for debugging webpack)
-	$(NODE) node_modules/webpack/bin/webpack.js ${WEBPACK_ARGS}
+	$(NODE) node_modules/webpack-cli/bin/cli.js ${WEBPACK_ARGS}
 
 lint: $(NODE_MODULES)  ## Ensures everything matches code conventions
 	$(NPM) run lint
@@ -61,22 +61,23 @@ run: prereqs  ## Runs the site normally
 
 dev: export NODE_ENV=DEV
 dev: prereqs install-git-hooks ## Runs the site as a developer; including live reload support and installation of git hooks
-	 $(NODE) ./node_modules/.bin/supervisor -w app.js,lib,etc/config -e 'js|node|properties' --exec $(NODE) $(NODE_ARGS) -- ./app.js $(EXTRA_ARGS)
+	$(NODE) ./node_modules/.bin/supervisor -w app.js,lib,etc/config -e 'js|node|properties' --exec $(NODE) $(NODE_ARGS) -- ./app.js $(EXTRA_ARGS)
 
+debug: export NODE_ENV=DEV
+debug: prereqs install-git-hooks ## Runs the site as a developer with full debugging; including live reload support and installation of git hooks
+	$(NODE) ./node_modules/.bin/supervisor -w app.js,lib,etc/config -e 'js|node|properties' --exec $(NODE) $(NODE_ARGS) -- ./app.js --debug $(EXTRA_ARGS)
 
 HASH := $(shell git rev-parse HEAD)
 dist: export WEBPACK_ARGS=-p
 dist: prereqs  ## Creates a distribution
 	rm -rf out/dist/
 	mkdir -p out/dist
-	mkdir -p out/dist/vs
 	cp -r static/dist/ out/dist/
-	cp -r static/vs/ out/dist/
 	cp -r static/policies/ out/dist/
 	echo ${HASH} > out/dist/git_hash
 
 travis-dist: dist  ## Creates a distribution as if we were running on travis
-	tar --exclude './.travis-compilers' --exclude './.git' --exclude './static' -Jcf /tmp/ce-build.tar.xz .
+	tar --exclude './.travis-compilers' --exclude './.git' --exclude './static' --exclude './.github' --exclude './.idea' --exclude './.nyc_output' --exclude './coverage' --exclude './test' --exclude './docs' -Jcf /tmp/ce-build.tar.xz .
 	rm -rf out/dist-bin
 	mkdir -p out/dist-bin
 	mv /tmp/ce-build.tar.xz out/dist-bin/${TRAVIS_BUILD_NUMBER}.tar.xz
