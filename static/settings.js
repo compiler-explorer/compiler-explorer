@@ -90,7 +90,7 @@ Textbox.prototype.putUi = function (elem, value) {
 };
 
 
-function setupSettings(root, settings, onChange, langId) {
+function setupSettings(root, settings, onChange, subLangId) {
     settings = settings || {};
     // Ensure the default language is not "null" but undefined. Temporary patch for a previous bug :(
     settings.defaultLanguage = settings.defaultLanguage === null ? undefined : settings.defaultLanguage;
@@ -196,7 +196,7 @@ function setupSettings(root, settings, onChange, langId) {
             return {label: lang.id, desc: lang.name};
         })
     );
-    if (langId) {
+    if (subLangId) {
         defaultLanguageSelector
             .prop('disabled', true)
             .prop('title', 'Default language inherited from subdomain')
