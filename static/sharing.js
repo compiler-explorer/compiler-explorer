@@ -178,11 +178,11 @@ function initShareButton(getLink, layout, noteNewState) {
             var config = layout.toConfig();
             var cacheLinkId = currentBind;
             if (cacheLinkId === "Embed" && $("#shareembedlink input:checked").length > 0) {
-                cacheLinkId += "|" + $("#shareembedlink input:checked").map(function() {
+                cacheLinkId += "|" + $("#shareembedlink input:checked").map(function () {
                     return $(this).prop("class");
-                  })
-                  .get()
-                  .join();
+                })
+                    .get()
+                    .join();
             }
             if (!urls[cacheLinkId]) {
                 label.text(currentNode.text());
@@ -210,7 +210,7 @@ function initShareButton(getLink, layout, noteNewState) {
             update();
         });
 
-        $(document).find('#embedsettings input').on('click', function() {
+        $(document).find('#embedsettings input').on('click', function () {
             setCurrent(root.find('.sources [data-bind="Embed"]'));
             update();
         });
@@ -305,9 +305,9 @@ function getLinks(config, currentBind, done) {
         default:
             if (currentBind.substr(0, 5) === "Embed") {
                 var options = {};
-                $("#shareembedlink input:checked").each(function() {
+                $("#shareembedlink input:checked").each(function () {
                     options[$(this).prop("class")] = true;
-                  });
+                });
                 done(null, getEmbeddedHtml(config, root, false, options), false);
                 return;
             }
