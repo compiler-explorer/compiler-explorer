@@ -28,12 +28,12 @@ var colour = require('../colour');
 var loadSaveLib = require('../loadSave');
 var FontScale = require('../fontscale');
 var Components = require('../components');
-// var monacoVim = require('../../node_modules/monaco-vim/dist/monaco-vim');
 var monaco = require('monaco-editor');
-var options = require('../optionfs');
+var options = require('../options');
 var Alert = require('../alert');
 var local = require('../local');
 var ga = require('../analytics');
+var monacoVim = require('monaco-vim');
 require('../modes/cppp-mode');
 require('../modes/d-mode');
 require('../modes/ispc-mode');
@@ -49,7 +49,6 @@ require('../modes/nc-mode');
 require('../modes/ada-mode');
 require('selectize');
 
-var monacoVim = require('monaco-vim');
 var loadSave = new loadSaveLib.LoadSave();
 var languages = options.languages;
 
@@ -104,7 +103,8 @@ function Editor(hub, state, container) {
     });
     this.editor.getModel().setEOL(monaco.editor.EndOfLineSequence.LF);
 
-    if (this.useVim)
+    this.editor.useVim = true;
+    if (this.editor.useVim)
         this.vimMode = monacoVim.initVimMode(this.editor, document.getElementById('vim-status'));
         
     if (state.source !== undefined) {
@@ -284,6 +284,7 @@ Editor.prototype.initButtons = function (state) {
     var paneAdderDropdown = this.domRoot.find('.add-pane');
     var addCompilerButton = this.domRoot.find('.btn.add-compiler');
     var addExecutorButton = this.domRoot.find('.btn.add-executor');
+    // var enableVim = this.domRoot.find('vim-mode');
     this.conformanceViewerButton = this.domRoot.find('.btn.conformance');
     var addEditorButton = this.domRoot.find('.btn.add-editor');
 
