@@ -49,6 +49,9 @@
           button.dropdown-item.btn.btn-sm.btn-light.add-editor(title="Add a new source editor view" aria-label="New source editor")
             span.dropdown-icon.fa.fa-code
             | Source editor
+        button.btn.btn-light.vim-mode(title="Enable Vim keybinding" aria-label="enable vim")
+          span.fab.fa-vimeo-square
+          span.hideable &nbsp;settings
         a.btn.btn-light.open-in-cppinsights(href="https://cppinsights.io/" target="_blank" title="Open in Cppinsights" arial-label="Open in Cppinsights")
           svg(height="16" width="16")
             include resources/cppinsights.svg
@@ -56,7 +59,6 @@
       .btn-group.btn-group-sm.ml-auto(role="group" aria-label="Editor language")
         select.change-language(title="Change this editor's (and associated panels) language" disabled=embedded && readOnly)
     .monaco-placeholder
-
   #compiler
     .top-bar.btn-toolbar.bg-light(role="toolbar")
       .btn-group.btn-group-sm(role="group" aria-label="Compiler picker")
