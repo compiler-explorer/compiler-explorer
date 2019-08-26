@@ -63,7 +63,7 @@ var simpleCooks = new SimpleCook();
 function setupSettings(hub) {
     var eventHub = hub.layout.eventHub;
     var defaultSettings = {
-        defaultLanguage: hub.subdomainLangId ? hub.subdomainLangId : undefined
+        defaultLanguage: hub.defaultLangId
     };
     var currentSettings = JSON.parse(local.get('settings', null)) || defaultSettings;
 
@@ -235,16 +235,23 @@ function start() {
     var options = require('options');
 
     var hostnameParts = window.location.hostname.split('.');
-    var subLangId = options.languages["c++"].id;
+    var subLangId = undefined;
+    // Only set the subdomain lang id if it makes sense to do so
     if (hostnameParts.length > 0) {
         var subdomainPart = hostnameParts[0];
         var langBySubdomain = _.find(options.languages, function (lang) {
-            return lang.id === subdomainPart || _.any(lang.alias, function (alias) {
-                return alias.indexOf(subdomainPart) >= 0;
-            });
+            return lang.id === subdomainPart || lang.alias.indexOf(subdomainPart) !== -1;
         });
         if (langBySubdomain) {
             subLangId = langBySubdomain.id;
+        }
+    }
+    var defaultLangId = subLangId;
+    if (!defaultLangId) {
+        if (options.languages["c++"]) {
+            defaultLangId = "c++";
+        } else {
+            defaultLangId = _.keys(options.languages)[0];
         }
     }
 
@@ -263,8 +270,8 @@ function start() {
         content: [{
             type: 'row',
             content: [
-                Components.getEditor(1, subLangId),
-                Components.getCompiler(1, subLangId)
+                Components.getEditor(1, defaultLangId),
+                Components.getCompiler(1, defaultLangId)
             ]
         }]
     };
@@ -289,7 +296,7 @@ function start() {
     var hub;
     try {
         layout = new GoldenLayout(config, root);
-        hub = new Hub(layout, subLangId);
+        hub = new Hub(layout, subLangId, defaultLangId);
     } catch (e) {
         Sentry.captureException(e);
 
@@ -298,7 +305,7 @@ function start() {
         }
 
         layout = new GoldenLayout(defaultConfig, root);
-        hub = new Hub(layout, subLangId);
+        hub = new Hub(layout, subLangId, defaultLangId);
     }
 
     var lastState = null;
