@@ -99,13 +99,14 @@ function Editor(hub, state, container) {
         folding: true,
         lineNumbersMinChars: options.embedded ? 1 : 3,
         emptySelectionClipboard: true,
-        autoIndent: true
+        autoIndent: true,
+        vimInUse: false,
     });
     this.editor.getModel().setEOL(monaco.editor.EndOfLineSequence.LF);
 
-    this.editor.useVim = true;
-    if (this.editor.useVim)
-        this.vimMode = monacoVim.initVimMode(this.editor, document.getElementById('vim-status'));
+    // this.editor.enableVim = true;
+    // if (this.editor.enableVim)
+    //     this.vimMode = monacoVim.initVimMode(this.editor, document.getElementById('vim-flag'));
         
     if (state.source !== undefined) {
         this.setSource(state.source);
@@ -284,13 +285,35 @@ Editor.prototype.initButtons = function (state) {
     var paneAdderDropdown = this.domRoot.find('.add-pane');
     var addCompilerButton = this.domRoot.find('.btn.add-compiler');
     var addExecutorButton = this.domRoot.find('.btn.add-executor');
-    // var enableVim = this.domRoot.find('vim-mode');
     this.conformanceViewerButton = this.domRoot.find('.btn.conformance');
     var addEditorButton = this.domRoot.find('.btn.add-editor');
-
+    var toggleVimButton = this.domRoot.find('#vim-flag');
     var togglePaneAdder = function () {
         paneAdderDropdown.dropdown('toggle');
     };
+    var toggleVim = function () {
+        var vFlag = this.domRoot.find('#vim-flag')[0];
+        if (this.editor.vimInUse) {
+            try {
+                this.vimMode.dispose();
+                this.domRoot.find('#v-status')[0].innerText="";
+                vFlag.setAttribute("class", "btn btn-light");
+            } catch (e) {
+                throw e;
+            }
+            this.editor.vimInUse = false;
+        } else {
+            try {
+                var statusNode = this.domRoot.find('#v-status')[0];
+                this.vimMode = monacoVim.initVimMode(this.editor, statusNode);
+                vFlag.setAttribute("class", "btn btn-info");
+            } catch (e) {
+                throw e;
+            }
+            this.editor.vimInUse = true;
+        }
+    };
+    toggleVimButton.on('click', _.bind(toggleVim, this));
 
     // NB a new compilerConfig needs to be created every time; else the state is shared
     // between all compilers created this way. That leads to some nasty-to-find state
@@ -352,6 +375,7 @@ Editor.prototype.initButtons = function (state) {
     this.cppInsightsButton.on('mousedown', _.bind(function () {
         this.updateOpenInCppInsights();
     }, this));
+
 };
 
 Editor.prototype.updateButtons = function () {
@@ -582,7 +606,6 @@ Editor.prototype.onSettingsChange = function (newSettings) {
 
     this.editor.updateOptions({
         autoClosingBrackets: this.settings.autoCloseBrackets,
-        useVim: this.settings.useVim,
         tabSize: this.settings.tabWidth,
         quickSuggestions: this.settings.showQuickSuggestions,
         contextmenu: this.settings.useCustomContextMenu,
@@ -603,17 +626,6 @@ Editor.prototype.onSettingsChange = function (newSettings) {
         this.onEditorSetDecoration(this.id, -1, false);
     }
 
-    if (before.useVim !== after.useVim) {
-        if (this.vimMode) {
-            this.vimMode.dispose();
-        }
-        document.getElementById('vim-status').innerHTML='';
-
-        if (after.useVim)
-            this.vimMode = monacoVim.initVimMode(this.editor, document.getElementById('vim-status'));
-        else
-            this.vimMode = null;
-    }
     this.numberUsedLines();
 };
 

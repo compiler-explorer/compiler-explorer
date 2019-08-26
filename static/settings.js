@@ -141,7 +141,7 @@ function setupSettings(root, settings, onChange, langId) {
     add(root.find('.enableCommunityAds'), 'enableCommunityAds', true, Checkbox);
     add(root.find('.hoverShowSource'), 'hoverShowSource', true, Checkbox);
     add(root.find('.hoverShowAsmDoc'), 'hoverShowAsmDoc', true, Checkbox);
-    add(root.find('.useVim'), 'useVim', false, Checkbox);
+    add(root.find('.enableVim'), 'enableVim', false, Checkbox);
 
     var themeSelect = root.find('.theme');
 
