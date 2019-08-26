@@ -104,10 +104,6 @@ function Editor(hub, state, container) {
     });
     this.editor.getModel().setEOL(monaco.editor.EndOfLineSequence.LF);
 
-    // this.editor.enableVim = true;
-    // if (this.editor.enableVim)
-    //     this.vimMode = monacoVim.initVimMode(this.editor, document.getElementById('vim-flag'));
-        
     if (state.source !== undefined) {
         this.setSource(state.source);
     } else {
@@ -484,6 +480,12 @@ Editor.prototype.initEditorActions = function () {
             this.tryPanesLinkLine(ed.getPosition().lineNumber, true);
         }, this)
     });
+
+    // this.editor.addAction({
+    //     id: 'usevim',
+    //     label: 'enable vim keybinding',
+
+    // })
 };
 
 Editor.prototype.doesMatchEditor = function (otherSource) {
@@ -606,6 +608,7 @@ Editor.prototype.onSettingsChange = function (newSettings) {
 
     this.editor.updateOptions({
         autoClosingBrackets: this.settings.autoCloseBrackets,
+        useVim: this.settings.useVim,
         tabSize: this.settings.tabWidth,
         quickSuggestions: this.settings.showQuickSuggestions,
         contextmenu: this.settings.useCustomContextMenu,
@@ -626,6 +629,17 @@ Editor.prototype.onSettingsChange = function (newSettings) {
         this.onEditorSetDecoration(this.id, -1, false);
     }
 
+    if (before.useVim !== after.useVim) {
+        if (this.vimMode) {
+            this.vimMode.dispose();
+        }
+        document.getElementById('vim-status').innerHTML='';
+
+        if (after.useVim)
+            this.vimMode = monacoVim.initVimMode(this.editor, document.getElementById('vim-status'));
+        else
+            this.vimMode = null;
+    }
     this.numberUsedLines();
 };
 
