@@ -290,22 +290,14 @@ Editor.prototype.initButtons = function (state) {
     var toggleVim = function () {
         var vFlag = this.domRoot.find('#vim-flag')[0];
         if (this.editor.vimInUse) {
-            try {
-                this.vimMode.dispose();
-                this.domRoot.find('#v-status')[0].innerText="";
-                vFlag.setAttribute("class", "btn btn-light");
-            } catch (e) {
-                throw e;
-            }
+            this.vimMode.dispose();
+            this.domRoot.find('#v-status')[0].innerText="";
+            vFlag.setAttribute("class", "btn btn-light");
             this.editor.vimInUse = false;
         } else {
-            try {
-                var statusNode = this.domRoot.find('#v-status')[0];
-                this.vimMode = monacoVim.initVimMode(this.editor, statusNode);
-                vFlag.setAttribute("class", "btn btn-info");
-            } catch (e) {
-                throw e;
-            }
+            var statusNode = this.domRoot.find('#v-status')[0];
+            this.vimMode = monacoVim.initVimMode(this.editor, statusNode);
+            vFlag.setAttribute("class", "btn btn-info");
             this.editor.vimInUse = true;
         }
     };
