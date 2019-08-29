@@ -276,7 +276,7 @@ Editor.prototype.onMouseMove = function (e) {
     }
 };
 
-Editor.prototype.onEscapeKey = function (event) {
+Editor.prototype.onEscapeKey = function () {
     if (this.editor.vimInUse) {
         monacoVim.VimMode.Vim.exitInsertMode(this.vimMode);
     }
