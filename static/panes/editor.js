@@ -260,7 +260,7 @@ Editor.prototype.initCallbacks = function () {
     this.eventHub.on('initialised', this.maybeEmitChange, this);
 
     $(document).on('keyup.editable', _.bind(function (e) {
-        if (event.target === this.domRoot.find(".monaco-placeholder .inputarea")[0]) {
+        if (e.target === this.domRoot.find(".monaco-placeholder .inputarea")[0]) {
             if (e.which === 27) {
                 this.onEscapeKey(e);
             } else if (e.which === 45) {
