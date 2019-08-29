@@ -63,7 +63,7 @@ Ids.prototype.next = function () {
     throw 'Ran out of ids!?';
 };
 
-function Hub(layout, subLangId) {
+function Hub(layout, subLangId, defaultLangId) {
     this.layout = layout;
     this.editorIds = new Ids();
     this.compilerIds = new Ids();
@@ -72,6 +72,7 @@ function Hub(layout, subLangId) {
     this.deferredEmissions = [];
     this.lastOpenedLangId = null;
     this.subdomainLangId = subLangId || undefined;
+    this.defaultLangId = defaultLangId;
 
     // FIXME
     // We can't avoid this self as _ is undefined at this point

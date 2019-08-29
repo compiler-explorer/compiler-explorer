@@ -21,16 +21,6 @@ Perhaps a read-only simplified view would work better: the main reason one bring
 The UI has a number of things that need improving, but one of the things we are looking at is how to
  handle the loss of data that happens if one has a work-in-progress CE window open and then clicks another CE link.
 
-### Execution support
-
-Another big ticket item is to allow executing of the user's code. This is fraught with security issues, and
-brings up a number of UI and API considerations. Compiling code every time to execute with different params
-seems wasteful, so caching seems good; but in a multi-instance setup a shared cache would be needed. Perhaps
-a backend system that caches the executables (and makes them downloadable; at least for some compilers where
-license allows), and stores the binaries in ephemeral, shared storage. This same backend system could also 
-be used to store code, and could be part of a whole new way of sending and sharing code (if made permanent
-storage).
-
 ### Support more compilers
 
 Most of the open tickets are to do with adding new compilers, or fixing issues with existing compilers.
@@ -54,7 +44,7 @@ despite the Patreon site where folks can help support the cost of running the se
 
 ## 2019 goals
 
-With all this in mind, the tentative goals for 2018 are:
+With all this in mind, the tentative goals for 2019 are:
 - [ ] Design an API that can handle remote code execution and download needs
 - [ ] Implement remote execution UIs
 
