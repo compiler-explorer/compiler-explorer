@@ -176,8 +176,8 @@ function initShareButton(getLink, layout, noteNewState) {
             return "Embed|" + $("#shareembedlink input:checked").map(function () {
                 return $(this).prop("class");
             })
-            .get()
-            .join();
+                .get()
+                .join();
         }
 
         function update() {
@@ -221,7 +221,7 @@ function initShareButton(getLink, layout, noteNewState) {
             setCurrent(embeddedButton);
             update();
         });
-        embeddedButton.off('click').on('click', function () {
+        embeddedButton.on('click', function () {
             $('#embedsettings').modal('show'); 
             setCurrent(embeddedButton);
             update();
