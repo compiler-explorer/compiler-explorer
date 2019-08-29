@@ -43,6 +43,7 @@
     "lz-string": "^1.4.4",
     "mkdirp": "^0.5.1",
     "monaco-editor": "^0.15.6",
+    "monaco-vim": "0.0.14",
     "morgan": "^1.9.1",
     "node-graceful": "^2.0.0",
     "node-targz": "^0.2.0",

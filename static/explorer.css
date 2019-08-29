@@ -354,6 +354,14 @@ button.dropdown-item.btn.btn-light.btn-sm {
     margin-left: 0 !important;
 }
 
+label#vim-label {
+    top: 3px;
+}
+
+input.vim-check {
+    margin-bottom: 4px
+}
+
 .opens-new-window {
     width: 16px;
     height: 16px;
