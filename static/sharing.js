@@ -170,6 +170,16 @@ function initShareButton(getLink, layout, noteNewState) {
             setSocialSharing(socialSharing, result.url);
         }
 
+        function getEmbeddedCacheLinkId() {
+            if ($("#shareembedlink input:checked").length === 0) return "Embed";
+
+            return "Embed|" + $("#shareembedlink input:checked").map(function () {
+                return $(this).prop("class");
+            })
+            .get()
+            .join();
+        }
+
         function update() {
             var socialSharing = socialSharingElements;
             socialSharing.empty();
@@ -177,12 +187,8 @@ function initShareButton(getLink, layout, noteNewState) {
             permalink.prop('disabled', false);
             var config = layout.toConfig();
             var cacheLinkId = currentBind;
-            if (cacheLinkId === "Embed" && $("#shareembedlink input:checked").length > 0) {
-                cacheLinkId += "|" + $("#shareembedlink input:checked").map(function () {
-                    return $(this).prop("class");
-                })
-                    .get()
-                    .join();
+            if (currentBind === "Embed") {
+                cacheLinkId = getEmbeddedCacheLinkId();
             }
             if (!urls[cacheLinkId]) {
                 label.text(currentNode.text());
@@ -210,8 +216,14 @@ function initShareButton(getLink, layout, noteNewState) {
             update();
         });
 
-        $(document).find('#embedsettings input').on('click', function () {
-            setCurrent(root.find('.sources [data-bind="Embed"]'));
+        var embeddedButton = $('#shareembed');
+        $('#embedsettings input').on('click', function () {
+            setCurrent(embeddedButton);
+            update();
+        });
+        embeddedButton.off('click').on('click', function () {
+            $('#embedsettings').modal('show'); 
+            setCurrent(embeddedButton);
             update();
         });
 

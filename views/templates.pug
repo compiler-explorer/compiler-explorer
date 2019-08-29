@@ -14,12 +14,20 @@
                         | Short
                   button.dropdown-item.btn.btn-light.btn-sm(data-bind="Full")
                     | Full
-                  button.dropdown-item.btn.btn-light.btn-sm(data-bind="Embed" href="javascript:;" data-target="#shareembedlink" data-toggle="modal")
-                    | Embed
               input.form-control.input-sm.permalink(type="text" placeholder="Loading" readonly size="1024" style="font-size: 10px")
               .input-group-append
                 button.input-group-btn.btn.btn-outline-secondary.btn-sm.clippy(type="button" data-clipboard-target=".popover .permalink" title="Copy to clipboard")
                   span.fa.fa-clipboard
+        div
+          | &nbsp;
+        .btn-group.btn-group-sm
+          .input-group.input-group-sm
+            .input-group-prepend
+              span
+            button.btn.btn-outline-secondary.btn-sm#shareembed(type="button" data-bind="Embed")
+              | Embedded
+            .input-group-append
+              span
       if sharingEnabled
         .card-footer
           .socialsharing
