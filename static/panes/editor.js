@@ -258,11 +258,43 @@ Editor.prototype.initCallbacks = function () {
     }, this));
 
     this.eventHub.on('initialised', this.maybeEmitChange, this);
+
+    $(document).on('keyup.editable', _.bind(function (e) {
+        if (event.target === this.domRoot.find(".monaco-placeholder .inputarea")[0]) {
+            if (e.which === 27) {
+                this.onEscapeKey(e);
+            } else if (e.which === 45) {
+                this.onInsertKey(e);
+            }
+        }
+    }, this));
 };
 
 Editor.prototype.onMouseMove = function (e) {
     if (e !== null && e.target !== null && this.settings.hoverShowSource && e.target.position !== null) {
         this.tryPanesLinkLine(e.target.position.lineNumber, false);
+    }
+};
+
+Editor.prototype.onEscapeKey = function (event) {
+    if (this.editor.vimInUse) {
+        monacoVim.VimMode.Vim.exitInsertMode(this.vimMode);
+    }
+};
+
+Editor.prototype.onInsertKey = function (event) {
+    if (this.editor.vimInUse) {
+        var currentState = monacoVim.VimMode.Vim.maybeInitVimState_(this.vimMode);
+        if (!currentState.insertMode) {
+            var insertEvent = {};
+            insertEvent.preventDefault = event.preventDefault;
+            insertEvent.stopPropagation = event.stopPropagation;
+            insertEvent.browserEvent = {};
+            insertEvent.browserEvent.key = 'i';
+            insertEvent.browserEvent.defaultPrevented = false;
+            insertEvent.keyCode = 39;
+            this.vimMode.handleKeyDown(insertEvent);
+        }
     }
 };
 
