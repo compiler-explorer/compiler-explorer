@@ -415,11 +415,17 @@ aws.initConfig(awsProps)
                 logger.info("=======================================");
                 if (gitReleaseName) logger.info(`  git release ${gitReleaseName}`);
 
-                function renderConfig(extra) {
-                    const extraJson = JSON.stringify(extra);
-                    const options = _.extend(extra, clientOptionsHandler.get());
+                function renderConfig(extra, urlOptions) {
+                    const urlOptionsWhitelist = [
+                        'readOnly', 'hideEditorToolbars'
+                    ];
+                    const filteredUrlOptions = _.mapObject(
+                        _.pick(urlOptions, urlOptionsWhitelist),
+                        val => utils.toProperty(val));
+                    const allExtraOptions = _.extend({}, filteredUrlOptions, extra);
+                    const options = _.extend({}, allExtraOptions, clientOptionsHandler.get());
                     options.optionsHash = clientOptionsHandler.getHash();
-                    options.compilerExplorerOptions = extraJson;
+                    options.compilerExplorerOptions = JSON.stringify(allExtraOptions);
                     options.extraBodyClass = extraBodyClass;
                     options.httpRoot = httpRoot;
                     options.httpRootDir = httpRootDir;
@@ -471,20 +477,20 @@ aws.initConfig(awsProps)
                     return code;
                 }
 
-                function renderGoldenLayout(config, metadata, res) {
+                function renderGoldenLayout(config, metadata, req, res) {
                     staticHeaders(res);
                     contentPolicyHeader(res);
                     res.render('index', renderConfig({
                         embedded: false,
                         config: config,
                         metadata: metadata
-                    }));
+                    }, req.query));
                 }
 
-                function renderClientState(clientstate, metadata, res) {
+                function renderClientState(clientstate, metadata, req, res) {
                     const config = getGoldenLayoutFromClientState(clientstate);
 
-                    renderGoldenLayout(config, metadata, res);
+                    renderGoldenLayout(config, metadata, req, res);
                 }
 
                 function getMetaDataFromLink(req, link, config) {
@@ -541,7 +547,7 @@ aws.initConfig(awsProps)
                             }
 
                             const metadata = getMetaDataFromLink(req, result, config);
-                            renderClientState(config, metadata, res);
+                            renderClientState(config, metadata, req, res);
                         })
                         .catch(err => {
                             logger.warn(`Exception thrown when expanding ${id}`);
@@ -558,7 +564,7 @@ aws.initConfig(awsProps)
                     const config = getGoldenLayoutFromClientState(new clientState.State(state));
                     const metadata = getMetaDataFromLink(req, null, config);
 
-                    renderGoldenLayout(config, metadata, res);
+                    renderGoldenLayout(config, metadata, req, res);
                 }
 
                 function storedStateHandler(req, res, next) {
@@ -570,7 +576,7 @@ aws.initConfig(awsProps)
                                 config = getGoldenLayoutFromClientState(new clientState.State(config));
                             }
                             const metadata = getMetaDataFromLink(req, result, config);
-                            renderGoldenLayout(config, metadata, res);
+                            renderGoldenLayout(config, metadata, req, res);
                             // And finally, increment the view count
                             // If any errors pop up, they are just logged, but the response should still be valid
                             // It's really  unlikely that it happens as a result of the id not being there though,
@@ -591,7 +597,7 @@ aws.initConfig(awsProps)
                 const embeddedHandler = function (req, res) {
                     staticHeaders(res);
                     contentPolicyHeader(res);
-                    res.render('embed', renderConfig({embedded: true}));
+                    res.render('embed', renderConfig({embedded: true}, req.query));
                 };
                 if (isDevMode()) {
                     router.use(webpackDevMiddleware(webpackCompiler, {
@@ -636,7 +642,7 @@ aws.initConfig(awsProps)
                     .get('/', (req, res) => {
                         staticHeaders(res);
                         contentPolicyHeader(res);
-                        res.render('index', renderConfig({embedded: false}));
+                        res.render('index', renderConfig({embedded: false}, req.query));
                     })
                     .get('/e', embeddedHandler)
                     // legacy. not a 301 to prevent any redirect loops between old e links and embed.html
@@ -644,7 +650,7 @@ aws.initConfig(awsProps)
                     .get('/embed-ro', (req, res) => {
                         staticHeaders(res);
                         contentPolicyHeader(res);
-                        res.render('embed', renderConfig({embedded: true, readOnly: true}));
+                        res.render('embed', renderConfig({embedded: true, readOnly: true}, req.query));
                     })
                     .get('/robots.txt', (req, res) => {
                         staticHeaders(res);

@@ -14,20 +14,20 @@
                         | Short
                   button.dropdown-item.btn.btn-light.btn-sm(data-bind="Full")
                     | Full
-                  button.dropdown-item.btn.btn-light.btn-sm(data-bind="Embed")
-                    | Embed
-                  button.dropdown-item.btn.btn-light.btn-sm(data-bind="Embed (RO)")
-                    | Embed (read only)
               input.form-control.input-sm.permalink(type="text" placeholder="Loading" readonly size="1024" style="font-size: 10px")
               .input-group-append
                 button.input-group-btn.btn.btn-outline-secondary.btn-sm.clippy(type="button" data-clipboard-target=".popover .permalink" title="Copy to clipboard")
                   span.fa.fa-clipboard
+        div
+          | &nbsp;
+        button.btn.btn-sm.btn-outline-secondary.shareembed(data-target="#shareembedlink" data-toggle="modal" data-bind="Embed")
+          | Embedded
       if sharingEnabled
         .card-footer
           .socialsharing
 
   #codeEditor
-    .top-bar.btn-toolbar.bg-light(role="toolbar" aria-label="Editor toolbar")
+    .top-bar.btn-toolbar.bg-light(role="toolbar" aria-label="Editor toolbar" name="editor-btn-toolbar")
       include font-size.pug
       .btn-group.btn-group-sm(role="group" aria-label="Editor settings")
         button.btn.btn-light.load-save(title="Load or save text" aria-label="Load or save text")

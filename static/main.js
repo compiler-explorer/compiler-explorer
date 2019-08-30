@@ -396,6 +396,11 @@ function start() {
         }
         $('#version-tree').prop('href', versionLink);
     }
+
+    if (options.hideEditorToolbars) {
+        $('[name="editor-btn-toolbar"]').addClass("d-none");
+    }
+
     sizeRoot();
     lastState = JSON.stringify(layout.toConfig());
 }

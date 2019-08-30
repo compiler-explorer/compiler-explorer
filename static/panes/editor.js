@@ -591,7 +591,7 @@ Editor.prototype.formatCurrentText = function () {
 
 Editor.prototype.resize = function () {
     var topBarHeight = this.updateAndCalcTopBarHeight();
-    //var topBarHeight = this.topBar.outerHeight(true) || 0;
+
     this.editor.layout({
         width: this.domRoot.width(),
         height: this.domRoot.height() - topBarHeight
@@ -606,20 +606,26 @@ Editor.prototype.resize = function () {
 
 Editor.prototype.updateAndCalcTopBarHeight = function () {
     var width = this.domRoot.width();
-    if (width === this.cachedTopBarHeightAtWidth) {
+    if (width === this.cachedTopBarHeightAtWidth && !this.topBar.hasClass("d-none")) {
         return this.cachedTopBarHeight;
     }
-    // If we save vertical space by hiding stuff that's OK to hide
-    // when thin, then hide that stuff.
-    this.hideable.show();
-    var topBarHeightMax = this.topBar.outerHeight(true);
-    this.hideable.hide();
-    var topBarHeightMin = this.topBar.outerHeight(true);
-    var topBarHeight = topBarHeightMin;
-    if (topBarHeightMin === topBarHeightMax) {
+
+    var topBarHeight = 0;
+    var topBarHeightMax = 0;
+    var topBarHeightMin = 0;
+
+    if (!this.topBar.hasClass("d-none")) {
         this.hideable.show();
-        topBarHeight = topBarHeightMax;
+        topBarHeightMax = this.topBar.outerHeight(true);
+        this.hideable.hide();
+        topBarHeightMin = this.topBar.outerHeight(true);
+        topBarHeight = topBarHeightMin;
+        if (topBarHeightMin === topBarHeightMax) {
+            this.hideable.show();
+            topBarHeight = topBarHeightMax;
+        }
     }
+
     this.cachedTopBarHeight = topBarHeight;
     this.cachedTopBarHeightAtWidth = width;
     return topBarHeight;
