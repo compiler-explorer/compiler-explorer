@@ -20,9 +20,8 @@
                   span.fa.fa-clipboard
         div
           | &nbsp;
-        .btn-group.btn-group-sm(role="group")
-          button.btn.btn-outline-secondary.btn-sm#shareembed
-            | Embedded
+        button.btn.btn-sm.btn-outline-secondary.shareembed(data-target="#shareembedlink" data-toggle="modal" data-bind="Embed")
+          | Embedded
       if sharingEnabled
         .card-footer
           .socialsharing

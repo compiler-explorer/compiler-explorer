@@ -216,13 +216,14 @@ function initShareButton(getLink, layout, noteNewState) {
             update();
         });
 
-        var embeddedButton = $('#shareembed');
-        $('#embedsettings input').on('click', function () {
+        var embeddedButton = $('.shareembed');
+        embeddedButton.on('click', function () {
             setCurrent(embeddedButton);
             update();
+            getLink.popover("hide");
         });
-        embeddedButton.on('click', function () {
-            $('#embedsettings').modal('show'); 
+
+        $('#embedsettings input').off('click').on('click', function () {
             setCurrent(embeddedButton);
             update();
         });
