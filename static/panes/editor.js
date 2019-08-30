@@ -504,12 +504,6 @@ Editor.prototype.initEditorActions = function () {
             this.tryPanesLinkLine(ed.getPosition().lineNumber, true);
         }, this)
     });
-
-    // this.editor.addAction({
-    //     id: 'usevim',
-    //     label: 'enable vim keybinding',
-
-    // })
 };
 
 Editor.prototype.doesMatchEditor = function (otherSource) {
