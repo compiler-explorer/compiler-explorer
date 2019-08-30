@@ -227,6 +227,7 @@ function setupSettings(root, settings, onChange, subLangId) {
     add(root.find('.enableCtrlS'), 'enableCtrlS', true, Checkbox);
     add(root.find('.editorsFFont'), 'editorsFFont', 'Consolas, "Liberation Mono", Courier, monospace', Textbox);
     add(root.find('.allowStoreCodeDebug'), 'allowStoreCodeDebug', true, Checkbox);
+    add(root.find('.useVim'), 'useVim', false, Checkbox);
 
     setSettings(settings);
     handleThemes();

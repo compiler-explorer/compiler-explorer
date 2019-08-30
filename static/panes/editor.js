@@ -278,7 +278,12 @@ Editor.prototype.onMouseMove = function (e) {
 
 Editor.prototype.onEscapeKey = function () {
     if (this.editor.vimInUse) {
-        monacoVim.VimMode.Vim.exitInsertMode(this.vimMode);
+        var currentState = monacoVim.VimMode.Vim.maybeInitVimState_(this.vimMode);
+        if (currentState.insertMode) {
+            monacoVim.VimMode.Vim.exitInsertMode(this.vimMode);
+        } else if (currentState.visualMode) {
+            monacoVim.VimMode.Vim.exitVisualMode(this.vimMode, false);
+        }
     }
 };
 
@@ -296,6 +301,21 @@ Editor.prototype.onInsertKey = function (event) {
             this.vimMode.handleKeyDown(insertEvent);
         }
     }
+};
+
+Editor.prototype.enableVim = function () {
+    this.vimMode = monacoVim.initVimMode(this.editor, this.domRoot.find('#v-status')[0]);
+    var vFlag = this.domRoot.find('#vim-flag');
+    vFlag.prop("class", "btn btn-info");
+    this.editor.vimInUse = true;
+};
+
+Editor.prototype.disableVim = function () {
+    this.vimMode.dispose();
+    this.domRoot.find('#v-status').html("");
+    var vFlag = this.domRoot.find('#vim-flag');
+    vFlag.prop("class", "btn btn-light");
+    this.editor.vimInUse = false;
 };
 
 Editor.prototype.initButtons = function (state) {
@@ -320,17 +340,10 @@ Editor.prototype.initButtons = function (state) {
         paneAdderDropdown.dropdown('toggle');
     };
     var toggleVim = function () {
-        var vFlag = this.domRoot.find('#vim-flag')[0];
         if (this.editor.vimInUse) {
-            this.vimMode.dispose();
-            this.domRoot.find('#v-status')[0].innerText="";
-            vFlag.setAttribute("class", "btn btn-light");
-            this.editor.vimInUse = false;
+            this.disableVim();
         } else {
-            var statusNode = this.domRoot.find('#v-status')[0];
-            this.vimMode = monacoVim.initVimMode(this.editor, statusNode);
-            vFlag.setAttribute("class", "btn btn-info");
-            this.editor.vimInUse = true;
+            this.enableVim();
         }
     };
     toggleVimButton.on('click', _.bind(toggleVim, this));
@@ -653,17 +666,10 @@ Editor.prototype.onSettingsChange = function (newSettings) {
         this.onEditorSetDecoration(this.id, -1, false);
     }
 
-    if (before.useVim !== after.useVim) {
-        if (this.vimMode) {
-            this.vimMode.dispose();
-        }
-        document.getElementById('vim-status').innerHTML='';
-
-        if (after.useVim)
-            this.vimMode = monacoVim.initVimMode(this.editor, document.getElementById('vim-status'));
-        else
-            this.vimMode = null;
+    if (after.useVim && !this.vimMode) {
+        this.enableVim();
     }
+
     this.numberUsedLines();
 };
 
