@@ -40,8 +40,6 @@ function GccDump(hub, container, state) {
     this.domRoot = container.getElement();
     this.domRoot.html($('#gccdump').html());
 
-    this._currentDecorations = [];
-
     this.gccDumpEditor = monaco.editor.create(this.domRoot.find('.monaco-placeholder')[0], {
         value: '',
         scrollBeyondLastLine: false,

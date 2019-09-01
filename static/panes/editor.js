@@ -100,7 +100,7 @@ function Editor(hub, state, container) {
         lineNumbersMinChars: options.embedded ? 1 : 3,
         emptySelectionClipboard: true,
         autoIndent: true,
-        vimInUse: false,
+        vimInUse: false
     });
     this.editor.getModel().setEOL(monaco.editor.EndOfLineSequence.LF);
 

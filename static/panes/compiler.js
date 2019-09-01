@@ -1040,11 +1040,11 @@ Compiler.prototype.updateButtons = function () {
     this.filterTrimButton.prop('disabled', this.compiler.disabledFilters.indexOf('trim') !== -1);
     formatFilterTitle(this.filterTrimButton, this.filterTrimTitle);
 
-    this.optButton.prop('disabled', !this.compiler.supportsOptOutput);
-    this.astButton.prop('disabled', !this.compiler.supportsAstView);
-    this.irButton.prop('disabled', !this.compiler.supportsIrView);
-    this.cfgButton.prop('disabled', !this.compiler.supportsCfg);
-    this.gccDumpButton.prop('disabled', !this.compiler.supportsGccDump);
+    this.optButton.prop('disabled', this.optViewOpen || !this.compiler.supportsOptOutput);
+    this.astButton.prop('disabled', this.astViewOpen || !this.compiler.supportsAstView);
+    this.irButton.prop('disabled', this.irViewOpen || !this.compiler.supportsIrView);
+    this.cfgButton.prop('disabled', this.cfgViewOpen || !this.compiler.supportsCfg);
+    this.gccDumpButton.prop('disabled', this.gccDumpViewOpen || !this.compiler.supportsGccDump);
 
     this.enableToolButtons();
 };
