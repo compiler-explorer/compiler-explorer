@@ -37,9 +37,7 @@ blacklist /snap
 blacklist /srv
 
 whitelist /opt/compiler-explorer
-whitelist /efs/compiler-explorer
 read-only /opt/compiler-explorer
-read-only /efs/compiler-explorer
 
 read-only /celibs
 read-only /compiler-explorer-image
