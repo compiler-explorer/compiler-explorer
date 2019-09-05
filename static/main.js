@@ -225,6 +225,8 @@ function initPolicies(options) {
     if (options.policies.cookies.enabled && storedCookieConsent !== '' &&
         options.policies.cookies.hash !== storedCookieConsent) {
         simpleCooks.show();
+    } else if (options.policies.cookies.enabled) {
+        analytics.initialise();
     }
 }
 
