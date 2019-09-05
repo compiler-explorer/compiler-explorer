@@ -14,6 +14,10 @@ script:
     - make changelog
     - make policies
     - make -j$(nproc) travis-dist
+    - mkdir -p out/dist-deploy/travis/${TRAVIS_BRANCH}
+    - mkdir -p out/dist-deploy/cdn
+    - cp -R out/dist-bin/* out/dist-deploy/travis/${TRAVIS_BRANCH}
+    - cp -R out/dist/dist/* out/dist-deploy/cdn
 
 deploy:
     on:
@@ -23,13 +27,7 @@ deploy:
     bucket: "compiler-explorer"
     skip_cleanup: true
     acl: public_read
-    local_dir: out/dist-bin
-    upload-dir: dist/travis/${TRAVIS_BRANCH}
-    provider: s3
-    bucket: "compiler-explorer"
-    skip_cleanup: true
-    acl: public_read
-    local_dir: out/dist/dist
-    upload-dir: dist/cdn
+    local_dir: out/dist-deploy
+    upload-dir: dist
 
 after_success: npm run codecov
