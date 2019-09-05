@@ -125,8 +125,8 @@ function setupButtons(options) {
     if (options.policies.cookies.enabled) {
         var getCookieTitle = function () {
             return 'Cookies & related technologies policy<br><p>Current consent status: <span style="color:' +
-                (hasCookieConsented() ? 'green' : 'red') + '">' +
-                (hasCookieConsented() ? 'Granted' : 'Denied') + '</span></p>';
+                (hasCookieConsented(options) ? 'green' : 'red') + '">' +
+                (hasCookieConsented(options) ? 'Granted' : 'Denied') + '</span></p>';
         };
         $('#cookies').click(function () {
             alertSystem.ask(getCookieTitle(), $(require('./policies/cookies.html')), {
