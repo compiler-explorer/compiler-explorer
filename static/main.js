@@ -100,6 +100,10 @@ function setupSettings(hub) {
     return currentSettings;
 }
 
+function hasCookieConsented(options) {
+    return jsCookie.get(options.policies.cookies.key) === options.policies.cookies.hash;
+}
+
 function setupButtons(options) {
     var alertSystem = new Alert();
 
@@ -117,14 +121,12 @@ function setupButtons(options) {
             }
         });
     }
-    var hasCookieConsented = function () {
-        return jsCookie.get(options.policies.cookies.key) === options.policies.cookies.hash;
-    };
+
     if (options.policies.cookies.enabled) {
         var getCookieTitle = function () {
             return 'Cookies & related technologies policy<br><p>Current consent status: <span style="color:' +
-                (hasCookieConsented() ? 'green' : 'red') + '">' +
-                (hasCookieConsented() ? 'Granted' : 'Denied') + '</span></p>';
+                (hasCookieConsented(options) ? 'green' : 'red') + '">' +
+                (hasCookieConsented(options) ? 'Granted' : 'Denied') + '</span></p>';
         };
         $('#cookies').click(function () {
             alertSystem.ask(getCookieTitle(), $(require('./policies/cookies.html')), {
@@ -225,6 +227,8 @@ function initPolicies(options) {
     if (options.policies.cookies.enabled && storedCookieConsent !== '' &&
         options.policies.cookies.hash !== storedCookieConsent) {
         simpleCooks.show();
+    } else if (options.policies.cookies.enabled && hasCookieConsented(options)) {
+        analytics.initialise();
     }
 }
 
