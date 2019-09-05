@@ -35,6 +35,6 @@ deploy:
     skip_cleanup: true
     acl: public_read
     local_dir: out/dist/dist
-    upload-dir: cdn
+    upload-dir: dist/cdn
 
 after_success: npm run codecov
