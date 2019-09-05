@@ -26,4 +26,15 @@ deploy:
     local_dir: out/dist-bin
     upload-dir: dist/travis/${TRAVIS_BRANCH}
 
+deploy:
+    on:
+        all_branches:
+            true
+    provider: s3
+    bucket: "compiler-explorer"
+    skip_cleanup: true
+    acl: public_read
+    local_dir: out/dist/dist
+    upload-dir: cdn
+
 after_success: npm run codecov
