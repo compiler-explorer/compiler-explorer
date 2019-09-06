@@ -1,14 +1,7 @@
-doctype html
-html(lang="en")
-  head
-    base(href=httpRoot)
-    include head.pug
-  body.embedded
-    a.float-link.link(href="/" target="_blank")
-      | Edit on #{language} Compiler Explorer
-      span.fas.fa-external-link-alt
-      br
+extends _layout.pug
 
-    #root
-
-    include templates.pug
+block prepend content
+  a.float-link.link(href="/" target="_blank")
+    | Edit on #{language} Compiler Explorer
+    span.fas.fa-external-link-alt
+    br

@@ -1,0 +1,37 @@
+doctype html
+html(lang="en")
+  head
+    base(href=httpRoot)
+
+    block meta
+        include meta.pug
+
+    block styles
+        link(href=require("main.css") rel="stylesheet")
+        style#theme
+
+  body(class=extraBodyClass)
+    block content
+        #root
+
+    block footer
+        include templates.pug
+
+    block scripts
+        script(src=`${httpRootDir}client-options.js?hash=${optionsHash}`)
+        //-
+          The atob/base64 stuff below is to prevent any XSS attacks: now we have user content in the options (from
+          short links), it's possible to do XSS attacks, by leaving <script> tags in the source etc, which can be
+          interpreted by the browser.
+        script
+          | var extraOptions = JSON.parse(decodeURIComponent("!{encodeURIComponent(compilerExplorerOptions)}"));
+          | for (k in extraOptions) { window.compilerExplorerOptions[k] = extraOptions[k]; }
+          |
+          | window.httpRoot = '#{httpRoot}'; window.httpRootDir = '#{httpRootDir}';
+          |
+          | if (window.navigator.userAgent.indexOf("Trident/") > 0) {
+          |   var s = document.createElement("script");
+          |   s.src = "#{httpRootDir}dist/es6-shim.min.js";
+          |   document.head.appendChild(s);
+          | }
+        script(src=require("main.js"))

@@ -426,7 +426,7 @@ aws.initConfig(awsProps)
                     const options = _.extend({}, allExtraOptions, clientOptionsHandler.get());
                     options.optionsHash = clientOptionsHandler.getHash();
                     options.compilerExplorerOptions = JSON.stringify(allExtraOptions);
-                    options.extraBodyClass = extraBodyClass;
+                    options.extraBodyClass = options.embedded ? 'embedded' : extraBodyClass;
                     options.httpRoot = httpRoot;
                     options.httpRootDir = httpRootDir;
                     options.storageSolution = storageSolution;
