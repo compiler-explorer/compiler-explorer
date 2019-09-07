@@ -95,7 +95,8 @@
                     "specialoutputs": [],
                     "tools": []
                 }
-            ]
+            ],
+            "executors": []
         }
     ]
 }

@@ -64,4 +64,16 @@ describe("Normalizing clientstate", () => {
 
         normalizer.normalized.should.deep.equal(resultdata);
     });
+
+    it("Should support executors", () => {
+        const normalizer = new ClientStateNormalizer();
+
+        const data =  JSON.parse(fs.readFileSync("test/state/executor.json"));
+
+        normalizer.fromGoldenLayout(data);
+
+        const resultdata = JSON.parse(fs.readFileSync("test/state/executor.json.normalized"));
+
+        normalizer.normalized.should.deep.equal(resultdata);
+    });
 });
