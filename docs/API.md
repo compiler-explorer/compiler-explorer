@@ -77,6 +77,33 @@ To specify a compilation request as a JSON document, post it as the appropriate
 }
 ```
 
+Execution Only request:
+```JSON
+{
+    "source": "int main () { return 1; }",
+    "compiler": "g82",
+    "options": {
+        "userArguments": "-O3",
+        "executeParameters": {
+            "args": "arg1",
+            "stdin": "hello, world!"
+        },
+        "compilerOptions": {
+            "executorRequest": true
+        },
+        "filters": {
+            "execute": true
+        },
+        "tools": [],
+        "libraries": [
+            {"id": "openssl", "version": "111c"}
+        ]
+    },
+    "lang": "c++",
+    "allowStoreCodeDebug": true
+}
+```
+
 The filters are a JSON object with `true`/`false` values. If not supplied,
  defaults are used. If supplied, the filters are used as-is.
  The `compilerOptions` is used to pass extra arguments to the back end, and is
@@ -167,19 +194,31 @@ If JSON is present in the request's `Accept` header, the compilation results
 ### `POST /shortener` - saves given state *forever* to a shortlink and returns the unique id for the link
 
 The body of this post should be in the format of a [ClientState](https://github.com/mattgodbolt/compiler-explorer/blob/master/lib/clientstate.js)
+Be sure that the Content-Type of your post is application/json
 
 An example of one the easiest forms of a clientstate:
-```
+```JSON
 {
-  sessions: [
+  "sessions": [
     {
-      id: 1,
-      language: 'c++',
-      source: 'int main() { return 42; }',
-      compilers: [
+      "id": 1,
+      "language": "c++",
+      "source": "int main() { return 42; }",
+      "compilers": [
         {
-          id: 'g82',
-          options: '-O3'
+          "id": "g82",
+          "options": "-O3"
+        }
+      ],
+      "executors": [
+        {
+          "arguments": "arg1",
+          "compiler": {
+              "id": "g92",
+              "libs": [],
+              "options": "-O3"
+          },
+          "stdin": ""
         }
       ]
     }
@@ -188,7 +227,11 @@ An example of one the easiest forms of a clientstate:
 ```
 
 Returns:
-`{"storedId":"abcdef"}`
+```JSON
+{
+    "url": "https://godbolt.org/z/Km_340"
+}
+```
 
 The storedId can be used in the api call /api/shortlinkinfo/<id> and to open in the website with a /z/<id> shortlink.
 
