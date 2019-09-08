@@ -23,7 +23,8 @@
                     "specialoutputs": [],
                     "tools": []
                 }
-            ]
+            ],
+            "executors": []
         },
         {
             "conformanceview": false,
@@ -48,7 +49,8 @@
                     "specialoutputs": [],
                     "tools": []
                 }
-            ]
+            ],
+            "executors": []
         }
     ]
 }
