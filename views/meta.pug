@@ -25,22 +25,3 @@ meta(name="author" content="Matt Godbolt")
 meta(name="google" content="nositelinkssearchbox")
 meta(name="google" content="notranslate")
 meta(id="meta-theme" name="theme-color" content="#f2f2f2")
-
-link(href=require("main.css") rel="stylesheet")
-style#theme
-
-// The atob/base64 stuff below is to prevent any XSS attacks: now we have user content in the options (from
-// short links), it's possible to do XSS attacks, by leaving <script> tags in the source etc, which can be
-// interpreted by the browser.
-script(src=`${httpRootDir}client-options.js?hash=${optionsHash}`)
-script
-  | var extraOptions = JSON.parse(decodeURIComponent("!{encodeURIComponent(compilerExplorerOptions)}"));
-  | for (k in extraOptions) { window.compilerExplorerOptions[k] = extraOptions[k]; }
-script window.httpRoot = '#{httpRoot}'; window.httpRootDir = '#{httpRootDir}';
-script
-  | if (window.navigator.userAgent.indexOf("Trident/") > 0) {
-  |   var s = document.createElement("script");
-  |   s.src = "#{httpRootDir}dist/es6-shim.min.js";
-  |   document.head.appendChild(s);
-  | }
-script(src=require("main.js"))
