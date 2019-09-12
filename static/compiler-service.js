@@ -46,9 +46,6 @@ function CompilerService(eventHub) {
     _.each(options.compilers, function (compiler) {
         if (!this.compilersByLang[compiler.lang]) this.compilersByLang[compiler.lang] = {};
         this.compilersByLang[compiler.lang][compiler.id] = compiler;
-        if (compiler.alias) {
-            this.compilersByLang[compiler.lang][compiler.alias] = compiler;
-        }
     }, this);
     // settingsChange is triggered on page load
     eventHub.on('settingsChange', function (newSettings) {
@@ -129,7 +126,7 @@ CompilerService.prototype.findCompilerInList = function (compilers, compilerId) 
         return compilers[compilerId];
     }
     return _.find(compilers, function (compiler) {
-        return compiler.alias === compilerId;
+        return compiler.alias.includes(compilerId);
     });
 };
 
