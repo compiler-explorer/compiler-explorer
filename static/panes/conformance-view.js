@@ -89,7 +89,8 @@ Conformance.prototype.onLibsChanged = function () {
 };
 
 Conformance.prototype.initLibraries = function (state) {
-    this.libsWidget = new Libraries.Widget(this.langId, false, false, this.libsButton, state, _.bind(this.onLibsChanged, this));
+    this.libsWidget = new Libraries.Widget(this.langId, false, false,
+        this.libsButton, state, _.bind(this.onLibsChanged, this));
 };
 
 Conformance.prototype.initButtons = function () {
@@ -413,7 +414,7 @@ Conformance.prototype.updateHideables = function () {
 };
 
 Conformance.prototype.updateLibraries = function () {
-    this.libsWidget.setNewLangId(newLangId);
+    this.libsWidget.setNewLangId(this.langId);
 };
 
 Conformance.prototype.onLanguageChange = function (editorId, newLangId) {

@@ -71,9 +71,11 @@ LibsWidget.prototype.updateAvailableLibs = function (possibleLibs) {
 
     if (!this.availableLibs[this.currentLangId][this.currentCompilerId]) {
         if (this.currentCompilerId === '_default_') {
-            this.availableLibs[this.currentLangId][this.currentCompilerId] = $.extend(true, {}, options.libs[this.currentLangId]);
+            this.availableLibs[this.currentLangId][this.currentCompilerId] =
+                $.extend(true, {}, options.libs[this.currentLangId]);
         } else {
-            this.availableLibs[this.currentLangId][this.currentCompilerId] = $.extend(true, {}, possibleLibs);
+            this.availableLibs[this.currentLangId][this.currentCompilerId] =
+                $.extend(true, {}, possibleLibs);
         }
     }
 
