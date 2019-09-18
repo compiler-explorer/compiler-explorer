@@ -127,6 +127,7 @@ Executor.prototype.initLangAndCompiler = function (state) {
     var result = this.compilerService.processFromLangAndCompiler(langId, compilerId);
     this.compiler = result.compiler;
     this.currentLangId = result.langId;
+    this.updateLibraries();
 };
 
 Executor.prototype.close = function () {
@@ -752,6 +753,10 @@ Executor.prototype.handleCompilationStatus = function (status) {
         .toggleClass('fa-check-circle', status.code !== 4 && status.didExecute);
 };
 
+Executor.prototype.updateLibraries = function () {
+    if (this.libsWidget) this.libsWidget.setNewLangId(this.currentLangId, this.compiler.id, this.compiler.libs);
+};
+
 Executor.prototype.onLanguageChange = function (editorId, newLangId) {
     if (this.sourceEditorId === editorId) {
         var oldLangId = this.currentLangId;
@@ -763,7 +768,6 @@ Executor.prototype.onLanguageChange = function (editorId, newLangId) {
             execArgs: this.executionArguments,
             execStdin: this.executionStdin
         };
-        this.libsWidget.setNewLangId(newLangId);
         var info = this.infoByLang[this.currentLangId] || {};
         this.initLangAndCompiler({lang: newLangId, compiler: info.compiler});
         this.updateCompilersSelector(info);

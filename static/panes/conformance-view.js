@@ -89,7 +89,7 @@ Conformance.prototype.onLibsChanged = function () {
 };
 
 Conformance.prototype.initLibraries = function (state) {
-    this.libsWidget = new Libraries.Widget(this.langId, this.libsButton, state, _.bind(this.onLibsChanged, this));
+    this.libsWidget = new Libraries.Widget(this.langId, false, false, this.libsButton, state, _.bind(this.onLibsChanged, this));
 };
 
 Conformance.prototype.initButtons = function () {
@@ -412,6 +412,10 @@ Conformance.prototype.updateHideables = function () {
     this.hideable.toggle(this.domRoot.width() > this.addCompilerButton.width());
 };
 
+Conformance.prototype.updateLibraries = function () {
+    this.libsWidget.setNewLangId(newLangId);
+};
+
 Conformance.prototype.onLanguageChange = function (editorId, newLangId) {
     if (editorId === this.editorId && this.langId !== newLangId) {
         var oldLangId = this.langId;
@@ -421,7 +425,7 @@ Conformance.prototype.onLanguageChange = function (editorId, newLangId) {
         this.selectorList.children().remove();
         var langState = this.stateByLang[newLangId];
         this.initFromState(langState);
-        this.libsWidget.setNewLangId(newLangId);
+        this.updateLibraries();
         this.handleToolbarUI();
         this.saveState();
     }

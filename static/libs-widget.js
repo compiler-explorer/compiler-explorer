@@ -28,14 +28,19 @@ var options = require('options'),
     _ = require('underscore'),
     $ = require('jquery');
 
-function LibsWidget(langId, dropdownButton, state, onChangeCallback) {
+function LibsWidget(langId, compilerId, possibleLibs, dropdownButton, state, onChangeCallback) {
     this.dropdownButton = dropdownButton;
     this.currentLangId = langId;
+    if (compilerId) {
+        this.currentCompilerId = compilerId;
+    } else {
+        this.currentCompilerId = '_default_';
+    }
     this.initButtons();
     this.domRoot = null;
     this.onChangeCallback = onChangeCallback;
     this.availableLibs = {};
-    this.updateAvailableLibs(langId);
+    this.updateAvailableLibs(possibleLibs);
     _.each(state.libs, _.bind(function (lib) {
         this.markLibrary(lib.name, lib.ver, true);
     }, this));
@@ -59,23 +64,39 @@ LibsWidget.prototype.initLangDefaultLibs = function () {
     }, this));
 };
 
-LibsWidget.prototype.updateAvailableLibs = function () {
+LibsWidget.prototype.updateAvailableLibs = function (possibleLibs) {
     if (!this.availableLibs[this.currentLangId]) {
-        this.availableLibs[this.currentLangId] = $.extend(true, {}, options.libs[this.currentLangId]);
+        this.availableLibs[this.currentLangId] = {};
     }
+
+    if (!this.availableLibs[this.currentLangId][this.currentCompilerId]) {
+        if (this.currentCompilerId === '_default_') {
+            this.availableLibs[this.currentLangId][this.currentCompilerId] = $.extend(true, {}, options.libs[this.currentLangId]);
+        } else {
+            this.availableLibs[this.currentLangId][this.currentCompilerId] = $.extend(true, {}, possibleLibs);
+        }
+    }
+
     this.initLangDefaultLibs();
     this.updateLibsDropdown();
 };
 
-LibsWidget.prototype.setNewLangId = function (langId) {
+LibsWidget.prototype.setNewLangId = function (langId, compilerId, possibleLibs) {
     this.currentLangId = langId;
+
+    if (compilerId) {
+        this.currentCompilerId = compilerId;
+    } else {
+        this.currentCompilerId = '_default_';
+    }
+
     // Clear the dom Root so it gets rebuilt with the new language libraries
     this.domRoot = null;
-    this.updateAvailableLibs();
+    this.updateAvailableLibs(possibleLibs);
 };
 
 LibsWidget.prototype.lazyDropdownLoad = function () {
-    var libsCount = _.keys(this.availableLibs[this.currentLangId]).length;
+    var libsCount = _.keys(this.availableLibs[this.currentLangId][this.currentCompilerId]).length;
     if (libsCount === 0) {
         return this.noLibsPanel;
     }
@@ -83,7 +104,7 @@ LibsWidget.prototype.lazyDropdownLoad = function () {
         var MAX_COLUMNS = 3;
         var currentColumn = null;
         var currentColumnItemCount = 0;
-        var libsKeys = _.keys(this.availableLibs[this.currentLangId]).sort();
+        var libsKeys = _.keys(this.availableLibs[this.currentLangId][this.currentCompilerId]).sort();
         var itemsPerColumn = Math.ceil(libsKeys.length / MAX_COLUMNS);
         this.domRoot = $('<div></div>');
         var libsPanel = $('<div></div>')
@@ -104,7 +125,7 @@ LibsWidget.prototype.lazyDropdownLoad = function () {
         var libsInUse = this.listUsedLibs();
 
         _.each(libsKeys, _.bind(function (id) {
-            var libEntry = this.availableLibs[this.currentLangId][id];
+            var libEntry = this.availableLibs[this.currentLangId][this.currentCompilerId][id];
             var newLibCard = this.libsEntry.clone();
             var label = newLibCard.find('.input-group-prepend label')
                 .text(libEntry.name)
@@ -160,10 +181,11 @@ LibsWidget.prototype.updateLibsDropdown = function () {
 
 LibsWidget.prototype.markLibrary = function (name, version, used) {
     if (this.availableLibs[this.currentLangId] &&
-        this.availableLibs[this.currentLangId][name] &&
-        this.availableLibs[this.currentLangId][name].versions[version]) {
+        this.availableLibs[this.currentLangId][this.currentCompilerId] &&
+        this.availableLibs[this.currentLangId][this.currentCompilerId][name] &&
+        this.availableLibs[this.currentLangId][this.currentCompilerId][name].versions[version]) {
 
-        this.availableLibs[this.currentLangId][name].versions[version].used = used;
+        this.availableLibs[this.currentLangId][this.currentCompilerId][name].versions[version].used = used;
     }
 };
 
@@ -175,7 +197,7 @@ LibsWidget.prototype.get = function () {
 
 LibsWidget.prototype.listUsedLibs = function () {
     var libs = {};
-    _.each(this.availableLibs[this.currentLangId], function (library, libId) {
+    _.each(this.availableLibs[this.currentLangId][this.currentCompilerId], function (library, libId) {
         _.each(library.versions, function (version, ver) {
             if (library.versions[ver].used) {
                 // We trust the invariant of only 1 used version at any given time per lib
@@ -188,7 +210,7 @@ LibsWidget.prototype.listUsedLibs = function () {
 
 LibsWidget.prototype.getLibsInUse = function () {
     var libs = [];
-    _.each(this.availableLibs[this.currentLangId], function (library, libId) {
+    _.each(this.availableLibs[this.currentLangId][this.currentCompilerId], function (library, libId) {
         _.each(library.versions, function (version, ver) {
             if (library.versions[ver].used) {
                 var libVer = Object.assign({libId: libId, versionId: ver}, library.versions[ver]);
