@@ -171,6 +171,7 @@ Conformance.prototype.addCompilerSelector = function (config) {
         this.handleStatusIcon(status, {code: 0});
         var compiler = this.compilerService.findCompiler(this.langId, compilerId);
         if (compiler) this.setCompilationOptionsPopover(prependOptions, compiler.options);
+        this.updateLibraries();
     }, this);
 
     var compilerPicker = newEntry.find('.compiler-picker').selectize({
@@ -414,7 +415,38 @@ Conformance.prototype.updateHideables = function () {
 };
 
 Conformance.prototype.updateLibraries = function () {
-    this.libsWidget.setNewLangId(this.langId);
+    var compilers = _.map(this.selectorList.children(), _.bind(function (child) {
+        var compilerId = $(child).find('.compiler-picker').val();
+        if (compilerId) {
+            return this.compilerService.findCompiler(this.langId, compilerId);
+        } else {
+            return false;
+        }
+    }, this));
+
+    var compilerIds = false;
+    var libraries = {};
+    var first = true;
+    _.forEach(compilers, function (compiler) {
+        if (compiler) {
+            if (compilerIds) {
+                compilerIds = compilerIds + "|" + compiler.id;
+            } else {
+                compilerIds = compiler.id;
+            }
+
+            if (first) {
+                libraries = _.extend({}, compiler.libs);
+                first = false;
+            } else {
+                libraries = _.omit(libraries, function (value, key) {
+                    return !_.keys(compiler.libs).includes(key);
+                });
+            }
+        }
+    });
+
+    this.libsWidget.setNewLangId(this.langId, compilerIds, libraries);
 };
 
 Conformance.prototype.onLanguageChange = function (editorId, newLangId) {
