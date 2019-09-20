@@ -421,9 +421,9 @@ Conformance.prototype.updateLibraries = function () {
             _.map(this.selectorList.children(), function (child) {
                 return $(child).find('.compiler-picker').val();
             })
-        , function (compilerId) {
-            return compilerId !== "";
-        })
+            , function (compilerId) {
+                return compilerId !== "";
+            })
     );
 
     var compilers = _.map(compilerIds, _.bind(function (compilerId) {
