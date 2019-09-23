@@ -89,7 +89,8 @@ Conformance.prototype.onLibsChanged = function () {
 };
 
 Conformance.prototype.initLibraries = function (state) {
-    this.libsWidget = new Libraries.Widget(this.langId, this.libsButton, state, _.bind(this.onLibsChanged, this));
+    this.libsWidget = new Libraries.Widget(this.langId, false, false,
+        this.libsButton, state, _.bind(this.onLibsChanged, this));
 };
 
 Conformance.prototype.initButtons = function () {
@@ -170,6 +171,7 @@ Conformance.prototype.addCompilerSelector = function (config) {
         this.handleStatusIcon(status, {code: 0});
         var compiler = this.compilerService.findCompiler(this.langId, compilerId);
         if (compiler) this.setCompilationOptionsPopover(prependOptions, compiler.options);
+        this.updateLibraries();
     }, this);
 
     var compilerPicker = newEntry.find('.compiler-picker').selectize({
@@ -226,6 +228,7 @@ Conformance.prototype.setCompilationOptionsPopover = function (element, content)
 
 Conformance.prototype.removeCompilerSelector = function (element) {
     if (element) element.remove();
+    this.updateLibraries();
     this.handleToolbarUI();
     this.saveState();
 };
@@ -412,6 +415,39 @@ Conformance.prototype.updateHideables = function () {
     this.hideable.toggle(this.domRoot.width() > this.addCompilerButton.width());
 };
 
+Conformance.prototype.updateLibraries = function () {
+    var compilerIds = _.uniq(
+        _.filter(
+            _.map(this.selectorList.children(), function (child) {
+                return $(child).find('.compiler-picker').val();
+            })
+            , function (compilerId) {
+                return compilerId !== "";
+            })
+    );
+
+    var compilers = _.map(compilerIds, _.bind(function (compilerId) {
+        return this.compilerService.findCompiler(this.langId, compilerId);
+    }, this));
+
+    var libraries = {};
+    var first = true;
+    _.forEach(compilers, function (compiler) {
+        if (compiler) {
+            if (first) {
+                libraries = _.extend({}, compiler.libs);
+                first = false;
+            } else {
+                libraries = _.omit(libraries, function (value, key) {
+                    return !_.keys(compiler.libs).includes(key);
+                });
+            }
+        }
+    });
+
+    this.libsWidget.setNewLangId(this.langId, compilerIds.join("|"), libraries);
+};
+
 Conformance.prototype.onLanguageChange = function (editorId, newLangId) {
     if (editorId === this.editorId && this.langId !== newLangId) {
         var oldLangId = this.langId;
@@ -421,7 +457,7 @@ Conformance.prototype.onLanguageChange = function (editorId, newLangId) {
         this.selectorList.children().remove();
         var langState = this.stateByLang[newLangId];
         this.initFromState(langState);
-        this.libsWidget.setNewLangId(newLangId);
+        this.updateLibraries();
         this.handleToolbarUI();
         this.saveState();
     }
