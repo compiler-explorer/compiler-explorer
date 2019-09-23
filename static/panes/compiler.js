@@ -1250,8 +1250,8 @@ Compiler.prototype.updateCompilerUI = function () {
 
 Compiler.prototype.onCompilerChange = function (value) {
     this.compiler = this.compilerService.findCompiler(this.currentLangId, value);
-    this.saveState();
     this.updateLibraries();
+    this.saveState();
     this.compile();
     this.updateCompilerUI();
     this.sendCompiler();

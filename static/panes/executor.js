@@ -618,7 +618,6 @@ Executor.prototype.onRequestCompilation = function (editorId) {
 
 Executor.prototype.updateCompilerInfo = function () {
     this.updateCompilerName();
-    this.updateLibraries();
     if (this.compiler) {
         if (this.compiler.notification) {
             this.alertSystem.notify(this.compiler.notification, {
@@ -639,6 +638,7 @@ Executor.prototype.updateCompilerUI = function () {
 
 Executor.prototype.onCompilerChange = function (value) {
     this.compiler = this.compilerService.findCompiler(this.currentLangId, value);
+    this.updateLibraries();
     this.saveState();
     this.compile();
     this.updateCompilerUI();
