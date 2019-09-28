@@ -666,8 +666,10 @@ Editor.prototype.onSettingsChange = function (newSettings) {
         this.onEditorSetDecoration(this.id, -1, false);
     }
 
-    if (after.useVim && !this.vimMode) {
+    if (after.useVim && !before.useVim) {
         this.enableVim();
+    } else if (!after.useVim && before.useVim) {
+        this.disableVim();
     }
 
     this.numberUsedLines();
