@@ -465,8 +465,13 @@ Executor.prototype.onLibsChanged = function () {
 };
 
 Executor.prototype.initLibraries = function (state) {
-    this.libsWidget = new Libraries.Widget(this.currentLangId, this.libsButton,
-        state, _.bind(this.onLibsChanged, this));
+    if (this.compiler) {
+        this.libsWidget = new Libraries.Widget(this.currentLangId, this.compiler.id, this.compiler.libs,
+            this.libsButton, state, _.bind(this.onLibsChanged, this));
+    } else {
+        this.libsWidget = new Libraries.Widget(this.currentLangId, false, false,
+            this.libsButton, state, _.bind(this.onLibsChanged, this));
+    }
 };
 
 Executor.prototype.onFontScale = function () {
@@ -633,6 +638,7 @@ Executor.prototype.updateCompilerUI = function () {
 
 Executor.prototype.onCompilerChange = function (value) {
     this.compiler = this.compilerService.findCompiler(this.currentLangId, value);
+    this.updateLibraries();
     this.saveState();
     this.compile();
     this.updateCompilerUI();

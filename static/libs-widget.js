@@ -84,6 +84,8 @@ LibsWidget.prototype.updateAvailableLibs = function (possibleLibs) {
 };
 
 LibsWidget.prototype.setNewLangId = function (langId, compilerId, possibleLibs) {
+    var libsInUse = this.listUsedLibs();
+
     this.currentLangId = langId;
 
     if (compilerId) {
@@ -95,6 +97,10 @@ LibsWidget.prototype.setNewLangId = function (langId, compilerId, possibleLibs) 
     // Clear the dom Root so it gets rebuilt with the new language libraries
     this.domRoot = null;
     this.updateAvailableLibs(possibleLibs);
+
+    _.forEach(libsInUse, _.bind(function (version, lib) {
+        this.markLibrary(lib, version, true);
+    }, this));
 };
 
 LibsWidget.prototype.lazyDropdownLoad = function () {

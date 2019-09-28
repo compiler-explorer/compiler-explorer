@@ -415,17 +415,7 @@ Conformance.prototype.updateHideables = function () {
     this.hideable.toggle(this.domRoot.width() > this.addCompilerButton.width());
 };
 
-Conformance.prototype.updateLibraries = function () {
-    var compilerIds = _.uniq(
-        _.filter(
-            _.map(this.selectorList.children(), function (child) {
-                return $(child).find('.compiler-picker').val();
-            })
-            , function (compilerId) {
-                return compilerId !== "";
-            })
-    );
-
+Conformance.prototype.getOverlappingLibraries = function (compilerIds) {
     var compilers = _.map(compilerIds, _.bind(function (compilerId) {
         return this.compilerService.findCompiler(this.langId, compilerId);
     }, this));
@@ -438,12 +428,45 @@ Conformance.prototype.updateLibraries = function () {
                 libraries = _.extend({}, compiler.libs);
                 first = false;
             } else {
-                libraries = _.omit(libraries, function (value, key) {
-                    return !_.keys(compiler.libs).includes(key);
+                var libsInCommon = _.intersection(_.keys(libraries),
+                    _.keys(compiler.libs));
+    
+                _.forEach(libraries, function (lib, libkey) {
+                    if (libsInCommon.includes(libkey)) {
+                        var versionsInCommon = _.intersection(_.keys(lib.versions),
+                            _.keys(compiler.libs[libkey].versions));
+
+                        libraries[libkey].versions = _.pick(lib.versions,
+                            function (version, versionkey) {
+                                return versionsInCommon.includes(versionkey);
+                            });
+                    } else {
+                        libraries[libkey] = false;
+                    }
+                });
+    
+                libraries = _.omit(libraries, function (lib) {
+                    return !lib || _.isEmpty(lib.versions);
                 });
             }
         }
     });
+
+    return libraries;
+};
+
+Conformance.prototype.updateLibraries = function () {
+    var compilerIds = _.uniq(
+        _.filter(
+            _.map(this.selectorList.children(), function (child) {
+                return $(child).find('.compiler-picker').val();
+            })
+            , function (compilerId) {
+                return compilerId !== "";
+            })
+    );
+
+    var libraries = this.getOverlappingLibraries(compilerIds);
 
     this.libsWidget.setNewLangId(this.langId, compilerIds.join("|"), libraries);
 };
