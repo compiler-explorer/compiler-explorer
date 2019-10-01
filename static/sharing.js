@@ -312,7 +312,6 @@ function getShortLink(config, root, done) {
 
 function getLinks(config, currentBind, done) {
     var root = window.httpRoot;
-    if (!root.endsWith("/")) root += "/";
     switch (currentBind) {
         case 'Short':
             getShortLink(config, root, done);

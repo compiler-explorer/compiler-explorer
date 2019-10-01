@@ -1,0 +1,15 @@
+--exclude out/dist/static/
+out/dist/
+etc/
+examples/
+--exclude lib/storage/data/
+lib/
+--exclude node_modules/.cache/
+--exclude node_modules/monaco-editor/
+node_modules/
+static/policies/
+static/favicon.ico
+views/
+app.js
+package-lock.json
+package.json

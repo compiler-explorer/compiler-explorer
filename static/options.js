@@ -23,4 +23,18 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 "use strict";
+
+var configElement = document.getElementById('config');
+
+window.httpRoot = configElement.getAttribute('httpRoot');
+window.staticRoot = configElement.getAttribute('staticRoot');
+
+var extraOptions = JSON.parse(decodeURIComponent(configElement.getAttribute('extraOptions')));
+for (var k in extraOptions) {
+    window.compilerExplorerOptions[k] = extraOptions[k];
+}
+
+__webpack_public_path__ = window.staticRoot;
+window.__webpack_public_path__ = __webpack_public_path__;
+
 module.exports = window.compilerExplorerOptions;
