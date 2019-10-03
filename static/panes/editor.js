@@ -39,6 +39,7 @@ require('../modes/d-mode');
 require('../modes/ispc-mode');
 require('../modes/llvm-ir-mode');
 require('../modes/haskell-mode');
+require('../modes/python-mode');
 require('../modes/ocaml-mode');
 require('../modes/clean-mode');
 require('../modes/pascal-mode');
