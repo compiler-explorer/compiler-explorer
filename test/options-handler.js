@@ -27,6 +27,7 @@ const chaiAsPromised = require("chai-as-promised");
 const OptionsHandler = require('../lib/options-handler');
 const _ = require('underscore');
 const properties = require('../lib/properties');
+const BaseCompiler = require('../lib/base-compiler');
 
 chai.use(chaiAsPromised);
 const should = chai.should();
@@ -38,7 +39,7 @@ const languages = {
 };
 
 const libProps = {
-    libs: 'fakelib',
+    libs: 'fakelib:fs',
     'libs.fakelib.name': 'fake lib',
     'libs.fakelib.description': 'Its is a real, fake lib!',
     'libs.fakelib.versions': 'onePath:twoPaths:noPaths',
@@ -52,7 +53,10 @@ const libProps = {
     'libs.fakelib.versions.twoPaths.libpath': '/lib/null:/lib/urandom',
     'libs.fakelib.versions.twoPaths.liblink': 'hello1:hello2',
     'libs.fakelib.versions.noPaths.version': 'no paths',
-    'libs.fakelib.versions.noPaths.path': ''
+    'libs.fakelib.versions.noPaths.path': '',
+    'libs.fs.versions': 'std',
+    'libs.fs.versions.std.version': 'std',
+    'libs.fs.versions.std.staticliblink': 'rt:pthread:c++fs'
 };
 
 if (process.platform === "win32") {
@@ -91,13 +95,27 @@ describe('Options handler', () => {
                 "name": "fake lib",
                 "url": "https://godbolt.org",
                 "versions": {
-                        "noPaths": {"path": [], "version": "no paths", "liblink": [], "libpath": []},
-                        "onePath": {"path": ["/dev/null"], "version": "one path",
+                        "noPaths": {"path": [], "version": "no paths", "liblink": [], "libpath": [], "staticliblink": []},
+                        "onePath": {"path": ["/dev/null"], "version": "one path", "staticliblink": [],
                             "liblink": ["hello"],
                             "libpath": ["/lib/null"]},
-                        "twoPaths": {"path": ["/dev/null", "/dev/urandom"],
+                        "twoPaths": {"path": ["/dev/null", "/dev/urandom"], "staticliblink": [],
                             "liblink": ["hello1", "hello2"],
-                            "libpath": ["/lib/null", "/lib/urandom"], "version": "two paths"}
+                            "libpath": ["/lib/null", "/lib/urandom"], "version": "two paths"},
+                },
+            },
+            "fs": {
+                "description": undefined,
+                "name": undefined,
+                "url": undefined,
+                "versions": {
+                    "std": {
+                        "libpath": [],
+                        "path": [],
+                        "version": "std",
+                        "liblink": [],
+                        "staticliblink": ["rt", "pthread", "c++fs"]
+                    },
                 }
             }
         }});
@@ -154,5 +172,20 @@ describe('Options handler', () => {
             should.equal(compiler['$order'], expectedOrder[compiler.group][compiler.id]);
         });
         optionsHandler.setCompilers([]);
+    });
+    it('should get static libraries', () => {
+        const libs = optionsHandler.parseLibraries({'fake': libProps.libs});
+        const compilerInfo = makeFakeCompilerInfo('g82', 'c++', "cpp", "8.2", true);
+        const env = {
+            compilerProps: () => {}
+        };
+        compilerInfo.libs = libs.fake;
+        const compiler = new BaseCompiler(compilerInfo, env);
+
+        const staticlinks = compiler.getStaticLibraryLinks([{"id": "fs", "version": "std"}]);
+        staticlinks.should.deep.equal(["-lrt", "-lpthread", "-lc++fs"]);
+
+        const sharedlinks = compiler.getSharedLibraryLinks([{"id": "fs", "version": "std"}]);
+        sharedlinks.should.deep.equal([]);
     });
 });
