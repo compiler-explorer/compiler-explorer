@@ -39,7 +39,7 @@ const languages = {
 };
 
 const libProps = {
-    libs: 'fakelib:fs',
+    libs: 'fakelib:fs:someotherlib',
     'libs.fakelib.name': 'fake lib',
     'libs.fakelib.description': 'Its is a real, fake lib!',
     'libs.fakelib.versions': 'onePath:twoPaths:noPaths',
@@ -56,7 +56,12 @@ const libProps = {
     'libs.fakelib.versions.noPaths.path': '',
     'libs.fs.versions': 'std',
     'libs.fs.versions.std.version': 'std',
-    'libs.fs.versions.std.staticliblink': 'rt:pthread:c++fs'
+    'libs.fs.versions.std.staticliblink': 'c++fs:rt',
+    'libs.fs.versions.std.dependencies': 'pthread',
+    'libs.someotherlib.versions': 'trunk',
+    'libs.someotherlib.versions.trunk.version': 'trunk',
+    'libs.someotherlib.versions.trunk.staticliblink': 'someotherlib',
+    'libs.someotherlib.versions.trunk.dependencies': 'c++fs',
 };
 
 if (process.platform === "win32") {
@@ -95,11 +100,11 @@ describe('Options handler', () => {
                 "name": "fake lib",
                 "url": "https://godbolt.org",
                 "versions": {
-                        "noPaths": {"path": [], "version": "no paths", "liblink": [], "libpath": [], "staticliblink": []},
-                        "onePath": {"path": ["/dev/null"], "version": "one path", "staticliblink": [],
+                        "noPaths": {"path": [], "version": "no paths", "liblink": [], "libpath": [], "staticliblink": [], "dependencies": []},
+                        "onePath": {"path": ["/dev/null"], "version": "one path", "staticliblink": [], "dependencies": [],
                             "liblink": ["hello"],
                             "libpath": ["/lib/null"]},
-                        "twoPaths": {"path": ["/dev/null", "/dev/urandom"], "staticliblink": [],
+                        "twoPaths": {"path": ["/dev/null", "/dev/urandom"], "staticliblink": [], "dependencies": [],
                             "liblink": ["hello1", "hello2"],
                             "libpath": ["/lib/null", "/lib/urandom"], "version": "two paths"},
                 },
@@ -114,7 +119,23 @@ describe('Options handler', () => {
                         "path": [],
                         "version": "std",
                         "liblink": [],
-                        "staticliblink": ["rt", "pthread", "c++fs"]
+                        "staticliblink": ["c++fs", "rt"],
+                        "dependencies": ["pthread"]
+                    },
+                }
+            },
+            "someotherlib": {
+                "description": undefined,
+                "name": undefined,
+                "url": undefined,
+                "versions": {
+                    "trunk": {
+                        "libpath": [],
+                        "path": [],
+                        "version": "trunk",
+                        "liblink": [],
+                        "staticliblink": ["someotherlib"],
+                        "dependencies": ["c++fs"]
                     },
                 }
             }
@@ -183,9 +204,26 @@ describe('Options handler', () => {
         const compiler = new BaseCompiler(compilerInfo, env);
 
         const staticlinks = compiler.getStaticLibraryLinks([{"id": "fs", "version": "std"}]);
-        staticlinks.should.deep.equal(["-lrt", "-lpthread", "-lc++fs"]);
+        staticlinks.should.deep.equal(["-lc++fs", "-lrt", "-lpthread"]);
 
         const sharedlinks = compiler.getSharedLibraryLinks([{"id": "fs", "version": "std"}]);
         sharedlinks.should.deep.equal([]);
+    });
+    it('should sort static libraries', () => {
+        const libs = optionsHandler.parseLibraries({'fake': libProps.libs});
+        const compilerInfo = makeFakeCompilerInfo('g82', 'c++', "cpp", "8.2", true);
+        const env = {
+            compilerProps: () => {}
+        };
+        compilerInfo.libs = libs.fake;
+        const compiler = new BaseCompiler(compilerInfo, env);
+
+        let staticlinks = compiler.getSortedStaticLibraries([{"id": "someotherlib", "version": "trunk"}]);
+        staticlinks.should.deep.equal(["someotherlib", "c++fs"]);
+
+        staticlinks = compiler.getSortedStaticLibraries([
+            {"id": "fs", "version": "std"},
+            {"id": "someotherlib", "version": "trunk"}]);
+        staticlinks.should.deep.equal(["someotherlib", "c++fs", "rt", "pthread"]);
     });
 });
