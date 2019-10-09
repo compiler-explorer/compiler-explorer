@@ -569,7 +569,7 @@ Compiler.prototype.setAssembly = function (asm) {
         }, this));
         var currentAsmLang = editorModel.getModeId();
         this.codeLensProvider = monaco.languages.registerCodeLensProvider(currentAsmLang, {
-            provideCodeLenses: function(model) {
+            provideCodeLenses: function (model) {
                 if (model === editorModel)
                     return codeLenses;
                 else
