@@ -58,7 +58,7 @@ const libProps = {
 if (process.platform === "win32") {
     libProps['libs.fakelib.versions.twoPaths.path'] =
         libProps['libs.fakelib.versions.twoPaths.path'].replace(':', ';');
-    libProps['libs.fakelib.versions.twoPaths.libpath'] = 
+    libProps['libs.fakelib.versions.twoPaths.libpath'] =
         libProps['libs.fakelib.versions.twoPaths.libpath'].replace(':', ';');
 }
 
@@ -121,7 +121,11 @@ describe('Options handler', () => {
             makeFakeCompilerInfo('d3', languages.fake.id, 'd', '0.0.5', true),
 
             makeFakeCompilerInfo('e1', languages.fake.id, 'e', '0..0', false),
-            makeFakeCompilerInfo('e2', languages.fake.id, 'e', undefined, false)
+            makeFakeCompilerInfo('e2', languages.fake.id, 'e', undefined, false),
+
+            makeFakeCompilerInfo('f1', languages.fake.id, 'f', '5', true),
+            makeFakeCompilerInfo('f2', languages.fake.id, 'f', '5.1', true),
+            makeFakeCompilerInfo('f3', languages.fake.id, 'f', '5.2', true)
         ];
         const expectedOrder = {
             a: {
@@ -140,18 +144,23 @@ describe('Options handler', () => {
                 c3: -2
             },
             d: {
-                d1: -2,
-                d2: -1,
+                d1: -1,
+                d2: -2,
                 d3: -0
             },
             e: {
                 e1: undefined,
                 e2: undefined
+            },
+            f: {
+                f1: -0,
+                f2: -1,
+                f3: -2
             }
         };
         optionsHandler.setCompilers(compilers);
         _.each(optionsHandler.get().compilers, compiler => {
-            should.equal(compiler['$order'], expectedOrder[compiler.group][compiler.id]);
+            should.equal(compiler['$order'], expectedOrder[compiler.group][compiler.id], `group: ${compiler.group} id: ${compiler.id}`);
         });
         optionsHandler.setCompilers([]);
     });
