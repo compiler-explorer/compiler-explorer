@@ -187,9 +187,12 @@ a.navbar-brand img.logo.normal {
     color: #fff;
 }
 
-pre.content {
+pre {
     color: #f2f2f2 !important;
-    background-color: #333 !important;
+}
+
+pre.content {
+    background-color: #1e1e1e !important;
 }
 
 .bottom-bar {
