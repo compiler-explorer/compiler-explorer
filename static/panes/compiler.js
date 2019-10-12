@@ -936,7 +936,7 @@ Compiler.prototype.onLibsChanged = function () {
 };
 
 Compiler.prototype.initLibraries = function (state) {
-    this.libsWidget = new Libraries.Widget(this.currentLangId, this.compiler.id, this.compiler.libs, this.libsButton,
+    this.libsWidget = new Libraries.Widget(this.currentLangId, this.compiler, this.libsButton,
         state, _.bind(this.onLibsChanged, this));
 };
 

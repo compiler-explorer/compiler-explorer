@@ -89,7 +89,7 @@ Conformance.prototype.onLibsChanged = function () {
 };
 
 Conformance.prototype.initLibraries = function (state) {
-    this.libsWidget = new Libraries.Widget(this.langId, false, false,
+    this.libsWidget = new Libraries.Widget(this.langId, null,
         this.libsButton, state, _.bind(this.onLibsChanged, this));
 };
 
