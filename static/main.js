@@ -385,7 +385,7 @@ function start() {
 
     // Skip some steps if using embedded mode
     if (!options.embedded) {
-        // Don't fetch the motd
+        // Only fetch MOTD when not embedded.
         motd.initialise(options.motdUrl, $('#motd'), subLangId, settings.enableCommunityAds,
             function (data) {
                 var sendMotd = function () {
