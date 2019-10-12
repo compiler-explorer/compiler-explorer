@@ -48,4 +48,6 @@ With all this in mind, the tentative goals for 2019 are:
 - [ ] Design an API that can handle remote code execution and download needs
 - [ ] Implement remote execution UIs
 
-These goals will be refined as time ticks on.
+## 2020 goals
+
+A clear goal for 2020 is to finally tackle small screen device support.
