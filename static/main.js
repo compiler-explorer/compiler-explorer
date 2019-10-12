@@ -386,11 +386,19 @@ function start() {
     // Skip some steps if using embedded mode
     if (!options.embedded) {
         // Don't fetch the motd
-        motd.initialise(options.motdUrl, $('#motd'), subLangId, settings.enableCommunityAds, function () {
-            hub.layout.eventHub.emit('modifySettings', {
-                enableCommunityAds: false
+        motd.initialise(options.motdUrl, $('#motd'), subLangId, settings.enableCommunityAds,
+            function (data) {
+                var sendMotd = function () {
+                    hub.layout.eventHub.emit('motd', data);
+                };
+                hub.layout.eventHub.on('requestMotd', sendMotd);
+                sendMotd();
+            },
+            function () {
+                hub.layout.eventHub.emit('modifySettings', {
+                    enableCommunityAds: false
+                });
             });
-        });
 
         // Don't try to update Version tree link
         var release = window.compilerExplorerOptions.release;

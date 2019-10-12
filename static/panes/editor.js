@@ -73,6 +73,7 @@ function Editor(hub, state, container) {
 
     this.decorations = {};
     this.prevDecorations = [];
+    this.extraDecorations = [];
 
     this.fadeTimeoutId = -1;
 
@@ -174,10 +175,35 @@ function Editor(hub, state, container) {
     });
 }
 
+Editor.prototype.onMotd = function (motd) {
+    this.extraDecorations = motd.decorations;
+    this.updateExtraDecorations();
+};
+
+Editor.prototype.updateExtraDecorations = function () {
+    var decorationsDirty = false;
+    _.each(this.extraDecorations, _.bind(function (decoration) {
+        if (decoration.filter && decoration.filter.indexOf(this.currentLanguage.name.toLowerCase()) < 0) return;
+        var match = this.editor.getModel().findNextMatch(decoration.regex, {
+            column: 1,
+            lineNumber: 1
+        }, true, true, null, false);
+        if (match !== this.decorations[decoration.name]) {
+            decorationsDirty = true;
+            this.decorations[decoration.name] = match ? [{range: match.range, options: decoration.decoration}] : null;
+        }
+    }, this));
+    if (decorationsDirty)
+        this.updateDecorations();
+};
+
 // If compilerId is undefined, every compiler will be pinged
 Editor.prototype.maybeEmitChange = function (force, compilerId) {
     var source = this.getSource();
     if (!force && source === this.lastChangeEmitted) return;
+
+    this.updateExtraDecorations();
+
     this.lastChangeEmitted = source;
     this.eventHub.emit('editorChange', this.id, this.lastChangeEmitted, this.currentLanguage.id, compilerId);
 };
@@ -249,6 +275,8 @@ Editor.prototype.initCallbacks = function () {
     this.eventHub.on('conformanceViewClose', this.onConformanceViewClose, this);
     this.eventHub.on('resize', this.resize, this);
     this.eventHub.on('newSource', this.onNewSource, this);
+    this.eventHub.on('motd', this.onMotd, this);
+    this.eventHub.emit('requestMotd');
 
     this.editor.getModel().onDidChangeContent(_.bind(function () {
         this.debouncedEmitChange();
@@ -830,7 +858,9 @@ Editor.prototype.onEditorSetDecoration = function (id, lineNum, reveal) {
 };
 
 Editor.prototype.updateDecorations = function () {
-    this.prevDecorations = this.editor.deltaDecorations(this.prevDecorations, _.flatten(_.values(this.decorations)));
+    this.prevDecorations = this.editor.deltaDecorations(
+        this.prevDecorations,
+        _.compact(_.flatten(_.values(this.decorations))));
 };
 
 Editor.prototype.onConformanceViewOpen = function (editorId) {

@@ -67,10 +67,11 @@ function handleMotd(motd, motdNode, subLang, adsEnabled, onHide) {
     }
 }
 
-function initialise(url, motdNode, defaultLanguage, adsEnabled, onHide) {
+function initialise(url, motdNode, defaultLanguage, adsEnabled, onMotd, onHide) {
     if (!url) return;
     $.getJSON(url)
         .then(function (res) {
+            onMotd(res);
             handleMotd(res, motdNode, defaultLanguage, adsEnabled, onHide);
         })
         .catch(function (jqXHR, textStatus, errorThrown) {
