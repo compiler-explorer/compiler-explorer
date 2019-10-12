@@ -100,7 +100,7 @@ function Editor(hub, state, container) {
         lineNumbersMinChars: options.embedded ? 1 : 3,
         emptySelectionClipboard: true,
         autoIndent: true,
-        vimInUse: false
+        vimInUse: this.settings.useVim
     });
     this.editor.getModel().setEOL(monaco.editor.EndOfLineSequence.LF);
 
@@ -125,6 +125,10 @@ function Editor(hub, state, container) {
     this.initEditorActions();
     this.initButtons(state);
     this.initCallbacks();
+
+    if (this.settings.useVim) {
+        this.enableVim();
+    }
 
     var usableLanguages = _.filter(languages, function (language) {
         return hub.compilerService.compilersByLang[language.id];
@@ -305,16 +309,14 @@ Editor.prototype.onInsertKey = function (event) {
 
 Editor.prototype.enableVim = function () {
     this.vimMode = monacoVim.initVimMode(this.editor, this.domRoot.find('#v-status')[0]);
-    var vFlag = this.domRoot.find('#vim-flag');
-    vFlag.prop("class", "btn btn-info");
+    this.vimFlag.prop("class", "btn btn-info");
     this.editor.vimInUse = true;
 };
 
 Editor.prototype.disableVim = function () {
     this.vimMode.dispose();
     this.domRoot.find('#v-status').html("");
-    var vFlag = this.domRoot.find('#vim-flag');
-    vFlag.prop("class", "btn btn-light");
+    this.vimFlag.prop("class", "btn btn-light");
     this.editor.vimInUse = false;
 };
 
@@ -339,14 +341,14 @@ Editor.prototype.initButtons = function (state) {
     var togglePaneAdder = function () {
         paneAdderDropdown.dropdown('toggle');
     };
-    var toggleVim = function () {
+    this.vimFlag = this.domRoot.find('#vim-flag');
+    toggleVimButton.on('click', _.bind(function () {
         if (this.editor.vimInUse) {
             this.disableVim();
         } else {
             this.enableVim();
         }
-    };
-    toggleVimButton.on('click', _.bind(toggleVim, this));
+    }, this));
 
     // NB a new compilerConfig needs to be created every time; else the state is shared
     // between all compilers created this way. That leads to some nasty-to-find state
