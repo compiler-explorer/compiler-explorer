@@ -211,6 +211,10 @@ pre.content {
     background-color: #1e1e1e !important;
 }
 
+pre.content.compiling {
+    background-color: #101010 !important;
+}
+
 .bottom-bar {
     color: #aaa !important;
     background-color: #333 !important;

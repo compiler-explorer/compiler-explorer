@@ -64,6 +64,10 @@ pre.content {
     background-color: #f5f5f5;
 }
 
+pre.content.compiling {
+    background-color: #f0f0f0;
+}
+
 a.navbar-brand img.logo.inverse {
     display: none !important;
 }
