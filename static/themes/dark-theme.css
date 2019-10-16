@@ -265,7 +265,8 @@ input {
 }
 
 .card {
-    background-color: #474747 !important;
+    background-color: #1e1e1e !important;
+    color: #f2f2f2 !important;
 }
 
 .analysis,
@@ -312,18 +313,11 @@ input {
 }
 
 .popover {
-    color: #f2f2f2 !important;
-    background-color: #a1a1a1;
     border-color: #464545 !important;
 }
 
-.popover-header {
-    background-color: #929292 !important;
-    color: #000000 !important;
-}
-
-.popover, .popover-content, .libs-container, .lib-list {
-    background-color: #737373 !important;
+.popover, .popover-content, .libs-container, .lib-list, .popover-body, .popover-header {
+    background-color: #151515 !important;
     color: #f2f2f2 !important;
 }
 
@@ -373,11 +367,11 @@ kbd {
 
 .prepend-options {
     border-color: #444 !important;
-    background-color: #444 !important;
+    background-color: #141414 !important;
 }
 
 .modal-content .card-body {
-    background-color: #373737 !important;
+    background-color: #141414 !important;
 }
 
 #simplecook {
