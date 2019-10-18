@@ -74,7 +74,7 @@ describe('CompilerDropInTool', () => {
         );
     });
 
-    it('Should support riscv gcc compilers', () => {
+    it('Should not support riscv gcc compilers', () => {
         const tool = new CompilerDropinTool({}, {});
 
         const compilationInfo = {
@@ -89,12 +89,7 @@ describe('CompilerDropInTool', () => {
         const sourcefile = "example.cpp";
 
         const orderedArgs = tool.getOrderedArguments(compilationInfo, includeflags, args, sourcefile);
-        orderedArgs.should.deep.equal(
-            [
-                "--gcc-toolchain=" + path.resolve("/opt/compiler-explorer/riscv64/gcc-8.2.0/riscv64-unknown-linux-gnu"),
-                "--gcc-toolchain=" + path.resolve("/opt/compiler-explorer/riscv64/gcc-8.2.0/riscv64-unknown-linux-gnu")
-            ]
-        );
+        orderedArgs.should.deep.equal(false);
     });
 
     it('Should support ICC compilers', () => {
@@ -120,7 +115,7 @@ describe('CompilerDropInTool', () => {
         );
     });
 
-    it('Should default for WINE MSVC compilers', () => {
+    it('Should not support WINE MSVC compilers', () => {
         const tool = new CompilerDropinTool({}, {});
 
         const compilationInfo = {
@@ -139,14 +134,11 @@ describe('CompilerDropInTool', () => {
         const args = ["/MD", "/STD:c++latest", "/Ox"];
         const sourcefile = "example.cpp";
 
-        // todo: msvc includes are not readable by iwyu
         const orderedArgs = tool.getOrderedArguments(compilationInfo, includeflags, args, sourcefile);
-        orderedArgs.should.deep.equal([
-            "-I/opt/compiler-explorer/windows/19.14.26423/include"
-        ]);
+        orderedArgs.should.deep.equal(false);
     });
 
-    it('Should default even when using libc++', () => {
+    it('Should not support using libc++', () => {
         const tool = new CompilerDropinTool({}, {});
 
         const compilationInfo = {
@@ -164,10 +156,6 @@ describe('CompilerDropInTool', () => {
         const sourcefile = "example.cpp";
 
         const orderedArgs = tool.getOrderedArguments(compilationInfo, includeflags, args, sourcefile);
-        orderedArgs.should.deep.equal(
-            [
-                "-I/opt/compiler-explorer/clang-concepts-trunk/something/etc/include"
-            ]
-        );
+        orderedArgs.should.deep.equal(false);
     });
 });
