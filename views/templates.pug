@@ -6,17 +6,17 @@
           .btn-group.btn-group-sm
             .input-group.input-group-sm
               .input-group-prepend
-                button.btn.btn-outline-secondary.btn-sm.dropdown-toggle(data-toggle="dropdown" type="button" aria-haspopup="true" aria-expanded="false")
+                button.btn.btn-sm.btn-outline-secondary.dropdown-toggle(data-toggle="dropdown" type="button" aria-haspopup="true" aria-expanded="false")
                   span.current Short
                 ul.dropdown-menu.sources
                   if storageSolution !== "null"
-                      button.dropdown-item.btn.btn-light.btn-sm(data-bind="Short")
+                      button.dropdown-item.btn.btn-light(data-bind="Short")
                         | Short
-                  button.dropdown-item.btn.btn-light.btn-sm(data-bind="Full")
+                  button.dropdown-item.btn.btn-light(data-bind="Full")
                     | Full
-              input.form-control.input-sm.permalink(type="text" placeholder="Loading" readonly size="1024" style="font-size: 10px")
+              input.form-control.permalink(type="text" placeholder="Loading" readonly size="1024")
               .input-group-append
-                button.input-group-btn.btn.btn-outline-secondary.btn-sm.clippy(type="button" data-clipboard-target=".popover .permalink" title="Copy to clipboard")
+                button.btn.btn-sm.btn-outline-secondary.clippy(type="button" data-clipboard-target=".popover .permalink" title="Copy to clipboard")
                   span.fa.fa-clipboard
         div
           | &nbsp;
