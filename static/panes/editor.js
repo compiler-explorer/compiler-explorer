@@ -73,6 +73,7 @@ function Editor(hub, state, container) {
 
     this.decorations = {};
     this.prevDecorations = [];
+    this.extraDecorations = [];
 
     this.fadeTimeoutId = -1;
 
@@ -100,7 +101,7 @@ function Editor(hub, state, container) {
         lineNumbersMinChars: options.embedded ? 1 : 3,
         emptySelectionClipboard: true,
         autoIndent: true,
-        vimInUse: false
+        vimInUse: this.settings.useVim
     });
     this.editor.getModel().setEOL(monaco.editor.EndOfLineSequence.LF);
 
@@ -125,6 +126,10 @@ function Editor(hub, state, container) {
     this.initEditorActions();
     this.initButtons(state);
     this.initCallbacks();
+
+    if (this.settings.useVim) {
+        this.enableVim();
+    }
 
     var usableLanguages = _.filter(languages, function (language) {
         return hub.compilerService.compilersByLang[language.id];
@@ -170,10 +175,35 @@ function Editor(hub, state, container) {
     });
 }
 
+Editor.prototype.onMotd = function (motd) {
+    this.extraDecorations = motd.decorations;
+    this.updateExtraDecorations();
+};
+
+Editor.prototype.updateExtraDecorations = function () {
+    var decorationsDirty = false;
+    _.each(this.extraDecorations, _.bind(function (decoration) {
+        if (decoration.filter && decoration.filter.indexOf(this.currentLanguage.name.toLowerCase()) < 0) return;
+        var match = this.editor.getModel().findNextMatch(decoration.regex, {
+            column: 1,
+            lineNumber: 1
+        }, true, true, null, false);
+        if (match !== this.decorations[decoration.name]) {
+            decorationsDirty = true;
+            this.decorations[decoration.name] = match ? [{range: match.range, options: decoration.decoration}] : null;
+        }
+    }, this));
+    if (decorationsDirty)
+        this.updateDecorations();
+};
+
 // If compilerId is undefined, every compiler will be pinged
 Editor.prototype.maybeEmitChange = function (force, compilerId) {
     var source = this.getSource();
     if (!force && source === this.lastChangeEmitted) return;
+
+    this.updateExtraDecorations();
+
     this.lastChangeEmitted = source;
     this.eventHub.emit('editorChange', this.id, this.lastChangeEmitted, this.currentLanguage.id, compilerId);
 };
@@ -245,6 +275,8 @@ Editor.prototype.initCallbacks = function () {
     this.eventHub.on('conformanceViewClose', this.onConformanceViewClose, this);
     this.eventHub.on('resize', this.resize, this);
     this.eventHub.on('newSource', this.onNewSource, this);
+    this.eventHub.on('motd', this.onMotd, this);
+    this.eventHub.emit('requestMotd');
 
     this.editor.getModel().onDidChangeContent(_.bind(function () {
         this.debouncedEmitChange();
@@ -305,16 +337,14 @@ Editor.prototype.onInsertKey = function (event) {
 
 Editor.prototype.enableVim = function () {
     this.vimMode = monacoVim.initVimMode(this.editor, this.domRoot.find('#v-status')[0]);
-    var vFlag = this.domRoot.find('#vim-flag');
-    vFlag.prop("class", "btn btn-info");
+    this.vimFlag.prop("class", "btn btn-info");
     this.editor.vimInUse = true;
 };
 
 Editor.prototype.disableVim = function () {
     this.vimMode.dispose();
     this.domRoot.find('#v-status').html("");
-    var vFlag = this.domRoot.find('#vim-flag');
-    vFlag.prop("class", "btn btn-light");
+    this.vimFlag.prop("class", "btn btn-light");
     this.editor.vimInUse = false;
 };
 
@@ -339,14 +369,14 @@ Editor.prototype.initButtons = function (state) {
     var togglePaneAdder = function () {
         paneAdderDropdown.dropdown('toggle');
     };
-    var toggleVim = function () {
+    this.vimFlag = this.domRoot.find('#vim-flag');
+    toggleVimButton.on('click', _.bind(function () {
         if (this.editor.vimInUse) {
             this.disableVim();
         } else {
             this.enableVim();
         }
-    };
-    toggleVimButton.on('click', _.bind(toggleVim, this));
+    }, this));
 
     // NB a new compilerConfig needs to be created every time; else the state is shared
     // between all compilers created this way. That leads to some nasty-to-find state
@@ -828,7 +858,9 @@ Editor.prototype.onEditorSetDecoration = function (id, lineNum, reveal) {
 };
 
 Editor.prototype.updateDecorations = function () {
-    this.prevDecorations = this.editor.deltaDecorations(this.prevDecorations, _.flatten(_.values(this.decorations)));
+    this.prevDecorations = this.editor.deltaDecorations(
+        this.prevDecorations,
+        _.compact(_.flatten(_.values(this.decorations))));
 };
 
 Editor.prototype.onConformanceViewOpen = function (editorId) {

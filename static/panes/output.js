@@ -58,16 +58,7 @@ function Output(hub, container, state) {
     this.errorAnsiToHtml = makeAnsiToHtml('red');
 
     this.initButtons();
-    this.options = new Toggles(this.domRoot.find('.options'), state);
-    this.options.on('change', _.bind(this.onOptionsChange, this));
-
-    this.container.on('resize', this.resize, this);
-    this.container.on('shown', this.resize, this);
-    this.container.on('destroy', this.close, this);
-
-    this.eventHub.on('compileResult', this.onCompileResult, this);
-    this.eventHub.on('compilerClose', this.onCompilerClose, this);
-    this.eventHub.emit('outputOpened', this.compilerId);
+    this.initCallbacks(state);
 
     this.onOptionsChange();
     this.updateCompilerName();
@@ -77,6 +68,20 @@ function Output(hub, container, state) {
         eventAction: 'Output'
     });
 }
+
+Output.prototype.initCallbacks = function (state) {
+    this.options = new Toggles(this.domRoot.find('.options'), state);
+    this.options.on('change', _.bind(this.onOptionsChange, this));
+
+    this.container.on('resize', this.resize, this);
+    this.container.on('shown', this.resize, this);
+    this.container.on('destroy', this.close, this);
+
+    this.eventHub.on('compiling', this.onCompiling, this);
+    this.eventHub.on('compileResult', this.onCompileResult, this);
+    this.eventHub.on('compilerClose', this.onCompilerClose, this);
+    this.eventHub.emit('outputOpened', this.compilerId);
+};
 
 Output.prototype.getEffectiveOptions = function () {
     return this.options.get();
@@ -126,6 +131,12 @@ Output.prototype.addOutputLines = function (result) {
     }, this);
 };
 
+Output.prototype.onCompiling = function (compilerId) {
+    if (this.compilerId === compilerId) {
+        this.setCompileStatus(true);
+    }
+};
+
 Output.prototype.onCompileResult = function (id, compiler, result) {
     if (id !== this.compilerId) return;
     if (compiler) this.compilerName = compiler.name;
@@ -162,7 +173,7 @@ Output.prototype.onCompileResult = function (id, compiler, result) {
             }, this);
         }
     }
-
+    this.setCompileStatus(false);
     this.updateCompilerName();
 };
 
@@ -217,6 +228,10 @@ Output.prototype.onCompilerClose = function (id) {
 Output.prototype.close = function () {
     this.eventHub.emit('outputClosed', this.compilerId);
     this.eventHub.unsubscribe();
+};
+
+Output.prototype.setCompileStatus = function (isCompiling) {
+    this.contentRoot.toggleClass('compiling', isCompiling);
 };
 
 module.exports = {

@@ -38,7 +38,7 @@ $(NODE_MODULES): package.json | node-installed
 	@touch $@
 
 webpack: $(NODE_MODULES)  ## Runs webpack (useful only for debugging webpack)
-	$(NODE) node_modules/webpack-cli/bin/cli.js ${WEBPACK_ARGS}
+	./node_modules/webpack-cli/bin/cli.js ${WEBPACK_ARGS}
 
 lint: $(NODE_MODULES)  ## Ensures everything matches code conventions
 	$(NPM) run lint
@@ -55,17 +55,19 @@ check: $(NODE_MODULES) test lint  ## Runs all checks required before committing
 clean:  ## Cleans up everything
 	rm -rf node_modules .*-updated .*-bin out static/dist static/vs
 
+# Don't use $(NODE) ./node_modules/<path to node_module> as sometimes that's not actually a node script. Instead, rely
+# on PATH ensuring "node" is found in our distribution first.
 run: export NODE_ENV=LOCAL WEBPACK_ARGS="-p"
 run: prereqs  ## Runs the site normally
-	$(NODE) ./node_modules/.bin/supervisor -w app.js,lib,etc/config -e 'js|node|properties' --exec $(NODE) $(NODE_ARGS) -- ./app.js $(EXTRA_ARGS)
+	./node_modules/.bin/supervisor -w app.js,lib,etc/config -e 'js|node|properties' --exec $(NODE) $(NODE_ARGS) -- ./app.js $(EXTRA_ARGS)
 
 dev: export NODE_ENV=DEV
 dev: prereqs install-git-hooks ## Runs the site as a developer; including live reload support and installation of git hooks
-	$(NODE) ./node_modules/.bin/supervisor -w app.js,lib,etc/config -e 'js|node|properties' --exec $(NODE) $(NODE_ARGS) -- ./app.js $(EXTRA_ARGS)
+	./node_modules/.bin/supervisor -w app.js,lib,etc/config -e 'js|node|properties' --exec $(NODE) $(NODE_ARGS) -- ./app.js $(EXTRA_ARGS)
 
 debug: export NODE_ENV=DEV
 debug: prereqs install-git-hooks ## Runs the site as a developer with full debugging; including live reload support and installation of git hooks
-	$(NODE) ./node_modules/.bin/supervisor -w app.js,lib,etc/config -e 'js|node|properties' --exec $(NODE) $(NODE_ARGS) -- ./app.js --debug $(EXTRA_ARGS)
+	./node_modules/.bin/supervisor -w app.js,lib,etc/config -e 'js|node|properties' --exec $(NODE) $(NODE_ARGS) -- ./app.js --debug $(EXTRA_ARGS)
 
 HASH := $(shell git rev-parse HEAD)
 dist: export WEBPACK_ARGS=-p
