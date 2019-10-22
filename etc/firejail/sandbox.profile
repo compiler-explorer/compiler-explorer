@@ -72,6 +72,7 @@ blacklist /dev/random
 # No need to see anything here
 blacklist /celibs
 blacklist /compiler-explorer-image
+blacklist /efs
 
 # Remove some env vars, mostly to stop people emailing me about them
 # SUDO_COMMAND is one with actual somewhat sensitive info
