@@ -17,8 +17,8 @@
   "main": "./app.js",
   "dependencies": {
     "@fortawesome/fontawesome-free": "5.8.1",
-    "@sentry/browser": "^5.1.0",
-    "@sentry/node": "^5.1.0",
+    "@sentry/browser": "^5.7.1",
+    "@sentry/node": "^5.7.1",
     "aws-sdk": "^2.472.0",
     "big-integer": "^1.6.44",
     "body-parser": "^1.18.2",
