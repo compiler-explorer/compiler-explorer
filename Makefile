@@ -57,15 +57,15 @@ clean:  ## Cleans up everything
 
 # Don't use $(NODE) ./node_modules/<path to node_module> as sometimes that's not actually a node script. Instead, rely
 # on PATH ensuring "node" is found in our distribution first.
-run: export NODE_ENV=LOCAL WEBPACK_ARGS="-p"
+run: export NODE_ENV=production WEBPACK_ARGS="-p"
 run: prereqs  ## Runs the site normally
 	./node_modules/.bin/supervisor -w app.js,lib,etc/config -e 'js|node|properties' --exec $(NODE) $(NODE_ARGS) -- ./app.js $(EXTRA_ARGS)
 
-dev: export NODE_ENV=DEV
+dev: export NODE_ENV=development
 dev: prereqs install-git-hooks ## Runs the site as a developer; including live reload support and installation of git hooks
 	./node_modules/.bin/supervisor -w app.js,lib,etc/config -e 'js|node|properties' --exec $(NODE) $(NODE_ARGS) -- ./app.js $(EXTRA_ARGS)
 
-debug: export NODE_ENV=DEV
+debug: export NODE_ENV=development
 debug: prereqs install-git-hooks ## Runs the site as a developer with full debugging; including live reload support and installation of git hooks
 	./node_modules/.bin/supervisor -w app.js,lib,etc/config -e 'js|node|properties' --exec $(NODE) $(NODE_ARGS) -- ./app.js --debug $(EXTRA_ARGS)
 
