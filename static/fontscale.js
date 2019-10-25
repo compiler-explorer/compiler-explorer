@@ -54,20 +54,24 @@ function makeFontSizeDropdown(elem, interval, obj, buttonDropdown) {
         obj.apply();
         obj.emit('change');
     };
-
+    var lastElement = -1;
     for (var i = interval[0]; i <= interval[1]; i += step) {
         step *= 1.2;
-        var newElement = $('<button></button>');
-        newElement.attr('data-value', i);
-        newElement.addClass('font-option dropdown-item btn btn-light btn-sm');
-        if (!found && (i === obj.scale || Math.floor(i) === obj.scale)) {
-            found = true;
-            newElement.addClass('active');
+        var displayValue = Math.round(i * factor);
+        if (displayValue !== lastElement) {
+            lastElement = displayValue;
+            var newElement = $('<button></button>');
+            newElement.attr('data-value', i);
+            newElement.addClass('font-option dropdown-item btn btn-light btn-sm');
+            if (!found && (i === obj.scale || Math.floor(i) === obj.scale)) {
+                found = true;
+                newElement.addClass('active');
+            }
+            newElement.text(displayValue);
+            newElement
+                .appendTo(elem)
+                .click(onClickEvent);
         }
-        newElement.text(Math.round(i * factor));
-        newElement
-            .appendTo(elem)
-            .click(onClickEvent);
     }
 
     if (buttonDropdown) {
@@ -80,7 +84,7 @@ function FontScale(domRoot, state, fontSelectorOrEditor) {
     this.domRoot = domRoot;
     this.scale = state.fontScale || options.defaultFontScale;
     this.fontSelectorOrEditor = fontSelectorOrEditor;
-    this.isFontOfStr = typeof(this.fontSelectorOrEditor) === "string";
+    this.isFontOfStr = typeof (this.fontSelectorOrEditor) === "string";
     this.apply();
     makeFontSizeDropdown(this.domRoot.find('.font-size-list'), [0.3, 3], this, this.domRoot.find('.fs-button'));
 }

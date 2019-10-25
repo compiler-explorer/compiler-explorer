@@ -31,17 +31,18 @@ function definition() {
 
         keywords: [
             'const', 'var', 'extern', 'packed', 'export', 'pub', 'noalias', 'inline',
-            'comptime', 'nakedcc', 'stdcallcc', 'volatile', 'align', 'section',
+            'comptime', 'nakedcc', 'stdcallcc', 'volatile', 'align', 'section', 'linksection',
             'struct', 'enum', 'union',
             'break', 'return', 'continue', 'asm', 'defer', 'errdefer', 'unreachable',
             'try', 'catch', 'async', 'await', 'suspend', 'resume', 'cancel',
             'if', 'else', 'switch', 'and', 'or', 'orelse',
             'while', 'for',
-            'null', 'undefined', 'this',
-            'fn', 'use', 'test'
+            'null', 'undefined',
+            'fn', 'usingnamespace', 'use', 'test',
+            'this',
         ],
         typeKeywords: [
-            'bool', 'f32', 'f64', 'f128', 'void', 'noreturn', 'type', 'error', 'promise',
+            'bool', 'f32', 'f64', 'f128', 'void', 'noreturn', 'type', 'error', 'anyerror', 'promise', 'anyframe',
             'isize', 'usize', 'c_short', 'c_ushort', 'c_int', 'c_uint', 'c_long', 'c_ulong',
             'c_longlong', 'c_ulonglong', 'c_longdouble', 'c_void'
         ],

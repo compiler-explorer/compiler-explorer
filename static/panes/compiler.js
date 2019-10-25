@@ -569,11 +569,11 @@ Compiler.prototype.setAssembly = function (asm) {
         }, this));
         var currentAsmLang = editorModel.getModeId();
         this.codeLensProvider = monaco.languages.registerCodeLensProvider(currentAsmLang, {
-            provideCodeLenses: function () {
-                return codeLenses;
-            },
-            resolveCodeLens: function (model, codeLens) {
-                return codeLens;
+            provideCodeLenses: function (model) {
+                if (model === editorModel)
+                    return codeLenses;
+                else
+                    return [];
             }
         });
     } else {
@@ -936,7 +936,7 @@ Compiler.prototype.onLibsChanged = function () {
 };
 
 Compiler.prototype.initLibraries = function (state) {
-    this.libsWidget = new Libraries.Widget(this.currentLangId, this.compiler.id, this.compiler.libs, this.libsButton,
+    this.libsWidget = new Libraries.Widget(this.currentLangId, this.compiler, this.libsButton,
         state, _.bind(this.onLibsChanged, this));
 };
 

@@ -36,7 +36,7 @@ const languages = {
 };
 
 let compilerProps = new properties.CompilerProps(languages, properties.fakeProps({}));
-compilerProps = compilerProps.get.bind(compilerProps);
+compilerProps = compilerProps.get.bind(compilerProps, 'c++');
 
 describe('llvm-ir parseMetaNode', function () {
     const llvmIrParser = new LlvmIrParser(compilerProps);

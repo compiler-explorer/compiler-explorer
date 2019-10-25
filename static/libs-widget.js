@@ -28,14 +28,16 @@ var options = require('options'),
     _ = require('underscore'),
     $ = require('jquery');
 
-function LibsWidget(langId, compilerId, possibleLibs, dropdownButton, state, onChangeCallback) {
+function LibsWidget(langId, compiler, dropdownButton, state, onChangeCallback) {
     this.dropdownButton = dropdownButton;
-    this.currentLangId = langId;
-    if (compilerId) {
-        this.currentCompilerId = compilerId;
+    var possibleLibs = false;
+    if (compiler) {
+        this.currentCompilerId = compiler.id;
+        possibleLibs = compiler.libs;
     } else {
         this.currentCompilerId = '_default_';
     }
+    this.currentLangId = langId;
     this.initButtons();
     this.domRoot = null;
     this.onChangeCallback = onChangeCallback;
