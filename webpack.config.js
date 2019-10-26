@@ -7,7 +7,7 @@ const path = require('path'),
     UglifyJsPlugin = require('uglifyjs-webpack-plugin'),
     MonacoEditorWebpackPlugin = require('monaco-editor-webpack-plugin');
 
-const isDev = process.env.NODE_ENV === "DEV";
+const isDev = process.env.NODE_ENV !== "production";
 
 const outputPathRelative = 'dist/';
 const staticRelative = 'static/';

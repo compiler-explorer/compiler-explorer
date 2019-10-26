@@ -11,3 +11,5 @@ nice 10
 rlimit-as 1342177280
 whitelist /opt/intel
 read-only /opt/intel
+whitelist /opt/arm
+read-only /opt/arm

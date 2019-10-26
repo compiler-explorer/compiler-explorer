@@ -169,6 +169,7 @@ Compiler.prototype.initLangAndCompiler = function (state) {
     var result = this.compilerService.processFromLangAndCompiler(langId, compilerId);
     this.compiler = result.compiler;
     this.currentLangId = result.langId;
+    this.updateLibraries();
 };
 
 Compiler.prototype.close = function () {
@@ -568,11 +569,11 @@ Compiler.prototype.setAssembly = function (asm) {
         }, this));
         var currentAsmLang = editorModel.getModeId();
         this.codeLensProvider = monaco.languages.registerCodeLensProvider(currentAsmLang, {
-            provideCodeLenses: function () {
-                return codeLenses;
-            },
-            resolveCodeLens: function (model, codeLens) {
-                return codeLens;
+            provideCodeLenses: function (model) {
+                if (model === editorModel)
+                    return codeLenses;
+                else
+                    return [];
             }
         });
     } else {
@@ -935,8 +936,12 @@ Compiler.prototype.onLibsChanged = function () {
 };
 
 Compiler.prototype.initLibraries = function (state) {
-    this.libsWidget = new Libraries.Widget(this.currentLangId, this.libsButton,
+    this.libsWidget = new Libraries.Widget(this.currentLangId, this.compiler, this.libsButton,
         state, _.bind(this.onLibsChanged, this));
+};
+
+Compiler.prototype.updateLibraries = function () {
+    if (this.libsWidget) this.libsWidget.setNewLangId(this.currentLangId, this.compiler.id, this.compiler.libs);
 };
 
 Compiler.prototype.supportsTool = function (toolId) {
@@ -1245,6 +1250,7 @@ Compiler.prototype.updateCompilerUI = function () {
 
 Compiler.prototype.onCompilerChange = function (value) {
     this.compiler = this.compilerService.findCompiler(this.currentLangId, value);
+    this.updateLibraries();
     this.saveState();
     this.compile();
     this.updateCompilerUI();
@@ -1682,7 +1688,6 @@ Compiler.prototype.onLanguageChange = function (editorId, newLangId) {
             compiler: this.compiler && this.compiler.id ? this.compiler.id : options.defaultCompiler[oldLangId],
             options: this.options
         };
-        this.libsWidget.setNewLangId(newLangId);
         var info = this.infoByLang[this.currentLangId] || {};
         this.initLangAndCompiler({lang: newLangId, compiler: info.compiler});
         this.updateCompilersSelector(info);
