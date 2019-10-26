@@ -77,6 +77,6 @@ From oldest to newest contributor, we would like to thank:
 - [Austin Morton](https://github.com/apmorton)
 - [Matt Hammerly](https://github.com/mhammerly)
 - [Christian Vonrüti](https://github.com/alshain)
-- [Sebastian Rath](https://github.com/seb-mtl)
 - [Alessandro Vergani](https://github.com/Loghorn)
+- [Sebastian Rath](https://github.com/seb-mtl)
 - 
