@@ -72,7 +72,7 @@ if (process.platform === "win32") {
 }
 
 const moreLibProps = {
-    libs: 'fs:someotherlib:yalib',
+    libs: 'fs:someotherlib:yalib:fourthlib',
 
     'libs.fs.versions': 'std',
     'libs.fs.versions.std.version': 'std',
@@ -88,6 +88,10 @@ const moreLibProps = {
     'libs.yalib.versions.trunk.version': 'trunk',
     'libs.yalib.versions.trunk.staticliblink': 'yalib',
     'libs.yalib.versions.trunk.dependencies': 'someotherlib:c++fs',
+
+    'libs.fourthlib.versions': 'trunk',
+    'libs.fourthlib.versions.trunk.version': 'trunk',
+    'libs.fourthlib.versions.trunk.staticliblink': 'fourthlib:yalib:rt',
 };
 
 const compilerProps = new properties.CompilerProps(languages, properties.fakeProps(libProps));
@@ -282,5 +286,20 @@ describe('Options handler', () => {
             {"id": "fs", "version": "std"},
             {"id": "someotherlib", "version": "trunk"}]);
         staticlinks.should.deep.equal(["yalib", "someotherlib", "fsextra", "c++fs", "rt", "pthread"]);
+    });
+    it('library sort special case 3', () => {
+        const libs = moreOptionsHandler.parseLibraries({'fake': moreLibProps.libs});
+        const compilerInfo = makeFakeCompilerInfo('g82', 'c++', "cpp", "8.2", true);
+        const env = {
+            compilerProps: () => {}
+        };
+        compilerInfo.libs = libs.fake;
+        const compiler = new BaseCompiler(compilerInfo, env);
+
+        let staticlinks = compiler.getSortedStaticLibraries([
+            {"id": "fourthlib", "version": "trunk"},
+            {"id": "fs", "version": "std"},
+            {"id": "someotherlib", "version": "trunk"}]);
+        staticlinks.should.deep.equal(["fourthlib", "yalib", "someotherlib", "fsextra", "c++fs", "rt", "pthread"]);
     });
 });
