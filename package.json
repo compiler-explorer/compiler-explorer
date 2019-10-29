@@ -105,6 +105,7 @@
     "test": "mocha --recursive",
     "check": "npm run lint && npm run test",
     "dev": "cross-env NODE_ENV=DEV node app.js",
+    "debug": "cross-env NODE_ENV=DEV node app.js --debug",
     "start": "npx webpack && cross-env NODE_ENV=LOCAL node app.js",
     "codecov": "codecov"
   },
