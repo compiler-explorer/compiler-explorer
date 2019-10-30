@@ -72,7 +72,7 @@ if (process.platform === "win32") {
 }
 
 const moreLibProps = {
-    libs: 'fs:someotherlib:yalib:fourthlib',
+    libs: 'fs:someotherlib:yalib:fourthlib:autolib',
 
     'libs.fs.versions': 'std',
     'libs.fs.versions.std.version': 'std',
@@ -92,6 +92,10 @@ const moreLibProps = {
     'libs.fourthlib.versions': 'trunk',
     'libs.fourthlib.versions.trunk.version': 'trunk',
     'libs.fourthlib.versions.trunk.staticliblink': 'fourthlib:yalib:rt',
+
+    'libs.autolib.versions': 'autodetect',
+    'libs.autolib.versions.autodetect.version': 'autodetect',
+    'libs.autolib.versions.autodetect.staticliblink': 'hello',
 };
 
 const compilerProps = new properties.CompilerProps(languages, properties.fakeProps(libProps));
@@ -301,5 +305,26 @@ describe('Options handler', () => {
             {"id": "fs", "version": "std"},
             {"id": "someotherlib", "version": "trunk"}]);
         staticlinks.should.deep.equal(["fourthlib", "yalib", "someotherlib", "fsextra", "c++fs", "rt", "pthread"]);
+    });
+    it('can detect libraries from options', () => {
+        const libs = moreOptionsHandler.parseLibraries({'fake': moreLibProps.libs});
+        const compilerInfo = makeFakeCompilerInfo('g82', 'c++', "cpp", "8.2", true);
+        const env = {
+            compilerProps: () => {}
+        };
+        compilerInfo.libs = libs.fake;
+        const compiler = new BaseCompiler(compilerInfo, env);
+
+        const obj = {
+            libraries: [{"id": "ctre", "version": "trunk"}],
+            options: ["-O3", "--std=c++17", "-lhello"]
+        };
+        compiler.tryAutodetectLibraries(obj).should.equal(true);
+
+        obj.libraries.should.deep.equal([
+            {"id": "ctre", "version": "trunk"},
+            {"id": "autolib", "version": "autodetect"}
+        ]);
+        obj.options.should.deep.equal(["-O3", "--std=c++17"]);
     });
 });
