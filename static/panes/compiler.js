@@ -113,7 +113,8 @@ function Compiler(hub, container, state) {
             maxColumn: 80
         },
         lineNumbersMinChars: options.embedded ? 1 : 5,
-        renderIndentGuides: false
+        renderIndentGuides: false,
+        fontLigatures: this.settings.enableLigatures
     });
 
     this.codeLensProvider = null;
@@ -1446,7 +1447,8 @@ Compiler.prototype.onSettingsChange = function (newSettings) {
         minimap: {
             enabled: this.settings.showMinimap && !options.embedded
         },
-        fontFamily: this.settings.editorsFFont
+        fontFamily: this.settings.editorsFFont,
+        fontLigatures: this.settings.enableLigatures
     });
 };
 

@@ -34,7 +34,6 @@ function Ast(hub, container, state) {
     this.eventHub = hub.createEventHub();
     this.domRoot = container.getElement();
     this.domRoot.html($('#ast').html());
-    this._currentDecorations = [];
     this.astEditor = monaco.editor.create(this.domRoot.find(".monaco-placeholder")[0], {
         value: "",
         scrollBeyondLastLine: false,
@@ -185,7 +184,8 @@ Ast.prototype.onSettingsChange = function (newSettings) {
         minimap: {
             enabled: newSettings.showMinimap
         },
-        fontFamily: newSettings.editorsFFont
+        fontFamily: newSettings.editorsFFont,
+        fontLigatures: newSettings.enableLigatures
     });
 };
 

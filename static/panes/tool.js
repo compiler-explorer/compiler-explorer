@@ -131,7 +131,8 @@ Tool.prototype.onSettingsChange = function (newSettings) {
         minimap: {
             enabled: newSettings.showMinimap
         },
-        fontFamily: newSettings.editorsFFont
+        fontFamily: newSettings.editorsFFont,
+        fontLigatures: newSettings.enableLigatures
     });
 };
 

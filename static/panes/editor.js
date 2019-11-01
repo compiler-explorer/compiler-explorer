@@ -101,7 +101,8 @@ function Editor(hub, state, container) {
         lineNumbersMinChars: options.embedded ? 1 : 3,
         emptySelectionClipboard: true,
         autoIndent: true,
-        vimInUse: this.settings.useVim
+        vimInUse: this.settings.useVim,
+        fontLigatures: this.settings.enableLigatures
     });
     this.editor.getModel().setEOL(monaco.editor.EndOfLineSequence.LF);
 
@@ -683,6 +684,7 @@ Editor.prototype.onSettingsChange = function (newSettings) {
             enabled: this.settings.showMinimap && !options.embedded
         },
         fontFamily: this.settings.editorsFFont,
+        fontLigatures: this.settings.enableLigatures,
         wordWrap: this.settings.wordWrap ? 'bounded' : 'off',
         wordWrapColumn: this.editor.getLayoutInfo().viewportColumn // Ensure the column count is up to date
     });
