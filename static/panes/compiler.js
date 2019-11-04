@@ -114,7 +114,7 @@ function Compiler(hub, container, state) {
         },
         lineNumbersMinChars: options.embedded ? 1 : 5,
         renderIndentGuides: false,
-        fontLigatures: this.settings.enableLigatures
+        fontLigatures: this.settings.editorsFLigatures
     });
 
     this.codeLensProvider = null;
@@ -1448,7 +1448,7 @@ Compiler.prototype.onSettingsChange = function (newSettings) {
             enabled: this.settings.showMinimap && !options.embedded
         },
         fontFamily: this.settings.editorsFFont,
-        fontLigatures: this.settings.enableLigatures
+        fontLigatures: this.settings.editorsFLigatures
     });
 };
 

@@ -297,7 +297,7 @@ GccDump.prototype.onSettingsChange = function (newSettings) {
             enabled: newSettings.showMinimap
         },
         fontFamily: newSettings.editorsFFont,
-        fontLigatures: newSettings.enableLigatures
+        fontLigatures: newSettings.editorsFLigatures
     });
 };
 
