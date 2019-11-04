@@ -43,9 +43,9 @@ describe('Hash tests', () => {
         StorageBase.isCleanText("I am the very model of a major general").should.be.true;
         StorageBase.isCleanText(badResult).should.be.false;
     });
-    it('should avoid profanities in hashes', () => {
+    it('should avoid profanities and illegible characters in hashes', () => {
         const testCase = {some: "test"};
-        const goodResult = 'B0B0Mon1efjwCXKJ_2340-3sjfwe';
+        const goodResult = 'uy3AkJTC9PRg8LfxqcxuUgKrCb-OatsRW7FAAVi3-4M'; // L in 13th place: OK
         const callback = sinon.stub()
             .onFirstCall().returns(badResult)
             .onSecondCall().returns(badResult) // force nonce to update a couple of times
@@ -58,9 +58,13 @@ describe('Hash tests', () => {
         should.exist(asObj.nonce);
         asObj.nonce.should.equal(2);
     });
+    it('should detect illegible characters in hashes', () => {
+        StorageBase.isLegibleText("Three").should.be.true;
+        StorageBase.isLegibleText(badResult).should.be.false;
+    });
     it('should not modify ok hashes', () => {
         const testCase = {some: "test"};
-        const {config, configHash} = StorageBase.getSafeHash(testCase);
+        const {config, configHash} = StorageBase.getSafeHash(testCase); // L in 13th place: OK
         const asObj = JSON.parse(config);
         should.not.exist(asObj.nonce);
     });
