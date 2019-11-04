@@ -38,7 +38,7 @@ describe('Hash tests', () => {
             as64.should.not.contain("+");
         }
     });
-    const badResult = 'R0Rapeabcdefghio1327698asdhjkJJklQp'; // An unfortunate hash, see https://github.com/mattgodbolt/compiler-explorer/issues/1297
+    const badResult = 'R0Rapeabcdefghio1327698asdhjkJJklQp'.toLowerCase(); // An unfortunate hash, see https://github.com/mattgodbolt/compiler-explorer/issues/1297
     it('should detect profanities in hashes', () => {
         StorageBase.isCleanText("I am the very model of a major general").should.be.true;
         StorageBase.isCleanText(badResult).should.be.false;
@@ -59,7 +59,7 @@ describe('Hash tests', () => {
         asObj.nonce.should.equal(2);
     });
     it('should detect illegible characters in hashes', () => {
-        StorageBase.isLegibleText("Three").should.be.true;
+        StorageBase.isLegibleText("three").should.be.true;
         StorageBase.isLegibleText(badResult).should.be.false;
     });
     it('should not modify ok hashes', () => {
