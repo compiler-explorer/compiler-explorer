@@ -476,3 +476,7 @@ kbd {
 .linked-compiler-output-line {
     cursor: pointer;
 }
+
+.lm_content {
+    overflow: visible;
+}
