@@ -31,7 +31,7 @@ var options = require('./options');
 function makeFontSizeDropdown(elem, obj, buttonDropdown) {
     var onWheelEvent = function (e) {
         e.preventDefault();
-        var selectedId = elem.find('.dropdown-item-active').index();
+        var selectedId = elem.find('.active').index();
         if (e.originalEvent.deltaY >= 0 && selectedId < elem.children().length - 1) {
             selectedId++;
         } else if (e.originalEvent.deltaY < 0 && selectedId > 0) {
@@ -43,8 +43,8 @@ function makeFontSizeDropdown(elem, obj, buttonDropdown) {
     var onClickEvent = function () {
         // Toggle off the selection of the others
         $(this)
-            .addClass('dropdown-item-active')
-            .siblings().removeClass('dropdown-item-active');
+            .addClass('active')
+            .siblings().removeClass('active');
         // Send the data
         obj.scale = $(this).data('value');
         obj.apply();
@@ -55,13 +55,13 @@ function makeFontSizeDropdown(elem, obj, buttonDropdown) {
         var item = $('<button></button>');
 
         item.attr('data-value', i)
-            .addClass('dropdown-item btn btn-sm')
+            .addClass('dropdown-item btn btn-sm btn-light')
             .text(i)
             .appendTo(elem)
             .click(onClickEvent);
 
         if (obj.scale === i) {
-            item.addClass('dropdown-item-active');
+            item.addClass('active');
         }
     }
 

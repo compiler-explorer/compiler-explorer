@@ -140,12 +140,21 @@ a.navbar-brand img.logo.normal {
 
 .selectize-dropdown {
     color: #f2f2f2 !important;
-    background-color: #666 !important;
+    background-color: #303030 !important;
 }
 
 .selectize-control.single .selectize-input.disabled {
     color: #f2f2f2 !important;
     background-color: #383838 !important;
+}
+
+.active {
+    background-color: #235765 !important;
+    color: #fff !important;
+}
+
+.active:hover {
+    background-color: #998899 !important;
 }
 
 .dropdown-menu {
@@ -161,14 +170,6 @@ a.navbar-brand img.logo.normal {
 .dropdown-item:hover {
     color: #fff !important;
     background-color: #23272b !important;
-}
-
-.dropdown-item-active {
-    background-color: #235765 !important;
-}
-
-.dropdown-item-active:hover {
-    background-color: #998899 !important;
 }
 
 .notification {
@@ -227,24 +228,30 @@ input {
 
 .btn-light {
     color: #e2e2e2 !important;
-    background-color: #474747 !important;
-    border-color: #272727 !important;
-}
-
-.btn-light:hover {
-    background-color: #383838 !important;
+    background-color: #333 !important;
+    border-color: #333 !important;
 }
 
 .btn-light.active {
-    color: #f2f2f2 !important;
+    background-color: #235765 !important;
+    color: #fff !important;
+}
+
+.btn-light.active:hover {
+    background-color: #998899 !important;
+}
+
+.btn-light:hover {
+    background-color: #23272b !important;
 }
 
 .btn-light:disabled {
-    color: #aaa !important;
+    background-color: #575757 !important;
+    color: #fff !important;
 }
 
 .btn-light:disabled:hover {
-    background-color: #474747 !important;
+    background-color: #575757 !important;
 }
 
 .top-bar.btn-toolbar.bg-light {
@@ -317,13 +324,13 @@ input {
 }
 
 #socialshare .share-twitter, .share-twitter {
-    background-color: #1da1f2;
-    color: white;
+    background-color: #1da1f2 !important;
+    color: white !important;
 }
 
 #socialshare .share-reddit, .share-reddit {
-    background-color: #ff4500;
-    color: white;
+    background-color: #ff4500 !important;
+    color: white !important;
 }
 
 .share-disabled {
