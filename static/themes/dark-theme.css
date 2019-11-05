@@ -153,31 +153,22 @@ a.navbar-brand img.logo.normal {
     background-color: #303030 !important;
 }
 
-.dropdown-menu li a {
-    color: #f2f2f2 !important;
-}
-
-.dropdown-menu li a:hover {
-    background-color: #333 !important;
-    color: #fff !important;
-}
-
-.font-option {
+.dropdown-item {
     color: #eee !important;
-    background: #303030 !important;
+    background-color: #303030;
 }
 
-.font-option:hover {
+.dropdown-item:hover {
     color: #fff !important;
-    background: #887788 !important;
+    background-color: #23272b !important;
 }
 
-.font-option-active {
-    background: #474747 !important;
+.dropdown-item-active {
+    background-color: #235765 !important;
 }
 
-.font-option-active:hover {
-    background: #998899 !important;
+.dropdown-item-active:hover {
+    background-color: #998899 !important;
 }
 
 .notification {

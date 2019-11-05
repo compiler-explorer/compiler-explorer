@@ -28,14 +28,10 @@ var $ = require('jquery');
 var EventEmitter = require('events');
 var options = require('./options');
 
-function makeFontSizeDropdown(elem, interval, obj, buttonDropdown) {
-    var factor = obj.isFontOfStr ? 10 : 14;
-    var step = 0.05;
-    var found = false;
-
+function makeFontSizeDropdown(elem, obj, buttonDropdown) {
     var onWheelEvent = function (e) {
         e.preventDefault();
-        var selectedId = elem.find('.active').index();
+        var selectedId = elem.find('.dropdown-item-active').index();
         if (e.originalEvent.deltaY >= 0 && selectedId < elem.children().length - 1) {
             selectedId++;
         } else if (e.originalEvent.deltaY < 0 && selectedId > 0) {
@@ -47,30 +43,25 @@ function makeFontSizeDropdown(elem, interval, obj, buttonDropdown) {
     var onClickEvent = function () {
         // Toggle off the selection of the others
         $(this)
-            .addClass('active')
-            .siblings().removeClass('active');
+            .addClass('dropdown-item-active')
+            .siblings().removeClass('dropdown-item-active');
         // Send the data
         obj.scale = $(this).data('value');
         obj.apply();
         obj.emit('change');
     };
-    var lastElement = -1;
-    for (var i = interval[0]; i <= interval[1]; i += step) {
-        step *= 1.2;
-        var displayValue = Math.round(i * factor);
-        if (displayValue !== lastElement) {
-            lastElement = displayValue;
-            var newElement = $('<button></button>');
-            newElement.attr('data-value', i);
-            newElement.addClass('font-option dropdown-item btn btn-light btn-sm');
-            if (!found && (i === obj.scale || Math.floor(i) === obj.scale)) {
-                found = true;
-                newElement.addClass('active');
-            }
-            newElement.text(displayValue);
-            newElement
-                .appendTo(elem)
-                .click(onClickEvent);
+
+    for (var i = 8; i < 30; i++) {
+        var item = $('<button></button>');
+
+        item.attr('data-value', i)
+            .addClass('dropdown-item btn btn-sm')
+            .text(i)
+            .appendTo(elem)
+            .click(onClickEvent);
+
+        if (obj.scale === i) {
+            item.addClass('dropdown-item-active');
         }
     }
 
@@ -86,24 +77,23 @@ function FontScale(domRoot, state, fontSelectorOrEditor) {
     this.fontSelectorOrEditor = fontSelectorOrEditor;
     this.isFontOfStr = typeof (this.fontSelectorOrEditor) === "string";
     this.apply();
-    makeFontSizeDropdown(this.domRoot.find('.font-size-list'), [0.3, 3], this, this.domRoot.find('.fs-button'));
+    makeFontSizeDropdown(this.domRoot.find('.font-size-list'), this, this.domRoot.find('.fs-button'));
 }
 
 _.extend(FontScale.prototype, EventEmitter.prototype);
 
 FontScale.prototype.apply = function () {
     if (this.isFontOfStr) {
-        this.domRoot.find(this.fontSelectorOrEditor).css('font-size', (10 * this.scale) + "pt");
+        this.domRoot.find(this.fontSelectorOrEditor).css('font-size', this.scale + "pt");
     } else {
         this.fontSelectorOrEditor.updateOptions({
-            fontSize: 14 * this.scale
+            fontSize: this.scale
         });
     }
 };
 
 FontScale.prototype.addState = function (state) {
-    if (this.scale !== 1.0)
-        state.fontScale = this.scale;
+    state.fontScale = this.scale;
 };
 
 FontScale.prototype.setScale = function (scale) {

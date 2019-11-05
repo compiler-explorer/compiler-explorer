@@ -293,6 +293,8 @@ pre.content.wrap {
 
 .font-size-list {
     min-width: 43px !important;
+    max-height: 40% !important;
+    overflow-y: scroll;
     width: auto;
 }
 
