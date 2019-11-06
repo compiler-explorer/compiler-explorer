@@ -431,6 +431,8 @@ Editor.prototype.initButtons = function (state) {
                 if (!loadSave.onSaveToFile(this.id)) {
                     this.showLoadSaver();
                 }
+            } else {
+                this.eventHub.emit("displaySharingPopover");
             }
         }
     }, this));

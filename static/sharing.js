@@ -246,6 +246,11 @@ function initShareButton(getLink, layout, noteNewState) {
             getLink.popover("hide");
     });
 
+    // Opens the popup if asked to by the editor
+    layout.eventHub.on('displaySharingPopover', function () {
+        getLink.popover("show");
+    });
+
     if (options.sharingEnabled) {
         updateShares($('#socialshare'), baseUrl);
     }
