@@ -51,7 +51,7 @@ function makeFontSizeDropdown(elem, obj, buttonDropdown) {
         obj.emit('change');
     };
 
-    for (var i = 8; i < 30; i++) {
+    for (var i = 8; i <= 30; i++) {
         var item = $('<button></button>');
 
         item.attr('data-value', i)
@@ -70,10 +70,19 @@ function makeFontSizeDropdown(elem, obj, buttonDropdown) {
     }
 }
 
+function convertOldScale(oldScale) {
+    // New low + ((new max - new low) * (oldScale - old low) / (old max - old low))
+    return Math.floor(8 + (22 * (oldScale - 0.3) / 2.7));
+}
+
 function FontScale(domRoot, state, fontSelectorOrEditor) {
     EventEmitter.call(this);
     this.domRoot = domRoot;
+    // Old scale went from 0.3 to 3. New one uses 8 up to 30, so we can convert the old ones to the new format
     this.scale = state.fontScale || options.defaultFontScale;
+    if (this.scale < 8) {
+        this.scale = convertOldScale(this.scale);
+    }
     this.fontSelectorOrEditor = fontSelectorOrEditor;
     this.isFontOfStr = typeof (this.fontSelectorOrEditor) === "string";
     this.apply();
