@@ -136,6 +136,8 @@ LibsWidget.prototype.lazyDropdownLoad = function () {
 
         _.each(libsKeys, _.bind(function (id) {
             var libEntry = this.availableLibs[this.currentLangId][this.currentCompilerId][id];
+            if (libEntry.versions.autodetect) return;
+
             var newLibCard = this.libsEntry.clone();
             var label = newLibCard.find('.input-group-prepend label')
                 .text(libEntry.name)
