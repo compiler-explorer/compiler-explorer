@@ -679,7 +679,6 @@ Editor.prototype.onSettingsChange = function (newSettings) {
     this.editor.updateOptions({
         autoClosingBrackets: this.settings.autoCloseBrackets,
         useVim: this.settings.useVim,
-        tabSize: this.settings.tabWidth,
         quickSuggestions: this.settings.showQuickSuggestions,
         contextmenu: this.settings.useCustomContextMenu,
         minimap: {
@@ -704,6 +703,12 @@ Editor.prototype.onSettingsChange = function (newSettings) {
         this.enableVim();
     } else if (!after.useVim && before.useVim) {
         this.disableVim();
+    }
+
+    if (before.tabWidth !== after.tabWidth && this.editor.getModel()) {
+        this.editor.getModel().updateOptions({
+            tabSize: this.settings.tabWidth
+        });
     }
 
     this.numberUsedLines();
