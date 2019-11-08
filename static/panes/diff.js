@@ -33,20 +33,48 @@ var ga = require('../analytics');
 require('../modes/asm-mode');
 require('selectize');
 
-function State(id, model) {
+var
+    DiffType_ASM = 0,
+    DiffType_CompilerStdOut = 1,
+    DiffType_CompilerStdErr = 2,
+    DiffType_ExecStdOut = 3,
+    DiffType_ExecStdErr = 4;
+
+function State(id, model, difftype) {
     this.id = id;
     this.model = model;
     this.compiler = null;
     this.result = null;
+    this.difftype = difftype;
 }
 
 State.prototype.update = function (id, compiler, result) {
     if (this.id !== id) return false;
     this.compiler = compiler;
     this.result = result;
-    var asm = result.asm || [];
-    this.model.setValue(_.pluck(asm, 'text').join("\n"));
+    this.refresh();
+
     return true;
+};
+
+State.prototype.refresh = function () {
+    var output = [];
+    if (this.result) {
+        if (this.difftype === DiffType_ASM) {
+            output = this.result.asm || [];
+        } else if (this.difftype === DiffType_CompilerStdOut) {
+            output = this.result.stdout;
+        } else if (this.difftype === DiffType_CompilerStdErr) {
+            output = this.result.stderr || [];
+        } else if (this.difftype === DiffType_ExecStdOut) {
+            if (this.result.execResult)
+                output = this.result.execResult.stdout || [];
+        } else if (this.difftype === DiffType_ExecStdErr) {
+            if (this.result.execResult)
+                output = this.result.execResult.stderr || [];
+        }
+    }
+    this.model.setValue(_.pluck(output, 'text').join("\n"));
 };
 
 function Diff(hub, container, state) {
@@ -63,9 +91,40 @@ function Diff(hub, container, state) {
         language: 'asm'
     });
 
-    this.lhs = new State(state.lhs, monaco.editor.createModel('', 'asm'));
-    this.rhs = new State(state.rhs, monaco.editor.createModel('', 'asm'));
+    this.lhs = new State(state.lhs, monaco.editor.createModel('', 'asm'), state.lhsdifftype || DiffType_ASM);
+    this.rhs = new State(state.rhs, monaco.editor.createModel('', 'asm'), state.rhsdifftype || DiffType_ASM);
     this.outputEditor.setModel({original: this.lhs.model, modified: this.rhs.model});
+
+    var selectizeType = this.domRoot.find(".difftype-picker").selectize({
+        sortField: 'name',
+        valueField: 'id',
+        labelField: 'name',
+        searchField: ['name'],
+        options: [
+            {id: DiffType_ASM, name: 'Assembly'},
+            {id: DiffType_CompilerStdOut, name: 'Compiler stdout'},
+            {id: DiffType_CompilerStdErr, name: 'Compiler stderr'},
+            {id: DiffType_ExecStdOut, name: 'Execution stdout'},
+            {id: DiffType_ExecStdErr, name: 'Execution stderr'}
+        ],
+        items: [],
+        render: {
+            option: function (item, escape) {
+                return '<div>' + escape(item.name) +  '</div>';
+            }
+        },
+        dropdownParent: 'body'
+    }).on('change', _.bind(function (e) {
+        var target = $(e.target);
+        if (target.hasClass('lhsdifftype')) {
+            this.lhs.difftype = parseInt(target.val());
+            this.lhs.refresh();
+        } else {
+            this.rhs.difftype = parseInt(target.val());
+            this.rhs.refresh();
+        }
+        this.updateState();
+    }, this));
 
     var selectize = this.domRoot.find(".diff-picker").selectize({
         sortField: 'name',
@@ -99,7 +158,11 @@ function Diff(hub, container, state) {
         }
         this.onDiffSelect(compiler.id);
     }, this));
-    this.selectize = {lhs: selectize[0].selectize, rhs: selectize[1].selectize};
+
+    this.selectize = {
+        lhs: selectize[0].selectize, rhs: selectize[1].selectize,
+        lhsdifftype: selectizeType[0].selectize, rhsdifftype: selectizeType[1].selectize
+    };
 
     this.initButtons(state);
     this.initCallbacks();
@@ -219,12 +282,17 @@ Diff.prototype.updateCompilersFor = function (selectize, id) {
 Diff.prototype.updateCompilers = function () {
     this.updateCompilersFor(this.selectize.lhs, this.lhs.id);
     this.updateCompilersFor(this.selectize.rhs, this.rhs.id);
+
+    this.selectize.lhsdifftype.setValue(this.lhs.difftype || DiffType_ASM);
+    this.selectize.rhsdifftype.setValue(this.rhs.difftype || DiffType_ASM);
 };
 
 Diff.prototype.updateState = function () {
     var state = {
         lhs: this.lhs.id,
-        rhs: this.rhs.id
+        rhs: this.rhs.id,
+        lhsdifftype: this.lhs.difftype,
+        rhsdifftype: this.rhs.difftype
     };
     this.fontScale.addState(state);
     this.container.setState(state);
