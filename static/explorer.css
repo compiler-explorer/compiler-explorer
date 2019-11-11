@@ -95,6 +95,11 @@ li.tweet {
     min-width: 14em;
 }
 
+.difftype-picker {
+    max-width: 10em;
+    min-width: 10em;
+}
+
 .diff-picker .compiler {
     font-weight: bold;
 }

@@ -135,12 +135,23 @@ function Diff(hub, container, state) {
         items: [],
         render: {
             option: function (item, escape) {
+                var compilerIdTitle = "";
+                if (typeof item.id === "string") {
+                    var p = item.id.indexOf("_exec");
+                    if (p !== -1) {
+                        compilerIdTitle = 'Executor #' + escape(item.id.substr(0, p - 1));
+                    } else {
+                        compilerIdTitle = 'Compiler #' + escape(item.id);
+                    }
+                } else {
+                    compilerIdTitle = 'Compiler #' + escape(item.id);
+                }
                 return '<div>' +
                     '<span class="compiler">' + escape(item.compiler.name) + '</span>' +
                     '<span class="options">' + escape(item.options) + '</span>' +
                     '<ul class="meta">' +
                     '<li class="editor">Editor #' + escape(item.editorId) + '</li>' +
-                    '<li class="compilerId">Compiler #' + escape(item.id) + '</li>' +
+                    '<li class="compilerId">' + compilerIdTitle + '</li>' +
                     '</ul></div>';
             }
         },
@@ -201,6 +212,17 @@ Diff.prototype.onCompileResult = function (id, compiler, result) {
     }
 };
 
+Diff.prototype.onExecuteResult = function (id, compiler, result) {
+    var compileResult = _.assign({}, result.buildResult);
+    compileResult.execResult = {
+        code: result.code,
+        stdout: result.stdout,
+        stderr: result.stderr,
+    };
+
+    this.onCompileResult(id + '_exec', compiler, compileResult);
+};
+
 Diff.prototype.initButtons = function (state) {
     this.fontScale = new FontScale(this.domRoot, state, this.outputEditor);
 
@@ -211,8 +233,11 @@ Diff.prototype.initCallbacks = function () {
     this.fontScale.on('change', _.bind(this.updateState, this));
 
     this.eventHub.on('compileResult', this.onCompileResult, this);
+    this.eventHub.on('executeResult', this.onExecuteResult, this);
     this.eventHub.on('compiler', this.onCompiler, this);
     this.eventHub.on('compilerClose', this.onCompilerClose, this);
+    this.eventHub.on('executor', this.onExecutor, this);
+    this.eventHub.on('executorClose', this.onExecutorClose, this);
     this.eventHub.on('settingsChange', this.onSettingsChange, this);
     this.eventHub.on('themeChange', this.onThemeChange, this);
     this.container.on('destroy', function () {
@@ -257,9 +282,17 @@ Diff.prototype.onCompiler = function (id, compiler, options, editorId) {
     this.updateCompilers();
 };
 
+Diff.prototype.onExecutor = function (id, compiler, options, editorId) {
+    this.onCompiler(id + '_exec', compiler, options, editorId);
+};
+
 Diff.prototype.onCompilerClose = function (id) {
     delete this.compilers[id];
     this.updateCompilers();
+};
+
+Diff.prototype.onExecutorClose = function (id) {
+    this.onCompilerClose(id + '_exec');
 };
 
 Diff.prototype.updateCompilerNames = function () {
