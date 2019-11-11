@@ -361,7 +361,8 @@ Executor.prototype.onCompileResponse = function (request, result, cached) {
     }
     this.compileTimeLabel.text(timeLabelText);
 
-    this.setCompilationOptionsPopover(result.buildResult && result.buildResult.compilationOptions ? result.buildResult.compilationOptions.join(' ') : '');
+    this.setCompilationOptionsPopover(result.buildResult &&
+        result.buildResult.compilationOptions ? result.buildResult.compilationOptions.join(' ') : '');
 
     this.eventHub.emit('executeResult', this.id, this.compiler, result, languages[this.currentLangId]);
 
