@@ -179,7 +179,7 @@ describe('On disk caches', () => {
         const cache = new OnDiskCache(tempDir, 1);
         return Promise.all([
             cache.get('abcdef').should.eventually.eql({hit: true, data: Buffer.from('this is abcdef')}),
-            cache.get('path/test').should.eventually.eql({hit: true, data: Buffer.from('this is path/test')})]);
+            cache.get(path.join('path', 'test')).should.eventually.eql({hit: true, data: Buffer.from('this is path/test')})]);
     });
 
     // MRG ideally handle the case of pre-populated stuff overflowing the size
