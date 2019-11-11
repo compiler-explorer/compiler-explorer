@@ -191,17 +191,19 @@ describe('API handling', () => {
             });
     });
     it('should list the formatters', () => {
-        return chai.request(app)
-            .get('/api/formats')
-            .set('Accept', 'application/json')
-            .then(res => {
-                res.should.have.status(200);
-                res.should.be.json;
-                res.body.should.deep.equals([{name: "FormatT", version: "Release"}]);
-            })
-            .catch(err => {
-                throw err;
-            });
+        if (process.platform !== "win32") { // Expects an executable called echo
+            return chai.request(app)
+                .get('/api/formats')
+                .set('Accept', 'application/json')
+                .then(res => {
+                    res.should.have.status(200);
+                    res.should.be.json;
+                    res.body.should.deep.equals([{name: "FormatT", version: "Release"}]);
+                })
+                .catch(err => {
+                    throw err;
+                });
+        }
     });
     it('should not go through with invalid tools', () => {
         return chai.request(app)
