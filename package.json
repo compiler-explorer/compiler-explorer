@@ -65,6 +65,7 @@
     "underscore": "1.9.1",
     "url-join": "^4.0.1",
     "vis": "4.20.1",
+    "which": "^2.0.1",
     "winston": "^3.2.1",
     "winston-papertrail": "^1.0.5",
     "wolfy87-eventemitter": "^5.2.8"
