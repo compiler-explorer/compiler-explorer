@@ -35,6 +35,8 @@ for (var k in extraOptions) {
 }
 
 __webpack_public_path__ = window.staticRoot;
-window.__webpack_public_path__ = __webpack_public_path__;
+
+// really gross monaco web worker cross origin workaround
+window.__webpack_public_path__ = window.httpRoot + 'workers/';
 
 module.exports = window.compilerExplorerOptions;

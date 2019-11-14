@@ -502,6 +502,36 @@ aws.initConfig(awsProps)
                 const shortenerLib = require(`./lib/shortener-${clientOptionsHandler.options.urlShortenService}`);
                 const shortener = shortenerLib({storageHandler});
 
+                /*
+                 * This is a workaround to make cross origin monaco web workers function
+                 * in spite of the monaco webpack plugin hijacking the MonacoEnvironment global.
+                 *
+                 * see https://github.com/microsoft/monaco-editor-webpack-plugin/issues/42
+                 *
+                 * This workaround wouldn't be so bad, if it didn't _also_ rely on *another* bug to
+                 * actually work.
+                 *
+                 * The webpack plugin incorrectly uses
+                 *     window.__webpack_public_path__
+                 * when it should use
+                 *     __webpack_public_path__
+                 *
+                 * see https://github.com/microsoft/monaco-editor-webpack-plugin/pull/63
+                 *
+                 * We can leave __webpack_public_path__ with the correct value, which lets runtime chunk
+                 * loading continue to function correctly.
+                 *
+                 * We can then set window.__webpack_public_path__ to the below handler, which lets us
+                 * fabricate a worker on the fly.
+                 *
+                 * This is bad and I feel bad.
+                 */
+                router.get('/workers/:worker', (req, res) => {
+                    staticHeaders(res);
+                    res.set('Content-Type', 'application/javascript');
+                    res.end(`importScripts('${urljoin(staticRoot, req.params.worker)}');`);
+                });
+
                 router
                     .use(Sentry.Handlers.requestHandler())
                     .use(morgan(morganFormat, {
