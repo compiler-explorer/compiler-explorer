@@ -376,7 +376,7 @@ Executor.prototype.onCompileResponse = function (request, result, cached) {
 
 Executor.prototype.onEditorChange = function (editor, source, langId, compilerId) {
     if (editor === this.sourceEditorId && langId === this.currentLangId &&
-        (compilerId === undefined || compilerId === this.id)) {
+        (compilerId === undefined)) {
         this.source = source;
         if (this.settings.compileOnChange) {
             this.compile();
