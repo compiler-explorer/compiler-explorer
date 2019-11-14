@@ -33,6 +33,7 @@ var ga = require('../analytics');
 require('../modes/asm-mode');
 require('selectize');
 
+// note that these variables are saved to state, so don't change, only add to it
 var
     DiffType_ASM = 0,
     DiffType_CompilerStdOut = 1,
@@ -60,22 +61,39 @@ State.prototype.update = function (id, compiler, result) {
 State.prototype.refresh = function () {
     var output = [];
     if (this.result) {
-        if (this.difftype === DiffType_ASM) {
-            output = this.result.asm || [];
-        } else if (this.difftype === DiffType_CompilerStdOut) {
-            output = this.result.stdout;
-        } else if (this.difftype === DiffType_CompilerStdErr) {
-            output = this.result.stderr || [];
-        } else if (this.difftype === DiffType_ExecStdOut) {
-            if (this.result.execResult)
-                output = this.result.execResult.stdout || [];
-        } else if (this.difftype === DiffType_ExecStdErr) {
-            if (this.result.execResult)
-                output = this.result.execResult.stderr || [];
+        switch (this.difftype) {
+            case DiffType_ASM:
+                output = this.result.asm || [];
+                break;
+            case DiffType_CompilerStdOut:
+                output = this.result.stdout || [];
+                break;
+            case DiffType_CompilerStdErr:
+                output = this.result.stderr || [];
+                break;
+            case DiffType_ExecStdOut:
+                if (this.result.execResult)
+                    output = this.result.execResult.stdout || [];
+                break;
+            case DiffType_ExecStdErr:
+                if (this.result.execResult)
+                    output = this.result.execResult.stderr || [];
+                break;
         }
     }
     this.model.setValue(_.pluck(output, 'text').join("\n"));
 };
+
+function getItemDisplayTitle(item) {
+    if (typeof item.id === "string") {
+        var p = item.id.indexOf("_exec");
+        if (p !== -1) {
+            return 'Executor #' + item.id.substr(0, p - 1);
+        }
+    }
+
+    return 'Compiler #' + item.id;
+}
 
 function Diff(hub, container, state) {
     this.container = container;
@@ -93,7 +111,7 @@ function Diff(hub, container, state) {
 
     this.lhs = new State(state.lhs, monaco.editor.createModel('', 'asm'), state.lhsdifftype || DiffType_ASM);
     this.rhs = new State(state.rhs, monaco.editor.createModel('', 'asm'), state.rhsdifftype || DiffType_ASM);
-    this.outputEditor.setModel({original: this.lhs.model, modified: this.rhs.model});
+    this.outputEditor.setModel({ original: this.lhs.model, modified: this.rhs.model });
 
     var selectizeType = this.domRoot.find(".difftype-picker").selectize({
         sortField: 'name',
@@ -101,16 +119,16 @@ function Diff(hub, container, state) {
         labelField: 'name',
         searchField: ['name'],
         options: [
-            {id: DiffType_ASM, name: 'Assembly'},
-            {id: DiffType_CompilerStdOut, name: 'Compiler stdout'},
-            {id: DiffType_CompilerStdErr, name: 'Compiler stderr'},
-            {id: DiffType_ExecStdOut, name: 'Execution stdout'},
-            {id: DiffType_ExecStdErr, name: 'Execution stderr'}
+            { id: DiffType_ASM, name: 'Assembly' },
+            { id: DiffType_CompilerStdOut, name: 'Compiler stdout' },
+            { id: DiffType_CompilerStdErr, name: 'Compiler stderr' },
+            { id: DiffType_ExecStdOut, name: 'Execution stdout' },
+            { id: DiffType_ExecStdErr, name: 'Execution stderr' }
         ],
         items: [],
         render: {
             option: function (item, escape) {
-                return '<div>' + escape(item.name) +  '</div>';
+                return '<div>' + escape(item.name) + '</div>';
             }
         },
         dropdownParent: 'body'
@@ -135,23 +153,12 @@ function Diff(hub, container, state) {
         items: [],
         render: {
             option: function (item, escape) {
-                var compilerIdTitle = "";
-                if (typeof item.id === "string") {
-                    var p = item.id.indexOf("_exec");
-                    if (p !== -1) {
-                        compilerIdTitle = 'Executor #' + escape(item.id.substr(0, p - 1));
-                    } else {
-                        compilerIdTitle = 'Compiler #' + escape(item.id);
-                    }
-                } else {
-                    compilerIdTitle = 'Compiler #' + escape(item.id);
-                }
                 return '<div>' +
                     '<span class="compiler">' + escape(item.compiler.name) + '</span>' +
                     '<span class="options">' + escape(item.options) + '</span>' +
                     '<ul class="meta">' +
                     '<li class="editor">Editor #' + escape(item.editorId) + '</li>' +
-                    '<li class="compilerId">' + compilerIdTitle + '</li>' +
+                    '<li class="compilerId">' + escape(getItemDisplayTitle(item.id)) + '</li>' +
                     '</ul></div>';
             }
         },
@@ -333,10 +340,10 @@ Diff.prototype.updateState = function () {
 
 Diff.prototype.onThemeChange = function (newTheme) {
     if (this.outputEditor)
-        this.outputEditor.updateOptions({theme: newTheme.monaco});
+        this.outputEditor.updateOptions({ theme: newTheme.monaco });
 };
 
-Diff.prototype.onSettingsChange =  function (newSettings) {
+Diff.prototype.onSettingsChange = function (newSettings) {
     this.outputEditor.updateOptions({
         minimap: {
             enabled: newSettings.showMinimap
@@ -352,7 +359,7 @@ module.exports = {
         return {
             type: 'component',
             componentName: 'diff',
-            componentState: {lhs: lhs, rhs: rhs}
+            componentState: { lhs: lhs, rhs: rhs }
         };
     }
 };
