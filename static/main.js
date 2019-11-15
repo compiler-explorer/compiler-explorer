@@ -23,18 +23,17 @@
 // POSSIBILITY OF SUCH DAMAGE
 "use strict";
 
-__webpack_public_path__ = window.httpRootDir + 'dist/';
-window.__webpack_public_path__ = __webpack_public_path__;
+// setup analytics before anything else so we can capture any future errors in sentry
+var analytics = require('./analytics');
 
 require('popper.js');
 require('bootstrap');
 require('bootstrap-slider');
 
-var analytics = require('./analytics');
 var sharing = require('./sharing');
 var _ = require('underscore');
 var $ = require('jquery');
-var GoldenLayout = require('goldenlayout');
+var GoldenLayout = require('golden-layout');
 var Components = require('./components');
 var url = require('./url');
 var clipboard = require('clipboard');
@@ -49,7 +48,7 @@ var jsCookie = require('js-cookie');
 var SimpleCook = require('./simplecook');
 //css
 require("bootstrap/dist/css/bootstrap.min.css");
-require("goldenlayout/src/css/goldenlayout-base.css");
+require("golden-layout/src/css/goldenlayout-base.css");
 require("selectize/dist/css/selectize.bootstrap2.css");
 require("bootstrap-slider/dist/css/bootstrap-slider.css");
 require("./colours.css");

@@ -18,3 +18,4 @@ lib/storage/data
 f.out
 /.nyc_output
 /coverage
+/dist

@@ -33,9 +33,6 @@ var Promise = require('es6-promise').Promise;
 function CompilerService(eventHub) {
     this.base = window.httpRoot;
     this.allowStoreCodeDebug = true;
-    if (!this.base.endsWith('/')) {
-        this.base += '/';
-    }
     this.cache = new LruCache({
         max: 200 * 1024,
         length: function (n) {

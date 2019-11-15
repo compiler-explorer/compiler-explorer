@@ -63,9 +63,6 @@ function Editor(hub, state, container) {
     this.settings = JSON.parse(local.get('settings', '{}'));
     this.ourCompilers = {};
     this.httpRoot = window.httpRoot;
-    if (!this.httpRoot.endsWith('/')) {
-        this.httpRoot += '/';
-    }
     this.widgetsByCompiler = {};
     this.asmByCompiler = {};
     this.busyCompilers = {};

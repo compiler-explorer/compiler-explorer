@@ -48,12 +48,7 @@ function LoadSave() {
     this.onLoad = _.identity;
     this.editorText = '';
     this.extension = '.txt';
-
     this.base = window.httpRoot;
-    if (!this.base.endsWith('/')) {
-        this.base += '/';
-    }
-
     this.fetchBuiltins();
 }
 
