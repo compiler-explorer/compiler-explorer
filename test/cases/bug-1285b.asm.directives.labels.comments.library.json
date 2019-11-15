@@ -20,7 +20,7 @@
   {
     "text": "        cmp     byte ptr [rsp + 16], 0",
     "source": {
-      "file": "/opt/compiler-explorer/libs/abseil/absl/types/ \"optional.h\"",
+      "file": "/opt/compiler-explorer/libs/abseil/absl/types/optional.h",
       "line": 447
     }
   },
@@ -115,28 +115,28 @@
   {
     "text": "        je      .LBB0_6",
     "source": {
-      "file": "/opt/compiler-explorer/libs/abseil/absl/types/internal/ \"optional.h\"",
+      "file": "/opt/compiler-explorer/libs/abseil/absl/types/internal/optional.h",
       "line": 92
     }
   },
   {
     "text": "        lea     rdi, [rbx + 8]",
     "source": {
-      "file": "/opt/compiler-explorer/libs/abseil/absl/types/internal/ \"optional.h\"",
+      "file": "/opt/compiler-explorer/libs/abseil/absl/types/internal/optional.h",
       "line": 93
     }
   },
   {
     "text": "        call    _ZN6stringD1Ev",
     "source": {
-      "file": "/opt/compiler-explorer/libs/abseil/absl/types/internal/ \"optional.h\"",
+      "file": "/opt/compiler-explorer/libs/abseil/absl/types/internal/optional.h",
       "line": 93
     }
   },
   {
     "text": "        mov     byte ptr [rbx], 0",
     "source": {
-      "file": "/opt/compiler-explorer/libs/abseil/absl/types/internal/ \"optional.h\"",
+      "file": "/opt/compiler-explorer/libs/abseil/absl/types/internal/optional.h",
       "line": 94
     }
   },
@@ -165,14 +165,14 @@
   {
     "text": "        call    _ZN6stringC1EN4absl11string_viewE",
     "source": {
-      "file": "/opt/compiler-explorer/libs/abseil/absl/types/internal/ \"optional.h\"",
+      "file": "/opt/compiler-explorer/libs/abseil/absl/types/internal/optional.h",
       "line": 152
     }
   },
   {
     "text": "        mov     byte ptr [rbx], 1",
     "source": {
-      "file": "/opt/compiler-explorer/libs/abseil/absl/types/internal/ \"optional.h\"",
+      "file": "/opt/compiler-explorer/libs/abseil/absl/types/internal/optional.h",
       "line": 153
     }
   },

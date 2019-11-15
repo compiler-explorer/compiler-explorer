@@ -64,9 +64,6 @@ function Editor(hub, state, container) {
     this.ourCompilers = {};
     this.ourExecutors = {};
     this.httpRoot = window.httpRoot;
-    if (!this.httpRoot.endsWith('/')) {
-        this.httpRoot += '/';
-    }
     this.widgetsByCompiler = {};
     this.asmByCompiler = {};
     this.busyCompilers = {};

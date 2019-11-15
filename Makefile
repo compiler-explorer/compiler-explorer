@@ -30,7 +30,7 @@ info: node-installed ## print out some useful variables
 
 .PHONY: clean run test run-amazon
 .PHONY: dist lint prereqs node_modules travis-dist
-prereqs: node_modules webpack
+prereqs: node_modules
 
 NODE_MODULES=.npm-updated
 $(NODE_MODULES): package.json | node-installed
@@ -38,6 +38,7 @@ $(NODE_MODULES): package.json | node-installed
 	@touch $@
 
 webpack: $(NODE_MODULES)  ## Runs webpack (useful only for debugging webpack)
+	rm -rf out/dist/static out/dist/manifest.json
 	./node_modules/webpack-cli/bin/cli.js ${WEBPACK_ARGS}
 
 lint: $(NODE_MODULES)  ## Ensures everything matches code conventions
@@ -53,13 +54,13 @@ test: $(NODE_MODULES)  ## Runs the tests
 check: $(NODE_MODULES) test lint  ## Runs all checks required before committing
 
 clean:  ## Cleans up everything
-	rm -rf node_modules .*-updated .*-bin out static/dist static/vs
+	rm -rf node_modules .*-updated .*-bin out
 
 # Don't use $(NODE) ./node_modules/<path to node_module> as sometimes that's not actually a node script. Instead, rely
 # on PATH ensuring "node" is found in our distribution first.
 run: export NODE_ENV=production
 run: export WEBPACK_ARGS="-p"
-run: prereqs  ## Runs the site normally
+run: prereqs webpack  ## Runs the site normally
 	./node_modules/.bin/supervisor -w app.js,lib,etc/config -e 'js|node|properties' --exec $(NODE) $(NODE_ARGS) -- ./app.js $(EXTRA_ARGS)
 
 dev: export NODE_ENV=development
@@ -71,20 +72,16 @@ debug: prereqs install-git-hooks ## Runs the site as a developer with full debug
 	./node_modules/.bin/supervisor -w app.js,lib,etc/config -e 'js|node|properties' --exec $(NODE) $(NODE_ARGS) -- ./app.js --debug $(EXTRA_ARGS)
 
 HASH := $(shell git rev-parse HEAD)
-dist: export WEBPACK_ARGS=-p
 dist: export NODE_ENV=production
-dist: prereqs  ## Creates a distribution
-	rm -rf out/dist/
-	mkdir -p out/dist
-	cp -r static/dist/ out/dist/
-	cp -r static/policies/ out/dist/
+dist: export WEBPACK_ARGS=-p
+dist: prereqs webpack  ## Creates a distribution
 	echo ${HASH} > out/dist/git_hash
 
 travis-dist: dist  ## Creates a distribution as if we were running on travis
-	tar --exclude './.travis-compilers' --exclude './.git' --exclude './static' --exclude './.github' --exclude './.idea' --exclude './.nyc_output' --exclude './coverage' --exclude './test' --exclude './docs' -Jcf /tmp/ce-build.tar.xz .
 	rm -rf out/dist-bin
 	mkdir -p out/dist-bin
-	mv /tmp/ce-build.tar.xz out/dist-bin/${TRAVIS_BUILD_NUMBER}.tar.xz
+	tar -Jcf out/dist-bin/${TRAVIS_BUILD_NUMBER}.tar.xz -T travis-dist-files.txt
+	tar -Jcf out/dist-bin/${TRAVIS_BUILD_NUMBER}.static.tar.xz --transform="s,^out/dist/static/,," out/dist/static/*
 	echo ${HASH} > out/dist-bin/${TRAVIS_BUILD_NUMBER}.txt
 
 install-git-hooks:  ## Install git hooks that will ensure code is linted and tests are run before allowing a check in

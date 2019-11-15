@@ -37,11 +37,11 @@ const nopt = require('nopt'),
     fs = require('fs-extra'),
     systemdSocket = require('systemd-socket'),
     url = require('url'),
+    urljoin = require('url-join'),
     _ = require('underscore'),
     express = require('express'),
     Sentry = require('@sentry/node'),
     {logger, logToPapertrail, suppressConsoleLog} = require('./lib/logger'),
-    webpackDevMiddleware = require("webpack-dev-middleware"),
     utils = require('./lib/utils'),
     initialiseWine = require('./lib/exec').initialiseWine,
     RouteAPI = require('./lib/handlers/route-api');
@@ -55,7 +55,7 @@ const opts = nopt({
     port: [Number],
     propDebug: [Boolean],
     debug: [Boolean],
-    static: [String],
+    dist: [Boolean],
     archivedVersions: [String],
     // Ignore fetch marks and assume every compiler is found locally
     noRemoteFetch: [Boolean],
@@ -95,13 +95,23 @@ if (opts.tmpDir) {
     process.env.winTmp = path.join("/mnt", driveLetter, directoryPath);
 }
 
-// Use the canned git_hash if provided
-let gitReleaseName = '';
-if (opts.static && fs.existsSync(opts.static + "/git_hash")) {
-    gitReleaseName = fs.readFileSync(opts.static + "/git_hash").toString().trim();
-} else if (fs.existsSync('.git/')) { // Just if we have been cloned and not downloaded (Thanks David!)
-    gitReleaseName = child_process.execSync('git rev-parse HEAD').toString().trim();
-}
+const distPath = path.resolve(__dirname, 'out', 'dist');
+
+const gitReleaseName = (() => {
+    // Use the canned git_hash if provided
+    const gitHashFilePath = path.join(distPath, 'git_hash');
+    if (opts.dist && fs.existsSync(gitHashFilePath)) {
+        return fs.readFileSync(gitHashFilePath).toString().trim();
+    }
+
+    // Just if we have been cloned and not downloaded (Thanks David!)
+    if (fs.existsSync('.git/')) {
+        return child_process.execSync('git rev-parse HEAD').toString().trim();
+    }
+
+    // unknown case
+    return '';
+})();
 
 // Set default values for omitted arguments
 const defArgs = {
@@ -109,7 +119,6 @@ const defArgs = {
     env: opts.env || ['dev'],
     hostname: opts.host,
     port: opts.port || 10240,
-    staticDir: opts.static || 'static',
     gitReleaseName: gitReleaseName,
     wantedLanguage: opts.language || null,
     doCache: !opts.noCache,
@@ -126,14 +135,6 @@ if (defArgs.suppressConsoleLog) {
     logger.info("Disabling further console logging");
     suppressConsoleLog();
 }
-
-const webpackConfig = require('./webpack.config.js')[1],
-    webpackCompiler = require('webpack')(webpackConfig),
-    manifestName = 'manifest.json',
-    staticManifestPath = path.join(__dirname, defArgs.staticDir, webpackConfig.output.publicPath),
-    assetManifestPath = path.join(staticManifestPath, 'assets'),
-    staticManifest = require(path.join(staticManifestPath, manifestName)),
-    assetManifest = require(path.join(assetManifestPath, manifestName));
 
 const isDevMode = () => process.env.NODE_ENV !== "production";
 
@@ -184,8 +185,10 @@ const staticMaxAgeSecs = ceProps('staticMaxAgeSecs', 0);
 const maxUploadSize = ceProps('maxUploadSize', '1mb');
 const extraBodyClass = ceProps('extraBodyClass', isDevMode() ? 'dev' : '');
 const storageSolution = compilerProps.ceProps('storageSolution', 'local');
-const httpRoot = ceProps('httpRoot', '/');
-const httpRootDir = httpRoot.endsWith('/') ? httpRoot : (httpRoot + '/');
+const httpRoot = urljoin(ceProps('httpRoot', '/'), '/');
+
+const staticUrl = ceProps('staticUrl');
+const staticRoot = urljoin(staticUrl || urljoin(httpRoot, 'static'), '/');
 
 function staticHeaders(res) {
     if (staticMaxAgeSecs) {
@@ -196,7 +199,8 @@ function staticHeaders(res) {
 const csp = require('./lib/csp').policy;
 
 function contentPolicyHeader(res) {
-    if (csp) {
+    // TODO: re-enable CSP
+    if (csp && 0) {
         res.setHeader('Content-Security-Policy', csp);
     }
 }
@@ -235,6 +239,48 @@ function setupEventLoopLagLogging() {
     }
 }
 
+let pugRequireHandler = () => {
+    logger.error("pug require handler not configured");
+};
+
+function setupWebPackDevMiddleware(router) {
+    logger.info("  using webpack dev middleware");
+
+    const webpackDevMiddleware = require("webpack-dev-middleware"),
+        webpackConfig = require('./webpack.config.js'),
+        webpackCompiler = require('webpack')(webpackConfig);
+
+    router.use(webpackDevMiddleware(webpackCompiler, {
+        publicPath: '/static',
+        logger: logger
+    }));
+
+    pugRequireHandler = (path) => urljoin(httpRoot, 'static', path);
+}
+
+function setupStaticMiddleware(router) {
+    const staticManifest = require(path.join(distPath, 'manifest.json'));
+
+    if (staticUrl) {
+        logger.info(`  using static files from '${staticUrl}'`);
+    } else {
+        const staticPath = path.join(distPath, 'static');
+        logger.info(`  serving static files from '${staticPath}'`);
+        router.use('/static', express.static(staticPath, {
+            maxAge: staticMaxAgeSecs * 1000
+        }));
+    }
+
+    pugRequireHandler = (path) => {
+        if (staticManifest.hasOwnProperty(path)) {
+            return urljoin(staticRoot, staticManifest[path]);
+        } else {
+            logger.error(`failed to locate static asset '${path}' in manifest`);
+            return '';
+        }
+    };
+}
+
 const awsProps = props.propsFor("aws");
 
 aws.initConfig(awsProps)
@@ -256,7 +302,7 @@ aws.initConfig(awsProps)
         const CompileHandler = require('./lib/handlers/compile').Handler;
         const compileHandler = new CompileHandler(compilationEnvironment, awsProps);
         const StorageHandler = require('./lib/storage/storage');
-        const storageHandler = StorageHandler.storageFactory(storageSolution, compilerProps, awsProps, httpRootDir);
+        const storageHandler = StorageHandler.storageFactory(storageSolution, compilerProps, awsProps, httpRoot);
         const SourceHandler = require('./lib/handlers/source').Handler;
         const sourceHandler = new SourceHandler(fileSources, staticHeaders);
         const CompilerFinder = require('./lib/compiler-finder');
@@ -355,7 +401,7 @@ aws.initConfig(awsProps)
                 const healthCheckFilePath = ceProps("healthCheckFilePath", false);
 
                 const routeApi = new RouteAPI(router, compileHandler, ceProps,
-                    storageHandler, renderConfig, renderGoldenLayout);
+                    storageHandler, renderGoldenLayout);
 
                 function onCompilerChange(compilers) {
                     if (JSON.stringify(prevCompilers) === JSON.stringify(compilers)) {
@@ -387,13 +433,13 @@ aws.initConfig(awsProps)
                     .on('error', err => logger.error('Caught error in web handler; continuing:', err))
                     // Handle healthchecks at the root, as they're not expected from the outside world
                     .use('/healthcheck', new healthCheck.HealthCheckHandler(healthCheckFilePath).handle)
-                    .use(httpRootDir, router)
+                    .use(httpRoot, router)
                     .use((req, res, next) => {
                         next({status: 404, message: `page "${req.path}" could not be found`});
                     })
                     .use(Sentry.Handlers.errorHandler)
                     // eslint-disable-next-line no-unused-vars
-                    .use((err, req, res, next) => {
+                    .use((err, req, res) => {
                         const status =
                             err.status ||
                             err.statusCode ||
@@ -421,25 +467,9 @@ aws.initConfig(awsProps)
                     options.compilerExplorerOptions = JSON.stringify(allExtraOptions);
                     options.extraBodyClass = options.embedded ? 'embedded' : extraBodyClass;
                     options.httpRoot = httpRoot;
-                    options.httpRootDir = httpRootDir;
+                    options.staticRoot = staticRoot;
                     options.storageSolution = storageSolution;
-                    options.require = function (path) {
-                        if (isDevMode()) {
-                            if (fs.existsSync('static/assets/' + path)) {
-                                return '/assets/' + path;
-                            } else {
-                                //this will break assets in dev mode for now
-                                return '/dist/' + path;
-                            }
-                        }
-                        if (staticManifest.hasOwnProperty(path)) {
-                            return `${httpRootDir}dist/${staticManifest[path]}`;
-                        }
-                        if (assetManifest.hasOwnProperty(path)) {
-                            return `${httpRootDir}dist/assets/${assetManifest[path]}`;
-                        }
-                        logger.warn("Requested an asset I don't know about");
-                    };
+                    options.require = pugRequireHandler;
                     return options;
                 }
 
@@ -459,17 +489,9 @@ aws.initConfig(awsProps)
                     res.render('embed', renderConfig({embedded: true}, req.query));
                 };
                 if (isDevMode()) {
-                    router.use(webpackDevMiddleware(webpackCompiler, {
-                        publicPath: webpackConfig.output.publicPath,
-                        logger: logger
-                    }));
-                    router.use(express.static(defArgs.staticDir));
-                    logger.info("  using webpack dev middleware");
+                    setupWebPackDevMiddleware(router);
                 } else {
-                    /* Assume that anything not dev is just production.
-                     * This gives sane defaults for anyone who isn't messing with this */
-                    logger.info(`  serving static files from '${defArgs.staticDir}'`);
-                    router.use(express.static(defArgs.staticDir, {maxAge: staticMaxAgeSecs * 1000}));
+                    setupStaticMiddleware(router);
                 }
 
                 morgan.token('gdpr_ip', req => utils.anonymizeIp(req.ip));
@@ -479,6 +501,36 @@ aws.initConfig(awsProps)
 
                 const shortenerLib = require(`./lib/shortener-${clientOptionsHandler.options.urlShortenService}`);
                 const shortener = shortenerLib({storageHandler});
+
+                /*
+                 * This is a workaround to make cross origin monaco web workers function
+                 * in spite of the monaco webpack plugin hijacking the MonacoEnvironment global.
+                 *
+                 * see https://github.com/microsoft/monaco-editor-webpack-plugin/issues/42
+                 *
+                 * This workaround wouldn't be so bad, if it didn't _also_ rely on *another* bug to
+                 * actually work.
+                 *
+                 * The webpack plugin incorrectly uses
+                 *     window.__webpack_public_path__
+                 * when it should use
+                 *     __webpack_public_path__
+                 *
+                 * see https://github.com/microsoft/monaco-editor-webpack-plugin/pull/63
+                 *
+                 * We can leave __webpack_public_path__ with the correct value, which lets runtime chunk
+                 * loading continue to function correctly.
+                 *
+                 * We can then set window.__webpack_public_path__ to the below handler, which lets us
+                 * fabricate a worker on the fly.
+                 *
+                 * This is bad and I feel bad.
+                 */
+                router.get('/workers/:worker', (req, res) => {
+                    staticHeaders(res);
+                    res.set('Content-Type', 'application/javascript');
+                    res.end(`importScripts('${urljoin(staticRoot, req.params.worker)}');`);
+                });
 
                 router
                     .use(Sentry.Handlers.requestHandler())
@@ -520,7 +572,7 @@ aws.initConfig(awsProps)
                         res.set('Content-Type', 'application/xml');
                         res.render('sitemap');
                     })
-                    .use(sFavicon(path.join(defArgs.staticDir, webpackConfig.output.publicPath, 'favicon.ico')))
+                    .use(sFavicon(path.resolve(__dirname, 'static', 'favicon.ico')))
                     .get('/client-options.js', (req, res) => {
                         staticHeaders(res);
                         res.set('Content-Type', 'application/javascript');
