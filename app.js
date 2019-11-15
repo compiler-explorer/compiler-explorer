@@ -355,7 +355,7 @@ aws.initConfig(awsProps)
                 const healthCheckFilePath = ceProps("healthCheckFilePath", false);
 
                 const routeApi = new RouteAPI(router, compileHandler, ceProps,
-                    storageHandler, renderConfig, renderGoldenLayout);
+                    storageHandler, renderGoldenLayout);
 
                 function onCompilerChange(compilers) {
                     if (JSON.stringify(prevCompilers) === JSON.stringify(compilers)) {
