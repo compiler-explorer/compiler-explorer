@@ -88,7 +88,7 @@ function getItemDisplayTitle(item) {
     if (typeof item.id === "string") {
         var p = item.id.indexOf("_exec");
         if (p !== -1) {
-            return 'Executor #' + item.id.substr(0, p - 1);
+            return 'Executor #' + item.id.substr(0, p);
         }
     }
 
@@ -158,7 +158,7 @@ function Diff(hub, container, state) {
                     '<span class="options">' + escape(item.options) + '</span>' +
                     '<ul class="meta">' +
                     '<li class="editor">Editor #' + escape(item.editorId) + '</li>' +
-                    '<li class="compilerId">' + escape(getItemDisplayTitle(item.id)) + '</li>' +
+                    '<li class="compilerId">' + escape(getItemDisplayTitle(item)) + '</li>' +
                     '</ul></div>';
             }
         },
