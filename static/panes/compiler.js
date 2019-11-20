@@ -94,6 +94,7 @@ function Compiler(hub, container, state) {
     this.wantOptInfo = state.wantOptInfo;
     this.decorations = {};
     this.prevDecorations = [];
+    this.labels = {};
     this.alertSystem = new Alert();
     this.alertSystem.prefixMessage = "Compiler #" + this.id + ": ";
 
@@ -102,6 +103,33 @@ function Compiler(hub, container, state) {
 
     this.linkedFadeTimeoutId = -1;
     this.toolsMenu = null;
+
+    var labelUsageInstructions = [
+        "call",
+        "callq",
+        "jmp",
+        "je", "jz",
+        "jne", "jnz",
+        "jg", "jnle",
+        "jge", "jnl",
+        "jl", "jnge",
+        "jle", "jng",
+        "ja", "jnbe",
+        "jae", "jnb",
+        "jb", "jnae",
+        "jbe", "jna",
+        "jxcz",
+        "jc",
+        "jnc",
+        "jo",
+        "jno",
+        "jp", "jpe",
+        "jnp", "jpo",
+        "js",
+        "jns"
+    ];
+    this.labelUsageRegex = new RegExp(
+        '\\s+(' + labelUsageInstructions.join('|') + ')\\s+([^#]+)');
 
     this.initButtons(state);
 
@@ -324,7 +352,72 @@ Compiler.prototype.resize = function () {
     });
 };
 
+// Returns a label name if it can be found in the given position, otherwise
+// returns null.
+Compiler.prototype.getLabelAtPosition = function (position) {
+    var line = this.outputEditor.getModel().getLineContent(position.lineNumber);
+    var match = line.match(this.labelUsageRegex);
+    if (match) {
+        return match[2].trim();
+    }
+
+    return null;
+};
+
+// Jumps to a label definition related to a label which was found in the
+// given position and highlights the given range. If no label can be found in
+// the given positon it do nothing.
+Compiler.prototype.jumpToLabel = function (position) {
+    var label = this.getLabelAtPosition(position);
+
+    if (!label) {
+        return;
+    }
+
+    var range = this.labels[label];
+    if (!range) {
+        return;
+    }
+
+    // Highlight the new range.
+    var endLineContent =
+        this.outputEditor.getModel().getLineContent(range.endLineNumber);
+
+    this.outputEditor.setSelection(new monaco.Selection(
+        range.startLineNumber, 0,
+        range.endLineNumber, endLineContent.length + 1));
+
+    // Jump to the given line.
+    this.outputEditor.revealLineInCenter(range.startLineNumber);
+};
+
 Compiler.prototype.initEditorActions = function () {
+    this.isLabelCtxKey = this.outputEditor.createContextKey('isLabel', true);
+
+    this.outputEditor.addAction({
+        id: 'jumptolabel',
+        label: 'Jump to label',
+        keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter],
+        precondition: 'isLabel',
+        contextMenuGroupId: 'navigation',
+        contextMenuOrder: 1.5,
+        run: _.bind(function (ed) {
+            this.jumpToLabel(ed.getPosition());
+        }, this)
+    });
+
+    // Hiding the 'Jump to label' context menu option if no label can be found
+    // in the clicked position.
+    var contextmenu = this.outputEditor.getContribution('editor.contrib.contextmenu');
+    var realMethod = contextmenu._onContextMenu;
+    contextmenu._onContextMenu = _.bind(function (e) {
+        if (this.isLabelCtxKey && e.target.position) {
+            var label = this.getLabelAtPosition(e.target.position);
+            this.isLabelCtxKey.set(label && this.labels[label]);
+        }
+        realMethod.apply(contextmenu, arguments);
+    }, this);
+
     this.outputEditor.addAction({
         id: 'viewsource',
         label: 'Scroll to source',
@@ -560,6 +653,33 @@ Compiler.prototype.setAssembly = function (asm) {
         this.outputEditor.revealLine(currentTopLine);
     }
 
+    // Set the labels which will be used at Jump to label feature.
+    setTimeout(_.bind(function () {
+        this.labels = {};
+        for (var i = 0; i < this.assembly.length; ++i) {
+            var text = this.assembly[i].text;
+            if (/^\S/.test(text)) {
+                var match = text.match(/(^\S+[^#]*):/);
+                if (match) {
+                    var startLineNumber = i;
+
+                    // Find the end of the label definition.
+                    while (i + 1 < this.assembly.length &&
+                           /^[\s#]/.test(this.assembly[i + 1].text)
+                    ) {
+                        i = i + 1;
+                    }
+
+                    this.labels[match[1]] = {
+                        startLineNumber: startLineNumber + 1,
+                        endLineNumber: i + 1
+                    };
+                }
+            }
+        }
+    }, this), 0);
+
+    this.outputEditor.revealLine(currentTopLine);
     if (this.getEffectiveFilters().binary) {
         this.setBinaryMargin();
         if (this.codeLensProvider !== null) {
@@ -1195,6 +1315,11 @@ Compiler.prototype.initCallbacks = function () {
         this.cursorSelectionThrottledFunction(e);
     }, this));
 
+    this.mouseUpThrottledFunction = _.throttle(_.bind(this.onMouseUp, this), 50);
+    this.outputEditor.onMouseUp(_.bind(function (e) {
+        this.mouseUpThrottledFunction(e);
+    }, this));
+
     this.compileClearCache.on('click', _.bind(function () {
         this.compilerService.cache.reset();
         this.compile(true);
@@ -1524,6 +1649,14 @@ Compiler.prototype.onDidChangeCursorSelection = function (e) {
     if (this.awaitingInitialResults) {
         this.selection = e.selection;
         this.saveState();
+    }
+};
+
+Compiler.prototype.onMouseUp = function (e) {
+    if (e === null || e.target === null || e.target.position === null) return;
+
+    if (e.event.ctrlKey && e.event.leftButton) {
+        this.jumpToLabel(e.target.position);
     }
 };
 
