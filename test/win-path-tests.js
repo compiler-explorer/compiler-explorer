@@ -24,23 +24,28 @@
 
 const chai = require('chai');
 
-const WslCL = require('../lib/compilers/WSL-CL');
-const WineCL = require('../lib/compilers/Wine-CL');
+const WslCL = require('../lib/compilers/wsl-vc');
+const WineCL = require('../lib/compilers/wine-vc');
 const CompilationEnvironment = require('../lib/compilation-env');
+const properties = require('../lib/properties');
 
 chai.should();
+
+const languages = {
+    'c++': {id: 'c++'}
+};
+
+const compilerProps = new properties.CompilerProps(languages, properties.fakeProps({}));
 
 describe('Paths', () => {
     it('Linux -> Wine path', () => {
         const info = {
-            lang: "c++",
+            lang: languages['c++'].id,
             exe: null,
             remote: true
         };
-        const envprops = (key, deflt) => deflt;
 
-        const env = new CompilationEnvironment(envprops);
-        env.compilerProps = undefined;
+        const env = new CompilationEnvironment(compilerProps);
 
         const compiler = new WineCL(info, env);
         compiler.filename("/tmp/123456/output.s").should.equal("Z:/tmp/123456/output.s");
@@ -48,15 +53,12 @@ describe('Paths', () => {
 
     it('Linux -> Windows path', function () {
         const info = {
-            lang: "c++",
+            lang: languages['c++'].id,
             exe: null,
             remote: true
         };
-        const envprops = (key, deflt) => deflt;
 
-        const env = new CompilationEnvironment(envprops);
-        env.compilerProps = () => {
-        };
+        const env = new CompilationEnvironment(compilerProps);
 
         process.env.winTmp = "/mnt/c/tmp";
 

@@ -1,5 +1,29 @@
 @import url("~golden-layout/src/css/goldenlayout-light-theme.css");
 
+/*
+ * replace low res golden-layout icons with svg recreations to improve high DPI displays
+ * not all icons in golden-layout are used, so we don't replace all of them
+ */
+.lm_header .lm_tab .lm_close_tab {
+    background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 9 9'%3E%3Cpath fill='%23000' d='M.45713 8.5429l-.44426-.44438 3.5955-3.5956L.00697.90152l.8944-.89463 3.6016 3.6015 3.6014-3.6015.88867.88867-3.6014 3.6015 3.6014 3.6015-.89449.89449-3.6015-3.6014-3.5957 3.5956z'/%3E%3C/svg%3E") !important;
+    background-size: 9px !important;
+}
+
+.lm_controls .lm_maximise {
+    background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 9 9'%3E%3Cpath fill='%23000' d='M0 4.5V0h9v9H0zM8 5V2H1v6h7z'/%3E%3C/svg%3E") !important;
+    background-size: 9px !important;
+}
+
+.lm_controls .lm_close {
+    background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 9 9'%3E%3Cpath fill='%23000' d='M.45713 8.5429l-.44426-.44438 3.5955-3.5956L.00697.90152l.8944-.89463 3.6016 3.6015 3.6014-3.6015.88867.88867-3.6014 3.6015 3.6014 3.6015-.89449.89449-3.6015-3.6014-3.5957 3.5956z'/%3E%3C/svg%3E") !important;
+    background-size: 9px !important;
+}
+
+.lm_maximised .lm_controls .lm_maximise {
+    background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 9 9'%3E%3Cpath fill='%23000' d='M1.0096 8.0019v-.99809h6.9807v1.9962H1.0096z'/%3E%3C/svg%3E") !important;
+    background-size: 9px !important;
+}
+
 body {
     background-color: #FFFFFF;
 }
@@ -20,6 +44,10 @@ body {
     background-color: #eee;
 }
 
+.navbar-nav a.nav-link {
+    border: rgb(140, 140, 140) 1px solid;
+}
+
 .float-link {
     background-color: rgba(128, 128, 128, 0.5);
 }
@@ -32,50 +60,58 @@ body {
     background-color: #f2f2f2;
 }
 
-.btn-godbolt {
-    color: #212529;
-    background-color: #f8f9fa;
-    border-color: #e9e9e9;
+pre.content {
+    background-color: #f5f5f5;
 }
 
-.btn-godbolt:hover {
-    color: #212529;
-    background-color: #e2e6ea;
-    border-color: #dae0e5;
+pre.content.compiling {
+    background-color: #f0f0f0;
 }
 
-.btn-godbolt:focus, .btn-godbolt.focus {
-    box-shadow: 0 0 0 0.2rem rgba(248, 249, 250, 0.5);
+a.navbar-brand img.logo.inverse {
+    display: none !important;
 }
 
-.btn-godbolt.disabled, .btn-godbolt:disabled {
-    color: #212529;
-    background-color: #f8f9fa;
-    border-color: #e9e9e9;
+a.navbar-brand img.logo.normal {
+    display: block !important;
 }
 
-.btn-godbolt:not(:disabled):not(.disabled):active, .btn-godbolt:not(:disabled):not(.disabled).active,
-.show > .btn-godbolt.dropdown-toggle {
-    color: #212529;
-    background-color: #dae0e5;
-    border-color: #d3d9df;
+.button-checkbox button:disabled {
+    background-color: #dae5e0 !important;
+    border-color: #aae3e0 !important;
 }
 
-.btn-godbolt:not(:disabled):not(.disabled):active:focus, .btn-godbolt:not(:disabled):not(.disabled).active:focus,
-.show > .btn-godbolt.dropdown-toggle:focus {
-    box-shadow: 0 0 0 0.2rem rgba(248, 249, 250, 0.5);
+.top-bar.btn-toolbar.bg-light {
+    border-bottom: 1px solid #d2d3d4;
 }
 
-.opcode {
-    color: #066;
-}
-
-.opcode:nth-child(odd) {
-    color: #060;
+.bottom-bar.bg-light {
+    border-top: 1px solid #d2d3d4;
 }
 
 .linked-code-decoration {
     background: lightblue;
+}
+
+.linked-code-decoration-inline {
+    background: lightblue;
+}
+
+.linked-code-decoration-line {
+    background: lightblue !important;
+}
+
+.rainbow-decoration {
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-image: -webkit-gradient(linear, left top, right bottom,
+    color-stop(0.00, red),
+    color-stop(16%, orange),
+    color-stop(32%, yellow),
+    color-stop(48%, green),
+    color-stop(60%, blue),
+    color-stop(76%, indigo),
+    color-stop(1.00, violet));
 }
 
 .font-option {
@@ -139,7 +175,7 @@ body {
 }
 
 .conformance-wrapper {
-    background-color: #fff;
+    background-color: #f5f5f5;
 }
 
 .graph-placeholder {
@@ -162,6 +198,106 @@ body {
     background-color: #f2f2f2;
 }
 
-.popover-content {
-    background-color: #f0f0f0;
+.popover, .popover-content, .libs-container, .lib-list {
+    background-color: #fefefe;
+}
+
+.lib-in-use {
+    background-color: green;
+}
+
+.consent-cookie-yes {
+    background-color: #c1e2b3;
+}
+
+.consent-cookie-no {
+    background-color: #f44336;
+    color: #ffffff;
+}
+
+#socialshare .share-twitter, .share-twitter {
+    background-color: #1da1f2;
+    color: white;
+}
+
+#socialshare .share-reddit, .share-reddit {
+    background-color: #ff4500;
+    color: white;
+}
+
+.share-disabled {
+    color: gray;
+}
+
+.community-advert {
+    background: #f0f0f0;
+    border-color: #67c52a;
+}
+
+.navbar-nav a.nav-link:hover {
+    background-color: #d8d9da;
+}
+
+kbd {
+    color: black;
+    border-color: #ccc;
+    background-color: #f7f7f7;
+}
+
+.prepend-options {
+    background-color: #e9ecef;
+}
+
+#simplecook {
+    background-color: #f4f4f4;
+}
+
+.new-cookie-msg {
+    color: black;
+}
+
+div.argmenuitem {
+    max-width: 250px;
+}
+
+div.argmenuitem span.argtitle {
+    font-weight: bold;
+    display: block;
+    overflow-x: hidden;
+    overflow-anchor: visible;
+    text-overflow: ellipsis;
+}
+
+div.argmenuitem span.argdescription {
+    max-height: 150px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    font-style: italic;
+    font-size: smaller;
+    display: block;
+    white-space: normal;
+    text-overflow: ellipsis;
+    overflow-anchor: visible;
+    overflow-y: hidden;
+}
+
+.open-in-cppinsights * {
+    vertical-align: middle;
+}
+
+
+.execution-stdout {
+    color: black;
+}
+
+.linked-compiler-output-line {
+    color: #007bfd;
+}
+
+.logo-pri {
+    fill: #67c52a;
+}
+
+.logo-sec {
+    fill: #3c3c3f;
 }

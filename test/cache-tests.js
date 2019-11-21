@@ -61,7 +61,7 @@ function basicTests(factory) {
                 cache.stats().should.eql({hits: 0, puts: 1, gets: 0});
                 return cache.get('a key').should.eventually.eql({
                     hit: true,
-                    data: new Buffer('a value')
+                    data: Buffer.from('a value')
                 });
             }).then(x => {
                 cache.stats().should.eql({hits: 1, puts: 1, gets: 1});
@@ -71,7 +71,7 @@ function basicTests(factory) {
 
     it('should store and retrieve binary buffers', () => {
         const cache = factory();
-        const buffer = new Buffer(2 * 1024 * 1024);
+        const buffer = Buffer.alloc(2 * 1024 * 1024);
         buffer.fill('@');
         return cache.put('a key', buffer, 'bob')
             .then(() => {
@@ -122,9 +122,9 @@ describe('Multi caches', () => {
         return cache.put('a key', 'a value', 'bob')
             .then(() => {
                 return Promise.all([
-                    cache.get('a key').should.eventually.eql({hit: true, data: new Buffer('a value')}),
-                    subCache1.get('a key').should.eventually.eql({hit: true, data: new Buffer('a value')}),
-                    subCache2.get('a key').should.eventually.eql({hit: true, data: new Buffer('a value')})
+                    cache.get('a key').should.eventually.eql({hit: true, data: Buffer.from('a value')}),
+                    subCache1.get('a key').should.eventually.eql({hit: true, data: Buffer.from('a value')}),
+                    subCache2.get('a key').should.eventually.eql({hit: true, data: Buffer.from('a value')})
                 ]);
             });
     });
@@ -136,7 +136,7 @@ describe('Multi caches', () => {
         subCache1.put('a key', 'cache1');
         subCache2.put('a key', 'cache2');
         const cache = new MultiCache(subCache1, subCache2);
-        return cache.get('a key').should.eventually.eql({hit: true, data: new Buffer('cache1')})
+        return cache.get('a key').should.eventually.eql({hit: true, data: Buffer.from('cache1')})
             .then((x) => {
                 subCache1.hits.should.equal(1);
                 subCache1.gets.should.equal(1);
@@ -145,8 +145,8 @@ describe('Multi caches', () => {
                 return x;
             }).then(() => {
                 Promise.all([
-                    subCache1.get('a key').should.eventually.eql({hit: true, data: new Buffer('cache1')}),
-                    subCache2.get('a key').should.eventually.eql({hit: true, data: new Buffer('cache2')})]
+                    subCache1.get('a key').should.eventually.eql({hit: true, data: Buffer.from('cache1')}),
+                    subCache2.get('a key').should.eventually.eql({hit: true, data: Buffer.from('cache2')})]
                 );
             });
     });
@@ -178,8 +178,8 @@ describe('On disk caches', () => {
         fs.writeFileSync(path.join(tempDir, 'path', 'test'), 'this is path/test');
         const cache = new OnDiskCache(tempDir, 1);
         return Promise.all([
-            cache.get('abcdef').should.eventually.eql({hit: true, data: new Buffer('this is abcdef')}),
-            cache.get('path/test').should.eventually.eql({hit: true, data: new Buffer('this is path/test')})]);
+            cache.get('abcdef').should.eventually.eql({hit: true, data: Buffer.from('this is abcdef')}),
+            cache.get(path.join('path', 'test')).should.eventually.eql({hit: true, data: Buffer.from('this is path/test')})]);
     });
 
     // MRG ideally handle the case of pre-populated stuff overflowing the size
@@ -187,29 +187,41 @@ describe('On disk caches', () => {
 });
 
 const S3FS = {};
-AWS.mock('S3', 'getObject', (params, callback) => {
-    params.Bucket.should.equal("test.bucket");
-    const result = S3FS[params.Key];
-    if (!result) {
-        const error = new Error("Not found");
-        error.code = "NoSuchKey";
-        callback(error);
-    } else {
-        callback(null, {Body: result});
-    }
-});
-AWS.mock('S3', 'putObject', (params, callback) => {
-    params.Bucket.should.equal("test.bucket");
-    S3FS[params.Key] = params.Body;
-    callback(null, {});
-});
+
+function setup() {
+    beforeEach(() => {
+        AWS.mock('S3', 'getObject', (params, callback) => {
+            params.Bucket.should.equal("test.bucket");
+            const result = S3FS[params.Key];
+            if (!result) {
+                const error = new Error("Not found");
+                error.code = "NoSuchKey";
+                callback(error);
+            } else {
+                callback(null, {Body: result});
+            }
+        });
+        AWS.mock('S3', 'putObject', (params, callback) => {
+            params.Bucket.should.equal("test.bucket");
+            S3FS[params.Key] = params.Body;
+            callback(null, {});
+        });
+
+    });
+    afterEach(() => {
+        AWS.restore();
+    });
+}
+
 describe('S3 tests', () => {
+    setup();
     basicTests(() => new S3Cache('test.bucket', 'cache', 'uk-north-1'));
     // BE VERY CAREFUL - the below can be used with sufficient permissions to test on prod (With mocks off)...
     // basicTests(() => new S3Cache('storage.godbolt.org', 'cache', 'us-east-1'));
 });
 
 describe('Config tests', () => {
+    setup();
     it('should create null cache on empty config', () => {
         const cache = FromConfig.create("");
         cache.constructor.should.eql(NullCache);

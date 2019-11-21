@@ -1,0 +1,6 @@
+g():
+        sub     rsp, 8
+        call    [QWORD PTR foo::baz[rip+8]]
+        xor     eax, eax
+        add     rsp, 8
+        ret

@@ -28,14 +28,10 @@ var $ = require('jquery');
 var EventEmitter = require('events');
 var options = require('./options');
 
-function makeFontSizeDropdown(elem, interval, obj, buttonDropdown) {
-    var factor = obj.isFontOfStr ? 10 : 14;
-    var step = 0.05;
-    var found = false;
-
+function makeFontSizeDropdown(elem, obj, buttonDropdown) {
     var onWheelEvent = function (e) {
         e.preventDefault();
-        var selectedId = elem.find('.font-option-active').index();
+        var selectedId = elem.find('.active').index();
         if (e.originalEvent.deltaY >= 0 && selectedId < elem.children().length - 1) {
             selectedId++;
         } else if (e.originalEvent.deltaY < 0 && selectedId > 0) {
@@ -46,29 +42,27 @@ function makeFontSizeDropdown(elem, interval, obj, buttonDropdown) {
 
     var onClickEvent = function () {
         // Toggle off the selection of the others
-        elem.children().removeClass('font-option-active');
-        // Toggle us on
-        $(this).addClass("font-option-active");
+        $(this)
+            .addClass('active')
+            .siblings().removeClass('active');
         // Send the data
-        obj.scale = $(this).data("value");
+        obj.scale = $(this).data('value');
         obj.apply();
         obj.emit('change');
     };
 
-    for (var i = interval[0]; i <= interval[1]; i += step) {
-        step *= 1.2;
-        var newElement = $('<li></li>');
-        newElement.attr('data-value', i);
-        newElement.addClass('font-option');
-        if (!found && (i === obj.scale || Math.floor(i) === obj.scale)) {
-            found = true;
-            newElement.addClass('font-option-active');
-        }
-        newElement.text(Math.round(i * factor));
-        newElement
+    for (var i = 8; i <= 30; i++) {
+        var item = $('<button></button>');
+
+        item.attr('data-value', i)
+            .addClass('dropdown-item btn btn-sm btn-light')
+            .text(i)
             .appendTo(elem)
-            .click(onClickEvent)
-            .on('wheel', onWheelEvent);
+            .click(onClickEvent);
+
+        if (obj.scale === i) {
+            item.addClass('active');
+        }
     }
 
     if (buttonDropdown) {
@@ -76,31 +70,39 @@ function makeFontSizeDropdown(elem, interval, obj, buttonDropdown) {
     }
 }
 
+function convertOldScale(oldScale) {
+    // New low + ((new max - new low) * (oldScale - old low) / (old max - old low))
+    return Math.floor(8 + (22 * (oldScale - 0.3) / 2.7));
+}
+
 function FontScale(domRoot, state, fontSelectorOrEditor) {
     EventEmitter.call(this);
     this.domRoot = domRoot;
+    // Old scale went from 0.3 to 3. New one uses 8 up to 30, so we can convert the old ones to the new format
     this.scale = state.fontScale || options.defaultFontScale;
+    if (this.scale < 8) {
+        this.scale = convertOldScale(this.scale);
+    }
     this.fontSelectorOrEditor = fontSelectorOrEditor;
-    this.isFontOfStr = typeof(this.fontSelectorOrEditor) === "string";
+    this.isFontOfStr = typeof (this.fontSelectorOrEditor) === "string";
     this.apply();
-    makeFontSizeDropdown(this.domRoot.find('.font-size-list'), [0.3, 3], this, this.domRoot.find('.fs-button'));
+    makeFontSizeDropdown(this.domRoot.find('.font-size-list'), this, this.domRoot.find('.fs-button'));
 }
 
 _.extend(FontScale.prototype, EventEmitter.prototype);
 
 FontScale.prototype.apply = function () {
     if (this.isFontOfStr) {
-        this.domRoot.find(this.fontSelectorOrEditor).css('font-size', (10 * this.scale) + "pt");
+        this.domRoot.find(this.fontSelectorOrEditor).css('font-size', this.scale + "pt");
     } else {
         this.fontSelectorOrEditor.updateOptions({
-            fontSize: 14 * this.scale
+            fontSize: this.scale
         });
     }
 };
 
 FontScale.prototype.addState = function (state) {
-    if (this.scale !== 1.0)
-        state.fontScale = this.scale;
+    state.fontScale = this.scale;
 };
 
 FontScale.prototype.setScale = function (scale) {

@@ -27,21 +27,25 @@ const chaiAsPromised = require("chai-as-promised");
 const LLCCompiler = require('../lib/compilers/llc');
 const OPTCompiler = require('../lib/compilers/opt');
 const CompilationEnvironment = require('../lib/compilation-env');
+const properties = require('../lib/properties');
 
 chai.use(chaiAsPromised);
 chai.should();
 
-const props = (key, deflt) => deflt;
+
+const languages = {
+    llvm: {id: 'llvm'}
+};
+
+const compilerProps = new properties.CompilerProps(languages, properties.fakeProps({}));
 
 function createCompiler(compiler) {
-    const ce = new CompilationEnvironment(props);
+    const ce = new CompilationEnvironment(compilerProps);
     const info = {
-        'exe': null,
-        'remote': true,
-        'lang': 'llvm'
+        exe: null,
+        remote: true,
+        lang: languages.llvm.id
     };
-
-    ce.compilerPropsL = () => '';
 
     return new compiler(info, ce);
 }

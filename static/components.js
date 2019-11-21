@@ -32,7 +32,7 @@ module.exports = {
             componentState: {source: editorId, lang: lang}
         };
     },
-    getCompilerWith: function (editorId, filters, options, compilerId) {
+    getCompilerWith: function (editorId, filters, options, compilerId, langId, libs) {
         return {
             type: 'component',
             componentName: 'compiler',
@@ -40,8 +40,17 @@ module.exports = {
                 source: editorId,
                 filters: filters,
                 options: options,
-                compiler: compilerId
+                compiler: compilerId,
+                lang: langId,
+                libs: libs
             }
+        };
+    },
+    getExecutor: function (editorId, lang) {
+        return {
+            type: 'component',
+            componentName: 'executor',
+            componentState: {source: editorId, lang: lang}
         };
     },
     getEditor: function (id, langId) {
@@ -63,6 +72,18 @@ module.exports = {
             type: 'component',
             componentName: 'output',
             componentState: {compiler: compiler, editor: editor}
+        };
+    },
+    getToolViewWith: function (compiler, editor, toolId, args) {
+        return {
+            type: 'component',
+            componentName: 'tool',
+            componentState: {
+                compiler: compiler,
+                editor: editor,
+                toolId: toolId,
+                args: args
+            }
         };
     },
     getDiff: function () {
@@ -154,13 +175,34 @@ module.exports = {
             }
         };
     },
-    getConformanceView: function (editorid, source) {
+    getConformanceView: function (editorid, source, langId) {
         return {
             type: 'component',
             componentName: 'conformance',
             componentState: {
                 editorid: editorid,
-                source: source
+                source: source,
+                langId: langId
+            }
+        };
+    },
+    getIrView: function () {
+        return {
+            type: 'component',
+            componentName: 'ir',
+            componentState: {}
+        };
+    },
+    getIrViewWith: function (id, source, irOutput, compilerName, editorid) {
+        return {
+            type: 'component',
+            componentName: 'ir',
+            componentState: {
+                id: id,
+                source: source,
+                irOutput: irOutput,
+                compilerName: compilerName,
+                editorid: editorid
             }
         };
     }

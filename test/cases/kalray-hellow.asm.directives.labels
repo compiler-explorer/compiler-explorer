@@ -1,4 +1,3 @@
-
 .LC0:
         .string "%s , %s , %lld , %d , %lld\n"
 

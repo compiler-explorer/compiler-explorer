@@ -1,0 +1,6 @@
+<svg viewBox="0 0 165 50" xmlns="http://www.w3.org/2000/svg">
+  <g transform="translate(110,50)rotate(-35)" font-weight="bold" font-family="sans-serif" font-size="25">
+    <text textLength="60" lengthAdjust="spacingAndGlyphs">DEV</text>
+    <text textLength="60" lengthAdjust="spacingAndGlyphs" fill="#671ac6" dx="-3" dy="-2">DEV</text>
+  </g>
+</svg>

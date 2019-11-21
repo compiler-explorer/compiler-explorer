@@ -2,30 +2,22 @@ sudo: false
 
 language: node_js
 
-before_install:
-    - etc/scripts/travis.sh
+git:
+    depth: false # Get all depth so our git-based version/change tracking of policies works
 
-node_js: 
-    - "8"
-
-before_script:
-    - export PATH=$PATH:$PWD/.travis-compilers/ghc/bin
-    - export PATH=$PATH:$PWD/.travis-compilers/gdc/x86_64-pc-linux-gnu/bin
-    - export PATH=$PATH:$PWD/.travis-compilers/rust/bin
-
-cache:
-    directories:
-        - .travis-compilers
+node_js:
+    - "10"
 
 script:
-    - npm test
-    - npm run codecov
+    - npm run ci-lint
+    - npm run ci-test
     - make changelog
-    - make travis-dist
+    - make policies
+    - make -j$(nproc) travis-dist
 
 deploy:
     on:
-        all_branches: 
+        all_branches:
             true
     provider: s3
     bucket: "compiler-explorer"
@@ -33,3 +25,5 @@ deploy:
     acl: public_read
     local_dir: out/dist-bin
     upload-dir: dist/travis/${TRAVIS_BRANCH}
+
+after_success: npm run codecov

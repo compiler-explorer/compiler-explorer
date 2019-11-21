@@ -38,7 +38,7 @@ function common(cases, filterArg, cfgArg) {
             const file = fs.readFileSync(filename, 'utf-8');
             if (file) {
                 const contents = JSON.parse(file);
-                assert.deepEqual(cfg.generateStructure(cfgArg, contents.asm), contents.cfg, `${filename}`);
+                assert.deepEqual(cfg.generateStructure('', cfgArg, contents.asm), contents.cfg, `${filename}`);
             }
         });
 }

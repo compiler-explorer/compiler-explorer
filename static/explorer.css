@@ -1,6 +1,14 @@
+@import url("~@fortawesome/fontawesome-free/css/all.min.css");
+@import url("~vis/dist/vis.css");
+
 /* TEMP HACK: https://github.com/Microsoft/monaco-editor/issues/349 */
 .quick-open-tree .row {
     margin-left: 0;
+}
+
+/* workaround high DPI issues in monaco. SEE: https://github.com/mattgodbolt/compiler-explorer/issues/1488 */
+.monaco-editor .margin-view-overlays .line-numbers {
+    cursor: default !important;
 }
 
 /*
@@ -15,41 +23,27 @@ body {
     overflow: hidden;
 }
 
-.container-fluid {
-    padding-left: 5px;
-    padding-right: 5px;
-}
-
-.navbar-default {
-    border: none;
-    border-radius: 0;
-    margin-bottom: 1px;
+.navbar-godbolt {
+    padding: 0;
 }
 
 .navbar-brand {
     padding: 0;
-    position: relative;
-    width: 185px;
 }
 
-.navbar-brand img {
+.navbar-brand img.logo-overlay {
     position: absolute;
-}
-
-.navbar-brand img.inverse {
-    display: none;
-}
-
-.navbar-brand img.beta-overlay {
-    display: none;
-}
-
-.beta .navbar-brand img.beta-overlay {
+    top: 0;
     display: block;
 }
 
-.nav.nav-tabs {
-    margin-bottom: 3px !important;
+.btn-light:focus {
+    box-shadow: none !important;
+}
+
+.top-bar .btn-light:disabled,
+.bottom-bar .btn-light:disabled {
+    cursor: not-allowed;
 }
 
 .float-link {
@@ -65,12 +59,21 @@ body {
     border-radius: 5px;
 }
 
+.popover.libs-popover {
+    max-width: 800px !important;
+    max-height: 600px !important;
+}
+
 .template {
     display: none;
 }
 
 .compiler-picker {
     min-width: 14em;
+}
+
+.compiler-picker .selectize-input {
+    text-align: center;
 }
 
 .function-picker {
@@ -89,7 +92,7 @@ li.tweet {
 
 .diff-picker {
     max-width: 20em;
-    width: 20em;
+    min-width: 14em;
 }
 
 .diff-picker .compiler {
@@ -115,40 +118,11 @@ li.tweet {
     margin: 0 10px 0 0;
 }
 
-input.options {
-    width: 98%;
-    margin-left: 0.25em;
-    margin-right: 0.25em;
-}
-
 #root {
     width: 100%;
     margin: 0;
     padding: 0;
     overflow: hidden;
-}
-
-.address {
-    display: inline;
-}
-
-.opcodes {
-    display: inline;
-}
-
-.opcode {
-    margin-right: 0.2em;
-}
-
-.binary-side {
-    text-align: left;
-    float: left;
-    clear: none;
-    width: 100%;
-}
-
-.highlighted {
-    font-weight: bold;
 }
 
 .lm_splitter.lm_vertical .lm_drag_handle {
@@ -233,13 +207,75 @@ pre.content.wrap {
     left: 3px;
 }
 
-.linked-code-decoration-inline {
+.linked-code-decoration-column {
     font-weight: 600;
 }
 
 .modal-content .well {
     border: 1px solid;
     border-radius: 3px;
+}
+
+@media (min-width: 1200px) {
+    .modal-dialog {
+        max-width: 1000px;
+    }
+}
+
+@media (min-width: 1400px) {
+    .modal-dialog {
+        max-width: 1200px;
+    }
+}
+
+.navbar-nav.navbar-center {
+    float: left; /* by default */
+}
+
+@media (min-width: 1300px) {
+    .navbar-nav.navbar-center {
+        float: none;
+        position: absolute;
+        left: 50%;
+        transform: translatex(-50%);
+    }
+}
+
+.community-advert {
+    display: none;
+    max-width: 300px;
+    height: 44px;
+    margin-top: 3px;
+    margin-bottom: 3px;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    border: 2px solid;
+    border-radius: 8px;
+    padding-left: 4px;
+    padding-right: 4px;
+}
+
+@media (min-width: 1000px) {
+    .community-advert {
+        display: flex;
+    }
+}
+
+@media (min-width: 1200px) {
+    .community-advert {
+        max-width: 500px;
+    }
+}
+
+.community-hide {
+    padding-left: 5px;
+}
+
+.community-hide button {
+    font-size: small;
+    opacity: 1;
+    color: #67c52a;
 }
 
 #notifications {
@@ -257,6 +293,8 @@ pre.content.wrap {
 
 .font-size-list {
     min-width: 43px !important;
+    max-height: 40% !important;
+    overflow-y: scroll;
     width: auto;
 }
 
@@ -293,12 +331,8 @@ pre.content.wrap {
     min-width: 100px !important;
 }
 
-.pane-dropdown button {
-    width: 100%;
-    text-align: left;
-}
-
-.full-compiler-name {
+.short-compiler-name {
+    font-size: 12px;
     padding-left: 3px;
 }
 
@@ -316,6 +350,18 @@ pre.content.wrap {
 
 .save-btn {
     margin-left: 5px;
+}
+
+button.dropdown-item.btn.btn-light.btn-sm {
+    margin-left: 0 !important;
+}
+
+label#vim-label {
+    top: 3px;
+}
+
+input.vim-check {
+    margin-bottom: 4px
 }
 
 .opens-new-window {
@@ -337,4 +383,102 @@ pre.content.wrap {
 .program-exec-output {
     font-family: "Courier New", Courier, monospace;
     padding-left: 2%;
+}
+
+.lib-arrow {
+    display: inline-table;
+    width: 0;
+    height: 0;
+    border: 7px solid transparent;
+    margin-right: 2px;
+}
+
+.share-disabled {
+    cursor: not-allowed;
+}
+
+.share-item {
+    display: block;
+    overflow: auto;
+    padding: 3px;
+}
+
+.share-item:last-child {
+    border-radius: 0 0 3px 3px;
+}
+
+.share-item-logo {
+    margin-left: 5px;
+    margin-right: 5px;
+    width: 20px;
+    height: 20px;
+}
+
+/* While we find a better solution, lets up this a bit */
+.compiler-picker .selectize-dropdown-content {
+    max-height: 300px !important;
+}
+
+.compiler-picker .selectize-dropdown-content .option {
+    padding: 0 10px;
+}
+
+.compiler-options-popover {
+    font-family: monospace;
+}
+
+.navbar-nav a.nav-link {
+    font-size: 14px;
+    border-radius: 5px;
+    margin-left: 1px;
+    margin-right: 1px;
+}
+
+.navbar-nav a.nav-link:hover {
+    border-radius: 5px;
+}
+
+kbd {
+    display: inline-block;
+    border: 1px solid;
+    border-radius: 4px;
+    padding: 0.1em 0.5em;
+    margin: 0 0.2em;
+    box-shadow: 0 1px 0px rgba(0, 0, 0, 0.2), 0 0 0 2px #fff inset;
+}
+
+#simplecook {
+    align-items: center;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+#simplecook .message {
+    display: block;
+    flex: 1 1 auto;
+    max-width: 100%;
+}
+
+.new-cookie-msg {
+    display: inline;
+    margin: 0 2px 0 2px;
+}
+
+.dropdown-icon {
+    width: 25px;
+    text-align: center;
+    margin-right: 6px;
+}
+
+#socialshare {
+    margin-left: -3px;
+}
+
+.linked-compiler-output-line {
+    cursor: pointer;
+}
+
+.lm_content {
+    overflow: visible;
 }

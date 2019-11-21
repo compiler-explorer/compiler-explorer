@@ -26,21 +26,24 @@ const chai = require('chai');
 const chaiAsPromised = require("chai-as-promised");
 const BaseCompiler = require('../lib/base-compiler');
 const CompilationEnvironment = require('../lib/compilation-env');
+const properties = require('../lib/properties');
 
 chai.use(chaiAsPromised);
 const should = chai.should();
 
-const props = (key, deflt) => deflt;
+const languages = {
+    'c++': {id: 'c++'}
+};
+
+const compilerProps = new properties.CompilerProps(languages, properties.fakeProps({}));
 
 describe('Basic compiler invariants', function () {
-    const ce = new CompilationEnvironment(props);
+    const ce = new CompilationEnvironment(compilerProps);
     const info = {
         exe: null,
         remote: true,
-        lang: "c++"
+        lang: languages['c++'].id
     };
-
-    ce.compilerPropsL = () => "";
 
     const compiler = new BaseCompiler(info, ce);
 
@@ -61,6 +64,10 @@ describe('Basic compiler invariants', function () {
         compiler.isCfgCompiler("g++ (GCC-Explorer-Build) 8.0.1 20180223 (experimental)").should.equal(true);
         compiler.isCfgCompiler("g++ (GCC) 4.1.2").should.equal(true);
 
+        compiler.isCfgCompiler("foo-bar-g++ (GCC-Explorer-Build) 4.9.4").should.equal(true);
+        compiler.isCfgCompiler("foo-bar-gcc (GCC-Explorer-Build) 4.9.4").should.equal(true);
+        compiler.isCfgCompiler("foo-bar-gdc (GCC-Explorer-Build) 4.9.4").should.equal(true);
+
         compiler.isCfgCompiler("fake-for-test (Based on g++)").should.equal(false);
 
         compiler.isCfgCompiler("gdc (crosstool-NG 203be35 - 20160205-2.066.1-e95a735b97) 5.2.0").should.equal(true);
@@ -74,6 +81,6 @@ describe('Basic compiler invariants', function () {
         should.equal(compiler.checkSource(text), null);
         const badSource = compiler.checkSource("#include </dev/null..> //Muehehehe");
         should.exist(badSource);
-        badSource.should.equal("<stdin>:1:1: no absolute or relative includes please")
+        badSource.should.equal("<stdin>:1:1: no absolute or relative includes please");
     });
 });

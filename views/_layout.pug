@@ -1,0 +1,29 @@
+doctype html
+html(lang="en")
+  head
+    base(href=httpRoot)
+
+    block meta
+        include meta.pug
+
+    block styles
+        link(href=require("main.css") rel="stylesheet")
+        style#theme
+
+  body(class=extraBodyClass)
+    block content
+        #root
+
+    block footer
+        include templates.pug
+
+    block scripts
+        script(src=`${httpRoot}client-options.js?hash=${optionsHash}`)
+        div#config(extraOptions=encodeURIComponent(compilerExplorerOptions), httpRoot=httpRoot, staticRoot=staticRoot)
+        script
+          | if (window.navigator.userAgent.indexOf("Trident/") > 0) {
+          |   var s = document.createElement("script");
+          |   s.src = "!{require("es6-shim.min.js")}";
+          |   document.head.appendChild(s);
+          | }
+        script(src=require("main.js"))

@@ -22,17 +22,38 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-const asmCl = require('../lib/asm-cl');
+const AsmParser = require('../lib/asm-parser-vc');
+const AsmRegex = require('../lib/asmregex').AsmRegex;
 require('chai').should();
 
 describe('ASM CL parser', () => {
     it('should work for error documents', () => {
-        const parser = new asmCl.AsmParser();
+        const parser = new AsmParser();
         parser.process("<Compilation failed>", {directives: true})
             .should.deep.equal([{
                 "source": null,
                 "text": "<Compilation failed>"
             }]
         );
+    });
+});
+
+
+describe('ASM regex base class', () => {
+    it('should leave unfiltered lines alone', () => {
+        const line = "     this    is    a line";
+        AsmRegex.filterAsmLine(line, {}).should.equal(line);
+    });
+    it('should use up internal whitespace when asked', () => {
+        AsmRegex.filterAsmLine("     this    is    a line", {trim: true}).should.equal("  this is a line");
+        AsmRegex.filterAsmLine("this    is    a line", {trim: true}).should.equal("this is a line");
+    });
+    it('should keep whitespace in strings', () => {
+        AsmRegex.filterAsmLine('equs     "this    string"', {trim: true}).should.equal('equs "this    string"');
+        AsmRegex.filterAsmLine('     equs     "this    string"', {trim: true}).should.equal('  equs "this    string"');
+        AsmRegex.filterAsmLine('equs     "this    \\"  string  \\""', {trim: true}).should.equal('equs "this    \\"  string  \\""');
+    });
+    it('should not get upset by mismatched strings', () => {
+        AsmRegex.filterAsmLine("a   \"string    'yeah", {trim: true}).should.equal("a \"string 'yeah");
     });
 });

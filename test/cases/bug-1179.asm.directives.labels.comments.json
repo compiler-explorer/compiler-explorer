@@ -1,0 +1,26 @@
+[
+  {
+    "text": "my_own_address:",
+    "source": null
+  },
+  {
+    "text": ".Ltmp0:",
+    "source": null
+  },
+  {
+    "text": "        .quad   .Ltmp0",
+    "source": null
+  },
+  {
+    "text": "",
+    "source": null
+  },
+  {
+    "text": "ptr:",
+    "source": null
+  },
+  {
+    "text": "        .quad   my_own_address",
+    "source": null
+  }
+]

@@ -22,64 +22,132 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-var chai = require('chai'),
+const chai = require('chai'),
     chaiAsPromised = require("chai-as-promised"),
     exec = require('../lib/exec');
 
 chai.use(chaiAsPromised);
 chai.should();
 
-describe('Executes external commands', () => {
-    it('supports output', () => {
-        return exec.execute('echo', ['hello', 'world'], {}).should.eventually.deep.equals(
-            {
-                code: 0,
-                okToCache: true,
-                stderr: "",
-                stdout: "hello world\n"
-            });
-    });
-    it('limits output', () => {
-        return exec.execute('echo', ['A very very very very very long string'], {maxOutput: 10})
-            .should.eventually.deep.equals(
+function testExecOutput(x) {
+    // Work around chai not being able to deepEquals with a function
+    x.filenameTransform.should.be.a('function');
+    delete x.filenameTransform;
+    return x;
+}
+
+if (process.platform !== 'win32') { // POSIX
+    describe('Executes external commands', () => {
+        it('supports output', () => {
+            return exec.execute('echo', ['hello', 'world'], {})
+                .then(testExecOutput)
+                .should.eventually.deep.equals(
+                    {
+                        code: 0,
+                        okToCache: true,
+                        stderr: "",
+                        stdout: "hello world\n"
+                    });
+        });
+        it('limits output', () => {
+            return exec.execute('echo', ['A very very very very very long string'], {maxOutput: 10})
+                .then(testExecOutput)
+                .should.eventually.deep.equals(
+                    {
+                        code: 0,
+                        okToCache: true,
+                        stderr: "",
+                        stdout: "A very ver\n[Truncated]"
+                    });
+        });
+        it('handles failing commands', () => {
+            return exec.execute('false', [], {})
+                .then(testExecOutput)
+                .should.eventually.deep.equals(
+                    {
+                        code: 1,
+                        okToCache: true,
+                        stderr: "",
+                        stdout: ""
+                    });
+        });
+        it('handles timouts', () => {
+            return exec.execute('sleep', ['5'], {timeoutMs: 10})
+                .then(testExecOutput)
+                .should.eventually.deep.equals(
+                    {
+                        code: -1,
+                        okToCache: false,
+                        stderr: "\nKilled - processing time exceeded",
+                        stdout: ""
+                    });
+        });
+        it('handles missing executables', () => {
+            return exec.execute('__not_a_command__', [], {})
+                .should.be.rejectedWith("ENOENT");
+        });
+        it('handles input', () => {
+            return exec.execute('cat', [], {input: "this is stdin"})
+                .then(testExecOutput)
+                .should.eventually.deep.equals(
                 {
                     code: 0,
                     okToCache: true,
                     stderr: "",
-                    stdout: "A very ver\n[Truncated]"
+                    stdout: "this is stdin"
                 });
+        });
     });
-    it('handles failing commands', () => {
-        return exec.execute('false', [], {})
-            .should.eventually.deep.equals(
+} else { // win32
+    describe('Executes external commands', () => {
+        // note: we use powershell, since echo is a builtin, and false doesn't exist
+        it('supports output', () => {
+            return exec.execute('powershell', ['-Command', 'echo "hello world"'], {})
+                .then(testExecOutput)
+                .should.eventually.deep.equals(
                 {
-                    code: 1,
+                    code: 0,
                     okToCache: true,
                     stderr: "",
-                    stdout: ""
+                    stdout: "hello world\r\n"
                 });
+        });
+        it('limits output', () => {
+            return exec.execute('powershell', ['-Command', 'echo "A very very very very very long string"'], {maxOutput: 10})
+                .then(testExecOutput)
+                .should.eventually.deep.equals(
+                    {
+                        code: 0,
+                        okToCache: true,
+                        stderr: "",
+                        stdout: "A very ver\n[Truncated]"
+                    });
+        });
+        it('handles failing commands', () => {
+            return exec.execute('powershell', ['-Command', 'function Fail { exit 1 }; Fail'], {})
+                .then(testExecOutput)
+                .should.eventually.deep.equals(
+                    {
+                        code: 1,
+                        okToCache: true,
+                        stderr: "",
+                        stdout: ""
+                    });
+        });
+        it('handles timouts', () => {
+            return exec.execute('powershell', ['-Command', '"sleep 5"'], {timeoutMs: 10})
+                .then(testExecOutput)
+                .should.eventually.deep.equals(
+                    {
+                        code: 1,
+                        okToCache: false,
+                        stderr: "\nKilled - processing time exceeded",
+                        stdout: ""
+                    });
+        });
+        it('handles missing executables', () => {
+            return exec.execute('__not_a_command__', [], {})
+                .should.be.rejectedWith("ENOENT");
+        });
     });
-    it('handles timouts', () => {
-        return exec.execute('sleep', ['5'], {timeoutMs: 10})
-            .should.eventually.deep.equals(
-                {
-                    code: -1,
-                    okToCache: false,
-                    stderr: "\nKilled - processing time exceeded",
-                    stdout: ""
-                });
-    });
-    it('handles missing executables', () => {
-        return exec.execute('__not_a_command__', [], {})
-            .should.be.rejectedWith("ENOENT");
-    });
-    it('handles input', () => {
-        return exec.execute('cat', [], {input: "this is stdin"}).should.eventually.deep.equals(
-            {
-                code: 0,
-                okToCache: true,
-                stderr: "",
-                stdout: "this is stdin"
-            });
-    });
-});
+}

@@ -1,0 +1,6 @@
+g():                                  # @g()
+        push    rax
+        call    qword ptr [rip + foo::baz+8]
+        xor     eax, eax
+        pop     rcx
+        ret

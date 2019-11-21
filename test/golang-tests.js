@@ -26,24 +26,23 @@ const chai = require('chai'),
     chaiAsPromised = require("chai-as-promised"),
     fs = require('fs-extra'),
     utils = require('../lib/utils'),
-    logger = require('../lib/logger').logger,
     CompilationEnvironment = require('../lib/compilation-env'),
-    GoCompiler = require('../lib/compilers/golang');
-
+    GoCompiler = require('../lib/compilers/golang'),
+    properties = require('../lib/properties');
 chai.use(chaiAsPromised);
 chai.should();
 
-const props = (key, deflt) => deflt;
-
-const ce = new CompilationEnvironment(props);
-const info = {
-    "exe": null,
-    "remote": true,
-    "lang": "go"
+const languages = {
+    go: { id: 'go' }
 };
 
-ce.compilerPropsL = function (lang, property, defaultValue) {
-    return "";
+const compilerProps = new properties.CompilerProps(languages, properties.fakeProps({}));
+
+const ce = new CompilationEnvironment(compilerProps);
+const info = {
+    exe: null,
+    remote: true,
+    lang: languages.go.id
 };
 
 function testGoAsm(basefilename) {
@@ -60,10 +59,12 @@ function testGoAsm(basefilename) {
     };
 
     return compiler.postProcess(result).then((output) => {
-        const expectedOutput = utils.splitLines(fs.readFileSync(basefilename + ".output.asm").toString()).join("\n");
+        const expectedOutput = utils.splitLines(fs.readFileSync(basefilename + ".output.asm").toString());
+
+        utils.splitLines(output.asm).should.deep.equal(expectedOutput);
 
         return output.should.deep.equal({
-            asm: expectedOutput,
+            asm: expectedOutput.join("\n"),
             stdout: []
         });
     });
@@ -73,4 +74,7 @@ describe('GO asm tests', () => {
     it('Handles unknown line number correctly', () => {
         return testGoAsm("test/golang/bug-901");
     });
+    it('Rewrites PC jumps to labels', () => {
+        return testGoAsm("test/golang/labels");
+    })
 });

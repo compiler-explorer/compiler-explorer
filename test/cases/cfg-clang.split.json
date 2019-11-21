@@ -1,0 +1,190 @@
+{
+  "asm": [
+    {
+      "text": "remove_space(char const*, char*, unsigned long):                 # @remove_space(char const*, char*, unsigned long)",
+      "source": null
+    },
+    {
+      "text": "        testq   %rdx, %rdx",
+      "source": null
+    },
+    {
+      "text": "        je      .LBB0_6",
+      "source": null
+    },
+    {
+      "text": "        xorl    %eax, %eax",
+      "source": null
+    },
+    {
+      "text": ".LBB0_2:                                # =>This Inner Loop Header: Depth=1",
+      "source": null
+    },
+    {
+      "text": "        movzbl  (%rdi,%rax), %ecx",
+      "source": null
+    },
+    {
+      "text": "        cmpb    $97, %cl",
+      "source": null
+    },
+    {
+      "text": "        je      .LBB0_5",
+      "source": null
+    },
+    {
+      "text": "        cmpb    $122, %cl",
+      "source": null
+    },
+    {
+      "text": "        je      .LBB0_5",
+      "source": null
+    },
+    {
+      "text": "        movb    %cl, (%rsi)",
+      "source": null
+    },
+    {
+      "text": "        addq    $1, %rsi",
+      "source": null
+    },
+    {
+      "text": ".LBB0_5:                                #   in Loop: Header=BB0_2 Depth=1",
+      "source": null
+    },
+    {
+      "text": "        addq    $1, %rax",
+      "source": null
+    },
+    {
+      "text": "        cmpq    %rax, %rdx",
+      "source": null
+    },
+    {
+      "text": "        jne     .LBB0_2",
+      "source": null
+    },
+    {
+      "text": ".LBB0_6:",
+      "source": null
+    },
+    {
+      "text": "        movq    %rsi, %rax",
+      "source": null
+    },
+    {
+      "text": "        retq",
+      "source": null
+    }
+  ],
+  "cfg": {
+    "remove_space(char const*, char*, unsigned long):": {
+      "nodes": [
+        {
+          "id": "remove_space(char const*, char*, unsigned long):",
+          "label": "remove_space(char const*, char*, unsigned long):\n        testq   %rdx, %rdx\n        je      .LBB0_6",
+          "color": "#99ccff",
+          "shape": "box"
+        },
+        {
+          "id": "remove_space(char const*, char*, unsigned long):@3",
+          "label": "remove_space(char const*, char*, unsigned long):@3\n        xorl    %eax, %eax",
+          "color": "#99ccff",
+          "shape": "box"
+        },
+        {
+          "color": "#99ccff",
+          "id": ".LBB0_2:",
+          "label": ".LBB0_2:\n        movzbl  (%rdi,%rax), %ecx\n        cmpb    $97, %cl\n        je      .LBB0_5",
+          "shape": "box"
+        },
+        {
+          "color": "#99ccff",
+          "id": ".LBB0_2:@8",
+          "label": ".LBB0_2:@8\n        cmpb    $122, %cl\n        je      .LBB0_5",
+          "shape": "box"
+        },
+        {
+          "color": "#99ccff",
+          "id": ".LBB0_2:@10",
+          "label": ".LBB0_2:@10\n        movb    %cl, (%rsi)\n        addq    $1, %rsi",
+          "shape": "box"
+        },
+        {
+          "color": "#99ccff",
+          "id": ".LBB0_5:",
+          "label": ".LBB0_5:\n        addq    $1, %rax\n        cmpq    %rax, %rdx\n        jne     .LBB0_2",
+          "shape": "box"
+        },
+        {
+          "color": "#99ccff",
+          "id": ".LBB0_6:",
+          "label": ".LBB0_6:\n        movq    %rsi, %rax\n        retq",
+          "shape": "box"
+        }
+      ],
+      "edges": [
+        {
+          "arrows": "to",
+          "color": "green",
+          "from": "remove_space(char const*, char*, unsigned long):",
+          "to": ".LBB0_6:"
+        },
+        {
+          "arrows": "to",
+          "color": "red",
+          "from": "remove_space(char const*, char*, unsigned long):",
+          "to": "remove_space(char const*, char*, unsigned long):@3"
+        },
+        {
+          "arrows": "to",
+          "color": "grey",
+          "from": "remove_space(char const*, char*, unsigned long):@3",
+          "to": ".LBB0_2:"
+        },
+        {
+          "arrows": "to",
+          "color": "green",
+          "from": ".LBB0_2:",
+          "to": ".LBB0_5:"
+        },
+        {
+          "arrows": "to",
+          "color": "red",
+          "from": ".LBB0_2:",
+          "to": ".LBB0_2:@8"
+        },
+        {
+          "arrows": "to",
+          "color": "green",
+          "from": ".LBB0_2:@8",
+          "to": ".LBB0_5:"
+        },
+        {
+          "arrows": "to",
+          "color": "red",
+          "from": ".LBB0_2:@8",
+          "to": ".LBB0_2:@10"
+        },
+        {
+          "arrows": "to",
+          "color": "grey",
+          "from": ".LBB0_2:@10",
+          "to": ".LBB0_5:"
+        },
+        {
+          "arrows": "to",
+          "color": "green",
+          "from": ".LBB0_5:",
+          "to": ".LBB0_2:"
+        },
+        {
+          "arrows": "to",
+          "color": "red",
+          "from": ".LBB0_5:",
+          "to": ".LBB0_6:"
+        }
+      ]
+    }
+  }
+}

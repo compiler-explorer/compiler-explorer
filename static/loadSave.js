@@ -1,34 +1,35 @@
 // Copyright (c) 2016, Matt Godbolt
 // All rights reserved.
-// 
-// Redistribution and use in source and binary forms, with or without 
+//
+// Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
-// 
-//     * Redistributions of source code must retain the above copyright notice, 
+//
+//     * Redistributions of source code must retain the above copyright notice,
 //       this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above copyright 
-//       notice, this list of conditions and the following disclaimer in the 
+//     * Redistributions in binary form must reproduce the above copyright
+//       notice, this list of conditions and the following disclaimer in the
 //       documentation and/or other materials provided with the distribution.
-// 
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE 
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
 "use strict";
 var $ = require('jquery');
 var _ = require('underscore');
-var saveAs = require('filesaver');
+var saveAs = require('file-saver').saveAs;
 var Alert = require('./alert');
 var local = require('./local');
 var Promise = require('es6-promise').Promise;
+var ga = require('./analytics');
 
 function getLocalFiles() {
     return JSON.parse(local.get('files', "{}"));
@@ -41,23 +42,29 @@ function setLocalFile(name, file) {
 }
 
 function LoadSave() {
-    this.modal = $('#load-save');
+    this.modal = null;
     this.alertSystem = new Alert();
     this.alertSystem.prefixMessage = "Load-Saver: ";
     this.onLoad = _.identity;
     this.editorText = '';
     this.extension = '.txt';
-    this.modal.find('.local-file').change(_.bind(this.onLocalFile, this));
-
-    this.modal.find('.save-button').click(_.bind(this.onSaveToBrowserStorage, this));
-    this.modal.find('.save-file').click(_.bind(this.onSaveToFile, this));
-
+    this.base = window.httpRoot;
     this.fetchBuiltins();
 }
 
+LoadSave.prototype.initializeIfNeeded = function () {
+    if ((this.modal === null) || (this.modal.length === 0)) {
+        this.modal = $("#load-save");
+
+        this.modal.find('.local-file').change(_.bind(this.onLocalFile, this));
+        this.modal.find('.save-button').click(_.bind(this.onSaveToBrowserStorage, this));
+        this.modal.find('.save-file').click(_.bind(this.onSaveToFile, this));
+    }
+};
+
 LoadSave.prototype.fetchBuiltins = function () {
     return new Promise(_.bind(function (resolve) {
-        $.getJSON('source/builtin/list', function (list) {
+        $.getJSON(window.location.origin + this.base + 'source/builtin/list', function (list) {
             resolve(list);
         });
     }, this));
@@ -122,18 +129,21 @@ LoadSave.prototype.onLocalFile = function (event) {
 };
 
 LoadSave.prototype.run = function (onLoad, editorText, currentLanguage) {
+    this.initializeIfNeeded();
     this.populateLocalStorage();
     this.onLoad = onLoad;
-    this.editorText = editorText;
-    // In case we don't send anything...
-    this.currentLanguage = currentLanguage;
-    this.extension = currentLanguage.extensions[0] || '.txt';
+    this.setMinimalOptions(editorText, currentLanguage);
     this.modal.find('.local-file').attr('accept', _.map(currentLanguage.extensions, function (extension) {
         return extension + ', ';
     }, this));
     this.populateBuiltins().then(_.bind(function () {
         this.modal.modal();
     }, this));
+    ga.proxy('send', {
+        hitType: 'event',
+        eventCategory: 'OpenModalPane',
+        eventAction: 'LoadSave'
+    });
 };
 
 LoadSave.prototype.onSaveToBrowserStorage = function () {
@@ -158,24 +168,35 @@ LoadSave.prototype.onSaveToBrowserStorage = function () {
     }
 };
 
-LoadSave.prototype.onSaveToFile = function () {
+LoadSave.prototype.setMinimalOptions = function (editorText, currentLanguage) {
+    this.editorText = editorText;
+    this.currentLanguage = currentLanguage;
+    this.extension = currentLanguage.extensions[0] || '.txt';
+};
+
+LoadSave.prototype.onSaveToFile = function (fileEditor) {
     try {
+        var fileLang = this.currentLanguage.name;
+        var name = fileLang !== undefined && fileEditor !== undefined ?
+            (fileLang +" Editor #" + fileEditor + ' ') : '';
         saveAs(new Blob(
             [this.editorText],
             {type: "text/plain;charset=utf-8"}),
-        "Compiler Explorer Code" + this.extension);
+        "Compiler Explorer " + name + "Code" + this.extension);
+        return true;
     } catch (e) {
         this.alertSystem.notify('Error while saving your code. Use the clipboard instead.', {
             group: "savelocalerror",
             alertClass: "notification-error",
             dismissTime: 5000
         });
+        return false;
     }
 };
 
 LoadSave.prototype.doLoad = function (element) {
     // TODO: handle errors. consider promises...
-    $.getJSON('source/builtin/load/' + element.lang + '/' + element.file,
+    $.getJSON(window.location.origin + this.base + 'source/builtin/load/' + element.lang + '/' + element.file,
         _.bind(function (response) {
             this.onLoad(response.file);
         }, this));

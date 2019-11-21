@@ -24,26 +24,29 @@
 
 const chai = require('chai');
 const chaiAsPromised = require("chai-as-promised");
-const PascalDemangler = require('../lib/pascal-support').demangler;
+const PascalDemangler = require('../lib/demangler-pascal').Demangler;
 const PascalCompiler = require('../lib/compilers/pascal');
 const CompilationEnvironment = require('../lib/compilation-env');
 const fs = require('fs-extra');
 const utils = require('../lib/utils');
+const properties = require('../lib/properties');
 
 chai.use(chaiAsPromised);
 chai.should();
 
-const props = (key, deflt) => deflt;
+const languages = {
+    pascal: {id: 'pascal'}
+};
+
+const compilerProps = new properties.CompilerProps(languages, properties.fakeProps({}));
 
 describe('Basic compiler setup', function () {
-    const ce = new CompilationEnvironment(props);
+    const ce = new CompilationEnvironment(compilerProps);
     const info = {
-        "exe": null,
-        "remote": true,
-        "lang": "pascal"
+        exe: null,
+        remote: true,
+        lang: languages.pascal.id
     };
-
-    ce.compilerPropsL = () => "";
 
     const compiler = new PascalCompiler(info, ce);
 
@@ -300,18 +303,16 @@ describe('Pascal Ignored Symbols', function () {
 });
 
 describe('Pascal ASM line number injection', function () {
-    const ce = new CompilationEnvironment(props);
+    const ce = new CompilationEnvironment(compilerProps);
     const info = {
-        "exe": null,
-        "remote": true,
-        "lang": "pascal"
-    };
-
-    ce.compilerPropsL = function (lang, property, defaultValue) {
-        return "";
+        exe: null,
+        remote: true,
+        lang: languages.pascal.id
     };
 
     const compiler = new PascalCompiler(info, ce);
+    compiler.demanglerClass = require("../lib/demangler-pascal").Demangler;
+    compiler.demangler = new compiler.demanglerClass(null, compiler);
 
     it('Should have line numbering', function () {
         return new Promise(function (resolve, reject) {
@@ -348,14 +349,12 @@ describe('Pascal objdump filtering', function () {
 });
 
 describe('Pascal parseOutput', () => {
-    const ce = new CompilationEnvironment(props);
+    const ce = new CompilationEnvironment(compilerProps);
     const info = {
-        "exe": null,
-        "remote": true,
-        "lang": "pascal"
+        exe: null,
+        remote: true,
+        lang: languages.pascal.id
     };
-
-    ce.compilerPropsL = () => "";
 
     const compiler = new PascalCompiler(info, ce);
 

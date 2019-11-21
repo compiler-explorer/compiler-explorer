@@ -1,42 +1,44 @@
 // Copyright (c) 2016, Matt Godbolt
 // All rights reserved.
-// 
-// Redistribution and use in source and binary forms, with or without 
+//
+// Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
-// 
-//     * Redistributions of source code must retain the above copyright notice, 
+//
+//     * Redistributions of source code must retain the above copyright notice,
 //       this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above copyright 
-//       notice, this list of conditions and the following disclaimer in the 
+//     * Redistributions in binary form must reproduce the above copyright
+//       notice, this list of conditions and the following disclaimer in the
 //       documentation and/or other materials provided with the distribution.
-// 
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE 
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-
 
 'use strict';
 
 var _ = require('underscore');
-var Raven = require('raven-js');
-var editor = require('editor');
-var compiler = require('compiler');
-var output = require('output');
+var Sentry = require('@sentry/browser');
+var editor = require('./panes/editor');
+var compiler = require('./panes/compiler');
+var executor = require('./panes/executor');
+var output = require('./panes/output');
+var tool = require('./panes/tool');
 var Components = require('components');
-var diff = require('diff');
-var optView = require('opt-view');
-var astView = require('ast-view');
-var gccDumpView = require('gccdump-view');
-var cfgView = require('cfg-view');
-var conformanceView = require('conformance-view');
+var diff = require('./panes/diff');
+var optView = require('./panes/opt-view');
+var astView = require('./panes/ast-view');
+var irView = require('./panes/ir-view');
+var gccDumpView = require('./panes/gccdump-view');
+var cfgView = require('./panes/cfg-view');
+var conformanceView = require('./panes/conformance-view');
 var CompilerService = require('compiler-service');
 
 function Ids() {
@@ -46,9 +48,11 @@ function Ids() {
 Ids.prototype.add = function (id) {
     this.used[id] = true;
 };
+
 Ids.prototype.remove = function (id) {
     delete this.used[id];
 };
+
 Ids.prototype.next = function () {
     for (var i = 1; i < 100000; ++i) {
         if (!this.used[i]) {
@@ -59,15 +63,16 @@ Ids.prototype.next = function () {
     throw 'Ran out of ids!?';
 };
 
-function Hub(layout, subLangId) {
+function Hub(layout, subLangId, defaultLangId) {
     this.layout = layout;
     this.editorIds = new Ids();
     this.compilerIds = new Ids();
-    this.compilerService = new CompilerService();
+    this.compilerService = new CompilerService(layout.eventHub);
     this.deferred = true;
     this.deferredEmissions = [];
     this.lastOpenedLangId = null;
     this.subdomainLangId = subLangId || undefined;
+    this.defaultLangId = defaultLangId;
 
     // FIXME
     // We can't avoid this self as _ is undefined at this point
@@ -81,9 +86,17 @@ function Hub(layout, subLangId) {
         function (container, state) {
             return self.compilerFactory(container, state);
         });
+    layout.registerComponent(Components.getExecutor().componentName,
+        function (container, state) {
+            return self.executorFactory(container, state);
+        });
     layout.registerComponent(Components.getOutput().componentName,
         function (container, state) {
             return self.outputFactory(container, state);
+        });
+    layout.registerComponent(Components.getToolViewWith().componentName,
+        function (container, state) {
+            return self.toolFactory(container, state);
         });
     layout.registerComponent(diff.getComponent().componentName,
         function (container, state) {
@@ -96,6 +109,10 @@ function Hub(layout, subLangId) {
     layout.registerComponent(Components.getAstView().componentName,
         function (container, state) {
             return self.astViewFactory(container, state);
+        });
+    layout.registerComponent(Components.getIrView().componentName,
+        function (container, state) {
+            return self.irViewFactory(container, state);
         });
     layout.registerComponent(Components.getGccDumpView().componentName,
         function (container, state) {
@@ -142,6 +159,7 @@ Hub.prototype.undefer = function () {
 Hub.prototype.nextEditorId = function () {
     return this.editorIds.next();
 };
+
 Hub.prototype.nextCompilerId = function () {
     return this.compilerIds.next();
 };
@@ -158,24 +176,42 @@ Hub.prototype.compilerFactory = function (container, state) {
     return new compiler.Compiler(this, container, state);
 };
 
+Hub.prototype.executorFactory = function (container, state) {
+    return new executor.Executor(this, container, state);
+};
+
 Hub.prototype.outputFactory = function (container, state) {
     return new output.Output(this, container, state);
 };
+
+Hub.prototype.toolFactory = function (container, state) {
+    return new tool.Tool(this, container, state);
+};
+
 Hub.prototype.diffFactory = function (container, state) {
     return new diff.Diff(this, container, state);
 };
+
 Hub.prototype.optViewFactory = function (container, state) {
     return new optView.Opt(this, container, state);
 };
+
 Hub.prototype.astViewFactory = function (container, state) {
     return new astView.Ast(this, container, state);
 };
+
+Hub.prototype.irViewFactory = function (container, state) {
+    return new irView.Ir(this, container, state);
+};
+
 Hub.prototype.gccDumpViewFactory = function (container, state) {
     return new gccDumpView.GccDump(this, container, state);
 };
+
 Hub.prototype.cfgViewFactory = function (container, state) {
     return new cfgView.Cfg(this, container, state);
 };
+
 Hub.prototype.confomanceFactory = function (container, state) {
     return new conformanceView.Conformance(this, container, state);
 };
@@ -195,16 +231,19 @@ WrappedEventHub.prototype.emit = function () {
         this.eventHub.emit.apply(this.eventHub, arguments);
     }
 };
+
 WrappedEventHub.prototype.on = function (event, callback, context) {
     this.eventHub.on(event, callback, context);
     this.subscriptions.push({evt: event, fn: callback, ctx: context});
 };
+
 WrappedEventHub.prototype.unsubscribe = function () {
     _.each(this.subscriptions, _.bind(function (obj) {
         try {
             this.eventHub.off(obj.evt, obj.fn, obj.ctx);
         } catch (e) {
-            Raven.captureMessage('Can not unsubscribe from ' + obj.evt.toString() + ' :"' + e.msg + '"');
+            Sentry.captureMessage('Can not unsubscribe from ' + obj.evt.toString());
+            Sentry.captureException(e);
         }
     }, this));
     this.subscriptions = [];

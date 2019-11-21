@@ -78,7 +78,19 @@ Slider.prototype.putUi = function (elem, value) {
     elem.slider('setValue', value);
 };
 
-function setupSettings(root, settings, onChange, langId) {
+function Textbox() {
+}
+
+Textbox.prototype.getUi = function (elem) {
+    return elem.val();
+};
+
+Textbox.prototype.putUi = function (elem, value) {
+    elem.val(value);
+};
+
+
+function setupSettings(root, settings, onChange, subLangId) {
     settings = settings || {};
     // Ensure the default language is not "null" but undefined. Temporary patch for a previous bug :(
     settings.defaultLanguage = settings.defaultLanguage === null ? undefined : settings.defaultLanguage;
@@ -127,10 +139,18 @@ function setupSettings(root, settings, onChange, langId) {
             return (x / 1000.0).toFixed(2) + "s";
         }
     });
+    add(root.find('.enableCommunityAds'), 'enableCommunityAds', true, Checkbox);
     add(root.find('.hoverShowSource'), 'hoverShowSource', true, Checkbox);
     add(root.find('.hoverShowAsmDoc'), 'hoverShowAsmDoc', true, Checkbox);
+
     var themeSelect = root.find('.theme');
-    add(themeSelect, 'theme', themes.default.id, Select,
+
+    var defaultThemeId = themes.default.id;
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        defaultThemeId = themes.dark.id;
+    }
+
+    add(themeSelect, 'theme', defaultThemeId, Select,
         _.map(themes, function (theme) {
             return {label: theme.id, desc: theme.name};
         })
@@ -177,7 +197,7 @@ function setupSettings(root, settings, onChange, langId) {
             return {label: lang.id, desc: lang.name};
         })
     );
-    if (langId) {
+    if (subLangId) {
         defaultLanguageSelector
             .prop('disabled', true)
             .prop('title', 'Default language inherited from subdomain')
@@ -192,6 +212,7 @@ function setupSettings(root, settings, onChange, langId) {
             return {label: format, desc: format};
         }));
     //add(root.find('.formatOverrides'), 'formatOverrides', "", TextAreaInput);
+    add(root.find('.wordWrap'), 'wordWrap', false, Checkbox);
 
     function setSettings(settings) {
         onSettingsChange(settings);
@@ -203,7 +224,11 @@ function setupSettings(root, settings, onChange, langId) {
             return {label: size, desc: size};
         })
     );
-
+    add(root.find('.enableCtrlS'), 'enableCtrlS', true, Checkbox);
+    add(root.find('.editorsFFont'), 'editorsFFont', 'Consolas, "Liberation Mono", Courier, monospace', Textbox);
+    add(root.find('.editorsFLigatures'), 'editorsFLigatures', false, Checkbox);
+    add(root.find('.allowStoreCodeDebug'), 'allowStoreCodeDebug', true, Checkbox);
+    add(root.find('.useVim'), 'useVim', false, Checkbox);
 
     setSettings(settings);
     handleThemes();

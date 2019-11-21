@@ -21,12 +21,13 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
+
 "use strict";
-var GoldenLayout = require('goldenlayout');
+var GoldenLayout = require('golden-layout');
 var rison = require('rison');
 var $ = require('jquery');
 var Components = require('components');
-var lzstring = require('lzstring');
+var lzstring = require('lz-string');
 var _ = require('underscore');
 
 function convertOldState(state) {

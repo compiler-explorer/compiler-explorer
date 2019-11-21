@@ -1,0 +1,6 @@
+g():
+        pushq   %rax
+        callq   *foo::baz+8(%rip)
+        xorl    %eax, %eax
+        popq    %rcx
+        retq

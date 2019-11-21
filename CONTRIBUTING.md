@@ -50,7 +50,7 @@ In the server code, the `app.js` sets up a basic `express`
  `lib/compilers/`. All of them inherit from `lib/base-compiler.js` which does
  most of the work of running compilers, then parsing the output and forming a
  JSON object to send to the client. Any assembly parsing is done in the
- `lib/asm.js`, and similar, files.
+ `lib/asm-parser.js`, and similar, files.
 
 In the client code, [GoldenLayout](https://www.golden-layout.com/) is used as
  the container. If you look at some of the components like the

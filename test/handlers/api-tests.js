@@ -55,14 +55,25 @@ describe('API handling', () => {
     const apiHandler = new ApiHandler({
         handle: res => {
             res.end("compile");
+        },
+        handlePopularArguments: res => {
+            res.end("ok");
+        },
+        handleOptimizationArguments: res => {
+            res.end("ok");
         }
     }, (key, def) => {
         switch (key) {
-            case "formatters": return "formatt:badformatt";
-            case "formatter.formatt.exe": return "echo";
-            case "formatter.formatt.version": return "Release";
-            case "formatter.formatt.name": return "FormatT";
-            default: return def;
+            case "formatters":
+                return "formatt:badformatt";
+            case "formatter.formatt.exe":
+                return "echo";
+            case "formatter.formatt.version":
+                return "Release";
+            case "formatter.formatt.name":
+                return "FormatT";
+            default:
+                return def;
         }
     });
     app.use('/api', apiHandler.handle);
@@ -71,16 +82,16 @@ describe('API handling', () => {
         name: "GCC 9.0.0",
         lang: "c++"
     },
-    {
-        id: "fpc302",
-        name: "FPC 3.0.2",
-        lang: "pascal"
-    },
-    {
-        id: "clangtrunk",
-        name: "Clang trunk",
-        lang: "c++"
-    }];
+        {
+            id: "fpc302",
+            name: "FPC 3.0.2",
+            lang: "pascal"
+        },
+        {
+            id: "clangtrunk",
+            name: "Clang trunk",
+            lang: "c++"
+        }];
     apiHandler.setCompilers(compilers);
     apiHandler.setLanguages(languages);
 
@@ -180,33 +191,32 @@ describe('API handling', () => {
             });
     });
     it('should list the formatters', () => {
-        return chai.request(app)
-            .get('/api/formats')
-            .set('Accept', 'application/json')
-            .then(res => {
-                res.should.have.status(200);
-                res.should.be.json;
-                res.body.should.deep.equals([{name: "FormatT", version: "Release"}]);
-            })
-            .catch(err => {
-                throw err;
-            })
+        if (process.platform !== "win32") { // Expects an executable called echo
+            return chai.request(app)
+                .get('/api/formats')
+                .set('Accept', 'application/json')
+                .then(res => {
+                    res.should.have.status(200);
+                    res.should.be.json;
+                    res.body.should.deep.equals([{name: "FormatT", version: "Release"}]);
+                })
+                .catch(err => {
+                    throw err;
+                });
+        }
     });
     it('should not go through with invalid tools', () => {
         return chai.request(app)
             .post('/api/format/invalid')
             .set('Accept', 'application/json')
             .then(res => {
-                // Not expected to go here
-                res.should.equal(null);
-            })
-            .catch(err => {
-                err.response.should.have.status(422);
-                err.response.should.be.json;
-                err.response.body.should.deep.equals({exit: 2, answer: "Tool not supported"});
-            })
+                res.should.have.status(422);
+                res.should.be.json;
+                res.body.should.deep.equals({exit: 2, answer: "Tool not supported"});
+            });
     });
-    xit('should not go through with invalid base styles', () => {
+    /*
+    it('should not go through with invalid base styles', () => {
         return chai.request(app)
             .post('/api/format/formatt')
             .set('Accept', 'application/json')
@@ -216,13 +226,10 @@ describe('API handling', () => {
                 source: ""
             })
             .then(res => {
-                // Not expected to go here
-                res.should.equal(null);
-            })
-            .catch(err => {
-                err.response.should.have.status(422);
-                err.response.should.be.json;
-                err.response.body.should.deep.equals({exit: 3, answer: "Base style not supported"});
+                res.should.have.status(422);
+                res.should.be.json;
+                res.body.should.deep.equals({exit: 3, answer: "Base style not supported"});
             });
     });
+    */
 });

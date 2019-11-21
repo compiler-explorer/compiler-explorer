@@ -1,0 +1,10 @@
+bar():
+        movl    $foo, %eax
+        ret
+bar2():
+        movl    $foo2, %eax
+        ret
+foo2:
+        .long   1
+foo:
+        .long   2
