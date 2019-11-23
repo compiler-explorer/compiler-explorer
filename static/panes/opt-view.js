@@ -58,6 +58,10 @@ function Opt(hub, container, state) {
     this._compilerid = state.id;
     this._compilerName = state.compilerName;
     this._editorid = state.editorid;
+
+    this.awaitingInitialResults = false;
+    this.selection = state.selection;
+
     this.isCompilerSupported = false;
 
     this.initButtons(state);
@@ -95,6 +99,12 @@ Opt.prototype.initCallbacks = function () {
 
     this.container.on('resize', this.resize, this);
     this.container.on('shown', this.resize, this);
+
+    this.cursorSelectionThrottledFunction =
+        _.throttle(_.bind(this.onDidChangeCursorSelection, this), 500);
+    this.optEditor.onDidChangeCursorSelection(_.bind(function (e) {
+        this.cursorSelectionThrottledFunction(e);
+    }, this));
 };
 
 Opt.prototype.onCompileResult = function (id, compiler, result, lang) {
@@ -106,6 +116,15 @@ Opt.prototype.onCompileResult = function (id, compiler, result, lang) {
     }
     if (lang && lang.monaco && this.getCurrentEditorLanguage() !== lang.monaco) {
         monaco.editor.setModelLanguage(this.optEditor.getModel(), lang.monaco);
+    }
+
+    if (!this.awaitingInitialResults) {
+        if (this.selection) {
+            this.optEditor.setSelection(this.selection);
+            this.optEditor.revealLinesInCenter(this.selection.startLineNumber,
+                this.selection.endLineNumber);
+        }
+        this.awaitingInitialResults = true;
     }
 };
 
@@ -188,7 +207,8 @@ Opt.prototype.updateState = function () {
 Opt.prototype.currentState = function () {
     var state = {
         id: this._compilerid,
-        editorid: this._editorid
+        editorid: this._editorid,
+        selection: this.selection
     };
     this.fontScale.addState(state);
     return state;
@@ -220,6 +240,13 @@ Opt.prototype.onSettingsChange = function (newSettings) {
         fontFamily: newSettings.editorsFFont,
         fontLigatures: newSettings.editorsFLigatures
     });
+};
+
+Opt.prototype.onDidChangeCursorSelection = function (e) {
+    if (this.awaitingInitialResults) {
+        this.selection = e.selection;
+        this.updateState();
+    }
 };
 
 module.exports = {

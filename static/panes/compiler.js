@@ -97,6 +97,9 @@ function Compiler(hub, container, state) {
     this.alertSystem = new Alert();
     this.alertSystem.prefixMessage = "Compiler #" + this.id + ": ";
 
+    this.awaitingInitialResults = false;
+    this.selection = state.selection;
+
     this.linkedFadeTimeoutId = -1;
     this.toolsMenu = null;
 
@@ -541,10 +544,22 @@ Compiler.prototype.setAssembly = function (asm) {
     this.assembly = asm;
     if (!this.outputEditor || !this.outputEditor.getModel()) return;
     var editorModel = this.outputEditor.getModel();
-    var visibleRanges = this.outputEditor.getVisibleRanges();
-    var currentTopLine = visibleRanges.length > 0 ? visibleRanges[0].startLineNumber : 1;
     editorModel.setValue(asm.length ? _.pluck(asm, 'text').join('\n') : "<No assembly generated>");
-    this.outputEditor.revealLine(currentTopLine);
+
+    if (!this.awaitingInitialResults) {
+        if (this.selection) {
+            this.outputEditor.setSelection(this.selection);
+            this.outputEditor.revealLinesInCenter(
+                this.selection.startLineNumber, this.selection.endLineNumber);
+        }
+        this.awaitingInitialResults = true;
+    } else {
+        var visibleRanges = this.outputEditor.getVisibleRanges();
+        var currentTopLine =
+            visibleRanges.length > 0 ? visibleRanges[0].startLineNumber : 1;
+        this.outputEditor.revealLine(currentTopLine);
+    }
+
     if (this.getEffectiveFilters().binary) {
         this.setBinaryMargin();
         if (this.codeLensProvider !== null) {
@@ -1174,6 +1189,12 @@ Compiler.prototype.initCallbacks = function () {
         this.mouseMoveThrottledFunction(e);
     }, this));
 
+    this.cursorSelectionThrottledFunction =
+        _.throttle(_.bind(this.onDidChangeCursorSelection, this), 500);
+    this.outputEditor.onDidChangeCursorSelection(_.bind(function (e) {
+        this.cursorSelectionThrottledFunction(e);
+    }, this));
+
     this.compileClearCache.on('click', _.bind(function () {
         this.compilerService.cache.reset();
         this.compile(true);
@@ -1290,7 +1311,8 @@ Compiler.prototype.currentState = function () {
         filters: this.filters.get(),
         wantOptInfo: this.wantOptInfo,
         libs: this.libsWidget.get(),
-        lang: this.currentLangId
+        lang: this.currentLangId,
+        selection: this.selection
     };
     this.fontScale.addState(state);
     return state;
@@ -1497,6 +1519,13 @@ function getAsmInfo(opcode) {
         });
     });
 }
+
+Compiler.prototype.onDidChangeCursorSelection = function (e) {
+    if (this.awaitingInitialResults) {
+        this.selection = e.selection;
+        this.saveState();
+    }
+};
 
 Compiler.prototype.onMouseMove = function (e) {
     if (e === null || e.target === null || e.target.position === null) return;

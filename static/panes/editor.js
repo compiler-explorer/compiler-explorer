@@ -78,6 +78,9 @@ function Editor(hub, state, container) {
     this.alertSystem = new Alert();
     this.alertSystem.prefixMessage = "Editor #" + this.id + ": ";
 
+    this.awaitingInitialResults = false;
+    this.selection = state.selection;
+
     this.langKeys = _.keys(languages);
     this.initLanguage(state);
 
@@ -210,7 +213,8 @@ Editor.prototype.updateState = function () {
     var state = {
         id: this.id,
         source: this.getSource(),
-        lang: this.currentLanguage.id
+        lang: this.currentLanguage.id,
+        selection: this.selection
     };
     this.fontScale.addState(state);
     this.container.setState(state);
@@ -287,6 +291,12 @@ Editor.prototype.initCallbacks = function () {
         this.mouseMoveThrottledFunction(e);
     }, this));
 
+    this.cursorSelectionThrottledFunction =
+        _.throttle(_.bind(this.onDidChangeCursorSelection, this), 500);
+    this.editor.onDidChangeCursorSelection(_.bind(function (e) {
+        this.cursorSelectionThrottledFunction(e);
+    }, this));
+
     this.eventHub.on('initialised', this.maybeEmitChange, this);
 
     $(document).on('keyup.editable', _.bind(function (e) {
@@ -303,6 +313,13 @@ Editor.prototype.initCallbacks = function () {
 Editor.prototype.onMouseMove = function (e) {
     if (e !== null && e.target !== null && this.settings.hoverShowSource && e.target.position !== null) {
         this.tryPanesLinkLine(e.target.position.lineNumber, false);
+    }
+};
+
+Editor.prototype.onDidChangeCursorSelection = function (e) {
+    if (this.awaitingInitialResults) {
+        this.selection = e.selection;
+        this.updateState();
     }
 };
 
@@ -575,6 +592,15 @@ Editor.prototype.updateSource = function (newSource) {
     // Apply de edit. Note that we lose cursor position, but I've not found a better alternative yet
     this.editor.getModel().pushEditOperations(viewState.cursorState, [operation], nullFn);
     this.numberUsedLines();
+
+    if (!this.awaitingInitialResults) {
+        if (this.selection) {
+            this.editor.setSelection(this.selection);
+            this.editor.revealLinesInCenter(this.selection.startLineNumber,
+                this.selection.endLineNumber);
+        }
+        this.awaitingInitialResults = true;
+    }
 };
 
 Editor.prototype.formatCurrentText = function () {
