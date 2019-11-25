@@ -23,10 +23,12 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 const chai = require('chai');
+const sinon = require('sinon');
 const chaiAsPromised = require("chai-as-promised");
 const BaseCompiler = require('../lib/base-compiler');
 const CompilationEnvironment = require('../lib/compilation-env');
 const properties = require('../lib/properties');
+const fs = require('fs');
 
 chai.use(chaiAsPromised);
 const should = chai.should();
@@ -77,10 +79,47 @@ describe('Basic compiler invariants', function () {
         compiler.isCfgCompiler("fake-for-test (Based on gdc)").should.equal(false);
     });
     it('should allow comments next to includes (Bug #874)', () => {
-        let text = "#include <cmath> // std::(sin, cos, ...)";
-        should.equal(compiler.checkSource(text), null);
+        should.equal(compiler.checkSource("#include <cmath> // std::(sin, cos, ...)"), null);
         const badSource = compiler.checkSource("#include </dev/null..> //Muehehehe");
         should.exist(badSource);
         badSource.should.equal("<stdin>:1:1: no absolute or relative includes please");
+    });
+
+    it('should compile', async () => {
+        const execStub = sinon.stub(compiler, 'exec');
+        execStub.callsFake((compiler, args, options) => {
+            const minusO = args.indexOf("-o");
+            minusO.should.be.gte(0);
+            const output = args[minusO + 1];
+            // Maybe we should mock out the FS too; but that requires a lot more work.
+            fs.writeFileSync(output, "This is the output file");
+            return Promise.resolve({
+                code: 0,
+                okToCache: true,
+                filenameTransform: x => x,
+                stdout: 'stdout',
+                stderr: 'stderr'
+            });
+        });
+        const result = await compiler.compile(
+            "source",
+            "options",
+            {},
+            {},
+            false,
+            [],
+            {},
+            []);
+        result.code.should.equal(0);
+        result.compilationOptions.should.contain("options");
+        result.compilationOptions.should.contain(result.inputFilename);
+        result.okToCache.should.be.true;
+        result.asm.should.deep.equal([{source: null, text: "This is the output file"}]);
+        result.stdout.should.deep.equal([{text: "stdout"}]);
+        result.stderr.should.deep.equal([{text: "stderr"}]);
+        result.popularArguments.should.deep.equal({});
+        result.tools.should.deep.equal([]);
+        execStub.called.should.be.true;
+        execStub.restore();
     });
 });
