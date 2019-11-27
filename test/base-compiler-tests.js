@@ -47,6 +47,8 @@ describe('Basic compiler invariants', function () {
         lang: languages['c++'].id
     };
 
+    afterEach(() => sinon.restore());
+
     const compiler = new BaseCompiler(info, ce);
 
     it('should recognize when optOutput has been request', () => {
@@ -85,21 +87,26 @@ describe('Basic compiler invariants', function () {
         badSource.should.equal("<stdin>:1:1: no absolute or relative includes please");
     });
 
-    it('should compile', async () => {
+    function stubExec(compiler, content, result) {
         const execStub = sinon.stub(compiler, 'exec');
         execStub.callsFake((compiler, args, options) => {
             const minusO = args.indexOf("-o");
             minusO.should.be.gte(0);
             const output = args[minusO + 1];
             // Maybe we should mock out the FS too; but that requires a lot more work.
-            fs.writeFileSync(output, "This is the output file");
-            return Promise.resolve({
-                code: 0,
-                okToCache: true,
-                filenameTransform: x => x,
-                stdout: 'stdout',
-                stderr: 'stderr'
-            });
+            fs.writeFileSync(output, content);
+            result.filenameTransform = x => x;
+            return Promise.resolve(result);
+        });
+        return execStub;
+    }
+
+    it('should compile', async () => {
+        const execStub = stubExec(compiler, "This is the output file", {
+            code: 0,
+            okToCache: true,
+            stdout: 'stdout',
+            stderr: 'stderr'
         });
         const result = await compiler.compile(
             "source",
@@ -120,6 +127,48 @@ describe('Basic compiler invariants', function () {
         result.popularArguments.should.deep.equal({});
         result.tools.should.deep.equal([]);
         execStub.called.should.be.true;
-        execStub.restore();
+    });
+
+    it('should cache results', async () => {
+        const ceMock = sinon.mock(ce);
+        const fakeExecResults = {
+            code: 0,
+            okToCache: true,
+            stdout: 'stdout',
+            stderr: 'stderr'
+        };
+        stubExec(compiler, "This is the output file", fakeExecResults);
+        const source = "Some cacheable source";
+        const options = "Some cacheable options";
+        ceMock.expects('cachePut').withArgs(sinon.match({source, options}), sinon.match(fakeExecResults));
+        const uncachedResult = await compiler.compile(
+            source,
+            options,
+            {},
+            {},
+            false,
+            [],
+            {},
+            []);
+        uncachedResult.code.should.equal(0);
+        ceMock.verify();
+    });
+
+    it('should read from the cache', async () => {
+        const ceMock = sinon.mock(ce);
+        const source = "Some previously cached source";
+        const options = "Some previously cached options";
+        ceMock.expects('cacheGet').withArgs(sinon.match({source, options})).resolves({code: 123});
+        const cachedResult = await compiler.compile(
+            source,
+            options,
+            {},
+            {},
+            false,
+            [],
+            {},
+            []);
+        cachedResult.code.should.equal(123);
+        ceMock.verify();
     });
 });
