@@ -29,6 +29,7 @@ const BaseCompiler = require('../lib/base-compiler');
 const CompilationEnvironment = require('../lib/compilation-env');
 const properties = require('../lib/properties');
 const fs = require('fs');
+const exec = require('../lib/exec');
 
 chai.use(chaiAsPromised);
 const should = chai.should();
@@ -44,10 +45,9 @@ describe('Basic compiler invariants', function () {
     const info = {
         exe: null,
         remote: true,
-        lang: languages['c++'].id
+        lang: languages['c++'].id,
+        ldPath: []
     };
-
-    afterEach(() => sinon.restore());
 
     const compiler = new BaseCompiler(info, ce);
 
@@ -86,10 +86,23 @@ describe('Basic compiler invariants', function () {
         should.exist(badSource);
         badSource.should.equal("<stdin>:1:1: no absolute or relative includes please");
     });
+});
 
-    function stubExec(compiler, content, result) {
-        const execStub = sinon.stub(compiler, 'exec');
-        execStub.callsFake((compiler, args, options) => {
+describe('Compiler execution', function () {
+    const ce = new CompilationEnvironment(compilerProps);
+    const info = {
+        exe: null,
+        remote: true,
+        lang: languages['c++'].id,
+        ldPath: []
+    };
+
+    afterEach(() => sinon.restore());
+
+    const compiler = new BaseCompiler(info, ce);
+
+    function stubOutCallToExec(execStub, compiler, content, result, nthCall) {
+        execStub.onCall(nthCall || 0).callsFake((compiler, args, options) => {
             const minusO = args.indexOf("-o");
             minusO.should.be.gte(0);
             const output = args[minusO + 1];
@@ -98,11 +111,11 @@ describe('Basic compiler invariants', function () {
             result.filenameTransform = x => x;
             return Promise.resolve(result);
         });
-        return execStub;
     }
 
     it('should compile', async () => {
-        const execStub = stubExec(compiler, "This is the output file", {
+        const execStub = sinon.stub(compiler, 'exec');
+        stubOutCallToExec(execStub, compiler, "This is the output file", {
             code: 0,
             okToCache: true,
             stdout: 'stdout',
@@ -129,7 +142,7 @@ describe('Basic compiler invariants', function () {
         execStub.called.should.be.true;
     });
 
-    it('should cache results', async () => {
+    it('should cache results (when asked)', async () => {
         const ceMock = sinon.mock(ce);
         const fakeExecResults = {
             code: 0,
@@ -137,7 +150,8 @@ describe('Basic compiler invariants', function () {
             stdout: 'stdout',
             stderr: 'stderr'
         };
-        stubExec(compiler, "This is the output file", fakeExecResults);
+        const execStub = sinon.stub(compiler, 'exec');
+        stubOutCallToExec(execStub, compiler, "This is the output file", fakeExecResults);
         const source = "Some cacheable source";
         const options = "Some cacheable options";
         ceMock.expects('cachePut').withArgs(sinon.match({source, options}), sinon.match(fakeExecResults));
@@ -154,7 +168,33 @@ describe('Basic compiler invariants', function () {
         ceMock.verify();
     });
 
-    it('should read from the cache', async () => {
+    it('should not cache results (when not asked)', async () => {
+        const ceMock = sinon.mock(ce);
+        const fakeExecResults = {
+            code: 0,
+            okToCache: false,
+            stdout: 'stdout',
+            stderr: 'stderr'
+        };
+        const execStub = sinon.stub(compiler, 'exec');
+        stubOutCallToExec(execStub, compiler, "This is the output file", fakeExecResults);
+        ceMock.expects("cachePut").never();
+        const source = "Some cacheable source";
+        const options = "Some cacheable options";
+        const uncachedResult = await compiler.compile(
+            source,
+            options,
+            {},
+            {},
+            false,
+            [],
+            {},
+            []);
+        uncachedResult.code.should.equal(0);
+        ceMock.verify();
+    });
+
+    it('should read from the cache (when asked)', async () => {
         const ceMock = sinon.mock(ce);
         const source = "Some previously cached source";
         const options = "Some previously cached options";
@@ -170,5 +210,70 @@ describe('Basic compiler invariants', function () {
             []);
         cachedResult.code.should.equal(123);
         ceMock.verify();
+    });
+
+    it('should note read from the cache (when bypassed)', async () => {
+        const ceMock = sinon.mock(ce);
+        const fakeExecResults = {
+            code: 0,
+            okToCache: true,
+            stdout: 'stdout',
+            stderr: 'stderr'
+        };
+        const source = "Some previously cached source";
+        const options = "Some previously cached options";
+        ceMock.expects('cacheGet').never();
+        const execStub = sinon.stub(compiler, 'exec');
+        stubOutCallToExec(execStub, compiler, "This is the output file", fakeExecResults);
+        const uncachedResult = await compiler.compile(
+            source,
+            options,
+            {},
+            {},
+            true,
+            [],
+            {},
+            []);
+        uncachedResult.code.should.equal(0);
+        ceMock.verify();
+    });
+
+    it('should execute', async () => {
+        const execMock = sinon.mock(exec);
+        const execStub = sinon.stub(compiler, 'exec');
+        stubOutCallToExec(execStub, compiler, "This is the output asm file", {
+            code: 0,
+            okToCache: true,
+            stdout: 'asm stdout',
+            stderr: 'asm stderr'
+        }, 0);
+        stubOutCallToExec(execStub, compiler, "This is the output binary file", {
+            code: 0,
+            okToCache: true,
+            stdout: 'binary stdout',
+            stderr: 'binary stderr'
+        }, 1);
+        execMock.expects("sandbox").withArgs(sinon.match.string, sinon.match.array, sinon.match.object).resolves({
+            code: 0,
+            stdout: 'exec stdout',
+            stderr: 'exec stderr'
+        });
+        const result = await compiler.compile(
+            "source",
+            "options",
+            {},
+            {execute: true},
+            false,
+            [],
+            {},
+            []);
+        result.code.should.equal(0);
+        result.execResult.didExecute.should.be.true;
+        result.stdout.should.deep.equal([{text: "asm stdout"}]);
+        result.execResult.stdout.should.deep.equal([{text: "exec stdout"}]);
+        result.execResult.buildResult.stdout.should.deep.equal([{text: "binary stdout"}]);
+        result.stderr.should.deep.equal([{text: "asm stderr"}]);
+        result.execResult.stderr.should.deep.equal([{text: "exec stderr"}]);
+        result.execResult.buildResult.stderr.should.deep.equal([{text: "binary stderr"}]);
     });
 });
