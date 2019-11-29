@@ -62,6 +62,7 @@ function Editor(hub, state, container) {
     // Should probably be its own function somewhere
     this.settings = JSON.parse(local.get('settings', '{}'));
     this.ourCompilers = {};
+    this.ourExecutors = {};
     this.httpRoot = window.httpRoot;
     this.widgetsByCompiler = {};
     this.asmByCompiler = {};
@@ -262,6 +263,7 @@ Editor.prototype.initCallbacks = function () {
     }, this);
 
     this.eventHub.on('compilerOpen', this.onCompilerOpen, this);
+    this.eventHub.on('executorOpen', this.onExecutorOpen, this);
     this.eventHub.on('compilerClose', this.onCompilerClose, this);
     this.eventHub.on('compiling', this.onCompiling, this);
     this.eventHub.on('compileResult', this.onCompileResponse, this);
@@ -758,6 +760,13 @@ Editor.prototype.onCompilerOpen = function (compilerId, editorId) {
     }
 };
 
+Editor.prototype.onExecutorOpen = function (executorId, editorId) {
+    if (editorId === this.id) {
+        this.maybeEmitChange(true);
+        this.ourExecutors[executorId] = true;
+    }
+};
+
 Editor.prototype.onCompilerClose = function (compilerId) {
     if (this.ourCompilers[compilerId]) {
         monaco.editor.setModelMarkers(this.editor.getModel(), compilerId, []);
@@ -766,6 +775,12 @@ Editor.prototype.onCompilerClose = function (compilerId) {
         delete this.busyCompilers[compilerId];
         delete this.ourCompilers[compilerId];
         this.numberUsedLines();
+    }
+};
+
+Editor.prototype.onExecutorClose = function (id) {
+    if (this.ourExecutors[id]) {
+        delete this.ourExecutors[id];
     }
 };
 
