@@ -204,7 +204,7 @@ Diff.prototype.resize = function () {
 };
 
 Diff.prototype.onDiffSelect = function (id) {
-    this.eventHub.emit('resendCompilation', id);
+    this.requestResendResult(id);
     this.updateCompilerNames();
     this.updateState();
 };
