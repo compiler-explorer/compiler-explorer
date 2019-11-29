@@ -373,6 +373,19 @@ Executor.prototype.onCompileResponse = function (request, result, cached) {
     }
 };
 
+Executor.prototype.resendResult = function () {
+    if (!$.isEmptyObject(this.lastResult)) {
+        this.eventHub.emit('executeResult', this.id, this.compiler, this.lastResult);
+        return true;
+    }
+    return false;
+};
+
+Executor.prototype.onResendExecutionResult = function (id) {
+    if (id === this.id) {
+        this.resendResult();
+    }
+};
 
 Executor.prototype.onEditorChange = function (editor, source, langId, compilerId) {
     if (editor === this.sourceEditorId && langId === this.currentLangId &&
@@ -489,7 +502,9 @@ Executor.prototype.initListeners = function () {
     this.eventHub.on('editorClose', this.onEditorClose, this);
     this.eventHub.on('settingsChange', this.onSettingsChange, this);
     this.eventHub.on('requestCompilation', this.onRequestCompilation, this);
+    this.eventHub.on('resendExecution', this.onResendExecutionResult, this);
     this.eventHub.on('resize', this.resize, this);
+    this.eventHub.on('findExecutors', this.sendExecutor, this);
 
     this.eventHub.on('languageChange', this.onLanguageChange, this);
 };

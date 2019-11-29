@@ -254,11 +254,26 @@ Diff.prototype.initCallbacks = function () {
     this.container.on('resize', this.resize, this);
     this.container.on('shown', this.resize, this);
 
-    this.eventHub.emit('resendCompilation', this.lhs.id);
-    this.eventHub.emit('resendCompilation', this.rhs.id);
+    this.requestResendResult(this.lhs.id);
+    this.requestResendResult(this.rhs.id);
+
     this.eventHub.emit('findCompilers');
+    this.eventHub.emit('findExecutors');
+
     this.eventHub.emit('requestTheme');
     this.eventHub.emit('requestSettings');
+};
+
+Diff.prototype.requestResendResult = function (id) {
+    if (typeof id === "string") {
+        var p = id.indexOf("_exec");
+        if (p !== -1) {
+            var execId = parseInt(id.substr(0, p));
+            this.eventHub.emit('resendExecution', execId);
+        }
+    } else {
+        this.eventHub.emit('resendCompilation', id);
+    }
 };
 
 Diff.prototype.onCompiler = function (id, compiler, options, editorId) {
