@@ -34,12 +34,14 @@ prereqs: node_modules
 
 NODE_MODULES=.npm-updated
 $(NODE_MODULES): package.json | node-installed
-	$(NPM) install $(NPM_FLAGS)
+	$(NPM) install --only=dev $(NPM_FLAGS)
+	$(NPM) install --only=prod $(NPM_FLAGS)
 	@touch $@
 
+WEBPACK:=./node_modules/webpack-cli/bin/cli.js
 webpack: $(NODE_MODULES)  ## Runs webpack (useful only for debugging webpack)
 	rm -rf out/dist/static out/dist/manifest.json
-	./node_modules/webpack-cli/bin/cli.js ${WEBPACK_ARGS}
+	$(WEBPACK) $(WEBPACK_ARGS)
 
 lint: $(NODE_MODULES)  ## Ensures everything matches code conventions
 	$(NPM) run lint
