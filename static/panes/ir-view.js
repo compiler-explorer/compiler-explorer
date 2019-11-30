@@ -60,6 +60,9 @@ function Ir(hub, container, state) {
     this._compilerName = state.compilerName;
     this._editorid = state.editorid;
 
+    this.awaitingInitialResults = false;
+    this.selection = state.selection;
+
     this.settings = {};
 
     this.colours = [];
@@ -115,6 +118,12 @@ Ir.prototype.initCallbacks = function () {
         this.mouseMoveThrottledFunction(e);
     }, this));
 
+    this.cursorSelectionThrottledFunction =
+        _.throttle(_.bind(this.onDidChangeCursorSelection, this), 500);
+    this.irEditor.onDidChangeCursorSelection(_.bind(function (e) {
+        this.cursorSelectionThrottledFunction(e);
+    }, this));
+
     this.fontScale.on('change', _.bind(this.updateState, this));
 
     this.container.on('destroy', this.close, this);
@@ -166,6 +175,15 @@ Ir.prototype.showIrResults = function (irCode) {
     if (!this.irEditor) return;
     this.irCode = irCode;
     this.irEditor.getModel().setValue(irCode.length ? _.pluck(irCode, 'text').join('\n') : "<No IR generated>");
+
+    if (!this.awaitingInitialResults) {
+        if (this.selection) {
+            this.irEditor.setSelection(this.selection);
+            this.irEditor.revealLinesInCenter(this.selection.startLineNumber,
+                this.selection.endLineNumber);
+        }
+        this.awaitingInitialResults = true;
+    }
 };
 
 Ir.prototype.onCompiler = function (id, compiler, options, editorid) {
@@ -211,7 +229,8 @@ Ir.prototype.updateState = function () {
 Ir.prototype.currentState = function () {
     var state = {
         id: this._compilerid,
-        editorid: this._editorid
+        editorid: this._editorid,
+        selection: this.selection
     };
     this.fontScale.addState(state);
     return state;
@@ -253,6 +272,14 @@ Ir.prototype.onMouseMove = function (e) {
         }
     }
 };
+
+Ir.prototype.onDidChangeCursorSelection = function (e) {
+    if (this.awaitingInitialResults) {
+        this.selection = e.selection;
+        this.updateState();
+    }
+};
+
 
 Ir.prototype.updateDecorations = function () {
     this.prevDecorations = this.irEditor.deltaDecorations(
