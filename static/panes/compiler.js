@@ -94,7 +94,7 @@ function Compiler(hub, container, state) {
     this.wantOptInfo = state.wantOptInfo;
     this.decorations = {};
     this.prevDecorations = [];
-    this.labels = {};
+    this.labelDefinitions = {};
     this.alertSystem = new Alert();
     this.alertSystem.prefixMessage = "Compiler #" + this.id + ": ";
 
@@ -103,33 +103,6 @@ function Compiler(hub, container, state) {
 
     this.linkedFadeTimeoutId = -1;
     this.toolsMenu = null;
-
-    var labelUsageInstructions = [
-        "call",
-        "callq",
-        "jmp",
-        "je", "jz",
-        "jne", "jnz",
-        "jg", "jnle",
-        "jge", "jnl",
-        "jl", "jnge",
-        "jle", "jng",
-        "ja", "jnbe",
-        "jae", "jnb",
-        "jb", "jnae",
-        "jbe", "jna",
-        "jxcz",
-        "jc",
-        "jnc",
-        "jo",
-        "jno",
-        "jp", "jpe",
-        "jnp", "jpo",
-        "js",
-        "jns"
-    ];
-    this.labelUsageRegex = new RegExp(
-        '\\s+(' + labelUsageInstructions.join('|') + ')\\s+([^#]+)');
 
     this.initButtons(state);
 
@@ -355,10 +328,16 @@ Compiler.prototype.resize = function () {
 // Returns a label name if it can be found in the given position, otherwise
 // returns null.
 Compiler.prototype.getLabelAtPosition = function (position) {
-    var line = this.outputEditor.getModel().getLineContent(position.lineNumber);
-    var match = line.match(this.labelUsageRegex);
-    if (match) {
-        return match[2].trim();
+    var asmLine = this.assembly[position.lineNumber - 1];
+    var column = position.column;
+    var labels = asmLine.labels;
+
+    for (var i = 0; i < labels.length; ++i) {
+        if (column >= labels[i].range.startCol &&
+            column < labels[i].range.endCol
+        ) {
+            return labels[i];
+        }
     }
 
     return null;
@@ -374,21 +353,21 @@ Compiler.prototype.jumpToLabel = function (position) {
         return;
     }
 
-    var range = this.labels[label];
-    if (!range) {
+    var labelDefLineNum = this.labelDefinitions[label.name];
+    if (!labelDefLineNum) {
         return;
     }
 
     // Highlight the new range.
     var endLineContent =
-        this.outputEditor.getModel().getLineContent(range.endLineNumber);
+        this.outputEditor.getModel().getLineContent(labelDefLineNum);
 
     this.outputEditor.setSelection(new monaco.Selection(
-        range.startLineNumber, 0,
-        range.endLineNumber, endLineContent.length + 1));
+        labelDefLineNum, 0,
+        labelDefLineNum, endLineContent.length + 1));
 
     // Jump to the given line.
-    this.outputEditor.revealLineInCenter(range.startLineNumber);
+    this.outputEditor.revealLineInCenter(labelDefLineNum);
 };
 
 Compiler.prototype.initEditorActions = function () {
@@ -413,7 +392,7 @@ Compiler.prototype.initEditorActions = function () {
     contextmenu._onContextMenu = _.bind(function (e) {
         if (this.isLabelCtxKey && e.target.position) {
             var label = this.getLabelAtPosition(e.target.position);
-            this.isLabelCtxKey.set(label && this.labels[label]);
+            this.isLabelCtxKey.set(label);
         }
         realMethod.apply(contextmenu, arguments);
     }, this);
@@ -653,31 +632,22 @@ Compiler.prototype.setAssembly = function (asm) {
         this.outputEditor.revealLine(currentTopLine);
     }
 
-    // Set the labels which will be used at Jump to label feature.
-    setTimeout(_.bind(function () {
-        this.labels = {};
-        for (var i = 0; i < this.assembly.length; ++i) {
-            var text = this.assembly[i].text;
-            if (/^\S/.test(text)) {
-                var match = text.match(/(^\S+[^#]*):/);
-                if (match) {
-                    var startLineNumber = i;
+    var decorations = [];
+    _.each(this.assembly, _.bind(function (obj, line) {
+        if (!obj.labels || !obj.labels.length) return;
 
-                    // Find the end of the label definition.
-                    while (i + 1 < this.assembly.length &&
-                           /^[\s#]/.test(this.assembly[i + 1].text)
-                    ) {
-                        i = i + 1;
-                    }
-
-                    this.labels[match[1]] = {
-                        startLineNumber: startLineNumber + 1,
-                        endLineNumber: i + 1
-                    };
+        obj.labels.forEach(function (label) {
+            decorations.push({
+                range: new monaco.Range(line + 1, label.range.startCol,
+                    line + 1, label.range.endCol),
+                options: {
+                    inlineClassName: 'asm-label-link'
                 }
-            }
-        }
-    }, this), 0);
+            });
+        });
+    }, this));
+
+    this.outputEditor.deltaDecorations([], decorations);
 
     this.outputEditor.revealLine(currentTopLine);
     if (this.getEffectiveFilters().binary) {
@@ -756,6 +726,7 @@ Compiler.prototype.onCompileResponse = function (request, result, cached) {
         timingValue: timeTaken
     });
 
+    this.labelDefinitions = result.labelDefinitions || {};
     this.setAssembly(result.asm || fakeAsm('<No output>'));
 
     var stdout = result.stdout || [];
