@@ -4,7 +4,7 @@
 .LC0:
 	.string	"%s , %s , %lld , %d , %lld\n"
 	.text
-
+	; This is a comment
 	.align 8
 	.globl toto
 	.type	toto, @function
@@ -12,6 +12,7 @@ toto:
 	add $r12 = $r12, -16
 	get $r8 = $ra
 	;;
+	;; This is also a comment
 	sw 28[$r12] = $r10
 	add $r10 = $r12, 16
 	;;
@@ -40,7 +41,7 @@ toto:
 	add $r12 = $r12, 16
 	;;
 	set $ra = $r1
-	;; /* Can't issue next in the same bundle */
+	;;
 	ret
 	;;
 	.size	toto, .-toto
@@ -74,7 +75,7 @@ main:
 	sd 16[$r12] = $r0r1
 	make $r1 = .LC1
 	make $r0 = .LC0
-	;; /* Can't issue next in the same bundle */
+	;;
 	call printf
 	;;
 	add $r12 = $r10, -16
@@ -88,7 +89,7 @@ main:
 	;;
 .OTHERDUMMY:
 	set $ra = $r1
-	;; /* Can't issue next in the same bundle */
+	;;
 	ret
 	;;
 	.size	main, .-main
