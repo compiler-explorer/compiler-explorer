@@ -82,7 +82,7 @@ function testFilter(filename, suffix, filters) {
             file = utils.splitLines(file);
         }
         if (json) {
-            result.asm.should.deep.equal(file);
+            result.should.deep.equal(file);
         } else {
             result.asm.map(function (x) {
                 return x.text;

@@ -1,375 +1,377 @@
-[
-    {
-        "text": "_TLS    SEGMENT",
-        "source": null
-    },
-    {
-        "text": "?h@@3HA DD        012345H                       ; h",
-        "source": null
-    },
-    {
-        "text": "        ORG $+4",
-        "source": null
-    },
-    {
-        "text": "?g@@3Usafetls@@A DD 098765H                   ; g",
-        "source": null
-    },
-    {
-        "text": "        ORG $+8",
-        "source": null
-    },
-    {
-        "text": "_TLS    ENDS",
-        "source": null
-    },
-    {
-        "text": "$pdata$?func@@YAHXZ DD imagerel $LN3",
-        "source": null
-    },
-    {
-        "text": "        DD      imagerel $LN3+43",
-        "source": null
-    },
-    {
-        "text": "        DD      imagerel $unwind$?func@@YAHXZ",
-        "source": null
-    },
-    {
-        "text": "$pdata$main DD  imagerel $LN3",
-        "source": null
-    },
-    {
-        "text": "        DD      imagerel $LN3+31",
-        "source": null
-    },
-    {
-        "text": "        DD      imagerel $unwind$main",
-        "source": null
-    },
-    {
-        "text": "$unwind$main DD 010401H",
-        "source": null
-    },
-    {
-        "text": "        DD      06204H",
-        "source": null
-    },
-    {
-        "text": "$unwind$?func@@YAHXZ DD 010401H",
-        "source": null
-    },
-    {
-        "text": "        DD      04204H",
-        "source": null
-    },
-    {
-        "text": "",
-        "source": null
-    },
-    {
-        "text": "this$ = 8",
-        "source": null
-    },
-    {
-        "text": "?value@safetls@@QEAAHXZ PROC                            ; safetls::value, COMDAT",
-        "source": null
-    },
-    {
-        "text": "        mov     QWORD PTR [rsp+8], rcx",
-        "source": {
-            "file": null,
-            "line": 9
+{
+    "asm": [
+        {
+            "text": "_TLS    SEGMENT",
+            "source": null
+        },
+        {
+            "text": "?h@@3HA DD        012345H                       ; h",
+            "source": null
+        },
+        {
+            "text": "        ORG $+4",
+            "source": null
+        },
+        {
+            "text": "?g@@3Usafetls@@A DD 098765H                   ; g",
+            "source": null
+        },
+        {
+            "text": "        ORG $+8",
+            "source": null
+        },
+        {
+            "text": "_TLS    ENDS",
+            "source": null
+        },
+        {
+            "text": "$pdata$?func@@YAHXZ DD imagerel $LN3",
+            "source": null
+        },
+        {
+            "text": "        DD      imagerel $LN3+43",
+            "source": null
+        },
+        {
+            "text": "        DD      imagerel $unwind$?func@@YAHXZ",
+            "source": null
+        },
+        {
+            "text": "$pdata$main DD  imagerel $LN3",
+            "source": null
+        },
+        {
+            "text": "        DD      imagerel $LN3+31",
+            "source": null
+        },
+        {
+            "text": "        DD      imagerel $unwind$main",
+            "source": null
+        },
+        {
+            "text": "$unwind$main DD 010401H",
+            "source": null
+        },
+        {
+            "text": "        DD      06204H",
+            "source": null
+        },
+        {
+            "text": "$unwind$?func@@YAHXZ DD 010401H",
+            "source": null
+        },
+        {
+            "text": "        DD      04204H",
+            "source": null
+        },
+        {
+            "text": "",
+            "source": null
+        },
+        {
+            "text": "this$ = 8",
+            "source": null
+        },
+        {
+            "text": "?value@safetls@@QEAAHXZ PROC                            ; safetls::value, COMDAT",
+            "source": null
+        },
+        {
+            "text": "        mov     QWORD PTR [rsp+8], rcx",
+            "source": {
+                "file": null,
+                "line": 9
+            }
+        },
+        {
+            "text": "        mov     rax, QWORD PTR this$[rsp]",
+            "source": {
+                "file": null,
+                "line": 9
+            }
+        },
+        {
+            "text": "        mov     rcx, QWORD PTR this$[rsp]",
+            "source": {
+                "file": null,
+                "line": 9
+            }
+        },
+        {
+            "text": "        mov     ecx, DWORD PTR [rcx+4]",
+            "source": {
+                "file": null,
+                "line": 9
+            }
+        },
+        {
+            "text": "        mov     eax, DWORD PTR [rax]",
+            "source": {
+                "file": null,
+                "line": 9
+            }
+        },
+        {
+            "text": "        sub     eax, ecx",
+            "source": {
+                "file": null,
+                "line": 9
+            }
+        },
+        {
+            "text": "        mov     rcx, QWORD PTR this$[rsp]",
+            "source": {
+                "file": null,
+                "line": 9
+            }
+        },
+        {
+            "text": "        add     eax, DWORD PTR [rcx+8]",
+            "source": {
+                "file": null,
+                "line": 9
+            }
+        },
+        {
+            "text": "        ret     0",
+            "source": {
+                "file": null,
+                "line": 9
+            }
+        },
+        {
+            "text": "?value@safetls@@QEAAHXZ ENDP                            ; safetls::value",
+            "source": null
+        },
+        {
+            "text": "",
+            "source": null
+        },
+        {
+            "text": "?func@@YAHXZ PROC                                 ; func, COMDAT",
+            "source": null
+        },
+        {
+            "text": "$LN3:",
+            "source": null
+        },
+        {
+            "text": "        sub     rsp, 40                             ; 00000028H",
+            "source": {
+                "file": null,
+                "line": 16
+            }
+        },
+        {
+            "text": "        mov     eax, OFFSET FLAT:?g@@3Usafetls@@A ; g",
+            "source": {
+                "file": null,
+                "line": 17
+            }
+        },
+        {
+            "text": "        mov     eax, eax",
+            "source": {
+                "file": null,
+                "line": 17
+            }
+        },
+        {
+            "text": "        mov     ecx, DWORD PTR _tls_index",
+            "source": {
+                "file": null,
+                "line": 17
+            }
+        },
+        {
+            "text": "        mov     rdx, QWORD PTR gs:88",
+            "source": {
+                "file": null,
+                "line": 17
+            }
+        },
+        {
+            "text": "        add     rax, QWORD PTR [rdx+rcx*8]",
+            "source": {
+                "file": null,
+                "line": 17
+            }
+        },
+        {
+            "text": "        mov     rcx, rax",
+            "source": {
+                "file": null,
+                "line": 17
+            }
+        },
+        {
+            "text": "        call    ?value@safetls@@QEAAHXZ       ; safetls::value",
+            "source": {
+                "file": null,
+                "line": 17
+            }
+        },
+        {
+            "text": "        add     rsp, 40                             ; 00000028H",
+            "source": {
+                "file": null,
+                "line": 18
+            }
+        },
+        {
+            "text": "        ret     0",
+            "source": {
+                "file": null,
+                "line": 18
+            }
+        },
+        {
+            "text": "?func@@YAHXZ ENDP                                 ; func",
+            "source": null
+        },
+        {
+            "text": "",
+            "source": null
+        },
+        {
+            "text": "?func2@@YAHXZ PROC                                  ; func2, COMDAT",
+            "source": null
+        },
+        {
+            "text": "        mov     eax, OFFSET FLAT:?h@@3HA      ; h",
+            "source": {
+                "file": null,
+                "line": 22
+            }
+        },
+        {
+            "text": "        mov     eax, eax",
+            "source": {
+                "file": null,
+                "line": 22
+            }
+        },
+        {
+            "text": "        mov     ecx, DWORD PTR _tls_index",
+            "source": {
+                "file": null,
+                "line": 22
+            }
+        },
+        {
+            "text": "        mov     rdx, QWORD PTR gs:88",
+            "source": {
+                "file": null,
+                "line": 22
+            }
+        },
+        {
+            "text": "        mov     rcx, QWORD PTR [rdx+rcx*8]",
+            "source": {
+                "file": null,
+                "line": 22
+            }
+        },
+        {
+            "text": "        mov     eax, DWORD PTR [rax+rcx]",
+            "source": {
+                "file": null,
+                "line": 22
+            }
+        },
+        {
+            "text": "        ret     0",
+            "source": {
+                "file": null,
+                "line": 23
+            }
+        },
+        {
+            "text": "?func2@@YAHXZ ENDP                                  ; func2",
+            "source": null
+        },
+        {
+            "text": "",
+            "source": null
+        },
+        {
+            "text": "tv64 = 32",
+            "source": null
+        },
+        {
+            "text": "main    PROC",
+            "source": null
+        },
+        {
+            "text": "$LN3:",
+            "source": null
+        },
+        {
+            "text": "        sub     rsp, 56                             ; 00000038H",
+            "source": {
+                "file": null,
+                "line": 26
+            }
+        },
+        {
+            "text": "        call    ?func@@YAHXZ                            ; func",
+            "source": {
+                "file": null,
+                "line": 27
+            }
+        },
+        {
+            "text": "        mov     DWORD PTR tv64[rsp], eax",
+            "source": {
+                "file": null,
+                "line": 27
+            }
+        },
+        {
+            "text": "        call    ?func2@@YAHXZ                     ; func2",
+            "source": {
+                "file": null,
+                "line": 27
+            }
+        },
+        {
+            "text": "        mov     ecx, DWORD PTR tv64[rsp]",
+            "source": {
+                "file": null,
+                "line": 27
+            }
+        },
+        {
+            "text": "        add     ecx, eax",
+            "source": {
+                "file": null,
+                "line": 27
+            }
+        },
+        {
+            "text": "        mov     eax, ecx",
+            "source": {
+                "file": null,
+                "line": 27
+            }
+        },
+        {
+            "text": "        add     rsp, 56                             ; 00000038H",
+            "source": {
+                "file": null,
+                "line": 28
+            }
+        },
+        {
+            "text": "        ret     0",
+            "source": {
+                "file": null,
+                "line": 28
+            }
+        },
+        {
+            "text": "main    ENDP",
+            "source": null
         }
-    },
-    {
-        "text": "        mov     rax, QWORD PTR this$[rsp]",
-        "source": {
-            "file": null,
-            "line": 9
-        }
-    },
-    {
-        "text": "        mov     rcx, QWORD PTR this$[rsp]",
-        "source": {
-            "file": null,
-            "line": 9
-        }
-    },
-    {
-        "text": "        mov     ecx, DWORD PTR [rcx+4]",
-        "source": {
-            "file": null,
-            "line": 9
-        }
-    },
-    {
-        "text": "        mov     eax, DWORD PTR [rax]",
-        "source": {
-            "file": null,
-            "line": 9
-        }
-    },
-    {
-        "text": "        sub     eax, ecx",
-        "source": {
-            "file": null,
-            "line": 9
-        }
-    },
-    {
-        "text": "        mov     rcx, QWORD PTR this$[rsp]",
-        "source": {
-            "file": null,
-            "line": 9
-        }
-    },
-    {
-        "text": "        add     eax, DWORD PTR [rcx+8]",
-        "source": {
-            "file": null,
-            "line": 9
-        }
-    },
-    {
-        "text": "        ret     0",
-        "source": {
-            "file": null,
-            "line": 9
-        }
-    },
-    {
-        "text": "?value@safetls@@QEAAHXZ ENDP                            ; safetls::value",
-        "source": null
-    },
-    {
-        "text": "",
-        "source": null
-    },
-    {
-        "text": "?func@@YAHXZ PROC                                 ; func, COMDAT",
-        "source": null
-    },
-    {
-        "text": "$LN3:",
-        "source": null
-    },
-    {
-        "text": "        sub     rsp, 40                             ; 00000028H",
-        "source": {
-            "file": null,
-            "line": 16
-        }
-    },
-    {
-        "text": "        mov     eax, OFFSET FLAT:?g@@3Usafetls@@A ; g",
-        "source": {
-            "file": null,
-            "line": 17
-        }
-    },
-    {
-        "text": "        mov     eax, eax",
-        "source": {
-            "file": null,
-            "line": 17
-        }
-    },
-    {
-        "text": "        mov     ecx, DWORD PTR _tls_index",
-        "source": {
-            "file": null,
-            "line": 17
-        }
-    },
-    {
-        "text": "        mov     rdx, QWORD PTR gs:88",
-        "source": {
-            "file": null,
-            "line": 17
-        }
-    },
-    {
-        "text": "        add     rax, QWORD PTR [rdx+rcx*8]",
-        "source": {
-            "file": null,
-            "line": 17
-        }
-    },
-    {
-        "text": "        mov     rcx, rax",
-        "source": {
-            "file": null,
-            "line": 17
-        }
-    },
-    {
-        "text": "        call    ?value@safetls@@QEAAHXZ       ; safetls::value",
-        "source": {
-            "file": null,
-            "line": 17
-        }
-    },
-    {
-        "text": "        add     rsp, 40                             ; 00000028H",
-        "source": {
-            "file": null,
-            "line": 18
-        }
-    },
-    {
-        "text": "        ret     0",
-        "source": {
-            "file": null,
-            "line": 18
-        }
-    },
-    {
-        "text": "?func@@YAHXZ ENDP                                 ; func",
-        "source": null
-    },
-    {
-        "text": "",
-        "source": null
-    },
-    {
-        "text": "?func2@@YAHXZ PROC                                  ; func2, COMDAT",
-        "source": null
-    },
-    {
-        "text": "        mov     eax, OFFSET FLAT:?h@@3HA      ; h",
-        "source": {
-            "file": null,
-            "line": 22
-        }
-    },
-    {
-        "text": "        mov     eax, eax",
-        "source": {
-            "file": null,
-            "line": 22
-        }
-    },
-    {
-        "text": "        mov     ecx, DWORD PTR _tls_index",
-        "source": {
-            "file": null,
-            "line": 22
-        }
-    },
-    {
-        "text": "        mov     rdx, QWORD PTR gs:88",
-        "source": {
-            "file": null,
-            "line": 22
-        }
-    },
-    {
-        "text": "        mov     rcx, QWORD PTR [rdx+rcx*8]",
-        "source": {
-            "file": null,
-            "line": 22
-        }
-    },
-    {
-        "text": "        mov     eax, DWORD PTR [rax+rcx]",
-        "source": {
-            "file": null,
-            "line": 22
-        }
-    },
-    {
-        "text": "        ret     0",
-        "source": {
-            "file": null,
-            "line": 23
-        }
-    },
-    {
-        "text": "?func2@@YAHXZ ENDP                                  ; func2",
-        "source": null
-    },
-    {
-        "text": "",
-        "source": null
-    },
-    {
-        "text": "tv64 = 32",
-        "source": null
-    },
-    {
-        "text": "main    PROC",
-        "source": null
-    },
-    {
-        "text": "$LN3:",
-        "source": null
-    },
-    {
-        "text": "        sub     rsp, 56                             ; 00000038H",
-        "source": {
-            "file": null,
-            "line": 26
-        }
-    },
-    {
-        "text": "        call    ?func@@YAHXZ                            ; func",
-        "source": {
-            "file": null,
-            "line": 27
-        }
-    },
-    {
-        "text": "        mov     DWORD PTR tv64[rsp], eax",
-        "source": {
-            "file": null,
-            "line": 27
-        }
-    },
-    {
-        "text": "        call    ?func2@@YAHXZ                     ; func2",
-        "source": {
-            "file": null,
-            "line": 27
-        }
-    },
-    {
-        "text": "        mov     ecx, DWORD PTR tv64[rsp]",
-        "source": {
-            "file": null,
-            "line": 27
-        }
-    },
-    {
-        "text": "        add     ecx, eax",
-        "source": {
-            "file": null,
-            "line": 27
-        }
-    },
-    {
-        "text": "        mov     eax, ecx",
-        "source": {
-            "file": null,
-            "line": 27
-        }
-    },
-    {
-        "text": "        add     rsp, 56                             ; 00000038H",
-        "source": {
-            "file": null,
-            "line": 28
-        }
-    },
-    {
-        "text": "        ret     0",
-        "source": {
-            "file": null,
-            "line": 28
-        }
-    },
-    {
-        "text": "main    ENDP",
-        "source": null
-    }
-]
+    ]
+}

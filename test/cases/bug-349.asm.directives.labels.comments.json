@@ -1,47 +1,50 @@
-[
-  {
-    "text": "foo():",
-    "source": null,
-    "labels": []
-  },
-  {
-    "text": "        PUSHM.W #1, R4",
-    "source": {
-      "file": null,
-      "line": 1
+{
+  "asm": [
+    {
+      "text": "foo():",
+      "source": null,
+      "labels": []
     },
-    "labels": []
-  },
-  {
-    "text": "        MOV.W   R1, R4",
-    "source": {
-      "file": null,
-      "line": 1
+    {
+      "text": "        PUSHM.W #1, R4",
+      "source": {
+        "file": null,
+        "line": 1
+      },
+      "labels": []
     },
-    "labels": []
-  },
-  {
-    "text": "        MOV.B   #3, R12",
-    "source": {
-      "file": null,
-      "line": 2
+    {
+      "text": "        MOV.W   R1, R4",
+      "source": {
+        "file": null,
+        "line": 1
+      },
+      "labels": []
     },
-    "labels": []
-  },
-  {
-    "text": "        POPM.W  #1, r4",
-    "source": {
-      "file": null,
-      "line": 3
+    {
+      "text": "        MOV.B   #3, R12",
+      "source": {
+        "file": null,
+        "line": 2
+      },
+      "labels": []
     },
-    "labels": []
-  },
-  {
-    "text": "        RET",
-    "source": {
-      "file": null,
-      "line": 3
+    {
+      "text": "        POPM.W  #1, r4",
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "labels": []
     },
-    "labels": []
-  }
-]
+    {
+      "text": "        RET",
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "labels": []
+    }
+  ],
+  "labelDefinitions": {}
+}

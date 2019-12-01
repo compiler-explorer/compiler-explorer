@@ -1,108 +1,113 @@
-[
-  {
-    "text": "_Z6squarei:",
-    "source": null,
-    "labels": []
-  },
-  {
-    "text": "        addiu   $sp,$sp,-8",
-    "source": {
-      "file": null,
-      "line": 1
+{
+  "asm": [
+    {
+      "text": "_Z6squarei:",
+      "source": null,
+      "labels": []
     },
-    "labels": []
-  },
-  {
-    "text": "        sw      $fp,4($sp)",
-    "source": {
-      "file": null,
-      "line": 1
+    {
+      "text": "        addiu   $sp,$sp,-8",
+      "source": {
+        "file": null,
+        "line": 1
+      },
+      "labels": []
     },
-    "labels": []
-  },
-  {
-    "text": "        move    $fp,$sp",
-    "source": {
-      "file": null,
-      "line": 1
+    {
+      "text": "        sw      $fp,4($sp)",
+      "source": {
+        "file": null,
+        "line": 1
+      },
+      "labels": []
     },
-    "labels": []
-  },
-  {
-    "text": "        sw      $4,8($fp)",
-    "source": {
-      "file": null,
-      "line": 1
+    {
+      "text": "        move    $fp,$sp",
+      "source": {
+        "file": null,
+        "line": 1
+      },
+      "labels": []
     },
-    "labels": []
-  },
-  {
-    "text": "        lw      $3,8($fp)",
-    "source": {
-      "file": null,
-      "line": 2
+    {
+      "text": "        sw      $4,8($fp)",
+      "source": {
+        "file": null,
+        "line": 1
+      },
+      "labels": []
     },
-    "labels": []
-  },
-  {
-    "text": "        lw      $2,8($fp)",
-    "source": {
-      "file": null,
-      "line": 2
+    {
+      "text": "        lw      $3,8($fp)",
+      "source": {
+        "file": null,
+        "line": 2
+      },
+      "labels": []
     },
-    "labels": []
-  },
-  {
-    "text": "        mul     $2,$3,$2",
-    "source": {
-      "file": null,
-      "line": 2
+    {
+      "text": "        lw      $2,8($fp)",
+      "source": {
+        "file": null,
+        "line": 2
+      },
+      "labels": []
     },
-    "labels": []
-  },
-  {
-    "text": "        move    $sp,$fp",
-    "source": {
-      "file": null,
-      "line": 3
+    {
+      "text": "        mul     $2,$3,$2",
+      "source": {
+        "file": null,
+        "line": 2
+      },
+      "labels": []
     },
-    "labels": []
-  },
-  {
-    "text": "        lw      $fp,4($sp)",
-    "source": {
-      "file": null,
-      "line": 3
+    {
+      "text": "        move    $sp,$fp",
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "labels": []
     },
-    "labels": []
-  },
-  {
-    "text": "        addiu   $sp,$sp,8",
-    "source": {
-      "file": null,
-      "line": 3
+    {
+      "text": "        lw      $fp,4($sp)",
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "labels": []
     },
-    "labels": []
-  },
-  {
-    "text": "        j       $31",
-    "source": {
-      "file": null,
-      "line": 3
+    {
+      "text": "        addiu   $sp,$sp,8",
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "labels": []
     },
-    "labels": []
-  },
-  {
-    "text": "        nop",
-    "source": {
-      "file": null,
-      "line": 3
+    {
+      "text": "        j       $31",
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "labels": []
     },
-    "labels": []
-  },
-  {
-    "text": "",
-    "source": null,
-    "labels": []
+    {
+      "text": "        nop",
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "labels": []
+    },
+    {
+      "text": "",
+      "source": null,
+      "labels": []
+    }
+  ],
+  "labelDefinitions": {
+    "_Z6squarei": 1
   }
-]
+}

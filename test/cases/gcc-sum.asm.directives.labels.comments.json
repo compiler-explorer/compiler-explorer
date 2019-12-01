@@ -1,201 +1,208 @@
-[
-  {
-    "text": "_Z12testFunctionPii:",
-    "source": null,
-    "labels": []
-  },
-  {
-    "text": "        pushq   %rbp",
-    "source": {
-      "file": null,
-      "line": 1
+{
+  "asm": [
+    {
+      "text": "_Z12testFunctionPii:",
+      "source": null,
+      "labels": []
     },
-    "labels": []
-  },
-  {
-    "text": "        movq    %rsp, %rbp",
-    "source": {
-      "file": null,
-      "line": 1
+    {
+      "text": "        pushq   %rbp",
+      "source": {
+        "file": null,
+        "line": 1
+      },
+      "labels": []
     },
-    "labels": []
-  },
-  {
-    "text": "        movq    %rdi, -24(%rbp)",
-    "source": {
-      "file": null,
-      "line": 1
+    {
+      "text": "        movq    %rsp, %rbp",
+      "source": {
+        "file": null,
+        "line": 1
+      },
+      "labels": []
     },
-    "labels": []
-  },
-  {
-    "text": "        movl    %esi, -28(%rbp)",
-    "source": {
-      "file": null,
-      "line": 1
+    {
+      "text": "        movq    %rdi, -24(%rbp)",
+      "source": {
+        "file": null,
+        "line": 1
+      },
+      "labels": []
     },
-    "labels": []
-  },
-  {
-    "text": "        movl    $0, -8(%rbp)",
-    "source": {
-      "file": null,
-      "line": 2
+    {
+      "text": "        movl    %esi, -28(%rbp)",
+      "source": {
+        "file": null,
+        "line": 1
+      },
+      "labels": []
     },
-    "labels": []
-  },
-  {
-    "text": "        movl    $0, -4(%rbp)",
-    "source": {
-      "file": null,
-      "line": 3
+    {
+      "text": "        movl    $0, -8(%rbp)",
+      "source": {
+        "file": null,
+        "line": 2
+      },
+      "labels": []
     },
-    "labels": []
-  },
-  {
-    "text": ".L3:",
-    "source": null,
-    "labels": []
-  },
-  {
-    "text": "        movl    -4(%rbp), %eax",
-    "source": {
-      "file": null,
-      "line": 3
+    {
+      "text": "        movl    $0, -4(%rbp)",
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "labels": []
     },
-    "labels": []
-  },
-  {
-    "text": "        cmpl    -28(%rbp), %eax",
-    "source": {
-      "file": null,
-      "line": 3
+    {
+      "text": ".L3:",
+      "source": null,
+      "labels": []
     },
-    "labels": []
-  },
-  {
-    "text": "        jge     .L2",
-    "source": {
-      "file": null,
-      "line": 3
+    {
+      "text": "        movl    -4(%rbp), %eax",
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "labels": []
     },
-    "labels": [
-      {
-        "name": ".L2",
-        "range": {
-          "startCol": 17,
-          "endCol": 20
+    {
+      "text": "        cmpl    -28(%rbp), %eax",
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "labels": []
+    },
+    {
+      "text": "        jge     .L2",
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "labels": [
+        {
+          "name": ".L2",
+          "range": {
+            "startCol": 17,
+            "endCol": 20
+          }
         }
-      }
-    ]
-  },
-  {
-    "text": "        movl    -4(%rbp), %eax",
-    "source": {
-      "file": null,
-      "line": 4
+      ]
     },
-    "labels": []
-  },
-  {
-    "text": "        cltq",
-    "source": {
-      "file": null,
-      "line": 4
+    {
+      "text": "        movl    -4(%rbp), %eax",
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "labels": []
     },
-    "labels": []
-  },
-  {
-    "text": "        leaq    0(,%rax,4), %rdx",
-    "source": {
-      "file": null,
-      "line": 4
+    {
+      "text": "        cltq",
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "labels": []
     },
-    "labels": []
-  },
-  {
-    "text": "        movq    -24(%rbp), %rax",
-    "source": {
-      "file": null,
-      "line": 4
+    {
+      "text": "        leaq    0(,%rax,4), %rdx",
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "labels": []
     },
-    "labels": []
-  },
-  {
-    "text": "        addq    %rdx, %rax",
-    "source": {
-      "file": null,
-      "line": 4
+    {
+      "text": "        movq    -24(%rbp), %rax",
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "labels": []
     },
-    "labels": []
-  },
-  {
-    "text": "        movl    (%rax), %eax",
-    "source": {
-      "file": null,
-      "line": 4
+    {
+      "text": "        addq    %rdx, %rax",
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "labels": []
     },
-    "labels": []
-  },
-  {
-    "text": "        addl    %eax, -8(%rbp)",
-    "source": {
-      "file": null,
-      "line": 4
+    {
+      "text": "        movl    (%rax), %eax",
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "labels": []
     },
-    "labels": []
-  },
-  {
-    "text": "        addl    $1, -4(%rbp)",
-    "source": {
-      "file": null,
-      "line": 3
+    {
+      "text": "        addl    %eax, -8(%rbp)",
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "labels": []
     },
-    "labels": []
-  },
-  {
-    "text": "        jmp     .L3",
-    "source": {
-      "file": null,
-      "line": 3
+    {
+      "text": "        addl    $1, -4(%rbp)",
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "labels": []
     },
-    "labels": [
-      {
-        "name": ".L3",
-        "range": {
-          "startCol": 17,
-          "endCol": 20
+    {
+      "text": "        jmp     .L3",
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "labels": [
+        {
+          "name": ".L3",
+          "range": {
+            "startCol": 17,
+            "endCol": 20
+          }
         }
-      }
-    ]
-  },
-  {
-    "text": ".L2:",
-    "source": null,
-    "labels": []
-  },
-  {
-    "text": "        movl    -8(%rbp), %eax",
-    "source": {
-      "file": null,
-      "line": 6
+      ]
     },
-    "labels": []
-  },
-  {
-    "text": "        popq    %rbp",
-    "source": {
-      "file": null,
-      "line": 7
+    {
+      "text": ".L2:",
+      "source": null,
+      "labels": []
     },
-    "labels": []
-  },
-  {
-    "text": "        ret",
-    "source": {
-      "file": null,
-      "line": 7
+    {
+      "text": "        movl    -8(%rbp), %eax",
+      "source": {
+        "file": null,
+        "line": 6
+      },
+      "labels": []
     },
-    "labels": []
+    {
+      "text": "        popq    %rbp",
+      "source": {
+        "file": null,
+        "line": 7
+      },
+      "labels": []
+    },
+    {
+      "text": "        ret",
+      "source": {
+        "file": null,
+        "line": 7
+      },
+      "labels": []
+    }
+  ],
+  "labelDefinitions": {
+    "_Z12testFunctionPii": 1,
+    ".L3": 8,
+    ".L2": 21
   }
-]
+}
