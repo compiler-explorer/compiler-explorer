@@ -62,6 +62,7 @@ function Editor(hub, state, container) {
     // Should probably be its own function somewhere
     this.settings = JSON.parse(local.get('settings', '{}'));
     this.ourCompilers = {};
+    this.ourExecutors = {};
     this.httpRoot = window.httpRoot;
     this.widgetsByCompiler = {};
     this.asmByCompiler = {};
@@ -77,6 +78,9 @@ function Editor(hub, state, container) {
     this.editorSourceByLang = {};
     this.alertSystem = new Alert();
     this.alertSystem.prefixMessage = "Editor #" + this.id + ": ";
+
+    this.awaitingInitialResults = false;
+    this.selection = state.selection;
 
     this.langKeys = _.keys(languages);
     this.initLanguage(state);
@@ -210,7 +214,8 @@ Editor.prototype.updateState = function () {
     var state = {
         id: this.id,
         source: this.getSource(),
-        lang: this.currentLanguage.id
+        lang: this.currentLanguage.id,
+        selection: this.selection
     };
     this.fontScale.addState(state);
     this.container.setState(state);
@@ -262,6 +267,7 @@ Editor.prototype.initCallbacks = function () {
     }, this);
 
     this.eventHub.on('compilerOpen', this.onCompilerOpen, this);
+    this.eventHub.on('executorOpen', this.onExecutorOpen, this);
     this.eventHub.on('compilerClose', this.onCompilerClose, this);
     this.eventHub.on('compiling', this.onCompiling, this);
     this.eventHub.on('compileResult', this.onCompileResponse, this);
@@ -287,6 +293,12 @@ Editor.prototype.initCallbacks = function () {
         this.mouseMoveThrottledFunction(e);
     }, this));
 
+    this.cursorSelectionThrottledFunction =
+        _.throttle(_.bind(this.onDidChangeCursorSelection, this), 500);
+    this.editor.onDidChangeCursorSelection(_.bind(function (e) {
+        this.cursorSelectionThrottledFunction(e);
+    }, this));
+
     this.eventHub.on('initialised', this.maybeEmitChange, this);
 
     $(document).on('keyup.editable', _.bind(function (e) {
@@ -303,6 +315,13 @@ Editor.prototype.initCallbacks = function () {
 Editor.prototype.onMouseMove = function (e) {
     if (e !== null && e.target !== null && this.settings.hoverShowSource && e.target.position !== null) {
         this.tryPanesLinkLine(e.target.position.lineNumber, false);
+    }
+};
+
+Editor.prototype.onDidChangeCursorSelection = function (e) {
+    if (this.awaitingInitialResults) {
+        this.selection = e.selection;
+        this.updateState();
     }
 };
 
@@ -575,6 +594,15 @@ Editor.prototype.updateSource = function (newSource) {
     // Apply de edit. Note that we lose cursor position, but I've not found a better alternative yet
     this.editor.getModel().pushEditOperations(viewState.cursorState, [operation], nullFn);
     this.numberUsedLines();
+
+    if (!this.awaitingInitialResults) {
+        if (this.selection) {
+            this.editor.setSelection(this.selection);
+            this.editor.revealLinesInCenter(this.selection.startLineNumber,
+                this.selection.endLineNumber);
+        }
+        this.awaitingInitialResults = true;
+    }
 };
 
 Editor.prototype.formatCurrentText = function () {
@@ -758,6 +786,13 @@ Editor.prototype.onCompilerOpen = function (compilerId, editorId) {
     }
 };
 
+Editor.prototype.onExecutorOpen = function (executorId, editorId) {
+    if (editorId === this.id) {
+        this.maybeEmitChange(true);
+        this.ourExecutors[executorId] = true;
+    }
+};
+
 Editor.prototype.onCompilerClose = function (compilerId) {
     if (this.ourCompilers[compilerId]) {
         monaco.editor.setModelMarkers(this.editor.getModel(), compilerId, []);
@@ -766,6 +801,12 @@ Editor.prototype.onCompilerClose = function (compilerId) {
         delete this.busyCompilers[compilerId];
         delete this.ourCompilers[compilerId];
         this.numberUsedLines();
+    }
+};
+
+Editor.prototype.onExecutorClose = function (id) {
+    if (this.ourExecutors[id]) {
+        delete this.ourExecutors[id];
     }
 };
 

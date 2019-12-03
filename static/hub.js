@@ -67,6 +67,7 @@ function Hub(layout, subLangId, defaultLangId) {
     this.layout = layout;
     this.editorIds = new Ids();
     this.compilerIds = new Ids();
+    this.executorIds = new Ids();
     this.compilerService = new CompilerService(layout.eventHub);
     this.deferred = true;
     this.deferredEmissions = [];
@@ -139,6 +140,12 @@ function Hub(layout, subLangId, defaultLangId) {
     layout.eventHub.on('compilerClose', function (id) {
         this.compilerIds.remove(id);
     }, this);
+    layout.eventHub.on('executorOpen', function (id) {
+        this.executorIds.add(id);
+    }, this);
+    layout.eventHub.on('executorClose', function (id) {
+        this.executorIds.remove(id);
+    }, this);
     layout.eventHub.on('languageChange', function (editorId, langId) {
         this.lastOpenedLangId = langId;
     }, this);
@@ -162,6 +169,10 @@ Hub.prototype.nextEditorId = function () {
 
 Hub.prototype.nextCompilerId = function () {
     return this.compilerIds.next();
+};
+
+Hub.prototype.nextExecutorId = function () {
+    return this.executorIds.next();
 };
 
 Hub.prototype.codeEditorFactory = function (container, state) {

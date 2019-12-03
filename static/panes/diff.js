@@ -33,21 +33,67 @@ var ga = require('../analytics');
 require('../modes/asm-mode');
 require('selectize');
 
-function State(id, model) {
+// note that these variables are saved to state, so don't change, only add to it
+var
+    DiffType_ASM = 0,
+    DiffType_CompilerStdOut = 1,
+    DiffType_CompilerStdErr = 2,
+    DiffType_ExecStdOut = 3,
+    DiffType_ExecStdErr = 4;
+
+function State(id, model, difftype) {
     this.id = id;
     this.model = model;
     this.compiler = null;
     this.result = null;
+    this.difftype = difftype;
 }
 
 State.prototype.update = function (id, compiler, result) {
     if (this.id !== id) return false;
     this.compiler = compiler;
     this.result = result;
-    var asm = result.asm || [];
-    this.model.setValue(_.pluck(asm, 'text').join("\n"));
+    this.refresh();
+
     return true;
 };
+
+State.prototype.refresh = function () {
+    var output = [];
+    if (this.result) {
+        switch (this.difftype) {
+            case DiffType_ASM:
+                output = this.result.asm || [];
+                break;
+            case DiffType_CompilerStdOut:
+                output = this.result.stdout || [];
+                break;
+            case DiffType_CompilerStdErr:
+                output = this.result.stderr || [];
+                break;
+            case DiffType_ExecStdOut:
+                if (this.result.execResult)
+                    output = this.result.execResult.stdout || [];
+                break;
+            case DiffType_ExecStdErr:
+                if (this.result.execResult)
+                    output = this.result.execResult.stderr || [];
+                break;
+        }
+    }
+    this.model.setValue(_.pluck(output, 'text').join("\n"));
+};
+
+function getItemDisplayTitle(item) {
+    if (typeof item.id === "string") {
+        var p = item.id.indexOf("_exec");
+        if (p !== -1) {
+            return 'Executor #' + item.id.substr(0, p);
+        }
+    }
+
+    return 'Compiler #' + item.id;
+}
 
 function Diff(hub, container, state) {
     this.container = container;
@@ -63,9 +109,40 @@ function Diff(hub, container, state) {
         language: 'asm'
     });
 
-    this.lhs = new State(state.lhs, monaco.editor.createModel('', 'asm'));
-    this.rhs = new State(state.rhs, monaco.editor.createModel('', 'asm'));
-    this.outputEditor.setModel({original: this.lhs.model, modified: this.rhs.model});
+    this.lhs = new State(state.lhs, monaco.editor.createModel('', 'asm'), state.lhsdifftype || DiffType_ASM);
+    this.rhs = new State(state.rhs, monaco.editor.createModel('', 'asm'), state.rhsdifftype || DiffType_ASM);
+    this.outputEditor.setModel({ original: this.lhs.model, modified: this.rhs.model });
+
+    var selectizeType = this.domRoot.find(".difftype-picker").selectize({
+        sortField: 'name',
+        valueField: 'id',
+        labelField: 'name',
+        searchField: ['name'],
+        options: [
+            { id: DiffType_ASM, name: 'Assembly' },
+            { id: DiffType_CompilerStdOut, name: 'Compiler stdout' },
+            { id: DiffType_CompilerStdErr, name: 'Compiler stderr' },
+            { id: DiffType_ExecStdOut, name: 'Execution stdout' },
+            { id: DiffType_ExecStdErr, name: 'Execution stderr' }
+        ],
+        items: [],
+        render: {
+            option: function (item, escape) {
+                return '<div>' + escape(item.name) + '</div>';
+            }
+        },
+        dropdownParent: 'body'
+    }).on('change', _.bind(function (e) {
+        var target = $(e.target);
+        if (target.hasClass('lhsdifftype')) {
+            this.lhs.difftype = parseInt(target.val());
+            this.lhs.refresh();
+        } else {
+            this.rhs.difftype = parseInt(target.val());
+            this.rhs.refresh();
+        }
+        this.updateState();
+    }, this));
 
     var selectize = this.domRoot.find(".diff-picker").selectize({
         sortField: 'name',
@@ -81,7 +158,7 @@ function Diff(hub, container, state) {
                     '<span class="options">' + escape(item.options) + '</span>' +
                     '<ul class="meta">' +
                     '<li class="editor">Editor #' + escape(item.editorId) + '</li>' +
-                    '<li class="compilerId">Compiler #' + escape(item.id) + '</li>' +
+                    '<li class="compilerId">' + escape(getItemDisplayTitle(item)) + '</li>' +
                     '</ul></div>';
             }
         },
@@ -99,7 +176,11 @@ function Diff(hub, container, state) {
         }
         this.onDiffSelect(compiler.id);
     }, this));
-    this.selectize = {lhs: selectize[0].selectize, rhs: selectize[1].selectize};
+
+    this.selectize = {
+        lhs: selectize[0].selectize, rhs: selectize[1].selectize,
+        lhsdifftype: selectizeType[0].selectize, rhsdifftype: selectizeType[1].selectize
+    };
 
     this.initButtons(state);
     this.initCallbacks();
@@ -123,7 +204,7 @@ Diff.prototype.resize = function () {
 };
 
 Diff.prototype.onDiffSelect = function (id) {
-    this.eventHub.emit('resendCompilation', id);
+    this.requestResendResult(id);
     this.updateCompilerNames();
     this.updateState();
 };
@@ -138,6 +219,17 @@ Diff.prototype.onCompileResult = function (id, compiler, result) {
     }
 };
 
+Diff.prototype.onExecuteResult = function (id, compiler, result) {
+    var compileResult = _.assign({}, result.buildResult);
+    compileResult.execResult = {
+        code: result.code,
+        stdout: result.stdout,
+        stderr: result.stderr,
+    };
+
+    this.onCompileResult(id + '_exec', compiler, compileResult);
+};
+
 Diff.prototype.initButtons = function (state) {
     this.fontScale = new FontScale(this.domRoot, state, this.outputEditor);
 
@@ -148,8 +240,11 @@ Diff.prototype.initCallbacks = function () {
     this.fontScale.on('change', _.bind(this.updateState, this));
 
     this.eventHub.on('compileResult', this.onCompileResult, this);
+    this.eventHub.on('executeResult', this.onExecuteResult, this);
     this.eventHub.on('compiler', this.onCompiler, this);
     this.eventHub.on('compilerClose', this.onCompilerClose, this);
+    this.eventHub.on('executor', this.onExecutor, this);
+    this.eventHub.on('executorClose', this.onExecutorClose, this);
     this.eventHub.on('settingsChange', this.onSettingsChange, this);
     this.eventHub.on('themeChange', this.onThemeChange, this);
     this.container.on('destroy', function () {
@@ -159,11 +254,26 @@ Diff.prototype.initCallbacks = function () {
     this.container.on('resize', this.resize, this);
     this.container.on('shown', this.resize, this);
 
-    this.eventHub.emit('resendCompilation', this.lhs.id);
-    this.eventHub.emit('resendCompilation', this.rhs.id);
+    this.requestResendResult(this.lhs.id);
+    this.requestResendResult(this.rhs.id);
+
     this.eventHub.emit('findCompilers');
+    this.eventHub.emit('findExecutors');
+
     this.eventHub.emit('requestTheme');
     this.eventHub.emit('requestSettings');
+};
+
+Diff.prototype.requestResendResult = function (id) {
+    if (typeof id === "string") {
+        var p = id.indexOf("_exec");
+        if (p !== -1) {
+            var execId = parseInt(id.substr(0, p));
+            this.eventHub.emit('resendExecution', execId);
+        }
+    } else {
+        this.eventHub.emit('resendCompilation', id);
+    }
 };
 
 Diff.prototype.onCompiler = function (id, compiler, options, editorId) {
@@ -194,9 +304,17 @@ Diff.prototype.onCompiler = function (id, compiler, options, editorId) {
     this.updateCompilers();
 };
 
+Diff.prototype.onExecutor = function (id, compiler, options, editorId) {
+    this.onCompiler(id + '_exec', compiler, options, editorId);
+};
+
 Diff.prototype.onCompilerClose = function (id) {
     delete this.compilers[id];
     this.updateCompilers();
+};
+
+Diff.prototype.onExecutorClose = function (id) {
+    this.onCompilerClose(id + '_exec');
 };
 
 Diff.prototype.updateCompilerNames = function () {
@@ -219,12 +337,17 @@ Diff.prototype.updateCompilersFor = function (selectize, id) {
 Diff.prototype.updateCompilers = function () {
     this.updateCompilersFor(this.selectize.lhs, this.lhs.id);
     this.updateCompilersFor(this.selectize.rhs, this.rhs.id);
+
+    this.selectize.lhsdifftype.setValue(this.lhs.difftype || DiffType_ASM);
+    this.selectize.rhsdifftype.setValue(this.rhs.difftype || DiffType_ASM);
 };
 
 Diff.prototype.updateState = function () {
     var state = {
         lhs: this.lhs.id,
-        rhs: this.rhs.id
+        rhs: this.rhs.id,
+        lhsdifftype: this.lhs.difftype,
+        rhsdifftype: this.rhs.difftype
     };
     this.fontScale.addState(state);
     this.container.setState(state);
@@ -232,10 +355,10 @@ Diff.prototype.updateState = function () {
 
 Diff.prototype.onThemeChange = function (newTheme) {
     if (this.outputEditor)
-        this.outputEditor.updateOptions({theme: newTheme.monaco});
+        this.outputEditor.updateOptions({ theme: newTheme.monaco });
 };
 
-Diff.prototype.onSettingsChange =  function (newSettings) {
+Diff.prototype.onSettingsChange = function (newSettings) {
     this.outputEditor.updateOptions({
         minimap: {
             enabled: newSettings.showMinimap
@@ -251,7 +374,7 @@ module.exports = {
         return {
             type: 'component',
             componentName: 'diff',
-            componentState: {lhs: lhs, rhs: rhs}
+            componentState: { lhs: lhs, rhs: rhs }
         };
     }
 };
