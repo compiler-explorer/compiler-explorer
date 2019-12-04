@@ -104,7 +104,7 @@
   ],
   "labelDefinitions": {
     "main": 1,
-    "__cxx_global_var_init": 4,
-    ".LBB1_2": 8
+    "__cxx_global_var_init": 5,
+    ".LBB1_2": 9
   }
 }

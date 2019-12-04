@@ -169,15 +169,7 @@
         "file": null,
         "line": 7
       },
-      "labels": [
-        {
-          "name": "_ZN5Eigen15DenseCoeffsBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEELi1EEclEll",
-          "range": {
-            "startCol": 17,
-            "endCol": 92
-          }
-        }
-      ]
+      "labels": []
     },
     {
       "text": "        movsd   xmm0, QWORD PTR .LC3[rip]",
@@ -233,15 +225,7 @@
         "file": null,
         "line": 8
       },
-      "labels": [
-        {
-          "name": "_ZN5Eigen15DenseCoeffsBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEELi1EEclEll",
-          "range": {
-            "startCol": 17,
-            "endCol": 92
-          }
-        }
-      ]
+      "labels": []
     },
     {
       "text": "        movsd   xmm0, QWORD PTR .LC4[rip]",
@@ -297,15 +281,7 @@
         "file": null,
         "line": 9
       },
-      "labels": [
-        {
-          "name": "_ZN5Eigen15DenseCoeffsBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEELi1EEclEll",
-          "range": {
-            "startCol": 17,
-            "endCol": 92
-          }
-        }
-      ]
+      "labels": []
     },
     {
       "text": "        movsd   xmm0, QWORD PTR .LC5[rip]",
@@ -361,15 +337,7 @@
         "file": null,
         "line": 10
       },
-      "labels": [
-        {
-          "name": "_ZN5Eigen15DenseCoeffsBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEELi1EEclEll",
-          "range": {
-            "startCol": 17,
-            "endCol": 92
-          }
-        }
-      ]
+      "labels": []
     },
     {
       "text": "        movsd   xmm1, QWORD PTR [rax]",
@@ -425,15 +393,7 @@
         "file": null,
         "line": 10
       },
-      "labels": [
-        {
-          "name": "_ZN5Eigen15DenseCoeffsBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEELi1EEclEll",
-          "range": {
-            "startCol": 17,
-            "endCol": 92
-          }
-        }
-      ]
+      "labels": []
     },
     {
       "text": "        movsd   xmm0, QWORD PTR [rax]",
@@ -497,15 +457,7 @@
         "file": null,
         "line": 10
       },
-      "labels": [
-        {
-          "name": "_ZN5Eigen15DenseCoeffsBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEELi1EEclEll",
-          "range": {
-            "startCol": 17,
-            "endCol": 92
-          }
-        }
-      ]
+      "labels": []
     },
     {
       "text": "        movsd   xmm0, QWORD PTR [rbp-56]",
@@ -553,15 +505,7 @@
         "file": null,
         "line": 11
       },
-      "labels": [
-        {
-          "name": "_ZN5EigenlsINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEEERSoS3_RKNS_9DenseBaseIT_EE",
-          "range": {
-            "startCol": 17,
-            "endCol": 95
-          }
-        }
-      ]
+      "labels": []
     },
     {
       "text": "        mov     esi, OFFSET FLAT:_ZSt4endlIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_",
@@ -1139,153 +1083,27 @@
     }
   ],
   "labelDefinitions": {
-    "_ZNSt9exceptionC2Ev": 1,
-    "_ZNSt9bad_allocC2Ev": 2,
-    "_ZNSt11char_traitsIcE6assignERcRKc": 3,
-    "_ZNSt11char_traitsIcE6lengthEPKc": 4,
-    "_ZNSt11char_traitsIcE4copyEPcPKcm": 5,
-    "_ZStorSt13_Ios_OpenmodeS_": 6,
-    "_ZNSt8ios_base9precisionEl": 7,
-    "_ZNSt8ios_base5widthEl": 8,
-    "_ZN5Eigen8internal11noncopyableC2Ev": 9,
-    "_ZN5Eigen8internal11noncopyableD2Ev": 10,
-    "_ZN5Eigen8internal19throw_std_bad_allocEv": 11,
-    "_ZN5Eigen8internal28check_that_malloc_is_allowedEv": 12,
-    ".LC0": 13,
-    ".LC1": 15,
-    "_ZN5Eigen8internal14aligned_mallocEm": 17,
-    "_ZN5Eigen8internal12aligned_freeEPv": 18,
-    ".LC2": 19,
-    "_ZN5Eigen8IOFormatC2EiiRKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEES8_S8_S8_S8_S8_": 21,
-    "_ZN5Eigen15PlainObjectBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEED2Ev": 22,
-    "_ZN5Eigen6MatrixIdLin1ELin1ELi0ELin1ELin1EED2Ev": 23,
-    "main": 24,
-    ".L54": 99,
-    "_ZN9__gnu_cxx11char_traitsIcE6lengthEPKc": 104,
-    "_ZN9__gnu_cxx11char_traitsIcE2eqERKcS3_": 105,
-    "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE12_Alloc_hiderD2Ev": 106,
-    "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEED2Ev": 107,
-    "_ZNKSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE6lengthEv": 108,
-    "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEC2IS3_EEPKcRKS3_": 109,
-    "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEC2ERKS4_": 110,
-    "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEixEm": 111,
-    "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEpLEc": 112,
-    "_ZN5Eigen6MatrixIdLin1ELin1ELi0ELin1ELin1EEC2IiiEERKT_RKT0_": 113,
-    "_ZN5Eigen12DenseStorageIdLin1ELin1ELin1ELi0EED2Ev": 114,
-    ".LC6": 115,
-    ".LC7": 117,
-    "_ZN5Eigen15DenseCoeffsBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEELi1EEclEll": 119,
-    "_ZN5Eigen8IOFormatD2Ev": 120,
-    ".LC8": 121,
-    ".LC9": 123,
-    "_ZN5EigenlsINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEEERSoS3_RKNS_9DenseBaseIT_EE": 125,
-    "_ZNKSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE7_M_dataEv": 126,
-    "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE10_M_disposeEv": 127,
-    "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE13_M_local_dataEv": 128,
-    "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE12_Alloc_hiderC2EPcRKS3_": 129,
-    "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE12_M_constructIPKcEEvT_S8_": 130,
-    "_ZNKSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE4sizeEv": 131,
-    "_ZNKSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE8capacityEv": 132,
-    "_ZN9__gnu_cxx14__alloc_traitsISaIcEcE17_S_select_on_copyERKS1_": 133,
-    "_ZNKSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE16_M_get_allocatorEv": 134,
-    "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE12_Alloc_hiderC2EPcOS3_": 135,
-    "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE12_M_constructIPcEEvT_S7_": 136,
-    "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE9push_backEc": 137,
-    "_ZN5Eigen15PlainObjectBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEEC2Ev": 138,
-    "_ZN5Eigen15PlainObjectBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEE22_check_template_paramsEv": 139,
-    "_ZN5Eigen15PlainObjectBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEE6_init2IiiEEvllPNS_8internal9enable_ifILb1ET_E4typeE": 140,
-    "_ZN5Eigen8internal31conditional_aligned_delete_autoIdLb1EEEvPT_m": 141,
-    "_ZNK5Eigen9EigenBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEE4rowsEv": 142,
-    "_ZNK5Eigen9EigenBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEE4colsEv": 143,
-    "_ZN5Eigen8internal14evaluator_baseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEED2Ev": 144,
-    "_ZN5Eigen8internal9evaluatorINS_15PlainObjectBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEEEED2Ev": 145,
-    "_ZN5Eigen8internal9evaluatorINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEED2Ev": 146,
-    "_ZN5Eigen15DenseCoeffsBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEELi1EE8coeffRefEll": 147,
-    "_ZNK5Eigen9DenseBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEE4evalEv": 148,
-    "_ZN5Eigen8internal12print_matrixINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEEERSoS4_RKT_RKNS_8IOFormatE": 149,
-    "_ZNKSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE11_M_is_localEv": 150,
-    "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE10_M_destroyEm": 151,
-    "_ZNSt14pointer_traitsIPcE10pointer_toERc": 152,
-    "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE16_M_construct_auxIPKcEEvT_S8_St12__false_type": 153,
-    "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE16_M_get_allocatorEv": 154,
-    "_ZSt4moveIRSaIcEEONSt16remove_referenceIT_E4typeEOS3_": 155,
-    "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE7_M_dataEPc": 156,
-    "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE11_M_capacityEm": 157,
-    "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE9_M_lengthEm": 158,
-    "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE13_M_set_lengthEm": 159,
-    "_ZNSt16allocator_traitsISaIcEE37select_on_container_copy_constructionERKS0_": 160,
-    "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE16_M_construct_auxIPcEEvT_S7_St12__false_type": 161,
-    "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE9_M_mutateEmmPKcm": 162,
-    "_ZN5Eigen10MatrixBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEEC2Ev": 163,
-    "_ZN5Eigen12DenseStorageIdLin1ELin1ELin1ELi0EEC2Ev": 164,
-    ".LC10": 165,
-    ".LC11": 167,
-    "_ZN5Eigen15PlainObjectBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEE6resizeEll": 172,
-    "_ZN5Eigen8internal24conditional_aligned_freeILb1EEEvPv": 173,
-    "_ZNK5Eigen9EigenBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEE7derivedEv": 174,
-    "_ZNK5Eigen15PlainObjectBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEE4rowsEv": 175,
-    "_ZNK5Eigen15PlainObjectBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEE4colsEv": 176,
-    "_ZN5Eigen9EigenBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEE7derivedEv": 177,
-    "_ZN5Eigen8internal9evaluatorINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEEC2ERKS3_": 178,
-    "_ZN5Eigen8internal9evaluatorINS_15PlainObjectBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEEEE8coeffRefEll": 179,
-    "_ZNK5Eigen9EigenBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEE4sizeEv": 180,
-    "_ZN5Eigen8internal25significant_decimals_implIdE3runEv": 181,
-    "_ZNK5Eigen15PlainObjectBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEE5coeffEll": 182,
-    "_ZSt3maxIlERKT_S2_S2_": 183,
-    "_ZNKSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE13_M_local_dataEv": 184,
-    "_ZNSt16allocator_traitsISaIcEE10deallocateERS0_Pcm": 185,
-    "_ZSt9addressofIcEPT_RS0_": 186,
-    "_ZSt8distanceIPKcENSt15iterator_traitsIT_E15difference_typeES3_S3_": 187,
-    ".LC12": 188,
-    "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE12_M_constructIPKcEEvT_S8_St20forward_iterator_tag": 190,
-    "_ZNKSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE8max_sizeEv": 191,
-    "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE7_S_copyEPcPKcm": 192,
-    "_ZSt8distanceIPcENSt15iterator_traitsIT_E15difference_typeES2_S2_": 193,
-    "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE12_M_constructIPcEEvT_S7_St20forward_iterator_tag": 194,
-    ".LC13": 195,
-    "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE9_M_createERmm": 197,
-    "_ZN5Eigen9DenseBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEEC2Ev": 198,
-    "_ZN5Eigen12DenseStorageIdLin1ELin1ELin1ELi0EE6resizeElll": 199,
-    "_ZNK5Eigen12DenseStorageIdLin1ELin1ELin1ELi0EE4rowsEv": 200,
-    "_ZNK5Eigen12DenseStorageIdLin1ELin1ELin1ELi0EE4colsEv": 201,
-    "_ZN5Eigen8internal14evaluator_baseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEEC2Ev": 202,
-    "_ZN5Eigen8internal9evaluatorINS_15PlainObjectBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEEEEC2ERKS5_": 203,
-    "_ZNK5Eigen8internal19variable_if_dynamicIlLin1EE5valueEv": 204,
-    "_ZN5Eigen16GenericNumTraitsIdE8digits10Ev": 205,
-    "_ZNK5Eigen12DenseStorageIdLin1ELin1ELin1ELi0EE4dataEv": 206,
-    "_ZNSt14pointer_traitsIPKcE10pointer_toERS0_": 207,
-    "_ZN9__gnu_cxx13new_allocatorIcE10deallocateEPcm": 208,
-    "_ZSt11__addressofIcEPT_RS0_": 209,
-    "_ZN9__gnu_cxx17__is_null_pointerIKcEEbPT_": 210,
-    "_ZSt19__iterator_categoryIPKcENSt15iterator_traitsIT_E17iterator_categoryERKS3_": 211,
-    "_ZSt10__distanceIPKcENSt15iterator_traitsIT_E15difference_typeES3_S3_St26random_access_iterator_tag": 212,
-    "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE13_S_copy_charsEPcPKcS7_": 213,
-    "_ZNSt16allocator_traitsISaIcEE8max_sizeERKS0_": 214,
-    "_ZN9__gnu_cxx17__is_null_pointerIcEEbPT_": 215,
-    "_ZSt19__iterator_categoryIPcENSt15iterator_traitsIT_E17iterator_categoryERKS2_": 216,
-    "_ZSt10__distanceIPcENSt15iterator_traitsIT_E15difference_typeES2_S2_St26random_access_iterator_tag": 217,
-    "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE13_S_copy_charsEPcS5_S5_": 218,
-    "_ZNSt16allocator_traitsISaIcEE8allocateERS0_m": 219,
-    "_ZN5Eigen8internal28conditional_aligned_new_autoIdLb1EEEPT_m": 220,
-    "_ZNK5Eigen15PlainObjectBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEE4dataEv": 221,
-    "_ZNK5Eigen15DenseCoeffsBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEELi3EE11outerStrideEv": 222,
-    "_ZN5Eigen8internal19variable_if_dynamicIlLin1EEC2El": 223,
-    "_ZN5Eigen8internal21default_digits10_implIdLb1ELb0EE3runEv": 224,
-    "_ZSt9addressofIKcEPT_RS1_": 225,
-    "_ZNK9__gnu_cxx13new_allocatorIcE8max_sizeEv": 226,
-    "_ZN9__gnu_cxx13new_allocatorIcE8allocateEmPKv": 227,
-    "_ZN5Eigen8internal26conditional_aligned_mallocILb1EEEPvm": 228,
-    "_ZNK5Eigen6MatrixIdLin1ELin1ELi0ELin1ELin1EE11outerStrideEv": 229,
-    "_ZSt11__addressofIKcEPT_RS1_": 230,
-    "_ZNK5Eigen9DenseBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEE9innerSizeEv": 231,
-    "_Z41__static_initialization_and_destruction_0ii": 232,
-    ".L328": 248,
-    "_GLOBAL__sub_I_main": 252,
-    "_ZZN5Eigen15PlainObjectBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEE6resizeEllE19__PRETTY_FUNCTION__": 260,
-    "_ZZN5Eigen8internal14aligned_mallocEmE19__PRETTY_FUNCTION__": 262,
-    "_ZZN5Eigen15DenseCoeffsBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEELi1EEclEllE19__PRETTY_FUNCTION__": 264,
-    ".LC3": 266,
-    ".LC4": 269,
-    ".LC5": 272
+    ".LC0": 1,
+    ".LC1": 3,
+    ".LC2": 5,
+    "main": 7,
+    ".L54": 82,
+    ".LC6": 87,
+    ".LC7": 89,
+    ".LC8": 91,
+    ".LC9": 93,
+    ".LC10": 95,
+    ".LC11": 97,
+    ".LC12": 102,
+    ".LC13": 104,
+    "_Z41__static_initialization_and_destruction_0ii": 106,
+    ".L328": 122,
+    "_GLOBAL__sub_I_main": 126,
+    "_ZZN5Eigen15PlainObjectBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEE6resizeEllE19__PRETTY_FUNCTION__": 134,
+    "_ZZN5Eigen8internal14aligned_mallocEmE19__PRETTY_FUNCTION__": 136,
+    "_ZZN5Eigen15DenseCoeffsBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEELi1EEclEllE19__PRETTY_FUNCTION__": 138,
+    ".LC3": 140,
+    ".LC4": 143,
+    ".LC5": 146
   }
 }

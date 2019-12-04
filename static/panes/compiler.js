@@ -632,24 +632,22 @@ Compiler.prototype.setAssembly = function (asm) {
         this.outputEditor.revealLine(currentTopLine);
     }
 
-    var decorations = [];
+    this.decorations.labelUsages = [];
     _.each(this.assembly, _.bind(function (obj, line) {
         if (!obj.labels || !obj.labels.length) return;
 
         obj.labels.forEach(function (label) {
-            decorations.push({
+            this.decorations.labelUsages.push({
                 range: new monaco.Range(line + 1, label.range.startCol,
                     line + 1, label.range.endCol),
                 options: {
                     inlineClassName: 'asm-label-link'
                 }
             });
-        });
+        }, this);
     }, this));
+    this.updateDecorations();
 
-    this.outputEditor.deltaDecorations([], decorations);
-
-    this.outputEditor.revealLine(currentTopLine);
     if (this.getEffectiveFilters().binary) {
         this.setBinaryMargin();
         if (this.codeLensProvider !== null) {
