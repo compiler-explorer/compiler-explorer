@@ -276,4 +276,39 @@ describe('Compiler execution', function () {
         result.execResult.stderr.should.deep.equal([{text: "exec stderr"}]);
         result.execResult.buildResult.stderr.should.deep.equal([{text: "binary stderr"}]);
     });
+
+    it('should demangle', async () => {
+        const withDemangler = {...info, demangler: 'demangler-exe', demanglerClassFile: './demangler-cpp'};
+        const compiler = new BaseCompiler(withDemangler, ce);
+        const execStub = sinon.stub(compiler, 'exec');
+        stubOutCallToExec(execStub, compiler, "someMangledSymbol:\n", {
+            code: 0,
+            okToCache: true,
+            stdout: 'stdout',
+            stderr: 'stderr'
+        });
+        execStub.onCall(1).callsFake((demangler, args, options) => {
+            demangler.should.equal("demangler-exe");
+            options.input.should.equal("someMangledSymbol");
+            return Promise.resolve({
+                code: 0,
+                filenameTransform: x => x,
+                stdout: 'someDemangledSymbol\n',
+                stderr: ''
+            });
+        });
+        const result = await compiler.compile(
+            "source",
+            "options",
+            {},
+            {demangle: true},
+            false,
+            [],
+            {},
+            []);
+        result.code.should.equal(0);
+        result.asm.should.deep.equal([{source: null, text: "someDemangledSymbol:"}]);
+        // TODO all with demangle: false
+    });
+
 });
