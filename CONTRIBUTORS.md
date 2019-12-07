@@ -80,3 +80,4 @@ From oldest to newest contributor, we would like to thank:
 - [Alessandro Vergani](https://github.com/Loghorn)
 - [Sebastian Rath](https://github.com/seb-mtl)
 - [Haze Booth](https://github.com/haze)
+- [Cassie Jones](https://github.com/porglezomp)
