@@ -1304,6 +1304,7 @@ Compiler.prototype.onFilterChange = function () {
 
 Compiler.prototype.currentState = function () {
     var state = {
+        id: this.id,
         compiler: this.compiler ? this.compiler.id : '',
         source: this.sourceEditorId,
         options: this.options,
