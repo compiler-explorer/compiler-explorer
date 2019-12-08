@@ -487,3 +487,8 @@ kbd {
 .lm_content {
     overflow: visible;
 }
+
+.lm_header {
+    /* Needed to prevent the tab selection dropdown getting stuck behind other elements */
+    z-index: 2 !important;
+}
