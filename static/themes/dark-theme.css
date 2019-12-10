@@ -148,15 +148,6 @@ a.navbar-brand img.logo.normal {
     background-color: #383838 !important;
 }
 
-.active {
-    background-color: #235765 !important;
-    color: #fff !important;
-}
-
-.active:hover {
-    background-color: #998899 !important;
-}
-
 .dropdown-menu {
     color: #f2f2f2 !important;
     background-color: #303030 !important;
