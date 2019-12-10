@@ -495,5 +495,38 @@ kbd {
 
 .lm_header {
     /* Needed to prevent the tab selection dropdown getting stuck behind other elements */
-    z-index: 2 !important;
+    z-index: 3 !important;
+    height: 20px !important;
+}
+
+@media (max-width: 768px) {
+    .lm_header {
+        height: 50px !important;
+    }
+
+    .lm_header .lm_tabs {
+        height: 100%;
+    }
+
+    .lm_header .lm_tabs .lm_tab {
+        height: 31px;
+        padding-top: 15px;
+    }
+
+    .lm_controls li {
+        padding-top: 20px;
+        transform: scale(1.8);
+        padding-right: 15px;
+    }
+
+    .lm_controls .lm_tabdropdown {
+        padding-top: 8px;
+    }
+
+    .lm_header .lm_tabdropdown_list .lm_tab {
+        height: 50px;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+    }
 }
