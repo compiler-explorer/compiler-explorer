@@ -1,197 +1,259 @@
-[
-  {
-    "text": "_ZN1C8SetValueEN4absl8optionalINS0_11string_viewEEE: # @_ZN1C8SetValueEN4absl8optionalINS0_11string_viewEEE",
-    "source": null
-  },
-  {
-    "text": "        push    rbx",
-    "source": {
-      "file": null,
-      "line": 50
+{
+  "asm": [
+    {
+      "text": "_ZN1C8SetValueEN4absl8optionalINS0_11string_viewEEE: # @_ZN1C8SetValueEN4absl8optionalINS0_11string_viewEEE",
+      "source": null,
+      "labels": []
+    },
+    {
+      "text": "        push    rbx",
+      "source": {
+        "file": null,
+        "line": 50
+      },
+      "labels": []
+    },
+    {
+      "text": "        mov     rbx, rdi",
+      "source": {
+        "file": null,
+        "line": 50
+      },
+      "labels": []
+    },
+    {
+      "text": "        cmp     byte ptr [rsp + 16], 0",
+      "source": {
+        "file": "/opt/compiler-explorer/libs/abseil/absl/types/optional.h",
+        "line": 447
+      },
+      "labels": []
+    },
+    {
+      "text": "        mov     al, byte ptr [rdi]",
+      "source": {
+        "file": null,
+        "line": 0
+      },
+      "labels": []
+    },
+    {
+      "text": "        je      .LBB0_4",
+      "source": {
+        "file": null,
+        "line": 54
+      },
+      "labels": [
+        {
+          "name": ".LBB0_4",
+          "range": {
+            "startCol": 17,
+            "endCol": 24
+          }
+        }
+      ]
+    },
+    {
+      "text": "        lea     rcx, [rsp + 16]",
+      "source": {
+        "file": null,
+        "line": 0
+      },
+      "labels": []
+    },
+    {
+      "text": "        lea     rdi, [rbx + 8]",
+      "source": {
+        "file": null,
+        "line": 0
+      },
+      "labels": []
+    },
+    {
+      "text": "        mov     rsi, qword ptr [rcx + 8]",
+      "source": {
+        "file": null,
+        "line": 0
+      },
+      "labels": []
+    },
+    {
+      "text": "        mov     rdx, qword ptr [rcx + 16]",
+      "source": {
+        "file": null,
+        "line": 0
+      },
+      "labels": []
+    },
+    {
+      "text": "        test    al, al",
+      "source": {
+        "file": null,
+        "line": 0
+      },
+      "labels": []
+    },
+    {
+      "text": "        je      .LBB0_3",
+      "source": {
+        "file": null,
+        "line": 55
+      },
+      "labels": [
+        {
+          "name": ".LBB0_3",
+          "range": {
+            "startCol": 17,
+            "endCol": 24
+          }
+        }
+      ]
+    },
+    {
+      "text": "        call    _ZN6string6assignEPKcm",
+      "source": {
+        "file": null,
+        "line": 56
+      },
+      "labels": []
+    },
+    {
+      "text": "        pop     rbx",
+      "source": {
+        "file": null,
+        "line": 64
+      },
+      "labels": []
+    },
+    {
+      "text": "        ret",
+      "source": {
+        "file": null,
+        "line": 64
+      },
+      "labels": []
+    },
+    {
+      "text": ".LBB0_4:",
+      "source": null,
+      "labels": []
+    },
+    {
+      "text": "        test    al, al",
+      "source": {
+        "file": null,
+        "line": 0
+      },
+      "labels": []
+    },
+    {
+      "text": "        je      .LBB0_6",
+      "source": {
+        "file": "/opt/compiler-explorer/libs/abseil/absl/types/internal/optional.h",
+        "line": 92
+      },
+      "labels": [
+        {
+          "name": ".LBB0_6",
+          "range": {
+            "startCol": 17,
+            "endCol": 24
+          }
+        }
+      ]
+    },
+    {
+      "text": "        lea     rdi, [rbx + 8]",
+      "source": {
+        "file": "/opt/compiler-explorer/libs/abseil/absl/types/internal/optional.h",
+        "line": 93
+      },
+      "labels": []
+    },
+    {
+      "text": "        call    _ZN6stringD1Ev",
+      "source": {
+        "file": "/opt/compiler-explorer/libs/abseil/absl/types/internal/optional.h",
+        "line": 93
+      },
+      "labels": []
+    },
+    {
+      "text": "        mov     byte ptr [rbx], 0",
+      "source": {
+        "file": "/opt/compiler-explorer/libs/abseil/absl/types/internal/optional.h",
+        "line": 94
+      },
+      "labels": []
+    },
+    {
+      "text": ".LBB0_6:",
+      "source": null,
+      "labels": []
+    },
+    {
+      "text": "        pop     rbx",
+      "source": {
+        "file": null,
+        "line": 64
+      },
+      "labels": []
+    },
+    {
+      "text": "        ret",
+      "source": {
+        "file": null,
+        "line": 64
+      },
+      "labels": []
+    },
+    {
+      "text": ".LBB0_3:",
+      "source": null,
+      "labels": []
+    },
+    {
+      "text": "        call    _ZN6stringC1EN4absl11string_viewE",
+      "source": {
+        "file": "/opt/compiler-explorer/libs/abseil/absl/types/internal/optional.h",
+        "line": 152
+      },
+      "labels": []
+    },
+    {
+      "text": "        mov     byte ptr [rbx], 1",
+      "source": {
+        "file": "/opt/compiler-explorer/libs/abseil/absl/types/internal/optional.h",
+        "line": 153
+      },
+      "labels": []
+    },
+    {
+      "text": "        pop     rbx",
+      "source": {
+        "file": null,
+        "line": 64
+      },
+      "labels": []
+    },
+    {
+      "text": "        ret",
+      "source": {
+        "file": null,
+        "line": 64
+      },
+      "labels": []
+    },
+    {
+      "text": "",
+      "source": null,
+      "labels": []
     }
-  },
-  {
-    "text": "        mov     rbx, rdi",
-    "source": {
-      "file": null,
-      "line": 50
-    }
-  },
-  {
-    "text": "        cmp     byte ptr [rsp + 16], 0",
-    "source": {
-      "file": "/opt/compiler-explorer/libs/abseil/absl/types/optional.h",
-      "line": 447
-    }
-  },
-  {
-    "text": "        mov     al, byte ptr [rdi]",
-    "source": {
-      "file": null,
-      "line": 0
-    }
-  },
-  {
-    "text": "        je      .LBB0_4",
-    "source": {
-      "file": null,
-      "line": 54
-    }
-  },
-  {
-    "text": "        lea     rcx, [rsp + 16]",
-    "source": {
-      "file": null,
-      "line": 0
-    }
-  },
-  {
-    "text": "        lea     rdi, [rbx + 8]",
-    "source": {
-      "file": null,
-      "line": 0
-    }
-  },
-  {
-    "text": "        mov     rsi, qword ptr [rcx + 8]",
-    "source": {
-      "file": null,
-      "line": 0
-    }
-  },
-  {
-    "text": "        mov     rdx, qword ptr [rcx + 16]",
-    "source": {
-      "file": null,
-      "line": 0
-    }
-  },
-  {
-    "text": "        test    al, al",
-    "source": {
-      "file": null,
-      "line": 0
-    }
-  },
-  {
-    "text": "        je      .LBB0_3",
-    "source": {
-      "file": null,
-      "line": 55
-    }
-  },
-  {
-    "text": "        call    _ZN6string6assignEPKcm",
-    "source": {
-      "file": null,
-      "line": 56
-    }
-  },
-  {
-    "text": "        pop     rbx",
-    "source": {
-      "file": null,
-      "line": 64
-    }
-  },
-  {
-    "text": "        ret",
-    "source": {
-      "file": null,
-      "line": 64
-    }
-  },
-  {
-    "text": ".LBB0_4:",
-    "source": null
-  },
-  {
-    "text": "        test    al, al",
-    "source": {
-      "file": null,
-      "line": 0
-    }
-  },
-  {
-    "text": "        je      .LBB0_6",
-    "source": {
-      "file": "/opt/compiler-explorer/libs/abseil/absl/types/internal/optional.h",
-      "line": 92
-    }
-  },
-  {
-    "text": "        lea     rdi, [rbx + 8]",
-    "source": {
-      "file": "/opt/compiler-explorer/libs/abseil/absl/types/internal/optional.h",
-      "line": 93
-    }
-  },
-  {
-    "text": "        call    _ZN6stringD1Ev",
-    "source": {
-      "file": "/opt/compiler-explorer/libs/abseil/absl/types/internal/optional.h",
-      "line": 93
-    }
-  },
-  {
-    "text": "        mov     byte ptr [rbx], 0",
-    "source": {
-      "file": "/opt/compiler-explorer/libs/abseil/absl/types/internal/optional.h",
-      "line": 94
-    }
-  },
-  {
-    "text": ".LBB0_6:",
-    "source": null
-  },
-  {
-    "text": "        pop     rbx",
-    "source": {
-      "file": null,
-      "line": 64
-    }
-  },
-  {
-    "text": "        ret",
-    "source": {
-      "file": null,
-      "line": 64
-    }
-  },
-  {
-    "text": ".LBB0_3:",
-    "source": null
-  },
-  {
-    "text": "        call    _ZN6stringC1EN4absl11string_viewE",
-    "source": {
-      "file": "/opt/compiler-explorer/libs/abseil/absl/types/internal/optional.h",
-      "line": 152
-    }
-  },
-  {
-    "text": "        mov     byte ptr [rbx], 1",
-    "source": {
-      "file": "/opt/compiler-explorer/libs/abseil/absl/types/internal/optional.h",
-      "line": 153
-    }
-  },
-  {
-    "text": "        pop     rbx",
-    "source": {
-      "file": null,
-      "line": 64
-    }
-  },
-  {
-    "text": "        ret",
-    "source": {
-      "file": null,
-      "line": 64
-    }
-  },
-  {
-    "text": "",
-    "source": null
+  ],
+  "labelDefinitions": {
+    "_ZN1C8SetValueEN4absl8optionalINS0_11string_viewEEE": 1,
+    ".LBB0_4": 16,
+    ".LBB0_6": 22,
+    ".LBB0_3": 25
   }
-]
+}

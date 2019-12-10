@@ -1,903 +1,1109 @@
-[
-  {
-    "text": ".LC0:",
-    "source": null
-  },
-  {
-    "text": "        .string \"/opt/compiler-explorer/libs/eigen/v3.3.4/Eigen/src/Core/util/Memory.h\"",
-    "source": null
-  },
-  {
-    "text": ".LC1:",
-    "source": null
-  },
-  {
-    "text": "        .string \"(size<16 || (std::size_t(result)%16)==0) && \\\"System's malloc returned an unaligned pointer. Compile with EIGEN_MALLOC_ALREADY_ALIGNED=0 to fallback to handmade alignd memory allocator.\\\"\"",
-    "source": null
-  },
-  {
-    "text": ".LC2:",
-    "source": null
-  },
-  {
-    "text": "        .string \"\"",
-    "source": null
-  },
-  {
-    "text": "main:",
-    "source": null
-  },
-  {
-    "text": "        push    rbp",
-    "source": {
-      "file": null,
-      "line": 5
-    }
-  },
-  {
-    "text": "        mov     rbp, rsp",
-    "source": {
-      "file": null,
-      "line": 5
-    }
-  },
-  {
-    "text": "        push    rbx",
-    "source": {
-      "file": null,
-      "line": 5
-    }
-  },
-  {
-    "text": "        sub     rsp, 56",
-    "source": {
-      "file": null,
-      "line": 5
-    }
-  },
-  {
-    "text": "        mov     DWORD PTR [rbp-24], 2",
-    "source": {
-      "file": null,
-      "line": 6
-    }
-  },
-  {
-    "text": "        mov     DWORD PTR [rbp-20], 2",
-    "source": {
-      "file": null,
-      "line": 6
-    }
-  },
-  {
-    "text": "        lea     rdx, [rbp-24]",
-    "source": {
-      "file": null,
-      "line": 6
-    }
-  },
-  {
-    "text": "        lea     rcx, [rbp-20]",
-    "source": {
-      "file": null,
-      "line": 6
-    }
-  },
-  {
-    "text": "        lea     rax, [rbp-48]",
-    "source": {
-      "file": null,
-      "line": 6
-    }
-  },
-  {
-    "text": "        mov     rsi, rcx",
-    "source": {
-      "file": null,
-      "line": 6
-    }
-  },
-  {
-    "text": "        mov     rdi, rax",
-    "source": {
-      "file": null,
-      "line": 6
-    }
-  },
-  {
-    "text": "        call    _ZN5Eigen6MatrixIdLin1ELin1ELi0ELin1ELin1EEC1IiiEERKT_RKT0_",
-    "source": {
-      "file": null,
-      "line": 6
-    }
-  },
-  {
-    "text": "        lea     rax, [rbp-48]",
-    "source": {
-      "file": null,
-      "line": 7
-    }
-  },
-  {
-    "text": "        mov     edx, 0",
-    "source": {
-      "file": null,
-      "line": 7
-    }
-  },
-  {
-    "text": "        mov     esi, 0",
-    "source": {
-      "file": null,
-      "line": 7
-    }
-  },
-  {
-    "text": "        mov     rdi, rax",
-    "source": {
-      "file": null,
-      "line": 7
-    }
-  },
-  {
-    "text": "        call    _ZN5Eigen15DenseCoeffsBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEELi1EEclEll",
-    "source": {
-      "file": null,
-      "line": 7
-    }
-  },
-  {
-    "text": "        movsd   xmm0, QWORD PTR .LC3[rip]",
-    "source": {
-      "file": null,
-      "line": 7
-    }
-  },
-  {
-    "text": "        movsd   QWORD PTR [rax], xmm0",
-    "source": {
-      "file": null,
-      "line": 7
-    }
-  },
-  {
-    "text": "        lea     rax, [rbp-48]",
-    "source": {
-      "file": null,
-      "line": 8
-    }
-  },
-  {
-    "text": "        mov     edx, 0",
-    "source": {
-      "file": null,
-      "line": 8
-    }
-  },
-  {
-    "text": "        mov     esi, 1",
-    "source": {
-      "file": null,
-      "line": 8
-    }
-  },
-  {
-    "text": "        mov     rdi, rax",
-    "source": {
-      "file": null,
-      "line": 8
-    }
-  },
-  {
-    "text": "        call    _ZN5Eigen15DenseCoeffsBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEELi1EEclEll",
-    "source": {
-      "file": null,
-      "line": 8
-    }
-  },
-  {
-    "text": "        movsd   xmm0, QWORD PTR .LC4[rip]",
-    "source": {
-      "file": null,
-      "line": 8
-    }
-  },
-  {
-    "text": "        movsd   QWORD PTR [rax], xmm0",
-    "source": {
-      "file": null,
-      "line": 8
-    }
-  },
-  {
-    "text": "        lea     rax, [rbp-48]",
-    "source": {
-      "file": null,
-      "line": 9
-    }
-  },
-  {
-    "text": "        mov     edx, 1",
-    "source": {
-      "file": null,
-      "line": 9
-    }
-  },
-  {
-    "text": "        mov     esi, 0",
-    "source": {
-      "file": null,
-      "line": 9
-    }
-  },
-  {
-    "text": "        mov     rdi, rax",
-    "source": {
-      "file": null,
-      "line": 9
-    }
-  },
-  {
-    "text": "        call    _ZN5Eigen15DenseCoeffsBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEELi1EEclEll",
-    "source": {
-      "file": null,
-      "line": 9
-    }
-  },
-  {
-    "text": "        movsd   xmm0, QWORD PTR .LC5[rip]",
-    "source": {
-      "file": null,
-      "line": 9
-    }
-  },
-  {
-    "text": "        movsd   QWORD PTR [rax], xmm0",
-    "source": {
-      "file": null,
-      "line": 9
-    }
-  },
-  {
-    "text": "        lea     rax, [rbp-48]",
-    "source": {
-      "file": null,
-      "line": 10
-    }
-  },
-  {
-    "text": "        mov     edx, 0",
-    "source": {
-      "file": null,
-      "line": 10
-    }
-  },
-  {
-    "text": "        mov     esi, 1",
-    "source": {
-      "file": null,
-      "line": 10
-    }
-  },
-  {
-    "text": "        mov     rdi, rax",
-    "source": {
-      "file": null,
-      "line": 10
-    }
-  },
-  {
-    "text": "        call    _ZN5Eigen15DenseCoeffsBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEELi1EEclEll",
-    "source": {
-      "file": null,
-      "line": 10
-    }
-  },
-  {
-    "text": "        movsd   xmm1, QWORD PTR [rax]",
-    "source": {
-      "file": null,
-      "line": 10
-    }
-  },
-  {
-    "text": "        movsd   QWORD PTR [rbp-56], xmm1",
-    "source": {
-      "file": null,
-      "line": 10
-    }
-  },
-  {
-    "text": "        lea     rax, [rbp-48]",
-    "source": {
-      "file": null,
-      "line": 10
-    }
-  },
-  {
-    "text": "        mov     edx, 1",
-    "source": {
-      "file": null,
-      "line": 10
-    }
-  },
-  {
-    "text": "        mov     esi, 0",
-    "source": {
-      "file": null,
-      "line": 10
-    }
-  },
-  {
-    "text": "        mov     rdi, rax",
-    "source": {
-      "file": null,
-      "line": 10
-    }
-  },
-  {
-    "text": "        call    _ZN5Eigen15DenseCoeffsBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEELi1EEclEll",
-    "source": {
-      "file": null,
-      "line": 10
-    }
-  },
-  {
-    "text": "        movsd   xmm0, QWORD PTR [rax]",
-    "source": {
-      "file": null,
-      "line": 10
-    }
-  },
-  {
-    "text": "        addsd   xmm0, QWORD PTR [rbp-56]",
-    "source": {
-      "file": null,
-      "line": 10
-    }
-  },
-  {
-    "text": "        movsd   QWORD PTR [rbp-56], xmm0",
-    "source": {
-      "file": null,
-      "line": 10
-    }
-  },
-  {
-    "text": "        lea     rax, [rbp-48]",
-    "source": {
-      "file": null,
-      "line": 10
-    }
-  },
-  {
-    "text": "        mov     edx, 1",
-    "source": {
-      "file": null,
-      "line": 10
-    }
-  },
-  {
-    "text": "        mov     esi, 1",
-    "source": {
-      "file": null,
-      "line": 10
-    }
-  },
-  {
-    "text": "        mov     rdi, rax",
-    "source": {
-      "file": null,
-      "line": 10
-    }
-  },
-  {
-    "text": "        call    _ZN5Eigen15DenseCoeffsBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEELi1EEclEll",
-    "source": {
-      "file": null,
-      "line": 10
-    }
-  },
-  {
-    "text": "        movsd   xmm0, QWORD PTR [rbp-56]",
-    "source": {
-      "file": null,
-      "line": 10
-    }
-  },
-  {
-    "text": "        movsd   QWORD PTR [rax], xmm0",
-    "source": {
-      "file": null,
-      "line": 10
-    }
-  },
-  {
-    "text": "        lea     rax, [rbp-48]",
-    "source": {
-      "file": null,
-      "line": 11
-    }
-  },
-  {
-    "text": "        mov     rsi, rax",
-    "source": {
-      "file": null,
-      "line": 11
-    }
-  },
-  {
-    "text": "        mov     edi, OFFSET FLAT:_ZSt4cout",
-    "source": {
-      "file": null,
-      "line": 11
-    }
-  },
-  {
-    "text": "        call    _ZN5EigenlsINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEEERSoS3_RKNS_9DenseBaseIT_EE",
-    "source": {
-      "file": null,
-      "line": 11
-    }
-  },
-  {
-    "text": "        mov     esi, OFFSET FLAT:_ZSt4endlIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_",
-    "source": {
-      "file": null,
-      "line": 11
-    }
-  },
-  {
-    "text": "        mov     rdi, rax",
-    "source": {
-      "file": null,
-      "line": 11
-    }
-  },
-  {
-    "text": "        call    _ZNSolsEPFRSoS_E",
-    "source": {
-      "file": null,
-      "line": 11
-    }
-  },
-  {
-    "text": "        lea     rax, [rbp-48]",
-    "source": {
-      "file": null,
-      "line": 6
-    }
-  },
-  {
-    "text": "        mov     rdi, rax",
-    "source": {
-      "file": null,
-      "line": 6
-    }
-  },
-  {
-    "text": "        call    _ZN5Eigen6MatrixIdLin1ELin1ELi0ELin1ELin1EED1Ev",
-    "source": {
-      "file": null,
-      "line": 6
-    }
-  },
-  {
-    "text": "        mov     eax, 0",
-    "source": {
-      "file": null,
-      "line": 12
-    }
-  },
-  {
-    "text": "        jmp     .L54",
-    "source": {
-      "file": null,
-      "line": 12
-    }
-  },
-  {
-    "text": "        mov     rbx, rax",
-    "source": {
-      "file": null,
-      "line": 12
-    }
-  },
-  {
-    "text": "        lea     rax, [rbp-48]",
-    "source": {
-      "file": null,
-      "line": 6
-    }
-  },
-  {
-    "text": "        mov     rdi, rax",
-    "source": {
-      "file": null,
-      "line": 6
-    }
-  },
-  {
-    "text": "        call    _ZN5Eigen6MatrixIdLin1ELin1ELi0ELin1ELin1EED1Ev",
-    "source": {
-      "file": null,
-      "line": 6
-    }
-  },
-  {
-    "text": "        mov     rax, rbx",
-    "source": {
-      "file": null,
-      "line": 6
-    }
-  },
-  {
-    "text": "        mov     rdi, rax",
-    "source": {
-      "file": null,
-      "line": 6
-    }
-  },
-  {
-    "text": "        call    _Unwind_Resume",
-    "source": {
-      "file": null,
-      "line": 6
-    }
-  },
-  {
-    "text": ".L54:",
-    "source": null
-  },
-  {
-    "text": "        add     rsp, 56",
-    "source": {
-      "file": null,
-      "line": 12
-    }
-  },
-  {
-    "text": "        pop     rbx",
-    "source": {
-      "file": null,
-      "line": 12
-    }
-  },
-  {
-    "text": "        pop     rbp",
-    "source": {
-      "file": null,
-      "line": 12
-    }
-  },
-  {
-    "text": "        ret",
-    "source": {
-      "file": null,
-      "line": 12
-    }
-  },
-  {
-    "text": ".LC6:",
-    "source": null
-  },
-  {
-    "text": "        .string \"/opt/compiler-explorer/libs/eigen/v3.3.4/Eigen/src/Core/DenseCoeffsBase.h\"",
-    "source": null
-  },
-  {
-    "text": ".LC7:",
-    "source": null
-  },
-  {
-    "text": "        .string \"row >= 0 && row < rows() && col >= 0 && col < cols()\"",
-    "source": null
-  },
-  {
-    "text": ".LC8:",
-    "source": null
-  },
-  {
-    "text": "        .string \"\\n\"",
-    "source": null
-  },
-  {
-    "text": ".LC9:",
-    "source": null
-  },
-  {
-    "text": "        .string \" \"",
-    "source": null
-  },
-  {
-    "text": ".LC10:",
-    "source": null
-  },
-  {
-    "text": "        .string \"/opt/compiler-explorer/libs/eigen/v3.3.4/Eigen/src/Core/PlainObjectBase.h\"",
-    "source": null
-  },
-  {
-    "text": ".LC11:",
-    "source": null
-  },
-  {
-    "text": "        .ascii  \"(!(RowsAtCompileTime!=Dynamic) || (rows==RowsAtCompileTime))\"",
-    "source": null
-  },
-  {
-    "text": "        .ascii  \" && (!(ColsAtCompileTime!=Dynamic) || (cols==ColsAtCompileTi\"",
-    "source": null
-  },
-  {
-    "text": "        .ascii  \"me)) && (!(RowsAtCompi\"",
-    "source": null
-  },
-  {
-    "text": "        .string \"leTime==Dynamic && MaxRowsAtCompileTime!=Dynamic) || (rows<=MaxRowsAtCompileTime)) && (!(ColsAtCompileTime==Dynamic && MaxColsAtCompileTime!=Dynamic) || (cols<=MaxColsAtCompileTime)) && rows>=0 && cols>=0 && \\\"Invalid sizes when resizing a matrix or array.\\\"\"",
-    "source": null
-  },
-  {
-    "text": ".LC12:",
-    "source": null
-  },
-  {
-    "text": "        .string \"basic_string::_M_construct null not valid\"",
-    "source": null
-  },
-  {
-    "text": ".LC13:",
-    "source": null
-  },
-  {
-    "text": "        .string \"basic_string::_M_create\"",
-    "source": null
-  },
-  {
-    "text": "_Z41__static_initialization_and_destruction_0ii:",
-    "source": null
-  },
-  {
-    "text": "        push    rbp",
-    "source": {
-      "file": null,
-      "line": 12
-    }
-  },
-  {
-    "text": "        mov     rbp, rsp",
-    "source": {
-      "file": null,
-      "line": 12
-    }
-  },
-  {
-    "text": "        sub     rsp, 16",
-    "source": {
-      "file": null,
-      "line": 12
-    }
-  },
-  {
-    "text": "        mov     DWORD PTR [rbp-4], edi",
-    "source": {
-      "file": null,
-      "line": 12
-    }
-  },
-  {
-    "text": "        mov     DWORD PTR [rbp-8], esi",
-    "source": {
-      "file": null,
-      "line": 12
-    }
-  },
-  {
-    "text": "        cmp     DWORD PTR [rbp-4], 1",
-    "source": {
-      "file": null,
-      "line": 12
-    }
-  },
-  {
-    "text": "        jne     .L328",
-    "source": {
-      "file": null,
-      "line": 12
-    }
-  },
-  {
-    "text": "        cmp     DWORD PTR [rbp-8], 65535",
-    "source": {
-      "file": null,
-      "line": 12
-    }
-  },
-  {
-    "text": "        jne     .L328",
-    "source": {
-      "file": null,
-      "line": 12
-    }
-  },
-  {
-    "text": "        mov     edi, OFFSET FLAT:_ZStL8__ioinit",
-    "source": {
-      "file": "/opt/compiler-explorer/gcc-8.3.0/include/c++/8.3.0/iostream",
-      "line": 74
-    }
-  },
-  {
-    "text": "        call    _ZNSt8ios_base4InitC1Ev",
-    "source": {
-      "file": "/opt/compiler-explorer/gcc-8.3.0/include/c++/8.3.0/iostream",
-      "line": 74
-    }
-  },
-  {
-    "text": "        mov     edx, OFFSET FLAT:__dso_handle",
-    "source": {
-      "file": "/opt/compiler-explorer/gcc-8.3.0/include/c++/8.3.0/iostream",
-      "line": 74
-    }
-  },
-  {
-    "text": "        mov     esi, OFFSET FLAT:_ZStL8__ioinit",
-    "source": {
-      "file": "/opt/compiler-explorer/gcc-8.3.0/include/c++/8.3.0/iostream",
-      "line": 74
-    }
-  },
-  {
-    "text": "        mov     edi, OFFSET FLAT:_ZNSt8ios_base4InitD1Ev",
-    "source": {
-      "file": "/opt/compiler-explorer/gcc-8.3.0/include/c++/8.3.0/iostream",
-      "line": 74
-    }
-  },
-  {
-    "text": "        call    __cxa_atexit",
-    "source": {
-      "file": "/opt/compiler-explorer/gcc-8.3.0/include/c++/8.3.0/iostream",
-      "line": 74
-    }
-  },
-  {
-    "text": ".L328:",
-    "source": null
-  },
-  {
-    "text": "        nop",
-    "source": {
-      "file": null,
-      "line": 12
-    }
-  },
-  {
-    "text": "        leave",
-    "source": {
-      "file": null,
-      "line": 12
-    }
-  },
-  {
-    "text": "        ret",
-    "source": {
-      "file": null,
-      "line": 12
-    }
-  },
-  {
-    "text": "_GLOBAL__sub_I_main:",
-    "source": null
-  },
-  {
-    "text": "        push    rbp",
-    "source": {
-      "file": null,
-      "line": 12
-    }
-  },
-  {
-    "text": "        mov     rbp, rsp",
-    "source": {
-      "file": null,
-      "line": 12
-    }
-  },
-  {
-    "text": "        mov     esi, 65535",
-    "source": {
-      "file": null,
-      "line": 12
-    }
-  },
-  {
-    "text": "        mov     edi, 1",
-    "source": {
-      "file": null,
-      "line": 12
-    }
-  },
-  {
-    "text": "        call    _Z41__static_initialization_and_destruction_0ii",
-    "source": {
-      "file": null,
-      "line": 12
-    }
-  },
-  {
-    "text": "        pop     rbp",
-    "source": {
-      "file": null,
-      "line": 12
-    }
-  },
-  {
-    "text": "        ret",
-    "source": {
-      "file": null,
-      "line": 12
-    }
-  },
-  {
-    "text": "_ZZN5Eigen15PlainObjectBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEE6resizeEllE19__PRETTY_FUNCTION__:",
-    "source": null
-  },
-  {
-    "text": "        .string \"void Eigen::PlainObjectBase<Derived>::resize(Eigen::Index, Eigen::Index) [with Derived = Eigen::Matrix<double, -1, -1>; Eigen::Index = long int]\"",
-    "source": null
-  },
-  {
-    "text": "_ZZN5Eigen8internal14aligned_mallocEmE19__PRETTY_FUNCTION__:",
-    "source": null
-  },
-  {
-    "text": "        .string \"void* Eigen::internal::aligned_malloc(std::size_t)\"",
-    "source": null
-  },
-  {
-    "text": "_ZZN5Eigen15DenseCoeffsBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEELi1EEclEllE19__PRETTY_FUNCTION__:",
-    "source": null
-  },
-  {
-    "text": "        .string \"Eigen::DenseCoeffsBase<Derived, 1>::Scalar& Eigen::DenseCoeffsBase<Derived, 1>::operator()(Eigen::Index, Eigen::Index) [with Derived = Eigen::Matrix<double, -1, -1>; Eigen::DenseCoeffsBase<Derived, 1>::Scalar = double; Eigen::Index = long int]\"",
-    "source": null
-  },
-  {
-    "text": ".LC3:",
-    "source": null
-  },
-  {
-    "text": "        .long   0",
-    "source": null
-  },
-  {
-    "text": "        .long   1074266112",
-    "source": null
-  },
-  {
-    "text": ".LC4:",
-    "source": null
-  },
-  {
-    "text": "        .long   0",
-    "source": null
-  },
-  {
-    "text": "        .long   1074003968",
-    "source": null
-  },
-  {
-    "text": ".LC5:",
-    "source": null
-  },
-  {
-    "text": "        .long   0",
-    "source": null
-  },
-  {
-    "text": "        .long   -1074790400",
-    "source": null
+{
+  "asm": [
+    {
+      "text": ".LC0:",
+      "source": null,
+      "labels": []
+    },
+    {
+      "text": "        .string \"/opt/compiler-explorer/libs/eigen/v3.3.4/Eigen/src/Core/util/Memory.h\"",
+      "source": null,
+      "labels": []
+    },
+    {
+      "text": ".LC1:",
+      "source": null,
+      "labels": []
+    },
+    {
+      "text": "        .string \"(size<16 || (std::size_t(result)%16)==0) && \\\"System's malloc returned an unaligned pointer. Compile with EIGEN_MALLOC_ALREADY_ALIGNED=0 to fallback to handmade alignd memory allocator.\\\"\"",
+      "source": null,
+      "labels": []
+    },
+    {
+      "text": ".LC2:",
+      "source": null,
+      "labels": []
+    },
+    {
+      "text": "        .string \"\"",
+      "source": null,
+      "labels": []
+    },
+    {
+      "text": "main:",
+      "source": null,
+      "labels": []
+    },
+    {
+      "text": "        push    rbp",
+      "source": {
+        "file": null,
+        "line": 5
+      },
+      "labels": []
+    },
+    {
+      "text": "        mov     rbp, rsp",
+      "source": {
+        "file": null,
+        "line": 5
+      },
+      "labels": []
+    },
+    {
+      "text": "        push    rbx",
+      "source": {
+        "file": null,
+        "line": 5
+      },
+      "labels": []
+    },
+    {
+      "text": "        sub     rsp, 56",
+      "source": {
+        "file": null,
+        "line": 5
+      },
+      "labels": []
+    },
+    {
+      "text": "        mov     DWORD PTR [rbp-24], 2",
+      "source": {
+        "file": null,
+        "line": 6
+      },
+      "labels": []
+    },
+    {
+      "text": "        mov     DWORD PTR [rbp-20], 2",
+      "source": {
+        "file": null,
+        "line": 6
+      },
+      "labels": []
+    },
+    {
+      "text": "        lea     rdx, [rbp-24]",
+      "source": {
+        "file": null,
+        "line": 6
+      },
+      "labels": []
+    },
+    {
+      "text": "        lea     rcx, [rbp-20]",
+      "source": {
+        "file": null,
+        "line": 6
+      },
+      "labels": []
+    },
+    {
+      "text": "        lea     rax, [rbp-48]",
+      "source": {
+        "file": null,
+        "line": 6
+      },
+      "labels": []
+    },
+    {
+      "text": "        mov     rsi, rcx",
+      "source": {
+        "file": null,
+        "line": 6
+      },
+      "labels": []
+    },
+    {
+      "text": "        mov     rdi, rax",
+      "source": {
+        "file": null,
+        "line": 6
+      },
+      "labels": []
+    },
+    {
+      "text": "        call    _ZN5Eigen6MatrixIdLin1ELin1ELi0ELin1ELin1EEC1IiiEERKT_RKT0_",
+      "source": {
+        "file": null,
+        "line": 6
+      },
+      "labels": []
+    },
+    {
+      "text": "        lea     rax, [rbp-48]",
+      "source": {
+        "file": null,
+        "line": 7
+      },
+      "labels": []
+    },
+    {
+      "text": "        mov     edx, 0",
+      "source": {
+        "file": null,
+        "line": 7
+      },
+      "labels": []
+    },
+    {
+      "text": "        mov     esi, 0",
+      "source": {
+        "file": null,
+        "line": 7
+      },
+      "labels": []
+    },
+    {
+      "text": "        mov     rdi, rax",
+      "source": {
+        "file": null,
+        "line": 7
+      },
+      "labels": []
+    },
+    {
+      "text": "        call    _ZN5Eigen15DenseCoeffsBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEELi1EEclEll",
+      "source": {
+        "file": null,
+        "line": 7
+      },
+      "labels": []
+    },
+    {
+      "text": "        movsd   xmm0, QWORD PTR .LC3[rip]",
+      "source": {
+        "file": null,
+        "line": 7
+      },
+      "labels": []
+    },
+    {
+      "text": "        movsd   QWORD PTR [rax], xmm0",
+      "source": {
+        "file": null,
+        "line": 7
+      },
+      "labels": []
+    },
+    {
+      "text": "        lea     rax, [rbp-48]",
+      "source": {
+        "file": null,
+        "line": 8
+      },
+      "labels": []
+    },
+    {
+      "text": "        mov     edx, 0",
+      "source": {
+        "file": null,
+        "line": 8
+      },
+      "labels": []
+    },
+    {
+      "text": "        mov     esi, 1",
+      "source": {
+        "file": null,
+        "line": 8
+      },
+      "labels": []
+    },
+    {
+      "text": "        mov     rdi, rax",
+      "source": {
+        "file": null,
+        "line": 8
+      },
+      "labels": []
+    },
+    {
+      "text": "        call    _ZN5Eigen15DenseCoeffsBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEELi1EEclEll",
+      "source": {
+        "file": null,
+        "line": 8
+      },
+      "labels": []
+    },
+    {
+      "text": "        movsd   xmm0, QWORD PTR .LC4[rip]",
+      "source": {
+        "file": null,
+        "line": 8
+      },
+      "labels": []
+    },
+    {
+      "text": "        movsd   QWORD PTR [rax], xmm0",
+      "source": {
+        "file": null,
+        "line": 8
+      },
+      "labels": []
+    },
+    {
+      "text": "        lea     rax, [rbp-48]",
+      "source": {
+        "file": null,
+        "line": 9
+      },
+      "labels": []
+    },
+    {
+      "text": "        mov     edx, 1",
+      "source": {
+        "file": null,
+        "line": 9
+      },
+      "labels": []
+    },
+    {
+      "text": "        mov     esi, 0",
+      "source": {
+        "file": null,
+        "line": 9
+      },
+      "labels": []
+    },
+    {
+      "text": "        mov     rdi, rax",
+      "source": {
+        "file": null,
+        "line": 9
+      },
+      "labels": []
+    },
+    {
+      "text": "        call    _ZN5Eigen15DenseCoeffsBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEELi1EEclEll",
+      "source": {
+        "file": null,
+        "line": 9
+      },
+      "labels": []
+    },
+    {
+      "text": "        movsd   xmm0, QWORD PTR .LC5[rip]",
+      "source": {
+        "file": null,
+        "line": 9
+      },
+      "labels": []
+    },
+    {
+      "text": "        movsd   QWORD PTR [rax], xmm0",
+      "source": {
+        "file": null,
+        "line": 9
+      },
+      "labels": []
+    },
+    {
+      "text": "        lea     rax, [rbp-48]",
+      "source": {
+        "file": null,
+        "line": 10
+      },
+      "labels": []
+    },
+    {
+      "text": "        mov     edx, 0",
+      "source": {
+        "file": null,
+        "line": 10
+      },
+      "labels": []
+    },
+    {
+      "text": "        mov     esi, 1",
+      "source": {
+        "file": null,
+        "line": 10
+      },
+      "labels": []
+    },
+    {
+      "text": "        mov     rdi, rax",
+      "source": {
+        "file": null,
+        "line": 10
+      },
+      "labels": []
+    },
+    {
+      "text": "        call    _ZN5Eigen15DenseCoeffsBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEELi1EEclEll",
+      "source": {
+        "file": null,
+        "line": 10
+      },
+      "labels": []
+    },
+    {
+      "text": "        movsd   xmm1, QWORD PTR [rax]",
+      "source": {
+        "file": null,
+        "line": 10
+      },
+      "labels": []
+    },
+    {
+      "text": "        movsd   QWORD PTR [rbp-56], xmm1",
+      "source": {
+        "file": null,
+        "line": 10
+      },
+      "labels": []
+    },
+    {
+      "text": "        lea     rax, [rbp-48]",
+      "source": {
+        "file": null,
+        "line": 10
+      },
+      "labels": []
+    },
+    {
+      "text": "        mov     edx, 1",
+      "source": {
+        "file": null,
+        "line": 10
+      },
+      "labels": []
+    },
+    {
+      "text": "        mov     esi, 0",
+      "source": {
+        "file": null,
+        "line": 10
+      },
+      "labels": []
+    },
+    {
+      "text": "        mov     rdi, rax",
+      "source": {
+        "file": null,
+        "line": 10
+      },
+      "labels": []
+    },
+    {
+      "text": "        call    _ZN5Eigen15DenseCoeffsBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEELi1EEclEll",
+      "source": {
+        "file": null,
+        "line": 10
+      },
+      "labels": []
+    },
+    {
+      "text": "        movsd   xmm0, QWORD PTR [rax]",
+      "source": {
+        "file": null,
+        "line": 10
+      },
+      "labels": []
+    },
+    {
+      "text": "        addsd   xmm0, QWORD PTR [rbp-56]",
+      "source": {
+        "file": null,
+        "line": 10
+      },
+      "labels": []
+    },
+    {
+      "text": "        movsd   QWORD PTR [rbp-56], xmm0",
+      "source": {
+        "file": null,
+        "line": 10
+      },
+      "labels": []
+    },
+    {
+      "text": "        lea     rax, [rbp-48]",
+      "source": {
+        "file": null,
+        "line": 10
+      },
+      "labels": []
+    },
+    {
+      "text": "        mov     edx, 1",
+      "source": {
+        "file": null,
+        "line": 10
+      },
+      "labels": []
+    },
+    {
+      "text": "        mov     esi, 1",
+      "source": {
+        "file": null,
+        "line": 10
+      },
+      "labels": []
+    },
+    {
+      "text": "        mov     rdi, rax",
+      "source": {
+        "file": null,
+        "line": 10
+      },
+      "labels": []
+    },
+    {
+      "text": "        call    _ZN5Eigen15DenseCoeffsBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEELi1EEclEll",
+      "source": {
+        "file": null,
+        "line": 10
+      },
+      "labels": []
+    },
+    {
+      "text": "        movsd   xmm0, QWORD PTR [rbp-56]",
+      "source": {
+        "file": null,
+        "line": 10
+      },
+      "labels": []
+    },
+    {
+      "text": "        movsd   QWORD PTR [rax], xmm0",
+      "source": {
+        "file": null,
+        "line": 10
+      },
+      "labels": []
+    },
+    {
+      "text": "        lea     rax, [rbp-48]",
+      "source": {
+        "file": null,
+        "line": 11
+      },
+      "labels": []
+    },
+    {
+      "text": "        mov     rsi, rax",
+      "source": {
+        "file": null,
+        "line": 11
+      },
+      "labels": []
+    },
+    {
+      "text": "        mov     edi, OFFSET FLAT:_ZSt4cout",
+      "source": {
+        "file": null,
+        "line": 11
+      },
+      "labels": []
+    },
+    {
+      "text": "        call    _ZN5EigenlsINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEEERSoS3_RKNS_9DenseBaseIT_EE",
+      "source": {
+        "file": null,
+        "line": 11
+      },
+      "labels": []
+    },
+    {
+      "text": "        mov     esi, OFFSET FLAT:_ZSt4endlIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_",
+      "source": {
+        "file": null,
+        "line": 11
+      },
+      "labels": []
+    },
+    {
+      "text": "        mov     rdi, rax",
+      "source": {
+        "file": null,
+        "line": 11
+      },
+      "labels": []
+    },
+    {
+      "text": "        call    _ZNSolsEPFRSoS_E",
+      "source": {
+        "file": null,
+        "line": 11
+      },
+      "labels": []
+    },
+    {
+      "text": "        lea     rax, [rbp-48]",
+      "source": {
+        "file": null,
+        "line": 6
+      },
+      "labels": []
+    },
+    {
+      "text": "        mov     rdi, rax",
+      "source": {
+        "file": null,
+        "line": 6
+      },
+      "labels": []
+    },
+    {
+      "text": "        call    _ZN5Eigen6MatrixIdLin1ELin1ELi0ELin1ELin1EED1Ev",
+      "source": {
+        "file": null,
+        "line": 6
+      },
+      "labels": []
+    },
+    {
+      "text": "        mov     eax, 0",
+      "source": {
+        "file": null,
+        "line": 12
+      },
+      "labels": []
+    },
+    {
+      "text": "        jmp     .L54",
+      "source": {
+        "file": null,
+        "line": 12
+      },
+      "labels": [
+        {
+          "name": ".L54",
+          "range": {
+            "startCol": 17,
+            "endCol": 21
+          }
+        }
+      ]
+    },
+    {
+      "text": "        mov     rbx, rax",
+      "source": {
+        "file": null,
+        "line": 12
+      },
+      "labels": []
+    },
+    {
+      "text": "        lea     rax, [rbp-48]",
+      "source": {
+        "file": null,
+        "line": 6
+      },
+      "labels": []
+    },
+    {
+      "text": "        mov     rdi, rax",
+      "source": {
+        "file": null,
+        "line": 6
+      },
+      "labels": []
+    },
+    {
+      "text": "        call    _ZN5Eigen6MatrixIdLin1ELin1ELi0ELin1ELin1EED1Ev",
+      "source": {
+        "file": null,
+        "line": 6
+      },
+      "labels": []
+    },
+    {
+      "text": "        mov     rax, rbx",
+      "source": {
+        "file": null,
+        "line": 6
+      },
+      "labels": []
+    },
+    {
+      "text": "        mov     rdi, rax",
+      "source": {
+        "file": null,
+        "line": 6
+      },
+      "labels": []
+    },
+    {
+      "text": "        call    _Unwind_Resume",
+      "source": {
+        "file": null,
+        "line": 6
+      },
+      "labels": []
+    },
+    {
+      "text": ".L54:",
+      "source": null,
+      "labels": []
+    },
+    {
+      "text": "        add     rsp, 56",
+      "source": {
+        "file": null,
+        "line": 12
+      },
+      "labels": []
+    },
+    {
+      "text": "        pop     rbx",
+      "source": {
+        "file": null,
+        "line": 12
+      },
+      "labels": []
+    },
+    {
+      "text": "        pop     rbp",
+      "source": {
+        "file": null,
+        "line": 12
+      },
+      "labels": []
+    },
+    {
+      "text": "        ret",
+      "source": {
+        "file": null,
+        "line": 12
+      },
+      "labels": []
+    },
+    {
+      "text": ".LC6:",
+      "source": null,
+      "labels": []
+    },
+    {
+      "text": "        .string \"/opt/compiler-explorer/libs/eigen/v3.3.4/Eigen/src/Core/DenseCoeffsBase.h\"",
+      "source": null,
+      "labels": []
+    },
+    {
+      "text": ".LC7:",
+      "source": null,
+      "labels": []
+    },
+    {
+      "text": "        .string \"row >= 0 && row < rows() && col >= 0 && col < cols()\"",
+      "source": null,
+      "labels": []
+    },
+    {
+      "text": ".LC8:",
+      "source": null,
+      "labels": []
+    },
+    {
+      "text": "        .string \"\\n\"",
+      "source": null,
+      "labels": []
+    },
+    {
+      "text": ".LC9:",
+      "source": null,
+      "labels": []
+    },
+    {
+      "text": "        .string \" \"",
+      "source": null,
+      "labels": []
+    },
+    {
+      "text": ".LC10:",
+      "source": null,
+      "labels": []
+    },
+    {
+      "text": "        .string \"/opt/compiler-explorer/libs/eigen/v3.3.4/Eigen/src/Core/PlainObjectBase.h\"",
+      "source": null,
+      "labels": []
+    },
+    {
+      "text": ".LC11:",
+      "source": null,
+      "labels": []
+    },
+    {
+      "text": "        .ascii  \"(!(RowsAtCompileTime!=Dynamic) || (rows==RowsAtCompileTime))\"",
+      "source": null,
+      "labels": []
+    },
+    {
+      "text": "        .ascii  \" && (!(ColsAtCompileTime!=Dynamic) || (cols==ColsAtCompileTi\"",
+      "source": null,
+      "labels": []
+    },
+    {
+      "text": "        .ascii  \"me)) && (!(RowsAtCompi\"",
+      "source": null,
+      "labels": []
+    },
+    {
+      "text": "        .string \"leTime==Dynamic && MaxRowsAtCompileTime!=Dynamic) || (rows<=MaxRowsAtCompileTime)) && (!(ColsAtCompileTime==Dynamic && MaxColsAtCompileTime!=Dynamic) || (cols<=MaxColsAtCompileTime)) && rows>=0 && cols>=0 && \\\"Invalid sizes when resizing a matrix or array.\\\"\"",
+      "source": null,
+      "labels": []
+    },
+    {
+      "text": ".LC12:",
+      "source": null,
+      "labels": []
+    },
+    {
+      "text": "        .string \"basic_string::_M_construct null not valid\"",
+      "source": null,
+      "labels": []
+    },
+    {
+      "text": ".LC13:",
+      "source": null,
+      "labels": []
+    },
+    {
+      "text": "        .string \"basic_string::_M_create\"",
+      "source": null,
+      "labels": []
+    },
+    {
+      "text": "_Z41__static_initialization_and_destruction_0ii:",
+      "source": null,
+      "labels": []
+    },
+    {
+      "text": "        push    rbp",
+      "source": {
+        "file": null,
+        "line": 12
+      },
+      "labels": []
+    },
+    {
+      "text": "        mov     rbp, rsp",
+      "source": {
+        "file": null,
+        "line": 12
+      },
+      "labels": []
+    },
+    {
+      "text": "        sub     rsp, 16",
+      "source": {
+        "file": null,
+        "line": 12
+      },
+      "labels": []
+    },
+    {
+      "text": "        mov     DWORD PTR [rbp-4], edi",
+      "source": {
+        "file": null,
+        "line": 12
+      },
+      "labels": []
+    },
+    {
+      "text": "        mov     DWORD PTR [rbp-8], esi",
+      "source": {
+        "file": null,
+        "line": 12
+      },
+      "labels": []
+    },
+    {
+      "text": "        cmp     DWORD PTR [rbp-4], 1",
+      "source": {
+        "file": null,
+        "line": 12
+      },
+      "labels": []
+    },
+    {
+      "text": "        jne     .L328",
+      "source": {
+        "file": null,
+        "line": 12
+      },
+      "labels": [
+        {
+          "name": ".L328",
+          "range": {
+            "startCol": 17,
+            "endCol": 22
+          }
+        }
+      ]
+    },
+    {
+      "text": "        cmp     DWORD PTR [rbp-8], 65535",
+      "source": {
+        "file": null,
+        "line": 12
+      },
+      "labels": []
+    },
+    {
+      "text": "        jne     .L328",
+      "source": {
+        "file": null,
+        "line": 12
+      },
+      "labels": [
+        {
+          "name": ".L328",
+          "range": {
+            "startCol": 17,
+            "endCol": 22
+          }
+        }
+      ]
+    },
+    {
+      "text": "        mov     edi, OFFSET FLAT:_ZStL8__ioinit",
+      "source": {
+        "file": "/opt/compiler-explorer/gcc-8.3.0/include/c++/8.3.0/iostream",
+        "line": 74
+      },
+      "labels": []
+    },
+    {
+      "text": "        call    _ZNSt8ios_base4InitC1Ev",
+      "source": {
+        "file": "/opt/compiler-explorer/gcc-8.3.0/include/c++/8.3.0/iostream",
+        "line": 74
+      },
+      "labels": []
+    },
+    {
+      "text": "        mov     edx, OFFSET FLAT:__dso_handle",
+      "source": {
+        "file": "/opt/compiler-explorer/gcc-8.3.0/include/c++/8.3.0/iostream",
+        "line": 74
+      },
+      "labels": []
+    },
+    {
+      "text": "        mov     esi, OFFSET FLAT:_ZStL8__ioinit",
+      "source": {
+        "file": "/opt/compiler-explorer/gcc-8.3.0/include/c++/8.3.0/iostream",
+        "line": 74
+      },
+      "labels": []
+    },
+    {
+      "text": "        mov     edi, OFFSET FLAT:_ZNSt8ios_base4InitD1Ev",
+      "source": {
+        "file": "/opt/compiler-explorer/gcc-8.3.0/include/c++/8.3.0/iostream",
+        "line": 74
+      },
+      "labels": []
+    },
+    {
+      "text": "        call    __cxa_atexit",
+      "source": {
+        "file": "/opt/compiler-explorer/gcc-8.3.0/include/c++/8.3.0/iostream",
+        "line": 74
+      },
+      "labels": []
+    },
+    {
+      "text": ".L328:",
+      "source": null,
+      "labels": []
+    },
+    {
+      "text": "        nop",
+      "source": {
+        "file": null,
+        "line": 12
+      },
+      "labels": []
+    },
+    {
+      "text": "        leave",
+      "source": {
+        "file": null,
+        "line": 12
+      },
+      "labels": []
+    },
+    {
+      "text": "        ret",
+      "source": {
+        "file": null,
+        "line": 12
+      },
+      "labels": []
+    },
+    {
+      "text": "_GLOBAL__sub_I_main:",
+      "source": null,
+      "labels": []
+    },
+    {
+      "text": "        push    rbp",
+      "source": {
+        "file": null,
+        "line": 12
+      },
+      "labels": []
+    },
+    {
+      "text": "        mov     rbp, rsp",
+      "source": {
+        "file": null,
+        "line": 12
+      },
+      "labels": []
+    },
+    {
+      "text": "        mov     esi, 65535",
+      "source": {
+        "file": null,
+        "line": 12
+      },
+      "labels": []
+    },
+    {
+      "text": "        mov     edi, 1",
+      "source": {
+        "file": null,
+        "line": 12
+      },
+      "labels": []
+    },
+    {
+      "text": "        call    _Z41__static_initialization_and_destruction_0ii",
+      "source": {
+        "file": null,
+        "line": 12
+      },
+      "labels": [
+        {
+          "name": "_Z41__static_initialization_and_destruction_0ii",
+          "range": {
+            "startCol": 17,
+            "endCol": 64
+          }
+        }
+      ]
+    },
+    {
+      "text": "        pop     rbp",
+      "source": {
+        "file": null,
+        "line": 12
+      },
+      "labels": []
+    },
+    {
+      "text": "        ret",
+      "source": {
+        "file": null,
+        "line": 12
+      },
+      "labels": []
+    },
+    {
+      "text": "_ZZN5Eigen15PlainObjectBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEE6resizeEllE19__PRETTY_FUNCTION__:",
+      "source": null,
+      "labels": []
+    },
+    {
+      "text": "        .string \"void Eigen::PlainObjectBase<Derived>::resize(Eigen::Index, Eigen::Index) [with Derived = Eigen::Matrix<double, -1, -1>; Eigen::Index = long int]\"",
+      "source": null,
+      "labels": []
+    },
+    {
+      "text": "_ZZN5Eigen8internal14aligned_mallocEmE19__PRETTY_FUNCTION__:",
+      "source": null,
+      "labels": []
+    },
+    {
+      "text": "        .string \"void* Eigen::internal::aligned_malloc(std::size_t)\"",
+      "source": null,
+      "labels": []
+    },
+    {
+      "text": "_ZZN5Eigen15DenseCoeffsBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEELi1EEclEllE19__PRETTY_FUNCTION__:",
+      "source": null,
+      "labels": []
+    },
+    {
+      "text": "        .string \"Eigen::DenseCoeffsBase<Derived, 1>::Scalar& Eigen::DenseCoeffsBase<Derived, 1>::operator()(Eigen::Index, Eigen::Index) [with Derived = Eigen::Matrix<double, -1, -1>; Eigen::DenseCoeffsBase<Derived, 1>::Scalar = double; Eigen::Index = long int]\"",
+      "source": null,
+      "labels": []
+    },
+    {
+      "text": ".LC3:",
+      "source": null,
+      "labels": []
+    },
+    {
+      "text": "        .long   0",
+      "source": null,
+      "labels": []
+    },
+    {
+      "text": "        .long   1074266112",
+      "source": null,
+      "labels": []
+    },
+    {
+      "text": ".LC4:",
+      "source": null,
+      "labels": []
+    },
+    {
+      "text": "        .long   0",
+      "source": null,
+      "labels": []
+    },
+    {
+      "text": "        .long   1074003968",
+      "source": null,
+      "labels": []
+    },
+    {
+      "text": ".LC5:",
+      "source": null,
+      "labels": []
+    },
+    {
+      "text": "        .long   0",
+      "source": null,
+      "labels": []
+    },
+    {
+      "text": "        .long   -1074790400",
+      "source": null,
+      "labels": []
+    }
+  ],
+  "labelDefinitions": {
+    ".LC0": 1,
+    ".LC1": 3,
+    ".LC2": 5,
+    "main": 7,
+    ".L54": 82,
+    ".LC6": 87,
+    ".LC7": 89,
+    ".LC8": 91,
+    ".LC9": 93,
+    ".LC10": 95,
+    ".LC11": 97,
+    ".LC12": 102,
+    ".LC13": 104,
+    "_Z41__static_initialization_and_destruction_0ii": 106,
+    ".L328": 122,
+    "_GLOBAL__sub_I_main": 126,
+    "_ZZN5Eigen15PlainObjectBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEE6resizeEllE19__PRETTY_FUNCTION__": 134,
+    "_ZZN5Eigen8internal14aligned_mallocEmE19__PRETTY_FUNCTION__": 136,
+    "_ZZN5Eigen15DenseCoeffsBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEELi1EEclEllE19__PRETTY_FUNCTION__": 138,
+    ".LC3": 140,
+    ".LC4": 143,
+    ".LC5": 146
   }
-]
+}

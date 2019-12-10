@@ -19,6 +19,11 @@
     visibility: visible;
 }
 
+.monaco-editor .asm-label-link {
+    text-decoration: underline;
+    cursor: pointer;
+}
+
 body {
     overflow: hidden;
 }

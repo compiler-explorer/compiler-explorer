@@ -1,99 +1,137 @@
-[
-  {
-    "text": "$LC0:",
-    "source": null
-  },
-  {
-    "text": "  .ascii \"hello world\\000\"",
-    "source": null
-  },
-  {
-    "text": "main:",
-    "source": null
-  },
-  {
-    "text": "  addiu $sp,$sp,-32",
-    "source": {
-      "file": null,
-      "line": 2
+{
+  "asm": [
+    {
+      "text": "$LC0:",
+      "source": null,
+      "labels": []
+    },
+    {
+      "text": "  .ascii \"hello world\\000\"",
+      "source": null,
+      "labels": []
+    },
+    {
+      "text": "main:",
+      "source": null,
+      "labels": []
+    },
+    {
+      "text": "  addiu $sp,$sp,-32",
+      "source": {
+        "file": null,
+        "line": 2
+      },
+      "labels": []
+    },
+    {
+      "text": "  sw $31,28($sp)",
+      "source": {
+        "file": null,
+        "line": 2
+      },
+      "labels": []
+    },
+    {
+      "text": "  lui $4,%hi($LC0)",
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "labels": [
+        {
+          "name": "$LC0",
+          "range": {
+            "startCol": 14,
+            "endCol": 18
+          }
+        }
+      ]
+    },
+    {
+      "text": "  addiu $4,$4,%lo($LC0)",
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "labels": [
+        {
+          "name": "$LC0",
+          "range": {
+            "startCol": 19,
+            "endCol": 23
+          }
+        }
+      ]
+    },
+    {
+      "text": "  jal puts",
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "labels": []
+    },
+    {
+      "text": "  nop",
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "labels": []
+    },
+    {
+      "text": "",
+      "source": null,
+      "labels": []
+    },
+    {
+      "text": "  move $2,$0",
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "labels": []
+    },
+    {
+      "text": "  lw $31,28($sp)",
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "labels": []
+    },
+    {
+      "text": "  nop",
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "labels": []
+    },
+    {
+      "text": "  j $31",
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "labels": []
+    },
+    {
+      "text": "  addiu $sp,$sp,32",
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "labels": []
+    },
+    {
+      "text": "",
+      "source": null,
+      "labels": []
     }
-  },
-  {
-    "text": "  sw $31,28($sp)",
-    "source": {
-      "file": null,
-      "line": 2
-    }
-  },
-  {
-    "text": "  lui $4,%hi($LC0)",
-    "source": {
-      "file": null,
-      "line": 3
-    }
-  },
-  {
-    "text": "  addiu $4,$4,%lo($LC0)",
-    "source": {
-      "file": null,
-      "line": 3
-    }
-  },
-  {
-    "text": "  jal puts",
-    "source": {
-      "file": null,
-      "line": 3
-    }
-  },
-  {
-    "text": "  nop",
-    "source": {
-      "file": null,
-      "line": 3
-    }
-  },
-  {
-    "text": "",
-    "source": null
-  },
-  {
-    "text": "  move $2,$0",
-    "source": {
-      "file": null,
-      "line": 4
-    }
-  },
-  {
-    "text": "  lw $31,28($sp)",
-    "source": {
-      "file": null,
-      "line": 4
-    }
-  },
-  {
-    "text": "  nop",
-    "source": {
-      "file": null,
-      "line": 4
-    }
-  },
-  {
-    "text": "  j $31",
-    "source": {
-      "file": null,
-      "line": 4
-    }
-  },
-  {
-    "text": "  addiu $sp,$sp,32",
-    "source": {
-      "file": null,
-      "line": 4
-    }
-  },
-  {
-    "text": "",
-    "source": null
+  ],
+  "labelDefinitions": {
+    "$LC0": 1,
+    "main": 3
   }
-]
+}

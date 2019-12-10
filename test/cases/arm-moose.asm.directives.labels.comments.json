@@ -1,350 +1,352 @@
-[
-  {
-    "text": "|thing| PROC",
-    "source": null
-  },
-  {
-    "text": "        mul         r0,r0,r0",
-    "source": {
-      "file": null,
-      "line": 7
+{
+  "asm": [
+    {
+      "text": "|thing| PROC",
+      "source": null
+    },
+    {
+      "text": "        mul         r0,r0,r0",
+      "source": {
+        "file": null,
+        "line": 7
+      }
+    },
+    {
+      "text": "|$M4|",
+      "source": null
+    },
+    {
+      "text": "        bx          lr",
+      "source": {
+        "file": null,
+        "line": 7
+      }
+    },
+    {
+      "text": "",
+      "source": null
+    },
+    {
+      "text": "        ENDP  ; |thing|",
+      "source": null
+    },
+    {
+      "text": "",
+      "source": null
+    },
+    {
+      "text": "|moose| PROC",
+      "source": null
+    },
+    {
+      "text": "        push        {r3-r5,lr}",
+      "source": {
+        "file": null,
+        "line": 9
+      }
+    },
+    {
+      "text": "|$M22|",
+      "source": null
+    },
+    {
+      "text": "        mov         r5,r0",
+      "source": {
+        "file": null,
+        "line": 9
+      }
+    },
+    {
+      "text": "        movs        r0,#1",
+      "source": {
+        "file": null,
+        "line": 10
+      }
+    },
+    {
+      "text": "        movs        r4,#0",
+      "source": {
+        "file": null,
+        "line": 10
+      }
+    },
+    {
+      "text": "        vdup.32     q10,r5",
+      "source": {
+        "file": null,
+        "line": 10
+      }
+    },
+    {
+      "text": "        cmp         r1,#0",
+      "source": {
+        "file": null,
+        "line": 12
+      }
+    },
+    {
+      "text": "        ble         |$LN18@moose|",
+      "source": {
+        "file": null,
+        "line": 12
+      }
+    },
+    {
+      "text": "        cmp         r1,#8",
+      "source": {
+        "file": null,
+        "line": 12
+      }
+    },
+    {
+      "text": "        bcc         |$LN11@moose|",
+      "source": {
+        "file": null,
+        "line": 12
+      }
+    },
+    {
+      "text": "        asrs        r3,r1,#2",
+      "source": {
+        "file": null,
+        "line": 10
+      }
+    },
+    {
+      "text": "        add         r3,r1,r3,lsr #0x1D",
+      "source": {
+        "file": null,
+        "line": 10
+      }
+    },
+    {
+      "text": "        asrs        r3,r3,#3",
+      "source": {
+        "file": null,
+        "line": 10
+      }
+    },
+    {
+      "text": "        sub         r3,r1,r3,lsl #3",
+      "source": {
+        "file": null,
+        "line": 10
+      }
+    },
+    {
+      "text": "        vmov.i64    q8,#0",
+      "source": {
+        "file": null,
+        "line": 10
+      }
+    },
+    {
+      "text": "        subs        r3,r1,r3",
+      "source": {
+        "file": null,
+        "line": 10
+      }
+    },
+    {
+      "text": "        vmov        q9,q8",
+      "source": {
+        "file": null,
+        "line": 10
+      }
+    },
+    {
+      "text": "        vmul.i32    q10,q10,q10",
+      "source": {
+        "file": null,
+        "line": 10
+      }
+    },
+    {
+      "text": "|$LL4@moose|",
+      "source": null
+    },
+    {
+      "text": "        adds        r4,r4,#8",
+      "source": {
+        "file": null,
+        "line": 12
+      }
+    },
+    {
+      "text": "        cmp         r4,r3",
+      "source": {
+        "file": null,
+        "line": 12
+      }
+    },
+    {
+      "text": "        vadd.i32    q8,q10,q8",
+      "source": {
+        "file": null,
+        "line": 13
+      }
+    },
+    {
+      "text": "        vadd.i32    q9,q10,q9",
+      "source": {
+        "file": null,
+        "line": 13
+      }
+    },
+    {
+      "text": "        blt         |$LL4@moose|",
+      "source": {
+        "file": null,
+        "line": 13
+      }
+    },
+    {
+      "text": "        vadd.i32    q8,q9,q8",
+      "source": {
+        "file": null,
+        "line": 10
+      }
+    },
+    {
+      "text": "        vmov.32     r2,d17[1]",
+      "source": {
+        "file": null,
+        "line": 10
+      }
+    },
+    {
+      "text": "        vmov.32     r3,d17[0]",
+      "source": {
+        "file": null,
+        "line": 10
+      }
+    },
+    {
+      "text": "        add         r2,r2,r3",
+      "source": {
+        "file": null,
+        "line": 10
+      }
+    },
+    {
+      "text": "        vmov.32     r3,d16[1]",
+      "source": {
+        "file": null,
+        "line": 10
+      }
+    },
+    {
+      "text": "        add         r2,r2,r3",
+      "source": {
+        "file": null,
+        "line": 10
+      }
+    },
+    {
+      "text": "        vmov.32     r3,d16[0]",
+      "source": {
+        "file": null,
+        "line": 10
+      }
+    },
+    {
+      "text": "        add         r3,r3,r2",
+      "source": {
+        "file": null,
+        "line": 10
+      }
+    },
+    {
+      "text": "        adds        r0,r3,#1",
+      "source": {
+        "file": null,
+        "line": 10
+      }
+    },
+    {
+      "text": "|$LN11@moose|",
+      "source": null
+    },
+    {
+      "text": "        cmp         r4,r1",
+      "source": {
+        "file": null,
+        "line": 12
+      }
+    },
+    {
+      "text": "        bge         |$LN17@moose|",
+      "source": {
+        "file": null,
+        "line": 12
+      }
+    },
+    {
+      "text": "        subs        r3,r1,r4",
+      "source": {
+        "file": null,
+        "line": 12
+      }
+    },
+    {
+      "text": "        mul         r3,r3,r5",
+      "source": {
+        "file": null,
+        "line": 12
+      }
+    },
+    {
+      "text": "        mla         r0,r3,r5,r0",
+      "source": {
+        "file": null,
+        "line": 12
+      }
+    },
+    {
+      "text": "|$LN17@moose|",
+      "source": null
+    },
+    {
+      "text": "|$M20|",
+      "source": null
+    },
+    {
+      "text": "        pop         {r3-r5,pc}",
+      "source": {
+        "file": null,
+        "line": 16
+      }
+    },
+    {
+      "text": "|$LN18@moose|",
+      "source": null
+    },
+    {
+      "text": "|$M21|",
+      "source": null
+    },
+    {
+      "text": "        pop         {r3-r5,pc}",
+      "source": {
+        "file": null,
+        "line": 16
+      }
+    },
+    {
+      "text": "|$M23|",
+      "source": null
+    },
+    {
+      "text": "",
+      "source": null
+    },
+    {
+      "text": "        ENDP  ; |moose|",
+      "source": null
+    },
+    {
+      "text": "",
+      "source": null
     }
-  },
-  {
-    "text": "|$M4|",
-    "source": null
-  },
-  {
-    "text": "        bx          lr",
-    "source": {
-      "file": null,
-      "line": 7
-    }
-  },
-  {
-    "text": "",
-    "source": null
-  },
-  {
-    "text": "        ENDP  ; |thing|",
-    "source": null
-  },
-  {
-    "text": "",
-    "source": null
-  },
-  {
-    "text": "|moose| PROC",
-    "source": null
-  },
-  {
-    "text": "        push        {r3-r5,lr}",
-    "source": {
-      "file": null,
-      "line": 9
-    }
-  },
-  {
-    "text": "|$M22|",
-    "source": null
-  },
-  {
-    "text": "        mov         r5,r0",
-    "source": {
-      "file": null,
-      "line": 9
-    }
-  },
-  {
-    "text": "        movs        r0,#1",
-    "source": {
-      "file": null,
-      "line": 10
-    }
-  },
-  {
-    "text": "        movs        r4,#0",
-    "source": {
-      "file": null,
-      "line": 10
-    }
-  },
-  {
-    "text": "        vdup.32     q10,r5",
-    "source": {
-      "file": null,
-      "line": 10
-    }
-  },
-  {
-    "text": "        cmp         r1,#0",
-    "source": {
-      "file": null,
-      "line": 12
-    }
-  },
-  {
-    "text": "        ble         |$LN18@moose|",
-    "source": {
-      "file": null,
-      "line": 12
-    }
-  },
-  {
-    "text": "        cmp         r1,#8",
-    "source": {
-      "file": null,
-      "line": 12
-    }
-  },
-  {
-    "text": "        bcc         |$LN11@moose|",
-    "source": {
-      "file": null,
-      "line": 12
-    }
-  },
-  {
-    "text": "        asrs        r3,r1,#2",
-    "source": {
-      "file": null,
-      "line": 10
-    }
-  },
-  {
-    "text": "        add         r3,r1,r3,lsr #0x1D",
-    "source": {
-      "file": null,
-      "line": 10
-    }
-  },
-  {
-    "text": "        asrs        r3,r3,#3",
-    "source": {
-      "file": null,
-      "line": 10
-    }
-  },
-  {
-    "text": "        sub         r3,r1,r3,lsl #3",
-    "source": {
-      "file": null,
-      "line": 10
-    }
-  },
-  {
-    "text": "        vmov.i64    q8,#0",
-    "source": {
-      "file": null,
-      "line": 10
-    }
-  },
-  {
-    "text": "        subs        r3,r1,r3",
-    "source": {
-      "file": null,
-      "line": 10
-    }
-  },
-  {
-    "text": "        vmov        q9,q8",
-    "source": {
-      "file": null,
-      "line": 10
-    }
-  },
-  {
-    "text": "        vmul.i32    q10,q10,q10",
-    "source": {
-      "file": null,
-      "line": 10
-    }
-  },
-  {
-    "text": "|$LL4@moose|",
-    "source": null
-  },
-  {
-    "text": "        adds        r4,r4,#8",
-    "source": {
-      "file": null,
-      "line": 12
-    }
-  },
-  {
-    "text": "        cmp         r4,r3",
-    "source": {
-      "file": null,
-      "line": 12
-    }
-  },
-  {
-    "text": "        vadd.i32    q8,q10,q8",
-    "source": {
-      "file": null,
-      "line": 13
-    }
-  },
-  {
-    "text": "        vadd.i32    q9,q10,q9",
-    "source": {
-      "file": null,
-      "line": 13
-    }
-  },
-  {
-    "text": "        blt         |$LL4@moose|",
-    "source": {
-      "file": null,
-      "line": 13
-    }
-  },
-  {
-    "text": "        vadd.i32    q8,q9,q8",
-    "source": {
-      "file": null,
-      "line": 10
-    }
-  },
-  {
-    "text": "        vmov.32     r2,d17[1]",
-    "source": {
-      "file": null,
-      "line": 10
-    }
-  },
-  {
-    "text": "        vmov.32     r3,d17[0]",
-    "source": {
-      "file": null,
-      "line": 10
-    }
-  },
-  {
-    "text": "        add         r2,r2,r3",
-    "source": {
-      "file": null,
-      "line": 10
-    }
-  },
-  {
-    "text": "        vmov.32     r3,d16[1]",
-    "source": {
-      "file": null,
-      "line": 10
-    }
-  },
-  {
-    "text": "        add         r2,r2,r3",
-    "source": {
-      "file": null,
-      "line": 10
-    }
-  },
-  {
-    "text": "        vmov.32     r3,d16[0]",
-    "source": {
-      "file": null,
-      "line": 10
-    }
-  },
-  {
-    "text": "        add         r3,r3,r2",
-    "source": {
-      "file": null,
-      "line": 10
-    }
-  },
-  {
-    "text": "        adds        r0,r3,#1",
-    "source": {
-      "file": null,
-      "line": 10
-    }
-  },
-  {
-    "text": "|$LN11@moose|",
-    "source": null
-  },
-  {
-    "text": "        cmp         r4,r1",
-    "source": {
-      "file": null,
-      "line": 12
-    }
-  },
-  {
-    "text": "        bge         |$LN17@moose|",
-    "source": {
-      "file": null,
-      "line": 12
-    }
-  },
-  {
-    "text": "        subs        r3,r1,r4",
-    "source": {
-      "file": null,
-      "line": 12
-    }
-  },
-  {
-    "text": "        mul         r3,r3,r5",
-    "source": {
-      "file": null,
-      "line": 12
-    }
-  },
-  {
-    "text": "        mla         r0,r3,r5,r0",
-    "source": {
-      "file": null,
-      "line": 12
-    }
-  },
-  {
-    "text": "|$LN17@moose|",
-    "source": null
-  },
-  {
-    "text": "|$M20|",
-    "source": null
-  },
-  {
-    "text": "        pop         {r3-r5,pc}",
-    "source": {
-      "file": null,
-      "line": 16
-    }
-  },
-  {
-    "text": "|$LN18@moose|",
-    "source": null
-  },
-  {
-    "text": "|$M21|",
-    "source": null
-  },
-  {
-    "text": "        pop         {r3-r5,pc}",
-    "source": {
-      "file": null,
-      "line": 16
-    }
-  },
-  {
-    "text": "|$M23|",
-    "source": null
-  },
-  {
-    "text": "",
-    "source": null
-  },
-  {
-    "text": "        ENDP  ; |moose|",
-    "source": null
-  },
-  {
-    "text": "",
-    "source": null
-  }
-]
+  ]
+}

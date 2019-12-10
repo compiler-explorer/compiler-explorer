@@ -134,7 +134,7 @@ describe('Compiler execution', function () {
         result.compilationOptions.should.contain("options");
         result.compilationOptions.should.contain(result.inputFilename);
         result.okToCache.should.be.true;
-        result.asm.should.deep.equal([{source: null, text: "This is the output file"}]);
+        result.asm.should.deep.equal([{source: null, text: "This is the output file", labels: []}]);
         result.stdout.should.deep.equal([{text: "stdout"}]);
         result.stderr.should.deep.equal([{text: "stderr"}]);
         result.popularArguments.should.deep.equal({});
