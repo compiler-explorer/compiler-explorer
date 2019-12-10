@@ -307,7 +307,7 @@ describe('Compiler execution', function () {
             {},
             []);
         result.code.should.equal(0);
-        result.asm.should.deep.equal([{source: null, text: "someDemangledSymbol:"}]);
+        result.asm.should.deep.equal([{source: null, labels: [], text: "someDemangledSymbol:"}]);
         // TODO all with demangle: false
     });
 
