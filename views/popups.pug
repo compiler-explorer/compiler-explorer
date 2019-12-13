@@ -230,3 +230,20 @@
                 label
                   input.hideEditorToolbars(type="checkbox")
                   | Hide Editor Toolbars
+
+#history.modal.fade.gl_keep(tabindex="-1" role="dialog")
+  .modal-dialog.modal-lg
+    .modal-content
+      .modal-header
+        h5.modal-title History
+        button.close(type="button" data-dismiss="modal" aria-hidden="true" aria-label="Close")
+          span(aria-hidden="true")
+            | &times;
+      .modal-body
+        .card
+          .card-body
+            #load-history.tab-pane.active(role="tabpanel")
+              ul.historiccode
+                li.template: a(href="javascript:;")
+      .modal-footer
+        button.btn.btn-light(type="button" data-dismiss="modal" aria-label="Close") Close
