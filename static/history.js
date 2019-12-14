@@ -43,7 +43,7 @@ function extractEditorSources(content) {
     }
 
     return sources;
-};
+}
 
 function push(stringifiedConfig) {
     var config = JSON.parse(stringifiedConfig);
@@ -78,16 +78,16 @@ function push(stringifiedConfig) {
 
         local.set('history', JSON.stringify(completeHistory));
     }
-};
+}
 
 function list() {
     var stringifiedHistory = local.get('history');
     var completeHistory = JSON.parse(stringifiedHistory ? stringifiedHistory : '[]');
 
     return completeHistory;
-};
+}
 
 module.exports = {
-    push,
-    list
+    push: push,
+    list: list
 };

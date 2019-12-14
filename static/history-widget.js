@@ -55,10 +55,6 @@ History.prototype.populateFromLocalStorage = function () {
         }, this)));
 };
 
-History.prototype.onLoad = function (data) {
-    console.log(data);
-};
-
 History.prototype.populate = function (root, list) {
     root.find('li:not(.template)').remove();
     var template = root.find('.template');
