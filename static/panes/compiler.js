@@ -196,10 +196,13 @@ Compiler.prototype.initPanerButtons = function () {
     }, this));
 
     var cloneComponent = _.bind(function () {
+        var currentState = this.currentState();
+        // Delete the saved id to force a new one
+        delete currentState.id;
         return {
             type: 'component',
             componentName: 'compiler',
-            componentState: this.currentState()
+            componentState: currentState
         };
     }, this);
     var createOptView = _.bind(function () {
