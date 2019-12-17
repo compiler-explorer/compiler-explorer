@@ -116,7 +116,7 @@ function Compiler(hub, container, state) {
         minimap: {
             maxColumn: 80
         },
-        lineNumbersMinChars: options.embedded ? 1 : 5,
+        lineNumbersMinChars: 1,
         renderIndentGuides: false,
         fontLigatures: this.settings.editorsFLigatures
     });
@@ -593,12 +593,14 @@ Compiler.prototype.sendCompile = function (request) {
 
 Compiler.prototype.setNormalMargin = function () {
     this.outputEditor.updateOptions({
-        lineNumbers: true
+        lineNumbers: true,
+        lineNumbersMinChars: 1
     });
 };
 
 Compiler.prototype.setBinaryMargin = function () {
     this.outputEditor.updateOptions({
+        lineNumbersMinChars: 6,
         lineNumbers: _.bind(this.getBinaryForLine, this)
     });
 };

@@ -99,7 +99,7 @@ function Editor(hub, state, container) {
             maxColumn: 80
         },
         folding: true,
-        lineNumbersMinChars: options.embedded ? 1 : 3,
+        lineNumbersMinChars: 1,
         emptySelectionClipboard: true,
         autoIndent: true,
         vimInUse: this.settings.useVim,
