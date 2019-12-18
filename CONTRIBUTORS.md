@@ -82,3 +82,4 @@ From oldest to newest contributor, we would like to thank:
 - [Haze Booth](https://github.com/haze)
 - [Cassie Jones](https://github.com/porglezomp)
 - [Bastien Penavayre](https://github.com/DaemonSnake)
+- [Dave Rodgman](https://github.com/daverodgman)
