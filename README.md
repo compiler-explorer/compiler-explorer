@@ -61,7 +61,7 @@ Assuming you have a compatible version of `node` installed, simply running
  on your local machine: http://localhost:10240/.
  Currently **Compiler Explorer**
  [requires the latest LTS](CONTRIBUTING.md#node-version) `node` version
- (_v10_) installed, either on the path or at `NODE_DIR`
+ (_v12_) installed, either on the path or at `NODE_DIR`
  (an environment variable or `make` parameter).
 
 Running with `make EXTRA_ARGS='--language LANG'` will allow you to load
