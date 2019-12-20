@@ -24,20 +24,28 @@ find_node() {
 
 NODE=$(find_node)
 
+NODE_MIN_VERSION=8
 NODE_VERSION_USED=12
 NODE_VERSION=$(${NODE} --version)
 NODE_MAJOR_VERSION=$(echo ${NODE_VERSION} | cut -f1 -d. | sed 's/^v//g')
 
-if test ${NODE_MAJOR_VERSION} -lt ${NODE_VERSION_USED}; then
-    >&2 echo Compiler Explorer needs node v${NODE_VERSION_USED}.x, but ${NODE_VERSION} was found.
+if test ${NODE_MAJOR_VERSION} -lt ${NODE_MIN_VERSION}; then
+    >&2 echo Compiler Explorer needs at least node v${NODE_MIN_VERSION}.x, but ${NODE_VERSION} was found.
     >&2 echo Visit https://nodejs.org/ for installation instructions
     >&2 echo To configure where we look for node, set NODE_DIR to its installation base
     exit 1
 fi
 
+if test ${NODE_MAJOR_VERSION} -lt ${NODE_VERSION_USED}; then
+    >&2 echo Compiler Explorer recommends node v${NODE_VERSION_USED}.x, but ${NODE_VERSION} was found.
+    >&2 echo Nonetheless, it should be able to run. Contact us if this is not the case for you.
+    >&2 echo Visit https://nodejs.org/ for installation instructions
+    >&2 echo To configure where we look for node, set NODE_DIR to its installation base
+fi
+
 if test ${NODE_MAJOR_VERSION} -gt ${NODE_VERSION_USED}; then
-    >&2 echo Compiler Explorer needs node v${NODE_VERSION_USED}.x, but ${NODE_VERSION} was found.
-    >&2 echo The higher node version might work but it has not been tested.
+    >&2 echo Compiler Explorer is tested against node v${NODE_VERSION_USED}.x, but ${NODE_VERSION} was found.
+    >&2 echo The higher node version might work but it is not guaranteed. Contact us if this is not the case for you.
 fi
 
 echo ${NODE} > ${OUT}
