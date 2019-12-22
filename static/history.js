@@ -87,7 +87,18 @@ function list() {
     return completeHistory;
 }
 
+function sortedList() {
+    var sorted = list();
+
+    sorted.sort(function (a, b) {
+        return b.dt - a.dt;
+    });
+
+    return sorted;
+}
+
 module.exports = {
     push: push,
-    list: list
+    list: list,
+    sortedList: sortedList
 };

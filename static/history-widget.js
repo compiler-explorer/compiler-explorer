@@ -27,26 +27,61 @@
 var
     $ = require('jquery'),
     _ = require('underscore'),
+    monaco = require('monaco-editor'),
     ga = require('analytics'),
     history = require('./history');
 
+function HistoryDiffState(model) {
+    this.model = model;
+    this.result = null;
+}
+
+HistoryDiffState.prototype.update = function (result) {
+    this.result = result;
+    this.refresh();
+
+    return true;
+};
+
+HistoryDiffState.prototype.refresh = function () {
+    var output = this.result || [];
+    this.model.setValue(output.join("\n\n\n\n"));
+};
+
 function History() {
     this.modal = null;
+    this.diffEditor = null;
+    this.lhs = null;
+    this.rhs = null;
+    this.currentList = [];
 }
 
 History.prototype.initializeIfNeeded = function () {
     if (this.modal === null) {
         this.modal = $("#history");
+
+        this.diffEditor = monaco.editor.createDiffEditor(this.modal.find(".monaco-placeholder")[0], {
+            fontFamily: 'Consolas, "Liberation Mono", Courier, monospace',
+            scrollBeyondLastLine: false,
+            readOnly: true,
+            language: 'c++'
+        });
+
+        this.lhs = new HistoryDiffState(monaco.editor.createModel('', 'c++'));
+        this.rhs = new HistoryDiffState(monaco.editor.createModel('', 'c++'));
+        this.diffEditor.setModel({ original: this.lhs.model, modified: this.rhs.model });
     }
 };
 
 History.prototype.populateFromLocalStorage = function () {
+    this.currentList = history.sortedList();
     this.populate(
         this.modal.find('.historiccode'),
-        _.map(history.list(), _.bind(function (data) {
+        _.map(this.currentList, _.bind(function (data) {
             var dt = new Date(data.dt);
             return {
-                name: dt.toString(),
+                dt: data.dt,
+                name: dt.toString().replace(/\s\(.*\)/, ''),
                 load: _.bind(function () {
                     this.onLoad(data);
                     this.modal.modal('hide');
@@ -55,18 +90,95 @@ History.prototype.populateFromLocalStorage = function () {
         }, this)));
 };
 
+History.prototype.HideRadiosAndSetDiff = function () {
+    var root = this.modal.find('.historiccode');
+    var items = root.find('li:not(.template)');
+
+    var foundbase = false;
+    var foundcomp = false;
+
+    items.each(_.bind(function (idx, elem) {
+        var li = $(elem);
+        var dt = li.data('dt');
+
+        var base = li.find('.base');
+        var comp = li.find('.comp');
+
+        var baseShouldBeVisible = true;
+        var compShouldBeVisible = true;
+
+        if (comp.prop('checked')) {
+            foundcomp = true;
+            baseShouldBeVisible = false;
+
+            var item = _.find(this.currentList, function (item) {
+                return (item.dt === dt);
+            });
+
+            this.rhs.update(item.code);
+        } else if (li.find('.base').prop('checked')) {
+            foundbase = true;
+
+            var item = _.find(this.currentList, function (item) {
+                return (item.dt === dt);
+            });
+
+            this.lhs.update(item.code);
+        }
+
+        if (foundbase && foundcomp) {
+            compShouldBeVisible = false;
+        } else if (!foundbase && !foundcomp) {
+            baseShouldBeVisible = false;
+        }
+
+        if (compShouldBeVisible) {
+            comp.css('visibility', '');
+        } else {
+            comp.css('visibility', 'hidden');
+        }
+
+        if (baseShouldBeVisible) {
+            base.css('visibility', '');
+        } else {
+            base.css('visibility', 'hidden');
+        }
+    }, this));
+};
+
 History.prototype.populate = function (root, list) {
     root.find('li:not(.template)').remove();
     var template = root.find('.template');
+
+    var baseMarked = false;
+    var compMarked = false;
+
     _.each(list, _.bind(function (elem) {
-        template
+        var li = template
             .clone()
             .removeClass('template')
-            .appendTo(root)
-            .find('a')
-            .text(elem.name)
-            .click(elem.load);
+            .appendTo(root);
+
+        li.data('dt', elem.dt);
+
+        var base = li.find('.base');
+        var comp = li.find('.comp');
+
+        if (!compMarked) {
+            comp.prop('checked', 'checked');
+            compMarked = true;
+        } else if (!baseMarked) {
+            base.prop('checked', 'checked');
+            baseMarked = true;
+        }
+
+        base.click(_.bind(this.HideRadiosAndSetDiff, this));
+        comp.click(_.bind(this.HideRadiosAndSetDiff, this));
+
+        li.find('a').text(elem.name).click(elem.load);
     }, this));
+
+    this.HideRadiosAndSetDiff();
 };
 
 History.prototype.run = function (onLoad) {
