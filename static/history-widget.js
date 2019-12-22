@@ -111,19 +111,19 @@ History.prototype.HideRadiosAndSetDiff = function () {
             foundcomp = true;
             baseShouldBeVisible = false;
 
-            var item = _.find(this.currentList, function (item) {
+            var itemRight = _.find(this.currentList, function (item) {
                 return (item.dt === dt);
             });
 
-            this.rhs.update(item.code);
+            this.rhs.update(itemRight.code);
         } else if (li.find('.base').prop('checked')) {
             foundbase = true;
 
-            var item = _.find(this.currentList, function (item) {
+            var itemLeft = _.find(this.currentList, function (item) {
                 return (item.dt === dt);
             });
 
-            this.lhs.update(item.code);
+            this.lhs.update(itemLeft.code);
         }
 
         if (foundbase && foundcomp) {
