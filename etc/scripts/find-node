@@ -24,20 +24,23 @@ find_node() {
 
 NODE=$(find_node)
 
+NODE_MIN_VERSION=8
 NODE_VERSION_USED=12
 NODE_VERSION=$(${NODE} --version)
 NODE_MAJOR_VERSION=$(echo ${NODE_VERSION} | cut -f1 -d. | sed 's/^v//g')
 
-if test ${NODE_MAJOR_VERSION} -lt ${NODE_VERSION_USED}; then
-    >&2 echo Compiler Explorer needs node v${NODE_VERSION_USED}.x, but ${NODE_VERSION} was found.
-    >&2 echo Visit https://nodejs.org/ for installation instructions
+if test ${NODE_MAJOR_VERSION} -lt ${NODE_MIN_VERSION}; then
+    >&2 echo Compiler Explorer is known not to run with versions prior to v${NODE_MIN_VERSION}
+    >&2 echo Visit https://nodejs.org/ for installation instructions for newer versions
     >&2 echo To configure where we look for node, set NODE_DIR to its installation base
     exit 1
 fi
 
-if test ${NODE_MAJOR_VERSION} -gt ${NODE_VERSION_USED}; then
-    >&2 echo Compiler Explorer needs node v${NODE_VERSION_USED}.x, but ${NODE_VERSION} was found.
-    >&2 echo The higher node version might work but it has not been tested.
+if test ${NODE_VERSION_USED} -ne ${NODE_MAJOR_VERSION}; then
+    >&2 echo Warning: Compiler Explorer is only tested against v${NODE_VERSION_USED}.x, but v${NODE_MAJOR_VERSION} was found.
+    >&2 echo Note that you might find issues if you decide to keep this version
+    >&2 echo Visit https://nodejs.org/ for installation instructions for the required version
+    >&2 echo To configure where we look for node, set NODE_DIR to its installation base
 fi
 
 echo ${NODE} > ${OUT}
