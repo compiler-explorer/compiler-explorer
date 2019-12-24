@@ -944,7 +944,7 @@ Editor.prototype.onLanguageChange = function (newLangId) {
         if (newLangId !== this.currentLanguage.id) {
             var oldLangId = this.currentLanguage.id;
             this.currentLanguage = languages[newLangId];
-            if (!this.waitingForLanguage) {
+            if (!this.waitingForLanguage && !this.settings.keepSourcesOnLangChange) {
                 this.editorSourceByLang[oldLangId] = this.getSource();
                 this.updateEditorCode();
             }
