@@ -45,7 +45,7 @@ HistoryDiffState.prototype.update = function (result) {
 
 HistoryDiffState.prototype.refresh = function () {
     var output = this.result || [];
-    this.model.setValue(output.join("\n\n\n\n"));
+    this.model.setValue(output.join("\n/******************************/\n"));
 };
 
 function History() {
@@ -64,12 +64,21 @@ History.prototype.initializeIfNeeded = function () {
             fontFamily: 'Consolas, "Liberation Mono", Courier, monospace',
             scrollBeyondLastLine: false,
             readOnly: true,
-            language: 'c++'
+            language: 'c++',
+            minimap: {
+                enabled: true
+            }
         });
-
         this.lhs = new HistoryDiffState(monaco.editor.createModel('', 'c++'));
         this.rhs = new HistoryDiffState(monaco.editor.createModel('', 'c++'));
         this.diffEditor.setModel({ original: this.lhs.model, modified: this.rhs.model });
+
+        this.modal.find('#inline-diff-checkbox').click(_.bind(function (event) {
+            var inline = $(event.target).prop('checked');
+			this.diffEditor.updateOptions({
+				renderSideBySide: !inline
+			});
+        }, this));
     }
 };
 

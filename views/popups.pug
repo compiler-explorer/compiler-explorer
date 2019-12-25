@@ -259,6 +259,10 @@
                     | &nbsp;
                     a(href="javascript:;")
               div.tab-pane#load-history-diff-display(role="tabpanel" aria-labelledby="loadhistorydiff-tab")
-                div.monaco-placeholder#history-diff(style="width:800px;height:600px")
+                .checkbox
+                  label.control-label(for="inline-diff-checkbox")
+                    input#inline-diff-checkbox(type="checkbox" value="")
+                    | Inline diff
+                div.monaco-placeholder#history-diff(style="width:100%;height:600px")
       .modal-footer
         button.btn.btn-light(type="button" data-dismiss="modal" aria-label="Close") Close
