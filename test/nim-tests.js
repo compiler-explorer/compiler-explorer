@@ -53,8 +53,8 @@ describe('Nim', () => {
 
     it('Nim compile to Cpp if not asked otherwise', () => {
         const compiler = new NimCompiler(info, ce);
-        compiler.filterUserOptions([]).should.deep.equal(["compileToCpp"]);
-        compiler.filterUserOptions(["badoption"]).should.deep.equal(["compileToCpp", "badoption"]);
+        compiler.filterUserOptions([]).should.deep.equal(["compile"]);
+        compiler.filterUserOptions(["badoption"]).should.deep.equal(["compile", "badoption"]);
         compiler.filterUserOptions(["js"]).should.deep.equal(["js"]);
     });
 
