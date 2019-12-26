@@ -57,4 +57,21 @@ describe('Nim', () => {
         compiler.filterUserOptions(["badoption"]).should.deep.equal(["compileToCpp", "badoption"]);
         compiler.filterUserOptions(["js"]).should.deep.equal(["js"]);
     });
+
+    it("test getCacheFile from possible user-options", () => {
+        const compiler = new NimCompiler(info, ce),
+            input = "test.min",
+            folder = "/tmp/",
+            expected = {
+                "cpp": folder + input + ".cpp.o",
+                "c": folder + input + ".c.o",
+                "objc": folder + input + ".m.o",
+            };
+
+        for (const lang of ["cpp", "c", "objc"]) {
+            compiler.getCacheFile([lang], input, folder).should.equal(expected[lang]);
+        }
+        chai.assert.equal(compiler.getCacheFile([], input, folder), null);
+        chai.assert.equal(compiler.getCacheFile(["js"], input, folder), null);
+    });
 });
