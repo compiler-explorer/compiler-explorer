@@ -47,7 +47,14 @@ describe('Nim', () => {
 
     it('Nim should not allow --run/-r parameter', () => {
         const compiler = new NimCompiler(info, ce);
-        compiler.filterUserOptions(["hello", "--run", "--something"]).should.deep.equal(["hello", "--something"]);
-        compiler.filterUserOptions(["hello", "-r", "--something"]).should.deep.equal(["hello", "--something"]);
+        compiler.filterUserOptions(["c", "--run", "--something"]).should.deep.equal(["c", "--something"]);
+        compiler.filterUserOptions(["cpp", "-r", "--something"]).should.deep.equal(["cpp", "--something"]);
+    });
+
+    it('Nim compile to Cpp if not asked otherwise', () => {
+        const compiler = new NimCompiler(info, ce);
+        compiler.filterUserOptions([]).should.deep.equal(["compileToCpp"]);
+        compiler.filterUserOptions(["badoption"]).should.deep.equal(["compileToCpp", "badoption"]);
+        compiler.filterUserOptions(["js"]).should.deep.equal(["js"]);
     });
 });
