@@ -27,6 +27,8 @@ var
     local = require('./local'),
     _ = require('underscore');
 
+var maxHistoryEntries = 30;
+
 function extractEditorSources(content) {
     var sources = [];
 
@@ -81,7 +83,7 @@ function push(stringifiedConfig) {
         var duplicateIdx = getSimilarSourcesIndex(completeHistory, getArrayWithJustTheCode(sources));
 
         if (duplicateIdx === -1) {
-            while (completeHistory.length >= 30) {
+            while (completeHistory.length >= maxHistoryEntries) {
                 completeHistory.shift();
             }
     
