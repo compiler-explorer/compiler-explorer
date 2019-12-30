@@ -77,8 +77,8 @@ History.prototype.initializeIfNeeded = function () {
 
         this.modal.find('#inline-diff-checkbox').click(_.bind(function (event) {
             var inline = $(event.target).prop('checked');
-			this.diffEditor.updateOptions({
-				renderSideBySide: !inline
+            this.diffEditor.updateOptions({
+                renderSideBySide: !inline
             });
             this.resizeLayout();
         }, this));
