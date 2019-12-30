@@ -47,7 +47,7 @@ var motd = require('./motd');
 var jsCookie = require('js-cookie');
 var SimpleCook = require('./simplecook');
 var History = require('./history');
-var HistoryWidget = require('./history-widget').History;
+var HistoryWidget = require('./history-widget').HistoryWidget;
 
 //css
 require("bootstrap/dist/css/bootstrap.min.css");

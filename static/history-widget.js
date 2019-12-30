@@ -29,7 +29,7 @@ var
     _ = require('underscore'),
     monaco = require('monaco-editor'),
     ga = require('analytics'),
-    history = require('./history');
+    History = require('./history');
 
 function HistoryDiffState(model) {
     this.model = model;
@@ -56,7 +56,7 @@ HistoryDiffState.prototype.refresh = function () {
     this.model.setValue(content);
 };
 
-function History() {
+function HistoryWidget() {
     this.modal = null;
     this.diffEditor = null;
     this.lhs = null;
@@ -64,7 +64,7 @@ function History() {
     this.currentList = [];
 }
 
-History.prototype.initializeIfNeeded = function () {
+HistoryWidget.prototype.initializeIfNeeded = function () {
     if (this.modal === null) {
         this.modal = $("#history");
 
@@ -93,7 +93,7 @@ History.prototype.initializeIfNeeded = function () {
     }
 };
 
-History.prototype.getLanguagesFromHistoryEntry = function (entry) {
+HistoryWidget.prototype.getLanguagesFromHistoryEntry = function (entry) {
     var languages = [];
     _.each(entry.sources, function (source) {
         languages.push(source.lang);
@@ -101,8 +101,8 @@ History.prototype.getLanguagesFromHistoryEntry = function (entry) {
     return languages;
 };
 
-History.prototype.populateFromLocalStorage = function () {
-    this.currentList = history.sortedList();
+HistoryWidget.prototype.populateFromLocalStorage = function () {
+    this.currentList = History.sortedList();
     this.populate(
         this.modal.find('.historiccode'),
         _.map(this.currentList, _.bind(function (data) {
@@ -119,7 +119,7 @@ History.prototype.populateFromLocalStorage = function () {
         }, this)));
 };
 
-History.prototype.HideRadiosAndSetDiff = function () {
+HistoryWidget.prototype.hideRadiosAndSetDiff = function () {
     var root = this.modal.find('.historiccode');
     var items = root.find('li:not(.template)');
 
@@ -145,7 +145,7 @@ History.prototype.HideRadiosAndSetDiff = function () {
             });
 
             this.rhs.update(itemRight);
-        } else if (li.find('.base').prop('checked')) {
+        } else if (base.prop('checked')) {
             foundbase = true;
 
             var itemLeft = _.find(this.currentList, function (item) {
@@ -175,7 +175,7 @@ History.prototype.HideRadiosAndSetDiff = function () {
     }, this));
 };
 
-History.prototype.populate = function (root, list) {
+HistoryWidget.prototype.populate = function (root, list) {
     root.find('li:not(.template)').remove();
     var template = root.find('.template');
 
@@ -201,16 +201,16 @@ History.prototype.populate = function (root, list) {
             baseMarked = true;
         }
 
-        base.click(_.bind(this.HideRadiosAndSetDiff, this));
-        comp.click(_.bind(this.HideRadiosAndSetDiff, this));
+        base.click(_.bind(this.hideRadiosAndSetDiff, this));
+        comp.click(_.bind(this.hideRadiosAndSetDiff, this));
 
         li.find('a').text(elem.name).click(elem.load);
     }, this));
 
-    this.HideRadiosAndSetDiff();
+    this.hideRadiosAndSetDiff();
 };
 
-History.prototype.resizeLayout = function () {
+HistoryWidget.prototype.resizeLayout = function () {
     var tabcontent = this.modal.find('div.tab-content');
     this.diffEditor.layout({
         width: tabcontent.width(),
@@ -218,7 +218,7 @@ History.prototype.resizeLayout = function () {
     });
 };
 
-History.prototype.run = function (onLoad) {
+HistoryWidget.prototype.run = function (onLoad) {
     this.initializeIfNeeded();
     this.populateFromLocalStorage();
     this.onLoad = onLoad;
@@ -237,5 +237,5 @@ History.prototype.run = function (onLoad) {
 };
 
 module.exports = {
-    History: History
+    HistoryWidget
 };
