@@ -60,7 +60,8 @@ History.prototype.initializeIfNeeded = function () {
     if (this.modal === null) {
         this.modal = $("#history");
 
-        this.diffEditor = monaco.editor.createDiffEditor(this.modal.find(".monaco-placeholder")[0], {
+        var placeholder = this.modal.find(".monaco-placeholder");
+        this.diffEditor = monaco.editor.createDiffEditor(placeholder[0], {
             fontFamily: 'Consolas, "Liberation Mono", Courier, monospace',
             scrollBeyondLastLine: false,
             readOnly: true,
@@ -69,6 +70,7 @@ History.prototype.initializeIfNeeded = function () {
                 enabled: true
             }
         });
+
         this.lhs = new HistoryDiffState(monaco.editor.createModel('', 'c++'));
         this.rhs = new HistoryDiffState(monaco.editor.createModel('', 'c++'));
         this.diffEditor.setModel({ original: this.lhs.model, modified: this.rhs.model });
@@ -77,7 +79,8 @@ History.prototype.initializeIfNeeded = function () {
             var inline = $(event.target).prop('checked');
 			this.diffEditor.updateOptions({
 				renderSideBySide: !inline
-			});
+            });
+            this.resizeLayout();
         }, this));
     }
 };
@@ -190,11 +193,25 @@ History.prototype.populate = function (root, list) {
     this.HideRadiosAndSetDiff();
 };
 
+History.prototype.resizeLayout = function () {
+    var tabcontent = this.modal.find('div.tab-content');
+    this.diffEditor.layout({
+        width: tabcontent.width(),
+        height: tabcontent.height() - 20
+    });
+};
+
 History.prototype.run = function (onLoad) {
     this.initializeIfNeeded();
     this.populateFromLocalStorage();
     this.onLoad = onLoad;
+
+    this.modal.on('shown.bs.modal', _.bind(function () {
+        this.resizeLayout();
+    }, this));
+
     this.modal.modal();
+
     ga.proxy('send', {
         hitType: 'event',
         eventCategory: 'OpenModalPane',

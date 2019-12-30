@@ -250,7 +250,7 @@
                 a.nav-link#loadhistorydiff-tab(data-toggle="tab" role="tab" href="#load-history-diff-display" aria-controls="load-history-diff-display" aria-selected="false")
                   | Diff
 
-            div.tab-content#historyTabs
+            div.tab-content#historyTabs(style="height:600px")
               div.tab-pane.show.active#load-history(role="tabpanel" aria-labelledby="loadhistory-tab")
                 ul.historiccode
                   li.template
@@ -263,6 +263,6 @@
                   label.control-label(for="inline-diff-checkbox")
                     input#inline-diff-checkbox(type="checkbox" value="")
                     | Inline diff
-                div.monaco-placeholder#history-diff(style="width:100%;height:600px")
+                div.monaco-placeholder#history-diff
       .modal-footer
         button.btn.btn-light(type="button" data-dismiss="modal" aria-label="Close") Close
