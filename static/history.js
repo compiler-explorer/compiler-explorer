@@ -38,28 +38,47 @@ function extractEditorSources(content) {
                 sources = sources.concat(subsources);
             }
         } else if (component.componentName === 'codeEditor') {
-            sources.push(component.componentState.source);
+            sources.push({
+                lang: component.componentState.lang,
+                source: component.componentState.source
+            });
         }
     }
 
     return sources;
 }
 
+function list() {
+    var stringifiedHistory = local.get('history');
+    var completeHistory = JSON.parse(stringifiedHistory ? stringifiedHistory : '[]');
+
+    return completeHistory;
+}
+
+function getArrayWithJustTheCode(editorSources) {
+    return _.pluck(editorSources, 'source');
+}
+
+function getSimilarSourcesIndex(completeHistory, sourcesToCompareTo) {
+    var duplicateIdx = -1;
+
+    for (var i = 0; i < completeHistory.length; i++) {
+        var diff = _.difference(sourcesToCompareTo, getArrayWithJustTheCode(completeHistory[i].sources));
+        if (diff.length === 0) {
+            duplicateIdx = i;
+            break;
+        }
+    }
+
+    return duplicateIdx;
+}
+
 function push(stringifiedConfig) {
     var config = JSON.parse(stringifiedConfig);
-    var editors = extractEditorSources(config.content);
-    if (editors.length > 0) {
-        var stringifiedHistory = local.get('history');
-        var completeHistory = JSON.parse(stringifiedHistory ? stringifiedHistory : '[]');
-
-        var duplicateIdx = -1;
-        for (var i = 0; i < completeHistory.length; i++) {
-            var diff = _.difference(editors, completeHistory[i].code);
-            if (diff.length === 0) {
-                duplicateIdx = i;
-                break;
-            }
-        }
+    var sources = extractEditorSources(config.content);
+    if (sources.length > 0) {
+        var completeHistory = list();
+        var duplicateIdx = getSimilarSourcesIndex(completeHistory, getArrayWithJustTheCode(sources));
 
         if (duplicateIdx === -1) {
             while (completeHistory.length >= 30) {
@@ -68,7 +87,7 @@ function push(stringifiedConfig) {
     
             completeHistory.push({
                 dt: Date.now(),
-                code: editors,
+                sources: sources,
                 config: config
             });
         } else {
@@ -78,13 +97,6 @@ function push(stringifiedConfig) {
 
         local.set('history', JSON.stringify(completeHistory));
     }
-}
-
-function list() {
-    var stringifiedHistory = local.get('history');
-    var completeHistory = JSON.parse(stringifiedHistory ? stringifiedHistory : '[]');
-
-    return completeHistory;
 }
 
 function sortedList() {
@@ -98,7 +110,7 @@ function sortedList() {
 }
 
 module.exports = {
-    push: push,
+    push: _.debounce(push, 500),
     list: list,
     sortedList: sortedList
 };

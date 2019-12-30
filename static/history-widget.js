@@ -37,7 +37,7 @@ function HistoryDiffState(model) {
 }
 
 HistoryDiffState.prototype.update = function (result) {
-    this.result = result;
+    this.result = result.sources;
     this.refresh();
 
     return true;
@@ -45,7 +45,15 @@ HistoryDiffState.prototype.update = function (result) {
 
 HistoryDiffState.prototype.refresh = function () {
     var output = this.result || [];
-    this.model.setValue(output.join("\n/******************************/\n"));
+    var content = "";
+    _.each(output, function (val) {
+        if (content.length > 0) {
+            content += "\n";
+        }
+        content += "/****** " + val.lang + " ******/\n";
+        content += val.source;
+    });
+    this.model.setValue(content);
 };
 
 function History() {
@@ -85,15 +93,24 @@ History.prototype.initializeIfNeeded = function () {
     }
 };
 
+History.prototype.getLanguagesFromHistoryEntry = function (entry) {
+    var languages = [];
+    _.each(entry.sources, function (source) {
+        languages.push(source.lang);
+    });
+    return languages;
+};
+
 History.prototype.populateFromLocalStorage = function () {
     this.currentList = history.sortedList();
     this.populate(
         this.modal.find('.historiccode'),
         _.map(this.currentList, _.bind(function (data) {
             var dt = new Date(data.dt);
+            var languages = this.getLanguagesFromHistoryEntry(data).join(', ');
             return {
                 dt: data.dt,
-                name: dt.toString().replace(/\s\(.*\)/, ''),
+                name: dt.toString().replace(/\s\(.*\)/, '').concat(" (" + languages + ")"),
                 load: _.bind(function () {
                     this.onLoad(data);
                     this.modal.modal('hide');
@@ -127,7 +144,7 @@ History.prototype.HideRadiosAndSetDiff = function () {
                 return (item.dt === dt);
             });
 
-            this.rhs.update(itemRight.code);
+            this.rhs.update(itemRight);
         } else if (li.find('.base').prop('checked')) {
             foundbase = true;
 
@@ -135,7 +152,7 @@ History.prototype.HideRadiosAndSetDiff = function () {
                 return (item.dt === dt);
             });
 
-            this.lhs.update(itemLeft.code);
+            this.lhs.update(itemLeft);
         }
 
         if (foundbase && foundcomp) {
