@@ -94,11 +94,7 @@ HistoryWidget.prototype.initializeIfNeeded = function () {
 };
 
 HistoryWidget.prototype.getLanguagesFromHistoryEntry = function (entry) {
-    var languages = [];
-    _.each(entry.sources, function (source) {
-        languages.push(source.lang);
-    });
-    return languages;
+    return _.pluck(entry.sources, 'lang');
 };
 
 HistoryWidget.prototype.populateFromLocalStorage = function () {
