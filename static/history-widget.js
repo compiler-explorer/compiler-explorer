@@ -233,5 +233,5 @@ HistoryWidget.prototype.run = function (onLoad) {
 };
 
 module.exports = {
-    HistoryWidget
+    HistoryWidget: HistoryWidget
 };
