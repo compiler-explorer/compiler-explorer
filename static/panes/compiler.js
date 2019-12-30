@@ -94,6 +94,7 @@ function Compiler(hub, container, state) {
     this.wantOptInfo = state.wantOptInfo;
     this.decorations = {};
     this.prevDecorations = [];
+    this.labelDefinitions = {};
     this.alertSystem = new Alert();
     this.alertSystem.prefixMessage = "Compiler #" + this.id + ": ";
 
@@ -115,7 +116,7 @@ function Compiler(hub, container, state) {
         minimap: {
             maxColumn: 80
         },
-        lineNumbersMinChars: options.embedded ? 1 : 5,
+        lineNumbersMinChars: 1,
         renderIndentGuides: false,
         fontLigatures: this.settings.editorsFLigatures
     });
@@ -195,10 +196,13 @@ Compiler.prototype.initPanerButtons = function () {
     }, this));
 
     var cloneComponent = _.bind(function () {
+        var currentState = this.currentState();
+        // Delete the saved id to force a new one
+        delete currentState.id;
         return {
             type: 'component',
             componentName: 'compiler',
-            componentState: this.currentState()
+            componentState: currentState
         };
     }, this);
     var createOptView = _.bind(function () {
@@ -324,7 +328,78 @@ Compiler.prototype.resize = function () {
     });
 };
 
+// Returns a label name if it can be found in the given position, otherwise
+// returns null.
+Compiler.prototype.getLabelAtPosition = function (position) {
+    var asmLine = this.assembly[position.lineNumber - 1];
+    var column = position.column;
+    var labels = asmLine.labels;
+
+    for (var i = 0; i < labels.length; ++i) {
+        if (column >= labels[i].range.startCol &&
+            column < labels[i].range.endCol
+        ) {
+            return labels[i];
+        }
+    }
+
+    return null;
+};
+
+// Jumps to a label definition related to a label which was found in the
+// given position and highlights the given range. If no label can be found in
+// the given positon it do nothing.
+Compiler.prototype.jumpToLabel = function (position) {
+    var label = this.getLabelAtPosition(position);
+
+    if (!label) {
+        return;
+    }
+
+    var labelDefLineNum = this.labelDefinitions[label.name];
+    if (!labelDefLineNum) {
+        return;
+    }
+
+    // Highlight the new range.
+    var endLineContent =
+        this.outputEditor.getModel().getLineContent(labelDefLineNum);
+
+    this.outputEditor.setSelection(new monaco.Selection(
+        labelDefLineNum, 0,
+        labelDefLineNum, endLineContent.length + 1));
+
+    // Jump to the given line.
+    this.outputEditor.revealLineInCenter(labelDefLineNum);
+};
+
 Compiler.prototype.initEditorActions = function () {
+    this.isLabelCtxKey = this.outputEditor.createContextKey('isLabel', true);
+
+    this.outputEditor.addAction({
+        id: 'jumptolabel',
+        label: 'Jump to label',
+        keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter],
+        precondition: 'isLabel',
+        contextMenuGroupId: 'navigation',
+        contextMenuOrder: 1.5,
+        run: _.bind(function (ed) {
+            this.jumpToLabel(ed.getPosition());
+        }, this)
+    });
+
+    // Hiding the 'Jump to label' context menu option if no label can be found
+    // in the clicked position.
+    var contextmenu = this.outputEditor.getContribution('editor.contrib.contextmenu');
+    var realMethod = contextmenu._onContextMenu;
+    contextmenu._onContextMenu = _.bind(function (e) {
+        if (this.isLabelCtxKey && e.target.position) {
+            var label = this.getLabelAtPosition(e.target.position);
+            this.isLabelCtxKey.set(label);
+        }
+        realMethod.apply(contextmenu, arguments);
+    }, this);
+
     this.outputEditor.addAction({
         id: 'viewsource',
         label: 'Scroll to source',
@@ -521,12 +596,14 @@ Compiler.prototype.sendCompile = function (request) {
 
 Compiler.prototype.setNormalMargin = function () {
     this.outputEditor.updateOptions({
-        lineNumbers: true
+        lineNumbers: true,
+        lineNumbersMinChars: 1
     });
 };
 
 Compiler.prototype.setBinaryMargin = function () {
     this.outputEditor.updateOptions({
+        lineNumbersMinChars: 6,
         lineNumbers: _.bind(this.getBinaryForLine, this)
     });
 };
@@ -559,6 +636,22 @@ Compiler.prototype.setAssembly = function (asm) {
             visibleRanges.length > 0 ? visibleRanges[0].startLineNumber : 1;
         this.outputEditor.revealLine(currentTopLine);
     }
+
+    this.decorations.labelUsages = [];
+    _.each(this.assembly, _.bind(function (obj, line) {
+        if (!obj.labels || !obj.labels.length) return;
+
+        obj.labels.forEach(function (label) {
+            this.decorations.labelUsages.push({
+                range: new monaco.Range(line + 1, label.range.startCol,
+                    line + 1, label.range.endCol),
+                options: {
+                    inlineClassName: 'asm-label-link'
+                }
+            });
+        }, this);
+    }, this));
+    this.updateDecorations();
 
     if (this.getEffectiveFilters().binary) {
         this.setBinaryMargin();
@@ -636,6 +729,7 @@ Compiler.prototype.onCompileResponse = function (request, result, cached) {
         timingValue: timeTaken
     });
 
+    this.labelDefinitions = result.labelDefinitions || {};
     this.setAssembly(result.asm || fakeAsm('<No output>'));
 
     var stdout = result.stdout || [];
@@ -1195,6 +1289,11 @@ Compiler.prototype.initCallbacks = function () {
         this.cursorSelectionThrottledFunction(e);
     }, this));
 
+    this.mouseUpThrottledFunction = _.throttle(_.bind(this.onMouseUp, this), 50);
+    this.outputEditor.onMouseUp(_.bind(function (e) {
+        this.mouseUpThrottledFunction(e);
+    }, this));
+
     this.compileClearCache.on('click', _.bind(function () {
         this.compilerService.cache.reset();
         this.compile(true);
@@ -1304,6 +1403,7 @@ Compiler.prototype.onFilterChange = function () {
 
 Compiler.prototype.currentState = function () {
     var state = {
+        id: this.id,
         compiler: this.compiler ? this.compiler.id : '',
         source: this.sourceEditorId,
         options: this.options,
@@ -1524,6 +1624,14 @@ Compiler.prototype.onDidChangeCursorSelection = function (e) {
     if (this.awaitingInitialResults) {
         this.selection = e.selection;
         this.saveState();
+    }
+};
+
+Compiler.prototype.onMouseUp = function (e) {
+    if (e === null || e.target === null || e.target.position === null) return;
+
+    if (e.event.ctrlKey && e.event.leftButton) {
+        this.jumpToLabel(e.target.position);
     }
 };
 

@@ -1,26 +1,55 @@
-[
-  {
-    "text": "my_own_address:",
-    "source": null
-  },
-  {
-    "text": ".Ltmp0:",
-    "source": null
-  },
-  {
-    "text": "        .quad   .Ltmp0",
-    "source": null
-  },
-  {
-    "text": "",
-    "source": null
-  },
-  {
-    "text": "ptr:",
-    "source": null
-  },
-  {
-    "text": "        .quad   my_own_address",
-    "source": null
+{
+  "asm": [
+    {
+      "text": "my_own_address:",
+      "source": null,
+      "labels": []
+    },
+    {
+      "text": ".Ltmp0:",
+      "source": null,
+      "labels": []
+    },
+    {
+      "text": "        .quad   .Ltmp0",
+      "source": null,
+      "labels": [
+        {
+          "name": ".Ltmp0",
+          "range": {
+            "startCol": 17,
+            "endCol": 23
+          }
+        }
+      ]
+    },
+    {
+      "text": "",
+      "source": null,
+      "labels": []
+    },
+    {
+      "text": "ptr:",
+      "source": null,
+      "labels": []
+    },
+    {
+      "text": "        .quad   my_own_address",
+      "source": null,
+      "labels": [
+        {
+          "name": "my_own_address",
+          "range": {
+            "startCol": 17,
+            "endCol": 31
+          }
+        }
+      ]
+    }
+  ],
+  "labelDefinitions": {
+    "my_own_address": 1,
+    ".Ltmp0": 2,
+    "ptr": 5
   }
-]
+}

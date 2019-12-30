@@ -226,8 +226,7 @@ function setupEventLoopLagLogging() {
 
         if (thresErr && lagMs >= thresErr) {
             logger.error(`Event Loop Lag: ${lagMs} ms`);
-        }
-        else if (thresWarn && lagMs >= thresWarn) {
+        } else if (thresWarn && lagMs >= thresWarn) {
             logger.warn(`Event Loop Lag: ${lagMs} ms`);
         }
 
@@ -417,7 +416,7 @@ aws.initConfig(awsProps)
                     routeApi.apiHandler.setLanguages(languages);
                     routeApi.apiHandler.setOptions(clientOptionsHandler);
                 }
-    
+
                 onCompilerChange(compilers);
 
                 const rescanCompilerSecs = ceProps('rescanCompilerSecs', 0);

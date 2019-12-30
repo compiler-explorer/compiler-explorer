@@ -1,21 +1,173 @@
-[
-  {"text":"maxArray(double*, double*):                        # @maxArray(double*, double*)","source":null},
-  {"text":"        xor     eax, eax","source":{"file":null,"line":1}},
-  {"text":".LBB0_1:                                # =>This Inner Loop Header: Depth=1","source":null},
-  {"text":"        movsd   xmm0, qword ptr [rsi + 8*rax]","source":{"file":null,"line":3}},
-  {"text":"        ucomisd xmm0, qword ptr [rdi + 8*rax]","source":{"file":null,"line":3}},
-  {"text":"        jbe     .LBB0_3","source":{"file":null,"line":3}},
-  {"text":"        movsd   qword ptr [rdi + 8*rax], xmm0","source":{"file":null,"line":3}},
-  {"text":".LBB0_3:                                #   in Loop: Header=BB0_1 Depth=1","source":null},
-  {"text":"        lea     rcx, qword ptr [rax + 1]","source":{"file":null,"line":2}},
-  {"text":"        movsd   xmm0, qword ptr [rsi + 8*rax + 8]","source":{"file":null,"line":3}},
-  {"text":"        ucomisd xmm0, qword ptr [rdi + 8*rax + 8]","source":{"file":null,"line":3}},
-  {"text":"        jbe     .LBB0_5","source":{"file":null,"line":3}},
-  {"text":"        movsd   qword ptr [rdi + 8*rax + 8], xmm0","source":{"file":null,"line":3}},
-  {"text":".LBB0_5:                                #   in Loop: Header=BB0_1 Depth=1","source":null},
-  {"text":"        inc     rcx","source":{"file":null,"line":2}},
-  {"text":"        cmp     rcx, 65536","source":{"file":null,"line":2}},
-  {"text":"        mov     rax, rcx","source":{"file":null,"line":2}},
-  {"text":"        jne     .LBB0_1","source":{"file":null,"line":2}},
-  {"text":"        ret","source":{"file":null,"line":5}}
-]
+{
+  "asm": [
+    {
+      "text": "maxArray(double*, double*):                        # @maxArray(double*, double*)",
+      "source": null,
+      "labels": []
+    },
+    {
+      "text": "        xor     eax, eax",
+      "source": {
+        "file": null,
+        "line": 1
+      },
+      "labels": []
+    },
+    {
+      "text": ".LBB0_1:                                # =>This Inner Loop Header: Depth=1",
+      "source": null,
+      "labels": []
+    },
+    {
+      "text": "        movsd   xmm0, qword ptr [rsi + 8*rax]",
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "labels": []
+    },
+    {
+      "text": "        ucomisd xmm0, qword ptr [rdi + 8*rax]",
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "labels": []
+    },
+    {
+      "text": "        jbe     .LBB0_3",
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "labels": [
+        {
+          "name": ".LBB0_3",
+          "range": {
+            "startCol": 17,
+            "endCol": 24
+          }
+        }
+      ]
+    },
+    {
+      "text": "        movsd   qword ptr [rdi + 8*rax], xmm0",
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "labels": []
+    },
+    {
+      "text": ".LBB0_3:                                #   in Loop: Header=BB0_1 Depth=1",
+      "source": null,
+      "labels": []
+    },
+    {
+      "text": "        lea     rcx, qword ptr [rax + 1]",
+      "source": {
+        "file": null,
+        "line": 2
+      },
+      "labels": []
+    },
+    {
+      "text": "        movsd   xmm0, qword ptr [rsi + 8*rax + 8]",
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "labels": []
+    },
+    {
+      "text": "        ucomisd xmm0, qword ptr [rdi + 8*rax + 8]",
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "labels": []
+    },
+    {
+      "text": "        jbe     .LBB0_5",
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "startCol": 17,
+            "endCol": 24
+          }
+        }
+      ]
+    },
+    {
+      "text": "        movsd   qword ptr [rdi + 8*rax + 8], xmm0",
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "labels": []
+    },
+    {
+      "text": ".LBB0_5:                                #   in Loop: Header=BB0_1 Depth=1",
+      "source": null,
+      "labels": []
+    },
+    {
+      "text": "        inc     rcx",
+      "source": {
+        "file": null,
+        "line": 2
+      },
+      "labels": []
+    },
+    {
+      "text": "        cmp     rcx, 65536",
+      "source": {
+        "file": null,
+        "line": 2
+      },
+      "labels": []
+    },
+    {
+      "text": "        mov     rax, rcx",
+      "source": {
+        "file": null,
+        "line": 2
+      },
+      "labels": []
+    },
+    {
+      "text": "        jne     .LBB0_1",
+      "source": {
+        "file": null,
+        "line": 2
+      },
+      "labels": [
+        {
+          "name": ".LBB0_1",
+          "range": {
+            "startCol": 17,
+            "endCol": 24
+          }
+        }
+      ]
+    },
+    {
+      "text": "        ret",
+      "source": {
+        "file": null,
+        "line": 5
+      },
+      "labels": []
+    }
+  ],
+  "labelDefinitions": {
+    ".LBB0_1": 3,
+    ".LBB0_3": 8,
+    ".LBB0_5": 14
+  }
+}

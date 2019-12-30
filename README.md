@@ -24,7 +24,7 @@ You can support [this project on Patreon](https://patreon.com/mattgodbolt).
 **Compiler Explorer** was started in 2012 to serve my needs at [my previous employer](https://drw.com) to show how
  C++ constructs translated to assembly code. It started out as a `tmux` session with `vi` running in one
  pane and `watch gcc -S foo.cc -o -` running in the other.
-Since then, it has become a public website serving around 140,000 compilations per day.
+Since then, it has become a public website serving around [210,000 compilations per day](https://www.stathat.com/cards/Tk5csAWI0O7x).
 
 ##### FAQ
 
@@ -61,7 +61,7 @@ Assuming you have a compatible version of `node` installed, simply running
  on your local machine: http://localhost:10240/.
  Currently **Compiler Explorer**
  [requires the latest LTS](CONTRIBUTING.md#node-version) `node` version
- (_v10_) installed, either on the path or at `NODE_DIR`
+ (_v12_) installed, either on the path or at `NODE_DIR`
  (an environment variable or `make` parameter).
 
 Running with `make EXTRA_ARGS='--language LANG'` will allow you to load

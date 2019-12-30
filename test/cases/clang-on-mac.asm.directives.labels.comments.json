@@ -1,45 +1,57 @@
-[
-  {
-    "text": "_main:                                  ## @main",
-    "source": null
-  },
-  {
-    "text": "        pushq   %rbp",
-    "source": {
-      "file": null,
-      "line": 2
+{
+  "asm": [
+    {
+      "text": "_main:                                  ## @main",
+      "source": null,
+      "labels": []
+    },
+    {
+      "text": "        pushq   %rbp",
+      "source": {
+        "file": null,
+        "line": 2
+      },
+      "labels": []
+    },
+    {
+      "text": "        movq    %rsp, %rbp",
+      "source": {
+        "file": null,
+        "line": 2
+      },
+      "labels": []
+    },
+    {
+      "text": "        xorl    %eax, %eax",
+      "source": {
+        "file": null,
+        "line": 2
+      },
+      "labels": []
+    },
+    {
+      "text": "        popq    %rbp",
+      "source": {
+        "file": null,
+        "line": 2
+      },
+      "labels": []
+    },
+    {
+      "text": "        retq",
+      "source": {
+        "file": null,
+        "line": 2
+      },
+      "labels": []
+    },
+    {
+      "text": "",
+      "source": null,
+      "labels": []
     }
-  },
-  {
-    "text": "        movq    %rsp, %rbp",
-    "source": {
-      "file": null,
-      "line": 2
-    }
-  },
-  {
-    "text": "        xorl    %eax, %eax",
-    "source": {
-      "file": null,
-      "line": 2
-    }
-  },
-  {
-    "text": "        popq    %rbp",
-    "source": {
-      "file": null,
-      "line": 2
-    }
-  },
-  {
-    "text": "        retq",
-    "source": {
-      "file": null,
-      "line": 2
-    }
-  },
-  {
-    "text": "",
-    "source": null
+  ],
+  "labelDefinitions": {
+    "_main": 1
   }
-]
+}

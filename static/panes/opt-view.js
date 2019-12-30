@@ -52,7 +52,7 @@ function Opt(hub, container, state) {
         minimap: {
             maxColumn: 80
         },
-        lineNumbersMinChars: 3
+        lineNumbersMinChars: 1
     });
 
     this._compilerid = state.id;

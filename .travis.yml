@@ -6,7 +6,7 @@ git:
     depth: false # Get all depth so our git-based version/change tracking of policies works
 
 node_js:
-    - "10"
+    - "12"
 
 script:
     - npm run ci-lint

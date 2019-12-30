@@ -99,7 +99,7 @@ function Editor(hub, state, container) {
             maxColumn: 80
         },
         folding: true,
-        lineNumbersMinChars: options.embedded ? 1 : 3,
+        lineNumbersMinChars: 1,
         emptySelectionClipboard: true,
         autoIndent: true,
         vimInUse: this.settings.useVim,
@@ -944,7 +944,7 @@ Editor.prototype.onLanguageChange = function (newLangId) {
         if (newLangId !== this.currentLanguage.id) {
             var oldLangId = this.currentLanguage.id;
             this.currentLanguage = languages[newLangId];
-            if (!this.waitingForLanguage) {
+            if (!this.waitingForLanguage && !this.settings.keepSourcesOnLangChange) {
                 this.editorSourceByLang[oldLangId] = this.getSource();
                 this.updateEditorCode();
             }

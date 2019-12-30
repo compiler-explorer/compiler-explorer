@@ -59,6 +59,7 @@ function dump(file) {
 
 function testFilter(filename, suffix, filters) {
     const result = processAsm(filename, filters);
+
     const expected = filename + suffix;
     let json = false;
     let file;
@@ -83,7 +84,7 @@ function testFilter(filename, suffix, filters) {
         if (json) {
             result.should.deep.equal(file);
         } else {
-            result.map(function (x) {
+            result.asm.map(function (x) {
                 return x.text;
             }).should.deep.equal(file);
         }

@@ -1,84 +1,104 @@
-[
-  {
-    "text": "_Z3foov:",
-    "source": null
-  },
-  {
-    "text": "        mov     eax, 42",
-    "source": {
-      "file": null,
-      "line": 3
+{
+  "asm": [
+    {
+      "text": "_Z3foov:",
+      "source": null,
+      "labels": []
+    },
+    {
+      "text": "        mov     eax, 42",
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "labels": []
+    },
+    {
+      "text": "        ret",
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "labels": []
+    },
+    {
+      "text": "_Z3barv:",
+      "source": null,
+      "labels": []
+    },
+    {
+      "text": "        mov     rax, QWORD PTR _ZTIi[rip+8]",
+      "source": {
+        "file": "/opt/compiler-explorer/gcc-8.3.0/include/c++/8.3.0/typeinfo",
+        "line": 100
+      },
+      "labels": []
+    },
+    {
+      "text": "        cmp     BYTE PTR [rax], 42",
+      "source": {
+        "file": "/opt/compiler-explorer/gcc-8.3.0/include/c++/8.3.0/typeinfo",
+        "line": 100
+      },
+      "labels": []
+    },
+    {
+      "text": "        sete    dl",
+      "source": {
+        "file": "/opt/compiler-explorer/gcc-8.3.0/include/c++/8.3.0/typeinfo",
+        "line": 100
+      },
+      "labels": []
+    },
+    {
+      "text": "        movzx   edx, dl",
+      "source": {
+        "file": "/opt/compiler-explorer/gcc-8.3.0/include/c++/8.3.0/typeinfo",
+        "line": 100
+      },
+      "labels": []
+    },
+    {
+      "text": "        movsx   eax, BYTE PTR [rax+rdx]",
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "labels": []
+    },
+    {
+      "text": "        ret",
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "labels": []
+    },
+    {
+      "text": "_Z3bazv:",
+      "source": null,
+      "labels": []
+    },
+    {
+      "text": "        mov     eax, 53",
+      "source": {
+        "file": null,
+        "line": 6
+      },
+      "labels": []
+    },
+    {
+      "text": "        ret",
+      "source": {
+        "file": null,
+        "line": 6
+      },
+      "labels": []
     }
-  },
-  {
-    "text": "        ret",
-    "source": {
-      "file": null,
-      "line": 3
-    }
-  },
-  {
-    "text": "_Z3barv:",
-    "source": null
-  },
-  {
-    "text": "        mov     rax, QWORD PTR _ZTIi[rip+8]",
-    "source": {
-      "file": "/opt/compiler-explorer/gcc-8.3.0/include/c++/8.3.0/typeinfo",
-      "line": 100
-    }
-  },
-  {
-    "text": "        cmp     BYTE PTR [rax], 42",
-    "source": {
-      "file": "/opt/compiler-explorer/gcc-8.3.0/include/c++/8.3.0/typeinfo",
-      "line": 100
-    }
-  },
-  {
-    "text": "        sete    dl",
-    "source": {
-      "file": "/opt/compiler-explorer/gcc-8.3.0/include/c++/8.3.0/typeinfo",
-      "line": 100
-    }
-  },
-  {
-    "text": "        movzx   edx, dl",
-    "source": {
-      "file": "/opt/compiler-explorer/gcc-8.3.0/include/c++/8.3.0/typeinfo",
-      "line": 100
-    }
-  },
-  {
-    "text": "        movsx   eax, BYTE PTR [rax+rdx]",
-    "source": {
-      "file": null,
-      "line": 4
-    }
-  },
-  {
-    "text": "        ret",
-    "source": {
-      "file": null,
-      "line": 4
-    }
-  },
-  {
-    "text": "_Z3bazv:",
-    "source": null
-  },
-  {
-    "text": "        mov     eax, 53",
-    "source": {
-      "file": null,
-      "line": 6
-    }
-  },
-  {
-    "text": "        ret",
-    "source": {
-      "file": null,
-      "line": 6
-    }
+  ],
+  "labelDefinitions": {
+    "_Z3foov": 1,
+    "_Z3barv": 4,
+    "_Z3bazv": 11
   }
-]
+}

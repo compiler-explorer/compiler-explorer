@@ -148,15 +148,6 @@ a.navbar-brand img.logo.normal {
     background-color: #383838 !important;
 }
 
-.active {
-    background-color: #235765 !important;
-    color: #fff !important;
-}
-
-.active:hover {
-    background-color: #998899 !important;
-}
-
 .dropdown-menu {
     color: #f2f2f2 !important;
     background-color: #303030 !important;
@@ -433,4 +424,21 @@ div.argmenuitem span.argdescription {
 
 a {
     color: #45bbe0 !important;
+}
+
+.fa, .fas {
+    color: white;
+}
+
+.close:hover {
+    color: white;
+}
+
+.navbar-light .navbar-toggler-icon {
+    background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3e%3cpath stroke='rgba(255, 255, 255, 0.5)' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+}
+
+.navbar-light .navbar-toggler {
+    color: rgba(255,255,255,.5);
+    border-color: rgba(255,255,255,.1);
 }

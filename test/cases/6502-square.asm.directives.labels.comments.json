@@ -1,84 +1,111 @@
-[
-  {
-    "text": ".proc   _square: near",
-    "source": null
-  },
-  {
-    "text": "",
-    "source": null
-  },
-  {
-    "text": "        jsr     pushax",
-    "source": {
-      "file": "/tmp/test.c",
-      "line": 2
+{
+  "asm": [
+    {
+      "text": ".proc   _square: near",
+      "source": null,
+      "labels": []
+    },
+    {
+      "text": "",
+      "source": null,
+      "labels": []
+    },
+    {
+      "text": "        jsr     pushax",
+      "source": {
+        "file": "/tmp/test.c",
+        "line": 2
+      },
+      "labels": []
+    },
+    {
+      "text": "        ldy     #$01",
+      "source": {
+        "file": "/tmp/test.c",
+        "line": 3
+      },
+      "labels": []
+    },
+    {
+      "text": "        jsr     ldaxysp",
+      "source": {
+        "file": "/tmp/test.c",
+        "line": 3
+      },
+      "labels": []
+    },
+    {
+      "text": "        jsr     pushax",
+      "source": {
+        "file": "/tmp/test.c",
+        "line": 3
+      },
+      "labels": []
+    },
+    {
+      "text": "        ldy     #$03",
+      "source": {
+        "file": "/tmp/test.c",
+        "line": 3
+      },
+      "labels": []
+    },
+    {
+      "text": "        jsr     ldaxysp",
+      "source": {
+        "file": "/tmp/test.c",
+        "line": 3
+      },
+      "labels": []
+    },
+    {
+      "text": "        jsr     tosmulax",
+      "source": {
+        "file": "/tmp/test.c",
+        "line": 3
+      },
+      "labels": []
+    },
+    {
+      "text": "        jmp     L0001",
+      "source": {
+        "file": "/tmp/test.c",
+        "line": 3
+      },
+      "labels": [
+        {
+          "name": "L0001",
+          "range": {
+            "startCol": 17,
+            "endCol": 22
+          }
+        }
+      ]
+    },
+    {
+      "text": "L0001:  jsr     incsp2",
+      "source": {
+        "file": "/tmp/test.c",
+        "line": 4
+      },
+      "labels": []
+    },
+    {
+      "text": "        rts",
+      "source": {
+        "file": "/tmp/test.c",
+        "line": 4
+      },
+      "labels": []
+    },
+    {
+      "text": "",
+      "source": null,
+      "labels": []
     }
-  },
-  {
-    "text": "        ldy     #$01",
-    "source": {
-      "file": "/tmp/test.c",
-      "line": 3
-    }
-  },
-  {
-    "text": "        jsr     ldaxysp",
-    "source": {
-      "file": "/tmp/test.c",
-      "line": 3
-    }
-  },
-  {
-    "text": "        jsr     pushax",
-    "source": {
-      "file": "/tmp/test.c",
-      "line": 3
-    }
-  },
-  {
-    "text": "        ldy     #$03",
-    "source": {
-      "file": "/tmp/test.c",
-      "line": 3
-    }
-  },
-  {
-    "text": "        jsr     ldaxysp",
-    "source": {
-      "file": "/tmp/test.c",
-      "line": 3
-    }
-  },
-  {
-    "text": "        jsr     tosmulax",
-    "source": {
-      "file": "/tmp/test.c",
-      "line": 3
-    }
-  },
-  {
-    "text": "        jmp     L0001",
-    "source": {
-      "file": "/tmp/test.c",
-      "line": 3
-    }
-  },
-  {
-    "text": "L0001:  jsr     incsp2",
-    "source": {
-      "file": "/tmp/test.c",
-      "line": 4
-    }
-  },
-  {
-    "text": "        rts",
-    "source": {
-      "file": "/tmp/test.c",
-      "line": 4
-    }
-  },
-  {
-    "text": "",
-    "source": null
+  ],
+  "labelDefinitions": {
+    "_square": 1,
+    "L0001": 11
   }
-]
+}

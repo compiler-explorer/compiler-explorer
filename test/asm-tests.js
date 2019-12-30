@@ -29,12 +29,14 @@ require('chai').should();
 describe('ASM CL parser', () => {
     it('should work for error documents', () => {
         const parser = new AsmParser();
-        parser.process("<Compilation failed>", {directives: true})
-            .should.deep.equal([{
-                "source": null,
-                "text": "<Compilation failed>"
-            }]
-        );
+        const result = parser.process("<Compilation failed>", {
+            directives: true
+        });
+
+        result.asm.should.deep.equal([{
+            "source": null,
+            "text": "<Compilation failed>"
+        }]);
     });
 });
 

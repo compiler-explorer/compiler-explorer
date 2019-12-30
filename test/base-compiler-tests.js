@@ -134,7 +134,7 @@ describe('Compiler execution', function () {
         result.compilationOptions.should.contain("options");
         result.compilationOptions.should.contain(result.inputFilename);
         result.okToCache.should.be.true;
-        result.asm.should.deep.equal([{source: null, text: "This is the output file"}]);
+        result.asm.should.deep.equal([{source: null, text: "This is the output file", labels: []}]);
         result.stdout.should.deep.equal([{text: "stdout"}]);
         result.stderr.should.deep.equal([{text: "stderr"}]);
         result.popularArguments.should.deep.equal({});
@@ -160,7 +160,7 @@ describe('Compiler execution', function () {
             {},
             []);
         result.code.should.equal(1);
-        result.asm.should.deep.equal([{source: null, text: "<Compilation failed>"}]);
+        result.asm.should.deep.equal([{labels:[], source: null, text: "<Compilation failed>"}]);
     });
 
     it('should cache results (when asked)', async () => {
@@ -297,4 +297,39 @@ describe('Compiler execution', function () {
         result.execResult.stderr.should.deep.equal([{text: "exec stderr"}]);
         result.execResult.buildResult.stderr.should.deep.equal([{text: "binary stderr"}]);
     });
+
+    it('should demangle', async () => {
+        const withDemangler = {...info, demangler: 'demangler-exe', demanglerClassFile: './demangler-cpp'};
+        const compiler = new BaseCompiler(withDemangler, ce);
+        const execStub = sinon.stub(compiler, 'exec');
+        stubOutCallToExec(execStub, compiler, "someMangledSymbol:\n", {
+            code: 0,
+            okToCache: true,
+            stdout: 'stdout',
+            stderr: 'stderr'
+        });
+        execStub.onCall(1).callsFake((demangler, args, options) => {
+            demangler.should.equal("demangler-exe");
+            options.input.should.equal("someMangledSymbol");
+            return Promise.resolve({
+                code: 0,
+                filenameTransform: x => x,
+                stdout: 'someDemangledSymbol\n',
+                stderr: ''
+            });
+        });
+        const result = await compiler.compile(
+            "source",
+            "options",
+            {},
+            {demangle: true},
+            false,
+            [],
+            {},
+            []);
+        result.code.should.equal(0);
+        result.asm.should.deep.equal([{source: null, labels: [], text: "someDemangledSymbol:"}]);
+        // TODO all with demangle: false
+    });
+
 });
