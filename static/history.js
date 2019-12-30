@@ -109,8 +109,25 @@ function sortedList() {
     return sorted;
 }
 
+function sources(language) {
+    var sourcelist = [];
+    _.each(sortedList(), function (entry) {
+        _.each(entry.sources, function (source) {
+            if (source.lang === language) {
+                sourcelist.push({
+                    dt: entry.dt,
+                    source: source.source
+                });
+            }
+        });
+    });
+
+    return sourcelist;
+}
+
 module.exports = {
     push: _.debounce(push, 500),
     list: list,
-    sortedList: sortedList
+    sortedList: sortedList,
+    sources: sources
 };
