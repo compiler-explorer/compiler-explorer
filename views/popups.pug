@@ -249,21 +249,21 @@
           .card-body
             ul.nav.nav-tabs(role="tablist")
               li.nav-item
-                a.nav-link.active#loadhistory-tab(data-toggle="tab" role="tab" href="#load-history" aria-controls="load-history" aria-selected="true")
+                a.nav-link.active(data-toggle="tab" role="tab" href="#load-history" aria-controls="load-history" aria-selected="true")
                   | History
               li.nav-item
-                a.nav-link#loadhistorydiff-tab(data-toggle="tab" role="tab" href="#load-history-diff-display" aria-controls="load-history-diff-display" aria-selected="false")
+                a.nav-link(data-toggle="tab" role="tab" href="#load-history-diff-display" aria-controls="load-history-diff-display" aria-selected="false")
                   | Diff
 
             div.tab-content#historyTabs(style="height:600px")
-              div.tab-pane.show.active#load-history(role="tabpanel" aria-labelledby="loadhistory-tab")
+              div.tab-pane.show.active#load-history(role="tabpanel")
                 ul.historiccode
                   li.template
                     input.base(type="radio" name="base")
                     input.comp(type="radio" name="comp")
                     | &nbsp;
                     a(href="javascript:;")
-              div.tab-pane#load-history-diff-display(role="tabpanel" aria-labelledby="loadhistorydiff-tab")
+              div.tab-pane#load-history-diff-display(role="tabpanel")
                 .checkbox
                   label.control-label(for="inline-diff-checkbox")
                     input#inline-diff-checkbox(type="checkbox" value="")
