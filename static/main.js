@@ -46,6 +46,9 @@ var themer = require('./themes');
 var motd = require('./motd');
 var jsCookie = require('js-cookie');
 var SimpleCook = require('./simplecook');
+var History = require('./history');
+var HistoryWidget = require('./history-widget').HistoryWidget;
+
 //css
 require("bootstrap/dist/css/bootstrap.min.css");
 require("golden-layout/src/css/goldenlayout-base.css");
@@ -58,6 +61,7 @@ require("./explorer.css");
 // Forgive me the global usage here
 var hasUIBeenReset = false;
 var simpleCooks = new SimpleCook();
+var historyWidget = new HistoryWidget();
 
 function setupSettings(hub) {
     var eventHub = hub.layout.eventHub;
@@ -157,6 +161,17 @@ function setupButtons(options) {
     });
     $('#changes').click(function () {
         alertSystem.alert("Changelog", $(require('./changelog.html')));
+    });
+
+    $('#ui-history').click(function () {
+        historyWidget.run(function (data) {
+            local.set('gl', JSON.stringify(data.config));
+            hasUIBeenReset = true;
+            window.history.replaceState(null, null, window.httpRoot);
+            window.location.reload();
+        });
+
+        $('#history').modal();
     });
 }
 
@@ -325,6 +340,8 @@ function start() {
                 // TODO: Add this state to storedPaths, but with a upper bound on the stored state count
             }
             lastState = stringifiedConfig;
+
+            History.push(stringifiedConfig);
         }
         if (options.embedded) {
             var strippedToLast = window.location.pathname;

@@ -12,6 +12,7 @@
             ul.nav.nav-tabs.card-header-tabs(role="tablist")
               li.nav-item(role="presentation"): a.nav-link.active(href="#load-examples" role="tab" data-toggle="tab") Examples
               li.nav-item(role="presentation"): a.nav-link(href="#load-browser-local" role="tab" data-toggle="tab") Browser-local storage
+              li.nav-item(role="presentation"): a.nav-link(href="#load-browser-local-history" role="tab" data-toggle="tab") Browser-local history
               li.nav-item(role="presentation"): a.nav-link(href="#load-file-system" role="tab" data-toggle="tab") File system
           .card-body.tab-content
             #load-examples.tab-pane.active(role="tabpanel")
@@ -26,6 +27,10 @@
                 input.save-name(type="text" size="20" placeholder="Set name of state")
                 .input-group-append
                   button.btn.btn-light.save-button(type="button") Save to browser-local storage
+            #load-browser-local-history.tab-pane(role="tabpanel")
+              h4.card-title Load from browser-local history:
+              ul.local-history.small-v-scrollable
+                li.template: a(href="javascript:;")
             #load-file-system.tab-pane(role="tabpanel")
               h4.card-title Load/save to your system
               label.btn.btn-outline-secondary.btn-file(role="button") Load from a local file
@@ -234,3 +239,39 @@
                 label
                   input.hideEditorToolbars(type="checkbox")
                   | Hide Editor Toolbars
+
+#history.modal.fade.gl_keep(tabindex="-1" role="dialog")
+  .modal-dialog.modal-lg
+    .modal-content
+      .modal-header
+        h5.modal-title History
+        button.close(type="button" data-dismiss="modal" aria-hidden="true" aria-label="Close")
+          span(aria-hidden="true")
+            | &times;
+      .modal-body
+        .card
+          .card-body
+            ul.nav.nav-tabs(role="tablist")
+              li.nav-item
+                a.nav-link.active(data-toggle="tab" role="tab" href="#load-history" aria-controls="load-history" aria-selected="true")
+                  | History
+              li.nav-item
+                a.nav-link(data-toggle="tab" role="tab" href="#load-history-diff-display" aria-controls="load-history-diff-display" aria-selected="false")
+                  | Diff
+
+            div.tab-content#historyTabs(style="height:600px")
+              div.tab-pane.show.active#load-history(role="tabpanel")
+                ul.historiccode
+                  li.template
+                    input.base(type="radio" name="base")
+                    input.comp(type="radio" name="comp")
+                    | &nbsp;
+                    a(href="javascript:;")
+              div.tab-pane#load-history-diff-display(role="tabpanel")
+                .checkbox
+                  label.control-label(for="inline-diff-checkbox")
+                    input.inline-diff-checkbox(type="checkbox" value="")
+                    | Inline diff
+                div.monaco-placeholder#history-diff
+      .modal-footer
+        button.btn.btn-light(type="button" data-dismiss="modal" aria-label="Close") Close
