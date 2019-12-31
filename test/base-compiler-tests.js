@@ -142,6 +142,27 @@ describe('Compiler execution', function () {
         execStub.called.should.be.true;
     });
 
+    it('should handle compilation failures', async () => {
+        const execStub = sinon.stub(compiler, 'exec');
+        stubOutCallToExec(execStub, compiler, "This is the output file", {
+            code: 1,
+            okToCache: true,
+            stdout: '',
+            stderr: 'oh noes'
+        });
+        const result = await compiler.compile(
+            "source",
+            "options",
+            {},
+            {},
+            false,
+            [],
+            {},
+            []);
+        result.code.should.equal(1);
+        result.asm.should.deep.equal([{labels:[], source: null, text: "<Compilation failed>"}]);
+    });
+
     it('should cache results (when asked)', async () => {
         const ceMock = sinon.mock(ce);
         const fakeExecResults = {
@@ -154,7 +175,7 @@ describe('Compiler execution', function () {
         stubOutCallToExec(execStub, compiler, "This is the output file", fakeExecResults);
         const source = "Some cacheable source";
         const options = "Some cacheable options";
-        ceMock.expects('cachePut').withArgs(sinon.match({source, options}), sinon.match(fakeExecResults));
+        ceMock.expects('cachePut').withArgs(sinon.match({source, options}), sinon.match(fakeExecResults)).resolves();
         const uncachedResult = await compiler.compile(
             source,
             options,
