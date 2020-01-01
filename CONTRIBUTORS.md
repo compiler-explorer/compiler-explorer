@@ -81,3 +81,4 @@ From oldest to newest contributor, we would like to thank:
 - [Sebastian Rath](https://github.com/seb-mtl)
 - [Haze Booth](https://github.com/haze)
 - [Cassie Jones](https://github.com/porglezomp)
+- [Bastien Penavayre](https://github.com/DaemonSnake)
