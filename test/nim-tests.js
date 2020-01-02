@@ -63,9 +63,9 @@ describe('Nim', () => {
             input = "test.min",
             folder = "/tmp/",
             expected = {
-                "cpp": folder + input + ".cpp.o",
-                "c": folder + input + ".c.o",
-                "objc": folder + input + ".m.o",
+                "cpp": folder + '@m' + input + ".cpp.o",
+                "c": folder + '@m' + input + ".c.o",
+                "objc": folder + '@m' + input + ".m.o",
             };
 
         for (const lang of ["cpp", "c", "objc"]) {
