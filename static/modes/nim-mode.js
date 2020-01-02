@@ -30,107 +30,106 @@ function definition() {
     
     return {
         keywords: [
-          "addr", "as", "asm",
-          "bind", "block", "break",
-          "case", "cast", "concept", "const", "continue", "converter",
-          "defer", "discard", "distinct", "div", "do",
-          "elif", "else", "end", "enum", "except", "export",
-          "finally", "for", "from", "func",
-          "if", "import", "include", "interface", "iterator",
-          "let",
-          "macro", "method", "mixin", "mod",
-          "nil",
-          "object", "out",
-          "proc", "ptr",
-          "raise", "ref", "return",
-          "static",
-          "template", "try", "tuple", "type",
-          "using",
-          "var",
-          "when", "while",
-          "yield"
+            "addr", "as", "asm",
+            "bind", "block", "break",
+            "case", "cast", "concept", "const", "continue", "converter",
+            "defer", "discard", "distinct", "div", "do",
+            "elif", "else", "end", "enum", "except", "export",
+            "finally", "for", "from", "func",
+            "if", "import", "include", "interface", "iterator",
+            "let",
+            "macro", "method", "mixin", "mod",
+            "nil",
+            "object", "out",
+            "proc", "ptr",
+            "raise", "ref", "return",
+            "static",
+            "template", "try", "tuple", "type",
+            "using",
+            "var",
+            "when", "while",
+            "yield"
         ],
         operators: [
-          '=', '+', '-', '*', '/', '<', '>',
-          '@', '$', '~', '&', '%', '|',
-          '!', '?', '^', '.', ':', '\\'
+            '=', '+', '-', '*', '/', '<', '>',
+            '@', '$', '~', '&', '%', '|',
+            '!', '?', '^', '.', ':', '\\'
         ],
         wordOperators: [
-          'and', 'or', 'not', 'xor', 'shl', 'shr', 'div', 'mod', 'in', 'notin', 'is', 'isnot', 'of'
+            'and', 'or', 'not', 'xor', 'shl', 'shr', 'div', 'mod', 'in', 'notin', 'is', 'isnot', 'of'
         ],
         symbols: /[=><!~&|+\-*/^%]+/,
-        escapes: /\\(p|r|c|n|l|f|t|v|a|b|e|\\|\"|\'|\d+|x[0-9a-fA-F]{2}|u[0-9a-fA-F]{4}|u\{[0-9a-fA-F]+\})/,
-        charEscapes: /\\(r|c|n|l|f|t|v|a|b|e|\\|\"|\'|x[0-9a-fA-F]{2})/,
+        escapes: /\\(p|r|c|n|l|f|t|v|a|b|e|\\|"|'|\d+|x[0-9a-fA-F]{2}|u[0-9a-fA-F]{4}|u\{[0-9a-fA-F]+\})/,
+        charEscapes: /\\(r|c|n|l|f|t|v|a|b|e|\\|"|'|x[0-9a-fA-F]{2})/,
         
         hexNumber: /0(x|X)[0-9a-fA-F](_?[0-9a-fA-F])*/,
         decNumber: /\d(_?\d)*/, 
         octNumber: /0o[0-7](_?[0-7])*/,
         binNumber: /0(b|B)[0-1](_?[0-1])*/,
-        exponent: /(e|E)(\+|\-)?\d(_?\d)*/,
+        exponent: /(e|E)(\+|-)?\d(_?\d)*/,
 
         // The main tokenizer for our languages
         tokenizer: {
             root: [
-              [/[A-Za-z]([_]?\w)*/, {
-                cases: {
-                  '@keywords': 'keyword',
-                  '@wordOperators': 'keyword',
-                  '@default': 'identifier'
-                }
-              }],
-              {include: '@whitespace'},
-              [/([\[\{\(][\.\:]|\.[\]\}\)]|[\[\]\{\}\(\)])/, '@brackets'],
-              [/@symbols/, {
-                cases: {
-                  '@operators': 'operator',
-                  '@default': ''
-                }
-              }],
+                [/[A-Za-z]([_]?\w)*/, {
+                    cases: {
+                        '@keywords': 'keyword',
+                        '@wordOperators': 'keyword',
+                        '@default': 'identifier'
+                    }
+                }],
+                {include: '@whitespace'},
+                [/([[{(][.:]|\.[\]})]|[[\]{}()])/, '@brackets'],
+                [/@symbols/, {
+                    cases: {
+                        '@operators': 'operator',
+                        '@default': ''
+                    }
+                }],
 
-              // number literals
-              // floats
-              [/@decNumber(\.@decNumber(@exponent)|@exponent)(\')?(f|F|d|D)(32|64)?/, 'number.float'], 
-              [/(@decNumber|@octNumber|@binNumber)(\')?(f|F|d|D)(32|64)?/, 'number.float'],
-              [/@hexNumber\'(f|F|d|D)(32|64)?/, 'number.float'],
+                // number literals
+                // floats
+                [/@decNumber(\.@decNumber(@exponent)|@exponent)(')?(f|F|d|D)(32|64)?/, 'number.float'], 
+                [/(@decNumber|@octNumber|@binNumber)(')?(f|F|d|D)(32|64)?/, 'number.float'],
+                [/@hexNumber'(f|F|d|D)(32|64)?/, 'number.float'],
 
-              // ints
-              [/@hexNumber(\')?((i|I|u|U)(8|16|32|64))?/, 'number.hex'],
-              [/@octNumber(\')?((i|I|u|U)(8|16|32|64))?/, 'number.octal'],
-              [/@binNumber(\')?((i|I|u|U)(8|16|32|64))?/, 'number.binary'],
+                // ints
+                [/@hexNumber(')?((i|I|u|U)(8|16|32|64))?/, 'number.hex'],
+                [/@octNumber(')?((i|I|u|U)(8|16|32|64))?/, 'number.octal'],
+                [/@binNumber(')?((i|I|u|U)(8|16|32|64))?/, 'number.binary'],
 
-              [/@decNumber(\')?((i|I|u|U)(8|16|32|64))?/, 'number'],
+                [/@decNumber(')?((i|I|u|U)(8|16|32|64))?/, 'number'],
               
-              // char literals
-              [/\'/, 'string', '@character'],
+                // char literals
+                [/'/, 'string', '@character'],
 
-              // strings
-              [/(r|R)\"/, 'string', '@rawString'],
-              [/\"\"\"/, 'string', '@tripleQuoteString'],
-              [/\"(?!\")/, 'string', '@string']
+                // strings
+                [/(r|R)"/, 'string', '@rawString'],
+                [/"""/, 'string', '@tripleQuoteString'],
+                [/"(?!")/, 'string', '@string']
             ],
             whitespace: [
-              [/[ \t\r\n]+/, 'white'],
-              [/\#\[/, 'comment', '@comment'],
-              [/\#.*$/, 'comment']
+                [/[ \t\r\n]+/, 'white'],
+                [/#\[/, 'comment', '@comment'],
+                [/#.*$/, 'comment']
             ],
             comment: [
-              //[/#\[/, 'comment', '@push'],
-              [/[^\]\#]/, 'comment'],
-              [/\]\#/, 'comment', '@pop']
+                [/[^\]#]/, 'comment'],
+                [/\]#/, 'comment', '@pop']
             ],
             string: [
-              [/@escapes/, 'string.escape'],
-              [/\"/, 'string', '@pop']
+                [/@escapes/, 'string.escape'],
+                [/"/, 'string', '@pop']
             ],
             tripleQuoteString: [
-              [/\"\"\"/, 'string', '@pop']
+                [/"""/, 'string', '@pop']
             ],
             rawString: [
-              [/\"/, 'string', '@pop']
+                [/"/, 'string', '@pop']
             ],
             character: [
-              [/@charEscapes/, 'string.escape'],
-              [/\'/, 'string', '@pop']
+                [/@charEscapes/, 'string.escape'],
+                [/'/, 'string', '@pop']
             ]
         }
     };
