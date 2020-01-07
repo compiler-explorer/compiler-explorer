@@ -33,7 +33,7 @@ chai.use(chaiAsPromised);
 chai.should();
 
 const languages = {
-    go: { id: 'go' }
+    go: {id: 'go'}
 };
 
 const compilerProps = new properties.CompilerProps(languages, properties.fakeProps({}));
@@ -58,7 +58,7 @@ function testGoAsm(basefilename) {
         })
     };
 
-    return compiler.postProcess(result).then((output) => {
+    return compiler.postProcess(result).then(([output, optOutput]) => {
         const expectedOutput = utils.splitLines(fs.readFileSync(basefilename + ".output.asm").toString());
 
         utils.splitLines(output.asm).should.deep.equal(expectedOutput);
@@ -76,5 +76,5 @@ describe('GO asm tests', () => {
     });
     it('Rewrites PC jumps to labels', () => {
         return testGoAsm("test/golang/labels");
-    })
+    });
 });
