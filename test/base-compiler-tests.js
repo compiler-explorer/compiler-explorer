@@ -160,7 +160,7 @@ describe('Compiler execution', function () {
             {},
             []);
         result.code.should.equal(1);
-        result.asm.should.deep.equal([{labels:[], source: null, text: "<Compilation failed>"}]);
+        result.asm.should.deep.equal([{labels: [], source: null, text: "<Compilation failed>"}]);
     });
 
     it('should cache results (when asked)', async () => {
@@ -332,4 +332,31 @@ describe('Compiler execution', function () {
         // TODO all with demangle: false
     });
 
+    it('should run objdump properly', async () => {
+        const withDemangler = {...info, objdumper: 'objdump-exe'};
+        const compiler = new BaseCompiler(withDemangler, ce);
+        const execStub = sinon.stub(compiler, 'exec');
+        execStub.onCall(0).callsFake((objdumper, args, options) => {
+            objdumper.should.equal("objdump-exe");
+            args.should.deep.equal([
+                "-d", "output",
+                "-l", "--insn-width=16",
+                "-C", "-M", "intel"]);
+            options.maxOutput.should.equal(123456);
+            return Promise.resolve({
+                code: 0,
+                filenameTransform: x => x,
+                stdout: 'the output',
+                stderr: ''
+            });
+        });
+        compiler.supportsObjdump().should.be.true;
+        const result = await compiler.objdump(
+            "output",
+            {},
+            123456,
+            true,
+            true);
+        result.asm.should.deep.equal("the output");
+    });
 });
