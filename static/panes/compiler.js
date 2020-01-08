@@ -106,10 +106,16 @@ function Compiler(hub, container, state) {
 
     this.initButtons(state);
 
+    var monacoDisassembly = "asm";
+    if (languages[this.currentLangId] && languages[this.currentLangId].monacoDisassembly) {
+        // TODO: If languages[this.currentLangId] is not valid, something went wrong. Find out what
+        monacoDisassembly = languages[this.currentLangId].monacoDisassembly;
+    }
+
     this.outputEditor = monaco.editor.create(this.monacoPlaceholder[0], {
         scrollBeyondLastLine: false,
         readOnly: true,
-        language: languages[this.currentLangId].monacoDisassembly || 'asm',
+        language: monacoDisassembly,
         fontFamily: this.settings.editorsFFont,
         glyphMargin: !options.embedded,
         fixedOverflowWidgets: true,
