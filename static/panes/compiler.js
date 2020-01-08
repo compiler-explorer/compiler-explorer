@@ -67,6 +67,8 @@ function patchOldFilters(filters) {
 
 var languages = options.languages;
 
+// Disable max line count only for the constructor. Turns out, it needs to do quite a lot of things
+// eslint-disable-next-line max-statements
 function Compiler(hub, container, state) {
     this.container = container;
     this.hub = hub;
