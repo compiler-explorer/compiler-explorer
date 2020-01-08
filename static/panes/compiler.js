@@ -341,7 +341,7 @@ Compiler.prototype.resize = function () {
 Compiler.prototype.getLabelAtPosition = function (position) {
     var asmLine = this.assembly[position.lineNumber - 1];
     var column = position.column;
-    var labels = asmLine.labels;
+    var labels = asmLine.labels || [];
 
     for (var i = 0; i < labels.length; ++i) {
         if (column >= labels[i].range.startCol &&
