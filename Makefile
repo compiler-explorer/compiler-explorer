@@ -3,7 +3,8 @@ default: run
 help: # with thanks to Ben Rady
 	@grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
-export XZ_OPT=-1 -T 0
+export XZ_OPT := -1 -T 0
+export SENTRY_ORG := compiler-explorer
 
 # If you see "node-not-found" then you need to depend on node-installed.
 NODE:=node-not-found
@@ -21,7 +22,7 @@ NPM:=npm-not-found
 node-installed: .node-bin
 	@$(eval NODE:=$(shell cat .node-bin))
 	@$(eval NPM:=$(shell dirname $(shell cat .node-bin))/npm)
-	@$(eval PATH=$(shell dirname $(realpath $(NODE))):${PATH})
+	@$(eval PATH=$(shell dirname $(realpath $(NODE))):$(PATH))
 
 info: node-installed ## print out some useful variables
 	@echo Using node from $(NODE)
@@ -77,14 +78,17 @@ HASH := $(shell git rev-parse HEAD)
 dist: export NODE_ENV=production
 dist: export WEBPACK_ARGS=-p
 dist: prereqs webpack  ## Creates a distribution
-	echo ${HASH} > out/dist/git_hash
+	echo $(HASH) > out/dist/git_hash
 
+SENTRY := ./node_modules/.bin/sentry-cli
 travis-dist: dist  ## Creates a distribution as if we were running on travis
 	rm -rf out/dist-bin
 	mkdir -p out/dist-bin
-	tar -Jcf out/dist-bin/${TRAVIS_BUILD_NUMBER}.tar.xz -T travis-dist-files.txt
-	tar -Jcf out/dist-bin/${TRAVIS_BUILD_NUMBER}.static.tar.xz --transform="s,^out/dist/static/,," out/dist/static/*
-	echo ${HASH} > out/dist-bin/${TRAVIS_BUILD_NUMBER}.txt
+	tar -Jcf out/dist-bin/$(TRAVIS_BUILD_NUMBER).tar.xz -T travis-dist-files.txt
+	tar -Jcf out/dist-bin/$(TRAVIS_BUILD_NUMBER).static.tar.xz --transform="s,^out/dist/static/,," out/dist/static/*
+	echo $(HASH) > out/dist-bin/$(TRAVIS_BUILD_NUMBER).txt
+	$(SENTRY) releases new -p compiler-explorer $(TRAVIS_BUILD_NUMBER)
+	$(SENTRY) releases set-commits --auto $(TRAVIS_BUILD_NUMBER)
 
 install-git-hooks:  ## Install git hooks that will ensure code is linted and tests are run before allowing a check in
 	ln -sf $(shell pwd)/etc/scripts/pre-commit .git/hooks/pre-commit

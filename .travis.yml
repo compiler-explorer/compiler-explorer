@@ -1,29 +1,25 @@
 sudo: false
-
 language: node_js
-
 git:
-    depth: false # Get all depth so our git-based version/change tracking of policies works
-
+  depth: false
 node_js:
-    - "12"
-
+- '12'
 script:
-    - npm run ci-lint
-    - npm run ci-test
-    - make changelog
-    - make policies
-    - make -j$(nproc) travis-dist
-
+- npm run ci-lint
+- npm run ci-test
+- make changelog
+- make policies
+- make -j$(nproc) travis-dist
 deploy:
-    on:
-        all_branches:
-            true
-    provider: s3
-    bucket: "compiler-explorer"
-    skip_cleanup: true
-    acl: public_read
-    local_dir: out/dist-bin
-    upload-dir: dist/travis/${TRAVIS_BRANCH}
-
+  on:
+    all_branches: true
+  provider: s3
+  bucket: compiler-explorer
+  skip_cleanup: true
+  acl: public_read
+  local_dir: out/dist-bin
+  upload-dir: dist/travis/${TRAVIS_BRANCH}
 after_success: npm run codecov
+env:
+  global:
+    secure: AA6ZqObZ9Tlhh7cJ6+Jh7tfkGYURug4jzDwBnjGYV4Z4r0Am/Nqnsa5NyDKJaTk9S/NPrQqxgAadNCz7o9P78a9ccavrzIhR9LCoDheWaExHl8NqxloavbIJmTY7w2h9GfHtSbqAxMjk8S1X84gzRFvOiVe6HYEFA0Chwe7xyaA=

@@ -71,6 +71,7 @@
     "wolfy87-eventemitter": "^5.2.8"
   },
   "devDependencies": {
+    "@sentry/cli": "^1.49.0",
     "aws-sdk-mock": "^1.7.0",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
