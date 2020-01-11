@@ -399,10 +399,11 @@ aws.initConfig(awsProps)
 
                 const sentryDsn = aws.getConfig('sentryDsn');
                 if (sentryDsn) {
+                    const sentryEnv = ceProps("sentryEnvironment");
                     Sentry.init({
                         dsn: sentryDsn,
                         release: travisBuildNumber,
-                        environment: defArgs.env,
+                        environment: sentryEnv,
                         beforeSend(event) {
                             if (event.request
                                 && event.request.data
