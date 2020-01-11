@@ -363,6 +363,15 @@ aws.initConfig(awsProps)
             server.listen(_port, defArgs.hostname);
         }
 
+        function shouldRedactRequestData(data) {
+            try {
+                const parsed = JSON.parse(data);
+                return !parsed['allowStoreCodeDebug'];
+            } catch (e) {
+                return true;
+            }
+        }
+
         compilerFinder.find()
             .then(result => {
                 let compilers = result.compilers;
@@ -382,7 +391,15 @@ aws.initConfig(awsProps)
                     Sentry.init({
                         dsn: sentryDsn,
                         release: gitReleaseName,
-                        environment: defArgs.env
+                        environment: defArgs.env,
+                        beforeSend(event) {
+                            if (event.request
+                                && event.request.data
+                                && shouldRedactRequestData(event.request.data)) {
+                                event.request.data = JSON.stringify({redacted: true});
+                            }
+                            return event;
+                        }
                     });
                     logger.info(`Configured with Sentry endpoint ${sentryDsn}`);
                 } else {
