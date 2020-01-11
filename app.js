@@ -113,6 +113,17 @@ const gitReleaseName = (() => {
     return '';
 })();
 
+const travisBuildNumber = (() => {
+    // Use the canned travis_build only if provided
+    const travisBuildPath = path.join(distPath, 'travis_build');
+    if (opts.dist && fs.existsSync(travisBuildPath)) {
+        return fs.readFileSync(travisBuildPath).toString().trim();
+    }
+
+    // non-travis build
+    return '';
+})();
+
 // Set default values for omitted arguments
 const defArgs = {
     rootDir: opts.rootDir || './etc',
@@ -390,7 +401,7 @@ aws.initConfig(awsProps)
                 if (sentryDsn) {
                     Sentry.init({
                         dsn: sentryDsn,
-                        release: gitReleaseName,
+                        release: travisBuildNumber,
                         environment: defArgs.env,
                         beforeSend(event) {
                             if (event.request
@@ -469,6 +480,7 @@ aws.initConfig(awsProps)
 
                 logger.info("=======================================");
                 if (gitReleaseName) logger.info(`  git release ${gitReleaseName}`);
+                if (travisBuildNumber) logger.info(`  travis build ${travisBuildNumber}`);
 
                 function renderConfig(extra, urlOptions) {
                     const urlOptionsWhitelist = [

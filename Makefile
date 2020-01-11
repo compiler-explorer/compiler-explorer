@@ -82,6 +82,7 @@ dist: prereqs webpack  ## Creates a distribution
 
 SENTRY := ./node_modules/.bin/sentry-cli
 travis-dist: dist  ## Creates a distribution as if we were running on travis
+	echo $(TRAVIS_BUILD_NUMBER) > out/dist/travis_build
 	rm -rf out/dist-bin
 	mkdir -p out/dist-bin
 	tar -Jcf out/dist-bin/$(TRAVIS_BUILD_NUMBER).tar.xz -T travis-dist-files.txt
