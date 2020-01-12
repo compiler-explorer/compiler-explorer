@@ -340,17 +340,19 @@ Compiler.prototype.resize = function () {
 // returns null.
 Compiler.prototype.getLabelAtPosition = function (position) {
     var asmLine = this.assembly[position.lineNumber - 1];
-    var column = position.column;
-    var labels = asmLine.labels || [];
+    // Outdated position.lineNumber can happen (Between compilations?) - Check for those and skip
+    if (asmLine) {
+        var column = position.column;
+        var labels = asmLine.labels || [];
 
-    for (var i = 0; i < labels.length; ++i) {
-        if (column >= labels[i].range.startCol &&
-            column < labels[i].range.endCol
-        ) {
-            return labels[i];
+        for (var i = 0; i < labels.length; ++i) {
+            if (column >= labels[i].range.startCol &&
+                column < labels[i].range.endCol
+            ) {
+                return labels[i];
+            }
         }
     }
-
     return null;
 };
 
