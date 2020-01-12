@@ -131,6 +131,7 @@ const defArgs = {
     hostname: opts.host,
     port: opts.port || 10240,
     gitReleaseName: gitReleaseName,
+    travisBuildNumber: travisBuildNumber,
     wantedLanguage: opts.language || null,
     doCache: !opts.noCache,
     fetchCompilersFromRemote: !opts.noRemoteFetch,
