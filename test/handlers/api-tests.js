@@ -54,13 +54,13 @@ describe('API handling', () => {
     const app = express();
     const apiHandler = new ApiHandler({
         handle: res => {
-            res.end("compile");
+            res.send("compile");
         },
         handlePopularArguments: res => {
-            res.end("ok");
+            res.send("ok");
         },
         handleOptimizationArguments: res => {
-            res.end("ok");
+            res.send("ok");
         }
     }, (key, def) => {
         switch (key) {
