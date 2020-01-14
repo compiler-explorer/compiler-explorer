@@ -48,7 +48,8 @@ function definition() {
             "using",
             "var",
             "when", "while",
-            "yield"
+            "yield",
+            "push", "pop"
         ],
         operators: [
             '=', '+', '-', '*', '/', '<', '>',
@@ -67,6 +68,16 @@ function definition() {
         octNumber: /0o[0-7](_?[0-7])*/,
         binNumber: /0(b|B)[0-1](_?[0-1])*/,
         exponent: /(e|E)(\+|-)?\d(_?\d)*/,
+        brackets: [
+            ['{','}','delimiter.curly'],
+            ['{.','.}','delimiter.curly'],
+            ['[',']','delimiter.square'],
+            ['[:',']','delimiter.square'],
+            ['[.','.]','delimiter.square'],
+            ['(',')','delimiter.parenthesis'],
+            ['(.','.)','delimiter.parenthesis'],
+            ['<','>','delimiter.angle']
+        ],
 
         // The main tokenizer for our languages
         tokenizer: {
@@ -79,7 +90,7 @@ function definition() {
                     }
                 }],
                 {include: '@whitespace'},
-                [/([[{(][.:]|\.[\]})]|[[\]{}()])/, '@brackets'],
+                [/([:|[[{(]\.|\.[\]})]|[[\]{}()])/, '@brackets'],
                 [/@symbols/, {
                     cases: {
                         '@operators': 'operator',
