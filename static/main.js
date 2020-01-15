@@ -63,6 +63,17 @@ var hasUIBeenReset = false;
 var simpleCooks = new SimpleCook();
 var historyWidget = new HistoryWidget();
 
+// Polyfill includes for IE11 - From MDN
+if (!String.prototype.includes) {
+    String.prototype.includes = function (search, start) {
+        if (search instanceof RegExp) {
+            throw TypeError('first argument must not be a RegExp');
+        }
+        if (start === undefined) { start = 0; }
+        return this.indexOf(search, start) !== -1;
+    };
+}
+
 function setupSettings(hub) {
     var eventHub = hub.layout.eventHub;
     var defaultSettings = {
