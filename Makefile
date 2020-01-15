@@ -88,8 +88,10 @@ travis-dist: dist  ## Creates a distribution as if we were running on travis
 	tar -Jcf out/dist-bin/$(TRAVIS_BUILD_NUMBER).tar.xz -T travis-dist-files.txt
 	tar -Jcf out/dist-bin/$(TRAVIS_BUILD_NUMBER).static.tar.xz --transform="s,^out/dist/static/,," out/dist/static/*
 	echo $(HASH) > out/dist-bin/$(TRAVIS_BUILD_NUMBER).txt
-	$(SENTRY) releases new -p compiler-explorer $(TRAVIS_BUILD_NUMBER)
-	$(SENTRY) releases set-commits --auto $(TRAVIS_BUILD_NUMBER)
+	# Create and set commits for a sentry release if and only if we have the secure token set
+	# External GitHub PRs etc won't have the variable set.
+	@[[ -z "$(SENTRY_AUTH_TOKEN)" ]] || $(SENTRY) releases new -p compiler-explorer $(TRAVIS_BUILD_NUMBER)
+	@[[ -z "$(SENTRY_AUTH_TOKEN)" ]] || $(SENTRY) releases set-commits --auto $(TRAVIS_BUILD_NUMBER)
 
 install-git-hooks:  ## Install git hooks that will ensure code is linted and tests are run before allowing a check in
 	ln -sf $(shell pwd)/etc/scripts/pre-commit .git/hooks/pre-commit
