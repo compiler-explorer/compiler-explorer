@@ -94,7 +94,7 @@ travis-dist: dist  ## Creates a distribution as if we were running on travis
 	@[ -z "$(SENTRY_AUTH_TOKEN)" ]] | $(SENTRY) releases set-commits --auto $(TRAVIS_BUILD_NUMBER)
 
 install-git-hooks:  ## Install git hooks that will ensure code is linted and tests are run before allowing a check in
-	ln -sf $(shell pwd)/etc/scripts/pre-commit .git/hooks/pre-commit
+	ln -sf $(shell pwd)/etc/scripts/pre-commit  $(shell git rev-parse --git-dir)/hooks/pre-commit
 .PHONY: install-git-hooks
 
 changelog:  ## Create the changelog
