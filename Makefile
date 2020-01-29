@@ -35,8 +35,8 @@ prereqs: node_modules
 
 NODE_MODULES=.npm-updated
 $(NODE_MODULES): package.json | node-installed
-	$(NPM) install --only=dev $(NPM_FLAGS)
 	$(NPM) install --only=prod $(NPM_FLAGS)
+	$(NPM) install --only=dev $(NPM_FLAGS)
 	@touch $@
 
 WEBPACK:=./node_modules/webpack-cli/bin/cli.js
