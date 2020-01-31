@@ -53,6 +53,7 @@
     "promise-queue": "2.2.3",
     "pug": "^2.0.4",
     "request": "^2.88.0",
+    "response-time": "^2.3.2",
     "selectize": "0.12.4",
     "semver": "^5.7.1",
     "serve-favicon": "^2.4.5",
