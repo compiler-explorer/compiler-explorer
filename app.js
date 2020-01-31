@@ -40,6 +40,7 @@ const nopt = require('nopt'),
     urljoin = require('url-join'),
     _ = require('underscore'),
     express = require('express'),
+    responseTime = require('response-time'),
     Sentry = require('@sentry/node'),
     {logger, logToPapertrail, suppressConsoleLog} = require('./lib/logger'),
     utils = require('./lib/utils'),
@@ -456,16 +457,30 @@ aws.initConfig(awsProps)
                         rescanCompilerSecs * 1000);
                 }
 
+                const sentrySlowRequestMs = ceProps("sentrySlowRequestMs", 0);
+
                 webServer
                     .set('trust proxy', true)
                     .set('view engine', 'pug')
                     .on('error', err => logger.error('Caught error in web handler; continuing:', err))
+                    // sentry request handler must be the first middleware on the app
+                    .use(Sentry.Handlers.requestHandler())
+                    // eslint-disable-next-line no-unused-vars
+                    .use(responseTime((req, res, time) => {
+                        if (sentrySlowRequestMs > 0 && time >= sentrySlowRequestMs) {
+                            Sentry.withScope(scope => {
+                                scope.setExtra('duration_ms', time);
+                                Sentry.captureMessage('SlowRequest', 'warning');
+                            });
+                        }
+                    }))
                     // Handle healthchecks at the root, as they're not expected from the outside world
                     .use('/healthcheck', new healthCheck.HealthCheckHandler(healthCheckFilePath).handle)
                     .use(httpRoot, router)
                     .use((req, res, next) => {
                         next({status: 404, message: `page "${req.path}" could not be found`});
                     })
+                    // sentry error handler must be the first error handling middleware
                     .use(Sentry.Handlers.errorHandler)
                     // eslint-disable-next-line no-unused-vars
                     .use((err, req, res) => {
@@ -563,7 +578,6 @@ aws.initConfig(awsProps)
                 });
 
                 router
-                    .use(Sentry.Handlers.requestHandler())
                     .use(morgan(morganFormat, {
                         stream: logger.stream,
                         // Skip for non errors (2xx, 3xx)
