@@ -319,3 +319,34 @@ describe('squashes horizontal whitespace', () => {
         utils.squashHorizontalWhitespace('    abc   abc').should.equals('  abc abc');
     });
 });
+
+describe('replaces all substrings', () => {
+    it('works with no substitutions', () => {
+        const string = "This is a line with no replacements";
+        utils.replaceAll(string, "not present", "won't be substituted").should.equal(string);
+    });
+    it('handles odd cases', () => {
+        utils.replaceAll("", "", "").should.equal("");
+        utils.replaceAll("Hello", "", "").should.equal("Hello");
+    });
+    it('works with single replacement', () => {
+        utils.replaceAll("This is a line with a mistook in it", "mistook", "mistake")
+            .should.equal("This is a line with a mistake in it");
+        utils.replaceAll("This is a line with a mistook", "mistook", "mistake")
+            .should.equal("This is a line with a mistake");
+        utils.replaceAll("Mistooks were made", "Mistooks", "Mistakes")
+            .should.equal("Mistakes were made");
+    });
+
+    it('works with multiple replacements', () => {
+        utils.replaceAll("A mistook is a mistook", "mistook", "mistake")
+            .should.equal("A mistake is a mistake");
+        utils.replaceAll("aaaaaaaaaaaaaaaaaaaaaaaaaaa", "a", "b")
+            .should.equal("bbbbbbbbbbbbbbbbbbbbbbbbbbb");
+    });
+
+    it('works with overlapping replacements', () => {
+        utils.replaceAll("aaaaaaaa", "a", "ba")
+            .should.equal("babababababababa");
+    });
+});
