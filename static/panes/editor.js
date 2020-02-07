@@ -482,7 +482,7 @@ Editor.prototype.b64UTFEncode = function (str) {
 };
 
 Editor.prototype.b64EncodeWithHtmlUnicode = function (str) {
-    return btoa(str.replace(/[\u00A0-\u2666]/g, function(c) {
+    return btoa(str.replace(/[\u00A0-\u2666]/g, function (c) {
         return '&$' + c.charCodeAt(0).toString(16) + ';';
     }));
 };
