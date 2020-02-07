@@ -731,9 +731,10 @@ Editor.prototype.onSettingsChange = function (newSettings) {
         this.disableVim();
     }
 
-    if (before.tabWidth !== after.tabWidth && this.editor.getModel()) {
+    if (this.editor.getModel()) {
         this.editor.getModel().updateOptions({
-            tabSize: this.settings.tabWidth
+            tabSize: this.settings.tabWidth,
+            insertSpaces: this.settings.useSpaces
         });
     }
 
