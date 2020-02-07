@@ -459,13 +459,19 @@ Editor.prototype.initButtons = function (state) {
         this.updateOpenInCppInsights();
     }, this));
 
+    this.quickBenchButton = this.domRoot.find('.open-in-quickbench');
+    this.quickBenchButton.on('mousedown', _.bind(function () {
+        this.updateOpenInQuickBench();
+    }, this));
 };
 
 Editor.prototype.updateButtons = function () {
     if (this.currentLanguage.id === 'c++') {
         this.cppInsightsButton.show();
+        this.quickBenchButton.show();
     } else {
         this.cppInsightsButton.hide();
+        this.quickBenchButton.hide();
     }
 };
 
@@ -475,11 +481,26 @@ Editor.prototype.b64UTFEncode = function (str) {
     }));
 };
 
+Editor.prototype.b64EncodeWithHtmlUnicode = function (str) {
+    return btoa(str.replace(/[\u00A0-\u2666]/g, function(c) {
+        return '&$' + c.charCodeAt(0).toString(16) + ';';
+    }));
+};
+
 Editor.prototype.updateOpenInCppInsights = function () {
     var cppStd = 'cpp2a'; // if a compiler is linked, maybe we can find this out?
     var link = 'https://cppinsights.io/lnk?code=' + this.b64UTFEncode(this.getSource()) + '&std=' + cppStd + '&rev=1.0';
 
     this.domRoot.find(".open-in-cppinsights").attr("href", link);
+};
+
+Editor.prototype.updateOpenInQuickBench = function () {
+    var quickBenchState = {
+        text: this.getSource()
+    };
+
+    var link = 'http://quick-bench.com/#' + this.b64EncodeWithHtmlUnicode(JSON.stringify(quickBenchState));
+    this.domRoot.find(".open-in-quickbench").attr("href", link);
 };
 
 Editor.prototype.changeLanguage = function (newLang) {
