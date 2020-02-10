@@ -89,7 +89,8 @@ Textbox.prototype.putUi = function (elem, value) {
     elem.val(value);
 };
 
-
+// Ignore max statements, there's no limit as to how many settings we need
+// eslint-disable-next-line max-statements
 function setupSettings(root, settings, onChange, subLangId) {
     settings = settings || {};
     // Ensure the default language is not "null" but undefined. Temporary patch for a previous bug :(
@@ -218,7 +219,7 @@ function setupSettings(root, settings, onChange, subLangId) {
         onSettingsChange(settings);
         onChange(settings);
     }
-
+    add(root.find('.useSpaces'), 'useSpaces', true, Checkbox);
     add(root.find('.tabWidth'), 'tabWidth', 4, Select,
         _.map([2, 4, 8], function (size) {
             return {label: size, desc: size};

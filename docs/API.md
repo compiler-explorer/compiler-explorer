@@ -85,7 +85,7 @@ Execution Only request:
     "options": {
         "userArguments": "-O3",
         "executeParameters": {
-            "args": "arg1",
+            "args": ["arg1", "arg2"],
             "stdin": "hello, world!"
         },
         "compilerOptions": {
