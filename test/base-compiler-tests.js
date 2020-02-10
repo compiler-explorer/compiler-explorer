@@ -28,8 +28,9 @@ const chaiAsPromised = require("chai-as-promised");
 const BaseCompiler = require('../lib/base-compiler');
 const CompilationEnvironment = require('../lib/compilation-env');
 const properties = require('../lib/properties');
-const fs = require('fs');
+const fs = require('fs-extra');
 const exec = require('../lib/exec');
+const path = require('path');
 
 chai.use(chaiAsPromised);
 const should = chai.should();
@@ -358,5 +359,29 @@ describe('Compiler execution', function () {
             true,
             true);
         result.asm.should.deep.equal("the output");
+    });
+
+    it('should run process opt output', async () => {
+        const test = `--- !Missed
+Pass: inline
+Name: NeverInline
+DebugLoc: { File: example.cpp, Line: 4, Column: 21 }
+Function: main
+Args: []
+...
+`;
+        const dirPath = await compiler.newTempDir();
+        const optPath = path.join(dirPath, "temp.out");
+        await fs.writeFile(optPath, test);
+        const a = await compiler.processOptOutput(optPath);
+        a.should.deep.equal([{
+            Args: [],
+            DebugLoc: {Column: 21, File: "example.cpp", Line: 4},
+            Function: "main",
+            Name: "NeverInline",
+            Pass: "inline",
+            displayString: "",
+            optType: "Missed"
+        }]);
     });
 });

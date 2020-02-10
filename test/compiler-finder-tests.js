@@ -53,6 +53,6 @@ describe('Compiler-finder', function () {
             }
         };
         const finder = new CompilerFinder({}, compilerProps, properties.fakeProps({}), {}, optionsHandler);
-        return Promise.all(finder.getCompilers()).should.eventually.have.lengthOf(2);
+        return finder.getCompilers().should.eventually.have.lengthOf(2);
     })
 });
