@@ -406,10 +406,6 @@ div.argmenuitem span.argdescription {
     overflow-y: hidden;
 }
 
-.open-in-cppinsights * {
-    vertical-align: middle;
-}
-
 .execution-stdout {
     color: white !important;
 }

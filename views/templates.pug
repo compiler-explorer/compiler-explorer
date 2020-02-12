@@ -52,10 +52,15 @@
         button#vim-flag.btn.btn-sm.btn-light(title="Toggle Vim Keybindings")
           span.fab.fa-vimeo-v
           span.hideable &nbsp; Vim
+      .btn-group.btn-group-sm(role="group" aria-label="External Sites")
         a.btn.btn-sm.btn-light.open-in-cppinsights(href="https://cppinsights.io/" target="_blank" title="Open in Cppinsights" arial-label="Open in Cppinsights")
           svg(height="16" width="16")
             include resources/cppinsights.svg
           span.hideable &nbsp;CppInsights
+        a.btn.btn-sm.btn-light.open-in-quickbench(href="http://quick-bench.com/" target="_blank" title="Open in Quick-bench" arial-label="Open in Quick-bench")
+          svg(height="16" width="16")
+            include resources/quickbench.svg
+          span.hideable &nbsp;Quick-bench
       .btn-group.btn-group-sm.ml-auto(role="group" aria-label="Editor language")
         select.change-language(title="Change this editor's (and associated panels) language" disabled=embedded && readOnly)
     div#v-status
