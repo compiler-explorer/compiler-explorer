@@ -530,3 +530,8 @@ kbd {
         align-items: center;
     }
 }
+
+.open-in-cppinsights *,
+.open-in-quickbench * {
+    vertical-align: middle;
+}
