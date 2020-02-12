@@ -481,10 +481,11 @@ Editor.prototype.b64UTFEncode = function (str) {
     }));
 };
 
-Editor.prototype.b64EncodeWithHtmlUnicode = function (str) {
-    return btoa(str.replace(/[\u00A0-\u2666]/g, function (c) {
-        return '&$' + c.charCodeAt(0).toString(16) + ';';
-    }));
+Editor.prototype.asciiEncodeJsonText = function (json) {
+    return json.replace(/[\u007F-\uFFFF]/g, function (chr) {
+        // json unicode escapes must always be 4 characters long, so pad with leading zeros
+        return "\\u" + ("0000" + chr.charCodeAt(0).toString(16)).substr(-4);
+    });
 };
 
 Editor.prototype.updateOpenInCppInsights = function () {
@@ -499,7 +500,7 @@ Editor.prototype.updateOpenInQuickBench = function () {
         text: this.getSource()
     };
 
-    var link = 'http://quick-bench.com/#' + this.b64EncodeWithHtmlUnicode(JSON.stringify(quickBenchState));
+    var link = 'http://quick-bench.com/#' + btoa(this.asciiEncodeJsonText(JSON.stringify(quickBenchState)));
     this.domRoot.find(".open-in-quickbench").attr("href", link);
 };
 
