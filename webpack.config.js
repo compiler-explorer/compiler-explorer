@@ -3,7 +3,7 @@ const path = require('path'),
     CopyWebpackPlugin = require('copy-webpack-plugin'),
     MiniCssExtractPlugin = require('mini-css-extract-plugin'),
     ManifestPlugin = require('webpack-manifest-plugin'),
-    UglifyJsPlugin = require('uglifyjs-webpack-plugin'),
+    TerserPlugin = require('terser-webpack-plugin'),
     MonacoEditorWebpackPlugin = require('monaco-editor-webpack-plugin');
 
 const isDev = process.env.NODE_ENV !== "production";
@@ -49,16 +49,15 @@ module.exports = {
     devtool: 'source-map',
     optimization: {
         minimize: !isDev,
-        minimizer: [new UglifyJsPlugin({
-            parallel: true,
-            sourceMap: true,
-            uglifyOptions: {
-                output: {
-                    comments: false,
-                    beautify: false
+        minimizer: [
+            new TerserPlugin({
+                parallel: true,
+                sourceMap: true,
+                terserOptions: {
+                    ecma: 5
                 }
-            }
-        })]
+            })
+        ]
     },
     module: {
         rules: [
