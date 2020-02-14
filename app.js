@@ -489,7 +489,7 @@ async function main() {
         // sentry error handler must be the first error handling middleware
         .use(Sentry.Handlers.errorHandler)
         // eslint-disable-next-line no-unused-vars
-        .use((err, req, res) => {
+        .use((err, req, res, next) => {
             const status =
                 err.status ||
                 err.statusCode ||
