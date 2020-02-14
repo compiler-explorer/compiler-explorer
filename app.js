@@ -572,6 +572,11 @@ async function main() {
      * fabricate a worker on the fly.
      *
      * This is bad and I feel bad.
+     *
+     * This should no longer be needed, but is left here for safety because people with
+     * workers already installed from this url may still try to hit this page for some time
+     *
+     * TODO: remove this route in the future now that it is not needed
      */
     router.get('/workers/:worker', (req, res) => {
         staticHeaders(res);
