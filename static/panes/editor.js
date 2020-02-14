@@ -488,6 +488,25 @@ Editor.prototype.asciiEncodeJsonText = function (json) {
     });
 };
 
+Editor.prototype.getCompilerStates = function () {
+    var states = [];
+
+    _.each(this.ourCompilers, (val, compilerIdStr) => {
+        var compilerId = parseInt(compilerIdStr);
+
+        var glCompiler = _.find(this.container.layoutManager.root.getComponentsByName("compiler"), function (c) {
+            return c.id === compilerId;
+        });
+
+        if (glCompiler) {
+            var state = glCompiler.currentState();
+            states.push(state);
+        }
+    });
+
+    return states;
+};
+
 Editor.prototype.updateOpenInCppInsights = function () {
     var cppStd = 'cpp2a'; // if a compiler is linked, maybe we can find this out?
     var link = 'https://cppinsights.io/lnk?code=' + this.b64UTFEncode(this.getSource()) + '&std=' + cppStd + '&rev=1.0';
@@ -499,6 +518,51 @@ Editor.prototype.updateOpenInQuickBench = function () {
     var quickBenchState = {
         text: this.getSource()
     };
+
+    var compilers = this.getCompilerStates();
+
+    _.each(compilers, (compiler) => {
+        var knownCompiler = false;
+        if (compiler.compiler.match(/^g[0-9]*$/)) {
+            knownCompiler = true;
+            quickBenchState.compiler = "gcc-" + compiler.compiler[1] + "." + compiler.compiler[2];
+        } else if (compiler.compiler.match(/^clang[0-9]*x?$/)) {
+            knownCompiler = true;
+            quickBenchState.compiler = "clang-" + compiler.compiler[5] + "." + compiler.compiler[6];
+        }
+
+        if (knownCompiler) {
+            if (compiler.options.indexOf("-O3") !== -1) {
+                quickBenchState.optim = "O3";
+            } else if (compiler.options.indexOf("-O2") !== -1) {
+                quickBenchState.optim = "O2";
+            } else if (compiler.options.indexOf("-O1") !== -1) {
+                quickBenchState.optim = "O1";
+            } else if (compiler.options.indexOf("-O0") !== -1) {
+                quickBenchState.optim = "O0";
+            } else if (compiler.options.indexOf("-Os") !== -1) {
+                quickBenchState.optim = "Os";
+            } else if (compiler.options.indexOf("-Og") !== -1) {
+                quickBenchState.optim = "Og";
+            } else if (compiler.options.indexOf("-Ofast") !== -1) {
+                quickBenchState.optim = "Ofast";
+            }
+
+            if ((compiler.options.indexOf("-std=c++11") !== -1) || (compiler.options.indexOf("-std=gnu++11") !== -1)) {
+                quickBenchState.cppVersion = "11";
+            } else if ((compiler.options.indexOf("-std=c++14") !== -1) || (compiler.options.indexOf("-std=gnu++14") !== -1)) {
+                quickBenchState.cppVersion = "14";
+            } else if ((compiler.options.indexOf("-std=c++17") !== -1) || (compiler.options.indexOf("-std=gnu++17") !== -1)) {
+                quickBenchState.cppVersion = "17";
+            } else if ((compiler.options.indexOf("-std=c++2a") !== -1) || (compiler.options.indexOf("-std=gnu++2a") !== -1)) {
+                quickBenchState.cppVersion = "20";
+            }
+
+            if ((compiler.options.indexOf("-stdlib=libc++") !== -1)) {
+                quickBenchState.lib = "llvm";
+            }
+        }
+    });
 
     var link = 'http://quick-bench.com/#' + btoa(this.asciiEncodeJsonText(JSON.stringify(quickBenchState)));
     this.domRoot.find(".open-in-quickbench").attr("href", link);
