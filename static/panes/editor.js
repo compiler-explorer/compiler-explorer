@@ -532,20 +532,9 @@ Editor.prototype.updateOpenInQuickBench = function () {
         }
 
         if (knownCompiler) {
-            if (compiler.options.indexOf("-O3") !== -1) {
-                quickBenchState.optim = "O3";
-            } else if (compiler.options.indexOf("-O2") !== -1) {
-                quickBenchState.optim = "O2";
-            } else if (compiler.options.indexOf("-O1") !== -1) {
-                quickBenchState.optim = "O1";
-            } else if (compiler.options.indexOf("-O0") !== -1) {
-                quickBenchState.optim = "O0";
-            } else if (compiler.options.indexOf("-Os") !== -1) {
-                quickBenchState.optim = "Os";
-            } else if (compiler.options.indexOf("-Og") !== -1) {
-                quickBenchState.optim = "Og";
-            } else if (compiler.options.indexOf("-Ofast") !== -1) {
-                quickBenchState.optim = "Ofast";
+            var match = compiler.options.match(/-(O([0-3sg]|fast))/);
+            if (match !== null) {
+                quickBenchState.optim = match[1];
             }
 
             if ((compiler.options.indexOf("-std=c++11") !== -1) ||
