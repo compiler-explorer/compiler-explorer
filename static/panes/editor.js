@@ -491,7 +491,7 @@ Editor.prototype.asciiEncodeJsonText = function (json) {
 Editor.prototype.getCompilerStates = function () {
     var states = [];
 
-    _.each(this.ourCompilers, (val, compilerIdStr) => {
+    _.each(this.ourCompilers, function (val, compilerIdStr) {
         var compilerId = parseInt(compilerIdStr);
 
         var glCompiler = _.find(this.container.layoutManager.root.getComponentsByName("compiler"), function (c) {
@@ -521,7 +521,7 @@ Editor.prototype.updateOpenInQuickBench = function () {
 
     var compilers = this.getCompilerStates();
 
-    _.each(compilers, (compiler) => {
+    _.each(compilers, function (compiler) {
         var knownCompiler = false;
         if (compiler.compiler.match(/^g[0-9]*$/)) {
             knownCompiler = true;
@@ -548,13 +548,17 @@ Editor.prototype.updateOpenInQuickBench = function () {
                 quickBenchState.optim = "Ofast";
             }
 
-            if ((compiler.options.indexOf("-std=c++11") !== -1) || (compiler.options.indexOf("-std=gnu++11") !== -1)) {
+            if ((compiler.options.indexOf("-std=c++11") !== -1) ||
+                (compiler.options.indexOf("-std=gnu++11") !== -1)) {
                 quickBenchState.cppVersion = "11";
-            } else if ((compiler.options.indexOf("-std=c++14") !== -1) || (compiler.options.indexOf("-std=gnu++14") !== -1)) {
+            } else if ((compiler.options.indexOf("-std=c++14") !== -1) ||
+                (compiler.options.indexOf("-std=gnu++14") !== -1)) {
                 quickBenchState.cppVersion = "14";
-            } else if ((compiler.options.indexOf("-std=c++17") !== -1) || (compiler.options.indexOf("-std=gnu++17") !== -1)) {
+            } else if ((compiler.options.indexOf("-std=c++17") !== -1) ||
+                (compiler.options.indexOf("-std=gnu++17") !== -1)) {
                 quickBenchState.cppVersion = "17";
-            } else if ((compiler.options.indexOf("-std=c++2a") !== -1) || (compiler.options.indexOf("-std=gnu++2a") !== -1)) {
+            } else if ((compiler.options.indexOf("-std=c++2a") !== -1) ||
+                (compiler.options.indexOf("-std=gnu++2a") !== -1)) {
                 quickBenchState.cppVersion = "20";
             }
 
