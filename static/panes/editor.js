@@ -41,7 +41,6 @@ require('../modes/llvm-ir-mode');
 require('../modes/haskell-mode');
 require('../modes/ocaml-mode');
 require('../modes/clean-mode');
-require('../modes/pascal-mode');
 require('../modes/cuda-mode');
 require('../modes/fortran-mode');
 require('../modes/zig-mode');
