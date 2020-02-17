@@ -13,7 +13,8 @@ const staticPath = path.join(distPath, 'static');
 
 let plugins = [
     new MonacoEditorWebpackPlugin({
-        languages: ['cpp', 'go', 'rust', 'swift']
+        languages: ['cpp', 'go', 'rust', 'swift', 'pascal'],
+        filename: isDev ? '[name].worker.js' : '[name].worker.[contenthash].js'
     }),
     new CopyWebpackPlugin([
         {
