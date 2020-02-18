@@ -34,16 +34,10 @@ describe('Health checks', () => {
     const app = express();
     app.use('/hc', new healthCheck.HealthCheckHandler().handle);
 
-    it('should respond with OK', () => {
-        return chai.request(app)
-            .get('/hc')
-            .then(res => {
-                res.should.have.status(200);
-                res.text.should.be.eql('Everything is awesome');
-            })
-            .catch(function (err) {
-                throw err;
-            });
+    it('should respond with OK', async () => {
+        const res = await chai.request(app).get('/hc');
+        res.should.have.status(200);
+        res.text.should.be.eql('Everything is awesome');
     });
 });
 
@@ -64,25 +58,15 @@ describe('Health checks on disk', () => {
         mockfs.restore();
     });
 
-    it('should respond with 500 when file not found', () => {
-        return chai.request(app)
-            .get('/hc')
-            .then(res => res.should.have.status(500))
-            .catch(function (err) {
-                throw err;
-            });
+    it('should respond with 500 when file not found', async () => {
+        const res = await chai.request(app).get('/hc');
+        res.should.have.status(500);
     });
 
 
-    it('should respond with OK and file contents when found', () => {
-        return chai.request(app)
-            .get('/hc2')
-            .then(res => {
-                res.should.have.status(200);
-                // Stupid chai http doesn't work with `send()` and promises it seems (!!)
-            })
-            .catch(function (err) {
-                throw err;
-            });
+    it('should respond with OK and file contents when found', async () => {
+        const res = await chai.request(app).get('/hc2');
+        res.should.have.status(200);
+        res.text.should.be.eql('Everything is fine');
     });
 });
