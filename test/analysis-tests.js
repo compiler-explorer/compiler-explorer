@@ -31,16 +31,19 @@ const languages = {
     analysis: {id: 'analysis'}
 };
 
-const compilerProps = new properties.CompilerProps(languages, properties.fakeProps({}));
-
 describe('LLVM-mca tool definition', () => {
-    const ce = new CompilationEnvironment(compilerProps);
-    const info = {
-        exe: null,
-        remote: true,
-        lang: languages.analysis.id
-    };
-    const a = new LLVMmcaTool(info, ce);
+    let ce, a;
+
+    before(() => {
+        const compilerProps = new properties.CompilerProps(languages, properties.fakeProps({}));
+        ce = new CompilationEnvironment(compilerProps);
+        const info = {
+            exe: null,
+            remote: true,
+            lang: languages.analysis.id
+        };
+        a = new LLVMmcaTool(info, ce);
+    });
 
     it('should have most filters disabled', () => {
         a.compiler.disabledFilters.should.be.deep.equal(['labels', 'directives', 'commentOnly', 'trim']);

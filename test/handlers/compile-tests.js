@@ -39,14 +39,19 @@ const languages = {
     d: {id: 'd'}
 };
 
-const compilerProps = new properties.CompilerProps(languages, properties.fakeProps({}));
 
 describe('Compiler tests', () => {
-    const app = express();
-    app.use(bodyParser.json()).use(bodyParser.text());
-    const compilationEnvironment = new CompilationEnvironment(compilerProps);
-    const compileHandler = new CompileHandler(compilationEnvironment);
-    app.post('/:compiler/compile', compileHandler.handle.bind(compileHandler));
+    let app, compileHandler;
+
+    before(() => {
+        const compilerProps = new properties.CompilerProps(languages, properties.fakeProps({}));
+        const compilationEnvironment = new CompilationEnvironment(compilerProps);
+        compileHandler = new CompileHandler(compilationEnvironment);
+
+        app = express();
+        app.use(bodyParser.json()).use(bodyParser.text());
+        app.post('/:compiler/compile', compileHandler.handle.bind(compileHandler));
+    });
 
     it('throws for unknown compilers', () => {
         return chai.request(app)

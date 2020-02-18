@@ -36,9 +36,7 @@ const languages = {
     go: {id: 'go'}
 };
 
-const compilerProps = new properties.CompilerProps(languages, properties.fakeProps({}));
-
-const ce = new CompilationEnvironment(compilerProps);
+let ce;
 const info = {
     exe: null,
     remote: true,
@@ -71,6 +69,11 @@ function testGoAsm(basefilename) {
 }
 
 describe('GO asm tests', () => {
+    before(() => {
+        const compilerProps = new properties.CompilerProps(languages, properties.fakeProps({}));
+        ce = new CompilationEnvironment(compilerProps);
+    });
+
     it('Handles unknown line number correctly', () => {
         return testGoAsm("test/golang/bug-901");
     });

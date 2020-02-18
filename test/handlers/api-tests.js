@@ -46,54 +46,60 @@ const languages = {
         extensions: ['.pas']
     }
 };
+const compilers = [
+    {
+        id: "gcc900",
+        name: "GCC 9.0.0",
+        lang: "c++"
+    },
+    {
+        id: "fpc302",
+        name: "FPC 3.0.2",
+        lang: "pascal"
+    },
+    {
+        id: "clangtrunk",
+        name: "Clang trunk",
+        lang: "c++"
+    }
+];
 
 chai.use(require("chai-http"));
 chai.should();
 
 describe('API handling', () => {
-    const app = express();
-    const apiHandler = new ApiHandler({
-        handle: res => {
-            res.send("compile");
-        },
-        handlePopularArguments: res => {
-            res.send("ok");
-        },
-        handleOptimizationArguments: res => {
-            res.send("ok");
-        }
-    }, (key, def) => {
-        switch (key) {
-            case "formatters":
-                return "formatt:badformatt";
-            case "formatter.formatt.exe":
-                return "echo";
-            case "formatter.formatt.version":
-                return "Release";
-            case "formatter.formatt.name":
-                return "FormatT";
-            default:
-                return def;
-        }
+    let app;
+
+    before(() => {
+        app = express();
+        const apiHandler = new ApiHandler({
+            handle: res => {
+                res.send("compile");
+            },
+            handlePopularArguments: res => {
+                res.send("ok");
+            },
+            handleOptimizationArguments: res => {
+                res.send("ok");
+            }
+        }, (key, def) => {
+            switch (key) {
+                case "formatters":
+                    return "formatt:badformatt";
+                case "formatter.formatt.exe":
+                    return "echo";
+                case "formatter.formatt.version":
+                    return "Release";
+                case "formatter.formatt.name":
+                    return "FormatT";
+                default:
+                    return def;
+            }
+        });
+        app.use('/api', apiHandler.handle);
+        apiHandler.setCompilers(compilers);
+        apiHandler.setLanguages(languages);
     });
-    app.use('/api', apiHandler.handle);
-    const compilers = [{
-        id: "gcc900",
-        name: "GCC 9.0.0",
-        lang: "c++"
-    },
-        {
-            id: "fpc302",
-            name: "FPC 3.0.2",
-            lang: "pascal"
-        },
-        {
-            id: "clangtrunk",
-            name: "Clang trunk",
-            lang: "c++"
-        }];
-    apiHandler.setCompilers(compilers);
-    apiHandler.setLanguages(languages);
 
     it('should respond to plain text compiler requests', () => {
         return chai.request(app)

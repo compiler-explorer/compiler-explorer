@@ -40,9 +40,13 @@ const props = {
     compilers: "goodCompiler:&badCompiler"
 };
 
-const compilerProps = new properties.CompilerProps(languages, properties.fakeProps(props));
-
 describe('Compiler-finder', function () {
+    let compilerProps;
+
+    before(() => {
+        compilerProps = new properties.CompilerProps(languages, properties.fakeProps(props));
+    });
+
     it('should not hang for undefined groups (Bug #860)', () => {
         const optionsHandler = {
             get: () => {

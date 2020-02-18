@@ -98,12 +98,6 @@ const moreLibProps = {
     'libs.autolib.versions.autodetect.staticliblink': 'hello',
 };
 
-const compilerProps = new properties.CompilerProps(languages, properties.fakeProps(libProps));
-const optionsHandler = new OptionsHandler([], compilerProps, {});
-
-const moreCompilerProps = new properties.CompilerProps(languages, properties.fakeProps(moreLibProps));
-const moreOptionsHandler = new OptionsHandler([], moreCompilerProps, {});
-
 const makeFakeCompilerInfo = (id, lang, group, semver, isSemver) => {
     return {
         id: id,
@@ -117,6 +111,19 @@ const makeFakeCompilerInfo = (id, lang, group, semver, isSemver) => {
 };
 
 describe('Options handler', () => {
+    let compilerProps;
+    let optionsHandler;
+    let moreCompilerProps;
+    let moreOptionsHandler;
+
+    before(() => {
+        compilerProps = new properties.CompilerProps(languages, properties.fakeProps(libProps));
+        optionsHandler = new OptionsHandler([], compilerProps, {});
+
+        moreCompilerProps = new properties.CompilerProps(languages, properties.fakeProps(moreLibProps));
+        moreOptionsHandler = new OptionsHandler([], moreCompilerProps, {});
+    });
+
     it('should always return an array of paths', () => {
         const libs = optionsHandler.parseLibraries({'fake': libProps.libs});
         _.each(libs[languages.fake.id]['fakelib'].versions, version => {

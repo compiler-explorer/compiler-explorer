@@ -36,15 +36,18 @@ const languages = {
     d: {id: 'd'}
 };
 
-const compilerProps = new properties.CompilerProps(languages, properties.fakeProps({}));
-
 describe('D', () => {
-    const ce = new CompilationEnvironment(compilerProps);
+    let ce;
     const info = {
         exe: null,
         remote: true,
         lang: languages.d.id
     };
+
+    before(() => {
+        const compilerProps = new properties.CompilerProps(languages, properties.fakeProps({}));
+        ce = new CompilationEnvironment(compilerProps);
+    });
 
     it('LDC should not allow -run parameter', () => {
         const compiler = new LDCCompiler(info, ce);

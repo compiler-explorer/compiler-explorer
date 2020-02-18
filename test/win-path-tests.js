@@ -35,31 +35,26 @@ const languages = {
     'c++': {id: 'c++'}
 };
 
-const compilerProps = new properties.CompilerProps(languages, properties.fakeProps({}));
+const info = {
+    lang: languages['c++'].id,
+    exe: null,
+    remote: true
+};
 
 describe('Paths', () => {
+    let env;
+
+    before(() => {
+        const compilerProps = new properties.CompilerProps(languages, properties.fakeProps({}));
+        env = new CompilationEnvironment(compilerProps);
+    });
+
     it('Linux -> Wine path', () => {
-        const info = {
-            lang: languages['c++'].id,
-            exe: null,
-            remote: true
-        };
-
-        const env = new CompilationEnvironment(compilerProps);
-
         const compiler = new WineCL(info, env);
         compiler.filename("/tmp/123456/output.s").should.equal("Z:/tmp/123456/output.s");
     });
 
     it('Linux -> Windows path', function () {
-        const info = {
-            lang: languages['c++'].id,
-            exe: null,
-            remote: true
-        };
-
-        const env = new CompilationEnvironment(compilerProps);
-
         process.env.winTmp = "/mnt/c/tmp";
 
         const compiler = new WslCL(info, env);

@@ -36,9 +36,13 @@ const props = {
     cacheConfig: 'InMemory(10)'
 };
 
-const compilerProps = new properties.CompilerProps({}, properties.fakeProps(props));
-
 describe('Compilation environment', () => {
+    let compilerProps;
+
+    before(() => {
+        compilerProps = new properties.CompilerProps({}, properties.fakeProps(props));
+    });
+
     it('Should cache by default', () => {
         const ce = new CompilationEnvironment(compilerProps);
         return ce.cacheGet('foo').should.eventually.equal(null)
