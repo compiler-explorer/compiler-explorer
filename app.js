@@ -284,7 +284,7 @@ function setupStaticMiddleware(router) {
     }
 
     pugRequireHandler = (path) => {
-        if (staticManifest.hasOwnProperty(path)) {
+        if (Object.prototype.hasOwnProperty.call(staticManifest, path)) {
             return urljoin(staticRoot, staticManifest[path]);
         } else {
             logger.error(`failed to locate static asset '${path}' in manifest`);
