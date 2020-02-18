@@ -38,7 +38,6 @@ function mockerise(service, method) {
     const handlers = [];
 
     beforeEach(() => {
-        console.log(`Mockerising ${service}/${method}`);
         AWS.mock(service, method, (q, callback) => {
             const qh = handlers.shift();
             should.exist(qh);
@@ -50,7 +49,6 @@ function mockerise(service, method) {
         });
     });
     afterEach(() => {
-        console.log(`Democking ${service}/${method}`);
         AWS.restore(service, method);
     });
     return handlers;
