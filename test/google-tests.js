@@ -23,68 +23,59 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 const chai = require('chai'),
-    chaiAsPromised = require("chai-as-promised"),
+    chaiAsPromised = require('chai-as-promised'),
     nock = require('nock'),
     google = require('../lib/google');
 
 chai.use(chaiAsPromised);
 chai.should();
 
-const googleApiUrl = 'https://www.googleapis.com';
-const shortUrlEndpoint = '/urlshortener/v1/url';
+const googlDomain = 'https://goo.gl';
+const shortUrl = '/short';
 
 describe('Google short URL resolver tests', () => {
+    after(() => {
+        nock.cleanAll();
+    });
+
     const resolver = new google.ShortLinkResolver();
-    // I'll add them in due time, I promise :)
-    // This ones are for the older revision pre goo.gl shutdown
-    /*it('Resolves simple URLs', () => {
-        const resultObj = {longUrl: "http://long.url/", shortUrl: "badger"};
-        nock(googleApiUrl)
-            .get(shortUrlEndpoint)
-            .query({
-                key: 'GoogleApiKey',
-                shortUrl: 'https://goo.gl/short'
-            })
-            .reply(200, JSON.stringify(resultObj));
-        return resolver
-            .resolve('https://goo.gl/short')
-            .should.eventually.deep.equal(resultObj);
+
+    it('Resolves simple URLs', async () => {
+        nock(googlDomain)
+            .head(shortUrl)
+            .reply(302, {}, { location: 'http://long.url/' });
+
+        const resp = await resolver.resolve(googlDomain + shortUrl);
+        resp.should.deep.equal({ longUrl: 'http://long.url/' });
     });
+
     it('Handles missing long urls', () => {
-        const resultObj = {missing: "no long url"};
-        nock(googleApiUrl)
-            .get(shortUrlEndpoint)
-            .query({
-                key: 'GoogleApiKey',
-                shortUrl: 'https://goo.gl/broken'
-            })
-            .reply(200, JSON.stringify(resultObj));
+        nock(googlDomain)
+            .head(shortUrl)
+            .reply(404);
+
         return resolver
-            .resolve('https://goo.gl/broken')
-            .should.be.rejectedWith("Missing longUrl");
+            .resolve(googlDomain + shortUrl)
+            .should.be.rejectedWith('Got response 404');
     });
-    it('Handles unsuccessful requests', () => {
-        nock(googleApiUrl)
-            .get(shortUrlEndpoint)
-            .query({
-                key: 'GoogleApiKey',
-                shortUrl: 'https://goo.gl/broken'
-            })
-            .reply(404, "Google says no");
+
+    it('Handles missing location header', () => {
+        nock(googlDomain)
+            .head(shortUrl)
+            .reply(302);
+
         return resolver
-            .resolve('https://goo.gl/broken')
-            .should.be.rejectedWith("Got response 404");
+            .resolve(googlDomain + shortUrl)
+            .should.be.rejectedWith('Missing location url in undefined');
     });
+
     it('Handles failed requests', () => {
-        nock(googleApiUrl)
-            .get(shortUrlEndpoint)
-            .query({
-                key: 'GoogleApiKey',
-                shortUrl: 'https://goo.gl/broken'
-            })
-            .replyWithError("Something went wrong");
+        nock(googlDomain)
+            .head(shortUrl)
+            .replyWithError('Something went wrong');
+
         return resolver
-            .resolve('https://goo.gl/broken')
-            .should.be.rejectedWith("Something went wrong");
-    });*/
+            .resolve(googlDomain + shortUrl)
+            .should.be.rejectedWith('Something went wrong');
+    });
 });
