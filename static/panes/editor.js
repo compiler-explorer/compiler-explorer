@@ -491,7 +491,7 @@ Editor.prototype.asciiEncodeJsonText = function (json) {
 Editor.prototype.getCompilerStates = function () {
     var states = [];
 
-    _.each(this.ourCompilers, function (val, compilerIdStr) {
+    _.each(this.ourCompilers, _.bind(function (val, compilerIdStr) {
         var compilerId = parseInt(compilerIdStr);
 
         var glCompiler = _.find(this.container.layoutManager.root.getComponentsByName("compiler"), function (c) {
@@ -502,7 +502,7 @@ Editor.prototype.getCompilerStates = function () {
             var state = glCompiler.currentState();
             states.push(state);
         }
-    });
+    }, this));
 
     return states;
 };
@@ -514,6 +514,18 @@ Editor.prototype.updateOpenInCppInsights = function () {
     this.domRoot.find(".open-in-cppinsights").attr("href", link);
 };
 
+Editor.prototype.cleanupSemVer = function (semver) {
+    if (semver) {
+        var semverStr = semver.toString();
+        if ((semverStr !== "") && (semverStr.indexOf('(') === -1)) {
+            var vercomps = semverStr.split('.');
+            return vercomps[0] + '.' + (vercomps[1] ? vercomps[1] : '0');
+        }
+    }
+
+    return false;
+};
+
 Editor.prototype.updateOpenInQuickBench = function () {
     var quickBenchState = {
         text: this.getSource()
@@ -521,14 +533,24 @@ Editor.prototype.updateOpenInQuickBench = function () {
 
     var compilers = this.getCompilerStates();
 
-    _.each(compilers, function (compiler) {
+    _.each(compilers, _.bind(function (compiler) {
         var knownCompiler = false;
-        if (compiler.compiler.match(/^g[0-9]*$/)) {
-            knownCompiler = true;
-            quickBenchState.compiler = "gcc-" + compiler.compiler[1] + "." + compiler.compiler[2];
-        } else if (compiler.compiler.match(/^clang[0-9]*x?$/)) {
-            knownCompiler = true;
-            quickBenchState.compiler = "clang-" + compiler.compiler[5] + "." + compiler.compiler[6];
+
+        var compilerExtInfo = this.hub.compilerService.findCompiler(this.currentLanguage.id, compiler.compiler);
+        var semver = this.cleanupSemVer(compilerExtInfo.semver);
+        var groupOrName =
+            compilerExtInfo.baseName ? compilerExtInfo.baseName :
+                compilerExtInfo.groupName ? compilerExtInfo.groupName : compilerExtInfo.name;
+
+        if (semver && groupOrName) {
+            groupOrName = groupOrName.toLowerCase();
+            if (groupOrName.indexOf('gcc') !== -1) {
+                quickBenchState.compiler = "gcc-" + semver;
+                knownCompiler = true;
+            } else if (groupOrName.indexOf('clang') !== -1) {
+                quickBenchState.compiler = "clang-" + semver;
+                knownCompiler = true;
+            }
         }
 
         if (knownCompiler) {
@@ -555,7 +577,7 @@ Editor.prototype.updateOpenInQuickBench = function () {
                 quickBenchState.lib = "llvm";
             }
         }
-    });
+    }, this));
 
     var link = 'http://quick-bench.com/#' + btoa(this.asciiEncodeJsonText(JSON.stringify(quickBenchState)));
     this.domRoot.find(".open-in-quickbench").attr("href", link);
