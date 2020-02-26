@@ -43,7 +43,9 @@ function definition() {
     cuda.tokenPostfix = '.cu';
 
     // Keywords for CUDA
-    addKeywords(["__host__", "__global__", "__device__", "__shared__", "__noinline__", "__forceinline__", "__restrict__"]);
+    addKeywords([
+        "__host__", "__global__", "__device__", "__shared__", "__noinline__", "__forceinline__", "__restrict__"
+    ]);
 
     return cuda;
 }
