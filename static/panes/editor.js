@@ -555,7 +555,11 @@ Editor.prototype.updateOpenInQuickBench = function () {
         if (knownCompiler) {
             var match = compiler.options.match(/-(O([0-3sg]|fast))/);
             if (match !== null) {
-                quickBenchState.optim = match[1];
+                if (match[2] === "fast") {
+                    quickBenchState.optim = "F";
+                } else {
+                    quickBenchState.optim = match[2].toUpperCase();
+                }
             }
 
             if ((compiler.options.indexOf("-std=c++11") !== -1) ||
