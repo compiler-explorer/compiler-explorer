@@ -38,6 +38,7 @@ var Alert = require('../alert');
 var bigInt = require('big-integer');
 var local = require('../local');
 var Libraries = require('../libs-widget');
+var codeLensHandler = require('../codelens-handler');
 require('../modes/asm-mode');
 require('../modes/ptx-mode');
 
@@ -129,7 +130,6 @@ function Compiler(hub, container, state) {
         fontLigatures: this.settings.editorsFLigatures
     });
 
-    this.codeLensProvider = null;
     this.fontScale = new FontScale(this.domRoot, state, this.outputEditor);
 
     this.compilerPicker.selectize({
@@ -186,6 +186,7 @@ Compiler.prototype.initLangAndCompiler = function (state) {
 };
 
 Compiler.prototype.close = function () {
+    codeLensHandler.unregister(this.id);
     this.eventHub.unsubscribe();
     this.eventHub.emit('compilerClose', this.id);
     this.outputEditor.dispose();
@@ -663,12 +664,9 @@ Compiler.prototype.setAssembly = function (asm) {
     }, this));
     this.updateDecorations();
 
+    var codeLenses = [];
     if (this.getEffectiveFilters().binary) {
         this.setBinaryMargin();
-        if (this.codeLensProvider !== null) {
-            this.codeLensProvider.dispose();
-        }
-        var codeLenses = [];
         _.each(this.assembly, _.bind(function (obj, line) {
             if (obj.opcodes) {
                 var address = obj.address ? obj.address.toString(16) : '';
@@ -686,21 +684,14 @@ Compiler.prototype.setAssembly = function (asm) {
                 });
             }
         }, this));
-        var currentAsmLang = editorModel.getModeId();
-        this.codeLensProvider = monaco.languages.registerCodeLensProvider(currentAsmLang, {
-            provideCodeLenses: function (model) {
-                if (model === editorModel)
-                    return codeLenses;
-                else
-                    return [];
-            }
-        });
     } else {
         this.setNormalMargin();
-        if (this.codeLensProvider !== null) {
-            this.codeLensProvider.dispose();
-        }
     }
+
+    codeLensHandler.registerLensesForCompiler(this.id, editorModel, codeLenses);
+
+    var currentAsmLang = editorModel.getModeId();
+    codeLensHandler.registerProviderForLanguage(currentAsmLang);
 };
 
 function errorResult(text) {
