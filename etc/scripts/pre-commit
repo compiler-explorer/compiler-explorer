@@ -3,7 +3,7 @@
 printf "\033[0;32mRunning tests...\033[0m\n"
 
 # Pass lint and mocha tests
-CHECK_OUTPUT=`make check`
+CHECK_OUTPUT=`make pre-commit`
 if [ $? -ne 0 ]
 then
 	printf "%s\n" "${CHECK_OUTPUT}"

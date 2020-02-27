@@ -30,7 +30,7 @@ info: node-installed ## print out some useful variables
 	@echo PATH is $(PATH)
 
 .PHONY: clean run test run-amazon
-.PHONY: dist lint prereqs node_modules travis-dist
+.PHONY: dist lint ci-lint prereqs node_modules travis-dist check pre-commit
 prereqs: node_modules
 
 NODE_MODULES=.npm-updated
@@ -44,8 +44,10 @@ webpack: $(NODE_MODULES)  ## Runs webpack (useful only for debugging webpack)
 	rm -rf out/dist/static out/dist/manifest.json
 	$(WEBPACK) $(WEBPACK_ARGS)
 
-lint: $(NODE_MODULES)  ## Ensures everything matches code conventions
+lint: $(NODE_MODULES)  ## Ensures everything matches code conventions (fixing trivial things automatically)
 	$(NPM) run lint
+ci-lint: $(NODE_MODULES)
+	$(NPM) run ci-lint
 
 node_modules: $(NODE_MODULES)
 webpack: $(WEBPACK)
@@ -54,7 +56,8 @@ test: $(NODE_MODULES)  ## Runs the tests
 	$(NPM) run test
 	@echo Tests pass
 
-check: $(NODE_MODULES) test lint  ## Runs all checks required before committing
+check: $(NODE_MODULES) test lint  ## Runs all checks required before committing (fixing trivial things automatically)
+pre-commit: $(NODE_MODULES) test ci-lint
 
 clean:  ## Cleans up everything
 	rm -rf node_modules .*-updated .*-bin out

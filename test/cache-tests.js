@@ -71,7 +71,7 @@ function basicTests(factory) {
 
     it('should store and retrieve binary buffers', () => {
         const cache = factory();
-        const buffer = Buffer.alloc(2 * 1024 * 1024);
+        const buffer = Buffer.alloc(2 * 1024);
         buffer.fill('@');
         return cache.put('a key', buffer, 'bob')
             .then(() => {
@@ -160,9 +160,9 @@ describe('On disk caches', () => {
         return cache.put('a key', 'a value', 'bob')
             .then(() => {
                 const promises = [];
-                const oneK = "".padEnd(1024);
-                for (let i = 0; i < 1024; i++) {
-                    promises.push(cache.put(`key${i}`, oneK));
+                const oneHundredK = "".padEnd(1024 * 100);
+                for (let i = 0; i < 12; i++) {
+                    promises.push(cache.put(`key${i}`, oneHundredK));
                 }
                 return Promise.all(promises);
             })

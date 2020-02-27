@@ -284,7 +284,7 @@ function setupStaticMiddleware(router) {
     }
 
     pugRequireHandler = (path) => {
-        if (staticManifest.hasOwnProperty(path)) {
+        if (Object.prototype.hasOwnProperty.call(staticManifest, path)) {
             return urljoin(staticRoot, staticManifest[path]);
         } else {
             logger.error(`failed to locate static asset '${path}' in manifest`);
@@ -489,7 +489,7 @@ async function main() {
         // sentry error handler must be the first error handling middleware
         .use(Sentry.Handlers.errorHandler)
         // eslint-disable-next-line no-unused-vars
-        .use((err, req, res) => {
+        .use((err, req, res, next) => {
             const status =
                 err.status ||
                 err.statusCode ||
@@ -572,6 +572,11 @@ async function main() {
      * fabricate a worker on the fly.
      *
      * This is bad and I feel bad.
+     *
+     * This should no longer be needed, but is left here for safety because people with
+     * workers already installed from this url may still try to hit this page for some time
+     *
+     * TODO: remove this route in the future now that it is not needed
      */
     router.get('/workers/:worker', (req, res) => {
         staticHeaders(res);

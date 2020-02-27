@@ -35,15 +35,18 @@ const languages = {
     c: {id: 'c'}
 };
 
-const compilerProps = new properties.CompilerProps(languages, properties.fakeProps({}));
-
 describe('PPCI', function () {
-    const ce = new CompilationEnvironment(compilerProps);
+    let ce;
     const info = {
         exe: null,
         remote: true,
         lang: languages.c.id
     };
+
+    before(() => {
+        const compilerProps = new properties.CompilerProps(languages, properties.fakeProps({}));
+        ce = new CompilationEnvironment(compilerProps);
+    });
 
     it('Should be ok with most arguments', () => {
         const compiler = new PPCICompiler(info, ce);

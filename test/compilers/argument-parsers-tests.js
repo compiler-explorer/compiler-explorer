@@ -36,11 +36,15 @@ const languages = {
     'c++': {id: 'c++'}
 };
 
-const compilerProps = new properties.CompilerProps(languages, properties.fakeProps({}));
+let env;
 
 function makeCompiler(stdout, stderr, code) {
+    if (env === undefined) {
+        const compilerProps = new properties.CompilerProps(languages, properties.fakeProps({}));
+        env = new CompilationEnvironment(compilerProps);
+    }
+
     if (code === undefined) code = 0;
-    const env = new CompilationEnvironment(compilerProps);
     const compiler = new FakeCompiler({lang: languages['c++'].id, remote: true}, env);
     compiler.exec = () => Promise.resolve({code: code, stdout: stdout || "", stderr: stderr || ""});
     compiler.execCompilerCached = compiler.exec;
@@ -155,7 +159,11 @@ describe('pascal parser', () => {
 });
 
 describe('popular compiler arguments', () => {
-    let compiler = makeCompiler("-fsave-optimization-record\n-x\n-g\n-fcolor-diagnostics\n-O<number> optimization level\n-std=<c++11,c++14,c++17z>");
+    let compiler;
+
+    before(() => {
+        compiler = makeCompiler("-fsave-optimization-record\n-x\n-g\n-fcolor-diagnostics\n-O<number> optimization level\n-std=<c++11,c++14,c++17z>");
+    });
 
     it('should return 5 arguments', () => {
         return parsers.Clang.parse(compiler).then(compiler => {

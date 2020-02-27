@@ -24,6 +24,7 @@
 
 const
     path = require('path'),
+    should = require('chai').should(),
     CompilerDropinTool = require('../lib/tooling/compiler-dropin-tool');
 
 

@@ -35,15 +35,18 @@ const languages = {
     nim: {id: 'nim'}
 };
 
-const compilerProps = new properties.CompilerProps(languages, properties.fakeProps({}));
-
 describe('Nim', () => {
-    const ce = new CompilationEnvironment(compilerProps);
+    let ce;
     const info = {
         exe: null,
         remote: true,
         lang: languages.nim.id
     };
+
+    before(() => {
+        const compilerProps = new properties.CompilerProps(languages, properties.fakeProps({}));
+        ce = new CompilationEnvironment(compilerProps);
+    });
 
     it('Nim should not allow --run/-r parameter', () => {
         const compiler = new NimCompiler(info, ce);

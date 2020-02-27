@@ -72,7 +72,7 @@ Running with `make EXTRA_ARGS='--language LANG'` will allow you to load
 
 Some languages need extra tools to demangle them, e.g. `rust`, `d`, or `haskell`.
  Such tools are kept separately in the
- [tools repo](https://github.com/mattgodbolt/compiler-explorer-tools).
+ [tools repo](https://github.com/compiler-explorer/compiler-explorer-tools).
 
 The config system leaves a lot to be desired.
  [Work has been done](https://github.com/rabsrincon/ccs-js) on porting

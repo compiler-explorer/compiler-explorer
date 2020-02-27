@@ -42,7 +42,7 @@ const languages = {
 const compilerProps = new properties.CompilerProps(languages, properties.fakeProps({}));
 
 describe('Basic compiler invariants', function () {
-    const ce = new CompilationEnvironment(compilerProps);
+    let ce, compiler;
     const info = {
         exe: null,
         remote: true,
@@ -50,7 +50,10 @@ describe('Basic compiler invariants', function () {
         ldPath: []
     };
 
-    const compiler = new BaseCompiler(info, ce);
+    before(() => {
+        ce = new CompilationEnvironment(compilerProps);
+        compiler = new BaseCompiler(info, ce);
+    });
 
     it('should recognize when optOutput has been request', () => {
         compiler.optOutputRequested(["please", "recognize", "-fsave-optimization-record"]).should.equal(true);
@@ -90,7 +93,7 @@ describe('Basic compiler invariants', function () {
 });
 
 describe('Compiler execution', function () {
-    const ce = new CompilationEnvironment(compilerProps);
+    let ce, compiler;
     const info = {
         exe: null,
         remote: true,
@@ -98,9 +101,12 @@ describe('Compiler execution', function () {
         ldPath: []
     };
 
-    afterEach(() => sinon.restore());
+    before(() => {
+        ce = new CompilationEnvironment(compilerProps);
+        compiler = new BaseCompiler(info, ce);
+    });
 
-    const compiler = new BaseCompiler(info, ce);
+    afterEach(() => sinon.restore());
 
     function stubOutCallToExec(execStub, compiler, content, result, nthCall) {
         execStub.onCall(nthCall || 0).callsFake((compiler, args, options) => {
