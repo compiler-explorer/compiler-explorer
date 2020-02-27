@@ -42,12 +42,6 @@ That also means that URLs should live forever once they are created
 CE will remain ad-free, open-source and non-commercial. There's no plans at all to add "freemium" content,
 despite the Patreon site where folks can help support the cost of running the servers.
 
-## 2019 goals
-
-With all this in mind, the tentative goals for 2019 are:
-- [ ] Design an API that can handle remote code execution and download needs
-- [ ] Implement remote execution UIs
-
 ## 2020 goals
 
 A clear goal for 2020 is to finally tackle small screen device support.
