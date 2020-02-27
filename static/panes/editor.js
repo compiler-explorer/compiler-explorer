@@ -507,7 +507,27 @@ Editor.prototype.getCompilerStates = function () {
 };
 
 Editor.prototype.updateOpenInCppInsights = function () {
-    var cppStd = 'cpp2a'; // if a compiler is linked, maybe we can find this out?
+    var cppStd = 'cpp2a';
+
+    var compilers = this.getCompilerStates();
+    _.each(compilers, _.bind(function (compiler) {
+        if ((compiler.options.indexOf("-std=c++11") !== -1) ||
+            (compiler.options.indexOf("-std=gnu++11") !== -1)) {
+            cppStd = "cpp11";
+        } else if ((compiler.options.indexOf("-std=c++14") !== -1) ||
+            (compiler.options.indexOf("-std=gnu++14") !== -1)) {
+            cppStd = "cpp14";
+        } else if ((compiler.options.indexOf("-std=c++17") !== -1) ||
+            (compiler.options.indexOf("-std=gnu++17") !== -1)) {
+            cppStd = "cpp17";
+        } else if ((compiler.options.indexOf("-std=c++2a") !== -1) ||
+            (compiler.options.indexOf("-std=gnu++2a") !== -1)) {
+            cppStd = "cpp2a";
+        } else if (compiler.options.indexOf("-std=c++98") !== -1) {
+            cppStd = "cpp98";
+        }
+    }, this));
+
     var link = 'https://cppinsights.io/lnk?code=' + this.b64UTFEncode(this.getSource()) + '&std=' + cppStd + '&rev=1.0';
 
     this.domRoot.find(".open-in-cppinsights").attr("href", link);
