@@ -51,9 +51,10 @@ function Togglesv2(root, state) {
             };
 
         // Event Handlers
-        $button.on('click', function () {
+        $button.on('click', function (e) {
             $checkbox.prop('checked', !$checkbox.is(':checked'));
             $checkbox.triggerHandler('change');
+            e.stopPropagation();
         });
         $checkbox.on('change', function () {
             updateDisplay();
