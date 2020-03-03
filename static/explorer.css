@@ -535,3 +535,8 @@ kbd {
 .open-in-quickbench * {
     vertical-align: middle;
 }
+
+/* Fix the width to allow bootstrap's right-justify to work, else it truncates. See https://github.com/mattgodbolt/compiler-explorer/issues/1863 */
+div.populararguments div.dropdown-menu {
+    width: 300px;
+}
