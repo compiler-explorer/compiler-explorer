@@ -82,7 +82,7 @@
       include font-size
       .btn-group.btn-group-sm.filters(role="group")
         button.btn.btn-sm.btn-light.dropdown-toggle(type="button" title="Compiler output options" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Change how the compiler's output is generated")
-          span.fas.fa-cogs
+          span.fas.fa-cog
           span.hideable &nbsp;Output...
         .dropdown-menu
           .button-checkbox
@@ -108,23 +108,23 @@
         .dropdown-menu
           .button-checkbox
             button.dropdown-item.btn.btn-sm.btn-light.active.nonbinary(type="button" title="Filter unused labels from the output" data-bind="labels" aria-pressed="true")
-              span Filter unused labels
+              span Unused labels
             input.d-none(type="checkbox" checked=true)
           .button-checkbox
             button.dropdown-item.btn.btn-sm.btn-light.active.nonbinary(title="Filter functions from other libraries from the output" data-bind="libraryCode" aria-pressed="true")
-              span Filter library functions
+              span Library functions
             input.d-none(type="checkbox")
           .button-checkbox
             button.dropdown-item.btn.btn-sm.btn-light.active.nonbinary(type="button" title="Filter all assembler directives from the output" data-bind="directives" aria-pressed="true")
-              span Filter directives
+              span Directives
             input.d-none(type="checkbox" checked=true)
           .button-checkbox
             button.dropdown-item.btn.btn-sm.btn-light.active.nonbinary(type="button" title="Remove all lines which are only comments from the output" data-bind="commentOnly" aria-pressed="true")
-              span Filter comments
+              span Comments
             input.d-none(type="checkbox" checked=true)
           .button-checkbox
             button.dropdown-item.btn.btn-sm.btn-light(type="button" title="Trim intra-line whitespace" data-bind="trim" aria-pressed="false")
-              span Trim horizontal whitespace
+              span Horizontal whitespace
             input.d-none(type="checkbox")
       .btn-group.btn-group-sm(role="group" aria-label="Compiler additions")
         button.btn.btn-sm.btn-light.show-libs.dropdown-toggle(title="Include libs" aria-label="Toggle libraries dropdown" aria-pressed="false" aria-haspopup="true")
@@ -155,7 +155,7 @@
             | Graph output
       .btn-group.btn-group-sm(role="group")
         button.btn.btn-sm.btn-light.dropdown-toggle.add-tool(type="button" title="Add tool" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Add tooling to this editor and compiler")
-          span.fas.fa-cogs
+          span.fas.fa-screwdriver
           span.hideable &nbsp;Add tool...
         .dropdown-menu.dropdown-menu-right.toolsmenu
     .monaco-placeholder
