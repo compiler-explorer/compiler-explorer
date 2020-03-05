@@ -10,8 +10,8 @@
                   span.current Short
                 ul.dropdown-menu.sources
                   if storageSolution !== "null"
-                      button.dropdown-item.btn.btn-light(data-bind="Short")
-                        | Short
+                    button.dropdown-item.btn.btn-light(data-bind="Short")
+                      | Short
                   button.dropdown-item.btn.btn-light(data-bind="Full")
                     | Full
               input.form-control.permalink(type="text" placeholder="Loading" readonly size="1024")
@@ -80,43 +80,52 @@
               span.sr-only Popular arguments
             div.dropdown-menu.dropdown-menu-right
       include font-size
-      .btn-group.btn-group-sm.filters(role="group" aria-label="Compiler filters")
-        .button-checkbox
-          button.btn.btn-sm.btn-light(type="button" title="Compile to binary and disassemble the output" data-bind="binary" aria-pressed="false")
-            span 11010
-          input.d-none(type="checkbox")
-        .button-checkbox
-          button.btn.btn-sm.btn-light(type="button" title="Execute the binary" data-bind="execute" aria-pressed="false")
-            span ./a.out
-          input.d-none(type="checkbox")
-        .button-checkbox
-          button.btn.btn-sm.btn-light.active.nonbinary(type="button" title="Filter unused labels from the output" data-bind="labels" aria-pressed="true")
-            span .LX0:
-          input.d-none(type="checkbox" checked=true)
-        .button-checkbox
-          button.btn.btn-sm.btn-light.active.nonbinary(title="Filter functions from other libraries from the output" data-bind="libraryCode" aria-pressed="true")
-            span lib.f:
-          input.d-none(type="checkbox")
-        .button-checkbox
-          button.btn.btn-sm.btn-light.active.nonbinary(type="button" title="Filter all assembler directives from the output" data-bind="directives" aria-pressed="true")
-            span .text
-          input.d-none(type="checkbox" checked=true)
-        .button-checkbox
-          button.btn.btn-sm.btn-light.active.nonbinary(type="button" title="Remove all lines which are only comments from the output" data-bind="commentOnly" aria-pressed="true")
-            span //
-          input.d-none(type="checkbox" checked=true)
-        .button-checkbox
-          button.btn.btn-sm.btn-light(type="button" title="Trim intra-line whitespace" data-bind="trim" aria-pressed="false")
-            span \s+
-          input.d-none(type="checkbox")
-        .button-checkbox
-          button.btn.btn-sm.btn-light.active(type="button" title="Output disassembly in Intel syntax" data-bind="intel" aria-pressed="true")
-            span Intel
-          input.d-none(type="checkbox" checked=true)
-        .button-checkbox
-          button.btn.btn-sm.btn-light.active(type="button" title="Demangle output" data-bind="demangle" aria-pressed="true")
-            span Demangle
-          input.d-none(type="checkbox" checked=true)
+      .btn-group.btn-group-sm.filters(role="group")
+        button.btn.btn-sm.btn-light.dropdown-toggle(type="button" title="Compiler output options" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Change how the compiler's output is generated")
+          span.fas.fa-cog
+          span.hideable &nbsp;Output...
+        .dropdown-menu
+          .button-checkbox
+            button.dropdown-item.btn.btn-sm.btn-light(type="button" title="Compile to binary and disassemble the output" data-bind="binary" aria-pressed="false")
+              span Compile to binary
+            input.d-none(type="checkbox")
+          .button-checkbox
+            button.dropdown-item.btn.btn-sm.btn-light(type="button" title="Execute the compiled code and show its output" data-bind="execute" aria-pressed="false")
+              span Run the compiled output
+            input.d-none(type="checkbox")
+          .button-checkbox
+            button.dropdown-item.btn.btn-sm.btn-light.active(type="button" title="Output disassembly in Intel syntax" data-bind="intel" aria-pressed="true")
+              span Intel asm syntax
+            input.d-none(type="checkbox" checked=true)
+          .button-checkbox
+            button.dropdown-item.btn.btn-sm.btn-light.active(type="button" title="Demangle output" data-bind="demangle" aria-pressed="true")
+              span Demangle identifiers
+            input.d-none(type="checkbox" checked=true)
+      .btn-group.btn-group-sm.filters(role="group")
+        button.btn.btn-sm.btn-light.dropdown-toggle(type="button" title="Compiler output filters" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Change how the compiler output is filtered")
+          span.fas.fa-filter
+          span.hideable &nbsp;Filter...
+        .dropdown-menu
+          .button-checkbox
+            button.dropdown-item.btn.btn-sm.btn-light.active.nonbinary(type="button" title="Filter unused labels from the output" data-bind="labels" aria-pressed="true")
+              span Unused labels
+            input.d-none(type="checkbox" checked=true)
+          .button-checkbox
+            button.dropdown-item.btn.btn-sm.btn-light.active.nonbinary(title="Filter functions from other libraries from the output" data-bind="libraryCode" aria-pressed="true")
+              span Library functions
+            input.d-none(type="checkbox")
+          .button-checkbox
+            button.dropdown-item.btn.btn-sm.btn-light.active.nonbinary(type="button" title="Filter all assembler directives from the output" data-bind="directives" aria-pressed="true")
+              span Directives
+            input.d-none(type="checkbox" checked=true)
+          .button-checkbox
+            button.dropdown-item.btn.btn-sm.btn-light.active.nonbinary(type="button" title="Remove all lines which are only comments from the output" data-bind="commentOnly" aria-pressed="true")
+              span Comments
+            input.d-none(type="checkbox" checked=true)
+          .button-checkbox
+            button.dropdown-item.btn.btn-sm.btn-light(type="button" title="Trim intra-line whitespace" data-bind="trim" aria-pressed="false")
+              span Horizontal whitespace
+            input.d-none(type="checkbox")
       .btn-group.btn-group-sm(role="group" aria-label="Compiler additions")
         button.btn.btn-sm.btn-light.show-libs.dropdown-toggle(title="Include libs" aria-label="Toggle libraries dropdown" aria-pressed="false" aria-haspopup="true")
           span.fas.fa-book
@@ -146,7 +155,7 @@
             | Graph output
       .btn-group.btn-group-sm(role="group")
         button.btn.btn-sm.btn-light.dropdown-toggle.add-tool(type="button" title="Add tool" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Add tooling to this editor and compiler")
-          span.fas.fa-cogs
+          span.fas.fa-screwdriver
           span.hideable &nbsp;Add tool...
         .dropdown-menu.dropdown-menu-right.toolsmenu
     .monaco-placeholder
