@@ -23,8 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 const LLVMmcaTool = require('../lib/compilers/llvm-mca');
-const CompilationEnvironment = require('../lib/compilation-env');
-const properties = require('../lib/properties');
+const {makeCompilationEnvironment} = require('./utils.js');
 require('chai').should();
 
 const languages = {
@@ -35,8 +34,7 @@ describe('LLVM-mca tool definition', () => {
     let ce, a;
 
     before(() => {
-        const compilerProps = new properties.CompilerProps(languages, properties.fakeProps({}));
-        ce = new CompilationEnvironment(compilerProps);
+        ce = makeCompilationEnvironment({languages});
         const info = {
             exe: null,
             remote: true,

@@ -25,8 +25,7 @@
 const chai = require('chai');
 const chaiAsPromised = require("chai-as-promised");
 const PPCICompiler = require('../lib/compilers/ppci');
-const CompilationEnvironment = require('../lib/compilation-env');
-const properties = require('../lib/properties');
+const {makeCompilationEnvironment} = require('./utils.js');
 
 chai.use(chaiAsPromised);
 chai.should();
@@ -44,8 +43,7 @@ describe('PPCI', function () {
     };
 
     before(() => {
-        const compilerProps = new properties.CompilerProps(languages, properties.fakeProps({}));
-        ce = new CompilationEnvironment(compilerProps);
+        ce = makeCompilationEnvironment({languages});
     });
 
     it('Should be ok with most arguments', () => {

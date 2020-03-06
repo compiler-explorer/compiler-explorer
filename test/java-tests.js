@@ -25,10 +25,9 @@
 const chai = require('chai');
 const chaiAsPromised = require('chai-as-promised');
 const JavaCompiler = require('../lib/compilers/java');
-const CompilationEnvironment = require('../lib/compilation-env');
 const fs = require('fs-extra');
 const utils = require('../lib/utils');
-const properties = require('../lib/properties');
+const {makeCompilationEnvironment} = require('./utils.js');
 
 // TODO!!!
 return;     // Temporarily disabled: see #1438
@@ -47,8 +46,7 @@ const info = {
     remote: true,
     lang: languages.java.id
 };
-const compilerProps = new properties.CompilerProps(languages, properties.fakeProps({}));
-const ce = new CompilationEnvironment(compilerProps);
+const ce = makeCompilationEnvironment({languages});
 
 function testJava(baseFolder, ...classNames) {
     const compiler = new JavaCompiler(info, ce);

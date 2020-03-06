@@ -1,4 +1,4 @@
-// Copyright (c) 2017, Patrick Quist
+// Copyright (c) 2020, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,40 +22,12 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-const chai = require('chai');
+const {CompilerProps, fakeProps} = require('../lib/properties');
+const CompilationQueue = require('../lib/compilation-queue');
+const CompilationEnvironment = require('../lib/compilation-env');
 
-const WslCL = require('../lib/compilers/wsl-vc');
-const WineCL = require('../lib/compilers/wine-vc');
-const {makeCompilationEnvironment} = require('./utils.js');
-
-chai.should();
-
-const languages = {
-    'c++': {id: 'c++'}
+module.exports.makeCompilationEnvironment = (options) => {
+    const compilerProps = new CompilerProps(options.languages, fakeProps(options.props || {}));
+    const compilationQueue = options.queue || new CompilationQueue(options.concurrency || 1, options.timeout);
+    return new CompilationEnvironment(compilerProps, compilationQueue, options.doCache);
 };
-
-const info = {
-    lang: languages['c++'].id,
-    exe: null,
-    remote: true
-};
-
-describe('Paths', () => {
-    let env;
-
-    before(() => {
-        env = makeCompilationEnvironment({languages});
-    });
-
-    it('Linux -> Wine path', () => {
-        const compiler = new WineCL(info, env);
-        compiler.filename("/tmp/123456/output.s").should.equal("Z:/tmp/123456/output.s");
-    });
-
-    it('Linux -> Windows path', function () {
-        process.env.winTmp = "/mnt/c/tmp";
-
-        const compiler = new WslCL(info, env);
-        compiler.filename("/mnt/c/tmp/123456/output.s").should.equal("c:/tmp/123456/output.s");
-    });
-});

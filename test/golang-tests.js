@@ -26,9 +26,9 @@ const chai = require('chai'),
     chaiAsPromised = require("chai-as-promised"),
     fs = require('fs-extra'),
     utils = require('../lib/utils'),
-    CompilationEnvironment = require('../lib/compilation-env'),
     GoCompiler = require('../lib/compilers/golang'),
-    properties = require('../lib/properties');
+    {makeCompilationEnvironment} = require('./utils.js');
+
 chai.use(chaiAsPromised);
 chai.should();
 
@@ -70,8 +70,7 @@ function testGoAsm(basefilename) {
 
 describe('GO asm tests', () => {
     before(() => {
-        const compilerProps = new properties.CompilerProps(languages, properties.fakeProps({}));
-        ce = new CompilationEnvironment(compilerProps);
+        ce = makeCompilationEnvironment({languages});
     });
 
     it('Handles unknown line number correctly', () => {

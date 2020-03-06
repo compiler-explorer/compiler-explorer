@@ -26,11 +26,10 @@ const chai = require('chai');
 const sinon = require('sinon');
 const chaiAsPromised = require("chai-as-promised");
 const BaseCompiler = require('../lib/base-compiler');
-const CompilationEnvironment = require('../lib/compilation-env');
-const properties = require('../lib/properties');
 const fs = require('fs-extra');
 const exec = require('../lib/exec');
 const path = require('path');
+const {makeCompilationEnvironment} = require('./utils.js');
 
 chai.use(chaiAsPromised);
 const should = chai.should();
@@ -38,8 +37,6 @@ const should = chai.should();
 const languages = {
     'c++': {id: 'c++'}
 };
-
-const compilerProps = new properties.CompilerProps(languages, properties.fakeProps({}));
 
 describe('Basic compiler invariants', function () {
     let ce, compiler;
@@ -51,7 +48,7 @@ describe('Basic compiler invariants', function () {
     };
 
     before(() => {
-        ce = new CompilationEnvironment(compilerProps);
+        ce = makeCompilationEnvironment({ languages });
         compiler = new BaseCompiler(info, ce);
     });
 
@@ -102,7 +99,7 @@ describe('Compiler execution', function () {
     };
 
     before(() => {
-        ce = new CompilationEnvironment(compilerProps);
+        ce = makeCompilationEnvironment({ languages });
         compiler = new BaseCompiler(info, ce);
     });
 

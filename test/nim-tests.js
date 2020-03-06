@@ -25,8 +25,7 @@
 const chai = require('chai');
 const chaiAsPromised = require("chai-as-promised");
 const NimCompiler = require('../lib/compilers/nim');
-const CompilationEnvironment = require('../lib/compilation-env');
-const properties = require('../lib/properties');
+const {makeCompilationEnvironment} = require('./utils.js');
 
 chai.use(chaiAsPromised);
 chai.should();
@@ -44,8 +43,7 @@ describe('Nim', () => {
     };
 
     before(() => {
-        const compilerProps = new properties.CompilerProps(languages, properties.fakeProps({}));
-        ce = new CompilationEnvironment(compilerProps);
+        ce = makeCompilationEnvironment({languages});
     });
 
     it('Nim should not allow --run/-r parameter', () => {

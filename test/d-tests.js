@@ -26,8 +26,7 @@ const chai = require('chai');
 const chaiAsPromised = require("chai-as-promised");
 const LDCCompiler = require('../lib/compilers/ldc');
 const DMDCompiler = require('../lib/compilers/dmd');
-const CompilationEnvironment = require('../lib/compilation-env');
-const properties = require('../lib/properties');
+const {makeCompilationEnvironment} = require('./utils.js');
 
 chai.use(chaiAsPromised);
 chai.should();
@@ -45,8 +44,7 @@ describe('D', () => {
     };
 
     before(() => {
-        const compilerProps = new properties.CompilerProps(languages, properties.fakeProps({}));
-        ce = new CompilationEnvironment(compilerProps);
+        ce = makeCompilationEnvironment({languages});
     });
 
     it('LDC should not allow -run parameter', () => {

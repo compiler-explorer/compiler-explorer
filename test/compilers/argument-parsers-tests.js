@@ -24,11 +24,10 @@
 
 const chai = require('chai'),
     FakeCompiler = require('../../lib/compilers/fake-for-test'),
-    CompilationEnvironment = require('../../lib/compilation-env'),
     chaiAsPromised = require("chai-as-promised"),
     parsers = require('../../lib/compilers/argument-parsers'),
     CompilerArguments = require('../../lib/compiler-arguments'),
-    properties = require('../../lib/properties');
+    {makeCompilationEnvironment} = require('../utils.js');
 chai.use(chaiAsPromised);
 const should = chai.should();
 
@@ -40,8 +39,7 @@ let env;
 
 function makeCompiler(stdout, stderr, code) {
     if (env === undefined) {
-        const compilerProps = new properties.CompilerProps(languages, properties.fakeProps({}));
-        env = new CompilationEnvironment(compilerProps);
+        env = makeCompilationEnvironment({languages});
     }
 
     if (code === undefined) code = 0;
