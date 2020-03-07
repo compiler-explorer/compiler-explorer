@@ -26,10 +26,9 @@ const chai = require('chai');
 const chaiAsPromised = require("chai-as-promised");
 const PascalDemangler = require('../lib/demangler-pascal').Demangler;
 const PascalCompiler = require('../lib/compilers/pascal');
-const CompilationEnvironment = require('../lib/compilation-env');
 const fs = require('fs-extra');
 const utils = require('../lib/utils');
-const properties = require('../lib/properties');
+const {makeCompilationEnvironment} = require('./utils.js')
 
 chai.use(chaiAsPromised);
 chai.should();
@@ -42,8 +41,7 @@ describe('Pascal', () => {
     let compiler;
 
     before(() => {
-        const compilerProps = new properties.CompilerProps(languages, properties.fakeProps({}));
-        const ce = new CompilationEnvironment(compilerProps);
+        const ce = makeCompilationEnvironment({languages});
         const info = {
             exe: null,
             remote: true,

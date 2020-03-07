@@ -26,8 +26,7 @@ const chai = require('chai');
 const chaiAsPromised = require("chai-as-promised");
 const LLCCompiler = require('../lib/compilers/llc');
 const OPTCompiler = require('../lib/compilers/opt');
-const CompilationEnvironment = require('../lib/compilation-env');
-const properties = require('../lib/properties');
+const {makeCompilationEnvironment} = require('./utils.js');
 
 chai.use(chaiAsPromised);
 chai.should();
@@ -41,8 +40,7 @@ let ce;
 
 function createCompiler(compiler) {
     if (ce === undefined) {
-        const compilerProps = new properties.CompilerProps(languages, properties.fakeProps({}));
-        ce = new CompilationEnvironment(compilerProps);
+        ce = makeCompilationEnvironment({languages});
     }
 
     const info = {

@@ -397,8 +397,10 @@ async function main() {
 
     const ClientOptionsHandler = require('./lib/options-handler');
     const clientOptionsHandler = new ClientOptionsHandler(fileSources, compilerProps, defArgs);
+    const CompilationQueue = require('./lib/compilation-queue');
+    const compilationQueue = CompilationQueue.fromProps(compilerProps.ceProps);
     const CompilationEnvironment = require('./lib/compilation-env');
-    const compilationEnvironment = new CompilationEnvironment(compilerProps, defArgs.doCache);
+    const compilationEnvironment = new CompilationEnvironment(compilerProps, compilationQueue, defArgs.doCache);
     const CompileHandler = require('./lib/handlers/compile').Handler;
     const compileHandler = new CompileHandler(compilationEnvironment, awsProps);
     const StorageHandler = require('./lib/storage/storage');
@@ -481,7 +483,7 @@ async function main() {
             }
         }))
         // Handle healthchecks at the root, as they're not expected from the outside world
-        .use('/healthcheck', new healthCheck.HealthCheckHandler(healthCheckFilePath).handle)
+        .use('/healthcheck', new healthCheck.HealthCheckHandler(compilationQueue, healthCheckFilePath).handle)
         .use(httpRoot, router)
         .use((req, res, next) => {
             next({status: 404, message: `page "${req.path}" could not be found`});
