@@ -83,3 +83,4 @@ From oldest to newest contributor, we would like to thank:
 - [Cassie Jones](https://github.com/porglezomp)
 - [Bastien Penavayre](https://github.com/DaemonSnake)
 - [Dave Rodgman](https://github.com/daverodgman)
+- [Will Lovett](https://github.com/willlovett-arm)
