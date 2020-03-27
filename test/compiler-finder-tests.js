@@ -40,15 +40,45 @@ const props = {
     compilers: "goodCompiler:&badCompiler"
 };
 
+const noOptionsAtAll = {
+    compilers: "goodCompiler"
+};
+
+const noBaseOptions = {
+    compilers: "goodCompiler",
+    options: "bar"
+};
+
+const onlyBaseOptions = {
+    compilers: "goodCompiler",
+    baseOptions: "foo"
+};
+
+const bothOptions = {
+    compilers: "goodCompiler",
+    baseOptions: "foo",
+    options: "bar"
+};
+
 describe('Compiler-finder', function () {
     let compilerProps;
 
+    let noOptionsAtAllProps;
+    let noBaseOptionsProps;
+    let onlyBaseOptionsProps;
+    let bothOptionsProps;
+
+    let optionsHandler;
+
     before(() => {
         compilerProps = new properties.CompilerProps(languages, properties.fakeProps(props));
-    });
 
-    it('should not hang for undefined groups (Bug #860)', () => {
-        const optionsHandler = {
+        noOptionsAtAllProps = new properties.CompilerProps(languages, properties.fakeProps(noOptionsAtAll));
+        noBaseOptionsProps = new properties.CompilerProps(languages, properties.fakeProps(noBaseOptions));
+        onlyBaseOptionsProps = new properties.CompilerProps(languages, properties.fakeProps(onlyBaseOptions));
+        bothOptionsProps = new properties.CompilerProps(languages, properties.fakeProps(bothOptions));
+
+        optionsHandler = {
             get: () => {
                 return {
                     libs: {},
@@ -56,7 +86,35 @@ describe('Compiler-finder', function () {
                 };
             }
         };
+    });
+
+    it('should not hang for undefined groups (Bug #860)', () => {
+
         const finder = new CompilerFinder({}, compilerProps, properties.fakeProps({}), {}, optionsHandler);
         return finder.getCompilers().should.eventually.have.lengthOf(2);
-    })
+    });
+
+    it('should behave properly if no options are provided at all', async () => {
+        const finder = new CompilerFinder({}, noOptionsAtAllProps, properties.fakeProps({}), {}, optionsHandler);
+        const compilers = await finder.getCompilers();
+        compilers[0].options.should.equal('');
+    });
+
+    it('should behave properly if no base options are provided', async () => {
+        const finder = new CompilerFinder({}, noBaseOptionsProps, properties.fakeProps({}), {}, optionsHandler);
+        const compilers = await finder.getCompilers();
+        compilers[0].options.should.equal('bar');
+    });
+
+    it('should behave properly if only base options are provided', async () => {
+        const finder = new CompilerFinder({}, onlyBaseOptionsProps, properties.fakeProps({}), {}, optionsHandler);
+        const compilers = await finder.getCompilers();
+        compilers[0].options.should.equal('foo');
+    });
+
+    it('should behave properly if both options are provided', async () => {
+        const finder = new CompilerFinder({}, bothOptionsProps, properties.fakeProps({}), {}, optionsHandler);
+        const compilers = await finder.getCompilers();
+        compilers[0].options.should.equal('foo bar');
+    });
 });
