@@ -1,12 +1,10 @@
-#![feature(core_intrinsics)]
-// Requires the use of the nightly rust
-// Compile with -O
-pub fn max_array(x: &mut[f64; 65536], y: &[f64; 65536]) {
-  unsafe {
-    std::intrinsics::assume(x.as_ptr() as usize % 64 == 0);
-    std::intrinsics::assume(y.as_ptr() as usize % 64 == 0);
-  }
-  for i in 0..65536 {
-    x[i] = if y[i] > x[i] { y[i] } else { x[i] };
-  }
+// Compile with -C opt-level=3 -C target-cpu=native to see autovectorization
+
+#[repr(align(64))]
+pub struct Aligned<T: ?Sized>(T);
+
+pub fn max_array(x: &mut Aligned<[f64; 65536]>, y: &Aligned<[f64; 65536]>) {
+    for (x, y) in x.0.iter_mut().zip(y.0.iter_mut()) {
+        *x = if *y > *x { *y } else { *x };
+    }
 }

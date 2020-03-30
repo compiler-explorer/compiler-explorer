@@ -1,25 +1,8 @@
-#![feature(core_intrinsics)]
-// Requires the use of the nightly rust
-// Compile with -O
+// Compile with -C opt-level=3 -C target-cpu=native to see autovectorization
 
-pub fn sum_array_loop(input: &[i32]) -> i32 {
-  unsafe {
-    std::intrinsics::assume(input.as_ptr() as usize % 64 == 0);
-  }
+#[repr(align(64))]
+pub struct Aligned<T: ?Sized>(T);
 
-  let mut sum: i32 = 0;
-
-  for i in 0..input.len() {
-    sum += input[i];
-  }
-
-  sum
-}
-
-pub fn sum_array_iterator(input: &[i32]) -> i32 {
-  unsafe {
-    std::intrinsics::assume(input.as_ptr() as usize % 64 == 0);
-  }
-
-  input.iter().sum()
+pub fn sum_array(input: &Aligned<[i32]>) -> i32 {
+    input.0.iter().sum()
 }
