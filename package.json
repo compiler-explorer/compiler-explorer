@@ -70,6 +70,7 @@
   },
   "devDependencies": {
     "@sentry/cli": "^1.51.0",
+    "acorn": "^7.0.0",
     "aws-sdk-mock": "^5.0.0",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
