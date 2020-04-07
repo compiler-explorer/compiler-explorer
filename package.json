@@ -28,6 +28,7 @@
     "compiler-opt-info": "0.0.4",
     "compression": "^1.7.1",
     "cross-env": "^7.0.2",
+    "deep-equal-in-any-order": "^1.0.27",
     "es6-promise": "^4.2.8",
     "es6-shim": "^0.35.5",
     "express": "^4.17.1",
@@ -66,7 +67,8 @@
     "which": "^2.0.2",
     "winston": "^3.2.1",
     "winston-papertrail": "^1.0.5",
-    "wolfy87-eventemitter": "^5.2.9"
+    "wolfy87-eventemitter": "^5.2.9",
+    "yaml": "^1.8.3"
   },
   "devDependencies": {
     "@sentry/cli": "^1.52.1",

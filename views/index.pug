@@ -49,6 +49,10 @@ block prepend content
         span.community-hide(title="Hide and never show again" aria-label="Close")
           button.close(type="button" aria-hidden="true") &times;
       ul.navbar-nav.navbar-right
+        if showSponsors
+          li.nav-item.btn.btn-outline-primary#sponsors(data-toggle="modal" data-target="#sponsorsPopup") Sponsors
+            each icon in sponsors.icons
+              img(src=icon.img height=24)
         li.nav-item
           a.nav-link#share(href="javascript:;") Share
             b.fas.fa-caret-down
@@ -62,8 +66,8 @@ block prepend content
               span.dropdown-icon.fab.fa-github-alt
               | Sponsor on GitHub
             a.dropdown-item(
-                href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=KQWQZ7GPY2GZ6&item_name=Compiler+Explorer+development&currency_code=USD&source=url"
-                title="Make a one-time donation to help fund Compiler Explorer's development" target="_blank" rel="noopener")
+              href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=KQWQZ7GPY2GZ6&item_name=Compiler+Explorer+development&currency_code=USD&source=url"
+              title="Make a one-time donation to help fund Compiler Explorer's development" target="_blank" rel="noopener")
               span.dropdown-icon.fab.fa-paypal
               | Donate via PayPal
             if githubEnabled
@@ -82,9 +86,6 @@ block prepend content
             a.dropdown-item(href="https://github.com/mattgodbolt/compiler-explorer/issues" target="_blank" rel="noopener")
               span.dropdown-icon.fas.fa-exclamation-circle
               | Report an issue
-            a.dropdown-item#thanks-to(href="javascript:;")
-              span.dropdown-icon.fas.fa-users
-              | Thanks to...
             a.dropdown-item(href="https://xania.org/201609/how-compiler-explorer-runs-on-amazon" target="_blank")
               span.dropdown-icon.fas.fa-cloud-meatball
               | How it works
@@ -114,4 +115,4 @@ block prepend content
                 | Privacy policy
 
 block append footer
-    include popups.pug
+  include popups.pug

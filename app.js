@@ -164,7 +164,8 @@ logger.info(`properties hierarchy: ${propHierarchy.join(', ')}`);
 if (opts.propDebug) props.setDebug(true);
 
 // *All* files in config dir are parsed
-props.initialize(defArgs.rootDir + '/config', propHierarchy);
+const configDir = defArgs.rootDir + '/config';
+props.initialize(configDir, propHierarchy);
 
 // Now load up our libraries.
 const aws = require('./lib/aws'),
@@ -409,6 +410,7 @@ async function main() {
     const sourceHandler = new SourceHandler(fileSources, staticHeaders);
     const CompilerFinder = require('./lib/compiler-finder');
     const compilerFinder = new CompilerFinder(compileHandler, compilerProps, awsProps, defArgs, clientOptionsHandler);
+    const sponsors = require('./lib/sponsors');
 
     logger.info("=======================================");
     if (gitReleaseName) logger.info(`  git release ${gitReleaseName}`);
@@ -503,6 +505,7 @@ async function main() {
             res.render('error', renderConfig({error: {code: status, message: message}}));
         });
 
+    const sponsorConfig = sponsors.loadFromString(fs.readFileSync(configDir + '/sponsors.yaml', 'utf-8'));
     function renderConfig(extra, urlOptions) {
         const urlOptionsWhitelist = [
             'readOnly', 'hideEditorToolbars'
@@ -519,6 +522,7 @@ async function main() {
         options.staticRoot = staticRoot;
         options.storageSolution = storageSolution;
         options.require = pugRequireHandler;
+        options.sponsors = sponsorConfig;
         return options;
     }
 
