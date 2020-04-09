@@ -41,6 +41,10 @@ describe('Properties', () => {
         }));
     });
 
+    after(() => {
+        properties.reset();
+    })
+
     it('Has working propsFor', () => {
         should.equal(properties.get("cases", "exampleProperty"), casesProps("exampleProperty"));
     });

@@ -35,11 +35,16 @@ const languages = {
     'c++': {id: 'c++'}
 };
 
-let compilerProps = new properties.CompilerProps(languages, properties.fakeProps({}));
-compilerProps = compilerProps.get.bind(compilerProps, 'c++');
-
 describe('llvm-ir parseMetaNode', function () {
-    const llvmIrParser = new LlvmIrParser(compilerProps);
+    let llvmIrParser;
+    let compilerProps;
+
+    before(() => {
+        let fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
+        compilerProps = fakeProps.get.bind(fakeProps, 'c++')
+
+        llvmIrParser = new LlvmIrParser(compilerProps);
+    });
 
     it('should parse DILocation node', function () {
         llvmIrParser.parseMetaNode('!60 = !DILocation(line: 9, column: 15, scope: !58)').should.deep.equal({
@@ -90,7 +95,16 @@ describe('llvm-ir parseMetaNode', function () {
 });
 
 describe('llvm-ir getSourceLineNumber', function () {
-    const llvmIrParser = new LlvmIrParser(compilerProps);
+    let llvmIrParser;
+    let compilerProps;
+
+    before(() => {
+        let fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
+        compilerProps = fakeProps.get.bind(fakeProps, 'c++')
+
+        llvmIrParser = new LlvmIrParser(compilerProps);
+    });
+
     const debugInfo = {
         '!10': { line: 10 },
         '!20': { line: 20, scope: '!10' },
@@ -122,7 +136,15 @@ describe('llvm-ir getSourceLineNumber', function () {
 });
 
 describe('llvm-ir getFileName', function () {
-    const llvmIrParser = new LlvmIrParser(compilerProps);
+    let llvmIrParser;
+    let compilerProps;
+
+    before(() => {
+        let fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
+        compilerProps = fakeProps.get.bind(fakeProps, 'c++')
+
+        llvmIrParser = new LlvmIrParser(compilerProps);
+    });
     const debugInfo = {
         '!10': { filename: "/test.cpp" },
         '!20': { filename: "/example.cpp" },
@@ -153,7 +175,16 @@ describe('llvm-ir getFileName', function () {
 });
 
 describe('llvm-ir isLineLlvmDirective', function () {
-    const llvmIrParser = new LlvmIrParser(compilerProps);
+    let llvmIrParser;
+    let compilerProps;
+
+    before(() => {
+        let fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
+        compilerProps = fakeProps.get.bind(fakeProps, 'c++')
+
+        llvmIrParser = new LlvmIrParser(compilerProps);
+    });
+
     const directives = [
         'source_filename = "/tmp/compiler-explorer/example.cpp"',
         '!llvm.dbg.cu = !{!0}',
@@ -166,6 +197,7 @@ describe('llvm-ir isLineLlvmDirective', function () {
         '!156 = !DILocation(line: 30, column: 15, scope: !154)',
         '!169 = distinct !{!169, !152, !170}'
     ];
+
     const nonDirectives = [
         '  %33 = load i32, i32* %5, align 4, !dbg !167',
         '  %25 = getelementptr inbounds double, double* %22, i64 %24, !dbg !129',
