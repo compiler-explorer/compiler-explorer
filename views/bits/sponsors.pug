@@ -1,0 +1,36 @@
+div.sponsors-level-selectors.d-flex.justify-content-center.mt-3
+  div.btn-group.btn-group
+    each level, index in sponsors.levels
+      button.btn.btn-primary(onclick='document.getElementById("sponsor_hop_' + index + '").scrollIntoView({behavior:"smooth"});')=level.name
+
+.sponsor-content-root.mt-6
+  .sponsor-blurb
+    | Compiler Explorer is proud to be sponsored by a number of individuals and companies. We thank them for
+    | making this website free for all. If you'd like to help, consider becoming a&nbsp;
+    a(href="https://www.patreon.com/bePatron?u=3691963" title="Help Compiler Explorer - become a Patron" target="_blank" rel="noopener")
+      span.fab.fa-patreon Patreon
+    | , sponsor on&nbsp;
+    a(href="https://github.com/sponsors/mattgodbolt" title="Help Compiler Explorer - sponsor on GitHub" target="_blank" rel="noopener")
+      span.fab.fa-github-alt GitHub,
+    | , make a one-time donation on&nbsp;
+    a(href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=KQWQZ7GPY2GZ6&item_name=Compiler+Explorer+development&currency_code=USD&source=url" title="Make a one-time donation to help fund Compiler Explorer's development" target="_blank" rel="noopener")
+      span.fab.fa-paypal PayPal
+    | , or&nbsp;
+    a(href="mailto:matt@godbolt.org") email Matt
+    | &nbsp;for corporate sponsorship.
+  .mt-6
+    each level, index in sponsors.levels
+      .sponsor-item-block(class=level.class id="sponsor_hop_" + index)
+        h2.sponsor-item-name= level.name
+        div.sponsor-item-description= level.description
+        .sponsors
+          each sponsor in level.sponsors
+            .sponsor
+              button.btn-block.btn-secondary(title=sponsor.title onclick=sponsor.onclick disabled=!sponsor.url)
+                span.sponsor-item-title
+                  if sponsor.img
+                    img(src=sponsor.img)
+                  = sponsor.name
+                if sponsor.description
+                  .sponsor-item-description
+                  = sponsor.description

@@ -636,6 +636,11 @@ async function main() {
             const options = JSON.stringify(clientOptionsHandler.get());
             res.end(`window.compilerExplorerOptions = ${options};`);
         })
+        .use('/bits/:bits.html', (req, res) => {
+            staticHeaders(res);
+            contentPolicyHeader(res);
+            res.render('bits/' + req.params.partial, renderConfig({embedded: false}, req.query));
+        })
         .use(bodyParser.json({limit: ceProps('bodyParserLimit', maxUploadSize)}))
         .use(bodyParser.text({limit: ceProps('bodyParserLimit', maxUploadSize), type: () => true}))
         .use('/source', sourceHandler.handle.bind(sourceHandler))

@@ -173,6 +173,18 @@ function setupButtons(options) {
         alertSystem.alert("Changelog", $(require('./changelog.html')));
     });
 
+    $('#sponsors').click(function () {
+        $.get(window.location.origin + window.httpRoot + 'bits/sponsors.html')
+            .done(function (data) {
+                alertSystem.alert("Compiler Explorer Sponsors", data);
+            })
+            .fail(function (err) {
+                var result = err.responseText || JSON.stringify(err);
+                alertSystem.alert("Compiler Explorer Sponsors",
+                    "<div>Unable to fetch sponsors:</div><div>" + result + "</div>");
+            });
+    });
+
     $('#ui-history').click(function () {
         historyWidget.run(function (data) {
             local.set('gl', JSON.stringify(data.config));
