@@ -164,7 +164,7 @@ logger.info(`properties hierarchy: ${propHierarchy.join(', ')}`);
 if (opts.propDebug) props.setDebug(true);
 
 // *All* files in config dir are parsed
-const configDir = defArgs.rootDir + '/config';
+const configDir = path.join(defArgs.rootDir, 'config');
 props.initialize(configDir, propHierarchy);
 
 // Now load up our libraries.
