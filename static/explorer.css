@@ -554,13 +554,13 @@ div.populararguments div.dropdown-menu {
 
 @media (min-height: 1000px) {
     .sponsor-content-root {
-        max-height: 600px;
+        max-height: 700px;
     }
 }
 
 @media (min-height: 1200px) {
     .sponsor-content-root {
-        max-height: 700px;
+        max-height: 900px;
     }
 }
 
