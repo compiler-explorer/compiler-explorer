@@ -94,6 +94,7 @@ function Compiler(hub, container, state) {
     this.nextRequest = null;
     this.optViewOpen = false;
     this.cfgViewOpen = false;
+    this.selectionDAGViewOpen = false;
     this.wantOptInfo = state.wantOptInfo;
     this.decorations = {};
     this.prevDecorations = [];
@@ -238,6 +239,10 @@ Compiler.prototype.initPanerButtons = function () {
         return Components.getCfgViewWith(this.id, this.sourceEditorId);
     }, this);
 
+    var createSelectionDAGView = _.bind(function () {
+        return Components.getSelectionDAGViewWith(this.id, this.sourceEditorId);
+    }, this);    
+
     var panerDropdown = this.domRoot.find('.pane-dropdown');
     var togglePannerAdder = function () {
         panerDropdown.dropdown('toggle');
@@ -296,11 +301,21 @@ Compiler.prototype.initPanerButtons = function () {
     this.container.layoutManager
         .createDragSource(this.cfgButton, createCfgView)
         ._dragListener.on('dragStart', togglePannerAdder);
-
+    
     this.cfgButton.click(_.bind(function () {
         var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
             this.container.layoutManager.root.contentItems[0];
         insertPoint.addChild(createCfgView);
+    }, this));
+
+    this.container.layoutManager
+        .createDragSource(this.selectionDAGButton, createSelectionDAGView)
+        ._dragListener.on('dragStart', togglePannerAdder);
+
+    this.selectionDAGButton.click(_.bind(function () {
+        var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
+            this.container.layoutManager.root.contentItems[0];
+        insertPoint.addChild(createSelectionDAGView);
     }, this));
 
     this.initToolButtons(togglePannerAdder);
@@ -539,7 +554,8 @@ Compiler.prototype.compile = function (bypassCache, newTools) {
             },
             produceOptInfo: this.wantOptInfo,
             produceCfg: this.cfgViewOpen,
-            produceIr: this.irViewOpen
+            produceSelectionDAG: this.selectionDAGViewOpen,
+            produceIr: this.irViewOpen || this.selectionDAGViewOpen,
         },
         filters: this.getEffectiveFilters(),
         tools: this.getActiveTools(newTools),
@@ -959,6 +975,21 @@ Compiler.prototype.onCfgViewClosed = function (id) {
     }
 };
 
+Compiler.prototype.onSelectionDAGViewOpened = function (id) {
+    if (this.id === id) {
+        this.selectionDAGButton.prop('disabled', true);
+        this.selectionDAGViewOpen = true;
+        this.compile();
+    }
+};
+
+Compiler.prototype.onSelectionDAGViewClosed = function (id) {
+    if (this.id === id) {
+        this.selectionDAGViewOpen = false;
+        this.selectionDAGButton.prop('disabled', this.getEffectiveFilters().binary);
+    }
+};
+
 Compiler.prototype.initButtons = function (state) {
     this.filters = new Toggles(this.domRoot.find('.filters'), patchOldFilters(state.filters));
 
@@ -967,6 +998,7 @@ Compiler.prototype.initButtons = function (state) {
     this.irButton = this.domRoot.find('.btn.view-ir');
     this.gccDumpButton = this.domRoot.find('.btn.view-gccdump');
     this.cfgButton = this.domRoot.find('.btn.view-cfg');
+    this.selectionDAGButton = this.domRoot.find('.btn.view-selectiondag');
     this.libsButton = this.domRoot.find('.btn.show-libs');
 
     this.compileTimeLabel = this.domRoot.find('.compile-time');
@@ -1160,6 +1192,7 @@ Compiler.prototype.updateButtons = function () {
     this.astButton.prop('disabled', this.astViewOpen || !this.compiler.supportsAstView);
     this.irButton.prop('disabled', this.irViewOpen || !this.compiler.supportsIrView);
     this.cfgButton.prop('disabled', this.cfgViewOpen || !this.compiler.supportsCfg);
+    this.selectionDAGButton.prop('disabled', this.cfgViewOpen || !this.compiler.supportsCfg);
     this.gccDumpButton.prop('disabled', this.gccDumpViewOpen || !this.compiler.supportsGccDump);
 
     this.enableToolButtons();
@@ -1254,6 +1287,8 @@ Compiler.prototype.initListeners = function () {
 
     this.eventHub.on('cfgViewOpened', this.onCfgViewOpened, this);
     this.eventHub.on('cfgViewClosed', this.onCfgViewClosed, this);
+    this.eventHub.on('selectionDAGViewOpened', this.onSelectionDAGViewOpened, this);
+    this.eventHub.on('selectionDAGViewClosed', this.onSelectionDAGViewClosed, this);
     this.eventHub.on('resize', this.resize, this);
     this.eventHub.on('requestFilters', function (id) {
         if (id === this.id) {

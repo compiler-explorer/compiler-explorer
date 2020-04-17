@@ -182,6 +182,14 @@ a.navbar-brand img.logo.normal {
     background-color: #FFFFFF;
 }
 
+.graphviz-placeholder {
+    background-color: #FFFFFF;
+}
+
+graphviz-placeholder > svg {
+    width: 100%
+}
+
 .text-count {
     color: green;
 }

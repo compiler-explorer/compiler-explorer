@@ -153,6 +153,10 @@
           button.dropdown-item.btn.btn-sm.btn-light.view-cfg(title="Show Graph Output")
             span.dropdown-icon.fas.fa-exchange-alt
             | Graph output
+          button.dropdown-item.btn.btn-sm.btn-light.view-selectiondag(title="Show LLVM Selection DAGs")
+            span.dropdown-icon.fas.fa-project-diagram
+            | Selection DAGs
+
       .btn-group.btn-group-sm(role="group")
         button.btn.btn-sm.btn-light.dropdown-toggle.add-tool(type="button" title="Add tool" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Add tooling to this editor and compiler")
           span.fas.fa-screwdriver
@@ -318,6 +322,40 @@
             span Physics
           input.d-none(type="checkbox")
     .graph-placeholder
+      
+  #selection-dag
+    .top-bar.btn-toolbar.bg-light.selection-dag-toolbar(role="toolbar")
+      .btn-group.btn-group-sm(role="group")
+        select.function-picker
+      .btn-group.btn-group-sm.selection-dag-buttons(role="group")
+        .btn-group.btn-group-sm.export-dag-buttons(role="group")
+          button.btn.btn-sm.btn-light.dropdown-toggle.add-pane(type="button" title="Export DAG..." data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Export this DAG as...")
+            span.fas.fa-save
+            span.hideable &nbsp;Export DAG...
+          .dropdown-menu.dropdown-menu-right
+            button.dropdown-item.btn.btn-sm.btn-light.export-dag-svg(title="SVG" aria-label="Export DAG to SVG")
+              span.dropdown-icon.fas.fa-bezier-curve
+              | ...SVG
+            button.dropdown-item.btn.btn-sm.btn-light.export-dag-png(title="PNG" aria-label="Export DAG to PNG")
+              span.dropdown-icon.far.fa-file-image
+              | ...PNG
+        button.btn.btn-sm.btn-light.dag-combine1(title="Combine1" aria-label="Conbine1")
+          span.hideable &nbsp;Combine1
+        button.btn.btn-sm.btn-light.legalize-types(title="Legalize Types" aria-label="legalize-types")
+          span.hideable &nbsp;Legalize Types
+        button.btn.btn-sm.btn-light.dag-combine-lt(title="Combine Lt" aria-label="combine-lt")
+          span.hideable &nbsp;Combine Lt
+        button.btn.btn-sm.btn-light.legalize(title="Legalize" aria-label="legalize")
+          span.hideable &nbsp;Legalize
+        button.btn.btn-sm.btn-light.dag-combine2(title="Combine2" aria-label="combine2")
+          span.hideable &nbsp;Combine2
+        button.btn.btn-sm.btn-light.isel(title="ISel" aria-label="isel")
+          span.hideable &nbsp;ISel
+        button.btn.btn-sm.btn-light.scheduler(title="Scheduler" aria-label="scheduler")
+          span.hideable &nbsp;Sched
+        button.btn.btn-sm.btn-light.sunit(title="SUnit" aria-label="sunit")
+          span.hideable &nbsp;SUnit
+    .graphviz-placeholder
 
   #conformance
     .top-bar.btn-toolbar.options-toolbar.bg-light(role="toolbar")

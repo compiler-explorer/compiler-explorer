@@ -38,6 +38,7 @@ var astView = require('./panes/ast-view');
 var irView = require('./panes/ir-view');
 var gccDumpView = require('./panes/gccdump-view');
 var cfgView = require('./panes/cfg-view');
+var selectionDAGView = require('./panes/selectiondag-view');
 var conformanceView = require('./panes/conformance-view');
 var CompilerService = require('compiler-service');
 
@@ -123,6 +124,10 @@ function Hub(layout, subLangId, defaultLangId) {
         function (container, state) {
             return self.cfgViewFactory(container, state);
         });
+    layout.registerComponent(Components.getSelectionDAGView().componentName,
+        function (container, state) {
+            return self.selectionDAGViewFactory(container, state);
+        });    
     layout.registerComponent(Components.getConformanceView().componentName,
         function (container, state) {
             return self.confomanceFactory(container, state);
@@ -221,6 +226,10 @@ Hub.prototype.gccDumpViewFactory = function (container, state) {
 
 Hub.prototype.cfgViewFactory = function (container, state) {
     return new cfgView.Cfg(this, container, state);
+};
+
+Hub.prototype.selectionDAGViewFactory = function (container, state) {
+    return new selectionDAGView.SelectionDAG(this, container, state);
 };
 
 Hub.prototype.confomanceFactory = function (container, state) {

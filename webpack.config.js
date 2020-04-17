@@ -26,6 +26,12 @@ const plugins = [
             to: staticPath
         }
     ]),
+    new CopyWebpackPlugin([
+        {
+            from: 'node_modules/@hpcc-js/wasm/dist/graphvizlib.wasm',
+            to: staticPath
+        }
+    ]),    
     new webpack.ProvidePlugin({
         $: 'jquery',
         jQuery: 'jquery'
@@ -94,7 +100,7 @@ module.exports = {
                 options: {
                     minimize: !isDev
                 }
-            }
+            },
         ]
     },
     plugins: plugins

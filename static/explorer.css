@@ -331,6 +331,16 @@ pre.content.wrap {
     height: 100%;
 }
 
+.selection-dag-toolbar table {
+    width: 100%;
+}
+
+.graphviz-placeholder {
+    width: 100%;
+    height: 100%;
+}
+
+
 .clear-cache {
     position: absolute;
     right: 0;

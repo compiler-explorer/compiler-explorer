@@ -279,6 +279,11 @@ input {
     background-color: #1e1e1e !important;
 }
 
+.graphviz-placeholder {
+    background-color: #1e1e1e !important;
+}
+
+
 .text-count {
     color: green !important;
 }

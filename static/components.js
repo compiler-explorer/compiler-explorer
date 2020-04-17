@@ -175,6 +175,23 @@ module.exports = {
             }
         };
     },
+    getSelectionDAGView: function () {
+        return {
+            type: 'component',
+            componentName: 'selection-dag',
+            componentState: {}
+        };
+    },    
+    getSelectionDAGViewWith: function (id, editorid) {
+        return {
+            type: 'component',
+            componentName: 'selection-dag',
+            componentState: {
+                id: id,
+                editorid: editorid
+            }
+        };
+    },
     getConformanceView: function (editorid, source, langId) {
         return {
             type: 'component',
