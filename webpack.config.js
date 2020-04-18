@@ -40,7 +40,10 @@ module.exports = {
     mode: isDev ? 'development' : 'production',
     entry: './static/main.js',
     output: {
-        filename: isDev ? '[name].js' : '[name].[chunkhash].js',
+        // Hack alert: due to a variety of issues, sometimes we need to change
+        // the name here. Mostly it's things like webpack changes that affect
+        // how minification is done, even though that's supposed not to matter.
+        filename: isDev ? '[name].js' : '[name].v2.[contenthash].js',
         path: staticPath
     },
     resolve: {
