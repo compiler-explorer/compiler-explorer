@@ -18,7 +18,7 @@ const webjackJsHack = ".v2.";
 const plugins = [
     new MonacoEditorWebpackPlugin({
         languages: ['cpp', 'go', 'rust', 'swift', 'pascal'],
-        filename: isDev ? '[name].worker.js' : `[name]${webjackJsHack}.worker.[contenthash].js`
+        filename: isDev ? '[name].worker.js' : `[name]${webjackJsHack}worker.[contenthash].js`
     }),
     new CopyWebpackPlugin([
         {
@@ -43,7 +43,7 @@ module.exports = {
     mode: isDev ? 'development' : 'production',
     entry: './static/main.js',
     output: {
-        filename: isDev ? '[name].js' : `[name]${webjackJsHack}.[contenthash].js`,
+        filename: isDev ? '[name].js' : `[name]${webjackJsHack}[contenthash].js`,
         path: staticPath
     },
     resolve: {
