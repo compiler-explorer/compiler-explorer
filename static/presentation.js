@@ -44,7 +44,7 @@ function Presentation() {
 
 Presentation.prototype.init = function (callback) {
     this.loadPresentationSettings();
-    this.loadPresentationSource(_.bind(function() {
+    this.loadPresentationSource(_.bind(function () {
         this.currentSlide = parseInt(local.get('presentationCurrentSlide', 0));
         this.initSettingsDialog();
         callback();
@@ -71,7 +71,7 @@ Presentation.prototype.loadOrderFromSettingsDialog = function () {
 
 Presentation.prototype.initSettingsDialogButtons = function () {
     this.settingsDialog.find(".add-to-order").click(_.bind(function () {
-        this.settingsSourcelist.find("option:selected").each(_.bind(function(idx, option) {
+        this.settingsSourcelist.find("option:selected").each(_.bind(function (idx, option) {
             this.settingsOrderedlist.append($(option).clone());
         }, this));
 
@@ -79,7 +79,7 @@ Presentation.prototype.initSettingsDialogButtons = function () {
     }, this));
 
     this.settingsDialog.find(".remove-from-order").click(_.bind(function () {
-        this.settingsOrderedlist.find("option:selected").each(function(idx, option) {
+        this.settingsOrderedlist.find("option:selected").each(function (idx, option) {
             option.remove();
         });
 
@@ -87,16 +87,20 @@ Presentation.prototype.initSettingsDialogButtons = function () {
     }, this));
 };
 
-Presentation.prototype.initSettingsDialog = function() {
+Presentation.prototype.initSettingsDialog = function () {
     this.settingsDialog.find("select option").remove();
-    
+
+    var order = {},
+        session = null,
+        compiler = null;
+
     for (var idxSession = 0; idxSession < this.source.sessions.length; idxSession++) {
-        var session = this.source.sessions[idxSession];
+        session = this.source.sessions[idxSession];
 
         for (var idxCompiler = 0; idxCompiler < session.compilers.length; idxCompiler++) {
-            var compiler = session.compilers[idxCompiler];
+            compiler = session.compilers[idxCompiler];
 
-            var order = {
+            order = {
                 session: idxSession,
                 compiler: idxCompiler
             };
@@ -106,9 +110,9 @@ Presentation.prototype.initSettingsDialog = function() {
     }
 
     for (var idxOrder = 0; idxOrder < this.settings.order.length; idxOrder++) {
-        var order = this.settings.order[idxOrder];
-        var session = this.source.sessions[order.session];
-        var compiler = session.compilers[order.compiler];
+        order = this.settings.order[idxOrder];
+        session = this.source.sessions[order.session];
+        compiler = session.compilers[order.compiler];
 
         this.settingsOrderedlist.append(this.createSettingsOption(order, session, compiler));
     }
@@ -146,39 +150,39 @@ Presentation.prototype.show = function () {
         var gl =
         {
             settings: {
-                "hasHeaders": true,
-                "constrainDragToContainer": false,
-                "reorderEnabled": true,
-                "selectionEnabled": false,
-                "popoutWholeStack": false,
-                "blockedPopoutsThrowError": true,
-                "closePopoutsOnUnload": true,
-                "showPopoutIcon": false,
-                "showMaximiseIcon": true,
-                "showCloseIcon": false,
-                "responsiveMode": "onload",
-                "tabOverlapAllowance": 0,
-                "reorderOnTabMenuClick": true,
-                "tabControlOffset": 10
+                hasHeaders: true,
+                constrainDragToContainer: false,
+                reorderEnabled: true,
+                selectionEnabled: false,
+                popoutWholeStack: false,
+                blockedPopoutsThrowError: true,
+                closePopoutsOnUnload: true,
+                showPopoutIcon: false,
+                showMaximiseIcon: true,
+                showCloseIcon: false,
+                responsiveMode: "onload",
+                tabOverlapAllowance: 0,
+                reorderOnTabMenuClick: true,
+                tabControlOffset: 10
             },
-            "dimensions":
+            dimensions:
             {
-                "borderWidth": 5,
-                "borderGrabWidth": 15,
-                "minItemHeight": 10,
-                "minItemWidth": 10,
-                "headerHeight": 20,
-                "dragProxyWidth": 300,
-                "dragProxyHeight": 200
+                borderWidth: 5,
+                borderGrabWidth: 15,
+                minItemHeight: 10,
+                minItemWidth: 10,
+                headerHeight: 20,
+                dragProxyWidth: 300,
+                dragProxyHeight: 200
             },
-            "labels":
+            labels:
             {
-                "close": "close",
-                "maximise": "maximise",
-                "minimise": "minimise",
-                "popout": "open in new window",
-                "popin": "pop in",
-                "tabDropdown": "additional tabs"
+                close: "close",
+                maximise: "maximise",
+                minimise: "minimise",
+                popout: "open in new window",
+                popin: "pop in",
+                tabDropdown: "additional tabs"
             },
             content: [
                 {
@@ -201,9 +205,7 @@ Presentation.prototype.show = function () {
                                     type: "stack",
                                     width: 100,
                                     content: [
-                                        this.createDiffComponent(
-                                            this.source.sessions[left.session],
-                                            this.source.sessions[right.session])
+                                        this.createDiffComponent()
                                     ]
                                 }
                             ]
@@ -220,7 +222,7 @@ Presentation.prototype.show = function () {
     }
 };
 
-Presentation.prototype.createDiffComponent = function (left, right) {
+Presentation.prototype.createDiffComponent = function () {
     return {
         type: "component",
         componentName: "diff",
@@ -235,28 +237,28 @@ Presentation.prototype.createDiffComponent = function (left, right) {
     };
 };
 
-Presentation.prototype.createCompilerComponent = function(session, compiler, sessionId) {
+Presentation.prototype.createCompilerComponent = function (session, compiler, sessionId) {
     return {
-            type: "component",
-            componentName: "compiler",
-            componentState: {
-                compiler: compiler.id,
-                source: sessionId,
-                options: compiler.options,
-                filters: {
-                    binary: compiler.filters.binary,
-                    execute: compiler.filters.execute,
-                    labels: compiler.filters.labels,
-                    directives: compiler.filters.directives,
-                    commentOnly: compiler.filters.commentOnly,
-                    trim: compiler.filters.trim,
-                    intel: compiler.filters.intel,
-                    demangle: compiler.filters.demangle
-                },
-                libs: compiler.libs,
-                lang: session.language
-            }
-        };
+        type: "component",
+        componentName: "compiler",
+        componentState: {
+            compiler: compiler.id,
+            source: sessionId,
+            options: compiler.options,
+            filters: {
+                binary: compiler.filters.binary,
+                execute: compiler.filters.execute,
+                labels: compiler.filters.labels,
+                directives: compiler.filters.directives,
+                commentOnly: compiler.filters.commentOnly,
+                trim: compiler.filters.trim,
+                intel: compiler.filters.intel,
+                demangle: compiler.filters.demangle
+            },
+            libs: compiler.libs,
+            lang: session.language
+        }
+    };
 };
 
 Presentation.prototype.createComponents = function (session, sessionId) {
@@ -334,7 +336,7 @@ function init(callback) {
     }
 }
 
-function first () {
+function first() {
     if (!_currentPresentation) throw "Presentation hasn't been initialized";
 
     _currentPresentation.first();

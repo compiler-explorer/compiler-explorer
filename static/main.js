@@ -186,7 +186,7 @@ function setupButtons(options, layout) {
         $('#history').modal();
     });
 
-    $('#ui-presentationmode').click(function() {
+    $('#ui-presentationmode').click(function () {
         var glSaved = local.get('glSaved');
         if (!glSaved) {
             // make sure latest layout is saved
@@ -195,15 +195,15 @@ function setupButtons(options, layout) {
             var data = JSON.parse(local.get('gl'));
             local.set('glSaved', JSON.stringify(data));
 
-            presentation.init(function() {
+            presentation.init(function () {
                 presentation.first();
 
                 // if first doesn't reload because of missing settings, this will
                 window.location.reload();
             });
         } else {
-            var data = local.get('glSaved');
-            local.set('gl', data);
+            var saved = local.get('glSaved');
+            local.set('gl', saved);
             local.remove('glSaved');
             local.remove('presentationSource');
             hasUIBeenReset = true;
@@ -217,7 +217,7 @@ function setupButtons(options, layout) {
     if (presentation.isActive()) {
         $("#ui-presentationmode span.caption").html("Normal mode");
 
-        presentation.init(function() {
+        presentation.init(function () {
             $(".ui-presentation-control").show();
             $(".ui-presentation-first").click(presentation.first);
             $(".ui-presentation-prev").click(presentation.prev);
