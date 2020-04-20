@@ -195,7 +195,9 @@ function setupButtons(options, layout) {
             var data = JSON.parse(local.get('gl'));
             local.set('glSaved', JSON.stringify(data));
 
-            presentation.init(presentation.first);
+            presentation.init(function() {
+                window.location.reload();
+            });
         } else {
             var data = local.get('glSaved');
             local.set('gl', data);
@@ -215,6 +217,10 @@ function setupButtons(options, layout) {
             $(".ui-presentation-first").click(presentation.first);
             $(".ui-presentation-prev").click(presentation.prev);
             $(".ui-presentation-next").click(presentation.next);
+
+            if (!presentation.isConfigured()) {
+                $("#presentationsettings").modal();
+            }
         });
     }
 }

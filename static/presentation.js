@@ -36,14 +36,84 @@ function Presentation() {
     this.settings = null;
     this.source = null;
     this.currentSlide = 0;
+
+    this.settingsDialog = $('#presentationsettings');
+    this.settingsSourcelist = this.settingsDialog.find('select.sourcesessions');
+    this.settingsOrderedlist = this.settingsDialog.find('select.ordered');
 }
 
 Presentation.prototype.init = function (callback) {
     this.loadPresentationSettings();
     this.loadPresentationSource(_.bind(function() {
         this.currentSlide = parseInt(local.get('presentationCurrentSlide', 0));
+        this.initSettingsDialog();
         callback();
     }, this));
+};
+
+Presentation.prototype.createSettingsOption = function (order, session, compiler) {
+    var option = $("<option />");
+    option.val(JSON.stringify(order));
+    option.html(
+        order.session + ":" + order.compiler + " - " +
+        session.language + ", " + compiler.id + ", " + compiler.options);
+    return option;
+};
+
+Presentation.prototype.loadOrderFromSettingsDialog = function () {
+    this.settings = {order: []};
+    this.settingsOrderedlist.find("option").each(_.bind(function (idx, option) {
+        this.settings.order.push(JSON.parse($(option).val()));
+    }, this));
+
+    local.set('presentationSettings', JSON.stringify(this.settings));
+};
+
+Presentation.prototype.initSettingsDialogButtons = function () {
+    this.settingsDialog.find(".add-to-order").click(_.bind(function () {
+        this.settingsSourcelist.find("option:selected").each(_.bind(function(idx, option) {
+            this.settingsOrderedlist.append($(option).clone());
+        }, this));
+
+        this.loadOrderFromSettingsDialog();
+    }, this));
+
+    this.settingsDialog.find(".remove-from-order").click(_.bind(function () {
+        this.settingsOrderedlist.find("option:selected").each(function(idx, option) {
+            option.remove();
+        });
+
+        this.loadOrderFromSettingsDialog();
+    }, this));
+};
+
+Presentation.prototype.initSettingsDialog = function() {
+    this.settingsDialog.find("select option").remove();
+    
+    for (var idxSession = 0; idxSession < this.source.sessions.length; idxSession++) {
+        var session = this.source.sessions[idxSession];
+
+        for (var idxCompiler = 0; idxCompiler < session.compilers.length; idxCompiler++) {
+            var compiler = session.compilers[idxCompiler];
+
+            var order = {
+                session: idxSession,
+                compiler: idxCompiler
+            };
+
+            this.settingsDialog.find("select.sourcesessions").append(this.createSettingsOption(order, session, compiler));
+        }
+    }
+
+    for (var idxOrder = 0; idxOrder < this.settings.order.length; idxOrder++) {
+        var order = this.settings.order[idxOrder];
+        var session = this.source.sessions[order.session];
+        var compiler = session.compilers[order.compiler];
+
+        this.settingsDialog.find("select.ordered").append(this.createSettingsOption(order, session, compiler));
+    }
+
+    this.initSettingsDialogButtons();
 };
 
 Presentation.prototype.first = function () {
@@ -53,7 +123,7 @@ Presentation.prototype.first = function () {
 };
 
 Presentation.prototype.next = function () {
-    if (this.settings && this.settings.order.length > this.currentSlide + 1) {
+    if (this.settings && (this.currentSlide + 2 < this.settings.order.length)) {
         this.currentSlide++;
         local.set('presentationCurrentSlide', this.currentSlide);
         this.show();
@@ -69,7 +139,7 @@ Presentation.prototype.prev = function () {
 };
 
 Presentation.prototype.show = function () {
-    if (this.settings && this.settings.order.length > this.currentSlide) {
+    if (this.settings && (this.currentSlide + 1 < this.settings.order.length)) {
         var left = this.settings.order[this.currentSlide];
         var right = this.settings.order[this.currentSlide + 1];
 
@@ -234,30 +304,7 @@ Presentation.prototype.savePresentationSource = function (source) {
 Presentation.prototype.loadPresentationSettings = function () {
     var presentationSettings = local.get('presentationSettings', null);
     if (!presentationSettings) {
-        this.settings = {
-            "order": [
-                {
-                    "session": 4,
-                    "compiler": 0
-                },
-                {
-                    "session": 0,
-                    "compiler": 0
-                },
-                {
-                    "session": 1,
-                    "compiler": 0
-                },
-                {
-                    "session": 2,
-                    "compiler": 0
-                },
-                {
-                    "session": 3,
-                    "compiler": 0
-                }
-            ]
-        };
+        this.settings = {order: []};
 
         local.set('presentationSettings', JSON.stringify(this.settings));
     } else {
@@ -310,11 +357,15 @@ function isActive() {
     return saved !== null;
 }
 
+function isConfigured() {
+    return _currentPresentation.settings.order.length > 1;
+}
 
 module.exports = {
     init: init,
     first: first,
     next: next,
     prev: prev,
-    isActive: isActive
+    isActive: isActive,
+    isConfigured: isConfigured
 };
