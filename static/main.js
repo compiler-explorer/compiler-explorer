@@ -202,8 +202,7 @@ function setupButtons(options, layout) {
                 window.location.reload();
             });
         } else {
-            var saved = local.get('glSaved');
-            local.set('gl', saved);
+            local.set('gl', glSaved);
             local.remove('glSaved');
             local.remove('presentationSource');
             hasUIBeenReset = true;
