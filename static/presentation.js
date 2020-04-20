@@ -54,9 +54,17 @@ Presentation.prototype.init = function (callback) {
 Presentation.prototype.createSettingsOption = function (order, session, compiler) {
     var option = $("<option />");
     option.val(JSON.stringify(order));
-    option.html(
-        order.session + ":" + order.compiler + " - " +
-        session.language + ", " + compiler.id + ", " + compiler.options);
+
+    if (session.description) {
+        option.html(
+            session.description + " - " +
+            compiler.id + ", " + compiler.options);
+    } else {
+        option.html(
+            order.session + ":" + order.compiler + " - " +
+            session.language + ", " + compiler.id + ", " + compiler.options);
+    }
+
     return option;
 };
 

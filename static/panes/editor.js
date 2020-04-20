@@ -82,6 +82,8 @@ function Editor(hub, state, container) {
     this.awaitingInitialResults = false;
     this.selection = state.selection;
 
+    this.description = state.description;
+
     this.langKeys = _.keys(languages);
     this.initLanguage(state);
 
@@ -215,7 +217,8 @@ Editor.prototype.updateState = function () {
         id: this.id,
         source: this.getSource(),
         lang: this.currentLanguage.id,
-        selection: this.selection
+        selection: this.selection,
+        description: this.description
     };
     this.fontScale.addState(state);
     this.container.setState(state);
@@ -625,7 +628,28 @@ Editor.prototype.requestCompilation = function () {
     this.eventHub.emit('requestCompilation', this.id);
 };
 
+Editor.prototype.askForAndSetDescription = function () {
+    this.alertSystem.prompt("Editor #" + this.id, "Enter description", this.description, {
+        yes: _.bind(function (answer) {
+            this.description = answer;
+            this.updateState();
+        }, this)
+    });
+};
+
 Editor.prototype.initEditorActions = function () {
+    this.editor.addAction({
+        id: 'askForAndSetDescription',
+        label: 'Change description',
+        keybindings: [],
+        keybindingContext: null,
+        contextMenuGroupId: 'navigation',
+        contextMenuOrder: 1.5,
+        run: _.bind(function () {
+            this.askForAndSetDescription();
+        }, this)
+    });
+
     this.editor.addAction({
         id: 'compile',
         label: 'Compile',

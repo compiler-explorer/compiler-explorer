@@ -37,6 +37,14 @@ function Alert() {
     yesNo.find('button.no').click(_.bind(function () {
         if (this.noHandler) this.noHandler();
     }, this));
+
+    var promptDialog = $('#prompt');
+    promptDialog.find('button.yes').click(_.bind(function () {
+        if (this.yesHandler) this.yesHandler(promptDialog.find('.answer').val());
+    }, this));
+    promptDialog.find('button.no').click(_.bind(function () {
+        if (this.noHandler) this.noHandler();
+    }, this));
 }
 
 Alert.prototype.alert = function (title, body, onClose) {
@@ -70,6 +78,47 @@ Alert.prototype.ask = function (title, question, handlers) {
     this.noHandler = handlers ? handlers.no : function () {};
     modal.find('.modal-title').html(title);
     modal.find('.modal-body').html(question);
+    if (handlers.yesHtml) {
+        modal.find('.modal-footer .yes').html(handlers.yesHtml);
+    }
+    if (handlers.yesClass) {
+        modal.find('.modal-footer .yes').addClass(handlers.yesClass);
+    }
+    if (handlers.noHtml) {
+        modal.find('.modal-footer .no').html(handlers.noHtml);
+    }
+    if (handlers.noClass) {
+        modal.find('.modal-footer .no').addClass(handlers.noClass);
+    }
+    if (handlers.onClose) {
+        modal.off('hidden.bs.modal');
+        modal.on('hidden.bs.modal', handlers.onClose);
+    }
+    return modal.modal();
+};
+
+/***
+ * Prompt a question and hope for an answer
+ *
+ * @param title
+ * @param question
+ * @param defaultAnswer
+ * @param handlers
+ * @param handlers.yes {function?} Function to execute on Save press
+ * @param handlers.no {function?} Function to execute on Cancel press
+ * @param handlers.yesHtml {HTML?} HTMl markup of yes button
+ * @param handlers.yesClass {string?} Custom class to add to Save button
+ * @param handlers.noHtml {HTML?} HTMl markup of Cancel button
+ * @param handlers.noClass {string?} Custom class to add to Cancel button
+ * @param handlers.onClose {function?} Function to execute on pane closure
+ */
+Alert.prototype.prompt = function (title, question, defaultAnswer, handlers) {
+    var modal = $('#prompt');
+    this.yesHandler = handlers ? handlers.yes : function () {};
+    this.noHandler = handlers ? handlers.no : function () {};
+    modal.find('.modal-title').html(title);
+    modal.find('.modal-body .question').html(question);
+    modal.find('.modal-body .answer').val(defaultAnswer);
     if (handlers.yesHtml) {
         modal.find('.modal-footer .yes').html(handlers.yesHtml);
     }
