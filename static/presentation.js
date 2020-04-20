@@ -101,7 +101,7 @@ Presentation.prototype.initSettingsDialog = function() {
                 compiler: idxCompiler
             };
 
-            this.settingsDialog.find("select.sourcesessions").append(this.createSettingsOption(order, session, compiler));
+            this.settingsSourcelist.append(this.createSettingsOption(order, session, compiler));
         }
     }
 
@@ -110,7 +110,7 @@ Presentation.prototype.initSettingsDialog = function() {
         var session = this.source.sessions[order.session];
         var compiler = session.compilers[order.compiler];
 
-        this.settingsDialog.find("select.ordered").append(this.createSettingsOption(order, session, compiler));
+        this.settingsOrderedlist.append(this.createSettingsOption(order, session, compiler));
     }
 
     this.initSettingsDialogButtons();

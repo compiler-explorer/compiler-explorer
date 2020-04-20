@@ -196,6 +196,9 @@ function setupButtons(options, layout) {
             local.set('glSaved', JSON.stringify(data));
 
             presentation.init(function() {
+                presentation.first();
+
+                // if first doesn't reload because of missing settings, this will
                 window.location.reload();
             });
         } else {
@@ -212,6 +215,8 @@ function setupButtons(options, layout) {
     $(".ui-presentation-control").hide();
 
     if (presentation.isActive()) {
+        $("#ui-presentationmode span.caption").html("Normal mode");
+
         presentation.init(function() {
             $(".ui-presentation-control").show();
             $(".ui-presentation-first").click(presentation.first);
