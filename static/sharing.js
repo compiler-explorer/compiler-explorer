@@ -310,6 +310,26 @@ function getShortLink(config, root, done) {
     });
 }
 
+function getClientstate(config, root, done) {
+    var data = JSON.stringify({
+        config: config
+    });
+    $.ajax({
+        type: 'POST',
+        url: window.location.origin + root + 'api/clientstateFromGL',
+        dataType: 'json',
+        contentType: 'application/json',
+        data: data,
+        success: _.bind(function (result) {
+            done(null, result);
+        }, this),
+        error: _.bind(function (err) {
+            done(err.statusText, null);
+        }, this),
+        cache: true
+    });
+}
+
 function getLinks(config, currentBind, done) {
     var root = window.httpRoot;
     switch (currentBind) {
@@ -335,5 +355,6 @@ function getLinks(config, currentBind, done) {
 
 module.exports = {
     initShareButton: initShareButton,
-    configFromEmbedded: configFromEmbedded
+    configFromEmbedded: configFromEmbedded,
+    getClientstate: getClientstate
 };

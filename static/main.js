@@ -48,6 +48,7 @@ var jsCookie = require('js-cookie');
 var SimpleCook = require('./simplecook');
 var History = require('./history');
 var HistoryWidget = require('./history-widget').HistoryWidget;
+var presentation = require('./presentation');
 
 //css
 require("bootstrap/dist/css/bootstrap.min.css");
@@ -118,7 +119,7 @@ function hasCookieConsented(options) {
     return jsCookie.get(options.policies.cookies.key) === options.policies.cookies.hash;
 }
 
-function setupButtons(options) {
+function setupButtons(options, layout) {
     var alertSystem = new Alert();
 
     // I'd like for this to be the only function used, but it gets messy to pass the callback function around,
@@ -184,6 +185,38 @@ function setupButtons(options) {
 
         $('#history').modal();
     });
+
+    $('#ui-presentationmode').click(function() {
+        var glSaved = local.get('glSaved');
+        if (!glSaved) {
+            // make sure latest layout is saved
+            local.set('gl', JSON.stringify(layout.toConfig()));
+
+            var data = JSON.parse(local.get('gl'));
+            local.set('glSaved', JSON.stringify(data));
+
+            presentation.init(presentation.first);
+        } else {
+            var data = local.get('glSaved');
+            local.set('gl', data);
+            local.remove('glSaved');
+            local.remove('presentationSource');
+            hasUIBeenReset = true;
+            window.history.replaceState(null, null, window.httpRoot);
+            window.location.reload();
+        }
+    });
+
+    $(".ui-presentation-control").hide();
+
+    if (presentation.isActive()) {
+        presentation.init(function() {
+            $(".ui-presentation-control").show();
+            $(".ui-presentation-first").click(presentation.first);
+            $(".ui-presentation-prev").click(presentation.prev);
+            $(".ui-presentation-next").click(presentation.next);
+        });
+    }
 }
 
 function findConfig(defaultConfig, options) {
@@ -371,7 +404,8 @@ function start() {
         .resize(sizeRoot)
         .on('beforeunload', function () {
             // Only preserve state in localStorage in non-embedded mode.
-            if (!options.embedded && !hasUIBeenReset) {
+            var shouldSave = !window.hasUIBeenReset && !hasUIBeenReset;
+            if (!options.embedded && shouldSave) {
                 local.set('gl', JSON.stringify(layout.toConfig()));
             }
         });
@@ -382,7 +416,7 @@ function start() {
 
     // We assume no consent for embed users
     if (!options.embedded) {
-        setupButtons(options);
+        setupButtons(options, layout);
     }
 
     sharing.initShareButton($('#share'), layout, function (config, extra) {
