@@ -38,7 +38,7 @@ describe('Hash tests', () => {
             as64.should.not.contain("+");
         }
     });
-    const badResult = 'R0Rapeabcdefghio1327698asdhjkJJklQp'.toLowerCase(); // An unfortunate hash, see https://github.com/mattgodbolt/compiler-explorer/issues/1297
+    const badResult = 'R0Buttabcdefghio1327698asdhjkJJklQp'.toLowerCase(); // Butt hash, see https://github.com/mattgodbolt/compiler-explorer/issues/1297
     it('should detect profanities in hashes', () => {
         StorageBase.isCleanText("I am the very model of a major general").should.be.true;
         StorageBase.isCleanText(badResult).should.be.false;

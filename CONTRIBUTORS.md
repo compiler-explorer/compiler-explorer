@@ -84,3 +84,4 @@ From oldest to newest contributor, we would like to thank:
 - [Bastien Penavayre](https://github.com/DaemonSnake)
 - [Dave Rodgman](https://github.com/daverodgman)
 - [Will Lovett](https://github.com/willlovett-arm)
+- [Mark Gillard](https://github.com/marzer)

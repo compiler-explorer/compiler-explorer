@@ -31,13 +31,10 @@ const
     SymbolStore = require('../lib/symbol-store').SymbolStore,
     Demangler = require('../lib/demangler-cpp').Demangler,
     DemanglerWin32 = require('../lib/demangler-win32').Demangler,
-    exec = require('../lib/exec'),
-    logger = require('../lib/logger').logger;
+    exec = require('../lib/exec');
 
 chai.use(chaiAsPromised);
-const should = chai.should();
-const expect = chai.expect;
-const assert = chai.assert;
+chai.should();
 
 const cppfiltpath = "c++filt";
 
