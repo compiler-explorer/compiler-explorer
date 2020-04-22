@@ -32,17 +32,23 @@ var
 
 var _currentPresentation = null;
 
+var
+    c_presmode_default = 0,
+    c_presmode_justsource = 1;
+
 function Presentation() {
     this.settings = null;
     this.source = null;
     this.currentSlide = 0;
+    this.mode = c_presmode_default;
 
     this.settingsDialog = $('#presentationsettings');
     this.settingsSourcelist = this.settingsDialog.find('select.sourcesessions');
     this.settingsOrderedlist = this.settingsDialog.find('select.ordered');
 }
 
-Presentation.prototype.init = function (callback) {
+Presentation.prototype.init = function (callback, mode) {
+    if (mode) this.mode = mode;
     this.loadPresentationSettings();
     this.loadPresentationSource(_.bind(function () {
         this.currentSlide = parseInt(local.get('presentationCurrentSlide', 0));
@@ -173,10 +179,13 @@ Presentation.prototype.createSourceContentArray = function (left, right) {
 };
 
 Presentation.prototype.show = function () {
-    if (this.settings && (this.currentSlide + 1 < this.settings.order.length)) {
-        var left = this.settings.order[this.currentSlide];
-        var right = this.settings.order[this.currentSlide + 1];
+    var leftSlideIdx = this.currentSlide;
+    var rightSlideIdx = this.mode === c_presmode_default ? this.currentSlide + 1 : this.currentSlide;
 
+    var left = this.settings.order[leftSlideIdx];
+    var right = this.settings.order[rightSlideIdx];
+
+    if (this.settings && left && right) {
         var gl =
         {
             settings: {
@@ -217,29 +226,40 @@ Presentation.prototype.show = function () {
             content: [
                 {
                     type: "column",
+                    content: []
+                }
+            ]
+        };
+
+        if (this.mode === c_presmode_default) {
+            gl.content[0].content = [
+                {
+                    type: "row",
+                    height: 50,
+                    content: this.createSourceContentArray(left, right)
+                },
+                {
+                    type: "row",
+                    height: 50,
                     content: [
                         {
-                            type: "row",
-                            height: 50,
-                            content: this.createSourceContentArray(left, right)
-                        },
-                        {
-                            type: "row",
-                            height: 50,
+                            type: "stack",
+                            width: 100,
                             content: [
-                                {
-                                    type: "stack",
-                                    width: 100,
-                                    content: [
-                                        this.createDiffComponent(left.compiler + 1, right.compiler + 1)
-                                    ]
-                                }
+                                this.createDiffComponent(left.compiler + 1, right.compiler + 1)
                             ]
                         }
                     ]
                 }
-            ]
-        };
+            ];
+        } else if (this.mode === c_presmode_justsource) {
+            gl.content[0].content = [
+                {
+                    type: "column",
+                    width: 100,
+                    content: this.createSourceContentArray(left, left)
+                }];
+        }
 
         local.set('gl', JSON.stringify(gl));
         window.hasUIBeenReset = true;
@@ -353,10 +373,10 @@ Presentation.prototype.requestPresentationSource = function (onLoaded) {
 };
 
 
-function init(callback) {
+function init(callback, mode) {
     if (!_currentPresentation) {
         _currentPresentation = new Presentation();
-        _currentPresentation.init(callback);
+        _currentPresentation.init(callback, mode);
     } else {
         callback();
     }
