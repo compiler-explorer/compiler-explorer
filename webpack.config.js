@@ -11,10 +11,14 @@ const isDev = process.env.NODE_ENV !== "production";
 const distPath = path.resolve(__dirname, 'out', 'dist');
 const staticPath = path.join(distPath, 'static');
 
-let plugins = [
+// Hack alert: due to a variety of issues, sometimes we need to change
+// the name here. Mostly it's things like webpack changes that affect
+// how minification is done, even though that's supposed not to matter.
+const webjackJsHack = ".v2.";
+const plugins = [
     new MonacoEditorWebpackPlugin({
         languages: ['cpp', 'go', 'rust', 'swift', 'pascal'],
-        filename: isDev ? '[name].worker.js' : '[name].worker.[contenthash].js'
+        filename: isDev ? '[name].worker.js' : `[name]${webjackJsHack}worker.[contenthash].js`
     }),
     new CopyWebpackPlugin([
         {
@@ -28,7 +32,6 @@ let plugins = [
     }),
     new MiniCssExtractPlugin({
         filename: isDev ? '[name].css' : '[name].[contenthash].css'
-
     }),
     new ManifestPlugin({
         fileName: path.join(distPath, 'manifest.json'),
@@ -40,7 +43,7 @@ module.exports = {
     mode: isDev ? 'development' : 'production',
     entry: './static/main.js',
     output: {
-        filename: isDev ? '[name].js' : '[name].[chunkhash].js',
+        filename: isDev ? '[name].js' : `[name]${webjackJsHack}[contenthash].js`,
         path: staticPath
     },
     resolve: {
