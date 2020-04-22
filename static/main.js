@@ -177,6 +177,11 @@ function setupButtons(options) {
         $.get(window.location.origin + window.httpRoot + 'bits/sponsors.html')
             .done(function (data) {
                 alertSystem.alert("Compiler Explorer Sponsors", data);
+                analytics.proxy('send', {
+                    hitType: 'event',
+                    eventCategory: 'Sponsors',
+                    eventAction: 'open'
+                });
             })
             .fail(function (err) {
                 var result = err.responseText || JSON.stringify(err);
@@ -461,14 +466,6 @@ function start() {
         });
         window.open(sponsor.url);
     };
-
-    $('#sponsorsPopup').on('shown.bs.modal', function () {
-        analytics.proxy('send', {
-            hitType: 'event',
-            eventCategory: 'Sponsors',
-            eventAction: 'open'
-        });
-    });
 
     sizeRoot();
     lastState = JSON.stringify(layout.toConfig());

@@ -50,7 +50,7 @@ block prepend content
           button.close(type="button" aria-hidden="true") &times;
       ul.navbar-nav.navbar-right
         if showSponsors
-          li.nav-item.btn.btn-outline-primary#sponsors(data-toggle="modal" data-target="#sponsorsPopup") Sponsors
+          li.nav-item.btn.btn-outline-primary#sponsors(data-toggle="modal") Sponsors
             each icon in sponsors.icons
               img(src=icon.img height=24)
         li.nav-item
