@@ -61,9 +61,13 @@ describe('Nim', () => {
 
     it("test getCacheFile from possible user-options", () => {
         const compiler = new NimCompiler(info, ce),
-            input = "test.min",
-            folder = "/tmp/",
-            expected = {
+            input = "test.min";
+        let folder = "/tmp/";
+        if (process.platform === "win32") {
+            folder = "\\tmp\\";
+        }
+
+        const expected = {
                 "cpp": folder + '@m' + input + ".cpp.o",
                 "c": folder + '@m' + input + ".c.o",
                 "objc": folder + '@m' + input + ".m.o",

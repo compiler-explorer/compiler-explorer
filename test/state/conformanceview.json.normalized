@@ -96,7 +96,8 @@
                     "tools": []
                 }
             ],
-            "executors": []
+            "executors": [],
+            "description": ""
         }
     ]
 }

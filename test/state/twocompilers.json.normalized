@@ -24,7 +24,8 @@
                     "tools": []
                 }
             ],
-            "executors": []
+            "executors": [],
+            "description": ""
         },
         {
             "conformanceview": false,
@@ -50,7 +51,8 @@
                     "tools": []
                 }
             ],
-            "executors": []
+            "executors": [],
+            "description": ""
         }
     ]
 }

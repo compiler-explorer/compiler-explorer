@@ -47,7 +47,8 @@
                     "tools": []
                 }
             ],
-            "executors": []
+            "executors": [],
+            "description": ""
         }
     ]
 }

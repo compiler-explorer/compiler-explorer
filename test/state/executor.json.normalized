@@ -55,7 +55,8 @@
                     "stdin": "",
                     "stdinVisible": false
                 }
-            ]
+            ],
+            "description": ""
         }
     ]
 }
