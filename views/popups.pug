@@ -308,25 +308,20 @@
         .card
           .card-body
             div.tab-content(style="height:400px")
-              table(width="100%")
-                thead
-                  td(width="40%")
-                    | Possible sources
-                  td(width="10%")
-                  td(width="40%")
-                    | Presentation order
-                tbody
-                  tr
-                    td(width="40%")
-                      select.sourcesessions(multiple="true" size="10" style="width: 400px")
-                    td(width="10%" vertical-align="center")
-                      div
-                        a.add-to-order(href="javascript:;")
-                          span.dropdown-icon.fas.fa-forward
-                      div
-                        a.remove-from-order(href="javascript:;")
-                          span.dropdown-icon.fas.fa-backward
-                    td(width="40%")
-                      select.ordered(multiple="true" size="10" style="width: 400px")
+              .container
+                .row
+                  .col-sm.left
+                    .title Possible sources
+                    select.sourcesessions(multiple="true" size="10" style="width: 400px")
+                  .col-sm.middle &nbsp;
+                    div
+                      a.add-to-order(href="javascript:;")
+                        span.dropdown-icon.fas.fa-forward
+                    div
+                      a.remove-from-order(href="javascript:;")
+                        span.dropdown-icon.fas.fa-backward
+                  .col-sm.right
+                    .title Presentation order
+                    select.ordered(multiple="true" size="10" style="width: 400px")
       .modal-footer
         button.btn.btn-light(type="button" data-dismiss="modal" aria-label="Close") Close
