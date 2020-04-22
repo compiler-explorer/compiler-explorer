@@ -30,25 +30,27 @@ function Alert() {
     this.yesHandler = null;
     this.noHandler = null;
     this.prefixMessage = "";
-    var yesNo = $('#yes-no');
-    yesNo.find('button.yes').click(_.bind(function () {
+    this.notifications = $('#notifications').clone().removeAttr('id');
+    this.alert = $('#alert').clone().removeAttr('id');
+    this.yesNo = $('#yes-no').clone().removeAttr('id');
+    this.yesNo.find('button.yes').click(_.bind(function () {
         if (this.yesHandler) this.yesHandler();
     }, this));
-    yesNo.find('button.no').click(_.bind(function () {
+    this.yesNo.find('button.no').click(_.bind(function () {
         if (this.noHandler) this.noHandler();
     }, this));
 
-    var promptDialog = $('#prompt');
-    promptDialog.find('button.yes').click(_.bind(function () {
-        if (this.yesHandler) this.yesHandler(promptDialog.find('.answer').val());
+    this.promptDialog = $('#prompt').clone().removeAttr('id');
+    this.promptDialog.find('button.yes').click(_.bind(function () {
+        if (this.yesHandler) this.yesHandler(this.promptDialog.find('.answer').val());
     }, this));
-    promptDialog.find('button.no').click(_.bind(function () {
+    this.promptDialog.find('button.no').click(_.bind(function () {
         if (this.noHandler) this.noHandler();
     }, this));
 }
 
 Alert.prototype.alert = function (title, body, onClose) {
-    var modal = $('#alert');
+    var modal = this.alert;
     modal.find('.modal-title').html(title);
     modal.find('.modal-body').html(body);
     modal.modal();
@@ -73,7 +75,7 @@ Alert.prototype.alert = function (title, body, onClose) {
  * @param handlers.onClose {function?} Function to execute on pane closure
  */
 Alert.prototype.ask = function (title, question, handlers) {
-    var modal = $('#yes-no');
+    var modal = this.yesNo;
     this.yesHandler = handlers ? handlers.yes : function () {};
     this.noHandler = handlers ? handlers.no : function () {};
     modal.find('.modal-title').html(title);
@@ -113,7 +115,7 @@ Alert.prototype.ask = function (title, question, handlers) {
  * @param handlers.onClose {function?} Function to execute on pane closure
  */
 Alert.prototype.prompt = function (title, question, defaultAnswer, handlers) {
-    var modal = $('#prompt');
+    var modal = this.promptDialog;
     this.yesHandler = handlers ? handlers.yes : function () {};
     this.noHandler = handlers ? handlers.no : function () {};
     modal.find('.modal-title').html(title);
@@ -162,7 +164,7 @@ Alert.prototype.prompt = function (title, question, defaultAnswer, handlers) {
  *  Min: 1000
  */
 Alert.prototype.notify = function (body, options) {
-    var container = $('#notifications');
+    var container = this.notifications;
     if (!container) return;
     var newElement = $('<div class="alert notification" tabindex="-1" role="dialog">' +
         '<button type="button" class="close" style="float: left;margin-right: 5px;" data-dismiss="alert">' +
