@@ -150,6 +150,17 @@ Presentation.prototype.prev = function () {
     }
 };
 
+Presentation.prototype.createSourceContentArray = function (left, right) {
+    if (left.session === right.session) {
+        return [this.createComponents(this.source.sessions[left.session], 1, 100)];
+    } else {
+        return [
+            this.createComponents(this.source.sessions[left.session], 1),
+            this.createComponents(this.source.sessions[right.session], 2)
+        ];
+    }
+};
+
 Presentation.prototype.show = function () {
     if (this.settings && (this.currentSlide + 1 < this.settings.order.length)) {
         var left = this.settings.order[this.currentSlide];
@@ -199,11 +210,7 @@ Presentation.prototype.show = function () {
                         {
                             type: "row",
                             height: 50,
-                            content: [
-                                this.createComponents(this.source.sessions[left.session], 1),
-                                this.createComponents(this.source.sessions[right.session], 2)
-                            ]
-
+                            content: this.createSourceContentArray(left, right)
                         },
                         {
                             type: "row",
@@ -213,7 +220,7 @@ Presentation.prototype.show = function () {
                                     type: "stack",
                                     width: 100,
                                     content: [
-                                        this.createDiffComponent()
+                                        this.createDiffComponent(left.compiler + 1, right.compiler + 1)
                                     ]
                                 }
                             ]
@@ -230,14 +237,14 @@ Presentation.prototype.show = function () {
     }
 };
 
-Presentation.prototype.createDiffComponent = function () {
+Presentation.prototype.createDiffComponent = function (left, right) {
     return {
         type: "component",
         componentName: "diff",
         componentState:
         {
-            lhs: 1,
-            rhs: 2,
+            lhs: left,
+            rhs: right,
             lhsdifftype: 0,
             rhsdifftype: 0,
             fontScale: 14
@@ -269,10 +276,10 @@ Presentation.prototype.createCompilerComponent = function (session, compiler, se
     };
 };
 
-Presentation.prototype.createComponents = function (session, sessionId) {
+Presentation.prototype.createComponents = function (session, sessionId, customWidth) {
     var stack = {
         type: "stack",
-        width: 50,
+        width: customWidth ? customWidth : 50,
         activeItemIndex: 0,
         content: [
             {
