@@ -406,7 +406,13 @@ function isActive() {
 }
 
 function isConfigured() {
-    return _currentPresentation.settings.order.length > 1;
+    if (_currentPresentation.mode === c_presmode_default) {
+        return _currentPresentation.settings.order.length > 1;
+    } else if  (_currentPresentation.mode === c_presmode_justsource) {
+        return _currentPresentation.settings.order.length > 0;
+    } else {
+        return false;
+    }
 }
 
 module.exports = {
