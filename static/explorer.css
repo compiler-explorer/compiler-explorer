@@ -540,3 +540,93 @@ kbd {
 div.populararguments div.dropdown-menu {
     width: 300px;
 }
+
+.sponsor-content-root {
+    max-height: 200px;
+    overflow-y: scroll;
+}
+
+@media (min-height: 700px) {
+    .sponsor-content-root {
+        max-height: 350px;
+    }
+}
+
+@media (min-height: 1000px) {
+    .sponsor-content-root {
+        max-height: 700px;
+    }
+}
+
+@media (min-height: 1200px) {
+    .sponsor-content-root {
+        max-height: 900px;
+    }
+}
+
+@media (min-height: 1800px) {
+    .sponsor-content-root {
+        max-height: 1200px;
+    }
+}
+
+@media (max-width: 1000px) {
+    .sponsor-content-root {
+        font-size: 60%;
+    }
+}
+
+.sponsor-item-block:not(:first-child) {
+    margin-top: 6em;
+}
+
+.sponsors {
+    margin-top: 1em;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.sponsor-item-title {
+    font-size: 200%;
+    font-weight: bold;
+}
+
+.sponsor-item-title img {
+    margin: 0.5em;
+}
+
+.sponsors-level-selectors {
+    padding-bottom: 5px;
+}
+
+.sponsor {
+    flex-grow: 1;
+    margin: 2px;
+    font-size: 70%;
+}
+
+.sponsor button {
+    padding: 4px;
+    height: 100%;
+}
+
+.corporate .sponsor {
+    font-size: 180%;
+    height: 300px
+}
+
+.legendary .sponsor {
+    font-size: 175%;
+    height: 7em;
+}
+
+.legendary .sponsor {
+    font-size: 175%;
+    height: 7em;
+}
+
+.legendary .sponsor button {
+    padding: 1em;
+}

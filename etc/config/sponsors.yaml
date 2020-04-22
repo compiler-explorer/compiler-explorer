@@ -1,0 +1,220 @@
+---
+levels:
+  - name: Patreon Legends
+    description: 'These amazing people have pledged at the highest level of support. Huge thanks to these fine folks:'
+    class: legendary
+    sponsors:
+      - name: Ólafur Waage
+        url: https://twitter.com/olafurw
+      - name: Aras Pranckevičius
+        url: https://aras-p.info/
+      - name: Stefan Hagen
+        url: https://stefan-hagen.website/
+      - name: Robert Douglas
+        url: https://www.youtube.com/channel/UCxwGBrWeIIWO9V_uLwRWCdA/videos
+      - Dylan Houlihan
+      - Igor Zarzycki
+      - TocarIP
+      - name: Jane Lusby
+        url: https://rustbeginners.github.io/awesome-rust-mentors/
+      - Corey Kosak
+      - name: Ondra Karlik
+        url: https://cgg.mff.cuni.cz/~jaroslav/
+        description: In memory of Jaroslav Křivánek
+  - name: Patreons
+    description: 'Thanks to all my patrons:'
+    sponsors:
+      - Karl
+      - Matthew Butler
+      - Gareth Lloyd
+      - Arne Mertz
+      - Peter Bindels
+      - Slobodan Milnovic
+      - Martin
+      - Sylvain Joubert
+      - Nathan Bronson
+      - Kaz Tros
+      - Jean-François
+      - Charles Wilkes
+      - Kaido Kert
+      - Carsten Schultz
+      - Cornel Izbasa
+      - Stefan Groth
+      - Sorin Suciu
+      - Andreas Gravgaard Andersen
+      - Nathan Myers
+      - Eugene Nemchenko
+      - Bill Caputo
+      - Christoph Siedentop
+      - Dendi Suhubdy
+      - Ilya F.
+      - Bastian Kauschke
+      - Youngsuk Kim
+      - Trent Nelson
+      - Guts
+      - Noel Cower
+      - Alina Banerjee
+      - Jean-Luc Burhop
+      - Detlef Grohs
+      - Phil Burr
+      - Mike Babb
+      - Matias Christensen
+      - Siddhant Nadkarni
+      - Emyr Williams
+      - Ed Rochenski
+      - William Wold
+      - Juan Gómez
+      - Christopher Koschack
+      - Björn Fahller
+      - Michael Pearce
+      - Solid Sands
+      - William Woodall
+      - Stefan Petersen
+      - Jason Lovett
+      - Tomas Dittmann
+      - Cory Benfield
+      - Tyler Hou
+      - Austin Morton
+      - William Andersen
+      - Joseph Malle
+      - Chris Marchetti
+      - Ian Cullinan
+      - Devon Richard
+      - Greg Miller
+      - Heinz N. Gies
+      - Alison Chaiken
+      - David Capello
+      - Amos Wenger
+      - Kacper Kolodziej
+      - Tony Magro
+      - Morten Brenna
+      - Jake Arkinstall
+      - ghochee
+      - Shane Clifford
+      - Eduardo Costa
+      - Ryan Sims
+      - Dmytro Lytovchenko
+      - Wraithan McCarroll
+      - Jean-Simon Lapointe
+      - David C Black
+      - Venkatesh Srinivas
+      - Ruslan Abdikeev
+      - Benjamin Demick
+      - Reiner Eiteljoerge
+      - Johnathan Roatch
+      - John Biesnecker
+      - Paul Williams
+      - CB Bailey
+      - Joe Doyle
+      - Jason Rice
+      - Rui Ueyama
+      - Narut Sereewattanawoot
+      - Travis Geiselbrecht
+      - Chris Kennelly
+      - Tom Hulton-Harrop
+      - Adenilson Cavalcanti
+      - Wojciech Bartnik
+      - Richard Powell
+      - Hayk Karapetyan
+      - Colden Cullen
+      - Josh Seba
+      - Matt Pharr
+      - Ajay Agrawal
+      - Dog Junko
+      - Robert Bigelow
+      - Lewis Cowles
+      - Yuri Kunde Schlesner
+      - Glen Fernandes
+      - Richard Smith
+      - Keith Bennett
+      - Herman Polloni
+      - Simon Parker
+      - Andrew McKinlay
+      - Adam Badura
+      - Max Langhof
+      - Ben Gras
+      - Alexandre Baiao
+      - Daniel Nissenbaum
+      - Gynvael
+      - Mikhail Smirnov
+      - Mike Cowan
+      - paercebal
+      - ThePhD
+      - Michał Bartoszkiewicz
+      - James Clarke
+      - Kalyankumar Ramaseshan
+      - Pierre-Marie Charavel
+      - Brian L. Troutwine
+      - -Y-
+      - Graham Carl Evans
+      - Frank Leon Rose
+      - Nathan Burles
+      - Tianyu Ge
+      - Kale Blankenship
+      - Erik Lundin
+      - Matt Weber
+      - Marcin # dmz1978
+      - Laurențiu Nicola
+      - Joe Ranweiler
+      - modocache
+      - Shao Voon
+      - Paul Groke # swampmonster9
+      - Travis Wehrman
+      - Shivanker Goel
+      - Hana Dusíková
+      - Chris Warner
+      - Evan Rowley
+      - Glenn
+      - Alexander Guettler
+      - Alejandro Lucena
+      - xyx
+      - Chris Luke
+      - Casey Carter
+      - Adam Greig
+      - Eric Perko
+      - Christopher Di Bella
+      - William Killian
+      - Matt Hargett
+      - Jeff Trull
+      - John McFarlane
+      - Jaewon Jung
+      - Garret Kelly
+      - Dan Luu
+      - Tim Cool
+      - Jerry Ryle
+      - ileonte
+      - Matt Weber
+      - Simon Haegler
+      - Jon Kalb
+      - Reuben Scratton
+      - Gaëtan Barel
+      - Zhihao Yuan
+      - David Jones
+      - relgukxilef
+      - Markus Lanner
+      - Igor Ivanov
+      - Thomas Trummer
+      - Andy Bond
+      - Michael Spencer
+      - Dmitry Kozhevnikov
+      - David Starr
+      - Nejc Vivod
+      - Thomas Goyne
+      - Federico Lebron
+      - François Andrieux
+      - Mark Atkinson
+      - Thomas Pape
+      - Robin Jubber
+      - Laurynas Biveinis
+      - Robert Snell
+      - Michał Dominiak
+      - Chris Newland
+      - Miguel Escudero
+      - Ian Carroll
+      - Jonathan Anderson
+      - Vimarsh Raina
+      - Gabriel Garcia
+      - Malcolm Rowe
+      - Jon Raymond
+      - Bene
+      - Billy
