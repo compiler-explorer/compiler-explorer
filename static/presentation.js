@@ -117,13 +117,24 @@ Presentation.prototype.initSettingsDialog = function () {
         }
     }
 
+    var orderFixed = false;
     for (var idxOrder = 0; idxOrder < this.settings.order.length; idxOrder++) {
         order = this.settings.order[idxOrder];
-        session = this.source.sessions[order.session];
-        compiler = session.compilers[order.compiler];
-
-        this.settingsOrderedlist.append(this.createSettingsOption(order, session, compiler));
+        if (order.session < this.source.sessions.length) {
+            session = this.source.sessions[order.session];
+            if (order.compiler < session.compilers.length) {
+                compiler = session.compilers[order.compiler];
+        
+                this.settingsOrderedlist.append(this.createSettingsOption(order, session, compiler));
+            } else {
+                orderFixed = true;
+            }
+        } else {
+            orderFixed = true;
+        }
     }
+
+    if (orderFixed) this.loadOrderFromSettingsDialog();
 
     this.initSettingsDialogButtons();
 };
