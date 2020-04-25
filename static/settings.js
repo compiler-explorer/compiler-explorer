@@ -230,6 +230,7 @@ function setupSettings(root, settings, onChange, subLangId) {
     add(root.find('.editorsFLigatures'), 'editorsFLigatures', false, Checkbox);
     add(root.find('.allowStoreCodeDebug'), 'allowStoreCodeDebug', true, Checkbox);
     add(root.find('.useVim'), 'useVim', false, Checkbox);
+    add(root.find('.autoIndent'), 'autoIndent', true, Checkbox);
     add(root.find('.keepSourcesOnLangChange'), 'keepSourcesOnLangChange', false, Checkbox);
 
     setSettings(settings);
