@@ -101,7 +101,7 @@ function Editor(hub, state, container) {
         folding: true,
         lineNumbersMinChars: 1,
         emptySelectionClipboard: true,
-        autoIndent: true,
+        autoIndent: this.settings.autoIndent ? "advanced" : "none",
         vimInUse: this.settings.useVim,
         fontLigatures: this.settings.editorsFLigatures
     });
@@ -827,6 +827,7 @@ Editor.prototype.onSettingsChange = function (newSettings) {
     this.settings = _.clone(newSettings);
 
     this.editor.updateOptions({
+        autoIndent: this.settings.autoIndent ? "advanced" : "none",
         autoClosingBrackets: this.settings.autoCloseBrackets,
         useVim: this.settings.useVim,
         quickSuggestions: this.settings.showQuickSuggestions,
