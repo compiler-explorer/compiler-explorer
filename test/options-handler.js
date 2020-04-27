@@ -134,6 +134,9 @@ describe('Options handler', () => {
                 "description": "Its is a real, fake lib!",
                 "name": "fake lib",
                 "url": "https://godbolt.org",
+                "dependencies": [],
+                "liblink": [],
+                "staticliblink": [],
                 "versions": {
                         "noPaths": {"path": [], "version": "no paths", "liblink": [], "libpath": [], "staticliblink": [], "dependencies": []},
                         "onePath": {"path": ["/dev/null"], "version": "one path", "staticliblink": [], "dependencies": [],
@@ -148,6 +151,9 @@ describe('Options handler', () => {
                 "description": undefined,
                 "name": undefined,
                 "url": undefined,
+                "dependencies": [],
+                "liblink": [],
+                "staticliblink": [],
                 "versions": {
                     "std": {
                         "libpath": [],
@@ -163,6 +169,9 @@ describe('Options handler', () => {
                 "description": undefined,
                 "name": undefined,
                 "url": undefined,
+                "dependencies": [],
+                "liblink": [],
+                "staticliblink": [],
                 "versions": {
                     "trunk": {
                         "libpath": [],
