@@ -155,24 +155,23 @@ describe('Compiler-finder', function () {
         const finder = new CompilerFinder({}, libraryCompilerProps, properties.fakeProps({}), {}, optionsHandler);
         const compilers = await finder.getCompilers();
         const libs = compilers[0].libs;
-        true.should.equal(true);
-        // libs.should.deep.equal({
-        //     catch2: {
-        //         versions: {
-        //             2101: {
-        //                 version: "2.1.0.1",
-        //                 libPath: "/catch2/2.1.0.1/lib/x86_64"
-        //             }
-        //         }
-        //     },
-        //     fmt: {
-        //         versions: {
-        //             trunk: {
-        //                 version: "(trunk)",
-        //                 libPath: "/fmt/trunk/lib"
-        //             }
-        //         }
-        //     }
-        // });
+        libs.should.deep.equal({
+            catch2: {
+                versions: {
+                    2101: {
+                        version: "2.1.0.1",
+                        libPath: "/catch2/2.1.0.1/lib/x86_64"
+                    }
+                }
+            },
+            fmt: {
+                versions: {
+                    trunk: {
+                        version: "(trunk)",
+                        libPath: "/fmt/trunk/lib"
+                    }
+                }
+            }
+        });
     });
 });
