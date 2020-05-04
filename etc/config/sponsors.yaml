@@ -12,7 +12,6 @@ levels:
         url: https://stefan-hagen.website/
       - name: Robert Douglas
         url: https://www.youtube.com/channel/UCxwGBrWeIIWO9V_uLwRWCdA/videos
-      - Dylan Houlihan
       - Igor Zarzycki
       - TocarIP
       - name: Jane Lusby
@@ -21,6 +20,10 @@ levels:
       - name: Ondra Karlik
         url: https://cgg.mff.cuni.cz/~jaroslav/
         description: In memory of Jaroslav Křivánek
+      - name: Matthew Guidry
+        url: https://blog.matthewguidry.dev/
+      # Person with the initials "WB" prefers to remain anonymous
+      - name: Casey Carter
   - name: Patreons
     description: 'Thanks to all my patrons:'
     sponsors:
@@ -169,7 +172,6 @@ levels:
       - Alejandro Lucena
       - xyx
       - Chris Luke
-      - Casey Carter
       - Adam Greig
       - Eric Perko
       - Christopher Di Bella
@@ -218,3 +220,10 @@ levels:
       - Jon Raymond
       - Bene
       - Billy
+      - Stefan Wüthrich
+      - Yin Zhong
+      - Dan Raviv
+      - Yacob Cohen-Arazi
+      - Tobias Ribizel
+      - Joel Falcou
+      - Dylan Houlihan
