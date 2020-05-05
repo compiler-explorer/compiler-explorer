@@ -124,6 +124,15 @@ authors for more help.
 
 Remember to also add the library dependencies following the same steps. It's on you if those should also appear in the UI.
 
+## Adding compilers with limited library support
+
+If you have libraries that you don't want to be shown with a compiler, you can limit the libraries per compiler. By default all libraries are visible for all compilers.
+
+For example if you only want all versions of fmt, and version 0.3.0 of Ranges, you can do the following:
+```
+compiler.mycompiler.supportedLibraries=fmt:rangesv3.030
+```
+
 ## Putting it all together
 
 Hopefully that's enough to get an idea. The ideal case should be a pull request to add a couple of
