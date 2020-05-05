@@ -200,7 +200,7 @@ function setupButtons(options, layout) {
 
                 // if first doesn't reload because of missing settings, this will
                 window.location.reload();
-            });
+            }, 1);
         } else {
             local.set('gl', glSaved);
             local.remove('glSaved');
@@ -225,7 +225,7 @@ function setupButtons(options, layout) {
             if (!presentation.isConfigured()) {
                 $("#presentationsettings").modal();
             }
-        });
+        }, 1);
     }
 }
 
