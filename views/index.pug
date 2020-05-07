@@ -2,7 +2,7 @@ extends _layout.pug
 
 block prepend content
   nav.navbar.navbar-godbolt.navbar-expand-md.navbar-light.bg-light
-    a.navbar-brand(href="javascript:;" title="Compiler Explorer")
+    a.navbar-brand(href=httpRoot title="Compiler Explorer")
       svg.logo.align-top(height="50" width="165")
         include resources/site-logo.svg
         if extraBodyClass === "beta"

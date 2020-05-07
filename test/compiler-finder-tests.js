@@ -36,6 +36,31 @@ const languages = {
     }
 };
 
+const libs = {
+    'a-lang': {
+        fmt: {
+            versions: {
+                trunk: {
+                    version: "(trunk)",
+                    libPath: "/fmt/trunk/lib"
+                }
+            }
+        },
+        catch2: {
+            versions: {
+                2101: {
+                    version: "2.1.0.1",
+                    libPath: "/catch2/2.1.0.1/lib/x86_64"
+                },
+                2102: {
+                    version: "2.1.0.2",
+                    libPath: "/catch2/2.1.0.2/lib/x86_64"
+                }
+            }
+        }
+    }
+};
+
 const props = {
     compilers: "goodCompiler:&badCompiler"
 };
@@ -60,6 +85,11 @@ const bothOptions = {
     options: "bar"
 };
 
+const supportsLibrariesOptions = {
+    compilers: "goodCompiler",
+    supportsLibraries: "fmt:catch2.2101"
+};
+
 describe('Compiler-finder', function () {
     let compilerProps;
 
@@ -67,6 +97,7 @@ describe('Compiler-finder', function () {
     let noBaseOptionsProps;
     let onlyBaseOptionsProps;
     let bothOptionsProps;
+    let libraryCompilerProps;
 
     let optionsHandler;
 
@@ -78,10 +109,12 @@ describe('Compiler-finder', function () {
         onlyBaseOptionsProps = new properties.CompilerProps(languages, properties.fakeProps(onlyBaseOptions));
         bothOptionsProps = new properties.CompilerProps(languages, properties.fakeProps(bothOptions));
 
+        libraryCompilerProps = new properties.CompilerProps(languages, properties.fakeProps(supportsLibrariesOptions));
+
         optionsHandler = {
             get: () => {
                 return {
-                    libs: {},
+                    libs: libs,
                     tools: {}
                 };
             }
@@ -116,5 +149,29 @@ describe('Compiler-finder', function () {
         const finder = new CompilerFinder({}, bothOptionsProps, properties.fakeProps({}), {}, optionsHandler);
         const compilers = await finder.getCompilers();
         compilers[0].options.should.equal('foo bar');
+    });
+
+    it('should be able to filter libraries', async () => {
+        const finder = new CompilerFinder({}, libraryCompilerProps, properties.fakeProps({}), {}, optionsHandler);
+        const compilers = await finder.getCompilers();
+        const libs = compilers[0].libs;
+        libs.should.deep.equal({
+            catch2: {
+                versions: {
+                    2101: {
+                        version: "2.1.0.1",
+                        libPath: "/catch2/2.1.0.1/lib/x86_64"
+                    }
+                }
+            },
+            fmt: {
+                versions: {
+                    trunk: {
+                        version: "(trunk)",
+                        libPath: "/fmt/trunk/lib"
+                    }
+                }
+            }
+        });
     });
 });
