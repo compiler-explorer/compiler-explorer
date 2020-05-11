@@ -1,5 +1,15 @@
 ---
 levels:
+  - name: Corporate Sponsors
+    description: 'Enormous thanks to our corporate sponsors. Please visit their websites below:'
+    class: corporate
+    sponsors:
+      - name: Solid Sands
+        description: The one-stop shop for C and C++ compiler and library testing, validation and safety services.
+        img: https://static.ce-cdn.net/SOLID+SANDS-LOGO-RGB-500px.png
+        url: https://solidsands.com/
+        priority: 100
+        topIcon: true
   - name: Patreon Legends
     description: 'These amazing people have pledged at the highest level of support. Huge thanks to these fine folks:'
     class: legendary
