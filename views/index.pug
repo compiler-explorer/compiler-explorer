@@ -52,7 +52,7 @@ block prepend content
         if showSponsors
           li.nav-item.btn.btn-outline-primary#sponsors(data-toggle="modal") Sponsors
             each icon in sponsors.icons
-              img(src=icon.img height=24)
+              img.sponsor-icon(src=icon.img)
         li.nav-item
           a.nav-link#share(href="javascript:;") Share
             b.fas.fa-caret-down
