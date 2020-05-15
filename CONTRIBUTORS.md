@@ -85,3 +85,4 @@ From oldest to newest contributor, we would like to thank:
 - [Dave Rodgman](https://github.com/daverodgman)
 - [Will Lovett](https://github.com/willlovett-arm)
 - [Mark Gillard](https://github.com/marzer)
+- [Ethan Slattery](https://github.com/CrustyAuklet)
