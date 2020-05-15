@@ -91,7 +91,7 @@ to be done.
 ## Adding a new compiler to the live site
 
 On the main CE website, compilers are installed into a `/opt/compiler-explorer/` directory by a set of scripts in the sister
-GitHub repo: https://github.com/mattgodbolt/compiler-explorer-image
+GitHub repo: https://github.com/compiler-explorer/infra
 
 In the `update_compilers` directory in that repository are a set of scripts that download and install binaries and compilers.
 If you wish to test locally, and can create a `/opt/compiler-explorer` directory on your machine which is readable and writable by your
@@ -104,7 +104,7 @@ authors for more help.
 ## Putting it all together
 
 Hopefully that's enough to get an idea. The ideal case of a GCC-like compiler should be a pull request to add a couple of
-lines to the `compiler-explorer-image` to install the compiler, and a pull request to add a few lines to the `LANG.amazon.properties`
+lines to the `infra` repository to install the compiler, and a pull request to add a few lines to the `LANG.amazon.properties`
 file in this repository.
 
 If you feel like we could improve this document in any way, please contact us. We'd love to hear from you!

@@ -71,7 +71,7 @@ blacklist /dev/random
 
 # No need to see anything here
 blacklist /celibs
-blacklist /compiler-explorer-image
+blacklist /infra
 blacklist /efs
 
 # Remove some env vars, mostly to stop people emailing me about them

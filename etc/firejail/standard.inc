@@ -40,6 +40,6 @@ whitelist /opt/compiler-explorer
 read-only /opt/compiler-explorer
 
 read-only /celibs
-read-only /compiler-explorer-image
+read-only /infra
 
 noexec /tmp

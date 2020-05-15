@@ -113,7 +113,7 @@ to be done.
 ## Adding a new library to the live site
 
 On the main CE website, libraries are installed into a `/opt/compiler-explorer/` directory by a set of scripts in the sister
-GitHub repo: https://github.com/mattgodbolt/compiler-explorer-image
+GitHub repo: https://github.com/compiler-explorer/infra
 
 In the `update_compilers` directory in that repository are a set of scripts that download and install the libraries.
 If you wish to test locally, and can create a `/opt/compiler-explorer` directory on your machine which is readable and writable by your
@@ -136,7 +136,7 @@ compiler.mycompiler.supportedLibraries=fmt:rangesv3.030
 ## Putting it all together
 
 Hopefully that's enough to get an idea. The ideal case should be a pull request to add a couple of
-lines to the `compiler-explorer-image` to install the library, and a pull request to add a few lines to the `LANG.amazon.properties`
+lines to the `infra` repository to install the library, and a pull request to add a few lines to the `LANG.amazon.properties`
 file in this repository.
 Once that's done, remember to update [the wiki](https://github.com/mattgodbolt/compiler-explorer/wiki/Installed-libraries) with the new library, adding the library in alphabetical order, with newer versions on top.
 
