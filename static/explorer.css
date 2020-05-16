@@ -6,7 +6,7 @@
     margin-left: 0;
 }
 
-/* workaround high DPI issues in monaco. SEE: https://github.com/mattgodbolt/compiler-explorer/issues/1488 */
+/* workaround high DPI issues in monaco. SEE: https://github.com/compiler-explorer/compiler-explorer/issues/1488 */
 .monaco-editor .margin-view-overlays .line-numbers {
     cursor: default !important;
 }
@@ -536,7 +536,7 @@ kbd {
     vertical-align: middle;
 }
 
-/* Fix the width to allow bootstrap's right-justify to work, else it truncates. See https://github.com/mattgodbolt/compiler-explorer/issues/1863 */
+/* Fix the width to allow bootstrap's right-justify to work, else it truncates. See https://github.com/compiler-explorer/compiler-explorer/issues/1863 */
 div.populararguments div.dropdown-menu {
     width: 300px;
 }

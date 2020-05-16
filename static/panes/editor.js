@@ -397,7 +397,7 @@ Editor.prototype.initButtons = function (state) {
 
     // NB a new compilerConfig needs to be created every time; else the state is shared
     // between all compilers created this way. That leads to some nasty-to-find state
-    // bugs e.g. https://github.com/mattgodbolt/compiler-explorer/issues/225
+    // bugs e.g. https://github.com/compiler-explorer/compiler-explorer/issues/225
     var getCompilerConfig = _.bind(function () {
         return Components.getCompiler(this.id, this.currentLanguage.id);
     }, this);

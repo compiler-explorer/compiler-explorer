@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "mattgodbolt/compiler-explorer"
+    "url": "compiler-explorer/compiler-explorer"
   },
   "version": "0.0.3",
   "engines": {

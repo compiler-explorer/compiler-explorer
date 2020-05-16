@@ -93,7 +93,7 @@ parser.add_argument('-t', '--token', type=str, help='GitHub token (Only needs pu
 parser.add_argument('-d', '--debug', action='store_true', help='Print debug information')
 parser.add_argument('-o', '--output', type=str, help='Path of output file', default='CONTRIBUTORS.md')
 parser.add_argument('-r', '--repository', type=str, help='Which repository to query',
-                    default='mattgodbolt/compiler-explorer')
+                    default='compiler-explorer/compiler-explorer')
 
 
 def create_file(args):

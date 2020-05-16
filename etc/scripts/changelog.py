@@ -68,4 +68,4 @@ def get_commits(repo):
 
 
 if __name__ == '__main__':
-    get_commits('https://github.com/mattgodbolt/compiler-explorer/')
+    get_commits('https://github.com/compiler-explorer/compiler-explorer/')
