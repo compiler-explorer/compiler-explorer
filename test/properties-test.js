@@ -151,6 +151,12 @@ describe('Properties', () => {
         compilerProps.get(languages, 'bar', true, undefined).should.deep.equal({a: false});
         compilerProps.propsByLangId[languages.a.id] = undefined;
     });
+    it('should not parse version properies as numbers', () => {
+        should.equal(casesProps('libs.example.versions.010.version'), '0.10');
+    });
+    it('should not parse semver properies as numbers', () => {
+        should.equal(casesProps('compiler.example110.semver'), '1.10');
+    });
 });
 
 describe('Properties blob parsing', () => {
