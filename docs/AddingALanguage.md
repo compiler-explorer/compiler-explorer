@@ -27,4 +27,4 @@
 
 * You can check http://127.0.0.1:10240/api/compilers to be sure your language and compiler are there
 
-* Make an installer on [compiler-explorer-image](https://github.com/mattgodbolt/compiler-explorer-image)
+* Make an installer in the [infra](https://github.com/compiler-explorer/infra) repository

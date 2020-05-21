@@ -445,7 +445,7 @@ function start() {
 
         // Don't try to update Version tree link
         var release = window.compilerExplorerOptions.gitReleaseCommit;
-        var versionLink = 'https://github.com/mattgodbolt/compiler-explorer/';
+        var versionLink = 'https://github.com/compiler-explorer/compiler-explorer/';
         if (release) {
             versionLink += 'tree/' + release;
         }

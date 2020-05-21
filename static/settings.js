@@ -89,6 +89,26 @@ Textbox.prototype.putUi = function (elem, value) {
     elem.val(value);
 };
 
+function Numeric(elem, params) {
+    this.min = params.min;
+    this.max = params.max;
+    elem.attr('min', params.min)
+        .attr('max', params.max);
+}
+
+Numeric.prototype.getUi = function (elem) {
+    var val = parseInt(elem.val());
+    if (val < this.min) return this.min;
+    if (val > this.max) return this.max;
+    return val;
+};
+
+Numeric.prototype.putUi = function (elem, value) {
+    if (value < this.min) value = this.min;
+    if (value > this.max) value = this.max;
+    elem.val(value);
+};
+
 // Ignore max statements, there's no limit as to how many settings we need
 // eslint-disable-next-line max-statements
 function setupSettings(root, settings, onChange, subLangId) {
@@ -220,11 +240,7 @@ function setupSettings(root, settings, onChange, subLangId) {
         onChange(settings);
     }
     add(root.find('.useSpaces'), 'useSpaces', true, Checkbox);
-    add(root.find('.tabWidth'), 'tabWidth', 4, Select,
-        _.map([2, 4, 8], function (size) {
-            return {label: size, desc: size};
-        })
-    );
+    add(root.find('.tabWidth'), 'tabWidth', 4, Numeric, {min: 1, max: 80});
     add(root.find('.enableCtrlS'), 'enableCtrlS', true, Checkbox);
     add(root.find('.editorsFFont'), 'editorsFFont', 'Consolas, "Liberation Mono", Courier, monospace', Textbox);
     add(root.find('.editorsFLigatures'), 'editorsFLigatures', false, Checkbox);

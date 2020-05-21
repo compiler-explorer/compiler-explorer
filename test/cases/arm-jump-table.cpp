@@ -1,4 +1,4 @@
-// from https://github.com/mattgodbolt/compiler-explorer/issues/1081
+// from https://github.com/compiler-explorer/compiler-explorer/issues/1081
 int switchexample(unsigned char num) {
    switch(num) {
    case 0:

@@ -1,5 +1,15 @@
 ---
 levels:
+  - name: Corporate Sponsors
+    description: 'Enormous thanks to our corporate sponsors. Please visit their websites below:'
+    class: corporate
+    sponsors:
+      - name: Solid Sands
+        description: The one-stop shop for C and C++ compiler and library testing, validation and safety services.
+        img: https://static.ce-cdn.net/SOLID+SANDS-LOGO-RGB-500px.png
+        url: https://solidsands.com/
+        priority: 100
+        topIcon: true
   - name: Patreon Legends
     description: 'These amazing people have pledged at the highest level of support. Huge thanks to these fine folks:'
     class: legendary
@@ -12,7 +22,6 @@ levels:
         url: https://stefan-hagen.website/
       - name: Robert Douglas
         url: https://www.youtube.com/channel/UCxwGBrWeIIWO9V_uLwRWCdA/videos
-      - Dylan Houlihan
       - Igor Zarzycki
       - TocarIP
       - name: Jane Lusby
@@ -21,6 +30,10 @@ levels:
       - name: Ondra Karlik
         url: https://cgg.mff.cuni.cz/~jaroslav/
         description: In memory of Jaroslav Křivánek
+      - name: Matthew Guidry
+        url: https://blog.matthewguidry.dev/
+      # Person with the initials "WB" prefers to remain anonymous
+      - name: Casey Carter
   - name: Patreons
     description: 'Thanks to all my patrons:'
     sponsors:
@@ -169,7 +182,6 @@ levels:
       - Alejandro Lucena
       - xyx
       - Chris Luke
-      - Casey Carter
       - Adam Greig
       - Eric Perko
       - Christopher Di Bella
@@ -218,3 +230,11 @@ levels:
       - Jon Raymond
       - Bene
       - Billy
+      - Stefan Wüthrich
+      - Yin Zhong
+      - Dan Raviv
+      - Yacob Cohen-Arazi
+      - Tobias Ribizel
+      - Joel Falcou
+      - Dylan Houlihan
+      - Chris Lincoln

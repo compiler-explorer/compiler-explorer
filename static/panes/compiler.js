@@ -1656,7 +1656,7 @@ Compiler.prototype.onMouseMove = function (e) {
         // c.f. https://sentry.io/matt-godbolt/compiler-explorer/issues/285270358/
         if (e.target.position.lineNumber <= this.outputEditor.getModel().getLineCount()) {
             // Hacky workaround to check for negative numbers.
-            // c.f. https://github.com/mattgodbolt/compiler-explorer/issues/434
+            // c.f. https://github.com/compiler-explorer/compiler-explorer/issues/434
             var lineContent = this.outputEditor.getModel().getLineContent(e.target.position.lineNumber);
             if (lineContent[currentWord.startColumn - 2] === '-') {
                 word = '-' + word;
@@ -1723,7 +1723,7 @@ Compiler.prototype.onAsmToolTip = function (ed) {
     var opcode = word.word.toUpperCase();
 
     function newGitHubIssueUrl() {
-        return 'https://github.com/mattgodbolt/compiler-explorer/issues/new?title=' +
+        return 'https://github.com/compiler-explorer/compiler-explorer/issues/new?title=' +
             encodeURIComponent("[BUG] Problem with " + opcode + " opcode");
     }
 

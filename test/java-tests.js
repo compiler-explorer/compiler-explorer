@@ -75,7 +75,7 @@ function testJava(baseFolder, ...classNames) {
         asm
     };
 
-    const processed = compiler.processAsm(result);
+    const processed = compiler.processAsm(result).asm;
     processed.should.deep.equal(expectedSegments);
 }
 

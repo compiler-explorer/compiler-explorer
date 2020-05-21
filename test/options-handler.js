@@ -251,6 +251,7 @@ describe('Options handler', () => {
         const libs = optionsHandler.parseLibraries({'fake': libProps.libs});
         const compilerInfo = makeFakeCompilerInfo('g82', 'c++', "cpp", "8.2", true);
         const env = {
+            ceProps: () => {},
             compilerProps: () => {}
         };
         compilerInfo.libs = libs.fake;
@@ -266,6 +267,7 @@ describe('Options handler', () => {
         const libs = optionsHandler.parseLibraries({'fake': libProps.libs});
         const compilerInfo = makeFakeCompilerInfo('g82', 'c++', "cpp", "8.2", true);
         const env = {
+            ceProps: () => {},
             compilerProps: () => {}
         };
         compilerInfo.libs = libs.fake;
@@ -283,6 +285,7 @@ describe('Options handler', () => {
         const libs = moreOptionsHandler.parseLibraries({'fake': moreLibProps.libs});
         const compilerInfo = makeFakeCompilerInfo('g82', 'c++', "cpp", "8.2", true);
         const env = {
+            ceProps: () => {},
             compilerProps: () => {}
         };
         compilerInfo.libs = libs.fake;
@@ -296,6 +299,7 @@ describe('Options handler', () => {
         const libs = moreOptionsHandler.parseLibraries({'fake': moreLibProps.libs});
         const compilerInfo = makeFakeCompilerInfo('g82', 'c++', "cpp", "8.2", true);
         const env = {
+            ceProps: () => {},
             compilerProps: () => {}
         };
         compilerInfo.libs = libs.fake;
@@ -311,6 +315,7 @@ describe('Options handler', () => {
         const libs = moreOptionsHandler.parseLibraries({'fake': moreLibProps.libs});
         const compilerInfo = makeFakeCompilerInfo('g82', 'c++', "cpp", "8.2", true);
         const env = {
+            ceProps: () => {},
             compilerProps: () => {}
         };
         compilerInfo.libs = libs.fake;
@@ -326,6 +331,7 @@ describe('Options handler', () => {
         const libs = moreOptionsHandler.parseLibraries({'fake': moreLibProps.libs});
         const compilerInfo = makeFakeCompilerInfo('g82', 'c++', "cpp", "8.2", true);
         const env = {
+            ceProps: () => {},
             compilerProps: () => {}
         };
         compilerInfo.libs = libs.fake;

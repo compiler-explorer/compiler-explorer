@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/mattgodbolt/compiler-explorer.svg?branch=master)](https://travis-ci.org/mattgodbolt/compiler-explorer)
+[![Build Status](https://travis-ci.org/compiler-explorer/compiler-explorer.svg?branch=master)](https://travis-ci.org/github/compiler-explorer/compiler-explorer)
 [![codecov](https://codecov.io/gh/mattgodbolt/compiler-explorer/branch/master/graph/badge.svg)](https://codecov.io/gh/mattgodbolt/compiler-explorer)
 
 ![Compiler Explorer](docs/logo.svg)
@@ -28,7 +28,7 @@ Since then, it has become a public website serving around [210,000 compilations 
 
 ##### FAQ
 
-There is now a FAQ section [in the repository wiki](https://github.com/mattgodbolt/compiler-explorer/wiki/FAQ).
+There is now a FAQ section [in the repository wiki](https://github.com/compiler-explorer/compiler-explorer/wiki/FAQ).
  If your question is not present, please contact us as described below so we can help you.
  If you find that the FAQ is lacking some important point, please free to contribute to it and/or ask us to clarify it.
 
@@ -49,7 +49,7 @@ If you are interested in developing, or want to see the discussions between
  [the development mailing list](https://groups.google.com/forum/#!forum/compiler-explorer-development)
  
 Feel free to raise an issue on
- [github](https://github.com/mattgodbolt/compiler-explorer/issues) or
+ [github](https://github.com/compiler-explorer/compiler-explorer/issues) or
  [email Matt directly](mailto:matt@godbolt.org) for more help.
 
 ### Developing
