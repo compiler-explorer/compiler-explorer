@@ -138,13 +138,13 @@ describe('Options handler', () => {
                 "liblink": [],
                 "staticliblink": [],
                 "versions": {
-                        "noPaths": {"path": [], "version": "no paths", "liblink": [], "libpath": [], "staticliblink": [], "dependencies": []},
+                        "noPaths": {"path": [], "version": "no paths", "liblink": [], "libpath": [], "staticliblink": [], "dependencies": [], "alias": undefined},
                         "onePath": {"path": ["/dev/null"], "version": "one path", "staticliblink": [], "dependencies": [],
                             "liblink": ["hello"],
-                            "libpath": ["/lib/null"]},
+                            "libpath": ["/lib/null"], "alias": undefined},
                         "twoPaths": {"path": ["/dev/null", "/dev/urandom"], "staticliblink": [], "dependencies": [],
                             "liblink": ["hello1", "hello2"],
-                            "libpath": ["/lib/null", "/lib/urandom"], "version": "two paths"},
+                            "libpath": ["/lib/null", "/lib/urandom"], "version": "two paths", "alias": undefined},
                 },
             },
             "fs": {
@@ -159,6 +159,7 @@ describe('Options handler', () => {
                         "libpath": [],
                         "path": [],
                         "version": "std",
+                        "alias": undefined,
                         "liblink": [],
                         "staticliblink": ["c++fs", "rt"],
                         "dependencies": ["pthread"]
@@ -177,6 +178,7 @@ describe('Options handler', () => {
                         "libpath": [],
                         "path": [],
                         "version": "trunk",
+                        "alias": undefined,
                         "liblink": [],
                         "staticliblink": ["someotherlib"],
                         "dependencies": ["c++fs"]
