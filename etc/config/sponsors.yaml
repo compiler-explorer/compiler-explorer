@@ -10,6 +10,14 @@ levels:
         url: https://solidsands.com/
         priority: 100
         topIcon: true
+      - name: PVS-Studio
+        description: Did you check how it compiles? Now check your code for bugs and potential vulnerabilities using PVS-Studio.
+        icon: https://static.ce-cdn.net/pvs_bugs_1.svg
+        sideBySide: true
+        img: https://static.ce-cdn.net/pvs%20logo%20white-mini.png
+        url: https://www.viva64.com/en/pvs-studio-download/?promo=godbolt
+        priority: 100
+        topIcon: true
   - name: Patreon Legends
     description: 'These amazing people have pledged at the highest level of support. Huge thanks to these fine folks:'
     class: legendary
