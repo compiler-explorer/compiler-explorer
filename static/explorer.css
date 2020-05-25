@@ -630,7 +630,19 @@ div.populararguments div.dropdown-menu {
     max-height: 1.5em;
 }
 
-.sponsor-icon {
+.sponsor-logo-large {
+    max-height: 3em;
+}
+
+.sponsor-icons {
     float: right;
     height: 1.5em;
+}
+
+.sponsor-icon {
+    height: 1.5em;
+}
+
+.sponsor-item-description {
+    margin: auto;
 }
