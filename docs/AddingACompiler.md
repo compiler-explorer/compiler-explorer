@@ -40,7 +40,7 @@ compiler.gcc720.exe=/usr/bin/gcc-7.2.0
 In addition to the `name` and `exe` per-compiler configuration keys, there are also some other options. Most of them default
 to sensible values for GCC-like compilers.
 
-A group is defined similar to a list of compilers, and may contain other groups. Keys for groups start with `group.ID`. 
+A group is defined similar to a list of compilers, and may contain other groups. Keys for groups start with `group.ID`.
 Configuration keys applied to the group apply to all compilers in that group (unless overridden by the compiler itself). An example:
 
 ```
@@ -87,6 +87,24 @@ Test locally, and for many compilers that's probably all you need to do. Some co
 the intel asm setting, or the version flag). For a completely new compiler, you might need to define a whole new `compilerType`.
 Doing so is beyond this document's scope at present, but take a look inside `lib/compilers/` to get some idea what might need
 to be done.
+
+## Adding a new compiler running remotely to your locally built compiler explorer
+
+If you would like to have both gcc and MSVC running in the "same" compiler explorer, one option would be running gcc on your local
+Linux machine and add a proxy to the MSVC compiler, which is running on a remote Window host. To achieve this, you could
+
+* Setup compiler explorer on your Linux host as usual
+* Follow [this guide](https://github.com/compiler-explorer/compiler-explorer/blob/master/docs/WindowsNative.md)
+to setup another compiler explorer instance on your Windows host
+* Add your Windows compiler explorer as a proxy to your Linux compiler explorer. You can simply modify your
+`etc/config/c++.local.properties` on your Linux host
+
+```
+compilers=&gcc:&clang:myWindowsHost@10240
+```
+
+Yes it is the `@` symbol rather than the `:` before the port number. Restart the Linux compiler explorer and you will be able to
+see the MSVC compiler in the compiler list.
 
 ## Adding a new compiler to the live site
 
