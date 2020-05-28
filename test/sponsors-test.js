@@ -62,9 +62,10 @@ levels:
     - Just a string
     - name: An object
         `).levels[0].sponsors;
-        folks.length.should.eq(2);
-        folks.should.deep.contain({name: 'An object'});
-        folks.should.deep.contain({name: 'Just a string'});
+        folks.should.deep.equalInAnyOrder([
+          {name: "An object"},
+          {name: "Just a string"}
+      ]);
     });
 
     it('should sort sponsors by name', () => {
@@ -106,6 +107,25 @@ levels:
             {name: 'C', priority: 50}
         ]);
     });
+    it('should pick icon over img', () => {
+        const things = sponsors.loadFromString(`
+---
+levels:
+  - name: a
+    description: d
+    sponsors:
+    - name: one
+      img: image
+    - name: two
+      img: not_an_icon
+      icon: icon
+        `).levels[0].sponsors;
+        things.should.deep.equalInAnyOrder([
+            {name: "one", icon: "image", img: "image"},
+            {name: "two", icon: "icon", img: "not_an_icon"}
+        ]);
+    });
+
     it('should pick out the top level icons', () => {
         const icons = sponsors.loadFromString(`
 ---
@@ -131,8 +151,8 @@ levels:
       topIcon: true
         `).icons;
         icons.should.deep.equalInAnyOrder([
-            {name: "one", img: "pick_me", topIcon: true},
-            {name: "four", img: "pick_me_also", topIcon: true}
+            {name: "one", icon: "pick_me", img: "pick_me", topIcon: true},
+            {name: "four", icon: "pick_me_also", img: "pick_me_also", topIcon: true}
         ]);
     });
 });

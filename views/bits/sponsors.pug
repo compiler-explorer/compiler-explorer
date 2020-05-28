@@ -27,10 +27,17 @@ div.sponsors-level-selectors.d-flex.justify-content-center.mt-3
           each sponsor in level.sponsors
             .sponsor
               button.btn-block.btn-secondary(title=sponsor.title onclick=sponsor.onclick disabled=!sponsor.url)
-                span.sponsor-item-title
-                  if sponsor.img
-                    img.sponsor-logo(src=sponsor.img)
-                  = sponsor.name
-                if sponsor.description
-                  .sponsor-item-description
-                  = sponsor.description
+                if sponsor.sideBySide
+                  .d-flex
+                    .sponsor-item-title
+                      img.sponsor-logo-large(src=sponsor.img)
+                    .sponsor-item-description
+                      = sponsor.description
+                else
+                  .sponsor-item-title
+                    if sponsor.img
+                      img.sponsor-logo(src=sponsor.img)
+                    = sponsor.name
+                  if sponsor.description
+                    .sponsor-item-description
+                      = sponsor.description
