@@ -191,13 +191,32 @@ LibsWidget.prototype.updateLibsDropdown = function () {
     });
 };
 
+LibsWidget.prototype.getVersionOrAlias = function (name, version) {
+    if (this.availableLibs[this.currentLangId] &&
+        this.availableLibs[this.currentLangId][this.currentCompilerId] &&
+        this.availableLibs[this.currentLangId][this.currentCompilerId][name]) {
+        if (this.availableLibs[this.currentLangId][this.currentCompilerId][name].versions[version]) {
+            return version;
+        } else {
+            var foundAlias = _.findKey(
+                this.availableLibs[this.currentLangId][this.currentCompilerId][name].versions,
+                function (ver) {
+                    return ver.alias && ver.alias.includes(version);
+                });
+
+            return foundAlias;
+        }
+    }
+};
+
 LibsWidget.prototype.markLibrary = function (name, version, used) {
+    var actualVersion = this.getVersionOrAlias(name, version);
+
     if (this.availableLibs[this.currentLangId] &&
         this.availableLibs[this.currentLangId][this.currentCompilerId] &&
         this.availableLibs[this.currentLangId][this.currentCompilerId][name] &&
-        this.availableLibs[this.currentLangId][this.currentCompilerId][name].versions[version]) {
-
-        this.availableLibs[this.currentLangId][this.currentCompilerId][name].versions[version].used = used;
+        this.availableLibs[this.currentLangId][this.currentCompilerId][name].versions[actualVersion]) {
+        this.availableLibs[this.currentLangId][this.currentCompilerId][name].versions[actualVersion].used = used;
     }
 };
 
