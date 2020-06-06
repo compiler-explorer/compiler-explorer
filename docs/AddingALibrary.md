@@ -47,7 +47,8 @@ libs.rangesv3.url=https://github.com/ericniebler/range-v3
 ```
 
 Now, for each declared version, CE will look for a `version` key, an human readable string representing the corresponding version,
-and `path`, a list consisting of the paths to add to the inclusion path of the library.
+and `path`, a list consisting of the paths separated by colon `:` (or semicolon `;` on Windows) to add to the inclusion path of the library.
+Optionally, you can provide a `libpath`, a list consisting of paths to add to your linker path.
 
 This would leave us with: (Empty lines added for clarity. Please refrain from using them if you plan to PR us :D)
 
