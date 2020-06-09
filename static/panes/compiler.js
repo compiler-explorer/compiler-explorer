@@ -140,7 +140,9 @@ function Compiler(hub, container, state) {
         optgroupField: 'group',
         optgroups: this.compilerService.getGroupsInUse(this.currentLangId),
         lockOptgroupOrder: true,
-        options: _.map(this.getCurrentLangCompilers(), _.identity),
+        options: _.filter(this.getCurrentLangCompilers(), function (e) {
+            return !e.hidden || e.id === state.compiler;
+        }),
         items: this.compiler ? [this.compiler.id] : [],
         dropdownParent: 'body',
         closeAfterSelect: true

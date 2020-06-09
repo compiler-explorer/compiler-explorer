@@ -182,7 +182,9 @@ Conformance.prototype.addCompilerSelector = function (config) {
         optgroupField: 'group',
         optgroups: this.compilerService.getGroupsInUse(this.langId),
         lockOptgroupOrder: true,
-        options: _.map(this.getCurrentLangCompilers(), _.identity),
+        options: _.filter(this.getCurrentLangCompilers(), function (e) {
+            return !e.hidden || e.id === config.compilerId;
+        }),
         items: config.compilerId ? [config.compilerId] : [],
         dropdownParent: 'body',
         closeAfterSelect: true
