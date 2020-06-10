@@ -18,6 +18,13 @@ levels:
         url: https://www.viva64.com/en/pvs-studio-download/?promo=godbolt
         priority: 100
         topIcon: true
+      - name: Stop Bugs
+        description: Identify defects, vulnerabilities, unmaintainable code, and more with powerful static analysis.
+        icon: https://static.ce-cdn.net/gimpel/pcl_logo2.png
+        img: https://static.ce-cdn.net/gimpel/logo_large_tint.png
+        url: https://gimpel.com/?promo=godbolt
+        priority: 200
+        topIcon: true
   - name: Patreon Legends
     description: 'These amazing people have pledged at the highest level of support. Huge thanks to these fine folks:'
     class: legendary
