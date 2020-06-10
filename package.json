@@ -17,8 +17,8 @@
   "main": "./app.js",
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.13.0",
-    "@sentry/browser": "^5.15.4",
-    "@sentry/node": "^5.15.4",
+    "@sentry/browser": "^5.17.0",
+    "@sentry/node": "^5.17.0",
     "aws-sdk": "^2.656.0",
     "big-integer": "^1.6.48",
     "body-parser": "^1.18.2",
@@ -36,8 +36,8 @@
     "fs-extra": "^8.1.0",
     "golden-layout": "^1.5.9",
     "html-loader": "^0.5.5",
-    "http-proxy": "^1.18.0",
-    "jquery": "3.4.1",
+    "http-proxy": "^1.18.1",
+    "jquery": "^3.5.1",
     "js-cookie": "^2.2.1",
     "lodash": "^4.17.15",
     "lru-cache": "^5.1.1",
@@ -97,7 +97,7 @@
     "webpack": "^4.42.1",
     "webpack-cli": "^3.3.11",
     "webpack-dev-middleware": "^3.7.2",
-    "webpack-dev-server": "^3.10.3",
+    "webpack-dev-server": "^3.11.0",
     "webpack-manifest-plugin": "^2.2.0"
   },
   "scripts": {
