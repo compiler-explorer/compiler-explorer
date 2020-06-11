@@ -238,6 +238,12 @@ pre.content.wrap {
     }
 }
 
+@media (min-width: 1800px) {
+    .modal-dialog {
+        max-width: 1500px;
+    }
+}
+
 .navbar-nav.navbar-center {
     float: left; /* by default */
 }
@@ -548,13 +554,21 @@ div.populararguments div.dropdown-menu {
 
 @media (min-height: 700px) {
     .sponsor-content-root {
-        max-height: 350px;
+        max-height: 500px;
+    }
+    /* Scales on the top-level object to try and fit enough in shorter screens*/
+    .sponsors {
+        font-size: 75%;
     }
 }
 
 @media (min-height: 1000px) {
     .sponsor-content-root {
         max-height: 700px;
+    }
+    /* Scales on the top-level object to try and fit enough in shorter screens*/
+    .sponsors {
+        font-size: 90%;
     }
 }
 
