@@ -19,7 +19,7 @@ levels:
         priority: 100
         topIcon: true
       - name: Stop Bugs
-        description: Identify defects, vulnerabilities, unmaintainable code, and more with powerful static analysis.
+        description: Identify defects, vulnerabilities, unmaintainable code, and more with PC-lint Plus.
         icon: https://static.ce-cdn.net/gimpel/pcl_logo2.png
         img: https://static.ce-cdn.net/gimpel/logo_large_tint.png
         url: https://gimpel.com/?promo=godbolt
