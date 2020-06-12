@@ -548,51 +548,21 @@ div.populararguments div.dropdown-menu {
 }
 
 .ces-content-root {
-    max-height: 200px;
+    max-height: calc(100vh - 300px);
     overflow-y: scroll;
 }
 
 @media (min-height: 700px) {
-    .ces-content-root {
-        max-height: 400px;
-    }
     /* Scales on the top-level object to try and fit enough in shorter screens*/
     .ces-top {
         font-size: 75%;
     }
 }
 
-@media (min-height: 800px) {
-    .ces-content-root {
-        max-height: 500px;
-    }
-}
-
-@media (min-height: 900px) {
-    .ces-content-root {
-        max-height: 600px;
-    }
-}
-
 @media (min-height: 1000px) {
-    .ces-content-root {
-        max-height: 700px;
-    }
     /* Scales on the top-level object to try and fit enough in shorter screens*/
     .ces-top {
         font-size: 90%;
-    }
-}
-
-@media (min-height: 1200px) {
-    .ces-content-root {
-        max-height: 900px;
-    }
-}
-
-@media (min-height: 1800px) {
-    .ces-content-root {
-        max-height: 1200px;
     }
 }
 
