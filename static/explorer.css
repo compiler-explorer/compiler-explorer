@@ -548,10 +548,15 @@ div.populararguments div.dropdown-menu {
 }
 
 .ces-content-root {
-    max-height: calc(100vh - 300px);
+    max-height: 150px;
     overflow-y: scroll;
 }
 
+@media (min-height: 450px) {
+    .ces-content-root {
+    max-height: calc(100vh - 300px);
+    }
+}
 @media (min-height: 700px) {
     /* Scales on the top-level object to try and fit enough in shorter screens*/
     .ces-top {
