@@ -173,7 +173,7 @@ function setupButtons(options) {
         alertSystem.alert("Changelog", $(require('./changelog.html')));
     });
 
-    $('#sponsors').click(function () {
+    $('#ces').click(function () {
         $.get(window.location.origin + window.httpRoot + 'bits/sponsors.html')
             .done(function (data) {
                 alertSystem.alert("Compiler Explorer Sponsors", data);
@@ -327,10 +327,12 @@ function start() {
     });
 
     // Which buttons act as a linkable popup
-    var linkablePopups = ['#sponsors', '#changes', '#cookies', '#setting', '#privacy'];
+    var linkablePopups = ['#ces', '#sponsors', '#changes', '#cookies', '#setting', '#privacy'];
     var hashPart = linkablePopups.indexOf(window.location.hash) > -1 ? window.location.hash : null;
     if (hashPart) {
         window.location.hash = "";
+        // Handle the time we renamed sponsors to ces to work around issues with blockers.
+        if (hashPart === '#sponsors') hashPart = '#ces';
     }
 
     var config = findConfig(defaultConfig, options);

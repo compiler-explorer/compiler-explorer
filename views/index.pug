@@ -50,10 +50,10 @@ block prepend content
           button.close(type="button" aria-hidden="true") &times;
       ul.navbar-nav.navbar-right
         if showSponsors
-          li.nav-item.btn.btn-outline-primary#sponsors(data-toggle="modal") Sponsors
-            .sponsor-icons
+          li.nav-item.btn.btn-outline-primary#ces(data-toggle="modal") Sponsors
+            .ces-icons
               each icon in sponsors.icons
-                img.sponsor-icon(src=icon.icon)
+                img.ces-icon(src=icon.icon)
         li.nav-item
           a.nav-link#share(href="javascript:;") Share
             b.fas.fa-caret-down
