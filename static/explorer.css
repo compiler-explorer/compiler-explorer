@@ -221,27 +221,28 @@ pre.content.wrap {
     font-weight: 600;
 }
 
+.modal { /* maximum for all modal dialogs */
+width: 100%; 
+height: 100%;
+}
+
+.modal.dialog {
+    margin: 1.75rem; /* global margin for all dialogs*/
+}
+
+.modal.content { 
+    max-width: max-content; /* modal boxes are at most as wide as their content - smaller width is handled by the browser and flexbox */
+    max-height: calc(100vh - 5rem); /* modal box height scales with the viewportheight and leaves space for borders */
+}
+
+.modal.body {
+    min-height: 200px;
+    overflow-y: auto; /* make body scrollable -> keep Header & Footer onscreen, if possible */
+}
+
 .modal-content .well {
     border: 1px solid;
     border-radius: 3px;
-}
-
-@media (min-width: 1200px) {
-    .modal-dialog {
-        max-width: 1000px;
-    }
-}
-
-@media (min-width: 1400px) {
-    .modal-dialog {
-        max-width: 1200px;
-    }
-}
-
-@media (min-width: 1800px) {
-    .modal-dialog {
-        max-width: 1500px;
-    }
 }
 
 .navbar-nav.navbar-center {
@@ -548,14 +549,12 @@ div.populararguments div.dropdown-menu {
 }
 
 .ces-content-root {
-    max-height: 200px;
-    overflow-y: scroll;
+    min-height: 100px;
+    max-height: calc(100vh - 306px); /* works on my machine :) - 306px = the height of the footer + borders/margins/paddings - guessed/tried out*/
+    overflow: auto; /* move scrollbar into sponsor part - keep quickaccess buttons on screen */
 }
 
 @media (min-height: 700px) {
-    .ces-content-root {
-        max-height: 500px;
-    }
     /* Scales on the top-level object to try and fit enough in shorter screens*/
     .ces-top {
         font-size: 75%;
@@ -563,24 +562,9 @@ div.populararguments div.dropdown-menu {
 }
 
 @media (min-height: 1000px) {
-    .ces-content-root {
-        max-height: 700px;
-    }
     /* Scales on the top-level object to try and fit enough in shorter screens*/
     .ces-top {
         font-size: 90%;
-    }
-}
-
-@media (min-height: 1200px) {
-    .ces-content-root {
-        max-height: 900px;
-    }
-}
-
-@media (min-height: 1800px) {
-    .ces-content-root {
-        max-height: 1200px;
     }
 }
 
