@@ -226,16 +226,17 @@ width: 100%;
 height: 100%;
 }
 
-.modal.dialog {
-    margin: 1.75rem; /* global margin for all dialogs*/
+.modal-dialog {
+    max-width: max-content; /* override bootstrap width */
+    margin: 1.75rem; /* global margin for all dialogs */
 }
 
-.modal.content { 
+.modal-content { 
     max-width: max-content; /* modal boxes are at most as wide as their content - smaller width is handled by the browser and flexbox */
     max-height: calc(100vh - 4rem); /* modal box height scales with the viewportheight and leaves space for borders */
 }
 
-.modal.body {
+.modal-body {
     min-height: 200px;
     overflow-y: auto; /* make body scrollable -> keep Header & Footer onscreen, if possible */
 }
@@ -243,6 +244,10 @@ height: 100%;
 .modal-content .well {
     border: 1px solid;
     border-radius: 3px;
+}
+
+.modal-footer {
+    border-top: none;
 }
 
 .navbar-nav.navbar-center {
@@ -391,10 +396,6 @@ input.vim-check {
     text-decoration: underline;
     text-decoration-style: dashed;
     cursor: help;
-}
-
-.modal-footer {
-    border-top: none;
 }
 
 .program-exec-output {
@@ -550,22 +551,8 @@ div.populararguments div.dropdown-menu {
 
 .ces-content-root {
     min-height: 100px;
-    max-height: calc(100vh - 306px); /* works on my machine :) - 306px = the height of the footer + borders/margins/paddings - guessed/tried out*/
+    max-height: calc(100vh - 306px); /* works on my machine :) - 306px = the height of the footer + borders/margins/paddings - guessed/tried out */
     overflow: auto; /* move scrollbar into sponsor part - keep quickaccess buttons on screen */
-}
-
-@media (min-height: 700px) {
-    /* Scales on the top-level object to try and fit enough in shorter screens*/
-    .ces-top {
-        font-size: 75%;
-    }
-}
-
-@media (min-height: 1000px) {
-    /* Scales on the top-level object to try and fit enough in shorter screens*/
-    .ces-top {
-        font-size: 90%;
-    }
 }
 
 @media (max-width: 1000px) {
@@ -584,6 +571,21 @@ div.populararguments div.dropdown-menu {
     flex-wrap: wrap;
     justify-content: space-around;
     align-items: center;
+    font-size: 60%
+}
+
+@media (min-height: 700px) {
+    /* Scales on the top-level object to try and fit enough in shorter screens */
+    .ces-top {
+        font-size: 75%;
+    }
+}
+
+@media (min-height: 1000px) {
+    /* Scales on the top-level object to try and fit enough in shorter screens */
+    .ces-top {
+        font-size: 90%;
+    }
 }
 
 .ces-item-title {
@@ -594,8 +596,7 @@ div.populararguments div.dropdown-menu {
 .ces-item-title img {
     margin: 0.5em;
 }
-
-.ces-top-level-selectors {
+.ces-level-selectors {
     padding-bottom: 5px;
 }
 
