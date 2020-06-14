@@ -294,7 +294,8 @@ Conformance.prototype.compileChild = function (child) {
                 userArguments: child.find(".options").val() || "",
                 filters: {},
                 compilerOptions: {produceAst: false, produceOptInfo: false},
-                libraries: []
+                libraries: [],
+                skipAsm: true
             }
         };
 
