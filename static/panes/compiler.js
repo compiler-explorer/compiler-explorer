@@ -1090,9 +1090,9 @@ Compiler.prototype.initToolButtons = function (togglePannerAdder) {
 
     var addTool = _.bind(function (toolName, title) {
         var btn = $("<button class='dropdown-item btn btn-light btn-sm'>");
-        btn.addClass('.view-' + toolName);
+        btn.addClass('view-' + toolName);
         btn.data('toolname', toolName);
-        btn.append("<span class='dropdown-icon fas fa-cog' />" + title);
+        btn.append("<span class='dropdown-icon fas fa-cog'></span>" + title);
         this.toolsMenu.append(btn);
 
         if (toolName !== "none") {
