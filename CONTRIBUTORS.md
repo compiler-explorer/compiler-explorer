@@ -87,3 +87,4 @@ From oldest to newest contributor, we would like to thank:
 - [Mark Gillard](https://github.com/marzer)
 - [Ethan Slattery](https://github.com/CrustyAuklet)
 - [Kale Blankenship](https://github.com/vcabbage)
+- [George Gribkov](https://github.com/GeorgeGribkov)
