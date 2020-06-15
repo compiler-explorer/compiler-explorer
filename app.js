@@ -507,11 +507,11 @@ async function main() {
 
     const sponsorConfig = sponsors.loadFromString(fs.readFileSync(configDir + '/sponsors.yaml', 'utf-8'));
     function renderConfig(extra, urlOptions) {
-        const urlOptionsWhitelist = [
+        const urlOptionsAllowed = [
             'readOnly', 'hideEditorToolbars'
         ];
         const filteredUrlOptions = _.mapObject(
-            _.pick(urlOptions, urlOptionsWhitelist),
+            _.pick(urlOptions, urlOptionsAllowed),
             val => utils.toProperty(val));
         const allExtraOptions = _.extend({}, filteredUrlOptions, extra);
         const options = _.extend({}, allExtraOptions, clientOptionsHandler.get());
