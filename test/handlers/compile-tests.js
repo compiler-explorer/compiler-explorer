@@ -118,6 +118,7 @@ describe('Compiler tests', () => {
                     asm: [{text: "ASMASMASM"}],
                     code: 0,
                     input: {
+                        backendOptions: {},
                         filters: [],
                         options: [],
                         source: "I am a program"
