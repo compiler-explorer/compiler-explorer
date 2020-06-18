@@ -17,7 +17,7 @@ in the directory you want the Compiler Explorer (from here on, CE)
 to live:
 
 ```bat
-git clone https://github.com/mattgodbolt/compiler-explorer.git
+git clone https://github.com/compiler-explorer/compiler-explorer.git
 ```
 
 Then, we'll need to make a configuration file

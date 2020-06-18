@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "mattgodbolt/compiler-explorer"
+    "url": "compiler-explorer/compiler-explorer"
   },
   "version": "0.0.3",
   "engines": {
@@ -17,8 +17,8 @@
   "main": "./app.js",
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.13.0",
-    "@sentry/browser": "^5.15.4",
-    "@sentry/node": "^5.15.4",
+    "@sentry/browser": "^5.17.0",
+    "@sentry/node": "^5.17.0",
     "aws-sdk": "^2.656.0",
     "big-integer": "^1.6.48",
     "body-parser": "^1.18.2",
@@ -28,6 +28,7 @@
     "compiler-opt-info": "0.0.4",
     "compression": "^1.7.1",
     "cross-env": "^7.0.2",
+    "deep-equal-in-any-order": "^1.0.27",
     "es6-promise": "^4.2.8",
     "es6-shim": "^0.35.5",
     "express": "^4.17.1",
@@ -35,8 +36,8 @@
     "fs-extra": "^8.1.0",
     "golden-layout": "^1.5.9",
     "html-loader": "^0.5.5",
-    "http-proxy": "^1.18.0",
-    "jquery": "3.4.1",
+    "http-proxy": "^1.18.1",
+    "jquery": "^3.5.1",
     "js-cookie": "^2.2.1",
     "lodash": "^4.17.15",
     "lru-cache": "^5.1.1",
@@ -66,7 +67,8 @@
     "which": "^2.0.2",
     "winston": "^3.2.1",
     "winston-papertrail": "^1.0.5",
-    "wolfy87-eventemitter": "^5.2.9"
+    "wolfy87-eventemitter": "^5.2.9",
+    "yaml": "^1.8.3"
   },
   "devDependencies": {
     "@sentry/cli": "^1.52.1",
@@ -95,7 +97,7 @@
     "webpack": "^4.42.1",
     "webpack-cli": "^3.3.11",
     "webpack-dev-middleware": "^3.7.2",
-    "webpack-dev-server": "^3.10.3",
+    "webpack-dev-server": "^3.11.0",
     "webpack-manifest-plugin": "^2.2.0"
   },
   "scripts": {

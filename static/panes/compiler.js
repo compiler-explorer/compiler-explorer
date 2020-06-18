@@ -140,7 +140,9 @@ function Compiler(hub, container, state) {
         optgroupField: 'group',
         optgroups: this.compilerService.getGroupsInUse(this.currentLangId),
         lockOptgroupOrder: true,
-        options: _.map(this.getCurrentLangCompilers(), _.identity),
+        options: _.filter(this.getCurrentLangCompilers(), function (e) {
+            return !e.hidden || e.id === state.compiler;
+        }),
         items: this.compiler ? [this.compiler.id] : [],
         dropdownParent: 'body',
         closeAfterSelect: true
@@ -1088,9 +1090,9 @@ Compiler.prototype.initToolButtons = function (togglePannerAdder) {
 
     var addTool = _.bind(function (toolName, title) {
         var btn = $("<button class='dropdown-item btn btn-light btn-sm'>");
-        btn.addClass('.view-' + toolName);
+        btn.addClass('view-' + toolName);
         btn.data('toolname', toolName);
-        btn.append("<span class='dropdown-icon fas fa-cog' />" + title);
+        btn.append("<span class='dropdown-icon fas fa-cog'></span>" + title);
         this.toolsMenu.append(btn);
 
         if (toolName !== "none") {
@@ -1656,7 +1658,7 @@ Compiler.prototype.onMouseMove = function (e) {
         // c.f. https://sentry.io/matt-godbolt/compiler-explorer/issues/285270358/
         if (e.target.position.lineNumber <= this.outputEditor.getModel().getLineCount()) {
             // Hacky workaround to check for negative numbers.
-            // c.f. https://github.com/mattgodbolt/compiler-explorer/issues/434
+            // c.f. https://github.com/compiler-explorer/compiler-explorer/issues/434
             var lineContent = this.outputEditor.getModel().getLineContent(e.target.position.lineNumber);
             if (lineContent[currentWord.startColumn - 2] === '-') {
                 word = '-' + word;
@@ -1723,7 +1725,7 @@ Compiler.prototype.onAsmToolTip = function (ed) {
     var opcode = word.word.toUpperCase();
 
     function newGitHubIssueUrl() {
-        return 'https://github.com/mattgodbolt/compiler-explorer/issues/new?title=' +
+        return 'https://github.com/compiler-explorer/compiler-explorer/issues/new?title=' +
             encodeURIComponent("[BUG] Problem with " + opcode + " opcode");
     }
 

@@ -193,7 +193,7 @@ If JSON is present in the request's `Accept` header, the compilation results
 
 ### `POST /shortener` - saves given state *forever* to a shortlink and returns the unique id for the link
 
-The body of this post should be in the format of a [ClientState](https://github.com/mattgodbolt/compiler-explorer/blob/master/lib/clientstate.js)
+The body of this post should be in the format of a [ClientState](https://github.com/compiler-explorer/compiler-explorer/blob/master/lib/clientstate.js)
 Be sure that the Content-Type of your post is application/json
 
 An example of one the easiest forms of a clientstate:

@@ -103,7 +103,7 @@ function Editor(hub, state, container) {
         folding: true,
         lineNumbersMinChars: 1,
         emptySelectionClipboard: true,
-        autoIndent: true,
+        autoIndent: this.settings.autoIndent ? "advanced" : "none",
         vimInUse: this.settings.useVim,
         fontLigatures: this.settings.editorsFLigatures
     });
@@ -400,7 +400,7 @@ Editor.prototype.initButtons = function (state) {
 
     // NB a new compilerConfig needs to be created every time; else the state is shared
     // between all compilers created this way. That leads to some nasty-to-find state
-    // bugs e.g. https://github.com/mattgodbolt/compiler-explorer/issues/225
+    // bugs e.g. https://github.com/compiler-explorer/compiler-explorer/issues/225
     var getCompilerConfig = _.bind(function () {
         return Components.getCompiler(this.id, this.currentLanguage.id);
     }, this);
@@ -851,6 +851,7 @@ Editor.prototype.onSettingsChange = function (newSettings) {
     this.settings = _.clone(newSettings);
 
     this.editor.updateOptions({
+        autoIndent: this.settings.autoIndent ? "advanced" : "none",
         autoClosingBrackets: this.settings.autoCloseBrackets,
         useVim: this.settings.useVim,
         quickSuggestions: this.settings.showQuickSuggestions,

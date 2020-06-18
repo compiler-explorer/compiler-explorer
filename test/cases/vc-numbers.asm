@@ -9,7 +9,7 @@
 INCLUDELIB LIBCMT
 INCLUDELIB OLDNAMES
 
-; only here to exercise bug https://github.com/mattgodbolt/compiler-explorer/issues/1337
+; only here to exercise bug https://github.com/compiler-explorer/compiler-explorer/issues/1337
 1234
 
 END

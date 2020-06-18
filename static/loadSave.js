@@ -135,12 +135,14 @@ LoadSave.prototype.populate = function (root, list) {
 
 LoadSave.prototype.onLocalFile = function (event) {
     var files = event.target.files;
-    var file = files[0];
-    var reader = new FileReader();
-    reader.onload = _.bind(function () {
-        this.onLoad(reader.result);
-    }, this);
-    reader.readAsText(file);
+    if (files.length !== 0) {
+        var file = files[0];
+        var reader = new FileReader();
+        reader.onload = _.bind(function () {
+            this.onLoad(reader.result);
+        }, this);
+        reader.readAsText(file);
+    }
     this.modal.modal('hide');
 };
 
@@ -178,7 +180,7 @@ LoadSave.prototype.onSaveToBrowserStorage = function () {
         this.alertSystem.ask(
             "Replace current?",
             "Do you want to replace the existing saved file '" + name + "'?",
-            {yes: done});
+            { yes: done });
     } else {
         done();
         this.modal.modal('hide');
@@ -195,11 +197,10 @@ LoadSave.prototype.onSaveToFile = function (fileEditor) {
     try {
         var fileLang = this.currentLanguage.name;
         var name = fileLang !== undefined && fileEditor !== undefined ?
-            (fileLang +" Editor #" + fileEditor + ' ') : '';
-        saveAs(new Blob(
-            [this.editorText],
-            {type: "text/plain;charset=utf-8"}),
-        "Compiler Explorer " + name + "Code" + this.extension);
+            (fileLang + " Editor #" + fileEditor + ' ') : '';
+        saveAs(
+            new Blob([this.editorText], { type: "text/plain;charset=utf-8" }),
+            "Compiler Explorer " + name + "Code" + this.extension);
         return true;
     } catch (e) {
         this.alertSystem.notify('Error while saving your code. Use the clipboard instead.', {
@@ -221,4 +222,4 @@ LoadSave.prototype.doLoad = function (element) {
 };
 
 
-module.exports = {LoadSave: LoadSave};
+module.exports = { LoadSave: LoadSave };

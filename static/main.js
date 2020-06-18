@@ -70,7 +70,9 @@ if (!String.prototype.includes) {
         if (search instanceof RegExp) {
             throw TypeError('first argument must not be a RegExp');
         }
-        if (start === undefined) { start = 0; }
+        if (start === undefined) {
+            start = 0;
+        }
         return this.indexOf(search, start) !== -1;
     };
 }
@@ -168,11 +170,25 @@ function setupButtons(options, layout) {
         window.open('/', '_blank');
     });
 
-    $('#thanks-to').click(function () {
-        alertSystem.alert("Special thanks to", $(require('./thanks.html')));
-    });
     $('#changes').click(function () {
         alertSystem.alert("Changelog", $(require('./changelog.html')));
+    });
+
+    $('#ces').click(function () {
+        $.get(window.location.origin + window.httpRoot + 'bits/sponsors.html')
+            .done(function (data) {
+                alertSystem.alert("Compiler Explorer Sponsors", data);
+                analytics.proxy('send', {
+                    hitType: 'event',
+                    eventCategory: 'Sponsors',
+                    eventAction: 'open'
+                });
+            })
+            .fail(function (err) {
+                var result = err.responseText || JSON.stringify(err);
+                alertSystem.alert("Compiler Explorer Sponsors",
+                    "<div>Unable to fetch sponsors:</div><div>" + result + "</div>");
+            });
     });
 
     $('#ui-history').click(function () {
@@ -354,10 +370,12 @@ function start() {
     });
 
     // Which buttons act as a linkable popup
-    var linkablePopups = ['#thanks-to', '#changes', '#cookies', '#setting', '#privacy'];
+    var linkablePopups = ['#ces', '#sponsors', '#changes', '#cookies', '#setting', '#privacy'];
     var hashPart = linkablePopups.indexOf(window.location.hash) > -1 ? window.location.hash : null;
     if (hashPart) {
         window.location.hash = "";
+        // Handle the time we renamed sponsors to ces to work around issues with blockers.
+        if (hashPart === '#sponsors') hashPart = '#ces';
     }
 
     var config = findConfig(defaultConfig, options);
@@ -473,7 +491,7 @@ function start() {
 
         // Don't try to update Version tree link
         var release = window.compilerExplorerOptions.gitReleaseCommit;
-        var versionLink = 'https://github.com/mattgodbolt/compiler-explorer/';
+        var versionLink = 'https://github.com/compiler-explorer/compiler-explorer/';
         if (release) {
             versionLink += 'tree/' + release;
         }
@@ -483,6 +501,17 @@ function start() {
     if (options.hideEditorToolbars) {
         $('[name="editor-btn-toolbar"]').addClass("d-none");
     }
+
+    window.onSponsorClick = function (sponsor) {
+        analytics.proxy('send', {
+            hitType: 'event',
+            eventCategory: 'Sponsors',
+            eventAction: 'click',
+            eventLabel: sponsor.url,
+            transport: 'beacon'
+        });
+        window.open(sponsor.url);
+    };
 
     sizeRoot();
     lastState = JSON.stringify(layout.toConfig());
