@@ -208,7 +208,7 @@ function setupButtons(options) {
 
     if (isMobileViewer() && window.compilerExplorerOptions.slides && window.compilerExplorerOptions.slides.length > 1) {
         $("#share").remove();
-        $(".ui-presentation-control").show();
+        $(".ui-presentation-control").removeClass("d-none");
         $(".ui-presentation-first").click(presentation.first);
         $(".ui-presentation-prev").click(presentation.prev);
         $(".ui-presentation-next").click(presentation.next);
