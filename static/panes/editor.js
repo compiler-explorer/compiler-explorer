@@ -91,7 +91,8 @@ function Editor(hub, state, container) {
         scrollBeyondLastLine: false,
         language: this.currentLanguage.monaco,
         fontFamily: this.settings.editorsFFont,
-        readOnly: !!options.readOnly || legacyReadOnly,
+        readOnly: !!options.readOnly || legacyReadOnly ||
+            window.compilerExplorerOptions.mobileViewer,
         glyphMargin: !options.embedded,
         quickSuggestions: false,
         fixedOverflowWidgets: true,
@@ -225,6 +226,10 @@ Editor.prototype.updateState = function () {
 
 Editor.prototype.setSource = function (newSource) {
     this.updateSource(newSource);
+
+    if (window.compilerExplorerOptions.mobileViewer) {
+        $(this.domRoot.find(".monaco-placeholder textarea")).hide();
+    }
 };
 
 Editor.prototype.onNewSource = function (editorId, newSource) {
