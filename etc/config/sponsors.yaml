@@ -12,7 +12,7 @@ levels:
         topIcon: true
       - name: PVS-Studio
         description: Did you check how it compiles? Now check your code for bugs and potential vulnerabilities using PVS-Studio.
-        icon: https://static.ce-cdn.net/pvs_bugs_1.svg
+        icon: https://static.ce-cdn.net/pvs_bugs_long.svg
         sideBySide: true
         img: https://static.ce-cdn.net/pvs%20logo%20white-mini.png
         url: https://www.viva64.com/en/pvs-studio-download/?promo=godbolt
