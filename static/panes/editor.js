@@ -93,7 +93,8 @@ function Editor(hub, state, container) {
         scrollBeyondLastLine: false,
         language: this.currentLanguage.monaco,
         fontFamily: this.settings.editorsFFont,
-        readOnly: !!options.readOnly || legacyReadOnly,
+        readOnly: !!options.readOnly || legacyReadOnly ||
+            window.compilerExplorerOptions.mobileViewer,
         glyphMargin: !options.embedded,
         quickSuggestions: false,
         fixedOverflowWidgets: true,
