@@ -121,6 +121,34 @@ function hasCookieConsented(options) {
     return jsCookie.get(options.policies.cookies.key) === options.policies.cookies.hash;
 }
 
+function startPresentationMode(layout) {
+    // make sure latest layout is saved
+    local.set('gl', JSON.stringify(layout.toConfig()));
+
+    var data = JSON.parse(local.get('gl'));
+    local.set('glSaved', JSON.stringify(data));
+
+    presentation.init(function () {
+        presentation.first();
+
+        // if first doesn't reload because of missing settings, this will
+        window.location.reload();
+    }, 1);
+}
+
+function endPresentationMode(glSaved) {
+    local.set('gl', glSaved);
+    local.remove('glSaved');
+    local.remove('presentationSource');
+    hasUIBeenReset = true;
+    window.history.replaceState(null, null, window.httpRoot);
+    window.location.reload();
+}
+
+function isMobileViewer() {
+    return window.compilerExplorerOptions.mobileViewer;
+}
+
 function setupButtons(options, layout) {
     var alertSystem = new Alert();
 
@@ -205,44 +233,13 @@ function setupButtons(options, layout) {
     $('#ui-presentationmode').click(function () {
         var glSaved = local.get('glSaved');
         if (!glSaved) {
-            // make sure latest layout is saved
-            local.set('gl', JSON.stringify(layout.toConfig()));
-
-            var data = JSON.parse(local.get('gl'));
-            local.set('glSaved', JSON.stringify(data));
-
-            presentation.init(function () {
-                presentation.first();
-
-                // if first doesn't reload because of missing settings, this will
-                window.location.reload();
-            }, 1);
+            startPresentationMode(layout);
         } else {
-            local.set('gl', glSaved);
-            local.remove('glSaved');
-            local.remove('presentationSource');
-            hasUIBeenReset = true;
-            window.history.replaceState(null, null, window.httpRoot);
-            window.location.reload();
+            endPresentationMode(glSaved);
         }
     });
 
     $(".ui-presentation-control").hide();
-
-    if (presentation.isActive()) {
-        $("#ui-presentationmode span.caption").html("Normal mode");
-
-        presentation.init(function () {
-            $(".ui-presentation-control").show();
-            $(".ui-presentation-first").click(presentation.first);
-            $(".ui-presentation-prev").click(presentation.prev);
-            $(".ui-presentation-next").click(presentation.next);
-
-            if (!presentation.isConfigured()) {
-                $("#presentationsettings").modal();
-            }
-        }, 1);
-    }
 }
 
 function findConfig(defaultConfig, options) {
@@ -445,6 +442,25 @@ function start() {
     // We assume no consent for embed users
     if (!options.embedded) {
         setupButtons(options, layout);
+
+        if (isMobileViewer() && !presentation.isActive()) {
+            startPresentationMode(layout);
+        }
+
+        if (presentation.isActive()) {
+            $("#ui-presentationmode span.caption").html("Normal mode");
+
+            presentation.init(function () {
+                $(".ui-presentation-control").show();
+                $(".ui-presentation-first").click(presentation.first);
+                $(".ui-presentation-prev").click(presentation.prev);
+                $(".ui-presentation-next").click(presentation.next);
+
+                if (!presentation.isConfigured()) {
+                    $("#presentationsettings").modal();
+                }
+            }, isMobileViewer() ? 1 : 0);
+        }
     }
 
     sharing.initShareButton($('#share'), layout, function (config, extra) {

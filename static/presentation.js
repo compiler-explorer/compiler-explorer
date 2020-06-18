@@ -48,9 +48,16 @@ function Presentation() {
 }
 
 Presentation.prototype.init = function (callback, mode) {
-    if (mode) this.mode = mode;
+    if (mode) {
+        this.mode = mode;
+    }
+
     this.loadPresentationSettings();
     this.loadPresentationSource(_.bind(function () {
+        if (this.mode === c_presmode_justsource) {
+            this.autoPopulateOrder();
+        }
+
         this.currentSlide = parseInt(local.get('presentationCurrentSlide', 0));
         this.initSettingsDialog();
         callback();
@@ -72,6 +79,28 @@ Presentation.prototype.createSettingsOption = function (order, session, compiler
     }
 
     return option;
+};
+
+Presentation.prototype.autoPopulateOrder = function () {
+    this.settings.order = [];
+
+    var order = {},
+        session = null;
+
+    for (var idxSession = 0; idxSession < this.source.sessions.length; idxSession++) {
+        session = this.source.sessions[idxSession];
+
+        for (var idxCompiler = 0; idxCompiler < session.compilers.length; idxCompiler++) {
+            order = {
+                session: idxSession,
+                compiler: idxCompiler
+            };
+
+            this.settings.order.push(order);
+        }
+    }
+
+    local.set('presentationSettings', JSON.stringify(this.settings));
 };
 
 Presentation.prototype.loadOrderFromSettingsDialog = function () {

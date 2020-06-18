@@ -529,8 +529,11 @@ async function main() {
     function renderGoldenLayout(config, metadata, req, res) {
         staticHeaders(res);
         contentPolicyHeader(res);
+
+        const mobileViewer = req.header('CloudFront-Is-Mobile-Viewer') === "true";
         res.render('index', renderConfig({
             embedded: false,
+            mobileViewer,
             config: config,
             metadata: metadata
         }, req.query));
@@ -539,7 +542,8 @@ async function main() {
     const embeddedHandler = function (req, res) {
         staticHeaders(res);
         contentPolicyHeader(res);
-        res.render('embed', renderConfig({embedded: true}, req.query));
+        const mobileViewer = req.header('CloudFront-Is-Mobile-Viewer') === "true";
+        res.render('embed', renderConfig({embedded: true, mobileViewer}, req.query));
     };
     if (isDevMode()) {
         setupWebPackDevMiddleware(router);
@@ -610,7 +614,8 @@ async function main() {
         .get('/', (req, res) => {
             staticHeaders(res);
             contentPolicyHeader(res);
-            res.render('index', renderConfig({embedded: false}, req.query));
+            const mobileViewer = req.header('CloudFront-Is-Mobile-Viewer') === "true";
+            res.render('index', renderConfig({embedded: false, mobileViewer}, req.query));
         })
         .get('/e', embeddedHandler)
         // legacy. not a 301 to prevent any redirect loops between old e links and embed.html
@@ -618,7 +623,8 @@ async function main() {
         .get('/embed-ro', (req, res) => {
             staticHeaders(res);
             contentPolicyHeader(res);
-            res.render('embed', renderConfig({embedded: true, readOnly: true}, req.query));
+            const mobileViewer = req.header('CloudFront-Is-Mobile-Viewer') === "true";
+            res.render('embed', renderConfig({embedded: true, readOnly: true, mobileViewer}, req.query));
         })
         .get('/robots.txt', (req, res) => {
             staticHeaders(res);
@@ -639,7 +645,8 @@ async function main() {
         .use('/bits/:bits.html', (req, res) => {
             staticHeaders(res);
             contentPolicyHeader(res);
-            res.render('bits/' + req.params.bits, renderConfig({embedded: false}, req.query));
+            const mobileViewer = req.header('CloudFront-Is-Mobile-Viewer') === "true";
+            res.render('bits/' + req.params.bits, renderConfig({embedded: false, mobileViewer}, req.query));
         })
         .use(bodyParser.json({limit: ceProps('bodyParserLimit', maxUploadSize)}))
         .use(bodyParser.text({limit: ceProps('bodyParserLimit', maxUploadSize), type: () => true}))
