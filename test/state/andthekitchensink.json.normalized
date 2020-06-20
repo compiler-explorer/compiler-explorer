@@ -17,8 +17,7 @@
                         "execute": false,
                         "intel": true,
                         "labels": true,
-                        "trim": false,
-                        "skipAsm": false
+                        "trim": false
                     },
                     "libs": [],
                     "specialoutputs": [
@@ -40,8 +39,7 @@
                         "execute": false,
                         "intel": true,
                         "labels": true,
-                        "trim": false,
-                        "skipAsm": false
+                        "trim": false
                     },
                     "libs": [],
                     "specialoutputs": [
