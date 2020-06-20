@@ -173,8 +173,7 @@
                                     "commentOnly": true,
                                     "trim": false,
                                     "intel": true,
-                                    "demangle": true,
-                                    "skipAsm": true
+                                    "demangle": true
                                 },
                                 "libs": [],
                                 "lang": "c++"
