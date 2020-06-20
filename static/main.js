@@ -32,6 +32,7 @@ require('bootstrap-slider');
 
 var sharing = require('./sharing');
 var _ = require('underscore');
+var cloneDeep = require('lodash.clonedeep');
 var $ = require('jquery');
 var GoldenLayout = require('golden-layout');
 var Components = require('./components');
@@ -273,6 +274,26 @@ function initPolicies(options) {
     }
 }
 
+function filterComponentState(config, keysToRemove) {
+    function filterComponentStateImpl(component) {
+        if (component.content) {
+            for (var i = 0; i < component.content.length; i++) {
+                filterComponentStateImpl(component.content[i], keysToRemove);
+            }
+        }
+
+        if (component.componentState) {
+            Object.keys(component.componentState)
+                .filter(function (key) { return keysToRemove.includes(key); })
+                .forEach(function (key) { delete component.componentState[key]; });
+        }
+    }
+
+    config = cloneDeep(config);
+    filterComponentStateImpl(config);
+    return config;
+}
+
 // eslint-disable-next-line max-statements
 function start() {
     initializeResetLayoutLink();
@@ -359,10 +380,10 @@ function start() {
     var storedPaths = {};  // TODO maybe make this an LRU cache?
 
     layout.on('stateChanged', function () {
-        var config = layout.toConfig();
+        var config = filterComponentState(layout.toConfig(), ["selection"]);
         var stringifiedConfig = JSON.stringify(config);
         if (stringifiedConfig !== lastState) {
-            if (storedPaths[config]) {
+            if (storedPaths[stringifiedConfig]) {
                 window.history.replaceState(null, null, storedPaths[stringifiedConfig]);
             } else if (window.location.pathname !== window.httpRoot) {
                 window.history.replaceState(null, null, window.httpRoot);
@@ -470,7 +491,9 @@ function start() {
     };
 
     sizeRoot();
-    lastState = JSON.stringify(layout.toConfig());
+    var initialConfig = JSON.stringify(filterComponentState(layout.toConfig(), ["selection"]));
+    lastState = initialConfig;
+    storedPaths[initialConfig] = window.location.href;
 }
 
 $(start);
