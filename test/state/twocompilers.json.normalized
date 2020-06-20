@@ -17,7 +17,8 @@
                         "commentOnly": true,
                         "demangle": true,
                         "trim": false,
-                        "intel": true
+                        "intel": true,
+                        "skipAsm": false
                     },
                     "libs": [],
                     "specialoutputs": ["compilerOutput"],
@@ -43,7 +44,8 @@
                         "commentOnly": true,
                         "demangle": true,
                         "trim": false,
-                        "intel": true
+                        "intel": true,
+                        "skipAsm": true
                     },
                     "libs": [],
                     "specialoutputs": [],
