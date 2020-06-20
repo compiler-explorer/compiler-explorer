@@ -43,6 +43,18 @@ block prepend content
             a.dropdown-item#ui-history(href="javascript:;")
               span.dropdown-icon.fas.fa-exchange-alt
               | History
+        li.nav-item.ui-presentation-control.d-none
+          a.nav-link.ui-presentation-first(href="javascript:;")
+            span.dropdown-icon.fas.fa-fast-backward
+            | Start
+        li.nav-item.ui-presentation-control.d-none
+          a.nav-link.ui-presentation-prev(href="javascript:;")
+            span.dropdown-icon.fas.fa-backward
+            | Previous
+        li.nav-item.ui-presentation-control.d-none
+          a.nav-link.ui-presentation-next(href="javascript:;")
+            span.dropdown-icon.fas.fa-forward
+            | Next
       ul#motd.navbar-nav.navbar-center.mr-auto.community-advert.d-none
         span.content
           | Thanks for using Compiler Explorer

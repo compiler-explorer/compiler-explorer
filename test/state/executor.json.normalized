@@ -14,7 +14,8 @@
                         "execute": false,
                         "intel": true,
                         "labels": true,
-                        "trim": false
+                        "trim": false,
+                        "skipAsm": false
                     },
                     "id": "g92",
                     "libs": [],
@@ -47,7 +48,8 @@
                             "execute": false,
                             "intel": true,
                             "labels": true,
-                            "trim": false
+                            "trim": false,
+                            "skipAsm": false
                         }
                     },
                     "compilerOutputVisible": true,

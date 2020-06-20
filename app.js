@@ -514,6 +514,18 @@ async function main() {
             _.pick(urlOptions, urlOptionsAllowed),
             val => utils.toProperty(val));
         const allExtraOptions = _.extend({}, filteredUrlOptions, extra);
+
+        if (allExtraOptions.mobileViewer && allExtraOptions.config) {
+            const normalizer = require('./lib/clientstate-normalizer');
+
+            const clnormalizer = new normalizer.ClientStateNormalizer();
+            clnormalizer.fromGoldenLayout(allExtraOptions.config);
+            const clientstate = clnormalizer.normalized;
+
+            const glnormalizer = new normalizer.ClientStateGoldenifier();
+            allExtraOptions.slides = glnormalizer.generatePresentationModeMobileViewerSlides(clientstate);
+        }
+
         const options = _.extend({}, allExtraOptions, clientOptionsHandler.get());
         options.optionsHash = clientOptionsHandler.getHash();
         options.compilerExplorerOptions = JSON.stringify(allExtraOptions);
@@ -526,11 +538,17 @@ async function main() {
         return options;
     }
 
+    function isMobileViewer(req) {
+        return req.header('CloudFront-Is-Mobile-Viewer') === "true";
+    }
+
     function renderGoldenLayout(config, metadata, req, res) {
         staticHeaders(res);
         contentPolicyHeader(res);
+
         res.render('index', renderConfig({
             embedded: false,
+            mobileViewer: isMobileViewer(req),
             config: config,
             metadata: metadata
         }, req.query));
@@ -539,7 +557,10 @@ async function main() {
     const embeddedHandler = function (req, res) {
         staticHeaders(res);
         contentPolicyHeader(res);
-        res.render('embed', renderConfig({embedded: true}, req.query));
+        res.render('embed', renderConfig({
+            embedded: true,
+            mobileViewer: isMobileViewer(req)
+        }, req.query));
     };
     if (isDevMode()) {
         setupWebPackDevMiddleware(router);
@@ -610,7 +631,10 @@ async function main() {
         .get('/', (req, res) => {
             staticHeaders(res);
             contentPolicyHeader(res);
-            res.render('index', renderConfig({embedded: false}, req.query));
+            res.render('index', renderConfig({
+                embedded: false,
+                mobileViewer: isMobileViewer(req)
+            }, req.query));
         })
         .get('/e', embeddedHandler)
         // legacy. not a 301 to prevent any redirect loops between old e links and embed.html
@@ -618,7 +642,11 @@ async function main() {
         .get('/embed-ro', (req, res) => {
             staticHeaders(res);
             contentPolicyHeader(res);
-            res.render('embed', renderConfig({embedded: true, readOnly: true}, req.query));
+            res.render('embed', renderConfig({
+                embedded: true,
+                readOnly: true,
+                mobileViewer: isMobileViewer(req)
+            }, req.query));
         })
         .get('/robots.txt', (req, res) => {
             staticHeaders(res);
@@ -639,7 +667,10 @@ async function main() {
         .use('/bits/:bits.html', (req, res) => {
             staticHeaders(res);
             contentPolicyHeader(res);
-            res.render('bits/' + req.params.bits, renderConfig({embedded: false}, req.query));
+            res.render('bits/' + req.params.bits, renderConfig({
+                embedded: false,
+                mobileViewer: isMobileViewer(req)
+            }, req.query));
         })
         .use(bodyParser.json({limit: ceProps('bodyParserLimit', maxUploadSize)}))
         .use(bodyParser.text({limit: ceProps('bodyParserLimit', maxUploadSize), type: () => true}))

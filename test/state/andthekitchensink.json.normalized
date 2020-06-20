@@ -17,10 +17,12 @@
                         "execute": false,
                         "intel": true,
                         "labels": true,
-                        "trim": false
+                        "trim": false,
+                        "skipAsm": false
                     },
                     "libs": [],
                     "specialoutputs": [
+                        "compilerOutput",
                         "ast",
                         "opt",
                         "cfg"
@@ -38,7 +40,8 @@
                         "execute": false,
                         "intel": true,
                         "labels": true,
-                        "trim": false
+                        "trim": false,
+                        "skipAsm": false
                     },
                     "libs": [],
                     "specialoutputs": [
