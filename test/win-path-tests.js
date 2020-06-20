@@ -23,11 +23,14 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 const chai = require('chai');
+const chaiAsPromised = require("chai-as-promised");
+const child_process = require('child_process');
 
 const WslCL = require('../lib/compilers/wsl-vc');
 const WineCL = require('../lib/compilers/wine-vc');
 const {makeCompilationEnvironment} = require('./utils.js');
 
+chai.use(chaiAsPromised);
 chai.should();
 
 const languages = {
@@ -59,3 +62,48 @@ describe('Paths', () => {
         compiler.filename("/mnt/c/tmp/123456/output.s").should.equal("c:/tmp/123456/output.s");
     });
 });
+
+function testExecOutput(x) {
+    // Work around chai not being able to deepEquals with a function
+    x.filenameTransform.should.be.a('function');
+    delete x.filenameTransform;
+    return x;
+}
+
+let ce;
+
+function createCompiler(compiler) {
+    if (ce === undefined) {
+        ce = makeCompilationEnvironment({languages});
+    }
+
+    const info = {
+        lang: languages['c++'].id,
+        envVars: []
+    };
+
+    return new compiler(info, ce);
+}
+
+if (process.platform === "linux" && child_process.execSync('uname -a').toString().indexOf('Microsoft') > -1) { // WSL
+    describe('Wsl compiler', () => {
+        let compiler;
+
+        before(() => {
+            compiler = createCompiler(WslCL);
+        });
+
+        it('Can set working directory', () => {
+            return compiler.runCompiler('pwd', [], "c:/this-should-be-run-in-mnt-c")
+                .then(testExecOutput)
+                .should.eventually.deep.equals(
+                    {
+                        code: 0,
+                        inputFilename: "c:/this-should-be-run-in-mnt-c",
+                        okToCache: true,
+                        stderr: [],
+                        stdout: [{text: "/mnt/c"}]
+                    });
+        });
+    });
+}
