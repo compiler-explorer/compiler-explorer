@@ -631,7 +631,10 @@ async function main() {
         .get('/', (req, res) => {
             staticHeaders(res);
             contentPolicyHeader(res);
-            res.render('index', renderConfig({embedded: false, mobileViewer: isMobileViewer(req)}, req.query));
+            res.render('index', renderConfig({
+                embedded: false,
+                mobileViewer: isMobileViewer(req)
+            }, req.query));
         })
         .get('/e', embeddedHandler)
         // legacy. not a 301 to prevent any redirect loops between old e links and embed.html
