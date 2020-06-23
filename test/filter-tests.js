@@ -28,16 +28,6 @@ const AsmParserVC = require('../lib/asm-parser-vc');
 const utils = require('../lib/utils');
 require('chai').should();
 
-async function processAsm(filename, filters) {
-    const file = await fs.readFile(filename, 'utf-8');
-    let parser;
-    if (file.includes('Microsoft'))
-        parser = new AsmParserVC();
-    else
-        parser = new AsmParser();
-    return parser.process(file, filters);
-}
-
 function bless(filename, output, filters) {
     const result = processAsm(__dirname + '/' + filename, filters);
     fs.writeFileSync(__dirname + '/' + output, JSON.stringify(result, null, 2));
@@ -76,72 +66,81 @@ function dump(file) {
 //     });
 // });
 
-describe('Filter test cases', function () {
-
-    let filesInCaseDir;
-    let cases;
-
-    before(async () => {
-        const files = await fs.readdir(__dirname + '/filters-cases');
-        filesInCaseDir = files.map(x => 'filters-cases/' + x);
-
-        cases = filesInCaseDir.filter(x => x.endsWith(".asm"));
-    })
-
-    async function testFilter(filename, suffix, filters) {
-        const expected = filename + suffix;
-        const json = filesInCaseDir.includes(expected + '.json');
-
-        let file;
-
-        if (json) {
-            file = await fs.readFile(__dirname + '/' + expected + '.json', 'utf-8');
-        }
-        else if (filesInCaseDir.includes(expected)) {
-            file = await fs.readFile(__dirname + '/' + expected, 'utf-8');
-        }
-        else {
-            return;
-        }
+function processAsm(filename, filters) {
+    const file = fs.readFileSync(filename, 'utf-8');
+    let parser;
+    if (file.includes('Microsoft'))
+        parser = new AsmParserVC();
+    else
+        parser = new AsmParser();
+    return parser.process(file, filters);
+}
 
 
-        const result = await processAsm(__dirname + '/' + filename, filters);
+const files = fs.readdirSync(__dirname + '/filters-cases');
+const filesInCaseDir = files.map(x => 'filters-cases/' + x);
 
-        if (json) {
-            file = JSON.parse(file);
-        } else {
-            file = utils.splitLines(file);
-        }
+const cases = filesInCaseDir.filter(x => x.endsWith(".asm"));
 
+function testFilter(filename, suffix, filters) {
+    const expected = filename + suffix;
+    const json = filesInCaseDir.includes(expected + '.json');
+
+    let file;
+
+    if (json) {
+        file = fs.readFileSync(__dirname + '/' + expected + '.json', 'utf-8');
+    }
+    else if (filesInCaseDir.includes(expected)) {
+        file = fs.readFileSync(__dirname + '/' + expected, 'utf-8');
+    }
+    else {
+        return;
+    }
+    const result = processAsm(__dirname + '/' + filename, filters);
+
+    if (json) {
+        file = JSON.parse(file);
+    } else {
+        file = utils.splitLines(file);
+    }
+
+    it(filename, () => {
         if (json) {
             result.should.deep.equal(file, `${filename} case error`);
         } else {
             result.asm.map(x => x.text).should.deep.equal(file, `${filename} case error`);
         }
-    }
+    });
+}
 
-    it('No filters', function () {
+/*
+    The before() hooks on mocha are for it()s - They don't execute before the describes!
+    That's sad because then we can't have cases be loaded in a before() for every descirbe child to see
+ */
+describe('Filter test cases', function () {
+
+    describe('No filters', function () {
         cases.forEach(x => testFilter(x, ".none", {}));
     });
-    it('Directive filters', function () {
+    describe('Directive filters', function () {
         cases.forEach(x => testFilter(x, ".directives", {directives: true}));
     });
-    it('Directives and labels together', function () {
+    describe('Directives and labels together', function () {
         cases.forEach(x => testFilter(x, ".directives.labels", {directives: true, labels: true}));
     });
-    it('Directives, labels and comments', function () {
+    describe('Directives, labels and comments', function () {
         cases.forEach(function (x) {
-            testFilter(x, ".directives.labels.comments",
-                {directives: true, labels: true, commentOnly: true});
+            testFilter(x, ".directives.labels.comments", {directives: true, labels: true, commentOnly: true});
         });
     });
-    it('Directives and comments', function () {
+    describe('Directives and comments', function () {
         cases.forEach(x => testFilter(x, ".directives.comments", {directives: true, commentOnly: true}));
     });
-    it('Directives and library code', function () {
+    describe('Directives and library code', function () {
         cases.forEach(x => testFilter(x, ".directives.library", {directives: true, libraryCode: true}));
     });
-    it('Directives, labels, comments and library code', function () {
+    describe('Directives, labels, comments and library code', function () {
         cases.forEach(function (x) {
             testFilter(x, ".directives.labels.comments.library",
                 {directives: true, labels: true, commentOnly: true, libraryCode: true});
