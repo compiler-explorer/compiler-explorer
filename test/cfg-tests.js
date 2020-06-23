@@ -24,18 +24,15 @@
 
 const chai = require('chai'),
     cfg = require('../lib/cfg'),
-    fs = require('fs');
+    fs = require('fs-extra');
 
-const cases = fs.readdirSync(__dirname + '/cases/')
-    .filter(x => x.match(/cfg-\w*/))
-    .map(x => __dirname + '/cases/' + x);
 
 const assert = chai.assert;
 
 function common(cases, filterArg, cfgArg) {
     cases.filter(x => x.includes(filterArg))
-        .forEach(filename => {
-            const file = fs.readFileSync(filename, 'utf-8');
+        .forEach(async filename => {
+            const file = await fs.readFile(filename, 'utf-8');
             if (file) {
                 const contents = JSON.parse(file);
                 assert.deepEqual(cfg.generateStructure('', cfgArg, contents.asm), contents.cfg, `${filename}`);
@@ -44,6 +41,14 @@ function common(cases, filterArg, cfgArg) {
 }
 
 describe('Cfg test cases', () => {
+    let cases;
+
+    before(() => {
+        const files = fs.readdirSync(__dirname + '/cfg-cases/');
+        cases = files.map(x => __dirname + '/cfg-cases/' + x);
+    });
+
+
     it('works for gcc', () => {
         common(cases, "gcc", "g++");
     });
