@@ -163,6 +163,7 @@ function Compiler(hub, container, state) {
     this.initLibraries(state);
 
     this.initEditorActions();
+    this.initEditorCommands();
 
     this.initCallbacks();
     // Handle initial settings
@@ -452,6 +453,17 @@ Compiler.prototype.initEditorActions = function () {
         }, this)
     });
 
+};
+
+Compiler.prototype.initEditorCommands = function () {
+    this.outputEditor.addAction({
+        id: 'dumpAsm',
+        label: 'Developer: Dump asm',
+        run: _.bind(function () {
+            // eslint-disable-next-line no-console
+            console.log(this.assembly);
+        }, this)
+    });
 };
 
 // Gets the filters that will actually be used (accounting for issues with binary
