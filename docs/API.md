@@ -54,7 +54,10 @@ To specify a compilation request as a JSON document, post it as the appropriate
     "source": "Source to compile",
     "options": {
         "userArguments": "Compiler flags",
-        "compilerOptions": {},
+        "compilerOptions": {
+              "skipAsm": false,
+              "executorRequest": false
+        },
         "filters": {
              "binary": false,
              "commentOnly": true,
