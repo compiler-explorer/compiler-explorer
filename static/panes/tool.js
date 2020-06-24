@@ -291,7 +291,6 @@ Tool.prototype.setLanguage = function (languageId) {
 };
 
 Tool.prototype.onCompileResult = function (id, compiler, result) {
-
     try{
         if (id !== this.compilerId) return;
         if (compiler) this.compilerName = compiler.name;
