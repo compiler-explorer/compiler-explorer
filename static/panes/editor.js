@@ -108,15 +108,6 @@ function Editor(hub, state, container) {
     });
     this.editor.getModel().setEOL(monaco.editor.EndOfLineSequence.LF);
 
-    if (window.compilerExplorerOptions.mobileViewer) {
-        this.editor.onDidChangeCursorSelection(_.bind(function() {
-            var contextmenu = $("div.context-view.monaco-menu-container");
-            if (contextmenu.css("display") !== "none") {
-                contextmenu.hide();
-            }
-        }, this));
-    }
-
     if (state.source !== undefined) {
         this.setSource(state.source);
     } else {
@@ -306,6 +297,15 @@ Editor.prototype.initCallbacks = function () {
     this.editor.onMouseMove(_.bind(function (e) {
         this.mouseMoveThrottledFunction(e);
     }, this));
+
+    if (window.compilerExplorerOptions.mobileViewer) {
+        this.editor.onDidChangeCursorSelection(_.bind(function () {
+            var contextmenu = $("div.context-view.monaco-menu-container");
+            if (contextmenu.css("display") !== "none") {
+                contextmenu.hide();
+            }
+        }, this));
+    }
 
     this.cursorSelectionThrottledFunction =
         _.throttle(_.bind(this.onDidChangeCursorSelection, this), 500);
