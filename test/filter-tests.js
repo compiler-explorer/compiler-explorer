@@ -90,6 +90,7 @@ function isCorrect(filename, file, result) {
 }
 
 function testFilter(filename, suffix, filters) {
+    const abspath = __dirname + '/' + filename;
     const expected = filename + suffix;
     const json = filesInCaseDir.includes(expected + '.json');
 
@@ -104,7 +105,6 @@ function testFilter(filename, suffix, filters) {
     else {
         return;
     }
-    const result = processAsm(__dirname + '/' + filename, filters);
 
     if (json) {
         file = JSON.parse(file);
@@ -112,11 +112,11 @@ function testFilter(filename, suffix, filters) {
         file = utils.splitLines(file);
     }
     // through javascript API
-    var result = processAsm(filename, filters);
-    if (!json) result = result.map(x => x.text);
+    var result = processAsm(abspath, filters);
+    if (!json) result = result.asm.map(x => x.text);
     isCorrect(filename, file, result);
     // through CLI
-    exec(__dirname + '/../etc/scripts/asm-file-parser.js < ' + filename, (err, stdout, stderr) => {
+    exec(__dirname + '/../etc/scripts/asm-file-parser.js < ' + abspath, (err, stdout, stderr) => {
         if (stderr != '') console.error(stderr);
         should.not.exist(err);
         isCorrect(filename, file, stdout);
