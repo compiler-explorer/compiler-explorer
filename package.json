@@ -34,7 +34,6 @@
     "express": "^4.17.1",
     "file-saver": "^2.0.2",
     "fs-extra": "^8.1.0",
-    "get-stdin": "^8.0.0",
     "golden-layout": "^1.5.9",
     "html-loader": "^0.5.5",
     "http-proxy": "^1.18.1",
