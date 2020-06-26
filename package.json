@@ -43,6 +43,7 @@
     "lodash.clonedeep": "^4.5.0",
     "lru-cache": "^5.1.1",
     "lz-string": "^1.4.4",
+    "minimist": ">=1.2.3",
     "monaco-editor": "~0.20.0",
     "monaco-vim": "^0.1.7",
     "morgan": "^1.10.0",
