@@ -116,7 +116,15 @@ function testFilter(filename, suffix, filters) {
     if (!json) result = result.asm.map(x => x.text);
     isCorrect(filename, file, result);
     // through CLI
-    exec(__dirname + '/../etc/scripts/asm-file-parser.js < ' + abspath, (err, stdout, stderr) => {
+    var opts = '';
+    for (const [name, value] of Object.entries(filters)) {
+        if (value) {
+            opts += '--' + name;
+        } else {
+            opts += '--no' + name;
+        }
+    }
+    exec(__dirname + '/../etc/scripts/asm-file-parser.js ' + opts + '< ' + abspath, (err, stdout, stderr) => {
         if (stderr != '') console.error(stderr);
         should.not.exist(err);
         isCorrect(filename, file.asm, stdout.split('\n'));
