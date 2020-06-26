@@ -119,7 +119,7 @@ function testFilter(filename, suffix, filters) {
     exec(__dirname + '/../etc/scripts/asm-file-parser.js < ' + abspath, (err, stdout, stderr) => {
         if (stderr != '') console.error(stderr);
         should.not.exist(err);
-        isCorrect(filename, file, stdout);
+        isCorrect(filename, file.asm, stdout.split('\n'));
     })
 }
 
