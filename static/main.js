@@ -318,6 +318,39 @@ function filterComponentState(config, keysToRemove) {
     return config;
 }
 
+/*
+ * this nonsense works around a bug in goldenlayout where a config can be generated
+ * that contains a flag indicating there is a maximized item which does not correspond
+ * to any items that actually exist in the config.
+ *
+ * See https://github.com/compiler-explorer/compiler-explorer/issues/2056
+ */
+function removeOrphanedMaximisedItemFromConfig(config) {
+    // nothing to do if the maximised item id is not set
+    if (config.maximisedItemId !== '__glMaximised') return;
+
+    var found = false;
+    function impl(component) {
+        if (component.id === '__glMaximised') {
+            found = true;
+            return;
+        }
+
+        if (component.content) {
+            for (var i = 0; i < component.content.length; i++) {
+                impl(component.content[i]);
+                if (found) return;
+            }
+        }
+    }
+
+    impl(config);
+
+    if (!found) {
+        config.maximisedItemId = null;
+    }
+}
+
 // eslint-disable-next-line max-statements
 function start() {
     initializeResetLayoutLink();
@@ -381,6 +414,7 @@ function start() {
     }
 
     var config = findConfig(defaultConfig, options);
+    removeOrphanedMaximisedItemFromConfig(config);
 
     var root = $("#root");
 
