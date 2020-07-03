@@ -118,6 +118,7 @@ describe('Compiler tests', () => {
                     asm: [{text: "ASMASMASM"}],
                     code: 0,
                     input: {
+                        backendOptions: {},
                         filters: [],
                         options: [],
                         source: "I am a program"
@@ -184,6 +185,7 @@ describe('Compiler tests', () => {
                     throw err;
                 });
         });
+
         it('handles filters removed', () => {
             return makeFakeQuery("source", {filters: 'a,b,c', removeFilters: 'b,c,d'})
                 .then(res => {
@@ -196,6 +198,7 @@ describe('Compiler tests', () => {
                     throw err;
                 });
         });
+
         it('handles filters added and removed', () => {
             return makeFakeQuery("source", {filters: 'a,b,c', addFilters: 'c,g,h', removeFilters: 'b,c,d,h'})
                 .then(res => {

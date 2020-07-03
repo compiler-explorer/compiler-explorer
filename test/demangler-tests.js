@@ -24,7 +24,7 @@
 
 const
     chai = require('chai'),
-    fs = require('fs'),
+    fs = require('fs-extra'),
     path = require('path'),
     utils = require('../lib/utils'),
     chaiAsPromised = require('chai-as-promised'),
@@ -281,10 +281,10 @@ function DoDemangleTest(root, filename, resolve, reject) {
     });
 }
 
-describe('File demangling', function() {
+describe('File demangling',async () => {
     const testcasespath = __dirname + '/demangle-cases';
 
-    files = fs.readdirSync(testcasespath);
+    const files = await fs.readdir(testcasespath);
 
     files.forEach((filename) => {
         if (filename.endsWith(".asm")) {

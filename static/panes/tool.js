@@ -76,7 +76,7 @@ function Tool(hub, container, state) {
         renderIndentGuides: false
     });
 
-    this.fontScale = new FontScale(this.domRoot, state, ".content,.monaco-editor");
+    this.fontScale = new FontScale(this.domRoot, state, ".content");
     this.fontScale.on('change', _.bind(function () {
         this.saveState();
     }, this));
@@ -278,11 +278,13 @@ Tool.prototype.setLanguage = function (languageId) {
         this.options.enableToggle("wrap", false);
         monaco.editor.setModelLanguage(this.outputEditor.getModel(), languageId);
         this.outputEditor.setValue("");
+        this.fontScale.setTarget(this.outputEditor);
         $(this.plainContentRoot).hide();
         $(this.editorContentRoot).show();
     } else {
         this.options.enableToggle("wrap", true);
         this.plainContentRoot.empty();
+        this.fontScale.setTarget(".content");
         $(this.editorContentRoot).hide();
         $(this.plainContentRoot).show();
     }

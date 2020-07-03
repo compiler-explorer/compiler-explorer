@@ -21,6 +21,7 @@
                     },
                     "libs": [],
                     "specialoutputs": [
+                        "compilerOutput",
                         "ast",
                         "opt",
                         "cfg"

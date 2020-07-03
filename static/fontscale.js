@@ -83,8 +83,7 @@ function FontScale(domRoot, state, fontSelectorOrEditor) {
     if (this.scale < 8) {
         this.scale = convertOldScale(this.scale);
     }
-    this.fontSelectorOrEditor = fontSelectorOrEditor;
-    this.isFontOfStr = typeof (this.fontSelectorOrEditor) === "string";
+    this.setTarget(fontSelectorOrEditor);
     this.apply();
     makeFontSizeDropdown(this.domRoot.find('.font-size-list'), this, this.domRoot.find('.fs-button'));
 }
@@ -108,6 +107,11 @@ FontScale.prototype.addState = function (state) {
 FontScale.prototype.setScale = function (scale) {
     this.scale = scale;
     this.apply();
+};
+
+FontScale.prototype.setTarget = function (target) {
+    this.fontSelectorOrEditor = target;
+    this.isFontOfStr = typeof (this.fontSelectorOrEditor) === "string";
 };
 
 module.exports = FontScale;

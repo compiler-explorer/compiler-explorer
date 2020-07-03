@@ -163,6 +163,7 @@ function Compiler(hub, container, state) {
     this.initLibraries(state);
 
     this.initEditorActions();
+    this.initEditorCommands();
 
     this.initCallbacks();
     // Handle initial settings
@@ -452,6 +453,17 @@ Compiler.prototype.initEditorActions = function () {
         }, this)
     });
 
+};
+
+Compiler.prototype.initEditorCommands = function () {
+    this.outputEditor.addAction({
+        id: 'dumpAsm',
+        label: 'Developer: Dump asm',
+        run: _.bind(function () {
+            // eslint-disable-next-line no-console
+            console.log(this.assembly);
+        }, this)
+    });
 };
 
 // Gets the filters that will actually be used (accounting for issues with binary
@@ -1090,9 +1102,9 @@ Compiler.prototype.initToolButtons = function (togglePannerAdder) {
 
     var addTool = _.bind(function (toolName, title) {
         var btn = $("<button class='dropdown-item btn btn-light btn-sm'>");
-        btn.addClass('.view-' + toolName);
+        btn.addClass('view-' + toolName);
         btn.data('toolname', toolName);
-        btn.append("<span class='dropdown-icon fas fa-cog' />" + title);
+        btn.append("<span class='dropdown-icon fas fa-cog'></span>" + title);
         this.toolsMenu.append(btn);
 
         if (toolName !== "none") {

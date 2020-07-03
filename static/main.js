@@ -32,6 +32,7 @@ require('bootstrap-slider');
 
 var sharing = require('./sharing');
 var _ = require('underscore');
+var cloneDeep = require('lodash.clonedeep');
 var $ = require('jquery');
 var GoldenLayout = require('golden-layout');
 var Components = require('./components');
@@ -48,6 +49,7 @@ var jsCookie = require('js-cookie');
 var SimpleCook = require('./simplecook');
 var History = require('./history');
 var HistoryWidget = require('./history-widget').HistoryWidget;
+var presentation = require('./presentation');
 
 //css
 require("bootstrap/dist/css/bootstrap.min.css");
@@ -120,6 +122,10 @@ function hasCookieConsented(options) {
     return jsCookie.get(options.policies.cookies.key) === options.policies.cookies.hash;
 }
 
+function isMobileViewer() {
+    return window.compilerExplorerOptions.mobileViewer;
+}
+
 function setupButtons(options) {
     var alertSystem = new Alert();
 
@@ -173,7 +179,7 @@ function setupButtons(options) {
         alertSystem.alert("Changelog", $(require('./changelog.html')));
     });
 
-    $('#sponsors').click(function () {
+    $('#ces').click(function () {
         $.get(window.location.origin + window.httpRoot + 'bits/sponsors.html')
             .done(function (data) {
                 alertSystem.alert("Compiler Explorer Sponsors", data);
@@ -200,24 +206,43 @@ function setupButtons(options) {
 
         $('#history').modal();
     });
+
+    if (isMobileViewer() && window.compilerExplorerOptions.slides && window.compilerExplorerOptions.slides.length > 1) {
+        $("#share").remove();
+        $(".ui-presentation-control").removeClass("d-none");
+        $(".ui-presentation-first").click(presentation.first);
+        $(".ui-presentation-prev").click(presentation.prev);
+        $(".ui-presentation-next").click(presentation.next);
+    }
 }
 
 function findConfig(defaultConfig, options) {
     var config = null;
     if (!options.embedded) {
-        if (options.config) {
-            config = options.config;
+        if (options.slides) {
+            presentation.init(window.compilerExplorerOptions.slides.length);
+            var currentSlide = presentation.getCurrentSlide();
+            if (currentSlide < options.slides.length) {
+                config = options.slides[currentSlide];
+            } else {
+                presentation.setCurrentSlide(0);
+                config = options.slides[0];
+            }
         } else {
-            config = url.deserialiseState(window.location.hash.substr(1));
-        }
+            if (options.config) {
+                config = options.config;
+            } else {
+                config = url.deserialiseState(window.location.hash.substr(1));
+            }
 
-        if (config) {
-            // replace anything in the default config with that from the hash
-            config = _.extend(defaultConfig, config);
-        }
-        if (!config) {
-            var savedState = local.get('gl', null);
-            config = savedState !== null ? JSON.parse(savedState) : defaultConfig;
+            if (config) {
+                // replace anything in the default config with that from the hash
+                config = _.extend(defaultConfig, config);
+            }
+            if (!config) {
+                var savedState = local.get('gl', null);
+                config = savedState !== null ? JSON.parse(savedState) : defaultConfig;
+            }
         }
     } else {
         config = _.extend(defaultConfig, {
@@ -270,6 +295,59 @@ function initPolicies(options) {
         simpleCooks.show();
     } else if (options.policies.cookies.enabled && hasCookieConsented(options)) {
         analytics.initialise();
+    }
+}
+
+function filterComponentState(config, keysToRemove) {
+    function filterComponentStateImpl(component) {
+        if (component.content) {
+            for (var i = 0; i < component.content.length; i++) {
+                filterComponentStateImpl(component.content[i], keysToRemove);
+            }
+        }
+
+        if (component.componentState) {
+            Object.keys(component.componentState)
+                .filter(function (key) { return keysToRemove.includes(key); })
+                .forEach(function (key) { delete component.componentState[key]; });
+        }
+    }
+
+    config = cloneDeep(config);
+    filterComponentStateImpl(config);
+    return config;
+}
+
+/*
+ * this nonsense works around a bug in goldenlayout where a config can be generated
+ * that contains a flag indicating there is a maximized item which does not correspond
+ * to any items that actually exist in the config.
+ *
+ * See https://github.com/compiler-explorer/compiler-explorer/issues/2056
+ */
+function removeOrphanedMaximisedItemFromConfig(config) {
+    // nothing to do if the maximised item id is not set
+    if (config.maximisedItemId !== '__glMaximised') return;
+
+    var found = false;
+    function impl(component) {
+        if (component.id === '__glMaximised') {
+            found = true;
+            return;
+        }
+
+        if (component.content) {
+            for (var i = 0; i < component.content.length; i++) {
+                impl(component.content[i]);
+                if (found) return;
+            }
+        }
+    }
+
+    impl(config);
+
+    if (!found) {
+        config.maximisedItemId = null;
     }
 }
 
@@ -327,13 +405,16 @@ function start() {
     });
 
     // Which buttons act as a linkable popup
-    var linkablePopups = ['#sponsors', '#changes', '#cookies', '#setting', '#privacy'];
+    var linkablePopups = ['#ces', '#sponsors', '#changes', '#cookies', '#setting', '#privacy'];
     var hashPart = linkablePopups.indexOf(window.location.hash) > -1 ? window.location.hash : null;
     if (hashPart) {
         window.location.hash = "";
+        // Handle the time we renamed sponsors to ces to work around issues with blockers.
+        if (hashPart === '#sponsors') hashPart = '#ces';
     }
 
     var config = findConfig(defaultConfig, options);
+    removeOrphanedMaximisedItemFromConfig(config);
 
     var root = $("#root");
 
@@ -357,10 +438,10 @@ function start() {
     var storedPaths = {};  // TODO maybe make this an LRU cache?
 
     layout.on('stateChanged', function () {
-        var config = layout.toConfig();
+        var config = filterComponentState(layout.toConfig(), ["selection"]);
         var stringifiedConfig = JSON.stringify(config);
         if (stringifiedConfig !== lastState) {
-            if (storedPaths[config]) {
+            if (storedPaths[stringifiedConfig]) {
                 window.history.replaceState(null, null, storedPaths[stringifiedConfig]);
             } else if (window.location.pathname !== window.httpRoot) {
                 window.history.replaceState(null, null, window.httpRoot);
@@ -387,7 +468,8 @@ function start() {
         .resize(sizeRoot)
         .on('beforeunload', function () {
             // Only preserve state in localStorage in non-embedded mode.
-            if (!options.embedded && !hasUIBeenReset) {
+            var shouldSave = !window.hasUIBeenReset && !hasUIBeenReset;
+            if (!options.embedded && !isMobileViewer() && shouldSave) {
                 local.set('gl', JSON.stringify(layout.toConfig()));
             }
         });
@@ -468,7 +550,9 @@ function start() {
     };
 
     sizeRoot();
-    lastState = JSON.stringify(layout.toConfig());
+    var initialConfig = JSON.stringify(filterComponentState(layout.toConfig(), ["selection"]));
+    lastState = initialConfig;
+    storedPaths[initialConfig] = window.location.href;
 }
 
 $(start);

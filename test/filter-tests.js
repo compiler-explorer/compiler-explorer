@@ -22,31 +22,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 // POSSIBILITY OF SUCH DAMAGE.
 
-const fs = require('fs');
+const fs = require('fs-extra');
 const AsmParser = require('../lib/asm-parser');
 const AsmParserVC = require('../lib/asm-parser-vc');
 const utils = require('../lib/utils');
 require('chai').should();
-
-function processAsm(filename, filters) {
-    const file = fs.readFileSync(filename, 'utf-8');
-    let parser;
-    if (file.indexOf('Microsoft') >= 0)
-        parser = new AsmParserVC();
-    else
-        parser = new AsmParser();
-    return parser.process(file, filters);
-}
-
-const filesInCaseDir = fs.readdirSync(__dirname + '/cases')
-    .map(function (x) {
-        return 'cases/' + x;
-    });
-
-const cases = filesInCaseDir
-    .filter(function (x) {
-        return x.match(/\.asm$/);
-    });
 
 function bless(filename, output, filters) {
     const result = processAsm(__dirname + '/' + filename, filters);
@@ -58,6 +38,49 @@ function dump(file) {
         console.log((i + 1) + " : " + JSON.stringify(file[i]));
     }
 }
+
+
+// bless("filters-cases/mips5-square.asm", "filters-cases/mips5-square.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
+// bless("filters-cases/gcc-sum.asm", "filters-cases/gcc-sum.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
+// bless("filters-cases/gcc-arm-sum.asm", "filters-cases/gcc-arm-sum.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
+// bless("filters-cases/gcc-avr-sum.asm", "filters-cases/gcc-avr-sum.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
+// bless("filters-cases/cl-regex.asm", "filters-cases/cl-regex.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
+// bless("filters-cases/cl-main-opt-out.asm", "filters-cases/cl-main-opt-out.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
+// bless("filters-cases/avr-loop.asm", "filters-cases/avr-loop.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
+// bless("filters-cases/bug-192.asm", "filters-cases/bug-192.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
+// bless("filters-cases/arm-moose.asm", "filters-cases/arm-moose.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
+// bless("filters-cases/gcc-x86-vector.asm", "filters-cases/gcc-x86-vector.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
+// bless("filters-cases/clang-on-mac.asm", "filters-cases/clang-on-mac.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
+// bless("filters-cases/bug-349.asm", "filters-cases/bug-349.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
+// bless("filters-cases/bug-348.asm", "filters-cases/bug-348.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
+// bless("filters-cases/bug-660.asm", "filters-cases/bug-660.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
+// bless("filters-cases/nvcc-example.asm", "filters-cases/nvcc-example.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
+// bless("filters-cases/clang-cuda-example.asm", "filters-cases/clang-cuda.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
+// bless("filters-cases/bug-995.asm", "filters-cases/bug-995.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
+// bless("filters-cases/arm-jump-table.asm", "filters-cases/arm-jump-table.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
+// bless("filters-cases/bug-1179.asm", "filters-cases/bug-1179.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
+// bless("filters-cases/6502-square.asm", "filters-cases/6502-square.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
+// describe('A test', function() {
+//     it('should work', function(){
+//         console.log(processAsm(__dirname + '/filters-cases/6502-square.asm', {directives: true, labels: true, commentOnly: true}));
+//     });
+// });
+
+function processAsm(filename, filters) {
+    const file = fs.readFileSync(filename, 'utf-8');
+    let parser;
+    if (file.includes('Microsoft'))
+        parser = new AsmParserVC();
+    else
+        parser = new AsmParser();
+    return parser.process(file, filters);
+}
+
+
+const files = fs.readdirSync(__dirname + '/filters-cases');
+const filesInCaseDir = files.map(x => 'filters-cases/' + x);
+
+const cases = filesInCaseDir.filter(x => x.endsWith(".asm"));
 
 function testFilter(filename, suffix, filters) {
     const expected = filename + suffix;
@@ -74,85 +97,48 @@ function testFilter(filename, suffix, filters) {
     else {
         return;
     }
+    const result = processAsm(__dirname + '/' + filename, filters);
+
+    if (json) {
+        file = JSON.parse(file);
+    } else {
+        file = utils.splitLines(file);
+    }
 
     it(filename, () => {
-        const result = processAsm(__dirname + '/' + filename, filters);
-
         if (json) {
-            file = JSON.parse(file);
+            result.should.deep.equal(file, `${filename} case error`);
         } else {
-            file = utils.splitLines(file);
-        }
-        if (json) {
-            result.should.deep.equal(file);
-        } else {
-            result.asm.map(function (x) {
-                return x.text;
-            }).should.deep.equal(file);
+            result.asm.map(x => x.text).should.deep.equal(file, `${filename} case error`);
         }
     });
 }
 
-// bless("cases/mips5-square.asm", "cases/mips5-square.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
-// bless("cases/gcc-sum.asm", "cases/gcc-sum.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
-// bless("cases/gcc-arm-sum.asm", "cases/gcc-arm-sum.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
-// bless("cases/gcc-avr-sum.asm", "cases/gcc-avr-sum.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
-// bless("cases/cl-regex.asm", "cases/cl-regex.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
-// bless("cases/cl-main-opt-out.asm", "cases/cl-main-opt-out.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
-// bless("cases/avr-loop.asm", "cases/avr-loop.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
-// bless("cases/bug-192.asm", "cases/bug-192.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
-// bless("cases/arm-moose.asm", "cases/arm-moose.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
-// bless("cases/gcc-x86-vector.asm", "cases/gcc-x86-vector.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
-// bless("cases/clang-on-mac.asm", "cases/clang-on-mac.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
-// bless("cases/bug-349.asm", "cases/bug-349.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
-// bless("cases/bug-348.asm", "cases/bug-348.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
-// bless("cases/bug-660.asm", "cases/bug-660.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
-// bless("cases/nvcc-example.asm", "cases/nvcc-example.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
-// bless("cases/clang-cuda-example.asm", "cases/clang-cuda.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
-// bless("cases/bug-995.asm", "cases/bug-995.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
-// bless("cases/arm-jump-table.asm", "cases/arm-jump-table.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
-// bless("cases/bug-1179.asm", "cases/bug-1179.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
-// bless("cases/6502-square.asm", "cases/6502-square.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
-// describe('A test', function() {
-//     it('should work', function(){
-//         console.log(processAsm(__dirname + '/cases/6502-square.asm', {directives: true, labels: true, commentOnly: true}));
-//     });
-// });
-
+/*
+    The before() hooks on mocha are for it()s - They don't execute before the describes!
+    That's sad because then we can't have cases be loaded in a before() for every descirbe child to see
+ */
 describe('Filter test cases', function () {
+
     describe('No filters', function () {
-        cases.forEach(function (x) {
-            testFilter(x, ".none", {});
-        });
+        cases.forEach(x => testFilter(x, ".none", {}));
     });
     describe('Directive filters', function () {
-        cases.forEach(function (x) {
-            testFilter(x, ".directives", {directives: true});
-        });
+        cases.forEach(x => testFilter(x, ".directives", {directives: true}));
     });
     describe('Directives and labels together', function () {
-        cases.forEach(function (x) {
-            testFilter(x, ".directives.labels",
-                {directives: true, labels: true});
-        });
+        cases.forEach(x => testFilter(x, ".directives.labels", {directives: true, labels: true}));
     });
     describe('Directives, labels and comments', function () {
         cases.forEach(function (x) {
-            testFilter(x, ".directives.labels.comments",
-                {directives: true, labels: true, commentOnly: true});
+            testFilter(x, ".directives.labels.comments", {directives: true, labels: true, commentOnly: true});
         });
     });
     describe('Directives and comments', function () {
-        cases.forEach(function (x) {
-            testFilter(x, ".directives.comments",
-                {directives: true, commentOnly: true});
-        });
+        cases.forEach(x => testFilter(x, ".directives.comments", {directives: true, commentOnly: true}));
     });
     describe('Directives and library code', function () {
-        cases.forEach(function (x) {
-            testFilter(x, ".directives.library",
-                {directives: true, libraryCode: true});
-        });
+        cases.forEach(x => testFilter(x, ".directives.library", {directives: true, libraryCode: true}));
     });
     describe('Directives, labels, comments and library code', function () {
         cases.forEach(function (x) {

@@ -31,8 +31,8 @@ chai.use(chaiAsPromised);
 chai.should();
 
 const props = {
-    optionsWhitelistRe: '.*',
-    optionsBlacklistRe: '^(-W[alp],)?((-wrapper|-fplugin.*|-specs|-load|-plugin|(@.*)|-I|-i)(=.*)?|--)$',
+    optionsAllowedRe: '.*',
+    optionsForbiddenRe: '^(-W[alp],)?((-wrapper|-fplugin.*|-specs|-load|-plugin|(@.*)|-I|-i)(=.*)?|--)$',
     cacheConfig: 'InMemory(10)'
 };
 
