@@ -68,4 +68,21 @@ describe('Hash tests', () => {
         const asObj = JSON.parse(config);
         should.not.exist(asObj.nonce);
     });
+    it('should not end with url unsafe characters', () => {
+        // trivial cases should be unmodified
+        StorageBase.getUrlSafeSubHash('12345678', 4).should.equal('1234');
+
+        // cases with url unsafe stuff in the middle should be of requested length
+        StorageBase.getUrlSafeSubHash('12_345678', 4).should.equal('12_3');
+        StorageBase.getUrlSafeSubHash('12-345678', 4).should.equal('12-3');
+
+        // cases with url unsafe stuff at the requested length should be extended
+        StorageBase.getUrlSafeSubHash('12345_678', 6).should.equal('12345_6');
+        StorageBase.getUrlSafeSubHash('12345-678', 6).should.equal('12345-6');
+        StorageBase.getUrlSafeSubHash('12345_-678', 6).should.equal('12345_-6');
+        StorageBase.getUrlSafeSubHash('12345-_678', 6).should.equal('12345-_6');
+
+        // cases where the hash itself ends in an unsafe character should just give up
+        StorageBase.getUrlSafeSubHash('12345_----', 6).should.equal('12345_----');
+    });
 });
