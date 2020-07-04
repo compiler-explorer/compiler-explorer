@@ -33,7 +33,7 @@ describe('Hash tests', () => {
     it('should never generate invalid characters', () => {
         for (let i = 0; i < 256; ++i) {
             const buf = Buffer.of(i);
-            const as64 = StorageBase.safe64Encoded(buf);
+            const as64 = StorageBase.encodeBuffer(buf);
             as64.should.not.contain("/");
             as64.should.not.contain("+");
         }
@@ -50,7 +50,7 @@ describe('Hash tests', () => {
             .onFirstCall().returns(badResult)
             .onSecondCall().returns(badResult) // force nonce to update a couple of times
             .returns(goodResult);
-        sinon.replace(StorageBase, 'safe64Encoded', callback);
+        sinon.replace(StorageBase, 'encodeBuffer', callback);
         const {config, configHash} = StorageBase.getSafeHash(testCase);
         configHash.should.not.equal(badResult);
         configHash.should.equal(goodResult);
@@ -58,13 +58,10 @@ describe('Hash tests', () => {
         should.exist(asObj.nonce);
         asObj.nonce.should.equal(2);
     });
-    it('should detect illegible characters in hashes', () => {
-        StorageBase.isLegibleText("three").should.be.true;
-        StorageBase.isLegibleText(badResult).should.be.false;
-    });
+
     it('should not modify ok hashes', () => {
         const testCase = {some: "test"};
-        const {config, configHash} = StorageBase.getSafeHash(testCase); // L in 13th place: OK
+        const {config, configHash} = StorageBase.getSafeHash(testCase);
         const asObj = JSON.parse(config);
         should.not.exist(asObj.nonce);
     });

@@ -350,3 +350,20 @@ describe('replaces all substrings', () => {
             .should.equal("babababababababa");
     });
 });
+
+describe('encodes in our version of base32', () => {
+    function doTest(original, expected) {
+        utils.base32Encode(Buffer.from(original)).should.equal(expected);
+    }
+
+   it('returns what we expect', () => {
+       // Done by hand to check that they are valid
+       doTest("", "");
+
+       doTest("a", "35");
+
+       doTest("foo", "8rrx8");
+
+       doTest("foobar", "8rrx8b7Pc5");
+   })
+});
