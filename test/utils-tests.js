@@ -356,14 +356,34 @@ describe('encodes in our version of base32', () => {
         utils.base32Encode(Buffer.from(original)).should.equal(expected);
     }
 
-   it('returns what we expect', () => {
-       // Done by hand to check that they are valid
-       doTest("", "");
+    // Done by hand to check that they are valid
 
-       doTest("a", "35");
+    it('works for empty strings', () => {
+        doTest("", "");
+    });
 
-       doTest("foo", "8rrx8");
+    it('works for lengths multiple of 5 bits', () => {
+        doTest("aaaaa", "3Mn4ha7P");
+    });
 
-       doTest("foobar", "8rrx8b7Pc5");
-   })
+    it('works for lengths not multiple of 5 bits', () => {
+        // 3
+        doTest("a", "35");
+
+        // 1
+        doTest("aa", "3Mn1");
+
+        // 4
+        doTest("aaa", "3Mn48");
+
+        // 2
+        doTest("aaaa", "3Mn4ha3");
+    });
+
+    it('works for some random strings', () => {
+        // I also calculated this ones so lets put them
+        doTest("foo", "8rrx8");
+
+        doTest("foobar", "8rrx8b7Pc5");
+    });
 });
