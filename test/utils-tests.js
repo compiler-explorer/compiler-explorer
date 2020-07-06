@@ -350,3 +350,40 @@ describe('replaces all substrings', () => {
             .should.equal("babababababababa");
     });
 });
+
+describe('encodes in our version of base32', () => {
+    function doTest(original, expected) {
+        utils.base32Encode(Buffer.from(original)).should.equal(expected);
+    }
+
+    // Done by hand to check that they are valid
+
+    it('works for empty strings', () => {
+        doTest("", "");
+    });
+
+    it('works for lengths multiple of 5 bits', () => {
+        doTest("aaaaa", "3Mn4ha7P");
+    });
+
+    it('works for lengths not multiple of 5 bits', () => {
+        // 3
+        doTest("a", "35");
+
+        // 1
+        doTest("aa", "3Mn1");
+
+        // 4
+        doTest("aaa", "3Mn48");
+
+        // 2
+        doTest("aaaa", "3Mn4ha3");
+    });
+
+    it('works for some random strings', () => {
+        // I also calculated this ones so lets put them
+        doTest("foo", "8rrx8");
+
+        doTest("foobar", "8rrx8b7Pc5");
+    });
+});
