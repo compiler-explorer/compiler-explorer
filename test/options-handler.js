@@ -54,6 +54,7 @@ const libProps = {
     'libs.fakelib.versions.twoPaths.liblink': 'hello1:hello2',
     'libs.fakelib.versions.noPaths.version': 'no paths',
     'libs.fakelib.versions.noPaths.path': '',
+    'libs.fakelib.versions.noPaths.lookupversion': 'no-paths123',
     'libs.fs.versions': 'std',
     'libs.fs.versions.std.version': 'std',
     'libs.fs.versions.std.staticliblink': 'c++fs:rt',
@@ -140,7 +141,8 @@ describe('Options handler', () => {
                 "liblink": [],
                 "staticliblink": [],
                 "versions": {
-                        "noPaths": {"path": [], "version": "no paths", "liblink": [], "libpath": [], "staticliblink": [], "dependencies": [], "alias": []},
+                        "noPaths": {"path": [], "version": "no paths", "liblink": [], "libpath": [], "staticliblink": [], "dependencies": [], "alias": [],
+                            "lookupversion": "no-paths123"},
                         "onePath": {"path": ["/dev/null"], "version": "one path", "staticliblink": [], "dependencies": [],
                             "liblink": ["hello"],
                             "libpath": ["/lib/null"], "alias": []},
