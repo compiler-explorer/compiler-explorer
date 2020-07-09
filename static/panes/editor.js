@@ -299,6 +299,7 @@ Editor.prototype.initCallbacks = function () {
     }, this));
 
     if (window.compilerExplorerOptions.mobileViewer) {
+        // bugfix for issue with contextmenu not going away when clicking somewhere else on the screen
         this.editor.onDidChangeCursorSelection(_.bind(function () {
             var contextmenu = $("div.context-view.monaco-menu-container");
             if (contextmenu.css("display") !== "none") {
