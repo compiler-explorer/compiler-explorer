@@ -298,6 +298,16 @@ Editor.prototype.initCallbacks = function () {
         this.mouseMoveThrottledFunction(e);
     }, this));
 
+    if (window.compilerExplorerOptions.mobileViewer) {
+        // workaround for issue with contextmenu not going away when tapping somewhere else on the screen
+        this.editor.onDidChangeCursorSelection(_.bind(function () {
+            var contextmenu = $("div.context-view.monaco-menu-container");
+            if (contextmenu.css("display") !== "none") {
+                contextmenu.hide();
+            }
+        }, this));
+    }
+
     this.cursorSelectionThrottledFunction =
         _.throttle(_.bind(this.onDidChangeCursorSelection, this), 500);
     this.editor.onDidChangeCursorSelection(_.bind(function (e) {
