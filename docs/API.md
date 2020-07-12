@@ -264,3 +264,4 @@ Here are some examples of projects using the Compiler Explorer API:
 * [API in Delphi by partouf](https://github.com/partouf/compilerexplorer-api) (Delphi)
 * [QTCreator Plugin by dobokirisame](https://github.com/dobokirisame/CompilerExplorer) (C++)
 * [CLion plugin by ogrebenyuk](https://github.com/ogrebenyuk/compilerexplorer) (Java)
+* [QCompilerExplorer - frontend in Qt](https://github.com/Waqar144/QCompilerExplorer) (C++)
