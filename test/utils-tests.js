@@ -191,6 +191,19 @@ describe('Tool output', () => {
         ]);
     });
 
+    it('removes fortran relative path', () => {
+        utils.parseOutput('./example.f90:5:22: error: No explicit type declared for \'y\'', './example.f90').should.deep.equals([
+            {
+                tag: {
+                    column: 22,
+                    line: 5,
+                    text: 'error: No explicit type declared for \'y\''
+                },
+                text: '<source>:5:22: error: No explicit type declared for \'y\''
+            }
+        ]);
+    });
+
     it('removes the jailed path', () => {
         utils.parseOutput('/home/ubuntu/example.cpp:1:1: Fatal: There were 1 errors compiling module, stopping', './example.cpp').should.deep.equals([
             {
