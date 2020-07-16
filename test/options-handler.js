@@ -54,6 +54,7 @@ const libProps = {
     'libs.fakelib.versions.twoPaths.liblink': 'hello1:hello2',
     'libs.fakelib.versions.noPaths.version': 'no paths',
     'libs.fakelib.versions.noPaths.path': '',
+    'libs.fakelib.versions.noPaths.lookupversion': 'no-paths123',
     'libs.fs.versions': 'std',
     'libs.fs.versions.std.version': 'std',
     'libs.fs.versions.std.staticliblink': 'c++fs:rt',
@@ -62,6 +63,7 @@ const libProps = {
     'libs.someotherlib.versions.trunk.version': 'trunk',
     'libs.someotherlib.versions.trunk.staticliblink': 'someotherlib',
     'libs.someotherlib.versions.trunk.dependencies': 'c++fs',
+    'libs.someotherlib.versions.trunk.alias': 'master',
 };
 
 if (process.platform === "win32") {
@@ -83,6 +85,7 @@ const moreLibProps = {
     'libs.someotherlib.versions.trunk.version': 'trunk',
     'libs.someotherlib.versions.trunk.staticliblink': 'someotherlib',
     'libs.someotherlib.versions.trunk.dependencies': 'c++fs',
+    'libs.someotherlib.versions.trunk.alias': 'master',
 
     'libs.yalib.versions': 'trunk',
     'libs.yalib.versions.trunk.version': 'trunk',
@@ -134,25 +137,33 @@ describe('Options handler', () => {
                 "description": "Its is a real, fake lib!",
                 "name": "fake lib",
                 "url": "https://godbolt.org",
+                "dependencies": [],
+                "liblink": [],
+                "staticliblink": [],
                 "versions": {
-                        "noPaths": {"path": [], "version": "no paths", "liblink": [], "libpath": [], "staticliblink": [], "dependencies": []},
+                        "noPaths": {"path": [], "version": "no paths", "liblink": [], "libpath": [], "staticliblink": [], "dependencies": [], "alias": [],
+                            "lookupversion": "no-paths123"},
                         "onePath": {"path": ["/dev/null"], "version": "one path", "staticliblink": [], "dependencies": [],
                             "liblink": ["hello"],
-                            "libpath": ["/lib/null"]},
+                            "libpath": ["/lib/null"], "alias": []},
                         "twoPaths": {"path": ["/dev/null", "/dev/urandom"], "staticliblink": [], "dependencies": [],
                             "liblink": ["hello1", "hello2"],
-                            "libpath": ["/lib/null", "/lib/urandom"], "version": "two paths"},
+                            "libpath": ["/lib/null", "/lib/urandom"], "version": "two paths", "alias": []},
                 },
             },
             "fs": {
                 "description": undefined,
                 "name": undefined,
                 "url": undefined,
+                "dependencies": [],
+                "liblink": [],
+                "staticliblink": [],
                 "versions": {
                     "std": {
                         "libpath": [],
                         "path": [],
                         "version": "std",
+                        "alias": [],
                         "liblink": [],
                         "staticliblink": ["c++fs", "rt"],
                         "dependencies": ["pthread"]
@@ -163,14 +174,18 @@ describe('Options handler', () => {
                 "description": undefined,
                 "name": undefined,
                 "url": undefined,
+                "dependencies": [],
+                "liblink": [],
+                "staticliblink": [],
                 "versions": {
                     "trunk": {
                         "libpath": [],
                         "path": [],
                         "version": "trunk",
+                        "alias": ["master"],
                         "liblink": [],
                         "staticliblink": ["someotherlib"],
-                        "dependencies": ["c++fs"]
+                        "dependencies": ["c++fs"],
                     },
                 }
             }
@@ -339,5 +354,19 @@ describe('Options handler', () => {
             {"id": "autolib", "version": "autodetect"}
         ]);
         obj.options.should.deep.equal(["-O3", "--std=c++17"]);
+    });
+    it('server-side library alias support (just in case client doesn\'t support it)', () => {
+        const libs = moreOptionsHandler.parseLibraries({'fake': moreLibProps.libs});
+        const compilerInfo = makeFakeCompilerInfo('g82', 'c++', "cpp", "8.2", true);
+        const env = {
+            ceProps: () => {},
+            compilerProps: () => {}
+        };
+        compilerInfo.libs = libs.fake;
+        const compiler = new BaseCompiler(compilerInfo, env);
+
+        let staticlinks = compiler.getSortedStaticLibraries([
+            {"id": "someotherlib", "version": "master"}]);
+        staticlinks.should.deep.equal(["someotherlib", "c++fs"]);
     });
 });
