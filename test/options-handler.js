@@ -121,10 +121,10 @@ describe('Options handler', () => {
 
     before(() => {
         compilerProps = new properties.CompilerProps(languages, properties.fakeProps(libProps));
-        optionsHandler = new OptionsHandler([], compilerProps, {});
+        optionsHandler = new OptionsHandler([], compilerProps, {env: ['dev']});
 
         moreCompilerProps = new properties.CompilerProps(languages, properties.fakeProps(moreLibProps));
-        moreOptionsHandler = new OptionsHandler([], moreCompilerProps, {});
+        moreOptionsHandler = new OptionsHandler([], moreCompilerProps, {env: ['dev']});
     });
 
     it('should always return an array of paths', () => {

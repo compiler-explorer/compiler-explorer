@@ -374,8 +374,8 @@ function setupSentry(sentryDsn) {
     const sentryEnv = ceProps("sentryEnvironment");
     Sentry.init({
         dsn: sentryDsn,
-        release: travisBuildNumber,
-        environment: sentryEnv,
+        release: travisBuildNumber || gitReleaseName,
+        environment: sentryEnv || defArgs.env[0],
         beforeSend(event) {
             if (event.request
                 && event.request.data
