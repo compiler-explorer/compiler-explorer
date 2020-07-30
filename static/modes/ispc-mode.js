@@ -70,6 +70,10 @@ function definition() {
         'taskIndex2',
         'threadCount',
         'threadIndex',
+        'uint16',
+        'uint32',
+        'uint64',
+        'uint8',
         'uniform',
         'unmasked',
         'varying'
