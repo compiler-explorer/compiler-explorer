@@ -728,7 +728,7 @@ Editor.prototype.searchOnCppreference = function (ed) {
     if (!word || !word.word) return;
 
     var url = "https://en.cppreference.com/mwiki/index.php?search=" + encodeURIComponent(word.word);
-    window.open(url, '_blank');
+    window.open(url, '_blank', 'noopener');
 };
 
 Editor.prototype.doesMatchEditor = function (otherSource) {
