@@ -57,6 +57,7 @@ function definition() {
         'programCount',
         'programIndex',
         'reference',
+        'size_t',
         'soa',
         'sync',
         'task',
