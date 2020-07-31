@@ -706,6 +706,29 @@ Editor.prototype.initEditorActions = function () {
             this.tryPanesLinkLine(ed.getPosition().lineNumber, true);
         }, this)
     });
+
+    this.isCpp = this.editor.createContextKey('isCpp', true);
+    this.isCpp.set(this.currentLanguage.id === 'c++');
+
+    this.editor.addAction({
+        id: 'cpprefsearch',
+        label: 'Search on Cppreference',
+        keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.F8],
+        keybindingContext: null,
+        contextMenuGroupId: 'help',
+        contextMenuOrder: 1.5,
+        precondition: 'isCpp',
+        run: _.bind(this.searchOnCppreference, this)
+    });
+};
+
+Editor.prototype.searchOnCppreference = function (ed) {
+    var pos = ed.getPosition();
+    var word = ed.getModel().getWordAtPosition(pos);
+    if (!word || !word.word) return;
+
+    var url = "https://en.cppreference.com/mwiki/index.php?search=" + encodeURIComponent(word.word);
+    window.open(url, '_blank', 'noopener');
 };
 
 Editor.prototype.doesMatchEditor = function (otherSource) {
@@ -1092,6 +1115,7 @@ Editor.prototype.onLanguageChange = function (newLangId) {
             }
             this.initLoadSaver();
             monaco.editor.setModelLanguage(this.editor.getModel(), this.currentLanguage.monaco);
+            this.isCpp.set(this.currentLanguage.id === 'c++');
             this.updateTitle();
             this.updateState();
             // Broadcast the change to other panels
