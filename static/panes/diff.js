@@ -25,7 +25,7 @@
 "use strict";
 
 var FontScale = require('../fontscale');
-var monaco = require('monaco-editor');
+var monaco = require('monaco-editor/esm/vs/editor/editor.api');
 var _ = require('underscore');
 var $ = require('jquery');
 var ga = require('../analytics');

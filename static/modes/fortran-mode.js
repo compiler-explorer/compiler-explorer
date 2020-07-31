@@ -28,7 +28,7 @@
 // The lists of keywords, operator, functions, and subroutines have been adopted from
 //    vs.language.fortran by Thomas E. Dunn
 "use strict";
-var monaco = require('monaco-editor');
+var monaco = require('monaco-editor/esm/vs/editor/editor.api');
 
 function definition() {
     return {

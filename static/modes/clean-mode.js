@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 "use strict";
-var monaco = require('monaco-editor');
+var monaco = require('monaco-editor/esm/vs/editor/editor.api');
 
 function definition() {
     return {

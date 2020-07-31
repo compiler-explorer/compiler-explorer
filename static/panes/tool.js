@@ -30,7 +30,7 @@ var FontScale = require('../fontscale');
 var AnsiToHtml = require('../ansi-to-html');
 var Toggles = require('../toggles');
 var ga = require('../analytics');
-var monaco = require('monaco-editor');
+var monaco = require('monaco-editor/esm/vs/editor/editor.api');
 require('../modes/asm6502-mode');
 
 function makeAnsiToHtml(color) {

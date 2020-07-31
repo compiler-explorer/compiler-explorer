@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 'use strict';
 
-var monaco = require('monaco-editor');
+var monaco = require('monaco-editor/esm/vs/editor/editor.api');
 
 function definition() {
     // Ada 2012 Language Definition
