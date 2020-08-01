@@ -25,7 +25,7 @@
 'use strict';
 
 var jquery = require('jquery');
-var monaco = require('monaco-editor/esm/vs/editor/editor.api');
+var monaco = require('monaco-editor');
 var cpp = require('monaco-editor/esm/vs/basic-languages/cpp/cpp');
 
 function definition() {

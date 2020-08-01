@@ -24,7 +24,7 @@
 "use strict";
 
 var _ = require('underscore'),
-    monaco = require('monaco-editor/esm/vs/editor/editor.api');
+    monaco = require('monaco-editor');
 
 var registeredCodelenses = [];
 var providersPerLanguage = {};

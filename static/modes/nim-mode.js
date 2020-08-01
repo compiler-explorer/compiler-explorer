@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 "use strict";
-var monaco = require('monaco-editor/esm/vs/editor/editor.api');
+var monaco = require('monaco-editor');
 
 function definition() {
     // Nim language definition

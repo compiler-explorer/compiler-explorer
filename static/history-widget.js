@@ -27,7 +27,7 @@
 var
     $ = require('jquery'),
     _ = require('underscore'),
-    monaco = require('monaco-editor/esm/vs/editor/editor.api'),
+    monaco = require('monaco-editor'),
     ga = require('analytics'),
     History = require('./history');
 
