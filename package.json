@@ -16,7 +16,6 @@
   },
   "main": "./app.js",
   "dependencies": {
-    "@apmorton/monaco-vim": "^0.1.7",
     "@fortawesome/fontawesome-free": "^5.13.0",
     "@sentry/browser": "^5.17.0",
     "@sentry/node": "^5.17.0",
@@ -45,6 +44,7 @@
     "lru-cache": "^5.1.1",
     "lz-string": "^1.4.4",
     "monaco-editor": "~0.20.0",
+    "monaco-vim": "^0.1.7",
     "morgan": "^1.10.0",
     "node-graceful": "^3.0.0",
     "node-targz": "^0.2.0",

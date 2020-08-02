@@ -49,8 +49,7 @@ module.exports = {
     },
     resolve: {
         alias: {
-            'monaco-vim': '@apmorton/monaco-vim',
-            'monaco-editor$': 'monaco-editor/esm/vs/editor/editor.api',
+            'monaco-editor$': 'monaco-editor/esm/vs/editor/editor.api'
         },
         modules: ['./static', './node_modules']
     },
