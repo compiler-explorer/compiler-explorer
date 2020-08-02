@@ -31,15 +31,15 @@ var themes = {
         id: "default",
         name: "Default",
         "main-color": "#f2f2f2",
-        monaco: "vs" // Optional field
+        monaco: "vs", // Optional field
     },
     dark: {
         path: "dark",
         id: "dark",
         name: "Dark",
         "main-color": "#333333",
-        monaco: "vs-dark"
-    }
+        monaco: "vs-dark",
+    },
 };
 
 function Themer(eventHub, initialSettings) {
@@ -73,5 +73,5 @@ function Themer(eventHub, initialSettings) {
 
 module.exports = {
     themes: themes,
-    Themer: Themer
+    Themer: Themer,
 };

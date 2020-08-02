@@ -44,9 +44,9 @@ function Ast(hub, container, state) {
         quickSuggestions: false,
         fixedOverflowWidgets: true,
         minimap: {
-            maxColumn: 80
+            maxColumn: 80,
         },
-        lineNumbersMinChars: 3
+        lineNumbersMinChars: 3,
     });
 
     this._compilerid = state.id;
@@ -67,7 +67,7 @@ function Ast(hub, container, state) {
     ga.proxy('send', {
         hitType: 'event',
         eventCategory: 'OpenViewPane',
-        eventAction: 'Ast'
+        eventAction: 'Ast',
     });
 }
 
@@ -104,7 +104,7 @@ Ast.prototype.resize = function () {
     var topBarHeight = this.topBar.outerHeight(true);
     this.astEditor.layout({
         width: this.domRoot.width(),
-        height: this.domRoot.height() - topBarHeight
+        height: this.domRoot.height() - topBarHeight,
     });
 };
 
@@ -180,7 +180,7 @@ Ast.prototype.currentState = function () {
     var state = {
         id: this._compilerid,
         editorid: this._editorid,
-        selection: this.selection
+        selection: this.selection,
     };
     this.fontScale.addState(state);
     return state;
@@ -201,10 +201,10 @@ Ast.prototype.onSettingsChange = function (newSettings) {
     this.astEditor.updateOptions({
         contextmenu: newSettings.useCustomContextMenu,
         minimap: {
-            enabled: newSettings.showMinimap
+            enabled: newSettings.showMinimap,
         },
         fontFamily: newSettings.editorsFFont,
-        fontLigatures: newSettings.editorsFLigatures
+        fontLigatures: newSettings.editorsFLigatures,
     });
 };
 
@@ -222,5 +222,5 @@ Ast.prototype.close = function () {
 };
 
 module.exports = {
-    Ast: Ast
+    Ast: Ast,
 };

@@ -75,8 +75,8 @@ HistoryWidget.prototype.initializeIfNeeded = function () {
             readOnly: true,
             language: 'c++',
             minimap: {
-                enabled: true
-            }
+                enabled: true,
+            },
         });
 
         this.lhs = new HistoryDiffState(monaco.editor.createModel('', 'c++'));
@@ -86,7 +86,7 @@ HistoryWidget.prototype.initializeIfNeeded = function () {
         this.modal.find('.inline-diff-checkbox').click(_.bind(function (event) {
             var inline = $(event.target).prop('checked');
             this.diffEditor.updateOptions({
-                renderSideBySide: !inline
+                renderSideBySide: !inline,
             });
             this.resizeLayout();
         }, this));
@@ -110,7 +110,7 @@ HistoryWidget.prototype.populateFromLocalStorage = function () {
                 load: _.bind(function () {
                     this.onLoad(data);
                     this.modal.modal('hide');
-                }, this)
+                }, this),
             };
         }, this)));
 };
@@ -210,7 +210,7 @@ HistoryWidget.prototype.resizeLayout = function () {
     var tabcontent = this.modal.find('div.tab-content');
     this.diffEditor.layout({
         width: tabcontent.width(),
-        height: tabcontent.height() - 20
+        height: tabcontent.height() - 20,
     });
 };
 
@@ -228,10 +228,10 @@ HistoryWidget.prototype.run = function (onLoad) {
     ga.proxy('send', {
         hitType: 'event',
         eventCategory: 'OpenModalPane',
-        eventAction: 'History'
+        eventAction: 'History',
     });
 };
 
 module.exports = {
-    HistoryWidget: HistoryWidget
+    HistoryWidget: HistoryWidget,
 };

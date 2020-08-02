@@ -48,7 +48,7 @@ var OpcodeCache = new LruCache({
     max: 64 * 1024,
     length: function (n) {
         return JSON.stringify(n).length;
-    }
+    },
 });
 
 function patchOldFilters(filters) {
@@ -123,11 +123,11 @@ function Compiler(hub, container, state) {
         glyphMargin: !options.embedded,
         fixedOverflowWidgets: true,
         minimap: {
-            maxColumn: 80
+            maxColumn: 80,
         },
         lineNumbersMinChars: 1,
         renderIndentGuides: false,
-        fontLigatures: this.settings.editorsFLigatures
+        fontLigatures: this.settings.editorsFLigatures,
     });
 
     this.fontScale = new FontScale(this.domRoot, state, this.outputEditor);
@@ -145,14 +145,14 @@ function Compiler(hub, container, state) {
         }),
         items: this.compiler ? [this.compiler.id] : [],
         dropdownParent: 'body',
-        closeAfterSelect: true
+        closeAfterSelect: true,
     }).on('change', _.bind(function (e) {
         var val = $(e.target).val();
         if (val) {
             ga.proxy('send', {
                 hitType: 'event',
                 eventCategory: 'SelectCompiler',
-                eventAction: val
+                eventAction: val,
             });
             this.onCompilerChange(val);
         }
@@ -175,7 +175,7 @@ function Compiler(hub, container, state) {
     ga.proxy('send', {
         hitType: 'event',
         eventCategory: 'OpenViewPane',
-        eventAction: 'Compiler'
+        eventAction: 'Compiler',
     });
 }
 
@@ -214,7 +214,7 @@ Compiler.prototype.initPanerButtons = function () {
         return {
             type: 'component',
             componentName: 'compiler',
-            componentState: currentState
+            componentState: currentState,
         };
     }, this);
     var createOptView = _.bind(function () {
@@ -336,7 +336,7 @@ Compiler.prototype.resize = function () {
     var bottomBarHeight = this.bottomBar.outerHeight(true);
     this.outputEditor.layout({
         width: this.domRoot.width(),
-        height: this.domRoot.height() - topBarHeight - bottomBarHeight
+        height: this.domRoot.height() - topBarHeight - bottomBarHeight,
     });
 };
 
@@ -399,7 +399,7 @@ Compiler.prototype.initEditorActions = function () {
         contextMenuOrder: 1.5,
         run: _.bind(function (ed) {
             this.jumpToLabel(ed.getPosition());
-        }, this)
+        }, this),
     });
 
     // Hiding the 'Jump to label' context menu option if no label can be found
@@ -428,7 +428,7 @@ Compiler.prototype.initEditorActions = function () {
                 // a null file means it was the user's source
                 this.eventHub.emit('editorLinkLine', this.sourceEditorId, source.line, -1, true);
             }
-        }, this)
+        }, this),
     });
 
     this.outputEditor.addAction({
@@ -438,7 +438,7 @@ Compiler.prototype.initEditorActions = function () {
         keybindingContext: null,
         contextMenuGroupId: 'help',
         contextMenuOrder: 1.5,
-        run: _.bind(this.onAsmToolTip, this)
+        run: _.bind(this.onAsmToolTip, this),
     });
 
     this.outputEditor.addAction({
@@ -448,9 +448,9 @@ Compiler.prototype.initEditorActions = function () {
         keybindingContext: null,
         run: _.bind(function () {
             this.eventHub.emit('modifySettings', {
-                colouriseAsm: !this.settings.colouriseAsm
+                colouriseAsm: !this.settings.colouriseAsm,
             });
-        }, this)
+        }, this),
     });
 
 };
@@ -462,7 +462,7 @@ Compiler.prototype.initEditorCommands = function () {
         run: _.bind(function () {
             // eslint-disable-next-line no-console
             console.log(this.assembly);
-        }, this)
+        }, this),
     });
 };
 
@@ -496,7 +496,7 @@ Compiler.prototype.findTools = function (content, tools) {
             tools.push({
                 id: content.componentState.toolId,
                 args: content.componentState.args,
-                stdin: content.componentState.stdin
+                stdin: content.componentState.stdin,
             });
         }
     } else if (content.content) {
@@ -516,7 +516,7 @@ Compiler.prototype.getActiveTools = function (newToolSettings) {
         tools.push({
             id: newToolSettings.toolId,
             args: newToolSettings.args,
-            stdin: newToolSettings.stdin
+            stdin: newToolSettings.stdin,
         });
     }
 
@@ -549,21 +549,21 @@ Compiler.prototype.compile = function (bypassCache, newTools) {
                 opened: this.gccDumpViewOpen,
                 pass: this.gccDumpPassSelected,
                 treeDump: this.treeDumpEnabled,
-                rtlDump: this.rtlDumpEnabled
+                rtlDump: this.rtlDumpEnabled,
             },
             produceOptInfo: this.wantOptInfo,
             produceCfg: this.cfgViewOpen,
-            produceIr: this.irViewOpen
+            produceIr: this.irViewOpen,
         },
         filters: this.getEffectiveFilters(),
         tools: this.getActiveTools(newTools),
-        libraries: []
+        libraries: [],
     };
 
     _.each(this.libsWidget.getLibsInUse(), function (item) {
         options.libraries.push({
             id: item.libId,
-            version: item.versionId
+            version: item.versionId,
         });
     });
 
@@ -572,7 +572,7 @@ Compiler.prototype.compile = function (bypassCache, newTools) {
             source: expanded || '',
             compiler: this.compiler ? this.compiler.id : '',
             options: options,
-            lang: this.currentLangId
+            lang: this.currentLangId,
         };
         if (bypassCache) request.bypassCache = true;
         if (!this.compiler) {
@@ -622,14 +622,14 @@ Compiler.prototype.sendCompile = function (request) {
 Compiler.prototype.setNormalMargin = function () {
     this.outputEditor.updateOptions({
         lineNumbers: true,
-        lineNumbersMinChars: 1
+        lineNumbersMinChars: 1,
     });
 };
 
 Compiler.prototype.setBinaryMargin = function () {
     this.outputEditor.updateOptions({
         lineNumbersMinChars: 6,
-        lineNumbers: _.bind(this.getBinaryForLine, this)
+        lineNumbers: _.bind(this.getBinaryForLine, this),
     });
 };
 
@@ -671,8 +671,8 @@ Compiler.prototype.setAssembly = function (asm) {
                 range: new monaco.Range(line + 1, label.range.startCol,
                     line + 1, label.range.endCol),
                 options: {
-                    inlineClassName: 'asm-label-link'
-                }
+                    inlineClassName: 'asm-label-link',
+                },
             });
         }, this);
     }, this));
@@ -689,12 +689,12 @@ Compiler.prototype.setAssembly = function (asm) {
                         startLineNumber: line + 1,
                         startColumn: 1,
                         endLineNumber: line + 2,
-                        endColumn: 1
+                        endColumn: 1,
                     },
                     id: address,
                     command: {
-                        title: obj.opcodes.join(' ')
-                    }
+                        title: obj.opcodes.join(' '),
+                    },
                 });
             }
         }, this));
@@ -735,13 +735,13 @@ Compiler.prototype.onCompileResponse = function (request, result, cached) {
         eventCategory: 'Compile',
         eventAction: request.compiler,
         eventLabel: request.options.userArguments,
-        eventValue: cached ? 1 : 0
+        eventValue: cached ? 1 : 0,
     });
     ga.proxy('send', {
         hitType: 'timing',
         timingCategory: 'Compile',
         timingVar: request.compiler,
-        timingValue: timeTaken
+        timingValue: timeTaken,
     });
 
     this.labelDefinitions = result.labelDefinitions || {};
@@ -1365,7 +1365,7 @@ Compiler.prototype.updateCompilerInfo = function () {
             this.alertSystem.notify(this.compiler.notification, {
                 group: 'compilerwarning',
                 alertClass: 'notification-info',
-                dismissTime: 5000
+                dismissTime: 5000,
             });
         }
         this.prependOptions.data('content', this.compiler.options);
@@ -1427,7 +1427,7 @@ Compiler.prototype.currentState = function () {
         wantOptInfo: this.wantOptInfo,
         libs: this.libsWidget.get(),
         lang: this.currentLangId,
-        selection: this.selection
+        selection: this.selection,
     };
     this.fontScale.addState(state);
     return state;
@@ -1513,8 +1513,8 @@ Compiler.prototype.onPanesLinkLine = function (compilerId, lineNumber, revealLin
                 options: {
                     isWholeLine: true,
                     linesDecorationsClassName: 'linked-code-decoration-margin',
-                    className: lineClass
-                }
+                    className: lineClass,
+                },
             };
         });
         if (this.linkedFadeTimeoutId !== -1) {
@@ -1537,8 +1537,8 @@ Compiler.prototype.onCompilerSetDecorations = function (id, lineNums, revealLine
                 options: {
                     isWholeLine: true,
                     linesDecorationsClassName: 'linked-code-decoration-margin',
-                    inlineClassName: 'linked-code-decoration-inline'
-                }
+                    inlineClassName: 'linked-code-decoration-inline',
+                },
             };
         });
         this.updateDecorations();
@@ -1552,7 +1552,7 @@ Compiler.prototype.setCompilationOptionsPopover = function (content) {
         template: '<div class="popover' +
             (content ? ' compiler-options-popover' : '') +
             '" role="tooltip"><div class="arrow"></div>' +
-            '<h3 class="popover-header"></h3><div class="popover-body"></div></div>'
+            '<h3 class="popover-header"></h3><div class="popover-body"></div></div>',
     });
 };
 
@@ -1563,7 +1563,7 @@ Compiler.prototype.setCompilerVersionPopover = function (version) {
         template: '<div class="popover' +
             (version ? ' compiler-options-popover' : '') +
             '" role="tooltip"><div class="arrow"></div>' +
-            '<h3 class="popover-header"></h3><div class="popover-body"></div></div>'
+            '<h3 class="popover-header"></h3><div class="popover-body"></div></div>',
     });
 };
 
@@ -1582,10 +1582,10 @@ Compiler.prototype.onSettingsChange = function (newSettings) {
     this.outputEditor.updateOptions({
         contextmenu: this.settings.useCustomContextMenu,
         minimap: {
-            enabled: this.settings.showMinimap && !options.embedded
+            enabled: this.settings.showMinimap && !options.embedded,
         },
         fontFamily: this.settings.editorsFFont,
-        fontLigatures: this.settings.editorsFLigatures
+        fontLigatures: this.settings.editorsFLigatures,
     });
 };
 
@@ -1630,7 +1630,7 @@ function getAsmInfo(opcode) {
             error: function (result) {
                 reject(result);
             },
-            cache: true
+            cache: true,
         });
     });
 }
@@ -1685,9 +1685,9 @@ Compiler.prototype.onMouseMove = function (e) {
                 range: currentWord.range,
                 options: {
                     isWholeLine: false, hoverMessage: [{
-                        value: '`' + numericToolTip + '`'
-                    }]
-                }
+                        value: '`' + numericToolTip + '`',
+                    }],
+                },
             };
             this.updateDecorations();
         }
@@ -1713,9 +1713,9 @@ Compiler.prototype.onMouseMove = function (e) {
                             isWholeLine: false,
                             hoverMessage: [{
                                 value: response.tooltip + '\n\nMore information available in the context menu.',
-                                isTrusted: true
-                            }]
-                        }
+                                isTrusted: true,
+                            }],
+                        },
                     };
                     this.updateDecorations();
                 }, this));
@@ -1728,7 +1728,7 @@ Compiler.prototype.onAsmToolTip = function (ed) {
     ga.proxy('send', {
         hitType: 'event',
         eventCategory: 'OpenModalPane',
-        eventAction: 'AsmDocs'
+        eventAction: 'AsmDocs',
     });
     if (!this.getEffectiveFilters().intel) return;
     var pos = ed.getPosition();
@@ -1762,7 +1762,7 @@ Compiler.prototype.onAsmToolTip = function (ed) {
             this.alertSystem.notify('This token was not found in the documentation. Sorry!', {
                 group: 'notokenindocs',
                 alertClass: 'notification-error',
-                dismissTime: 3000
+                dismissTime: 3000,
             });
         }
     }, this), _.bind(function (rejection) {
@@ -1770,7 +1770,7 @@ Compiler.prototype.onAsmToolTip = function (ed) {
             .notify('There was an error fetching the documentation for this opcode (' + rejection + ').', {
                 group: 'notokenindocs',
                 alertClass: 'notification-error',
-                dismissTime: 3000
+                dismissTime: 3000,
             });
     }, this));
 };
@@ -1837,7 +1837,7 @@ Compiler.prototype.onLanguageChange = function (editorId, newLangId) {
         // Store the current selected stuff to come back to it later in the same session (Not state stored!)
         this.infoByLang[oldLangId] = {
             compiler: this.compiler && this.compiler.id ? this.compiler.id : options.defaultCompiler[oldLangId],
-            options: this.options
+            options: this.options,
         };
         var info = this.infoByLang[this.currentLangId] || {};
         this.initLangAndCompiler({lang: newLangId, compiler: info.compiler});
@@ -1867,5 +1867,5 @@ Compiler.prototype.updateCompilersSelector = function (info) {
 };
 
 module.exports = {
-    Compiler: Compiler
+    Compiler: Compiler,
 };

@@ -19,6 +19,12 @@
       "named": "never",
       "asyncArrow": "always"
     }],
+    "comma-dangle": ["error", {
+      "arrays": "always-multiline",
+      "objects": "always-multiline",
+      "imports": "always-multiline",
+      "exports": "always-multiline"
+    }],
     "quote-props": ["error", "as-needed"]
   },
   "parserOptions": {

@@ -95,7 +95,7 @@ FontScale.prototype.apply = function () {
         this.domRoot.find(this.fontSelectorOrEditor).css('font-size', this.scale + "pt");
     } else {
         this.fontSelectorOrEditor.updateOptions({
-            fontSize: this.scale
+            fontSize: this.scale,
         });
     }
 };

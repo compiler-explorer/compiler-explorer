@@ -83,7 +83,7 @@ LoadSave.prototype.populateBuiltins = function () {
                         name: elem.name,
                         load: _.bind(function () {
                             this.doLoad(elem);
-                        }, this)
+                        }, this),
                     };
                 }, this))
             );
@@ -99,7 +99,7 @@ LoadSave.prototype.populateLocalStorage = function () {
                 load: _.bind(function () {
                     this.onLoad(data);
                     this.modal.modal('hide');
-                }, this)
+                }, this),
             };
         }, this)));
 };
@@ -114,7 +114,7 @@ LoadSave.prototype.populateLocalHistory = function () {
                 load: _.bind(function () {
                     this.onLoad(data.source);
                     this.modal.modal('hide');
-                }, this)
+                }, this),
             };
         }, this)));
 };
@@ -161,7 +161,7 @@ LoadSave.prototype.run = function (onLoad, editorText, currentLanguage) {
     ga.proxy('send', {
         hitType: 'event',
         eventCategory: 'OpenModalPane',
-        eventAction: 'LoadSave'
+        eventAction: 'LoadSave',
     });
 };
 
@@ -206,7 +206,7 @@ LoadSave.prototype.onSaveToFile = function (fileEditor) {
         this.alertSystem.notify('Error while saving your code. Use the clipboard instead.', {
             group: "savelocalerror",
             alertClass: "notification-error",
-            dismissTime: 5000
+            dismissTime: 5000,
         });
         return false;
     }

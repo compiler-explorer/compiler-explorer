@@ -50,9 +50,9 @@ function Opt(hub, container, state) {
         fixedOverflowWidgets: true,
         fontFamily: 'Consolas, "Liberation Mono", Courier, monospace',
         minimap: {
-            maxColumn: 80
+            maxColumn: 80,
         },
-        lineNumbersMinChars: 1
+        lineNumbersMinChars: 1,
     });
 
     this._compilerid = state.id;
@@ -75,7 +75,7 @@ function Opt(hub, container, state) {
     ga.proxy('send', {
         hitType: 'event',
         eventCategory: 'OpenViewPane',
-        eventAction: 'Opt'
+        eventAction: 'Opt',
     });
 }
 
@@ -141,7 +141,7 @@ Opt.prototype.setTitle = function () {
 Opt.prototype.getDisplayableOpt = function (optResult) {
     return {
         value: "**" + optResult.optType + "** - " + optResult.displayString,
-        isTrusted: false
+        isTrusted: false,
     };
 };
 
@@ -173,8 +173,8 @@ Opt.prototype.showOptResults = function (results) {
                 isWholeLine: true,
                 glyphMarginClassName: "opt-decoration." + className.toLowerCase(),
                 hoverMessage: contents,
-                glyphMarginHoverMessage: contents
-            }
+                glyphMarginHoverMessage: contents,
+            },
         });
     }, this);
 
@@ -196,7 +196,7 @@ Opt.prototype.resize = function () {
     var topBarHeight = this.topBar.outerHeight(true);
     this.optEditor.layout({
         width: this.domRoot.width(),
-        height: this.domRoot.height() - topBarHeight
+        height: this.domRoot.height() - topBarHeight,
     });
 };
 
@@ -208,7 +208,7 @@ Opt.prototype.currentState = function () {
     var state = {
         id: this._compilerid,
         editorid: this._editorid,
-        selection: this.selection
+        selection: this.selection,
     };
     this.fontScale.addState(state);
     return state;
@@ -235,10 +235,10 @@ Opt.prototype.onSettingsChange = function (newSettings) {
     this.optEditor.updateOptions({
         contextmenu: newSettings.useCustomContextMenu,
         minimap: {
-            enabled: newSettings.showMinimap
+            enabled: newSettings.showMinimap,
         },
         fontFamily: newSettings.editorsFFont,
-        fontLigatures: newSettings.editorsFLigatures
+        fontLigatures: newSettings.editorsFLigatures,
     });
 };
 
@@ -250,5 +250,5 @@ Opt.prototype.onDidChangeCursorSelection = function (e) {
 };
 
 module.exports = {
-    Opt: Opt
+    Opt: Opt,
 };

@@ -49,15 +49,15 @@ function definition() {
             "var",
             "when", "while",
             "yield",
-            "push", "pop"
+            "push", "pop",
         ],
         operators: [
             '=', '+', '-', '*', '/', '<', '>',
             '@', '$', '~', '&', '%', '|',
-            '!', '?', '^', '.', ':', '\\'
+            '!', '?', '^', '.', ':', '\\',
         ],
         wordOperators: [
-            'and', 'or', 'not', 'xor', 'shl', 'shr', 'div', 'mod', 'in', 'notin', 'is', 'isnot', 'of'
+            'and', 'or', 'not', 'xor', 'shl', 'shr', 'div', 'mod', 'in', 'notin', 'is', 'isnot', 'of',
         ],
         symbols: /[=><!~&|+\-*/^%]+/,
         escapes: /\\(p|r|c|n|l|f|t|v|a|b|e|\\|"|'|\d+|x[0-9a-fA-F]{2}|u[0-9a-fA-F]{4}|u\{[0-9a-fA-F]+\})/,
@@ -76,7 +76,7 @@ function definition() {
             ['[.','.]','delimiter.square'],
             ['(',')','delimiter.parenthesis'],
             ['(.','.)','delimiter.parenthesis'],
-            ['<','>','delimiter.angle']
+            ['<','>','delimiter.angle'],
         ],
 
         // The main tokenizer for our languages
@@ -86,16 +86,16 @@ function definition() {
                     cases: {
                         '@keywords': 'keyword',
                         '@wordOperators': 'keyword',
-                        '@default': 'identifier'
-                    }
+                        '@default': 'identifier',
+                    },
                 }],
                 {include: '@whitespace'},
                 [/([:|[[{(]\.|\.[\]})]|[[\]{}()])/, '@brackets'],
                 [/@symbols/, {
                     cases: {
                         '@operators': 'operator',
-                        '@default': ''
-                    }
+                        '@default': '',
+                    },
                 }],
 
                 // number literals
@@ -117,32 +117,32 @@ function definition() {
                 // strings
                 [/(r|R)"/, 'string', '@rawString'],
                 [/"""/, 'string', '@tripleQuoteString'],
-                [/"(?!")/, 'string', '@string']
+                [/"(?!")/, 'string', '@string'],
             ],
             whitespace: [
                 [/[ \t\r\n]+/, 'white'],
                 [/#\[/, 'comment', '@comment'],
-                [/#.*$/, 'comment']
+                [/#.*$/, 'comment'],
             ],
             comment: [
                 [/[^\]#]/, 'comment'],
-                [/\]#/, 'comment', '@pop']
+                [/\]#/, 'comment', '@pop'],
             ],
             string: [
                 [/@escapes/, 'string.escape'],
-                [/"/, 'string', '@pop']
+                [/"/, 'string', '@pop'],
             ],
             tripleQuoteString: [
-                [/"""/, 'string', '@pop']
+                [/"""/, 'string', '@pop'],
             ],
             rawString: [
-                [/"/, 'string', '@pop']
+                [/"/, 'string', '@pop'],
             ],
             character: [
                 [/@charEscapes/, 'string.escape'],
-                [/'/, 'string', '@pop']
-            ]
-        }
+                [/'/, 'string', '@pop'],
+            ],
+        },
     };
 }
 

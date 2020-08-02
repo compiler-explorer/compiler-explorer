@@ -119,5 +119,5 @@ module.exports = {
     deserialiseState: deserialiseState,
     serialiseState: serialiseState,
     unrisonify: unrisonify,
-    risonify: risonify
+    risonify: risonify,
 };

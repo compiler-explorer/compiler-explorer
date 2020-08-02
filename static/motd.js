@@ -49,7 +49,7 @@ function handleMotd(motd, motdNode, subLang, adsEnabled, onHide) {
                     hitType: 'event',
                     eventCategory: 'Ads',
                     eventLabel: 'Visibility',
-                    eventAction: 'Hide'
+                    eventAction: 'Hide',
                 });
                 motdNode.addClass('d-none');
                 onHide();
@@ -59,7 +59,7 @@ function handleMotd(motd, motdNode, subLang, adsEnabled, onHide) {
                     hitType: 'event',
                     eventCategory: 'Ads',
                     eventAction: 'Click',
-                    eventLabel: this.href
+                    eventLabel: this.href,
                 });
             });
             motdNode.removeClass('d-none');
@@ -80,5 +80,5 @@ function initialise(url, motdNode, defaultLanguage, adsEnabled, onMotd, onHide) 
 }
 
 module.exports = {
-    initialise: initialise
+    initialise: initialise,
 };

@@ -70,7 +70,7 @@ const opts = nopt({
     ensureNoIdClash: [Boolean],
     logHost: [String],
     logPort: [Number],
-    suppressConsoleLog: [Boolean]
+    suppressConsoleLog: [Boolean],
 });
 
 if (opts.debug) logger.level = 'debug';
@@ -137,7 +137,7 @@ const defArgs = {
     doCache: !opts.noCache,
     fetchCompilersFromRemote: !opts.noRemoteFetch,
     ensureNoCompilerClash: opts.ensureNoIdClash,
-    suppressConsoleLog: opts.suppressConsoleLog || false
+    suppressConsoleLog: opts.suppressConsoleLog || false,
 };
 
 if (opts.logHost && opts.logPort) {
@@ -265,7 +265,7 @@ function setupWebPackDevMiddleware(router) {
 
     router.use(webpackDevMiddleware(webpackCompiler, {
         publicPath: '/static',
-        logger: logger
+        logger: logger,
     }));
 
     pugRequireHandler = (path) => urljoin(httpRoot, 'static', path);
@@ -280,7 +280,7 @@ function setupStaticMiddleware(router) {
         const staticPath = path.join(distPath, 'static');
         logger.info(`  serving static files from '${staticPath}'`);
         router.use('/static', express.static(staticPath, {
-            maxAge: staticMaxAgeSecs * 1000
+            maxAge: staticMaxAgeSecs * 1000,
         }));
     }
 
@@ -326,7 +326,7 @@ function oldGoogleUrlHandler(req, res, next) {
             }
             res.writeHead(301, {
                 Location: resultObj.longUrl,
-                'Cache-Control': 'public'
+                'Cache-Control': 'public',
             });
             res.end();
         })
@@ -383,7 +383,7 @@ function setupSentry(sentryDsn) {
                 event.request.data = JSON.stringify({redacted: true});
             }
             return event;
-        }
+        },
     });
     logger.info(`Configured with Sentry endpoint ${sentryDsn}`);
 }
@@ -508,7 +508,7 @@ async function main() {
     const sponsorConfig = sponsors.loadFromString(fs.readFileSync(configDir + '/sponsors.yaml', 'utf-8'));
     function renderConfig(extra, urlOptions) {
         const urlOptionsAllowed = [
-            'readOnly', 'hideEditorToolbars'
+            'readOnly', 'hideEditorToolbars',
         ];
         const filteredUrlOptions = _.mapObject(
             _.pick(urlOptions, urlOptionsAllowed),
@@ -550,7 +550,7 @@ async function main() {
             embedded: false,
             mobileViewer: isMobileViewer(req),
             config: config,
-            metadata: metadata
+            metadata: metadata,
         }, req.query));
     }
 
@@ -559,7 +559,7 @@ async function main() {
         contentPolicyHeader(res);
         res.render('embed', renderConfig({
             embedded: true,
-            mobileViewer: isMobileViewer(req)
+            mobileViewer: isMobileViewer(req),
         }, req.query));
     };
     if (isDevMode()) {
@@ -615,17 +615,17 @@ async function main() {
         .use(morgan(morganFormat, {
             stream: logger.stream,
             // Skip for non errors (2xx, 3xx)
-            skip: (req, res) => res.statusCode >= 400
+            skip: (req, res) => res.statusCode >= 400,
         }))
         .use(morgan(morganFormat, {
             stream: logger.warnStream,
             // Skip for non user errors (4xx)
-            skip: (req, res) => res.statusCode < 400 || res.statusCode >= 500
+            skip: (req, res) => res.statusCode < 400 || res.statusCode >= 500,
         }))
         .use(morgan(morganFormat, {
             stream: logger.errStream,
             // Skip for non server errors (5xx)
-            skip: (req, res) => res.statusCode < 500
+            skip: (req, res) => res.statusCode < 500,
         }))
         .use(compression())
         .get('/', (req, res) => {
@@ -633,7 +633,7 @@ async function main() {
             contentPolicyHeader(res);
             res.render('index', renderConfig({
                 embedded: false,
-                mobileViewer: isMobileViewer(req)
+                mobileViewer: isMobileViewer(req),
             }, req.query));
         })
         .get('/e', embeddedHandler)
@@ -645,7 +645,7 @@ async function main() {
             res.render('embed', renderConfig({
                 embedded: true,
                 readOnly: true,
-                mobileViewer: isMobileViewer(req)
+                mobileViewer: isMobileViewer(req),
             }, req.query));
         })
         .get('/robots.txt', (req, res) => {
@@ -669,7 +669,7 @@ async function main() {
             contentPolicyHeader(res);
             res.render('bits/' + req.params.bits, renderConfig({
                 embedded: false,
-                mobileViewer: isMobileViewer(req)
+                mobileViewer: isMobileViewer(req),
             }, req.query));
         })
         .use(bodyParser.json({limit: ceProps('bodyParserLimit', maxUploadSize)}))

@@ -104,8 +104,8 @@ function definition() {
                     cases: {
                         '@typeKeywords': 'keyword',
                         '@keywords': 'keyword',
-                        '@default': 'identifier'
-                    }
+                        '@default': 'identifier',
+                    },
                 }],
 
                 { include: '@whitespace' },
@@ -114,7 +114,7 @@ function definition() {
 
                 [/[+\-*/=<>$@]/, 'operators'],
 
-                [/(")(.*)(")/, ['string', 'string', 'string']]
+                [/(")(.*)(")/, ['string', 'string', 'string']],
             ],
 
             comment: [
@@ -126,7 +126,7 @@ function definition() {
                 [/[ \t\r\n]+/, 'white'],
                 [/\(\*/, 'comment', '@comment'],
             ],
-        }
+        },
     };
 }
 

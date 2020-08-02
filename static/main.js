@@ -81,7 +81,7 @@ if (!String.prototype.includes) {
 function setupSettings(hub) {
     var eventHub = hub.layout.eventHub;
     var defaultSettings = {
-        defaultLanguage: hub.defaultLangId
+        defaultLanguage: hub.defaultLangId,
     };
     var currentSettings = JSON.parse(local.get('settings', null)) || defaultSettings;
 
@@ -90,14 +90,14 @@ function setupSettings(hub) {
             analytics.proxy('send', {
                 hitType: 'event',
                 eventCategory: 'ThemeChange',
-                eventAction: newSettings.theme
+                eventAction: newSettings.theme,
             });
         }
         if (currentSettings.colourScheme !== newSettings.colourScheme) {
             analytics.proxy('send', {
                 hitType: 'event',
                 eventCategory: 'ColourSchemeChange',
-                eventAction: newSettings.colourScheme
+                eventAction: newSettings.colourScheme,
             });
         }
         currentSettings = newSettings;
@@ -159,7 +159,7 @@ function setupButtons(options) {
                 no: function () {
                     simpleCooks.callDontConsent.apply(simpleCooks);
                 },
-                noHtml: 'Do NOT consent'
+                noHtml: 'Do NOT consent',
             });
         });
     }
@@ -186,7 +186,7 @@ function setupButtons(options) {
                 analytics.proxy('send', {
                     hitType: 'event',
                     eventCategory: 'Sponsors',
-                    eventAction: 'open'
+                    eventAction: 'open',
                 });
             })
             .fail(function (err) {
@@ -249,8 +249,8 @@ function findConfig(defaultConfig, options) {
             settings: {
                 showMaximiseIcon: false,
                 showCloseIcon: false,
-                hasHeaders: false
-            }
+                hasHeaders: false,
+            },
         }, sharing.configFromEmbedded(window.location.hash.substr(1)));
     }
     return config;
@@ -274,7 +274,7 @@ function initPolicies(options) {
     if (options.policies.privacy.enabled &&
         options.policies.privacy.hash !== jsCookie.get(options.policies.privacy.key)) {
         $('#privacy').trigger('click', {
-            title: 'New Privacy Policy. Please take a moment to read it'
+            title: 'New Privacy Policy. Please take a moment to read it',
         });
     }
     simpleCooks.onDoConsent = function () {
@@ -394,9 +394,9 @@ function start() {
             type: 'row',
             content: [
                 Components.getEditor(1, defaultLangId),
-                Components.getCompiler(1, defaultLangId)
-            ]
-        }]
+                Components.getCompiler(1, defaultLangId),
+            ],
+        }],
     };
 
     $(window).bind('hashchange', function () {
@@ -521,7 +521,7 @@ function start() {
             },
             function () {
                 hub.layout.eventHub.emit('modifySettings', {
-                    enableCommunityAds: false
+                    enableCommunityAds: false,
                 });
             });
 
@@ -544,7 +544,7 @@ function start() {
             eventCategory: 'Sponsors',
             eventAction: 'click',
             eventLabel: sponsor.url,
-            transport: 'beacon'
+            transport: 'beacon',
         });
         window.open(sponsor.url);
     };

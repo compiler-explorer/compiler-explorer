@@ -55,7 +55,7 @@ function definition() {
                 [/[(){}]/, {token: 'operator', next: '@rest'}],
 
                 // whitespace
-                {include: '@whitespace'}
+                {include: '@whitespace'},
             ],
 
             rest: [
@@ -93,30 +93,30 @@ function definition() {
                 [/%?[.?_$a-zA-Z@][.?_$a-zA-Z0-9@]*/, 'type.identifier'],
 
                 // whitespace
-                {include: '@whitespace'}
+                {include: '@whitespace'},
             ],
 
             comment: [
                 [/[^/*]+/, 'comment'],
                 [/\/\*/, 'comment', '@push'],    // nested comment
                 ["\\*/", 'comment', '@pop'],
-                [/[/*]/, 'comment']
+                [/[/*]/, 'comment'],
             ],
 
             string: [
                 [/[^\\"]+/, 'string'],
                 [/@escapes/, 'string.escape'],
                 [/\\./, 'string.escape.invalid'],
-                [/"/, {token: 'string.quote', bracket: '@close', next: '@pop'}]
+                [/"/, {token: 'string.quote', bracket: '@close', next: '@pop'}],
             ],
 
             whitespace: [
                 [/[ \t\r\n]+/, 'white'],
                 [/\/\*/, 'comment', '@comment'],
                 [/\/\/.*$/, 'comment'],
-                [/[#;\\@].*$/, 'comment']
-            ]
-        }
+                [/[#;\\@].*$/, 'comment'],
+            ],
+        },
     };
 }
 

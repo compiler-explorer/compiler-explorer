@@ -106,7 +106,7 @@ function Diff(hub, container, state) {
         fontFamily: 'Consolas, "Liberation Mono", Courier, monospace',
         scrollBeyondLastLine: false,
         readOnly: true,
-        language: 'asm'
+        language: 'asm',
     });
 
     this.lhs = new State(state.lhs, monaco.editor.createModel('', 'asm'), state.lhsdifftype || DiffType_ASM);
@@ -123,15 +123,15 @@ function Diff(hub, container, state) {
             { id: DiffType_CompilerStdOut, name: 'Compiler stdout' },
             { id: DiffType_CompilerStdErr, name: 'Compiler stderr' },
             { id: DiffType_ExecStdOut, name: 'Execution stdout' },
-            { id: DiffType_ExecStdErr, name: 'Execution stderr' }
+            { id: DiffType_ExecStdErr, name: 'Execution stderr' },
         ],
         items: [],
         render: {
             option: function (item, escape) {
                 return '<div>' + escape(item.name) + '</div>';
-            }
+            },
         },
-        dropdownParent: 'body'
+        dropdownParent: 'body',
     }).on('change', _.bind(function (e) {
         var target = $(e.target);
         if (target.hasClass('lhsdifftype')) {
@@ -160,9 +160,9 @@ function Diff(hub, container, state) {
                     '<li class="editor">Editor #' + escape(item.editorId) + '</li>' +
                     '<li class="compilerId">' + escape(getItemDisplayTitle(item)) + '</li>' +
                     '</ul></div>';
-            }
+            },
         },
-        dropdownParent: 'body'
+        dropdownParent: 'body',
     }).on('change', _.bind(function (e) {
         var target = $(e.target);
         var compiler = this.compilers[target.val()];
@@ -179,7 +179,7 @@ function Diff(hub, container, state) {
 
     this.selectize = {
         lhs: selectize[0].selectize, rhs: selectize[1].selectize,
-        lhsdifftype: selectizeType[0].selectize, rhsdifftype: selectizeType[1].selectize
+        lhsdifftype: selectizeType[0].selectize, rhsdifftype: selectizeType[1].selectize,
     };
 
     this.initButtons(state);
@@ -190,7 +190,7 @@ function Diff(hub, container, state) {
     ga.proxy('send', {
         hitType: 'event',
         eventCategory: 'OpenViewPane',
-        eventAction: 'Diff'
+        eventAction: 'Diff',
     });
 }
 
@@ -199,7 +199,7 @@ Diff.prototype.resize = function () {
     var topBarHeight = this.topBar.outerHeight(true);
     this.outputEditor.layout({
         width: this.domRoot.width(),
-        height: this.domRoot.height() - topBarHeight
+        height: this.domRoot.height() - topBarHeight,
     });
 };
 
@@ -290,7 +290,7 @@ Diff.prototype.onCompiler = function (id, compiler, options, editorId) {
         name: name,
         options: options,
         editorId: editorId,
-        compiler: compiler
+        compiler: compiler,
     };
     if (!this.lhs.id) {
         this.lhs.compiler = this.compilers[id];
@@ -347,7 +347,7 @@ Diff.prototype.updateState = function () {
         lhs: this.lhs.id,
         rhs: this.rhs.id,
         lhsdifftype: this.lhs.difftype,
-        rhsdifftype: this.rhs.difftype
+        rhsdifftype: this.rhs.difftype,
     };
     this.fontScale.addState(state);
     this.container.setState(state);
@@ -361,10 +361,10 @@ Diff.prototype.onThemeChange = function (newTheme) {
 Diff.prototype.onSettingsChange = function (newSettings) {
     this.outputEditor.updateOptions({
         minimap: {
-            enabled: newSettings.showMinimap
+            enabled: newSettings.showMinimap,
         },
         fontFamily: newSettings.editorsFFont,
-        fontLigatures: newSettings.editorsFLigatures
+        fontLigatures: newSettings.editorsFLigatures,
     });
 };
 
@@ -374,7 +374,7 @@ module.exports = {
         return {
             type: 'component',
             componentName: 'diff',
-            componentState: { lhs: lhs, rhs: rhs }
+            componentState: { lhs: lhs, rhs: rhs },
         };
-    }
+    },
 };
