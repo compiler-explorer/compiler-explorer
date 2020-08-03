@@ -1,6 +1,11 @@
 {
   "root": true,
-  "extends": "eslint:recommended",
+  "plugins": [
+    "jsdoc"
+  ],
+  "extends": [
+    "eslint:recommended"
+  ],
   "env": {
     "mocha": true,
     "node": true,
@@ -19,7 +24,16 @@
       "named": "never",
       "asyncArrow": "always"
     }],
-    "quote-props": ["error", "as-needed"]
+    "quote-props": ["error", "as-needed"],
+    "jsdoc/check-alignment": 1,
+    "jsdoc/check-param-names": 1,
+    "jsdoc/check-syntax": 1,
+    "jsdoc/check-tag-names": 1,
+    "jsdoc/check-types": 1,
+    "jsdoc/empty-tags": 1,
+    "jsdoc/newline-after-description": 1,
+    "jsdoc/require-hyphen-before-param-description": 1,
+    "jsdoc/valid-types": 1
   },
   "parserOptions": {
     "ecmaVersion": 2018

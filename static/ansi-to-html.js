@@ -27,6 +27,10 @@
 
 var _ = require('underscore');
 
+/***
+ * @typedef {number[]} ColorRGBChannels
+ */
+
 var defaults = {
     fg: '#FFF',
     bg: '#000',
@@ -35,6 +39,7 @@ var defaults = {
     stream: false,
     colors: getDefaultColors()
 };
+
 
 function getDefaultColors() {
     var colors = {
@@ -91,6 +96,7 @@ function setStyleColor(red, green, blue, colors) {
 
 /**
  * Converts from a number like 15 to a hex string like 'F'
+ *
  * @param {number} num
  * @returns {string}
  */
@@ -106,7 +112,8 @@ function toHexString(num) {
 
 /**
  * Converts from an array of numbers like [15, 15, 15] to a hex string like 'FFF'
- * @param {[red, green, blue]} ref
+ *
+ * @param {ColorRGBChannels} ref
  * @returns {string}
  */
 function toColorHexString(ref) {
@@ -210,6 +217,7 @@ function handleDisplay(stack, code, options) {
 
 /**
  * Clear all the styles
+ *
  * @returns {string}
  */
 function resetStyles(stack) {
@@ -224,9 +232,10 @@ function resetStyles(stack) {
 
 /**
  * Creates an array of numbers ranging from low to high
+ *
  * @param {number} low
  * @param {number} high
- * @returns {Array}
+ * @returns {number[]}
  * @example range(3, 7); // creates [3, 4, 5, 6, 7]
  */
 function range(low, high) {
@@ -241,8 +250,9 @@ function range(low, high) {
 
 /**
  * Returns a new function that is true if value is NOT the same category
+ *
  * @param {string} category
- * @returns {function}
+ * @returns {Function}
  */
 function notCategory(category) {
     return function (e) {
@@ -252,6 +262,7 @@ function notCategory(category) {
 
 /**
  * Converts a code into an ansi token type
+ *
  * @param {number} code
  * @returns {string}
  */
@@ -346,7 +357,7 @@ function closeTag(stack, style) {
 /**
  * @param {string} text
  * @param {object} options
- * @param {function} callback
+ * @param {Function} callback
  * @returns {Array}
  */
 function tokenize(text, options, callback) {

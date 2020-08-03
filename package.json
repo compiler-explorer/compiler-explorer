@@ -82,6 +82,7 @@
     "copy-webpack-plugin": "^5.1.1",
     "css-loader": "^3.5.2",
     "eslint": "^6.8.0",
+    "eslint-plugin-jsdoc": "^30.1.0",
     "file-loader": "^5.1.0",
     "mini-css-extract-plugin": "^0.9.0",
     "mocha": "^7.1.1",
@@ -103,11 +104,12 @@
     "webpack-manifest-plugin": "^2.2.0"
   },
   "scripts": {
-    "ci-lint": "eslint --config static/.eslintrc --ignore-path static/.eslintignore ./static/*.js ./static/panes/*.js ./static/modes/*.js && eslint --config .eslintrc --ignore-path .eslintignore ./app.js ./lib/**",
+    "ci-lint": "npm run lint",
     "ci-test": "nyc --reporter=lcov mocha --recursive",
-    "lint-client": "eslint --config static/.eslintrc --ignore-path static/.eslintignore --fix ./static/*.js ./static/panes/*.js ./static/modes/*.js",
-    "lint-server": "eslint --config .eslintrc --ignore-path .eslintignore --fix ./app.js ./lib/**",
+    "lint-client": "eslint --config static/.eslintrc --ignore-path static/.eslintignore ./static/*.js ./static/panes/*.js ./static/modes/*.js",
+    "lint-server": "eslint --config .eslintrc --ignore-path .eslintignore ./app.js ./lib/**",
     "lint": "npm run lint-client && npm run lint-server",
+    "lint-fix": "npm run lint-client -- --fix && npm run lint-server -- --fix",
     "test": "mocha --recursive",
     "check": "npm run lint && npm run test",
     "dev": "cross-env NODE_ENV=DEV node app.js",
