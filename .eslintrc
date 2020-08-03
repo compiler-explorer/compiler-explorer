@@ -54,6 +54,7 @@
     "unicorn/no-hex-escape": "off",
     "unicorn/no-null": "off",
     "unicorn/no-reduce": "off",
+    "unicorn/number-literal-case": "error",
     "unicorn/prefer-add-event-listener": "off",
     "unicorn/prefer-optional-catch-binding": "off",
     "unicorn/prefer-number-properties": "off",
