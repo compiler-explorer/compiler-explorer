@@ -28,7 +28,7 @@ const child_process = require('child_process');
 
 const WslCL = require('../lib/compilers/wsl-vc');
 const WineCL = require('../lib/compilers/wine-vc');
-const {makeCompilationEnvironment} = require('./utils.js');
+const {makeCompilationEnvironment} = require('./utils');
 
 chai.use(chaiAsPromised);
 chai.should();

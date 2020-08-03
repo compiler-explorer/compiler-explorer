@@ -41,7 +41,7 @@ describe('llvm-ir parseMetaNode', function () {
 
     before(() => {
         let fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
-        compilerProps = fakeProps.get.bind(fakeProps, 'c++')
+        compilerProps = fakeProps.get.bind(fakeProps, 'c++');
 
         llvmIrParser = new LlvmIrParser(compilerProps);
     });
@@ -100,7 +100,7 @@ describe('llvm-ir getSourceLineNumber', function () {
 
     before(() => {
         let fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
-        compilerProps = fakeProps.get.bind(fakeProps, 'c++')
+        compilerProps = fakeProps.get.bind(fakeProps, 'c++');
 
         llvmIrParser = new LlvmIrParser(compilerProps);
     });
@@ -113,7 +113,7 @@ describe('llvm-ir getSourceLineNumber', function () {
         '!14': { },
         '!15': { scope: '!14' },
         '!16': { scope: '!42' }
-    }
+    };
 
     it('should return a line number', function () {
         expect(llvmIrParser.getSourceLineNumber(debugInfo, '!10')).to.equal(10);
@@ -141,7 +141,7 @@ describe('llvm-ir getFileName', function () {
 
     before(() => {
         let fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
-        compilerProps = fakeProps.get.bind(fakeProps, 'c++')
+        compilerProps = fakeProps.get.bind(fakeProps, 'c++');
 
         llvmIrParser = new LlvmIrParser(compilerProps);
     });
@@ -152,7 +152,7 @@ describe('llvm-ir getFileName', function () {
         '!21': { file: '!20' },
         '!12': { scope: '!11' },
         '!13': { scope: '!12' }
-    }
+    };
 
     it('should return a filename', function () {
         expect(llvmIrParser.getFileName(debugInfo, '!10')).to.equal("/test.cpp");
@@ -180,7 +180,7 @@ describe('llvm-ir isLineLlvmDirective', function () {
 
     before(() => {
         let fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
-        compilerProps = fakeProps.get.bind(fakeProps, 'c++')
+        compilerProps = fakeProps.get.bind(fakeProps, 'c++');
 
         llvmIrParser = new LlvmIrParser(compilerProps);
     });

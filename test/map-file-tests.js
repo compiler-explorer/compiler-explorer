@@ -24,10 +24,11 @@
 "use strict";
 
 const chai = require('chai'),
-    should = chai.should(),
     assert = chai.assert,
     VSMapFileReader = require('../lib/map-file-vs').MapFileReader,
     DelphiMapFileReader = require('../lib/map-file-delphi').MapFileReader;
+
+chai.should();
 
 describe('Map setup', function () {
     it('VS-map preferred load address', function () {

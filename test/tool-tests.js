@@ -24,9 +24,10 @@
 
 const
     path = require('path'),
-    should = require('chai').should(),
+    chai = require('chai'),
     CompilerDropinTool = require('../lib/tooling/compiler-dropin-tool');
 
+chai.should();
 
 describe('CompilerDropInTool', () => {
     it('Should support llvm based compilers', () => {

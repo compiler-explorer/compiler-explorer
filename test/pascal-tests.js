@@ -28,7 +28,7 @@ const PascalDemangler = require('../lib/demangler-pascal').Demangler;
 const PascalCompiler = require('../lib/compilers/pascal');
 const fs = require('fs-extra');
 const utils = require('../lib/utils');
-const {makeCompilationEnvironment} = require('./utils.js')
+const {makeCompilationEnvironment} = require('./utils');
 
 chai.use(chaiAsPromised);
 chai.should();
@@ -311,7 +311,7 @@ describe('Pascal', () => {
         });
 
         it('Should have line numbering', function () {
-            return new Promise(function (resolve, reject) {
+            return new Promise(function (resolve) {
                 fs.readFile("test/pascal/asm-example.s", function (err, buffer) {
                     const asmLines = utils.splitLines(buffer.toString());
                     compiler.preProcessLines(asmLines);
@@ -331,7 +331,7 @@ describe('Pascal', () => {
 
     describe('Pascal objdump filtering', function () {
         it('Should filter out most of the runtime', function () {
-            return new Promise(function (resolve, reject) {
+            return new Promise(function (resolve) {
                 fs.readFile("test/pascal/objdump-example.s", function (err, buffer) {
                     const output = PascalCompiler.preProcessBinaryAsm(buffer.toString());
                     resolve(Promise.all([
@@ -354,7 +354,7 @@ describe('Pascal', () => {
             compiler.parseOutput(result, "/tmp/path/output.pas", "/tmp/path").should.deep.equal({
                 inputFilename: "output.pas",
                 stdout: [{
-                    "text": "Hello, world!"
+                    text: "Hello, world!"
                 }],
                 stderr: []
             });

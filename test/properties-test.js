@@ -43,7 +43,7 @@ describe('Properties', () => {
 
     after(() => {
         properties.reset();
-    })
+    });
 
     it('Has working propsFor', () => {
         should.equal(properties.get("cases", "exampleProperty"), casesProps("exampleProperty"));
@@ -69,7 +69,7 @@ describe('Properties', () => {
         should.equal(casesProps("commentedProperty"), undefined);
     });
     it('Ignores bad lines', () => {
-        should.equal(casesProps("badLineIfYouSeeThisWithAnErrorItsOk"), undefined)
+        should.equal(casesProps("badLineIfYouSeeThisWithAnErrorItsOk"), undefined);
     });
     it('Understands positive integers', () => {
         should.equal(casesProps("numericPropertyPositive"), 42);

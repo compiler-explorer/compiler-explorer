@@ -28,11 +28,13 @@ const AsmParserVC = require('../lib/asm-parser-vc');
 const utils = require('../lib/utils');
 require('chai').should();
 
+// eslint-disable-next-line no-unused-vars
 function bless(filename, output, filters) {
     const result = processAsm(__dirname + '/' + filename, filters);
     fs.writeFileSync(__dirname + '/' + output, JSON.stringify(result, null, 2));
 }
 
+// eslint-disable-next-line no-unused-vars
 function dump(file) {
     for (let i = 0; i < file.length; ++i) {
         console.log((i + 1) + " : " + JSON.stringify(file[i]));

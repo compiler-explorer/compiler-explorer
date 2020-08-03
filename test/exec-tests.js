@@ -90,12 +90,12 @@ if (process.platform !== 'win32') { // POSIX
             return exec.execute('cat', [], {input: "this is stdin"})
                 .then(testExecOutput)
                 .should.eventually.deep.equals(
-                {
-                    code: 0,
-                    okToCache: true,
-                    stderr: "",
-                    stdout: "this is stdin"
-                });
+                    {
+                        code: 0,
+                        okToCache: true,
+                        stderr: "",
+                        stdout: "this is stdin"
+                    });
         });
     });
 } else { // win32
@@ -105,12 +105,12 @@ if (process.platform !== 'win32') { // POSIX
             return exec.execute('powershell', ['-Command', 'echo "hello world"'], {})
                 .then(testExecOutput)
                 .should.eventually.deep.equals(
-                {
-                    code: 0,
-                    okToCache: true,
-                    stderr: "",
-                    stdout: "hello world\r\n"
-                });
+                    {
+                        code: 0,
+                        okToCache: true,
+                        stderr: "",
+                        stdout: "hello world\r\n"
+                    });
         });
         it('limits output', () => {
             return exec.execute('powershell', ['-Command', 'echo "A very very very very very long string"'], {maxOutput: 10})

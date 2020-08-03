@@ -27,11 +27,7 @@ const chaiAsPromised = require('chai-as-promised');
 const JavaCompiler = require('../lib/compilers/java');
 const fs = require('fs-extra');
 const utils = require('../lib/utils');
-const {makeCompilationEnvironment} = require('./utils.js');
-
-// TODO!!!
-return;     // Temporarily disabled: see #1438
-// TODO!!!
+const {makeCompilationEnvironment} = require('./utils');
 
 
 chai.use(chaiAsPromised);
@@ -46,10 +42,9 @@ const info = {
     remote: true,
     lang: languages.java.id
 };
-const ce = makeCompilationEnvironment({languages});
 
-function testJava(baseFolder, ...classNames) {
-    const compiler = new JavaCompiler(info, ce);
+function testJava(env, baseFolder, ...classNames) {
+    const compiler = new JavaCompiler(info, env);
 
     const asm = classNames.map(className => fs.readFileSync(`${baseFolder}/${className}.asm`).toString());
 
@@ -79,17 +74,24 @@ function testJava(baseFolder, ...classNames) {
     processed.should.deep.equal(expectedSegments);
 }
 
+// Temporarily disabled: see #1438
+describe.skip("Basic java compiler setup", function () {
+    let env;
+    let compiler;
+    before(() => {
+        env = makeCompilationEnvironment({languages});
+        compiler = new JavaCompiler(info, env);
+    });
 
-describe("Basic compiler setup", function () {
     it("Should not crash on instantiation", function () {
-        new JavaCompiler(info, ce);
+        new JavaCompiler(info, env);
     });
 
 
     it("should ignore second param for getOutputFilename", function () {
         // Because javac produces a class files based on user provided class names,
         // it's not possible to determine the main class file before compilation/parsing
-        const compiler = new JavaCompiler(info, ce);
+
         if (process.platform === 'win32') {
             compiler.getOutputFilename('/tmp/', 'Ignored.java').should.equal('\\tmp\\example.class');
         } else {
@@ -98,8 +100,12 @@ describe("Basic compiler setup", function () {
     });
 
     describe("Forbidden compiler arguments", function () {
+        let compiler;
+        before(() => {
+            const env = makeCompilationEnvironment({languages});
+            compiler = new JavaCompiler(info, env);
+        });
         it("JavaCompiler should not allow -d parameter", () => {
-            const compiler = new JavaCompiler(info, ce);
             compiler.filterUserOptions(['hello', '-d', '--something', '--something-else']).should.deep.equal(
                 ['hello', '--something-else']
             );
@@ -112,7 +118,6 @@ describe("Basic compiler setup", function () {
         });
 
         it("JavaCompiler should not allow -s parameter", () => {
-            const compiler = new JavaCompiler(info, ce);
             compiler.filterUserOptions(['hello', '-s', '--something', '--something-else']).should.deep.equal(
                 ['hello', '--something-else']
             );
@@ -125,7 +130,6 @@ describe("Basic compiler setup", function () {
         });
 
         it("JavaCompiler should not allow --source-path parameter", () => {
-            const compiler = new JavaCompiler(info, ce);
             compiler.filterUserOptions(['hello', '--source-path', '--something', '--something-else']).should.deep.equal(
                 ['hello', '--something-else']
             );
@@ -138,7 +142,6 @@ describe("Basic compiler setup", function () {
         });
 
         it("JavaCompiler should not allow -sourcepath parameter", () => {
-            const compiler = new JavaCompiler(info, ce);
             compiler.filterUserOptions(['hello', '-sourcepath', '--something', '--something-else']).should.deep.equal(
                 ['hello', '--something-else']
             );
@@ -152,8 +155,13 @@ describe("Basic compiler setup", function () {
     });
 });
 
-describe("javap parsing", () => {
-    const compiler = new JavaCompiler(info, ce);
+describe.skip("javap parsing", () => {
+    let compiler;
+    let env;
+    before(() => {
+        env = makeCompilationEnvironment({languages});
+        compiler = new JavaCompiler(info, env);
+    });
 
     it("should handle errors", () => {
         const result = {
@@ -167,14 +175,14 @@ describe("javap parsing", () => {
 
     it("Parses simple class with one method", () => {
         return Promise.all([
-            testJava('test/java/square', 'javap-square')
+            testJava(env, 'test/java/square', 'javap-square')
         ]);
     });
 
     it("Preserves ordering of multiple classes", () => {
         return Promise.all([
-            testJava('test/java/two-classes', 'ZFirstClass', 'ASecondClass'),
-            testJava('test/java/two-classes', 'ASecondClass', 'ZFirstClass')
+            testJava(env, 'test/java/two-classes', 'ZFirstClass', 'ASecondClass'),
+            testJava(env, 'test/java/two-classes', 'ASecondClass', 'ZFirstClass')
         ]);
     });
 });

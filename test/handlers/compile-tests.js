@@ -28,7 +28,7 @@ const chai = require('chai'),
     CompileHandler = require('../../lib/handlers/compile').Handler,
     express = require('express'),
     bodyParser = require('body-parser'),
-    {makeCompilationEnvironment} = require('../utils.js');
+    {makeCompilationEnvironment} = require('../utils');
 chai.use(require("chai-http"));
 chai.should();
 

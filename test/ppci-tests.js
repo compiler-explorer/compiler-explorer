@@ -25,7 +25,7 @@
 const chai = require('chai');
 const chaiAsPromised = require("chai-as-promised");
 const PPCICompiler = require('../lib/compilers/ppci');
-const {makeCompilationEnvironment} = require('./utils.js');
+const {makeCompilationEnvironment} = require('./utils');
 
 chai.use(chaiAsPromised);
 chai.should();

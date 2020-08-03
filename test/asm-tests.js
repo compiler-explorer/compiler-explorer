@@ -34,8 +34,8 @@ describe('ASM CL parser', () => {
         });
 
         result.asm.should.deep.equal([{
-            "source": null,
-            "text": "<Compilation failed>"
+            source: null,
+            text: "<Compilation failed>"
         }]);
     });
 });

@@ -25,7 +25,7 @@
 const chai = require('chai');
 const chaiAsPromised = require("chai-as-promised");
 const NimCompiler = require('../lib/compilers/nim');
-const {makeCompilationEnvironment} = require('./utils.js');
+const {makeCompilationEnvironment} = require('./utils');
 
 chai.use(chaiAsPromised);
 chai.should();
@@ -64,9 +64,9 @@ describe('Nim', () => {
             input = "test.min",
             folder = "/tmp/",
             expected = {
-                "cpp": folder + '@m' + input + ".cpp.o",
-                "c": folder + '@m' + input + ".c.o",
-                "objc": folder + '@m' + input + ".m.o",
+                cpp: folder + '@m' + input + ".cpp.o",
+                c: folder + '@m' + input + ".c.o",
+                objc: folder + '@m' + input + ".m.o",
             };
 
         for (const lang of ["cpp", "c", "objc"]) {

@@ -46,6 +46,7 @@ webpack: $(NODE_MODULES)  ## Runs webpack (useful only for debugging webpack)
 
 lint: $(NODE_MODULES)  ## Ensures everything matches code conventions (fixing trivial things automatically)
 	$(NPM) run lint
+
 ci-lint: $(NODE_MODULES)
 	$(NPM) run ci-lint
 

@@ -29,7 +29,7 @@ const BaseCompiler = require('../lib/base-compiler');
 const fs = require('fs-extra');
 const exec = require('../lib/exec');
 const path = require('path');
-const {makeCompilationEnvironment} = require('./utils.js');
+const {makeCompilationEnvironment} = require('./utils');
 
 chai.use(chaiAsPromised);
 const should = chai.should();
@@ -106,7 +106,7 @@ describe('Compiler execution', function () {
     afterEach(() => sinon.restore());
 
     function stubOutCallToExec(execStub, compiler, content, result, nthCall) {
-        execStub.onCall(nthCall || 0).callsFake((compiler, args, options) => {
+        execStub.onCall(nthCall || 0).callsFake((compiler, args) => {
             const minusO = args.indexOf("-o");
             minusO.should.be.gte(0);
             const output = args[minusO + 1];

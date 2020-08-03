@@ -61,7 +61,7 @@ describe('Hash tests', () => {
 
     it('should not modify ok hashes', () => {
         const testCase = {some: "test"};
-        const {config, configHash} = StorageBase.getSafeHash(testCase);
+        const {config} = StorageBase.getSafeHash(testCase);
         const asObj = JSON.parse(config);
         should.not.exist(asObj.nonce);
     });

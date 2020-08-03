@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 const LLVMmcaTool = require('../lib/compilers/llvm-mca');
-const {makeCompilationEnvironment} = require('./utils.js');
+const {makeCompilationEnvironment} = require('./utils');
 require('chai').should();
 
 const languages = {

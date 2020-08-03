@@ -63,9 +63,9 @@ levels:
     - name: An object
         `).levels[0].sponsors;
         folks.should.deep.equalInAnyOrder([
-          {name: "An object"},
-          {name: "Just a string"}
-      ]);
+            {name: "An object"},
+            {name: "Just a string"}
+        ]);
     });
 
     it('should sort sponsors by name', () => {

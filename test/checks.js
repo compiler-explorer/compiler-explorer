@@ -44,7 +44,7 @@ describe('Live site checks', () => {
     });
     after(() => {
         properties.reset();
-    })
+    });
 
     it('there should not be any orphan libraries', () => {
         const langsLibs = compilerProps.get(compilerProps.languages, 'libs', '');
@@ -68,6 +68,6 @@ describe('Live site checks', () => {
                 differences[lang] = difference;
             }
         });
-        differences.should.be.eql({}, 'One or more defined libraries are not listed on their corresponding language libs property array')
+        differences.should.be.eql({}, 'One or more defined libraries are not listed on their corresponding language libs property array');
     });
 });

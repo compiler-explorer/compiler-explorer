@@ -27,7 +27,7 @@ const chai = require('chai'),
     fs = require('fs-extra'),
     utils = require('../lib/utils'),
     GoCompiler = require('../lib/compilers/golang'),
-    {makeCompilationEnvironment} = require('./utils.js');
+    {makeCompilationEnvironment} = require('./utils');
 
 chai.use(chaiAsPromised);
 chai.should();
@@ -56,7 +56,7 @@ function testGoAsm(basefilename) {
         })
     };
 
-    return compiler.postProcess(result).then(([output, optOutput]) => {
+    return compiler.postProcess(result).then(([output]) => {
         const expectedOutput = utils.splitLines(fs.readFileSync(basefilename + ".output.asm").toString());
 
         utils.splitLines(output.asm).should.deep.equal(expectedOutput);

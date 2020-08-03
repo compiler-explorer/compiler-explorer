@@ -26,7 +26,7 @@ const chai = require('chai');
 const chaiAsPromised = require("chai-as-promised");
 const LDCCompiler = require('../lib/compilers/ldc');
 const DMDCompiler = require('../lib/compilers/dmd');
-const {makeCompilationEnvironment} = require('./utils.js');
+const {makeCompilationEnvironment} = require('./utils');
 
 chai.use(chaiAsPromised);
 chai.should();

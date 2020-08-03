@@ -21,12 +21,14 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ,
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-"use strict"
+"use strict";
 
-const should = require('chai').should();
+const chai = require('chai');
 const clientstate = require('../lib/clientstate');
 const fs = require('fs');
 const ClientStateNormalizer = require('../lib/clientstate-normalizer').ClientStateNormalizer;
+
+chai.should();
 
 describe("Normalizing clientstate", () => {
     it("Should translate 2 compilers GL layout to clientstate", () => {
@@ -81,12 +83,12 @@ describe("Normalizing clientstate", () => {
 describe("ClientState parsing", () => {
     it("Should work without executors", () => {
         const state = new clientstate.State({
-            "sessions": [
-                {"id":1,
-                "language":"c++",
-                "source":"int main() {}",
-                "compilers":[{"id":"g91","options":"-O3 -std=c++2a"}]
-            }]
+            sessions: [
+                {id:1,
+                    language:"c++",
+                    source:"int main() {}",
+                    compilers:[{id:"g91",options:"-O3 -std=c++2a"}]
+                }]
         });
 
         state.sessions[0].compilers.length.should.equal(1);
@@ -95,15 +97,15 @@ describe("ClientState parsing", () => {
 
     it("Should work with executor", () => {
         const state = new clientstate.State({
-            "sessions": [
-                {"id":1,
-                "language":"c++",
-                "source":"int main() {}",
-                "compilers": [],
-                "executors":[{
-                    "compiler":{"id":"g91","options":"-O3 -std=c++2a"}
+            sessions: [
+                {id:1,
+                    language:"c++",
+                    source:"int main() {}",
+                    compilers: [],
+                    executors:[{
+                        compiler:{id:"g91",options:"-O3 -std=c++2a"}
+                    }]
                 }]
-            }]
         });
 
         state.sessions[0].compilers.length.should.equal(0);
