@@ -296,7 +296,8 @@ Conformance.prototype.compileChild = function (child) {
                 compilerOptions: {produceAst: false, produceOptInfo: false},
                 libraries: [],
                 skipAsm: true
-            }
+            },
+            lang: this.langId
         };
 
         _.each(this.libsWidget.getLibsInUse(), function (item) {

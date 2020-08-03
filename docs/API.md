@@ -51,9 +51,9 @@ To specify a compilation request as a JSON document, post it as the appropriate
  type and send an object of the form:
 ```JSON
 {
-    "source": "Source to compile",
+    "source": "<Source-to-compile>",
     "options": {
-        "userArguments": "Compiler flags",
+        "userArguments": "<Compiler-flags>",
         "compilerOptions": {
               "skipAsm": false,
               "executorRequest": false
@@ -76,11 +76,13 @@ To specify a compilation request as a JSON document, post it as the appropriate
              {"id": "range-v3", "version": "trunk"},
              {"id": "fmt", "version": "400"}
         ]
-    }
+    },
+    "lang": "<lang-id (Optional)>",
+    "allowStoreCodeDebug": true
 }
 ```
 
-Execution Only request:
+Execution Only request example:
 ```JSON
 {
     "source": "int main () { return 1; }",
