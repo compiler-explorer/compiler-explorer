@@ -20,12 +20,20 @@
     "semi": ["error", "always"],
     "indent": ["error", 4, { "SwitchCase": 1 }],
     "no-control-regex": 0,
+    "no-useless-call": "error",
+    "no-useless-computed-key": "error",
+    "no-useless-concat": "error",
+    "no-useless-constructor": "error",
+    "no-useless-escape": "error",
+    "no-useless-rename": "error",
+    "no-useless-return": "error",
     "space-before-function-paren": ["error", {
       "anonymous": "always",
       "named": "never",
       "asyncArrow": "always"
     }],
-    "quote-props": ["error", "as-needed"]
+    "quote-props": ["error", "as-needed"],
+    "yoda": [ "error", "never", { "onlyEquality": true } ]
   },
   "parserOptions": {
     "ecmaVersion": 2018

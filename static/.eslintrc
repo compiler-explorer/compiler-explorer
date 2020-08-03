@@ -22,6 +22,12 @@
     "semi": ["error", "always"],
     "indent": ["error", 4, { "SwitchCase": 1 }],
     "no-control-regex": 0,
+    "no-useless-call": "error",
+    "no-useless-computed-key": "error",
+    "no-useless-concat": "error",
+    "no-useless-escape": "error",
+    "no-useless-rename": "error",
+    "no-useless-return": "error",
     "space-before-function-paren": ["error", {
       "anonymous": "always",
       "named": "never",
@@ -36,7 +42,8 @@
     "jsdoc/empty-tags": 1,
     "jsdoc/newline-after-description": 1,
     "jsdoc/require-hyphen-before-param-description": 1,
-    "jsdoc/valid-types": 1
+    "jsdoc/valid-types": 1,
+    "yoda": [ "error", "never", { "onlyEquality": true } ]
   },
   "parserOptions": {
     "ecmaVersion": 5
