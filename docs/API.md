@@ -45,7 +45,7 @@ You will need the library id's and the version id's to supply to **compile** if 
 Returns information like Sourcecode, Compiler settings and libraries for a given link id.
  This request only returns data in JSON.
 
-### `POST /api/compile` - perform a compilation
+### `POST /api/compiler/<compiler-id>/compile` - perform a compilation
 
 To specify a compilation request as a JSON document, post it as the appropriate
  type and send an object of the form:
@@ -77,7 +77,6 @@ To specify a compilation request as a JSON document, post it as the appropriate
              {"id": "fmt", "version": "400"}
         ]
     },
-    "compiler": "<compiler-id>",
     "lang": "<lang-id (Optional)>",
     "allowStoreCodeDebug": true
 }
