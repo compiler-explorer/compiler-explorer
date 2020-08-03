@@ -36,7 +36,7 @@ const
 chai.use(chaiAsPromised);
 chai.should();
 
-const cppfiltpath = "c++filt";
+const cppfiltpath = 'c++filt';
 
 class DummyCompiler {
     exec(command, args, options) {
@@ -53,14 +53,14 @@ const catchCppfiltNonexistence = err => {
 describe('Basic demangling', function () {
     it('One line of asm', function () {
         const result = {};
-        result.asm = [{text: "Hello, World!"}];
+        result.asm = [{text: 'Hello, World!'}];
 
         const demangler = new Demangler(cppfiltpath, new DummyCompiler());
         demangler.demanglerArguments = ['-n'];
 
         return Promise.all([
             demangler.process(result).then((output) => {
-                output.asm[0].text.should.equal("Hello, World!");
+                output.asm[0].text.should.equal('Hello, World!');
             })
         ]);
     });
@@ -68,8 +68,8 @@ describe('Basic demangling', function () {
     it('One label and some asm', function () {
         const result = {};
         result.asm = [
-            {text: "_Z6squarei:"},
-            {text: "  ret"}
+            {text: '_Z6squarei:'},
+            {text: '  ret'}
         ];
 
         const demangler = new Demangler(cppfiltpath, new DummyCompiler());
@@ -78,8 +78,8 @@ describe('Basic demangling', function () {
         return Promise.all([
             demangler.process(result)
                 .then((output) => {
-                    output.asm[0].text.should.equal("square(int):");
-                    output.asm[1].text.should.equal("  ret");
+                    output.asm[0].text.should.equal('square(int):');
+                    output.asm[1].text.should.equal('  ret');
                 })
                 .catch(catchCppfiltNonexistence)
         ]);
@@ -88,8 +88,8 @@ describe('Basic demangling', function () {
     it('One label and use of a label', function () {
         const result = {};
         result.asm = [
-            {text: "_Z6squarei:"},
-            {text: "  mov eax, $_Z6squarei"}
+            {text: '_Z6squarei:'},
+            {text: '  mov eax, $_Z6squarei'}
         ];
 
         const demangler = new Demangler(cppfiltpath, new DummyCompiler());
@@ -97,8 +97,8 @@ describe('Basic demangling', function () {
 
         return Promise.all([
             demangler.process(result).then((output) => {
-                output.asm[0].text.should.equal("square(int):");
-                output.asm[1].text.should.equal("  mov eax, $square(int)");
+                output.asm[0].text.should.equal('square(int):');
+                output.asm[1].text.should.equal('  mov eax, $square(int)');
             })
                 .catch(catchCppfiltNonexistence)
         ]);
@@ -107,15 +107,15 @@ describe('Basic demangling', function () {
     it('Two destructors', function () {
         const result = {};
         result.asm = [
-            {text: "_ZN6NormalD0Ev:"},
-            {text: "  callq _ZdlPv"},
-            {text: "_Z7caller1v:"},
-            {text: "  rep ret"},
-            {text: "_Z7caller2P6Normal:"},
-            {text: "  cmp rax, OFFSET FLAT:_ZN6NormalD0Ev"},
-            {text: "  jmp _ZdlPvm"},
-            {text: "_ZN6NormalD2Ev:"},
-            {text: "  rep ret"}
+            {text: '_ZN6NormalD0Ev:'},
+            {text: '  callq _ZdlPv'},
+            {text: '_Z7caller1v:'},
+            {text: '  rep ret'},
+            {text: '_Z7caller2P6Normal:'},
+            {text: '  cmp rax, OFFSET FLAT:_ZN6NormalD0Ev'},
+            {text: '  jmp _ZdlPvm'},
+            {text: '_ZN6NormalD2Ev:'},
+            {text: '  rep ret'}
         ];
 
         const demangler = new Demangler(cppfiltpath, new DummyCompiler());
@@ -123,9 +123,9 @@ describe('Basic demangling', function () {
 
         return demangler.process(result)
             .then((output) => {
-                output.asm[0].text.should.equal("Normal::~Normal() [deleting destructor]:");
-                output.asm[1].text.should.equal("  callq operator delete(void*)");
-                output.asm[6].text.should.equal("  jmp operator delete(void*, unsigned long)");
+                output.asm[0].text.should.equal('Normal::~Normal() [deleting destructor]:');
+                output.asm[1].text.should.equal('  callq operator delete(void*)');
+                output.asm[6].text.should.equal('  jmp operator delete(void*, unsigned long)');
             })
             .catch(catchCppfiltNonexistence);
     });
@@ -133,7 +133,7 @@ describe('Basic demangling', function () {
     it('Should ignore comments (CL)', function () {
         const result = {};
         result.asm = [
-            {text: "        call     ??3@YAXPEAX_K@Z                ; operator delete"}
+            {text: '        call     ??3@YAXPEAX_K@Z                ; operator delete'}
         ];
 
         const demangler = new DemanglerWin32(cppfiltpath, new DummyCompiler());
@@ -144,7 +144,7 @@ describe('Basic demangling', function () {
         const output = demangler.win32RawSymbols;
         output.should.deep.equal(
             [
-                "??3@YAXPEAX_K@Z"
+                '??3@YAXPEAX_K@Z'
             ]
         );
     });
@@ -152,7 +152,7 @@ describe('Basic demangling', function () {
     it('Should ignore comments (CPP)', function () {
         const result = {};
         result.asm = [
-            {text: "        call     hello                ; operator delete"}
+            {text: '        call     hello                ; operator delete'}
         ];
 
         const demangler = new Demangler(cppfiltpath, new DummyCompiler());
@@ -164,7 +164,7 @@ describe('Basic demangling', function () {
         const output = demangler.othersymbols.listSymbols();
         output.should.deep.equal(
             [
-                "hello"
+                'hello'
             ]
         );
     });
@@ -172,7 +172,7 @@ describe('Basic demangling', function () {
     it('Should also support ARM branch instructions', () => {
         const result = {};
         result.asm = [
-            {text: "   bl _ZN3FooC1Ev"}
+            {text: '   bl _ZN3FooC1Ev'}
         ];
 
         const demangler = new Demangler(cppfiltpath, new DummyCompiler());
@@ -184,7 +184,7 @@ describe('Basic demangling', function () {
         const output = demangler.othersymbols.listSymbols();
         output.should.deep.equal(
             [
-                "_ZN3FooC1Ev"
+                '_ZN3FooC1Ev'
             ]
         );
     });
@@ -192,7 +192,7 @@ describe('Basic demangling', function () {
     it('Should NOT handle undecorated labels', () => {
         const result = {};
         result.asm = [
-            {text: "$LN3@caller2:"}
+            {text: '$LN3@caller2:'}
         ];
 
         const demangler = new DemanglerWin32(cppfiltpath, new DummyCompiler());
@@ -210,7 +210,7 @@ describe('Basic demangling', function () {
     it('Should ignore comments after jmps', function () {
         const result = {};
         result.asm = [
-            {text: "  jmp _Z1fP6mytype # TAILCALL"}
+            {text: '  jmp _Z1fP6mytype # TAILCALL'}
         ];
 
         const demangler = new Demangler(cppfiltpath, new DummyCompiler());
@@ -222,7 +222,7 @@ describe('Basic demangling', function () {
         const output = demangler.othersymbols.listSymbols();
         output.should.deep.equal(
             [
-                "_Z1fP6mytype"
+                '_Z1fP6mytype'
             ]
         );
     });
@@ -230,7 +230,7 @@ describe('Basic demangling', function () {
     it('Should still work with normal jmps', function () {
         const result = {};
         result.asm = [
-            {text: "  jmp _Z1fP6mytype"}
+            {text: '  jmp _Z1fP6mytype'}
         ];
 
         const demangler = new Demangler(cppfiltpath, new DummyCompiler());
@@ -242,7 +242,7 @@ describe('Basic demangling', function () {
         const output = demangler.othersymbols.listSymbols();
         output.should.deep.equal(
             [
-                "_Z1fP6mytype"
+                '_Z1fP6mytype'
             ]
         );
     });
@@ -258,7 +258,7 @@ function DoDemangleTest(root, filename, resolve, reject) {
             return {text: line};
         });
 
-        fs.readFile(path.join(root, filename + ".demangle"), function (err, dataOut) {
+        fs.readFile(path.join(root, filename + '.demangle'), function (err, dataOut) {
             if (err) reject(err);
 
             let resultOut = {asm: []};
@@ -287,7 +287,7 @@ describe('File demangling',async () => {
     const files = await fs.readdir(testcasespath);
 
     files.forEach((filename) => {
-        if (filename.endsWith(".asm")) {
+        if (filename.endsWith('.asm')) {
             it(filename, (done) => {
                 DoDemangleTest(testcasespath, filename, () => done(), (err) => done(err));
             });

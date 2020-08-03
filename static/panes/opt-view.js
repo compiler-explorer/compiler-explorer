@@ -21,7 +21,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-"use strict";
+'use strict';
 
 var FontScale = require('../fontscale');
 var monaco = require('monaco-editor');
@@ -38,9 +38,9 @@ function Opt(hub, container, state) {
     this.eventHub = hub.createEventHub();
     this.domRoot = container.getElement();
     this.domRoot.html($('#opt').html());
-    this.source = state.source || "";
+    this.source = state.source || '';
     this._currentDecorations = [];
-    this.optEditor = monaco.editor.create(this.domRoot.find(".monaco-placeholder")[0], {
+    this.optEditor = monaco.editor.create(this.domRoot.find('.monaco-placeholder')[0], {
         value: this.source,
         scrollBeyondLastLine: false,
         language: 'plaintext',
@@ -71,7 +71,7 @@ function Opt(hub, container, state) {
         this.showOptResults(state.optOutput);
     }
     this.setTitle();
-    this.eventHub.emit("optViewOpened", this._compilerid);
+    this.eventHub.emit('optViewOpened', this._compilerid);
     ga.proxy('send', {
         hitType: 'event',
         eventCategory: 'OpenViewPane',
@@ -82,7 +82,7 @@ function Opt(hub, container, state) {
 Opt.prototype.initButtons = function (state) {
     this.fontScale = new FontScale(this.domRoot, state, this.optEditor);
 
-    this.topBar = this.domRoot.find(".top-bar");
+    this.topBar = this.domRoot.find('.top-bar');
 };
 
 Opt.prototype.initCallbacks = function () {
@@ -135,12 +135,12 @@ Opt.prototype.getCurrentEditorLanguage = function () {
 
 Opt.prototype.setTitle = function () {
     this.container.setTitle(
-        this._compilerName + " Opt Viewer (Editor #" + this._editorid + ", Compiler #" + this._compilerid + ")");
+        this._compilerName + ' Opt Viewer (Editor #' + this._editorid + ', Compiler #' + this._compilerid + ')');
 };
 
 Opt.prototype.getDisplayableOpt = function (optResult) {
     return {
-        value: "**" + optResult.optType + "** - " + optResult.displayString,
+        value: '**' + optResult.optType + '** - ' + optResult.displayString,
         isTrusted: false
     };
 };
@@ -159,19 +159,19 @@ Opt.prototype.showOptResults = function (results) {
     _.mapObject(results, function (value, key) {
         var linenumber = Number(key);
         var className = value.reduce(function (acc, x) {
-            if (x.optType === "Missed" || acc === "Missed") {
-                return "Missed";
-            } else if (x.optType === "Passed" || acc === "Passed") {
-                return "Passed";
+            if (x.optType === 'Missed' || acc === 'Missed') {
+                return 'Missed';
+            } else if (x.optType === 'Passed' || acc === 'Passed') {
+                return 'Passed';
             }
             return x.optType;
-        }, "");
+        }, '');
         var contents = _.map(value, this.getDisplayableOpt, this);
         opt.push({
             range: new monaco.Range(linenumber, 1, linenumber, Infinity),
             options: {
                 isWholeLine: true,
-                glyphMarginClassName: "opt-decoration." + className.toLowerCase(),
+                glyphMarginClassName: 'opt-decoration.' + className.toLowerCase(),
                 hoverMessage: contents,
                 glyphMarginHoverMessage: contents
             }
@@ -187,7 +187,7 @@ Opt.prototype.onCompiler = function (id, compiler) {
         this.setTitle();
         this.isCompilerSupported = compiler ? compiler.supportsOptOutput : false;
         if (!this.isCompilerSupported) {
-            this.optEditor.setValue("<OPT output is not supported for this compiler>");
+            this.optEditor.setValue('<OPT output is not supported for this compiler>');
         }
     }
 };
@@ -216,7 +216,7 @@ Opt.prototype.currentState = function () {
 
 Opt.prototype.close = function () {
     this.eventHub.unsubscribe();
-    this.eventHub.emit("optViewClosed", this._compilerid);
+    this.eventHub.emit('optViewClosed', this._compilerid);
     this.optEditor.dispose();
 };
 

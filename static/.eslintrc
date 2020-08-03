@@ -33,6 +33,7 @@
       "named": "never",
       "asyncArrow": "always"
     }],
+    "quotes": [ "error", "single", { "allowTemplateLiterals": false, "avoidEscape": true}],
     "quote-props": ["error", "as-needed"],
     "jsdoc/check-alignment": 1,
     "jsdoc/check-param-names": 1,

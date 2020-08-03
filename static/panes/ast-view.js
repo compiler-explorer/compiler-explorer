@@ -21,7 +21,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-"use strict";
+'use strict';
 
 var FontScale = require('../fontscale');
 var monaco = require('monaco-editor');
@@ -34,8 +34,8 @@ function Ast(hub, container, state) {
     this.eventHub = hub.createEventHub();
     this.domRoot = container.getElement();
     this.domRoot.html($('#ast').html());
-    this.astEditor = monaco.editor.create(this.domRoot.find(".monaco-placeholder")[0], {
-        value: "",
+    this.astEditor = monaco.editor.create(this.domRoot.find('.monaco-placeholder')[0], {
+        value: '',
         scrollBeyondLastLine: false,
         language: 'plaintext',
         readOnly: true,
@@ -74,7 +74,7 @@ function Ast(hub, container, state) {
 Ast.prototype.initButtons = function (state) {
     this.fontScale = new FontScale(this.domRoot, state, this.astEditor);
 
-    this.topBar = this.domRoot.find(".top-bar");
+    this.topBar = this.domRoot.find('.top-bar');
 };
 
 Ast.prototype.initCallbacks = function () {
@@ -115,7 +115,7 @@ Ast.prototype.onCompileResult = function (id, compiler, result, lang) {
         this.showAstResults(result.astOutput);
     }
     else if (compiler.supportsAstView) {
-        this.showAstResults("<No output>");
+        this.showAstResults('<No output>');
     }
 
     if (lang && lang.monaco && this.getCurrentEditorLanguage() !== lang.monaco) {
@@ -130,12 +130,12 @@ Ast.prototype.getCurrentEditorLanguage = function () {
 
 Ast.prototype.setTitle = function () {
     this.container.setTitle(
-        this._compilerName + " Ast Viewer (Editor #" + this._editorid + ", Compiler #" + this._compilerid + ")"
+        this._compilerName + ' Ast Viewer (Editor #' + this._editorid + ', Compiler #' + this._compilerid + ')'
     );
 };
 
 Ast.prototype.getDisplayableAst = function (astResult) {
-    return "**" + astResult.astType + "** - " + astResult.displayString;
+    return '**' + astResult.astType + '** - ' + astResult.displayString;
 };
 
 Ast.prototype.showAstResults = function (results) {
@@ -157,7 +157,7 @@ Ast.prototype.onCompiler = function (id, compiler, options, editorid) {
         this._editorid = editorid;
         this.setTitle();
         if (compiler && !compiler.supportsAstView) {
-            this.astEditor.setValue("<AST output is not supported for this compiler>");
+            this.astEditor.setValue('<AST output is not supported for this compiler>');
         }
     }
 };
@@ -217,7 +217,7 @@ Ast.prototype.onDidChangeCursorSelection = function (e) {
 
 Ast.prototype.close = function () {
     this.eventHub.unsubscribe();
-    this.eventHub.emit("astViewClosed", this._compilerid);
+    this.eventHub.emit('astViewClosed', this._compilerid);
     this.astEditor.dispose();
 };
 

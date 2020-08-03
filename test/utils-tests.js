@@ -90,14 +90,14 @@ describe('Parses compiler output', () => {
         utils.parseOutput('Line one\nbob.cpp:1 Line two', 'bob.cpp').should.deep.equals([
             {text: 'Line one'},
             {
-                tag: {column: 0, line: 1, text: "Line two"},
+                tag: {column: 0, line: 1, text: 'Line two'},
                 text: '<source>:1 Line two'
             }
         ]);
         utils.parseOutput('Line one\nbob.cpp:1:5: Line two', 'bob.cpp').should.deep.equals([
             {text: 'Line one'},
             {
-                tag: {column: 5, line: 1, text: "Line two"},
+                tag: {column: 5, line: 1, text: 'Line two'},
                 text: '<source>:1:5: Line two'
             }
         ]);
@@ -258,13 +258,13 @@ describe('Anonymizes all kind of IPs', () => {
 
 describe('Logger functionality', () => {
     it('has info stream with a write function', () => {
-        logger.stream.write.should.a("function");
+        logger.stream.write.should.a('function');
     });
     it('has warning stream with a write function', () => {
-        logger.warnStream.write.should.a("function");
+        logger.warnStream.write.should.a('function');
     });
     it('has error stream with a write function', () => {
-        logger.errStream.write.should.a("function");
+        logger.errStream.write.should.a('function');
     });
 });
 
@@ -335,32 +335,32 @@ describe('squashes horizontal whitespace', () => {
 
 describe('replaces all substrings', () => {
     it('works with no substitutions', () => {
-        const string = "This is a line with no replacements";
-        utils.replaceAll(string, "not present", "won't be substituted").should.equal(string);
+        const string = 'This is a line with no replacements';
+        utils.replaceAll(string, 'not present', "won't be substituted").should.equal(string);
     });
     it('handles odd cases', () => {
-        utils.replaceAll("", "", "").should.equal("");
-        utils.replaceAll("Hello", "", "").should.equal("Hello");
+        utils.replaceAll('', '', '').should.equal('');
+        utils.replaceAll('Hello', '', '').should.equal('Hello');
     });
     it('works with single replacement', () => {
-        utils.replaceAll("This is a line with a mistook in it", "mistook", "mistake")
-            .should.equal("This is a line with a mistake in it");
-        utils.replaceAll("This is a line with a mistook", "mistook", "mistake")
-            .should.equal("This is a line with a mistake");
-        utils.replaceAll("Mistooks were made", "Mistooks", "Mistakes")
-            .should.equal("Mistakes were made");
+        utils.replaceAll('This is a line with a mistook in it', 'mistook', 'mistake')
+            .should.equal('This is a line with a mistake in it');
+        utils.replaceAll('This is a line with a mistook', 'mistook', 'mistake')
+            .should.equal('This is a line with a mistake');
+        utils.replaceAll('Mistooks were made', 'Mistooks', 'Mistakes')
+            .should.equal('Mistakes were made');
     });
 
     it('works with multiple replacements', () => {
-        utils.replaceAll("A mistook is a mistook", "mistook", "mistake")
-            .should.equal("A mistake is a mistake");
-        utils.replaceAll("aaaaaaaaaaaaaaaaaaaaaaaaaaa", "a", "b")
-            .should.equal("bbbbbbbbbbbbbbbbbbbbbbbbbbb");
+        utils.replaceAll('A mistook is a mistook', 'mistook', 'mistake')
+            .should.equal('A mistake is a mistake');
+        utils.replaceAll('aaaaaaaaaaaaaaaaaaaaaaaaaaa', 'a', 'b')
+            .should.equal('bbbbbbbbbbbbbbbbbbbbbbbbbbb');
     });
 
     it('works with overlapping replacements', () => {
-        utils.replaceAll("aaaaaaaa", "a", "ba")
-            .should.equal("babababababababa");
+        utils.replaceAll('aaaaaaaa', 'a', 'ba')
+            .should.equal('babababababababa');
     });
 });
 
@@ -372,31 +372,31 @@ describe('encodes in our version of base32', () => {
     // Done by hand to check that they are valid
 
     it('works for empty strings', () => {
-        doTest("", "");
+        doTest('', '');
     });
 
     it('works for lengths multiple of 5 bits', () => {
-        doTest("aaaaa", "3Mn4ha7P");
+        doTest('aaaaa', '3Mn4ha7P');
     });
 
     it('works for lengths not multiple of 5 bits', () => {
         // 3
-        doTest("a", "35");
+        doTest('a', '35');
 
         // 1
-        doTest("aa", "3Mn1");
+        doTest('aa', '3Mn1');
 
         // 4
-        doTest("aaa", "3Mn48");
+        doTest('aaa', '3Mn48');
 
         // 2
-        doTest("aaaa", "3Mn4ha3");
+        doTest('aaaa', '3Mn4ha3');
     });
 
     it('works for some random strings', () => {
         // I also calculated this ones so lets put them
-        doTest("foo", "8rrx8");
+        doTest('foo', '8rrx8');
 
-        doTest("foobar", "8rrx8b7Pc5");
+        doTest('foobar', '8rrx8b7Pc5');
     });
 });

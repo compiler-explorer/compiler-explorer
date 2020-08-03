@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-"use strict";
+'use strict';
 
 var FontScale = require('../fontscale');
 var monaco = require('monaco-editor');
@@ -40,9 +40,9 @@ function Ir(hub, container, state) {
     this.decorations = {};
     this.prevDecorations = [];
 
-    this.irEditor = monaco.editor.create(this.domRoot.find(".monaco-placeholder")[0], {
+    this.irEditor = monaco.editor.create(this.domRoot.find('.monaco-placeholder')[0], {
         fontFamily: 'Consolas, "Liberation Mono", Courier, monospace',
-        value: "",
+        value: '',
         scrollBeyondLastLine: false,
         language: 'llvm-ir',
         readOnly: true,
@@ -108,7 +108,7 @@ Ir.prototype.initEditorActions = function () {
 Ir.prototype.initButtons = function (state) {
     this.fontScale = new FontScale(this.domRoot, state, this.irEditor);
 
-    this.topBar = this.domRoot.find(".top-bar");
+    this.topBar = this.domRoot.find('.top-bar');
 };
 
 Ir.prototype.initCallbacks = function () {
@@ -155,7 +155,7 @@ Ir.prototype.onCompileResponse = function (id, compiler, result) {
     if (result.hasIrOutput) {
         this.showIrResults(result.irOutput);
     } else if (compiler.supportsIrView) {
-        this.showIrResults([{text: "<No output>"}]);
+        this.showIrResults([{text: '<No output>'}]);
     }
 
     // Why call this explicitly instead of just listening to the "colours" event?
@@ -164,7 +164,7 @@ Ir.prototype.onCompileResponse = function (id, compiler, result) {
 };
 
 Ir.prototype.getPaneName = function () {
-    return this._compilerName + " IR Viewer (Editor #" + this._editorid + ", Compiler #" + this._compilerid + ")";
+    return this._compilerName + ' IR Viewer (Editor #' + this._editorid + ', Compiler #' + this._compilerid + ')';
 };
 
 Ir.prototype.setTitle = function () {
@@ -174,7 +174,7 @@ Ir.prototype.setTitle = function () {
 Ir.prototype.showIrResults = function (irCode) {
     if (!this.irEditor) return;
     this.irCode = irCode;
-    this.irEditor.getModel().setValue(irCode.length ? _.pluck(irCode, 'text').join('\n') : "<No IR generated>");
+    this.irEditor.getModel().setValue(irCode.length ? _.pluck(irCode, 'text').join('\n') : '<No IR generated>');
 
     if (!this.awaitingInitialResults) {
         if (this.selection) {
@@ -192,7 +192,7 @@ Ir.prototype.onCompiler = function (id, compiler, options, editorid) {
         this._editorid = editorid;
         this.setTitle();
         if (compiler && !compiler.supportsIrView) {
-            this.irEditor.setValue("<IR output is not supported for this compiler>");
+            this.irEditor.setValue('<IR output is not supported for this compiler>');
         }
     }
 };
@@ -325,7 +325,7 @@ Ir.prototype.onPanesLinkLine = function (compilerId, lineNumber, revealLine, sen
 
 Ir.prototype.close = function () {
     this.eventHub.unsubscribe();
-    this.eventHub.emit("irViewClosed", this._compilerid);
+    this.eventHub.emit('irViewClosed', this._compilerid);
     this.irEditor.dispose();
 };
 

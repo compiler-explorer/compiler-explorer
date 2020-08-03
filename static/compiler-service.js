@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-"use strict";
+'use strict';
 var Sentry = require('@sentry/browser');
 var $ = require('jquery');
 var _ = require('underscore');
@@ -137,27 +137,27 @@ function handleRequestError(request, reject, xhr, textStatus, errorThrown) {
     var error = errorThrown;
     if (!error) {
         switch (textStatus) {
-            case "timeout":
-                error = "Request timed out";
+            case 'timeout':
+                error = 'Request timed out';
                 break;
-            case "abort":
-                error = "Request was aborted";
+            case 'abort':
+                error = 'Request was aborted';
                 break;
-            case "error":
+            case 'error':
                 switch (xhr.status) {
                     case 500:
-                        error = "Request failed: internal server error";
+                        error = 'Request failed: internal server error';
                         break;
                     case 504:
-                        error = "Request failed: gateway timeout";
+                        error = 'Request failed: gateway timeout';
                         break;
                     default:
-                        error = "Request failed: HTTP error code " + xhr.status;
+                        error = 'Request failed: HTTP error code ' + xhr.status;
                         break;
                 }
                 break;
             default:
-                error = "Error sending request";
+                error = 'Error sending request';
                 break;
         }
     }
@@ -229,7 +229,7 @@ CompilerService.prototype.requestPopularArguments = function (compilerId, option
 
 CompilerService.prototype.expand = function (source) {
     var includeFind = /^\s*#\s*include\s*["<](https?:\/\/[^>"]+)[>"]/;
-    var lines = source.split("\n");
+    var lines = source.split('\n');
     var promises = [];
     _.each(lines, function (line, lineNumZeroBased) {
         var match = line.match(includeFind);
@@ -249,7 +249,7 @@ CompilerService.prototype.expand = function (source) {
         }
     });
     return Promise.all(promises).then(function () {
-        return lines.join("\n");
+        return lines.join('\n');
     });
 };
 

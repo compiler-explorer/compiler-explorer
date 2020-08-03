@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 const chai = require('chai');
-const chaiAsPromised = require("chai-as-promised");
+const chaiAsPromised = require('chai-as-promised');
 const OptionsHandler = require('../lib/options-handler');
 const _ = require('underscore');
 const properties = require('../lib/properties');
@@ -66,7 +66,7 @@ const libProps = {
     'libs.someotherlib.versions.trunk.alias': 'master',
 };
 
-if (process.platform === "win32") {
+if (process.platform === 'win32') {
     libProps['libs.fakelib.versions.twoPaths.path'] =
         libProps['libs.fakelib.versions.twoPaths.path'].replace(':', ';');
     libProps['libs.fakelib.versions.twoPaths.libpath'] =
@@ -134,21 +134,21 @@ describe('Options handler', () => {
         });
         libs.should.deep.equal({fake: {
             fakelib: {
-                description: "Its is a real, fake lib!",
-                name: "fake lib",
-                url: "https://godbolt.org",
+                description: 'Its is a real, fake lib!',
+                name: 'fake lib',
+                url: 'https://godbolt.org',
                 dependencies: [],
                 liblink: [],
                 staticliblink: [],
                 versions: {
-                    noPaths: {path: [], version: "no paths", liblink: [], libpath: [], staticliblink: [], dependencies: [], alias: [],
-                        lookupversion: "no-paths123"},
-                    onePath: {path: ["/dev/null"], version: "one path", staticliblink: [], dependencies: [],
-                        liblink: ["hello"],
-                        libpath: ["/lib/null"], alias: []},
-                    twoPaths: {path: ["/dev/null", "/dev/urandom"], staticliblink: [], dependencies: [],
-                        liblink: ["hello1", "hello2"],
-                        libpath: ["/lib/null", "/lib/urandom"], version: "two paths", alias: []},
+                    noPaths: {path: [], version: 'no paths', liblink: [], libpath: [], staticliblink: [], dependencies: [], alias: [],
+                        lookupversion: 'no-paths123'},
+                    onePath: {path: ['/dev/null'], version: 'one path', staticliblink: [], dependencies: [],
+                        liblink: ['hello'],
+                        libpath: ['/lib/null'], alias: []},
+                    twoPaths: {path: ['/dev/null', '/dev/urandom'], staticliblink: [], dependencies: [],
+                        liblink: ['hello1', 'hello2'],
+                        libpath: ['/lib/null', '/lib/urandom'], version: 'two paths', alias: []},
                 },
             },
             fs: {
@@ -162,11 +162,11 @@ describe('Options handler', () => {
                     std: {
                         libpath: [],
                         path: [],
-                        version: "std",
+                        version: 'std',
                         alias: [],
                         liblink: [],
-                        staticliblink: ["c++fs", "rt"],
-                        dependencies: ["pthread"]
+                        staticliblink: ['c++fs', 'rt'],
+                        dependencies: ['pthread']
                     },
                 }
             },
@@ -181,11 +181,11 @@ describe('Options handler', () => {
                     trunk: {
                         libpath: [],
                         path: [],
-                        version: "trunk",
-                        alias: ["master"],
+                        version: 'trunk',
+                        alias: ['master'],
                         liblink: [],
-                        staticliblink: ["someotherlib"],
-                        dependencies: ["c++fs"],
+                        staticliblink: ['someotherlib'],
+                        dependencies: ['c++fs'],
                     },
                 }
             }
@@ -255,7 +255,7 @@ describe('Options handler', () => {
     });
     it('should get static libraries', () => {
         const libs = optionsHandler.parseLibraries({fake: libProps.libs});
-        const compilerInfo = makeFakeCompilerInfo('g82', 'c++', "cpp", "8.2", true);
+        const compilerInfo = makeFakeCompilerInfo('g82', 'c++', 'cpp', '8.2', true);
         const env = {
             ceProps: () => {},
             compilerProps: () => {}
@@ -263,15 +263,15 @@ describe('Options handler', () => {
         compilerInfo.libs = libs.fake;
         const compiler = new BaseCompiler(compilerInfo, env);
 
-        const staticlinks = compiler.getStaticLibraryLinks([{id: "fs", version: "std"}]);
-        staticlinks.should.deep.equal(["-lc++fs", "-lrt", "-lpthread"]);
+        const staticlinks = compiler.getStaticLibraryLinks([{id: 'fs', version: 'std'}]);
+        staticlinks.should.deep.equal(['-lc++fs', '-lrt', '-lpthread']);
 
-        const sharedlinks = compiler.getSharedLibraryLinks([{id: "fs", version: "std"}]);
+        const sharedlinks = compiler.getSharedLibraryLinks([{id: 'fs', version: 'std'}]);
         sharedlinks.should.deep.equal([]);
     });
     it('should sort static libraries', () => {
         const libs = optionsHandler.parseLibraries({fake: libProps.libs});
-        const compilerInfo = makeFakeCompilerInfo('g82', 'c++', "cpp", "8.2", true);
+        const compilerInfo = makeFakeCompilerInfo('g82', 'c++', 'cpp', '8.2', true);
         const env = {
             ceProps: () => {},
             compilerProps: () => {}
@@ -279,17 +279,17 @@ describe('Options handler', () => {
         compilerInfo.libs = libs.fake;
         const compiler = new BaseCompiler(compilerInfo, env);
 
-        let staticlinks = compiler.getSortedStaticLibraries([{id: "someotherlib", version: "trunk"}]);
-        staticlinks.should.deep.equal(["someotherlib", "c++fs"]);
+        let staticlinks = compiler.getSortedStaticLibraries([{id: 'someotherlib', version: 'trunk'}]);
+        staticlinks.should.deep.equal(['someotherlib', 'c++fs']);
 
         staticlinks = compiler.getSortedStaticLibraries([
-            {id: "fs", version: "std"},
-            {id: "someotherlib", version: "trunk"}]);
-        staticlinks.should.deep.equal(["someotherlib", "c++fs", "rt", "pthread"]);
+            {id: 'fs', version: 'std'},
+            {id: 'someotherlib', version: 'trunk'}]);
+        staticlinks.should.deep.equal(['someotherlib', 'c++fs', 'rt', 'pthread']);
     });
     it('library sort special case 1', () => {
         const libs = moreOptionsHandler.parseLibraries({fake: moreLibProps.libs});
-        const compilerInfo = makeFakeCompilerInfo('g82', 'c++', "cpp", "8.2", true);
+        const compilerInfo = makeFakeCompilerInfo('g82', 'c++', 'cpp', '8.2', true);
         const env = {
             ceProps: () => {},
             compilerProps: () => {}
@@ -298,12 +298,12 @@ describe('Options handler', () => {
         const compiler = new BaseCompiler(compilerInfo, env);
 
         let staticlinks = compiler.getSortedStaticLibraries([
-            {id: "fs", version: "std"}]);
-        staticlinks.should.deep.equal(["fsextra", "c++fs", "rt", "pthread"]);
+            {id: 'fs', version: 'std'}]);
+        staticlinks.should.deep.equal(['fsextra', 'c++fs', 'rt', 'pthread']);
     });
     it('library sort special case 2', () => {
         const libs = moreOptionsHandler.parseLibraries({fake: moreLibProps.libs});
-        const compilerInfo = makeFakeCompilerInfo('g82', 'c++', "cpp", "8.2", true);
+        const compilerInfo = makeFakeCompilerInfo('g82', 'c++', 'cpp', '8.2', true);
         const env = {
             ceProps: () => {},
             compilerProps: () => {}
@@ -312,14 +312,14 @@ describe('Options handler', () => {
         const compiler = new BaseCompiler(compilerInfo, env);
 
         let staticlinks = compiler.getSortedStaticLibraries([
-            {id: "yalib", version: "trunk"},
-            {id: "fs", version: "std"},
-            {id: "someotherlib", version: "trunk"}]);
-        staticlinks.should.deep.equal(["yalib", "someotherlib", "fsextra", "c++fs", "rt", "pthread"]);
+            {id: 'yalib', version: 'trunk'},
+            {id: 'fs', version: 'std'},
+            {id: 'someotherlib', version: 'trunk'}]);
+        staticlinks.should.deep.equal(['yalib', 'someotherlib', 'fsextra', 'c++fs', 'rt', 'pthread']);
     });
     it('library sort special case 3', () => {
         const libs = moreOptionsHandler.parseLibraries({fake: moreLibProps.libs});
-        const compilerInfo = makeFakeCompilerInfo('g82', 'c++', "cpp", "8.2", true);
+        const compilerInfo = makeFakeCompilerInfo('g82', 'c++', 'cpp', '8.2', true);
         const env = {
             ceProps: () => {},
             compilerProps: () => {}
@@ -328,14 +328,14 @@ describe('Options handler', () => {
         const compiler = new BaseCompiler(compilerInfo, env);
 
         let staticlinks = compiler.getSortedStaticLibraries([
-            {id: "fourthlib", version: "trunk"},
-            {id: "fs", version: "std"},
-            {id: "someotherlib", version: "trunk"}]);
-        staticlinks.should.deep.equal(["fourthlib", "yalib", "someotherlib", "fsextra", "c++fs", "rt", "pthread"]);
+            {id: 'fourthlib', version: 'trunk'},
+            {id: 'fs', version: 'std'},
+            {id: 'someotherlib', version: 'trunk'}]);
+        staticlinks.should.deep.equal(['fourthlib', 'yalib', 'someotherlib', 'fsextra', 'c++fs', 'rt', 'pthread']);
     });
     it('can detect libraries from options', () => {
         const libs = moreOptionsHandler.parseLibraries({fake: moreLibProps.libs});
-        const compilerInfo = makeFakeCompilerInfo('g82', 'c++', "cpp", "8.2", true);
+        const compilerInfo = makeFakeCompilerInfo('g82', 'c++', 'cpp', '8.2', true);
         const env = {
             ceProps: () => {},
             compilerProps: () => {}
@@ -344,20 +344,20 @@ describe('Options handler', () => {
         const compiler = new BaseCompiler(compilerInfo, env);
 
         const obj = {
-            libraries: [{id: "ctre", version: "trunk"}],
-            options: ["-O3", "--std=c++17", "-lhello"]
+            libraries: [{id: 'ctre', version: 'trunk'}],
+            options: ['-O3', '--std=c++17', '-lhello']
         };
         compiler.tryAutodetectLibraries(obj).should.equal(true);
 
         obj.libraries.should.deep.equal([
-            {id: "ctre", version: "trunk"},
-            {id: "autolib", version: "autodetect"}
+            {id: 'ctre', version: 'trunk'},
+            {id: 'autolib', version: 'autodetect'}
         ]);
-        obj.options.should.deep.equal(["-O3", "--std=c++17"]);
+        obj.options.should.deep.equal(['-O3', '--std=c++17']);
     });
     it('server-side library alias support (just in case client doesn\'t support it)', () => {
         const libs = moreOptionsHandler.parseLibraries({fake: moreLibProps.libs});
-        const compilerInfo = makeFakeCompilerInfo('g82', 'c++', "cpp", "8.2", true);
+        const compilerInfo = makeFakeCompilerInfo('g82', 'c++', 'cpp', '8.2', true);
         const env = {
             ceProps: () => {},
             compilerProps: () => {}
@@ -366,7 +366,7 @@ describe('Options handler', () => {
         const compiler = new BaseCompiler(compilerInfo, env);
 
         let staticlinks = compiler.getSortedStaticLibraries([
-            {id: "someotherlib", version: "master"}]);
-        staticlinks.should.deep.equal(["someotherlib", "c++fs"]);
+            {id: 'someotherlib', version: 'master'}]);
+        staticlinks.should.deep.equal(['someotherlib', 'c++fs']);
     });
 });

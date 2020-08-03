@@ -23,8 +23,8 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 const chai = require('chai');
-const chaiAsPromised = require("chai-as-promised");
-const LlvmIrParser = require("../lib/llvm-ir");
+const chaiAsPromised = require('chai-as-promised');
+const LlvmIrParser = require('../lib/llvm-ir');
 const properties = require('../lib/properties');
 
 chai.use(chaiAsPromised);
@@ -146,8 +146,8 @@ describe('llvm-ir getFileName', function () {
         llvmIrParser = new LlvmIrParser(compilerProps);
     });
     const debugInfo = {
-        '!10': { filename: "/test.cpp" },
-        '!20': { filename: "/example.cpp" },
+        '!10': { filename: '/test.cpp' },
+        '!20': { filename: '/example.cpp' },
         '!11': { file: '!10' },
         '!21': { file: '!20' },
         '!12': { scope: '!11' },
@@ -155,13 +155,13 @@ describe('llvm-ir getFileName', function () {
     };
 
     it('should return a filename', function () {
-        expect(llvmIrParser.getFileName(debugInfo, '!10')).to.equal("/test.cpp");
-        expect(llvmIrParser.getFileName(debugInfo, '!11')).to.equal("/test.cpp");
+        expect(llvmIrParser.getFileName(debugInfo, '!10')).to.equal('/test.cpp');
+        expect(llvmIrParser.getFileName(debugInfo, '!11')).to.equal('/test.cpp');
     });
 
     it('should return the filename of its parent scope', function () {
-        expect(llvmIrParser.getFileName(debugInfo, '!12')).to.equal("/test.cpp");
-        expect(llvmIrParser.getFileName(debugInfo, '!13')).to.equal("/test.cpp");
+        expect(llvmIrParser.getFileName(debugInfo, '!12')).to.equal('/test.cpp');
+        expect(llvmIrParser.getFileName(debugInfo, '!13')).to.equal('/test.cpp');
     });
 
     it('should return null on non-existend node', function () {

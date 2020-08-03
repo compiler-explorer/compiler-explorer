@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 const chai = require('chai');
-const chaiAsPromised = require("chai-as-promised");
+const chaiAsPromised = require('chai-as-promised');
 const PPCICompiler = require('../lib/compilers/ppci');
 const {makeCompilationEnvironment} = require('./utils');
 
@@ -48,16 +48,16 @@ describe('PPCI', function () {
 
     it('Should be ok with most arguments', () => {
         const compiler = new PPCICompiler(info, ce);
-        compiler.filterUserOptions(["hello", "-help", "--something"]).should.deep.equal(["hello", "-help", "--something"]);
+        compiler.filterUserOptions(['hello', '-help', '--something']).should.deep.equal(['hello', '-help', '--something']);
     });
 
     it('Should be ok with path argument', () => {
         const compiler = new PPCICompiler(info, ce);
-        compiler.filterUserOptions(["hello", "--stuff", "/proc/cpuinfo"]).should.deep.equal(["hello", "--stuff", "/proc/cpuinfo"]);
+        compiler.filterUserOptions(['hello', '--stuff', '/proc/cpuinfo']).should.deep.equal(['hello', '--stuff', '/proc/cpuinfo']);
     });
 
     it('Should be Not ok with report arguments', () => {
         const compiler = new PPCICompiler(info, ce);
-        compiler.filterUserOptions(["hello", "--report", "--text-report", "--html-report"]).should.deep.equal(["hello"]);
+        compiler.filterUserOptions(['hello', '--report', '--text-report', '--html-report']).should.deep.equal(['hello']);
     });
 });

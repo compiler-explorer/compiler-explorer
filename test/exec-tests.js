@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 const chai = require('chai'),
-    chaiAsPromised = require("chai-as-promised"),
+    chaiAsPromised = require('chai-as-promised'),
     exec = require('../lib/exec');
 
 chai.use(chaiAsPromised);
@@ -45,8 +45,8 @@ if (process.platform !== 'win32') { // POSIX
                     {
                         code: 0,
                         okToCache: true,
-                        stderr: "",
-                        stdout: "hello world\n"
+                        stderr: '',
+                        stdout: 'hello world\n'
                     });
         });
         it('limits output', () => {
@@ -56,8 +56,8 @@ if (process.platform !== 'win32') { // POSIX
                     {
                         code: 0,
                         okToCache: true,
-                        stderr: "",
-                        stdout: "A very ver\n[Truncated]"
+                        stderr: '',
+                        stdout: 'A very ver\n[Truncated]'
                     });
         });
         it('handles failing commands', () => {
@@ -67,8 +67,8 @@ if (process.platform !== 'win32') { // POSIX
                     {
                         code: 1,
                         okToCache: true,
-                        stderr: "",
-                        stdout: ""
+                        stderr: '',
+                        stdout: ''
                     });
         });
         it('handles timouts', () => {
@@ -78,23 +78,23 @@ if (process.platform !== 'win32') { // POSIX
                     {
                         code: -1,
                         okToCache: false,
-                        stderr: "\nKilled - processing time exceeded",
-                        stdout: ""
+                        stderr: '\nKilled - processing time exceeded',
+                        stdout: ''
                     });
         });
         it('handles missing executables', () => {
             return exec.execute('__not_a_command__', [], {})
-                .should.be.rejectedWith("ENOENT");
+                .should.be.rejectedWith('ENOENT');
         });
         it('handles input', () => {
-            return exec.execute('cat', [], {input: "this is stdin"})
+            return exec.execute('cat', [], {input: 'this is stdin'})
                 .then(testExecOutput)
                 .should.eventually.deep.equals(
                     {
                         code: 0,
                         okToCache: true,
-                        stderr: "",
-                        stdout: "this is stdin"
+                        stderr: '',
+                        stdout: 'this is stdin'
                     });
         });
     });
@@ -108,8 +108,8 @@ if (process.platform !== 'win32') { // POSIX
                     {
                         code: 0,
                         okToCache: true,
-                        stderr: "",
-                        stdout: "hello world\r\n"
+                        stderr: '',
+                        stdout: 'hello world\r\n'
                     });
         });
         it('limits output', () => {
@@ -119,8 +119,8 @@ if (process.platform !== 'win32') { // POSIX
                     {
                         code: 0,
                         okToCache: true,
-                        stderr: "",
-                        stdout: "A very ver\n[Truncated]"
+                        stderr: '',
+                        stdout: 'A very ver\n[Truncated]'
                     });
         });
         it('handles failing commands', () => {
@@ -130,8 +130,8 @@ if (process.platform !== 'win32') { // POSIX
                     {
                         code: 1,
                         okToCache: true,
-                        stderr: "",
-                        stdout: ""
+                        stderr: '',
+                        stdout: ''
                     });
         });
         it('handles timouts', () => {
@@ -141,13 +141,13 @@ if (process.platform !== 'win32') { // POSIX
                     {
                         code: 1,
                         okToCache: false,
-                        stderr: "\nKilled - processing time exceeded",
-                        stdout: ""
+                        stderr: '\nKilled - processing time exceeded',
+                        stdout: ''
                     });
         });
         it('handles missing executables', () => {
             return exec.execute('__not_a_command__', [], {})
-                .should.be.rejectedWith("ENOENT");
+                .should.be.rejectedWith('ENOENT');
         });
     });
 }

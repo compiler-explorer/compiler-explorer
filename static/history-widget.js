@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-"use strict";
+'use strict';
 
 var
     $ = require('jquery'),
@@ -45,12 +45,12 @@ HistoryDiffState.prototype.update = function (result) {
 
 HistoryDiffState.prototype.refresh = function () {
     var output = this.result || [];
-    var content = "";
+    var content = '';
     _.each(output, function (val) {
         if (content.length > 0) {
-            content += "\n";
+            content += '\n';
         }
-        content += "/****** " + val.lang + " ******/\n";
+        content += '/****** ' + val.lang + ' ******/\n';
         content += val.source;
     });
     this.model.setValue(content);
@@ -66,9 +66,9 @@ function HistoryWidget() {
 
 HistoryWidget.prototype.initializeIfNeeded = function () {
     if (this.modal === null) {
-        this.modal = $("#history");
+        this.modal = $('#history');
 
-        var placeholder = this.modal.find(".monaco-placeholder");
+        var placeholder = this.modal.find('.monaco-placeholder');
         this.diffEditor = monaco.editor.createDiffEditor(placeholder[0], {
             fontFamily: 'Consolas, "Liberation Mono", Courier, monospace',
             scrollBeyondLastLine: false,
@@ -106,7 +106,7 @@ HistoryWidget.prototype.populateFromLocalStorage = function () {
             var languages = this.getLanguagesFromHistoryEntry(data).join(', ');
             return {
                 dt: data.dt,
-                name: dt.toString().replace(/\s\(.*\)/, '').concat(" (" + languages + ")"),
+                name: dt.toString().replace(/\s\(.*\)/, '').concat(' (' + languages + ')'),
                 load: _.bind(function () {
                     this.onLoad(data);
                     this.modal.modal('hide');

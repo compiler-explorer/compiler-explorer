@@ -99,7 +99,7 @@ function Compiler(hub, container, state) {
     this.prevDecorations = [];
     this.labelDefinitions = {};
     this.alertSystem = new Alert();
-    this.alertSystem.prefixMessage = "Compiler #" + this.id + ": ";
+    this.alertSystem.prefixMessage = 'Compiler #' + this.id + ': ';
 
     this.awaitingInitialResults = false;
     this.selection = state.selection;
@@ -109,7 +109,7 @@ function Compiler(hub, container, state) {
 
     this.initButtons(state);
 
-    var monacoDisassembly = "asm";
+    var monacoDisassembly = 'asm';
     if (languages[this.currentLangId] && languages[this.currentLangId].monacoDisassembly) {
         // TODO: If languages[this.currentLangId] is not valid, something went wrong. Find out what
         monacoDisassembly = languages[this.currentLangId].monacoDisassembly;
@@ -489,7 +489,7 @@ Compiler.prototype.getEffectiveFilters = function () {
 };
 
 Compiler.prototype.findTools = function (content, tools) {
-    if (content.componentName === "tool") {
+    if (content.componentName === 'tool') {
         if (
             (content.componentState.editor === this.sourceEditorId) &&
             (content.componentState.compiler === this.id)) {
@@ -608,7 +608,7 @@ Compiler.prototype.sendCompile = function (request) {
         })
         .catch(function (x) {
             clearTimeout(progress);
-            var message = "Unknown error";
+            var message = 'Unknown error';
             if (_.isString(x)) {
                 message = x;
             } else if (x) {
@@ -646,7 +646,7 @@ Compiler.prototype.setAssembly = function (asm) {
     this.assembly = asm;
     if (!this.outputEditor || !this.outputEditor.getModel()) return;
     var editorModel = this.outputEditor.getModel();
-    editorModel.setValue(asm.length ? _.pluck(asm, 'text').join('\n') : "<No assembly generated>");
+    editorModel.setValue(asm.length ? _.pluck(asm, 'text').join('\n') : '<No assembly generated>');
 
     if (!this.awaitingInitialResults) {
         if (this.selection) {
@@ -1000,11 +1000,11 @@ Compiler.prototype.initButtons = function (state) {
         var target = $(e.target);
         if (!target.is(this.prependOptions) && this.prependOptions.has(target).length === 0 &&
             target.closest('.popover').length === 0)
-            this.prependOptions.popover("hide");
+            this.prependOptions.popover('hide');
 
         if (!target.is(this.fullCompilerName) && this.fullCompilerName.has(target).length === 0 &&
             target.closest('.popover').length === 0)
-            this.fullCompilerName.popover("hide");
+            this.fullCompilerName.popover('hide');
     }, this));
 
     this.filterBinaryButton = this.domRoot.find("[data-bind='binary']");
@@ -1079,7 +1079,7 @@ Compiler.prototype.supportsTool = function (toolId) {
 
 Compiler.prototype.initToolButton = function (togglePannerAdder, button, toolId) {
     var createToolView = _.bind(function () {
-        return Components.getToolViewWith(this.id, this.sourceEditorId, toolId, "");
+        return Components.getToolViewWith(this.id, this.sourceEditorId, toolId, '');
     }, this);
 
     this.container.layoutManager
@@ -1087,7 +1087,7 @@ Compiler.prototype.initToolButton = function (togglePannerAdder, button, toolId)
         ._dragListener.on('dragStart', togglePannerAdder);
 
     button.click(_.bind(function () {
-        button.prop("disabled", true);
+        button.prop('disabled', true);
         var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
             this.container.layoutManager.root.contentItems[0];
         insertPoint.addChild(createToolView);
@@ -1107,13 +1107,13 @@ Compiler.prototype.initToolButtons = function (togglePannerAdder) {
         btn.append("<span class='dropdown-icon fas fa-cog'></span>" + title);
         this.toolsMenu.append(btn);
 
-        if (toolName !== "none") {
+        if (toolName !== 'none') {
             this.initToolButton(togglePannerAdder, btn, toolName);
         }
     }, this);
 
     if (_.isEmpty(this.compiler.tools)) {
-        addTool("none", "No tools available");
+        addTool('none', 'No tools available');
     } else {
         _.each(this.compiler.tools, function (tool) {
             addTool(tool.tool.id, tool.tool.name);
@@ -1180,30 +1180,30 @@ Compiler.prototype.updateButtons = function () {
 };
 
 Compiler.prototype.handlePopularArgumentsResult = function (result) {
-    var popularArgumentsMenu = this.domRoot.find("div.populararguments div.dropdown-menu");
-    popularArgumentsMenu.html("");
+    var popularArgumentsMenu = this.domRoot.find('div.populararguments div.dropdown-menu');
+    popularArgumentsMenu.html('');
 
     if (result) {
         var addedOption = false;
 
         _.forEach(result, _.bind(function (arg, key) {
-            var argumentButton = $(document.createElement("button"));
+            var argumentButton = $(document.createElement('button'));
             argumentButton.addClass('dropdown-item btn btn-light btn-sm');
-            argumentButton.attr("title", arg.description);
-            argumentButton.data("arg", key);
+            argumentButton.attr('title', arg.description);
+            argumentButton.data('arg', key);
             argumentButton.html(
                 "<div class='argmenuitem'>" +
-                "<span class='argtitle'>" + _.escape(key) + "</span>" +
-                "<span class='argdescription'>" + arg.description + "</span>" +
-                "</div>");
+                "<span class='argtitle'>" + _.escape(key) + '</span>' +
+                "<span class='argdescription'>" + arg.description + '</span>' +
+                '</div>');
 
             argumentButton.click(_.bind(function () {
                 var button = argumentButton;
                 var curOptions = this.optionsField.val();
                 if (curOptions.length > 0) {
-                    this.optionsField.val(curOptions + " " + button.data("arg"));
+                    this.optionsField.val(curOptions + ' ' + button.data('arg'));
                 } else {
-                    this.optionsField.val(button.data("arg"));
+                    this.optionsField.val(button.data('arg'));
                 }
 
                 this.optionsField.change();
@@ -1214,12 +1214,12 @@ Compiler.prototype.handlePopularArgumentsResult = function (result) {
         }, this));
 
         if (!addedOption) {
-            $("div.populararguments").hide();
+            $('div.populararguments').hide();
         } else {
-            $("div.populararguments").show();
+            $('div.populararguments').show();
         }
     } else {
-        $("div.populararguments").hide();
+        $('div.populararguments').hide();
     }
 };
 
@@ -1348,10 +1348,10 @@ Compiler.prototype.checkForUnwiseArguments = function (optionsArray) {
     // Check if any options are in the unwiseOptions array and remember them
     var unwiseOptions = _.intersection(optionsArray, this.compiler.unwiseOptions);
 
-    var options = unwiseOptions.length === 1 ? "Option " : "Options ";
-    var names = unwiseOptions.join(", ");
-    var are = unwiseOptions.length === 1 ? " is " : " are ";
-    var msg = options + names + are + "not recommended, as behaviour might change based on server hardware.";
+    var options = unwiseOptions.length === 1 ? 'Option ' : 'Options ';
+    var names = unwiseOptions.join(', ');
+    var are = unwiseOptions.length === 1 ? ' is ' : ' are ';
+    var msg = options + names + are + 'not recommended, as behaviour might change based on server hardware.';
 
     if (unwiseOptions.length > 0) {
         this.alertSystem.notify(msg, {group: 'unwiseOption', collapseSimilar: true});
@@ -1738,7 +1738,7 @@ Compiler.prototype.onAsmToolTip = function (ed) {
 
     function newGitHubIssueUrl() {
         return 'https://github.com/compiler-explorer/compiler-explorer/issues/new?title=' +
-            encodeURIComponent("[BUG] Problem with " + opcode + " opcode");
+            encodeURIComponent('[BUG] Problem with ' + opcode + ' opcode');
     }
 
     function appendInfo(url) {
@@ -1780,37 +1780,37 @@ Compiler.prototype.handleCompilationStatus = function (status) {
 
     function ariaLabel() {
         // Compiling...
-        if (status.code === 4) return "Compiling";
+        if (status.code === 4) return 'Compiling';
         if (status.compilerOut === 0) {
             // StdErr.length > 0
-            if (status.code === 3) return "Compilation succeeded with errors";
+            if (status.code === 3) return 'Compilation succeeded with errors';
             // StdOut.length > 0
-            if (status.code === 2) return "Compilation succeeded with warnings";
-            return "Compilation succeeded";
+            if (status.code === 2) return 'Compilation succeeded with warnings';
+            return 'Compilation succeeded';
         } else {
             // StdErr.length > 0
-            if (status.code === 3) return "Compilation failed with errors";
+            if (status.code === 3) return 'Compilation failed with errors';
             // StdOut.length > 0
-            if (status.code === 2) return "Compilation failed with warnings";
-            return "Compilation failed";
+            if (status.code === 2) return 'Compilation failed with warnings';
+            return 'Compilation failed';
         }
     }
 
     function color() {
         // Compiling...
-        if (status.code === 4) return "black";
+        if (status.code === 4) return 'black';
         if (status.compilerOut === 0) {
             // StdErr.length > 0
-            if (status.code === 3) return "#FF6645";
+            if (status.code === 3) return '#FF6645';
             // StdOut.length > 0
-            if (status.code === 2) return "#FF6500";
-            return "#12BB12";
+            if (status.code === 2) return '#FF6500';
+            return '#12BB12';
         } else {
             // StdErr.length > 0
-            if (status.code === 3) return "#FF1212";
+            if (status.code === 3) return '#FF1212';
             // StdOut.length > 0
-            if (status.code === 2) return "#BB8700";
-            return "#FF6645";
+            if (status.code === 2) return '#BB8700';
+            return '#FF6645';
         }
     }
 
@@ -1862,7 +1862,7 @@ Compiler.prototype.updateCompilersSelector = function (info) {
         callback(_.map(this.getCurrentLangCompilers(), _.identity));
     }, this));
     this.compilerSelectizer.setValue([this.compiler ? this.compiler.id : null], true);
-    this.options = info.options || "";
+    this.options = info.options || '';
     this.optionsField.val(this.options);
 };
 

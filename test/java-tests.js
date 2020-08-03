@@ -75,7 +75,7 @@ function testJava(env, baseFolder, ...classNames) {
 }
 
 // Temporarily disabled: see #1438
-describe.skip("Basic java compiler setup", function () {
+describe.skip('Basic java compiler setup', function () {
     let env;
     let compiler;
     before(() => {
@@ -83,12 +83,12 @@ describe.skip("Basic java compiler setup", function () {
         compiler = new JavaCompiler(info, env);
     });
 
-    it("Should not crash on instantiation", function () {
+    it('Should not crash on instantiation', function () {
         new JavaCompiler(info, env);
     });
 
 
-    it("should ignore second param for getOutputFilename", function () {
+    it('should ignore second param for getOutputFilename', function () {
         // Because javac produces a class files based on user provided class names,
         // it's not possible to determine the main class file before compilation/parsing
 
@@ -99,13 +99,13 @@ describe.skip("Basic java compiler setup", function () {
         }
     });
 
-    describe("Forbidden compiler arguments", function () {
+    describe('Forbidden compiler arguments', function () {
         let compiler;
         before(() => {
             const env = makeCompilationEnvironment({languages});
             compiler = new JavaCompiler(info, env);
         });
-        it("JavaCompiler should not allow -d parameter", () => {
+        it('JavaCompiler should not allow -d parameter', () => {
             compiler.filterUserOptions(['hello', '-d', '--something', '--something-else']).should.deep.equal(
                 ['hello', '--something-else']
             );
@@ -117,7 +117,7 @@ describe.skip("Basic java compiler setup", function () {
             );
         });
 
-        it("JavaCompiler should not allow -s parameter", () => {
+        it('JavaCompiler should not allow -s parameter', () => {
             compiler.filterUserOptions(['hello', '-s', '--something', '--something-else']).should.deep.equal(
                 ['hello', '--something-else']
             );
@@ -129,7 +129,7 @@ describe.skip("Basic java compiler setup", function () {
             );
         });
 
-        it("JavaCompiler should not allow --source-path parameter", () => {
+        it('JavaCompiler should not allow --source-path parameter', () => {
             compiler.filterUserOptions(['hello', '--source-path', '--something', '--something-else']).should.deep.equal(
                 ['hello', '--something-else']
             );
@@ -141,7 +141,7 @@ describe.skip("Basic java compiler setup", function () {
             );
         });
 
-        it("JavaCompiler should not allow -sourcepath parameter", () => {
+        it('JavaCompiler should not allow -sourcepath parameter', () => {
             compiler.filterUserOptions(['hello', '-sourcepath', '--something', '--something-else']).should.deep.equal(
                 ['hello', '--something-else']
             );
@@ -155,7 +155,7 @@ describe.skip("Basic java compiler setup", function () {
     });
 });
 
-describe.skip("javap parsing", () => {
+describe.skip('javap parsing', () => {
     let compiler;
     let env;
     before(() => {
@@ -163,7 +163,7 @@ describe.skip("javap parsing", () => {
         compiler = new JavaCompiler(info, env);
     });
 
-    it("should handle errors", () => {
+    it('should handle errors', () => {
         const result = {
             asm: '<Compilation failed>'
         };
@@ -173,13 +173,13 @@ describe.skip("javap parsing", () => {
         ]);
     });
 
-    it("Parses simple class with one method", () => {
+    it('Parses simple class with one method', () => {
         return Promise.all([
             testJava(env, 'test/java/square', 'javap-square')
         ]);
     });
 
-    it("Preserves ordering of multiple classes", () => {
+    it('Preserves ordering of multiple classes', () => {
         return Promise.all([
             testJava(env, 'test/java/two-classes', 'ZFirstClass', 'ASecondClass'),
             testJava(env, 'test/java/two-classes', 'ASecondClass', 'ZFirstClass')

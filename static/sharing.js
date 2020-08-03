@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-"use strict";
+'use strict';
 var $ = require('jquery');
 var _ = require('underscore');
 var options = require('./options');
@@ -36,7 +36,7 @@ var shareServices = {
         logoClass: 'fab fa-twitter',
         cssClass: 'share-twitter',
         getLink: function (title, url) {
-            return "https://twitter.com/intent/tweet?text=" +
+            return 'https://twitter.com/intent/tweet?text=' +
                 encodeURIComponent(title) + '&url=' + encodeURIComponent(url) + '&via=CompileExplore';
         },
         text: 'Tweet'
@@ -62,7 +62,7 @@ function configFromEmbedded(embeddedUrl) {
         // Ignore this, it's not a problem
     }
     if (params && params.source && params.compiler) {
-        var filters = _.chain((params.filters || "").split(','))
+        var filters = _.chain((params.filters || '').split(','))
             .map(function (o) {
                 return [o, true];
             })
@@ -138,7 +138,7 @@ function initShareButton(getLink, layout, noteNewState) {
         var socialSharingElements = popoverElement.find('.socialsharing');
         var root = $('.urls-container:visible');
         var label = root.find('.current');
-        var permalink = $(".permalink");
+        var permalink = $('.permalink');
         var urls = {};
         if (!currentNode) currentNode = $(root.find('.sources button')[0]);
         if (!currentBind) currentBind = currentNode.data().bind;
@@ -171,10 +171,10 @@ function initShareButton(getLink, layout, noteNewState) {
         }
 
         function getEmbeddedCacheLinkId() {
-            if ($("#shareembedlink input:checked").length === 0) return "Embed";
+            if ($('#shareembedlink input:checked').length === 0) return 'Embed';
 
-            return "Embed|" + $("#shareembedlink input:checked").map(function () {
-                return $(this).prop("class");
+            return 'Embed|' + $('#shareembedlink input:checked').map(function () {
+                return $(this).prop('class');
             })
                 .get()
                 .join();
@@ -187,7 +187,7 @@ function initShareButton(getLink, layout, noteNewState) {
             permalink.prop('disabled', false);
             var config = layout.toConfig();
             var cacheLinkId = currentBind;
-            if (currentBind === "Embed") {
+            if (currentBind === 'Embed') {
                 cacheLinkId = getEmbeddedCacheLinkId();
             }
             if (!urls[cacheLinkId]) {
@@ -220,7 +220,7 @@ function initShareButton(getLink, layout, noteNewState) {
         embeddedButton.on('click', function () {
             setCurrent(embeddedButton);
             update();
-            getLink.popover("hide");
+            getLink.popover('hide');
         });
 
         $('#embedsettings input').off('click').on('click', function () {
@@ -234,7 +234,7 @@ function initShareButton(getLink, layout, noteNewState) {
     // Dismiss the popover on escape.
     $(document).on('keyup.editable', function (e) {
         if (e.which === 27) {
-            getLink.popover("hide");
+            getLink.popover('hide');
         }
     });
 
@@ -243,12 +243,12 @@ function initShareButton(getLink, layout, noteNewState) {
     $(document).on('mouseup', function (e) {
         var target = $(e.target);
         if (!target.is(getLink) && getLink.has(target).length === 0 && target.closest('.popover').length === 0)
-            getLink.popover("hide");
+            getLink.popover('hide');
     });
 
     // Opens the popup if asked to by the editor
     layout.eventHub.on('displaySharingPopover', function () {
-        getLink.popover("show");
+        getLink.popover('show');
     });
 
     if (options.sharingEnabled) {
@@ -258,17 +258,17 @@ function initShareButton(getLink, layout, noteNewState) {
 
 function getEmbeddedUrl(config, root, readOnly, extraOptions) {
     var location = window.location.origin + root;
-    var path = "";
-    var parameters = "";
+    var path = '';
+    var parameters = '';
 
     _.forEach(extraOptions, function (value, key) {
-        if (parameters === "") {
-            parameters = "?";
+        if (parameters === '') {
+            parameters = '?';
         } else {
-            parameters += "&";
+            parameters += '&';
         }
 
-        parameters += key + "=" + value;
+        parameters += key + '=' + value;
     });
 
     if (readOnly) {
@@ -320,10 +320,10 @@ function getLinks(config, currentBind, done) {
             done(null, window.location.origin + root + '#' + url.serialiseState(config), false);
             return;
         default:
-            if (currentBind.substr(0, 5) === "Embed") {
+            if (currentBind.substr(0, 5) === 'Embed') {
                 var options = {};
-                $("#shareembedlink input:checked").each(function () {
-                    options[$(this).prop("class")] = true;
+                $('#shareembedlink input:checked').each(function () {
+                    options[$(this).prop('class')] = true;
                 });
                 done(null, getEmbeddedHtml(config, root, false, options), false);
                 return;

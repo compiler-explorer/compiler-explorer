@@ -21,7 +21,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ,
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-"use strict";
+'use strict';
 
 const chai = require('chai');
 const clientstate = require('../lib/clientstate');
@@ -30,64 +30,64 @@ const ClientStateNormalizer = require('../lib/clientstate-normalizer').ClientSta
 
 chai.should();
 
-describe("Normalizing clientstate", () => {
-    it("Should translate 2 compilers GL layout to clientstate", () => {
+describe('Normalizing clientstate', () => {
+    it('Should translate 2 compilers GL layout to clientstate', () => {
         const normalizer = new ClientStateNormalizer();
 
-        const data =  JSON.parse(fs.readFileSync("test/state/twocompilers.json"));
+        const data =  JSON.parse(fs.readFileSync('test/state/twocompilers.json'));
 
         normalizer.fromGoldenLayout(data);
 
-        const resultdata = JSON.parse(fs.readFileSync("test/state/twocompilers.json.normalized"));
+        const resultdata = JSON.parse(fs.readFileSync('test/state/twocompilers.json.normalized'));
 
         normalizer.normalized.should.deep.equal(resultdata);
     });
 
-    it("Should recognize everything and kitchensink as well", () => {
+    it('Should recognize everything and kitchensink as well', () => {
         const normalizer = new ClientStateNormalizer();
 
-        const data =  JSON.parse(fs.readFileSync("test/state/andthekitchensink.json"));
+        const data =  JSON.parse(fs.readFileSync('test/state/andthekitchensink.json'));
 
         normalizer.fromGoldenLayout(data);
 
-        const resultdata = JSON.parse(fs.readFileSync("test/state/andthekitchensink.json.normalized"));
+        const resultdata = JSON.parse(fs.readFileSync('test/state/andthekitchensink.json.normalized'));
 
         normalizer.normalized.should.deep.equal(resultdata);
     });
 
-    it("Should support conformanceview", () => {
+    it('Should support conformanceview', () => {
         const normalizer = new ClientStateNormalizer();
 
-        const data =  JSON.parse(fs.readFileSync("test/state/conformanceview.json"));
+        const data =  JSON.parse(fs.readFileSync('test/state/conformanceview.json'));
 
         normalizer.fromGoldenLayout(data);
 
-        const resultdata = JSON.parse(fs.readFileSync("test/state/conformanceview.json.normalized"));
+        const resultdata = JSON.parse(fs.readFileSync('test/state/conformanceview.json.normalized'));
 
         normalizer.normalized.should.deep.equal(resultdata);
     });
 
-    it("Should support executors", () => {
+    it('Should support executors', () => {
         const normalizer = new ClientStateNormalizer();
 
-        const data =  JSON.parse(fs.readFileSync("test/state/executor.json"));
+        const data =  JSON.parse(fs.readFileSync('test/state/executor.json'));
 
         normalizer.fromGoldenLayout(data);
 
-        const resultdata = JSON.parse(fs.readFileSync("test/state/executor.json.normalized"));
+        const resultdata = JSON.parse(fs.readFileSync('test/state/executor.json.normalized'));
 
         normalizer.normalized.should.deep.equal(resultdata);
     });
 });
 
-describe("ClientState parsing", () => {
-    it("Should work without executors", () => {
+describe('ClientState parsing', () => {
+    it('Should work without executors', () => {
         const state = new clientstate.State({
             sessions: [
                 {id:1,
-                    language:"c++",
-                    source:"int main() {}",
-                    compilers:[{id:"g91",options:"-O3 -std=c++2a"}]
+                    language:'c++',
+                    source:'int main() {}',
+                    compilers:[{id:'g91',options:'-O3 -std=c++2a'}]
                 }]
         });
 
@@ -95,15 +95,15 @@ describe("ClientState parsing", () => {
         state.sessions[0].executors.length.should.equal(0);
     });
 
-    it("Should work with executor", () => {
+    it('Should work with executor', () => {
         const state = new clientstate.State({
             sessions: [
                 {id:1,
-                    language:"c++",
-                    source:"int main() {}",
+                    language:'c++',
+                    source:'int main() {}',
                     compilers: [],
                     executors:[{
-                        compiler:{id:"g91",options:"-O3 -std=c++2a"}
+                        compiler:{id:'g91',options:'-O3 -std=c++2a'}
                     }]
                 }]
         });

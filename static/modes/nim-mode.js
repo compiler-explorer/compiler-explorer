@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-"use strict";
+'use strict';
 var monaco = require('monaco-editor');
 
 function definition() {
@@ -30,26 +30,26 @@ function definition() {
     
     return {
         keywords: [
-            "addr", "as", "asm",
-            "bind", "block", "break",
-            "case", "cast", "concept", "const", "continue", "converter",
-            "defer", "discard", "distinct", "div", "do",
-            "elif", "else", "end", "enum", "except", "export",
-            "finally", "for", "from", "func",
-            "if", "import", "include", "interface", "iterator",
-            "let",
-            "macro", "method", "mixin", "mod",
-            "nil",
-            "object", "out",
-            "proc", "ptr",
-            "raise", "ref", "return",
-            "static",
-            "template", "try", "tuple", "type",
-            "using",
-            "var",
-            "when", "while",
-            "yield",
-            "push", "pop"
+            'addr', 'as', 'asm',
+            'bind', 'block', 'break',
+            'case', 'cast', 'concept', 'const', 'continue', 'converter',
+            'defer', 'discard', 'distinct', 'div', 'do',
+            'elif', 'else', 'end', 'enum', 'except', 'export',
+            'finally', 'for', 'from', 'func',
+            'if', 'import', 'include', 'interface', 'iterator',
+            'let',
+            'macro', 'method', 'mixin', 'mod',
+            'nil',
+            'object', 'out',
+            'proc', 'ptr',
+            'raise', 'ref', 'return',
+            'static',
+            'template', 'try', 'tuple', 'type',
+            'using',
+            'var',
+            'when', 'while',
+            'yield',
+            'push', 'pop'
         ],
         operators: [
             '=', '+', '-', '*', '/', '<', '>',

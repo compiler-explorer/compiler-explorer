@@ -21,7 +21,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-"use strict";
+'use strict';
 var _ = require('underscore');
 var $ = require('jquery');
 var colour = require('../colour');
@@ -77,7 +77,7 @@ function Editor(hub, state, container) {
 
     this.editorSourceByLang = {};
     this.alertSystem = new Alert();
-    this.alertSystem.prefixMessage = "Editor #" + this.id + ": ";
+    this.alertSystem.prefixMessage = 'Editor #' + this.id + ': ';
 
     this.awaitingInitialResults = false;
     this.selection = state.selection;
@@ -85,7 +85,7 @@ function Editor(hub, state, container) {
     this.langKeys = _.keys(languages);
     this.initLanguage(state);
 
-    var root = this.domRoot.find(".monaco-placeholder");
+    var root = this.domRoot.find('.monaco-placeholder');
     var legacyReadOnly = state.options && !!state.options.readOnly;
     this.editor = monaco.editor.create(root[0], {
         scrollBeyondLastLine: false,
@@ -102,7 +102,7 @@ function Editor(hub, state, container) {
         folding: true,
         lineNumbersMinChars: 1,
         emptySelectionClipboard: true,
-        autoIndent: this.settings.autoIndent ? "advanced" : "none",
+        autoIndent: this.settings.autoIndent ? 'advanced' : 'none',
         vimInUse: this.settings.useVim,
         fontLigatures: this.settings.editorsFLigatures
     });
@@ -121,7 +121,7 @@ function Editor(hub, state, container) {
         setTimeout(_.bind(function () {
             this.editor.setSelection(new monaco.Selection(1, 1, 1, 1));
             this.editor.focus();
-            this.editor.getAction("editor.fold").run();
+            this.editor.getAction('editor.fold').run();
             this.editor.clearSelection();
         }, this), 500);
     }
@@ -228,7 +228,7 @@ Editor.prototype.setSource = function (newSource) {
     this.updateSource(newSource);
 
     if (window.compilerExplorerOptions.mobileViewer) {
-        $(this.domRoot.find(".monaco-placeholder textarea")).hide();
+        $(this.domRoot.find('.monaco-placeholder textarea')).hide();
     }
 };
 
@@ -301,8 +301,8 @@ Editor.prototype.initCallbacks = function () {
     if (window.compilerExplorerOptions.mobileViewer) {
         // workaround for issue with contextmenu not going away when tapping somewhere else on the screen
         this.editor.onDidChangeCursorSelection(_.bind(function () {
-            var contextmenu = $("div.context-view.monaco-menu-container");
-            if (contextmenu.css("display") !== "none") {
+            var contextmenu = $('div.context-view.monaco-menu-container');
+            if (contextmenu.css('display') !== 'none') {
                 contextmenu.hide();
             }
         }, this));
@@ -317,7 +317,7 @@ Editor.prototype.initCallbacks = function () {
     this.eventHub.on('initialised', this.maybeEmitChange, this);
 
     $(document).on('keyup.editable', _.bind(function (e) {
-        if (e.target === this.domRoot.find(".monaco-placeholder .inputarea")[0]) {
+        if (e.target === this.domRoot.find('.monaco-placeholder .inputarea')[0]) {
             if (e.which === 27) {
                 this.onEscapeKey(e);
             } else if (e.which === 45) {
@@ -369,14 +369,14 @@ Editor.prototype.onInsertKey = function (event) {
 
 Editor.prototype.enableVim = function () {
     this.vimMode = monacoVim.initVimMode(this.editor, this.domRoot.find('#v-status')[0]);
-    this.vimFlag.prop("class", "btn btn-info");
+    this.vimFlag.prop('class', 'btn btn-info');
     this.editor.vimInUse = true;
 };
 
 Editor.prototype.disableVim = function () {
     this.vimMode.dispose();
-    this.domRoot.find('#v-status').html("");
-    this.vimFlag.prop("class", "btn btn-light");
+    this.domRoot.find('#v-status').html('');
+    this.vimFlag.prop('class', 'btn btn-light');
     this.editor.vimInUse = false;
 };
 
@@ -386,7 +386,7 @@ Editor.prototype.initButtons = function (state) {
     // Ensure that the button is disabled if we don't have nothing to select
     // Note that is might be disabled for other reasons beforehand
     if (this.langKeys.length <= 1) {
-        this.languageBtn.prop("disabled", true);
+        this.languageBtn.prop('disabled', true);
     }
     this.topBar = this.domRoot.find('.top-bar');
     this.hideable = this.domRoot.find('.hideable');
@@ -463,7 +463,7 @@ Editor.prototype.initButtons = function (state) {
                     this.showLoadSaver();
                 }
             } else {
-                this.eventHub.emit("displaySharingPopover");
+                this.eventHub.emit('displaySharingPopover');
             }
         }
     }, this));
@@ -498,7 +498,7 @@ Editor.prototype.b64UTFEncode = function (str) {
 Editor.prototype.asciiEncodeJsonText = function (json) {
     return json.replace(/[\u007F-\uFFFF]/g, function (chr) {
         // json unicode escapes must always be 4 characters long, so pad with leading zeros
-        return "\\u" + ("0000" + chr.charCodeAt(0).toString(16)).substr(-4);
+        return '\\u' + ('0000' + chr.charCodeAt(0).toString(16)).substr(-4);
     });
 };
 
@@ -508,7 +508,7 @@ Editor.prototype.getCompilerStates = function () {
     _.each(this.ourCompilers, _.bind(function (val, compilerIdStr) {
         var compilerId = parseInt(compilerIdStr);
 
-        var glCompiler = _.find(this.container.layoutManager.root.getComponentsByName("compiler"), function (c) {
+        var glCompiler = _.find(this.container.layoutManager.root.getComponentsByName('compiler'), function (c) {
             return c.id === compilerId;
         });
 
@@ -526,32 +526,32 @@ Editor.prototype.updateOpenInCppInsights = function () {
 
     var compilers = this.getCompilerStates();
     _.each(compilers, _.bind(function (compiler) {
-        if ((compiler.options.indexOf("-std=c++11") !== -1) ||
-            (compiler.options.indexOf("-std=gnu++11") !== -1)) {
-            cppStd = "cpp11";
-        } else if ((compiler.options.indexOf("-std=c++14") !== -1) ||
-            (compiler.options.indexOf("-std=gnu++14") !== -1)) {
-            cppStd = "cpp14";
-        } else if ((compiler.options.indexOf("-std=c++17") !== -1) ||
-            (compiler.options.indexOf("-std=gnu++17") !== -1)) {
-            cppStd = "cpp17";
-        } else if ((compiler.options.indexOf("-std=c++2a") !== -1) ||
-            (compiler.options.indexOf("-std=gnu++2a") !== -1)) {
-            cppStd = "cpp2a";
-        } else if (compiler.options.indexOf("-std=c++98") !== -1) {
-            cppStd = "cpp98";
+        if ((compiler.options.indexOf('-std=c++11') !== -1) ||
+            (compiler.options.indexOf('-std=gnu++11') !== -1)) {
+            cppStd = 'cpp11';
+        } else if ((compiler.options.indexOf('-std=c++14') !== -1) ||
+            (compiler.options.indexOf('-std=gnu++14') !== -1)) {
+            cppStd = 'cpp14';
+        } else if ((compiler.options.indexOf('-std=c++17') !== -1) ||
+            (compiler.options.indexOf('-std=gnu++17') !== -1)) {
+            cppStd = 'cpp17';
+        } else if ((compiler.options.indexOf('-std=c++2a') !== -1) ||
+            (compiler.options.indexOf('-std=gnu++2a') !== -1)) {
+            cppStd = 'cpp2a';
+        } else if (compiler.options.indexOf('-std=c++98') !== -1) {
+            cppStd = 'cpp98';
         }
     }, this));
 
     var link = 'https://cppinsights.io/lnk?code=' + this.b64UTFEncode(this.getSource()) + '&std=' + cppStd + '&rev=1.0';
 
-    this.domRoot.find(".open-in-cppinsights").attr("href", link);
+    this.domRoot.find('.open-in-cppinsights').attr('href', link);
 };
 
 Editor.prototype.cleanupSemVer = function (semver) {
     if (semver) {
         var semverStr = semver.toString();
-        if ((semverStr !== "") && (semverStr.indexOf('(') === -1)) {
+        if ((semverStr !== '') && (semverStr.indexOf('(') === -1)) {
             var vercomps = semverStr.split('.');
             return vercomps[0] + '.' + (vercomps[1] ? vercomps[1] : '0');
         }
@@ -579,10 +579,10 @@ Editor.prototype.updateOpenInQuickBench = function () {
         if (semver && groupOrName) {
             groupOrName = groupOrName.toLowerCase();
             if (groupOrName.indexOf('gcc') !== -1) {
-                quickBenchState.compiler = "gcc-" + semver;
+                quickBenchState.compiler = 'gcc-' + semver;
                 knownCompiler = true;
             } else if (groupOrName.indexOf('clang') !== -1) {
-                quickBenchState.compiler = "clang-" + semver;
+                quickBenchState.compiler = 'clang-' + semver;
                 knownCompiler = true;
             }
         }
@@ -590,35 +590,35 @@ Editor.prototype.updateOpenInQuickBench = function () {
         if (knownCompiler) {
             var match = compiler.options.match(/-(O([0-3sg]|fast))/);
             if (match !== null) {
-                if (match[2] === "fast") {
-                    quickBenchState.optim = "F";
+                if (match[2] === 'fast') {
+                    quickBenchState.optim = 'F';
                 } else {
                     quickBenchState.optim = match[2].toUpperCase();
                 }
             }
 
-            if ((compiler.options.indexOf("-std=c++11") !== -1) ||
-                (compiler.options.indexOf("-std=gnu++11") !== -1)) {
-                quickBenchState.cppVersion = "11";
-            } else if ((compiler.options.indexOf("-std=c++14") !== -1) ||
-                (compiler.options.indexOf("-std=gnu++14") !== -1)) {
-                quickBenchState.cppVersion = "14";
-            } else if ((compiler.options.indexOf("-std=c++17") !== -1) ||
-                (compiler.options.indexOf("-std=gnu++17") !== -1)) {
-                quickBenchState.cppVersion = "17";
-            } else if ((compiler.options.indexOf("-std=c++2a") !== -1) ||
-                (compiler.options.indexOf("-std=gnu++2a") !== -1)) {
-                quickBenchState.cppVersion = "20";
+            if ((compiler.options.indexOf('-std=c++11') !== -1) ||
+                (compiler.options.indexOf('-std=gnu++11') !== -1)) {
+                quickBenchState.cppVersion = '11';
+            } else if ((compiler.options.indexOf('-std=c++14') !== -1) ||
+                (compiler.options.indexOf('-std=gnu++14') !== -1)) {
+                quickBenchState.cppVersion = '14';
+            } else if ((compiler.options.indexOf('-std=c++17') !== -1) ||
+                (compiler.options.indexOf('-std=gnu++17') !== -1)) {
+                quickBenchState.cppVersion = '17';
+            } else if ((compiler.options.indexOf('-std=c++2a') !== -1) ||
+                (compiler.options.indexOf('-std=gnu++2a') !== -1)) {
+                quickBenchState.cppVersion = '20';
             }
 
-            if ((compiler.options.indexOf("-stdlib=libc++") !== -1)) {
-                quickBenchState.lib = "llvm";
+            if ((compiler.options.indexOf('-stdlib=libc++') !== -1)) {
+                quickBenchState.lib = 'llvm';
             }
         }
     }, this));
 
     var link = 'http://quick-bench.com/#' + btoa(this.asciiEncodeJsonText(JSON.stringify(quickBenchState)));
-    this.domRoot.find(".open-in-quickbench").attr("href", link);
+    this.domRoot.find('.open-in-quickbench').attr('href', link);
 };
 
 Editor.prototype.changeLanguage = function (newLang) {
@@ -666,8 +666,8 @@ Editor.prototype.initEditorActions = function () {
             });
             this.alertSystem
                 .notify('Compile on change has been toggled ' + (this.settings.compileOnChange ? 'ON' : 'OFF'), {
-                    group: "togglecompile",
-                    alertClass: this.settings.compileOnChange ? "notification-on" : "notification-off",
+                    group: 'togglecompile',
+                    alertClass: this.settings.compileOnChange ? 'notification-on' : 'notification-off',
                     dismissTime: 3000
                 });
         }, this)
@@ -727,7 +727,7 @@ Editor.prototype.searchOnCppreference = function (ed) {
     var word = ed.getModel().getWordAtPosition(pos);
     if (!word || !word.word) return;
 
-    var url = "https://en.cppreference.com/mwiki/index.php?search=" + encodeURIComponent(word.word);
+    var url = 'https://en.cppreference.com/mwiki/index.php?search=' + encodeURIComponent(word.word);
     window.open(url, '_blank', 'noopener');
 };
 
@@ -736,8 +736,8 @@ Editor.prototype.doesMatchEditor = function (otherSource) {
 };
 
 Editor.prototype.confirmOverwrite = function (yes) {
-    this.alertSystem.ask("Changes were made to the code",
-        "Changes were made to the code while it was being processed. Overwrite changes?",
+    this.alertSystem.ask('Changes were made to the code',
+        'Changes were made to the code while it was being processed. Overwrite changes?',
         {yes: yes, no: null});
 };
 
@@ -791,9 +791,9 @@ Editor.prototype.formatCurrentText = function () {
                 }
             } else {
                 // Ops, the formatter itself failed!
-                this.alertSystem.notify("We encountered an error formatting your code: " + result.answer, {
-                    group: "formatting",
-                    alertClass: "notification-error"
+                this.alertSystem.notify('We encountered an error formatting your code: ' + result.answer, {
+                    group: 'formatting',
+                    alertClass: 'notification-error'
                 });
             }
         }, this),
@@ -807,10 +807,10 @@ Editor.prototype.formatCurrentText = function () {
                     // continue regardless of error
                 }
             }
-            error = error || "Unknown error";
-            this.alertSystem.notify("We ran into some issues while formatting your code: " + error, {
-                group: "formatting",
-                alertClass: "notification-error"
+            error = error || 'Unknown error';
+            this.alertSystem.notify('We ran into some issues while formatting your code: ' + error, {
+                group: 'formatting',
+                alertClass: 'notification-error'
             });
         }, this),
         cache: true
@@ -834,7 +834,7 @@ Editor.prototype.resize = function () {
 
 Editor.prototype.updateAndCalcTopBarHeight = function () {
     var width = this.domRoot.width();
-    if (width === this.cachedTopBarHeightAtWidth && !this.topBar.hasClass("d-none")) {
+    if (width === this.cachedTopBarHeightAtWidth && !this.topBar.hasClass('d-none')) {
         return this.cachedTopBarHeight;
     }
 
@@ -842,7 +842,7 @@ Editor.prototype.updateAndCalcTopBarHeight = function () {
     var topBarHeightMax = 0;
     var topBarHeightMin = 0;
 
-    if (!this.topBar.hasClass("d-none")) {
+    if (!this.topBar.hasClass('d-none')) {
         this.hideable.show();
         topBarHeightMax = this.topBar.outerHeight(true);
         this.hideable.hide();
@@ -865,7 +865,7 @@ Editor.prototype.onSettingsChange = function (newSettings) {
     this.settings = _.clone(newSettings);
 
     this.editor.updateOptions({
-        autoIndent: this.settings.autoIndent ? "advanced" : "none",
+        autoIndent: this.settings.autoIndent ? 'advanced' : 'none',
         autoClosingBrackets: this.settings.autoCloseBrackets,
         useVim: this.settings.useVim,
         quickSuggestions: this.settings.showQuickSuggestions,
@@ -934,7 +934,7 @@ Editor.prototype.onCompilerOpen = function (compilerId, editorId) {
     if (editorId === this.id) {
         // On any compiler open, rebroadcast our state in case they need to know it.
         if (this.waitingForLanguage) {
-            var glCompiler = _.find(this.container.layoutManager.root.getComponentsByName("compiler"), function (c) {
+            var glCompiler = _.find(this.container.layoutManager.root.getComponentsByName('compiler'), function (c) {
                 return c.id === compilerId;
             });
             if (glCompiler) {
@@ -1005,7 +1005,7 @@ Editor.prototype.onCompileResponse = function (compilerId, compiler, result) {
             range: new monaco.Range(tag.startLineNumber, tag.startColumn, tag.startLineNumber + 1, 1),
             options: {
                 isWholeLine: false,
-                inlineClassName: "error-code"
+                inlineClassName: 'error-code'
             }
         };
     }, this);
@@ -1077,13 +1077,13 @@ Editor.prototype.updateDecorations = function () {
 
 Editor.prototype.onConformanceViewOpen = function (editorId) {
     if (editorId === this.id) {
-        this.conformanceViewerButton.attr("disabled", true);
+        this.conformanceViewerButton.attr('disabled', true);
     }
 };
 
 Editor.prototype.onConformanceViewClose = function (editorId) {
     if (editorId === this.id) {
-        this.conformanceViewerButton.attr("disabled", false);
+        this.conformanceViewerButton.attr('disabled', false);
     }
 };
 
@@ -1119,7 +1119,7 @@ Editor.prototype.onLanguageChange = function (newLangId) {
             this.updateTitle();
             this.updateState();
             // Broadcast the change to other panels
-            this.eventHub.emit("languageChange", this.id, newLangId);
+            this.eventHub.emit('languageChange', this.id, newLangId);
             this.maybeEmitChange(true);
             this.requestCompilation();
             ga.proxy('send', {
@@ -1133,7 +1133,7 @@ Editor.prototype.onLanguageChange = function (newLangId) {
 };
 
 Editor.prototype.getPaneName = function () {
-    return this.currentLanguage.name + " source #" + this.id;
+    return this.currentLanguage.name + ' source #' + this.id;
 };
 
 Editor.prototype.updateTitle = function () {

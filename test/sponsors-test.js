@@ -63,8 +63,8 @@ levels:
     - name: An object
         `).levels[0].sponsors;
         folks.should.deep.equalInAnyOrder([
-            {name: "An object"},
-            {name: "Just a string"}
+            {name: 'An object'},
+            {name: 'Just a string'}
         ]);
     });
 
@@ -121,8 +121,8 @@ levels:
       icon: icon
         `).levels[0].sponsors;
         things.should.deep.equalInAnyOrder([
-            {name: "one", icon: "image", img: "image"},
-            {name: "two", icon: "icon", img: "not_an_icon"}
+            {name: 'one', icon: 'image', img: 'image'},
+            {name: 'two', icon: 'icon', img: 'not_an_icon'}
         ]);
     });
 
@@ -151,8 +151,8 @@ levels:
       topIcon: true
         `).icons;
         icons.should.deep.equalInAnyOrder([
-            {name: "one", icon: "pick_me", img: "pick_me", topIcon: true},
-            {name: "four", icon: "pick_me_also", img: "pick_me_also", topIcon: true}
+            {name: 'one', icon: 'pick_me', img: 'pick_me', topIcon: true},
+            {name: 'four', icon: 'pick_me_also', img: 'pick_me_also', topIcon: true}
         ]);
     });
 });

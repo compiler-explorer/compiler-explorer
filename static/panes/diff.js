@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-"use strict";
+'use strict';
 
 var FontScale = require('../fontscale');
 var monaco = require('monaco-editor');
@@ -81,12 +81,12 @@ State.prototype.refresh = function () {
                 break;
         }
     }
-    this.model.setValue(_.pluck(output, 'text').join("\n"));
+    this.model.setValue(_.pluck(output, 'text').join('\n'));
 };
 
 function getItemDisplayTitle(item) {
-    if (typeof item.id === "string") {
-        var p = item.id.indexOf("_exec");
+    if (typeof item.id === 'string') {
+        var p = item.id.indexOf('_exec');
         if (p !== -1) {
             return 'Executor #' + item.id.substr(0, p);
         }
@@ -102,7 +102,7 @@ function Diff(hub, container, state) {
     this.domRoot.html($('#diff').html());
     this.compilers = {};
 
-    this.outputEditor = monaco.editor.createDiffEditor(this.domRoot.find(".monaco-placeholder")[0], {
+    this.outputEditor = monaco.editor.createDiffEditor(this.domRoot.find('.monaco-placeholder')[0], {
         fontFamily: 'Consolas, "Liberation Mono", Courier, monospace',
         scrollBeyondLastLine: false,
         readOnly: true,
@@ -113,7 +113,7 @@ function Diff(hub, container, state) {
     this.rhs = new State(state.rhs, monaco.editor.createModel('', 'asm'), state.rhsdifftype || DiffType_ASM);
     this.outputEditor.setModel({ original: this.lhs.model, modified: this.rhs.model });
 
-    var selectizeType = this.domRoot.find(".difftype-picker").selectize({
+    var selectizeType = this.domRoot.find('.difftype-picker').selectize({
         sortField: 'name',
         valueField: 'id',
         labelField: 'name',
@@ -144,7 +144,7 @@ function Diff(hub, container, state) {
         this.updateState();
     }, this));
 
-    var selectize = this.domRoot.find(".diff-picker").selectize({
+    var selectize = this.domRoot.find('.diff-picker').selectize({
         sortField: 'name',
         valueField: 'id',
         labelField: 'name',
@@ -233,7 +233,7 @@ Diff.prototype.onExecuteResult = function (id, compiler, result) {
 Diff.prototype.initButtons = function (state) {
     this.fontScale = new FontScale(this.domRoot, state, this.outputEditor);
 
-    this.topBar = this.domRoot.find(".top-bar");
+    this.topBar = this.domRoot.find('.top-bar');
 };
 
 Diff.prototype.initCallbacks = function () {
@@ -265,8 +265,8 @@ Diff.prototype.initCallbacks = function () {
 };
 
 Diff.prototype.requestResendResult = function (id) {
-    if (typeof id === "string") {
-        var p = id.indexOf("_exec");
+    if (typeof id === 'string') {
+        var p = id.indexOf('_exec');
         if (p !== -1) {
             var execId = parseInt(id.substr(0, p));
             this.eventHub.emit('resendExecution', execId);
@@ -278,13 +278,13 @@ Diff.prototype.requestResendResult = function (id) {
 
 Diff.prototype.onCompiler = function (id, compiler, options, editorId) {
     if (!compiler) return;
-    options = options || "";
-    var name = compiler.name + " " + options;
+    options = options || '';
+    var name = compiler.name + ' ' + options;
     // TODO: selectize doesn't play nicely with CSS tricks for truncation; this is the best I can do
     // There's a plugin at: http://www.benbybenjacobs.com/blog/2014/04/09/no-wrap-plugin-for-selectize-dot-js
     // but it doesn't look easy to integrate.
     var maxLength = 30;
-    if (name.length > maxLength - 3) name = name.substr(0, maxLength - 3) + "...";
+    if (name.length > maxLength - 3) name = name.substr(0, maxLength - 3) + '...';
     this.compilers[id] = {
         id: id,
         name: name,
@@ -318,9 +318,9 @@ Diff.prototype.onExecutorClose = function (id) {
 };
 
 Diff.prototype.updateCompilerNames = function () {
-    var name = "Diff";
+    var name = 'Diff';
     if (this.lhs.compiler && this.rhs.compiler)
-        name += " " + this.lhs.compiler.name + " vs " + this.rhs.compiler.name;
+        name += ' ' + this.lhs.compiler.name + ' vs ' + this.rhs.compiler.name;
     this.container.setTitle(name);
 };
 

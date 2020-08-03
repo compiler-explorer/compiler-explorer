@@ -26,7 +26,7 @@ const chai = require('chai'),
     asmDocsApi = require('../../lib/handlers/asm-docs-api'),
     express = require('express');
 
-chai.use(require("chai-http"));
+chai.use(require('chai-http'));
 chai.should();
 
 describe('Assembly documents', () => {
@@ -41,7 +41,7 @@ describe('Assembly documents', () => {
             .then(res => {
                 res.should.have.status(200);
                 res.should.be.html;
-                res.text.should.equal("Unknown opcode");
+                res.text.should.equal('Unknown opcode');
             })
             .catch(function (err) {
                 throw err;
@@ -54,7 +54,7 @@ describe('Assembly documents', () => {
             .then(res => {
                 res.should.have.status(200);
                 res.should.be.html;
-                res.text.should.contain("Copies the second operand");
+                res.text.should.contain('Copies the second operand');
             })
             .catch(function (err) {
                 throw err;
@@ -69,9 +69,9 @@ describe('Assembly documents', () => {
                 res.should.have.status(200);
                 res.should.be.json;
                 res.body.found.should.equal(true);
-                res.body.result.html.should.contain("Copies the second operand");
-                res.body.result.tooltip.should.contain("Copies the second operand");
-                res.body.result.url.should.contain("www.felixcloutier.com");
+                res.body.result.html.should.contain('Copies the second operand');
+                res.body.result.tooltip.should.contain('Copies the second operand');
+                res.body.result.url.should.contain('www.felixcloutier.com');
             })
             .catch(function (err) {
                 throw err;
@@ -97,7 +97,7 @@ describe('Assembly documents', () => {
             .then(res => {
                 res.should.have.status(200);
                 res.should.be.html;
-                res.text.should.contain("Adds the destination operand");
+                res.text.should.contain('Adds the destination operand');
             })
             .catch(function (err) {
                 throw err;

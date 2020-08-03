@@ -61,7 +61,7 @@ function Cfg(hub, container, state) {
             arrows: {to: {enabled: true}},
             smooth: {
                 enabled: true,
-                type: "dynamic",
+                type: 'dynamic',
                 roundness: 1
             },
             physics: true

@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-"use strict";
+'use strict';
 
 var _ = require('underscore');
 var $ = require('jquery');
@@ -47,7 +47,7 @@ function Tool(hub, container, state) {
     this.compilerId = state.compiler;
     this.editorId = state.editor;
     this.toolId = state.toolId;
-    this.toolName = "Tool";
+    this.toolName = 'Tool';
     this.compilerService = hub.compilerService;
     this.eventHub = hub.createEventHub();
     this.domRoot = container.getElement();
@@ -55,7 +55,7 @@ function Tool(hub, container, state) {
     this.editorContentRoot = this.domRoot.find('.monaco-placeholder');
     this.plainContentRoot = this.domRoot.find('pre.content');
     this.optionsToolbar = this.domRoot.find('.options-toolbar');
-    this.compilerName = "";
+    this.compilerName = '';
     this.normalAnsiToHtml = makeAnsiToHtml();
     this.errorAnsiToHtml = makeAnsiToHtml('red');
 
@@ -66,7 +66,7 @@ function Tool(hub, container, state) {
         scrollBeyondLastLine: false,
         readOnly: true,
         language: 'text',
-        fontFamily: "courier new",
+        fontFamily: 'courier new',
         glyphMargin: true,
         fixedOverflowWidgets: true,
         minimap: {
@@ -76,7 +76,7 @@ function Tool(hub, container, state) {
         renderIndentGuides: false
     });
 
-    this.fontScale = new FontScale(this.domRoot, state, ".content");
+    this.fontScale = new FontScale(this.domRoot, state, '.content');
     this.fontScale.on('change', _.bind(function () {
         this.saveState();
     }, this));
@@ -120,7 +120,7 @@ Tool.prototype.initCallbacks = function () {
 
     if (MutationObserver !== undefined) {
         new MutationObserver(_.bind(this.resize, this)).observe(this.stdinField[0], {
-            attributes: true, attributeFilter: ["style"]
+            attributes: true, attributeFilter: ['style']
         });
     }
 };
@@ -168,7 +168,7 @@ Tool.prototype.getInputArgs = function () {
     if (this.optionsField) {
         return this.optionsField.val();
     } else {
-        return "";
+        return '';
     }
 };
 
@@ -176,7 +176,7 @@ Tool.prototype.getInputStdin = function () {
     if (this.stdinField) {
         return this.stdinField.val();
     } else {
-        return "";
+        return '';
     }
 };
 
@@ -186,10 +186,10 @@ Tool.prototype.getEffectiveOptions = function () {
 
 Tool.prototype.resize = function () {
     var barsHeight = this.optionsToolbar.outerHeight() + 2;
-    if (!this.panelArgs.hasClass("d-none")) {
+    if (!this.panelArgs.hasClass('d-none')) {
         barsHeight += this.panelArgs.outerHeight();
     }
-    if (!this.panelStdin.hasClass("d-none")) {
+    if (!this.panelStdin.hasClass('d-none')) {
         barsHeight += this.panelStdin.outerHeight();
     }
 
@@ -275,16 +275,16 @@ Tool.prototype.saveState = function () {
 
 Tool.prototype.setLanguage = function (languageId) {
     if (languageId) {
-        this.options.enableToggle("wrap", false);
+        this.options.enableToggle('wrap', false);
         monaco.editor.setModelLanguage(this.outputEditor.getModel(), languageId);
-        this.outputEditor.setValue("");
+        this.outputEditor.setValue('');
         this.fontScale.setTarget(this.outputEditor);
         $(this.plainContentRoot).hide();
         $(this.editorContentRoot).show();
     } else {
-        this.options.enableToggle("wrap", true);
+        this.options.enableToggle('wrap', true);
         this.plainContentRoot.empty();
-        this.fontScale.setTarget(".content");
+        this.fontScale.setTarget('.content');
         $(this.editorContentRoot).hide();
         $(this.plainContentRoot).show();
     }
@@ -310,20 +310,20 @@ Tool.prototype.onCompileResult = function (id, compiler, result) {
         }
 
         if (toolInfo) {
-            this.toggleStdin.prop("disabled", false);
+            this.toggleStdin.prop('disabled', false);
 
             if (toolInfo.tool.stdinHint) {
-                this.stdinField.prop("placeholder", toolInfo.tool.stdinHint);
-                if (toolInfo.tool.stdinHint === "disabled") {
-                    this.toggleStdin.prop("disabled", true);
+                this.stdinField.prop('placeholder', toolInfo.tool.stdinHint);
+                if (toolInfo.tool.stdinHint === 'disabled') {
+                    this.toggleStdin.prop('disabled', true);
                 }
             } else {
-                this.stdinField.prop("placeholder", "Tool stdin...");
+                this.stdinField.prop('placeholder', 'Tool stdin...');
             }
         }
 
         if (toolResult) {
-            if (toolResult.languageId && (toolResult.languageId === "stderr")) {
+            if (toolResult.languageId && (toolResult.languageId === 'stderr')) {
                 toolResult.languageId = false;
             }
 
@@ -333,7 +333,7 @@ Tool.prototype.onCompileResult = function (id, compiler, result) {
                 this.setEditorContent(_.pluck(toolResult.stdout, 'text').join('\n'));
             } else {
                 _.each((toolResult.stdout || []).concat(toolResult.stderr || []), function (obj) {
-                    if (obj.text === "") {
+                    if (obj.text === '') {
                         this.add('<br/>');
                     } else {
                         this.add(this.normalAnsiToHtml.toHtml(obj.text), obj.tag ? obj.tag.line : obj.line);
@@ -348,11 +348,11 @@ Tool.prototype.onCompileResult = function (id, compiler, result) {
                 this.eventHub.emit('newSource', this.editorId, toolResult.newsource);
             }
         } else {
-            this.setEditorContent("No tool result");
+            this.setEditorContent('No tool result');
         }
     } catch(e) {
         this.setLanguage(false);
-        this.add("javascript error: " + e.message);
+        this.add('javascript error: ' + e.message);
     }
 };
 
@@ -398,8 +398,8 @@ Tool.prototype.setNormalContent = function () {
 };
 
 Tool.prototype.updateCompilerName = function () {
-    var name = this.toolName + " #" + this.compilerId;
-    if (this.compilerName) name += " with " + this.compilerName;
+    var name = this.toolName + ' #' + this.compilerId;
+    if (this.compilerName) name += ' with ' + this.compilerName;
     this.container.setTitle(name);
 };
 

@@ -21,7 +21,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-"use strict";
+'use strict';
 
 var _ = require('underscore');
 
@@ -45,7 +45,7 @@ function applyColours(editor, colours, schemeName, prevDecorations) {
             range: new monaco.Range(line, 1, line, 1),
             options: {
                 isWholeLine: true,
-                className: "line-linkage " + scheme.name + "-" + (ordinal % scheme.count)
+                className: 'line-linkage ' + scheme.name + '-' + (ordinal % scheme.count)
             }
         };
     });

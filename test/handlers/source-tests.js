@@ -26,7 +26,7 @@ const chai = require('chai'),
     source = require('../../lib/handlers/source'),
     express = require('express');
 
-chai.use(require("chai-http"));
+chai.use(require('chai-http'));
 chai.should();
 
 describe('Sources', () => {
@@ -48,7 +48,7 @@ describe('Sources', () => {
                 res.should.have.status(200);
                 res.should.be.json;
                 res.body.should.deep.equals({moose: 'pig'});
-                res.should.have.header("Yibble", 'boing');
+                res.should.have.header('Yibble', 'boing');
             })
             .catch(function (err) {
                 throw err;
@@ -61,7 +61,7 @@ describe('Sources', () => {
                 res.should.have.status(200);
                 res.should.be.json;
                 res.body.should.deep.equals({file: 'File called Grunkle'});
-                res.should.have.header("Yibble", 'boing');
+                res.should.have.header('Yibble', 'boing');
             })
             .catch(function (err) {
                 throw err;

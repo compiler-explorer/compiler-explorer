@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 const chai = require('chai');
-const chaiAsPromised = require("chai-as-promised");
+const chaiAsPromised = require('chai-as-promised');
 const LLCCompiler = require('../lib/compilers/llc');
 const OPTCompiler = require('../lib/compilers/opt');
 const {makeCompilationEnvironment} = require('./utils');

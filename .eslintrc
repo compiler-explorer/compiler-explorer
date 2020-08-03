@@ -35,6 +35,7 @@
       "named": "never",
       "asyncArrow": "always"
     }],
+    "quotes": [ "error", "single", { "allowTemplateLiterals": true, "avoidEscape": true}],
     "quote-props": ["error", "as-needed"],
     "yoda": [ "error", "never", { "onlyEquality": true } ],
     "jsdoc/check-alignment": 1,

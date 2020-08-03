@@ -69,7 +69,7 @@ describe('LLVM-mca tool definition', () => {
         const info = {
             exe: null,
             remote: true,
-            lang: "analysis",
+            lang: 'analysis',
             disabledFilters: 'labels,directives'
         };
         const a = new LLVMmcaTool(info, ce);
