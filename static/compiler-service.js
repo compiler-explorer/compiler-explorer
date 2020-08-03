@@ -228,7 +228,7 @@ CompilerService.prototype.requestPopularArguments = function (compilerId, option
 };
 
 CompilerService.prototype.expand = function (source) {
-    var includeFind = /^\s*#\s*include\s*["<](https?:\/\/[^>"]+)[>"]/;
+    var includeFind = /^\s*#\s*include\s*["<](https?:\/\/[^">]+)[">]/;
     var lines = source.split('\n');
     var promises = [];
     _.each(lines, function (line, lineNumZeroBased) {

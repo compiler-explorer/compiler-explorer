@@ -156,14 +156,14 @@ function definition() {
         ],
 
         // we include these common regular expressions
-        symbols: /[=><!~?:&|+\-*/^%]+/,
-        escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
+        symbols: /[!%&*+/:<=>?^|~-]+/,
+        escapes: /\\(?:["'\\abfnrtv]|x[\dA-Fa-f]{1,4}|u[\dA-Fa-f]{4}|U[\dA-Fa-f]{8})/,
 
         // The main tokenizer for our languages
         tokenizer: {
             root: [
                 // identifiers and keywords
-                [/[a-z_$][\w$]*/, {
+                [/[$_a-z][\w$]*/, {
                     cases: {
                         '@typeKeywords': 'keyword',
                         '@keywords': 'keyword',
@@ -176,7 +176,7 @@ function definition() {
                 {include: '@whitespace'},
 
                 // delimiters and operators
-                [/[{}()[\]]/, '@brackets'],
+                [/[()[\]{}]/, '@brackets'],
                 [/[<>](?!@symbols)/, '@brackets'],
                 [/@symbols/, {
                     cases: {
@@ -186,14 +186,14 @@ function definition() {
                 }],
 
                 // numbers
-                [/\d*\.\d+([eE][-+]?\d+)?[fFdD]?/, 'number.float'],
-                [/0[xX][0-9a-fA-F_]*[0-9a-fA-F][Ll]?/, 'number.hex'],
+                [/\d*\.\d+([Ee][+-]?\d+)?[DFdf]?/, 'number.float'],
+                [/0[Xx][\dA-F_a-f]*[\dA-Fa-f][Ll]?/, 'number.hex'],
                 [/0[0-7_]*[0-7][Ll]?/, 'number.octal'],
-                [/0[bB][0-1_]*[0-1][Ll]?/, 'number.binary'],
-                [/\d+[lL]?/, 'number'],
+                [/0[Bb][01_]*[01][Ll]?/, 'number.binary'],
+                [/\d+[Ll]?/, 'number'],
 
                 // delimiter: after number because of .\d floats
-                [/[;,.]/, 'delimiter'],
+                [/[,.;]/, 'delimiter'],
 
                 // strings
                 [/"([^"\\]|\\.)*$/, 'string.invalid'],  // non-teminated string
@@ -201,34 +201,34 @@ function definition() {
                 [/`/, 'string', '@rawstring'],
 
                 // characters
-                [/'[^\\']'/, 'string'],
+                [/'[^'\\]'/, 'string'],
                 [/(')(@escapes)(')/, ['string', 'string.escape', 'string']],
                 [/'/, 'string.invalid']
             ],
 
             whitespace: [
-                [/[ \t\r\n]+/, 'white'],
+                [/[\t\n\r ]+/, 'white'],
                 [/\/\*/, 'comment', '@comment'],
                 [/\/\+/, 'comment', '@nestingcomment'],
                 [/\/\/.*$/, 'comment']
             ],
 
             comment: [
-                [/[^/*]+/, 'comment'],
+                [/[^*/]+/, 'comment'],
                 [/\*\//, 'comment', '@pop'],
-                [/[/*]/, 'comment']
+                [/[*/]/, 'comment']
             ],
 
             nestingcomment: [
-                [/[^/+]+/, 'comment'],
+                [/[^+/]+/, 'comment'],
                 [/\/\+/, 'comment', '@push'],
                 [/\/\+/, 'comment.invalid'],
                 [/\+\//, 'comment', '@pop'],
-                [/[/+]/, 'comment']
+                [/[+/]/, 'comment']
             ],
 
             string: [
-                [/[^\\"]+/, 'string'],
+                [/[^"\\]+/, 'string'],
                 [/@escapes/, 'string.escape'],
                 [/\\./, 'string.escape.invalid'],
                 [/"/, 'string', '@pop']

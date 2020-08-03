@@ -77,34 +77,34 @@ function definition() {
             'win64cc', 'x86_fastcallcc', 'x86_stdcallcc', 'x86_thiscallcc', 'zeroext'
         ],
 
-        escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
+        escapes: /\\(?:["'\\abfnrtv]|x[\dA-Fa-f]{1,4}|u[\dA-Fa-f]{4}|U[\dA-Fa-f]{8})/,
 
         tokenizer: {
             root: [
-                [/[,(){}<>[\]]/, 'delimiters'],
+                [/[(),<>[\]{}]/, 'delimiters'],
                 [/i\d+\**/, 'type'], // llvmType
 
                 // Misc syntax.
-                [/[%@!]\d+/, 'variable.name'],                         // llvmNoName
+                [/[!%@]\d+/, 'variable.name'],                         // llvmNoName
                 [/-?\d+\.\d*(e[+-]\d+)?/, 'number.float'],             // llvmFloat
-                [/0[xX][0-9A-Fa-f]+/, 'number.hex'],                   // llvmFloat
+                [/0[Xx][\dA-Fa-f]+/, 'number.hex'],                   // llvmFloat
                 [/-?\d+/, 'number'],                                   // llvmNumber
                 [/\b(true|false)\b/, 'keyword'],                       // llvmBoolean
                 [/\b(zeroinitializer|undef|null|none)\b/, 'constant'], // llvmConstant
                 [/"([^"\\]|\\.)*$/, 'string.invalid'],                 // non-terminated string
                 [/"/, 'string', '@string'],                            // push to string state
-                [/[-a-zA-Z$._][-a-zA-Z$._0-9]*:/, 'tag'],              // llvmLabel
-                [/[%@][-a-zA-Z$._][-a-zA-Z$._0-9]*/, 'variable.name'], // llvmIdentifier
+                [/[$.A-Z_a-z-][\w$.-]*:/, 'tag'],              // llvmLabel
+                [/[%@][$.A-Z_a-z-][\w$.-]*/, 'variable.name'], // llvmIdentifier
 
                 // Named metadata and specialized metadata keywords.
-                [/![-a-zA-Z$._][-a-zA-Z$._0-9]*(?=\s*)$/, 'identifier'],    // llvmIdentifier
-                [/![-a-zA-Z$._][-a-zA-Z$._0-9]*(?=\s*[=!])/, 'identifier'], // llvmIdentifier
+                [/![$.A-Z_a-z-][\w$.-]*(?=\s*)$/, 'identifier'],    // llvmIdentifier
+                [/![$.A-Z_a-z-][\w$.-]*(?=\s*[!=])/, 'identifier'], // llvmIdentifier
                 [/![A-Za-z]+(?=\s*\()/, 'type'],                            // llvmType
-                [/\bDW_TAG_[a-z_]+\b/, 'constant'],                         // llvmConstant
-                [/\bDW_ATE_[a-zA-Z_]+\b/, 'constant'],                      // llvmConstant
-                [/\bDW_OP_[a-zA-Z0-9_]+\b/, 'constant'],                    // llvmConstant
-                [/\bDW_LANG_[a-zA-Z0-9_]+\b/, 'constant'],                  // llvmConstant
-                [/\bDW_VIRTUALITY_[a-z_]+\b/, 'constant'],                  // llvmConstant
+                [/\bDW_TAG_[_a-z]+\b/, 'constant'],                         // llvmConstant
+                [/\bDW_ATE_[A-Z_a-z]+\b/, 'constant'],                      // llvmConstant
+                [/\bDW_OP_\w+\b/, 'constant'],                    // llvmConstant
+                [/\bDW_LANG_\w+\b/, 'constant'],                  // llvmConstant
+                [/\bDW_VIRTUALITY_[_a-z]+\b/, 'constant'],                  // llvmConstant
                 [/\bDIFlag[A-Za-z]+\b/, 'constant'],                        // llvmConstant
 
                 // Syntax-highlight lit test commands and bug numbers.
@@ -115,8 +115,8 @@ function definition() {
                 [/;\s*CHECK-(?:NEXT|NOT|DAG|SAME|LABEL):.*$/, 'comment.doc'],   // llvmSpecialComment
                 [/;\s*XFAIL:.*$/, 'comment.doc'],                               // llvmSpecialComment
                 [/;.*$/, 'comment'],
-                [/[*#=!]/, 'operators'],
-                [/[a-z_$][\w$]*/, {
+                [/[!#*=]/, 'operators'],
+                [/[$_a-z][\w$]*/, {
                     cases: {
                         '@statements': 'operators',
                         '@keywords': 'keyword',
@@ -124,11 +124,11 @@ function definition() {
                         '@default': 'identifier'
                     }
                 }],
-                [/[ \t\r\n]+/, 'white']
+                [/[\t\n\r ]+/, 'white']
 
             ],
             string: [
-                [/[^\\"]+/, 'string'],
+                [/[^"\\]+/, 'string'],
                 [/@escapes/, 'string.escape'],
                 [/\\./, 'string.escape.invalid'],
                 [/"/, 'string', '@pop']

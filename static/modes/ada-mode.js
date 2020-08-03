@@ -135,14 +135,14 @@ function definition() {
             ['(', ')', 'delimiter.parenthesis'],
             ['[', ']', 'delimiter.square']
         ],
-        symbols: /[=><!~&|+\-*/^]+/,
-        delimiters: /[;=.:,`]/,
-        escapes: /\\(?:[abfnrtv\\'\n\r]|x[0-9A-Fa-f]{2}|[0-7]{3}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8}|N\{\w+\})/,
+        symbols: /[!&*+/<=>^|~-]+/,
+        delimiters: /[,.:;=`]/,
+        escapes: /\\(?:[\n\r'\\abfnrtv]|x[\dA-Fa-f]{2}|[0-7]{3}|u[\dA-Fa-f]{4}|U[\dA-Fa-f]{8}|N{\w+})/,
         
         // The main tokenizer for our languages
         tokenizer: {
             root: [
-                [/[a-zA-Z_][a-zA-Z0-9_]*/, {
+                [/[A-Z_a-z]\w*/, {
                     cases: {
                         '@standardTypes': 'type',
                         '@keywords': 'keyword',
@@ -157,10 +157,10 @@ function definition() {
                 // Numbers
                 // See https://regex101.com/r/dflfeQ/2 for examples from the 
                 // 2012 ARM (http://www.ada-auth.org/standards/12rm/html/RM-2-4-1.html#S0009)
-                [/[0-9_.]+(E[+-]?\d+)?/, 'number.float'],
+                [/[\d._]+(E[+-]?\d+)?/, 'number.float'],
                 // See https://regex101.com/r/dSSADT/3 for examples from the
                 // 2012 ARM (http://www.ada-auth.org/standards/12rm/html/RM-2-4-2.html#S0011)
-                [/[0-9]+#[0-9A-Fa-f_.]+#(E[+-]?\d+)?/, 'number.hex'],
+                [/\d+#[\d.A-F_a-f]+#(E[+-]?\d+)?/, 'number.hex'],
 
                 [/@delimiters/, {
                     cases: {
@@ -173,18 +173,18 @@ function definition() {
                 [/"/, 'string', '@string'],
 
                 // characters
-                [/'[^\\']'/, 'string'],
+                [/'[^'\\]'/, 'string'],
                 [/(')(@escapes)(')/, ['string', 'string.escape', 'string']],
                 [/'/, 'string.invalid']
             ],
             
             // Whitespace and comments
             whitespace: [
-                [/[ \t\r\n]+/, 'white'],
+                [/[\t\n\r ]+/, 'white'],
                 [/--.*$/, 'comment']
             ],
             string: [
-                [/[^\\"]+/, 'string'],
+                [/[^"\\]+/, 'string'],
                 [/@escapes/, 'string.escape'],
                 [/\\./, 'string.escape.invalid'],
                 [/"/, 'string', '@pop']

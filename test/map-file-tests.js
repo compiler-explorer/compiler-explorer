@@ -151,11 +151,11 @@ describe('Symbol info', function () {
         reader.tryReadingNamedAddress(' 0002:000006b0       ??$__vcrt_va_start_verify_argument_type@QBD@@YAXXZ 004116b0 f i ConsoleApplication1.obj');
         reader.namedAddresses.length.should.equal(1);
 
-        let info = reader.getSymbolAt('0002', 0x6b0);
+        let info = reader.getSymbolAt('0002', 0x6B0);
         assert(info !== false, 'Symbol start_verify_argument should have been returned 1');
         info.displayName.should.equal('??$__vcrt_va_start_verify_argument_type@QBD@@YAXXZ');
         
-        info = reader.getSymbolAt(false, 0x4116b0);
+        info = reader.getSymbolAt(false, 0x4116B0);
         assert(info !== false, 'Symbol start_verify_argument should have been returned 2');
         info.displayName.should.equal('??$__vcrt_va_start_verify_argument_type@QBD@@YAXXZ');
     });
@@ -236,8 +236,8 @@ describe('VS-Map load test', function () {
         reader.getSegmentOffset('0002').should.equal(0x411000, 'offset 2');
         reader.getSegmentOffset('0003').should.equal(0x416000, 'offset 3');
         reader.getSegmentOffset('0004').should.equal(0x419000, 'offset 4');
-        reader.getSegmentOffset('0005').should.equal(0x41a000, 'offset 5');
-        reader.getSegmentOffset('0007').should.equal(0x41c000, 'offset 7');
+        reader.getSegmentOffset('0005').should.equal(0x41A000, 'offset 5');
+        reader.getSegmentOffset('0007').should.equal(0x41C000, 'offset 7');
     });
 });
 

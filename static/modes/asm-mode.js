@@ -31,26 +31,26 @@ function definition() {
         defaultToken: 'invalid',
 
         // C# style strings
-        escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
+        escapes: /\\(?:["'\\abfnrtv]|x[\dA-Fa-f]{1,4}|u[\dA-Fa-f]{4}|U[\dA-Fa-f]{8})/,
 
-        registers: /%?\b(r[0-9]+[dbw]?|([er]?([abcd][xhl]|cs|fs|ds|ss|sp|bp|ip|sil?|dil?))|[xyz]mm[0-9]+|sp|fp|lr)\b/,
+        registers: /%?\b(r\d+[bdw]?|([er]?([a-d][hlx]|cs|fs|ds|ss|sp|bp|ip|sil?|dil?))|[x-z]mm\d+|sp|fp|lr)\b/,
 
-        intelOperators: /PTR|(D|Q|[XYZ]MM)?WORD/,
+        intelOperators: /PTR|(D|Q|[X-Z]MM)?WORD/,
 
         tokenizer: {
             root: [
                 // Error document
                 [/^<.*>$/, {token: 'annotation'}],
                 // Label definition
-                [/^[.a-zA-Z0-9_$?@].*:/, {token: 'type.identifier'}],
+                [/^[\w$.?@].*:/, {token: 'type.identifier'}],
                 // Label definition (ARM style)
-                [/^\s*[|][^|]*[|]/, {token: 'type.identifier'}],
+                [/^\s*\|[^|]*\|/, {token: 'type.identifier'}],
                 // Label definition (CL style)
-                [/^\s*[.a-zA-Z0-9_$|]*\s*(PROC|ENDP|DB|DD)/, {token: 'type.identifier'}],
+                [/^\s*[\w$.|]*\s*(PROC|ENDP|DB|DD)/, {token: 'type.identifier'}],
                 // Constant definition
-                [/^[.a-zA-Z0-9_$?@][^=]*=/, {token: 'type.identifier'}],
+                [/^[\w$.?@][^=]*=/, {token: 'type.identifier'}],
                 // opcode
-                [/[.a-zA-Z_][.a-zA-Z_0-9]*/, {token: 'keyword', next: '@rest'}],
+                [/[.A-Z_a-z][\w.]*/, {token: 'keyword', next: '@rest'}],
                 // braces and parentheses at the start of the line (e.g. nvcc output)
                 [/[(){}]/, {token: 'operator', next: '@rest'}],
 
@@ -65,56 +65,56 @@ function definition() {
                 [/@registers/, 'variable.predefined'],
                 [/@intelOperators/, 'annotation'],
                 // brackets
-                [/[{}<>()[\]]/, '@brackets'],
+                [/[()<>[\]{}]/, '@brackets'],
 
                 // ARM-style label reference
-                [/[|][^|]*[|]*/, 'type.identifier'],
+                [/\|[^|]*\|*/, 'type.identifier'],
 
                 // numbers
-                [/\d*\.\d+([eE][-+]?\d+)?/, 'number.float'],
-                [/([$]|0[xX])[0-9a-fA-F]+/, 'number.hex'],
+                [/\d*\.\d+([Ee][+-]?\d+)?/, 'number.float'],
+                [/(\$|0[Xx])[\dA-Fa-f]+/, 'number.hex'],
                 [/\d+/, 'number'],
                 // ARM-style immediate numbers (which otherwise look like comments)
                 [/#-?\d+/, 'number'],
 
                 // operators
-                [/[-+,*/!:&{}()]/, 'operator'],
+                [/[!&()*+,/:{}-]/, 'operator'],
 
                 // strings
                 [/"([^"\\]|\\.)*$/, 'string.invalid'],  // non-terminated string
                 [/"/, {token: 'string.quote', bracket: '@open', next: '@string'}],
 
                 // characters
-                [/'[^\\']'/, 'string'],
+                [/'[^'\\]'/, 'string'],
                 [/(')(@escapes)(')/, ['string', 'string.escape', 'string']],
                 [/'/, 'string.invalid'],
 
                 // Assume anything else is a label reference
-                [/%?[.?_$a-zA-Z@][.?_$a-zA-Z0-9@]*/, 'type.identifier'],
+                [/%?[$.?@A-Z_a-z][\w$.?@]*/, 'type.identifier'],
 
                 // whitespace
                 {include: '@whitespace'}
             ],
 
             comment: [
-                [/[^/*]+/, 'comment'],
+                [/[^*/]+/, 'comment'],
                 [/\/\*/, 'comment', '@push'],    // nested comment
                 ['\\*/', 'comment', '@pop'],
-                [/[/*]/, 'comment']
+                [/[*/]/, 'comment']
             ],
 
             string: [
-                [/[^\\"]+/, 'string'],
+                [/[^"\\]+/, 'string'],
                 [/@escapes/, 'string.escape'],
                 [/\\./, 'string.escape.invalid'],
                 [/"/, {token: 'string.quote', bracket: '@close', next: '@pop'}]
             ],
 
             whitespace: [
-                [/[ \t\r\n]+/, 'white'],
+                [/[\t\n\r ]+/, 'white'],
                 [/\/\*/, 'comment', '@comment'],
                 [/\/\/.*$/, 'comment'],
-                [/[#;\\@].*$/, 'comment']
+                [/[#;@\\].*$/, 'comment']
             ]
         }
     };

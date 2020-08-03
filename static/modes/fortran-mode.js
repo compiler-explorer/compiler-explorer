@@ -430,14 +430,14 @@ function definition() {
         ],
 
         // we include these common regular expressions
-        symbols: /[=><!~?:&|+\-*/^%]+/,
-        escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
+        symbols: /[!%&*+/:<=>?^|~-]+/,
+        escapes: /\\(?:["'\\abfnrtv]|x[\dA-Fa-f]{1,4}|u[\dA-Fa-f]{4}|U[\dA-Fa-f]{8})/,
 
         // The main tokenizer for our languages
         tokenizer: {
             root: [
                 // identify type declarations (also functions)
-                [/[a-zA-Z][\w$]*(?=.*(::|function))/, {
+                [/[A-Za-z][\w$]*(?=.*(::|function))/, {
                     cases: {
                         '@typeKeywords': 'type.identifier',
                         '@keywords': 'keyword',
@@ -445,7 +445,7 @@ function definition() {
                     }
                 }],
                 // identifiers and keywords
-                [/[a-zA-Z][\w$]*/, {
+                [/[A-Za-z][\w$]*/, {
                     cases: {
                         '@keywords': 'keyword',
                         '@functions': 'keyword',
@@ -461,7 +461,7 @@ function definition() {
                 {include: '@whitespace'},
 
                 // delimiters and operators
-                [/[{}()[\]]/, '@brackets'],
+                [/[()[\]{}]/, '@brackets'],
                 [/[<>](?!@symbols)/, '@brackets'],
                 [/@symbols/, {
                     cases: {
@@ -471,27 +471,27 @@ function definition() {
                 }],
 
                 // numbers
-                [/\d*\.\d+([eEdD][-+]?\d+)?/, 'number.float'],
-                [/[zZ]['"][0-9a-fA-F]*[0-9a-fA-F]['"]/, 'number.hex'],
-                [/[oO]['"][0-7]*[0-7]['"]/, 'number.octal'],
-                [/[bB]['"][0-1]*[0-1]['"]/, 'number.binary'],
+                [/\d*\.\d+([DEde][+-]?\d+)?/, 'number.float'],
+                [/[Zz]["'][\dA-Fa-f]+["']/, 'number.hex'],
+                [/[Oo]["'][0-7]+["']/, 'number.octal'],
+                [/[Bb]["'][01]+["']/, 'number.binary'],
                 [/\d/, 'number'],
 
                 // delimiter: after number because of .\d floats
-                [/[;,.]/, 'delimiter'],
+                [/[,.;]/, 'delimiter'],
 
                 // strings
                 [/"([^"\\]|\\.)*$/, 'string.invalid'],  // non-teminated string
                 [/"/, 'string', '@string'],
 
                 // characters
-                [/'[^\\']'/, 'string'],
+                [/'[^'\\]'/, 'string'],
                 [/(')(@escapes)(')/, ['string', 'string.escape', 'string']],
                 [/'/, 'string.invalid']
             ],
 
             whitespace: [
-                [/[ \t\r\n]+/, 'white']
+                [/[\t\n\r ]+/, 'white']
             ],
 
             comment: [
@@ -499,7 +499,7 @@ function definition() {
             ],
 
             string: [
-                [/[^\\"]+/, 'string'],
+                [/[^"\\]+/, 'string'],
                 [/@escapes/, 'string.escape'],
                 [/\\./, 'string.escape.invalid'],
                 [/"/, 'string', '@pop']

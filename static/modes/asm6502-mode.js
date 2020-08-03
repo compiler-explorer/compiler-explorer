@@ -30,31 +30,31 @@ function definition() {
     return {
         tokenizer: {
             root: [
-                [/^[a-zA-Z_][a-zA-Z_0-9]*/, { token: 'type.identifier' }],
+                [/^[A-Z_a-z]\w*/, { token: 'type.identifier' }],
                 [/^\s+/, { token: 'whitespace', next: '@opcode' }],
-                [/^\.[a-zA-Z]+\s*/, { token: 'type.identifier', next: '@arguments' }],
+                [/^\.[A-Za-z]+\s*/, { token: 'type.identifier', next: '@arguments' }],
                 [/;.*$/, { token: 'comment', next: '@root' }],
                 [/\s*,\s*/, { token: 'delimiter', next: '@arguments' }]
             ],
 
             opcode: [
-                [/[a-zA-Z]+$/, { token: 'keyword', next: '@root' }],
-                [/[a-zA-Z]+\s*/, { token: 'keyword', next: '@arguments' }],
+                [/[A-Za-z]+$/, { token: 'keyword', next: '@root' }],
+                [/[A-Za-z]+\s*/, { token: 'keyword', next: '@arguments' }],
                 [/;.*$/, { token: 'comment', next: '@root' }]
             ],
 
             arguments: [
-                [/\$#[0-9a-fA-F]+/, { token: 'number', next: '@root' }],
-                [/\$[0-9a-fA-F]+/, { token: 'number', next: '@root' }],
-                [/#\$[0-9a-fA-F]+/, { token: 'number', next: '@root' }],
-                [/#<[0-9]+\(%[a-zA-Z]+\)/, { token: 'number', next: '@root' }],
-                [/#>[0-9]+\(%[a-zA-Z]+\)/, { token: 'number', next: '@root' }],
-                [/#<\$[0-9a-fA-F]+/, { token: 'number', next: '@root' }],
-                [/#>\$[0-9a-fA-F]+/, { token: 'number', next: '@root' }],
-                [/#%[0-1]+/, { token: 'number', next: '@root' }],
-                [/#[0-9]+/, { token: 'number', next: '@root' }],
-                [/[a-zA-Z_][a-zA-Z_0-9]*/, { token: 'type.identifier', next: '@root' }],
-                [/[0-9]+/, { token: 'number', next: '@root' }],
+                [/\$#[\dA-Fa-f]+/, { token: 'number', next: '@root' }],
+                [/\$[\dA-Fa-f]+/, { token: 'number', next: '@root' }],
+                [/#\$[\dA-Fa-f]+/, { token: 'number', next: '@root' }],
+                [/#<\d+\(%[A-Za-z]+\)/, { token: 'number', next: '@root' }],
+                [/#>\d+\(%[A-Za-z]+\)/, { token: 'number', next: '@root' }],
+                [/#<\$[\dA-Fa-f]+/, { token: 'number', next: '@root' }],
+                [/#>\$[\dA-Fa-f]+/, { token: 'number', next: '@root' }],
+                [/#%[01]+/, { token: 'number', next: '@root' }],
+                [/#\d+/, { token: 'number', next: '@root' }],
+                [/[A-Z_a-z]\w*/, { token: 'type.identifier', next: '@root' }],
+                [/\d+/, { token: 'number', next: '@root' }],
                 [/;.*$/, { token: 'comment', next: '@root' }]
             ]
         }

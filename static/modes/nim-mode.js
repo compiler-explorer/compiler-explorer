@@ -59,15 +59,15 @@ function definition() {
         wordOperators: [
             'and', 'or', 'not', 'xor', 'shl', 'shr', 'div', 'mod', 'in', 'notin', 'is', 'isnot', 'of'
         ],
-        symbols: /[=><!~&|+\-*/^%]+/,
-        escapes: /\\(p|r|c|n|l|f|t|v|a|b|e|\\|"|'|\d+|x[0-9a-fA-F]{2}|u[0-9a-fA-F]{4}|u\{[0-9a-fA-F]+\})/,
-        charEscapes: /\\(r|c|n|l|f|t|v|a|b|e|\\|"|'|x[0-9a-fA-F]{2})/,
+        symbols: /[!%&*+/<=>^|~-]+/,
+        escapes: /\\(p|r|c|n|l|f|t|v|a|b|e|\\|"|'|\d+|x[\dA-Fa-f]{2}|u[\dA-Fa-f]{4}|u{[\dA-Fa-f]+})/,
+        charEscapes: /\\(r|c|n|l|f|t|v|a|b|e|\\|"|'|x[\dA-Fa-f]{2})/,
         
-        hexNumber: /0(x|X)[0-9a-fA-F](_?[0-9a-fA-F])*/,
+        hexNumber: /0(xX)[\dA-Fa-f](_?[\dA-Fa-f])*/,
         decNumber: /\d(_?\d)*/, 
         octNumber: /0o[0-7](_?[0-7])*/,
-        binNumber: /0(b|B)[0-1](_?[0-1])*/,
-        exponent: /(e|E)(\+|-)?\d(_?\d)*/,
+        binNumber: /0(bB)[01](_?[01])*/,
+        exponent: /(eE)(\+-)?\d(_?\d)*/,
         brackets: [
             ['{','}','delimiter.curly'],
             ['{.','.}','delimiter.curly'],
@@ -82,7 +82,7 @@ function definition() {
         // The main tokenizer for our languages
         tokenizer: {
             root: [
-                [/[A-Za-z]([_]?\w)*/, {
+                [/[A-Za-z](_?\w)*/, {
                     cases: {
                         '@keywords': 'keyword',
                         '@wordOperators': 'keyword',
@@ -90,7 +90,7 @@ function definition() {
                     }
                 }],
                 {include: '@whitespace'},
-                [/([:|[[{(]\.|\.[\]})]|[[\]{}()])/, '@brackets'],
+                [/([(:[{|]\.|\.[)\]}]|[()[\]{}])/, '@brackets'],
                 [/@symbols/, {
                     cases: {
                         '@operators': 'operator',
@@ -100,16 +100,16 @@ function definition() {
 
                 // number literals
                 // floats
-                [/@decNumber(\.@decNumber(@exponent)|@exponent)(')?(f|F|d|D)(32|64)?/, 'number.float'], 
-                [/(@decNumber|@octNumber|@binNumber)(')?(f|F|d|D)(32|64)?/, 'number.float'],
-                [/@hexNumber'(f|F|d|D)(32|64)?/, 'number.float'],
+                [/@decNumber(\.@decNumber(@exponent)|@exponent)(')?([DFdf])(32|64)?/, 'number.float'],
+                [/(@decNumber|@octNumber|@binNumber)(')?([DFdf])(32|64)?/, 'number.float'],
+                [/@hexNumber'([DFdf])(32|64)?/, 'number.float'],
 
                 // ints
-                [/@hexNumber(')?((i|I|u|U)(8|16|32|64))?/, 'number.hex'],
-                [/@octNumber(')?((i|I|u|U)(8|16|32|64))?/, 'number.octal'],
-                [/@binNumber(')?((i|I|u|U)(8|16|32|64))?/, 'number.binary'],
+                [/@hexNumber(')?(([IUiu])(8|16|32|64))?/, 'number.hex'],
+                [/@octNumber(')?(([IUiu])(8|16|32|64))?/, 'number.octal'],
+                [/@binNumber(')?(([IUiu])(8|16|32|64))?/, 'number.binary'],
 
-                [/@decNumber(')?((i|I|u|U)(8|16|32|64))?/, 'number'],
+                [/@decNumber(')?(([IUiu])(8|16|32|64))?/, 'number'],
               
                 // char literals
                 [/'/, 'string', '@character'],
@@ -120,13 +120,13 @@ function definition() {
                 [/"(?!")/, 'string', '@string']
             ],
             whitespace: [
-                [/[ \t\r\n]+/, 'white'],
+                [/[\t\n\r ]+/, 'white'],
                 [/#\[/, 'comment', '@comment'],
                 [/#.*$/, 'comment']
             ],
             comment: [
-                [/[^\]#]/, 'comment'],
-                [/\]#/, 'comment', '@pop']
+                [/[^#\]]/, 'comment'],
+                [/]#/, 'comment', '@pop']
             ],
             string: [
                 [/@escapes/, 'string.escape'],

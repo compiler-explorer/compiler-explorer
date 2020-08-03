@@ -272,7 +272,7 @@ Conformance.prototype.onCompileResponse = function (child, result) {
     this.setCompilationOptionsPopover(child.find('.prepend-options'),
         result.compilationOptions ? result.compilationOptions.join(' ') : '');
     child.find('.compiler-out')
-        .prop('title', allText.replace(/\x1b\[[0-9;]*m(.\[K)?/g, ''))
+        .prop('title', allText.replace(/\x1B\[[\d;]*m(.\[K)?/g, ''))
         .toggleClass('d-none', !allText);
     this.handleStatusIcon(child.find('.status-icon'), {code: failed ? 3 : (warns ? 2 : 1), compilerOut: result.code});
     this.saveState();

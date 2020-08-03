@@ -646,7 +646,7 @@ Compiler.prototype.setAssembly = function (asm) {
     this.assembly = asm;
     if (!this.outputEditor || !this.outputEditor.getModel()) return;
     var editorModel = this.outputEditor.getModel();
-    editorModel.setValue(asm.length ? _.pluck(asm, 'text').join('\n') : '<No assembly generated>');
+    editorModel.setValue(asm.length > 0 ? _.pluck(asm, 'text').join('\n') : '<No assembly generated>');
 
     if (!this.awaitingInitialResults) {
         if (this.selection) {
@@ -759,7 +759,7 @@ Compiler.prototype.onCompileResponse = function (request, result, cached) {
     if (this.isOutputOpened) {
         this.outputBtn.prop('title', '');
     } else {
-        this.outputBtn.prop('title', allText.replace(/\x1b\[[0-9;]*m(.\[K)?/g, ''));
+        this.outputBtn.prop('title', allText.replace(/\x1B\[[\d;]*m(.\[K)?/g, ''));
     }
     var timeLabelText = '';
     if (cached) {
@@ -1589,9 +1589,9 @@ Compiler.prototype.onSettingsChange = function (newSettings) {
     });
 };
 
-var hexLike = /^(#?[$]|0x)([0-9a-fA-F]+)$/;
-var hexLike2 = /^(#?)([0-9a-fA-F]+)H$/;
-var decimalLike = /^(#?)(-?[0-9]+)$/;
+var hexLike = /^(#?\$|0x)([\dA-Fa-f]+)$/;
+var hexLike2 = /^(#?)([\dA-Fa-f]+)H$/;
+var decimalLike = /^(#?)(-?\d+)$/;
 
 function getNumericToolTip(value) {
     var match = hexLike.exec(value) || hexLike2.exec(value);

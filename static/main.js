@@ -359,7 +359,7 @@ function start() {
     var options = require('options');
 
     var hostnameParts = window.location.hostname.split('.');
-    var subLangId = undefined;
+    var subLangId;
     // Only set the subdomain lang id if it makes sense to do so
     if (hostnameParts.length > 0) {
         var subdomainPart = hostnameParts[0];

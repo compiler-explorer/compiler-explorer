@@ -409,22 +409,22 @@ function tokenize(text, options, callback) {
         pattern: /^\x08+/,
         sub: remove
     }, {
-        pattern: /^\x1b\[[012]?K/,
+        pattern: /^\x1B\[[0-2]?K/,
         sub: remove
     }, {
-        pattern: /^\x1b\[38;5;(\d+)m/,
+        pattern: /^\x1B\[38;5;(\d+)m/,
         sub: removeXterm256
     }, {
         pattern: /^\n/,
         sub: newline
     }, {
-        pattern: /^\x1b\[((?:\d{1,3};?)+|)m/,
+        pattern: /^\x1B\[((?:\d{1,3};?)+|)m/,
         sub: ansiMess
     }, {
-        pattern: /^\x1b\[?[\d;]{0,3}/,
+        pattern: /^\x1B\[?[\d;]{0,3}/,
         sub: remove
     }, {
-        pattern: /^([^\x1b\x08\n]+)/,
+        pattern: /^([^\x08\n\x1B]+)/,
         sub: realText
     }];
 

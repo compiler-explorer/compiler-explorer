@@ -158,12 +158,12 @@ Cfg.prototype.onCompileResult = function (id, compiler, result) {
         }
 
         this.functionPicker[0].selectize.clearOptions();
-        this.functionPicker[0].selectize.addOption(functionNames.length ?
+        this.functionPicker[0].selectize.addOption(functionNames.length > 0?
             this.adaptStructure(functionNames) : {name: 'The input does not contain functions'});
         this.functionPicker[0].selectize.refreshOptions(false);
 
         this.functionPicker[0].selectize.clear();
-        this.functionPicker[0].selectize.addItem(functionNames.length ?
+        this.functionPicker[0].selectize.addItem(functionNames.length > 0 ?
             this.currentFunc : 'The input does not contain any function', true);
         this.saveState();
     }

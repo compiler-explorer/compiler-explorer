@@ -205,7 +205,7 @@ describe('Options handler', () => {
             makeFakeCompilerInfo('c2', languages.fake.id, 'c', '3.0.0', true),
             makeFakeCompilerInfo('c3', languages.fake.id, 'c', '3.0.0', true),
 
-            makeFakeCompilerInfo('d1', languages.fake.id, 'd', 1.0, true),
+            makeFakeCompilerInfo('d1', languages.fake.id, 'd', 1, true),
             makeFakeCompilerInfo('d2', languages.fake.id, 'd', '2.0.0', true),
             makeFakeCompilerInfo('d3', languages.fake.id, 'd', '0.0.5', true),
 

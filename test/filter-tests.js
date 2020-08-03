@@ -36,8 +36,8 @@ function bless(filename, output, filters) {
 
 // eslint-disable-next-line no-unused-vars
 function dump(file) {
-    for (let i = 0; i < file.length; ++i) {
-        console.log((i + 1) + ' : ' + JSON.stringify(file[i]));
+    for (const [i, element] of file.entries()) {
+        console.log((i + 1) + ' : ' + JSON.stringify(element));
     }
 }
 

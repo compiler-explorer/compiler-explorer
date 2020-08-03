@@ -77,7 +77,7 @@ if (opts.debug) logger.level = 'debug';
 
 // AP: Detect if we're running under Windows Subsystem for Linux. Temporary modification
 // of process.env is allowed: https://nodejs.org/api/process.html#process_process_env
-if (process.platform === 'linux' && child_process.execSync('uname -a').toString().indexOf('Microsoft') > -1) {
+if (process.platform === 'linux' && child_process.execSync('uname -a').toString().includes('Microsoft')) {
     process.env.wsl = true;
 }
 
@@ -91,8 +91,8 @@ if (opts.tmpDir) {
     // Dec 2017 preview builds of WSL include /bin/wslpath; do the parsing work for now.
     // Parsing example %TEMP% is C:\Users\apardoe\AppData\Local\Temp
     const windowsTemp = child_process.execSync('cmd.exe /c echo %TEMP%').toString().replace(/\\/g, '/');
-    const driveLetter = windowsTemp.substring(0, 1).toLowerCase();
-    const directoryPath = windowsTemp.substring(2).trim();
+    const driveLetter = windowsTemp.slice(0, 1).toLowerCase();
+    const directoryPath = windowsTemp.slice(2).trim();
     process.env.winTmp = path.join('/mnt', driveLetter, directoryPath);
 }
 
@@ -182,7 +182,7 @@ if (defArgs.wantedLanguage) {
     _.each(languages, lang => {
         if (lang.id === defArgs.wantedLanguage ||
             lang.name === defArgs.wantedLanguage ||
-            (lang.alias && lang.alias.indexOf(defArgs.wantedLanguage) >= 0)) {
+            (lang.alias && lang.alias.includes(defArgs.wantedLanguage))) {
             filteredLangs[lang.id] = lang;
         }
     });
@@ -225,7 +225,7 @@ function measureEventLoopLag(delayMs) {
         setTimeout(() => {
             const elapsed = process.hrtime.bigint() - start;
             const delta = elapsed - BigInt(delayMs * 1000000);
-            return resolve(Number(delta) / 1000000.0);
+            return resolve(Number(delta) / 1000000);
         }, delayMs);
     });
 }

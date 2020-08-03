@@ -211,16 +211,16 @@ function definition() {
         ],
 
         // we include these common regular expressions
-        symbols: /[=><!~?:&|+\-*/^%]+/,
+        symbols: /[!%&*+/:<=>?^|~-]+/,
 
         // C# style strings
-        escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
+        escapes: /\\(?:["'\\abfnrtv]|x[\dA-Fa-f]{1,4}|u[\dA-Fa-f]{4}|U[\dA-Fa-f]{8})/,
 
         // The main tokenizer for our languages
         tokenizer: {
             root: [
                 // identifiers and keywords
-                [/[a-z_$][\w$]*/, {
+                [/[$_a-z][\w$]*/, {
                     cases: {
                         '@typeKeywords': 'keyword',
                         '@keywords': 'keyword',
@@ -233,7 +233,7 @@ function definition() {
                 {include: '@whitespace'},
 
                 // delimiters and operators
-                [/[{}()[\]]/, '@brackets'],
+                [/[()[\]{}]/, '@brackets'],
                 [/[<>](?!@symbols)/, '@brackets'],
                 [/@symbols/, {
                     cases: {
@@ -248,39 +248,39 @@ function definition() {
                 //  [/@\s*[a-zA-Z_\$][\w\$]*/, { token: 'annotation', log: 'annotation token: $0' }],
 
                 // numbers
-                [/\d*\.\d+([eE][-+]?\d+)?/, 'number.float'],
-                [/0[xX][0-9a-fA-F]+/, 'number.hex'],
+                [/\d*\.\d+([Ee][+-]?\d+)?/, 'number.float'],
+                [/0[Xx][\dA-Fa-f]+/, 'number.hex'],
                 [/\d+/, 'number'],
 
                 // delimiter: after number because of .\d floats
-                [/[;,.]/, 'delimiter'],
+                [/[,.;]/, 'delimiter'],
 
                 // strings
                 [/"([^"\\]|\\.)*$/, 'string.invalid'],  // non-teminated string
                 [/"/, {token: 'string.quote', bracket: '@open', next: '@string'}],
 
                 // characters
-                [/'[^\\']'/, 'string'],
+                [/'[^'\\]'/, 'string'],
                 [/(')(@escapes)(')/, ['string', 'string.escape', 'string']],
                 [/'/, 'string.invalid']
             ],
 
             comment: [
-                [/[^/*]+/, 'comment'],
+                [/[^*/]+/, 'comment'],
                 [/\/\*/, 'comment', '@push'],    // nested comment
                 ['\\*/', 'comment', '@pop'],
-                [/[/*]/, 'comment']
+                [/[*/]/, 'comment']
             ],
 
             string: [
-                [/[^\\"]+/, 'string'],
+                [/[^"\\]+/, 'string'],
                 [/@escapes/, 'string.escape'],
                 [/\\./, 'string.escape.invalid'],
                 [/"/, {token: 'string.quote', bracket: '@close', next: '@pop'}]
             ],
 
             whitespace: [
-                [/[ \t\r\n]+/, 'white'],
+                [/[\t\n\r ]+/, 'white'],
                 [/\/\*/, 'comment', '@comment'],
                 [/\/\/.*$/, 'comment'],
                 [/^;;.*$/, 'comment']

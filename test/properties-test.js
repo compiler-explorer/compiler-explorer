@@ -84,7 +84,7 @@ describe('Properties', () => {
         should.equal(casesProps('floatPropertyPositive'), 3.14);
     });
     it('Understands negative floats', () => {
-        should.equal(casesProps('floatPropertyNegative'), -9000.0);
+        should.equal(casesProps('floatPropertyNegative'), -9000);
     });
     it('Does not understand comma decimal as float', () => {
         should.equal(casesProps('commaAsDecimalProperty'), '3,14');
@@ -126,8 +126,8 @@ describe('Properties', () => {
         should.equal(overridingProps('localProperty'), 11235813);
     });
     it('should have an identity function if none provided', () => {
-        should.equal(compilerProps.get('a', 'foo', '0', undefined), '1');
-        compilerProps.get(languages, 'foo', '0', undefined).should.deep.equal({a: '1'});
+        should.equal(compilerProps.get('a', 'foo', '0'), '1');
+        compilerProps.get(languages, 'foo', '0').should.deep.equal({a: '1'});
     });
     it('should return an object of languages if the languages arg is an object itself', () => {
         compilerProps.get(languages, 'foo', '0').should.deep.equal({a: '1'});
@@ -148,7 +148,7 @@ describe('Properties', () => {
         compilerProps.propsByLangId[languages.a.id] = properties.fakeProps({bar: false});
         // Now query it with a default of true. We should see false...
         should.equal(compilerProps.get('a', 'bar', true), false);
-        compilerProps.get(languages, 'bar', true, undefined).should.deep.equal({a: false});
+        compilerProps.get(languages, 'bar', true).should.deep.equal({a: false});
         compilerProps.propsByLangId[languages.a.id] = undefined;
     });
     it('should not parse version properies as numbers', () => {

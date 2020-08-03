@@ -58,7 +58,7 @@ describe('Live site checks', () => {
             const filePath = `etc/config/${lang}.amazon.properties`;
             const fileContents = fs.readFileSync(filePath, 'utf-8');
 
-            const matches = fileContents.match(/^libs\..*?\.name/mg);
+            const matches = fileContents.match(/^libs\..*?\.name/gm);
             let found = [];
             if (matches) {
                 found = _.map(matches, line => line.match(/libs\.(.*?)\.name/)[1]);

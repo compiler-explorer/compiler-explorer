@@ -3,12 +3,14 @@
   "plugins": [
     "jsdoc",
     "requirejs",
-    "node"
+    "node",
+    "unicorn"
   ],
   "extends": [
     "eslint:recommended",
     "plugin:requirejs/recommended",
-    "plugin:node/recommended"
+    "plugin:node/recommended",
+    "plugin:unicorn/recommended"
   ],
   "env": {
     "mocha": true,
@@ -16,12 +18,11 @@
     "es6": true
   },
   "rules": {
-    "eqeqeq": ["error", "smart"],
-    "max-statements": ["error", 50],
-    "max-len": ["error", 120, { "ignoreRegExpLiterals": true }],
     "eol-last": ["error", "always"],
-    "semi": ["error", "always"],
-    "indent": ["error", 4, { "SwitchCase": 1 }],
+    "eqeqeq": ["error", "smart"],
+    "indent": ["error", 4, {"SwitchCase": 1}],
+    "max-len": ["error", 120, {"ignoreRegExpLiterals": true}],
+    "max-statements": ["error", 50],
     "no-control-regex": 0,
     "no-useless-call": "error",
     "no-useless-computed-key": "error",
@@ -30,26 +31,34 @@
     "no-useless-escape": "error",
     "no-useless-rename": "error",
     "no-useless-return": "error",
-    "space-before-function-paren": ["error", {
-      "anonymous": "always",
-      "named": "never",
-      "asyncArrow": "always"
-    }],
-    "quotes": [ "error", "single", { "allowTemplateLiterals": true, "avoidEscape": true}],
     "quote-props": ["error", "as-needed"],
-    "yoda": [ "error", "never", { "onlyEquality": true } ],
-    "jsdoc/check-alignment": 1,
-    "jsdoc/check-param-names": 1,
-    "jsdoc/check-syntax": 1,
-    "jsdoc/check-tag-names": 1,
-    "jsdoc/check-types": 1,
-    "jsdoc/empty-tags": 1,
-    "jsdoc/newline-after-description": 1,
-    "jsdoc/require-hyphen-before-param-description": 1,
-    "jsdoc/valid-types": 1,
-    "no-process-exit": 0,
-    "node/no-unpublished-require": 0,
-    "node/shebang": 0
+    "quotes": ["error", "single", {"allowTemplateLiterals": true, "avoidEscape": true}],
+    "semi": ["error", "always"],
+    "space-before-function-paren": ["error", {"anonymous": "always", "asyncArrow": "always", "named": "never"}],
+    "yoda": ["error", "never", {"onlyEquality": true}],
+    "jsdoc/check-alignment": "warn",
+    "jsdoc/check-param-names": "warn",
+    "jsdoc/check-syntax": "warn",
+    "jsdoc/check-tag-names": "warn",
+    "jsdoc/check-types": "warn",
+    "jsdoc/empty-tags": "warn",
+    "jsdoc/newline-after-description": "warn",
+    "jsdoc/require-hyphen-before-param-description": "warn",
+    "jsdoc/valid-types": "warn",
+    "no-process-exit": "off",
+    "node/no-unpublished-require": "off",
+    "node/shebang": "off",
+    "unicorn/catch-error-name": "off",
+    "unicorn/consistent-function-scoping": "off",
+    "unicorn/no-fn-reference-in-iterator": "off",
+    "unicorn/no-hex-escape": "off",
+    "unicorn/no-null": "off",
+    "unicorn/no-reduce": "off",
+    "unicorn/prefer-add-event-listener": "off",
+    "unicorn/prefer-optional-catch-binding": "off",
+    "unicorn/prefer-number-properties": "off",
+    "unicorn/prefer-string-slice": "off",
+    "unicorn/prevent-abbreviations": "off"
   },
   "parserOptions": {
     "ecmaVersion": 2018

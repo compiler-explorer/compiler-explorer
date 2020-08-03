@@ -85,7 +85,7 @@ function createCompiler(compiler) {
     return new compiler(info, ce);
 }
 
-if (process.platform === 'linux' && child_process.execSync('uname -a').toString().indexOf('Microsoft') > -1) { // WSL
+if (process.platform === 'linux' && child_process.execSync('uname -a').toString().includes('Microsoft')) { // WSL
     describe('Wsl compiler', () => {
         let compiler;
 

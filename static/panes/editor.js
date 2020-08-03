@@ -114,7 +114,7 @@ function Editor(hub, state, container) {
         this.updateEditorCode();
     }
 
-    var startFolded = /^[/*#;]+\s*setup.*/;
+    var startFolded = /^[#*/;]+\s*setup.*/;
     if (state.source && state.source.match(startFolded)) {
         // With reference to https://github.com/Microsoft/monaco-editor/issues/115
         // I tried that and it didn't work, but a delay of 500 seems to "be enough".
@@ -490,7 +490,7 @@ Editor.prototype.updateButtons = function () {
 };
 
 Editor.prototype.b64UTFEncode = function (str) {
-    return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function (match, v) {
+    return btoa(encodeURIComponent(str).replace(/%([\dA-F]{2})/g, function (match, v) {
         return String.fromCharCode(parseInt(v, 16));
     }));
 };
@@ -588,7 +588,7 @@ Editor.prototype.updateOpenInQuickBench = function () {
         }
 
         if (knownCompiler) {
-            var match = compiler.options.match(/-(O([0-3sg]|fast))/);
+            var match = compiler.options.match(/-(O([0-3gs]|fast))/);
             if (match !== null) {
                 if (match[2] === 'fast') {
                     quickBenchState.optim = 'F';

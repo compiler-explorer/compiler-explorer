@@ -39,7 +39,7 @@ function definition() {
             '=', '==', '>=', '<=', '+', '-', '*', '/', '::', '->', '=:', '=>', '|', '$'
         ],
 
-        numbers: /-?[0-9.]/,
+        numbers: /-?[\d.]/,
 
         tokenizer: {
             root: [
@@ -51,9 +51,9 @@ function definition() {
 
                 [/(\w*)(\s?)(::)/, ['keyword', 'white', 'operators']],
 
-                [/[+\-*/=<>$]/, 'operators'],
+                [/[$*+/<=>-]/, 'operators'],
 
-                [/[a-zA-Z_][a-zA-Z0-9_]*/, {
+                [/[A-Z_a-z]\w*/, {
                     cases: {
                         '@builtintypes': 'type',
                         '@keywords': 'keyword',
@@ -61,7 +61,7 @@ function definition() {
                     }
                 }],
 
-                [/[()[\],:]/, 'delimiter'],
+                [/[(),:[\]]/, 'delimiter'],
 
                 [/@numbers/, 'number'],
 
@@ -69,13 +69,13 @@ function definition() {
             ],
 
             comment: [
-                [/[^/*]+/, 'comment'],
+                [/[^*/]+/, 'comment'],
                 [/\*\//, 'comment', '@pop'],
-                [/[/*]/, 'comment']
+                [/[*/]/, 'comment']
             ],
 
             whitespace: [
-                [/[ \t\r\n]+/, 'white'],
+                [/[\t\n\r ]+/, 'white'],
                 [/\/\*/, 'comment', '@comment'],
                 [/\/\/.*$/, 'comment'],
                 [/--.*$/, 'comment']

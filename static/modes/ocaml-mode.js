@@ -95,12 +95,12 @@ function definition() {
             'unit',
         ],
 
-        numbers: /-?[0-9.]/,
+        numbers: /-?[\d.]/,
 
         tokenizer: {
             root: [
                 // identifiers and keywords
-                [/[a-z_$][\w$]*/, {
+                [/[$_a-z][\w$]*/, {
                     cases: {
                         '@typeKeywords': 'keyword',
                         '@keywords': 'keyword',
@@ -112,7 +112,7 @@ function definition() {
 
                 [/@numbers/, 'number'],
 
-                [/[+\-*/=<>$@]/, 'operators'],
+                [/[$*+/<=>@-]/, 'operators'],
 
                 [/(")(.*)(")/, ['string', 'string', 'string']]
             ],
@@ -123,7 +123,7 @@ function definition() {
             ],
 
             whitespace: [
-                [/[ \t\r\n]+/, 'white'],
+                [/[\t\n\r ]+/, 'white'],
                 [/\(\*/, 'comment', '@comment'],
             ],
         }
