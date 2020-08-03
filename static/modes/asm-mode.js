@@ -90,7 +90,7 @@ function definition() {
                 [/'/, 'string.invalid'],
 
                 // Assume anything else is a label reference
-                [/%?[$.?@A-Z_a-z][\w$.?@]*/, 'type.identifier'],
+                [/%?[$.?A-Z_a-z@][\w$.?@]*/, 'type.identifier'],
 
                 // whitespace
                 {include: '@whitespace'},
@@ -114,7 +114,7 @@ function definition() {
                 [/[\t\n\r ]+/, 'white'],
                 [/\/\*/, 'comment', '@comment'],
                 [/\/\/.*$/, 'comment'],
-                [/[#;@\\].*$/, 'comment'],
+                [/[#;\\@].*$/, 'comment'],
             ],
         },
     };

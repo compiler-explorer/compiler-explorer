@@ -85,7 +85,7 @@ function definition() {
                 [/i\d+\**/, 'type'], // llvmType
 
                 // Misc syntax.
-                [/[!%@]\d+/, 'variable.name'],                         // llvmNoName
+                [/[!@%]\d+/, 'variable.name'],                         // llvmNoName
                 [/-?\d+\.\d*(e[+-]\d+)?/, 'number.float'],             // llvmFloat
                 [/0[Xx][\dA-Fa-f]+/, 'number.hex'],                   // llvmFloat
                 [/-?\d+/, 'number'],                                   // llvmNumber

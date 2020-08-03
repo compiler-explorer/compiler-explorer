@@ -112,7 +112,7 @@ function definition() {
 
                 [/@numbers/, 'number'],
 
-                [/[$*+/<=>@-]/, 'operators'],
+                [/[$*+/<=>-@]/, 'operators'],
 
                 [/(")(.*)(")/, ['string', 'string', 'string']],
             ],
