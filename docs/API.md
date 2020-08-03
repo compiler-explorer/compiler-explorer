@@ -45,15 +45,15 @@ You will need the library id's and the version id's to supply to **compile** if 
 Returns information like Sourcecode, Compiler settings and libraries for a given link id.
  This request only returns data in JSON.
 
-### `POST /api/compiler/<compiler-id>/compile` - perform a compilation
+### `POST /api/compile` - perform a compilation
 
 To specify a compilation request as a JSON document, post it as the appropriate
  type and send an object of the form:
 ```JSON
 {
-    "source": "Source to compile",
+    "source": "<Source-to-compile>",
     "options": {
-        "userArguments": "Compiler flags",
+        "userArguments": "<Compiler-flags>",
         "compilerOptions": {
               "skipAsm": false,
               "executorRequest": false
@@ -76,11 +76,14 @@ To specify a compilation request as a JSON document, post it as the appropriate
              {"id": "range-v3", "version": "trunk"},
              {"id": "fmt", "version": "400"}
         ]
-    }
+    },
+    "compiler": "<compiler-id>",
+    "lang": "<lang-id (Optional)>",
+    "allowStoreCodeDebug": true
 }
 ```
 
-Execution Only request:
+Execution Only request example:
 ```JSON
 {
     "source": "int main () { return 1; }",
