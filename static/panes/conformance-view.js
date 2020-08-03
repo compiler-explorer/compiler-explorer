@@ -301,6 +301,7 @@ Conformance.prototype.compileChild = function (child) {
                     libraries: [],
                     skipAsm: true,
                 },
+                lang: this.langId,
             };
 
             _.each(this.libsWidget.getLibsInUse(), function (item) {
