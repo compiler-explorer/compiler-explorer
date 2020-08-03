@@ -32,7 +32,7 @@ chai.use(chaiAsPromised);
 chai.should();
 
 const languages = {
-    d: {id: 'd'}
+    d: {id: 'd'},
 };
 
 describe('D', () => {
@@ -40,7 +40,7 @@ describe('D', () => {
     const info = {
         exe: null,
         remote: true,
-        lang: languages.d.id
+        lang: languages.d.id,
     };
 
     before(() => {

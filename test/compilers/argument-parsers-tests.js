@@ -32,7 +32,7 @@ chai.use(chaiAsPromised);
 const should = chai.should();
 
 const languages = {
-    'c++': {id: 'c++'}
+    'c++': {id: 'c++'},
 };
 
 let env;
@@ -62,31 +62,31 @@ describe('option parser', () => {
         return parsers.Base.getOptions(makeCompiler('-foo\n')).should.eventually.deep.equals({
             '-foo': {
                 description: '',
-                timesused: 0
-            }
+                timesused: 0,
+            },
         });
     });
     it('should parse double-dash options', () => {
         return parsers.Base.getOptions(makeCompiler('--foo\n')).should.eventually.deep.equals({
             '--foo': {
                 description: '',
-                timesused: 0
-            }
+                timesused: 0,
+            },
         });
     });
     it('should parse stderr options', () => {
         return parsers.Base.getOptions(makeCompiler('', '--bar=monkey\n')).should.eventually.deep.equals({
             '--bar=monkey': {
                 description: '',
-                timesused: 0
-            }
+                timesused: 0,
+            },
         });
     });
     it('handles non-option text', () => {
         return parsers.Base.getOptions(makeCompiler('-foo=123\nthis is a fish\n-badger=123')).should.eventually.deep.equals(
             {
                 '-foo=123': {description: 'this is a fish', timesused: 0},
-                '-badger=123': {description: '', timesused: 0}
+                '-badger=123': {description: '', timesused: 0},
             });
     });
     it('should ignore if errors occur', () => {
@@ -99,7 +99,7 @@ describe('gcc parser', () => {
         return parsers.GCC.parse(makeCompiler()).should.eventually.satisfy(result => {
             return Promise.all([
                 should.not.equal(result.compiler.supportsGccDump, true),
-                result.compiler.options.should.equals('')
+                result.compiler.options.should.equals(''),
             ]);
         });
     });
@@ -110,14 +110,14 @@ describe('gcc parser', () => {
                     result.compiler.supportsGccDump.should.equals(true),
                     result.compiler.supportsIntel.should.equals(true),
                     result.compiler.intelAsm.should.equals('-masm=intel'),
-                    result.compiler.options.should.equals('-fdiagnostics-color=always')
+                    result.compiler.options.should.equals('-fdiagnostics-color=always'),
                 ]);
             });
     });
     it('should handle undefined options', () => {
         return parsers.GCC.parse(makeCompiler('-fdiagnostics-color=[blah]')).should.eventually.satisfy(result => {
             return Promise.all([
-                result.compiler.options.should.equals('-fdiagnostics-color=always')
+                result.compiler.options.should.equals('-fdiagnostics-color=always'),
             ]);
         });
     });
@@ -127,7 +127,7 @@ describe('clang parser', () => {
     it('should handle empty options', () => {
         return parsers.Clang.parse(makeCompiler()).should.eventually.satisfy(result => {
             return Promise.all([
-                result.compiler.options.should.equals('')
+                result.compiler.options.should.equals(''),
             ]);
         });
     });
@@ -140,7 +140,7 @@ describe('clang parser', () => {
 
                     result.compiler.options.should.include('-fcolor-diagnostics'),
                     result.compiler.options.should.include('-fno-crash-diagnostics'),
-                    result.compiler.options.should.not.include('-fsave-optimization-record')
+                    result.compiler.options.should.not.include('-fsave-optimization-record'),
                 ]);
             });
     });
@@ -150,7 +150,7 @@ describe('pascal parser', () => {
     it('should handle empty options', () => {
         return parsers.Pascal.parse(makeCompiler()).should.eventually.satisfy(result => {
             return Promise.all([
-                result.compiler.options.should.equals('')
+                result.compiler.options.should.equals(''),
             ]);
         });
     });
@@ -172,8 +172,8 @@ describe('popular compiler arguments', () => {
                         '-fcolor-diagnostics': {description: '', timesused: 0},
                         '-fsave-optimization-record': {description: '', timesused: 0},
                         '-g': {description: '', timesused: 0},
-                        '-x': {description: '', timesused: 0}
-                    })
+                        '-x': {description: '', timesused: 0},
+                    }),
                 ]);
             });
         });
@@ -188,8 +188,8 @@ describe('popular compiler arguments', () => {
                         '-fsave-optimization-record': {description: '', timesused: 0},
                         '-g': {description: '', timesused: 0},
                         '-x': {description: '', timesused: 0},
-                        '-std=<c++11,c++14,c++17z>': {description: '', timesused: 0}
-                    })
+                        '-std=<c++11,c++14,c++17z>': {description: '', timesused: 0},
+                    }),
                 ]);
             });
         });
@@ -203,8 +203,8 @@ describe('popular compiler arguments', () => {
                         '-O<number>': {description: 'optimization level', timesused: 0},
                         '-fcolor-diagnostics': {description: '', timesused: 0},
                         '-fsave-optimization-record': {description: '', timesused: 0},
-                        '-x': {description: '', timesused: 0}
-                    })
+                        '-x': {description: '', timesused: 0},
+                    }),
                 ]);
             });
         });

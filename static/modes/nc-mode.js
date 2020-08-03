@@ -36,7 +36,7 @@ function definition() {
         'int', 'long', 'register', 'restrict', 'return', 'short', 'signed', 'sizeof', 'static',
         'struct', 'switch', 'typedef', 'union', 'unsigned', 'void', 'volatile', 'while',
         '_Alignas', '_Alignof', '_Atomic', '_Bool', '_Complex', '_Generic', '_Imaginary',
-        '_Noreturn', '_Static_assert', '_Thread_local'
+        '_Noreturn', '_Static_assert', '_Thread_local',
     ];
     return nc;
 }

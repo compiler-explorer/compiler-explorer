@@ -32,8 +32,8 @@ chai.should();
 
 const languages = {
     'a-lang': {
-        id: 'a-lang'
-    }
+        id: 'a-lang',
+    },
 };
 
 const libs = {
@@ -42,52 +42,52 @@ const libs = {
             versions: {
                 trunk: {
                     version: '(trunk)',
-                    libPath: '/fmt/trunk/lib'
-                }
-            }
+                    libPath: '/fmt/trunk/lib',
+                },
+            },
         },
         catch2: {
             versions: {
                 2101: {
                     version: '2.1.0.1',
-                    libPath: '/catch2/2.1.0.1/lib/x86_64'
+                    libPath: '/catch2/2.1.0.1/lib/x86_64',
                 },
                 2102: {
                     version: '2.1.0.2',
-                    libPath: '/catch2/2.1.0.2/lib/x86_64'
-                }
-            }
-        }
-    }
+                    libPath: '/catch2/2.1.0.2/lib/x86_64',
+                },
+            },
+        },
+    },
 };
 
 const props = {
-    compilers: 'goodCompiler:&badCompiler'
+    compilers: 'goodCompiler:&badCompiler',
 };
 
 const noOptionsAtAll = {
-    compilers: 'goodCompiler'
+    compilers: 'goodCompiler',
 };
 
 const noBaseOptions = {
     compilers: 'goodCompiler',
-    options: 'bar'
+    options: 'bar',
 };
 
 const onlyBaseOptions = {
     compilers: 'goodCompiler',
-    baseOptions: 'foo'
+    baseOptions: 'foo',
 };
 
 const bothOptions = {
     compilers: 'goodCompiler',
     baseOptions: 'foo',
-    options: 'bar'
+    options: 'bar',
 };
 
 const supportsLibrariesOptions = {
     compilers: 'goodCompiler',
-    supportsLibraries: 'fmt:catch2.2101'
+    supportsLibraries: 'fmt:catch2.2101',
 };
 
 describe('Compiler-finder', function () {
@@ -115,9 +115,9 @@ describe('Compiler-finder', function () {
             get: () => {
                 return {
                     libs: libs,
-                    tools: {}
+                    tools: {},
                 };
-            }
+            },
         };
     });
 
@@ -160,18 +160,18 @@ describe('Compiler-finder', function () {
                 versions: {
                     2101: {
                         version: '2.1.0.1',
-                        libPath: '/catch2/2.1.0.1/lib/x86_64'
-                    }
-                }
+                        libPath: '/catch2/2.1.0.1/lib/x86_64',
+                    },
+                },
             },
             fmt: {
                 versions: {
                     trunk: {
                         version: '(trunk)',
-                        libPath: '/fmt/trunk/lib'
-                    }
-                }
-            }
+                        libPath: '/fmt/trunk/lib',
+                    },
+                },
+            },
         });
     });
 });

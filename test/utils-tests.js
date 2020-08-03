@@ -85,37 +85,37 @@ describe('Parses compiler output', () => {
     it('handles simple cases', () => {
         utils.parseOutput('Line one\nLine two', 'bob.cpp').should.deep.equals([
             {text: 'Line one'},
-            {text: 'Line two'}
+            {text: 'Line two'},
         ]);
         utils.parseOutput('Line one\nbob.cpp:1 Line two', 'bob.cpp').should.deep.equals([
             {text: 'Line one'},
             {
                 tag: {column: 0, line: 1, text: 'Line two'},
-                text: '<source>:1 Line two'
-            }
+                text: '<source>:1 Line two',
+            },
         ]);
         utils.parseOutput('Line one\nbob.cpp:1:5: Line two', 'bob.cpp').should.deep.equals([
             {text: 'Line one'},
             {
                 tag: {column: 5, line: 1, text: 'Line two'},
-                text: '<source>:1:5: Line two'
-            }
+                text: '<source>:1:5: Line two',
+            },
         ]);
     });
     it('handles windows output', () => {
         utils.parseOutput('bob.cpp(1) Oh noes', 'bob.cpp').should.deep.equals([
             {
                 tag: {column: 0, line: 1, text: 'Oh noes'},
-                text: '<source>(1) Oh noes'
-            }
+                text: '<source>(1) Oh noes',
+            },
         ]);
     });
     it('replaces all references to input source', () => {
         utils.parseOutput('bob.cpp:1 error in bob.cpp', 'bob.cpp').should.deep.equals([
             {
                 tag: {column: 0, line: 1, text: 'error in <source>'},
-                text: '<source>:1 error in <source>'
-            }
+                text: '<source>:1 error in <source>',
+            },
         ]);
     });
     it('treats <stdin> as if it were the compiler source', () => {
@@ -125,10 +125,10 @@ describe('Parses compiler output', () => {
                     tag: {
                         column: 25,
                         line: 120,
-                        text: 'error: variable or field \'transform_data\' declared void'
+                        text: 'error: variable or field \'transform_data\' declared void',
                     },
-                    text: '<source>:120:25: error: variable or field \'transform_data\' declared void'
-                }
+                    text: '<source>:120:25: error: variable or field \'transform_data\' declared void',
+                },
             ]);
     });
 });
@@ -140,10 +140,10 @@ describe('Pascal compiler output', () => {
                 tag: {
                     column: 23,
                     line: 13,
-                    text: 'Error: Identifier not found "adsadasd"'
+                    text: 'Error: Identifier not found "adsadasd"',
                 },
-                text: '<source>(13,23) Error: Identifier not found "adsadasd"'
-            }
+                text: '<source>(13,23) Error: Identifier not found "adsadasd"',
+            },
         ]);
     });
 
@@ -153,26 +153,26 @@ describe('Pascal compiler output', () => {
                 tag: {
                     column: 0,
                     line: 17,
-                    text: 'Fatal: There were 1 errors compiling module, stopping'
+                    text: 'Fatal: There were 1 errors compiling module, stopping',
                 },
-                text: '<source>(17) Fatal: There were 1 errors compiling module, stopping'
-            }
+                text: '<source>(17) Fatal: There were 1 errors compiling module, stopping',
+            },
         ]);
     });
 
     it('removes the temp path', () => {
         utils.parseOutput('Compiling /tmp/path/prog.dpr\noutput.pas(17) Fatal: There were 1 errors compiling module, stopping', 'output.pas', '/tmp/path/').should.deep.equals([
             {
-                text: 'Compiling prog.dpr'
+                text: 'Compiling prog.dpr',
             },
             {
                 tag: {
                     column: 0,
                     line: 17,
-                    text: 'Fatal: There were 1 errors compiling module, stopping'
+                    text: 'Fatal: There were 1 errors compiling module, stopping',
                 },
-                text: '<source>(17) Fatal: There were 1 errors compiling module, stopping'
-            }
+                text: '<source>(17) Fatal: There were 1 errors compiling module, stopping',
+            },
         ]);
     });
 });
@@ -184,10 +184,10 @@ describe('Tool output', () => {
                 tag: {
                     column: 1,
                     line: 1,
-                    text: 'Fatal: There were 1 errors compiling module, stopping'
+                    text: 'Fatal: There were 1 errors compiling module, stopping',
                 },
-                text: '<source>:1:1: Fatal: There were 1 errors compiling module, stopping'
-            }
+                text: '<source>:1:1: Fatal: There were 1 errors compiling module, stopping',
+            },
         ]);
     });
 
@@ -197,10 +197,10 @@ describe('Tool output', () => {
                 tag: {
                     column: 22,
                     line: 5,
-                    text: 'error: No explicit type declared for \'y\''
+                    text: 'error: No explicit type declared for \'y\'',
                 },
-                text: '<source>:5:22: error: No explicit type declared for \'y\''
-            }
+                text: '<source>:5:22: error: No explicit type declared for \'y\'',
+            },
         ]);
     });
 
@@ -210,10 +210,10 @@ describe('Tool output', () => {
                 tag: {
                     column: 1,
                     line: 1,
-                    text: 'Fatal: There were 1 errors compiling module, stopping'
+                    text: 'Fatal: There were 1 errors compiling module, stopping',
                 },
-                text: '<source>:1:1: Fatal: There were 1 errors compiling module, stopping'
-            }
+                text: '<source>:1:1: Fatal: There were 1 errors compiling module, stopping',
+            },
         ]);
     });
 });
@@ -279,8 +279,8 @@ describe('Hash interface', () => {
         utils.getHash({
             toppings: [
                 {name: 'raspberries', optional: false},
-                {name: 'ground cinnamon', optional: true}
-            ]
+                {name: 'ground cinnamon', optional: true},
+            ],
         }).should.equal('e205d63abd5db363086621fdc62c4c23a51b733bac5855985a8b56642d570491');
     });
 });
@@ -295,15 +295,15 @@ describe('GoldenLayout utils', () => {
                         {source: 'Editor 1', language: 'c++'},
                         {source: 'Editor 2', language: 'c++'},
                         {source: 'Editor 3', language: 'c++'},
-                        {source: 'Editor 4', language: 'c++'}
+                        {source: 'Editor 4', language: 'c++'},
                     ],
                     compilers: [
                         {compiler: 'clang_trunk'},
                         {compiler: 'gsnapshot'},
                         {compiler: 'clang_trunk'},
                         {compiler: 'gsnapshot'},
-                        {compiler: 'rv32clang'}
-                    ]
+                        {compiler: 'rv32clang'},
+                    ],
                 });
             });
     });

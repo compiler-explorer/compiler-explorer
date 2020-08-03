@@ -29,15 +29,15 @@ function definition() {
         keywords: [
             'module', 'import', 'Start', 'where', 'otherwise',
             'definition', 'implementation', 'from', 'class', 'instance', 'abort',
-            'infix', 'infixl', 'infixr', 'if', 'True', 'False'
+            'infix', 'infixl', 'infixr', 'if', 'True', 'False',
         ],
 
         builtintypes: [
-            'Int', 'Real', 'String', 'Char', 'Complex', 'Bool'
+            'Int', 'Real', 'String', 'Char', 'Complex', 'Bool',
         ],
 
         operators: [
-            '=', '==', '>=', '<=', '+', '-', '*', '/', '::', ':==', '->', '=:', '=>', '|', '\\\\'
+            '=', '==', '>=', '<=', '+', '-', '*', '/', '::', ':==', '->', '=:', '=>', '|', '\\\\',
         ],
 
         numbers: /-?[\d.]/,
@@ -58,29 +58,29 @@ function definition() {
                     cases: {
                         '@builtintypes': 'type',
                         '@keywords': 'keyword',
-                        '@default': ''
-                    }
+                        '@default': '',
+                    },
                 }],
 
                 [/[(),:[\]]/, 'delimiter'],
 
                 [/@numbers/, 'number'],
 
-                [/(")(.*)(")/, ['string', 'string', 'string']]
+                [/(")(.*)(")/, ['string', 'string', 'string']],
             ],
 
             comment: [
                 [/[^*/]+/, 'comment'],
                 [/\*\//, 'comment', '@pop'],
-                [/[*/]/, 'comment']
+                [/[*/]/, 'comment'],
             ],
 
             whitespace: [
                 [/[\t\n\r ]+/, 'white'],
                 [/\/\*/, 'comment', '@comment'],
-                [/\/\/.*$/, 'comment']
-            ]
-        }
+                [/\/\/.*$/, 'comment'],
+            ],
+        },
     };
 }
 

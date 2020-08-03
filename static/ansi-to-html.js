@@ -37,7 +37,7 @@ var defaults = {
     newline: false,
     escapeXML: false,
     stream: false,
-    colors: getDefaultColors()
+    colors: getDefaultColors(),
 };
 
 
@@ -58,7 +58,7 @@ function getDefaultColors() {
         12: '#55F',
         13: '#F5F',
         14: '#5FF',
-        15: '#FFF'
+        15: '#FFF',
     };
 
     range(0, 5).forEach(function (red) {
@@ -195,7 +195,7 @@ function handleDisplay(stack, code, options) {
         },
         49: function _() {
             return pushBackgroundColor(stack, options.bg);
-        }
+        },
     };
 
     if (codeMap[code]) {
@@ -407,25 +407,25 @@ function tokenize(text, options, callback) {
     /* eslint no-control-regex:0 */
     var tokens = [{
         pattern: /^\x08+/,
-        sub: remove
+        sub: remove,
     }, {
         pattern: /^\x1B\[[0-2]?K/,
-        sub: remove
+        sub: remove,
     }, {
         pattern: /^\x1B\[38;5;(\d+)m/,
-        sub: removeXterm256
+        sub: removeXterm256,
     }, {
         pattern: /^\n/,
-        sub: newline
+        sub: newline,
     }, {
         pattern: /^\x1B\[((?:\d{1,3};?)+|)m/,
-        sub: ansiMess
+        sub: ansiMess,
     }, {
         pattern: /^\x1B\[?[\d;]{0,3}/,
-        sub: remove
+        sub: remove,
     }, {
         pattern: /^([^\x08\n\x1B]+)/,
-        sub: realText
+        sub: realText,
     }];
 
     function process(handler, i) {
@@ -529,7 +529,7 @@ Filter.prototype = {
         }
 
         return buf.join('');
-    }
+    },
 };
 
 module.exports = Filter;

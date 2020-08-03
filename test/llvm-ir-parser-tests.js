@@ -32,7 +32,7 @@ chai.should();
 const expect = chai.expect;
 
 const languages = {
-    'c++': {id: 'c++'}
+    'c++': {id: 'c++'},
 };
 
 describe('llvm-ir parseMetaNode', function () {
@@ -63,7 +63,7 @@ describe('llvm-ir parseMetaNode', function () {
             scope: '!44',
             file: '!1',
             line: '8',
-            column: '5'
+            column: '5',
         });
     });
 
@@ -80,7 +80,7 @@ describe('llvm-ir parseMetaNode', function () {
             isDefinition: 'true',
             flags: 'DIFlagPrototyped',
             ceTest: 'a:b\\"c,d',
-            ceEmpty: ''
+            ceEmpty: '',
         });
     });
 
@@ -89,7 +89,7 @@ describe('llvm-ir parseMetaNode', function () {
             metaType: 'File',
             metaId: '!1',
             filename: '/tmp/example.cpp',
-            directory: '/home/compiler-explorer'
+            directory: '/home/compiler-explorer',
         });
     });
 });
@@ -112,7 +112,7 @@ describe('llvm-ir getSourceLineNumber', function () {
         '!12': { line: 0, scope: '!10' },
         '!14': { },
         '!15': { scope: '!14' },
-        '!16': { scope: '!42' }
+        '!16': { scope: '!42' },
     };
 
     it('should return a line number', function () {
@@ -151,7 +151,7 @@ describe('llvm-ir getFileName', function () {
         '!11': { file: '!10' },
         '!21': { file: '!20' },
         '!12': { scope: '!11' },
-        '!13': { scope: '!12' }
+        '!13': { scope: '!12' },
     };
 
     it('should return a filename', function () {
@@ -195,14 +195,14 @@ describe('llvm-ir isLineLlvmDirective', function () {
             'file: !1, line: 28, type: !8, isLocal: false, isDefinition: true, scopeLine: 28)',
         '!150 = distinct !DILexicalBlock(scope: !146, file: !1, line: 29, column: 5)',
         '!156 = !DILocation(line: 30, column: 15, scope: !154)',
-        '!169 = distinct !{!169, !152, !170}'
+        '!169 = distinct !{!169, !152, !170}',
     ];
 
     const nonDirectives = [
         '  %33 = load i32, i32* %5, align 4, !dbg !167',
         '  %25 = getelementptr inbounds double, double* %22, i64 %24, !dbg !129',
         'define void @_Z9maxAr1rayPdS_(double*, double*) #0 !dbg !76 {',
-        '  call void @llvm.dbg.declare(metadata double** %3, metadata !12, metadata !DIExpression()), !dbg !13'
+        '  call void @llvm.dbg.declare(metadata double** %3, metadata !12, metadata !DIExpression()), !dbg !13',
     ];
 
     it('should recognize directives', function () {

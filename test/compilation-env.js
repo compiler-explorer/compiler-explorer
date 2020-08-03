@@ -33,7 +33,7 @@ chai.should();
 const props = {
     optionsAllowedRe: '.*',
     optionsForbiddenRe: '^(-W[alp],)?((-wrapper|-fplugin.*|-specs|-load|-plugin|(@.*)|-I|-i)(=.*)?|--)$',
-    cacheConfig: 'InMemory(10)'
+    cacheConfig: 'InMemory(10)',
 };
 
 describe('Compilation environment', () => {

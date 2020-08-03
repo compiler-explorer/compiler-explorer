@@ -28,15 +28,15 @@ function definition() {
     return {
         keywords: [
             'module', 'import', 'main', 'where', 'otherwise', 'newtype',
-            'definition', 'implementation', 'from', 'class', 'instance', 'abort'
+            'definition', 'implementation', 'from', 'class', 'instance', 'abort',
         ],
 
         builtintypes: [
-            'Int', 'Real', 'String'
+            'Int', 'Real', 'String',
         ],
 
         operators: [
-            '=', '==', '>=', '<=', '+', '-', '*', '/', '::', '->', '=:', '=>', '|', '$'
+            '=', '==', '>=', '<=', '+', '-', '*', '/', '::', '->', '=:', '=>', '|', '$',
         ],
 
         numbers: /-?[\d.]/,
@@ -57,30 +57,30 @@ function definition() {
                     cases: {
                         '@builtintypes': 'type',
                         '@keywords': 'keyword',
-                        '@default': ''
-                    }
+                        '@default': '',
+                    },
                 }],
 
                 [/[(),:[\]]/, 'delimiter'],
 
                 [/@numbers/, 'number'],
 
-                [/(")(.*)(")/, ['string', 'string', 'string']]
+                [/(")(.*)(")/, ['string', 'string', 'string']],
             ],
 
             comment: [
                 [/[^*/]+/, 'comment'],
                 [/\*\//, 'comment', '@pop'],
-                [/[*/]/, 'comment']
+                [/[*/]/, 'comment'],
             ],
 
             whitespace: [
                 [/[\t\n\r ]+/, 'white'],
                 [/\/\*/, 'comment', '@comment'],
                 [/\/\/.*$/, 'comment'],
-                [/--.*$/, 'comment']
-            ]
-        }
+                [/--.*$/, 'comment'],
+            ],
+        },
     };
 }
 

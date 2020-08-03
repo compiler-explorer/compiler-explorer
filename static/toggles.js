@@ -43,11 +43,11 @@ function Togglesv2(root, state) {
             bind = $button.data('bind'),
             settings = {
                 on: {
-                    icon: 'far fa-check-square'
+                    icon: 'far fa-check-square',
                 },
                 off: {
-                    icon: 'far fa-square'
-                }
+                    icon: 'far fa-square',
+                },
             };
 
         // Event Handlers

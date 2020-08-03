@@ -37,7 +37,7 @@ function CompilerService(eventHub) {
         max: 200 * 1024,
         length: function (n) {
             return JSON.stringify(n).length;
-        }
+        },
     });
     this.compilersByLang = {};
     _.each(options.compilers, function (compiler) {
@@ -74,7 +74,7 @@ CompilerService.prototype.processFromLangAndCompiler = function (languageId, com
                 if (compiler) {
                     return {
                         langId: lang.id,
-                        compiler: compiler
+                        compiler: compiler,
                     };
                 }
                 return null;
@@ -97,7 +97,7 @@ CompilerService.prototype.processFromLangAndCompiler = function (languageId, com
 
     return {
         langId: langId,
-        compiler: foundCompiler
+        compiler: foundCompiler,
     };
 };
 
@@ -163,7 +163,7 @@ function handleRequestError(request, reject, xhr, textStatus, errorThrown) {
     }
     reject({
         request: request,
-        error: error
+        error: error,
     });
 }
 
@@ -176,7 +176,7 @@ CompilerService.prototype.submit = function (request) {
             return Promise.resolve({
                 request: request,
                 result: cachedResult,
-                localCacheHit: true
+                localCacheHit: true,
             });
         }
     }
@@ -196,10 +196,10 @@ CompilerService.prototype.submit = function (request) {
                 resolve({
                     request: request,
                     result: result,
-                    localCacheHit: false
+                    localCacheHit: false,
                 });
             }, this),
-            error: bindHandler
+            error: bindHandler,
         });
     }, this));
 };
@@ -213,16 +213,16 @@ CompilerService.prototype.requestPopularArguments = function (compilerId, option
             dataType: 'json',
             data: JSON.stringify({
                 usedOptions: options,
-                presplit: false
+                presplit: false,
             }),
             success: _.bind(function (result) {
                 resolve({
                     request: compilerId,
                     result: result,
-                    localCacheHit: false
+                    localCacheHit: false,
                 });
             }, this),
-            error: bindHandler
+            error: bindHandler,
         });
     }, this));
 };
@@ -257,7 +257,7 @@ CompilerService.prototype.getSelectizerOrder = function () {
     return [
         {field: '$order'},
         {field: '$score'},
-        {field: 'name'}
+        {field: 'name'},
     ];
 };
 

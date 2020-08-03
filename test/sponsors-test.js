@@ -64,7 +64,7 @@ levels:
         `).levels[0].sponsors;
         folks.should.deep.equalInAnyOrder([
             {name: 'An object'},
-            {name: 'Just a string'}
+            {name: 'Just a string'},
         ]);
     });
 
@@ -84,7 +84,7 @@ levels:
             {name: 'A'},
             {name: 'B'},
             {name: 'C'},
-            {name: 'D'}
+            {name: 'D'},
         ]);
     });
     it('should sort sponsors by priority then name', () => {
@@ -104,7 +104,7 @@ levels:
         peeps.should.deep.equals([
             {name: 'D', priority: 100},
             {name: 'B', priority: 50},
-            {name: 'C', priority: 50}
+            {name: 'C', priority: 50},
         ]);
     });
     it('should pick icon over img', () => {
@@ -122,7 +122,7 @@ levels:
         `).levels[0].sponsors;
         things.should.deep.equalInAnyOrder([
             {name: 'one', icon: 'image', img: 'image'},
-            {name: 'two', icon: 'icon', img: 'not_an_icon'}
+            {name: 'two', icon: 'icon', img: 'not_an_icon'},
         ]);
     });
 
@@ -152,7 +152,7 @@ levels:
         `).icons;
         icons.should.deep.equalInAnyOrder([
             {name: 'one', icon: 'pick_me', img: 'pick_me', topIcon: true},
-            {name: 'four', icon: 'pick_me_also', img: 'pick_me_also', topIcon: true}
+            {name: 'four', icon: 'pick_me_also', img: 'pick_me_also', topIcon: true},
         ]);
     });
 });

@@ -46,7 +46,7 @@ if (process.platform !== 'win32') { // POSIX
                         code: 0,
                         okToCache: true,
                         stderr: '',
-                        stdout: 'hello world\n'
+                        stdout: 'hello world\n',
                     });
         });
         it('limits output', () => {
@@ -57,7 +57,7 @@ if (process.platform !== 'win32') { // POSIX
                         code: 0,
                         okToCache: true,
                         stderr: '',
-                        stdout: 'A very ver\n[Truncated]'
+                        stdout: 'A very ver\n[Truncated]',
                     });
         });
         it('handles failing commands', () => {
@@ -68,7 +68,7 @@ if (process.platform !== 'win32') { // POSIX
                         code: 1,
                         okToCache: true,
                         stderr: '',
-                        stdout: ''
+                        stdout: '',
                     });
         });
         it('handles timouts', () => {
@@ -79,7 +79,7 @@ if (process.platform !== 'win32') { // POSIX
                         code: -1,
                         okToCache: false,
                         stderr: '\nKilled - processing time exceeded',
-                        stdout: ''
+                        stdout: '',
                     });
         });
         it('handles missing executables', () => {
@@ -94,7 +94,7 @@ if (process.platform !== 'win32') { // POSIX
                         code: 0,
                         okToCache: true,
                         stderr: '',
-                        stdout: 'this is stdin'
+                        stdout: 'this is stdin',
                     });
         });
     });
@@ -109,7 +109,7 @@ if (process.platform !== 'win32') { // POSIX
                         code: 0,
                         okToCache: true,
                         stderr: '',
-                        stdout: 'hello world\r\n'
+                        stdout: 'hello world\r\n',
                     });
         });
         it('limits output', () => {
@@ -120,7 +120,7 @@ if (process.platform !== 'win32') { // POSIX
                         code: 0,
                         okToCache: true,
                         stderr: '',
-                        stdout: 'A very ver\n[Truncated]'
+                        stdout: 'A very ver\n[Truncated]',
                     });
         });
         it('handles failing commands', () => {
@@ -131,7 +131,7 @@ if (process.platform !== 'win32') { // POSIX
                         code: 1,
                         okToCache: true,
                         stderr: '',
-                        stdout: ''
+                        stdout: '',
                     });
         });
         it('handles timouts', () => {
@@ -142,7 +142,7 @@ if (process.platform !== 'win32') { // POSIX
                         code: 1,
                         okToCache: false,
                         stderr: '\nKilled - processing time exceeded',
-                        stdout: ''
+                        stdout: '',
                     });
         });
         it('handles missing executables', () => {

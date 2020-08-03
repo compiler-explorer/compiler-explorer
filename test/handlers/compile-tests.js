@@ -35,7 +35,7 @@ chai.should();
 const languages = {
     a: {id: 'a'},
     b: {id: 'b'},
-    d: {id: 'd'}
+    d: {id: 'd'},
 };
 
 
@@ -68,14 +68,14 @@ describe('Compiler tests', () => {
                     code: 0,
                     stdout: [{text: 'Something from stdout'}],
                     stderr: [{text: 'Something from stderr'}],
-                    asm: [{text: 'ASMASMASM'}]
-                }
+                    asm: [{text: 'ASMASMASM'}],
+                },
             }]).then(() => {
                 return chai.request(app)
                     .post('/fake-for-test/compile')
                     .send({
                         options: '',
-                        source: 'I am a program'
+                        source: 'I am a program',
                     })
                     .then(res => {
                         res.should.have.status(200);
@@ -94,14 +94,14 @@ describe('Compiler tests', () => {
             return compileHandler.setCompilers([{
                 compilerType: 'fake-for-test',
                 exe: 'fake',
-                fakeResult: fakeResult || {}
+                fakeResult: fakeResult || {},
             }])
                 .then(() => chai.request(app)
                     .post('/fake-for-test/compile')
                     .set('Accept', 'application/json')
                     .send({
                         options: options || {},
-                        source: source || ''
+                        source: source || '',
                     }));
         }
 
@@ -110,7 +110,7 @@ describe('Compiler tests', () => {
                 code: 0,
                 stdout: [{text: 'Something from stdout'}],
                 stderr: [{text: 'Something from stderr'}],
-                asm: [{text: 'ASMASMASM'}]
+                asm: [{text: 'ASMASMASM'}],
             }).then(res => {
                 res.should.have.status(200);
                 res.should.be.json;
@@ -121,10 +121,10 @@ describe('Compiler tests', () => {
                         backendOptions: {},
                         filters: [],
                         options: [],
-                        source: 'I am a program'
+                        source: 'I am a program',
                     },
                     stderr: [{text: 'Something from stderr'}],
-                    stdout: [{text: 'Something from stdout'}]
+                    stdout: [{text: 'Something from stdout'}],
                 });
             })
                 .catch(err => {
@@ -135,7 +135,7 @@ describe('Compiler tests', () => {
         it('parses options and filters', () => {
             return makeFakeJson('I am a program', {
                 userArguments: '-O1 -monkey "badger badger"',
-                filters: {a: true, b: true, c: true}
+                filters: {a: true, b: true, c: true},
             })
                 .then(res => {
                     res.should.have.status(200);
@@ -151,7 +151,7 @@ describe('Compiler tests', () => {
             return compileHandler.setCompilers([{
                 compilerType: 'fake-for-test',
                 exe: 'fake',
-                fakeResult: fakeResult || {}
+                fakeResult: fakeResult || {},
             }])
                 .then(() => chai.request(app)
                     .post('/fake-for-test/compile')
@@ -221,22 +221,22 @@ describe('Compiler tests', () => {
                     id: 'a',
                     lang: 'a',
                     exe: 'fake',
-                    fakeResult: {code: 0, stdout: [], stderr: [], asm: [{text: 'LANG A'}]}
+                    fakeResult: {code: 0, stdout: [], stderr: [], asm: [{text: 'LANG A'}]},
                 },
                 {
                     compilerType: 'fake-for-test',
                     id: 'b',
                     lang: 'b',
                     exe: 'fake',
-                    fakeResult: {code: 0, stdout: [], stderr: [], asm: [{text: 'LANG B'}]}
+                    fakeResult: {code: 0, stdout: [], stderr: [], asm: [{text: 'LANG B'}]},
                 },
                 {
                     compilerType: 'fake-for-test',
                     id: 'a',
                     lang: 'b',
                     exe: 'fake',
-                    fakeResult: {code: 0, stdout: [], stderr: [], asm: [{text: 'LANG B but A'}]}
-                }
+                    fakeResult: {code: 0, stdout: [], stderr: [], asm: [{text: 'LANG B but A'}]},
+                },
             ])
                 .then(() => chai.request(app)
                     .post(`/${compiler}/compile`)
@@ -244,7 +244,7 @@ describe('Compiler tests', () => {
                     .send({
                         lang: lang,
                         options: {},
-                        source: ''
+                        source: '',
                     }));
         }
 

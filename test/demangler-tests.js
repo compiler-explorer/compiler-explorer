@@ -61,7 +61,7 @@ describe('Basic demangling', function () {
         return Promise.all([
             demangler.process(result).then((output) => {
                 output.asm[0].text.should.equal('Hello, World!');
-            })
+            }),
         ]);
     });
 
@@ -69,7 +69,7 @@ describe('Basic demangling', function () {
         const result = {};
         result.asm = [
             {text: '_Z6squarei:'},
-            {text: '  ret'}
+            {text: '  ret'},
         ];
 
         const demangler = new Demangler(cppfiltpath, new DummyCompiler());
@@ -81,7 +81,7 @@ describe('Basic demangling', function () {
                     output.asm[0].text.should.equal('square(int):');
                     output.asm[1].text.should.equal('  ret');
                 })
-                .catch(catchCppfiltNonexistence)
+                .catch(catchCppfiltNonexistence),
         ]);
     });
 
@@ -89,7 +89,7 @@ describe('Basic demangling', function () {
         const result = {};
         result.asm = [
             {text: '_Z6squarei:'},
-            {text: '  mov eax, $_Z6squarei'}
+            {text: '  mov eax, $_Z6squarei'},
         ];
 
         const demangler = new Demangler(cppfiltpath, new DummyCompiler());
@@ -100,7 +100,7 @@ describe('Basic demangling', function () {
                 output.asm[0].text.should.equal('square(int):');
                 output.asm[1].text.should.equal('  mov eax, $square(int)');
             })
-                .catch(catchCppfiltNonexistence)
+                .catch(catchCppfiltNonexistence),
         ]);
     });
 
@@ -115,7 +115,7 @@ describe('Basic demangling', function () {
             {text: '  cmp rax, OFFSET FLAT:_ZN6NormalD0Ev'},
             {text: '  jmp _ZdlPvm'},
             {text: '_ZN6NormalD2Ev:'},
-            {text: '  rep ret'}
+            {text: '  rep ret'},
         ];
 
         const demangler = new Demangler(cppfiltpath, new DummyCompiler());
@@ -133,7 +133,7 @@ describe('Basic demangling', function () {
     it('Should ignore comments (CL)', function () {
         const result = {};
         result.asm = [
-            {text: '        call     ??3@YAXPEAX_K@Z                ; operator delete'}
+            {text: '        call     ??3@YAXPEAX_K@Z                ; operator delete'},
         ];
 
         const demangler = new DemanglerWin32(cppfiltpath, new DummyCompiler());
@@ -144,15 +144,15 @@ describe('Basic demangling', function () {
         const output = demangler.win32RawSymbols;
         output.should.deep.equal(
             [
-                '??3@YAXPEAX_K@Z'
-            ]
+                '??3@YAXPEAX_K@Z',
+            ],
         );
     });
 
     it('Should ignore comments (CPP)', function () {
         const result = {};
         result.asm = [
-            {text: '        call     hello                ; operator delete'}
+            {text: '        call     hello                ; operator delete'},
         ];
 
         const demangler = new Demangler(cppfiltpath, new DummyCompiler());
@@ -164,15 +164,15 @@ describe('Basic demangling', function () {
         const output = demangler.othersymbols.listSymbols();
         output.should.deep.equal(
             [
-                'hello'
-            ]
+                'hello',
+            ],
         );
     });
 
     it('Should also support ARM branch instructions', () => {
         const result = {};
         result.asm = [
-            {text: '   bl _ZN3FooC1Ev'}
+            {text: '   bl _ZN3FooC1Ev'},
         ];
 
         const demangler = new Demangler(cppfiltpath, new DummyCompiler());
@@ -184,15 +184,15 @@ describe('Basic demangling', function () {
         const output = demangler.othersymbols.listSymbols();
         output.should.deep.equal(
             [
-                '_ZN3FooC1Ev'
-            ]
+                '_ZN3FooC1Ev',
+            ],
         );
     });
     
     it('Should NOT handle undecorated labels', () => {
         const result = {};
         result.asm = [
-            {text: '$LN3@caller2:'}
+            {text: '$LN3@caller2:'},
         ];
 
         const demangler = new DemanglerWin32(cppfiltpath, new DummyCompiler());
@@ -203,14 +203,14 @@ describe('Basic demangling', function () {
         const output = demangler.win32RawSymbols;
         output.should.deep.equal(
             [
-            ]
+            ],
         );
     });
 
     it('Should ignore comments after jmps', function () {
         const result = {};
         result.asm = [
-            {text: '  jmp _Z1fP6mytype # TAILCALL'}
+            {text: '  jmp _Z1fP6mytype # TAILCALL'},
         ];
 
         const demangler = new Demangler(cppfiltpath, new DummyCompiler());
@@ -222,15 +222,15 @@ describe('Basic demangling', function () {
         const output = demangler.othersymbols.listSymbols();
         output.should.deep.equal(
             [
-                '_Z1fP6mytype'
-            ]
+                '_Z1fP6mytype',
+            ],
         );
     });
 
     it('Should still work with normal jmps', function () {
         const result = {};
         result.asm = [
-            {text: '  jmp _Z1fP6mytype'}
+            {text: '  jmp _Z1fP6mytype'},
         ];
 
         const demangler = new Demangler(cppfiltpath, new DummyCompiler());
@@ -242,8 +242,8 @@ describe('Basic demangling', function () {
         const output = demangler.othersymbols.listSymbols();
         output.should.deep.equal(
             [
-                '_Z1fP6mytype'
-            ]
+                '_Z1fP6mytype',
+            ],
         );
     });
 });

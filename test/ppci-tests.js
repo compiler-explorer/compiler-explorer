@@ -31,7 +31,7 @@ chai.use(chaiAsPromised);
 chai.should();
 
 const languages = {
-    c: {id: 'c'}
+    c: {id: 'c'},
 };
 
 describe('PPCI', function () {
@@ -39,7 +39,7 @@ describe('PPCI', function () {
     const info = {
         exe: null,
         remote: true,
-        lang: languages.c.id
+        lang: languages.c.id,
     };
 
     before(() => {

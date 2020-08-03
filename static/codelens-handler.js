@@ -40,7 +40,7 @@ function registerLensesForCompiler(compilerId, editorModel, lenses) {
         registeredCodelenses.push({
             compilerId: compilerId,
             editorModel: editorModel,
-            lenses: lenses
+            lenses: lenses,
         });
     }
 }
@@ -53,12 +53,12 @@ function provide(model) {
     if (item) {
         return {
             lenses: item.lenses,
-            dispose: function () {}
+            dispose: function () {},
         };
     } else {
         return {
             lenses: [],
-            dispose: function () {}
+            dispose: function () {},
         };
     }
 }
@@ -76,7 +76,7 @@ function unregister(compilerId) {
 function registerProviderForLanguage(language) {
     if (!providersPerLanguage[language]) {
         providersPerLanguage[language] = monaco.languages.registerCodeLensProvider(language, {
-            provideCodeLenses: provide
+            provideCodeLenses: provide,
         });
     }
 }
@@ -84,5 +84,5 @@ function registerProviderForLanguage(language) {
 module.exports = {
     registerLensesForCompiler: registerLensesForCompiler,
     unregister: unregister,
-    registerProviderForLanguage: registerProviderForLanguage
+    registerProviderForLanguage: registerProviderForLanguage,
 };

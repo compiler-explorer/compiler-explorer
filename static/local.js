@@ -59,5 +59,5 @@ function remove(key) {
 module.exports = {
     set: set,
     get: get,
-    remove: remove
+    remove: remove,
 };

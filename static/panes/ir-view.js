@@ -51,9 +51,9 @@ function Ir(hub, container, state) {
         quickSuggestions: false,
         fixedOverflowWidgets: true,
         minimap: {
-            maxColumn: 80
+            maxColumn: 80,
         },
-        lineNumbersMinChars: 3
+        lineNumbersMinChars: 3,
     });
 
     this._compilerid = state.id;
@@ -82,7 +82,7 @@ function Ir(hub, container, state) {
     ga.proxy('send', {
         hitType: 'event',
         eventCategory: 'OpenViewPane',
-        eventAction: 'Ir'
+        eventAction: 'Ir',
     });
 }
 
@@ -101,7 +101,7 @@ Ir.prototype.initEditorActions = function () {
                 // a null file means it was the user's source
                 this.eventHub.emit('editorLinkLine', this._editorid, source.line, -1, true);
             }
-        }, this)
+        }, this),
     });
 };
 
@@ -146,7 +146,7 @@ Ir.prototype.resize = function () {
     var topBarHeight = this.topBar.outerHeight(true);
     this.irEditor.layout({
         width: this.domRoot.width(),
-        height: this.domRoot.height() - topBarHeight
+        height: this.domRoot.height() - topBarHeight,
     });
 };
 
@@ -230,7 +230,7 @@ Ir.prototype.currentState = function () {
     var state = {
         id: this._compilerid,
         editorid: this._editorid,
-        selection: this.selection
+        selection: this.selection,
     };
     this.fontScale.addState(state);
     return state;
@@ -252,10 +252,10 @@ Ir.prototype.onSettingsChange = function (newSettings) {
     this.irEditor.updateOptions({
         contextmenu: newSettings.useCustomContextMenu,
         minimap: {
-            enabled: newSettings.showMinimap
+            enabled: newSettings.showMinimap,
         },
         fontFamily: newSettings.editorsFFont,
-        fontLigatures: newSettings.editorsFLigatures
+        fontLigatures: newSettings.editorsFLigatures,
     });
 };
 
@@ -308,8 +308,8 @@ Ir.prototype.onPanesLinkLine = function (compilerId, lineNumber, revealLine, sen
                 options: {
                     isWholeLine: true,
                     linesDecorationsClassName: 'linked-code-decoration-margin',
-                    className: lineClass
-                }
+                    className: lineClass,
+                },
             };
         });
         if (this.linkedFadeTimeoutId !== -1) {
@@ -330,5 +330,5 @@ Ir.prototype.close = function () {
 };
 
 module.exports = {
-    Ir: Ir
+    Ir: Ir,
 };

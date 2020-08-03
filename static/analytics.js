@@ -30,7 +30,7 @@ if (options.sentryDsn) {
     Sentry.init({
         dsn: options.sentryDsn,
         release: options.release,
-        environment: options.sentryEnvironment
+        environment: options.sentryEnvironment,
     });
 }
 

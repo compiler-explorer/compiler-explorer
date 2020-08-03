@@ -61,7 +61,7 @@ function basicTests(factory) {
                 cache.stats().should.eql({hits: 0, puts: 1, gets: 0});
                 return cache.get('a key').should.eventually.eql({
                     hit: true,
-                    data: Buffer.from('a value')
+                    data: Buffer.from('a value'),
                 });
             }).then(x => {
                 cache.stats().should.eql({hits: 1, puts: 1, gets: 1});
@@ -78,7 +78,7 @@ function basicTests(factory) {
                 cache.stats().should.eql({hits: 0, puts: 1, gets: 0});
                 return cache.get('a key').should.eventually.eql({
                     hit: true,
-                    data: buffer
+                    data: buffer,
                 });
             }).then(x => {
                 cache.stats().should.eql({hits: 1, puts: 1, gets: 1});
@@ -124,7 +124,7 @@ describe('Multi caches', () => {
                 return Promise.all([
                     cache.get('a key').should.eventually.eql({hit: true, data: Buffer.from('a value')}),
                     subCache1.get('a key').should.eventually.eql({hit: true, data: Buffer.from('a value')}),
-                    subCache2.get('a key').should.eventually.eql({hit: true, data: Buffer.from('a value')})
+                    subCache2.get('a key').should.eventually.eql({hit: true, data: Buffer.from('a value')}),
                 ]);
             });
     });
@@ -146,7 +146,7 @@ describe('Multi caches', () => {
             }).then(() => {
                 Promise.all([
                     subCache1.get('a key').should.eventually.eql({hit: true, data: Buffer.from('cache1')}),
-                    subCache2.get('a key').should.eventually.eql({hit: true, data: Buffer.from('cache2')})]
+                    subCache2.get('a key').should.eventually.eql({hit: true, data: Buffer.from('cache2')})],
                 );
             });
     });

@@ -34,13 +34,13 @@ chai.use(chaiAsPromised);
 chai.should();
 
 const languages = {
-    java: {id: 'java'}
+    java: {id: 'java'},
 };
 
 const info = {
     exe: null,
     remote: true,
-    lang: languages.java.id
+    lang: languages.java.id,
 };
 
 function testJava(env, baseFolder, ...classNames) {
@@ -56,18 +56,18 @@ function testJava(env, baseFolder, ...classNames) {
                 text: match[2],
                 source: {
                     line: Number.parseInt(match[1]),
-                    file: null
-                }
+                    file: null,
+                },
             };
         }
         return {
             text: line,
-            source: null
+            source: null,
         };
     });
 
     const result = {
-        asm
+        asm,
     };
 
     const processed = compiler.processAsm(result).asm;
@@ -107,49 +107,49 @@ describe.skip('Basic java compiler setup', function () {
         });
         it('JavaCompiler should not allow -d parameter', () => {
             compiler.filterUserOptions(['hello', '-d', '--something', '--something-else']).should.deep.equal(
-                ['hello', '--something-else']
+                ['hello', '--something-else'],
             );
             compiler.filterUserOptions(['hello', '-d']).should.deep.equal(
-                ['hello']
+                ['hello'],
             );
             compiler.filterUserOptions(['-d', 'something', 'something-else']).should.deep.equal(
-                ['something-else']
+                ['something-else'],
             );
         });
 
         it('JavaCompiler should not allow -s parameter', () => {
             compiler.filterUserOptions(['hello', '-s', '--something', '--something-else']).should.deep.equal(
-                ['hello', '--something-else']
+                ['hello', '--something-else'],
             );
             compiler.filterUserOptions(['hello', '-s']).should.deep.equal(
-                ['hello']
+                ['hello'],
             );
             compiler.filterUserOptions(['-s', 'something', 'something-else']).should.deep.equal(
-                ['something-else']
+                ['something-else'],
             );
         });
 
         it('JavaCompiler should not allow --source-path parameter', () => {
             compiler.filterUserOptions(['hello', '--source-path', '--something', '--something-else']).should.deep.equal(
-                ['hello', '--something-else']
+                ['hello', '--something-else'],
             );
             compiler.filterUserOptions(['hello', '--source-path']).should.deep.equal(
-                ['hello']
+                ['hello'],
             );
             compiler.filterUserOptions(['--source-path', 'something', 'something-else']).should.deep.equal(
-                ['something-else']
+                ['something-else'],
             );
         });
 
         it('JavaCompiler should not allow -sourcepath parameter', () => {
             compiler.filterUserOptions(['hello', '-sourcepath', '--something', '--something-else']).should.deep.equal(
-                ['hello', '--something-else']
+                ['hello', '--something-else'],
             );
             compiler.filterUserOptions(['hello', '-sourcepath']).should.deep.equal(
-                ['hello']
+                ['hello'],
             );
             compiler.filterUserOptions(['-sourcepath', 'something', 'something-else']).should.deep.equal(
-                ['something-else']
+                ['something-else'],
             );
         });
     });
@@ -165,24 +165,24 @@ describe.skip('javap parsing', () => {
 
     it('should handle errors', () => {
         const result = {
-            asm: '<Compilation failed>'
+            asm: '<Compilation failed>',
         };
 
         compiler.processAsm(result).should.deep.equal([
-            {text: '<Compilation failed>', source: null}
+            {text: '<Compilation failed>', source: null},
         ]);
     });
 
     it('Parses simple class with one method', () => {
         return Promise.all([
-            testJava(env, 'test/java/square', 'javap-square')
+            testJava(env, 'test/java/square', 'javap-square'),
         ]);
     });
 
     it('Preserves ordering of multiple classes', () => {
         return Promise.all([
             testJava(env, 'test/java/two-classes', 'ZFirstClass', 'ASecondClass'),
-            testJava(env, 'test/java/two-classes', 'ASecondClass', 'ZFirstClass')
+            testJava(env, 'test/java/two-classes', 'ASecondClass', 'ZFirstClass'),
         ]);
     });
 });

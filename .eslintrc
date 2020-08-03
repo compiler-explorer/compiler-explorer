@@ -18,6 +18,7 @@
     "es6": true
   },
   "rules": {
+    "comma-dangle": ["error", "always-multiline"],
     "eol-last": ["error", "always"],
     "eqeqeq": ["error", "smart"],
     "indent": ["error", 4, {"SwitchCase": 1}],

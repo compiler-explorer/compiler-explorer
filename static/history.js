@@ -42,7 +42,7 @@ function extractEditorSources(content) {
         } else if (component.componentName === 'codeEditor') {
             sources.push({
                 lang: component.componentState.lang,
-                source: component.componentState.source
+                source: component.componentState.source,
             });
         }
     }
@@ -90,7 +90,7 @@ function push(stringifiedConfig) {
             completeHistory.push({
                 dt: Date.now(),
                 sources: sources,
-                config: config
+                config: config,
             });
         } else {
             var entry = completeHistory[duplicateIdx];
@@ -118,7 +118,7 @@ function sources(language) {
             if (source.lang === language) {
                 sourcelist.push({
                     dt: entry.dt,
-                    source: source.source
+                    source: source.source,
                 });
             }
         });
@@ -131,5 +131,5 @@ module.exports = {
     push: _.debounce(push, 500),
     list: list,
     sortedList: sortedList,
-    sources: sources
+    sources: sources,
 };

@@ -50,7 +50,7 @@ function Conformance(hub, container, state) {
 
     this.status = {
         allowCompile: false,
-        allowAdd: true
+        allowAdd: true,
     };
     this.stateByLang = {};
 
@@ -62,7 +62,7 @@ function Conformance(hub, container, state) {
     ga.proxy('send', {
         hitType: 'event',
         eventCategory: 'OpenViewPane',
-        eventAction: 'Conformance'
+        eventAction: 'Conformance',
     });
 
     // Dismiss the popover on escape.
@@ -138,7 +138,7 @@ Conformance.prototype.addCompilerSelector = function (config) {
             // Compiler id which is being used
             compilerId: '',
             // Options which are in use
-            options: options.compileOptions[this.langId]
+            options: options.compileOptions[this.langId],
         };
     }
 
@@ -187,7 +187,7 @@ Conformance.prototype.addCompilerSelector = function (config) {
         }),
         items: config.compilerId ? [config.compilerId] : [],
         dropdownParent: 'body',
-        closeAfterSelect: true
+        closeAfterSelect: true,
     }).on('change', _.bind(function (e) {
         onCompilerChange($(e.target).val());
         this.compileChild(newEntry);
@@ -224,7 +224,7 @@ Conformance.prototype.setCompilationOptionsPopover = function (element, content)
         template: '<div class="popover' +
             (content ? ' compiler-options-popover' : '') +
             '" role="tooltip"><div class="arrow"></div>' +
-            '<h3 class="popover-header"></h3><div class="popover-body"></div></div>'
+            '<h3 class="popover-header"></h3><div class="popover-body"></div></div>',
     });
 };
 
@@ -295,14 +295,14 @@ Conformance.prototype.compileChild = function (child) {
                 filters: {},
                 compilerOptions: {produceAst: false, produceOptInfo: false},
                 libraries: [],
-                skipAsm: true
-            }
+                skipAsm: true,
+            },
         };
 
         _.each(this.libsWidget.getLibsInUse(), function (item) {
             request.options.libraries.push({
                 id: item.libId,
-                version: item.versionId
+                version: item.versionId,
             });
         });
 
@@ -316,7 +316,7 @@ Conformance.prototype.compileChild = function (child) {
                     asm: '',
                     code: -1,
                     stdout: '',
-                    stderr: x.error
+                    stderr: x.error,
                 });
             }, this));
     }, this));
@@ -393,14 +393,14 @@ Conformance.prototype.currentState = function () {
         child = $(child);
         return {
             compilerId: child.find('.compiler-picker').val() || '',
-            options: child.find('.options').val() || ''
+            options: child.find('.options').val() || '',
         };
     });
     return {
         editorid: this.editorId,
         langId: this.langId,
         compilers: compilers,
-        libs: this.libsWidget.get()
+        libs: this.libsWidget.get(),
     };
 };
 
@@ -504,5 +504,5 @@ Conformance.prototype.initFromState = function (state) {
 };
 
 module.exports = {
-    Conformance: Conformance
+    Conformance: Conformance,
 };

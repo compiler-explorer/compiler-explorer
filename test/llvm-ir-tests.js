@@ -33,7 +33,7 @@ chai.should();
 
 
 const languages = {
-    llvm: {id: 'llvm'}
+    llvm: {id: 'llvm'},
 };
 
 let ce;
@@ -46,7 +46,7 @@ function createCompiler(compiler) {
     const info = {
         exe: null,
         remote: true,
-        lang: languages.llvm.id
+        lang: languages.llvm.id,
     };
 
     return new compiler(info, ce);
@@ -63,28 +63,28 @@ describe('LLVM IR Compiler', () => {
     it('llc options for at&t assembly', function () {
         compiler.optionsForFilter({
             intel: false,
-            binary: false
+            binary: false,
         }, 'output.s').should.eql(['-o', 'output.s']);
     });
 
     it('llc options for intel assembly', function () {
         compiler.optionsForFilter({
             intel: true,
-            binary: false
+            binary: false,
         }, 'output.s').should.eql(['-o', 'output.s', '-x86-asm-syntax=intel']);
     });
 
     it('llc options for at&t binary', function () {
         compiler.optionsForFilter({
             intel: false,
-            binary: true
+            binary: true,
         }, 'output.s').should.eql(['-o', 'output.s', '-filetype=obj']);
     });
 
     it('llc options for intel binary', function () {
         compiler.optionsForFilter({
             intel: true,
-            binary: true
+            binary: true,
         }, 'output.s').should.eql(['-o', 'output.s', '-filetype=obj']);
     });
 
@@ -93,7 +93,7 @@ describe('LLVM IR Compiler', () => {
 
         compiler.optionsForFilter({
             intel: false,
-            binary: false
+            binary: false,
         }, 'output.s').should.eql(['-o', 'output.s', '-S']);
     });
 });

@@ -39,7 +39,7 @@ var shareServices = {
             return 'https://twitter.com/intent/tweet?text=' +
                 encodeURIComponent(title) + '&url=' + encodeURIComponent(url) + '&via=CompileExplore';
         },
-        text: 'Tweet'
+        text: 'Tweet',
     },
     reddit: {
         embedValid: false,
@@ -49,8 +49,8 @@ var shareServices = {
             return 'http://www.reddit.com/submit?url=' +
                 encodeURIComponent(url) + '&title=' + encodeURIComponent(title);
         },
-        text: 'Share on Reddit'
-    }
+        text: 'Share on Reddit',
+    },
 };
 
 function configFromEmbedded(embeddedUrl) {
@@ -74,10 +74,10 @@ function configFromEmbedded(embeddedUrl) {
                     type: 'row',
                     content: [
                         Components.getEditorWith(1, params.source, filters),
-                        Components.getCompilerWith(1, filters, params.options, params.compiler)
-                    ]
-                }
-            ]
+                        Components.getCompilerWith(1, filters, params.options, params.compiler),
+                    ],
+                },
+            ],
         };
     } else {
         return url.deserialiseState(embeddedUrl);
@@ -125,14 +125,14 @@ function initShareButton(getLink, layout, noteNewState) {
         html: true,
         placement: 'bottom',
         trigger: 'manual',
-        sanitize: false
+        sanitize: false,
     }).click(function () {
         getLink.popover('toggle');
     }).on('inserted.bs.popover', function () {
         ga.proxy('send', {
             hitType: 'event',
             eventCategory: 'OpenModalPane',
-            eventAction: 'Sharing'
+            eventAction: 'Sharing',
         });
         var popoverElement = $($(this).data('bs.popover').tip);
         var socialSharingElements = popoverElement.find('.socialsharing');
@@ -201,7 +201,7 @@ function initShareButton(getLink, layout, noteNewState) {
                         urls[cacheLinkId] = {
                             updateState: updateState,
                             extra: extra,
-                            url: newUrl
+                            url: newUrl,
                         };
                         onUpdate(socialSharing, config, currentBind, urls[cacheLinkId]);
                     }
@@ -290,7 +290,7 @@ function getShortLink(config, root, done) {
     var data = JSON.stringify({
         config: useExternalShortener
             ? url.serialiseState(config)
-            : config
+            : config,
     });
     $.ajax({
         type: 'POST',
@@ -306,7 +306,7 @@ function getShortLink(config, root, done) {
             // Notify the user that we ran into trouble?
             done(err.statusText, null, false);
         }, this),
-        cache: true
+        cache: true,
     });
 }
 
@@ -335,5 +335,5 @@ function getLinks(config, currentBind, done) {
 
 module.exports = {
     initShareButton: initShareButton,
-    configFromEmbedded: configFromEmbedded
+    configFromEmbedded: configFromEmbedded,
 };

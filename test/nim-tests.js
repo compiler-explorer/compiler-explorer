@@ -31,7 +31,7 @@ chai.use(chaiAsPromised);
 chai.should();
 
 const languages = {
-    nim: {id: 'nim'}
+    nim: {id: 'nim'},
 };
 
 describe('Nim', () => {
@@ -39,7 +39,7 @@ describe('Nim', () => {
     const info = {
         exe: null,
         remote: true,
-        lang: languages.nim.id
+        lang: languages.nim.id,
     };
 
     before(() => {

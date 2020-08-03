@@ -31,37 +31,37 @@ const languages = {
         id: 'c++',
         name: 'C++',
         monaco: 'cppp',
-        extensions: ['.cpp', '.cxx', '.h', '.hpp', '.hxx', '.c']
+        extensions: ['.cpp', '.cxx', '.h', '.hpp', '.hxx', '.c'],
     },
     haskell: {
         id: 'haskell',
         name: 'Haskell',
         monaco: 'haskell',
-        extensions: ['.hs', '.haskell']
+        extensions: ['.hs', '.haskell'],
     },
     pascal: {
         id: 'pascal',
         name: 'Pascal',
         monaco: 'pascal',
-        extensions: ['.pas']
-    }
+        extensions: ['.pas'],
+    },
 };
 const compilers = [
     {
         id: 'gcc900',
         name: 'GCC 9.0.0',
-        lang: 'c++'
+        lang: 'c++',
     },
     {
         id: 'fpc302',
         name: 'FPC 3.0.2',
-        lang: 'pascal'
+        lang: 'pascal',
     },
     {
         id: 'clangtrunk',
         name: 'Clang trunk',
-        lang: 'c++'
-    }
+        lang: 'c++',
+    },
 ];
 
 chai.use(require('chai-http'));
@@ -81,7 +81,7 @@ describe('API handling', () => {
             },
             handleOptimizationArguments: res => {
                 res.send('ok');
-            }
+            },
         }, (key, def) => {
             switch (key) {
                 case 'formatters':

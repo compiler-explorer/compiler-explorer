@@ -158,7 +158,7 @@ function setupSettings(root, settings, onChange, subLangId) {
         min: 250,
         formatter: function (x) {
             return (x / 1000.0).toFixed(2) + 's';
-        }
+        },
     });
     add(root.find('.enableCommunityAds'), 'enableCommunityAds', true, Checkbox);
     add(root.find('.hoverShowSource'), 'hoverShowSource', true, Checkbox);

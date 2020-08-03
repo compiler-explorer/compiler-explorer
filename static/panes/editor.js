@@ -97,14 +97,14 @@ function Editor(hub, state, container) {
         quickSuggestions: false,
         fixedOverflowWidgets: true,
         minimap: {
-            maxColumn: 80
+            maxColumn: 80,
         },
         folding: true,
         lineNumbersMinChars: 1,
         emptySelectionClipboard: true,
         autoIndent: this.settings.autoIndent ? 'advanced' : 'none',
         vimInUse: this.settings.useVim,
-        fontLigatures: this.settings.editorsFLigatures
+        fontLigatures: this.settings.editorsFLigatures,
     });
     this.editor.getModel().setEOL(monaco.editor.EndOfLineSequence.LF);
 
@@ -145,7 +145,7 @@ function Editor(hub, state, container) {
         searchField: ['name'],
         options: _.map(usableLanguages, _.identity),
         items: [this.currentLanguage.id],
-        dropdownParent: 'body'
+        dropdownParent: 'body',
     }).on('change', _.bind(function (e) {
         this.onLanguageChange($(e.target).val());
     }, this));
@@ -169,12 +169,12 @@ function Editor(hub, state, container) {
     ga.proxy('send', {
         hitType: 'event',
         eventCategory: 'OpenViewPane',
-        eventAction: 'Editor'
+        eventAction: 'Editor',
     });
     ga.proxy('send', {
         hitType: 'event',
         eventCategory: 'LanguageChange',
-        eventAction: this.currentLanguage.id
+        eventAction: this.currentLanguage.id,
     });
 }
 
@@ -189,7 +189,7 @@ Editor.prototype.updateExtraDecorations = function () {
         if (decoration.filter && decoration.filter.indexOf(this.currentLanguage.name.toLowerCase()) < 0) return;
         var match = this.editor.getModel().findNextMatch(decoration.regex, {
             column: 1,
-            lineNumber: 1
+            lineNumber: 1,
         }, true, true, null, false);
         if (match !== this.decorations[decoration.name]) {
             decorationsDirty = true;
@@ -216,7 +216,7 @@ Editor.prototype.updateState = function () {
         id: this.id,
         source: this.getSource(),
         lang: this.currentLanguage.id,
-        selection: this.selection
+        selection: this.selection,
     };
     this.fontScale.addState(state);
     this.container.setState(state);
@@ -562,7 +562,7 @@ Editor.prototype.cleanupSemVer = function (semver) {
 
 Editor.prototype.updateOpenInQuickBench = function () {
     var quickBenchState = {
-        text: this.getSource()
+        text: this.getSource(),
     };
 
     var compilers = this.getCompilerStates();
@@ -652,7 +652,7 @@ Editor.prototype.initEditorActions = function () {
             // This change request is mostly superfluous
             this.maybeEmitChange();
             this.requestCompilation();
-        }, this)
+        }, this),
     });
 
     this.editor.addAction({
@@ -662,15 +662,15 @@ Editor.prototype.initEditorActions = function () {
         keybindingContext: null,
         run: _.bind(function () {
             this.eventHub.emit('modifySettings', {
-                compileOnChange: !this.settings.compileOnChange
+                compileOnChange: !this.settings.compileOnChange,
             });
             this.alertSystem
                 .notify('Compile on change has been toggled ' + (this.settings.compileOnChange ? 'ON' : 'OFF'), {
                     group: 'togglecompile',
                     alertClass: this.settings.compileOnChange ? 'notification-on' : 'notification-off',
-                    dismissTime: 3000
+                    dismissTime: 3000,
                 });
-        }, this)
+        }, this),
     });
 
     this.editor.addAction({
@@ -680,7 +680,7 @@ Editor.prototype.initEditorActions = function () {
         keybindingContext: null,
         contextMenuGroupId: 'help',
         contextMenuOrder: 1.5,
-        run: _.bind(this.formatCurrentText, this)
+        run: _.bind(this.formatCurrentText, this),
     });
 
     this.editor.addAction({
@@ -690,9 +690,9 @@ Editor.prototype.initEditorActions = function () {
         keybindingContext: null,
         run: _.bind(function () {
             this.eventHub.emit('modifySettings', {
-                colouriseAsm: !this.settings.colouriseAsm
+                colouriseAsm: !this.settings.colouriseAsm,
             });
-        }, this)
+        }, this),
     });
 
     this.editor.addAction({
@@ -704,7 +704,7 @@ Editor.prototype.initEditorActions = function () {
         contextMenuOrder: 1.5,
         run: _.bind(function (ed) {
             this.tryPanesLinkLine(ed.getPosition().lineNumber, true);
-        }, this)
+        }, this),
     });
 
     this.isCpp = this.editor.createContextKey('isCpp', true);
@@ -718,7 +718,7 @@ Editor.prototype.initEditorActions = function () {
         contextMenuGroupId: 'help',
         contextMenuOrder: 1.5,
         precondition: 'isCpp',
-        run: _.bind(this.searchOnCppreference, this)
+        run: _.bind(this.searchOnCppreference, this),
     });
 };
 
@@ -746,7 +746,7 @@ Editor.prototype.updateSource = function (newSource) {
     var operation = {
         range: this.editor.getModel().getFullModelRange(),
         forceMoveMarkers: true,
-        text: newSource
+        text: newSource,
     };
     var nullFn = function () {
         return null;
@@ -778,7 +778,7 @@ Editor.prototype.formatCurrentText = function () {
         contentType: 'application/json',  // Sent
         data: JSON.stringify({
             source: previousSource,
-            base: this.settings.formatBase
+            base: this.settings.formatBase,
         }),
         success: _.bind(function (result) {
             if (result.exit === 0) {
@@ -793,7 +793,7 @@ Editor.prototype.formatCurrentText = function () {
                 // Ops, the formatter itself failed!
                 this.alertSystem.notify('We encountered an error formatting your code: ' + result.answer, {
                     group: 'formatting',
-                    alertClass: 'notification-error'
+                    alertClass: 'notification-error',
                 });
             }
         }, this),
@@ -810,10 +810,10 @@ Editor.prototype.formatCurrentText = function () {
             error = error || 'Unknown error';
             this.alertSystem.notify('We ran into some issues while formatting your code: ' + error, {
                 group: 'formatting',
-                alertClass: 'notification-error'
+                alertClass: 'notification-error',
             });
         }, this),
-        cache: true
+        cache: true,
     });
 };
 
@@ -822,12 +822,12 @@ Editor.prototype.resize = function () {
 
     this.editor.layout({
         width: this.domRoot.width(),
-        height: this.domRoot.height() - topBarHeight
+        height: this.domRoot.height() - topBarHeight,
     });
     // Only update the options if needed
     if (this.settings.wordWrap) {
         this.editor.updateOptions({
-            wordWrapColumn: this.editor.getLayoutInfo().viewportColumn
+            wordWrapColumn: this.editor.getLayoutInfo().viewportColumn,
         });
     }
 };
@@ -871,12 +871,12 @@ Editor.prototype.onSettingsChange = function (newSettings) {
         quickSuggestions: this.settings.showQuickSuggestions,
         contextmenu: this.settings.useCustomContextMenu,
         minimap: {
-            enabled: this.settings.showMinimap && !options.embedded
+            enabled: this.settings.showMinimap && !options.embedded,
         },
         fontFamily: this.settings.editorsFFont,
         fontLigatures: this.settings.editorsFLigatures,
         wordWrap: this.settings.wordWrap ? 'bounded' : 'off',
-        wordWrapColumn: this.editor.getLayoutInfo().viewportColumn // Ensure the column count is up to date
+        wordWrapColumn: this.editor.getLayoutInfo().viewportColumn, // Ensure the column count is up to date
     });
 
     // Unconditionally send editor changes. The compiler only compiles when needed
@@ -897,7 +897,7 @@ Editor.prototype.onSettingsChange = function (newSettings) {
     if (this.editor.getModel()) {
         this.editor.getModel().updateOptions({
             tabSize: this.settings.tabWidth,
-            insertSpaces: this.settings.useSpaces
+            insertSpaces: this.settings.useSpaces,
         });
     }
 
@@ -996,7 +996,7 @@ Editor.prototype.onCompileResponse = function (compilerId, compiler, result) {
             startLineNumber: obj.tag.line,
             startColumn: obj.tag.column || 0,
             endLineNumber: obj.tag.line,
-            endColumn: obj.tag.column ? -1 : Infinity
+            endColumn: obj.tag.column ? -1 : Infinity,
         };
     }, this));
     monaco.editor.setModelMarkers(this.editor.getModel(), compilerId, widgets);
@@ -1005,8 +1005,8 @@ Editor.prototype.onCompileResponse = function (compilerId, compiler, result) {
             range: new monaco.Range(tag.startLineNumber, tag.startColumn, tag.startLineNumber + 1, 1),
             options: {
                 isWholeLine: false,
-                inlineClassName: 'error-code'
-            }
+                inlineClassName: 'error-code',
+            },
         };
     }, this);
     this.updateDecorations();
@@ -1028,8 +1028,8 @@ Editor.prototype.onEditorLinkLine = function (editorId, lineNum, columnNum, reve
             options: {
                 isWholeLine: true,
                 linesDecorationsClassName: 'linked-code-decoration-margin',
-                className: 'linked-code-decoration-line'
-            }
+                className: 'linked-code-decoration-line',
+            },
         }];
 
         if (lineNum > 0 && columnNum !== -1) {
@@ -1037,8 +1037,8 @@ Editor.prototype.onEditorLinkLine = function (editorId, lineNum, columnNum, reve
                 range: new monaco.Range(lineNum, columnNum, lineNum, columnNum + 1),
                 options: {
                     isWholeLine: false,
-                    inlineClassName: 'linked-code-decoration-column'
-                }
+                    inlineClassName: 'linked-code-decoration-column',
+                },
             });
         }
 
@@ -1062,8 +1062,8 @@ Editor.prototype.onEditorSetDecoration = function (id, lineNum, reveal) {
             options: {
                 isWholeLine: true,
                 linesDecorationsClassName: 'linked-code-decoration-margin',
-                inlineClassName: 'linked-code-decoration-inline'
-            }
+                inlineClassName: 'linked-code-decoration-inline',
+            },
         }];
         this.updateDecorations();
     }
@@ -1125,7 +1125,7 @@ Editor.prototype.onLanguageChange = function (newLangId) {
             ga.proxy('send', {
                 hitType: 'event',
                 eventCategory: 'LanguageChange',
-                eventAction: newLangId
+                eventAction: newLangId,
             });
         }
         this.waitingForLanguage = false;
@@ -1152,5 +1152,5 @@ Editor.prototype.close = function () {
 };
 
 module.exports = {
-    Editor: Editor
+    Editor: Editor,
 };

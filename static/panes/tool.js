@@ -38,7 +38,7 @@ function makeAnsiToHtml(color) {
         fg: color ? color : '#333',
         bg: '#f5f5f5',
         stream: true,
-        escapeXML: true
+        escapeXML: true,
     });
 }
 
@@ -70,10 +70,10 @@ function Tool(hub, container, state) {
         glyphMargin: true,
         fixedOverflowWidgets: true,
         minimap: {
-            maxColumn: 80
+            maxColumn: 80,
         },
         lineNumbersMinChars: 5,
-        renderIndentGuides: false
+        renderIndentGuides: false,
     });
 
     this.fontScale = new FontScale(this.domRoot, state, '.content');
@@ -94,7 +94,7 @@ function Tool(hub, container, state) {
     ga.proxy('send', {
         hitType: 'event',
         eventCategory: 'OpenViewPane',
-        eventAction: 'Tool'
+        eventAction: 'Tool',
     });
 
     this.eventHub.emit('toolOpened', this.compilerId, this.currentState());
@@ -120,7 +120,7 @@ Tool.prototype.initCallbacks = function () {
 
     if (MutationObserver !== undefined) {
         new MutationObserver(_.bind(this.resize, this)).observe(this.stdinField[0], {
-            attributes: true, attributeFilter: ['style']
+            attributes: true, attributeFilter: ['style'],
         });
     }
 };
@@ -129,10 +129,10 @@ Tool.prototype.onSettingsChange = function (newSettings) {
     this.outputEditor.updateOptions({
         contextmenu: newSettings.useCustomContextMenu,
         minimap: {
-            enabled: newSettings.showMinimap
+            enabled: newSettings.showMinimap,
         },
         fontFamily: newSettings.editorsFFont,
-        fontLigatures: newSettings.editorsFLigatures
+        fontLigatures: newSettings.editorsFLigatures,
     });
 };
 
@@ -195,7 +195,7 @@ Tool.prototype.resize = function () {
 
     this.outputEditor.layout({
         width: this.domRoot.width(),
-        height: this.domRoot.height() - barsHeight
+        height: this.domRoot.height() - barsHeight,
     });
 
     this.plainContentRoot.height(this.domRoot.height() - barsHeight);
@@ -263,7 +263,7 @@ Tool.prototype.currentState = function () {
         args: this.getInputArgs(),
         stdin: this.getInputStdin(),
         stdinPanelShown: !this.panelStdin.hasClass('d-none'),
-        argsPanelShow: !this.panelArgs.hasClass('d-none')
+        argsPanelShow: !this.panelArgs.hasClass('d-none'),
     };
     this.fontScale.addState(state);
     return state;
@@ -390,7 +390,7 @@ Tool.prototype.setEditorContent = function (content) {
 Tool.prototype.setNormalContent = function () {
     this.outputEditor.updateOptions({
         lineNumbers: true,
-        codeLens: false
+        codeLens: false,
     });
     if (this.codeLensProvider) {
         this.codeLensProvider.dispose();
@@ -419,5 +419,5 @@ Tool.prototype.close = function () {
 };
 
 module.exports = {
-    Tool: Tool
+    Tool: Tool,
 };

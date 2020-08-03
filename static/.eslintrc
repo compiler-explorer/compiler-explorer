@@ -14,6 +14,13 @@
     "es6": false
   },
   "rules": {
+    "comma-dangle": ["error", {
+      "arrays": "always-multiline",
+      "objects": "always-multiline",
+      "imports": "always-multiline",
+      "exports": "always-multiline",
+      "functions": "never"
+    }],
     "eol-last": ["error", "always"],
     "eqeqeq": ["error", "smart"],
     "indent": ["error", 4, {"SwitchCase": 1}],

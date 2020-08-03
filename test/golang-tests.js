@@ -33,14 +33,14 @@ chai.use(chaiAsPromised);
 chai.should();
 
 const languages = {
-    go: {id: 'go'}
+    go: {id: 'go'},
 };
 
 let ce;
 const info = {
     exe: null,
     remote: true,
-    lang: languages.go.id
+    lang: languages.go.id,
 };
 
 function testGoAsm(basefilename) {
@@ -51,9 +51,9 @@ function testGoAsm(basefilename) {
     const result = {
         stderr: asmLines.map((line) => {
             return {
-                text: line
+                text: line,
             };
-        })
+        }),
     };
 
     return compiler.postProcess(result).then(([output]) => {
@@ -64,7 +64,7 @@ function testGoAsm(basefilename) {
         return output.should.deep.equal({
             asm: expectedOutput.join('\n'),
             stdout: [],
-            stderr: null
+            stderr: null,
         });
     });
 }

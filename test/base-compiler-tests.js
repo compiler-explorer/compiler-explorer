@@ -35,7 +35,7 @@ chai.use(chaiAsPromised);
 const should = chai.should();
 
 const languages = {
-    'c++': {id: 'c++'}
+    'c++': {id: 'c++'},
 };
 
 describe('Basic compiler invariants', function () {
@@ -44,7 +44,7 @@ describe('Basic compiler invariants', function () {
         exe: null,
         remote: true,
         lang: languages['c++'].id,
-        ldPath: []
+        ldPath: [],
     };
 
     before(() => {
@@ -95,7 +95,7 @@ describe('Compiler execution', function () {
         exe: null,
         remote: true,
         lang: languages['c++'].id,
-        ldPath: []
+        ldPath: [],
     };
 
     before(() => {
@@ -123,7 +123,7 @@ describe('Compiler execution', function () {
             code: 0,
             okToCache: true,
             stdout: 'stdout',
-            stderr: 'stderr'
+            stderr: 'stderr',
         });
         const result = await compiler.compile(
             'source',
@@ -152,7 +152,7 @@ describe('Compiler execution', function () {
             code: 1,
             okToCache: true,
             stdout: '',
-            stderr: 'oh noes'
+            stderr: 'oh noes',
         });
         const result = await compiler.compile(
             'source',
@@ -173,7 +173,7 @@ describe('Compiler execution', function () {
             code: 0,
             okToCache: true,
             stdout: 'stdout',
-            stderr: 'stderr'
+            stderr: 'stderr',
         };
         const execStub = sinon.stub(compiler, 'exec');
         stubOutCallToExec(execStub, compiler, 'This is the output file', fakeExecResults);
@@ -199,7 +199,7 @@ describe('Compiler execution', function () {
             code: 0,
             okToCache: false,
             stdout: 'stdout',
-            stderr: 'stderr'
+            stderr: 'stderr',
         };
         const execStub = sinon.stub(compiler, 'exec');
         stubOutCallToExec(execStub, compiler, 'This is the output file', fakeExecResults);
@@ -243,7 +243,7 @@ describe('Compiler execution', function () {
             code: 0,
             okToCache: true,
             stdout: 'stdout',
-            stderr: 'stderr'
+            stderr: 'stderr',
         };
         const source = 'Some previously cached source';
         const options = 'Some previously cached options';
@@ -270,18 +270,18 @@ describe('Compiler execution', function () {
             code: 0,
             okToCache: true,
             stdout: 'asm stdout',
-            stderr: 'asm stderr'
+            stderr: 'asm stderr',
         }, 0);
         stubOutCallToExec(execStub, compiler, 'This is the output binary file', {
             code: 0,
             okToCache: true,
             stdout: 'binary stdout',
-            stderr: 'binary stderr'
+            stderr: 'binary stderr',
         }, 1);
         execMock.expects('sandbox').withArgs(sinon.match.string, sinon.match.array, sinon.match.object).resolves({
             code: 0,
             stdout: 'exec stdout',
-            stderr: 'exec stderr'
+            stderr: 'exec stderr',
         });
         const result = await compiler.compile(
             'source',
@@ -310,7 +310,7 @@ describe('Compiler execution', function () {
             code: 0,
             okToCache: true,
             stdout: 'stdout',
-            stderr: 'stderr'
+            stderr: 'stderr',
         });
         execStub.onCall(1).callsFake((demangler, args, options) => {
             demangler.should.equal('demangler-exe');
@@ -319,7 +319,7 @@ describe('Compiler execution', function () {
                 code: 0,
                 filenameTransform: x => x,
                 stdout: 'someDemangledSymbol\n',
-                stderr: ''
+                stderr: '',
             });
         });
         const result = await compiler.compile(
@@ -351,7 +351,7 @@ describe('Compiler execution', function () {
                 code: 0,
                 filenameTransform: x => x,
                 stdout: 'the output',
-                stderr: ''
+                stderr: '',
             });
         });
         compiler.supportsObjdump().should.be.true;
@@ -384,7 +384,7 @@ Args: []
             Name: 'NeverInline',
             Pass: 'inline',
             displayString: '',
-            optType: 'Missed'
+            optType: 'Missed',
         }]);
     });
 });

@@ -144,7 +144,7 @@ function definition() {
 
         typeKeywords: [
             'bool', 'byte', 'ubyte', 'short', 'ushort', 'int', 'uint', 'long', 'ulong', 'char', 'wchar', 'dchar',
-            'float', 'double', 'real', 'ifloat', 'idouble', 'ireal', 'cfloat', 'cdouble', 'creal', 'void'
+            'float', 'double', 'real', 'ifloat', 'idouble', 'ireal', 'cfloat', 'cdouble', 'creal', 'void',
         ],
 
         operators: [
@@ -152,7 +152,7 @@ function definition() {
             '==', '<=', '>=', '!=', '&&', '||', '++', '--',
             '+', '-', '*', '/', '&', '|', '^', '%', '<<',
             '>>', '>>>', '+=', '-=', '*=', '/=', '&=', '|=',
-            '^=', '%=', '<<=', '>>=', '>>>='
+            '^=', '%=', '<<=', '>>=', '>>>=',
         ],
 
         // we include these common regular expressions
@@ -167,8 +167,8 @@ function definition() {
                     cases: {
                         '@typeKeywords': 'keyword',
                         '@keywords': 'keyword',
-                        '@default': 'identifier'
-                    }
+                        '@default': 'identifier',
+                    },
                 }],
                 [/[A-Z][\w$]*/, 'type.identifier'],  // to show class names nicely
 
@@ -181,8 +181,8 @@ function definition() {
                 [/@symbols/, {
                     cases: {
                         '@operators': 'operator',
-                        '@default': ''
-                    }
+                        '@default': '',
+                    },
                 }],
 
                 // numbers
@@ -203,20 +203,20 @@ function definition() {
                 // characters
                 [/'[^'\\]'/, 'string'],
                 [/(')(@escapes)(')/, ['string', 'string.escape', 'string']],
-                [/'/, 'string.invalid']
+                [/'/, 'string.invalid'],
             ],
 
             whitespace: [
                 [/[\t\n\r ]+/, 'white'],
                 [/\/\*/, 'comment', '@comment'],
                 [/\/\+/, 'comment', '@nestingcomment'],
-                [/\/\/.*$/, 'comment']
+                [/\/\/.*$/, 'comment'],
             ],
 
             comment: [
                 [/[^*/]+/, 'comment'],
                 [/\*\//, 'comment', '@pop'],
-                [/[*/]/, 'comment']
+                [/[*/]/, 'comment'],
             ],
 
             nestingcomment: [
@@ -224,21 +224,21 @@ function definition() {
                 [/\/\+/, 'comment', '@push'],
                 [/\/\+/, 'comment.invalid'],
                 [/\+\//, 'comment', '@pop'],
-                [/[+/]/, 'comment']
+                [/[+/]/, 'comment'],
             ],
 
             string: [
                 [/[^"\\]+/, 'string'],
                 [/@escapes/, 'string.escape'],
                 [/\\./, 'string.escape.invalid'],
-                [/"/, 'string', '@pop']
+                [/"/, 'string', '@pop'],
             ],
 
             rawstring: [
                 [/[^`]/, 'string'],
-                [/`/, 'string', '@pop']
-            ]
-        }
+                [/`/, 'string', '@pop'],
+            ],
+        },
     };
 }
 
@@ -246,13 +246,13 @@ function configuration() {
     return {
         comments: {
             lineComment: '//',
-            blockComment: ['/*', '*/']
+            blockComment: ['/*', '*/'],
         },
 
         brackets: [
             ['{', '}'],
             ['[', ']'],
-            ['(', ')']
+            ['(', ')'],
         ],
 
         autoClosingPairs: [
@@ -261,7 +261,7 @@ function configuration() {
             {open: '(', close: ')'},
             {open: '`', close: '`', notIn: ['string']},
             {open: '"', close: '"', notIn: ['string']},
-            {open: '\'', close: '\'', notIn: ['string', 'comment']}
+            {open: '\'', close: '\'', notIn: ['string', 'comment']},
         ],
 
         surroundingPairs: [
@@ -270,8 +270,8 @@ function configuration() {
             {open: '(', close: ')'},
             {open: '`', close: '`'},
             {open: '"', close: '"'},
-            {open: '\'', close: '\''}
-        ]
+            {open: '\'', close: '\''},
+        ],
     };
 }
 

@@ -117,5 +117,5 @@ module.exports = {
     next: next,
     prev: prev,
     getCurrentSlide: getCurrentSlide,
-    setCurrentSlide: setCurrentSlide
+    setCurrentSlide: setCurrentSlide,
 };

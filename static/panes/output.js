@@ -36,7 +36,7 @@ function makeAnsiToHtml(color) {
         fg: color ? color : '#333',
         bg: '#f5f5f5',
         stream: true,
-        escapeXML: true
+        escapeXML: true,
     });
 }
 
@@ -65,7 +65,7 @@ function Output(hub, container, state) {
     ga.proxy('send', {
         hitType: 'event',
         eventCategory: 'OpenViewPane',
-        eventAction: 'Output'
+        eventAction: 'Output',
     });
 }
 
@@ -109,7 +109,7 @@ Output.prototype.currentState = function () {
     var state = {
         compiler: this.compilerId,
         editor: this.editorId,
-        wrap: options.wrap
+        wrap: options.wrap,
     };
     this.fontScale.addState(state);
     return state;
@@ -235,5 +235,5 @@ Output.prototype.setCompileStatus = function (isCompiling) {
 };
 
 module.exports = {
-    Output: Output
+    Output: Output,
 };

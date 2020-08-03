@@ -196,18 +196,18 @@ function definition() {
             'var_location',
             'debug_implicit_ptr',
             'entry_value',
-            'debug_parameter_ref'
+            'debug_parameter_ref',
         ],
 
         typeKeywords: [
-            'boolean', 'double', 'byte', 'int', 'short', 'char', 'void', 'long', 'float'
+            'boolean', 'double', 'byte', 'int', 'short', 'char', 'void', 'long', 'float',
         ],
 
         operators: [
             '=', '>', '<', '!', '~', '?', ':', '==', '<=', '>=', '!=',
             '&&', '||', '++', '--', '+', '-', '*', '/', '&', '|', '^', '%',
             '<<', '>>', '>>>', '+=', '-=', '*=', '/=', '&=', '|=', '^=',
-            '%=', '<<=', '>>=', '>>>='
+            '%=', '<<=', '>>=', '>>>=',
         ],
 
         // we include these common regular expressions
@@ -224,8 +224,8 @@ function definition() {
                     cases: {
                         '@typeKeywords': 'keyword',
                         '@keywords': 'keyword',
-                        '@default': 'identifier'
-                    }
+                        '@default': 'identifier',
+                    },
                 }],
                 [/[A-Z][\w$]*/, 'type.identifier'],  // to show class names nicely
 
@@ -238,8 +238,8 @@ function definition() {
                 [/@symbols/, {
                     cases: {
                         '@operators': 'operator',
-                        '@default': ''
-                    }
+                        '@default': '',
+                    },
                 }],
 
                 // @ annotations.
@@ -262,31 +262,31 @@ function definition() {
                 // characters
                 [/'[^'\\]'/, 'string'],
                 [/(')(@escapes)(')/, ['string', 'string.escape', 'string']],
-                [/'/, 'string.invalid']
+                [/'/, 'string.invalid'],
             ],
 
             comment: [
                 [/[^*/]+/, 'comment'],
                 [/\/\*/, 'comment', '@push'],    // nested comment
                 ['\\*/', 'comment', '@pop'],
-                [/[*/]/, 'comment']
+                [/[*/]/, 'comment'],
             ],
 
             string: [
                 [/[^"\\]+/, 'string'],
                 [/@escapes/, 'string.escape'],
                 [/\\./, 'string.escape.invalid'],
-                [/"/, {token: 'string.quote', bracket: '@close', next: '@pop'}]
+                [/"/, {token: 'string.quote', bracket: '@close', next: '@pop'}],
             ],
 
             whitespace: [
                 [/[\t\n\r ]+/, 'white'],
                 [/\/\*/, 'comment', '@comment'],
                 [/\/\/.*$/, 'comment'],
-                [/^;;.*$/, 'comment']
+                [/^;;.*$/, 'comment'],
 
-            ]
-        }
+            ],
+        },
     };
 }
 

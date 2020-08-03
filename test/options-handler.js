@@ -34,8 +34,8 @@ const should = chai.should();
 
 const languages = {
     fake: {
-        id: 'fake'
-    }
+        id: 'fake',
+    },
 };
 
 const libProps = {
@@ -109,7 +109,7 @@ const makeFakeCompilerInfo = (id, lang, group, semver, isSemver) => {
         lang: lang,
         group: group,
         isSemVer: isSemver,
-        semver: semver
+        semver: semver,
     };
 };
 
@@ -166,9 +166,9 @@ describe('Options handler', () => {
                         alias: [],
                         liblink: [],
                         staticliblink: ['c++fs', 'rt'],
-                        dependencies: ['pthread']
+                        dependencies: ['pthread'],
                     },
-                }
+                },
             },
             someotherlib: {
                 description: undefined,
@@ -187,8 +187,8 @@ describe('Options handler', () => {
                         staticliblink: ['someotherlib'],
                         dependencies: ['c++fs'],
                     },
-                }
-            }
+                },
+            },
         }});
     });
     it('should order compilers as expected', () => {
@@ -214,38 +214,38 @@ describe('Options handler', () => {
 
             makeFakeCompilerInfo('f1', languages.fake.id, 'f', '5', true),
             makeFakeCompilerInfo('f2', languages.fake.id, 'f', '5.1', true),
-            makeFakeCompilerInfo('f3', languages.fake.id, 'f', '5.2', true)
+            makeFakeCompilerInfo('f3', languages.fake.id, 'f', '5.2', true),
         ];
         const expectedOrder = {
             a: {
                 a1: -0,
                 a2: -1,
-                a3: -2
+                a3: -2,
             },
             b: {
                 b1: -2,
                 b2: -1,
-                b3: -0
+                b3: -0,
             },
             c: {
                 c1: -0,
                 c2: -1,
-                c3: -2
+                c3: -2,
             },
             d: {
                 d1: -1,
                 d2: -2,
-                d3: -0
+                d3: -0,
             },
             e: {
                 e1: undefined,
-                e2: undefined
+                e2: undefined,
             },
             f: {
                 f1: -0,
                 f2: -1,
-                f3: -2
-            }
+                f3: -2,
+            },
         };
         optionsHandler.setCompilers(compilers);
         _.each(optionsHandler.get().compilers, compiler => {
@@ -258,7 +258,7 @@ describe('Options handler', () => {
         const compilerInfo = makeFakeCompilerInfo('g82', 'c++', 'cpp', '8.2', true);
         const env = {
             ceProps: () => {},
-            compilerProps: () => {}
+            compilerProps: () => {},
         };
         compilerInfo.libs = libs.fake;
         const compiler = new BaseCompiler(compilerInfo, env);
@@ -274,7 +274,7 @@ describe('Options handler', () => {
         const compilerInfo = makeFakeCompilerInfo('g82', 'c++', 'cpp', '8.2', true);
         const env = {
             ceProps: () => {},
-            compilerProps: () => {}
+            compilerProps: () => {},
         };
         compilerInfo.libs = libs.fake;
         const compiler = new BaseCompiler(compilerInfo, env);
@@ -292,7 +292,7 @@ describe('Options handler', () => {
         const compilerInfo = makeFakeCompilerInfo('g82', 'c++', 'cpp', '8.2', true);
         const env = {
             ceProps: () => {},
-            compilerProps: () => {}
+            compilerProps: () => {},
         };
         compilerInfo.libs = libs.fake;
         const compiler = new BaseCompiler(compilerInfo, env);
@@ -306,7 +306,7 @@ describe('Options handler', () => {
         const compilerInfo = makeFakeCompilerInfo('g82', 'c++', 'cpp', '8.2', true);
         const env = {
             ceProps: () => {},
-            compilerProps: () => {}
+            compilerProps: () => {},
         };
         compilerInfo.libs = libs.fake;
         const compiler = new BaseCompiler(compilerInfo, env);
@@ -322,7 +322,7 @@ describe('Options handler', () => {
         const compilerInfo = makeFakeCompilerInfo('g82', 'c++', 'cpp', '8.2', true);
         const env = {
             ceProps: () => {},
-            compilerProps: () => {}
+            compilerProps: () => {},
         };
         compilerInfo.libs = libs.fake;
         const compiler = new BaseCompiler(compilerInfo, env);
@@ -338,20 +338,20 @@ describe('Options handler', () => {
         const compilerInfo = makeFakeCompilerInfo('g82', 'c++', 'cpp', '8.2', true);
         const env = {
             ceProps: () => {},
-            compilerProps: () => {}
+            compilerProps: () => {},
         };
         compilerInfo.libs = libs.fake;
         const compiler = new BaseCompiler(compilerInfo, env);
 
         const obj = {
             libraries: [{id: 'ctre', version: 'trunk'}],
-            options: ['-O3', '--std=c++17', '-lhello']
+            options: ['-O3', '--std=c++17', '-lhello'],
         };
         compiler.tryAutodetectLibraries(obj).should.equal(true);
 
         obj.libraries.should.deep.equal([
             {id: 'ctre', version: 'trunk'},
-            {id: 'autolib', version: 'autodetect'}
+            {id: 'autolib', version: 'autodetect'},
         ]);
         obj.options.should.deep.equal(['-O3', '--std=c++17']);
     });
@@ -360,7 +360,7 @@ describe('Options handler', () => {
         const compilerInfo = makeFakeCompilerInfo('g82', 'c++', 'cpp', '8.2', true);
         const env = {
             ceProps: () => {},
-            compilerProps: () => {}
+            compilerProps: () => {},
         };
         compilerInfo.libs = libs.fake;
         const compiler = new BaseCompiler(compilerInfo, env);

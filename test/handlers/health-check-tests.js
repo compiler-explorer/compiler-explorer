@@ -69,8 +69,8 @@ describe('Health checks on disk', () => {
 
         mockfs({
             '/fake': {
-                '.health': 'Everything is fine'
-            }
+                '.health': 'Everything is fine',
+            },
         });
     });
 

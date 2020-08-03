@@ -34,13 +34,13 @@ function definition() {
                 [/^\s+/, { token: 'whitespace', next: '@opcode' }],
                 [/^\.[A-Za-z]+\s*/, { token: 'type.identifier', next: '@arguments' }],
                 [/;.*$/, { token: 'comment', next: '@root' }],
-                [/\s*,\s*/, { token: 'delimiter', next: '@arguments' }]
+                [/\s*,\s*/, { token: 'delimiter', next: '@arguments' }],
             ],
 
             opcode: [
                 [/[A-Za-z]+$/, { token: 'keyword', next: '@root' }],
                 [/[A-Za-z]+\s*/, { token: 'keyword', next: '@arguments' }],
-                [/;.*$/, { token: 'comment', next: '@root' }]
+                [/;.*$/, { token: 'comment', next: '@root' }],
             ],
 
             arguments: [
@@ -55,9 +55,9 @@ function definition() {
                 [/#\d+/, { token: 'number', next: '@root' }],
                 [/[A-Z_a-z]\w*/, { token: 'type.identifier', next: '@root' }],
                 [/\d+/, { token: 'number', next: '@root' }],
-                [/;.*$/, { token: 'comment', next: '@root' }]
-            ]
-        }
+                [/;.*$/, { token: 'comment', next: '@root' }],
+            ],
+        },
     };
 }
 

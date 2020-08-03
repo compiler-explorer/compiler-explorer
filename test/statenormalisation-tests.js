@@ -87,8 +87,8 @@ describe('ClientState parsing', () => {
                 {id:1,
                     language:'c++',
                     source:'int main() {}',
-                    compilers:[{id:'g91',options:'-O3 -std=c++2a'}]
-                }]
+                    compilers:[{id:'g91',options:'-O3 -std=c++2a'}],
+                }],
         });
 
         state.sessions[0].compilers.length.should.equal(1);
@@ -103,9 +103,9 @@ describe('ClientState parsing', () => {
                     source:'int main() {}',
                     compilers: [],
                     executors:[{
-                        compiler:{id:'g91',options:'-O3 -std=c++2a'}
-                    }]
-                }]
+                        compiler:{id:'g91',options:'-O3 -std=c++2a'},
+                    }],
+                }],
         });
 
         state.sessions[0].compilers.length.should.equal(0);

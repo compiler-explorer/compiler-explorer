@@ -34,7 +34,7 @@ chai.use(chaiAsPromised);
 chai.should();
 
 const languages = {
-    pascal: {id: 'pascal'}
+    pascal: {id: 'pascal'},
 };
 
 describe('Pascal', () => {
@@ -45,7 +45,7 @@ describe('Pascal', () => {
         const info = {
             exe: null,
             remote: true,
-            lang: languages.pascal.id
+            lang: languages.pascal.id,
         };
 
         compiler = new PascalCompiler(info, ce);
@@ -322,7 +322,7 @@ describe('Pascal', () => {
                         asmLines.should.include('# [13] Square := num * num + 14;'),
                         asmLines.should.include('  .loc 1 13 0'),
                         asmLines.should.include('.Le0:'),
-                        asmLines.should.include('  .cfi_endproc')
+                        asmLines.should.include('  .cfi_endproc'),
                     ]));
                 });
             });
@@ -337,7 +337,7 @@ describe('Pascal', () => {
                     resolve(Promise.all([
                         utils.splitLines(output).length.should.be.below(500),
                         output.should.not.include('fpc_zeromem():'),
-                        output.should.include('SQUARE():')
+                        output.should.include('SQUARE():'),
                     ]));
                 });
             });
@@ -348,15 +348,15 @@ describe('Pascal', () => {
         it('should return parsed output', () => {
             const result = {
                 stdout: 'Hello, world!',
-                stderr: ''
+                stderr: '',
             };
 
             compiler.parseOutput(result, '/tmp/path/output.pas', '/tmp/path').should.deep.equal({
                 inputFilename: 'output.pas',
                 stdout: [{
-                    text: 'Hello, world!'
+                    text: 'Hello, world!',
                 }],
-                stderr: []
+                stderr: [],
             });
         });
     });

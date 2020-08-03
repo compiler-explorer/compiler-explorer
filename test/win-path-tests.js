@@ -34,13 +34,13 @@ chai.use(chaiAsPromised);
 chai.should();
 
 const languages = {
-    'c++': {id: 'c++'}
+    'c++': {id: 'c++'},
 };
 
 const info = {
     lang: languages['c++'].id,
     exe: null,
-    remote: true
+    remote: true,
 };
 
 describe('Paths', () => {
@@ -79,7 +79,7 @@ function createCompiler(compiler) {
 
     const info = {
         lang: languages['c++'].id,
-        envVars: []
+        envVars: [],
     };
 
     return new compiler(info, ce);
@@ -102,7 +102,7 @@ if (process.platform === 'linux' && child_process.execSync('uname -a').toString(
                         inputFilename: 'c:/this-should-be-run-in-mnt-c',
                         okToCache: true,
                         stderr: [],
-                        stdout: [{text: '/mnt/c'}]
+                        stdout: [{text: '/mnt/c'}],
                     });
         });
     });

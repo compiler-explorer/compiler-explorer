@@ -30,12 +30,12 @@ describe('ASM CL parser', () => {
     it('should work for error documents', () => {
         const parser = new AsmParser();
         const result = parser.process('<Compilation failed>', {
-            directives: true
+            directives: true,
         });
 
         result.asm.should.deep.equal([{
             source: null,
-            text: '<Compilation failed>'
+            text: '<Compilation failed>',
         }]);
     });
 });

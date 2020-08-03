@@ -26,7 +26,7 @@ const should = require('chai').should();
 const properties = require('../lib/properties');
 
 const languages = {
-    a: {id: 'a'}
+    a: {id: 'a'},
 };
 
 describe('Properties', () => {
@@ -37,7 +37,7 @@ describe('Properties', () => {
         casesProps = properties.propsFor('cases');
         overridingProps = properties.propsFor('overwrite');
         compilerProps = new properties.CompilerProps(languages, properties.fakeProps({
-            foo: '1'
+            foo: '1',
         }));
     });
 
