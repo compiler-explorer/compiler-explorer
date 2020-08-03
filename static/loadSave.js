@@ -155,9 +155,17 @@ LoadSave.prototype.run = function (onLoad, editorText, currentLanguage) {
     this.modal.find('.local-file').attr('accept', _.map(currentLanguage.extensions, function (extension) {
         return extension + ', ';
     }, this));
-    this.populateBuiltins().then(_.bind(function () {
-        this.modal.modal();
-    }, this));
+    this.populateBuiltins()
+        .then(_.bind(function () {
+            this.modal.modal();
+        }, this))
+        .catch(_.bind(function () {
+            this.alertSystem.notify('Error while loading modal.', {
+                group: 'savelocalerror',
+                alertClass: 'notification-error',
+                dismissTime: 5000,
+            });
+        }, this));
     ga.proxy('send', {
         hitType: 'event',
         eventCategory: 'OpenModalPane',

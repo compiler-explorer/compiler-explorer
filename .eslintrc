@@ -5,7 +5,8 @@
     "requirejs",
     "node",
     "unicorn",
-    "sonarjs"
+    "sonarjs",
+    "promise"
   ],
   "extends": [
     "eslint:recommended",
@@ -50,6 +51,11 @@
     "no-process-exit": "off",
     "node/no-unpublished-require": "off",
     "node/shebang": "off",
+    "promise/catch-or-return": "error",
+    "promise/no-new-statics": "error",
+    "promise/no-return-wrap": "error",
+    "promise/param-names": "error",
+    "promise/valid-params": "error",
     "sonarjs/no-collection-size-mischeck": "error",
     "sonarjs/no-redundant-boolean": "error",
     "sonarjs/no-unused-collection": "error",

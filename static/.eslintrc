@@ -3,7 +3,8 @@
   "plugins": [
     "jsdoc",
     "requirejs",
-    "sonarjs"
+    "sonarjs",
+    "promise"
   ],
   "extends": [
     "eslint:recommended",
@@ -48,6 +49,11 @@
     "jsdoc/newline-after-description": "warn",
     "jsdoc/require-hyphen-before-param-description": "warn",
     "jsdoc/valid-types": "warn",
+    "promise/catch-or-return": "error",
+    "promise/no-new-statics": "error",
+    "promise/no-return-wrap": "error",
+    "promise/param-names": "error",
+    "promise/valid-params": "error",
     "sonarjs/no-collection-size-mischeck": "error",
     "sonarjs/no-redundant-boolean": "error",
     "sonarjs/no-unused-collection": "error",

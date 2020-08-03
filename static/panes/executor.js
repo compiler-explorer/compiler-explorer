@@ -205,20 +205,28 @@ Executor.prototype.compile = function (bypassCache) {
         });
     });
 
-    this.compilerService.expand(this.source).then(_.bind(function (expanded) {
-        var request = {
-            source: expanded || '',
-            compiler: this.compiler ? this.compiler.id : '',
-            options: options,
-            lang: this.currentLangId,
-        };
-        if (bypassCache) request.bypassCache = true;
-        if (!this.compiler) {
-            this.onCompileResponse(request, errorResult('<Please select a compiler>'), false);
-        } else {
-            this.sendCompile(request);
-        }
-    }, this));
+    this.compilerService.expand(this.source)
+        .then(_.bind(function (expanded) {
+            var request = {
+                source: expanded || '',
+                compiler: this.compiler ? this.compiler.id : '',
+                options: options,
+                lang: this.currentLangId,
+            };
+            if (bypassCache) request.bypassCache = true;
+            if (!this.compiler) {
+                this.onCompileResponse(request, errorResult('<Please select a compiler>'), false);
+            } else {
+                this.sendCompile(request);
+            }
+        }, this))
+        .catch(_.bind(function () {
+            this.alertSystem.notify('Internal page error while processing compilation', {
+                group: 'executorerror',
+                alertClass: 'notification-error',
+                dismissTime: 5000,
+            });
+        }, this));
 };
 
 Executor.prototype.sendCompile = function (request) {
@@ -633,7 +641,7 @@ Executor.prototype.updateCompilerInfo = function () {
     if (this.compiler) {
         if (this.compiler.notification) {
             this.alertSystem.notify(this.compiler.notification, {
-                group: 'compilerwarning',
+                group: 'executorwarning',
                 alertClass: 'notification-info',
                 dismissTime: 5000,
             });

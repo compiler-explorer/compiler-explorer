@@ -31,6 +31,7 @@ var Promise = require('es6-promise').Promise;
 var ga = require('../analytics');
 var Components = require('../components');
 var Libraries = require('../libs-widget');
+var Alert = require('../alert');
 
 require('selectize');
 
@@ -47,6 +48,8 @@ function Conformance(hub, container, state) {
     this.source = state.source || '';
     this.sourceNeedsExpanding = true;
     this.expandedSource = null;
+    this.alertSystem = new Alert();
+    this.alertSystem.prefixMessage = 'Conf. View For Editor #' + this.editorId + ': ';
 
     this.status = {
         allowCompile: false,
@@ -286,40 +289,48 @@ Conformance.prototype.compileChild = function (child) {
 
     this.handleStatusIcon(child.find('.status-icon'), {code: 4});
 
-    this.expandSource().then(_.bind(function (expandedSource) {
-        var request = {
-            source: expandedSource,
-            compiler: picker.val(),
-            options: {
-                userArguments: child.find('.options').val() || '',
-                filters: {},
-                compilerOptions: {produceAst: false, produceOptInfo: false},
-                libraries: [],
-                skipAsm: true,
-            },
-        };
+    this.expandSource()
+        .then(_.bind(function (expandedSource) {
+            var request = {
+                source: expandedSource,
+                compiler: picker.val(),
+                options: {
+                    userArguments: child.find('.options').val() || '',
+                    filters: {},
+                    compilerOptions: {produceAst: false, produceOptInfo: false},
+                    libraries: [],
+                    skipAsm: true,
+                },
+            };
 
-        _.each(this.libsWidget.getLibsInUse(), function (item) {
-            request.options.libraries.push({
-                id: item.libId,
-                version: item.versionId,
-            });
-        });
-
-        // This error function ensures that the user will know we had a problem (As we don't save asm)
-        this.compilerService.submit(request)
-            .then(_.bind(function (x) {
-                this.onCompileResponse(child, x.result);
-            }, this))
-            .catch(_.bind(function (x) {
-                this.onCompileResponse(child, {
-                    asm: '',
-                    code: -1,
-                    stdout: '',
-                    stderr: x.error,
+            _.each(this.libsWidget.getLibsInUse(), function (item) {
+                request.options.libraries.push({
+                    id: item.libId,
+                    version: item.versionId,
                 });
-            }, this));
-    }, this));
+            });
+
+            // This error function ensures that the user will know we had a problem (As we don't save asm)
+            this.compilerService.submit(request)
+                .then(_.bind(function (x) {
+                    this.onCompileResponse(child, x.result);
+                }, this))
+                .catch(_.bind(function (x) {
+                    this.onCompileResponse(child, {
+                        asm: '',
+                        code: -1,
+                        stdout: '',
+                        stderr: x.error,
+                    });
+                }, this));
+        }, this))
+        .catch(_.bind(function () {
+            this.alertSystem.notify('Internal page error while processing a compilation', {
+                group: 'confviewerror',
+                alertClass: 'notification-error',
+                dismissTime: 5000,
+            });
+        }, this));
 };
 
 Conformance.prototype.compileAll = function () {

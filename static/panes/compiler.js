@@ -567,20 +567,28 @@ Compiler.prototype.compile = function (bypassCache, newTools) {
         });
     });
 
-    this.compilerService.expand(this.source).then(_.bind(function (expanded) {
-        var request = {
-            source: expanded || '',
-            compiler: this.compiler ? this.compiler.id : '',
-            options: options,
-            lang: this.currentLangId,
-        };
-        if (bypassCache) request.bypassCache = true;
-        if (!this.compiler) {
-            this.onCompileResponse(request, errorResult('<Please select a compiler>'), false);
-        } else {
-            this.sendCompile(request);
-        }
-    }, this));
+    this.compilerService.expand(this.source)
+        .then(_.bind(function (expanded) {
+            var request = {
+                source: expanded || '',
+                compiler: this.compiler ? this.compiler.id : '',
+                options: options,
+                lang: this.currentLangId,
+            };
+            if (bypassCache) request.bypassCache = true;
+            if (!this.compiler) {
+                this.onCompileResponse(request, errorResult('<Please select a compiler>'), false);
+            } else {
+                this.sendCompile(request);
+            }
+        }, this))
+        .catch(_.bind(function () {
+            this.alertSystem.notify('Internal page error while processing compilation', {
+                group: 'compilererror',
+                alertClass: 'notification-error',
+                dismissTime: 5000,
+            });
+        }, this));
 };
 
 Compiler.prototype.sendCompile = function (request) {
@@ -788,13 +796,19 @@ Compiler.prototype.postCompilationResult = function (request, result) {
     if (result.popularArguments) {
         this.handlePopularArgumentsResult(result.popularArguments);
     } else {
-        this.compilerService.requestPopularArguments(this.compiler.id, request.options.userArguments).then(
-            _.bind(function (result) {
+        this.compilerService.requestPopularArguments(this.compiler.id, request.options.userArguments)
+            .then(_.bind(function (result) {
                 if (result && result.result) {
                     this.handlePopularArgumentsResult(result.result);
                 }
-            }, this)
-        );
+            }, this))
+            .catch(_.bind(function () {
+                this.alertSystem.notify('Internal page error while handling  popular arguments', {
+                    group: 'compilererror',
+                    alertClass: 'notification-error',
+                    dismissTime: 5000,
+                });
+            }, this));
     }
 
     this.updateButtons();
@@ -1705,20 +1719,28 @@ Compiler.prototype.onMouseMove = function (e) {
                 _.some(lineTokens(this.outputEditor.getModel(), currentWord.range.startLineNumber), function (t) {
                     return t.offset + 1 === currentWord.startColumn && t.type === 'keyword.asm';
                 })) {
-                getAsmInfo(currentWord.word).then(_.bind(function (response) {
-                    if (!response) return;
-                    this.decorations.asmToolTip = {
-                        range: currentWord.range,
-                        options: {
-                            isWholeLine: false,
-                            hoverMessage: [{
-                                value: response.tooltip + '\n\nMore information available in the context menu.',
-                                isTrusted: true,
-                            }],
-                        },
-                    };
-                    this.updateDecorations();
-                }, this));
+                getAsmInfo(currentWord.word)
+                    .then(_.bind(function (response) {
+                        if (!response) return;
+                        this.decorations.asmToolTip = {
+                            range: currentWord.range,
+                            options: {
+                                isWholeLine: false,
+                                hoverMessage: [{
+                                    value: response.tooltip + '\n\nMore information available in the context menu.',
+                                    isTrusted: true,
+                                }],
+                            },
+                        };
+                        this.updateDecorations();
+                    }, this))
+                    .catch(_.bind(function () {
+                        this.alertSystem.notify('Internal page error while processing asm tooltip', {
+                            group: 'compilererror',
+                            alertClass: 'notification-error',
+                            dismissTime: 2500,
+                        });
+                    }, this));
             }
         }
     }
@@ -1772,7 +1794,14 @@ Compiler.prototype.onAsmToolTip = function (ed) {
                 alertClass: 'notification-error',
                 dismissTime: 3000,
             });
-    }, this));
+    }, this))
+        .catch(_.bind(function () {
+            this.alertSystem.notify('Internal page error while requesting asm opcode info', {
+                group: 'compilererror',
+                alertClass: 'notification-error',
+                dismissTime: 5000,
+            });
+        }, this));
 };
 
 Compiler.prototype.handleCompilationStatus = function (status) {
