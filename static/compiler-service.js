@@ -80,11 +80,9 @@ CompilerService.prototype.processFromLangAndCompiler = function (languageId, com
                 return null;
             }, this);
 
-            var match = _.find(matchingCompilers, function (match) {
+            return _.find(matchingCompilers, function (match) {
                 return (match !== null);
             });
-
-            return match;
         } else {
             var firstLang = _.first(_.values(options.languages));
             if (firstLang) {

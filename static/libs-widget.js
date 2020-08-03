@@ -198,13 +198,10 @@ LibsWidget.prototype.getVersionOrAlias = function (name, version) {
         if (this.availableLibs[this.currentLangId][this.currentCompilerId][name].versions[version]) {
             return version;
         } else {
-            var foundAlias = _.findKey(
-                this.availableLibs[this.currentLangId][this.currentCompilerId][name].versions,
+            return _.findKey(this.availableLibs[this.currentLangId][this.currentCompilerId][name].versions,
                 function (ver) {
                     return ver.alias && ver.alias.includes(version);
                 });
-
-            return foundAlias;
         }
     }
 };

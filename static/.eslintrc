@@ -2,7 +2,8 @@
   "root": true,
   "plugins": [
     "jsdoc",
-    "requirejs"
+    "requirejs",
+    "sonarjs"
   ],
   "extends": [
     "eslint:recommended",
@@ -46,7 +47,13 @@
     "jsdoc/empty-tags": "warn",
     "jsdoc/newline-after-description": "warn",
     "jsdoc/require-hyphen-before-param-description": "warn",
-    "jsdoc/valid-types": "warn"
+    "jsdoc/valid-types": "warn",
+    "sonarjs/no-collection-size-mischeck": "error",
+    "sonarjs/no-redundant-boolean": "error",
+    "sonarjs/no-unused-collection": "error",
+    "sonarjs/prefer-immediate-return": "error",
+    "sonarjs/prefer-object-literal": "error",
+    "sonarjs/prefer-single-boolean-return": "error"
   },
   "parserOptions": {
     "ecmaVersion": 5

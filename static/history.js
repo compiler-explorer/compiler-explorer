@@ -52,9 +52,8 @@ function extractEditorSources(content) {
 
 function list() {
     var stringifiedHistory = local.get('history');
-    var completeHistory = JSON.parse(stringifiedHistory ? stringifiedHistory : '[]');
 
-    return completeHistory;
+    return JSON.parse(stringifiedHistory ? stringifiedHistory : '[]');
 }
 
 function getArrayWithJustTheCode(editorSources) {

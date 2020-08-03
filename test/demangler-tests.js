@@ -52,8 +52,9 @@ const catchCppfiltNonexistence = err => {
 
 describe('Basic demangling', function () {
     it('One line of asm', function () {
-        const result = {};
-        result.asm = [{text: 'Hello, World!'}];
+        const result = {
+            asm: [{text: 'Hello, World!'}],
+        };
 
         const demangler = new Demangler(cppfiltpath, new DummyCompiler());
         demangler.demanglerArguments = ['-n'];

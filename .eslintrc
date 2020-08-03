@@ -4,7 +4,8 @@
     "jsdoc",
     "requirejs",
     "node",
-    "unicorn"
+    "unicorn",
+    "sonarjs"
   ],
   "extends": [
     "eslint:recommended",
@@ -49,6 +50,12 @@
     "no-process-exit": "off",
     "node/no-unpublished-require": "off",
     "node/shebang": "off",
+    "sonarjs/no-collection-size-mischeck": "error",
+    "sonarjs/no-redundant-boolean": "error",
+    "sonarjs/no-unused-collection": "error",
+    "sonarjs/prefer-immediate-return": "error",
+    "sonarjs/prefer-object-literal": "error",
+    "sonarjs/prefer-single-boolean-return": "error",
     "unicorn/catch-error-name": "off",
     "unicorn/consistent-function-scoping": "off",
     "unicorn/no-fn-reference-in-iterator": "off",

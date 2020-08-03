@@ -355,13 +355,15 @@ Editor.prototype.onInsertKey = function (event) {
     if (this.editor.vimInUse) {
         var currentState = monacoVim.VimMode.Vim.maybeInitVimState_(this.vimMode);
         if (!currentState.insertMode) {
-            var insertEvent = {};
-            insertEvent.preventDefault = event.preventDefault;
-            insertEvent.stopPropagation = event.stopPropagation;
-            insertEvent.browserEvent = {};
-            insertEvent.browserEvent.key = 'i';
-            insertEvent.browserEvent.defaultPrevented = false;
-            insertEvent.keyCode = 39;
+            var insertEvent = {
+                preventDefault: event.preventDefault,
+                stopPropagation: event.stopPropagation,
+                browserEvent: {
+                    key: 'i',
+                    defaultPrevented: false,
+                },
+                keyCode: 39,
+            };
             this.vimMode.handleKeyDown(insertEvent);
         }
     }
