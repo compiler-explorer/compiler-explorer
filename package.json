@@ -85,6 +85,7 @@
     "copy-webpack-plugin": "^5.1.1",
     "css-loader": "^3.5.2",
     "eslint": "^6.8.0",
+    "eslint-formatter-github": "^1.0.11",
     "eslint-plugin-jsdoc": "^30.1.0",
     "eslint-plugin-mocha": "^7.0.1",
     "eslint-plugin-node": "^11.1.0",
@@ -110,7 +111,7 @@
     "webpack-manifest-plugin": "^2.2.0"
   },
   "scripts": {
-    "ci-lint": "npm run lint",
+    "ci-lint": "npm run lint-client -- --format github && npm run lint-server -- --format github && npm run lint-tests -- --format github",
     "ci-test": "nyc --reporter=lcov mocha --recursive",
     "lint-client": "eslint --config static/.eslintrc --ignore-path static/.eslintignore ./static/*.js ./static/panes/*.js ./static/modes/*.js",
     "lint-server": "eslint --config .eslintrc --ignore-path .eslintignore ./app.js ./lib/**",
