@@ -325,12 +325,13 @@ Conformance.prototype.compileChild = function (child) {
                     });
                 }, this));
         }, this))
-        .catch(_.bind(function () {
+        .catch(_.bind(function (error) {
             this.alertSystem.notify('Internal page error while processing a compilation', {
                 group: 'confviewerror',
                 alertClass: 'notification-error',
                 dismissTime: 5000,
             });
+            throw error;
         }, this));
 };
 

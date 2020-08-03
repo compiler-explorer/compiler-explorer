@@ -159,12 +159,13 @@ LoadSave.prototype.run = function (onLoad, editorText, currentLanguage) {
         .then(_.bind(function () {
             this.modal.modal();
         }, this))
-        .catch(_.bind(function () {
+        .catch(_.bind(function (error) {
             this.alertSystem.notify('Error while loading modal.', {
                 group: 'savelocalerror',
                 alertClass: 'notification-error',
                 dismissTime: 5000,
             });
+            throw error;
         }, this));
     ga.proxy('send', {
         hitType: 'event',

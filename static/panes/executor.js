@@ -220,12 +220,13 @@ Executor.prototype.compile = function (bypassCache) {
                 this.sendCompile(request);
             }
         }, this))
-        .catch(_.bind(function () {
+        .catch(_.bind(function (error) {
             this.alertSystem.notify('Internal page error while processing compilation', {
                 group: 'executorerror',
                 alertClass: 'notification-error',
                 dismissTime: 5000,
             });
+            throw error;
         }, this));
 };
 

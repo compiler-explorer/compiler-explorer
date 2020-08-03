@@ -582,12 +582,13 @@ Compiler.prototype.compile = function (bypassCache, newTools) {
                 this.sendCompile(request);
             }
         }, this))
-        .catch(_.bind(function () {
+        .catch(_.bind(function (error) {
             this.alertSystem.notify('Internal page error while processing compilation', {
                 group: 'compilererror',
                 alertClass: 'notification-error',
                 dismissTime: 5000,
             });
+            throw error;
         }, this));
 };
 
@@ -802,12 +803,13 @@ Compiler.prototype.postCompilationResult = function (request, result) {
                     this.handlePopularArgumentsResult(result.result);
                 }
             }, this))
-            .catch(_.bind(function () {
+            .catch(_.bind(function (error) {
                 this.alertSystem.notify('Internal page error while handling  popular arguments', {
                     group: 'compilererror',
                     alertClass: 'notification-error',
                     dismissTime: 5000,
                 });
+                throw error;
             }, this));
     }
 
@@ -1734,12 +1736,13 @@ Compiler.prototype.onMouseMove = function (e) {
                         };
                         this.updateDecorations();
                     }, this))
-                    .catch(_.bind(function () {
+                    .catch(_.bind(function (error) {
                         this.alertSystem.notify('Internal page error while processing asm tooltip', {
                             group: 'compilererror',
                             alertClass: 'notification-error',
                             dismissTime: 2500,
                         });
+                        throw error;
                     }, this));
             }
         }
@@ -1795,12 +1798,13 @@ Compiler.prototype.onAsmToolTip = function (ed) {
                 dismissTime: 3000,
             });
     }, this))
-        .catch(_.bind(function () {
+        .catch(_.bind(function (error) {
             this.alertSystem.notify('Internal page error while requesting asm opcode info', {
                 group: 'compilererror',
                 alertClass: 'notification-error',
                 dismissTime: 5000,
             });
+            throw error;
         }, this));
 };
 
