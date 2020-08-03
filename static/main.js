@@ -26,6 +26,7 @@
 // setup analytics before anything else so we can capture any future errors in sentry
 var analytics = require('./analytics');
 
+// eslint-disable-next-line requirejs/no-js-extension
 require('popper.js');
 require('bootstrap');
 require('bootstrap-slider');

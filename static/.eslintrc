@@ -1,10 +1,12 @@
 {
   "root": true,
   "plugins": [
-    "jsdoc"
+    "jsdoc",
+    "requirejs"
   ],
   "extends": [
-    "eslint:recommended"
+    "eslint:recommended",
+    "plugin:requirejs/recommended"
   ],
   "env": {
     "browser": true,

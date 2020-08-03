@@ -260,6 +260,7 @@ function setupWebPackDevMiddleware(router) {
     logger.info("  using webpack dev middleware");
 
     const webpackDevMiddleware = require("webpack-dev-middleware"),
+        // eslint-disable-next-line requirejs/no-js-extension
         webpackConfig = require('./webpack.config.js'),
         webpackCompiler = require('webpack')(webpackConfig);
 

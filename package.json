@@ -83,6 +83,7 @@
     "css-loader": "^3.5.2",
     "eslint": "^6.8.0",
     "eslint-plugin-jsdoc": "^30.1.0",
+    "eslint-plugin-requirejs": "^4.0.0",
     "file-loader": "^5.1.0",
     "mini-css-extract-plugin": "^0.9.0",
     "mocha": "^7.1.1",
