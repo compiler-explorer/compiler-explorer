@@ -2,11 +2,13 @@
   "root": true,
   "plugins": [
     "jsdoc",
-    "requirejs"
+    "requirejs",
+    "node"
   ],
   "extends": [
     "eslint:recommended",
-    "plugin:requirejs/recommended"
+    "plugin:requirejs/recommended",
+    "plugin:node/recommended"
   ],
   "env": {
     "mocha": true,
@@ -43,7 +45,10 @@
     "jsdoc/empty-tags": 1,
     "jsdoc/newline-after-description": 1,
     "jsdoc/require-hyphen-before-param-description": 1,
-    "jsdoc/valid-types": 1
+    "jsdoc/valid-types": 1,
+    "no-process-exit": 0,
+    "node/no-unpublished-require": 0,
+    "node/shebang": 0
   },
   "parserOptions": {
     "ecmaVersion": 2018

@@ -319,7 +319,7 @@ function oldGoogleUrlHandler(req, res, next) {
     const googleUrl = `https://goo.gl/${encodeURIComponent(bits[1])}`;
     googleShortUrlResolver.resolve(googleUrl)
         .then(resultObj => {
-            const parsed = url.parse(resultObj.longUrl);
+            const parsed = new url.URL(resultObj.longUrl);
             const allowedRe = new RegExp(ceProps('allowedShortUrlHostRe'));
             if (parsed.host.match(allowedRe) === null) {
                 logger.warn(`Denied access to short URL ${bits[1]} - linked to ${resultObj.longUrl}`);

@@ -1,11 +1,13 @@
 {
   "root": true,
   "plugins": [
-    "requirejs"
+    "requirejs",
+    "node"
   ],
   "extends": [
     "eslint:recommended",
-    "plugin:requirejs/recommended"
+    "plugin:requirejs/recommended",
+    "plugin:node/recommended"
   ],
   "env": {
     "mocha": true,
@@ -33,7 +35,10 @@
       "asyncArrow": "always"
     }],
     "quote-props": ["error", "as-needed"],
-    "yoda": [ "error", "never", { "onlyEquality": true } ]
+    "yoda": [ "error", "never", { "onlyEquality": true } ],
+    "no-process-exit": 0,
+    "node/no-unpublished-require": 0,
+    "node/shebang": 0
   },
   "parserOptions": {
     "ecmaVersion": 2018
