@@ -50,7 +50,7 @@
     "jsdoc/newline-after-description": "warn",
     "jsdoc/require-hyphen-before-param-description": "warn",
     "jsdoc/valid-types": "warn",
-    "promise/catch-or-return": "error",
+    "promise/catch-or-return": "off",
     "promise/no-new-statics": "error",
     "promise/no-return-wrap": "error",
     "promise/param-names": "error",

@@ -27,7 +27,7 @@
 //
 // The lists of keywords, operator, functions, and subroutines have been adopted from
 //    vs.language.fortran by Thomas E. Dunn
-"use strict";
+'use strict';
 var monaco = require('monaco-editor');
 
 function definition() {
@@ -161,7 +161,7 @@ function definition() {
             'wait',
             'where',
             'while',
-            'write'
+            'write',
         ],
 
         typeKeywords: [
@@ -178,7 +178,7 @@ function definition() {
             'allocatable',
             'parameter',
             'private',
-            'public'
+            'public',
         ],
 
         operators: [
@@ -206,7 +206,7 @@ function definition() {
             '.ne.',
             '.neqv.',
             '.not.',
-            '.or.'
+            '.or.',
         ],
 
         functions: [
@@ -400,7 +400,7 @@ function definition() {
             'ubound',
             'ucobound',
             'unpack',
-            'verify'
+            'verify',
         ],
 
         subroutines: [
@@ -426,7 +426,7 @@ function definition() {
             'mvbits',
             'random_number',
             'random_seed',
-            'system_clock'
+            'system_clock',
         ],
 
         // we include these common regular expressions
@@ -441,8 +441,8 @@ function definition() {
                     cases: {
                         '@typeKeywords': 'type.identifier',
                         '@keywords': 'keyword',
-                        '@default': 'identifier'
-                    }
+                        '@default': 'identifier',
+                    },
                 }],
                 // identifiers and keywords
                 [/[a-zA-Z][\w$]*/, {
@@ -450,8 +450,8 @@ function definition() {
                         '@keywords': 'keyword',
                         '@functions': 'keyword',
                         '@subroutines': 'keyword',
-                        '@default': 'identifier'
-                    }
+                        '@default': 'identifier',
+                    },
                 }],
 
                 // comments
@@ -466,8 +466,8 @@ function definition() {
                 [/@symbols/, {
                     cases: {
                         '@operators': 'operator',
-                        '@default': ''
-                    }
+                        '@default': '',
+                    },
                 }],
 
                 // numbers
@@ -487,24 +487,24 @@ function definition() {
                 // characters
                 [/'[^\\']'/, 'string'],
                 [/(')(@escapes)(')/, ['string', 'string.escape', 'string']],
-                [/'/, 'string.invalid']
+                [/'/, 'string.invalid'],
             ],
 
             whitespace: [
-                [/[ \t\r\n]+/, 'white']
+                [/[ \t\r\n]+/, 'white'],
             ],
 
             comment: [
-                [/!/, 'comment']
+                [/!/, 'comment'],
             ],
 
             string: [
                 [/[^\\"]+/, 'string'],
                 [/@escapes/, 'string.escape'],
                 [/\\./, 'string.escape.invalid'],
-                [/"/, 'string', '@pop']
+                [/"/, 'string', '@pop'],
             ],
-        }
+        },
     };
 }
 
@@ -517,7 +517,7 @@ function configuration() {
         brackets: [
             ['(/', '/)'],
             ['[', ']'],
-            ['(', ')']
+            ['(', ')'],
         ],
 
         autoClosingPairs: [
@@ -525,7 +525,7 @@ function configuration() {
             {open: '(', close: ')'},
             {open: '`', close: '`', notIn: ['string','comment']},
             {open: "'", close: "'", notIn: ['string','comment']},
-            {open: '"', close: '"', notIn: ['string']}
+            {open: '"', close: '"', notIn: ['string']},
         ],
 
         surroundingPairs: [
@@ -533,14 +533,14 @@ function configuration() {
             {open: '(', close: ')'},
             {open: '`', close: '`'},
             {open: "'", close: "'"},
-            {open: '"', close: '"'}
+            {open: '"', close: '"'},
         ],
 
         indentationRules: {
             decreaseIndentPattern: /(end\s*(do|if|function|subroutine|program|module|block|associate|forall|select))|else|(^((?!select).)*(case))/,
             increaseIndentPattern: /(^((?!end).)*(do\s|if(\s|\().*then|function\s|subroutine\s|program\s|module\s|block\s*|associate(\s|\()|forall|case)|else)/,
-            unIndentedLinePattern: null
-        }
+            unIndentedLinePattern: null,
+        },
     };
 }
 
