@@ -124,7 +124,7 @@ describe.skip('Basic compiler setup', function () {
     });
 });
 
-describe('javap parsing', () => {
+describe.skip('javap parsing', () => {
     let compiler;
     let env;
     before(() => {
