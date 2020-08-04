@@ -31,17 +31,17 @@ chai.should();
 describe('CSP', () => {
     it('Should work in the godbolt.org domain for every field', () => {
         Object.keys(csp.data).forEach(value => {
-            csp.data[value].should.include.members(['https://*.godbolt.org', "'self'"])
+            csp.data[value].should.include.members(['https://*.godbolt.org', "'self'"]);
         });
     });
     it('Should work in the compiler-explorer domain for every field', () => {
         Object.keys(csp.data).forEach(value => {
-            csp.data[value].should.include.members(['https://*.compiler-explorer.com', "'self'"])
+            csp.data[value].should.include.members(['https://*.compiler-explorer.com', "'self'"]);
         });
     });
     it('Should work in a localhost environment for every field', () => {
         Object.keys(csp.data).forEach(value => {
-            csp.data[value].should.include.members(['localhost:*', "'self'"])
+            csp.data[value].should.include.members(['localhost:*', "'self'"]);
         });
     });
     it('Should be a valid policy', () => {

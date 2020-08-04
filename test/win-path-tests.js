@@ -23,24 +23,24 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 const chai = require('chai');
-const chaiAsPromised = require("chai-as-promised");
+const chaiAsPromised = require('chai-as-promised');
 const child_process = require('child_process');
 
 const WslCL = require('../lib/compilers/wsl-vc');
 const WineCL = require('../lib/compilers/wine-vc');
-const {makeCompilationEnvironment} = require('./utils.js');
+const {makeCompilationEnvironment} = require('./utils');
 
 chai.use(chaiAsPromised);
 chai.should();
 
 const languages = {
-    'c++': {id: 'c++'}
+    'c++': {id: 'c++'},
 };
 
 const info = {
     lang: languages['c++'].id,
     exe: null,
-    remote: true
+    remote: true,
 };
 
 describe('Paths', () => {
@@ -52,14 +52,14 @@ describe('Paths', () => {
 
     it('Linux -> Wine path', () => {
         const compiler = new WineCL(info, env);
-        compiler.filename("/tmp/123456/output.s").should.equal("Z:/tmp/123456/output.s");
+        compiler.filename('/tmp/123456/output.s').should.equal('Z:/tmp/123456/output.s');
     });
 
     it('Linux -> Windows path', function () {
-        process.env.winTmp = "/mnt/c/tmp";
+        process.env.winTmp = '/mnt/c/tmp';
 
         const compiler = new WslCL(info, env);
-        compiler.filename("/mnt/c/tmp/123456/output.s").should.equal("c:/tmp/123456/output.s");
+        compiler.filename('/mnt/c/tmp/123456/output.s').should.equal('c:/tmp/123456/output.s');
     });
 });
 
@@ -79,13 +79,13 @@ function createCompiler(compiler) {
 
     const info = {
         lang: languages['c++'].id,
-        envVars: []
+        envVars: [],
     };
 
     return new compiler(info, ce);
 }
 
-if (process.platform === "linux" && child_process.execSync('uname -a').toString().indexOf('Microsoft') > -1) { // WSL
+if (process.platform === 'linux' && child_process.execSync('uname -a').toString().includes('Microsoft')) { // WSL
     describe('Wsl compiler', () => {
         let compiler;
 
@@ -94,15 +94,15 @@ if (process.platform === "linux" && child_process.execSync('uname -a').toString(
         });
 
         it('Can set working directory', () => {
-            return compiler.runCompiler('pwd', [], "c:/this-should-be-run-in-mnt-c")
+            return compiler.runCompiler('pwd', [], 'c:/this-should-be-run-in-mnt-c')
                 .then(testExecOutput)
                 .should.eventually.deep.equals(
                     {
                         code: 0,
-                        inputFilename: "c:/this-should-be-run-in-mnt-c",
+                        inputFilename: 'c:/this-should-be-run-in-mnt-c',
                         okToCache: true,
                         stderr: [],
-                        stdout: [{text: "/mnt/c"}]
+                        stdout: [{text: '/mnt/c'}],
                     });
         });
     });
