@@ -11,15 +11,16 @@ block prepend content
           include resources/site-logo-staging.svg
         else if extraBodyClass === "dev"
           include resources/site-logo-dev.svg
-        ul#motd.navbar-nav.navbar-center.mr-auto.community-advert.d-none
-            span.content
-            | Thanks for using Compiler Explorer
-        ul.navbar-nav.navbar-right
-            if showSponsors
+    ul#motd.navbar-nav.navbar-center.mr-auto.community-advert.d-none
+        span.content
+        | Thanks for using Compiler Explorer
+    ul.navbar-nav.navbar-right
+        if showSponsors
             li.nav-item.btn.btn-outline-primary#ces(data-toggle="modal") Sponsors
                 .ces-icons
                 each icon in sponsors.icons
-                    img.ces-icon(src=icon.icon)
+                    img.ces-icon(src=icon.icon alt=icon.name)
+                    span &nbsp;
   nav.navbar.navbar-godbolt.navbar-expand-md.navbar-light.bg-light
         div.dropdown-menu.dropdown-menu-right(aria-labelledby="otherDropdown")
         a.dropdown-item(href="https://www.patreon.com/bePatron?u=3691963" title="Help Compiler Explorer - become a Patron" target="_blank" rel="noopener")
