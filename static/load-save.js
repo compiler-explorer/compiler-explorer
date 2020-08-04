@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-"use strict";
+'use strict';
 var $ = require('jquery');
 var _ = require('underscore');
 var saveAs = require('file-saver').saveAs;
@@ -33,7 +33,7 @@ var ga = require('./analytics');
 var history = require('./history');
 
 function getLocalFiles() {
-    return JSON.parse(local.get('files', "{}"));
+    return JSON.parse(local.get('files', '{}'));
 }
 
 function setLocalFile(name, file) {
@@ -45,7 +45,7 @@ function setLocalFile(name, file) {
 function LoadSave() {
     this.modal = null;
     this.alertSystem = new Alert();
-    this.alertSystem.prefixMessage = "Load-Saver: ";
+    this.alertSystem.prefixMessage = 'Load-Saver: ';
     this.onLoad = _.identity;
     this.editorText = '';
     this.extension = '.txt';
@@ -55,7 +55,7 @@ function LoadSave() {
 
 LoadSave.prototype.initializeIfNeeded = function () {
     if ((this.modal === null) || (this.modal.length === 0)) {
-        this.modal = $("#load-save");
+        this.modal = $('#load-save');
 
         this.modal.find('.local-file').change(_.bind(this.onLocalFile, this));
         this.modal.find('.save-button').click(_.bind(this.onSaveToBrowserStorage, this));
@@ -83,7 +83,7 @@ LoadSave.prototype.populateBuiltins = function () {
                         name: elem.name,
                         load: _.bind(function () {
                             this.doLoad(elem);
-                        }, this)
+                        }, this),
                     };
                 }, this))
             );
@@ -99,7 +99,7 @@ LoadSave.prototype.populateLocalStorage = function () {
                 load: _.bind(function () {
                     this.onLoad(data);
                     this.modal.modal('hide');
-                }, this)
+                }, this),
             };
         }, this)));
 };
@@ -114,7 +114,7 @@ LoadSave.prototype.populateLocalHistory = function () {
                 load: _.bind(function () {
                     this.onLoad(data.source);
                     this.modal.modal('hide');
-                }, this)
+                }, this),
             };
         }, this)));
 };
@@ -161,24 +161,24 @@ LoadSave.prototype.run = function (onLoad, editorText, currentLanguage) {
     ga.proxy('send', {
         hitType: 'event',
         eventCategory: 'OpenModalPane',
-        eventAction: 'LoadSave'
+        eventAction: 'LoadSave',
     });
 };
 
 LoadSave.prototype.onSaveToBrowserStorage = function () {
     var name = this.modal.find('.save-name').val();
     if (!name) {
-        this.alertSystem.alert("Save name", "Invalid save name");
+        this.alertSystem.alert('Save name', 'Invalid save name');
         return;
     }
-    name += " (" + this.currentLanguage.name + ")";
+    name += ' (' + this.currentLanguage.name + ')';
     var done = _.bind(function () {
         setLocalFile(name, this.editorText);
     }, this);
     if (getLocalFiles()[name] !== undefined) {
         this.modal.modal('hide');
         this.alertSystem.ask(
-            "Replace current?",
+            'Replace current?',
             "Do you want to replace the existing saved file '" + name + "'?",
             { yes: done });
     } else {
@@ -197,16 +197,16 @@ LoadSave.prototype.onSaveToFile = function (fileEditor) {
     try {
         var fileLang = this.currentLanguage.name;
         var name = fileLang !== undefined && fileEditor !== undefined ?
-            (fileLang + " Editor #" + fileEditor + ' ') : '';
+            (fileLang + ' Editor #' + fileEditor + ' ') : '';
         saveAs(
-            new Blob([this.editorText], { type: "text/plain;charset=utf-8" }),
-            "Compiler Explorer " + name + "Code" + this.extension);
+            new Blob([this.editorText], { type: 'text/plain;charset=utf-8' }),
+            'Compiler Explorer ' + name + 'Code' + this.extension);
         return true;
     } catch (e) {
         this.alertSystem.notify('Error while saving your code. Use the clipboard instead.', {
-            group: "savelocalerror",
-            alertClass: "notification-error",
-            dismissTime: 5000
+            group: 'savelocalerror',
+            alertClass: 'notification-error',
+            dismissTime: 5000,
         });
         return false;
     }

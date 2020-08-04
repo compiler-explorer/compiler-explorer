@@ -23,16 +23,16 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 const chai = require('chai');
-const chaiAsPromised = require("chai-as-promised");
+const chaiAsPromised = require('chai-as-promised');
 const LDCCompiler = require('../lib/compilers/ldc');
 const DMDCompiler = require('../lib/compilers/dmd');
-const {makeCompilationEnvironment} = require('./utils.js');
+const {makeCompilationEnvironment} = require('./utils');
 
 chai.use(chaiAsPromised);
 chai.should();
 
 const languages = {
-    d: {id: 'd'}
+    d: {id: 'd'},
 };
 
 describe('D', () => {
@@ -40,7 +40,7 @@ describe('D', () => {
     const info = {
         exe: null,
         remote: true,
-        lang: languages.d.id
+        lang: languages.d.id,
     };
 
     before(() => {
@@ -49,18 +49,18 @@ describe('D', () => {
 
     it('LDC should not allow -run parameter', () => {
         const compiler = new LDCCompiler(info, ce);
-        compiler.filterUserOptions(["hello", "-run", "--something"]).should.deep.equal(["hello", "--something"]);
+        compiler.filterUserOptions(['hello', '-run', '--something']).should.deep.equal(['hello', '--something']);
     });
     it('DMD should not allow -run parameter', () => {
         const compiler = new DMDCompiler(info, ce);
-        compiler.filterUserOptions(["hello", "-run", "--something"]).should.deep.equal(["hello", "--something"]);
+        compiler.filterUserOptions(['hello', '-run', '--something']).should.deep.equal(['hello', '--something']);
     });
 
     it('LDC supports AST output since version 1.4.0', () => {
         const compiler = new LDCCompiler(info, ce);
-        compiler.couldSupportASTDump("LDC - the LLVM D compiler (1.3.0)").should.equal(false);
-        compiler.couldSupportASTDump("LDC - the LLVM D compiler (1.4.0)").should.equal(true);
-        compiler.couldSupportASTDump("LDC - the LLVM D compiler (1.8.0git-d54d25b-dirty)").should.equal(true);
-        compiler.couldSupportASTDump("LDC - the LLVM D compiler (1.10.0)").should.equal(true);
+        compiler.couldSupportASTDump('LDC - the LLVM D compiler (1.3.0)').should.equal(false);
+        compiler.couldSupportASTDump('LDC - the LLVM D compiler (1.4.0)').should.equal(true);
+        compiler.couldSupportASTDump('LDC - the LLVM D compiler (1.8.0git-d54d25b-dirty)').should.equal(true);
+        compiler.couldSupportASTDump('LDC - the LLVM D compiler (1.10.0)').should.equal(true);
     });
 });

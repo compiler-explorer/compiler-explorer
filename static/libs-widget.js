@@ -147,13 +147,13 @@ LibsWidget.prototype.lazyDropdownLoad = function () {
                 .prop('id', id)
                 .append($('<option>', {
                     value: '-',
-                    text: '-'
+                    text: '-',
                 }));
             _.each(libEntry.versions, _.bind(function (version, versionId) {
                 select.append($('<option>', {
                     value: versionId,
                     text: version.version,
-                    selected: libsInUse[id] && libsInUse[id] === versionId
+                    selected: libsInUse[id] && libsInUse[id] === versionId,
                 }));
             }, this));
             label.toggleClass('bg-success text-white', select.val() !== '-');
@@ -187,7 +187,7 @@ LibsWidget.prototype.updateLibsDropdown = function () {
         trigger: 'click',
         template: '<div class="popover libs-popover" role="tooltip"><div class="arrow"></div>' +
             '<h3 class="popover-header"></h3>' +
-            '<div class="popover-body"></div></div>'
+            '<div class="popover-body"></div></div>',
     });
 };
 
@@ -198,13 +198,11 @@ LibsWidget.prototype.getVersionOrAlias = function (name, version) {
         if (this.availableLibs[this.currentLangId][this.currentCompilerId][name].versions[version]) {
             return version;
         } else {
-            var foundAlias = _.findKey(
+            return _.findKey(
                 this.availableLibs[this.currentLangId][this.currentCompilerId][name].versions,
                 function (ver) {
                     return ver.alias && ver.alias.includes(version);
                 });
-
-            return foundAlias;
         }
     }
 };
@@ -253,5 +251,5 @@ LibsWidget.prototype.getLibsInUse = function () {
 };
 
 module.exports = {
-    Widget: LibsWidget
+    Widget: LibsWidget,
 };

@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 const chai = require('chai');
-const chaiAsPromised = require("chai-as-promised");
+const chaiAsPromised = require('chai-as-promised');
 const CompilationEnvironment = require('../lib/compilation-env');
 const properties = require('../lib/properties');
 
@@ -33,7 +33,7 @@ chai.should();
 const props = {
     optionsAllowedRe: '.*',
     optionsForbiddenRe: '^(-W[alp],)?((-wrapper|-fplugin.*|-specs|-load|-plugin|(@.*)|-I|-i)(=.*)?|--)$',
-    cacheConfig: 'InMemory(10)'
+    cacheConfig: 'InMemory(10)',
 };
 
 describe('Compilation environment', () => {

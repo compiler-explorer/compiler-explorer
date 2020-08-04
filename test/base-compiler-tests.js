@@ -24,18 +24,18 @@
 
 const chai = require('chai');
 const sinon = require('sinon');
-const chaiAsPromised = require("chai-as-promised");
+const chaiAsPromised = require('chai-as-promised');
 const BaseCompiler = require('../lib/base-compiler');
 const fs = require('fs-extra');
 const exec = require('../lib/exec');
 const path = require('path');
-const {makeCompilationEnvironment} = require('./utils.js');
+const {makeCompilationEnvironment} = require('./utils');
 
 chai.use(chaiAsPromised);
 const should = chai.should();
 
 const languages = {
-    'c++': {id: 'c++'}
+    'c++': {id: 'c++'},
 };
 
 describe('Basic compiler invariants', function () {
@@ -44,7 +44,7 @@ describe('Basic compiler invariants', function () {
         exe: null,
         remote: true,
         lang: languages['c++'].id,
-        ldPath: []
+        ldPath: [],
     };
 
     before(() => {
@@ -53,39 +53,39 @@ describe('Basic compiler invariants', function () {
     });
 
     it('should recognize when optOutput has been request', () => {
-        compiler.optOutputRequested(["please", "recognize", "-fsave-optimization-record"]).should.equal(true);
-        compiler.optOutputRequested(["please", "don't", "recognize"]).should.equal(false);
+        compiler.optOutputRequested(['please', 'recognize', '-fsave-optimization-record']).should.equal(true);
+        compiler.optOutputRequested(['please', "don't", 'recognize']).should.equal(false);
     });
     // Overkill test, but now we're safer!
     it('should recognize cfg compilers', () => {
-        compiler.isCfgCompiler("clang version 5.0.0 (https://github.com/asutton/clang.git 449c8c3e91355a3b2b6761e11d9fb5d3c125b791) (https://github.com/llvm-mirror/llvm.git 40b1e969f9cb2a0c697e247435193fb006ef1311)").should.equal(true);
-        compiler.isCfgCompiler("clang version 4.0.0 (tags/RELEASE_400/final 299826)").should.equal(true);
-        compiler.isCfgCompiler("clang version 7.0.0 (trunk 325868)").should.equal(true);
-        compiler.isCfgCompiler("clang version 3.3 (tags/RELEASE_33/final)").should.equal(true);
-        compiler.isCfgCompiler("clang version 6.0.0 (tags/RELEASE_600/final 327031) (llvm/tags/RELEASE_600/final 327028)").should.equal(true);
+        compiler.isCfgCompiler('clang version 5.0.0 (https://github.com/asutton/clang.git 449c8c3e91355a3b2b6761e11d9fb5d3c125b791) (https://github.com/llvm-mirror/llvm.git 40b1e969f9cb2a0c697e247435193fb006ef1311)').should.equal(true);
+        compiler.isCfgCompiler('clang version 4.0.0 (tags/RELEASE_400/final 299826)').should.equal(true);
+        compiler.isCfgCompiler('clang version 7.0.0 (trunk 325868)').should.equal(true);
+        compiler.isCfgCompiler('clang version 3.3 (tags/RELEASE_33/final)').should.equal(true);
+        compiler.isCfgCompiler('clang version 6.0.0 (tags/RELEASE_600/final 327031) (llvm/tags/RELEASE_600/final 327028)').should.equal(true);
 
-        compiler.isCfgCompiler("g++ (GCC-Explorer-Build) 4.9.4").should.equal(true);
-        compiler.isCfgCompiler("g++ (GCC-Explorer-Build) 8.0.1 20180223 (experimental)").should.equal(true);
-        compiler.isCfgCompiler("g++ (GCC-Explorer-Build) 8.0.1 20180223 (experimental)").should.equal(true);
-        compiler.isCfgCompiler("g++ (GCC) 4.1.2").should.equal(true);
+        compiler.isCfgCompiler('g++ (GCC-Explorer-Build) 4.9.4').should.equal(true);
+        compiler.isCfgCompiler('g++ (GCC-Explorer-Build) 8.0.1 20180223 (experimental)').should.equal(true);
+        compiler.isCfgCompiler('g++ (GCC-Explorer-Build) 8.0.1 20180223 (experimental)').should.equal(true);
+        compiler.isCfgCompiler('g++ (GCC) 4.1.2').should.equal(true);
 
-        compiler.isCfgCompiler("foo-bar-g++ (GCC-Explorer-Build) 4.9.4").should.equal(true);
-        compiler.isCfgCompiler("foo-bar-gcc (GCC-Explorer-Build) 4.9.4").should.equal(true);
-        compiler.isCfgCompiler("foo-bar-gdc (GCC-Explorer-Build) 4.9.4").should.equal(true);
+        compiler.isCfgCompiler('foo-bar-g++ (GCC-Explorer-Build) 4.9.4').should.equal(true);
+        compiler.isCfgCompiler('foo-bar-gcc (GCC-Explorer-Build) 4.9.4').should.equal(true);
+        compiler.isCfgCompiler('foo-bar-gdc (GCC-Explorer-Build) 4.9.4').should.equal(true);
 
-        compiler.isCfgCompiler("fake-for-test (Based on g++)").should.equal(false);
+        compiler.isCfgCompiler('fake-for-test (Based on g++)').should.equal(false);
 
-        compiler.isCfgCompiler("gdc (crosstool-NG 203be35 - 20160205-2.066.1-e95a735b97) 5.2.0").should.equal(true);
-        compiler.isCfgCompiler("gdc (crosstool-NG hg+unknown-20131212.080758 - 20140430-2.064.2-404a037d26) 4.8.2").should.equal(true);
-        compiler.isCfgCompiler("gdc (crosstool-NG crosstool-ng-1.20.0-232-gc746732 - 20150830-2.066.1-d0dd4a83de) 4.9.3").should.equal(true);
+        compiler.isCfgCompiler('gdc (crosstool-NG 203be35 - 20160205-2.066.1-e95a735b97) 5.2.0').should.equal(true);
+        compiler.isCfgCompiler('gdc (crosstool-NG hg+unknown-20131212.080758 - 20140430-2.064.2-404a037d26) 4.8.2').should.equal(true);
+        compiler.isCfgCompiler('gdc (crosstool-NG crosstool-ng-1.20.0-232-gc746732 - 20150830-2.066.1-d0dd4a83de) 4.9.3').should.equal(true);
 
-        compiler.isCfgCompiler("fake-for-test (Based on gdc)").should.equal(false);
+        compiler.isCfgCompiler('fake-for-test (Based on gdc)').should.equal(false);
     });
     it('should allow comments next to includes (Bug #874)', () => {
-        should.equal(compiler.checkSource("#include <cmath> // std::(sin, cos, ...)"), null);
-        const badSource = compiler.checkSource("#include </dev/null..> //Muehehehe");
+        should.equal(compiler.checkSource('#include <cmath> // std::(sin, cos, ...)'), null);
+        const badSource = compiler.checkSource('#include </dev/null..> //Muehehehe');
         should.exist(badSource);
-        badSource.should.equal("<stdin>:1:1: no absolute or relative includes please");
+        badSource.should.equal('<stdin>:1:1: no absolute or relative includes please');
     });
 });
 
@@ -95,7 +95,7 @@ describe('Compiler execution', function () {
         exe: null,
         remote: true,
         lang: languages['c++'].id,
-        ldPath: []
+        ldPath: [],
     };
 
     before(() => {
@@ -106,8 +106,8 @@ describe('Compiler execution', function () {
     afterEach(() => sinon.restore());
 
     function stubOutCallToExec(execStub, compiler, content, result, nthCall) {
-        execStub.onCall(nthCall || 0).callsFake((compiler, args, options) => {
-            const minusO = args.indexOf("-o");
+        execStub.onCall(nthCall || 0).callsFake((compiler, args) => {
+            const minusO = args.indexOf('-o');
             minusO.should.be.gte(0);
             const output = args[minusO + 1];
             // Maybe we should mock out the FS too; but that requires a lot more work.
@@ -119,15 +119,15 @@ describe('Compiler execution', function () {
 
     it('should compile', async () => {
         const execStub = sinon.stub(compiler, 'exec');
-        stubOutCallToExec(execStub, compiler, "This is the output file", {
+        stubOutCallToExec(execStub, compiler, 'This is the output file', {
             code: 0,
             okToCache: true,
             stdout: 'stdout',
-            stderr: 'stderr'
+            stderr: 'stderr',
         });
         const result = await compiler.compile(
-            "source",
-            "options",
+            'source',
+            'options',
             {},
             {},
             false,
@@ -135,12 +135,12 @@ describe('Compiler execution', function () {
             {},
             []);
         result.code.should.equal(0);
-        result.compilationOptions.should.contain("options");
+        result.compilationOptions.should.contain('options');
         result.compilationOptions.should.contain(result.inputFilename);
         result.okToCache.should.be.true;
-        result.asm.should.deep.equal([{source: null, text: "This is the output file", labels: []}]);
-        result.stdout.should.deep.equal([{text: "stdout"}]);
-        result.stderr.should.deep.equal([{text: "stderr"}]);
+        result.asm.should.deep.equal([{source: null, text: 'This is the output file', labels: []}]);
+        result.stdout.should.deep.equal([{text: 'stdout'}]);
+        result.stderr.should.deep.equal([{text: 'stderr'}]);
         result.popularArguments.should.deep.equal({});
         result.tools.should.deep.equal([]);
         execStub.called.should.be.true;
@@ -148,15 +148,15 @@ describe('Compiler execution', function () {
 
     it('should handle compilation failures', async () => {
         const execStub = sinon.stub(compiler, 'exec');
-        stubOutCallToExec(execStub, compiler, "This is the output file", {
+        stubOutCallToExec(execStub, compiler, 'This is the output file', {
             code: 1,
             okToCache: true,
             stdout: '',
-            stderr: 'oh noes'
+            stderr: 'oh noes',
         });
         const result = await compiler.compile(
-            "source",
-            "options",
+            'source',
+            'options',
             {},
             {},
             false,
@@ -164,7 +164,7 @@ describe('Compiler execution', function () {
             {},
             []);
         result.code.should.equal(1);
-        result.asm.should.deep.equal([{labels: [], source: null, text: "<Compilation failed>"}]);
+        result.asm.should.deep.equal([{labels: [], source: null, text: '<Compilation failed>'}]);
     });
 
     it('should cache results (when asked)', async () => {
@@ -173,12 +173,12 @@ describe('Compiler execution', function () {
             code: 0,
             okToCache: true,
             stdout: 'stdout',
-            stderr: 'stderr'
+            stderr: 'stderr',
         };
         const execStub = sinon.stub(compiler, 'exec');
-        stubOutCallToExec(execStub, compiler, "This is the output file", fakeExecResults);
-        const source = "Some cacheable source";
-        const options = "Some cacheable options";
+        stubOutCallToExec(execStub, compiler, 'This is the output file', fakeExecResults);
+        const source = 'Some cacheable source';
+        const options = 'Some cacheable options';
         ceMock.expects('cachePut').withArgs(sinon.match({source, options}), sinon.match(fakeExecResults)).resolves();
         const uncachedResult = await compiler.compile(
             source,
@@ -199,13 +199,13 @@ describe('Compiler execution', function () {
             code: 0,
             okToCache: false,
             stdout: 'stdout',
-            stderr: 'stderr'
+            stderr: 'stderr',
         };
         const execStub = sinon.stub(compiler, 'exec');
-        stubOutCallToExec(execStub, compiler, "This is the output file", fakeExecResults);
-        ceMock.expects("cachePut").never();
-        const source = "Some cacheable source";
-        const options = "Some cacheable options";
+        stubOutCallToExec(execStub, compiler, 'This is the output file', fakeExecResults);
+        ceMock.expects('cachePut').never();
+        const source = 'Some cacheable source';
+        const options = 'Some cacheable options';
         const uncachedResult = await compiler.compile(
             source,
             options,
@@ -221,8 +221,8 @@ describe('Compiler execution', function () {
 
     it('should read from the cache (when asked)', async () => {
         const ceMock = sinon.mock(ce);
-        const source = "Some previously cached source";
-        const options = "Some previously cached options";
+        const source = 'Some previously cached source';
+        const options = 'Some previously cached options';
         ceMock.expects('cacheGet').withArgs(sinon.match({source, options})).resolves({code: 123});
         const cachedResult = await compiler.compile(
             source,
@@ -243,13 +243,13 @@ describe('Compiler execution', function () {
             code: 0,
             okToCache: true,
             stdout: 'stdout',
-            stderr: 'stderr'
+            stderr: 'stderr',
         };
-        const source = "Some previously cached source";
-        const options = "Some previously cached options";
+        const source = 'Some previously cached source';
+        const options = 'Some previously cached options';
         ceMock.expects('cacheGet').never();
         const execStub = sinon.stub(compiler, 'exec');
-        stubOutCallToExec(execStub, compiler, "This is the output file", fakeExecResults);
+        stubOutCallToExec(execStub, compiler, 'This is the output file', fakeExecResults);
         const uncachedResult = await compiler.compile(
             source,
             options,
@@ -266,26 +266,26 @@ describe('Compiler execution', function () {
     it('should execute', async () => {
         const execMock = sinon.mock(exec);
         const execStub = sinon.stub(compiler, 'exec');
-        stubOutCallToExec(execStub, compiler, "This is the output asm file", {
+        stubOutCallToExec(execStub, compiler, 'This is the output asm file', {
             code: 0,
             okToCache: true,
             stdout: 'asm stdout',
-            stderr: 'asm stderr'
+            stderr: 'asm stderr',
         }, 0);
-        stubOutCallToExec(execStub, compiler, "This is the output binary file", {
+        stubOutCallToExec(execStub, compiler, 'This is the output binary file', {
             code: 0,
             okToCache: true,
             stdout: 'binary stdout',
-            stderr: 'binary stderr'
+            stderr: 'binary stderr',
         }, 1);
-        execMock.expects("sandbox").withArgs(sinon.match.string, sinon.match.array, sinon.match.object).resolves({
+        execMock.expects('sandbox').withArgs(sinon.match.string, sinon.match.array, sinon.match.object).resolves({
             code: 0,
             stdout: 'exec stdout',
-            stderr: 'exec stderr'
+            stderr: 'exec stderr',
         });
         const result = await compiler.compile(
-            "source",
-            "options",
+            'source',
+            'options',
             {},
             {execute: true},
             false,
@@ -294,37 +294,37 @@ describe('Compiler execution', function () {
             []);
         result.code.should.equal(0);
         result.execResult.didExecute.should.be.true;
-        result.stdout.should.deep.equal([{text: "asm stdout"}]);
-        result.execResult.stdout.should.deep.equal([{text: "exec stdout"}]);
-        result.execResult.buildResult.stdout.should.deep.equal([{text: "binary stdout"}]);
-        result.stderr.should.deep.equal([{text: "asm stderr"}]);
-        result.execResult.stderr.should.deep.equal([{text: "exec stderr"}]);
-        result.execResult.buildResult.stderr.should.deep.equal([{text: "binary stderr"}]);
+        result.stdout.should.deep.equal([{text: 'asm stdout'}]);
+        result.execResult.stdout.should.deep.equal([{text: 'exec stdout'}]);
+        result.execResult.buildResult.stdout.should.deep.equal([{text: 'binary stdout'}]);
+        result.stderr.should.deep.equal([{text: 'asm stderr'}]);
+        result.execResult.stderr.should.deep.equal([{text: 'exec stderr'}]);
+        result.execResult.buildResult.stderr.should.deep.equal([{text: 'binary stderr'}]);
     });
 
     it('should demangle', async () => {
         const withDemangler = {...info, demangler: 'demangler-exe', demanglerClassFile: './demangler-cpp'};
         const compiler = new BaseCompiler(withDemangler, ce);
         const execStub = sinon.stub(compiler, 'exec');
-        stubOutCallToExec(execStub, compiler, "someMangledSymbol:\n", {
+        stubOutCallToExec(execStub, compiler, 'someMangledSymbol:\n', {
             code: 0,
             okToCache: true,
             stdout: 'stdout',
-            stderr: 'stderr'
+            stderr: 'stderr',
         });
         execStub.onCall(1).callsFake((demangler, args, options) => {
-            demangler.should.equal("demangler-exe");
-            options.input.should.equal("someMangledSymbol");
+            demangler.should.equal('demangler-exe');
+            options.input.should.equal('someMangledSymbol');
             return Promise.resolve({
                 code: 0,
                 filenameTransform: x => x,
                 stdout: 'someDemangledSymbol\n',
-                stderr: ''
+                stderr: '',
             });
         });
         const result = await compiler.compile(
-            "source",
-            "options",
+            'source',
+            'options',
             {},
             {demangle: true},
             false,
@@ -332,7 +332,7 @@ describe('Compiler execution', function () {
             {},
             []);
         result.code.should.equal(0);
-        result.asm.should.deep.equal([{source: null, labels: [], text: "someDemangledSymbol:"}]);
+        result.asm.should.deep.equal([{source: null, labels: [], text: 'someDemangledSymbol:'}]);
         // TODO all with demangle: false
     });
 
@@ -341,27 +341,27 @@ describe('Compiler execution', function () {
         const compiler = new BaseCompiler(withDemangler, ce);
         const execStub = sinon.stub(compiler, 'exec');
         execStub.onCall(0).callsFake((objdumper, args, options) => {
-            objdumper.should.equal("objdump-exe");
+            objdumper.should.equal('objdump-exe');
             args.should.deep.equal([
-                "-d", "output",
-                "-l", "--insn-width=16",
-                "-C", "-M", "intel"]);
+                '-d', 'output',
+                '-l', '--insn-width=16',
+                '-C', '-M', 'intel']);
             options.maxOutput.should.equal(123456);
             return Promise.resolve({
                 code: 0,
                 filenameTransform: x => x,
                 stdout: 'the output',
-                stderr: ''
+                stderr: '',
             });
         });
         compiler.supportsObjdump().should.be.true;
         const result = await compiler.objdump(
-            "output",
+            'output',
             {},
             123456,
             true,
             true);
-        result.asm.should.deep.equal("the output");
+        result.asm.should.deep.equal('the output');
     });
 
     it('should run process opt output', async () => {
@@ -374,17 +374,17 @@ Args: []
 ...
 `;
         const dirPath = await compiler.newTempDir();
-        const optPath = path.join(dirPath, "temp.out");
+        const optPath = path.join(dirPath, 'temp.out');
         await fs.writeFile(optPath, test);
         const a = await compiler.processOptOutput(optPath);
         a.should.deep.equal([{
             Args: [],
-            DebugLoc: {Column: 21, File: "example.cpp", Line: 4},
-            Function: "main",
-            Name: "NeverInline",
-            Pass: "inline",
-            displayString: "",
-            optType: "Missed"
+            DebugLoc: {Column: 21, File: 'example.cpp', Line: 4},
+            Function: 'main',
+            Name: 'NeverInline',
+            Pass: 'inline',
+            displayString: '',
+            optType: 'Missed',
         }]);
     });
 });

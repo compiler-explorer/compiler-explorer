@@ -28,14 +28,16 @@ const AsmParserVC = require('../lib/asm-parser-vc');
 const utils = require('../lib/utils');
 require('chai').should();
 
+// eslint-disable-next-line no-unused-vars
 function bless(filename, output, filters) {
     const result = processAsm(__dirname + '/' + filename, filters);
     fs.writeFileSync(__dirname + '/' + output, JSON.stringify(result, null, 2));
 }
 
+// eslint-disable-next-line no-unused-vars
 function dump(file) {
-    for (let i = 0; i < file.length; ++i) {
-        console.log((i + 1) + " : " + JSON.stringify(file[i]));
+    for (const [i, element] of file.entries()) {
+        console.log((i + 1) + ' : ' + JSON.stringify(element));
     }
 }
 
@@ -80,7 +82,7 @@ function processAsm(filename, filters) {
 const files = fs.readdirSync(__dirname + '/filters-cases');
 const filesInCaseDir = files.map(x => 'filters-cases/' + x);
 
-const cases = filesInCaseDir.filter(x => x.endsWith(".asm"));
+const cases = filesInCaseDir.filter(x => x.endsWith('.asm'));
 
 function testFilter(filename, suffix, filters) {
     const expected = filename + suffix;
@@ -121,28 +123,28 @@ function testFilter(filename, suffix, filters) {
 describe('Filter test cases', function () {
 
     describe('No filters', function () {
-        cases.forEach(x => testFilter(x, ".none", {}));
+        cases.forEach(x => testFilter(x, '.none', {}));
     });
     describe('Directive filters', function () {
-        cases.forEach(x => testFilter(x, ".directives", {directives: true}));
+        cases.forEach(x => testFilter(x, '.directives', {directives: true}));
     });
     describe('Directives and labels together', function () {
-        cases.forEach(x => testFilter(x, ".directives.labels", {directives: true, labels: true}));
+        cases.forEach(x => testFilter(x, '.directives.labels', {directives: true, labels: true}));
     });
     describe('Directives, labels and comments', function () {
         cases.forEach(function (x) {
-            testFilter(x, ".directives.labels.comments", {directives: true, labels: true, commentOnly: true});
+            testFilter(x, '.directives.labels.comments', {directives: true, labels: true, commentOnly: true});
         });
     });
     describe('Directives and comments', function () {
-        cases.forEach(x => testFilter(x, ".directives.comments", {directives: true, commentOnly: true}));
+        cases.forEach(x => testFilter(x, '.directives.comments', {directives: true, commentOnly: true}));
     });
     describe('Directives and library code', function () {
-        cases.forEach(x => testFilter(x, ".directives.library", {directives: true, libraryCode: true}));
+        cases.forEach(x => testFilter(x, '.directives.library', {directives: true, libraryCode: true}));
     });
     describe('Directives, labels, comments and library code', function () {
         cases.forEach(function (x) {
-            testFilter(x, ".directives.labels.comments.library",
+            testFilter(x, '.directives.labels.comments.library',
                 {directives: true, labels: true, commentOnly: true, libraryCode: true});
         });
     });

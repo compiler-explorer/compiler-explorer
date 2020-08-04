@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 const chai = require('chai');
-const chaiAsPromised = require("chai-as-promised");
+const chaiAsPromised = require('chai-as-promised');
 const InMemoryCache = require('../lib/cache/in-memory');
 const MultiCache = require('../lib/cache/multi');
 const OnDiskCache = require('../lib/cache/on-disk');
@@ -61,7 +61,7 @@ function basicTests(factory) {
                 cache.stats().should.eql({hits: 0, puts: 1, gets: 0});
                 return cache.get('a key').should.eventually.eql({
                     hit: true,
-                    data: Buffer.from('a value')
+                    data: Buffer.from('a value'),
                 });
             }).then(x => {
                 cache.stats().should.eql({hits: 1, puts: 1, gets: 1});
@@ -78,7 +78,7 @@ function basicTests(factory) {
                 cache.stats().should.eql({hits: 0, puts: 1, gets: 0});
                 return cache.get('a key').should.eventually.eql({
                     hit: true,
-                    data: buffer
+                    data: buffer,
                 });
             }).then(x => {
                 cache.stats().should.eql({hits: 1, puts: 1, gets: 1});
@@ -100,7 +100,7 @@ describe('In-memory caches', () => {
         return cache.put('a key', 'a value', 'bob')
             .then(() => {
                 const promises = [];
-                const oneK = "".padEnd(1024);
+                const oneK = ''.padEnd(1024);
                 for (let i = 0; i < 1024; i++) {
                     promises.push(cache.put(`key${i}`, oneK));
                 }
@@ -124,7 +124,7 @@ describe('Multi caches', () => {
                 return Promise.all([
                     cache.get('a key').should.eventually.eql({hit: true, data: Buffer.from('a value')}),
                     subCache1.get('a key').should.eventually.eql({hit: true, data: Buffer.from('a value')}),
-                    subCache2.get('a key').should.eventually.eql({hit: true, data: Buffer.from('a value')})
+                    subCache2.get('a key').should.eventually.eql({hit: true, data: Buffer.from('a value')}),
                 ]);
             });
     });
@@ -146,7 +146,7 @@ describe('Multi caches', () => {
             }).then(() => {
                 Promise.all([
                     subCache1.get('a key').should.eventually.eql({hit: true, data: Buffer.from('cache1')}),
-                    subCache2.get('a key').should.eventually.eql({hit: true, data: Buffer.from('cache2')})]
+                    subCache2.get('a key').should.eventually.eql({hit: true, data: Buffer.from('cache2')})],
                 );
             });
     });
@@ -160,7 +160,7 @@ describe('On disk caches', () => {
         return cache.put('a key', 'a value', 'bob')
             .then(() => {
                 const promises = [];
-                const oneHundredK = "".padEnd(1024 * 100);
+                const oneHundredK = ''.padEnd(1024 * 100);
                 for (let i = 0; i < 12; i++) {
                     promises.push(cache.put(`key${i}`, oneHundredK));
                 }
@@ -191,18 +191,18 @@ const S3FS = {};
 function setup() {
     beforeEach(() => {
         AWS.mock('S3', 'getObject', (params, callback) => {
-            params.Bucket.should.equal("test.bucket");
+            params.Bucket.should.equal('test.bucket');
             const result = S3FS[params.Key];
             if (!result) {
-                const error = new Error("Not found");
-                error.code = "NoSuchKey";
+                const error = new Error('Not found');
+                error.code = 'NoSuchKey';
                 callback(error);
             } else {
                 callback(null, {Body: result});
             }
         });
         AWS.mock('S3', 'putObject', (params, callback) => {
-            params.Bucket.should.equal("test.bucket");
+            params.Bucket.should.equal('test.bucket');
             S3FS[params.Key] = params.Body;
             callback(null, {});
         });
@@ -223,20 +223,20 @@ describe('S3 tests', () => {
 describe('Config tests', () => {
     setup();
     it('should create null cache on empty config', () => {
-        const cache = FromConfig.create("");
+        const cache = FromConfig.create('');
         cache.constructor.should.eql(NullCache);
     });
     it('should throw on bad types', () => {
-        (() => FromConfig.create("InMemory")).should.throw();
-        (() => FromConfig.create("NotAType()")).should.throw();
+        (() => FromConfig.create('InMemory')).should.throw();
+        (() => FromConfig.create('NotAType()')).should.throw();
     });
     it('should create in memory caches', () => {
-        const cache = FromConfig.create("InMemory(123)");
+        const cache = FromConfig.create('InMemory(123)');
         cache.constructor.should.eql(InMemoryCache);
         cache.cacheMb.should.equal(123);
-        (() => FromConfig.create("InMemory()")).should.throw();
-        (() => FromConfig.create("InMemory(argh)")).should.throw();
-        (() => FromConfig.create("InMemory(123,yibble)")).should.throw();
+        (() => FromConfig.create('InMemory()')).should.throw();
+        (() => FromConfig.create('InMemory(argh)')).should.throw();
+        (() => FromConfig.create('InMemory(123,yibble)')).should.throw();
     });
     it('should create on disk caches', () => {
         const tempDir = newTempDir();
@@ -244,19 +244,19 @@ describe('Config tests', () => {
         cache.constructor.should.eql(OnDiskCache);
         cache.path.should.equal(tempDir);
         cache.cacheMb.should.equal(456);
-        (() => FromConfig.create("OnDisk()")).should.throw();
-        (() => FromConfig.create("OnDisk(argh,yibble)")).should.throw();
-        (() => FromConfig.create("OnDisk(/tmp/moo,456,blah)")).should.throw();
+        (() => FromConfig.create('OnDisk()')).should.throw();
+        (() => FromConfig.create('OnDisk(argh,yibble)')).should.throw();
+        (() => FromConfig.create('OnDisk(/tmp/moo,456,blah)')).should.throw();
     });
     it('should create S3 caches', () => {
         const cache = FromConfig.create(`S3(test.bucket,cache,uk-north-1)`);
         cache.constructor.should.eql(S3Cache);
-        cache.bucket.should.equal("test.bucket");
-        cache.path.should.equal("cache");
-        cache.region.should.equal("uk-north-1");
-        (() => FromConfig.create("S3()")).should.throw();
-        (() => FromConfig.create("S3(argh,yibble)")).should.throw();
-        (() => FromConfig.create("S3(/tmp/moo,456,blah,nork)")).should.throw();
+        cache.bucket.should.equal('test.bucket');
+        cache.path.should.equal('cache');
+        cache.region.should.equal('uk-north-1');
+        (() => FromConfig.create('S3()')).should.throw();
+        (() => FromConfig.create('S3(argh,yibble)')).should.throw();
+        (() => FromConfig.create('S3(/tmp/moo,456,blah,nork)')).should.throw();
     });
     it('should create multi caches', () => {
         const tempDir = newTempDir();

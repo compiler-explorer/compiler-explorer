@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 const chai = require('chai'),
-    chaiAsPromised = require("chai-as-promised"),
+    chaiAsPromised = require('chai-as-promised'),
     aws = require('../lib/aws'),
     AWS = require('aws-sdk-mock');
 
@@ -35,32 +35,32 @@ const instanceA = {
     Id: 'A',
     Tags: [
         {Key: 'Name', Value: 'Alice'},
-        {Key: 'Moose', Value: 'Bob'}
-    ]
+        {Key: 'Moose', Value: 'Bob'},
+    ],
 };
 const instanceB = {
     State: {Name: 'sleeping'},
     Id: 'B',
     Tags: [
         {Key: 'Name', Value: 'Alice'},
-        {Key: 'Moose', Value: 'Bob'}
-    ]
+        {Key: 'Moose', Value: 'Bob'},
+    ],
 };
 const instanceC = {
     State: {Name: 'running'},
     Id: 'C',
     Tags: [
         {Key: 'Name', Value: 'Bob'},
-        {Key: 'Moose', Value: 'Bob'}
-    ]
+        {Key: 'Moose', Value: 'Bob'},
+    ],
 };
 const instanceD = {
     State: {Name: 'running'},
     Id: 'D',
     Tags: [
         {Key: 'Name', Value: 'Alice'},
-        {Key: 'Moose', Value: 'Bob'}
-    ]
+        {Key: 'Moose', Value: 'Bob'},
+    ],
 };
 
 function setup() {
@@ -72,23 +72,23 @@ function setup() {
                         instanceA,
                         instanceB,
                         instanceC,
-                        instanceD
-                    ]
-                }
-            ]
+                        instanceD,
+                    ],
+                },
+            ],
         });
 
         AWS.mock('SSM', 'getParametersByPath', {
             Parameters: [
                 {
                     Name: '/compiler-explorer/configValue',
-                    Value: 'fromAws'
+                    Value: 'fromAws',
                 },
                 {
                     Name: '/compiler-explorer/onlyOnAws',
-                    Value: 'bibble'
-                }
-            ]
+                    Value: 'bibble',
+                },
+            ],
         });
 
     });
@@ -101,7 +101,7 @@ describe('AWS instance fetcher tests', () => {
         const fakeProps = {
             region: 'not-a-region',
             tagKey: 'Name',
-            tagValue: 'Bob'
+            tagValue: 'Bob',
         };
         const fetcher = new aws.InstanceFetcher(prop => fakeProps[prop]);
         return fetcher.getInstances().should.eventually.deep.equal([instanceC]);
@@ -111,7 +111,7 @@ describe('AWS instance fetcher tests', () => {
         const fakeProps = {
             region: 'not-a-region',
             tagKey: 'Name',
-            tagValue: 'Alice'
+            tagValue: 'Alice',
         };
         const fetcher = new aws.InstanceFetcher(prop => fakeProps[prop]);
         return fetcher.getInstances().should.eventually.deep.equal([instanceA, instanceD]);
@@ -123,7 +123,7 @@ describe('AWS config tests', () => {
     it('Doesn\'t fetch unless region is configured', () => {
         const fakeProps = {
             region: '',
-            configValue: 'fromConfigFile'
+            configValue: 'fromConfigFile',
         };
         return aws.initConfig(prop => fakeProps[prop])
             .then(() => {
@@ -135,7 +135,7 @@ describe('AWS config tests', () => {
         const fakeProps = {
             region: 'a non-empty region',
             configValue: 'fromConfigFile',
-            notInAmazon: 'yay'
+            notInAmazon: 'yay',
         };
         return aws.initConfig(prop => fakeProps[prop])
             .then(() => {
