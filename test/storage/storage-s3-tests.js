@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 const chai = require('chai'),
-    chaiAsPromised = require("chai-as-promised"),
+    chaiAsPromised = require('chai-as-promised'),
     properties = require('../../lib/properties'),
     s3s = require('../../lib/storage/storage-s3'),
     AWS = require('aws-sdk-mock');
@@ -66,7 +66,7 @@ describe('Find unique subhash tests', () => {
         region: 'not-a-region',
         storageBucket: 'bucket',
         storagePrefix: 'prefix',
-        storageDynamoTable: 'table'
+        storageDynamoTable: 'table',
     });
     it('works when empty', () => {
         const storage = new s3s(httpRootDir, compilerProps, awsProps);
@@ -74,12 +74,12 @@ describe('Find unique subhash tests', () => {
             q.TableName.should.equal('table');
             return {};
         });
-        return storage.findUniqueSubhash("ABCDEFGHIJKLMNOPQRSTUV").should.eventually.deep.equal(
+        return storage.findUniqueSubhash('ABCDEFGHIJKLMNOPQRSTUV').should.eventually.deep.equal(
             {
                 alreadyPresent: false,
-                prefix: "ABCDEF",
-                uniqueSubHash: "ABCDEF"
-            }
+                prefix: 'ABCDEF',
+                uniqueSubHash: 'ABCDEF',
+            },
         );
     });
     it('works when not empty', () => {
@@ -89,17 +89,17 @@ describe('Find unique subhash tests', () => {
                 Items: [
                     {
                         full_hash: {S: 'ZZVZT'},
-                        unique_subhash: {S: 'ZZVZT'}
-                    }
-                ]
+                        unique_subhash: {S: 'ZZVZT'},
+                    },
+                ],
             };
         });
-        return storage.findUniqueSubhash("ABCDEFGHIJKLMNOPQRSTUV").should.eventually.deep.equal(
+        return storage.findUniqueSubhash('ABCDEFGHIJKLMNOPQRSTUV').should.eventually.deep.equal(
             {
                 alreadyPresent: false,
-                prefix: "ABCDEF",
-                uniqueSubHash: "ABCDEF"
-            }
+                prefix: 'ABCDEF',
+                uniqueSubHash: 'ABCDEF',
+            },
         );
     });
     it('works when there\' a collision', () => {
@@ -109,17 +109,17 @@ describe('Find unique subhash tests', () => {
                 Items: [
                     {
                         full_hash: {S: 'ABCDEFZZ'},
-                        unique_subhash: {S: 'ABCDEF'}
-                    }
-                ]
+                        unique_subhash: {S: 'ABCDEF'},
+                    },
+                ],
             };
         });
-        return storage.findUniqueSubhash("ABCDEFGHIJKLMNOPQRSTUV").should.eventually.deep.equal(
+        return storage.findUniqueSubhash('ABCDEFGHIJKLMNOPQRSTUV').should.eventually.deep.equal(
             {
                 alreadyPresent: false,
-                prefix: "ABCDEF",
-                uniqueSubHash: "ABCDEFG"
-            }
+                prefix: 'ABCDEF',
+                uniqueSubHash: 'ABCDEFG',
+            },
         );
     });
     it('finds an existing match', () => {
@@ -129,17 +129,17 @@ describe('Find unique subhash tests', () => {
                 Items: [
                     {
                         full_hash: {S: 'ABCDEFGHIJKLMNOPQRSTUV'},
-                        unique_subhash: {S: 'ABCDEF'}
-                    }
-                ]
+                        unique_subhash: {S: 'ABCDEF'},
+                    },
+                ],
             };
         });
-        return storage.findUniqueSubhash("ABCDEFGHIJKLMNOPQRSTUV").should.eventually.deep.equal(
+        return storage.findUniqueSubhash('ABCDEFGHIJKLMNOPQRSTUV').should.eventually.deep.equal(
             {
                 alreadyPresent: true,
-                prefix: "ABCDEF",
-                uniqueSubHash: "ABCDEF"
-            }
+                prefix: 'ABCDEF',
+                uniqueSubHash: 'ABCDEF',
+            },
         );
     });
 });
@@ -154,15 +154,15 @@ describe('Stores to s3', () => {
         region: 'not-a-region',
         storageBucket: 'bucket',
         storagePrefix: 'prefix',
-        storageDynamoTable: 'table'
+        storageDynamoTable: 'table',
     });
     it('and works ok', () => {
         const storage = new s3s(httpRootDir, compilerProps, awsProps);
         const object = {
-            prefix: "ABCDEF",
-            uniqueSubHash: "ABCDEFG",
-            fullHash: "ABCDEFGHIJKLMNOP",
-            config: 'yo'
+            prefix: 'ABCDEF',
+            uniqueSubHash: 'ABCDEFG',
+            fullHash: 'ABCDEFGHIJKLMNOP',
+            config: 'yo',
         };
 
         const ran = {s3: false, dynamo: false};
@@ -182,7 +182,7 @@ describe('Stores to s3', () => {
                 stats: {M: {clicks: {N: '0'}}},
                 creation_ip: {S: 'localhost'},
                 // Cheat the date
-                creation_date: {S: q.Item.creation_date.S}
+                creation_date: {S: q.Item.creation_date.S},
             });
             ran.dynamo = true;
             return {};

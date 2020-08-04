@@ -29,7 +29,7 @@ module.exports = {
         return {
             type: 'component',
             componentName: 'compiler',
-            componentState: {source: editorId, lang: lang}
+            componentState: {source: editorId, lang: lang},
         };
     },
     getCompilerWith: function (editorId, filters, options, compilerId, langId, libs) {
@@ -42,36 +42,36 @@ module.exports = {
                 options: options,
                 compiler: compilerId,
                 lang: langId,
-                libs: libs
-            }
+                libs: libs,
+            },
         };
     },
     getExecutor: function (editorId, lang) {
         return {
             type: 'component',
             componentName: 'executor',
-            componentState: {source: editorId, lang: lang}
+            componentState: {source: editorId, lang: lang},
         };
     },
     getEditor: function (id, langId) {
         return {
             type: 'component',
             componentName: 'codeEditor',
-            componentState: {id: id, lang: langId}
+            componentState: {id: id, lang: langId},
         };
     },
     getEditorWith: function (id, source, options) {
         return {
             type: 'component',
             componentName: 'codeEditor',
-            componentState: {id: id, source: source, options: options}
+            componentState: {id: id, source: source, options: options},
         };
     },
     getOutput: function (compiler, editor) {
         return {
             type: 'component',
             componentName: 'output',
-            componentState: {compiler: compiler, editor: editor}
+            componentState: {compiler: compiler, editor: editor},
         };
     },
     getToolViewWith: function (compiler, editor, toolId, args) {
@@ -82,22 +82,22 @@ module.exports = {
                 compiler: compiler,
                 editor: editor,
                 toolId: toolId,
-                args: args
-            }
+                args: args,
+            },
         };
     },
     getDiff: function () {
         return {
             type: 'component',
             componentName: 'diff',
-            componentState: {}
+            componentState: {},
         };
     },
     getOptView: function () {
         return {
             type: 'component',
             componentName: 'opt',
-            componentState: {}
+            componentState: {},
         };
     },
     getOptViewWith: function (id, source, optimization, compilerName, editorid) {
@@ -109,15 +109,15 @@ module.exports = {
                 source: source,
                 optOutput: optimization,
                 compilerName: compilerName,
-                editorid: editorid
-            }
+                editorid: editorid,
+            },
         };
     },
     getAstView: function () {
         return {
             type: 'component',
             componentName: 'ast',
-            componentState: {}
+            componentState: {},
         };
     },
     getAstViewWith: function (id, source, astOutput, compilerName, editorid) {
@@ -129,15 +129,15 @@ module.exports = {
                 source: source,
                 astOutput: astOutput,
                 compilerName: compilerName,
-                editorid: editorid
-            }
+                editorid: editorid,
+            },
         };
     },
     getGccDumpView: function () {
         return {
             type: 'component',
             componentName: 'gccdump',
-            componentState: {}
+            componentState: {},
         };
     },
     getGccDumpViewWith: function (id, compilerName, editorid, gccDumpOutput) {
@@ -147,8 +147,8 @@ module.exports = {
             componentState: {
                 _compilerid: id,
                 _compilerName: compilerName,
-                _editorid: editorid
-            }
+                _editorid: editorid,
+            },
         };
         if (gccDumpOutput) {
             ret.treeDump = gccDumpOutput.treeDump;
@@ -162,7 +162,7 @@ module.exports = {
         return {
             type: 'component',
             componentName: 'cfg',
-            componentState: {}
+            componentState: {},
         };
     },
     getCfgViewWith: function (id, editorid) {
@@ -171,8 +171,8 @@ module.exports = {
             componentName: 'cfg',
             componentState: {
                 id: id,
-                editorid: editorid
-            }
+                editorid: editorid,
+            },
         };
     },
     getConformanceView: function (editorid, source, langId) {
@@ -182,15 +182,15 @@ module.exports = {
             componentState: {
                 editorid: editorid,
                 source: source,
-                langId: langId
-            }
+                langId: langId,
+            },
         };
     },
     getIrView: function () {
         return {
             type: 'component',
             componentName: 'ir',
-            componentState: {}
+            componentState: {},
         };
     },
     getIrViewWith: function (id, source, irOutput, compilerName, editorid) {
@@ -202,8 +202,8 @@ module.exports = {
                 source: source,
                 irOutput: irOutput,
                 compilerName: compilerName,
-                editorid: editorid
-            }
+                editorid: editorid,
+            },
         };
-    }
+    },
 };

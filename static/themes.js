@@ -22,24 +22,24 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-"use strict";
+'use strict';
 var $ = require('jquery');
 
 var themes = {
     default: {
-        path: "default",
-        id: "default",
-        name: "Default",
-        "main-color": "#f2f2f2",
-        monaco: "vs" // Optional field
+        path: 'default',
+        id: 'default',
+        name: 'Default',
+        'main-color': '#f2f2f2',
+        monaco: 'vs', // Optional field
     },
     dark: {
-        path: "dark",
-        id: "dark",
-        name: "Dark",
-        "main-color": "#333333",
-        monaco: "vs-dark"
-    }
+        path: 'dark',
+        id: 'dark',
+        name: 'Dark',
+        'main-color': '#333333',
+        monaco: 'vs-dark',
+    },
 };
 
 function Themer(eventHub, initialSettings) {
@@ -48,9 +48,9 @@ function Themer(eventHub, initialSettings) {
 
     this.setTheme = function (theme) {
         if (this.currentTheme === theme) return;
-        var cssData = require('./themes/' + theme.path + "-theme.css");
+        var cssData = require('./themes/' + theme.path + '-theme.css');
         $('#theme').html(cssData.toString());
-        $('#meta-theme').prop('content', theme["main-color"]);
+        $('#meta-theme').prop('content', theme['main-color']);
         monaco.editor.setTheme(theme.monaco);
         this.eventHub.emit('resize');
         this.currentTheme = theme;
@@ -59,7 +59,7 @@ function Themer(eventHub, initialSettings) {
     this.onSettingsChange = function (newSettings) {
         var newTheme = themes[newSettings.theme] || themes.default;
         if (!newTheme.monaco)
-            newTheme.monaco = "vs";
+            newTheme.monaco = 'vs';
         this.setTheme(newTheme);
     };
     this.onSettingsChange(initialSettings);
@@ -73,5 +73,5 @@ function Themer(eventHub, initialSettings) {
 
 module.exports = {
     themes: themes,
-    Themer: Themer
+    Themer: Themer,
 };

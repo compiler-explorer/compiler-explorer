@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-"use strict";
+'use strict';
 var monaco = require('monaco-editor');
 
 function definition() {
@@ -44,13 +44,13 @@ function definition() {
         typeKeywords: [
             'bool', 'f32', 'f64', 'f128', 'void', 'noreturn', 'type', 'error', 'anyerror', 'promise', 'anyframe',
             'isize', 'usize', 'c_short', 'c_ushort', 'c_int', 'c_uint', 'c_long', 'c_ulong',
-            'c_longlong', 'c_ulonglong', 'c_longdouble', 'c_void'
+            'c_longlong', 'c_ulonglong', 'c_longdouble', 'c_void',
         ],
         operators: [
             '+', '+%', '-', '-%', '/', '*', '*%', '=', '^', '&', '?', '|',
             '!', '>', '<', '%', '<<', '<<%', '>>',
             '+=', '+%=', '-=', '-%=', '/=', '*=', '*%=', '==', '^=', '&=',
-            '?=', '|=', '!=', '>=', '<=', '%=', '<<=', '<<%=', '>>='
+            '?=', '|=', '!=', '>=', '<=', '%=', '<<=', '<<%=', '>>=',
         ],
 
         symbols: /[=><!~?:&|+\-*/^%]+/,
@@ -67,8 +67,8 @@ function definition() {
                     cases: {
                         '@typeKeywords': 'keyword',
                         '@keywords': 'keyword',
-                        '@default': 'identifier'
-                    }
+                        '@default': 'identifier',
+                    },
                 }],
 
                 [/@[a-zA-Z_$]*/, 'builtin.identifier'],
@@ -84,8 +84,8 @@ function definition() {
                 [/@symbols/, {
                     cases: {
                         '@operators': 'operator',
-                        '@default': ''
-                    }
+                        '@default': '',
+                    },
                 }],
 
                 // numbers
@@ -106,7 +106,7 @@ function definition() {
                 // characters
                 [/'[^\\']'/, 'string'],
                 [/(')(@escapes)(')/, ['string', 'string.escape', 'string']],
-                [/'/, 'string.invalid']
+                [/'/, 'string.invalid'],
             ],
 
             whitespace: [
@@ -114,22 +114,22 @@ function definition() {
                 [/\/\*/, 'comment', '@comment'],
                 [/\/\+/, 'comment', '@comment'],
                 [/\/\/.*$/, 'comment'],
-                [/\t/, 'comment.invalid']
+                [/\t/, 'comment.invalid'],
             ],
 
             comment: [
                 [/[^/*]+/, 'comment'],
                 [/\/\*/, 'comment.invalid'],
-                [/[/*]/, 'comment']
+                [/[/*]/, 'comment'],
             ],
 
             string: [
                 [/[^\\"]+/, 'string'],
                 [/@escapes/, 'string.escape'],
                 [/\\./, 'string.escape.invalid'],
-                [/"/, 'string', '@pop']
-            ]
-        }
+                [/"/, 'string', '@pop'],
+            ],
+        },
     };
 }
 

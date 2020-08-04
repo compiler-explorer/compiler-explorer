@@ -36,87 +36,87 @@ describe('SymbolStore', function () {
 
     it('should be able to add an item', function () {
         const store = new SymbolStore();
-        store.add("test");
+        store.add('test');
         store.listSymbols().length.should.equal(1);
         store.listTranslations().length.should.equal(1);
 
-        store.listSymbols()[0].should.equal("test");
+        store.listSymbols()[0].should.equal('test');
 
         const translations = store.listTranslations();
-        translations[0][0].should.equal("test");
-        translations[0][1].should.equal("test");
+        translations[0][0].should.equal('test');
+        translations[0][1].should.equal('test');
     });
 
     it('should not contain duplicate items', function () {
         const store = new SymbolStore();
-        store.add("test");
-        store.add("test");
+        store.add('test');
+        store.add('test');
         store.listSymbols().length.should.equal(1);
         store.listTranslations().length.should.equal(1);
 
-        store.listSymbols()[0].should.equal("test");
+        store.listSymbols()[0].should.equal('test');
 
         const translations = store.listTranslations();
-        translations[0][0].should.equal("test");
-        translations[0][1].should.equal("test");
+        translations[0][0].should.equal('test');
+        translations[0][1].should.equal('test');
     });
 
     it('should return a sorted list', function () {
         const store = new SymbolStore();
-        store.add("test123");
-        store.add("test123456");
+        store.add('test123');
+        store.add('test123456');
         store.listSymbols().length.should.equal(2);
         store.listTranslations().length.should.equal(2);
 
         const translations = store.listTranslations();
-        translations[0][0].should.equal("test123456");
-        translations[1][0].should.equal("test123");
+        translations[0][0].should.equal('test123456');
+        translations[1][0].should.equal('test123');
     });
 
     it('should be able to add an array of items', function () {
         const store = new SymbolStore();
-        store.addMany(["test123", "test123456", "test123"]);
+        store.addMany(['test123', 'test123456', 'test123']);
         store.listSymbols().length.should.equal(2);
         store.listTranslations().length.should.equal(2);
 
         const translations = store.listTranslations();
-        translations[0][0].should.equal("test123456");
-        translations[1][0].should.equal("test123");
+        translations[0][0].should.equal('test123456');
+        translations[1][0].should.equal('test123');
     });
 
     it('should be possible to exclude items in another store', function () {
         const store1 = new SymbolStore();
-        store1.addMany(["test123", "test123456", "test123"]);
+        store1.addMany(['test123', 'test123456', 'test123']);
 
         const store2 = new SymbolStore();
-        store2.addMany(["test123"]);
+        store2.addMany(['test123']);
 
         store1.exclude(store2);
         var translations = store1.listTranslations();
         translations.length.should.equal(1);
-        translations[0][0].should.equal("test123456");
+        translations[0][0].should.equal('test123456');
     });
 
     it('should be possible to exclude items that partially match', function () {
         const store1 = new SymbolStore();
-        store1.addMany(["test123", "test123456", "test123"]);
+        store1.addMany(['test123', 'test123456', 'test123']);
 
         const store2 = new SymbolStore();
-        store2.addMany(["est123"]);
+        store2.addMany(['est123']);
 
         store1.softExclude(store2);
         var translations = store1.listTranslations();
         translations.length.should.equal(1);
-        translations[0][0].should.equal("test123456");
+        translations[0][0].should.equal('test123456');
     });
     
     it('should be able to check contents', function () {
         const store = new SymbolStore();
-        store.addMany(["test123", "test123456", "test123"]);
+        store.addMany(['test123', 'test123456', 'test123']);
 
-        store.contains("test123").should.equal(true);
-        store.contains("test123456").should.equal(true);
-        store.contains("test456").should.equal(false);
+        store.contains('test123').should.equal(true);
+        store.contains('test123456').should.equal(true);
+        store.contains('test456').should.equal(false);
 
         store.listSymbols().length.should.equal(2);
     });

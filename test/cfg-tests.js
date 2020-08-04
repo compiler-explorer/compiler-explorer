@@ -50,10 +50,10 @@ describe('Cfg test cases', () => {
 
 
     it('works for gcc', () => {
-        common(cases, "gcc", "g++");
+        common(cases, 'gcc', 'g++');
     });
 
     it('works for clang', () => {
-        common(cases, "clang", "clang");
+        common(cases, 'clang', 'clang');
     });
 });

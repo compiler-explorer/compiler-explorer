@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-"use strict";
+'use strict';
 var $ = require('jquery');
 var _ = require('underscore');
 var colour = require('./colour');
@@ -55,7 +55,7 @@ Checkbox.prototype.putUi = function (elem, value) {
 function Select(elem, populate) {
     elem.empty();
     _.each(populate, function (e) {
-        elem.append($('<option value="' + e.label + '">' + e.desc + "</option>"));
+        elem.append($('<option value="' + e.label + '">' + e.desc + '</option>'));
     });
 }
 
@@ -157,8 +157,8 @@ function setupSettings(root, settings, onChange, subLangId) {
         step: 250,
         min: 250,
         formatter: function (x) {
-            return (x / 1000.0).toFixed(2) + "s";
-        }
+            return (x / 1000.0).toFixed(2) + 's';
+        },
     });
     add(root.find('.enableCommunityAds'), 'enableCommunityAds', true, Checkbox);
     add(root.find('.hoverShowSource'), 'hoverShowSource', true, Checkbox);
@@ -192,7 +192,7 @@ function setupSettings(root, settings, onChange, subLangId) {
             if (!scheme.themes || scheme.themes.length === 0 || scheme.themes.indexOf(newTheme) !== -1 ||
                 scheme.themes.indexOf('all') !== -1) {
 
-                colourSchemeSelect.append($('<option value="' + scheme.name + '">' + scheme.desc + "</option>"));
+                colourSchemeSelect.append($('<option value="' + scheme.name + '">' + scheme.desc + '</option>'));
                 if (newThemeStoredScheme === scheme.name) {
                     isStoredUsable = true;
                 }
@@ -203,7 +203,7 @@ function setupSettings(root, settings, onChange, subLangId) {
         } else {
             // This should never happen. In case it does, lets use the default one
             colourSchemeSelect.append(
-                $('<option value="' + colour.schemes[0].name + '">' + colour.schemes[0].desc + "</option>"));
+                $('<option value="' + colour.schemes[0].name + '">' + colour.schemes[0].desc + '</option>'));
             colourSchemeSelect.val(colourSchemeSelect.first().val());
         }
         colourSchemeSelect.trigger('change');
@@ -227,7 +227,7 @@ function setupSettings(root, settings, onChange, subLangId) {
 
     add(root.find('.newEditorLastLang'), 'newEditorLastLang', true, Checkbox);
 
-    var formats = ["Google", "LLVM", "Mozilla", "Chromium", "WebKit"];
+    var formats = ['Google', 'LLVM', 'Mozilla', 'Chromium', 'WebKit'];
     add(root.find('.formatBase'), 'formatBase', formats[0], Select,
         _.map(formats, function (format) {
             return {label: format, desc: format};

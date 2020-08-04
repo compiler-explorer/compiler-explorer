@@ -21,7 +21,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-"use strict";
+'use strict';
 var monaco = require('monaco-editor');
 
 function definition() {
@@ -29,15 +29,15 @@ function definition() {
         keywords: [
             'module', 'import', 'Start', 'where', 'otherwise',
             'definition', 'implementation', 'from', 'class', 'instance', 'abort',
-            'infix', 'infixl', 'infixr', 'if', 'True', 'False'
+            'infix', 'infixl', 'infixr', 'if', 'True', 'False',
         ],
 
         builtintypes: [
-            'Int', 'Real', 'String', 'Char', 'Complex', 'Bool'
+            'Int', 'Real', 'String', 'Char', 'Complex', 'Bool',
         ],
 
         operators: [
-            '=', '==', '>=', '<=', '+', '-', '*', '/', '::', ':==', '->', '=:', '=>', '|', '\\\\'
+            '=', '==', '>=', '<=', '+', '-', '*', '/', '::', ':==', '->', '=:', '=>', '|', '\\\\',
         ],
 
         numbers: /-?[0-9.]/,
@@ -58,29 +58,29 @@ function definition() {
                     cases: {
                         '@builtintypes': 'type',
                         '@keywords': 'keyword',
-                        '@default': ''
-                    }
+                        '@default': '',
+                    },
                 }],
 
                 [/[()[\],:]/, 'delimiter'],
 
                 [/@numbers/, 'number'],
 
-                [/(")(.*)(")/, ['string', 'string', 'string']]
+                [/(")(.*)(")/, ['string', 'string', 'string']],
             ],
 
             comment: [
                 [/[^/*]+/, 'comment'],
                 [/\*\//, 'comment', '@pop'],
-                [/[/*]/, 'comment']
+                [/[/*]/, 'comment'],
             ],
 
             whitespace: [
                 [/[ \t\r\n]+/, 'white'],
                 [/\/\*/, 'comment', '@comment'],
-                [/\/\/.*$/, 'comment']
-            ]
-        }
+                [/\/\/.*$/, 'comment'],
+            ],
+        },
     };
 }
 

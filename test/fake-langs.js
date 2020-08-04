@@ -27,6 +27,6 @@ module.exports = {
         id: 'fake-lang',
         name: 'Fake Lang',
         extensions: ['.fake'],
-        alias: ['testing']
-    }
+        alias: ['testing'],
+    },
 };

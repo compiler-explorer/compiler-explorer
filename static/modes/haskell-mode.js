@@ -21,22 +21,22 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-"use strict";
+'use strict';
 var monaco = require('monaco-editor');
 
 function definition() {
     return {
         keywords: [
             'module', 'import', 'main', 'where', 'otherwise', 'newtype',
-            'definition', 'implementation', 'from', 'class', 'instance', 'abort'
+            'definition', 'implementation', 'from', 'class', 'instance', 'abort',
         ],
 
         builtintypes: [
-            'Int', 'Real', 'String'
+            'Int', 'Real', 'String',
         ],
 
         operators: [
-            '=', '==', '>=', '<=', '+', '-', '*', '/', '::', '->', '=:', '=>', '|', '$'
+            '=', '==', '>=', '<=', '+', '-', '*', '/', '::', '->', '=:', '=>', '|', '$',
         ],
 
         numbers: /-?[0-9.]/,
@@ -57,30 +57,30 @@ function definition() {
                     cases: {
                         '@builtintypes': 'type',
                         '@keywords': 'keyword',
-                        '@default': ''
-                    }
+                        '@default': '',
+                    },
                 }],
 
                 [/[()[\],:]/, 'delimiter'],
 
                 [/@numbers/, 'number'],
 
-                [/(")(.*)(")/, ['string', 'string', 'string']]
+                [/(")(.*)(")/, ['string', 'string', 'string']],
             ],
 
             comment: [
                 [/[^/*]+/, 'comment'],
                 [/\*\//, 'comment', '@pop'],
-                [/[/*]/, 'comment']
+                [/[/*]/, 'comment'],
             ],
 
             whitespace: [
                 [/[ \t\r\n]+/, 'white'],
                 [/\/\*/, 'comment', '@comment'],
                 [/\/\/.*$/, 'comment'],
-                [/--.*$/, 'comment']
-            ]
-        }
+                [/--.*$/, 'comment'],
+            ],
+        },
     };
 }
 

@@ -34,17 +34,17 @@ describe('Hash tests', () => {
         for (let i = 0; i < 256; ++i) {
             const buf = Buffer.of(i);
             const as64 = StorageBase.encodeBuffer(buf);
-            as64.should.not.contain("/");
-            as64.should.not.contain("+");
+            as64.should.not.contain('/');
+            as64.should.not.contain('+');
         }
     });
     const badResult = 'R0Buttabcdefghio1327698asdhjkJJklQp'.toLowerCase(); // Butt hash, see https://github.com/compiler-explorer/compiler-explorer/issues/1297
     it('should detect profanities in hashes', () => {
-        StorageBase.isCleanText("I am the very model of a major general").should.be.true;
+        StorageBase.isCleanText('I am the very model of a major general').should.be.true;
         StorageBase.isCleanText(badResult).should.be.false;
     });
     it('should avoid profanities and illegible characters in hashes', () => {
-        const testCase = {some: "test"};
+        const testCase = {some: 'test'};
         const goodResult = 'uy3AkJTC9PRg8LfxqcxuUgKrCb-OatsRW7FAAVi3-4M'; // L in 13th place: OK
         const callback = sinon.stub()
             .onFirstCall().returns(badResult)
@@ -60,8 +60,8 @@ describe('Hash tests', () => {
     });
 
     it('should not modify ok hashes', () => {
-        const testCase = {some: "test"};
-        const {config, configHash} = StorageBase.getSafeHash(testCase);
+        const testCase = {some: 'test'};
+        const {config} = StorageBase.getSafeHash(testCase);
         const asObj = JSON.parse(config);
         should.not.exist(asObj.nonce);
     });

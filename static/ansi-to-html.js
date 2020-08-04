@@ -33,7 +33,7 @@ var defaults = {
     newline: false,
     escapeXML: false,
     stream: false,
-    colors: getDefaultColors()
+    colors: getDefaultColors(),
 };
 
 function getDefaultColors() {
@@ -53,7 +53,7 @@ function getDefaultColors() {
         12: '#55F',
         13: '#F5F',
         14: '#5FF',
-        15: '#FFF'
+        15: '#FFF',
     };
 
     range(0, 5).forEach(function (red) {
@@ -91,6 +91,7 @@ function setStyleColor(red, green, blue, colors) {
 
 /**
  * Converts from a number like 15 to a hex string like 'F'
+ *
  * @param {number} num
  * @returns {string}
  */
@@ -106,7 +107,8 @@ function toHexString(num) {
 
 /**
  * Converts from an array of numbers like [15, 15, 15] to a hex string like 'FFF'
- * @param {[red, green, blue]} ref
+ *
+ * @param {number[]} ref
  * @returns {string}
  */
 function toColorHexString(ref) {
@@ -188,7 +190,7 @@ function handleDisplay(stack, code, options) {
         },
         49: function _() {
             return pushBackgroundColor(stack, options.bg);
-        }
+        },
     };
 
     if (codeMap[code]) {
@@ -210,6 +212,7 @@ function handleDisplay(stack, code, options) {
 
 /**
  * Clear all the styles
+ *
  * @returns {string}
  */
 function resetStyles(stack) {
@@ -224,6 +227,7 @@ function resetStyles(stack) {
 
 /**
  * Creates an array of numbers ranging from low to high
+ *
  * @param {number} low
  * @param {number} high
  * @returns {Array}
@@ -241,8 +245,9 @@ function range(low, high) {
 
 /**
  * Returns a new function that is true if value is NOT the same category
+ *
  * @param {string} category
- * @returns {function}
+ * @returns {Function}
  */
 function notCategory(category) {
     return function (e) {
@@ -252,6 +257,7 @@ function notCategory(category) {
 
 /**
  * Converts a code into an ansi token type
+ *
  * @param {number} code
  * @returns {string}
  */
@@ -346,7 +352,7 @@ function closeTag(stack, style) {
 /**
  * @param {string} text
  * @param {object} options
- * @param {function} callback
+ * @param {Function} callback
  * @returns {Array}
  */
 function tokenize(text, options, callback) {
@@ -378,7 +384,7 @@ function tokenize(text, options, callback) {
             g1 = '0';
         }
 
-        g1 = g1.replace(/;+$/, "").split(';');
+        g1 = g1.replace(/;+$/, '').split(';');
 
         for (var o = 0, len = g1.length; o < len; o++) {
             callback('display', g1[o]);
@@ -396,25 +402,25 @@ function tokenize(text, options, callback) {
     /* eslint no-control-regex:0 */
     var tokens = [{
         pattern: /^\x08+/,
-        sub: remove
+        sub: remove,
     }, {
         pattern: /^\x1b\[[012]?K/,
-        sub: remove
+        sub: remove,
     }, {
         pattern: /^\x1b\[38;5;(\d+)m/,
-        sub: removeXterm256
+        sub: removeXterm256,
     }, {
         pattern: /^\n/,
-        sub: newline
+        sub: newline,
     }, {
         pattern: /^\x1b\[((?:\d{1,3};?)+|)m/,
-        sub: ansiMess
+        sub: ansiMess,
     }, {
         pattern: /^\x1b\[?[\d;]{0,3}/,
-        sub: remove
+        sub: remove,
     }, {
         pattern: /^([^\x1b\x08\n]+)/,
-        sub: realText
+        sub: realText,
     }];
 
     function process(handler, i) {
@@ -518,7 +524,7 @@ Filter.prototype = {
         }
 
         return buf.join('');
-    }
+    },
 };
 
 module.exports = Filter;

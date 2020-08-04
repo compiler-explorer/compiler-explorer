@@ -24,9 +24,10 @@
 
 const
     path = require('path'),
-    should = require('chai').should(),
+    chai = require('chai'),
     CompilerDropinTool = require('../lib/tooling/compiler-dropin-tool');
 
+chai.should();
 
 describe('CompilerDropInTool', () => {
     it('Should support llvm based compilers', () => {
@@ -34,21 +35,21 @@ describe('CompilerDropInTool', () => {
 
         const compilationInfo = {
             compiler: {
-                exe: "/opt/compiler-explorer/clang-8.0.0/bin/clang++",
-                options: "--gcc-toolchain=/opt/compiler-explorer/gcc-7.2.0"
+                exe: '/opt/compiler-explorer/clang-8.0.0/bin/clang++',
+                options: '--gcc-toolchain=/opt/compiler-explorer/gcc-7.2.0',
             },
-            options: []
+            options: [],
         };
         const includeflags = [];
         const args = [];
-        const sourcefile = "example.cpp";
+        const sourcefile = 'example.cpp';
 
         const orderedArgs = tool.getOrderedArguments(compilationInfo, includeflags, args, sourcefile);
         orderedArgs.should.deep.equal(
             [
-                "--gcc-toolchain=/opt/compiler-explorer/gcc-7.2.0",
-                "--gcc-toolchain=/opt/compiler-explorer/gcc-7.2.0"
-            ]
+                '--gcc-toolchain=/opt/compiler-explorer/gcc-7.2.0',
+                '--gcc-toolchain=/opt/compiler-explorer/gcc-7.2.0',
+            ],
         );
     });
 
@@ -57,21 +58,21 @@ describe('CompilerDropInTool', () => {
 
         const compilationInfo = {
             compiler: {
-                exe: "/opt/compiler-explorer/gcc-8.0/bin/g++",
-                options: ""
+                exe: '/opt/compiler-explorer/gcc-8.0/bin/g++',
+                options: '',
             },
-            options: []
+            options: [],
         };
         const includeflags = [];
         const args = [];
-        const sourcefile = "example.cpp";
+        const sourcefile = 'example.cpp';
 
         const orderedArgs = tool.getOrderedArguments(compilationInfo, includeflags, args, sourcefile);
         orderedArgs.should.deep.equal(
             [
-                "--gcc-toolchain=" + path.resolve("/opt/compiler-explorer/gcc-8.0"),
-                "--gcc-toolchain=" + path.resolve("/opt/compiler-explorer/gcc-8.0")
-            ]
+                '--gcc-toolchain=' + path.resolve('/opt/compiler-explorer/gcc-8.0'),
+                '--gcc-toolchain=' + path.resolve('/opt/compiler-explorer/gcc-8.0'),
+            ],
         );
     });
 
@@ -80,14 +81,14 @@ describe('CompilerDropInTool', () => {
 
         const compilationInfo = {
             compiler: {
-                exe: "/opt/compiler-explorer/riscv64/gcc-8.2.0/riscv64-unknown-linux-gnu/bin/riscv64-unknown-linux-gnu-g++",
-                options: ""
+                exe: '/opt/compiler-explorer/riscv64/gcc-8.2.0/riscv64-unknown-linux-gnu/bin/riscv64-unknown-linux-gnu-g++',
+                options: '',
             },
-            options: []
+            options: [],
         };
         const includeflags = [];
         const args = [];
-        const sourcefile = "example.cpp";
+        const sourcefile = 'example.cpp';
 
         const orderedArgs = tool.getOrderedArguments(compilationInfo, includeflags, args, sourcefile);
         orderedArgs.should.deep.equal(false);
@@ -98,21 +99,21 @@ describe('CompilerDropInTool', () => {
 
         const compilationInfo = {
             compiler: {
-                exe: "/opt/compiler-explorer/intel-2019.1/bin/icc",
-                options: "--gxx-name=/opt/compiler-explorer/gcc-8.2.0/bin/g++"
+                exe: '/opt/compiler-explorer/intel-2019.1/bin/icc',
+                options: '--gxx-name=/opt/compiler-explorer/gcc-8.2.0/bin/g++',
             },
-            options: []
+            options: [],
         };
         const includeflags = [];
         const args = [];
-        const sourcefile = "example.cpp";
+        const sourcefile = 'example.cpp';
 
         const orderedArgs = tool.getOrderedArguments(compilationInfo, includeflags, args, sourcefile);
         orderedArgs.should.deep.equal(
             [
-                "--gcc-toolchain=" + path.resolve("/opt/compiler-explorer/gcc-8.2.0"),
-                "--gcc-toolchain=" + path.resolve("/opt/compiler-explorer/gcc-8.2.0")
-            ]
+                '--gcc-toolchain=' + path.resolve('/opt/compiler-explorer/gcc-8.2.0'),
+                '--gcc-toolchain=' + path.resolve('/opt/compiler-explorer/gcc-8.2.0'),
+            ],
         );
     });
 
@@ -121,19 +122,19 @@ describe('CompilerDropInTool', () => {
 
         const compilationInfo = {
             compiler: {
-                exe: "/opt/compiler-explorer/windows/19.14.26423/bin/cl.exe",
+                exe: '/opt/compiler-explorer/windows/19.14.26423/bin/cl.exe',
                 options: 
-                    "/I/opt/compiler-explorer/windows/10.0.10240.0/ucrt/ " +
-                    "/I/opt/compiler-explorer/windows/19.14.26423/include/",
+                    '/I/opt/compiler-explorer/windows/10.0.10240.0/ucrt/ ' +
+                    '/I/opt/compiler-explorer/windows/19.14.26423/include/',
                 internalIncludePaths: [
-                    "/opt/compiler-explorer/windows/19.14.26423/include"
-                ]
+                    '/opt/compiler-explorer/windows/19.14.26423/include',
+                ],
             },
-            options: []
+            options: [],
         };
         const includeflags = [];
-        const args = ["/MD", "/STD:c++latest", "/Ox"];
-        const sourcefile = "example.cpp";
+        const args = ['/MD', '/STD:c++latest', '/Ox'];
+        const sourcefile = 'example.cpp';
 
         const orderedArgs = tool.getOrderedArguments(compilationInfo, includeflags, args, sourcefile);
         orderedArgs.should.deep.equal(false);
@@ -144,17 +145,17 @@ describe('CompilerDropInTool', () => {
 
         const compilationInfo = {
             compiler: {
-                exe: "/opt/compiler-explorer/clang-concepts-trunk/bin/clang++",
-                options: "-stdlib=libc++",
+                exe: '/opt/compiler-explorer/clang-concepts-trunk/bin/clang++',
+                options: '-stdlib=libc++',
                 internalIncludePaths: [
-                    "/opt/compiler-explorer/clang-concepts-trunk/something/etc/include"
-                ]
+                    '/opt/compiler-explorer/clang-concepts-trunk/something/etc/include',
+                ],
             },
-            options: []
+            options: [],
         };
         const includeflags = [];
         const args = [];
-        const sourcefile = "example.cpp";
+        const sourcefile = 'example.cpp';
 
         const orderedArgs = tool.getOrderedArguments(compilationInfo, includeflags, args, sourcefile);
         orderedArgs.should.deep.equal(false);
