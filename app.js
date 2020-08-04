@@ -471,6 +471,7 @@ async function main() {
 
     webServer
         .set('trust proxy', true)
+        .set('views', './noscriptviews')
         .set('view engine', 'pug')
         .on('error', err => logger.error('Caught error in web handler; continuing:', err))
         // sentry request handler must be the first middleware on the app
@@ -673,6 +674,11 @@ async function main() {
             }, req.query));
         })
         .use(bodyParser.json({limit: ceProps('bodyParserLimit', maxUploadSize)}))
+        .use(express.urlencoded({
+            type: 'application/x-www-form-urlencoded',
+            limit: ceProps('bodyParserLimit', maxUploadSize),
+            extended: false
+        }))
         .use(bodyParser.text({limit: ceProps('bodyParserLimit', maxUploadSize), type: () => true}))
         .use('/source', sourceHandler.handle.bind(sourceHandler))
         .use('/g', oldGoogleUrlHandler)

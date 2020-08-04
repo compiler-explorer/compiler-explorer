@@ -1,0 +1,13 @@
+doctype html
+html(lang="en")
+  head
+    base(href=httpRoot)
+    title Error #{error.code}
+  body(style="background-color:#f2f2f2;display:flex;align-items: center;justify-content: center;")
+    div(style="")
+      a(href=httpRoot title="Go to main site")
+        svg.normal(height="50" width="165")
+          include resources/site-logo.svg
+      p Whoops, #{error.message}
+      hr
+      a(href=httpRoot) Main site
