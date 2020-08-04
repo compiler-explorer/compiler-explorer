@@ -1,11 +1,12 @@
 {
   "root": true,
   "plugins": [
-    "requirejs",
+    "jsdoc",
     "node",
-    "unicorn",
+    "promise",
+    "requirejs",
     "sonarjs",
-    "promise"
+    "unicorn"
   ],
   "extends": [
     "eslint:recommended",

@@ -2,9 +2,10 @@
   "root": true,
   "plugins": [
     "jsdoc",
+    "promise",
     "requirejs",
     "sonarjs",
-    "promise"
+    "unicorn"
   ],
   "extends": [
     "eslint:recommended",
@@ -59,7 +60,8 @@
     "sonarjs/no-unused-collection": "error",
     "sonarjs/prefer-immediate-return": "error",
     "sonarjs/prefer-object-literal": "error",
-    "sonarjs/prefer-single-boolean-return": "error"
+    "sonarjs/prefer-single-boolean-return": "error",
+    "unicorn/filename-case": "error"
   },
   "parserOptions": {
     "ecmaVersion": 5
