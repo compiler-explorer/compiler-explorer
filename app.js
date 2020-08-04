@@ -678,7 +678,7 @@ async function main() {
         .use(express.urlencoded({
             type: 'application/x-www-form-urlencoded',
             limit: ceProps('bodyParserLimit', maxUploadSize),
-            extended: false
+            extended: false,
         }))
         .use(bodyParser.text({limit: ceProps('bodyParserLimit', maxUploadSize), type: () => true}))
         .use('/source', sourceHandler.handle.bind(sourceHandler))
