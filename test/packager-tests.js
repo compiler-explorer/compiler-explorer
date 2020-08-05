@@ -21,7 +21,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-"use strict";
+'use strict';
 
 const
     chai = require('chai'),
@@ -46,16 +46,16 @@ function newTempDir() {
 }
 
 function writeTestFile(filepath) {
-    return fs.writeFile(filepath, "#!/bin/sh\n\necho Hello, world!\n\n");
+    return fs.writeFile(filepath, '#!/bin/sh\n\necho Hello, world!\n\n');
 }
 
 describe('Packager', function () {
     it('should be able to package 1 file', function () {
         const pack = new Packager();
         return newTempDir().then((dirPath) => {
-            const executablePath = path.join(dirPath, "hello.txt");
+            const executablePath = path.join(dirPath, 'hello.txt');
             writeTestFile(executablePath).then(() => {
-                const targzPath = path.join(dirPath, "package.tgz");
+                const targzPath = path.join(dirPath, 'package.tgz');
 
                 return pack.package(dirPath, targzPath).then(() => {
                     return fs.existsSync(targzPath).should.equal(true);
@@ -69,16 +69,16 @@ describe('Packager', function () {
     it('should be able to unpack', function () {
         const pack = new Packager();
         return newTempDir().then((dirPath) => {
-            const executablePath = path.join(dirPath, "hello.txt");
+            const executablePath = path.join(dirPath, 'hello.txt');
             return writeTestFile(executablePath).then(() => {
-                const targzPath = path.join(dirPath, "package.tgz");
+                const targzPath = path.join(dirPath, 'package.tgz');
 
                 return pack.package(dirPath, targzPath).then(() => {
                     return newTempDir().then((unpackPath) => {
 
                         const pack2 = new Packager();
                         return pack2.unpack(targzPath, unpackPath).then(() => {
-                            const unpackedFilepath = path.join(unpackPath, "hello.txt");
+                            const unpackedFilepath = path.join(unpackPath, 'hello.txt');
                             return fs.existsSync(unpackedFilepath).should.equal(true);
                         });
                     });

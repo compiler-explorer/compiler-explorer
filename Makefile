@@ -30,7 +30,7 @@ info: node-installed ## print out some useful variables
 	@echo PATH is $(PATH)
 
 .PHONY: clean run test run-amazon
-.PHONY: dist lint ci-lint prereqs node_modules travis-dist check pre-commit
+.PHONY: dist lint lint-fix ci-lint prereqs node_modules travis-dist check pre-commit
 prereqs: node_modules
 
 NODE_MODULES=.npm-updated
@@ -44,8 +44,12 @@ webpack: $(NODE_MODULES)  ## Runs webpack (useful only for debugging webpack)
 	rm -rf out/dist/static out/dist/manifest.json
 	$(WEBPACK) $(WEBPACK_ARGS)
 
-lint: $(NODE_MODULES)  ## Ensures everything matches code conventions (fixing trivial things automatically)
+lint: $(NODE_MODULES)  ## Checks if the source currently matches code conventions
 	$(NPM) run lint
+
+lint-fix: $(NODE_MODULES)  ## Checks if everything matches code conventions & fixes those which are trivial to do so
+	$(NPM) run lint-fix
+
 ci-lint: $(NODE_MODULES)
 	$(NPM) run ci-lint
 
@@ -91,6 +95,7 @@ travis-dist: dist  ## Creates a distribution as if we were running on travis
 	tar -Jcf out/dist-bin/$(TRAVIS_BUILD_NUMBER).tar.xz -T travis-dist-files.txt
 	tar -Jcf out/dist-bin/$(TRAVIS_BUILD_NUMBER).static.tar.xz --transform="s,^out/dist/static/,," out/dist/static/*
 	echo $(HASH) > out/dist-bin/$(TRAVIS_BUILD_NUMBER).txt
+	du -ch out/**/*
 	# Create and set commits for a sentry release if and only if we have the secure token set
 	# External GitHub PRs etc won't have the variable set.
 	@[ -z "$(SENTRY_AUTH_TOKEN)" ] || $(SENTRY) releases new -p compiler-explorer $(TRAVIS_BUILD_NUMBER)

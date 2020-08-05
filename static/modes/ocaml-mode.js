@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-"use strict";
+'use strict';
 var monaco = require('monaco-editor');
 
 function definition() {
@@ -104,8 +104,8 @@ function definition() {
                     cases: {
                         '@typeKeywords': 'keyword',
                         '@keywords': 'keyword',
-                        '@default': 'identifier'
-                    }
+                        '@default': 'identifier',
+                    },
                 }],
 
                 { include: '@whitespace' },
@@ -114,7 +114,7 @@ function definition() {
 
                 [/[+\-*/=<>$@]/, 'operators'],
 
-                [/(")(.*)(")/, ['string', 'string', 'string']]
+                [/(")(.*)(")/, ['string', 'string', 'string']],
             ],
 
             comment: [
@@ -126,7 +126,7 @@ function definition() {
                 [/[ \t\r\n]+/, 'white'],
                 [/\(\*/, 'comment', '@comment'],
             ],
-        }
+        },
     };
 }
 

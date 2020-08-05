@@ -42,8 +42,8 @@ function Cfg(hub, container, state) {
         nodes: [{
             id: 0,
             shape: 'box',
-            label: 'Cfg mode cannot be used when the binary filter is set'
-        }], edges: []
+            label: 'Cfg mode cannot be used when the binary filter is set',
+        }], edges: [],
     };
     // Note that this might be outdated if no functions were present when creating the link, but that's handled
     // by selectize
@@ -61,36 +61,36 @@ function Cfg(hub, container, state) {
             arrows: {to: {enabled: true}},
             smooth: {
                 enabled: true,
-                type: "dynamic",
-                roundness: 1
+                type: 'dynamic',
+                roundness: 1,
             },
-            physics: true
+            physics: true,
         },
         nodes: {
-            font: {face: 'Consolas, "Liberation Mono", Courier, monospace', align: 'left'}
+            font: {face: 'Consolas, "Liberation Mono", Courier, monospace', align: 'left'},
         },
         layout: {
             hierarchical: {
                 enabled: true,
                 direction: 'UD',
                 nodeSpacing: 100,
-                levelSeparation: 150
-            }
+                levelSeparation: 150,
+            },
         },
         physics: {
             enabled: !!state.options.physics,
             hierarchicalRepulsion: {
-                nodeDistance: 160
-            }
+                nodeDistance: 160,
+            },
         },
         interaction: {
             navigationButtons: !!state.options.navigation,
             keyboard: {
                 enabled: true,
                 speed: {x: 10, y: 10, zoom: 0.03},
-                bindToWindow: false
-            }
-        }
+                bindToWindow: false,
+            },
+        },
     };
 
     this.cfgVisualiser = new vis.Network(this.domRoot.find('.graph-placeholder')[0],
@@ -107,14 +107,14 @@ function Cfg(hub, container, state) {
         valueField: 'name',
         labelField: 'name',
         searchField: ['name'],
-        dropdownParent: 'body'
+        dropdownParent: 'body',
     }).on('change', _.bind(function (e) {
         var selectedFn = this.functions[e.target.value];
         if (selectedFn) {
             this.currentFunc = e.target.value;
             this.showCfgResults({
                 nodes: selectedFn.nodes,
-                edges: selectedFn.edges
+                edges: selectedFn.edges,
             });
             this.cfgVisualiser.selectNodes([selectedFn.nodes[0].id]);
             this.resize();
@@ -133,7 +133,7 @@ function Cfg(hub, container, state) {
     ga.proxy('send', {
         hitType: 'event',
         eventCategory: 'OpenViewPane',
-        eventAction: 'Cfg'
+        eventAction: 'Cfg',
     });
 }
 
@@ -148,7 +148,7 @@ Cfg.prototype.onCompileResult = function (id, compiler, result) {
             }
             this.showCfgResults({
                 nodes: this.functions[this.currentFunc].nodes,
-                edges: this.functions[this.currentFunc].edges
+                edges: this.functions[this.currentFunc].edges,
             });
             this.cfgVisualiser.selectNodes([this.functions[this.currentFunc].nodes[0].id]);
         } else {
@@ -215,14 +215,14 @@ Cfg.prototype.initCallbacks = function () {
         this.networkOpts.physics.enabled = this.togglePhysicsButton.hasClass('active');
         // change only physics.enabled option to preserve current node locations
         this.cfgVisualiser.setOptions({
-            physics: {enabled: this.networkOpts.physics.enabled}
+            physics: {enabled: this.networkOpts.physics.enabled},
         });
     }, this));
 
     this.toggleNavigationButton.on('click', _.bind(function () {
         this.networkOpts.interaction.navigationButtons = this.toggleNavigationButton.hasClass('active');
         this.cfgVisualiser.setOptions({interaction: {
-            navigationButtons: this.networkOpts.interaction.navigationButtons}
+            navigationButtons: this.networkOpts.interaction.navigationButtons},
         });
     }, this));
     this.toggles.on('change', _.bind(function () {
@@ -265,7 +265,7 @@ Cfg.prototype.assignLevels = function (data) {
             id: node.id,
             level: 0,
             state: 0,
-            inCount: 0
+            inCount: 0,
         });
     }
     var isEdgeValid = function (edge) {
@@ -337,7 +337,7 @@ Cfg.prototype.showCfgResults = function (data) {
         this.cfgVisualiser.moveTo({
             position: this.savedPos,
             animation: false,
-            scale: this.savedScale
+            scale: this.savedScale,
         });
         this.needsMove = false;
     }
@@ -375,10 +375,10 @@ Cfg.prototype.currentState = function () {
         selectedFn: this.currentFunc,
         pos: this.cfgVisualiser.getViewPosition(),
         scale: this.cfgVisualiser.getScale(),
-        options: this.getEffectiveOptions()
+        options: this.getEffectiveOptions(),
     };
 };
 
 module.exports = {
-    Cfg: Cfg
+    Cfg: Cfg,
 };

@@ -23,11 +23,11 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 const LLVMmcaTool = require('../lib/compilers/llvm-mca');
-const {makeCompilationEnvironment} = require('./utils.js');
+const {makeCompilationEnvironment} = require('./utils');
 require('chai').should();
 
 const languages = {
-    analysis: {id: 'analysis'}
+    analysis: {id: 'analysis'},
 };
 
 describe('LLVM-mca tool definition', () => {
@@ -38,7 +38,7 @@ describe('LLVM-mca tool definition', () => {
         const info = {
             exe: null,
             remote: true,
-            lang: languages.analysis.id
+            lang: languages.analysis.id,
         };
         a = new LLVMmcaTool(info, ce);
     });
@@ -69,8 +69,8 @@ describe('LLVM-mca tool definition', () => {
         const info = {
             exe: null,
             remote: true,
-            lang: "analysis",
-            disabledFilters: 'labels,directives'
+            lang: 'analysis',
+            disabledFilters: 'labels,directives',
         };
         const a = new LLVMmcaTool(info, ce);
         a.compiler.disabledFilters.should.be.deep.equal(['labels', 'directives']);

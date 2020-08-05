@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-"use strict";
+'use strict';
 
 var _ = require('underscore');
 var $ = require('jquery');
@@ -36,7 +36,7 @@ function makeAnsiToHtml(color) {
         fg: color ? color : '#333',
         bg: '#f5f5f5',
         stream: true,
-        escapeXML: true
+        escapeXML: true,
     });
 }
 
@@ -49,8 +49,8 @@ function Output(hub, container, state) {
     this.domRoot.html($('#compiler-output').html());
     this.contentRoot = this.domRoot.find('.content');
     this.optionsToolbar = this.domRoot.find('.options-toolbar');
-    this.compilerName = "";
-    this.fontScale = new FontScale(this.domRoot, state, ".content");
+    this.compilerName = '';
+    this.fontScale = new FontScale(this.domRoot, state, '.content');
     this.fontScale.on('change', _.bind(function () {
         this.saveState();
     }, this));
@@ -65,7 +65,7 @@ function Output(hub, container, state) {
     ga.proxy('send', {
         hitType: 'event',
         eventCategory: 'OpenViewPane',
-        eventAction: 'Output'
+        eventAction: 'Output',
     });
 }
 
@@ -109,7 +109,7 @@ Output.prototype.currentState = function () {
     var state = {
         compiler: this.compilerId,
         editor: this.editorId,
-        wrap: options.wrap
+        wrap: options.wrap,
     };
     this.fontScale.addState(state);
     return state;
@@ -123,7 +123,7 @@ Output.prototype.addOutputLines = function (result) {
     _.each((result.stdout || []).concat(result.stderr || []), function (obj) {
         var lineNumber = obj.tag ? obj.tag.line : obj.line;
         var columnNumber = obj.tag ? obj.tag.column : -1;
-        if (obj.text === "") {
+        if (obj.text === '') {
             this.add('<br/>');
         } else {
             this.add(this.normalAnsiToHtml.toHtml(obj.text), lineNumber, columnNumber);
@@ -145,27 +145,27 @@ Output.prototype.onCompileResult = function (id, compiler, result) {
 
     this.addOutputLines(result);
     if (!result.execResult) {
-        this.add("Compiler returned: " + result.code);
+        this.add('Compiler returned: ' + result.code);
     } else {
-        this.add("ASM generation compiler returned: " + result.code);
+        this.add('ASM generation compiler returned: ' + result.code);
         this.addOutputLines(result.execResult.buildResult);
-        this.add("Execution build compiler returned: " + result.execResult.buildResult.code);
+        this.add('Execution build compiler returned: ' + result.execResult.buildResult.code);
     }
     if (result.execResult && result.execResult.didExecute) {
-        this.add("Program returned: " + result.execResult.code);
+        this.add('Program returned: ' + result.execResult.code);
         if (result.execResult.stderr.length || result.execResult.stdout.length) {
             _.each(result.execResult.stderr, function (obj) {
                 // Conserve empty lines as they are discarded by ansiToHtml
-                if (obj.text === "") {
+                if (obj.text === '') {
                     this.programOutput('<br/>');
                 } else {
-                    this.programOutput(this.errorAnsiToHtml.toHtml(obj.text), "red");
+                    this.programOutput(this.errorAnsiToHtml.toHtml(obj.text), 'red');
                 }
             }, this);
 
             _.each(result.execResult.stdout, function (obj) {
                 // Conserve empty lines as they are discarded by ansiToHtml
-                if (obj.text === "") {
+                if (obj.text === '') {
                     this.programOutput('<br/>');
                 } else {
                     this.programOutput(this.normalAnsiToHtml.toHtml(obj.text));
@@ -183,7 +183,7 @@ Output.prototype.programOutput = function (msg, color) {
         .addClass('program-exec-output');
 
     if (color)
-        elem.css("color", color);
+        elem.css('color', color);
 };
 
 Output.prototype.add = function (msg, lineNum, column) {
@@ -209,8 +209,8 @@ Output.prototype.add = function (msg, lineNum, column) {
 };
 
 Output.prototype.updateCompilerName = function () {
-    var name = "#" + this.compilerId;
-    if (this.compilerName) name += " with " + this.compilerName;
+    var name = '#' + this.compilerId;
+    if (this.compilerName) name += ' with ' + this.compilerName;
     this.container.setTitle(name);
 };
 
@@ -235,5 +235,5 @@ Output.prototype.setCompileStatus = function (isCompiling) {
 };
 
 module.exports = {
-    Output: Output
+    Output: Output,
 };

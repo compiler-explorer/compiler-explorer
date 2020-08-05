@@ -31,40 +31,40 @@ const languages = {
         id: 'c++',
         name: 'C++',
         monaco: 'cppp',
-        extensions: ['.cpp', '.cxx', '.h', '.hpp', '.hxx', '.c']
+        extensions: ['.cpp', '.cxx', '.h', '.hpp', '.hxx', '.c'],
     },
     haskell: {
         id: 'haskell',
         name: 'Haskell',
         monaco: 'haskell',
-        extensions: ['.hs', '.haskell']
+        extensions: ['.hs', '.haskell'],
     },
     pascal: {
         id: 'pascal',
         name: 'Pascal',
         monaco: 'pascal',
-        extensions: ['.pas']
-    }
+        extensions: ['.pas'],
+    },
 };
 const compilers = [
     {
-        id: "gcc900",
-        name: "GCC 9.0.0",
-        lang: "c++"
+        id: 'gcc900',
+        name: 'GCC 9.0.0',
+        lang: 'c++',
     },
     {
-        id: "fpc302",
-        name: "FPC 3.0.2",
-        lang: "pascal"
+        id: 'fpc302',
+        name: 'FPC 3.0.2',
+        lang: 'pascal',
     },
     {
-        id: "clangtrunk",
-        name: "Clang trunk",
-        lang: "c++"
-    }
+        id: 'clangtrunk',
+        name: 'Clang trunk',
+        lang: 'c++',
+    },
 ];
 
-chai.use(require("chai-http"));
+chai.use(require('chai-http'));
 chai.should();
 
 describe('API handling', () => {
@@ -74,24 +74,24 @@ describe('API handling', () => {
         app = express();
         const apiHandler = new ApiHandler({
             handle: res => {
-                res.send("compile");
+                res.send('compile');
             },
             handlePopularArguments: res => {
-                res.send("ok");
+                res.send('ok');
             },
             handleOptimizationArguments: res => {
-                res.send("ok");
-            }
+                res.send('ok');
+            },
         }, (key, def) => {
             switch (key) {
-                case "formatters":
-                    return "formatt:badformatt";
-                case "formatter.formatt.exe":
-                    return "echo";
-                case "formatter.formatt.version":
-                    return "Release";
-                case "formatter.formatt.name":
-                    return "FormatT";
+                case 'formatters':
+                    return 'formatt:badformatt';
+                case 'formatter.formatt.exe':
+                    return 'echo';
+                case 'formatter.formatt.version':
+                    return 'Release';
+                case 'formatter.formatt.name':
+                    return 'FormatT';
                 default:
                     return def;
             }
@@ -107,9 +107,9 @@ describe('API handling', () => {
             .then(res => {
                 res.should.have.status(200);
                 res.should.be.text;
-                res.text.should.contain("Compiler Name");
-                res.text.should.contain("gcc900");
-                res.text.should.contain("GCC 9.0.0");
+                res.text.should.contain('Compiler Name');
+                res.text.should.contain('gcc900');
+                res.text.should.contain('GCC 9.0.0');
             })
             .catch(err => {
                 throw err;
@@ -173,11 +173,11 @@ describe('API handling', () => {
             .then(res => {
                 res.should.have.status(200);
                 res.should.be.text;
-                res.text.should.contain("Name");
-                res.text.should.contain("c++");
-                res.text.should.contain("pascal");
+                res.text.should.contain('Name');
+                res.text.should.contain('c++');
+                res.text.should.contain('pascal');
                 // We should not list languages for which there are no compilers
-                res.text.should.not.contain("Haskell");
+                res.text.should.not.contain('Haskell');
             })
             .catch(err => {
                 throw err;
@@ -197,14 +197,14 @@ describe('API handling', () => {
             });
     });
     it('should list the formatters', () => {
-        if (process.platform !== "win32") { // Expects an executable called echo
+        if (process.platform !== 'win32') { // Expects an executable called echo
             return chai.request(app)
                 .get('/api/formats')
                 .set('Accept', 'application/json')
                 .then(res => {
                     res.should.have.status(200);
                     res.should.be.json;
-                    res.body.should.deep.equals([{name: "FormatT", version: "Release"}]);
+                    res.body.should.deep.equals([{name: 'FormatT', version: 'Release'}]);
                 })
                 .catch(err => {
                     throw err;
@@ -218,7 +218,7 @@ describe('API handling', () => {
             .then(res => {
                 res.should.have.status(422);
                 res.should.be.json;
-                res.body.should.deep.equals({exit: 2, answer: "Tool not supported"});
+                res.body.should.deep.equals({exit: 2, answer: 'Tool not supported'});
             });
     });
     /*

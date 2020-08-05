@@ -28,7 +28,7 @@ const chai = require('chai'),
     express = require('express'),
     mockfs = require('mock-fs');
 
-chai.use(require("chai-http"));
+chai.use(require('chai-http'));
 chai.should();
 
 describe('Health checks', () => {
@@ -69,8 +69,8 @@ describe('Health checks on disk', () => {
 
         mockfs({
             '/fake': {
-                '.health': 'Everything is fine'
-            }
+                '.health': 'Everything is fine',
+            },
         });
     });
 

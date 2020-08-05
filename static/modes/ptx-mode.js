@@ -41,7 +41,7 @@ function definition() {
         [/[ \t\r\n]+/, 'white'],
         [/\/\*/, 'comment', '@comment'],
         [/\/\/.*$/, 'comment'],
-        [/[#;\\].*$/, 'comment']
+        [/[#;\\].*$/, 'comment'],
     ];
 
     // Add predicated instructions to the list of root tokens. Search for an opcode next, which is also a root token.

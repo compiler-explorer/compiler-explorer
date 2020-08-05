@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-"use strict";
+'use strict';
 var monaco = require('monaco-editor');
 
 // This definition is based on the official LLVM vim syntax:
@@ -34,7 +34,7 @@ function definition() {
         types: [
             'void', 'half', 'float', 'double', 'x86_fp80', 'fp128', 'ppc_fp128',
             'label', 'metadata', 'x86_mmx',
-            'type', 'label', 'opaque', 'token'
+            'type', 'label', 'opaque', 'token',
         ],
         // llvmStatement
         statements: [
@@ -50,7 +50,7 @@ function definition() {
             'sext', 'sge', 'sgt', 'shl', 'shufflevector', 'sitofp', 'sle', 'slt', 'srem',
             'store', 'sub', 'switch', 'trunc', 'udiv', 'ueq', 'uge', 'ugt', 'uitofp', 'ule', 'ult',
             'umax', 'umin', 'une', 'uno', 'unreachable', 'unwind', 'urem', 'va_arg',
-            'xchg', 'xor', 'zext'
+            'xchg', 'xor', 'zext',
         ],
         // llvmKeyword
         keywords: [
@@ -74,7 +74,7 @@ function definition() {
             'sspreq', 'sspstrong', 'strictfp', 'swiftcc', 'tail', 'target', 'thread_local',
             'to', 'triple', 'unnamed_addr', 'unordered', 'uselistorder', 'uselistorder_bb',
             'uwtable', 'volatile', 'weak', 'weak_odr', 'within', 'writeonly', 'x86_64_sysvcc',
-            'win64cc', 'x86_fastcallcc', 'x86_stdcallcc', 'x86_thiscallcc', 'zeroext'
+            'win64cc', 'x86_fastcallcc', 'x86_stdcallcc', 'x86_thiscallcc', 'zeroext',
         ],
 
         escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
@@ -121,19 +121,19 @@ function definition() {
                         '@statements': 'operators',
                         '@keywords': 'keyword',
                         '@types': 'type',
-                        '@default': 'identifier'
-                    }
+                        '@default': 'identifier',
+                    },
                 }],
-                [/[ \t\r\n]+/, 'white']
+                [/[ \t\r\n]+/, 'white'],
 
             ],
             string: [
                 [/[^\\"]+/, 'string'],
                 [/@escapes/, 'string.escape'],
                 [/\\./, 'string.escape.invalid'],
-                [/"/, 'string', '@pop']
-            ]
-        }
+                [/"/, 'string', '@pop'],
+            ],
+        },
     };
 }
 

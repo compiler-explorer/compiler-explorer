@@ -22,11 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-const chai = require('chai');
-    should = chai.should(),
-    assert = chai.assert,
-    LabelReconstructor = require('../lib/pe32-support').labelReconstructor,
-    logger = require('../lib/logger').logger;
+const chai = require('chai'),
+    LabelReconstructor = require('../lib/pe32-support').labelReconstructor;
+
+chai.should();
 
 describe('Basic reconstructions', function () {
     it('No lines', function () {

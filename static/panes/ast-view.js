@@ -21,7 +21,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-"use strict";
+'use strict';
 
 var FontScale = require('../fontscale');
 var monaco = require('monaco-editor');
@@ -34,8 +34,8 @@ function Ast(hub, container, state) {
     this.eventHub = hub.createEventHub();
     this.domRoot = container.getElement();
     this.domRoot.html($('#ast').html());
-    this.astEditor = monaco.editor.create(this.domRoot.find(".monaco-placeholder")[0], {
-        value: "",
+    this.astEditor = monaco.editor.create(this.domRoot.find('.monaco-placeholder')[0], {
+        value: '',
         scrollBeyondLastLine: false,
         language: 'plaintext',
         readOnly: true,
@@ -44,9 +44,9 @@ function Ast(hub, container, state) {
         quickSuggestions: false,
         fixedOverflowWidgets: true,
         minimap: {
-            maxColumn: 80
+            maxColumn: 80,
         },
-        lineNumbersMinChars: 3
+        lineNumbersMinChars: 3,
     });
 
     this._compilerid = state.id;
@@ -67,14 +67,14 @@ function Ast(hub, container, state) {
     ga.proxy('send', {
         hitType: 'event',
         eventCategory: 'OpenViewPane',
-        eventAction: 'Ast'
+        eventAction: 'Ast',
     });
 }
 
 Ast.prototype.initButtons = function (state) {
     this.fontScale = new FontScale(this.domRoot, state, this.astEditor);
 
-    this.topBar = this.domRoot.find(".top-bar");
+    this.topBar = this.domRoot.find('.top-bar');
 };
 
 Ast.prototype.initCallbacks = function () {
@@ -104,7 +104,7 @@ Ast.prototype.resize = function () {
     var topBarHeight = this.topBar.outerHeight(true);
     this.astEditor.layout({
         width: this.domRoot.width(),
-        height: this.domRoot.height() - topBarHeight
+        height: this.domRoot.height() - topBarHeight,
     });
 };
 
@@ -115,7 +115,7 @@ Ast.prototype.onCompileResult = function (id, compiler, result, lang) {
         this.showAstResults(result.astOutput);
     }
     else if (compiler.supportsAstView) {
-        this.showAstResults("<No output>");
+        this.showAstResults('<No output>');
     }
 
     if (lang && lang.monaco && this.getCurrentEditorLanguage() !== lang.monaco) {
@@ -130,12 +130,12 @@ Ast.prototype.getCurrentEditorLanguage = function () {
 
 Ast.prototype.setTitle = function () {
     this.container.setTitle(
-        this._compilerName + " Ast Viewer (Editor #" + this._editorid + ", Compiler #" + this._compilerid + ")"
+        this._compilerName + ' Ast Viewer (Editor #' + this._editorid + ', Compiler #' + this._compilerid + ')'
     );
 };
 
 Ast.prototype.getDisplayableAst = function (astResult) {
-    return "**" + astResult.astType + "** - " + astResult.displayString;
+    return '**' + astResult.astType + '** - ' + astResult.displayString;
 };
 
 Ast.prototype.showAstResults = function (results) {
@@ -157,7 +157,7 @@ Ast.prototype.onCompiler = function (id, compiler, options, editorid) {
         this._editorid = editorid;
         this.setTitle();
         if (compiler && !compiler.supportsAstView) {
-            this.astEditor.setValue("<AST output is not supported for this compiler>");
+            this.astEditor.setValue('<AST output is not supported for this compiler>');
         }
     }
 };
@@ -180,7 +180,7 @@ Ast.prototype.currentState = function () {
     var state = {
         id: this._compilerid,
         editorid: this._editorid,
-        selection: this.selection
+        selection: this.selection,
     };
     this.fontScale.addState(state);
     return state;
@@ -201,10 +201,10 @@ Ast.prototype.onSettingsChange = function (newSettings) {
     this.astEditor.updateOptions({
         contextmenu: newSettings.useCustomContextMenu,
         minimap: {
-            enabled: newSettings.showMinimap
+            enabled: newSettings.showMinimap,
         },
         fontFamily: newSettings.editorsFFont,
-        fontLigatures: newSettings.editorsFLigatures
+        fontLigatures: newSettings.editorsFLigatures,
     });
 };
 
@@ -217,10 +217,10 @@ Ast.prototype.onDidChangeCursorSelection = function (e) {
 
 Ast.prototype.close = function () {
     this.eventHub.unsubscribe();
-    this.eventHub.emit("astViewClosed", this._compilerid);
+    this.eventHub.emit('astViewClosed', this._compilerid);
     this.astEditor.dispose();
 };
 
 module.exports = {
-    Ast: Ast
+    Ast: Ast,
 };

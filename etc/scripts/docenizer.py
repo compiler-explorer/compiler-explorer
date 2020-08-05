@@ -7,6 +7,7 @@ import re
 import sys
 import tarfile
 import urllib
+from urlparse import urljoin
 
 try:
     from bs4 import BeautifulSoup
@@ -225,6 +226,15 @@ def parse(filename, f):
         sections[section_header.text] = children
 
     description_paragraphs = get_description_paragraphs(doc)
+
+    for para in description_paragraphs:
+        for link in para.find_all('a'):
+            # this urljoin will only ensure relative urls are prefixed
+            # if a url is already absolute it does nothing
+            link['href'] = urljoin('http://www.felixcloutier.com/x86/', link['href'])
+            link['target'] = '_blank'
+            link['rel'] = 'noreferrer noopener'
+
 
     return Instruction(
         filename,

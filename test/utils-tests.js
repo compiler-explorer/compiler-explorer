@@ -85,51 +85,51 @@ describe('Parses compiler output', () => {
     it('handles simple cases', () => {
         utils.parseOutput('Line one\nLine two', 'bob.cpp').should.deep.equals([
             {text: 'Line one'},
-            {text: 'Line two'}
+            {text: 'Line two'},
         ]);
         utils.parseOutput('Line one\nbob.cpp:1 Line two', 'bob.cpp').should.deep.equals([
             {text: 'Line one'},
             {
-                tag: {column: 0, line: 1, text: "Line two"},
-                text: '<source>:1 Line two'
-            }
+                tag: {column: 0, line: 1, text: 'Line two'},
+                text: '<source>:1 Line two',
+            },
         ]);
         utils.parseOutput('Line one\nbob.cpp:1:5: Line two', 'bob.cpp').should.deep.equals([
             {text: 'Line one'},
             {
-                tag: {column: 5, line: 1, text: "Line two"},
-                text: '<source>:1:5: Line two'
-            }
+                tag: {column: 5, line: 1, text: 'Line two'},
+                text: '<source>:1:5: Line two',
+            },
         ]);
     });
     it('handles windows output', () => {
         utils.parseOutput('bob.cpp(1) Oh noes', 'bob.cpp').should.deep.equals([
             {
                 tag: {column: 0, line: 1, text: 'Oh noes'},
-                text: '<source>(1) Oh noes'
-            }
+                text: '<source>(1) Oh noes',
+            },
         ]);
     });
     it('replaces all references to input source', () => {
         utils.parseOutput('bob.cpp:1 error in bob.cpp', 'bob.cpp').should.deep.equals([
             {
                 tag: {column: 0, line: 1, text: 'error in <source>'},
-                text: '<source>:1 error in <source>'
-            }
+                text: '<source>:1 error in <source>',
+            },
         ]);
     });
     it('treats <stdin> as if it were the compiler source', () => {
         utils.parseOutput('<stdin>:120:25: error: variable or field \'transform_data\' declared void', 'bob.cpp')
             .should.deep.equals([
-            {
-                tag: {
-                    column: 25,
-                    line: 120,
-                    text: 'error: variable or field \'transform_data\' declared void'
+                {
+                    tag: {
+                        column: 25,
+                        line: 120,
+                        text: 'error: variable or field \'transform_data\' declared void',
+                    },
+                    text: '<source>:120:25: error: variable or field \'transform_data\' declared void',
                 },
-                text: '<source>:120:25: error: variable or field \'transform_data\' declared void'
-            }
-        ]);
+            ]);
     });
 });
 
@@ -140,10 +140,10 @@ describe('Pascal compiler output', () => {
                 tag: {
                     column: 23,
                     line: 13,
-                    text: 'Error: Identifier not found "adsadasd"'
+                    text: 'Error: Identifier not found "adsadasd"',
                 },
-                text: '<source>(13,23) Error: Identifier not found "adsadasd"'
-            }
+                text: '<source>(13,23) Error: Identifier not found "adsadasd"',
+            },
         ]);
     });
 
@@ -153,26 +153,26 @@ describe('Pascal compiler output', () => {
                 tag: {
                     column: 0,
                     line: 17,
-                    text: 'Fatal: There were 1 errors compiling module, stopping'
+                    text: 'Fatal: There were 1 errors compiling module, stopping',
                 },
-                text: '<source>(17) Fatal: There were 1 errors compiling module, stopping'
-            }
+                text: '<source>(17) Fatal: There were 1 errors compiling module, stopping',
+            },
         ]);
     });
 
     it('removes the temp path', () => {
         utils.parseOutput('Compiling /tmp/path/prog.dpr\noutput.pas(17) Fatal: There were 1 errors compiling module, stopping', 'output.pas', '/tmp/path/').should.deep.equals([
             {
-                text: 'Compiling prog.dpr'
+                text: 'Compiling prog.dpr',
             },
             {
                 tag: {
                     column: 0,
                     line: 17,
-                    text: 'Fatal: There were 1 errors compiling module, stopping'
+                    text: 'Fatal: There were 1 errors compiling module, stopping',
                 },
-                text: '<source>(17) Fatal: There were 1 errors compiling module, stopping'
-            }
+                text: '<source>(17) Fatal: There were 1 errors compiling module, stopping',
+            },
         ]);
     });
 });
@@ -184,10 +184,10 @@ describe('Tool output', () => {
                 tag: {
                     column: 1,
                     line: 1,
-                    text: 'Fatal: There were 1 errors compiling module, stopping'
+                    text: 'Fatal: There were 1 errors compiling module, stopping',
                 },
-                text: '<source>:1:1: Fatal: There were 1 errors compiling module, stopping'
-            }
+                text: '<source>:1:1: Fatal: There were 1 errors compiling module, stopping',
+            },
         ]);
     });
 
@@ -197,10 +197,10 @@ describe('Tool output', () => {
                 tag: {
                     column: 22,
                     line: 5,
-                    text: 'error: No explicit type declared for \'y\''
+                    text: 'error: No explicit type declared for \'y\'',
                 },
-                text: '<source>:5:22: error: No explicit type declared for \'y\''
-            }
+                text: '<source>:5:22: error: No explicit type declared for \'y\'',
+            },
         ]);
     });
 
@@ -210,10 +210,10 @@ describe('Tool output', () => {
                 tag: {
                     column: 1,
                     line: 1,
-                    text: 'Fatal: There were 1 errors compiling module, stopping'
+                    text: 'Fatal: There were 1 errors compiling module, stopping',
                 },
-                text: '<source>:1:1: Fatal: There were 1 errors compiling module, stopping'
-            }
+                text: '<source>:1:1: Fatal: There were 1 errors compiling module, stopping',
+            },
         ]);
     });
 });
@@ -258,13 +258,13 @@ describe('Anonymizes all kind of IPs', () => {
 
 describe('Logger functionality', () => {
     it('has info stream with a write function', () => {
-        logger.stream.write.should.a("function");
+        logger.stream.write.should.a('function');
     });
     it('has warning stream with a write function', () => {
-        logger.warnStream.write.should.a("function");
+        logger.warnStream.write.should.a('function');
     });
     it('has error stream with a write function', () => {
-        logger.errStream.write.should.a("function");
+        logger.errStream.write.should.a('function');
     });
 });
 
@@ -279,8 +279,8 @@ describe('Hash interface', () => {
         utils.getHash({
             toppings: [
                 {name: 'raspberries', optional: false},
-                {name: 'ground cinnamon', optional: true}
-            ]
+                {name: 'ground cinnamon', optional: true},
+            ],
         }).should.equal('e205d63abd5db363086621fdc62c4c23a51b733bac5855985a8b56642d570491');
     });
 });
@@ -295,15 +295,15 @@ describe('GoldenLayout utils', () => {
                         {source: 'Editor 1', language: 'c++'},
                         {source: 'Editor 2', language: 'c++'},
                         {source: 'Editor 3', language: 'c++'},
-                        {source: 'Editor 4', language: 'c++'}
+                        {source: 'Editor 4', language: 'c++'},
                     ],
                     compilers: [
                         {compiler: 'clang_trunk'},
                         {compiler: 'gsnapshot'},
                         {compiler: 'clang_trunk'},
                         {compiler: 'gsnapshot'},
-                        {compiler: 'rv32clang'}
-                    ]
+                        {compiler: 'rv32clang'},
+                    ],
                 });
             });
     });
@@ -335,32 +335,32 @@ describe('squashes horizontal whitespace', () => {
 
 describe('replaces all substrings', () => {
     it('works with no substitutions', () => {
-        const string = "This is a line with no replacements";
-        utils.replaceAll(string, "not present", "won't be substituted").should.equal(string);
+        const string = 'This is a line with no replacements';
+        utils.replaceAll(string, 'not present', "won't be substituted").should.equal(string);
     });
     it('handles odd cases', () => {
-        utils.replaceAll("", "", "").should.equal("");
-        utils.replaceAll("Hello", "", "").should.equal("Hello");
+        utils.replaceAll('', '', '').should.equal('');
+        utils.replaceAll('Hello', '', '').should.equal('Hello');
     });
     it('works with single replacement', () => {
-        utils.replaceAll("This is a line with a mistook in it", "mistook", "mistake")
-            .should.equal("This is a line with a mistake in it");
-        utils.replaceAll("This is a line with a mistook", "mistook", "mistake")
-            .should.equal("This is a line with a mistake");
-        utils.replaceAll("Mistooks were made", "Mistooks", "Mistakes")
-            .should.equal("Mistakes were made");
+        utils.replaceAll('This is a line with a mistook in it', 'mistook', 'mistake')
+            .should.equal('This is a line with a mistake in it');
+        utils.replaceAll('This is a line with a mistook', 'mistook', 'mistake')
+            .should.equal('This is a line with a mistake');
+        utils.replaceAll('Mistooks were made', 'Mistooks', 'Mistakes')
+            .should.equal('Mistakes were made');
     });
 
     it('works with multiple replacements', () => {
-        utils.replaceAll("A mistook is a mistook", "mistook", "mistake")
-            .should.equal("A mistake is a mistake");
-        utils.replaceAll("aaaaaaaaaaaaaaaaaaaaaaaaaaa", "a", "b")
-            .should.equal("bbbbbbbbbbbbbbbbbbbbbbbbbbb");
+        utils.replaceAll('A mistook is a mistook', 'mistook', 'mistake')
+            .should.equal('A mistake is a mistake');
+        utils.replaceAll('aaaaaaaaaaaaaaaaaaaaaaaaaaa', 'a', 'b')
+            .should.equal('bbbbbbbbbbbbbbbbbbbbbbbbbbb');
     });
 
     it('works with overlapping replacements', () => {
-        utils.replaceAll("aaaaaaaa", "a", "ba")
-            .should.equal("babababababababa");
+        utils.replaceAll('aaaaaaaa', 'a', 'ba')
+            .should.equal('babababababababa');
     });
 });
 
@@ -372,31 +372,31 @@ describe('encodes in our version of base32', () => {
     // Done by hand to check that they are valid
 
     it('works for empty strings', () => {
-        doTest("", "");
+        doTest('', '');
     });
 
     it('works for lengths multiple of 5 bits', () => {
-        doTest("aaaaa", "3Mn4ha7P");
+        doTest('aaaaa', '3Mn4ha7P');
     });
 
     it('works for lengths not multiple of 5 bits', () => {
         // 3
-        doTest("a", "35");
+        doTest('a', '35');
 
         // 1
-        doTest("aa", "3Mn1");
+        doTest('aa', '3Mn1');
 
         // 4
-        doTest("aaa", "3Mn48");
+        doTest('aaa', '3Mn48');
 
         // 2
-        doTest("aaaa", "3Mn4ha3");
+        doTest('aaaa', '3Mn4ha3');
     });
 
     it('works for some random strings', () => {
         // I also calculated this ones so lets put them
-        doTest("foo", "8rrx8");
+        doTest('foo', '8rrx8');
 
-        doTest("foobar", "8rrx8b7Pc5");
+        doTest('foobar', '8rrx8b7Pc5');
     });
 });

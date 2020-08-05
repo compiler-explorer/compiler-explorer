@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-"use strict";
+'use strict';
 
 var FontScale = require('../fontscale');
 var monaco = require('monaco-editor');
@@ -81,12 +81,12 @@ State.prototype.refresh = function () {
                 break;
         }
     }
-    this.model.setValue(_.pluck(output, 'text').join("\n"));
+    this.model.setValue(_.pluck(output, 'text').join('\n'));
 };
 
 function getItemDisplayTitle(item) {
-    if (typeof item.id === "string") {
-        var p = item.id.indexOf("_exec");
+    if (typeof item.id === 'string') {
+        var p = item.id.indexOf('_exec');
         if (p !== -1) {
             return 'Executor #' + item.id.substr(0, p);
         }
@@ -102,18 +102,18 @@ function Diff(hub, container, state) {
     this.domRoot.html($('#diff').html());
     this.compilers = {};
 
-    this.outputEditor = monaco.editor.createDiffEditor(this.domRoot.find(".monaco-placeholder")[0], {
+    this.outputEditor = monaco.editor.createDiffEditor(this.domRoot.find('.monaco-placeholder')[0], {
         fontFamily: 'Consolas, "Liberation Mono", Courier, monospace',
         scrollBeyondLastLine: false,
         readOnly: true,
-        language: 'asm'
+        language: 'asm',
     });
 
     this.lhs = new State(state.lhs, monaco.editor.createModel('', 'asm'), state.lhsdifftype || DiffType_ASM);
     this.rhs = new State(state.rhs, monaco.editor.createModel('', 'asm'), state.rhsdifftype || DiffType_ASM);
     this.outputEditor.setModel({ original: this.lhs.model, modified: this.rhs.model });
 
-    var selectizeType = this.domRoot.find(".difftype-picker").selectize({
+    var selectizeType = this.domRoot.find('.difftype-picker').selectize({
         sortField: 'name',
         valueField: 'id',
         labelField: 'name',
@@ -123,15 +123,15 @@ function Diff(hub, container, state) {
             { id: DiffType_CompilerStdOut, name: 'Compiler stdout' },
             { id: DiffType_CompilerStdErr, name: 'Compiler stderr' },
             { id: DiffType_ExecStdOut, name: 'Execution stdout' },
-            { id: DiffType_ExecStdErr, name: 'Execution stderr' }
+            { id: DiffType_ExecStdErr, name: 'Execution stderr' },
         ],
         items: [],
         render: {
             option: function (item, escape) {
                 return '<div>' + escape(item.name) + '</div>';
-            }
+            },
         },
-        dropdownParent: 'body'
+        dropdownParent: 'body',
     }).on('change', _.bind(function (e) {
         var target = $(e.target);
         if (target.hasClass('lhsdifftype')) {
@@ -144,7 +144,7 @@ function Diff(hub, container, state) {
         this.updateState();
     }, this));
 
-    var selectize = this.domRoot.find(".diff-picker").selectize({
+    var selectize = this.domRoot.find('.diff-picker').selectize({
         sortField: 'name',
         valueField: 'id',
         labelField: 'name',
@@ -160,9 +160,9 @@ function Diff(hub, container, state) {
                     '<li class="editor">Editor #' + escape(item.editorId) + '</li>' +
                     '<li class="compilerId">' + escape(getItemDisplayTitle(item)) + '</li>' +
                     '</ul></div>';
-            }
+            },
         },
-        dropdownParent: 'body'
+        dropdownParent: 'body',
     }).on('change', _.bind(function (e) {
         var target = $(e.target);
         var compiler = this.compilers[target.val()];
@@ -179,7 +179,7 @@ function Diff(hub, container, state) {
 
     this.selectize = {
         lhs: selectize[0].selectize, rhs: selectize[1].selectize,
-        lhsdifftype: selectizeType[0].selectize, rhsdifftype: selectizeType[1].selectize
+        lhsdifftype: selectizeType[0].selectize, rhsdifftype: selectizeType[1].selectize,
     };
 
     this.initButtons(state);
@@ -190,7 +190,7 @@ function Diff(hub, container, state) {
     ga.proxy('send', {
         hitType: 'event',
         eventCategory: 'OpenViewPane',
-        eventAction: 'Diff'
+        eventAction: 'Diff',
     });
 }
 
@@ -199,7 +199,7 @@ Diff.prototype.resize = function () {
     var topBarHeight = this.topBar.outerHeight(true);
     this.outputEditor.layout({
         width: this.domRoot.width(),
-        height: this.domRoot.height() - topBarHeight
+        height: this.domRoot.height() - topBarHeight,
     });
 };
 
@@ -233,7 +233,7 @@ Diff.prototype.onExecuteResult = function (id, compiler, result) {
 Diff.prototype.initButtons = function (state) {
     this.fontScale = new FontScale(this.domRoot, state, this.outputEditor);
 
-    this.topBar = this.domRoot.find(".top-bar");
+    this.topBar = this.domRoot.find('.top-bar');
 };
 
 Diff.prototype.initCallbacks = function () {
@@ -265,8 +265,8 @@ Diff.prototype.initCallbacks = function () {
 };
 
 Diff.prototype.requestResendResult = function (id) {
-    if (typeof id === "string") {
-        var p = id.indexOf("_exec");
+    if (typeof id === 'string') {
+        var p = id.indexOf('_exec');
         if (p !== -1) {
             var execId = parseInt(id.substr(0, p));
             this.eventHub.emit('resendExecution', execId);
@@ -278,19 +278,19 @@ Diff.prototype.requestResendResult = function (id) {
 
 Diff.prototype.onCompiler = function (id, compiler, options, editorId) {
     if (!compiler) return;
-    options = options || "";
-    var name = compiler.name + " " + options;
+    options = options || '';
+    var name = compiler.name + ' ' + options;
     // TODO: selectize doesn't play nicely with CSS tricks for truncation; this is the best I can do
     // There's a plugin at: http://www.benbybenjacobs.com/blog/2014/04/09/no-wrap-plugin-for-selectize-dot-js
     // but it doesn't look easy to integrate.
     var maxLength = 30;
-    if (name.length > maxLength - 3) name = name.substr(0, maxLength - 3) + "...";
+    if (name.length > maxLength - 3) name = name.substr(0, maxLength - 3) + '...';
     this.compilers[id] = {
         id: id,
         name: name,
         options: options,
         editorId: editorId,
-        compiler: compiler
+        compiler: compiler,
     };
     if (!this.lhs.id) {
         this.lhs.compiler = this.compilers[id];
@@ -318,9 +318,9 @@ Diff.prototype.onExecutorClose = function (id) {
 };
 
 Diff.prototype.updateCompilerNames = function () {
-    var name = "Diff";
+    var name = 'Diff';
     if (this.lhs.compiler && this.rhs.compiler)
-        name += " " + this.lhs.compiler.name + " vs " + this.rhs.compiler.name;
+        name += ' ' + this.lhs.compiler.name + ' vs ' + this.rhs.compiler.name;
     this.container.setTitle(name);
 };
 
@@ -347,7 +347,7 @@ Diff.prototype.updateState = function () {
         lhs: this.lhs.id,
         rhs: this.rhs.id,
         lhsdifftype: this.lhs.difftype,
-        rhsdifftype: this.rhs.difftype
+        rhsdifftype: this.rhs.difftype,
     };
     this.fontScale.addState(state);
     this.container.setState(state);
@@ -361,10 +361,10 @@ Diff.prototype.onThemeChange = function (newTheme) {
 Diff.prototype.onSettingsChange = function (newSettings) {
     this.outputEditor.updateOptions({
         minimap: {
-            enabled: newSettings.showMinimap
+            enabled: newSettings.showMinimap,
         },
         fontFamily: newSettings.editorsFFont,
-        fontLigatures: newSettings.editorsFLigatures
+        fontLigatures: newSettings.editorsFLigatures,
     });
 };
 
@@ -374,7 +374,7 @@ module.exports = {
         return {
             type: 'component',
             componentName: 'diff',
-            componentState: { lhs: lhs, rhs: rhs }
+            componentState: { lhs: lhs, rhs: rhs },
         };
-    }
+    },
 };

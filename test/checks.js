@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 const chai = require('chai');
-const chaiAsPromised = require("chai-as-promised");
+const chaiAsPromised = require('chai-as-promised');
 const _ = require('underscore');
 const properties = require('../lib/properties');
 const languages = require('../lib/languages').list;
@@ -44,7 +44,7 @@ describe('Live site checks', () => {
     });
     after(() => {
         properties.reset();
-    })
+    });
 
     it('there should not be any orphan libraries', () => {
         const langsLibs = compilerProps.get(compilerProps.languages, 'libs', '');
@@ -58,7 +58,7 @@ describe('Live site checks', () => {
             const filePath = `etc/config/${lang}.amazon.properties`;
             const fileContents = fs.readFileSync(filePath, 'utf-8');
 
-            const matches = fileContents.match(/^libs\..*?\.name/mg);
+            const matches = fileContents.match(/^libs\..*?\.name/gm);
             let found = [];
             if (matches) {
                 found = _.map(matches, line => line.match(/libs\.(.*?)\.name/)[1]);
@@ -68,6 +68,6 @@ describe('Live site checks', () => {
                 differences[lang] = difference;
             }
         });
-        differences.should.be.eql({}, 'One or more defined libraries are not listed on their corresponding language libs property array')
+        differences.should.be.eql({}, 'One or more defined libraries are not listed on their corresponding language libs property array');
     });
 });

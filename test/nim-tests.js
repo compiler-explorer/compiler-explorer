@@ -23,15 +23,15 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 const chai = require('chai');
-const chaiAsPromised = require("chai-as-promised");
+const chaiAsPromised = require('chai-as-promised');
 const NimCompiler = require('../lib/compilers/nim');
-const {makeCompilationEnvironment} = require('./utils.js');
+const {makeCompilationEnvironment} = require('./utils');
 
 chai.use(chaiAsPromised);
 chai.should();
 
 const languages = {
-    nim: {id: 'nim'}
+    nim: {id: 'nim'},
 };
 
 describe('Nim', () => {
@@ -39,7 +39,7 @@ describe('Nim', () => {
     const info = {
         exe: null,
         remote: true,
-        lang: languages.nim.id
+        lang: languages.nim.id,
     };
 
     before(() => {
@@ -48,31 +48,31 @@ describe('Nim', () => {
 
     it('Nim should not allow --run/-r parameter', () => {
         const compiler = new NimCompiler(info, ce);
-        compiler.filterUserOptions(["c", "--run", "--something"]).should.deep.equal(["c", "--something"]);
-        compiler.filterUserOptions(["cpp", "-r", "--something"]).should.deep.equal(["cpp", "--something"]);
+        compiler.filterUserOptions(['c', '--run', '--something']).should.deep.equal(['c', '--something']);
+        compiler.filterUserOptions(['cpp', '-r', '--something']).should.deep.equal(['cpp', '--something']);
     });
 
     it('Nim compile to Cpp if not asked otherwise', () => {
         const compiler = new NimCompiler(info, ce);
-        compiler.filterUserOptions([]).should.deep.equal(["compile"]);
-        compiler.filterUserOptions(["badoption"]).should.deep.equal(["compile", "badoption"]);
-        compiler.filterUserOptions(["js"]).should.deep.equal(["js"]);
+        compiler.filterUserOptions([]).should.deep.equal(['compile']);
+        compiler.filterUserOptions(['badoption']).should.deep.equal(['compile', 'badoption']);
+        compiler.filterUserOptions(['js']).should.deep.equal(['js']);
     });
 
-    it("test getCacheFile from possible user-options", () => {
+    it('test getCacheFile from possible user-options', () => {
         const compiler = new NimCompiler(info, ce),
-            input = "test.min",
-            folder = "/tmp/",
+            input = 'test.min',
+            folder = '/tmp/',
             expected = {
-                "cpp": folder + '@m' + input + ".cpp.o",
-                "c": folder + '@m' + input + ".c.o",
-                "objc": folder + '@m' + input + ".m.o",
+                cpp: folder + '@m' + input + '.cpp.o',
+                c: folder + '@m' + input + '.c.o',
+                objc: folder + '@m' + input + '.m.o',
             };
 
-        for (const lang of ["cpp", "c", "objc"]) {
+        for (const lang of ['cpp', 'c', 'objc']) {
             compiler.getCacheFile([lang], input, folder).should.equal(expected[lang]);
         }
         chai.assert.equal(compiler.getCacheFile([], input, folder), null);
-        chai.assert.equal(compiler.getCacheFile(["js"], input, folder), null);
+        chai.assert.equal(compiler.getCacheFile(['js'], input, folder), null);
     });
 });

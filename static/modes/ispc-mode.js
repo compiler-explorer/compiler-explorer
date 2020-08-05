@@ -57,6 +57,7 @@ function definition() {
         'programCount',
         'programIndex',
         'reference',
+        'size_t',
         'soa',
         'sync',
         'task',
@@ -70,6 +71,10 @@ function definition() {
         'taskIndex2',
         'threadCount',
         'threadIndex',
+        'uint16',
+        'uint32',
+        'uint64',
+        'uint8',
         'uniform',
         'unmasked',
         'varying'

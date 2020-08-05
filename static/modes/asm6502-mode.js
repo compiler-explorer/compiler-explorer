@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-"use strict";
+'use strict';
 
 var monaco = require('monaco-editor');
 
@@ -34,13 +34,13 @@ function definition() {
                 [/^\s+/, { token: 'whitespace', next: '@opcode' }],
                 [/^\.[a-zA-Z]+\s*/, { token: 'type.identifier', next: '@arguments' }],
                 [/;.*$/, { token: 'comment', next: '@root' }],
-                [/\s*,\s*/, { token: 'delimiter', next: '@arguments' }]
+                [/\s*,\s*/, { token: 'delimiter', next: '@arguments' }],
             ],
 
             opcode: [
                 [/[a-zA-Z]+$/, { token: 'keyword', next: '@root' }],
                 [/[a-zA-Z]+\s*/, { token: 'keyword', next: '@arguments' }],
-                [/;.*$/, { token: 'comment', next: '@root' }]
+                [/;.*$/, { token: 'comment', next: '@root' }],
             ],
 
             arguments: [
@@ -55,9 +55,9 @@ function definition() {
                 [/#[0-9]+/, { token: 'number', next: '@root' }],
                 [/[a-zA-Z_][a-zA-Z_0-9]*/, { token: 'type.identifier', next: '@root' }],
                 [/[0-9]+/, { token: 'number', next: '@root' }],
-                [/;.*$/, { token: 'comment', next: '@root' }]
-            ]
-        }
+                [/;.*$/, { token: 'comment', next: '@root' }],
+            ],
+        },
     };
 }
 

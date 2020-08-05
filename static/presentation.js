@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-"use strict";
+'use strict';
 
 var
     local = require('./local');
@@ -117,5 +117,5 @@ module.exports = {
     next: next,
     prev: prev,
     getCurrentSlide: getCurrentSlide,
-    setCurrentSlide: setCurrentSlide
+    setCurrentSlide: setCurrentSlide,
 };
