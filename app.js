@@ -472,7 +472,6 @@ async function main() {
 
     webServer
         .set('trust proxy', true)
-        .set('views', './noscriptviews')
         .set('view engine', 'pug')
         .on('error', err => logger.error('Caught error in web handler; continuing:', err))
         // sentry request handler must be the first middleware on the app
@@ -510,7 +509,7 @@ async function main() {
     const sponsorConfig = sponsors.loadFromString(fs.readFileSync(configDir + '/sponsors.yaml', 'utf-8'));
     function renderConfig(extra, urlOptions) {
         const urlOptionsAllowed = [
-            'readOnly', 'hideEditorToolbars',
+            'readOnly', 'hideEditorToolbars', 'language',
         ];
         const filteredUrlOptions = _.mapObject(
             _.pick(urlOptions, urlOptionsAllowed),
@@ -634,6 +633,37 @@ async function main() {
             staticHeaders(res);
             contentPolicyHeader(res);
             res.render('index', renderConfig({
+                embedded: false,
+                mobileViewer: isMobileViewer(req),
+            }, req.query));
+        })
+        .get('/noscript', (req, res) => {
+            staticHeaders(res);
+            contentPolicyHeader(res);
+
+            let wantedLanguage = 'c++';
+            if (opts.wantedLanguage) wantedLanguage = opts.wantedLanguage;
+            if (req.query.language) wantedLanguage = req.query.language;
+
+            res.render('noscript', renderConfig({
+                embedded: false,
+                mobileViewer: isMobileViewer(req),
+                wantedLanguage: wantedLanguage,
+            }, req.query));
+        })
+        .get('/noscript/:language', (req, res) => {
+            staticHeaders(res);
+            contentPolicyHeader(res);
+            res.render('noscript', renderConfig({
+                embedded: false,
+                mobileViewer: isMobileViewer(req),
+                wantedLanguage: req.params.language,
+            }, req.query));
+        })
+        .get('/sponsors', (req, res) => {
+            staticHeaders(res);
+            contentPolicyHeader(res);
+            res.render('noscript_sponsors', renderConfig({
                 embedded: false,
                 mobileViewer: isMobileViewer(req),
             }, req.query));

@@ -1,0 +1,19 @@
+block content
+  form#compiler(action="/api/noscript/compile" method="POST")
+    input#lang(name='lang' value=wantedLanguage type='hidden')
+    .top-bar.btn-toolbar.bg-light(role="toolbar")
+      label(for='compilerid') Compiler
+      select.compiler-picker#compilerid(name='compiler' placeholder="Select a compiler...")
+        each compiler in compilers
+          if compiler.lang == wantedLanguage
+            option(value=compiler.id data-lang=compiler.lang)= compiler.name
+    .top-bar.btn-toolbar.bg-light(role="toolbar")
+      label(for='compileroptions') Options
+      span.options
+        input.options.form-control#compileroptions(name='userArguments' type="text" placeholder="Compiler options..." size="256" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false")
+    .top-bar.btn-toolbar.bg-light(role="toolbar")
+      label(for='source') Source
+      textarea#source(name='source' cols='80' rows='10')
+        =languages[wantedLanguage].example
+    .top-bar.btn-toolbar.bg-light(role="toolbar")
+      input(type='submit')

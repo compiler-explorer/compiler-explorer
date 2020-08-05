@@ -1,0 +1,6 @@
+@import url("~@fortawesome/fontawesome-free/css/all.min.css");
+@import url("~vis/dist/vis.css");
+
+html body {
+    overflow: auto;
+}
