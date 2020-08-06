@@ -663,7 +663,7 @@ async function main() {
         .get('/sponsors', (req, res) => {
             staticHeaders(res);
             contentPolicyHeader(res);
-            res.render('noscript_sponsors', renderConfig({
+            res.render('noscript-sponsors', renderConfig({
                 embedded: false,
                 mobileViewer: isMobileViewer(req),
             }, req.query));
