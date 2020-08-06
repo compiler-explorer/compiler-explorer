@@ -16,7 +16,10 @@ html(lang="en")
         #root
           noscript
             p Without Javascript the regular website is not functional. To go to the noscript version Compiler Explorer&nbsp;
-              a(href=`${httpRoot}noscript`) click here
+              if storedStateId
+                a(href=`${httpRoot}noscript/z/${storedStateId}`) click here
+              else
+                a(href=`${httpRoot}noscript`) click here
 
     block footer
         include templates.pug
