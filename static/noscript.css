@@ -4,3 +4,28 @@
 html body {
     overflow: auto;
 }
+
+form {
+    padding: 10px;
+}
+
+.form-pair-inlined {
+    min-height: 30px;
+}
+
+.form-pair-inlined label {
+    padding-right: 30px;
+}
+
+.form-pair-block * {
+    display: block;
+}
+
+nav.navbar.navbar-godbolt.navbar-expand-md.navbar-light.bg-light {
+    flex-flow: row wrap !important;
+}
+
+nav.nodropdown a.dropdown-item {
+    display: inline-block;
+    width: auto;
+}

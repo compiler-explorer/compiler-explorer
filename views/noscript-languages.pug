@@ -1,0 +1,6 @@
+block header
+  nav.nodropdown.bg-light
+    each language in languages
+      span
+        a.dropdown-item(href=`${httpRoot}noscript/${language.id}` title=language.name)= language.name
+        | &nbsp;

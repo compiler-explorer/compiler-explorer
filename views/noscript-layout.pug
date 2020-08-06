@@ -1,8 +1,7 @@
+- var noscript = true
 doctype html
 html(lang="en")
   head
-    base(href=httpRoot)
-
     block meta
         include meta.pug
 
@@ -14,11 +13,11 @@ html(lang="en")
 
   body(class=extraBodyClass)
     block header
-        include noscript_header.pug
-        include noscript_languages.pug
+        include noscript-header.pug
+        include noscript-languages.pug
 
     block content
         #root
 
     block footer
-        include noscript_footer.pug
+        include noscript-footer.pug

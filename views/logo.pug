@@ -1,0 +1,9 @@
+a.navbar-brand(href=httpRoot title="Compiler Explorer")
+  svg.logo.align-top(height="50" width="165")
+    include resources/site-logo.svg
+    if extraBodyClass === "beta"
+      include resources/site-logo-beta.svg
+    else if extraBodyClass === "staging"
+      include resources/site-logo-staging.svg
+    else if extraBodyClass === "dev"
+      include resources/site-logo-dev.svg
