@@ -2,10 +2,12 @@ block content
   form#compiler(action=`${httpRoot}api/noscript/compile` method='POST')
     input#lang(name='lang' value=wantedLanguage type='hidden')
     .form-pair.inlined
+      span.fas.fa-cog
       label Output
       .output
         include options-output.pug
     .form-pair.inlined
+      span.fas.fa-filter
       label Filters
       .filters
         include options-filters.pug
