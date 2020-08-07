@@ -24,6 +24,7 @@
 
 const fs = require('fs-extra');
 const AsmParser = require('../lib/asm-parser');
+const AsmParserSass = require('../lib/asm-parser-sass');
 const AsmParserVC = require('../lib/asm-parser-vc');
 const utils = require('../lib/utils');
 require('chai').should();
@@ -62,6 +63,8 @@ function dump(file) {
 // bless("filters-cases/arm-jump-table.asm", "filters-cases/arm-jump-table.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
 // bless("filters-cases/bug-1179.asm", "filters-cases/bug-1179.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
 // bless("filters-cases/6502-square.asm", "filters-cases/6502-square.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
+// bless("filters-cases/sass-square.asm", "filters-cases/sass-square.asm.binary.directives.labels.comments.json", {binary: true, directives: true, labels: true, commentOnly: true});
+// bless("filters-cases/sass-squarelabeled.asm", "filters-cases/sass-squarelabeled.asm.binary.directives.labels.comments.json", {binary: true, directives: true, labels: true, commentOnly: true});
 // describe('A test', function() {
 //     it('should work', function(){
 //         console.log(processAsm(__dirname + '/filters-cases/6502-square.asm', {directives: true, labels: true, commentOnly: true}));
@@ -73,6 +76,8 @@ function processAsm(filename, filters) {
     let parser;
     if (file.includes('Microsoft'))
         parser = new AsmParserVC();
+    else if (filename.includes('sass-'))
+        parser = new AsmParserSass();
     else
         parser = new AsmParser();
     return parser.process(file, filters);
@@ -134,6 +139,11 @@ describe('Filter test cases', function () {
     describe('Directives, labels and comments', function () {
         cases.forEach(function (x) {
             testFilter(x, '.directives.labels.comments', {directives: true, labels: true, commentOnly: true});
+        });
+    });
+    describe('Binary, directives, labels and comments', function () {
+        cases.forEach(function (x) {
+            testFilter(x, '.binary.directives.labels.comments', {binary: true, directives: true, labels: true, commentOnly: true});
         });
     });
     describe('Directives and comments', function () {

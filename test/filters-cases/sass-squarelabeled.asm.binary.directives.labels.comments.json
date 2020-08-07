@@ -1,0 +1,430 @@
+{
+  "asm": [
+    {
+      "text": "_Z6squarePii:",
+      "source": null,
+      "labels": []
+    },
+    {
+      "opcodes": [
+        "e4",
+        "5d",
+        "00",
+        "10",
+        "01",
+        "40",
+        "00",
+        "28"
+      ],
+      "address": 8,
+      "text": " MOV R1, c[0x0][0x44]",
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "links": null,
+      "labels": []
+    },
+    {
+      "opcodes": [
+        "04",
+        "1c",
+        "00",
+        "94",
+        "00",
+        "00",
+        "00",
+        "2c"
+      ],
+      "address": 16,
+      "text": " S2R R0, SR_CTAID.X",
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "links": null,
+      "labels": []
+    },
+    {
+      "opcodes": [
+        "23",
+        "dc",
+        "01",
+        "20",
+        "05",
+        "40",
+        "0e",
+        "1b"
+      ],
+      "address": 24,
+      "text": " ISETP.GE.AND P0, PT, R0, c[0x0][0x148], PT",
+      "source": {
+        "file": null,
+        "line": 5
+      },
+      "links": null,
+      "labels": []
+    },
+    {
+      "opcodes": [
+        "e7",
+        "21",
+        "00",
+        "00",
+        "01",
+        "00",
+        "00",
+        "40"
+      ],
+      "address": 32,
+      "text": " @!P0 BRA `(.L_1)",
+      "source": {
+        "file": null,
+        "line": 5
+      },
+      "links": null,
+      "labels": []
+    },
+    {
+      "opcodes": [
+        "e4",
+        "1d",
+        "00",
+        "20",
+        "05",
+        "40",
+        "00",
+        "28"
+      ],
+      "address": 40,
+      "text": " MOV R0, c[0x0][0x148]",
+      "source": {
+        "file": null,
+        "line": 8
+      },
+      "links": null,
+      "labels": []
+    },
+    {
+      "opcodes": [
+        "e2",
+        "dd",
+        "00",
+        "10",
+        "00",
+        "00",
+        "00",
+        "18"
+      ],
+      "address": 48,
+      "text": " MOV32I R3, 0x4",
+      "source": {
+        "file": null,
+        "line": 8
+      },
+      "links": null,
+      "labels": []
+    },
+    {
+      "opcodes": [
+        "02",
+        "1c",
+        "00",
+        "fc",
+        "ff",
+        "ff",
+        "ff",
+        "0b"
+      ],
+      "address": 56,
+      "text": " IADD32I R0, R0, -0x1",
+      "source": {
+        "file": null,
+        "line": 8
+      },
+      "links": null,
+      "labels": []
+    },
+    {
+      "opcodes": [
+        "43",
+        "9c",
+        "00",
+        "00",
+        "05",
+        "40",
+        "01",
+        "40"
+      ],
+      "address": 72,
+      "text": " ISCADD R2.CC, R0, c[0x0][0x140], 0x2",
+      "source": {
+        "file": null,
+        "line": 8
+      },
+      "links": null,
+      "labels": []
+    },
+    {
+      "opcodes": [
+        "e3",
+        "dc",
+        "00",
+        "10",
+        "05",
+        "80",
+        "86",
+        "20"
+      ],
+      "address": 80,
+      "text": " IMAD.HI.X R3, R0, R3, c[0x0][0x144]",
+      "source": {
+        "file": null,
+        "line": 8
+      },
+      "links": null,
+      "labels": []
+    },
+    {
+      "opcodes": [
+        "85",
+        "dc",
+        "2f",
+        "00",
+        "00",
+        "00",
+        "00",
+        "94"
+      ],
+      "address": 88,
+      "text": " ST.E [R2], RZ",
+      "source": {
+        "file": null,
+        "line": 8
+      },
+      "links": null,
+      "labels": []
+    },
+    {
+      "opcodes": [
+        "e7",
+        "1d",
+        "00",
+        "00",
+        "00",
+        "00",
+        "00",
+        "80"
+      ],
+      "address": 96,
+      "text": " EXIT",
+      "source": {
+        "file": null,
+        "line": 10
+      },
+      "links": null,
+      "labels": []
+    },
+    {
+      "text": ".L_1:",
+      "source": null,
+      "labels": []
+    },
+    {
+      "opcodes": [
+        "43",
+        "9c",
+        "00",
+        "00",
+        "05",
+        "40",
+        "01",
+        "40"
+      ],
+      "address": 104,
+      "text": " ISCADD R2.CC, R0, c[0x0][0x140], 0x2",
+      "source": {
+        "file": null,
+        "line": 6
+      },
+      "links": null,
+      "labels": []
+    },
+    {
+      "opcodes": [
+        "e2",
+        "dd",
+        "00",
+        "10",
+        "00",
+        "00",
+        "00",
+        "18"
+      ],
+      "address": 112,
+      "text": " MOV32I R3, 0x4",
+      "source": {
+        "file": null,
+        "line": 6
+      },
+      "links": null,
+      "labels": []
+    },
+    {
+      "opcodes": [
+        "e3",
+        "dc",
+        "00",
+        "10",
+        "05",
+        "80",
+        "86",
+        "20"
+      ],
+      "address": 120,
+      "text": " IMAD.HI.X R3, R0, R3, c[0x0][0x144]",
+      "source": {
+        "file": null,
+        "line": 6
+      },
+      "links": null,
+      "labels": []
+    },
+    {
+      "opcodes": [
+        "85",
+        "1c",
+        "20",
+        "00",
+        "00",
+        "00",
+        "00",
+        "84"
+      ],
+      "address": 136,
+      "text": " LD.E R0, [R2]",
+      "source": {
+        "file": null,
+        "line": 6
+      },
+      "links": null,
+      "labels": []
+    },
+    {
+      "opcodes": [
+        "a3",
+        "1c",
+        "00",
+        "20",
+        "05",
+        "80",
+        "00",
+        "20"
+      ],
+      "address": 144,
+      "text": " IMAD R0, R0, R0, c[0x0][0x148]",
+      "source": {
+        "file": null,
+        "line": 1
+      },
+      "links": null,
+      "labels": []
+    },
+    {
+      "opcodes": [
+        "02",
+        "1c",
+        "01",
+        "04",
+        "00",
+        "00",
+        "00",
+        "08"
+      ],
+      "address": 152,
+      "text": " IADD32I R4, R0, 0x1",
+      "source": {
+        "file": null,
+        "line": 6
+      },
+      "links": null,
+      "labels": []
+    },
+    {
+      "opcodes": [
+        "85",
+        "1c",
+        "21",
+        "00",
+        "00",
+        "00",
+        "00",
+        "94"
+      ],
+      "address": 160,
+      "text": " ST.E [R2], R4",
+      "source": {
+        "file": null,
+        "line": 6
+      },
+      "links": null,
+      "labels": []
+    },
+    {
+      "opcodes": [
+        "e7",
+        "1d",
+        "00",
+        "00",
+        "00",
+        "00",
+        "00",
+        "80"
+      ],
+      "address": 168,
+      "text": " EXIT",
+      "source": {
+        "file": null,
+        "line": 6
+      },
+      "links": null,
+      "labels": []
+    },
+    {
+      "text": ".L_2:",
+      "source": null,
+      "labels": []
+    },
+    {
+      "opcodes": [
+        "e7",
+        "1d",
+        "00",
+        "e0",
+        "ff",
+        "ff",
+        "03",
+        "40"
+      ],
+      "address": 176,
+      "text": " BRA `(.L_2)",
+      "source": {
+        "file": null,
+        "line": 6
+      },
+      "links": null,
+      "labels": []
+    },
+    {
+      "text": ".L_19:",
+      "source": null,
+      "labels": []
+    }
+  ],
+  "labelDefinitions": {
+    "_Z6squarePii": 1,
+    ".L_1": 13,
+    ".L_2": 22,
+    ".L_19": 24
+  }
+}
