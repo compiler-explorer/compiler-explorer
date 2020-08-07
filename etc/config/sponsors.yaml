@@ -50,6 +50,8 @@ levels:
       # Person with the initials "WB" prefers to remain anonymous
       - name: Casey Carter
       - name: Ben Barbour
+      - name: Embark Studios
+        url: https://www.embark-studios.com/
   - name: Patreons
     description: 'Thanks to all my patrons:'
     sponsors:
@@ -276,3 +278,8 @@ levels:
       - Borislav Stanimirov
       - Joshua Norrid
       - Nathan Harris
+      - Aleksandr Susha
+      - Anton Kovalev
+      - Luke D
+      - Erich Keane
+      - Michael Daum
