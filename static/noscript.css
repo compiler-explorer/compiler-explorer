@@ -33,3 +33,7 @@ nav.navbar.navbar-godbolt.navbar-expand-md.navbar-light.bg-light {
 .dropdown-item.language-option {
     display: block;
 }
+
+textarea {
+    width: 100%;
+}
