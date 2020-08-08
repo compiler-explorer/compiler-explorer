@@ -1,6 +1,12 @@
 block header
-  nav.nodropdown.bg-light
-    each language in languages
-      span
-        a.dropdown-item(href=`${httpRoot}noscript/${language.id}` title=language.name)= language.name
+  nav.bg-light
+    if mobileViewer
+      a.nav-link.dropdown-toggle#languageDropdown(href="javascript:;" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") Language
+
+    .dropdown-menu(aria-labelledby="languageDropdown")
+      each language in languages
+        if wantedLanguage == language
+          a.dropdown-item.language-option(href=`${httpRoot}noscript/${language.id}` title=language.name)= language.name
+        else
+          a.dropdown-item.language-option(href=`${httpRoot}noscript/${language.id}` title=language.name)= language.name
         | &nbsp;

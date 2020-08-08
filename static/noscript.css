@@ -29,3 +29,7 @@ nav.nodropdown a.dropdown-item {
     display: inline-block;
     width: auto;
 }
+
+.dropdown-item.language-option {
+    display: block;
+}

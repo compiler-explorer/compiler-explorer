@@ -1,3 +1,7 @@
 block footer
-  nav.nodropdown.bg-light
-    include menu-other.pug
+  nav.bg-light
+    if mobileViewer
+      a.nav-link.dropdown-toggle#otherDropdown(href="javascript:;" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") Other
+
+    .dropdown-menu(aria-labelledby="otherDropdown")
+      include menu-other.pug
