@@ -5,7 +5,7 @@ block content
       input#lang(name='lang' value=session.language type='hidden')
       .form-pair.inlined
         if mobileViewer
-          a.nav-link.dropdown-toggle#filtersDropdown(href="javascript:;" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") Filters
+          a.nav-link.dropdown-toggle#outputDropdown(href="javascript:;" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") Output
         else
           span.fas.fa-cog
           label Output

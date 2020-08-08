@@ -45,7 +45,6 @@ module.exports = {
     entry: {
         main: './static/main.js',
         noscript: './static/noscript.js',
-        noscriptmobile: './static/noscript-mobile.js',
     },
     output: {
         filename: isDev ? '[name].js' : `[name]${webjackJsHack}[contenthash].js`,
