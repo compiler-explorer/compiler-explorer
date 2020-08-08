@@ -23,9 +23,11 @@ block content
       .form-pair-inlined
         label(for='compilerid') Compiler
         select.compiler-picker#compilerid(name='compiler' placeholder='Select a compiler...')
+          - var selectedCompilerId = (session.compilers.length > 0) ? (session.compilers[0].id) : '';
           each compiler in compilers
-            if compiler.lang == session.language
-              if (session.compilers.length > 0) && (compiler.id == session.compilers[0].id)
+            - var compilerIsSelected = compiler.id == selectedCompilerId
+            if compiler.lang == session.language && (!compiler.hidden || compilerIsSelected)
+              if compilerIsSelected
                 option(value=compiler.id selected=true)= compiler.name
               else
                 option(value=compiler.id )= compiler.name
