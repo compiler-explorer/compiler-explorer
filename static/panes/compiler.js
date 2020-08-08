@@ -1858,8 +1858,14 @@ Compiler.prototype.updateCompilersSelector = function (info) {
     _.each(this.compilerService.getGroupsInUse(this.currentLangId), function (group) {
         this.compilerSelectizer.addOptionGroup(group.value, {label: group.label});
     }, this);
+
+    var selectedCompilerId = this.compiler ? this.compiler.id : null;
+    var filteredCompilers = _.filter(this.getCurrentLangCompilers(), function (e) {
+        return !e.hidden || e.id === selectedCompilerId;
+    });
+
     this.compilerSelectizer.load(_.bind(function (callback) {
-        callback(_.map(this.getCurrentLangCompilers(), _.identity));
+        callback(_.map(filteredCompilers, _.identity));
     }, this));
     this.compilerSelectizer.setValue([this.compiler ? this.compiler.id : null], true);
     this.options = info.options || '';
