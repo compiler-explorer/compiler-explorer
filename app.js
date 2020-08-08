@@ -665,7 +665,7 @@ async function main() {
             const options = JSON.stringify(clientOptionsHandler.get());
             res.end(`window.compilerExplorerOptions = ${options};`);
         })
-        .use('/bits/:bits.html', (req, res) => {
+        .use('/bits/:bits(\\w+).html', (req, res) => {
             staticHeaders(res);
             contentPolicyHeader(res);
             res.render('bits/' + req.params.bits, renderConfig({
