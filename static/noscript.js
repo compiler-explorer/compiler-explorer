@@ -2,6 +2,12 @@ require('./noscript.css');
 
 var $ = require('jquery');
 
+// eslint-disable-next-line requirejs/no-js-extension
+require('popper.js');
+require('bootstrap');
+
+var Toggles = require('./toggles');
+
 function initOptionMenus() {
     $('.button-checkbox').each(function () {
         var container = $(this);
@@ -25,10 +31,17 @@ function initOptionMenus() {
         parent.removeClass('noscriptdropdown');
         parent.addClass('dropdown-menu');
     });
+
+    new Toggles($('.output'));
+    new Toggles($('.filters'));
 }
 
-console.log('hello');
+function initLanguageMenu() {
+    $('.noscriptdropdown').removeClass('noscriptdropdown').addClass('dropdown-menu');
+    $('.nodropdown-toggle').removeClass('nodropdown-toggle').addClass('dropdown-toggle');
+}
+
 $(document).ready(function () {
-    console.log('ready');
     initOptionMenus();
+    initLanguageMenu();
 });
