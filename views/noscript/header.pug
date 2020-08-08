@@ -1,6 +1,6 @@
 .header
   nav.navbar.navbar-godbolt.navbar-expand-md.navbar-light.bg-light
-    include logo.pug
+    include ../logo.pug
     #motd.navbar-nav.navbar-center.mr-auto.community-advert.d-none
       span.content
       | Thanks for using Compiler Explorer
@@ -8,4 +8,4 @@
       if showSponsors
         li.nav-item.btn.btn-outline-primary#ces(data-toggle="modal")
           a(href=`${httpRoot}sponsors`) Sponsors
-          include sponsor-icons.pug
+          include ../sponsor-icons.pug

@@ -25,7 +25,7 @@ nav.navbar.navbar-godbolt.navbar-expand-md.navbar-light.bg-light {
     flex-flow: row wrap !important;
 }
 
-nav.nodropdown a.dropdown-item {
+.noscriptdropdown a.dropdown-item {
     display: inline-block;
     width: auto;
 }

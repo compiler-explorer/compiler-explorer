@@ -3,7 +3,7 @@ doctype html
 html(lang="en")
   head
     block meta
-        include meta.pug
+        include ../meta.pug
 
     block styles
         link(href=require("noscript.css") rel="stylesheet")
@@ -20,11 +20,11 @@ html(lang="en")
 
   body(class=extraBodyClass)
     block header
-        include noscript-header.pug
-        include noscript-languages.pug
+        include header.pug
+        include languages.pug
 
     block content
         #root
 
     block footer
-        include noscript-footer.pug
+        include footer.pug

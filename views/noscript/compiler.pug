@@ -4,10 +4,14 @@ block content
       p=`${session.language} source #${session.id}`
       input#lang(name='lang' value=session.language type='hidden')
       .form-pair.inlined
-        span.fas.fa-cog
-        label Output
-        .output
-          include options-output.pug
+        if mobileViewer
+          a.nav-link.dropdown-toggle#filtersDropdown(href="javascript:;" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") Filters
+        else
+          span.fas.fa-cog
+          label Output
+
+        .output.noscriptdropdown(aria-labelledby="outputDropdown")
+          include ../options-output.pug
 
       .form-pair.inlined
         if mobileViewer
@@ -16,8 +20,8 @@ block content
           span.fas.fa-filter
           label Filters
 
-        .filters.dropdown-menu(aria-labelledby="filtersDropdown")
-          include options-filters.pug
+        .filters.noscriptdropdown(aria-labelledby="filtersDropdown")
+          include ../options-filters.pug
 
       .form-pair-inlined
         label(for='compilerid') Compiler
