@@ -8,7 +8,7 @@ require('bootstrap');
 
 var Toggles = require('./toggles');
 
-function initOptionMenus() {
+function initMenus() {
     $('.button-checkbox').each(function () {
         var container = $(this);
 
@@ -32,16 +32,13 @@ function initOptionMenus() {
         parent.addClass('dropdown-menu');
     });
 
+    $('.noscriptdropdown').removeClass('noscriptdropdown').addClass('dropdown-menu');
+    $('.nodropdown-toggle').removeClass('nodropdown-toggle').addClass('dropdown-toggle');
+
     new Toggles($('.output'));
     new Toggles($('.filters'));
 }
 
-function initLanguageMenu() {
-    $('.noscriptdropdown').removeClass('noscriptdropdown').addClass('dropdown-menu');
-    $('.nodropdown-toggle').removeClass('nodropdown-toggle').addClass('dropdown-toggle');
-}
-
 $(document).ready(function () {
-    initOptionMenus();
-    initLanguageMenu();
+    initMenus();
 });
