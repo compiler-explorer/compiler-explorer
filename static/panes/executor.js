@@ -61,7 +61,6 @@ function Executor(hub, container, state) {
     this.sourceEditorId = state.source || 1;
     this.id = state.id || hub.nextExecutorId();
     this.settings = JSON.parse(local.get('settings', '{}'));
-    console.log(state);
     this.initLangAndCompiler(state);
     this.infoByLang = {};
     this.deferCompiles = hub.deferred;
