@@ -11,7 +11,7 @@ levels:
         priority: 100
         topIcon: true
       - name: PVS-Studio
-        description: "Check your C and C++ code for bugs and potential vulnerabilities. Get a month free trial using the <b>#godbolt</b> promo code."
+        description: "Check your C and C++ code for bugs and potential vulnerabilities.<br>Get a month free trial using the <b>#godbolt</b> promo code."
         icon: https://static.ce-cdn.net/pvs_bugs_long2.png
         sideBySide: true
         img: https://static.ce-cdn.net/pvs%20logo%20white-mini.png
