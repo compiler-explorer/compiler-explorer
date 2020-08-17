@@ -35,6 +35,7 @@ var local = require('../local');
 var ga = require('../analytics');
 var monacoVim = require('monaco-vim');
 require('../modes/cppp-mode');
+require('../modes/cppx-gold-mode');
 require('../modes/d-mode');
 require('../modes/ispc-mode');
 require('../modes/llvm-ir-mode');
