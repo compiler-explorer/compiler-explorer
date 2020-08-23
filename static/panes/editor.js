@@ -89,7 +89,7 @@ function Editor(hub, state, container) {
     var root = this.domRoot.find('.monaco-placeholder');
     var legacyReadOnly = state.options && !!state.options.readOnly;
     this.editor = monaco.editor.create(root[0], {
-        scrollBeyondLastLine: false,
+        scrollBeyondLastLine: true,
         language: this.currentLanguage.monaco,
         fontFamily: this.settings.editorsFFont,
         readOnly: !!options.readOnly || legacyReadOnly ||

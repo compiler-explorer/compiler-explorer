@@ -36,7 +36,7 @@ function Ast(hub, container, state) {
     this.domRoot.html($('#ast').html());
     this.astEditor = monaco.editor.create(this.domRoot.find('.monaco-placeholder')[0], {
         value: '',
-        scrollBeyondLastLine: false,
+        scrollBeyondLastLine: true,
         language: 'plaintext',
         readOnly: true,
         glyphMargin: true,

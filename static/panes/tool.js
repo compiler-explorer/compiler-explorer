@@ -63,7 +63,7 @@ function Tool(hub, container, state) {
     this.stdinField = this.domRoot.find('textarea.tool-stdin');
 
     this.outputEditor = monaco.editor.create(this.editorContentRoot[0], {
-        scrollBeyondLastLine: false,
+        scrollBeyondLastLine: true,
         readOnly: true,
         language: 'text',
         fontFamily: 'courier new',

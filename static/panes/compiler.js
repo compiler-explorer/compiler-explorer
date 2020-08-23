@@ -116,7 +116,7 @@ function Compiler(hub, container, state) {
     }
 
     this.outputEditor = monaco.editor.create(this.monacoPlaceholder[0], {
-        scrollBeyondLastLine: false,
+        scrollBeyondLastLine: true,
         readOnly: true,
         language: monacoDisassembly,
         fontFamily: this.settings.editorsFFont,

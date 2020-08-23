@@ -42,7 +42,7 @@ function GccDump(hub, container, state) {
 
     this.gccDumpEditor = monaco.editor.create(this.domRoot.find('.monaco-placeholder')[0], {
         value: '',
-        scrollBeyondLastLine: false,
+        scrollBeyondLastLine: true,
         readOnly: true,
         glyphMargin: true,
         quickSuggestions: false,
