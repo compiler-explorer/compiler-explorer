@@ -550,6 +550,8 @@ Compiler.prototype.compile = function (bypassCache, newTools) {
                 pass: this.gccDumpPassSelected,
                 treeDump: this.treeDumpEnabled,
                 rtlDump: this.rtlDumpEnabled,
+                ipaDump: this.ipaDumpEnabled,
+                dumpFlags: this.dumpFlags,
             },
             produceOptInfo: this.wantOptInfo,
             produceCfg: this.cfgViewOpen,
@@ -914,6 +916,19 @@ Compiler.prototype.onGccDumpFiltersChanged = function (id, filters, reqCompile) 
     if (this.id === id) {
         this.treeDumpEnabled = (filters.treeDump !== false);
         this.rtlDumpEnabled = (filters.rtlDump !== false);
+        this.ipaDumpEnabled = (filters.ipaDump !== false);
+        this.dumpFlags = {
+            address: filters.addressOption !== false,
+            slim: filters.slimOption !== false,
+            raw: filters.rawOption !== false,
+            details: filters.detailsOption !== false,
+            stats: filters.statsOption !== false,
+            blocks: filters.blocksOption !== false,
+            vops: filters.vopsOption !== false,
+            lineno: filters.linenoOption !== false,
+            uid: filters.uidOption !== false,
+            all: filters.allOption !== false,
+        };
 
         if (reqCompile) {
             this.compile();
@@ -946,6 +961,8 @@ Compiler.prototype.onGccDumpViewClosed = function (id) {
         delete this.gccDumpPassSelected;
         delete this.treeDumpEnabled;
         delete this.rtlDumpEnabled;
+        delete this.ipaDumpEnabled;
+        delete this.dumpFlags;
     }
 };
 

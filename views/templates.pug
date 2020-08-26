@@ -294,14 +294,68 @@
       .btn-group.btn-group-sm(role="group")
         select.gccdump-pass-picker(placeholder="Select a pass...")
       .btn-group.btn-group-sm.dump-filters
-        .button-checkbox
-          button.btn.btn-sm.btn-light.active(type="button" title="Show Tree pass" data-bind="treeDump" aria-pressed="true")
-            span Tree pass
-          input.d-none(type="checkbox" checked=true)
-        .button-checkbox
-          button.btn.btn-sm.btn-light.active(type="button" title="Show RTL pass" data-bind="rtlDump" aria-pressed="true")
-            span RTL pass
-          input.d-none(type="checkbox" checked=true)
+        button.btn.btn-sm.btn-light.dropdown-toggle(type="button" title="Dump passes" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Available dump passes")
+          span.fas.fa-compass
+          span.hideable &nbsp;Passes
+        .dropdown-menu
+          .button-checkbox
+            button.dropdown-item.btn.btn-sm.btn-light.active(type="button" title="Show Tree passes" data-bind="treeDump" aria-pressed="true")
+              span Tree pass
+            input.d-none(type="checkbox" checked=true)
+          .button-checkbox
+            button.dropdown-item.btn.btn-sm.btn-light.active(type="button" title="Show RTL passes" data-bind="rtlDump" aria-pressed="true")
+              span RTL pass
+            input.d-none(type="checkbox" checked=true)
+          .button-checkbox
+            button.dropdown-item.btn.btn-sm.btn-light.active(type="button" title="Show IPA passes" data-bind="ipaDump" aria-pressed="false")
+              span IPA pass
+            input.d-none(type="checkbox")
+      .btn-group.btn-group-sm.dump-filters
+        button.btn.btn-sm.btn-light.dropdown-toggle(type="button" title="Dump pass options" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Control the details of the dump")
+          span.fas.fa-microchip
+          span.hideable &nbsp;Options
+        .dropdown-menu
+          .button-checkbox
+            button.dropdown-item.btn.btn-sm.btn-light(type="button" title="Print raw representation of the tree" data-bind="rawOption" aria-pressed="false")
+              span Raw Dump
+            input.d-none(type="checkbox")
+          .button-checkbox
+            button.dropdown-item.btn.btn-sm.btn-light(type="button" title="Print condensed intermediate representations" data-bind="slimOption" aria-pressed="false")
+              span Slim Dump
+            input.d-none(type="checkbox")
+          div.dropdown-divider
+          .button-checkbox
+            button.dropdown-item.btn.btn-sm.btn-light(type="button" title="Turn on all options (except raw, slim, and lineno)" data-bind="allOption" aria-pressed="false")
+              span All Options
+            input.d-none(type="checkbox")
+          .button-checkbox
+            button.dropdown-item.btn.btn-sm.btn-light(type="button" title="Enable printing the address of each tree node" data-bind="addressOption" aria-pressed="true")
+              span Addresses
+            input.d-none(type="checkbox")
+          .button-checkbox
+            button.dropdown-item.btn.btn-sm.btn-light(type="button" title="Enable showing basic block boundaries (disabled in raw dumps)" data-bind="blocksOption" aria-pressed="false")
+              span Basic Blocks
+            input.d-none(type="checkbox")
+          .button-checkbox
+            button.dropdown-item.btn.btn-sm.btn-light(type="button" title="Enable showing line numbers" data-bind="linenoOption" aria-pressed="false")
+              span Line Numbers
+            input.d-none(type="checkbox")
+          .button-checkbox
+            button.dropdown-item.btn.btn-sm.btn-light(type="button" title="Enable more detailed dumps (not honored by every dump option)" data-bind="detailsOption" aria-pressed="false")
+              span Pass Details
+            input.d-none(type="checkbox")
+          .button-checkbox
+            button.dropdown-item.btn.btn-sm.btn-light(type="button" title="Enable dumping statistics (not honored by every dump option)" data-bind="statsOption" aria-pressed="false")
+              span Pass Stats
+            input.d-none(type="checkbox")
+          .button-checkbox
+            button.dropdown-item.btn.btn-sm.btn-light(type="button" title="Enable showing variable UIDs" data-bind="uidOption" aria-pressed="false")
+              span Unique IDs
+            input.d-none(type="checkbox")
+          .button-checkbox
+            button.dropdown-item.btn.btn-sm.btn-light(type="button" title="Enable showing virtual operands" data-bind="vopsOption" aria-pressed="false")
+              span Virtual Operands
+            input.d-none(type="checkbox")
     .monaco-placeholder
 
   #cfg

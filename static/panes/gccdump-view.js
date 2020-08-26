@@ -92,6 +92,7 @@ function GccDump(hub, container, state) {
 
     this.eventHub.emit('gccDumpFiltersChanged', this.state._compilerid, this.getEffectiveFilters(), false);
 
+    this.updateButtons();
     this.saveState();
     this.setTitle();
 
@@ -111,6 +112,45 @@ GccDump.prototype.initButtons = function (state) {
 
     this.topBar = this.domRoot.find('.top-bar');
     this.dumpFiltersButtons = this.domRoot.find('.dump-filters .btn');
+
+    this.dumpTreesButton = this.domRoot.find("[data-bind='treeDump']");
+    this.dumpTreesTitle = this.dumpTreesButton.prop('title');
+
+    this.dumpRtlButton = this.domRoot.find("[data-bind='rtlDump']");
+    this.dumpRtlTitle = this.dumpRtlButton.prop('title');
+
+    this.dumpIpaButton = this.domRoot.find("[data-bind='ipaDump']");
+    this.dumpIpaTitle = this.dumpIpaButton.prop('title');
+
+    this.optionAddressButton = this.domRoot.find("[data-bind='addressOption']");
+    this.optionAddressTitle = this.optionAddressButton.prop('title');
+
+    this.optionSlimButton = this.domRoot.find("[data-bind='slimOption']");
+    this.optionSlimTitle = this.optionSlimButton.prop('title');
+
+    this.optionRawButton = this.domRoot.find("[data-bind='rawOption']");
+    this.optionRawTitle = this.optionRawButton.prop('title');
+
+    this.optionDetailsButton = this.domRoot.find("[data-bind='detailsOption']");
+    this.optionDetailsTitle = this.optionDetailsButton.prop('title');
+
+    this.optionStatsButton = this.domRoot.find("[data-bind='statsOption']");
+    this.optionStatsTitle = this.optionStatsButton.prop('title');
+
+    this.optionBlocksButton = this.domRoot.find("[data-bind='blocksOption']");
+    this.optionBlocksTitle = this.optionBlocksButton.prop('title');
+
+    this.optionVopsButton = this.domRoot.find("[data-bind='vopsOption']");
+    this.optionVopsTitle = this.optionVopsButton.prop('title');
+
+    this.optionLinenoButton = this.domRoot.find("[data-bind='linenoOption']");
+    this.optionLinenoTitle = this.optionLinenoButton.prop('title');
+
+    this.optionUidButton = this.domRoot.find("[data-bind='uidOption']");
+    this.optionUidTitle = this.optionUidButton.prop('title');
+
+    this.optionAllButton = this.domRoot.find("[data-bind='allOption']");
+    this.optionAllTitle = this.optionAllButton.prop('title');
 };
 
 GccDump.prototype.initCallbacks = function () {
@@ -136,6 +176,25 @@ GccDump.prototype.initCallbacks = function () {
     this.gccDumpEditor.onDidChangeCursorSelection(_.bind(function (e) {
         this.cursorSelectionThrottledFunction(e);
     }, this));
+};
+
+GccDump.prototype.updateButtons = function () {
+    var formatButtonTitle = function (button, title) {
+        button.prop('title', '[' + (button.hasClass('active') ? 'ON' : 'OFF') + '] ' + title);
+    };
+    formatButtonTitle(this.dumpTreesButton, this.dumpTreesTitle);
+    formatButtonTitle(this.dumpRtlButton, this.dumpRtlTitle);
+    formatButtonTitle(this.dumpIpaButton, this.dumpIpaTitle);
+    formatButtonTitle(this.optionAddressButton, this.optionAddressTitle);
+    formatButtonTitle(this.optionSlimButton, this.optionSlimTitle);
+    formatButtonTitle(this.optionRawButton, this.optionRawTitle);
+    formatButtonTitle(this.optionDetailsButton, this.optionDetailsTitle);
+    formatButtonTitle(this.optionStatsButton, this.optionStatsTitle);
+    formatButtonTitle(this.optionBlocksButton, this.optionBlocksTitle);
+    formatButtonTitle(this.optionVopsButton, this.optionVopsTitle);
+    formatButtonTitle(this.optionLinenoButton, this.optionLinenoTitle);
+    formatButtonTitle(this.optionUidButton, this.optionUidTitle);
+    formatButtonTitle(this.optionAllButton, this.optionAllTitle);
 };
 
 // Disable view's menu when invalid compiler has been
@@ -285,6 +344,7 @@ GccDump.prototype.getEffectiveFilters = function () {
 
 GccDump.prototype.onFilterChange = function () {
     this.saveState();
+    this.updateButtons();
 
     if (this.inhibitPassSelect !== true) {
         this.eventHub.emit('gccDumpFiltersChanged', this.state._compilerid, this.getEffectiveFilters(), true);
@@ -305,6 +365,17 @@ GccDump.prototype.currentState = function () {
         selectedPass: this.state.selectedPass,
         treeDump: filters.treeDump,
         rtlDump: filters.rtlDump,
+        ipaDump: filters.ipaDump,
+        addressOption: filters.addressOption,
+        slimOption: filters.slimOption,
+        rawOption: filters.rawOption,
+        detailsOption: filters.detailsOption,
+        statsOption: filters.statsOption,
+        blocksOption: filters.blocksOption,
+        vopsOption: filters.vopsOption,
+        linenoOption: filters.linenoOption,
+        uidOption: filters.uidOption,
+        allOption: filters.allOption,
         selection: this.selection,
     };
 };
