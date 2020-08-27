@@ -49,7 +49,7 @@ function extendConfig(options, settings) {
             fontLigatures: settings.editorsFLigatures,
         };
     }
-    return _.extend(config, settingsObject, options);
+    return _.extend({}, config, settingsObject, options);
 }
 
 module.exports = {
