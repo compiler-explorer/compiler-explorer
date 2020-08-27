@@ -39,6 +39,7 @@ var bigInt = require('big-integer');
 var local = require('../local');
 var Libraries = require('../libs-widget');
 var codeLensHandler = require('../codelens-handler');
+var monacoConfig = require('../monaco-config');
 require('../modes/asm-mode');
 require('../modes/ptx-mode');
 
@@ -115,20 +116,13 @@ function Compiler(hub, container, state) {
         monacoDisassembly = languages[this.currentLangId].monacoDisassembly;
     }
 
-    this.outputEditor = monaco.editor.create(this.monacoPlaceholder[0], {
-        scrollBeyondLastLine: true,
+    this.outputEditor = monaco.editor.create(this.monacoPlaceholder[0], monacoConfig.extendConfig({
         readOnly: true,
         language: monacoDisassembly,
-        fontFamily: this.settings.editorsFFont,
         glyphMargin: !options.embedded,
-        fixedOverflowWidgets: true,
-        minimap: {
-            maxColumn: 80,
-        },
-        lineNumbersMinChars: 1,
         renderIndentGuides: false,
-        fontLigatures: this.settings.editorsFLigatures,
-    });
+        vimInUse: false,
+    }, this.settings));
 
     this.fontScale = new FontScale(this.domRoot, state, this.outputEditor);
 

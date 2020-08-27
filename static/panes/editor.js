@@ -34,6 +34,7 @@ var Alert = require('../alert');
 var local = require('../local');
 var ga = require('../analytics');
 var monacoVim = require('monaco-vim');
+var monacoConfig = require('../monaco-config');
 require('../modes/cppp-mode');
 require('../modes/cppx-gold-mode');
 require('../modes/d-mode');
@@ -88,25 +89,11 @@ function Editor(hub, state, container) {
 
     var root = this.domRoot.find('.monaco-placeholder');
     var legacyReadOnly = state.options && !!state.options.readOnly;
-    this.editor = monaco.editor.create(root[0], {
-        scrollBeyondLastLine: true,
+    this.editor = monaco.editor.create(root[0], monacoConfig.extendConfig({
         language: this.currentLanguage.monaco,
-        fontFamily: this.settings.editorsFFont,
-        readOnly: !!options.readOnly || legacyReadOnly ||
-            window.compilerExplorerOptions.mobileViewer,
+        readOnly: !!options.readOnly || legacyReadOnly || window.compilerExplorerOptions.mobileViewer,
         glyphMargin: !options.embedded,
-        quickSuggestions: false,
-        fixedOverflowWidgets: true,
-        minimap: {
-            maxColumn: 80,
-        },
-        folding: true,
-        lineNumbersMinChars: 1,
-        emptySelectionClipboard: true,
-        autoIndent: this.settings.autoIndent ? 'advanced' : 'none',
-        vimInUse: this.settings.useVim,
-        fontLigatures: this.settings.editorsFLigatures,
-    });
+    }, this.settings));
     this.editor.getModel().setEOL(monaco.editor.EndOfLineSequence.LF);
 
     if (state.source !== undefined) {

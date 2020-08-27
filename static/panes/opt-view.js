@@ -28,6 +28,7 @@ var monaco = require('monaco-editor');
 var _ = require('underscore');
 var $ = require('jquery');
 var ga = require('../analytics');
+var monacoConfig = require('../monaco-config');
 
 require('../modes/asm-mode');
 require('selectize');
@@ -40,20 +41,14 @@ function Opt(hub, container, state) {
     this.domRoot.html($('#opt').html());
     this.source = state.source || '';
     this._currentDecorations = [];
-    this.optEditor = monaco.editor.create(this.domRoot.find('.monaco-placeholder')[0], {
+    var root = this.domRoot.find('.monaco-placeholder');
+
+    this.optEditor = monaco.editor.create(root[0], monacoConfig.extendConfig({
         value: this.source,
-        scrollBeyondLastLine: true,
         language: 'plaintext',
         readOnly: true,
         glyphMargin: true,
-        quickSuggestions: false,
-        fixedOverflowWidgets: true,
-        fontFamily: 'Consolas, "Liberation Mono", Courier, monospace',
-        minimap: {
-            maxColumn: 80,
-        },
-        lineNumbersMinChars: 1,
-    });
+    }));
 
     this._compilerid = state.id;
     this._compilerName = state.compilerName;

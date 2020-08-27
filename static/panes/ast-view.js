@@ -28,26 +28,20 @@ var monaco = require('monaco-editor');
 var _ = require('underscore');
 var $ = require('jquery');
 var ga = require('../analytics');
+var monacoConfig = require('../monaco-config');
 
 function Ast(hub, container, state) {
     this.container = container;
     this.eventHub = hub.createEventHub();
     this.domRoot = container.getElement();
     this.domRoot.html($('#ast').html());
-    this.astEditor = monaco.editor.create(this.domRoot.find('.monaco-placeholder')[0], {
-        value: '',
-        scrollBeyondLastLine: true,
+    var root = this.domRoot.find('.monaco-placeholder');
+    this.astEditor = monaco.editor.create(root[0], monacoConfig.extendConfig({
         language: 'plaintext',
         readOnly: true,
         glyphMargin: true,
-        fontFamily: 'Consolas, "Liberation Mono", Courier, monospace',
-        quickSuggestions: false,
-        fixedOverflowWidgets: true,
-        minimap: {
-            maxColumn: 80,
-        },
         lineNumbersMinChars: 3,
-    });
+    }));
 
     this._compilerid = state.id;
     this._compilerName = state.compilerName;

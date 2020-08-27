@@ -31,6 +31,7 @@ var AnsiToHtml = require('../ansi-to-html');
 var Toggles = require('../toggles');
 var ga = require('../analytics');
 var monaco = require('monaco-editor');
+var monacoConfig = require('../monaco-config');
 require('../modes/asm6502-mode');
 
 function makeAnsiToHtml(color) {
@@ -62,19 +63,13 @@ function Tool(hub, container, state) {
     this.optionsField = this.domRoot.find('input.options');
     this.stdinField = this.domRoot.find('textarea.tool-stdin');
 
-    this.outputEditor = monaco.editor.create(this.editorContentRoot[0], {
-        scrollBeyondLastLine: true,
+    this.outputEditor = monaco.editor.create(this.editorContentRoot[0], monacoConfig.extendConfig({
         readOnly: true,
         language: 'text',
         fontFamily: 'courier new',
-        glyphMargin: true,
-        fixedOverflowWidgets: true,
-        minimap: {
-            maxColumn: 80,
-        },
         lineNumbersMinChars: 5,
         renderIndentGuides: false,
-    });
+    }));
 
     this.fontScale = new FontScale(this.domRoot, state, '.content');
     this.fontScale.on('change', _.bind(function () {
