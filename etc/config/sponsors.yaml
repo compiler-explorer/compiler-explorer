@@ -11,12 +11,19 @@ levels:
         priority: 100
         topIcon: true
       - name: PVS-Studio
-        description: Did you check how it compiles? Now check your code for bugs and potential vulnerabilities using PVS-Studio.
-        icon: https://static.ce-cdn.net/pvs_bugs_1.svg
+        description: "Check your C and C++ code for bugs and potential vulnerabilities.<br>Get a month free trial using the <b>#godbolt</b> promo code."
+        icon: https://static.ce-cdn.net/pvs_bugs_long2.png
         sideBySide: true
         img: https://static.ce-cdn.net/pvs%20logo%20white-mini.png
         url: https://www.viva64.com/en/pvs-studio-download/?promo=godbolt
         priority: 100
+        topIcon: true
+      - name: Stop Bugs
+        description: Identify defects, vulnerabilities, unmaintainable code, and more with PC-lint Plus.
+        icon: https://static.ce-cdn.net/gimpel/pcl_logo2.png
+        img: https://static.ce-cdn.net/gimpel/logo_large_tint.png
+        url: https://gimpel.com/?promo=godbolt
+        priority: 200
         topIcon: true
   - name: Patreon Legends
     description: 'These amazing people have pledged at the highest level of support. Huge thanks to these fine folks:'
@@ -42,6 +49,9 @@ levels:
         url: https://blog.matthewguidry.dev/
       # Person with the initials "WB" prefers to remain anonymous
       - name: Casey Carter
+      - name: Ben Barbour
+      - name: Embark Studios
+        url: https://www.embark-studios.com/
   - name: Patreons
     description: 'Thanks to all my patrons:'
     sponsors:
@@ -246,3 +256,32 @@ levels:
       - Joel Falcou
       - Dylan Houlihan
       - Chris Lincoln
+      - Josko Nikolic
+      - Cody Browne
+      - Andrey Oleynikov
+      - Karl Bunch
+      - Mark Hamann
+      - Eric Niebler
+      - Richard Ketchersid
+      - Victor Ciura
+      - Panos Gourgaris
+      - Arsen Tufankjian
+      - Lesley Lai
+      - Federico Zuccardi Merli
+      - Andrew Tridgell
+      - Jeff Roberts
+      - Pankaj Raghav
+      - Bene
+      - Fredrik Berggren
+      - Christoph Siedentop
+      - Jeff Dash
+      - Borislav Stanimirov
+      - Joshua Norrid
+      - Nathan Harris
+      - Aleksandr Susha
+      - Anton Kovalev
+      - Luke D
+      - Erich Keane
+      - Michael Daum
+      - Mac Reiter
+      - Petr Leonov

@@ -1,6 +1,7 @@
 link(rel="icon" href="favicon.ico?v=1")
 meta(charset="utf-8")
-meta(name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, shrink-to-fit=no")
+- var userScalable = mobileViewer ? "yes" : "no"
+meta(name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=" + userScalable + ", shrink-to-fit=no")
 meta(http-equiv="X-UA-Compatible" content="IE=edge")
 title Compiler Explorer
 if metadata

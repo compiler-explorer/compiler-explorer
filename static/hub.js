@@ -286,7 +286,7 @@ Hub.prototype.addAtRoot = function (newElem) {
     } else {
         this.layout.root.addChild({
             type: 'row',
-            content: [newElem]
+            content: [newElem],
         });
     }
 };

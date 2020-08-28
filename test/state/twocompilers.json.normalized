@@ -20,7 +20,7 @@
                         "intel": true
                     },
                     "libs": [],
-                    "specialoutputs": [],
+                    "specialoutputs": ["compilerOutput"],
                     "tools": []
                 }
             ],

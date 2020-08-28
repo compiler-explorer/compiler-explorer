@@ -21,17 +21,19 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE
-"use strict";
+'use strict';
 
 // setup analytics before anything else so we can capture any future errors in sentry
 var analytics = require('./analytics');
 
+// eslint-disable-next-line requirejs/no-js-extension
 require('popper.js');
 require('bootstrap');
 require('bootstrap-slider');
 
 var sharing = require('./sharing');
 var _ = require('underscore');
+var cloneDeep = require('lodash.clonedeep');
 var $ = require('jquery');
 var GoldenLayout = require('golden-layout');
 var Components = require('./components');
@@ -48,14 +50,15 @@ var jsCookie = require('js-cookie');
 var SimpleCook = require('./simplecook');
 var History = require('./history');
 var HistoryWidget = require('./history-widget').HistoryWidget;
+var presentation = require('./presentation');
 
 //css
-require("bootstrap/dist/css/bootstrap.min.css");
-require("golden-layout/src/css/goldenlayout-base.css");
-require("selectize/dist/css/selectize.bootstrap2.css");
-require("bootstrap-slider/dist/css/bootstrap-slider.css");
-require("./colours.css");
-require("./explorer.css");
+require('bootstrap/dist/css/bootstrap.min.css');
+require('golden-layout/src/css/goldenlayout-base.css');
+require('selectize/dist/css/selectize.bootstrap2.css');
+require('bootstrap-slider/dist/css/bootstrap-slider.css');
+require('./colours.css');
+require('./explorer.css');
 
 // Check to see if the current unload is a UI reset.
 // Forgive me the global usage here
@@ -79,7 +82,7 @@ if (!String.prototype.includes) {
 function setupSettings(hub) {
     var eventHub = hub.layout.eventHub;
     var defaultSettings = {
-        defaultLanguage: hub.defaultLangId
+        defaultLanguage: hub.defaultLangId,
     };
     var currentSettings = JSON.parse(local.get('settings', null)) || defaultSettings;
 
@@ -88,14 +91,14 @@ function setupSettings(hub) {
             analytics.proxy('send', {
                 hitType: 'event',
                 eventCategory: 'ThemeChange',
-                eventAction: newSettings.theme
+                eventAction: newSettings.theme,
             });
         }
         if (currentSettings.colourScheme !== newSettings.colourScheme) {
             analytics.proxy('send', {
                 hitType: 'event',
                 eventCategory: 'ColourSchemeChange',
-                eventAction: newSettings.colourScheme
+                eventAction: newSettings.colourScheme,
             });
         }
         currentSettings = newSettings;
@@ -120,6 +123,10 @@ function hasCookieConsented(options) {
     return jsCookie.get(options.policies.cookies.key) === options.policies.cookies.hash;
 }
 
+function isMobileViewer() {
+    return window.compilerExplorerOptions.mobileViewer;
+}
+
 function setupButtons(options) {
     var alertSystem = new Alert();
 
@@ -128,7 +135,7 @@ function setupButtons(options) {
     if (options.policies.privacy.enabled) {
         $('#privacy').click(function (event, data) {
             alertSystem.alert(
-                data && data.title ? data.title : "Privacy policy",
+                data && data.title ? data.title : 'Privacy policy',
                 require('./policies/privacy.html')
             );
             // I can't remember why this check is here as it seems superfluous
@@ -153,7 +160,7 @@ function setupButtons(options) {
                 no: function () {
                     simpleCooks.callDontConsent.apply(simpleCooks);
                 },
-                noHtml: 'Do NOT consent'
+                noHtml: 'Do NOT consent',
             });
         });
     }
@@ -170,23 +177,23 @@ function setupButtons(options) {
     });
 
     $('#changes').click(function () {
-        alertSystem.alert("Changelog", $(require('./changelog.html')));
+        alertSystem.alert('Changelog', $(require('./changelog.html')));
     });
 
-    $('#sponsors').click(function () {
+    $('#ces').click(function () {
         $.get(window.location.origin + window.httpRoot + 'bits/sponsors.html')
             .done(function (data) {
-                alertSystem.alert("Compiler Explorer Sponsors", data);
+                alertSystem.alert('Compiler Explorer Sponsors', data);
                 analytics.proxy('send', {
                     hitType: 'event',
                     eventCategory: 'Sponsors',
-                    eventAction: 'open'
+                    eventAction: 'open',
                 });
             })
             .fail(function (err) {
                 var result = err.responseText || JSON.stringify(err);
-                alertSystem.alert("Compiler Explorer Sponsors",
-                    "<div>Unable to fetch sponsors:</div><div>" + result + "</div>");
+                alertSystem.alert('Compiler Explorer Sponsors',
+                    '<div>Unable to fetch sponsors:</div><div>' + result + '</div>');
             });
     });
 
@@ -200,32 +207,51 @@ function setupButtons(options) {
 
         $('#history').modal();
     });
+
+    if (isMobileViewer() && window.compilerExplorerOptions.slides && window.compilerExplorerOptions.slides.length > 1) {
+        $('#share').remove();
+        $('.ui-presentation-control').removeClass('d-none');
+        $('.ui-presentation-first').click(presentation.first);
+        $('.ui-presentation-prev').click(presentation.prev);
+        $('.ui-presentation-next').click(presentation.next);
+    }
 }
 
 function findConfig(defaultConfig, options) {
     var config = null;
     if (!options.embedded) {
-        if (options.config) {
-            config = options.config;
+        if (options.slides) {
+            presentation.init(window.compilerExplorerOptions.slides.length);
+            var currentSlide = presentation.getCurrentSlide();
+            if (currentSlide < options.slides.length) {
+                config = options.slides[currentSlide];
+            } else {
+                presentation.setCurrentSlide(0);
+                config = options.slides[0];
+            }
         } else {
-            config = url.deserialiseState(window.location.hash.substr(1));
-        }
+            if (options.config) {
+                config = options.config;
+            } else {
+                config = url.deserialiseState(window.location.hash.substr(1));
+            }
 
-        if (config) {
-            // replace anything in the default config with that from the hash
-            config = _.extend(defaultConfig, config);
-        }
-        if (!config) {
-            var savedState = local.get('gl', null);
-            config = savedState !== null ? JSON.parse(savedState) : defaultConfig;
+            if (config) {
+                // replace anything in the default config with that from the hash
+                config = _.extend(defaultConfig, config);
+            }
+            if (!config) {
+                var savedState = local.get('gl', null);
+                config = savedState !== null ? JSON.parse(savedState) : defaultConfig;
+            }
         }
     } else {
         config = _.extend(defaultConfig, {
             settings: {
                 showMaximiseIcon: false,
                 showCloseIcon: false,
-                hasHeaders: false
-            }
+                hasHeaders: false,
+            },
         }, sharing.configFromEmbedded(window.location.hash.substr(1)));
     }
     return config;
@@ -233,11 +259,11 @@ function findConfig(defaultConfig, options) {
 
 function initializeResetLayoutLink() {
     var currentUrl = document.URL;
-    if (currentUrl.includes("/z/")) {
-        $("#ui-brokenlink").attr("href", currentUrl.replace("/z/", "/resetlayout/"));
-        $("#ui-brokenlink").show();
+    if (currentUrl.includes('/z/')) {
+        $('#ui-brokenlink').attr('href', currentUrl.replace('/z/', '/resetlayout/'));
+        $('#ui-brokenlink').show();
     } else {
-        $("#ui-brokenlink").hide();
+        $('#ui-brokenlink').hide();
     }
 }
 
@@ -249,7 +275,7 @@ function initPolicies(options) {
     if (options.policies.privacy.enabled &&
         options.policies.privacy.hash !== jsCookie.get(options.policies.privacy.key)) {
         $('#privacy').trigger('click', {
-            title: 'New Privacy Policy. Please take a moment to read it'
+            title: 'New Privacy Policy. Please take a moment to read it',
         });
     }
     simpleCooks.onDoConsent = function () {
@@ -273,6 +299,59 @@ function initPolicies(options) {
     }
 }
 
+function filterComponentState(config, keysToRemove) {
+    function filterComponentStateImpl(component) {
+        if (component.content) {
+            for (var i = 0; i < component.content.length; i++) {
+                filterComponentStateImpl(component.content[i], keysToRemove);
+            }
+        }
+
+        if (component.componentState) {
+            Object.keys(component.componentState)
+                .filter(function (key) { return keysToRemove.includes(key); })
+                .forEach(function (key) { delete component.componentState[key]; });
+        }
+    }
+
+    config = cloneDeep(config);
+    filterComponentStateImpl(config);
+    return config;
+}
+
+/*
+ * this nonsense works around a bug in goldenlayout where a config can be generated
+ * that contains a flag indicating there is a maximized item which does not correspond
+ * to any items that actually exist in the config.
+ *
+ * See https://github.com/compiler-explorer/compiler-explorer/issues/2056
+ */
+function removeOrphanedMaximisedItemFromConfig(config) {
+    // nothing to do if the maximised item id is not set
+    if (config.maximisedItemId !== '__glMaximised') return;
+
+    var found = false;
+    function impl(component) {
+        if (component.id === '__glMaximised') {
+            found = true;
+            return;
+        }
+
+        if (component.content) {
+            for (var i = 0; i < component.content.length; i++) {
+                impl(component.content[i]);
+                if (found) return;
+            }
+        }
+    }
+
+    impl(config);
+
+    if (!found) {
+        config.maximisedItemId = null;
+    }
+}
+
 // eslint-disable-next-line max-statements
 function start() {
     initializeResetLayoutLink();
@@ -293,8 +372,8 @@ function start() {
     }
     var defaultLangId = subLangId;
     if (!defaultLangId) {
-        if (options.languages["c++"]) {
-            defaultLangId = "c++";
+        if (options.languages['c++']) {
+            defaultLangId = 'c++';
         } else {
             defaultLangId = _.keys(options.languages)[0];
         }
@@ -316,9 +395,9 @@ function start() {
             type: 'row',
             content: [
                 Components.getEditor(1, defaultLangId),
-                Components.getCompiler(1, defaultLangId)
-            ]
-        }]
+                Components.getCompiler(1, defaultLangId),
+            ],
+        }],
     };
 
     $(window).bind('hashchange', function () {
@@ -327,15 +406,18 @@ function start() {
     });
 
     // Which buttons act as a linkable popup
-    var linkablePopups = ['#sponsors', '#changes', '#cookies', '#setting', '#privacy'];
+    var linkablePopups = ['#ces', '#sponsors', '#changes', '#cookies', '#setting', '#privacy'];
     var hashPart = linkablePopups.indexOf(window.location.hash) > -1 ? window.location.hash : null;
     if (hashPart) {
-        window.location.hash = "";
+        window.location.hash = '';
+        // Handle the time we renamed sponsors to ces to work around issues with blockers.
+        if (hashPart === '#sponsors') hashPart = '#ces';
     }
 
     var config = findConfig(defaultConfig, options);
+    removeOrphanedMaximisedItemFromConfig(config);
 
-    var root = $("#root");
+    var root = $('#root');
 
     var layout;
     var hub;
@@ -345,8 +427,8 @@ function start() {
     } catch (e) {
         Sentry.captureException(e);
 
-        if (document.URL.includes("/z/")) {
-            document.location = document.URL.replace("/z/", "/resetlayout/");
+        if (document.URL.includes('/z/')) {
+            document.location = document.URL.replace('/z/', '/resetlayout/');
         }
 
         layout = new GoldenLayout(defaultConfig, root);
@@ -357,10 +439,10 @@ function start() {
     var storedPaths = {};  // TODO maybe make this an LRU cache?
 
     layout.on('stateChanged', function () {
-        var config = layout.toConfig();
+        var config = filterComponentState(layout.toConfig(), ['selection']);
         var stringifiedConfig = JSON.stringify(config);
         if (stringifiedConfig !== lastState) {
-            if (storedPaths[config]) {
+            if (storedPaths[stringifiedConfig]) {
                 window.history.replaceState(null, null, storedPaths[stringifiedConfig]);
             } else if (window.location.pathname !== window.httpRoot) {
                 window.history.replaceState(null, null, window.httpRoot);
@@ -387,7 +469,8 @@ function start() {
         .resize(sizeRoot)
         .on('beforeunload', function () {
             // Only preserve state in localStorage in non-embedded mode.
-            if (!options.embedded && !hasUIBeenReset) {
+            var shouldSave = !window.hasUIBeenReset && !hasUIBeenReset;
+            if (!options.embedded && !isMobileViewer() && shouldSave) {
                 local.set('gl', JSON.stringify(layout.toConfig()));
             }
         });
@@ -439,7 +522,7 @@ function start() {
             },
             function () {
                 hub.layout.eventHub.emit('modifySettings', {
-                    enableCommunityAds: false
+                    enableCommunityAds: false,
                 });
             });
 
@@ -453,7 +536,7 @@ function start() {
     }
 
     if (options.hideEditorToolbars) {
-        $('[name="editor-btn-toolbar"]').addClass("d-none");
+        $('[name="editor-btn-toolbar"]').addClass('d-none');
     }
 
     window.onSponsorClick = function (sponsor) {
@@ -462,13 +545,15 @@ function start() {
             eventCategory: 'Sponsors',
             eventAction: 'click',
             eventLabel: sponsor.url,
-            transport: 'beacon'
+            transport: 'beacon',
         });
         window.open(sponsor.url);
     };
 
     sizeRoot();
-    lastState = JSON.stringify(layout.toConfig());
+    var initialConfig = JSON.stringify(filterComponentState(layout.toConfig(), ['selection']));
+    lastState = initialConfig;
+    storedPaths[initialConfig] = window.location.href;
 }
 
 $(start);

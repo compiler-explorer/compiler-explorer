@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-"use strict";
+'use strict';
 var _ = require('underscore');
 var $ = require('jquery');
 var EventEmitter = require('events');
@@ -43,11 +43,11 @@ function Togglesv2(root, state) {
             bind = $button.data('bind'),
             settings = {
                 on: {
-                    icon: 'far fa-check-square'
+                    icon: 'far fa-check-square',
                 },
                 off: {
-                    icon: 'far fa-square'
-                }
+                    icon: 'far fa-square',
+                },
             };
 
         // Event Handlers
@@ -68,7 +68,7 @@ function Togglesv2(root, state) {
             var isChecked = $checkbox.is(':checked');
 
             // Set the button's state
-            $button.data('state', (isChecked) ? "on" : "off");
+            $button.data('state', (isChecked) ? 'on' : 'off');
 
             // Set the button's icon
             $button.find('.state-icon')
@@ -113,7 +113,7 @@ Togglesv2.prototype.enableToggle = function (key, enable) {
         var button = $(widget.find('button'));
         var bind = button.data('bind');
         if (bind === key) {
-            button.prop("disabled", !enable);
+            button.prop('disabled', !enable);
         }
     });
 };

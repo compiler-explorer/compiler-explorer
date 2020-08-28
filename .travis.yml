@@ -9,7 +9,7 @@ script:
 - npm run ci-test
 - make changelog
 - make policies
-- make -j$(nproc) travis-dist
+- make -j$(nproc) travis-dist NPM_FLAGS="--no-audit"
 deploy:
   on:
     all_branches: true

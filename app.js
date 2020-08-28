@@ -70,14 +70,14 @@ const opts = nopt({
     ensureNoIdClash: [Boolean],
     logHost: [String],
     logPort: [Number],
-    suppressConsoleLog: [Boolean]
+    suppressConsoleLog: [Boolean],
 });
 
 if (opts.debug) logger.level = 'debug';
 
 // AP: Detect if we're running under Windows Subsystem for Linux. Temporary modification
 // of process.env is allowed: https://nodejs.org/api/process.html#process_process_env
-if (process.platform === "linux" && child_process.execSync('uname -a').toString().indexOf('Microsoft') > -1) {
+if (process.platform === 'linux' && child_process.execSync('uname -a').toString().includes('Microsoft')) {
     process.env.wsl = true;
 }
 
@@ -90,10 +90,10 @@ if (opts.tmpDir) {
 } else if (process.env.wsl) {
     // Dec 2017 preview builds of WSL include /bin/wslpath; do the parsing work for now.
     // Parsing example %TEMP% is C:\Users\apardoe\AppData\Local\Temp
-    const windowsTemp = child_process.execSync('cmd.exe /c echo %TEMP%').toString().replace(/\\/g, "/");
+    const windowsTemp = child_process.execSync('cmd.exe /c echo %TEMP%').toString().replace(/\\/g, '/');
     const driveLetter = windowsTemp.substring(0, 1).toLowerCase();
     const directoryPath = windowsTemp.substring(2).trim();
-    process.env.winTmp = path.join("/mnt", driveLetter, directoryPath);
+    process.env.winTmp = path.join('/mnt', driveLetter, directoryPath);
 }
 
 const distPath = path.resolve(__dirname, 'out', 'dist');
@@ -137,19 +137,19 @@ const defArgs = {
     doCache: !opts.noCache,
     fetchCompilersFromRemote: !opts.noRemoteFetch,
     ensureNoCompilerClash: opts.ensureNoIdClash,
-    suppressConsoleLog: opts.suppressConsoleLog || false
+    suppressConsoleLog: opts.suppressConsoleLog || false,
 };
 
 if (opts.logHost && opts.logPort) {
-    logToPapertrail(opts.logHost, opts.logPort, defArgs.env.join("."));
+    logToPapertrail(opts.logHost, opts.logPort, defArgs.env.join('.'));
 }
 
 if (defArgs.suppressConsoleLog) {
-    logger.info("Disabling further console logging");
+    logger.info('Disabling further console logging');
     suppressConsoleLog();
 }
 
-const isDevMode = () => process.env.NODE_ENV !== "production";
+const isDevMode = () => process.env.NODE_ENV !== 'production';
 
 const propHierarchy = _.flatten([
     'defaults',
@@ -173,7 +173,7 @@ const aws = require('./lib/aws'),
 
 // Instantiate a function to access records concerning "compiler-explorer"
 // in hidden object props.properties
-const ceProps = props.propsFor("compiler-explorer");
+const ceProps = props.propsFor('compiler-explorer');
 
 let languages = require('./lib/languages').list;
 
@@ -182,7 +182,7 @@ if (defArgs.wantedLanguage) {
     _.each(languages, lang => {
         if (lang.id === defArgs.wantedLanguage ||
             lang.name === defArgs.wantedLanguage ||
-            (lang.alias && lang.alias.indexOf(defArgs.wantedLanguage) >= 0)) {
+            (lang.alias && lang.alias.includes(defArgs.wantedLanguage))) {
             filteredLangs[lang.id] = lang;
         }
     });
@@ -190,7 +190,7 @@ if (defArgs.wantedLanguage) {
 }
 
 if (languages.length === 0) {
-    logger.error("Trying to start Compiler Explorer without a language");
+    logger.error('Trying to start Compiler Explorer without a language');
 }
 
 const compilerProps = new props.CompilerProps(languages, ceProps);
@@ -225,7 +225,7 @@ function measureEventLoopLag(delayMs) {
         setTimeout(() => {
             const elapsed = process.hrtime.bigint() - start;
             const delta = elapsed - BigInt(delayMs * 1000000);
-            return resolve(Number(delta) / 1000000.0);
+            return resolve(Number(delta) / 1000000);
         }, delayMs);
     });
 }
@@ -253,19 +253,20 @@ function setupEventLoopLagLogging() {
 }
 
 let pugRequireHandler = () => {
-    logger.error("pug require handler not configured");
+    logger.error('pug require handler not configured');
 };
 
 function setupWebPackDevMiddleware(router) {
-    logger.info("  using webpack dev middleware");
+    logger.info('  using webpack dev middleware');
 
-    const webpackDevMiddleware = require("webpack-dev-middleware"),
+    const webpackDevMiddleware = require('webpack-dev-middleware'),
+        // eslint-disable-next-line requirejs/no-js-extension
         webpackConfig = require('./webpack.config.js'),
         webpackCompiler = require('webpack')(webpackConfig);
 
     router.use(webpackDevMiddleware(webpackCompiler, {
         publicPath: '/static',
-        logger: logger
+        logger: logger,
     }));
 
     pugRequireHandler = (path) => urljoin(httpRoot, 'static', path);
@@ -280,7 +281,7 @@ function setupStaticMiddleware(router) {
         const staticPath = path.join(distPath, 'static');
         logger.info(`  serving static files from '${staticPath}'`);
         router.use('/static', express.static(staticPath, {
-            maxAge: staticMaxAgeSecs * 1000
+            maxAge: staticMaxAgeSecs * 1000,
         }));
     }
 
@@ -295,10 +296,10 @@ function setupStaticMiddleware(router) {
 }
 
 async function loadSources() {
-    const sourcesDir = "lib/sources";
+    const sourcesDir = 'lib/sources';
     return (await fs.readdir(sourcesDir))
         .filter(file => file.match(/.*\.js$/))
-        .map(file => require("./" + path.join(sourcesDir, file)));
+        .map(file => require('./' + path.join(sourcesDir, file)));
 }
 
 function shouldRedactRequestData(data) {
@@ -313,12 +314,12 @@ function shouldRedactRequestData(data) {
 const googleShortUrlResolver = new google.ShortLinkResolver();
 
 function oldGoogleUrlHandler(req, res, next) {
-    const bits = req.url.split("/");
-    if (bits.length !== 2 || req.method !== "GET") return next();
+    const bits = req.url.split('/');
+    if (bits.length !== 2 || req.method !== 'GET') return next();
     const googleUrl = `https://goo.gl/${encodeURIComponent(bits[1])}`;
     googleShortUrlResolver.resolve(googleUrl)
         .then(resultObj => {
-            const parsed = url.parse(resultObj.longUrl);
+            const parsed = new url.URL(resultObj.longUrl);
             const allowedRe = new RegExp(ceProps('allowedShortUrlHostRe'));
             if (parsed.host.match(allowedRe) === null) {
                 logger.warn(`Denied access to short URL ${bits[1]} - linked to ${resultObj.longUrl}`);
@@ -326,7 +327,7 @@ function oldGoogleUrlHandler(req, res, next) {
             }
             res.writeHead(301, {
                 Location: resultObj.longUrl,
-                'Cache-Control': 'public'
+                'Cache-Control': 'public',
             });
             res.end();
         })
@@ -345,7 +346,7 @@ function startListening(server) {
         const timeout = (typeof idleTimeout !== 'undefined' ? idleTimeout : 300) * 1000;
         if (idleTimeout) {
             const exit = () => {
-                logger.info("Inactivity timeout reached, exiting.");
+                logger.info('Inactivity timeout reached, exiting.');
                 process.exit(0);
             };
             let idleTimer = setTimeout(exit, timeout);
@@ -362,20 +363,20 @@ function startListening(server) {
     }
     logger.info(`  Listening on http://${defArgs.hostname || 'localhost'}:${_port}/`);
     logger.info(`  Startup duration: ${new Date() - startTime}ms`);
-    logger.info("=======================================");
+    logger.info('=======================================');
     server.listen(_port, defArgs.hostname);
 }
 
 function setupSentry(sentryDsn) {
     if (!sentryDsn) {
-        logger.info("Not configuring sentry");
+        logger.info('Not configuring sentry');
         return;
     }
-    const sentryEnv = ceProps("sentryEnvironment");
+    const sentryEnv = ceProps('sentryEnvironment');
     Sentry.init({
         dsn: sentryDsn,
-        release: travisBuildNumber,
-        environment: sentryEnv,
+        release: travisBuildNumber || gitReleaseName,
+        environment: sentryEnv || defArgs.env[0],
         beforeSend(event) {
             if (event.request
                 && event.request.data
@@ -383,12 +384,12 @@ function setupSentry(sentryDsn) {
                 event.request.data = JSON.stringify({redacted: true});
             }
             return event;
-        }
+        },
     });
     logger.info(`Configured with Sentry endpoint ${sentryDsn}`);
 }
 
-const awsProps = props.propsFor("aws");
+const awsProps = props.propsFor('aws');
 
 // eslint-disable-next-line max-statements
 async function main() {
@@ -412,7 +413,7 @@ async function main() {
     const compilerFinder = new CompilerFinder(compileHandler, compilerProps, awsProps, defArgs, clientOptionsHandler);
     const sponsors = require('./lib/sponsors');
 
-    logger.info("=======================================");
+    logger.info('=======================================');
     if (gitReleaseName) logger.info(`  git release ${gitReleaseName}`);
     if (travisBuildNumber) logger.info(`  travis build ${travisBuildNumber}`);
 
@@ -439,7 +440,7 @@ async function main() {
         router = express.Router(),
         healthCheck = require('./lib/handlers/health-check');
 
-    const healthCheckFilePath = ceProps("healthCheckFilePath", false);
+    const healthCheckFilePath = ceProps('healthCheckFilePath', false);
 
     const routeApi = new RouteAPI(router, compileHandler, ceProps, storageHandler, renderGoldenLayout);
 
@@ -447,9 +448,9 @@ async function main() {
         if (JSON.stringify(prevCompilers) === JSON.stringify(compilers)) {
             return;
         }
-        logger.debug("Compilers:", compilers);
+        logger.debug('Compilers:', compilers);
         if (compilers.length === 0) {
-            logger.error("#### No compilers found: no compilation will be done!");
+            logger.error('#### No compilers found: no compilation will be done!');
         }
         prevCompilers = compilers;
         clientOptionsHandler.setCompilers(compilers);
@@ -467,7 +468,7 @@ async function main() {
             rescanCompilerSecs * 1000);
     }
 
-    const sentrySlowRequestMs = ceProps("sentrySlowRequestMs", 0);
+    const sentrySlowRequestMs = ceProps('sentrySlowRequestMs', 0);
 
     webServer
         .set('trust proxy', true)
@@ -507,13 +508,25 @@ async function main() {
 
     const sponsorConfig = sponsors.loadFromString(fs.readFileSync(configDir + '/sponsors.yaml', 'utf-8'));
     function renderConfig(extra, urlOptions) {
-        const urlOptionsWhitelist = [
-            'readOnly', 'hideEditorToolbars'
+        const urlOptionsAllowed = [
+            'readOnly', 'hideEditorToolbars',
         ];
         const filteredUrlOptions = _.mapObject(
-            _.pick(urlOptions, urlOptionsWhitelist),
+            _.pick(urlOptions, urlOptionsAllowed),
             val => utils.toProperty(val));
         const allExtraOptions = _.extend({}, filteredUrlOptions, extra);
+
+        if (allExtraOptions.mobileViewer && allExtraOptions.config) {
+            const normalizer = require('./lib/clientstate-normalizer');
+
+            const clnormalizer = new normalizer.ClientStateNormalizer();
+            clnormalizer.fromGoldenLayout(allExtraOptions.config);
+            const clientstate = clnormalizer.normalized;
+
+            const glnormalizer = new normalizer.ClientStateGoldenifier();
+            allExtraOptions.slides = glnormalizer.generatePresentationModeMobileViewerSlides(clientstate);
+        }
+
         const options = _.extend({}, allExtraOptions, clientOptionsHandler.get());
         options.optionsHash = clientOptionsHandler.getHash();
         options.compilerExplorerOptions = JSON.stringify(allExtraOptions);
@@ -526,20 +539,29 @@ async function main() {
         return options;
     }
 
+    function isMobileViewer(req) {
+        return req.header('CloudFront-Is-Mobile-Viewer') === 'true';
+    }
+
     function renderGoldenLayout(config, metadata, req, res) {
         staticHeaders(res);
         contentPolicyHeader(res);
+
         res.render('index', renderConfig({
             embedded: false,
+            mobileViewer: isMobileViewer(req),
             config: config,
-            metadata: metadata
+            metadata: metadata,
         }, req.query));
     }
 
     const embeddedHandler = function (req, res) {
         staticHeaders(res);
         contentPolicyHeader(res);
-        res.render('embed', renderConfig({embedded: true}, req.query));
+        res.render('embed', renderConfig({
+            embedded: true,
+            mobileViewer: isMobileViewer(req),
+        }, req.query));
     };
     if (isDevMode()) {
         setupWebPackDevMiddleware(router);
@@ -594,23 +616,26 @@ async function main() {
         .use(morgan(morganFormat, {
             stream: logger.stream,
             // Skip for non errors (2xx, 3xx)
-            skip: (req, res) => res.statusCode >= 400
+            skip: (req, res) => res.statusCode >= 400,
         }))
         .use(morgan(morganFormat, {
             stream: logger.warnStream,
             // Skip for non user errors (4xx)
-            skip: (req, res) => res.statusCode < 400 || res.statusCode >= 500
+            skip: (req, res) => res.statusCode < 400 || res.statusCode >= 500,
         }))
         .use(morgan(morganFormat, {
             stream: logger.errStream,
             // Skip for non server errors (5xx)
-            skip: (req, res) => res.statusCode < 500
+            skip: (req, res) => res.statusCode < 500,
         }))
         .use(compression())
         .get('/', (req, res) => {
             staticHeaders(res);
             contentPolicyHeader(res);
-            res.render('index', renderConfig({embedded: false}, req.query));
+            res.render('index', renderConfig({
+                embedded: false,
+                mobileViewer: isMobileViewer(req),
+            }, req.query));
         })
         .get('/e', embeddedHandler)
         // legacy. not a 301 to prevent any redirect loops between old e links and embed.html
@@ -618,7 +643,11 @@ async function main() {
         .get('/embed-ro', (req, res) => {
             staticHeaders(res);
             contentPolicyHeader(res);
-            res.render('embed', renderConfig({embedded: true, readOnly: true}, req.query));
+            res.render('embed', renderConfig({
+                embedded: true,
+                readOnly: true,
+                mobileViewer: isMobileViewer(req),
+            }, req.query));
         })
         .get('/robots.txt', (req, res) => {
             staticHeaders(res);
@@ -636,10 +665,13 @@ async function main() {
             const options = JSON.stringify(clientOptionsHandler.get());
             res.end(`window.compilerExplorerOptions = ${options};`);
         })
-        .use('/bits/:bits.html', (req, res) => {
+        .use('/bits/:bits(\\w+).html', (req, res) => {
             staticHeaders(res);
             contentPolicyHeader(res);
-            res.render('bits/' + req.params.bits, renderConfig({embedded: false}, req.query));
+            res.render('bits/' + req.params.bits, renderConfig({
+                embedded: false,
+                mobileViewer: isMobileViewer(req),
+            }, req.query));
         })
         .use(bodyParser.json({limit: ceProps('bodyParserLimit', maxUploadSize)}))
         .use(bodyParser.text({limit: ceProps('bodyParserLimit', maxUploadSize), type: () => true}))
@@ -650,7 +682,7 @@ async function main() {
     routeApi.InitializeRoutes();
 
     if (!defArgs.doCache) {
-        logger.info("  with disabled caching");
+        logger.info('  with disabled caching');
     }
     setupEventLoopLagLogging();
     startListening(webServer);
@@ -660,6 +692,6 @@ main()
     .then(() => {
     })
     .catch(err => {
-        logger.error("Top-level error (shutting down):", err);
+        logger.error('Top-level error (shutting down):', err);
         process.exit(1);
     });

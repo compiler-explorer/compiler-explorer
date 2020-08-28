@@ -23,8 +23,8 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 const chai = require('chai');
-const chaiAsPromised = require("chai-as-promised");
-const LlvmIrParser = require("../lib/llvm-ir");
+const chaiAsPromised = require('chai-as-promised');
+const LlvmIrParser = require('../lib/llvm-ir');
 const properties = require('../lib/properties');
 
 chai.use(chaiAsPromised);
@@ -32,7 +32,7 @@ chai.should();
 const expect = chai.expect;
 
 const languages = {
-    'c++': {id: 'c++'}
+    'c++': {id: 'c++'},
 };
 
 describe('llvm-ir parseMetaNode', function () {
@@ -41,7 +41,7 @@ describe('llvm-ir parseMetaNode', function () {
 
     before(() => {
         let fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
-        compilerProps = fakeProps.get.bind(fakeProps, 'c++')
+        compilerProps = fakeProps.get.bind(fakeProps, 'c++');
 
         llvmIrParser = new LlvmIrParser(compilerProps);
     });
@@ -63,7 +63,7 @@ describe('llvm-ir parseMetaNode', function () {
             scope: '!44',
             file: '!1',
             line: '8',
-            column: '5'
+            column: '5',
         });
     });
 
@@ -80,7 +80,7 @@ describe('llvm-ir parseMetaNode', function () {
             isDefinition: 'true',
             flags: 'DIFlagPrototyped',
             ceTest: 'a:b\\"c,d',
-            ceEmpty: ''
+            ceEmpty: '',
         });
     });
 
@@ -89,7 +89,7 @@ describe('llvm-ir parseMetaNode', function () {
             metaType: 'File',
             metaId: '!1',
             filename: '/tmp/example.cpp',
-            directory: '/home/compiler-explorer'
+            directory: '/home/compiler-explorer',
         });
     });
 });
@@ -100,7 +100,7 @@ describe('llvm-ir getSourceLineNumber', function () {
 
     before(() => {
         let fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
-        compilerProps = fakeProps.get.bind(fakeProps, 'c++')
+        compilerProps = fakeProps.get.bind(fakeProps, 'c++');
 
         llvmIrParser = new LlvmIrParser(compilerProps);
     });
@@ -112,8 +112,8 @@ describe('llvm-ir getSourceLineNumber', function () {
         '!12': { line: 0, scope: '!10' },
         '!14': { },
         '!15': { scope: '!14' },
-        '!16': { scope: '!42' }
-    }
+        '!16': { scope: '!42' },
+    };
 
     it('should return a line number', function () {
         expect(llvmIrParser.getSourceLineNumber(debugInfo, '!10')).to.equal(10);
@@ -141,27 +141,27 @@ describe('llvm-ir getFileName', function () {
 
     before(() => {
         let fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
-        compilerProps = fakeProps.get.bind(fakeProps, 'c++')
+        compilerProps = fakeProps.get.bind(fakeProps, 'c++');
 
         llvmIrParser = new LlvmIrParser(compilerProps);
     });
     const debugInfo = {
-        '!10': { filename: "/test.cpp" },
-        '!20': { filename: "/example.cpp" },
+        '!10': { filename: '/test.cpp' },
+        '!20': { filename: '/example.cpp' },
         '!11': { file: '!10' },
         '!21': { file: '!20' },
         '!12': { scope: '!11' },
-        '!13': { scope: '!12' }
-    }
+        '!13': { scope: '!12' },
+    };
 
     it('should return a filename', function () {
-        expect(llvmIrParser.getFileName(debugInfo, '!10')).to.equal("/test.cpp");
-        expect(llvmIrParser.getFileName(debugInfo, '!11')).to.equal("/test.cpp");
+        expect(llvmIrParser.getFileName(debugInfo, '!10')).to.equal('/test.cpp');
+        expect(llvmIrParser.getFileName(debugInfo, '!11')).to.equal('/test.cpp');
     });
 
     it('should return the filename of its parent scope', function () {
-        expect(llvmIrParser.getFileName(debugInfo, '!12')).to.equal("/test.cpp");
-        expect(llvmIrParser.getFileName(debugInfo, '!13')).to.equal("/test.cpp");
+        expect(llvmIrParser.getFileName(debugInfo, '!12')).to.equal('/test.cpp');
+        expect(llvmIrParser.getFileName(debugInfo, '!13')).to.equal('/test.cpp');
     });
 
     it('should return null on non-existend node', function () {
@@ -180,7 +180,7 @@ describe('llvm-ir isLineLlvmDirective', function () {
 
     before(() => {
         let fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
-        compilerProps = fakeProps.get.bind(fakeProps, 'c++')
+        compilerProps = fakeProps.get.bind(fakeProps, 'c++');
 
         llvmIrParser = new LlvmIrParser(compilerProps);
     });
@@ -195,14 +195,14 @@ describe('llvm-ir isLineLlvmDirective', function () {
             'file: !1, line: 28, type: !8, isLocal: false, isDefinition: true, scopeLine: 28)',
         '!150 = distinct !DILexicalBlock(scope: !146, file: !1, line: 29, column: 5)',
         '!156 = !DILocation(line: 30, column: 15, scope: !154)',
-        '!169 = distinct !{!169, !152, !170}'
+        '!169 = distinct !{!169, !152, !170}',
     ];
 
     const nonDirectives = [
         '  %33 = load i32, i32* %5, align 4, !dbg !167',
         '  %25 = getelementptr inbounds double, double* %22, i64 %24, !dbg !129',
         'define void @_Z9maxAr1rayPdS_(double*, double*) #0 !dbg !76 {',
-        '  call void @llvm.dbg.declare(metadata double** %3, metadata !12, metadata !DIExpression()), !dbg !13'
+        '  call void @llvm.dbg.declare(metadata double** %3, metadata !12, metadata !DIExpression()), !dbg !13',
     ];
 
     it('should recognize directives', function () {

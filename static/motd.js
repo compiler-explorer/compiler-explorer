@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-"use strict";
+'use strict';
 var $ = require('jquery'),
     Sentry = require('@sentry/browser'),
     _ = require('underscore'),
@@ -30,9 +30,9 @@ var $ = require('jquery'),
 
 function handleMotd(motd, motdNode, subLang, adsEnabled, onHide) {
     if (motd.motd) {
-        motdNode.find(".content").html(motd.motd);
+        motdNode.find('.content').html(motd.motd);
         motdNode.removeClass('d-none');
-        motdNode.find(".close")
+        motdNode.find('.close')
             .on('click', function () {
                 motdNode.addClass('d-none');
             })
@@ -43,13 +43,13 @@ function handleMotd(motd, motdNode, subLang, adsEnabled, onHide) {
         });
         var randomAd = applicableAds[_.random(applicableAds.length - 1)];
         if (randomAd) {
-            motdNode.find(".content").html(randomAd.html);
-            motdNode.find(".close").on('click', function () {
+            motdNode.find('.content').html(randomAd.html);
+            motdNode.find('.close').on('click', function () {
                 ga.proxy('send', {
                     hitType: 'event',
                     eventCategory: 'Ads',
                     eventLabel: 'Visibility',
-                    eventAction: 'Hide'
+                    eventAction: 'Hide',
                 });
                 motdNode.addClass('d-none');
                 onHide();
@@ -59,7 +59,7 @@ function handleMotd(motd, motdNode, subLang, adsEnabled, onHide) {
                     hitType: 'event',
                     eventCategory: 'Ads',
                     eventAction: 'Click',
-                    eventLabel: this.href
+                    eventLabel: this.href,
                 });
             });
             motdNode.removeClass('d-none');
@@ -75,10 +75,10 @@ function initialise(url, motdNode, defaultLanguage, adsEnabled, onMotd, onHide) 
             handleMotd(res, motdNode, defaultLanguage, adsEnabled, onHide);
         })
         .catch(function (jqXHR, textStatus, errorThrown) {
-            Sentry.captureMessage("MOTD error for " + url + " - " + textStatus + " - " + errorThrown, "warning");
+            Sentry.captureMessage('MOTD error for ' + url + ' - ' + textStatus + ' - ' + errorThrown, 'warning');
         });
 }
 
 module.exports = {
-    initialise: initialise
+    initialise: initialise,
 };

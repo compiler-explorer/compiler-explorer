@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-"use strict";
+'use strict';
 var
     local = require('./local'),
     _ = require('underscore');
@@ -42,7 +42,7 @@ function extractEditorSources(content) {
         } else if (component.componentName === 'codeEditor') {
             sources.push({
                 lang: component.componentState.lang,
-                source: component.componentState.source
+                source: component.componentState.source,
             });
         }
     }
@@ -52,9 +52,7 @@ function extractEditorSources(content) {
 
 function list() {
     var stringifiedHistory = local.get('history');
-    var completeHistory = JSON.parse(stringifiedHistory ? stringifiedHistory : '[]');
-
-    return completeHistory;
+    return JSON.parse(stringifiedHistory ? stringifiedHistory : '[]');
 }
 
 function getArrayWithJustTheCode(editorSources) {
@@ -90,7 +88,7 @@ function push(stringifiedConfig) {
             completeHistory.push({
                 dt: Date.now(),
                 sources: sources,
-                config: config
+                config: config,
             });
         } else {
             var entry = completeHistory[duplicateIdx];
@@ -118,7 +116,7 @@ function sources(language) {
             if (source.lang === language) {
                 sourcelist.push({
                     dt: entry.dt,
-                    source: source.source
+                    source: source.source,
                 });
             }
         });
@@ -131,5 +129,5 @@ module.exports = {
     push: _.debounce(push, 500),
     list: list,
     sortedList: sortedList,
-    sources: sources
+    sources: sources,
 };
