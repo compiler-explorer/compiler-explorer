@@ -317,6 +317,12 @@ Tool.prototype.onCompileResult = function (id, compiler, result) {
         if (id !== this.compilerId) return;
         if (compiler) this.compilerName = compiler.name;
 
+        var foundTool = _.find(compiler.tools, function (tool) {
+            return (tool.tool.id === this.toolId);
+        }, this);
+
+        this.toggleUsable(foundTool);
+
         var toolResult = null;
         if (result && result.tools) {
             toolResult = _.find(result.tools, function (tool) {
