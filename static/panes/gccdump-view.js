@@ -31,6 +31,7 @@ require('../modes/gccdump-rtl-gimple-mode');
 var _ = require('underscore');
 var $ = require('jquery');
 var ga = require('../analytics');
+var monacoConfig = require('../monaco-config');
 
 require('selectize');
 
@@ -39,21 +40,14 @@ function GccDump(hub, container, state) {
     this.eventHub = hub.createEventHub();
     this.domRoot = container.getElement();
     this.domRoot.html($('#gccdump').html());
+    var root = this.domRoot.find('.monaco-placeholder');
 
-    this.gccDumpEditor = monaco.editor.create(this.domRoot.find('.monaco-placeholder')[0], {
-        value: '',
-        scrollBeyondLastLine: true,
+    this.gccDumpEditor = monaco.editor.create(root[0], monacoConfig.extendConfig({
         readOnly: true,
         glyphMargin: true,
-        quickSuggestions: false,
-        fixedOverflowWidgets: true,
-        fontFamily: 'Consolas, "Liberation Mono", Courier, monospace',
-        minimap: {
-            maxColumn: 80,
-        },
         lineNumbersMinChars: 3,
         dropdownParent: 'body',
-    });
+    }));
 
     this.initButtons(state);
 

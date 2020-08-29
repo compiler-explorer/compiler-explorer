@@ -30,6 +30,7 @@ var _ = require('underscore');
 var $ = require('jquery');
 var colour = require('../colour');
 var ga = require('../analytics');
+var monacoConfig = require('../monaco-config');
 
 function Ir(hub, container, state) {
     this.container = container;
@@ -39,22 +40,14 @@ function Ir(hub, container, state) {
 
     this.decorations = {};
     this.prevDecorations = [];
+    var root = this.domRoot.find('.monaco-placeholder');
 
-    this.irEditor = monaco.editor.create(this.domRoot.find('.monaco-placeholder')[0], {
-        fontFamily: 'Consolas, "Liberation Mono", Courier, monospace',
-        value: '',
-        scrollBeyondLastLine: true,
+    this.irEditor = monaco.editor.create(root[0], monacoConfig.extendConfig({
         language: 'llvm-ir',
         readOnly: true,
-        folding: true,
         glyphMargin: true,
-        quickSuggestions: false,
-        fixedOverflowWidgets: true,
-        minimap: {
-            maxColumn: 80,
-        },
         lineNumbersMinChars: 3,
-    });
+    }));
 
     this._compilerid = state.id;
     this._compilerName = state.compilerName;

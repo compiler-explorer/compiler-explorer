@@ -101,8 +101,9 @@ function Diff(hub, container, state) {
     this.domRoot = container.getElement();
     this.domRoot.html($('#diff').html());
     this.compilers = {};
+    var root = this.domRoot.find('.monaco-placeholder');
 
-    this.outputEditor = monaco.editor.createDiffEditor(this.domRoot.find('.monaco-placeholder')[0], {
+    this.outputEditor = monaco.editor.createDiffEditor(root[0], {
         fontFamily: 'Consolas, "Liberation Mono", Courier, monospace',
         scrollBeyondLastLine: true,
         readOnly: true,
