@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-"use strict";
+'use strict';
 
 var _ = require('underscore');
 var $ = require('jquery');
@@ -39,7 +39,7 @@ function makeAnsiToHtml(color) {
         fg: color ? color : '#333',
         bg: '#f5f5f5',
         stream: true,
-        escapeXML: true
+        escapeXML: true,
     });
 }
 
@@ -48,7 +48,7 @@ function Tool(hub, container, state) {
     this.compilerId = state.compiler;
     this.editorId = state.editor;
     this.toolId = state.toolId;
-    this.toolName = "Tool";
+    this.toolName = 'Tool';
     this.compilerService = hub.compilerService;
     this.eventHub = hub.createEventHub();
     this.domRoot = container.getElement();
@@ -57,7 +57,7 @@ function Tool(hub, container, state) {
     this.plainContentRoot = this.domRoot.find('pre.content');
     this.optionsToolbar = this.domRoot.find('.options-toolbar');
     this.badLangToolbar = this.domRoot.find('.bad-lang');
-    this.compilerName = "";
+    this.compilerName = '';
     this.normalAnsiToHtml = makeAnsiToHtml();
     this.errorAnsiToHtml = makeAnsiToHtml('red');
 
@@ -65,20 +65,20 @@ function Tool(hub, container, state) {
     this.stdinField = this.domRoot.find('textarea.tool-stdin');
 
     this.outputEditor = monaco.editor.create(this.editorContentRoot[0], {
-        scrollBeyondLastLine: false,
+        scrollBeyondLastLine: true,
         readOnly: true,
         language: 'text',
-        fontFamily: "courier new",
+        fontFamily: 'courier new',
         glyphMargin: true,
         fixedOverflowWidgets: true,
         minimap: {
-            maxColumn: 80
+            maxColumn: 80,
         },
         lineNumbersMinChars: 5,
-        renderIndentGuides: false
+        renderIndentGuides: false,
     });
 
-    this.fontScale = new FontScale(this.domRoot, state, ".content,.monaco-editor");
+    this.fontScale = new FontScale(this.domRoot, state, '.content');
     this.fontScale.on('change', _.bind(function () {
         this.saveState();
     }, this));
@@ -96,7 +96,7 @@ function Tool(hub, container, state) {
     ga.proxy('send', {
         hitType: 'event',
         eventCategory: 'OpenViewPane',
-        eventAction: 'Tool'
+        eventAction: 'Tool',
     });
 
     this.eventHub.emit('toolOpened', this.compilerId, this.currentState());
@@ -123,7 +123,7 @@ Tool.prototype.initCallbacks = function () {
 
     if (MutationObserver !== undefined) {
         new MutationObserver(_.bind(this.resize, this)).observe(this.stdinField[0], {
-            attributes: true, attributeFilter: ["style"]
+            attributes: true, attributeFilter: ['style'],
         });
     }
 };
@@ -151,10 +151,10 @@ Tool.prototype.onSettingsChange = function (newSettings) {
     this.outputEditor.updateOptions({
         contextmenu: newSettings.useCustomContextMenu,
         minimap: {
-            enabled: newSettings.showMinimap
+            enabled: newSettings.showMinimap,
         },
         fontFamily: newSettings.editorsFFont,
-        fontLigatures: newSettings.editorsFLigatures
+        fontLigatures: newSettings.editorsFLigatures,
     });
 };
 
@@ -190,7 +190,7 @@ Tool.prototype.getInputArgs = function () {
     if (this.optionsField) {
         return this.optionsField.val();
     } else {
-        return "";
+        return '';
     }
 };
 
@@ -198,7 +198,7 @@ Tool.prototype.getInputStdin = function () {
     if (this.stdinField) {
         return this.stdinField.val();
     } else {
-        return "";
+        return '';
     }
 };
 
@@ -208,16 +208,16 @@ Tool.prototype.getEffectiveOptions = function () {
 
 Tool.prototype.resize = function () {
     var barsHeight = this.optionsToolbar.outerHeight() + 2;
-    if (!this.panelArgs.hasClass("d-none")) {
+    if (!this.panelArgs.hasClass('d-none')) {
         barsHeight += this.panelArgs.outerHeight();
     }
-    if (!this.panelStdin.hasClass("d-none")) {
+    if (!this.panelStdin.hasClass('d-none')) {
         barsHeight += this.panelStdin.outerHeight();
     }
 
     this.outputEditor.layout({
         width: this.domRoot.width(),
-        height: this.domRoot.height() - barsHeight
+        height: this.domRoot.height() - barsHeight,
     });
 
     this.plainContentRoot.height(this.domRoot.height() - barsHeight);
@@ -285,7 +285,7 @@ Tool.prototype.currentState = function () {
         args: this.getInputArgs(),
         stdin: this.getInputStdin(),
         stdinPanelShown: !this.panelStdin.hasClass('d-none'),
-        argsPanelShow: !this.panelArgs.hasClass('d-none')
+        argsPanelShow: !this.panelArgs.hasClass('d-none'),
     };
     this.fontScale.addState(state);
     return state;
@@ -297,14 +297,16 @@ Tool.prototype.saveState = function () {
 
 Tool.prototype.setLanguage = function (languageId) {
     if (languageId) {
-        this.options.enableToggle("wrap", false);
+        this.options.enableToggle('wrap', false);
         monaco.editor.setModelLanguage(this.outputEditor.getModel(), languageId);
-        this.outputEditor.setValue("");
+        this.outputEditor.setValue('');
+        this.fontScale.setTarget(this.outputEditor);
         $(this.plainContentRoot).hide();
         $(this.editorContentRoot).show();
     } else {
-        this.options.enableToggle("wrap", true);
+        this.options.enableToggle('wrap', true);
         this.plainContentRoot.empty();
+        this.fontScale.setTarget('.content');
         $(this.editorContentRoot).hide();
         $(this.plainContentRoot).show();
     }
@@ -330,20 +332,20 @@ Tool.prototype.onCompileResult = function (id, compiler, result) {
         }
 
         if (toolInfo) {
-            this.toggleStdin.prop("disabled", false);
+            this.toggleStdin.prop('disabled', false);
 
             if (toolInfo.tool.stdinHint) {
-                this.stdinField.prop("placeholder", toolInfo.tool.stdinHint);
-                if (toolInfo.tool.stdinHint === "disabled") {
-                    this.toggleStdin.prop("disabled", true);
+                this.stdinField.prop('placeholder', toolInfo.tool.stdinHint);
+                if (toolInfo.tool.stdinHint === 'disabled') {
+                    this.toggleStdin.prop('disabled', true);
                 }
             } else {
-                this.stdinField.prop("placeholder", "Tool stdin...");
+                this.stdinField.prop('placeholder', 'Tool stdin...');
             }
         }
 
         if (toolResult) {
-            if (toolResult.languageId && (toolResult.languageId === "stderr")) {
+            if (toolResult.languageId && (toolResult.languageId === 'stderr')) {
                 toolResult.languageId = false;
             }
 
@@ -353,7 +355,7 @@ Tool.prototype.onCompileResult = function (id, compiler, result) {
                 this.setEditorContent(_.pluck(toolResult.stdout, 'text').join('\n'));
             } else {
                 _.each((toolResult.stdout || []).concat(toolResult.stderr || []), function (obj) {
-                    if (obj.text === "") {
+                    if (obj.text === '') {
                         this.add('<br/>');
                     } else {
                         this.add(this.normalAnsiToHtml.toHtml(obj.text), obj.tag ? obj.tag.line : obj.line);
@@ -368,11 +370,11 @@ Tool.prototype.onCompileResult = function (id, compiler, result) {
                 this.eventHub.emit('newSource', this.editorId, toolResult.newsource);
             }
         } else {
-            this.setEditorContent("No tool result");
+            this.setEditorContent('No tool result');
         }
     } catch(e) {
         this.setLanguage(false);
-        this.add("javascript error: " + e.message);
+        this.add('javascript error: ' + e.message);
     }
 };
 
@@ -410,7 +412,7 @@ Tool.prototype.setEditorContent = function (content) {
 Tool.prototype.setNormalContent = function () {
     this.outputEditor.updateOptions({
         lineNumbers: true,
-        codeLens: false
+        codeLens: false,
     });
     if (this.codeLensProvider) {
         this.codeLensProvider.dispose();
@@ -418,8 +420,8 @@ Tool.prototype.setNormalContent = function () {
 };
 
 Tool.prototype.updateCompilerName = function () {
-    var name = this.toolName + " #" + this.compilerId;
-    if (this.compilerName) name += " with " + this.compilerName;
+    var name = this.toolName + ' #' + this.compilerId;
+    if (this.compilerName) name += ' with ' + this.compilerName;
     this.container.setTitle(name);
 };
 
@@ -439,5 +441,5 @@ Tool.prototype.close = function () {
 };
 
 module.exports = {
-    Tool: Tool
+    Tool: Tool,
 };

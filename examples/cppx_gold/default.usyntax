@@ -1,0 +1,6 @@
+# Type your code here, or load an example.
+square(num : int) : int!
+  return num * num
+
+main() : int!
+  return 0

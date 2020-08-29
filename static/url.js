@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-"use strict";
+'use strict';
 var GoldenLayout = require('golden-layout');
 var rison = require('rison');
 var $ = require('jquery');
@@ -32,7 +32,7 @@ var _ = require('underscore');
 
 function convertOldState(state) {
     var sc = state.compilers[0];
-    if (!sc) throw new Error("Unable to determine compiler from old state");
+    if (!sc) throw new Error('Unable to determine compiler from old state');
     var content = [];
     var source;
     if (sc.sourcez) {
@@ -119,5 +119,5 @@ module.exports = {
     deserialiseState: deserialiseState,
     serialiseState: serialiseState,
     unrisonify: unrisonify,
-    risonify: risonify
+    risonify: risonify,
 };

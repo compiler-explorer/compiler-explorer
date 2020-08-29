@@ -46,7 +46,7 @@ function makeAnsiToHtml(color) {
         fg: color ? color : '#333',
         bg: '#f5f5f5',
         stream: true,
-        escapeXML: true
+        escapeXML: true,
     });
 }
 
@@ -74,7 +74,7 @@ function Executor(hub, container, state) {
     this.nextRequest = null;
 
     this.alertSystem = new Alert();
-    this.alertSystem.prefixMessage = "Executor #" + this.id + ": ";
+    this.alertSystem.prefixMessage = 'Executor #' + this.id + ': ';
 
     this.normalAnsiToHtml = makeAnsiToHtml();
     this.errorAnsiToHtml = makeAnsiToHtml('red');
@@ -94,14 +94,14 @@ function Executor(hub, container, state) {
         options: _.map(this.getCurrentLangCompilers(), _.identity),
         items: this.compiler ? [this.compiler.id] : [],
         dropdownParent: 'body',
-        closeAfterSelect: true
+        closeAfterSelect: true,
     }).on('change', _.bind(function (e) {
         var val = $(e.target).val();
         if (val) {
             ga.proxy('send', {
                 hitType: 'event',
                 eventCategory: 'SelectCompiler',
-                eventAction: val
+                eventAction: val,
             });
             this.onCompilerChange(val);
         }
@@ -118,7 +118,7 @@ function Executor(hub, container, state) {
     ga.proxy('send', {
         hitType: 'event',
         eventCategory: 'OpenViewPane',
-        eventAction: 'Executor'
+        eventAction: 'Executor',
     });
 }
 
@@ -188,20 +188,20 @@ Executor.prototype.compile = function (bypassCache) {
         userArguments: this.options,
         executeParameters: {
             args: this.executionArguments,
-            stdin: this.executionStdin
+            stdin: this.executionStdin,
         },
         compilerOptions: {
-            executorRequest: true
+            executorRequest: true,
         },
         filters: {execute: true},
         tools: [],
-        libraries: []
+        libraries: [],
     };
 
     _.each(this.libsWidget.getLibsInUse(), function (item) {
         options.libraries.push({
             id: item.libId,
-            version: item.versionId
+            version: item.versionId,
         });
     });
 
@@ -210,7 +210,7 @@ Executor.prototype.compile = function (bypassCache) {
             source: expanded || '',
             compiler: this.compiler ? this.compiler.id : '',
             options: options,
-            lang: this.currentLangId
+            lang: this.currentLangId,
         };
         if (bypassCache) request.bypassCache = true;
         if (!this.compiler) {
@@ -241,7 +241,7 @@ Executor.prototype.sendCompile = function (request) {
             onCompilerResponse(request, x.result, x.localCacheHit);
         })
         .catch(function (x) {
-            var message = "Unknown error";
+            var message = 'Unknown error';
             if (_.isString(x)) {
                 message = x;
             } else if (x) {
@@ -291,13 +291,13 @@ Executor.prototype.onCompileResponse = function (request, result, cached) {
         eventCategory: 'Compile',
         eventAction: request.compiler,
         eventLabel: request.options.userArguments,
-        eventValue: cached ? 1 : 0
+        eventValue: cached ? 1 : 0,
     });
     ga.proxy('send', {
         hitType: 'timing',
         timingCategory: 'Compile',
         timingVar: request.compiler,
-        timingValue: timeTaken
+        timingValue: timeTaken,
     });
 
     this.clearPreviousOutput();
@@ -313,8 +313,8 @@ Executor.prototype.onCompileResponse = function (request, result, cached) {
         this.compilerOutputSection.append($('<p></p>').text('Compiler stdout'));
         var outElem = $('<pre class="card"></pre>').appendTo(this.compilerOutputSection);
         _.each(compileStdout, function (obj) {
-            if (obj.text === "") {
-                this.addCompilerOutputLine("<br/>", outElem);
+            if (obj.text === '') {
+                this.addCompilerOutputLine('<br/>', outElem);
             } else {
                 var lineNumber = obj.tag ? obj.tag.line : obj.line;
                 var columnNumber = obj.tag ? obj.tag.column : -1;
@@ -326,8 +326,8 @@ Executor.prototype.onCompileResponse = function (request, result, cached) {
         this.compilerOutputSection.append($('<p></p>').text('Compiler stderr'));
         var errElem = $('<pre class="card"></pre>').appendTo(this.compilerOutputSection);
         _.each(compileStderr, function (obj) {
-            if (obj.text === "") {
-                this.addCompilerOutputLine("<br/>", errElem);
+            if (obj.text === '') {
+                this.addCompilerOutputLine('<br/>', errElem);
             } else {
                 var lineNumber = obj.tag ? obj.tag.line : obj.line;
                 var columnNumber = obj.tag ? obj.tag.column : -1;
@@ -422,11 +422,11 @@ Executor.prototype.initButtons = function (state) {
         var target = $(e.target);
         if (!target.is(this.prependOptions) && this.prependOptions.has(target).length === 0 &&
             target.closest('.popover').length === 0)
-            this.prependOptions.popover("hide");
+            this.prependOptions.popover('hide');
 
         if (!target.is(this.fullCompilerName) && this.fullCompilerName.has(target).length === 0 &&
             target.closest('.popover').length === 0)
-            this.fullCompilerName.popover("hide");
+            this.fullCompilerName.popover('hide');
     }, this));
 
     this.optionsField.val(this.options);
@@ -599,7 +599,7 @@ Executor.prototype.initCallbacks = function () {
 
     if (MutationObserver !== undefined) {
         new MutationObserver(_.bind(this.resize, this)).observe(this.execStdinField[0], {
-            attributes: true, attributeFilter: ["style"]
+            attributes: true, attributeFilter: ['style'],
         });
     }
 };
@@ -635,7 +635,7 @@ Executor.prototype.updateCompilerInfo = function () {
             this.alertSystem.notify(this.compiler.notification, {
                 group: 'compilerwarning',
                 alertClass: 'notification-info',
-                dismissTime: 5000
+                dismissTime: 5000,
             });
         }
         this.prependOptions.data('content', this.compiler.options);
@@ -685,7 +685,7 @@ Executor.prototype.currentState = function () {
         compilationPanelShown: !this.panelCompilation.hasClass('d-none'),
         compilerOutShown: !this.compilerOutputSection.hasClass('d-none'),
         argsPanelShown: !this.panelArgs.hasClass('d-none'),
-        stdinPanelShown: !this.panelStdin.hasClass('d-none')
+        stdinPanelShown: !this.panelStdin.hasClass('d-none'),
     };
     this.fontScale.addState(state);
     return state;
@@ -726,7 +726,7 @@ Executor.prototype.setCompilationOptionsPopover = function (content) {
         template: '<div class="popover' +
             (content ? ' compiler-options-popover' : '') +
             '" role="tooltip"><div class="arrow"></div>' +
-            '<h3 class="popover-header"></h3><div class="popover-body"></div></div>'
+            '<h3 class="popover-header"></h3><div class="popover-body"></div></div>',
     });
 };
 
@@ -737,7 +737,7 @@ Executor.prototype.setCompilerVersionPopover = function (version) {
         template: '<div class="popover' +
             (version ? ' compiler-options-popover' : '') +
             '" role="tooltip"><div class="arrow"></div>' +
-            '<h3 class="popover-header"></h3><div class="popover-body"></div></div>'
+            '<h3 class="popover-header"></h3><div class="popover-body"></div></div>',
     });
 };
 
@@ -750,19 +750,19 @@ Executor.prototype.handleCompilationStatus = function (status) {
 
     function ariaLabel() {
         // Compiling...
-        if (status.code === 4) return "Compiling";
+        if (status.code === 4) return 'Compiling';
         if (status.didExecute) {
-            return "Program compiled & executed";
+            return 'Program compiled & executed';
         } else {
-            return "Program could not be executed";
+            return 'Program could not be executed';
         }
     }
 
     function color() {
         // Compiling...
-        if (status.code === 4) return "black";
-        if (status.didExecute) return "#12BB12";
-        return "#FF1212";
+        if (status.code === 4) return 'black';
+        if (status.didExecute) return '#12BB12';
+        return '#FF1212';
     }
 
     this.statusIcon
@@ -790,7 +790,7 @@ Executor.prototype.onLanguageChange = function (editorId, newLangId) {
             compiler: this.compiler && this.compiler.id ? this.compiler.id : options.defaultCompiler[oldLangId],
             options: this.options,
             execArgs: this.executionArguments,
-            execStdin: this.executionStdin
+            execStdin: this.executionStdin,
         };
         var info = this.infoByLang[this.currentLangId] || {};
         this.initLangAndCompiler({lang: newLangId, compiler: info.compiler});
@@ -823,5 +823,5 @@ Executor.prototype.updateCompilersSelector = function (info) {
 };
 
 module.exports = {
-    Executor: Executor
+    Executor: Executor,
 };

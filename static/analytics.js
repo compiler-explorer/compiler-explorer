@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-"use strict";
+'use strict';
 var options = require('options');
 var Sentry = require('@sentry/browser');
 
@@ -30,7 +30,7 @@ if (options.sentryDsn) {
     Sentry.init({
         dsn: options.sentryDsn,
         release: options.release,
-        environment: options.sentryEnvironment
+        environment: options.sentryEnvironment,
     });
 }
 

@@ -21,7 +21,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-"use strict";
+'use strict';
 
 var _ = require('underscore');
 
@@ -31,7 +31,7 @@ var schemes = [
     {name: 'rainbow2', desc: 'Rainbow 2', count: 12, themes: ['default']},
     {name: 'earth', desc: 'Earth tones (colourblind safe)', count: 9, themes: ['default']},
     {name: 'green-blue', desc: 'Greens and blues (colourblind safe)', count: 4, themes: ['default']},
-    {name: 'gray-shade', desc: 'Gray shades', count: 4, themes: ['dark']}
+    {name: 'gray-shade', desc: 'Gray shades', count: 4, themes: ['dark']},
 ];
 
 function applyColours(editor, colours, schemeName, prevDecorations) {
@@ -45,8 +45,8 @@ function applyColours(editor, colours, schemeName, prevDecorations) {
             range: new monaco.Range(line, 1, line, 1),
             options: {
                 isWholeLine: true,
-                className: "line-linkage " + scheme.name + "-" + (ordinal % scheme.count)
-            }
+                className: 'line-linkage ' + scheme.name + '-' + (ordinal % scheme.count),
+            },
         };
     });
     return editor.deltaDecorations(prevDecorations, newDecorations);
@@ -54,5 +54,5 @@ function applyColours(editor, colours, schemeName, prevDecorations) {
 
 module.exports = {
     applyColours: applyColours,
-    schemes: schemes
+    schemes: schemes,
 };

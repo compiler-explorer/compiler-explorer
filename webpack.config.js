@@ -4,6 +4,7 @@ const path = require('path'),
     MiniCssExtractPlugin = require('mini-css-extract-plugin'),
     ManifestPlugin = require('webpack-manifest-plugin'),
     TerserPlugin = require('terser-webpack-plugin'),
+    OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin'),
     MonacoEditorWebpackPlugin = require('monaco-editor-webpack-plugin');
 
 const isDev = process.env.NODE_ENV !== "production";
@@ -14,10 +15,10 @@ const staticPath = path.join(distPath, 'static');
 // Hack alert: due to a variety of issues, sometimes we need to change
 // the name here. Mostly it's things like webpack changes that affect
 // how minification is done, even though that's supposed not to matter.
-const webjackJsHack = ".v2.";
+const webjackJsHack = ".v3.";
 const plugins = [
     new MonacoEditorWebpackPlugin({
-        languages: ['cpp', 'go', 'rust', 'swift', 'pascal'],
+        languages: [ 'cpp', 'go', 'pascal', 'python', 'rust', 'swift' ],
         filename: isDev ? '[name].worker.js' : `[name]${webjackJsHack}worker.[contenthash].js`
     }),
     new CopyWebpackPlugin([
@@ -47,13 +48,32 @@ module.exports = {
         path: staticPath
     },
     resolve: {
+        alias: {
+            'monaco-editor$': 'monaco-editor/esm/vs/editor/editor.api'
+        },
         modules: ['./static', './node_modules']
     },
     stats: 'normal',
     devtool: 'source-map',
     optimization: {
-        minimize: !isDev,
+        runtimeChunk: 'single',
+        splitChunks: {
+            cacheGroups: {
+                vendors: {
+                    test: /[\\/]node_modules[\\/]/,
+                    name: 'vendor',
+                    chunks: 'all',
+                    priority: -10,
+                }
+            }
+        },
+        moduleIds: 'hashed',
         minimizer: [
+            new OptimizeCssAssetsPlugin({
+                cssProcessorPluginOptions: {
+                    preset: ['default', { discardComments: { removeAll: true } }],
+                }
+            }),
             new TerserPlugin({
                 parallel: true,
                 sourceMap: true,
@@ -82,7 +102,7 @@ module.exports = {
             {
                 test: /\.css$/,
                 include: path.resolve(__dirname, 'static/themes/'),
-                use: ['css-loader']
+                loader: 'css-loader'
             },
             {
                 test: /\.(png|woff|woff2|eot|ttf|svg)$/,
@@ -90,10 +110,7 @@ module.exports = {
             },
             {
                 test: /\.(html)$/,
-                loader: 'html-loader',
-                options: {
-                    minimize: !isDev
-                }
+                loader: 'html-loader'
             }
         ]
     },

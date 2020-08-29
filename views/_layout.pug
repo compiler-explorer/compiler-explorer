@@ -7,6 +7,7 @@ html(lang="en")
         include meta.pug
 
     block styles
+        link(href=require("vendor.css") rel="stylesheet")
         link(href=require("main.css") rel="stylesheet")
         style#theme
 
@@ -26,4 +27,6 @@ html(lang="en")
           |   s.src = "!{require("es6-shim.min.js")}";
           |   document.head.appendChild(s);
           | }
+        script(src=require("runtime.js"))
+        script(src=require("vendor.js"))
         script(src=require("main.js"))

@@ -51,10 +51,13 @@ To specify a compilation request as a JSON document, post it as the appropriate
  type and send an object of the form:
 ```JSON
 {
-    "source": "Source to compile",
+    "source": "<Source-to-compile>",
     "options": {
-        "userArguments": "Compiler flags",
-        "compilerOptions": {},
+        "userArguments": "<Compiler-flags>",
+        "compilerOptions": {
+              "skipAsm": false,
+              "executorRequest": false
+        },
         "filters": {
              "binary": false,
              "commentOnly": true,
@@ -73,11 +76,13 @@ To specify a compilation request as a JSON document, post it as the appropriate
              {"id": "range-v3", "version": "trunk"},
              {"id": "fmt", "version": "400"}
         ]
-    }
+    },
+    "lang": "<lang-id (Optional)>",
+    "allowStoreCodeDebug": true
 }
 ```
 
-Execution Only request:
+Execution Only request example:
 ```JSON
 {
     "source": "int main () { return 1; }",
@@ -261,3 +266,4 @@ Here are some examples of projects using the Compiler Explorer API:
 * [API in Delphi by partouf](https://github.com/partouf/compilerexplorer-api) (Delphi)
 * [QTCreator Plugin by dobokirisame](https://github.com/dobokirisame/CompilerExplorer) (C++)
 * [CLion plugin by ogrebenyuk](https://github.com/ogrebenyuk/compilerexplorer) (Java)
+* [QCompilerExplorer - frontend in Qt](https://github.com/Waqar144/QCompilerExplorer) (C++)

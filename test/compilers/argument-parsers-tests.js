@@ -24,15 +24,15 @@
 
 const chai = require('chai'),
     FakeCompiler = require('../../lib/compilers/fake-for-test'),
-    chaiAsPromised = require("chai-as-promised"),
+    chaiAsPromised = require('chai-as-promised'),
     parsers = require('../../lib/compilers/argument-parsers'),
     CompilerArguments = require('../../lib/compiler-arguments'),
-    {makeCompilationEnvironment} = require('../utils.js');
+    {makeCompilationEnvironment} = require('../utils');
 chai.use(chaiAsPromised);
 const should = chai.should();
 
 const languages = {
-    'c++': {id: 'c++'}
+    'c++': {id: 'c++'},
 };
 
 let env;
@@ -44,9 +44,9 @@ function makeCompiler(stdout, stderr, code) {
 
     if (code === undefined) code = 0;
     const compiler = new FakeCompiler({lang: languages['c++'].id, remote: true}, env);
-    compiler.exec = () => Promise.resolve({code: code, stdout: stdout || "", stderr: stderr || ""});
+    compiler.exec = () => Promise.resolve({code: code, stdout: stdout || '', stderr: stderr || ''});
     compiler.execCompilerCached = compiler.exec;
-    compiler.possibleArguments = new CompilerArguments("g82");
+    compiler.possibleArguments = new CompilerArguments('g82');
     return compiler;
 }
 
@@ -59,38 +59,38 @@ describe('option parser', () => {
         return parsers.Base.getOptions(makeCompiler()).should.eventually.deep.equals({});
     });
     it('should parse single-dash options', () => {
-        return parsers.Base.getOptions(makeCompiler("-foo\n")).should.eventually.deep.equals({
+        return parsers.Base.getOptions(makeCompiler('-foo\n')).should.eventually.deep.equals({
             '-foo': {
-                "description": "",
-                "timesused": 0
-            }
+                description: '',
+                timesused: 0,
+            },
         });
     });
     it('should parse double-dash options', () => {
-        return parsers.Base.getOptions(makeCompiler("--foo\n")).should.eventually.deep.equals({
+        return parsers.Base.getOptions(makeCompiler('--foo\n')).should.eventually.deep.equals({
             '--foo': {
-                "description": "",
-                "timesused": 0
-            }
+                description: '',
+                timesused: 0,
+            },
         });
     });
     it('should parse stderr options', () => {
-        return parsers.Base.getOptions(makeCompiler("", "--bar=monkey\n")).should.eventually.deep.equals({
+        return parsers.Base.getOptions(makeCompiler('', '--bar=monkey\n')).should.eventually.deep.equals({
             '--bar=monkey': {
-                "description": "",
-                "timesused": 0
-            }
+                description: '',
+                timesused: 0,
+            },
         });
     });
     it('handles non-option text', () => {
-        return parsers.Base.getOptions(makeCompiler("-foo=123\nthis is a fish\n-badger=123")).should.eventually.deep.equals(
+        return parsers.Base.getOptions(makeCompiler('-foo=123\nthis is a fish\n-badger=123')).should.eventually.deep.equals(
             {
-                '-foo=123': {"description": "this is a fish", "timesused": 0},
-                '-badger=123': {"description": "", "timesused": 0}
+                '-foo=123': {description: 'this is a fish', timesused: 0},
+                '-badger=123': {description: '', timesused: 0},
             });
     });
     it('should ignore if errors occur', () => {
-        return parsers.Base.getOptions(makeCompiler("--foo\n", "--bar\n", 1)).should.eventually.deep.equals({});
+        return parsers.Base.getOptions(makeCompiler('--foo\n', '--bar\n', 1)).should.eventually.deep.equals({});
     });
 });
 
@@ -99,25 +99,25 @@ describe('gcc parser', () => {
         return parsers.GCC.parse(makeCompiler()).should.eventually.satisfy(result => {
             return Promise.all([
                 should.not.equal(result.compiler.supportsGccDump, true),
-                result.compiler.options.should.equals('')
+                result.compiler.options.should.equals(''),
             ]);
         });
     });
     it('should handle options', () => {
-        return parsers.GCC.parse(makeCompiler("-masm=intel\n-fdiagnostics-color=[blah]\n-fdump-tree-all"))
+        return parsers.GCC.parse(makeCompiler('-masm=intel\n-fdiagnostics-color=[blah]\n-fdump-tree-all'))
             .should.eventually.satisfy(result => {
                 return Promise.all([
                     result.compiler.supportsGccDump.should.equals(true),
                     result.compiler.supportsIntel.should.equals(true),
                     result.compiler.intelAsm.should.equals('-masm=intel'),
-                    result.compiler.options.should.equals('-fdiagnostics-color=always')
+                    result.compiler.options.should.equals('-fdiagnostics-color=always'),
                 ]);
             });
     });
     it('should handle undefined options', () => {
-        return parsers.GCC.parse(makeCompiler("-fdiagnostics-color=[blah]")).should.eventually.satisfy(result => {
+        return parsers.GCC.parse(makeCompiler('-fdiagnostics-color=[blah]')).should.eventually.satisfy(result => {
             return Promise.all([
-                result.compiler.options.should.equals('-fdiagnostics-color=always')
+                result.compiler.options.should.equals('-fdiagnostics-color=always'),
             ]);
         });
     });
@@ -127,20 +127,20 @@ describe('clang parser', () => {
     it('should handle empty options', () => {
         return parsers.Clang.parse(makeCompiler()).should.eventually.satisfy(result => {
             return Promise.all([
-                result.compiler.options.should.equals('')
+                result.compiler.options.should.equals(''),
             ]);
         });
     });
     it('should handle options', () => {
-        return parsers.Clang.parse(makeCompiler("-fno-crash-diagnostics\n-fsave-optimization-record\n-fcolor-diagnostics"))
+        return parsers.Clang.parse(makeCompiler('-fno-crash-diagnostics\n-fsave-optimization-record\n-fcolor-diagnostics'))
             .should.eventually.satisfy(result => {
                 return Promise.all([
                     result.compiler.supportsOptOutput.should.equals(true),
                     result.compiler.optArg.should.equals('-fsave-optimization-record'),
 
-                    result.compiler.options.should.include("-fcolor-diagnostics"),
-                    result.compiler.options.should.include("-fno-crash-diagnostics"),
-                    result.compiler.options.should.not.include("-fsave-optimization-record")
+                    result.compiler.options.should.include('-fcolor-diagnostics'),
+                    result.compiler.options.should.include('-fno-crash-diagnostics'),
+                    result.compiler.options.should.not.include('-fsave-optimization-record'),
                 ]);
             });
     });
@@ -150,7 +150,7 @@ describe('pascal parser', () => {
     it('should handle empty options', () => {
         return parsers.Pascal.parse(makeCompiler()).should.eventually.satisfy(result => {
             return Promise.all([
-                result.compiler.options.should.equals('')
+                result.compiler.options.should.equals(''),
             ]);
         });
     });
@@ -160,7 +160,7 @@ describe('popular compiler arguments', () => {
     let compiler;
 
     before(() => {
-        compiler = makeCompiler("-fsave-optimization-record\n-x\n-g\n-fcolor-diagnostics\n-O<number> optimization level\n-std=<c++11,c++14,c++17z>");
+        compiler = makeCompiler('-fsave-optimization-record\n-x\n-g\n-fcolor-diagnostics\n-O<number> optimization level\n-std=<c++11,c++14,c++17z>');
     });
 
     it('should return 5 arguments', () => {
@@ -168,12 +168,12 @@ describe('popular compiler arguments', () => {
             return compiler.should.satisfy(compiler => {
                 return Promise.all([
                     compiler.possibleArguments.getPopularArguments().should.deep.equal({
-                        "-O<number>": {description: "optimization level", timesused: 0},
-                        "-fcolor-diagnostics": {"description": "", "timesused": 0},
-                        "-fsave-optimization-record": {"description": "", "timesused": 0},
-                        "-g": {"description": "", "timesused": 0},
-                        "-x": {"description": "", "timesused": 0}
-                    })
+                        '-O<number>': {description: 'optimization level', timesused: 0},
+                        '-fcolor-diagnostics': {description: '', timesused: 0},
+                        '-fsave-optimization-record': {description: '', timesused: 0},
+                        '-g': {description: '', timesused: 0},
+                        '-x': {description: '', timesused: 0},
+                    }),
                 ]);
             });
         });
@@ -183,13 +183,13 @@ describe('popular compiler arguments', () => {
         return parsers.Clang.parse(compiler).then(compiler => {
             return compiler.should.satisfy(compiler => {
                 return Promise.all([
-                    compiler.possibleArguments.getPopularArguments(["-O3", "--hello"]).should.deep.equal({
-                        "-fcolor-diagnostics": {"description": "", "timesused": 0},
-                        "-fsave-optimization-record": {"description": "", "timesused": 0},
-                        "-g": {"description": "", "timesused": 0},
-                        "-x": {"description": "", "timesused": 0},
-                        "-std=<c++11,c++14,c++17z>": {"description": "", "timesused": 0}
-                    })
+                    compiler.possibleArguments.getPopularArguments(['-O3', '--hello']).should.deep.equal({
+                        '-fcolor-diagnostics': {description: '', timesused: 0},
+                        '-fsave-optimization-record': {description: '', timesused: 0},
+                        '-g': {description: '', timesused: 0},
+                        '-x': {description: '', timesused: 0},
+                        '-std=<c++11,c++14,c++17z>': {description: '', timesused: 0},
+                    }),
                 ]);
             });
         });
@@ -199,12 +199,12 @@ describe('popular compiler arguments', () => {
         return parsers.Clang.parse(compiler).then(compiler => {
             return compiler.should.satisfy(compiler => {
                 return Promise.all([
-                    compiler.possibleArguments.getPopularArguments(["-std=c++14", "-g", "--hello"]).should.deep.equal({
-                        "-O<number>": {description: "optimization level", timesused: 0},
-                        "-fcolor-diagnostics": {"description": "", "timesused": 0},
-                        "-fsave-optimization-record": {"description": "", "timesused": 0},
-                        "-x": {"description": "", "timesused": 0}
-                    })
+                    compiler.possibleArguments.getPopularArguments(['-std=c++14', '-g', '--hello']).should.deep.equal({
+                        '-O<number>': {description: 'optimization level', timesused: 0},
+                        '-fcolor-diagnostics': {description: '', timesused: 0},
+                        '-fsave-optimization-record': {description: '', timesused: 0},
+                        '-x': {description: '', timesused: 0},
+                    }),
                 ]);
             });
         });
