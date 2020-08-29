@@ -42,7 +42,10 @@ const plugins = [
 
 module.exports = {
     mode: isDev ? 'development' : 'production',
-    entry: './static/main.js',
+    entry: {
+        main: './static/main.js',
+        noscript: './static/noscript.js',
+    },
     output: {
         filename: isDev ? '[name].js' : `[name]${webjackJsHack}[contenthash].js`,
         path: staticPath

@@ -1,0 +1,39 @@
+@import url("~@fortawesome/fontawesome-free/css/all.min.css");
+@import url("~vis/dist/vis.css");
+
+html body {
+    overflow: auto;
+}
+
+form {
+    padding: 10px;
+}
+
+.form-pair-inlined {
+    min-height: 30px;
+}
+
+.form-pair-inlined label {
+    padding-right: 30px;
+}
+
+.form-pair-block * {
+    display: block;
+}
+
+nav.navbar.navbar-godbolt.navbar-expand-md.navbar-light.bg-light {
+    flex-flow: row wrap !important;
+}
+
+.noscriptdropdown a.dropdown-item {
+    display: inline-block;
+    width: auto;
+}
+
+.dropdown-item.language-option {
+    display: block;
+}
+
+textarea {
+    width: 100%;
+}

@@ -1,0 +1,9 @@
+block header
+  nav.bg-light
+    if mobileViewer
+      a.btn.nodropdown-toggle#languageDropdown(href="javascript:;" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") Language
+
+    .noscriptdropdown(aria-labelledby="languageDropdown")
+      each language in languages
+        a.dropdown-item.language-option(href=`${httpRoot}noscript/${language.id}` title=language.name)= language.name
+        | &nbsp;

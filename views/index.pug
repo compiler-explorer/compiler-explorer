@@ -2,15 +2,7 @@ extends _layout.pug
 
 block prepend content
   nav.navbar.navbar-godbolt.navbar-expand-md.navbar-light.bg-light
-    a.navbar-brand(href=httpRoot title="Compiler Explorer")
-      svg.logo.align-top(height="50" width="165")
-        include resources/site-logo.svg
-        if extraBodyClass === "beta"
-          include resources/site-logo-beta.svg
-        else if extraBodyClass === "staging"
-          include resources/site-logo-staging.svg
-        else if extraBodyClass === "dev"
-          include resources/site-logo-dev.svg
+    include logo.pug
     button.navbar-toggler(type="button" data-toggle="collapse" data-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation")
       span.navbar-toggler-icon
     .collapse.navbar-collapse#navbarContent
@@ -63,69 +55,19 @@ block prepend content
       ul.navbar-nav.navbar-right
         if showSponsors
           li.nav-item.btn.btn-outline-primary#ces(data-toggle="modal") Sponsors
-            .ces-icons
-              each icon in sponsors.icons
-                img.ces-icon(src=icon.icon)
+            include sponsor-icons.pug
         li.nav-item
           a.nav-link#share(href="javascript:;") Share
             b.fas.fa-caret-down
         li.nav-item.dropdown
           a.nav-link.dropdown-toggle#otherDropdown(href="javascript:;" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") Other
           div.dropdown-menu.dropdown-menu-right(aria-labelledby="otherDropdown")
-            a.dropdown-item(href="https://www.patreon.com/bePatron?u=3691963" title="Help Compiler Explorer - become a Patron" target="_blank" rel="noopener")
-              span.dropdown-icon.fab.fa-patreon
-              | Become a Patron
-            a.dropdown-item(href="https://github.com/sponsors/mattgodbolt" title="Help Compiler Explorer - sponsor on GitHub" target="_blank" rel="noopener")
-              span.dropdown-icon.fab.fa-github-alt
-              | Sponsor on GitHub
-            a.dropdown-item(
-              href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=KQWQZ7GPY2GZ6&item_name=Compiler+Explorer+development&currency_code=USD&source=url"
-              title="Make a one-time donation to help fund Compiler Explorer's development" target="_blank" rel="noopener")
-              span.dropdown-icon.fab.fa-paypal
-              | Donate via PayPal
-            if githubEnabled
-              a.dropdown-item(href="https://github.com/compiler-explorer/compiler-explorer" title="View the source on GitHub" target="_blank" rel="noopener")
-                span.dropdown-icon.fab.fa-github
-                | Source on GitHub
-            a.dropdown-item(href="https://groups.google.com/forum/#!forum/compiler-explorer-discussion" title="Join Compiler Explorer Public Google Group" target="_blank" rel="noopener")
-              span.dropdown-icon.fas.fa-envelope
-              | Mailing list
-            a.dropdown-item(href="https://godbolt.org/admin/libraries.html" target="_blank" rel="noopener")
-              span.dropdown-icon.fas.fa-book
-              | Installed libraries
-            a.dropdown-item(href="https://github.com/compiler-explorer/compiler-explorer/wiki" target="_blank" rel="noopener")
-              span.dropdown-icon.fas.fa-book-open
-              | Wiki
-            a.dropdown-item(href="https://github.com/compiler-explorer/compiler-explorer/issues" target="_blank" rel="noopener")
-              span.dropdown-icon.fas.fa-exclamation-circle
-              | Report an issue
-            a.dropdown-item(href="https://xania.org/201609/how-compiler-explorer-runs-on-amazon" target="_blank")
-              span.dropdown-icon.fas.fa-cloud-meatball
-              | How it works
-            a.dropdown-item(href="mailto:matt@godbolt.org" target="_blank" rel="noopener noreferrer")
-              span.dropdown-icon.fas.fa-paper-plane
-              | Contact the author
-            a.dropdown-item(href="https://xania.org/MattGodbolt" rel="author" target="_blank")
-              span.dropdown-icon.fas.fa-address-card
-              | About the author
-            a.dropdown-item#changes(href="javascript:;")
-              span.dropdown-icon.fas.fa-sticky-note
-              | Changelog
-            a.dropdown-item#version-tree(href="javascript:;" target="_blank")
-              span.dropdown-icon.fas.fa-code-branch
-              | Version tree
-            if sharingEnabled
-              a.dropdown-item#socialshare
+            include menu-other.pug
         if policies.cookies.enabled || policies.privacy.enabled
           li.nav-item.dropdown
             a.nav-link.dropdown-toggle#policiesDropdown(href="javascript:;" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") Policies
             div.dropdown-menu.dropdown-menu-right(aria-labelledby="policiesDropdown")
-              a.dropdown-item#cookies(href="javascript:;")
-                span.dropdown-icon.fas.fa-cookie-bite
-                | Cookie policy
-              a.dropdown-item#privacy(href="javascript:;")
-                span.dropdown-icon.fas.fa-user-lock
-                | Privacy policy
+              include menu-policies.pug
 
 block append footer
   include popups.pug

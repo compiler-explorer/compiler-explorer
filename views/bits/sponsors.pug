@@ -3,41 +3,5 @@ div.ces-level-selectors.d-flex.justify-content-center.mt-3
     each level, index in sponsors.levels
       button.btn.btn-primary(onclick='document.getElementById("ces_hop_' + index + '").scrollIntoView({behavior:"smooth"});')=level.name
 
-.ces-content-root.mt-6
-  .ces-blurb
-    | Compiler Explorer is proud to be sponsored by a number of individuals and companies. We thank them for
-    | making this website free for all. If you'd like to help, consider becoming a&nbsp;
-    a(href="https://www.patreon.com/bePatron?u=3691963" title="Help Compiler Explorer - become a Patron" target="_blank" rel="noopener")
-      span.fab.fa-patreon Patreon
-    | , sponsor on&nbsp;
-    a(href="https://github.com/sponsors/mattgodbolt" title="Help Compiler Explorer - sponsor on GitHub" target="_blank" rel="noopener")
-      span.fab.fa-github-alt GitHub
-    | , make a one-time donation on&nbsp;
-    a(href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=KQWQZ7GPY2GZ6&item_name=Compiler+Explorer+development&currency_code=USD&source=url" title="Make a one-time donation to help fund Compiler Explorer's development" target="_blank" rel="noopener")
-      span.fab.fa-paypal PayPal
-    | , or&nbsp;
-    a(href="mailto:matt@godbolt.org") email Matt
-    | &nbsp;for corporate sponsorship.
-  .mt-6
-    each level, index in sponsors.levels
-      .ces-item-block(class=level.class id="ces_hop_" + index)
-        h2.ces-item-name= level.name
-        div.ces-item-description= level.description
-        .ces-top
-          each sponsor in level.sponsors
-            .ces
-              button.btn-block.btn-secondary(title=sponsor.title onclick=sponsor.onclick disabled=!sponsor.url)
-                if sponsor.sideBySide
-                  .d-flex
-                    .ces-item-title
-                      img.ces-logo-large(src=sponsor.img)
-                    .ces-item-description
-                      != sponsor.description
-                else
-                  .ces-item-title
-                    if sponsor.img
-                      img.ces-logo(src=sponsor.img)
-                    = sponsor.name
-                  if sponsor.description
-                    .ces-item-description
-                      = sponsor.description
+block content
+  include sponsors-content.pug

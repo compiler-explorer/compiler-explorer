@@ -45,7 +45,8 @@ const nopt = require('nopt'),
     {logger, logToPapertrail, suppressConsoleLog} = require('./lib/logger'),
     utils = require('./lib/utils'),
     initialiseWine = require('./lib/exec').initialiseWine,
-    RouteAPI = require('./lib/handlers/route-api');
+    RouteAPI = require('./lib/handlers/route-api'),
+    NoScriptHandler = require('./lib/handlers/noscript');
 
 
 // Parse arguments from command line 'node ./app.js args...'
@@ -442,7 +443,20 @@ async function main() {
 
     const healthCheckFilePath = ceProps('healthCheckFilePath', false);
 
-    const routeApi = new RouteAPI(router, compileHandler, ceProps, storageHandler, renderGoldenLayout);
+    const handlerConfig = {
+        compileHandler,
+        clientOptionsHandler,
+        storageHandler,
+        ceProps,
+        opts,
+        renderConfig,
+        renderGoldenLayout,
+        staticHeaders,
+        contentPolicyHeader,
+    };
+
+    const noscriptHandler = new NoScriptHandler(router, handlerConfig);
+    const routeApi = new RouteAPI(router, handlerConfig, noscriptHandler.renderNoScriptLayout);
 
     function onCompilerChange(compilers) {
         if (JSON.stringify(prevCompilers) === JSON.stringify(compilers)) {
@@ -509,7 +523,7 @@ async function main() {
     const sponsorConfig = sponsors.loadFromString(fs.readFileSync(configDir + '/sponsors.yaml', 'utf-8'));
     function renderConfig(extra, urlOptions) {
         const urlOptionsAllowed = [
-            'readOnly', 'hideEditorToolbars',
+            'readOnly', 'hideEditorToolbars', 'language',
         ];
         const filteredUrlOptions = _.mapObject(
             _.pick(urlOptions, urlOptionsAllowed),
@@ -552,6 +566,7 @@ async function main() {
             mobileViewer: isMobileViewer(req),
             config: config,
             metadata: metadata,
+            storedStateId: req.params.id ? req.params.id : false,
         }, req.query));
     }
 
@@ -674,12 +689,18 @@ async function main() {
             }, req.query));
         })
         .use(bodyParser.json({limit: ceProps('bodyParserLimit', maxUploadSize)}))
+        .use(express.urlencoded({
+            type: 'application/x-www-form-urlencoded',
+            limit: ceProps('bodyParserLimit', maxUploadSize),
+            extended: false,
+        }))
         .use(bodyParser.text({limit: ceProps('bodyParserLimit', maxUploadSize), type: () => true}))
         .use('/source', sourceHandler.handle.bind(sourceHandler))
         .use('/g', oldGoogleUrlHandler)
         .post('/shortener', shortener);
 
     routeApi.InitializeRoutes();
+    noscriptHandler.InitializeRoutes();
 
     if (!defArgs.doCache) {
         logger.info('  with disabled caching');
