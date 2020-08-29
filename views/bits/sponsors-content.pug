@@ -28,7 +28,7 @@ block content
                       .ces-item-title
                         img.ces-logo-large(src=sponsor.img alt=sponsor.name)
                       .ces-item-description
-                        = sponsor.description
+                        != sponsor.description
                   else
                     .ces-item-title
                       if sponsor.img
