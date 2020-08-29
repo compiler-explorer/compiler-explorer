@@ -153,6 +153,17 @@ module.exports = {
         if (gccDumpOutput) {
             ret.treeDump = gccDumpOutput.treeDump;
             ret.rtlDump = gccDumpOutput.rtlDump;
+            ret.ipaDump = gccDumpOutput.ipaDump;
+            ret.addressOption = gccDumpOutput.addressOption;
+            ret.slimOption = gccDumpOutput.slimOption;
+            ret.rawOption = gccDumpOutput.rawOption;
+            ret.detailsOption = gccDumpOutput.detailsOption;
+            ret.statsOption = gccDumpOutput.statsOption;
+            ret.blocksOption = gccDumpOutput.blocksOption;
+            ret.vopsOption = gccDumpOutput.vopsOption;
+            ret.linenoOption = gccDumpOutput.linenoOption;
+            ret.uidOption = gccDumpOutput.uidOption;
+            ret.allOption = gccDumpOutput.allOption;
             ret.selectedPass = gccDumpOutput.selectedPass;
         }
         return ret;

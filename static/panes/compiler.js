@@ -116,7 +116,7 @@ function Compiler(hub, container, state) {
     }
 
     this.outputEditor = monaco.editor.create(this.monacoPlaceholder[0], {
-        scrollBeyondLastLine: false,
+        scrollBeyondLastLine: true,
         readOnly: true,
         language: monacoDisassembly,
         fontFamily: this.settings.editorsFFont,
@@ -550,6 +550,8 @@ Compiler.prototype.compile = function (bypassCache, newTools) {
                 pass: this.gccDumpPassSelected,
                 treeDump: this.treeDumpEnabled,
                 rtlDump: this.rtlDumpEnabled,
+                ipaDump: this.ipaDumpEnabled,
+                dumpFlags: this.dumpFlags,
             },
             produceOptInfo: this.wantOptInfo,
             produceCfg: this.cfgViewOpen,
@@ -914,6 +916,19 @@ Compiler.prototype.onGccDumpFiltersChanged = function (id, filters, reqCompile) 
     if (this.id === id) {
         this.treeDumpEnabled = (filters.treeDump !== false);
         this.rtlDumpEnabled = (filters.rtlDump !== false);
+        this.ipaDumpEnabled = (filters.ipaDump !== false);
+        this.dumpFlags = {
+            address: filters.addressOption !== false,
+            slim: filters.slimOption !== false,
+            raw: filters.rawOption !== false,
+            details: filters.detailsOption !== false,
+            stats: filters.statsOption !== false,
+            blocks: filters.blocksOption !== false,
+            vops: filters.vopsOption !== false,
+            lineno: filters.linenoOption !== false,
+            uid: filters.uidOption !== false,
+            all: filters.allOption !== false,
+        };
 
         if (reqCompile) {
             this.compile();
@@ -946,6 +961,8 @@ Compiler.prototype.onGccDumpViewClosed = function (id) {
         delete this.gccDumpPassSelected;
         delete this.treeDumpEnabled;
         delete this.rtlDumpEnabled;
+        delete this.ipaDumpEnabled;
+        delete this.dumpFlags;
     }
 };
 
@@ -1858,8 +1875,14 @@ Compiler.prototype.updateCompilersSelector = function (info) {
     _.each(this.compilerService.getGroupsInUse(this.currentLangId), function (group) {
         this.compilerSelectizer.addOptionGroup(group.value, {label: group.label});
     }, this);
+
+    var selectedCompilerId = this.compiler ? this.compiler.id : null;
+    var filteredCompilers = _.filter(this.getCurrentLangCompilers(), function (e) {
+        return !e.hidden || e.id === selectedCompilerId;
+    });
+
     this.compilerSelectizer.load(_.bind(function (callback) {
-        callback(_.map(this.getCurrentLangCompilers(), _.identity));
+        callback(_.map(filteredCompilers, _.identity));
     }, this));
     this.compilerSelectizer.setValue([this.compiler ? this.compiler.id : null], true);
     this.options = info.options || '';

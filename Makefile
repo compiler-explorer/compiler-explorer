@@ -95,6 +95,7 @@ travis-dist: dist  ## Creates a distribution as if we were running on travis
 	tar -Jcf out/dist-bin/$(TRAVIS_BUILD_NUMBER).tar.xz -T travis-dist-files.txt
 	tar -Jcf out/dist-bin/$(TRAVIS_BUILD_NUMBER).static.tar.xz --transform="s,^out/dist/static/,," out/dist/static/*
 	echo $(HASH) > out/dist-bin/$(TRAVIS_BUILD_NUMBER).txt
+	du -ch out/**/*
 	# Create and set commits for a sentry release if and only if we have the secure token set
 	# External GitHub PRs etc won't have the variable set.
 	@[ -z "$(SENTRY_AUTH_TOKEN)" ] || $(SENTRY) releases new -p compiler-explorer $(TRAVIS_BUILD_NUMBER)

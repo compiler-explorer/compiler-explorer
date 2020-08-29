@@ -71,7 +71,7 @@ HistoryWidget.prototype.initializeIfNeeded = function () {
         var placeholder = this.modal.find('.monaco-placeholder');
         this.diffEditor = monaco.editor.createDiffEditor(placeholder[0], {
             fontFamily: 'Consolas, "Liberation Mono", Courier, monospace',
-            scrollBeyondLastLine: false,
+            scrollBeyondLastLine: true,
             readOnly: true,
             language: 'c++',
             minimap: {

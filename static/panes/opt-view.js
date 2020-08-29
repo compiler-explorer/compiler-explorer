@@ -42,7 +42,7 @@ function Opt(hub, container, state) {
     this._currentDecorations = [];
     this.optEditor = monaco.editor.create(this.domRoot.find('.monaco-placeholder')[0], {
         value: this.source,
-        scrollBeyondLastLine: false,
+        scrollBeyondLastLine: true,
         language: 'plaintext',
         readOnly: true,
         glyphMargin: true,

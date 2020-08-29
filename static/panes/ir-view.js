@@ -43,7 +43,7 @@ function Ir(hub, container, state) {
     this.irEditor = monaco.editor.create(this.domRoot.find('.monaco-placeholder')[0], {
         fontFamily: 'Consolas, "Liberation Mono", Courier, monospace',
         value: '',
-        scrollBeyondLastLine: false,
+        scrollBeyondLastLine: true,
         language: 'llvm-ir',
         readOnly: true,
         folding: true,

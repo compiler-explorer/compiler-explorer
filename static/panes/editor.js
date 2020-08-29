@@ -35,6 +35,7 @@ var local = require('../local');
 var ga = require('../analytics');
 var monacoVim = require('monaco-vim');
 require('../modes/cppp-mode');
+require('../modes/cppx-gold-mode');
 require('../modes/d-mode');
 require('../modes/ispc-mode');
 require('../modes/llvm-ir-mode');
@@ -88,7 +89,7 @@ function Editor(hub, state, container) {
     var root = this.domRoot.find('.monaco-placeholder');
     var legacyReadOnly = state.options && !!state.options.readOnly;
     this.editor = monaco.editor.create(root[0], {
-        scrollBeyondLastLine: false,
+        scrollBeyondLastLine: true,
         language: this.currentLanguage.monaco,
         fontFamily: this.settings.editorsFFont,
         readOnly: !!options.readOnly || legacyReadOnly ||
@@ -762,9 +763,26 @@ Editor.prototype.updateSource = function (newSource) {
 
     if (!this.awaitingInitialResults) {
         if (this.selection) {
-            this.editor.setSelection(this.selection);
-            this.editor.revealLinesInCenter(this.selection.startLineNumber,
-                this.selection.endLineNumber);
+            /*
+             * this setTimeout is a really crap workaround to fix #2150
+             * the TL;DR; is that we reach this point *before* GL has laid
+             * out the window, so we have no height
+             *
+             * If we revealLinesInCenter at this point the editor "does the right thing"
+             * and scrolls itself all the way to the line we requested.
+             *
+             * Unfortunately the editor thinks it is very small, so the "center"
+             * is the first line, and when the editor does resize eventually things are off.
+             *
+             * The workaround is to just delay things "long enough"
+             *
+             * This is bad and I feel bad.
+             */
+            setTimeout(_.bind(function () {
+                this.editor.setSelection(this.selection);
+                this.editor.revealLinesInCenter(this.selection.startLineNumber,
+                    this.selection.endLineNumber);
+            }, this), 500);
         }
         this.awaitingInitialResults = true;
     }
