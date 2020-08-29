@@ -31,6 +31,7 @@ var AnsiToHtml = require('../ansi-to-html');
 var Toggles = require('../toggles');
 var ga = require('../analytics');
 var monaco = require('monaco-editor');
+var ceoptions = require('../options');
 require('../modes/asm6502-mode');
 
 function makeAnsiToHtml(color) {
@@ -55,6 +56,7 @@ function Tool(hub, container, state) {
     this.editorContentRoot = this.domRoot.find('.monaco-placeholder');
     this.plainContentRoot = this.domRoot.find('pre.content');
     this.optionsToolbar = this.domRoot.find('.options-toolbar');
+    this.badLangToolbar = this.domRoot.find('.bad-lang');
     this.compilerName = '';
     this.normalAnsiToHtml = makeAnsiToHtml();
     this.errorAnsiToHtml = makeAnsiToHtml('red');
@@ -109,6 +111,7 @@ Tool.prototype.initCallbacks = function () {
     this.eventHub.on('compileResult', this.onCompileResult, this);
     this.eventHub.on('compilerClose', this.onCompilerClose, this);
     this.eventHub.on('settingsChange', this.onSettingsChange, this);
+    this.eventHub.on('languageChange', this.onLanguageChange, this);
 
     this.toggleArgs.on('click', _.bind(function () {
         this.togglePanel(this.toggleArgs, this.panelArgs);
@@ -122,6 +125,25 @@ Tool.prototype.initCallbacks = function () {
         new MutationObserver(_.bind(this.resize, this)).observe(this.stdinField[0], {
             attributes: true, attributeFilter: ['style'],
         });
+    }
+};
+
+Tool.prototype.onLanguageChange = function (editorId, newLangId) {
+    if (this.editorId === editorId) {
+        var tools = ceoptions.tools[newLangId];
+        this.toggleUsable(tools && tools[this.toolId]);
+    }
+};
+
+Tool.prototype.toggleUsable = function (isUsable) {
+    if (isUsable) {
+        this.plainContentRoot.css('opacity', '1');
+        this.badLangToolbar.hide();
+        this.optionsToolbar.show();
+    } else {
+        this.plainContentRoot.css('opacity', '0.5');
+        this.optionsToolbar.hide();
+        this.badLangToolbar.show();
     }
 };
 
@@ -294,6 +316,12 @@ Tool.prototype.onCompileResult = function (id, compiler, result) {
     try{
         if (id !== this.compilerId) return;
         if (compiler) this.compilerName = compiler.name;
+
+        var foundTool = _.find(compiler.tools, function (tool) {
+            return (tool.tool.id === this.toolId);
+        }, this);
+
+        this.toggleUsable(foundTool);
 
         var toolResult = null;
         if (result && result.tools) {
