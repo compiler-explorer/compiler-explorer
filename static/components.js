@@ -53,6 +53,13 @@ module.exports = {
             componentState: {source: editorId, lang: lang},
         };
     },
+    getExecutorWith: function (editorId, lang, compilerId, libraries) {
+        return {
+            type: 'component',
+            componentName: 'executor',
+            componentState: {source: editorId, lang: lang, compiler: compilerId, libs: libraries},
+        };
+    },
     getEditor: function (id, langId) {
         return {
             type: 'component',

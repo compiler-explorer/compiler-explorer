@@ -235,6 +235,20 @@ Compiler.prototype.initPanerButtons = function () {
         return Components.getCfgViewWith(this.id, this.sourceEditorId);
     }, this);
 
+    var createExecutor = _.bind(function () {
+        var editorId = this.sourceEditorId;
+        var langId = this.currentLangId;
+        var compilerId = this.compiler ? this.compiler.id : '';
+        var libs = [];
+        _.each(this.libsWidget.getLibsInUse(), function (item) {
+            libs.push({
+                name: item.libId,
+                ver: item.versionId,
+            });
+        });
+        return Components.getExecutorWith(editorId, langId, compilerId, libs);
+    }, this);
+
     var panerDropdown = this.domRoot.find('.pane-dropdown');
     var togglePannerAdder = function () {
         panerDropdown.dropdown('toggle');
@@ -298,6 +312,16 @@ Compiler.prototype.initPanerButtons = function () {
         var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
             this.container.layoutManager.root.contentItems[0];
         insertPoint.addChild(createCfgView);
+    }, this));
+
+    this.container.layoutManager
+        .createDragSource(this.executorButton, createExecutor)
+        ._dragListener.on('dragStart', togglePannerAdder);
+
+    this.executorButton.click(_.bind(function () {
+        var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
+            this.container.layoutManager.root.contentItems[0];
+        insertPoint.addChild(createExecutor);
     }, this));
 
     this.initToolButtons(togglePannerAdder);
@@ -992,6 +1016,7 @@ Compiler.prototype.initButtons = function (state) {
     this.irButton = this.domRoot.find('.btn.view-ir');
     this.gccDumpButton = this.domRoot.find('.btn.view-gccdump');
     this.cfgButton = this.domRoot.find('.btn.view-cfg');
+    this.executorButton = this.domRoot.find('.create-executor');
     this.libsButton = this.domRoot.find('.btn.show-libs');
 
     this.compileTimeLabel = this.domRoot.find('.compile-time');
