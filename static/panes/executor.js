@@ -279,6 +279,20 @@ Executor.prototype.clearPreviousOutput = function () {
     this.executionOutputSection.empty();
 };
 
+Executor.prototype.handleOutput = function (output, element, ansiParser) {
+    var outElem = $('<pre class="card"></pre>').appendTo(element);
+    _.each(output, function (obj) {
+        if (obj.text === '') {
+            this.addCompilerOutputLine('<br/>', outElem);
+        } else {
+            var lineNumber = obj.tag ? obj.tag.line : obj.line;
+            var columnNumber = obj.tag ? obj.tag.column : -1;
+            this.addCompilerOutputLine(ansiParser.toHtml(obj.text), outElem, lineNumber, columnNumber);
+        }
+    }, this);
+    return outElem;
+};
+
 Executor.prototype.onCompileResponse = function (request, result, cached) {
     // Save which source produced this change. It should probably be saved earlier though
     result.source = this.source;
@@ -309,46 +323,25 @@ Executor.prototype.onCompileResponse = function (request, result, cached) {
         this.executionStatusSection.append($('<p></p>').text('Could not execute the program'));
         this.executionStatusSection.append($('<p></p>').text('Compiler returned: ' + result.buildResult.code));
     }
+
     if (compileStdout.length > 0) {
         this.compilerOutputSection.append($('<p></p>').text('Compiler stdout'));
-        var outElem = $('<pre class="card"></pre>').appendTo(this.compilerOutputSection);
-        _.each(compileStdout, function (obj) {
-            if (obj.text === '') {
-                this.addCompilerOutputLine('<br/>', outElem);
-            } else {
-                var lineNumber = obj.tag ? obj.tag.line : obj.line;
-                var columnNumber = obj.tag ? obj.tag.column : -1;
-                this.addCompilerOutputLine(this.normalAnsiToHtml.toHtml(obj.text), outElem, lineNumber, columnNumber);
-            }
-        }, this);
+        this.handleOutput(compileStdout, this.compilerOutputSection, this.normalAnsiToHtml);
     }
     if (compileStderr.length > 0) {
         this.compilerOutputSection.append($('<p></p>').text('Compiler stderr'));
-        var errElem = $('<pre class="card"></pre>').appendTo(this.compilerOutputSection);
-        _.each(compileStderr, function (obj) {
-            if (obj.text === '') {
-                this.addCompilerOutputLine('<br/>', errElem);
-            } else {
-                var lineNumber = obj.tag ? obj.tag.line : obj.line;
-                var columnNumber = obj.tag ? obj.tag.column : -1;
-                this.addCompilerOutputLine(this.errorAnsiToHtml.toHtml(obj.text), errElem, lineNumber, columnNumber);
-            }
-        }, this);
+        this.handleOutput(compileStderr, this.compilerOutputSection, this.errorAnsiToHtml);
     }
     if (result.didExecute) {
         this.executionOutputSection.append($('<p></p>').text('Program returned: ' + result.code));
         if (execStdout.length > 0) {
             this.executionOutputSection.append($('<p></p>').text('Program stdout'));
-            $('<pre class="card execution-stdout"></pre>')
-                .text(_.pluck(execStdout, 'text').join('\n'))
-                .appendTo(this.executionOutputSection);
+            var outElem = this.handleOutput(execStdout, this.executionOutputSection, this.normalAnsiToHtml);
+            outElem.addClass('execution-stdout');
         }
         if (execStderr.length > 0) {
             this.executionOutputSection.append($('<p></p>').text('Program stderr'));
-            $('<pre class="card"></pre>')
-                .text(_.pluck(execStderr, 'text').join('\n'))
-                .css({color: 'red'})
-                .appendTo(this.executionOutputSection);
+            this.handleOutput(execStderr, this.executionOutputSection, this.normalAnsiToHtml);
         }
     }
 
