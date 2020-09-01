@@ -11,10 +11,7 @@ mixin outputoption(name, longdescription, shortdescription, defaultchecked)
     .button-checkbox
       button.dropdown-item.btn.btn-sm.btn-light(type='button' title=longdescription data-bind=name aria-pressed=pressed)
         span=shortdescription
-      if defaultchecked
-        input.d-none(type="checkbox" checked='checked')
-      else
-        input.d-none(type="checkbox")
+      input.d-none(type="checkbox" checked=defaultchecked)
 
 +outputoption('binary', 'Compile to binary and disassemble the output', 'Compile to binary', false)
 +outputoption('execute', 'Execute the compiled code and show its output', 'Run the compiled output', false)
