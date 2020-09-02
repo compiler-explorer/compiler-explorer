@@ -64,6 +64,21 @@ const compilers = [
     },
 ];
 
+const compilersLimitedFields = [
+    {
+        id: 'gcc900',
+        name: 'GCC 9.0.0',
+    },
+    {
+        id: 'fpc302',
+        name: 'FPC 3.0.2',
+    },
+    {
+        id: 'clangtrunk',
+        name: 'Clang trunk',
+    },
+];
+
 chai.use(require('chai-http'));
 chai.should();
 
@@ -123,6 +138,32 @@ describe('API handling', () => {
                 res.should.have.status(200);
                 res.should.be.json;
                 res.body.should.deep.equals(compilers);
+            })
+            .catch(err => {
+                throw err;
+            });
+    });
+    it('should respond to JSON compiler requests with all fields', () => {
+        return chai.request(app)
+            .get('/api/compilers?fields=all')
+            .set('Accept', 'application/json')
+            .then(res => {
+                res.should.have.status(200);
+                res.should.be.json;
+                res.body.should.deep.equals(compilers);
+            })
+            .catch(err => {
+                throw err;
+            });
+    });
+    it('should respond to JSON compiler requests with limited fields', () => {
+        return chai.request(app)
+            .get('/api/compilers?fields=id,name')
+            .set('Accept', 'application/json')
+            .then(res => {
+                res.should.have.status(200);
+                res.should.be.json;
+                res.body.should.deep.equals(compilersLimitedFields);
             })
             .catch(err => {
                 throw err;
