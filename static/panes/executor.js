@@ -794,8 +794,18 @@ Executor.prototype.onLanguageChange = function (editorId, newLangId) {
 };
 
 Executor.prototype.getCurrentLangCompilers = function () {
+    var allCompilers = this.compilerService.getCompilersForLang(this.currentLangId);
+    var hasAtLeastOneExecuteSupported = _.any(allCompilers, function (compiler) {
+        return (compiler.supportsExecute !== false);
+    });
+
+    if (!hasAtLeastOneExecuteSupported) {
+        this.compiler = null;
+        return [];
+    }
+
     return _.filter(
-        this.compilerService.getCompilersForLang(this.currentLangId),
+        allCompilers,
         _.bind(function (compiler) {
             return (compiler.supportsExecute !== false) ||
                    (this.compiler && compiler.id === this.compiler.id);
