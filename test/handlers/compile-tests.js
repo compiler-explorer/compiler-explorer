@@ -46,11 +46,14 @@ describe('Compiler tests', () => {
         const compilationEnvironment = makeCompilationEnvironment({languages});
         compileHandler = new CompileHandler(compilationEnvironment);
 
-        app = express();
-        app.use(bodyParser.json()).use(bodyParser.text({type: () => true}));
+        const textParser = bodyParser.text({type: () => true});
+        const formParser = bodyParser.urlencoded({extended: false});
 
-        app.post('/:compiler/compile', compileHandler.handle.bind(compileHandler));
-        app.post('/noscript/compile', compileHandler.handle.bind(compileHandler));
+        app = express();
+        app.use(bodyParser.json());
+
+        app.post('/noscript/compile', formParser, compileHandler.handle.bind(compileHandler));
+        app.post('/:compiler/compile', textParser, compileHandler.handle.bind(compileHandler));
     });
 
     it('throws for unknown compilers', () => {
