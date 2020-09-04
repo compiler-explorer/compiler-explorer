@@ -796,9 +796,10 @@ Executor.prototype.onLanguageChange = function (editorId, newLangId) {
 Executor.prototype.getCurrentLangCompilers = function () {
     return _.filter(
         this.compilerService.getCompilersForLang(this.currentLangId),
-        function (compiler) {
-            return compiler.supportsExecute !== false;
-        });
+        _.bind(function (compiler) {
+            return (compiler.supportsExecute !== false) ||
+                   (this.compiler && compiler.id === this.compiler.id);
+        }, this));
 };
 
 Executor.prototype.updateCompilersSelector = function (info) {
