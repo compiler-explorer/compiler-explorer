@@ -90,8 +90,16 @@ describe('Basic compiler invariants', function () {
 });
 
 describe('Compiler execution', function () {
-    let ce, compiler;
-    const info = {
+    let ce, compiler, compilerNoExec;
+    const executingCompilerInfo = {
+        exe: null,
+        remote: true,
+        lang: languages['c++'].id,
+        ldPath: [],
+        supportsExecute: true,
+        supportsBinary: true,
+    };
+    const noExecuteSupportCompilerInfo = {
         exe: null,
         remote: true,
         lang: languages['c++'].id,
@@ -100,7 +108,8 @@ describe('Compiler execution', function () {
 
     before(() => {
         ce = makeCompilationEnvironment({ languages });
-        compiler = new BaseCompiler(info, ce);
+        compiler = new BaseCompiler(executingCompilerInfo, ce);
+        compilerNoExec = new BaseCompiler(noExecuteSupportCompilerInfo, ce);
     });
 
     afterEach(() => sinon.restore());
@@ -302,8 +311,47 @@ describe('Compiler execution', function () {
         result.execResult.buildResult.stderr.should.deep.equal([{text: 'binary stderr'}]);
     });
 
+    it('should not execute where not supported', async () => {
+        const execMock = sinon.mock(exec);
+        const execStub = sinon.stub(compilerNoExec, 'exec');
+        stubOutCallToExec(execStub, compilerNoExec, 'This is the output asm file', {
+            code: 0,
+            okToCache: true,
+            stdout: 'asm stdout',
+            stderr: 'asm stderr',
+        }, 0);
+        stubOutCallToExec(execStub, compilerNoExec, 'This is the output binary file', {
+            code: 0,
+            okToCache: true,
+            stdout: 'binary stdout',
+            stderr: 'binary stderr',
+        }, 1);
+        execMock.expects('sandbox').withArgs(sinon.match.string, sinon.match.array, sinon.match.object).resolves({
+            code: 0,
+            stdout: 'exec stdout',
+            stderr: 'exec stderr',
+        });
+        const result = await compilerNoExec.compile(
+            'source',
+            'options',
+            {},
+            {execute: true},
+            false,
+            [],
+            {},
+            []);
+        result.code.should.equal(0);
+        result.execResult.didExecute.should.be.false;
+        result.stdout.should.deep.equal([{text: 'asm stdout'}]);
+        result.execResult.stdout.should.deep.equal([]);
+        result.execResult.buildResult.stdout.should.deep.equal([{text: 'binary stdout'}]);
+        result.stderr.should.deep.equal([{text: 'asm stderr'}]);
+        result.execResult.stderr.should.deep.equal([{text: 'Compiler does not support execution'}]);
+        result.execResult.buildResult.stderr.should.deep.equal([{text: 'binary stderr'}]);
+    });
+
     it('should demangle', async () => {
-        const withDemangler = {...info, demangler: 'demangler-exe', demanglerClassFile: './demangler-cpp'};
+        const withDemangler = {...noExecuteSupportCompilerInfo, demangler: 'demangler-exe', demanglerClassFile: './demangler-cpp'};
         const compiler = new BaseCompiler(withDemangler, ce);
         const execStub = sinon.stub(compiler, 'exec');
         stubOutCallToExec(execStub, compiler, 'someMangledSymbol:\n', {
@@ -337,7 +385,7 @@ describe('Compiler execution', function () {
     });
 
     it('should run objdump properly', async () => {
-        const withDemangler = {...info, objdumper: 'objdump-exe'};
+        const withDemangler = {...noExecuteSupportCompilerInfo, objdumper: 'objdump-exe'};
         const compiler = new BaseCompiler(withDemangler, ce);
         const execStub = sinon.stub(compiler, 'exec');
         execStub.onCall(0).callsFake((objdumper, args, options) => {
