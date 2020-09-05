@@ -46,9 +46,14 @@ describe('Compiler tests', () => {
         const compilationEnvironment = makeCompilationEnvironment({languages});
         compileHandler = new CompileHandler(compilationEnvironment);
 
+        const textParser = bodyParser.text({type: () => true});
+        const formParser = bodyParser.urlencoded({extended: false});
+
         app = express();
-        app.use(bodyParser.json()).use(bodyParser.text());
-        app.post('/:compiler/compile', compileHandler.handle.bind(compileHandler));
+        app.use(bodyParser.json());
+
+        app.post('/noscript/compile', formParser, compileHandler.handle.bind(compileHandler));
+        app.post('/:compiler/compile', textParser, compileHandler.handle.bind(compileHandler));
     });
 
     it('throws for unknown compilers', () => {
@@ -57,6 +62,66 @@ describe('Compiler tests', () => {
             .then((res) => {
                 res.should.have.status(404);
             });
+    });
+
+    describe('Noscript API', () => {
+        it('supports compile', () => {
+            return compileHandler.setCompilers([{
+                compilerType: 'fake-for-test',
+                exe: 'fake',
+                fakeResult: {
+                    code: 0,
+                    stdout: [{text: 'Something from stdout'}],
+                    stderr: [{text: 'Something from stderr'}],
+                    asm: [{text: 'ASMASMASM'}],
+                },
+            }]).then(() => {
+                return chai.request(app)
+                    .post('/noscript/compile')
+                    .set('Content-Type', 'application/x-www-form-urlencoded')
+                    .send('compiler=fake-for-test&source=I am a program')
+                    .then(res => {
+                        res.should.have.status(200);
+                        res.should.be.text;
+                        res.text.should.contain('Something from stdout');
+                        res.text.should.contain('Something from stderr');
+                        res.text.should.contain('ASMASMASM');
+                    })
+                    .catch(err => {
+                        throw err;
+                    });
+            });
+        });
+    });
+
+    describe('Curl API', () => {
+        it('supports compile', () => {
+            return compileHandler.setCompilers([{
+                compilerType: 'fake-for-test',
+                exe: 'fake',
+                fakeResult: {
+                    code: 0,
+                    stdout: [{text: 'Something from stdout'}],
+                    stderr: [{text: 'Something from stderr'}],
+                    asm: [{text: 'ASMASMASM'}],
+                },
+            }]).then(() => {
+                return chai.request(app)
+                    .post('/fake-for-test/compile')
+                    .set('Content-Type', 'application/x-www-form-urlencoded')
+                    .send('I am a program /* &compiler=NOT_A_COMPILER&source=etc */')
+                    .then(res => {
+                        res.should.have.status(200);
+                        res.should.be.text;
+                        res.text.should.contain('Something from stdout');
+                        res.text.should.contain('Something from stderr');
+                        res.text.should.contain('ASMASMASM');
+                    })
+                    .catch(err => {
+                        throw err;
+                    });
+            });
+        });
     });
 
     describe('JSON API', () => {
