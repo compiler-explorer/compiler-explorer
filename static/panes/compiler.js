@@ -236,9 +236,10 @@ Compiler.prototype.initPanerButtons = function () {
     }, this);
 
     var createExecutor = _.bind(function () {
-        var editorId = this.sourceEditorId;
-        var langId = this.currentLangId;
-        var compilerId = this.compiler ? this.compiler.id : '';
+        var currentState = this.currentState();
+        var editorId = currentState.source;
+        var langId = currentState.lang;
+        var compilerId = currentState.compiler;
         var libs = [];
         _.each(this.libsWidget.getLibsInUse(), function (item) {
             libs.push({
@@ -246,7 +247,7 @@ Compiler.prototype.initPanerButtons = function () {
                 ver: item.versionId,
             });
         });
-        return Components.getExecutorWith(editorId, langId, compilerId, libs);
+        return Components.getExecutorWith(editorId, langId, compilerId, libs, currentState.options);
     }, this);
 
     var panerDropdown = this.domRoot.find('.pane-dropdown');
