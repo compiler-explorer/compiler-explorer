@@ -1213,6 +1213,8 @@ Compiler.prototype.updateButtons = function () {
     this.cfgButton.prop('disabled', this.cfgViewOpen || !this.compiler.supportsCfg);
     this.gccDumpButton.prop('disabled', this.gccDumpViewOpen || !this.compiler.supportsGccDump);
 
+    this.executorButton.prop('disabled', !this.compiler.supportsExecute);
+
     this.enableToolButtons();
 };
 
