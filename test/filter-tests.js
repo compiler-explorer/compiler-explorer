@@ -65,6 +65,8 @@ function dump(file) {
 // bless("filters-cases/6502-square.asm", "filters-cases/6502-square.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
 // bless("filters-cases/sass-square.asm", "filters-cases/sass-square.asm.binary.directives.labels.comments.json", {binary: true, directives: true, labels: true, commentOnly: true});
 // bless("filters-cases/sass-squarelabeled.asm", "filters-cases/sass-squarelabeled.asm.binary.directives.labels.comments.json", {binary: true, directives: true, labels: true, commentOnly: true});
+// bless("filters-cases/bug-2164.asm", "filters-cases/bug-2164.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
+// bless("filters-cases/bug-2164b.asm", "filters-cases/bug-2164b.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
 // describe('A test', function() {
 //     it('should work', function(){
 //         console.log(processAsm(__dirname + '/filters-cases/6502-square.asm', {directives: true, labels: true, commentOnly: true}));
