@@ -807,7 +807,7 @@ Executor.prototype.getCurrentLangCompilers = function () {
     return _.filter(
         allCompilers,
         _.bind(function (compiler) {
-            return (compiler.supportsExecute !== false) ||
+            return ((compiler.hidden !== true) && (compiler.supportsExecute !== false)) ||
                    (this.compiler && compiler.id === this.compiler.id);
         }, this));
 };
