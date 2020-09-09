@@ -10,14 +10,14 @@ Adding a library that is linked against:
 
 1. Add to bin/yaml/libraries.yaml
  - There's a difference between nightly trunks' and versions, search for "nightly:" to find the nightlies
-
+ - Note: the name of the library in the yaml file needs to be the same as the name in the c++.amazon.properties file
  - Add basic entry
  ```
       unifex:
         type: github
         method: nightlyclone
         repo: facebookexperimental/libunifex
-		build_type: cmake
+        build_type: cmake
         make_targets:
           - unifex
         targets:
