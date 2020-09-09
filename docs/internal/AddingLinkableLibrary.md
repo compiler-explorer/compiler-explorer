@@ -46,4 +46,5 @@ libs.unifex.versions.trunk.path=/opt/compiler-explorer/libs/unifex/trunk/include
 7. Merge the amazon.properties to master
 8. Start library builder for the new library until no later than 00:00 UTC
 9. Await and check libraries @ https://conan.compiler-explorer.com/libraries.html and logs @ https://conan.compiler-explorer.com/failedbuilds.html
+  - These new libraries won't show up on these pages until you do https://conan.compiler-explorer.com/reinitialize and then go to https://conan.compiler-explorer.com/libraries and hit refresh
 
