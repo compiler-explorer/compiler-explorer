@@ -119,9 +119,35 @@ to be done.
 On the main CE website, libraries are installed into a `/opt/compiler-explorer/` directory by a set of scripts in the sister
 GitHub repo: https://github.com/compiler-explorer/infra
 
-In the `update_compilers` directory in that repository are a set of scripts that download and install the libraries.
+In the `bin/yaml` directory in that repository are a set of yaml files that configure the download, install and building of the libraries.
 If you wish to test locally, and can create a `/opt/compiler-explorer` directory on your machine which is readable and writable by your
 current user, then you can run the scripts directly.
+
+Example of configuring a library that is header only:
+```
+    sol2:
+      type: github
+      method: clone_branch
+      repo: ThePhD/sol2
+      check_file: include/sol/sol.hpp
+      build_type: none
+      targets:
+        - v3.2.1
+```
+
+Example of configuring a library that is linked against:
+```    
+    catch2:
+      type: github
+      repo: catchorg/Catch2
+      build_type: cmake
+      make_targets:
+        - Catch2
+        - Catch2WithMain
+      target_prefix: v
+      targets:
+        - 3.0.0-preview2
+```
 
 If your library fits nicely into the harness then it should be straightforward to add it there. Anything more complex: contact the CE
 authors for more help.
