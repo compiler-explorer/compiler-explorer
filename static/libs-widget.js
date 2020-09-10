@@ -115,7 +115,7 @@ LibsWidget.prototype.lazyDropdownLoad = function () {
         var currentColumn = null;
         var currentColumnItemCount = 0;
         var libsKeys = _.keys(this.availableLibs[this.currentLangId][this.currentCompilerId]).sort();
-        var itemsPerColumn = Math.ceil(libsKeys.length / MAX_COLUMNS);
+        var itemsPerColumn = Math.floor(libsKeys.length / MAX_COLUMNS);
         this.domRoot = $('<div></div>');
         var libsPanel = $('<div></div>')
             .addClass('card-columns');
