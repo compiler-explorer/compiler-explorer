@@ -29,13 +29,13 @@ require('chai').should();
 describe('ASM CL parser', () => {
     it('should work for error documents', () => {
         const parser = new AsmParser();
-        const result = parser.process("<Compilation failed>", {
-            directives: true
+        const result = parser.process('<Compilation failed>', {
+            directives: true,
         });
 
         result.asm.should.deep.equal([{
-            "source": null,
-            "text": "<Compilation failed>"
+            source: null,
+            text: '<Compilation failed>',
         }]);
     });
 });
@@ -43,12 +43,12 @@ describe('ASM CL parser', () => {
 
 describe('ASM regex base class', () => {
     it('should leave unfiltered lines alone', () => {
-        const line = "     this    is    a line";
+        const line = '     this    is    a line';
         AsmRegex.filterAsmLine(line, {}).should.equal(line);
     });
     it('should use up internal whitespace when asked', () => {
-        AsmRegex.filterAsmLine("     this    is    a line", {trim: true}).should.equal("  this is a line");
-        AsmRegex.filterAsmLine("this    is    a line", {trim: true}).should.equal("this is a line");
+        AsmRegex.filterAsmLine('     this    is    a line', {trim: true}).should.equal('  this is a line');
+        AsmRegex.filterAsmLine('this    is    a line', {trim: true}).should.equal('this is a line');
     });
     it('should keep whitespace in strings', () => {
         AsmRegex.filterAsmLine('equs     "this    string"', {trim: true}).should.equal('equs "this    string"');

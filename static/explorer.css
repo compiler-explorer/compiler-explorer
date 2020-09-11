@@ -66,7 +66,7 @@ body {
 
 .popover.libs-popover {
     max-width: 800px !important;
-    max-height: 600px !important;
+    max-height: 615px !important;
 }
 
 .template {
@@ -222,13 +222,14 @@ pre.content.wrap {
 }
 
 .modal { /* maximum for all modal dialogs */
-width: 100%; 
-height: 100%;
+    width: 100%;
+    height: 100%;
+    padding: 1.75rem;
 }
 
 .modal-dialog {
     max-width: max-content; /* override bootstrap width */
-    margin: 1.75rem; /* global margin for all dialogs */
+    margin: 0 auto;
 }
 
 .modal-content { 
@@ -639,6 +640,7 @@ div.populararguments div.dropdown-menu {
 }
 
 .ces-icon {
+    margin-left: 0.3em;
     height: 1.5em;
 }
 

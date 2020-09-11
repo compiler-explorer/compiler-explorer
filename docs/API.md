@@ -24,12 +24,24 @@ Returns a list of compilers. In text form, there's a simple formatting of the
  information is returned as an array of compilers, with the `id` key being the
  primary identifier of each compiler.
 
+Due to the amount of compilers and information available through this api call,
+ by default you will only get these fields per compiler:
+ `['id', 'name', 'lang', 'compilerType', 'semver', 'extensions', 'monaco']`
+
+If you require different fields, you can specify them by adding `?fields=field1,field2,field3`
+ to your query.
+
+To see all the available fields, you can use `?fields=all`. It is not recommended
+ to use this by default.
+
 ### `GET /api/compilers/<language-id>` - return a list of compilers with matching language
 
 Returns a list of compilers for the provided language id. In text form,
  there's a simple formatting of the ID of the compiler, its description and its
  language ID. In JSON, all the information is returned as an array of compilers,
  with the `id` key being the primary identifier of each compiler.
+
+The same field restrictions apply as with `GET /api/compilers`
 
 ### `GET /api/libraries/<language-id>` - return a list of libraries available with for a language
 
@@ -51,9 +63,9 @@ To specify a compilation request as a JSON document, post it as the appropriate
  type and send an object of the form:
 ```JSON
 {
-    "source": "Source to compile",
+    "source": "<Source-to-compile>",
     "options": {
-        "userArguments": "Compiler flags",
+        "userArguments": "<Compiler-flags>",
         "compilerOptions": {
               "skipAsm": false,
               "executorRequest": false
@@ -76,11 +88,13 @@ To specify a compilation request as a JSON document, post it as the appropriate
              {"id": "range-v3", "version": "trunk"},
              {"id": "fmt", "version": "400"}
         ]
-    }
+    },
+    "lang": "<lang-id (Optional)>",
+    "allowStoreCodeDebug": true
 }
 ```
 
-Execution Only request:
+Execution Only request example:
 ```JSON
 {
     "source": "int main () { return 1; }",
@@ -264,3 +278,4 @@ Here are some examples of projects using the Compiler Explorer API:
 * [API in Delphi by partouf](https://github.com/partouf/compilerexplorer-api) (Delphi)
 * [QTCreator Plugin by dobokirisame](https://github.com/dobokirisame/CompilerExplorer) (C++)
 * [CLion plugin by ogrebenyuk](https://github.com/ogrebenyuk/compilerexplorer) (Java)
+* [QCompilerExplorer - frontend in Qt](https://github.com/Waqar144/QCompilerExplorer) (C++)

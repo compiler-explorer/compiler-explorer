@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-"use strict";
+'use strict';
 var _ = require('underscore');
 var $ = require('jquery');
 var EventEmitter = require('events');
@@ -92,10 +92,10 @@ _.extend(FontScale.prototype, EventEmitter.prototype);
 
 FontScale.prototype.apply = function () {
     if (this.isFontOfStr) {
-        this.domRoot.find(this.fontSelectorOrEditor).css('font-size', this.scale + "pt");
+        this.domRoot.find(this.fontSelectorOrEditor).css('font-size', this.scale + 'pt');
     } else {
         this.fontSelectorOrEditor.updateOptions({
-            fontSize: this.scale
+            fontSize: this.scale,
         });
     }
 };
@@ -111,7 +111,7 @@ FontScale.prototype.setScale = function (scale) {
 
 FontScale.prototype.setTarget = function (target) {
     this.fontSelectorOrEditor = target;
-    this.isFontOfStr = typeof (this.fontSelectorOrEditor) === "string";
+    this.isFontOfStr = typeof (this.fontSelectorOrEditor) === 'string';
 };
 
 module.exports = FontScale;

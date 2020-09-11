@@ -28,14 +28,14 @@ const chai = require('chai'),
     CompileHandler = require('../../lib/handlers/compile').Handler,
     express = require('express'),
     bodyParser = require('body-parser'),
-    {makeCompilationEnvironment} = require('../utils.js');
-chai.use(require("chai-http"));
+    {makeCompilationEnvironment} = require('../utils');
+chai.use(require('chai-http'));
 chai.should();
 
 const languages = {
     a: {id: 'a'},
     b: {id: 'b'},
-    d: {id: 'd'}
+    d: {id: 'd'},
 };
 
 
@@ -46,9 +46,14 @@ describe('Compiler tests', () => {
         const compilationEnvironment = makeCompilationEnvironment({languages});
         compileHandler = new CompileHandler(compilationEnvironment);
 
+        const textParser = bodyParser.text({type: () => true});
+        const formParser = bodyParser.urlencoded({extended: false});
+
         app = express();
-        app.use(bodyParser.json()).use(bodyParser.text());
-        app.post('/:compiler/compile', compileHandler.handle.bind(compileHandler));
+        app.use(bodyParser.json());
+
+        app.post('/noscript/compile', formParser, compileHandler.handle.bind(compileHandler));
+        app.post('/:compiler/compile', textParser, compileHandler.handle.bind(compileHandler));
     });
 
     it('throws for unknown compilers', () => {
@@ -59,30 +64,90 @@ describe('Compiler tests', () => {
             });
     });
 
+    describe('Noscript API', () => {
+        it('supports compile', () => {
+            return compileHandler.setCompilers([{
+                compilerType: 'fake-for-test',
+                exe: 'fake',
+                fakeResult: {
+                    code: 0,
+                    stdout: [{text: 'Something from stdout'}],
+                    stderr: [{text: 'Something from stderr'}],
+                    asm: [{text: 'ASMASMASM'}],
+                },
+            }]).then(() => {
+                return chai.request(app)
+                    .post('/noscript/compile')
+                    .set('Content-Type', 'application/x-www-form-urlencoded')
+                    .send('compiler=fake-for-test&source=I am a program')
+                    .then(res => {
+                        res.should.have.status(200);
+                        res.should.be.text;
+                        res.text.should.contain('Something from stdout');
+                        res.text.should.contain('Something from stderr');
+                        res.text.should.contain('ASMASMASM');
+                    })
+                    .catch(err => {
+                        throw err;
+                    });
+            });
+        });
+    });
+
+    describe('Curl API', () => {
+        it('supports compile', () => {
+            return compileHandler.setCompilers([{
+                compilerType: 'fake-for-test',
+                exe: 'fake',
+                fakeResult: {
+                    code: 0,
+                    stdout: [{text: 'Something from stdout'}],
+                    stderr: [{text: 'Something from stderr'}],
+                    asm: [{text: 'ASMASMASM'}],
+                },
+            }]).then(() => {
+                return chai.request(app)
+                    .post('/fake-for-test/compile')
+                    .set('Content-Type', 'application/x-www-form-urlencoded')
+                    .send('I am a program /* &compiler=NOT_A_COMPILER&source=etc */')
+                    .then(res => {
+                        res.should.have.status(200);
+                        res.should.be.text;
+                        res.text.should.contain('Something from stdout');
+                        res.text.should.contain('Something from stderr');
+                        res.text.should.contain('ASMASMASM');
+                    })
+                    .catch(err => {
+                        throw err;
+                    });
+            });
+        });
+    });
+
     describe('JSON API', () => {
         it('handles text output', () => {
             return compileHandler.setCompilers([{
-                compilerType: "fake-for-test",
-                exe: "fake",
+                compilerType: 'fake-for-test',
+                exe: 'fake',
                 fakeResult: {
                     code: 0,
-                    stdout: [{text: "Something from stdout"}],
-                    stderr: [{text: "Something from stderr"}],
-                    asm: [{text: "ASMASMASM"}]
-                }
+                    stdout: [{text: 'Something from stdout'}],
+                    stderr: [{text: 'Something from stderr'}],
+                    asm: [{text: 'ASMASMASM'}],
+                },
             }]).then(() => {
                 return chai.request(app)
                     .post('/fake-for-test/compile')
                     .send({
                         options: '',
-                        source: 'I am a program'
+                        source: 'I am a program',
                     })
                     .then(res => {
                         res.should.have.status(200);
                         res.should.be.text;
-                        res.text.should.contain("Something from stdout");
-                        res.text.should.contain("Something from stderr");
-                        res.text.should.contain("ASMASMASM");
+                        res.text.should.contain('Something from stdout');
+                        res.text.should.contain('Something from stderr');
+                        res.text.should.contain('ASMASMASM');
                     })
                     .catch(err => {
                         throw err;
@@ -92,39 +157,39 @@ describe('Compiler tests', () => {
 
         function makeFakeJson(source, options, fakeResult) {
             return compileHandler.setCompilers([{
-                compilerType: "fake-for-test",
-                exe: "fake",
-                fakeResult: fakeResult || {}
+                compilerType: 'fake-for-test',
+                exe: 'fake',
+                fakeResult: fakeResult || {},
             }])
                 .then(() => chai.request(app)
                     .post('/fake-for-test/compile')
                     .set('Accept', 'application/json')
                     .send({
                         options: options || {},
-                        source: source || ''
+                        source: source || '',
                     }));
         }
 
         it('handles JSON output', () => {
             return makeFakeJson('I am a program', {}, {
                 code: 0,
-                stdout: [{text: "Something from stdout"}],
-                stderr: [{text: "Something from stderr"}],
-                asm: [{text: "ASMASMASM"}]
+                stdout: [{text: 'Something from stdout'}],
+                stderr: [{text: 'Something from stderr'}],
+                asm: [{text: 'ASMASMASM'}],
             }).then(res => {
                 res.should.have.status(200);
                 res.should.be.json;
                 res.body.should.deep.equals({
-                    asm: [{text: "ASMASMASM"}],
+                    asm: [{text: 'ASMASMASM'}],
                     code: 0,
                     input: {
                         backendOptions: {},
                         filters: [],
                         options: [],
-                        source: "I am a program"
+                        source: 'I am a program',
                     },
-                    stderr: [{text: "Something from stderr"}],
-                    stdout: [{text: "Something from stdout"}]
+                    stderr: [{text: 'Something from stderr'}],
+                    stdout: [{text: 'Something from stdout'}],
                 });
             })
                 .catch(err => {
@@ -135,7 +200,7 @@ describe('Compiler tests', () => {
         it('parses options and filters', () => {
             return makeFakeJson('I am a program', {
                 userArguments: '-O1 -monkey "badger badger"',
-                filters: {a: true, b: true, c: true}
+                filters: {a: true, b: true, c: true},
             })
                 .then(res => {
                     res.should.have.status(200);
@@ -149,19 +214,19 @@ describe('Compiler tests', () => {
     describe('Query API', () => {
         function makeFakeQuery(source, query, fakeResult) {
             return compileHandler.setCompilers([{
-                compilerType: "fake-for-test",
-                exe: "fake",
-                fakeResult: fakeResult || {}
+                compilerType: 'fake-for-test',
+                exe: 'fake',
+                fakeResult: fakeResult || {},
             }])
                 .then(() => chai.request(app)
                     .post('/fake-for-test/compile')
                     .query(query || {})
                     .set('Accept', 'application/json')
-                    .send(source || ""));
+                    .send(source || ''));
         }
 
         it('handles filters set directly', () => {
-            return makeFakeQuery("source", {filters: 'a,b,c'})
+            return makeFakeQuery('source', {filters: 'a,b,c'})
                 .then(res => {
                     res.should.have.status(200);
                     res.should.be.json;
@@ -174,7 +239,7 @@ describe('Compiler tests', () => {
         });
 
         it('handles filters added', () => {
-            return makeFakeQuery("source", {filters: 'a', addFilters: 'e,f'})
+            return makeFakeQuery('source', {filters: 'a', addFilters: 'e,f'})
                 .then(res => {
                     res.should.have.status(200);
                     res.should.be.json;
@@ -187,7 +252,7 @@ describe('Compiler tests', () => {
         });
 
         it('handles filters removed', () => {
-            return makeFakeQuery("source", {filters: 'a,b,c', removeFilters: 'b,c,d'})
+            return makeFakeQuery('source', {filters: 'a,b,c', removeFilters: 'b,c,d'})
                 .then(res => {
                     res.should.have.status(200);
                     res.should.be.json;
@@ -200,7 +265,7 @@ describe('Compiler tests', () => {
         });
 
         it('handles filters added and removed', () => {
-            return makeFakeQuery("source", {filters: 'a,b,c', addFilters: 'c,g,h', removeFilters: 'b,c,d,h'})
+            return makeFakeQuery('source', {filters: 'a,b,c', addFilters: 'c,g,h', removeFilters: 'b,c,d,h'})
                 .then(res => {
                     res.should.have.status(200);
                     res.should.be.json;
@@ -217,26 +282,26 @@ describe('Compiler tests', () => {
         function makeFakeJson(compiler, lang) {
             return compileHandler.setCompilers([
                 {
-                    compilerType: "fake-for-test",
+                    compilerType: 'fake-for-test',
                     id: 'a',
                     lang: 'a',
-                    exe: "fake",
-                    fakeResult: {code: 0, stdout: [], stderr: [], asm: [{text: "LANG A"}]}
+                    exe: 'fake',
+                    fakeResult: {code: 0, stdout: [], stderr: [], asm: [{text: 'LANG A'}]},
                 },
                 {
-                    compilerType: "fake-for-test",
+                    compilerType: 'fake-for-test',
                     id: 'b',
                     lang: 'b',
-                    exe: "fake",
-                    fakeResult: {code: 0, stdout: [], stderr: [], asm: [{text: "LANG B"}]}
+                    exe: 'fake',
+                    fakeResult: {code: 0, stdout: [], stderr: [], asm: [{text: 'LANG B'}]},
                 },
                 {
-                    compilerType: "fake-for-test",
+                    compilerType: 'fake-for-test',
                     id: 'a',
                     lang: 'b',
-                    exe: "fake",
-                    fakeResult: {code: 0, stdout: [], stderr: [], asm: [{text: "LANG B but A"}]}
-                }
+                    exe: 'fake',
+                    fakeResult: {code: 0, stdout: [], stderr: [], asm: [{text: 'LANG B but A'}]},
+                },
             ])
                 .then(() => chai.request(app)
                     .post(`/${compiler}/compile`)
@@ -244,16 +309,16 @@ describe('Compiler tests', () => {
                     .send({
                         lang: lang,
                         options: {},
-                        source: ''
+                        source: '',
                     }));
         }
 
         it('finds without language', () => {
-            return makeFakeJson("b", {})
+            return makeFakeJson('b', {})
                 .then(res => {
                     res.should.have.status(200);
                     res.should.be.json;
-                    res.body.asm.should.deep.equals([{text: "LANG B"}]);
+                    res.body.asm.should.deep.equals([{text: 'LANG B'}]);
                 })
                 .catch(err => {
                     throw err;
@@ -261,11 +326,11 @@ describe('Compiler tests', () => {
         });
 
         it('disambiguates by language, choosing A', () => {
-            return makeFakeJson("a", "a")
+            return makeFakeJson('a', 'a')
                 .then(res => {
                     res.should.have.status(200);
                     res.should.be.json;
-                    res.body.asm.should.deep.equals([{text: "LANG A"}]);
+                    res.body.asm.should.deep.equals([{text: 'LANG A'}]);
                 })
                 .catch(err => {
                     throw err;
@@ -273,11 +338,11 @@ describe('Compiler tests', () => {
         });
 
         it('disambiguates by language, choosing B', () => {
-            return makeFakeJson("a", "b")
+            return makeFakeJson('a', 'b')
                 .then(res => {
                     res.should.have.status(200);
                     res.should.be.json;
-                    res.body.asm.should.deep.equals([{text: "LANG B but A"}]);
+                    res.body.asm.should.deep.equals([{text: 'LANG B but A'}]);
                 })
                 .catch(err => {
                     throw err;

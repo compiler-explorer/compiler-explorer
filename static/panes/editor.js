@@ -21,11 +21,11 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-"use strict";
+'use strict';
 var _ = require('underscore');
 var $ = require('jquery');
 var colour = require('../colour');
-var loadSaveLib = require('../loadSave');
+var loadSaveLib = require('../load-save');
 var FontScale = require('../fontscale');
 var Components = require('../components');
 var monaco = require('monaco-editor');
@@ -34,7 +34,9 @@ var Alert = require('../alert');
 var local = require('../local');
 var ga = require('../analytics');
 var monacoVim = require('monaco-vim');
+var monacoConfig = require('../monaco-config');
 require('../modes/cppp-mode');
+require('../modes/cppx-gold-mode');
 require('../modes/d-mode');
 require('../modes/ispc-mode');
 require('../modes/llvm-ir-mode');
@@ -77,7 +79,7 @@ function Editor(hub, state, container) {
 
     this.editorSourceByLang = {};
     this.alertSystem = new Alert();
-    this.alertSystem.prefixMessage = "Editor #" + this.id + ": ";
+    this.alertSystem.prefixMessage = 'Editor #' + this.id + ': ';
 
     this.awaitingInitialResults = false;
     this.selection = state.selection;
@@ -85,27 +87,13 @@ function Editor(hub, state, container) {
     this.langKeys = _.keys(languages);
     this.initLanguage(state);
 
-    var root = this.domRoot.find(".monaco-placeholder");
+    var root = this.domRoot.find('.monaco-placeholder');
     var legacyReadOnly = state.options && !!state.options.readOnly;
-    this.editor = monaco.editor.create(root[0], {
-        scrollBeyondLastLine: false,
+    this.editor = monaco.editor.create(root[0], monacoConfig.extendConfig({
         language: this.currentLanguage.monaco,
-        fontFamily: this.settings.editorsFFont,
-        readOnly: !!options.readOnly || legacyReadOnly ||
-            window.compilerExplorerOptions.mobileViewer,
+        readOnly: !!options.readOnly || legacyReadOnly || window.compilerExplorerOptions.mobileViewer,
         glyphMargin: !options.embedded,
-        quickSuggestions: false,
-        fixedOverflowWidgets: true,
-        minimap: {
-            maxColumn: 80
-        },
-        folding: true,
-        lineNumbersMinChars: 1,
-        emptySelectionClipboard: true,
-        autoIndent: this.settings.autoIndent ? "advanced" : "none",
-        vimInUse: this.settings.useVim,
-        fontLigatures: this.settings.editorsFLigatures
-    });
+    }, this.settings));
     this.editor.getModel().setEOL(monaco.editor.EndOfLineSequence.LF);
 
     if (state.source !== undefined) {
@@ -121,7 +109,7 @@ function Editor(hub, state, container) {
         setTimeout(_.bind(function () {
             this.editor.setSelection(new monaco.Selection(1, 1, 1, 1));
             this.editor.focus();
-            this.editor.getAction("editor.fold").run();
+            this.editor.getAction('editor.fold').run();
             this.editor.clearSelection();
         }, this), 500);
     }
@@ -145,7 +133,7 @@ function Editor(hub, state, container) {
         searchField: ['name'],
         options: _.map(usableLanguages, _.identity),
         items: [this.currentLanguage.id],
-        dropdownParent: 'body'
+        dropdownParent: 'body',
     }).on('change', _.bind(function (e) {
         this.onLanguageChange($(e.target).val());
     }, this));
@@ -169,12 +157,12 @@ function Editor(hub, state, container) {
     ga.proxy('send', {
         hitType: 'event',
         eventCategory: 'OpenViewPane',
-        eventAction: 'Editor'
+        eventAction: 'Editor',
     });
     ga.proxy('send', {
         hitType: 'event',
         eventCategory: 'LanguageChange',
-        eventAction: this.currentLanguage.id
+        eventAction: this.currentLanguage.id,
     });
 }
 
@@ -189,7 +177,7 @@ Editor.prototype.updateExtraDecorations = function () {
         if (decoration.filter && decoration.filter.indexOf(this.currentLanguage.name.toLowerCase()) < 0) return;
         var match = this.editor.getModel().findNextMatch(decoration.regex, {
             column: 1,
-            lineNumber: 1
+            lineNumber: 1,
         }, true, true, null, false);
         if (match !== this.decorations[decoration.name]) {
             decorationsDirty = true;
@@ -216,7 +204,7 @@ Editor.prototype.updateState = function () {
         id: this.id,
         source: this.getSource(),
         lang: this.currentLanguage.id,
-        selection: this.selection
+        selection: this.selection,
     };
     this.fontScale.addState(state);
     this.container.setState(state);
@@ -228,7 +216,7 @@ Editor.prototype.setSource = function (newSource) {
     this.updateSource(newSource);
 
     if (window.compilerExplorerOptions.mobileViewer) {
-        $(this.domRoot.find(".monaco-placeholder textarea")).hide();
+        $(this.domRoot.find('.monaco-placeholder textarea')).hide();
     }
 };
 
@@ -298,6 +286,16 @@ Editor.prototype.initCallbacks = function () {
         this.mouseMoveThrottledFunction(e);
     }, this));
 
+    if (window.compilerExplorerOptions.mobileViewer) {
+        // workaround for issue with contextmenu not going away when tapping somewhere else on the screen
+        this.editor.onDidChangeCursorSelection(_.bind(function () {
+            var contextmenu = $('div.context-view.monaco-menu-container');
+            if (contextmenu.css('display') !== 'none') {
+                contextmenu.hide();
+            }
+        }, this));
+    }
+
     this.cursorSelectionThrottledFunction =
         _.throttle(_.bind(this.onDidChangeCursorSelection, this), 500);
     this.editor.onDidChangeCursorSelection(_.bind(function (e) {
@@ -307,7 +305,7 @@ Editor.prototype.initCallbacks = function () {
     this.eventHub.on('initialised', this.maybeEmitChange, this);
 
     $(document).on('keyup.editable', _.bind(function (e) {
-        if (e.target === this.domRoot.find(".monaco-placeholder .inputarea")[0]) {
+        if (e.target === this.domRoot.find('.monaco-placeholder .inputarea')[0]) {
             if (e.which === 27) {
                 this.onEscapeKey(e);
             } else if (e.which === 45) {
@@ -345,13 +343,15 @@ Editor.prototype.onInsertKey = function (event) {
     if (this.editor.vimInUse) {
         var currentState = monacoVim.VimMode.Vim.maybeInitVimState_(this.vimMode);
         if (!currentState.insertMode) {
-            var insertEvent = {};
-            insertEvent.preventDefault = event.preventDefault;
-            insertEvent.stopPropagation = event.stopPropagation;
-            insertEvent.browserEvent = {};
-            insertEvent.browserEvent.key = 'i';
-            insertEvent.browserEvent.defaultPrevented = false;
-            insertEvent.keyCode = 39;
+            var insertEvent = {
+                preventDefault: event.preventDefault,
+                stopPropagation: event.stopPropagation,
+                browserEvent: {
+                    key: 'i',
+                    defaultPrevented: false,
+                },
+                keyCode: 39,
+            };
             this.vimMode.handleKeyDown(insertEvent);
         }
     }
@@ -359,14 +359,14 @@ Editor.prototype.onInsertKey = function (event) {
 
 Editor.prototype.enableVim = function () {
     this.vimMode = monacoVim.initVimMode(this.editor, this.domRoot.find('#v-status')[0]);
-    this.vimFlag.prop("class", "btn btn-info");
+    this.vimFlag.prop('class', 'btn btn-info');
     this.editor.vimInUse = true;
 };
 
 Editor.prototype.disableVim = function () {
     this.vimMode.dispose();
-    this.domRoot.find('#v-status').html("");
-    this.vimFlag.prop("class", "btn btn-light");
+    this.domRoot.find('#v-status').html('');
+    this.vimFlag.prop('class', 'btn btn-light');
     this.editor.vimInUse = false;
 };
 
@@ -376,7 +376,7 @@ Editor.prototype.initButtons = function (state) {
     // Ensure that the button is disabled if we don't have nothing to select
     // Note that is might be disabled for other reasons beforehand
     if (this.langKeys.length <= 1) {
-        this.languageBtn.prop("disabled", true);
+        this.languageBtn.prop('disabled', true);
     }
     this.topBar = this.domRoot.find('.top-bar');
     this.hideable = this.domRoot.find('.hideable');
@@ -453,7 +453,7 @@ Editor.prototype.initButtons = function (state) {
                     this.showLoadSaver();
                 }
             } else {
-                this.eventHub.emit("displaySharingPopover");
+                this.eventHub.emit('displaySharingPopover');
             }
         }
     }, this));
@@ -488,7 +488,7 @@ Editor.prototype.b64UTFEncode = function (str) {
 Editor.prototype.asciiEncodeJsonText = function (json) {
     return json.replace(/[\u007F-\uFFFF]/g, function (chr) {
         // json unicode escapes must always be 4 characters long, so pad with leading zeros
-        return "\\u" + ("0000" + chr.charCodeAt(0).toString(16)).substr(-4);
+        return '\\u' + ('0000' + chr.charCodeAt(0).toString(16)).substr(-4);
     });
 };
 
@@ -498,7 +498,7 @@ Editor.prototype.getCompilerStates = function () {
     _.each(this.ourCompilers, _.bind(function (val, compilerIdStr) {
         var compilerId = parseInt(compilerIdStr);
 
-        var glCompiler = _.find(this.container.layoutManager.root.getComponentsByName("compiler"), function (c) {
+        var glCompiler = _.find(this.container.layoutManager.root.getComponentsByName('compiler'), function (c) {
             return c.id === compilerId;
         });
 
@@ -516,32 +516,32 @@ Editor.prototype.updateOpenInCppInsights = function () {
 
     var compilers = this.getCompilerStates();
     _.each(compilers, _.bind(function (compiler) {
-        if ((compiler.options.indexOf("-std=c++11") !== -1) ||
-            (compiler.options.indexOf("-std=gnu++11") !== -1)) {
-            cppStd = "cpp11";
-        } else if ((compiler.options.indexOf("-std=c++14") !== -1) ||
-            (compiler.options.indexOf("-std=gnu++14") !== -1)) {
-            cppStd = "cpp14";
-        } else if ((compiler.options.indexOf("-std=c++17") !== -1) ||
-            (compiler.options.indexOf("-std=gnu++17") !== -1)) {
-            cppStd = "cpp17";
-        } else if ((compiler.options.indexOf("-std=c++2a") !== -1) ||
-            (compiler.options.indexOf("-std=gnu++2a") !== -1)) {
-            cppStd = "cpp2a";
-        } else if (compiler.options.indexOf("-std=c++98") !== -1) {
-            cppStd = "cpp98";
+        if ((compiler.options.indexOf('-std=c++11') !== -1) ||
+            (compiler.options.indexOf('-std=gnu++11') !== -1)) {
+            cppStd = 'cpp11';
+        } else if ((compiler.options.indexOf('-std=c++14') !== -1) ||
+            (compiler.options.indexOf('-std=gnu++14') !== -1)) {
+            cppStd = 'cpp14';
+        } else if ((compiler.options.indexOf('-std=c++17') !== -1) ||
+            (compiler.options.indexOf('-std=gnu++17') !== -1)) {
+            cppStd = 'cpp17';
+        } else if ((compiler.options.indexOf('-std=c++2a') !== -1) ||
+            (compiler.options.indexOf('-std=gnu++2a') !== -1)) {
+            cppStd = 'cpp2a';
+        } else if (compiler.options.indexOf('-std=c++98') !== -1) {
+            cppStd = 'cpp98';
         }
     }, this));
 
     var link = 'https://cppinsights.io/lnk?code=' + this.b64UTFEncode(this.getSource()) + '&std=' + cppStd + '&rev=1.0';
 
-    this.domRoot.find(".open-in-cppinsights").attr("href", link);
+    this.domRoot.find('.open-in-cppinsights').attr('href', link);
 };
 
 Editor.prototype.cleanupSemVer = function (semver) {
     if (semver) {
         var semverStr = semver.toString();
-        if ((semverStr !== "") && (semverStr.indexOf('(') === -1)) {
+        if ((semverStr !== '') && (semverStr.indexOf('(') === -1)) {
             var vercomps = semverStr.split('.');
             return vercomps[0] + '.' + (vercomps[1] ? vercomps[1] : '0');
         }
@@ -552,7 +552,7 @@ Editor.prototype.cleanupSemVer = function (semver) {
 
 Editor.prototype.updateOpenInQuickBench = function () {
     var quickBenchState = {
-        text: this.getSource()
+        text: this.getSource(),
     };
 
     var compilers = this.getCompilerStates();
@@ -569,10 +569,10 @@ Editor.prototype.updateOpenInQuickBench = function () {
         if (semver && groupOrName) {
             groupOrName = groupOrName.toLowerCase();
             if (groupOrName.indexOf('gcc') !== -1) {
-                quickBenchState.compiler = "gcc-" + semver;
+                quickBenchState.compiler = 'gcc-' + semver;
                 knownCompiler = true;
             } else if (groupOrName.indexOf('clang') !== -1) {
-                quickBenchState.compiler = "clang-" + semver;
+                quickBenchState.compiler = 'clang-' + semver;
                 knownCompiler = true;
             }
         }
@@ -580,35 +580,35 @@ Editor.prototype.updateOpenInQuickBench = function () {
         if (knownCompiler) {
             var match = compiler.options.match(/-(O([0-3sg]|fast))/);
             if (match !== null) {
-                if (match[2] === "fast") {
-                    quickBenchState.optim = "F";
+                if (match[2] === 'fast') {
+                    quickBenchState.optim = 'F';
                 } else {
                     quickBenchState.optim = match[2].toUpperCase();
                 }
             }
 
-            if ((compiler.options.indexOf("-std=c++11") !== -1) ||
-                (compiler.options.indexOf("-std=gnu++11") !== -1)) {
-                quickBenchState.cppVersion = "11";
-            } else if ((compiler.options.indexOf("-std=c++14") !== -1) ||
-                (compiler.options.indexOf("-std=gnu++14") !== -1)) {
-                quickBenchState.cppVersion = "14";
-            } else if ((compiler.options.indexOf("-std=c++17") !== -1) ||
-                (compiler.options.indexOf("-std=gnu++17") !== -1)) {
-                quickBenchState.cppVersion = "17";
-            } else if ((compiler.options.indexOf("-std=c++2a") !== -1) ||
-                (compiler.options.indexOf("-std=gnu++2a") !== -1)) {
-                quickBenchState.cppVersion = "20";
+            if ((compiler.options.indexOf('-std=c++11') !== -1) ||
+                (compiler.options.indexOf('-std=gnu++11') !== -1)) {
+                quickBenchState.cppVersion = '11';
+            } else if ((compiler.options.indexOf('-std=c++14') !== -1) ||
+                (compiler.options.indexOf('-std=gnu++14') !== -1)) {
+                quickBenchState.cppVersion = '14';
+            } else if ((compiler.options.indexOf('-std=c++17') !== -1) ||
+                (compiler.options.indexOf('-std=gnu++17') !== -1)) {
+                quickBenchState.cppVersion = '17';
+            } else if ((compiler.options.indexOf('-std=c++2a') !== -1) ||
+                (compiler.options.indexOf('-std=gnu++2a') !== -1)) {
+                quickBenchState.cppVersion = '20';
             }
 
-            if ((compiler.options.indexOf("-stdlib=libc++") !== -1)) {
-                quickBenchState.lib = "llvm";
+            if ((compiler.options.indexOf('-stdlib=libc++') !== -1)) {
+                quickBenchState.lib = 'llvm';
             }
         }
     }, this));
 
     var link = 'http://quick-bench.com/#' + btoa(this.asciiEncodeJsonText(JSON.stringify(quickBenchState)));
-    this.domRoot.find(".open-in-quickbench").attr("href", link);
+    this.domRoot.find('.open-in-quickbench').attr('href', link);
 };
 
 Editor.prototype.changeLanguage = function (newLang) {
@@ -642,7 +642,7 @@ Editor.prototype.initEditorActions = function () {
             // This change request is mostly superfluous
             this.maybeEmitChange();
             this.requestCompilation();
-        }, this)
+        }, this),
     });
 
     this.editor.addAction({
@@ -652,15 +652,15 @@ Editor.prototype.initEditorActions = function () {
         keybindingContext: null,
         run: _.bind(function () {
             this.eventHub.emit('modifySettings', {
-                compileOnChange: !this.settings.compileOnChange
+                compileOnChange: !this.settings.compileOnChange,
             });
             this.alertSystem
                 .notify('Compile on change has been toggled ' + (this.settings.compileOnChange ? 'ON' : 'OFF'), {
-                    group: "togglecompile",
-                    alertClass: this.settings.compileOnChange ? "notification-on" : "notification-off",
-                    dismissTime: 3000
+                    group: 'togglecompile',
+                    alertClass: this.settings.compileOnChange ? 'notification-on' : 'notification-off',
+                    dismissTime: 3000,
                 });
-        }, this)
+        }, this),
     });
 
     this.editor.addAction({
@@ -670,7 +670,7 @@ Editor.prototype.initEditorActions = function () {
         keybindingContext: null,
         contextMenuGroupId: 'help',
         contextMenuOrder: 1.5,
-        run: _.bind(this.formatCurrentText, this)
+        run: _.bind(this.formatCurrentText, this),
     });
 
     this.editor.addAction({
@@ -680,9 +680,9 @@ Editor.prototype.initEditorActions = function () {
         keybindingContext: null,
         run: _.bind(function () {
             this.eventHub.emit('modifySettings', {
-                colouriseAsm: !this.settings.colouriseAsm
+                colouriseAsm: !this.settings.colouriseAsm,
             });
-        }, this)
+        }, this),
     });
 
     this.editor.addAction({
@@ -694,8 +694,31 @@ Editor.prototype.initEditorActions = function () {
         contextMenuOrder: 1.5,
         run: _.bind(function (ed) {
             this.tryPanesLinkLine(ed.getPosition().lineNumber, true);
-        }, this)
+        }, this),
     });
+
+    this.isCpp = this.editor.createContextKey('isCpp', true);
+    this.isCpp.set(this.currentLanguage.id === 'c++');
+
+    this.editor.addAction({
+        id: 'cpprefsearch',
+        label: 'Search on Cppreference',
+        keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.F8],
+        keybindingContext: null,
+        contextMenuGroupId: 'help',
+        contextMenuOrder: 1.5,
+        precondition: 'isCpp',
+        run: _.bind(this.searchOnCppreference, this),
+    });
+};
+
+Editor.prototype.searchOnCppreference = function (ed) {
+    var pos = ed.getPosition();
+    var word = ed.getModel().getWordAtPosition(pos);
+    if (!word || !word.word) return;
+
+    var url = 'https://en.cppreference.com/mwiki/index.php?search=' + encodeURIComponent(word.word);
+    window.open(url, '_blank', 'noopener');
 };
 
 Editor.prototype.doesMatchEditor = function (otherSource) {
@@ -703,8 +726,8 @@ Editor.prototype.doesMatchEditor = function (otherSource) {
 };
 
 Editor.prototype.confirmOverwrite = function (yes) {
-    this.alertSystem.ask("Changes were made to the code",
-        "Changes were made to the code while it was being processed. Overwrite changes?",
+    this.alertSystem.ask('Changes were made to the code',
+        'Changes were made to the code while it was being processed. Overwrite changes?',
         {yes: yes, no: null});
 };
 
@@ -713,7 +736,7 @@ Editor.prototype.updateSource = function (newSource) {
     var operation = {
         range: this.editor.getModel().getFullModelRange(),
         forceMoveMarkers: true,
-        text: newSource
+        text: newSource,
     };
     var nullFn = function () {
         return null;
@@ -727,9 +750,26 @@ Editor.prototype.updateSource = function (newSource) {
 
     if (!this.awaitingInitialResults) {
         if (this.selection) {
-            this.editor.setSelection(this.selection);
-            this.editor.revealLinesInCenter(this.selection.startLineNumber,
-                this.selection.endLineNumber);
+            /*
+             * this setTimeout is a really crap workaround to fix #2150
+             * the TL;DR; is that we reach this point *before* GL has laid
+             * out the window, so we have no height
+             *
+             * If we revealLinesInCenter at this point the editor "does the right thing"
+             * and scrolls itself all the way to the line we requested.
+             *
+             * Unfortunately the editor thinks it is very small, so the "center"
+             * is the first line, and when the editor does resize eventually things are off.
+             *
+             * The workaround is to just delay things "long enough"
+             *
+             * This is bad and I feel bad.
+             */
+            setTimeout(_.bind(function () {
+                this.editor.setSelection(this.selection);
+                this.editor.revealLinesInCenter(this.selection.startLineNumber,
+                    this.selection.endLineNumber);
+            }, this), 500);
         }
         this.awaitingInitialResults = true;
     }
@@ -745,7 +785,7 @@ Editor.prototype.formatCurrentText = function () {
         contentType: 'application/json',  // Sent
         data: JSON.stringify({
             source: previousSource,
-            base: this.settings.formatBase
+            base: this.settings.formatBase,
         }),
         success: _.bind(function (result) {
             if (result.exit === 0) {
@@ -758,9 +798,9 @@ Editor.prototype.formatCurrentText = function () {
                 }
             } else {
                 // Ops, the formatter itself failed!
-                this.alertSystem.notify("We encountered an error formatting your code: " + result.answer, {
-                    group: "formatting",
-                    alertClass: "notification-error"
+                this.alertSystem.notify('We encountered an error formatting your code: ' + result.answer, {
+                    group: 'formatting',
+                    alertClass: 'notification-error',
                 });
             }
         }, this),
@@ -774,13 +814,13 @@ Editor.prototype.formatCurrentText = function () {
                     // continue regardless of error
                 }
             }
-            error = error || "Unknown error";
-            this.alertSystem.notify("We ran into some issues while formatting your code: " + error, {
-                group: "formatting",
-                alertClass: "notification-error"
+            error = error || 'Unknown error';
+            this.alertSystem.notify('We ran into some issues while formatting your code: ' + error, {
+                group: 'formatting',
+                alertClass: 'notification-error',
             });
         }, this),
-        cache: true
+        cache: true,
     });
 };
 
@@ -789,19 +829,19 @@ Editor.prototype.resize = function () {
 
     this.editor.layout({
         width: this.domRoot.width(),
-        height: this.domRoot.height() - topBarHeight
+        height: this.domRoot.height() - topBarHeight,
     });
     // Only update the options if needed
     if (this.settings.wordWrap) {
         this.editor.updateOptions({
-            wordWrapColumn: this.editor.getLayoutInfo().viewportColumn
+            wordWrapColumn: this.editor.getLayoutInfo().viewportColumn,
         });
     }
 };
 
 Editor.prototype.updateAndCalcTopBarHeight = function () {
     var width = this.domRoot.width();
-    if (width === this.cachedTopBarHeightAtWidth && !this.topBar.hasClass("d-none")) {
+    if (width === this.cachedTopBarHeightAtWidth && !this.topBar.hasClass('d-none')) {
         return this.cachedTopBarHeight;
     }
 
@@ -809,7 +849,7 @@ Editor.prototype.updateAndCalcTopBarHeight = function () {
     var topBarHeightMax = 0;
     var topBarHeightMin = 0;
 
-    if (!this.topBar.hasClass("d-none")) {
+    if (!this.topBar.hasClass('d-none')) {
         this.hideable.show();
         topBarHeightMax = this.topBar.outerHeight(true);
         this.hideable.hide();
@@ -832,18 +872,18 @@ Editor.prototype.onSettingsChange = function (newSettings) {
     this.settings = _.clone(newSettings);
 
     this.editor.updateOptions({
-        autoIndent: this.settings.autoIndent ? "advanced" : "none",
+        autoIndent: this.settings.autoIndent ? 'advanced' : 'none',
         autoClosingBrackets: this.settings.autoCloseBrackets,
         useVim: this.settings.useVim,
         quickSuggestions: this.settings.showQuickSuggestions,
         contextmenu: this.settings.useCustomContextMenu,
         minimap: {
-            enabled: this.settings.showMinimap && !options.embedded
+            enabled: this.settings.showMinimap && !options.embedded,
         },
         fontFamily: this.settings.editorsFFont,
         fontLigatures: this.settings.editorsFLigatures,
         wordWrap: this.settings.wordWrap ? 'bounded' : 'off',
-        wordWrapColumn: this.editor.getLayoutInfo().viewportColumn // Ensure the column count is up to date
+        wordWrapColumn: this.editor.getLayoutInfo().viewportColumn, // Ensure the column count is up to date
     });
 
     // Unconditionally send editor changes. The compiler only compiles when needed
@@ -864,7 +904,7 @@ Editor.prototype.onSettingsChange = function (newSettings) {
     if (this.editor.getModel()) {
         this.editor.getModel().updateOptions({
             tabSize: this.settings.tabWidth,
-            insertSpaces: this.settings.useSpaces
+            insertSpaces: this.settings.useSpaces,
         });
     }
 
@@ -901,7 +941,7 @@ Editor.prototype.onCompilerOpen = function (compilerId, editorId) {
     if (editorId === this.id) {
         // On any compiler open, rebroadcast our state in case they need to know it.
         if (this.waitingForLanguage) {
-            var glCompiler = _.find(this.container.layoutManager.root.getComponentsByName("compiler"), function (c) {
+            var glCompiler = _.find(this.container.layoutManager.root.getComponentsByName('compiler'), function (c) {
                 return c.id === compilerId;
             });
             if (glCompiler) {
@@ -963,7 +1003,7 @@ Editor.prototype.onCompileResponse = function (compilerId, compiler, result) {
             startLineNumber: obj.tag.line,
             startColumn: obj.tag.column || 0,
             endLineNumber: obj.tag.line,
-            endColumn: obj.tag.column ? -1 : Infinity
+            endColumn: obj.tag.column ? -1 : Infinity,
         };
     }, this));
     monaco.editor.setModelMarkers(this.editor.getModel(), compilerId, widgets);
@@ -972,8 +1012,8 @@ Editor.prototype.onCompileResponse = function (compilerId, compiler, result) {
             range: new monaco.Range(tag.startLineNumber, tag.startColumn, tag.startLineNumber + 1, 1),
             options: {
                 isWholeLine: false,
-                inlineClassName: "error-code"
-            }
+                inlineClassName: 'error-code',
+            },
         };
     }, this);
     this.updateDecorations();
@@ -995,8 +1035,8 @@ Editor.prototype.onEditorLinkLine = function (editorId, lineNum, columnNum, reve
             options: {
                 isWholeLine: true,
                 linesDecorationsClassName: 'linked-code-decoration-margin',
-                className: 'linked-code-decoration-line'
-            }
+                className: 'linked-code-decoration-line',
+            },
         }];
 
         if (lineNum > 0 && columnNum !== -1) {
@@ -1004,8 +1044,8 @@ Editor.prototype.onEditorLinkLine = function (editorId, lineNum, columnNum, reve
                 range: new monaco.Range(lineNum, columnNum, lineNum, columnNum + 1),
                 options: {
                     isWholeLine: false,
-                    inlineClassName: 'linked-code-decoration-column'
-                }
+                    inlineClassName: 'linked-code-decoration-column',
+                },
             });
         }
 
@@ -1029,8 +1069,8 @@ Editor.prototype.onEditorSetDecoration = function (id, lineNum, reveal) {
             options: {
                 isWholeLine: true,
                 linesDecorationsClassName: 'linked-code-decoration-margin',
-                inlineClassName: 'linked-code-decoration-inline'
-            }
+                inlineClassName: 'linked-code-decoration-inline',
+            },
         }];
         this.updateDecorations();
     }
@@ -1044,13 +1084,13 @@ Editor.prototype.updateDecorations = function () {
 
 Editor.prototype.onConformanceViewOpen = function (editorId) {
     if (editorId === this.id) {
-        this.conformanceViewerButton.attr("disabled", true);
+        this.conformanceViewerButton.attr('disabled', true);
     }
 };
 
 Editor.prototype.onConformanceViewClose = function (editorId) {
     if (editorId === this.id) {
-        this.conformanceViewerButton.attr("disabled", false);
+        this.conformanceViewerButton.attr('disabled', false);
     }
 };
 
@@ -1082,16 +1122,17 @@ Editor.prototype.onLanguageChange = function (newLangId) {
             }
             this.initLoadSaver();
             monaco.editor.setModelLanguage(this.editor.getModel(), this.currentLanguage.monaco);
+            this.isCpp.set(this.currentLanguage.id === 'c++');
             this.updateTitle();
             this.updateState();
             // Broadcast the change to other panels
-            this.eventHub.emit("languageChange", this.id, newLangId);
+            this.eventHub.emit('languageChange', this.id, newLangId);
             this.maybeEmitChange(true);
             this.requestCompilation();
             ga.proxy('send', {
                 hitType: 'event',
                 eventCategory: 'LanguageChange',
-                eventAction: newLangId
+                eventAction: newLangId,
             });
         }
         this.waitingForLanguage = false;
@@ -1099,7 +1140,7 @@ Editor.prototype.onLanguageChange = function (newLangId) {
 };
 
 Editor.prototype.getPaneName = function () {
-    return this.currentLanguage.name + " source #" + this.id;
+    return this.currentLanguage.name + ' source #' + this.id;
 };
 
 Editor.prototype.updateTitle = function () {
@@ -1118,5 +1159,5 @@ Editor.prototype.close = function () {
 };
 
 module.exports = {
-    Editor: Editor
+    Editor: Editor,
 };

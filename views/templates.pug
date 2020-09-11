@@ -85,47 +85,13 @@
           span.fas.fa-cog
           span.hideable &nbsp;Output...
         .dropdown-menu
-          .button-checkbox
-            button.dropdown-item.btn.btn-sm.btn-light(type="button" title="Compile to binary and disassemble the output" data-bind="binary" aria-pressed="false")
-              span Compile to binary
-            input.d-none(type="checkbox")
-          .button-checkbox
-            button.dropdown-item.btn.btn-sm.btn-light(type="button" title="Execute the compiled code and show its output" data-bind="execute" aria-pressed="false")
-              span Run the compiled output
-            input.d-none(type="checkbox")
-          .button-checkbox
-            button.dropdown-item.btn.btn-sm.btn-light.active(type="button" title="Output disassembly in Intel syntax" data-bind="intel" aria-pressed="true")
-              span Intel asm syntax
-            input.d-none(type="checkbox" checked=true)
-          .button-checkbox
-            button.dropdown-item.btn.btn-sm.btn-light.active(type="button" title="Demangle output" data-bind="demangle" aria-pressed="true")
-              span Demangle identifiers
-            input.d-none(type="checkbox" checked=true)
+          include options-output.pug
       .btn-group.btn-group-sm.filters(role="group")
         button.btn.btn-sm.btn-light.dropdown-toggle(type="button" title="Compiler output filters" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Change how the compiler output is filtered")
           span.fas.fa-filter
           span.hideable &nbsp;Filter...
         .dropdown-menu
-          .button-checkbox
-            button.dropdown-item.btn.btn-sm.btn-light.active.nonbinary(type="button" title="Filter unused labels from the output" data-bind="labels" aria-pressed="true")
-              span Unused labels
-            input.d-none(type="checkbox" checked=true)
-          .button-checkbox
-            button.dropdown-item.btn.btn-sm.btn-light.active.nonbinary(title="Filter functions from other libraries from the output" data-bind="libraryCode" aria-pressed="true")
-              span Library functions
-            input.d-none(type="checkbox")
-          .button-checkbox
-            button.dropdown-item.btn.btn-sm.btn-light.active.nonbinary(type="button" title="Filter all assembler directives from the output" data-bind="directives" aria-pressed="true")
-              span Directives
-            input.d-none(type="checkbox" checked=true)
-          .button-checkbox
-            button.dropdown-item.btn.btn-sm.btn-light.active.nonbinary(type="button" title="Remove all lines which are only comments from the output" data-bind="commentOnly" aria-pressed="true")
-              span Comments
-            input.d-none(type="checkbox" checked=true)
-          .button-checkbox
-            button.dropdown-item.btn.btn-sm.btn-light(type="button" title="Trim intra-line whitespace" data-bind="trim" aria-pressed="false")
-              span Horizontal whitespace
-            input.d-none(type="checkbox")
+          include options-filters.pug
       .btn-group.btn-group-sm(role="group" aria-label="Compiler additions")
         button.btn.btn-sm.btn-light.show-libs.dropdown-toggle(title="Include libs" aria-label="Toggle libraries dropdown" aria-pressed="false" aria-haspopup="true")
           span.fas.fa-book
@@ -138,6 +104,9 @@
           button.dropdown-item.btn.btn-sm.btn-light.add-compiler(title="Clone this compiler window (click or drag)")
             span.dropdown-icon.far.fa-clone
             | Clone compiler
+          button.dropdown-item.btn.btn-sm.btn-light.create-executor(title="Create executor from this compiler")
+            span.dropdown-icon.fas.fa-microchip
+            | Executor from this
           button.dropdown-item.btn.btn-sm.btn-light.view-optimization(title="Show optimization output")
             span.dropdown-icon.fas.fa-weight
             | Optimization output
@@ -233,6 +202,8 @@
     pre.content
 
   #tool-output
+    .top-bar.bad-lang.bg-warning(role="toolbar" style="display: none")
+      p The current language or compiler does not support this tool
     .top-bar.btn-toolbar.options-toolbar.bg-light(role="toolbar")
       include font-size
       .btn-group.btn-group-sm.options(role="group" aria-label="Tool options")
@@ -294,14 +265,68 @@
       .btn-group.btn-group-sm(role="group")
         select.gccdump-pass-picker(placeholder="Select a pass...")
       .btn-group.btn-group-sm.dump-filters
-        .button-checkbox
-          button.btn.btn-sm.btn-light.active(type="button" title="Show Tree pass" data-bind="treeDump" aria-pressed="true")
-            span Tree pass
-          input.d-none(type="checkbox" checked=true)
-        .button-checkbox
-          button.btn.btn-sm.btn-light.active(type="button" title="Show RTL pass" data-bind="rtlDump" aria-pressed="true")
-            span RTL pass
-          input.d-none(type="checkbox" checked=true)
+        button.btn.btn-sm.btn-light.dropdown-toggle(type="button" title="Dump passes" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Available dump passes")
+          span.fas.fa-compass
+          span.hideable &nbsp;Passes
+        .dropdown-menu
+          .button-checkbox
+            button.dropdown-item.btn.btn-sm.btn-light.active(type="button" title="Show Tree passes" data-bind="treeDump" aria-pressed="true")
+              span Tree pass
+            input.d-none(type="checkbox" checked=true)
+          .button-checkbox
+            button.dropdown-item.btn.btn-sm.btn-light.active(type="button" title="Show RTL passes" data-bind="rtlDump" aria-pressed="true")
+              span RTL pass
+            input.d-none(type="checkbox" checked=true)
+          .button-checkbox
+            button.dropdown-item.btn.btn-sm.btn-light.active(type="button" title="Show IPA passes" data-bind="ipaDump" aria-pressed="false")
+              span IPA pass
+            input.d-none(type="checkbox")
+      .btn-group.btn-group-sm.dump-filters
+        button.btn.btn-sm.btn-light.dropdown-toggle(type="button" title="Dump pass options" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Control the details of the dump")
+          span.fas.fa-microchip
+          span.hideable &nbsp;Options
+        .dropdown-menu
+          .button-checkbox
+            button.dropdown-item.btn.btn-sm.btn-light(type="button" title="Print raw representation of the tree" data-bind="rawOption" aria-pressed="false")
+              span Raw Dump
+            input.d-none(type="checkbox")
+          .button-checkbox
+            button.dropdown-item.btn.btn-sm.btn-light(type="button" title="Print condensed intermediate representations" data-bind="slimOption" aria-pressed="false")
+              span Slim Dump
+            input.d-none(type="checkbox")
+          div.dropdown-divider
+          .button-checkbox
+            button.dropdown-item.btn.btn-sm.btn-light(type="button" title="Turn on all options (except raw, slim, and lineno)" data-bind="allOption" aria-pressed="false")
+              span All Options
+            input.d-none(type="checkbox")
+          .button-checkbox
+            button.dropdown-item.btn.btn-sm.btn-light(type="button" title="Enable printing the address of each tree node" data-bind="addressOption" aria-pressed="true")
+              span Addresses
+            input.d-none(type="checkbox")
+          .button-checkbox
+            button.dropdown-item.btn.btn-sm.btn-light(type="button" title="Enable showing basic block boundaries (disabled in raw dumps)" data-bind="blocksOption" aria-pressed="false")
+              span Basic Blocks
+            input.d-none(type="checkbox")
+          .button-checkbox
+            button.dropdown-item.btn.btn-sm.btn-light(type="button" title="Enable showing line numbers" data-bind="linenoOption" aria-pressed="false")
+              span Line Numbers
+            input.d-none(type="checkbox")
+          .button-checkbox
+            button.dropdown-item.btn.btn-sm.btn-light(type="button" title="Enable more detailed dumps (not honored by every dump option)" data-bind="detailsOption" aria-pressed="false")
+              span Pass Details
+            input.d-none(type="checkbox")
+          .button-checkbox
+            button.dropdown-item.btn.btn-sm.btn-light(type="button" title="Enable dumping statistics (not honored by every dump option)" data-bind="statsOption" aria-pressed="false")
+              span Pass Stats
+            input.d-none(type="checkbox")
+          .button-checkbox
+            button.dropdown-item.btn.btn-sm.btn-light(type="button" title="Enable showing variable UIDs" data-bind="uidOption" aria-pressed="false")
+              span Unique IDs
+            input.d-none(type="checkbox")
+          .button-checkbox
+            button.dropdown-item.btn.btn-sm.btn-light(type="button" title="Enable showing virtual operands" data-bind="vopsOption" aria-pressed="false")
+              span Virtual Operands
+            input.d-none(type="checkbox")
     .monaco-placeholder
 
   #cfg

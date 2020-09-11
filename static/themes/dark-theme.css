@@ -418,6 +418,18 @@ div.argmenuitem span.argdescription {
     fill: #999999 !important;
 }
 
+.qb-logo-pri {
+    fill: #e2e2e2 !important;
+}
+
+.qb-logo-sec {
+    fill: #333 !important;
+}
+
+.cppi-logo-sec {
+    fill: #e2e2e2 !important;
+}
+
 a {
     color: #45bbe0 !important;
 }

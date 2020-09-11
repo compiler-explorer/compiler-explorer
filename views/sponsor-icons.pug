@@ -1,0 +1,8 @@
+.ces-icons
+  each icon in sponsors.icons
+    if noscript
+      a(href=icon.url)
+        img.ces-icon(src=icon.icon alt=icon.name)
+      span &nbsp;
+    else
+      img.ces-icon(src=icon.icon alt=icon.name)

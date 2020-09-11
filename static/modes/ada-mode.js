@@ -101,7 +101,7 @@ function definition() {
             'not',
             'and',
             'or',
-            'xor'
+            'xor',
         ],
         standardTypes :[
             // Defined in the package Standard
@@ -122,18 +122,18 @@ function definition() {
             'Constraint_Error',
             'Program_Error',
             'Storage_Error',
-            'Tasking_Error'
+            'Tasking_Error',
         ],
 
         operators: [
             '+', '-', '*', '/', 'div', 'mod',
             'shl', 'shr', 'and', 'or', 'xor', 'not',
             '<', '>', '<=', '>=', '==', '<>',
-            '+=', '-=', '*=', '/='
+            '+=', '-=', '*=', '/=',
         ],
         brackets: [
             ['(', ')', 'delimiter.parenthesis'],
-            ['[', ']', 'delimiter.square']
+            ['[', ']', 'delimiter.square'],
         ],
         symbols: /[=><!~&|+\-*/^]+/,
         delimiters: /[;=.:,`]/,
@@ -146,8 +146,8 @@ function definition() {
                     cases: {
                         '@standardTypes': 'type',
                         '@keywords': 'keyword',
-                        '@default': 'identifier'
-                    }
+                        '@default': 'identifier',
+                    },
                 }],
                 // Whitespace
                 {include: '@whitespace'},
@@ -165,8 +165,8 @@ function definition() {
                 [/@delimiters/, {
                     cases: {
                         '@keywords': 'keyword',
-                        '@default': 'delimiter'
-                    }
+                        '@default': 'delimiter',
+                    },
                 }],
                 // strings
                 [/"([^"\\]|\\.)*$/, 'string.invalid'],  // non-teminated string
@@ -175,21 +175,21 @@ function definition() {
                 // characters
                 [/'[^\\']'/, 'string'],
                 [/(')(@escapes)(')/, ['string', 'string.escape', 'string']],
-                [/'/, 'string.invalid']
+                [/'/, 'string.invalid'],
             ],
             
             // Whitespace and comments
             whitespace: [
                 [/[ \t\r\n]+/, 'white'],
-                [/--.*$/, 'comment']
+                [/--.*$/, 'comment'],
             ],
             string: [
                 [/[^\\"]+/, 'string'],
                 [/@escapes/, 'string.escape'],
                 [/\\./, 'string.escape.invalid'],
-                [/"/, 'string', '@pop']
-            ]
-        }
+                [/"/, 'string', '@pop'],
+            ],
+        },
     };
 }
 monaco.languages.register({id: 'ada'});

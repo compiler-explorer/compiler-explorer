@@ -1,0 +1,20 @@
+mixin filteroption(name, longdescription, shortdescription, defaultchecked)
+  if noscript
+    .button-checkbox
+      if defaultchecked
+        input(type="checkbox" title=longdescription name=name checked='checked' value='true')
+      else
+        input(type="checkbox" title=longdescription name=name value='true')
+      span=shortdescription
+  else
+    - var pressed = defaultchecked ? 'true' : 'false'
+    .button-checkbox
+      button.dropdown-item.btn.btn-sm.btn-light(type='button' title=longdescription data-bind=name aria-pressed=pressed)
+        span=shortdescription
+      input.d-none(type="checkbox" checked=defaultchecked)
+
++filteroption('labels', 'Filter unused labels from the output', 'Unused labels', true)
++filteroption('libraryCode', 'Filter functions from other libraries from the output', 'Library functions', false)
++filteroption('directives', 'Filter all assembler directives from the output', 'Directives', true)
++filteroption('commentOnly', 'Remove all lines which are only comments from the output', 'Comments', true)
++filteroption('trim', 'Trim intra-line whitespace', 'Horizontal whitespace', false)

@@ -21,7 +21,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-"use strict";
+'use strict';
 
 var _ = require('underscore');
 var $ = require('jquery');
@@ -29,7 +29,7 @@ var $ = require('jquery');
 function Alert() {
     this.yesHandler = null;
     this.noHandler = null;
-    this.prefixMessage = "";
+    this.prefixMessage = '';
     var yesNo = $('#yes-no');
     yesNo.find('button.yes').click(_.bind(function () {
         if (this.yesHandler) this.yesHandler();
@@ -124,9 +124,9 @@ Alert.prototype.notify = function (body, options) {
     if (!options) options = {};
     // Set defaults
     // Collapse similar by default
-    options.collapseSimilar = ("collapseSimilar" in options) ? options.collapseSimilar : true;
+    options.collapseSimilar = ('collapseSimilar' in options) ? options.collapseSimilar : true;
     // autoDismiss by default
-    options.autoDismiss = ("autoDismiss" in options) ? options.autoDismiss : true;
+    options.autoDismiss = ('autoDismiss' in options) ? options.autoDismiss : true;
     // Dismiss this after 5000ms by default
     options.dismissTime = options.dismissTime ? Math.max(1000, options.dismissTime) : 5000;
     if (options.group) {

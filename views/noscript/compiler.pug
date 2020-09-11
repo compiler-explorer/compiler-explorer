@@ -1,0 +1,42 @@
+block content
+  each session in clientstate.sessions
+    form(action=`${httpRoot}api/noscript/compile` method='POST')
+      p=`${session.language} source #${session.id}`
+      input#lang(name='lang' value=session.language type='hidden')
+
+      .form-pair.inlined.dropdown
+        a.btn.nodropdown-toggle#outputDropdown(href="javascript:;" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
+          span.fas.fa-cog
+          | Output
+
+        .output.noscriptdropdown(aria-labelledby="outputDropdown")
+          include ../options-output.pug
+
+      .form-pair.inlined.dropdown
+        a.btn.nodropdown-toggle#filtersDropdown(href="javascript:;" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
+          span.fas.fa-filter
+          | Filters
+
+        .filters.noscriptdropdown(aria-labelledby="filtersDropdown")
+          include ../options-filters.pug
+
+      .form-pair-inlined
+        label(for='compilerid') Compiler
+        select.compiler-picker#compilerid(name='compiler' placeholder='Select a compiler...')
+          - var selectedCompilerId = (session.compilers.length > 0) ? (session.compilers[0].id) : '';
+          each compiler in compilers
+            - var compilerIsSelected = compiler.id == selectedCompilerId
+            if compiler.lang == session.language && (!compiler.hidden || compilerIsSelected)
+              if compilerIsSelected
+                option(value=compiler.id selected=true)= compiler.name
+              else
+                option(value=compiler.id )= compiler.name
+      .form-pair-inlined
+        label(for='compileroptions') Options
+        input#compileroptions(name='userArguments' type="text" placeholder='Compiler options...' autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" value=(session.compilers.length > 0) ? session.compilers[0].options : '')
+      .form-pair-block
+        label(for='source') Source code
+        textarea#source(name='source' cols='70' rows='10' placeholder='Type your code here')
+          =session.source
+      .form-pair-inlined
+        input(type='submit' value='Compile')

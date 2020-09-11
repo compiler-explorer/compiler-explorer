@@ -1,0 +1,29 @@
+- var noscript = true
+doctype html
+html(lang="en")
+  head
+    block meta
+        include ../meta.pug
+
+    block styles
+        link(href=require("noscript.css") rel="stylesheet")
+        link(href=require("vendor.css") rel="stylesheet")
+        link(href=require("main.css") rel="stylesheet")
+        style#theme
+
+    block scripts
+        if mobileViewer
+            script(src=require("vendor.js"))
+            script(src=require("runtime.js"))
+            script(src=require("noscript.js"))
+
+  body(class=extraBodyClass)
+    block header
+        include header.pug
+        include languages.pug
+
+    block content
+        #root
+
+    block footer
+        include footer.pug

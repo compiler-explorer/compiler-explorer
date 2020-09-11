@@ -33,24 +33,24 @@ describe('Hash tests', () => {
     it('should never generate invalid characters', () => {
         for (let i = 0; i < 256; ++i) {
             const buf = Buffer.of(i);
-            const as64 = StorageBase.safe64Encoded(buf);
-            as64.should.not.contain("/");
-            as64.should.not.contain("+");
+            const as64 = StorageBase.encodeBuffer(buf);
+            as64.should.not.contain('/');
+            as64.should.not.contain('+');
         }
     });
     const badResult = 'R0Buttabcdefghio1327698asdhjkJJklQp'.toLowerCase(); // Butt hash, see https://github.com/compiler-explorer/compiler-explorer/issues/1297
     it('should detect profanities in hashes', () => {
-        StorageBase.isCleanText("I am the very model of a major general").should.be.true;
+        StorageBase.isCleanText('I am the very model of a major general').should.be.true;
         StorageBase.isCleanText(badResult).should.be.false;
     });
     it('should avoid profanities and illegible characters in hashes', () => {
-        const testCase = {some: "test"};
+        const testCase = {some: 'test'};
         const goodResult = 'uy3AkJTC9PRg8LfxqcxuUgKrCb-OatsRW7FAAVi3-4M'; // L in 13th place: OK
         const callback = sinon.stub()
             .onFirstCall().returns(badResult)
             .onSecondCall().returns(badResult) // force nonce to update a couple of times
             .returns(goodResult);
-        sinon.replace(StorageBase, 'safe64Encoded', callback);
+        sinon.replace(StorageBase, 'encodeBuffer', callback);
         const {config, configHash} = StorageBase.getSafeHash(testCase);
         configHash.should.not.equal(badResult);
         configHash.should.equal(goodResult);
@@ -58,13 +58,10 @@ describe('Hash tests', () => {
         should.exist(asObj.nonce);
         asObj.nonce.should.equal(2);
     });
-    it('should detect illegible characters in hashes', () => {
-        StorageBase.isLegibleText("three").should.be.true;
-        StorageBase.isLegibleText(badResult).should.be.false;
-    });
+
     it('should not modify ok hashes', () => {
-        const testCase = {some: "test"};
-        const {config, configHash} = StorageBase.getSafeHash(testCase); // L in 13th place: OK
+        const testCase = {some: 'test'};
+        const {config} = StorageBase.getSafeHash(testCase);
         const asObj = JSON.parse(config);
         should.not.exist(asObj.nonce);
     });

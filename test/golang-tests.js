@@ -23,48 +23,48 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 const chai = require('chai'),
-    chaiAsPromised = require("chai-as-promised"),
+    chaiAsPromised = require('chai-as-promised'),
     fs = require('fs-extra'),
     utils = require('../lib/utils'),
     GoCompiler = require('../lib/compilers/golang'),
-    {makeCompilationEnvironment} = require('./utils.js');
+    {makeCompilationEnvironment} = require('./utils');
 
 chai.use(chaiAsPromised);
 chai.should();
 
 const languages = {
-    go: {id: 'go'}
+    go: {id: 'go'},
 };
 
 let ce;
 const info = {
     exe: null,
     remote: true,
-    lang: languages.go.id
+    lang: languages.go.id,
 };
 
 function testGoAsm(basefilename) {
     const compiler = new GoCompiler(info, ce);
 
-    const asmLines = utils.splitLines(fs.readFileSync(basefilename + ".asm").toString());
+    const asmLines = utils.splitLines(fs.readFileSync(basefilename + '.asm').toString());
 
     const result = {
         stderr: asmLines.map((line) => {
             return {
-                text: line
+                text: line,
             };
-        })
+        }),
     };
 
-    return compiler.postProcess(result).then(([output, optOutput]) => {
-        const expectedOutput = utils.splitLines(fs.readFileSync(basefilename + ".output.asm").toString());
+    return compiler.postProcess(result).then(([output]) => {
+        const expectedOutput = utils.splitLines(fs.readFileSync(basefilename + '.output.asm').toString());
 
         utils.splitLines(output.asm).should.deep.equal(expectedOutput);
 
         return output.should.deep.equal({
-            asm: expectedOutput.join("\n"),
+            asm: expectedOutput.join('\n'),
             stdout: [],
-            stderr: null
+            stderr: null,
         });
     });
 }
@@ -75,9 +75,9 @@ describe('GO asm tests', () => {
     });
 
     it('Handles unknown line number correctly', () => {
-        return testGoAsm("test/golang/bug-901");
+        return testGoAsm('test/golang/bug-901');
     });
     it('Rewrites PC jumps to labels', () => {
-        return testGoAsm("test/golang/labels");
+        return testGoAsm('test/golang/labels');
     });
 });

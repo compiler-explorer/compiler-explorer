@@ -10,14 +10,6 @@ levels:
         url: https://solidsands.com/
         priority: 100
         topIcon: true
-      - name: PVS-Studio
-        description: Did you check how it compiles? Now check your code for bugs and potential vulnerabilities using PVS-Studio.
-        icon: https://static.ce-cdn.net/pvs_bugs_long.svg
-        sideBySide: true
-        img: https://static.ce-cdn.net/pvs%20logo%20white-mini.png
-        url: https://www.viva64.com/en/pvs-studio-download/?promo=godbolt
-        priority: 100
-        topIcon: true
       - name: Stop Bugs
         description: Identify defects, vulnerabilities, unmaintainable code, and more with PC-lint Plus.
         icon: https://static.ce-cdn.net/gimpel/pcl_logo2.png
@@ -50,6 +42,8 @@ levels:
       # Person with the initials "WB" prefers to remain anonymous
       - name: Casey Carter
       - name: Ben Barbour
+      - name: Embark Studios
+        url: https://www.embark-studios.com/
   - name: Patreons
     description: 'Thanks to all my patrons:'
     sponsors:
@@ -269,3 +263,19 @@ levels:
       - Andrew Tridgell
       - Jeff Roberts
       - Pankaj Raghav
+      - Fredrik Berggren
+      - Christoph Siedentop
+      - Jeff Dash
+      - Borislav Stanimirov
+      - Joshua Norrid
+      - Nathan Harris
+      - Aleksandr Susha
+      - Anton Kovalev
+      - Luke D
+      - Erich Keane
+      - Michael Daum
+      - Mac Reiter
+      - Petr Leonov
+      - Niall Cooling
+      - Ian
+

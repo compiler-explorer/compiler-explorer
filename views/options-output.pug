@@ -1,0 +1,19 @@
+mixin outputoption(name, longdescription, shortdescription, defaultchecked)
+  if noscript
+    .button-checkbox
+      if defaultchecked
+        input(type="checkbox" title=longdescription name=name checked='checked' value='true')
+      else
+        input(type="checkbox" title=longdescription name=name value='true')
+      span=shortdescription
+  else
+    - var pressed = defaultchecked ? 'true' : 'false'
+    .button-checkbox
+      button.dropdown-item.btn.btn-sm.btn-light(type='button' title=longdescription data-bind=name aria-pressed=pressed)
+        span=shortdescription
+      input.d-none(type="checkbox" checked=defaultchecked)
+
++outputoption('binary', 'Compile to binary and disassemble the output', 'Compile to binary', false)
++outputoption('execute', 'Execute the compiled code and show its output', 'Run the compiled output', false)
++outputoption('intel', 'Output disassembly in Intel syntax', 'Intel asm syntax', true)
++outputoption('demangle', 'Demangle output', 'Demangle identifiers', true)

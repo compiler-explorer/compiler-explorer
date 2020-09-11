@@ -21,13 +21,14 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-"use strict";
+'use strict';
 
 var FontScale = require('../fontscale');
 var monaco = require('monaco-editor');
 var _ = require('underscore');
 var $ = require('jquery');
 var ga = require('../analytics');
+var monacoConfig = require('../monaco-config');
 
 require('../modes/asm-mode');
 require('selectize');
@@ -38,22 +39,16 @@ function Opt(hub, container, state) {
     this.eventHub = hub.createEventHub();
     this.domRoot = container.getElement();
     this.domRoot.html($('#opt').html());
-    this.source = state.source || "";
+    this.source = state.source || '';
     this._currentDecorations = [];
-    this.optEditor = monaco.editor.create(this.domRoot.find(".monaco-placeholder")[0], {
+    var root = this.domRoot.find('.monaco-placeholder');
+
+    this.optEditor = monaco.editor.create(root[0], monacoConfig.extendConfig({
         value: this.source,
-        scrollBeyondLastLine: false,
         language: 'plaintext',
         readOnly: true,
         glyphMargin: true,
-        quickSuggestions: false,
-        fixedOverflowWidgets: true,
-        fontFamily: 'Consolas, "Liberation Mono", Courier, monospace',
-        minimap: {
-            maxColumn: 80
-        },
-        lineNumbersMinChars: 1
-    });
+    }));
 
     this._compilerid = state.id;
     this._compilerName = state.compilerName;
@@ -71,18 +66,18 @@ function Opt(hub, container, state) {
         this.showOptResults(state.optOutput);
     }
     this.setTitle();
-    this.eventHub.emit("optViewOpened", this._compilerid);
+    this.eventHub.emit('optViewOpened', this._compilerid);
     ga.proxy('send', {
         hitType: 'event',
         eventCategory: 'OpenViewPane',
-        eventAction: 'Opt'
+        eventAction: 'Opt',
     });
 }
 
 Opt.prototype.initButtons = function (state) {
     this.fontScale = new FontScale(this.domRoot, state, this.optEditor);
 
-    this.topBar = this.domRoot.find(".top-bar");
+    this.topBar = this.domRoot.find('.top-bar');
 };
 
 Opt.prototype.initCallbacks = function () {
@@ -135,13 +130,13 @@ Opt.prototype.getCurrentEditorLanguage = function () {
 
 Opt.prototype.setTitle = function () {
     this.container.setTitle(
-        this._compilerName + " Opt Viewer (Editor #" + this._editorid + ", Compiler #" + this._compilerid + ")");
+        this._compilerName + ' Opt Viewer (Editor #' + this._editorid + ', Compiler #' + this._compilerid + ')');
 };
 
 Opt.prototype.getDisplayableOpt = function (optResult) {
     return {
-        value: "**" + optResult.optType + "** - " + optResult.displayString,
-        isTrusted: false
+        value: '**' + optResult.optType + '** - ' + optResult.displayString,
+        isTrusted: false,
     };
 };
 
@@ -159,22 +154,22 @@ Opt.prototype.showOptResults = function (results) {
     _.mapObject(results, function (value, key) {
         var linenumber = Number(key);
         var className = value.reduce(function (acc, x) {
-            if (x.optType === "Missed" || acc === "Missed") {
-                return "Missed";
-            } else if (x.optType === "Passed" || acc === "Passed") {
-                return "Passed";
+            if (x.optType === 'Missed' || acc === 'Missed') {
+                return 'Missed';
+            } else if (x.optType === 'Passed' || acc === 'Passed') {
+                return 'Passed';
             }
             return x.optType;
-        }, "");
+        }, '');
         var contents = _.map(value, this.getDisplayableOpt, this);
         opt.push({
             range: new monaco.Range(linenumber, 1, linenumber, Infinity),
             options: {
                 isWholeLine: true,
-                glyphMarginClassName: "opt-decoration." + className.toLowerCase(),
+                glyphMarginClassName: 'opt-decoration.' + className.toLowerCase(),
                 hoverMessage: contents,
-                glyphMarginHoverMessage: contents
-            }
+                glyphMarginHoverMessage: contents,
+            },
         });
     }, this);
 
@@ -187,7 +182,7 @@ Opt.prototype.onCompiler = function (id, compiler) {
         this.setTitle();
         this.isCompilerSupported = compiler ? compiler.supportsOptOutput : false;
         if (!this.isCompilerSupported) {
-            this.optEditor.setValue("<OPT output is not supported for this compiler>");
+            this.optEditor.setValue('<OPT output is not supported for this compiler>');
         }
     }
 };
@@ -196,7 +191,7 @@ Opt.prototype.resize = function () {
     var topBarHeight = this.topBar.outerHeight(true);
     this.optEditor.layout({
         width: this.domRoot.width(),
-        height: this.domRoot.height() - topBarHeight
+        height: this.domRoot.height() - topBarHeight,
     });
 };
 
@@ -208,7 +203,7 @@ Opt.prototype.currentState = function () {
     var state = {
         id: this._compilerid,
         editorid: this._editorid,
-        selection: this.selection
+        selection: this.selection,
     };
     this.fontScale.addState(state);
     return state;
@@ -216,7 +211,7 @@ Opt.prototype.currentState = function () {
 
 Opt.prototype.close = function () {
     this.eventHub.unsubscribe();
-    this.eventHub.emit("optViewClosed", this._compilerid);
+    this.eventHub.emit('optViewClosed', this._compilerid);
     this.optEditor.dispose();
 };
 
@@ -235,10 +230,10 @@ Opt.prototype.onSettingsChange = function (newSettings) {
     this.optEditor.updateOptions({
         contextmenu: newSettings.useCustomContextMenu,
         minimap: {
-            enabled: newSettings.showMinimap
+            enabled: newSettings.showMinimap,
         },
         fontFamily: newSettings.editorsFFont,
-        fontLigatures: newSettings.editorsFLigatures
+        fontLigatures: newSettings.editorsFLigatures,
     });
 };
 
@@ -250,5 +245,5 @@ Opt.prototype.onDidChangeCursorSelection = function (e) {
 };
 
 module.exports = {
-    Opt: Opt
+    Opt: Opt,
 };

@@ -46,7 +46,7 @@ function makeAnsiToHtml(color) {
         fg: color ? color : '#333',
         bg: '#f5f5f5',
         stream: true,
-        escapeXML: true
+        escapeXML: true,
     });
 }
 
@@ -74,7 +74,7 @@ function Executor(hub, container, state) {
     this.nextRequest = null;
 
     this.alertSystem = new Alert();
-    this.alertSystem.prefixMessage = "Executor #" + this.id + ": ";
+    this.alertSystem.prefixMessage = 'Executor #' + this.id + ': ';
 
     this.normalAnsiToHtml = makeAnsiToHtml();
     this.errorAnsiToHtml = makeAnsiToHtml('red');
@@ -94,14 +94,14 @@ function Executor(hub, container, state) {
         options: _.map(this.getCurrentLangCompilers(), _.identity),
         items: this.compiler ? [this.compiler.id] : [],
         dropdownParent: 'body',
-        closeAfterSelect: true
+        closeAfterSelect: true,
     }).on('change', _.bind(function (e) {
         var val = $(e.target).val();
         if (val) {
             ga.proxy('send', {
                 hitType: 'event',
                 eventCategory: 'SelectCompiler',
-                eventAction: val
+                eventAction: val,
             });
             this.onCompilerChange(val);
         }
@@ -118,7 +118,7 @@ function Executor(hub, container, state) {
     ga.proxy('send', {
         hitType: 'event',
         eventCategory: 'OpenViewPane',
-        eventAction: 'Executor'
+        eventAction: 'Executor',
     });
 }
 
@@ -188,20 +188,20 @@ Executor.prototype.compile = function (bypassCache) {
         userArguments: this.options,
         executeParameters: {
             args: this.executionArguments,
-            stdin: this.executionStdin
+            stdin: this.executionStdin,
         },
         compilerOptions: {
-            executorRequest: true
+            executorRequest: true,
         },
         filters: {execute: true},
         tools: [],
-        libraries: []
+        libraries: [],
     };
 
     _.each(this.libsWidget.getLibsInUse(), function (item) {
         options.libraries.push({
             id: item.libId,
-            version: item.versionId
+            version: item.versionId,
         });
     });
 
@@ -210,7 +210,7 @@ Executor.prototype.compile = function (bypassCache) {
             source: expanded || '',
             compiler: this.compiler ? this.compiler.id : '',
             options: options,
-            lang: this.currentLangId
+            lang: this.currentLangId,
         };
         if (bypassCache) request.bypassCache = true;
         if (!this.compiler) {
@@ -241,7 +241,7 @@ Executor.prototype.sendCompile = function (request) {
             onCompilerResponse(request, x.result, x.localCacheHit);
         })
         .catch(function (x) {
-            var message = "Unknown error";
+            var message = 'Unknown error';
             if (_.isString(x)) {
                 message = x;
             } else if (x) {
@@ -279,6 +279,20 @@ Executor.prototype.clearPreviousOutput = function () {
     this.executionOutputSection.empty();
 };
 
+Executor.prototype.handleOutput = function (output, element, ansiParser) {
+    var outElem = $('<pre class="card"></pre>').appendTo(element);
+    _.each(output, function (obj) {
+        if (obj.text === '') {
+            this.addCompilerOutputLine('<br/>', outElem);
+        } else {
+            var lineNumber = obj.tag ? obj.tag.line : obj.line;
+            var columnNumber = obj.tag ? obj.tag.column : -1;
+            this.addCompilerOutputLine(ansiParser.toHtml(obj.text), outElem, lineNumber, columnNumber);
+        }
+    }, this);
+    return outElem;
+};
+
 Executor.prototype.onCompileResponse = function (request, result, cached) {
     // Save which source produced this change. It should probably be saved earlier though
     result.source = this.source;
@@ -291,13 +305,13 @@ Executor.prototype.onCompileResponse = function (request, result, cached) {
         eventCategory: 'Compile',
         eventAction: request.compiler,
         eventLabel: request.options.userArguments,
-        eventValue: cached ? 1 : 0
+        eventValue: cached ? 1 : 0,
     });
     ga.proxy('send', {
         hitType: 'timing',
         timingCategory: 'Compile',
         timingVar: request.compiler,
-        timingValue: timeTaken
+        timingValue: timeTaken,
     });
 
     this.clearPreviousOutput();
@@ -309,46 +323,25 @@ Executor.prototype.onCompileResponse = function (request, result, cached) {
         this.executionStatusSection.append($('<p></p>').text('Could not execute the program'));
         this.executionStatusSection.append($('<p></p>').text('Compiler returned: ' + result.buildResult.code));
     }
+
     if (compileStdout.length > 0) {
         this.compilerOutputSection.append($('<p></p>').text('Compiler stdout'));
-        var outElem = $('<pre class="card"></pre>').appendTo(this.compilerOutputSection);
-        _.each(compileStdout, function (obj) {
-            if (obj.text === "") {
-                this.addCompilerOutputLine("<br/>", outElem);
-            } else {
-                var lineNumber = obj.tag ? obj.tag.line : obj.line;
-                var columnNumber = obj.tag ? obj.tag.column : -1;
-                this.addCompilerOutputLine(this.normalAnsiToHtml.toHtml(obj.text), outElem, lineNumber, columnNumber);
-            }
-        }, this);
+        this.handleOutput(compileStdout, this.compilerOutputSection, this.normalAnsiToHtml);
     }
     if (compileStderr.length > 0) {
         this.compilerOutputSection.append($('<p></p>').text('Compiler stderr'));
-        var errElem = $('<pre class="card"></pre>').appendTo(this.compilerOutputSection);
-        _.each(compileStderr, function (obj) {
-            if (obj.text === "") {
-                this.addCompilerOutputLine("<br/>", errElem);
-            } else {
-                var lineNumber = obj.tag ? obj.tag.line : obj.line;
-                var columnNumber = obj.tag ? obj.tag.column : -1;
-                this.addCompilerOutputLine(this.errorAnsiToHtml.toHtml(obj.text), errElem, lineNumber, columnNumber);
-            }
-        }, this);
+        this.handleOutput(compileStderr, this.compilerOutputSection, this.errorAnsiToHtml);
     }
     if (result.didExecute) {
         this.executionOutputSection.append($('<p></p>').text('Program returned: ' + result.code));
         if (execStdout.length > 0) {
             this.executionOutputSection.append($('<p></p>').text('Program stdout'));
-            $('<pre class="card execution-stdout"></pre>')
-                .text(_.pluck(execStdout, 'text').join('\n'))
-                .appendTo(this.executionOutputSection);
+            var outElem = this.handleOutput(execStdout, this.executionOutputSection, this.normalAnsiToHtml);
+            outElem.addClass('execution-stdout');
         }
         if (execStderr.length > 0) {
             this.executionOutputSection.append($('<p></p>').text('Program stderr'));
-            $('<pre class="card"></pre>')
-                .text(_.pluck(execStderr, 'text').join('\n'))
-                .css({color: 'red'})
-                .appendTo(this.executionOutputSection);
+            this.handleOutput(execStderr, this.executionOutputSection, this.normalAnsiToHtml);
         }
     }
 
@@ -422,11 +415,11 @@ Executor.prototype.initButtons = function (state) {
         var target = $(e.target);
         if (!target.is(this.prependOptions) && this.prependOptions.has(target).length === 0 &&
             target.closest('.popover').length === 0)
-            this.prependOptions.popover("hide");
+            this.prependOptions.popover('hide');
 
         if (!target.is(this.fullCompilerName) && this.fullCompilerName.has(target).length === 0 &&
             target.closest('.popover').length === 0)
-            this.fullCompilerName.popover("hide");
+            this.fullCompilerName.popover('hide');
     }, this));
 
     this.optionsField.val(this.options);
@@ -599,7 +592,7 @@ Executor.prototype.initCallbacks = function () {
 
     if (MutationObserver !== undefined) {
         new MutationObserver(_.bind(this.resize, this)).observe(this.execStdinField[0], {
-            attributes: true, attributeFilter: ["style"]
+            attributes: true, attributeFilter: ['style'],
         });
     }
 };
@@ -635,7 +628,7 @@ Executor.prototype.updateCompilerInfo = function () {
             this.alertSystem.notify(this.compiler.notification, {
                 group: 'compilerwarning',
                 alertClass: 'notification-info',
-                dismissTime: 5000
+                dismissTime: 5000,
             });
         }
         this.prependOptions.data('content', this.compiler.options);
@@ -685,7 +678,7 @@ Executor.prototype.currentState = function () {
         compilationPanelShown: !this.panelCompilation.hasClass('d-none'),
         compilerOutShown: !this.compilerOutputSection.hasClass('d-none'),
         argsPanelShown: !this.panelArgs.hasClass('d-none'),
-        stdinPanelShown: !this.panelStdin.hasClass('d-none')
+        stdinPanelShown: !this.panelStdin.hasClass('d-none'),
     };
     this.fontScale.addState(state);
     return state;
@@ -726,7 +719,7 @@ Executor.prototype.setCompilationOptionsPopover = function (content) {
         template: '<div class="popover' +
             (content ? ' compiler-options-popover' : '') +
             '" role="tooltip"><div class="arrow"></div>' +
-            '<h3 class="popover-header"></h3><div class="popover-body"></div></div>'
+            '<h3 class="popover-header"></h3><div class="popover-body"></div></div>',
     });
 };
 
@@ -737,7 +730,7 @@ Executor.prototype.setCompilerVersionPopover = function (version) {
         template: '<div class="popover' +
             (version ? ' compiler-options-popover' : '') +
             '" role="tooltip"><div class="arrow"></div>' +
-            '<h3 class="popover-header"></h3><div class="popover-body"></div></div>'
+            '<h3 class="popover-header"></h3><div class="popover-body"></div></div>',
     });
 };
 
@@ -750,19 +743,19 @@ Executor.prototype.handleCompilationStatus = function (status) {
 
     function ariaLabel() {
         // Compiling...
-        if (status.code === 4) return "Compiling";
+        if (status.code === 4) return 'Compiling';
         if (status.didExecute) {
-            return "Program compiled & executed";
+            return 'Program compiled & executed';
         } else {
-            return "Program could not be executed";
+            return 'Program could not be executed';
         }
     }
 
     function color() {
         // Compiling...
-        if (status.code === 4) return "black";
-        if (status.didExecute) return "#12BB12";
-        return "#FF1212";
+        if (status.code === 4) return 'black';
+        if (status.didExecute) return '#12BB12';
+        return '#FF1212';
     }
 
     this.statusIcon
@@ -790,7 +783,7 @@ Executor.prototype.onLanguageChange = function (editorId, newLangId) {
             compiler: this.compiler && this.compiler.id ? this.compiler.id : options.defaultCompiler[oldLangId],
             options: this.options,
             execArgs: this.executionArguments,
-            execStdin: this.executionStdin
+            execStdin: this.executionStdin,
         };
         var info = this.infoByLang[this.currentLangId] || {};
         this.initLangAndCompiler({lang: newLangId, compiler: info.compiler});
@@ -801,7 +794,22 @@ Executor.prototype.onLanguageChange = function (editorId, newLangId) {
 };
 
 Executor.prototype.getCurrentLangCompilers = function () {
-    return this.compilerService.getCompilersForLang(this.currentLangId);
+    var allCompilers = this.compilerService.getCompilersForLang(this.currentLangId);
+    var hasAtLeastOneExecuteSupported = _.any(allCompilers, function (compiler) {
+        return (compiler.supportsExecute !== false);
+    });
+
+    if (!hasAtLeastOneExecuteSupported) {
+        this.compiler = null;
+        return [];
+    }
+
+    return _.filter(
+        allCompilers,
+        _.bind(function (compiler) {
+            return ((compiler.hidden !== true) && (compiler.supportsExecute !== false)) ||
+                   (this.compiler && compiler.id === this.compiler.id);
+        }, this));
 };
 
 Executor.prototype.updateCompilersSelector = function (info) {
@@ -823,5 +831,5 @@ Executor.prototype.updateCompilersSelector = function (info) {
 };
 
 module.exports = {
-    Executor: Executor
+    Executor: Executor,
 };
