@@ -91,6 +91,9 @@ describe('API handling', () => {
             handle: res => {
                 res.send('compile');
             },
+            handleCmake: res => {
+                res.send('cmake');
+            },
             handlePopularArguments: res => {
                 res.send('ok');
             },
