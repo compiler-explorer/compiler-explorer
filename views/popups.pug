@@ -299,12 +299,12 @@
               .row
                 .col-lg
                   div(style='text-align: center')
-                    input.search(val="t")
-                    button.btn.btn-light(type="button") Search
+                    input.search(value="t")
+                    button.btn.btn-primary(type="button" style="margin-left: 10px;") Search
               .row
                 .col-lg &nbsp;
               .row
-                .col-md(style="min-width: 250px;")
+                .col-md(style="min-width: 200px;")
                   h6 Selected
                   div
                     button.btn.btn-lg {fmt} 7.0.0
@@ -312,17 +312,45 @@
                     button.btn.btn-lg CTRE trunk
                   div
                     button.btn.btn-lg GSL trunk
-                .col-md(style="min-width: 350px;")
+                .col-md(style="min-width: 450px;")
                   h6 Results
-                  div
-                    b {fmt}
-                    p A modern formatting library
-                    a(href='https://github.com/fmtlib/fmt') Website
-                  div
-                    b Doctest
-                    p The fastest feature-rich C++11 single-header testing framework for unit tests and TDD
-                    a(href='https://github.com/onqtam/doctest') Website
-                .col-md(style="min-width: 250px;")
+                  div.card
+                    div.card-header
+                      b {fmt}
+                    div.card-body
+                      p A modern formatting library
+                      a(href='https://github.com/fmtlib/fmt') Website
+                  div.card
+                    div.card-header
+                      b Doctest
+                    div.card-body
+                      p The fastest feature-rich C++11 single-header testing framework for unit tests and TDD
+                      a(href='https://github.com/onqtam/doctest') Website
+                  div.card
+                    div.card-header
+                      b Doctest
+                    div.card-body
+                      p The fastest feature-rich C++11 single-header testing framework for unit tests and TDD
+                      a(href='https://github.com/onqtam/doctest') Website
+                  div.card
+                    div.card-header
+                      b Doctest
+                    div.card-body
+                      p The fastest feature-rich C++11 single-header testing framework for unit tests and TDD
+                      a(href='https://github.com/onqtam/doctest') Website
+                  div.card
+                    div.card-header
+                      b Doctest
+                    div.card-body
+                      p The fastest feature-rich C++11 single-header testing framework for unit tests and TDD
+                      a(href='https://github.com/onqtam/doctest') Website
+                  div.card
+                    div.card-header
+                      b Doctest
+                    div.card-body
+                      p The fastest feature-rich C++11 single-header testing framework for unit tests and TDD
+                      a(href='https://github.com/onqtam/doctest') Website
+                .col-md(style="min-width: 150px;")
                   h6 Favorites
                   div
                     ul
@@ -335,7 +363,11 @@
                   h6 Popular
                   div
                     ul
-                      li {fmt}
-                      li range-v3
-                      li Intel TBB
-                      li xsimd
+                      li
+                        button.btn.btn-sm {fmt}
+                      li
+                        button.btn.btn-sm range-v3
+                      li
+                        button.btn.btn-sm Intel TBB
+                      li
+                        button.btn.btn-sm xsimd
