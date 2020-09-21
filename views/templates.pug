@@ -387,3 +387,25 @@
   #share-item
     a.share-item(href="javascript:;" rel="noopener noreferrer" target="_blank")
       span.share-item-text
+
+  #lib-selected-tpl
+    div
+      button.btn.btn-md.lib-name-and-version &nbsp;
+      button.btn.btn-sm.lib-remove
+        span.fas.fa-trash
+
+  #lib-search-result-tpl
+    .card(style='margin-bottom: 3px')
+      .card-header
+        span
+          b.lib-name &nbsp;
+        span(style='float: right')
+          select.custom-select.custom-select-sm.lib-version-select
+            option -
+      .card-body
+        p.lib-description &nbsp;
+        span(style='float: left')
+          a.lib-website-link(href='#') Website
+        span(style='float: right')
+          button.btn.btn-sm
+            span.lib-fav-button.fas.fa-star(style='color: blue')
