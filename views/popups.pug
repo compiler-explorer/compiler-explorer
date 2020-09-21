@@ -283,3 +283,59 @@
                 div.monaco-placeholder#history-diff
       .modal-footer
         button.btn.btn-light(type="button" data-dismiss="modal" aria-label="Close") Close
+
+#library-selection.modal.fade.gl_keep(tabindex="-1" role="dialog")
+  .modal-dialog.modal-lg
+    .modal-content
+      .modal-header
+        h5.modal-title Libraries
+        button.close(type="button" data-dismiss="modal" aria-hidden="true" aria-label="Close")
+          span(aria-hidden="true")
+            | &times;
+      .modal-body
+        .card
+          .card-body
+            .container
+              .row
+                .col-lg
+                  div(style='text-align: center')
+                    input.search(val="t")
+                    button.btn.btn-light(type="button") Search
+              .row
+                .col-lg &nbsp;
+              .row
+                .col-md(style="min-width: 250px;")
+                  h6 Selected
+                  div
+                    button.btn.btn-lg {fmt} 7.0.0
+                  div
+                    button.btn.btn-lg CTRE trunk
+                  div
+                    button.btn.btn-lg GSL trunk
+                .col-md(style="min-width: 350px;")
+                  h6 Results
+                  div
+                    b {fmt}
+                    p A modern formatting library
+                    a(href='https://github.com/fmtlib/fmt') Website
+                  div
+                    b Doctest
+                    p The fastest feature-rich C++11 single-header testing framework for unit tests and TDD
+                    a(href='https://github.com/onqtam/doctest') Website
+                .col-md(style="min-width: 250px;")
+                  h6 Favorites
+                  div
+                    ul
+                      li
+                        button.btn.btn-sm {fmt}
+                      li
+                        button.btn.btn-sm CTRE
+                      li
+                        button.btn.btn-sm GSL
+                  h6 Popular
+                  div
+                    ul
+                      li {fmt}
+                      li range-v3
+                      li Intel TBB
+                      li xsimd
