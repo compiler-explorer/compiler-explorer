@@ -26,6 +26,7 @@
 
 var options = require('options'),
     _ = require('underscore'),
+    local = require('./local'),
     $ = require('jquery');
 
 function LibsWidgetExt(langId, compiler, dropdownButton, state, onChangeCallback) {
@@ -47,6 +48,7 @@ function LibsWidgetExt(langId, compiler, dropdownButton, state, onChangeCallback
     }, this));
     this.showSelectedLibs();
     this.showSelectedLibsAsSearchResults();
+    this.showFavorites();
 
     this.domRoot.find('.lib-search-input').on('keypress', _.bind(function (e) {
         if(e.which === 13) {
@@ -58,6 +60,85 @@ function LibsWidgetExt(langId, compiler, dropdownButton, state, onChangeCallback
         this.startSearching();
     }, this));
 }
+
+LibsWidgetExt.prototype.getFavorites = function () {
+    var storkey = 'favlibs';
+
+    return JSON.parse(local.get(storkey, '{}'));
+};
+
+LibsWidgetExt.prototype.setFavorites = function (faves) {
+    var storkey = 'favlibs';
+
+    local.set(storkey, JSON.stringify(faves));
+};
+
+LibsWidgetExt.prototype.isAFavorite = function (libId, versionId) {
+    var faves = this.getFavorites();
+    if (faves[libId]) {
+        return faves[libId].includes(versionId);
+    }
+
+    return false;
+};
+
+LibsWidgetExt.prototype.addToFavorites = function (libId, versionId) {
+    var faves = this.getFavorites();
+    if (faves[libId]) {
+        faves[libId].push(versionId);
+    } else {
+        faves[libId] = [];
+        faves[libId].push(versionId);
+    }
+
+    this.setFavorites(faves);
+};
+
+LibsWidgetExt.prototype.removeFromFavorites = function (libId, versionId) {
+    var faves = this.getFavorites();
+    if (faves[libId]) {
+        faves[libId] = _.filter(faves[libId], function (v) {
+            return (v !== versionId);
+        });
+    }
+
+    this.setFavorites(faves);
+};
+
+LibsWidgetExt.prototype.newFavoriteLibDiv = function (libId, versionId, lib, version) {
+    var template = $('#lib-favorite-tpl');
+
+    var libDiv = $(template.children()[0].cloneNode(true));
+
+    var quickSelectButton = libDiv.find('.lib-name-and-version');
+    quickSelectButton.html(lib.name + ' ' + version.version);
+    quickSelectButton.on('click', _.bind(function () {
+        this.selectLibAndVersion(libId, versionId);
+        this.showSelectedLibs();
+        this.onChangeCallback();
+    }, this));
+
+    return libDiv;
+};
+
+LibsWidgetExt.prototype.showFavorites = function () {
+    var favoritesDiv = this.domRoot.find('.lib-favorites');
+    favoritesDiv.html('');
+
+    var faves = this.getFavorites();
+    _.each(faves, _.bind(function (versionArr, libId) {
+        _.each(versionArr, _.bind(function (versionId) {
+            var lib = this.getLibInfoById(libId);
+            if (lib) {
+                var version = lib.versions[versionId];
+                if (version) {
+                    var div = this.newFavoriteLibDiv(libId, versionId, lib, version);
+                    favoritesDiv.append(div);
+                }
+            }
+        }, this));
+    }, this));
+};
 
 LibsWidgetExt.prototype.getAndEmptySearchResults = function () {
     var searchResults = this.domRoot.find('.lib-results-items');
@@ -96,25 +177,61 @@ LibsWidgetExt.prototype.newSearchResult = function (libId, lib) {
     result.find('.lib-description').html(lib.description ? lib.description : '&nbsp;');
     result.find('.lib-website-link').attr('href', lib.url ? lib.url : '#');
 
-    result.find('.lib-fav-button').removeClass('fas').addClass('far');
+    var faveButton = result.find('.lib-fav-button');
+    var faveStar = faveButton.find('.lib-fav-btn-icon');
+    faveButton.hide();
 
     var versions = result.find('.lib-version-select');
     versions.html('');
     versions.append($('<option value="">-</option>'));
-    _.each(lib.versions, function (version, versionId) {
+    _.each(lib.versions, _.bind(function (version, versionId) {
         var option = $('<option>');
         if (version.used) {
             option.attr('selected','selected');
+
+            if (this.isAFavorite(libId, versionId)) {
+                faveStar.removeClass('far').addClass('fas');
+            }
+
+            faveButton.show();
         }
         option.attr('value', versionId);
         option.html(version.version);
         versions.append(option);
-    });
+    }, this));
+
+    faveButton.on('click', _.bind(function () {
+        var option = versions.find('option:selected');
+        var verId = option.attr('value');
+        if (this.isAFavorite(libId, verId)) {
+            this.removeFromFavorites(libId, verId);
+            faveStar.removeClass('fas').addClass('far');
+        } else {
+            this.addToFavorites(libId, verId);
+            faveStar.removeClass('far').addClass('fas');
+        }
+        this.showFavorites();
+    }, this));
 
     versions.on('change', _.bind(function () {
         var option = versions.find('option:selected');
-        this.selectLibAndVersion(libId, option.attr('value'));
+        var verId = option.attr('value');
+
+        this.selectLibAndVersion(libId, verId);
         this.showSelectedLibs();
+
+        if (this.isAFavorite(libId, verId)) {
+            faveStar.removeClass('far').addClass('fas');
+        } else {
+            faveStar.removeClass('fas').addClass('far');
+        }
+
+        if (verId) {
+            faveButton.show();
+        } else {
+            faveButton.hide();
+        }
+
         this.onChangeCallback();
     }, this));
 
@@ -241,6 +358,16 @@ LibsWidgetExt.prototype.getVersionOrAlias = function (name, version) {
                 });
         }
     }
+};
+
+LibsWidgetExt.prototype.getLibInfoById = function (libId) {
+    if (this.availableLibs[this.currentLangId] &&
+        this.availableLibs[this.currentLangId][this.currentCompilerId] &&
+        this.availableLibs[this.currentLangId][this.currentCompilerId][libId]) {
+        return this.availableLibs[this.currentLangId][this.currentCompilerId][libId];
+    }
+
+    return false;
 };
 
 LibsWidgetExt.prototype.markLibrary = function (name, version, used) {

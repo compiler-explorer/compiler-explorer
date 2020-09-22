@@ -394,6 +394,10 @@
       button.btn.btn-sm.lib-remove
         span.fas.fa-trash
 
+  #lib-favorite-tpl
+    div
+      button.btn.btn-md.lib-name-and-version &nbsp;
+
   #lib-search-result-tpl
     .card(style='margin-bottom: 3px')
       .card-header
@@ -407,5 +411,5 @@
         span(style='float: left')
           a.lib-website-link(href='#') Website
         span(style='float: right')
-          button.btn.btn-sm
-            span.lib-fav-button.fas.fa-star(style='color: blue')
+          button.btn.btn-sm.lib-fav-button
+            span.lib-fav-btn-icon.far.fa-star
