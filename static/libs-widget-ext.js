@@ -38,7 +38,6 @@ function LibsWidgetExt(langId, compiler, dropdownButton, state, onChangeCallback
         this.currentCompilerId = '_default_';
     }
     this.currentLangId = langId;
-    this.initButtons();
     this.domRoot = $('#library-selection');
     this.onChangeCallback = onChangeCallback;
     this.availableLibs = {};
@@ -59,15 +58,30 @@ function LibsWidgetExt(langId, compiler, dropdownButton, state, onChangeCallback
     }, this));
 }
 
-LibsWidgetExt.prototype.newSelectedLibDiv = function (lib, version) {
+LibsWidgetExt.prototype.getAndEmptySearchResults = function () {
+    var searchResults = this.domRoot.find('.lib-results-items');
+    searchResults.html('');
+    return searchResults;
+}
+
+LibsWidgetExt.prototype.newSelectedLibDiv = function (libId, versionId, lib, version) {
     var template = $('#lib-selected-tpl');
 
     var libDiv = $(template.children()[0].cloneNode(true));
-    libDiv.data('libId', lib.id);
-    libDiv.data('libVersion', version.id);
 
     var detailsButton = libDiv.find('.lib-name-and-version');
     detailsButton.html(lib.name + ' ' + version.version);
+    detailsButton.on('click', _.bind(function () {
+        var searchResults = this.getAndEmptySearchResults();
+        this.addSearchResult(lib, searchResults);
+    }, this));
+
+    var deleteButton = libDiv.find('.lib-remove');
+    deleteButton.on('click', _.bind(function () {
+        this.markLibrary(libId, versionId, false);
+        libDiv.remove();
+        this.onChangeCallback();
+    }, this));
 
     return libDiv;
 };
@@ -104,11 +118,9 @@ LibsWidgetExt.prototype.addSearchResult = function (library, searchResults) {
 
 LibsWidgetExt.prototype.startSearching = function () {
     var searchtext = this.domRoot.find('.lib-search-input').val();
-
-    var searchResults = this.domRoot.find('.lib-results-items');
-    searchResults.html('');
-
     var lcSearchtext = searchtext.toLowerCase();
+
+    var searchResults = this.getAndEmptySearchResults();
 
     _.each(this.availableLibs[this.currentLangId][this.currentCompilerId], _.bind(function (library) {
         if (library.versions && library.versions.autodetect) return;
@@ -137,12 +149,11 @@ LibsWidgetExt.prototype.showSelectedLibs = function () {
         var lib = this.availableLibs[this.currentLangId][this.currentCompilerId][libId];
         var version = lib.versions[versionId];
 
-        var libDiv = this.newSelectedLibDiv(lib, version);
+        var libDiv = this.newSelectedLibDiv(libId, versionId, lib, version);
         items.append(libDiv);
     }, this));
 
-    var searchResults = this.domRoot.find('.lib-results-items');
-    searchResults.html('');
+    var searchResults = this.getAndEmptySearchResults();
 
     _.each(this.availableLibs[this.currentLangId][this.currentCompilerId], _.bind(function (library) {
         if (library.versions && library.versions.autodetect) return;
@@ -150,11 +161,6 @@ LibsWidgetExt.prototype.showSelectedLibs = function () {
         var card = this.newSearchResult(library);
         searchResults.append(card);
     }, this));
-};
-
-LibsWidgetExt.prototype.initButtons = function () {
-    this.noLibsPanel = $('#libs-dropdown .no-libs');
-    this.libsEntry = $('#libs-entry .input-group');
 };
 
 LibsWidgetExt.prototype.initLangDefaultLibs = function () {
