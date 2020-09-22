@@ -62,7 +62,7 @@ LibsWidgetExt.prototype.getAndEmptySearchResults = function () {
     var searchResults = this.domRoot.find('.lib-results-items');
     searchResults.html('');
     return searchResults;
-}
+};
 
 LibsWidgetExt.prototype.newSelectedLibDiv = function (libId, versionId, lib, version) {
     var template = $('#lib-selected-tpl');
