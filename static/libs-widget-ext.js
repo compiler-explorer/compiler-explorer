@@ -46,6 +46,7 @@ function LibsWidgetExt(langId, compiler, dropdownButton, state, onChangeCallback
         this.markLibrary(lib.name, lib.ver, true);
     }, this));
     this.showSelectedLibs();
+    this.showSelectedLibsAsSearchResults();
 
     this.domRoot.find('.lib-search-input').on('keypress', _.bind(function (e) {
         if(e.which === 13) {
@@ -73,20 +74,21 @@ LibsWidgetExt.prototype.newSelectedLibDiv = function (libId, versionId, lib, ver
     detailsButton.html(lib.name + ' ' + version.version);
     detailsButton.on('click', _.bind(function () {
         var searchResults = this.getAndEmptySearchResults();
-        this.addSearchResult(lib, searchResults);
+        this.addSearchResult(libId, lib, searchResults);
     }, this));
 
     var deleteButton = libDiv.find('.lib-remove');
     deleteButton.on('click', _.bind(function () {
         this.markLibrary(libId, versionId, false);
         libDiv.remove();
+        this.showSelectedLibs();
         this.onChangeCallback();
     }, this));
 
     return libDiv;
 };
 
-LibsWidgetExt.prototype.newSearchResult = function (lib) {
+LibsWidgetExt.prototype.newSearchResult = function (libId, lib) {
     var template = $('#lib-search-result-tpl');
 
     var result = $(template.children()[0].cloneNode(true));
@@ -98,7 +100,7 @@ LibsWidgetExt.prototype.newSearchResult = function (lib) {
 
     var versions = result.find('.lib-version-select');
     versions.html('');
-    versions.append($('<option>-</option>'));
+    versions.append($('<option value="">-</option>'));
     _.each(lib.versions, function (version, versionId) {
         var option = $('<option>');
         if (version.used) {
@@ -108,11 +110,19 @@ LibsWidgetExt.prototype.newSearchResult = function (lib) {
         option.html(version.version);
         versions.append(option);
     });
+
+    versions.on('change', _.bind(function () {
+        var option = versions.find('option:selected');
+        this.selectLibAndVersion(libId, option.attr('value'));
+        this.showSelectedLibs();
+        this.onChangeCallback();
+    }, this));
+
     return result;
 };
 
-LibsWidgetExt.prototype.addSearchResult = function (library, searchResults) {
-    var card = this.newSearchResult(library);
+LibsWidgetExt.prototype.addSearchResult = function (libId, library, searchResults) {
+    var card = this.newSearchResult(libId, library);
     searchResults.append(card);
 };
 
@@ -122,19 +132,19 @@ LibsWidgetExt.prototype.startSearching = function () {
 
     var searchResults = this.getAndEmptySearchResults();
 
-    _.each(this.availableLibs[this.currentLangId][this.currentCompilerId], _.bind(function (library) {
+    _.each(this.availableLibs[this.currentLangId][this.currentCompilerId], _.bind(function (library, libId) {
         if (library.versions && library.versions.autodetect) return;
 
         if (library.name) {
             if (library.name.toLowerCase().includes(lcSearchtext)) {
-                this.addSearchResult(library, searchResults);
+                this.addSearchResult(libId, library, searchResults);
                 return;
             }
         }
 
         if (library.description) {
             if (library.description.toLowerCase().includes(lcSearchtext)) {
-                this.addSearchResult(library, searchResults);
+                this.addSearchResult(libId, library, searchResults);
             }
         }
     }, this));
@@ -152,13 +162,15 @@ LibsWidgetExt.prototype.showSelectedLibs = function () {
         var libDiv = this.newSelectedLibDiv(libId, versionId, lib, version);
         items.append(libDiv);
     }, this));
+};
 
+LibsWidgetExt.prototype.showSelectedLibsAsSearchResults = function () {
     var searchResults = this.getAndEmptySearchResults();
 
-    _.each(this.availableLibs[this.currentLangId][this.currentCompilerId], _.bind(function (library) {
+    _.each(this.availableLibs[this.currentLangId][this.currentCompilerId], _.bind(function (library, libId) {
         if (library.versions && library.versions.autodetect) return;
 
-        var card = this.newSearchResult(library);
+        var card = this.newSearchResult(libId, library);
         searchResults.append(card);
     }, this));
 };
@@ -239,6 +251,19 @@ LibsWidgetExt.prototype.markLibrary = function (name, version, used) {
         this.availableLibs[this.currentLangId][this.currentCompilerId][name] &&
         this.availableLibs[this.currentLangId][this.currentCompilerId][name].versions[actualVersion]) {
         this.availableLibs[this.currentLangId][this.currentCompilerId][name].versions[actualVersion].used = used;
+    }
+};
+
+LibsWidgetExt.prototype.selectLibAndVersion = function (libId, versionId) {
+    if (this.availableLibs[this.currentLangId] &&
+        this.availableLibs[this.currentLangId][this.currentCompilerId] &&
+        this.availableLibs[this.currentLangId][this.currentCompilerId][libId]) {
+
+        _.each(
+            this.availableLibs[this.currentLangId][this.currentCompilerId][libId].versions,
+            function (curver, curverId) {
+                curver.used = curverId === versionId;
+            });
     }
 };
 
