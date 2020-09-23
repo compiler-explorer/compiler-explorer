@@ -114,13 +114,10 @@
     "webpack-manifest-plugin": "^2.2.0"
   },
   "scripts": {
-    "ci-lint": "npm run lint-static -- --format github && npm run lint-server -- --format github && npm run lint-tests -- --format github",
-    "ci-test": "nyc --reporter=lcov mocha --recursive",
-    "lint-static": "eslint --config static/.eslintrc --ignore-path static/.eslintignore ./static/*.js ./static/panes/*.js ./static/modes/*.js",
-    "lint-server": "eslint --config .eslintrc --ignore-path .eslintignore ./app.js ./lib/**",
-    "lint-tests": "eslint --config test/.eslintrc --ignore-path test/.eslintignore ./test/**/*.js ./test/*.js",
-    "lint": "npm run lint-static && npm run lint-server && npm run lint-tests",
-    "lint-fix": "npm run lint-static -- --fix && npm run lint-server -- --fix && npm run lint-tests -- --fix",
+    "ci-lint": "eslint --format github .",
+    "ci-test": "nyc mocha --recursive",
+    "lint": "eslint .",
+    "lint-fix": "eslint --fix .",
     "test": "mocha --recursive",
     "check": "npm run lint && npm run test",
     "dev": "cross-env NODE_ENV=DEV node app.js",
