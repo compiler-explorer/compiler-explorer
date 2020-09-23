@@ -351,7 +351,7 @@ describe('Compiler execution', function () {
     });
 
     it('should demangle', async () => {
-        const withDemangler = {...noExecuteSupportCompilerInfo, demangler: 'demangler-exe', demanglerClassFile: './demangler-cpp'};
+        const withDemangler = {...noExecuteSupportCompilerInfo, demangler: 'demangler-exe', demanglerType: 'cpp'};
         const compiler = new BaseCompiler(withDemangler, ce);
         const execStub = sinon.stub(compiler, 'exec');
         stubOutCallToExec(execStub, compiler, 'someMangledSymbol:\n', {
