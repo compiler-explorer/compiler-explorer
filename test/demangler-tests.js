@@ -249,49 +249,44 @@ describe('Basic demangling', function () {
     });
 });
 
-function DoDemangleTest(root, filename, resolve, reject) {
-    fs.readFile(path.join(root, filename), function (err, dataIn) {
-        if (err) reject(err);
-
-        let resultIn = {asm: []};
-
-        resultIn.asm = utils.splitLines(dataIn.toString()).map(function (line) {
-            return {text: line};
-        });
-
-        fs.readFile(path.join(root, filename + '.demangle'), function (err, dataOut) {
-            if (err) reject(err);
-
-            let resultOut = {asm: []};
-            resultOut.asm = utils.splitLines(dataOut.toString()).map(function (line) {
-                return {text: line};
-            });
-
-            const demangler = new Demangler(cppfiltpath, new DummyCompiler());
-            demangler.demanglerArguments = ['-n'];
-            demangler.process(resultIn)
-                .then((output) => {
-                    try {
-                        output.should.deep.equal(resultOut);
-                        resolve();
-                    } catch(err) {
-                        reject(err);
-                    }
-                });
-        });
+async function readResultFile(filename) {
+    const data = await fs.readFile(filename);
+    const asm = utils.splitLines(data.toString()).map(line => {
+        return { text: line };
     });
+
+    return { asm };
 }
 
-describe('File demangling',async () => {
+async function DoDemangleTest(filename) {
+    const resultIn = await readResultFile(filename);
+    const resultOut = await readResultFile(filename + '.demangle');
+
+    const demangler = new Demangler(cppfiltpath, new DummyCompiler());
+    demangler.demanglerArguments = ['-n'];
+    await demangler.process(resultIn).should.eventually.deep.equal(resultOut);
+}
+
+describe('File demangling', () => {
     const testcasespath = __dirname + '/demangle-cases';
 
-    const files = await fs.readdir(testcasespath);
+    /*
+     * NB: this readdir must *NOT* be async
+     *
+     * Mocha calls the function passed to `describe` synchronously
+     * and expects the test suite to be fully configured upon return.
+     *
+     * If you pass an async function to describe and setup test cases
+     * after an await there is no guarantee they will be found, and
+     * if they are they will not end up in the expected suite.
+     */
+    const files = fs.readdirSync(testcasespath);
 
-    files.forEach((filename) => {
+    for (const filename of files) {
         if (filename.endsWith('.asm')) {
-            it(filename, (done) => {
-                DoDemangleTest(testcasespath, filename, () => done(), (err) => done(err));
+            it(filename, async () => {
+                DoDemangleTest(path.join(testcasespath, filename));
             });
         }
-    });
+    }
 });

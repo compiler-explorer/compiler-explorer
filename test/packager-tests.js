@@ -50,40 +50,32 @@ function writeTestFile(filepath) {
 }
 
 describe('Packager', function () {
-    it('should be able to package 1 file', function () {
+    it('should be able to package 1 file', async () => {
         const pack = new Packager();
-        return newTempDir().then((dirPath) => {
-            const executablePath = path.join(dirPath, 'hello.txt');
-            writeTestFile(executablePath).then(() => {
-                const targzPath = path.join(dirPath, 'package.tgz');
 
-                return pack.package(dirPath, targzPath).then(() => {
-                    return fs.existsSync(targzPath).should.equal(true);
-                }).catch(err => {
-                    throw err;
-                });
-            });
-        });
+        const dirPath = await newTempDir();
+        await writeTestFile(path.join(dirPath, 'hello.txt'));
+
+        const targzPath = path.join(dirPath, 'package.tgz');
+        await pack.package(dirPath, targzPath);
+
+        await fs.exists(targzPath).should.eventually.equal(true);
     });
 
-    it('should be able to unpack', function () {
+    it('should be able to unpack', async () =>  {
         const pack = new Packager();
-        return newTempDir().then((dirPath) => {
-            const executablePath = path.join(dirPath, 'hello.txt');
-            return writeTestFile(executablePath).then(() => {
-                const targzPath = path.join(dirPath, 'package.tgz');
 
-                return pack.package(dirPath, targzPath).then(() => {
-                    return newTempDir().then((unpackPath) => {
+        const dirPath = await newTempDir();
+        await writeTestFile(path.join(dirPath, 'hello.txt'));
 
-                        const pack2 = new Packager();
-                        return pack2.unpack(targzPath, unpackPath).then(() => {
-                            const unpackedFilepath = path.join(unpackPath, 'hello.txt');
-                            return fs.existsSync(unpackedFilepath).should.equal(true);
-                        });
-                    });
-                });
-            });
-        });
+        const targzPath = path.join(dirPath, 'package.tgz');
+        await pack.package(dirPath, targzPath);
+
+        const unpackPath = await newTempDir();
+        const pack2 = new Packager();
+        await pack2.unpack(targzPath, unpackPath);
+
+        const unpackedFilepath = path.join(unpackPath, 'hello.txt');
+        await fs.exists(unpackedFilepath).should.eventually.equal(true);
     });
 });

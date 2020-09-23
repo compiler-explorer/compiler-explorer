@@ -129,26 +129,22 @@ describe('Multi caches', () => {
             });
     });
 
-    it('services from the first cache hit', () => {
+    it('services from the first cache hit', async () => {
         const subCache1 = new InMemoryCache(1);
         const subCache2 = new InMemoryCache(1);
         // Set up caches with deliberately skew values for the same key.
         subCache1.put('a key', 'cache1');
         subCache2.put('a key', 'cache2');
         const cache = new MultiCache(subCache1, subCache2);
-        return cache.get('a key').should.eventually.eql({hit: true, data: Buffer.from('cache1')})
-            .then((x) => {
-                subCache1.hits.should.equal(1);
-                subCache1.gets.should.equal(1);
-                subCache2.hits.should.equal(0);
-                subCache2.gets.should.equal(0);
-                return x;
-            }).then(() => {
-                Promise.all([
-                    subCache1.get('a key').should.eventually.eql({hit: true, data: Buffer.from('cache1')}),
-                    subCache2.get('a key').should.eventually.eql({hit: true, data: Buffer.from('cache2')})],
-                );
-            });
+        await cache.get('a key').should.eventually.eql({hit: true, data: Buffer.from('cache1')});
+
+        subCache1.hits.should.equal(1);
+        subCache1.gets.should.equal(1);
+        subCache2.hits.should.equal(0);
+        subCache2.gets.should.equal(0);
+
+        await subCache1.get('a key').should.eventually.eql({hit: true, data: Buffer.from('cache1')});
+        await subCache2.get('a key').should.eventually.eql({hit: true, data: Buffer.from('cache2')});
     });
 });
 
