@@ -1,0 +1,5 @@
+---
+root: false
+rules:
+  max-len: off
+  max-statements: off

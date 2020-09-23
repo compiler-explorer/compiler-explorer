@@ -286,26 +286,24 @@ describe('Hash interface', () => {
 });
 
 describe('GoldenLayout utils', () => {
-    it('finds every editor & compiler', () => {
-        fs.readJson('test/example-states/default-state.json')
-            .then(state => {
-                const contents = utils.glGetMainContents(state.content);
-                contents.should.deep.equal({
-                    editors: [
-                        {source: 'Editor 1', language: 'c++'},
-                        {source: 'Editor 2', language: 'c++'},
-                        {source: 'Editor 3', language: 'c++'},
-                        {source: 'Editor 4', language: 'c++'},
-                    ],
-                    compilers: [
-                        {compiler: 'clang_trunk'},
-                        {compiler: 'gsnapshot'},
-                        {compiler: 'clang_trunk'},
-                        {compiler: 'gsnapshot'},
-                        {compiler: 'rv32clang'},
-                    ],
-                });
-            });
+    it('finds every editor & compiler', async () => {
+        const state = await fs.readJson('test/example-states/default-state.json');
+        const contents = utils.glGetMainContents(state.content);
+        contents.should.deep.equal({
+            editors: [
+                {source: 'Editor 1', language: 'c++'},
+                {source: 'Editor 2', language: 'c++'},
+                {source: 'Editor 3', language: 'c++'},
+                {source: 'Editor 4', language: 'c++'},
+            ],
+            compilers: [
+                {compiler: 'clang_trunk'},
+                {compiler: 'gsnapshot'},
+                {compiler: 'clang_trunk'},
+                {compiler: 'gsnapshot'},
+                {compiler: 'rv32clang'},
+            ],
+        });
     });
 });
 

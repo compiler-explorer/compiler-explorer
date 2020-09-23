@@ -22,38 +22,44 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-const chai = require('chai'),
-    cfg = require('../lib/cfg'),
-    fs = require('fs-extra');
+const cfg = require('../lib/cfg'),
+    fs = require('fs-extra'),
+    path = require('path');
 
-
-const assert = chai.assert;
-
-function common(cases, filterArg, cfgArg) {
-    cases.filter(x => x.includes(filterArg))
-        .forEach(async filename => {
-            const file = await fs.readFile(filename, 'utf-8');
-            if (file) {
-                const contents = JSON.parse(file);
-                assert.deepEqual(cfg.generateStructure('', cfgArg, contents.asm), contents.cfg, `${filename}`);
-            }
-        });
+async function DoCfgTest(cfgArg, filename) {
+    const contents = await fs.readJson(filename, 'utf-8');
+    const structure = cfg.generateStructure('', cfgArg, contents.asm);
+    structure.should.deep.equal(contents.cfg);
 }
 
 describe('Cfg test cases', () => {
-    let cases;
+    const testcasespath = __dirname + '/cfg-cases';
 
-    before(() => {
-        const files = fs.readdirSync(__dirname + '/cfg-cases/');
-        cases = files.map(x => __dirname + '/cfg-cases/' + x);
+    /*
+     * NB: this readdir must *NOT* be async
+     *
+     * Mocha calls the function passed to `describe` synchronously
+     * and expects the test suite to be fully configured upon return.
+     *
+     * If you pass an async function to describe and setup test cases
+     * after an await there is no guarantee they will be found, and
+     * if they are they will not end up in the expected suite.
+     */
+    const files = fs.readdirSync(testcasespath);
+
+    describe('gcc', () => {
+        for (const filename of files.filter(x => x.includes('gcc'))) {
+            it(filename, async () => {
+                await DoCfgTest('g++', path.join(testcasespath, filename));
+            });
+        }
     });
 
-
-    it('works for gcc', () => {
-        common(cases, 'gcc', 'g++');
-    });
-
-    it('works for clang', () => {
-        common(cases, 'clang', 'clang');
+    describe('clang', () => {
+        for (const filename of files.filter(x => x.includes('clang'))) {
+            it(filename, async () => {
+                await DoCfgTest('clang', path.join(testcasespath, filename));
+            });
+        }
     });
 });
