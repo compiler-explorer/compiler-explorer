@@ -406,7 +406,7 @@ async function main() {
     const compilationEnvironment = new CompilationEnvironment(compilerProps, compilationQueue, defArgs.doCache);
     const CompileHandler = require('./lib/handlers/compile').Handler;
     const compileHandler = new CompileHandler(compilationEnvironment, awsProps);
-    const StorageHandler = require('./lib/storage/storage');
+    const StorageHandler = require('./lib/storage/base');
     const storageHandler = StorageHandler.storageFactory(storageSolution, compilerProps, awsProps, httpRoot);
     const SourceHandler = require('./lib/handlers/source').Handler;
     const sourceHandler = new SourceHandler(fileSources, staticHeaders);

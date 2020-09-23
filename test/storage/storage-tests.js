@@ -24,7 +24,7 @@
 
 const chai = require('chai'),
     sinon = require('sinon'),
-    {StorageBase} = require('../../lib/storage/storage');
+    {StorageBase} = require('../../lib/storage/base');
 
 const should = chai.should();
 
