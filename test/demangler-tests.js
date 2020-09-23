@@ -29,8 +29,8 @@ const
     utils = require('../lib/utils'),
     chaiAsPromised = require('chai-as-promised'),
     SymbolStore = require('../lib/symbol-store').SymbolStore,
-    Demangler = require('../lib/demangler-cpp').Demangler,
-    DemanglerWin32 = require('../lib/demangler-win32').Demangler,
+    Demangler = require('../lib/demangler/cpp').Demangler,
+    DemanglerWin32 = require('../lib/demangler/win32').Demangler,
     exec = require('../lib/exec');
 
 chai.use(chaiAsPromised);
