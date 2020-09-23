@@ -22,16 +22,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-const chai = require('chai');
-const chaiAsPromised = require('chai-as-promised');
-const PascalDemangler = require('../lib/demangler/pascal').Demangler;
-const PascalCompiler = require('../lib/compilers/pascal');
-const fs = require('fs-extra');
-const utils = require('../lib/utils');
-const {makeCompilationEnvironment} = require('./utils');
-
-chai.use(chaiAsPromised);
-chai.should();
+import { PascalDemangler } from '../lib/demangler';
+import { FPCCompiler } from '../lib/compilers/pascal';
+import fs from 'fs-extra';
+import * as utils from '../lib/utils';
+import { makeCompilationEnvironment } from './utils';
 
 const languages = {
     pascal: {id: 'pascal'},
@@ -48,7 +43,7 @@ describe('Pascal', () => {
             lang: languages.pascal.id,
         };
 
-        compiler = new PascalCompiler(info, ce);
+        compiler = new FPCCompiler(info, ce);
     });
 
     it('Basic compiler setup', () => {
@@ -333,7 +328,7 @@ describe('Pascal', () => {
         it('Should filter out most of the runtime', function () {
             return new Promise(function (resolve) {
                 fs.readFile('test/pascal/objdump-example.s', function (err, buffer) {
-                    const output = PascalCompiler.preProcessBinaryAsm(buffer.toString());
+                    const output = FPCCompiler.preProcessBinaryAsm(buffer.toString());
                     resolve(Promise.all([
                         utils.splitLines(output).length.should.be.below(500),
                         output.should.not.include('fpc_zeromem():'),

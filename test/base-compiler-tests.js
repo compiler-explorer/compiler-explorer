@@ -22,17 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-const chai = require('chai');
-const sinon = require('sinon');
-const chaiAsPromised = require('chai-as-promised');
-const BaseCompiler = require('../lib/base-compiler');
-const fs = require('fs-extra');
-const exec = require('../lib/exec');
-const path = require('path');
-const {makeCompilationEnvironment} = require('./utils');
-
-chai.use(chaiAsPromised);
-const should = chai.should();
+import { fs, path, should, makeCompilationEnvironment } from './utils';
+import sinon from 'sinon';
+import { BaseCompiler } from '../lib/base-compiler';
+import * as exec from '../lib/exec';
 
 const languages = {
     'c++': {id: 'c++'},
@@ -370,6 +363,7 @@ describe('Compiler execution', function () {
                 stderr: '',
             });
         });
+
         const result = await compiler.compile(
             'source',
             'options',

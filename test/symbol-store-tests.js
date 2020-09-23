@@ -22,10 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-const chai = require('chai');
-const SymbolStore = require('../lib/symbol-store').SymbolStore;
-
-chai.should();
+import './utils';
+import { SymbolStore } from '../lib/symbol-store';
 
 describe('SymbolStore', function () {
     it('should be empty initially', function () {

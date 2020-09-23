@@ -21,14 +21,10 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ,
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-'use strict';
 
-const chai = require('chai');
-const clientstate = require('../lib/clientstate');
-const fs = require('fs');
-const ClientStateNormalizer = require('../lib/clientstate-normalizer').ClientStateNormalizer;
-
-chai.should();
+import { ClientState } from '../lib/clientstate';
+import fs from 'fs';
+import { ClientStateNormalizer } from '../lib/clientstate-normalizer';
 
 describe('Normalizing clientstate', () => {
     it('Should translate 2 compilers GL layout to clientstate', () => {
@@ -82,7 +78,7 @@ describe('Normalizing clientstate', () => {
 
 describe('ClientState parsing', () => {
     it('Should work without executors', () => {
-        const state = new clientstate.State({
+        const state = new ClientState({
             sessions: [
                 {id:1,
                     language:'c++',
@@ -96,7 +92,7 @@ describe('ClientState parsing', () => {
     });
 
     it('Should work with executor', () => {
-        const state = new clientstate.State({
+        const state = new ClientState({
             sessions: [
                 {id:1,
                     language:'c++',

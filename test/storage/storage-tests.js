@@ -22,9 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-const chai = require('chai'),
-    sinon = require('sinon'),
-    {StorageBase} = require('../../lib/storage/base');
+import chai from 'chai';
+import sinon from 'sinon';
+import { StorageBase } from '../../lib/storage';
 
 const should = chai.should();
 

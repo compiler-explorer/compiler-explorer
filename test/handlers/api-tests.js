@@ -22,9 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-const chai = require('chai'),
-    ApiHandler = require('../../lib/handlers/api').Handler,
-    express = require('express');
+import { chai } from '../utils';
+import { ApiHandler } from '../../lib/handlers/api';
+import express from 'express';
 
 const languages = {
     'c++': {
@@ -78,9 +78,6 @@ const compilersLimitedFields = [
         name: 'Clang trunk',
     },
 ];
-
-chai.use(require('chai-http'));
-chai.should();
 
 describe('API handling', () => {
     let app;

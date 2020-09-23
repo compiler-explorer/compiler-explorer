@@ -22,14 +22,16 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-const chai = require('chai');
+import chai from 'chai';
+import deepEqualInAnyOrder from 'deep-equal-in-any-order';
+import { loadSponsorsFromString } from '../lib/sponsors';
+
 chai.should();
-chai.use(require('deep-equal-in-any-order'));
-const sponsors = require('../lib/sponsors');
+chai.use(deepEqualInAnyOrder);
 
 describe('Sponsors', () => {
     it('should load a simple example', () => {
-        const sample = sponsors.loadFromString(`
+        const sample = loadSponsorsFromString(`
 ---
 levels:
   - name: Patreon Legends
@@ -53,7 +55,7 @@ levels:
     });
 
     it('should expand names to objects', () => {
-        const folks = sponsors.loadFromString(`
+        const folks = loadSponsorsFromString(`
 ---
 levels:
   - name: a
@@ -69,7 +71,7 @@ levels:
     });
 
     it('should sort sponsors by name', () => {
-        const peeps = sponsors.loadFromString(`
+        const peeps = loadSponsorsFromString(`
 ---
 levels:
   - name: a
@@ -88,7 +90,7 @@ levels:
         ]);
     });
     it('should sort sponsors by priority then name', () => {
-        const peeps = sponsors.loadFromString(`
+        const peeps = loadSponsorsFromString(`
 ---
 levels:
   - name: a
@@ -108,7 +110,7 @@ levels:
         ]);
     });
     it('should pick icon over img', () => {
-        const things = sponsors.loadFromString(`
+        const things = loadSponsorsFromString(`
 ---
 levels:
   - name: a
@@ -127,7 +129,7 @@ levels:
     });
 
     it('should pick out the top level icons', () => {
-        const icons = sponsors.loadFromString(`
+        const icons = loadSponsorsFromString(`
 ---
 levels:
   - name: a

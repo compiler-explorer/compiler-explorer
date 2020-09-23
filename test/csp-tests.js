@@ -22,11 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-const chai = require('chai');
-const csp = require('../lib/csp');
+import chai from 'chai';
+import * as csp from '../lib/csp';
 
 chai.should();
-
 
 describe('CSP', () => {
     it('Should work in the godbolt.org domain for every field', () => {

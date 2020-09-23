@@ -22,16 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-const chai = require('chai');
-const chaiAsPromised = require('chai-as-promised');
-const _ = require('underscore');
-const properties = require('../lib/properties');
-const languages = require('../lib/languages').list;
-const fs = require('fs-extra');
-
-
-chai.use(chaiAsPromised);
-chai.should();
+import { fs } from './utils';
+import _ from 'underscore';
+import * as properties from '../lib/properties';
+import { languages } from '../lib/languages';
 
 describe('Live site checks', () => {
     let ceProps;

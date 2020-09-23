@@ -22,16 +22,13 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-const chai = require('chai'),
-    source = require('../../lib/handlers/source'),
-    express = require('express');
-
-chai.use(require('chai-http'));
-chai.should();
+import { chai } from '../utils';
+import { SourceHandler } from '../../lib/handlers/source';
+import express from 'express';
 
 describe('Sources', () => {
     const app = express();
-    const handler = new source.Handler(
+    const handler = new SourceHandler(
         [{
             urlpart: 'moose',
             list: () => Promise.resolve({moose: 'pig'}),

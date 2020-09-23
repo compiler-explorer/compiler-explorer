@@ -1,6 +1,7 @@
 ---
 root: true
 plugins:
+- import
 - jsdoc
 - node
 - promise
@@ -9,6 +10,7 @@ plugins:
 - unicorn
 extends:
 - eslint:recommended
+- plugin:import/recommended
 - plugin:requirejs/recommended
 - plugin:node/recommended
 - plugin:unicorn/recommended
@@ -26,6 +28,25 @@ rules:
   eqeqeq:
   - error
   - smart
+  import/extensions: error
+  import/first: error
+  import/newline-after-import: error
+  import/no-absolute-path: error
+  import/no-cycle: error
+  import/no-default-export: warn
+  import/no-deprecated: warn
+  import/no-mutable-exports: error
+  import/no-self-import: error
+#  import/no-unused-modules:
+#  - warn
+#  - missingExports: true
+#    unusedExports: true
+  import/no-useless-path-segments: error
+  import/no-webpack-loader-syntax: error
+  import/order:
+  - off
+  - alphabetize:
+      order: asc
   indent:
   - error
   - 4
@@ -38,6 +59,7 @@ rules:
   - error
   - 50
   no-control-regex: 0
+  no-duplicate-imports: error
   no-useless-call: error
   no-useless-computed-key: error
   no-useless-concat: error
@@ -76,6 +98,8 @@ rules:
   jsdoc/valid-types: warn
   no-process-exit: off
   node/no-unpublished-require: off
+  node/no-unpublished-import: off
+  node/no-unsupported-features/es-syntax: off
   node/shebang: off
   promise/catch-or-return: error
   promise/no-new-statics: error
@@ -88,6 +112,7 @@ rules:
   sonarjs/prefer-immediate-return: error
   sonarjs/prefer-object-literal: error
   sonarjs/prefer-single-boolean-return: error
+  sort-imports: off
   unicorn/catch-error-name: off
   unicorn/consistent-function-scoping: off
   unicorn/no-fn-reference-in-iterator: off
@@ -101,6 +126,7 @@ rules:
   unicorn/prefer-string-slice: off
   unicorn/prevent-abbreviations: off
 parserOptions:
-  ecmaVersion: 2018
+  sourceType: module
+  ecmaVersion: 2020
 globals:
   BigInt: true

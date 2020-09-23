@@ -24,32 +24,45 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-const startTime = new Date();
-
-// Initialise options and properties. Don't load any handlers here; they
-// may need an initialised properties library.
-const nopt = require('nopt'),
-    os = require('os'),
-    props = require('./lib/properties'),
-    child_process = require('child_process'),
-    path = require('path'),
-    process = require('process'),
-    fs = require('fs-extra'),
-    systemdSocket = require('systemd-socket'),
-    url = require('url'),
-    urljoin = require('url-join'),
-    _ = require('underscore'),
-    express = require('express'),
-    responseTime = require('response-time'),
-    Sentry = require('@sentry/node'),
-    {logger, logToPapertrail, suppressConsoleLog} = require('./lib/logger'),
-    utils = require('./lib/utils'),
-    sources = require('./lib/sources'),
-    getShortenerTypeByKey = require('./lib/shortener').getShortenerTypeByKey,
-    initialiseWine = require('./lib/exec').initialiseWine,
-    RouteAPI = require('./lib/handlers/route-api'),
-    NoScriptHandler = require('./lib/handlers/noscript');
-
+import nopt from 'nopt';
+import os from 'os';
+import * as props from './lib/properties';
+import child_process from 'child_process';
+import path from 'path';
+import process from 'process';
+import fs from 'fs-extra';
+import systemdSocket from 'systemd-socket';
+import url from 'url';
+import urljoin from 'url-join';
+import _ from 'underscore';
+import express from 'express';
+import responseTime from 'response-time';
+import * as Sentry from '@sentry/node';
+import { logger, logToPapertrail, suppressConsoleLog } from './lib/logger';
+import * as utils from './lib/utils';
+import { initialiseWine } from './lib/exec';
+import { RouteAPI } from './lib/handlers/route-api';
+import { NoScriptHandler } from './lib/handlers/noscript';
+import * as aws from './lib/aws';
+import { ShortLinkResolver } from './lib/google';
+import { languages as allLanguages } from './lib/languages';
+import { policy as csp } from './lib/csp';
+import { ClientOptionsHandler } from './lib/options-handler';
+import { CompilationQueue } from './lib/compilation-queue';
+import { CompilationEnvironment } from './lib/compilation-env';
+import { CompileHandler } from './lib/handlers/compile';
+import { getStorageTypeByKey } from './lib/storage';
+import { getShortenerTypeByKey } from './lib/shortener';
+import { SourceHandler } from './lib/handlers/source';
+import { CompilerFinder } from './lib/compiler-finder';
+import { loadSponsorsFromString } from './lib/sponsors';
+import sFavicon from 'serve-favicon';
+import bodyParser from 'body-parser';
+import morgan from 'morgan';
+import compression from 'compression';
+import * as healthCheck from './lib/handlers/health-check';
+import * as normalizer from './lib/clientstate-normalizer';
+import { sources } from './lib/sources';
 
 // Parse arguments from command line 'node ./app.js args...'
 const opts = nopt({
@@ -99,7 +112,7 @@ if (opts.tmpDir) {
     process.env.winTmp = path.join('/mnt', driveLetter, directoryPath);
 }
 
-const distPath = path.resolve(__dirname, 'out', 'dist');
+const distPath = utils.resolvePathFromAppRoot('out', 'dist');
 
 const gitReleaseName = (() => {
     // Use the canned git_hash if provided
@@ -169,17 +182,11 @@ if (opts.propDebug) props.setDebug(true);
 // *All* files in config dir are parsed
 const configDir = path.join(defArgs.rootDir, 'config');
 props.initialize(configDir, propHierarchy);
-
-// Now load up our libraries.
-const aws = require('./lib/aws'),
-    google = require('./lib/google');
-
 // Instantiate a function to access records concerning "compiler-explorer"
 // in hidden object props.properties
 const ceProps = props.propsFor('compiler-explorer');
 
-let languages = require('./lib/languages').list;
-
+let languages = allLanguages;
 if (defArgs.wantedLanguage) {
     const filteredLangs = {};
     _.each(languages, lang => {
@@ -212,8 +219,6 @@ function staticHeaders(res) {
         res.setHeader('Cache-Control', 'public, max-age=' + staticMaxAgeSecs + ', must-revalidate');
     }
 }
-
-const csp = require('./lib/csp').policy;
 
 function contentPolicyHeader(res) {
     // TODO: re-enable CSP
@@ -259,14 +264,17 @@ let pugRequireHandler = () => {
     logger.error('pug require handler not configured');
 };
 
-function setupWebPackDevMiddleware(router) {
+async function setupWebPackDevMiddleware(router) {
     logger.info('  using webpack dev middleware');
 
-    const webpackDevMiddleware = require('webpack-dev-middleware'),
-        // eslint-disable-next-line requirejs/no-js-extension
-        webpackConfig = require('./webpack.config.js'),
-        webpackCompiler = require('webpack')(webpackConfig);
+    /* eslint-disable node/no-unsupported-features/es-syntax, node/no-unpublished-import */
+    const webpackDevMiddleware = (await import('webpack-dev-middleware')).default;
+    // eslint-disable-next-line requirejs/no-js-extension
+    const webpackConfig = (await import('./webpack.config.esm.js')).default;
+    const webpack = (await import('webpack')).default;
+    /* eslint-enable */
 
+    const webpackCompiler = webpack(webpackConfig);
     router.use(webpackDevMiddleware(webpackCompiler, {
         publicPath: '/static',
         logger: logger,
@@ -275,8 +283,8 @@ function setupWebPackDevMiddleware(router) {
     pugRequireHandler = (path) => urljoin(httpRoot, 'static', path);
 }
 
-function setupStaticMiddleware(router) {
-    const staticManifest = require(path.join(distPath, 'manifest.json'));
+async function setupStaticMiddleware(router) {
+    const staticManifest = await fs.readJson(path.join(distPath, 'manifest.json'));
 
     if (staticUrl) {
         logger.info(`  using static files from '${staticUrl}'`);
@@ -307,7 +315,7 @@ function shouldRedactRequestData(data) {
     }
 }
 
-const googleShortUrlResolver = new google.ShortLinkResolver();
+const googleShortUrlResolver = new ShortLinkResolver();
 
 function oldGoogleUrlHandler(req, res, next) {
     const bits = req.url.split('/');
@@ -357,8 +365,10 @@ function startListening(server) {
     } else {
         _port = defArgs.port;
     }
+
+    var startupDurationMs = Math.floor(process.uptime() * 1000);
     logger.info(`  Listening on http://${defArgs.hostname || 'localhost'}:${_port}/`);
-    logger.info(`  Startup duration: ${new Date() - startTime}ms`);
+    logger.info(`  Startup duration: ${startupDurationMs}ms`);
     logger.info('=======================================');
     server.listen(_port, defArgs.hostname);
 }
@@ -392,21 +402,14 @@ async function main() {
     await aws.initConfig(awsProps);
     await initialiseWine();
 
-    const ClientOptionsHandler = require('./lib/options-handler');
     const clientOptionsHandler = new ClientOptionsHandler(sources, compilerProps, defArgs);
-    const CompilationQueue = require('./lib/compilation-queue');
     const compilationQueue = CompilationQueue.fromProps(compilerProps.ceProps);
-    const CompilationEnvironment = require('./lib/compilation-env');
     const compilationEnvironment = new CompilationEnvironment(compilerProps, compilationQueue, defArgs.doCache);
-    const CompileHandler = require('./lib/handlers/compile').Handler;
     const compileHandler = new CompileHandler(compilationEnvironment, awsProps);
-    const storageType = require('./lib/storage').getStorageTypeByKey(storageSolution);
+    const storageType = getStorageTypeByKey(storageSolution);
     const storageHandler = new storageType(httpRoot, compilerProps, awsProps);
-    const SourceHandler = require('./lib/handlers/source').Handler;
     const sourceHandler = new SourceHandler(sources, staticHeaders);
-    const CompilerFinder = require('./lib/compiler-finder');
     const compilerFinder = new CompilerFinder(compileHandler, compilerProps, awsProps, defArgs, clientOptionsHandler);
-    const sponsors = require('./lib/sponsors');
 
     logger.info('=======================================');
     if (gitReleaseName) logger.info(`  git release ${gitReleaseName}`);
@@ -426,15 +429,7 @@ async function main() {
     }
 
     setupSentry(aws.getConfig('sentryDsn'));
-
-    const webServer = express(),
-        sFavicon = require('serve-favicon'),
-        bodyParser = require('body-parser'),
-        morgan = require('morgan'),
-        compression = require('compression'),
-        router = express.Router(),
-        healthCheck = require('./lib/handlers/health-check');
-
+    const webServer = express(), router = express.Router();
     const healthCheckFilePath = ceProps('healthCheckFilePath', false);
 
     const handlerConfig = {
@@ -514,7 +509,7 @@ async function main() {
             res.render('error', renderConfig({error: {code: status, message: message}}));
         });
 
-    const sponsorConfig = sponsors.loadFromString(fs.readFileSync(configDir + '/sponsors.yaml', 'utf-8'));
+    const sponsorConfig = loadSponsorsFromString(fs.readFileSync(configDir + '/sponsors.yaml', 'utf-8'));
     function renderConfig(extra, urlOptions) {
         const urlOptionsAllowed = [
             'readOnly', 'hideEditorToolbars', 'language',
@@ -525,8 +520,6 @@ async function main() {
         const allExtraOptions = _.extend({}, filteredUrlOptions, extra);
 
         if (allExtraOptions.mobileViewer && allExtraOptions.config) {
-            const normalizer = require('./lib/clientstate-normalizer');
-
             const clnormalizer = new normalizer.ClientStateNormalizer();
             clnormalizer.fromGoldenLayout(allExtraOptions.config);
             const clientstate = clnormalizer.normalized;
@@ -573,9 +566,9 @@ async function main() {
         }, req.query));
     };
     if (isDevMode()) {
-        setupWebPackDevMiddleware(router);
+        await setupWebPackDevMiddleware(router);
     } else {
-        setupStaticMiddleware(router);
+        await setupStaticMiddleware(router);
     }
 
     morgan.token('gdpr_ip', req => utils.anonymizeIp(req.ip));
@@ -667,7 +660,7 @@ async function main() {
             res.set('Content-Type', 'application/xml');
             res.render('sitemap');
         })
-        .use(sFavicon(path.resolve(__dirname, 'static', 'favicon.ico')))
+        .use(sFavicon(utils.resolvePathFromAppRoot('static', 'favicon.ico')))
         .get('/client-options.js', (req, res) => {
             staticHeaders(res);
             res.set('Content-Type', 'application/javascript');

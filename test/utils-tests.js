@@ -22,12 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-const chai = require('chai'),
-    utils = require('../lib/utils'),
-    logger = require('../lib/logger').logger,
-    fs = require('fs-extra');
-
-chai.should();
+import { fs } from './utils';
+import * as utils from '../lib/utils';
+import { logger } from '../lib/logger';
 
 describe('Splits lines', () => {
     it('handles empty input', () => {
