@@ -682,6 +682,18 @@ div.populararguments div.dropdown-menu {
     max-width: 450px;
 }
 
+#library-selection .libs-results-col span.lib-version {
+    float: right;
+}
+
+#library-selection .libs-results-col span.lib-website {
+    float: left;
+}
+
+#library-selection .libs-results-col span.lib-fav {
+    float: right;
+}
+
 #library-selection .libs-favorites-col {
     padding: 0 0 0 15px;
     min-width: 200px;
