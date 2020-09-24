@@ -50,7 +50,13 @@ function LibsWidgetExt(langId, compiler, dropdownButton, state, onChangeCallback
     this.showSelectedLibsAsSearchResults();
     this.showFavorites();
 
-    this.domRoot.find('.lib-search-input').on('keypress', _.bind(function () {
+    var searchInput = this.domRoot.find('.lib-search-input');
+
+    this.domRoot.on('shown.bs.modal', function () {
+        searchInput.trigger('focus');
+    });
+
+    searchInput.on('input', _.bind(function () {
         this.startSearching();
     }, this));
 
