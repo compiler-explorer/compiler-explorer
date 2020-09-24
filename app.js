@@ -406,7 +406,7 @@ async function main() {
     const compilationEnvironment = new CompilationEnvironment(compilerProps, compilationQueue, defArgs.doCache);
     const CompileHandler = require('./lib/handlers/compile').Handler;
     const compileHandler = new CompileHandler(compilationEnvironment, awsProps);
-    const StorageHandler = require('./lib/storage/storage');
+    const StorageHandler = require('./lib/storage/base');
     const storageHandler = StorageHandler.storageFactory(storageSolution, compilerProps, awsProps, httpRoot);
     const SourceHandler = require('./lib/handlers/source').Handler;
     const sourceHandler = new SourceHandler(fileSources, staticHeaders);
@@ -589,8 +589,8 @@ async function main() {
     // Based on combined format, but: GDPR compliant IP, no timestamp & no unused fields for our usecase
     const morganFormat = isDevMode() ? 'dev' : ':gdpr_ip ":method :url" :status';
 
-    const shortenerLib = require(`./lib/shortener-${clientOptionsHandler.options.urlShortenService}`);
-    const shortener = shortenerLib({storageHandler});
+    const shortenerType = require(`./lib/shortener/${clientOptionsHandler.options.urlShortenService}`);
+    const shortener = new shortenerType(storageHandler);
 
     /*
      * This is a workaround to make cross origin monaco web workers function
@@ -691,7 +691,7 @@ async function main() {
         .use(bodyParser.json({limit: ceProps('bodyParserLimit', maxUploadSize)}))
         .use('/source', sourceHandler.handle.bind(sourceHandler))
         .use('/g', oldGoogleUrlHandler)
-        .post('/shortener', shortener);
+        .post('/shortener', shortener.handle.bind(shortener));
 
     noscriptHandler.InitializeRoutes({limit: ceProps('bodyParserLimit', maxUploadSize)});
     routeApi.InitializeRoutes();

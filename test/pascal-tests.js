@@ -24,7 +24,7 @@
 
 const chai = require('chai');
 const chaiAsPromised = require('chai-as-promised');
-const PascalDemangler = require('../lib/demangler-pascal').Demangler;
+const PascalDemangler = require('../lib/demangler/pascal').Demangler;
 const PascalCompiler = require('../lib/compilers/pascal');
 const fs = require('fs-extra');
 const utils = require('../lib/utils');
@@ -306,8 +306,8 @@ describe('Pascal', () => {
 
     describe('Pascal ASM line number injection', function () {
         before(() => {
-            compiler.demanglerClass = require('../lib/demangler-pascal').Demangler;
-            compiler.demangler = new compiler.demanglerClass(null, compiler);
+            compiler.demanglerClass = PascalDemangler;
+            compiler.demangler = new PascalDemangler(null, compiler);
         });
 
         it('Should have line numbering', function () {

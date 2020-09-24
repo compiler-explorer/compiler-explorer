@@ -25,7 +25,7 @@
 const chai = require('chai'),
     chaiAsPromised = require('chai-as-promised'),
     properties = require('../../lib/properties'),
-    s3s = require('../../lib/storage/storage-s3'),
+    s3s = require('../../lib/storage/s3'),
     AWS = require('aws-sdk-mock');
 
 chai.use(chaiAsPromised);
