@@ -687,3 +687,7 @@ div.populararguments div.dropdown-menu {
     min-width: 200px;
     max-width: 200px;
 }
+
+#library-selection.mobile .libs-favorites-col {
+    display: none;
+}
