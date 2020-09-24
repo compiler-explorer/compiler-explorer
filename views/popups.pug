@@ -300,110 +300,17 @@
                 .col-lg
                   div(style='text-align: center')
                     input.lib-search-input(value="")
-                    button.btn.btn-primary.lib-search-button(type="button" style="margin-left: 10px;") Search
+                    button.btn.btn-primary.lib-search-button(type="button") Search
               .row
                 .col-lg &nbsp;
               .row
-                .libs-selected-col.col-md(style="min-width: 250px;")
+                .libs-selected-col.col-md
                   div
                     h6 Selected
                   .libs-selected-items
-                    div
-                      button.btn.btn-lg {fmt} 7.0.0
-                      button.btn.btn-sm
-                        span.fas.fa-trash
-                    div
-                      button.btn.btn-lg CTRE trunk
-                      button.btn.btn-sm
-                        span.fas.fa-trash
-                    div
-                      button.btn.btn-lg GSL trunk
-                      button.btn.btn-sm
-                        span.fas.fa-trash
-                .libs-results-col.col-md(style="min-width: 450px;")
+                .libs-results-col.col-md
                   h6 Results
                   .lib-results-items
-                    div.card(style='margin-bottom: 3px')
-                      div.card-header
-                        span
-                          b {fmt}
-                        span(style='float: right')
-                          select.custom-select.custom-select-sm
-                            option -
-                            option 4.0.0
-                            option 7.0.0
-                            option trunk
-                      div.card-body
-                        p A modern formatting library
-                        span(style='float: left')
-                          a(href='https://github.com/fmtlib/fmt') Website
-                        span(style='float: right')
-                          button.btn.btn-sm
-                            span.fas.fa-star(style='color: blue')
-                    div.card(style='margin-bottom: 3px')
-                      div.card-header
-                        span
-                          b Doctest
-                        span(style='float: right')
-                          select.custom-select.custom-select-sm
-                            option -
-                            option trunk
-                      div.card-body
-                        p The fastest feature-rich C++11 single-header testing framework for unit tests and TDD
-                        span(style='float: left')
-                          a(href='https://github.com/onqtam/doctest') Website
-                        span(style='float: right')
-                          button.btn.btn-sm
-                            span.far.fa-star
-                    div.card(style='margin-bottom: 3px')
-                      div.card-header
-                        span
-                          b Doctest
-                        span(style='float: right')
-                          select.custom-select.custom-select-sm
-                            option -
-                            option trunk
-                      div.card-body
-                        p The fastest feature-rich C++11 single-header testing framework for unit tests and TDD
-                        span(style='float: left')
-                          a(href='https://github.com/onqtam/doctest') Website
-                        span(style='float: right')
-                          button.btn.btn-sm
-                            span.far.fa-star
-                    div.card(style='margin-bottom: 3px')
-                      div.card-header
-                        span
-                          b Doctest
-                        span(style='float: right')
-                          select.custom-select.custom-select-sm
-                            option -
-                            option trunk
-                      div.card-body
-                        p The fastest feature-rich C++11 single-header testing framework for unit tests and TDD
-                        span(style='float: left')
-                          a(href='https://github.com/onqtam/doctest') Website
-                        span(style='float: right')
-                          button.btn.btn-sm
-                            span.far.fa-star
-                    div.card(style='margin-bottom: 3px')
-                      div.card-header
-                        b Doctest
-                      div.card-body
-                        p The fastest feature-rich C++11 single-header testing framework for unit tests and TDD
-                        a(href='https://github.com/onqtam/doctest') Website
-                    div.card(style='margin-bottom: 3px')
-                      div.card-header
-                        b Doctest
-                      div.card-body
-                        p The fastest feature-rich C++11 single-header testing framework for unit tests and TDD
-                        a(href='https://github.com/onqtam/doctest') Website
-                .col-md(style="min-width: 150px;")
+                .libs-favories-col.col-md
                   h6 Favorites
-                  div.lib-favorites
-                    ul
-                      li
-                        button.btn.btn-sm {fmt}
-                      li
-                        button.btn.btn-sm CTRE
-                      li
-                        button.btn.btn-sm GSL
+                  .lib-favorites

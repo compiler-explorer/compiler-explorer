@@ -647,3 +647,30 @@ div.populararguments div.dropdown-menu {
 .ces-item-description {
     margin: auto;
 }
+
+#library-selection .modal-body {
+    min-height: 100%;
+    overflow-y: scroll;
+}
+
+#library-selection .lib-search-button {
+    margin-left: 10px;
+}
+
+#library-selection .libs-selected-col {
+    padding: 0 15px 0 0;
+    min-width: 250px;
+    max-width: 250px;
+}
+
+#library-selection .libs-results-col {
+    padding: 0 0 0 0;
+    min-width: 450px;
+    max-width: 450px;
+}
+
+#library-selection .libs-favories-col {
+    padding: 0 0 0 15px;
+    min-width: 200px;
+    max-width: 200px;
+}
