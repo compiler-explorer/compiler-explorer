@@ -1216,9 +1216,9 @@ Compiler.prototype.updateButtons = function () {
     this.executorButton.prop('disabled', !this.compiler.supportsExecute);
 
     if (this.currentState().libs.length > 0) {
-        this.libsButton.addClass('btn-success');
+        this.libsButton.addClass('btn-success').removeClass('btn-light');
     } else {
-        this.libsButton.removeClass('btn-success');
+        this.libsButton.removeClass('btn-success').addClass('btn-light');
     }
 
     this.enableToolButtons();
