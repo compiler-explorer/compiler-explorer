@@ -669,6 +669,19 @@ div.populararguments div.dropdown-menu {
     max-width: 450px;
 }
 
+#library-selection .lib-results-items .card {
+    margin-bottom: 3px;
+}
+
+#library-selection.mobile .lib-results-items .card-body {
+    display: none;
+}
+
+#library-selection.mobile .libs-results-col {
+    min-width: 250px;
+    max-width: 450px;
+}
+
 #library-selection .libs-favorites-col {
     padding: 0 0 0 15px;
     min-width: 200px;

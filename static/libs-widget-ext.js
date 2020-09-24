@@ -52,6 +52,10 @@ function LibsWidgetExt(langId, compiler, dropdownButton, state, onChangeCallback
 
     var searchInput = this.domRoot.find('.lib-search-input');
 
+    if (window.compilerExplorerOptions.mobileViewer) {
+        this.domRoot.addClass('mobile');
+    }
+
     this.domRoot.on('shown.bs.modal', function () {
         searchInput.trigger('focus');
     });
