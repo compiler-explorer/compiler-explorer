@@ -177,6 +177,24 @@ LibsWidgetExt.prototype.newSelectedLibDiv = function (libId, versionId, lib, ver
     return libDiv;
 };
 
+LibsWidgetExt.prototype.conjureUpExamples = function (result, lib) {
+    var examples = result.find('.lib-examples');
+    if (lib.examples.length > 0) {
+        var examplesHeader = $('<b>Examples</b>');
+        var examplesList = $('<ul />');
+        _.each(lib.examples, function (exampleId) {
+            var li = $('<li />');
+            examplesList.append(li);
+            var exampleLink = $('<a>Example</a>');
+            exampleLink.attr('href', '/z/' + exampleId);
+            li.append(exampleLink);
+        });
+
+        examples.append(examplesHeader);
+        examples.append(examplesList);
+    }
+};
+
 LibsWidgetExt.prototype.newSearchResult = function (libId, lib) {
     var template = $('#lib-search-result-tpl');
 
@@ -184,6 +202,8 @@ LibsWidgetExt.prototype.newSearchResult = function (libId, lib) {
     result.find('.lib-name').html(lib.name);
     result.find('.lib-description').html(lib.description ? lib.description : '&nbsp;');
     result.find('.lib-website-link').attr('href', lib.url ? lib.url : '#');
+
+    this.conjureUpExamples(result, lib);
 
     var faveButton = result.find('.lib-fav-button');
     var faveStar = faveButton.find('.lib-fav-btn-icon');
