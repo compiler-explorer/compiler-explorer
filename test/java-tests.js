@@ -23,9 +23,8 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import { JavaCompiler } from '../lib/compilers/java';
-import fs from 'fs-extra';
 import * as utils from '../lib/utils';
-import { makeCompilationEnvironment } from './utils';
+import { fs, makeCompilationEnvironment } from './utils';
 
 const languages = {
     java: {id: 'java'},

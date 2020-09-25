@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import { fs } from './utils';
 import { ClientState } from '../lib/clientstate';
-import fs from 'fs';
 import { ClientStateNormalizer } from '../lib/clientstate-normalizer';
 
 describe('Normalizing clientstate', () => {

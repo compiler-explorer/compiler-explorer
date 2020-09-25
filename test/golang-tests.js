@@ -22,10 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import fs from 'fs-extra';
 import * as utils from '../lib/utils';
 import { GolangCompiler } from '../lib/compilers/golang';
-import { makeCompilationEnvironment } from './utils';
+import { fs, makeCompilationEnvironment } from './utils';
 
 const languages = {
     go: {id: 'go'},

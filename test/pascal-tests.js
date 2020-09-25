@@ -24,9 +24,8 @@
 
 import { PascalDemangler } from '../lib/demangler';
 import { FPCCompiler } from '../lib/compilers/pascal';
-import fs from 'fs-extra';
 import * as utils from '../lib/utils';
-import { makeCompilationEnvironment } from './utils';
+import { fs, makeCompilationEnvironment } from './utils';
 
 const languages = {
     pascal: {id: 'pascal'},
