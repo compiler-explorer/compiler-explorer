@@ -24,8 +24,6 @@
 
 import fs from 'fs-extra';
 import chai from 'chai';
-import chaiAsPromised from 'chai-as-promised';
-import chaiHttp from 'chai-http';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { CompilerProps, fakeProps } from '../lib/properties';
@@ -38,10 +36,7 @@ export function makeCompilationEnvironment(options) {
     return new CompilationEnvironment(compilerProps, compilationQueue, options.doCache);
 }
 
-chai.use(chaiAsPromised);
-chai.use(chaiHttp);
 export const should = chai.should();
-export const assert = chai.assert;
 
 /***
  * Absolute path to the root of the tests

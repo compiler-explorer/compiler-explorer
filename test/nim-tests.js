@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import { NimCompiler } from '../lib/compilers/nim';
-import { chai, makeCompilationEnvironment } from './utils';
+import { should, makeCompilationEnvironment } from './utils';
 
 const languages = {
     nim: {id: 'nim'},
@@ -67,7 +67,8 @@ describe('Nim', () => {
         for (const lang of ['cpp', 'c', 'objc']) {
             compiler.getCacheFile([lang], input, folder).should.equal(expected[lang]);
         }
-        chai.assert.equal(compiler.getCacheFile([], input, folder), null);
-        chai.assert.equal(compiler.getCacheFile(['js'], input, folder), null);
+
+        should.equal(compiler.getCacheFile([], input, folder), null);
+        should.equal(compiler.getCacheFile(['js'], input, folder), null);
     });
 });

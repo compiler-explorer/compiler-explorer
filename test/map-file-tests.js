@@ -22,7 +22,6 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { assert } from './utils';
 import { MapFileReaderVS } from '../lib/map-file-vs';
 import { MapFileReaderDelphi } from '../lib/map-file-delphi';
 
@@ -52,7 +51,7 @@ describe('Code Segments', function () {
         info.unitName.should.equal('output');
 
         info = reader.getSegmentInfoByStartingAddress('0001', '2838');
-        assert(info === false, 'Address should not be a Start for any segment');
+        info.should.equal(false, 'Address should not be a Start for any segment');
 
         info = reader.getSegmentInfoAddressIsIn('0001', 0x2838 + 0x10);
         info.unitName.should.equal('output');
@@ -61,7 +60,7 @@ describe('Code Segments', function () {
         info.unitName.should.equal('output');
 
         info = reader.getSegmentInfoAddressIsIn('0001', reader.getSegmentOffset('0001') + 0x2838 + 0x80 + 1);
-        assert(info === false, 'Address should not be in any segment');
+        info.should.equal(false, 'Address should not be in any segment');
 
         info = reader.getSegmentInfoByUnitName('output');
         info.unitName.should.equal('output');
@@ -95,7 +94,7 @@ describe('Code Segments', function () {
         info.addressInt.should.equal(reader.getSegmentOffset('0001') + 0x2838);
         
         info = reader.getSegmentInfoAddressIsIn('0001', reader.getSegmentOffset('0001') + 0x2837);
-        assert(info === false);
+        info.should.equal(false);
     });
 
     it('Repair VS-Map code segment info', function () {
@@ -120,11 +119,11 @@ describe('Symbol info', function () {
         reader.namedAddresses.length.should.equal(1);
         
         let info = reader.getSymbolAt('0001', 0x2838);
-        assert(info !== false, 'Symbol Square should have been returned 1');
+        info.should.not.equal(false, 'Symbol Square should have been returned 1');
         info.displayName.should.equal('Square');
 
         info = reader.getSymbolAt(false, reader.getSegmentOffset('0001') + 0x2838);
-        assert(info !== false, 'Symbol Square should have been returned 2');
+        info.should.not.equal(false, 'Symbol Square should have been returned 2');
         info.displayName.should.equal('Square');
     });
 
@@ -134,11 +133,11 @@ describe('Symbol info', function () {
         reader.namedAddresses.length.should.equal(1);
 
         let info = reader.getSymbolAt('0001', 0x2C4C);
-        assert(info !== false, 'Symbol MaxArray should have been returned');
+        info.should.not.equal(false, 'Symbol MaxArray should have been returned');
         info.displayName.should.equal('output.MaxArray');
 
         info = reader.getSymbolAt(false, reader.getSegmentOffset('0001') + 0x2C4C);
-        assert(info !== false, 'Symbol MaxArray should have been returned');
+        info.should.not.equal(false, 'Symbol MaxArray should have been returned');
         info.displayName.should.equal('output.MaxArray');
     });
 
@@ -148,11 +147,11 @@ describe('Symbol info', function () {
         reader.namedAddresses.length.should.equal(1);
 
         let info = reader.getSymbolAt('0002', 0x6B0);
-        assert(info !== false, 'Symbol start_verify_argument should have been returned 1');
+        info.should.not.equal(false, 'Symbol start_verify_argument should have been returned 1');
         info.displayName.should.equal('??$__vcrt_va_start_verify_argument_type@QBD@@YAXXZ');
         
         info = reader.getSymbolAt(false, 0x4116B0);
-        assert(info !== false, 'Symbol start_verify_argument should have been returned 2');
+        info.should.not.equal(false, 'Symbol start_verify_argument should have been returned 2');
         info.displayName.should.equal('??$__vcrt_va_start_verify_argument_type@QBD@@YAXXZ');
     });
 
@@ -169,12 +168,12 @@ describe('Symbol info', function () {
 describe('Delphi-Map Line number info', function () {
     it('No line', function () {
         const reader = new MapFileReaderDelphi();
-        assert(reader.tryReadingLineNumbers('') === false);
+        reader.tryReadingLineNumbers('').should.equal(false);
     });
 
     it('One line', function () {
         const reader = new MapFileReaderDelphi();
-        assert(reader.tryReadingLineNumbers('    17 0001:000028A4') === true);
+        reader.tryReadingLineNumbers('    17 0001:000028A4').should.equal(true);
 
         let lineInfo = reader.getLineInfoByAddress('0001', 0x28A4);
         lineInfo.lineNumber.should.equal(17);
@@ -185,7 +184,7 @@ describe('Delphi-Map Line number info', function () {
 
     it('Multiple lines', function () {
         const reader = new MapFileReaderDelphi();
-        assert(reader.tryReadingLineNumbers('    12 0001:00002838    13 0001:0000283B    14 0001:00002854    15 0001:00002858') === true);
+        reader.tryReadingLineNumbers('    12 0001:00002838    13 0001:0000283B    14 0001:00002854    15 0001:00002858').should.equal(true);
 
         let lineInfo = reader.getLineInfoByAddress('0001', 0x2838);
         lineInfo.lineNumber.should.equal(12);

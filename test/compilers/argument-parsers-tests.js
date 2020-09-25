@@ -22,15 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import chai from 'chai';
 import { FakeCompiler } from '../../lib/compilers/fake-for-test';
-import chaiAsPromised from 'chai-as-promised';
 import { BaseParser, ClangParser, GCCParser, PascalParser } from '../../lib/compilers/argument-parsers';
 import { CompilerArguments } from '../../lib/compiler-arguments';
-import { makeCompilationEnvironment } from '../utils';
-
-chai.use(chaiAsPromised);
-const should = chai.should();
+import { should, makeCompilationEnvironment } from '../utils';
 
 const languages = {
     'c++': {id: 'c++'},
@@ -96,13 +91,10 @@ describe('option parser', () => {
 });
 
 describe('gcc parser', () => {
-    it('should handle empty options', () => {
-        return GCCParser.parse(makeCompiler()).should.eventually.satisfy(result => {
-            return Promise.all([
-                should.not.equal(result.compiler.supportsGccDump, true),
-                result.compiler.options.should.equals(''),
-            ]);
-        });
+    it('should handle empty options', async () => {
+        const result = await GCCParser.parse(makeCompiler());
+        should.not.exist(result.compiler.supportsGccDump);
+        result.compiler.options.should.equals('');
     });
     it('should handle options', () => {
         return GCCParser.parse(makeCompiler('-masm=intel\n-fdiagnostics-color=[blah]\n-fdump-tree-all'))

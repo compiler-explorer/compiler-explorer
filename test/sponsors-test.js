@@ -22,12 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import chai from 'chai';
-import deepEqualInAnyOrder from 'deep-equal-in-any-order';
 import { loadSponsorsFromString } from '../lib/sponsors';
-
-chai.should();
-chai.use(deepEqualInAnyOrder);
 
 describe('Sponsors', () => {
     it('should load a simple example', () => {

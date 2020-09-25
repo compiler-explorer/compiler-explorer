@@ -23,10 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import path from 'path';
-import chai from 'chai';
 import { CompilerDropinTool } from '../lib/tooling/compiler-dropin-tool';
-
-chai.should();
 
 describe('CompilerDropInTool', () => {
     it('Should support llvm based compilers', () => {
