@@ -44,7 +44,11 @@ function LibsWidgetExt(langId, compiler, dropdownButton, state, onChangeCallback
     this.availableLibs = {};
     this.updateAvailableLibs(possibleLibs);
     _.each(state.libs, _.bind(function (lib) {
-        this.markLibrary(lib.name, lib.ver, true);
+        if (lib.name && lib.ver) {
+            this.markLibrary(lib.name, lib.ver, true);
+        } else {
+            this.markLibrary(lib.id, lib.version, true);
+        }
     }, this));
     this.showSelectedLibs();
     this.showSelectedLibsAsSearchResults();
