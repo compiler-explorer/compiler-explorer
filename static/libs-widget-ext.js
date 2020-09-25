@@ -40,7 +40,10 @@ function LibsWidgetExt(langId, compiler, dropdownButton, state, onChangeCallback
     }
     this.currentLangId = langId;
     this.domRoot = $('#library-selection');
-    this.onChangeCallback = onChangeCallback;
+    this.onChangeCallback = function () {
+        this.updateButton();
+        onChangeCallback();
+    };
     this.availableLibs = {};
     this.updateAvailableLibs(possibleLibs);
     _.each(state.libs, _.bind(function (lib) {
@@ -71,7 +74,18 @@ function LibsWidgetExt(langId, compiler, dropdownButton, state, onChangeCallback
     this.domRoot.find('.lib-search-button').on('click', _.bind(function () {
         this.startSearching();
     }, this));
+
+    this.updateButton();
 }
+
+LibsWidgetExt.prototype.updateButton = function () {
+    var selectedLibs = this.get();
+    if (selectedLibs.length > 0) {
+        this.dropdownButton.addClass('btn-success').removeClass('btn-light');
+    } else {
+        this.dropdownButton.removeClass('btn-success').addClass('btn-light');
+    }
+};
 
 LibsWidgetExt.prototype.getFavorites = function () {
     var storkey = 'favlibs';
