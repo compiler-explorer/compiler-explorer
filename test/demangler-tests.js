@@ -259,7 +259,7 @@ async function DoDemangleTest(filename) {
     await demangler.process(resultIn).should.eventually.deep.equal(resultOut);
 }
 
-describe('File demangling',async () => {
+describe('File demangling', () => {
     const testcasespath = resolvePathFromTestRoot('demangle-cases');
 
     /*
