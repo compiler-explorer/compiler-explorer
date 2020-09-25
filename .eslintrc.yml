@@ -5,13 +5,11 @@ plugins:
 - jsdoc
 - node
 - promise
-- requirejs
 - sonarjs
 - unicorn
 extends:
 - eslint:recommended
 - plugin:import/recommended
-- plugin:requirejs/recommended
 - plugin:node/recommended
 - plugin:unicorn/recommended
 env:
@@ -37,16 +35,14 @@ rules:
   import/no-deprecated: warn
   import/no-mutable-exports: error
   import/no-self-import: error
-#  import/no-unused-modules:
-#  - warn
-#  - missingExports: true
-#    unusedExports: true
   import/no-useless-path-segments: error
   import/no-webpack-loader-syntax: error
   import/order:
-  - off
+  - warn
   - alphabetize:
       order: asc
+      caseInsensitive: true
+    newlines-between: always
   indent:
   - error
   - 4
@@ -96,9 +92,12 @@ rules:
   jsdoc/newline-after-description: warn
   jsdoc/require-hyphen-before-param-description: warn
   jsdoc/valid-types: warn
+  no-multiple-empty-lines:
+  - warn
+  - max: 1
+    maxBOF: 0
+    maxEOF: 0
   no-process-exit: off
-  node/no-unpublished-require: off
-  node/no-unpublished-import: off
   node/no-unsupported-features/es-syntax: off
   node/shebang: off
   promise/catch-or-return: error
@@ -112,7 +111,10 @@ rules:
   sonarjs/prefer-immediate-return: error
   sonarjs/prefer-object-literal: error
   sonarjs/prefer-single-boolean-return: error
-  sort-imports: off
+  sort-imports:
+  - warn
+  - ignoreCase: true
+    ignoreDeclarationSort: true
   unicorn/catch-error-name: off
   unicorn/consistent-function-scoping: off
   unicorn/no-fn-reference-in-iterator: off

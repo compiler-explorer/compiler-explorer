@@ -24,6 +24,7 @@
 
 import { JavaCompiler } from '../lib/compilers/java';
 import * as utils from '../lib/utils';
+
 import { fs, makeCompilationEnvironment } from './utils';
 
 const languages = {
@@ -47,7 +48,6 @@ describe.skip('Basic compiler setup', function () {
     it('Should not crash on instantiation', function () {
         new JavaCompiler(info, env);
     });
-
 
     it('should ignore second param for getOutputFilename', function () {
         // Because javac produces a class files based on user provided class names,

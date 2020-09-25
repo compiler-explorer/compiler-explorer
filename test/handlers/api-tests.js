@@ -22,9 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { chai } from '../utils';
-import { ApiHandler } from '../../lib/handlers/api';
 import express from 'express';
+
+import { ApiHandler } from '../../lib/handlers/api';
+import { chai } from '../utils';
 
 const languages = {
     'c++': {

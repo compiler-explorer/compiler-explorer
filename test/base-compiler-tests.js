@@ -22,10 +22,12 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { fs, path, should, makeCompilationEnvironment } from './utils';
 import sinon from 'sinon';
+
 import { BaseCompiler } from '../lib/base-compiler';
 import * as exec from '../lib/exec';
+
+import { fs, makeCompilationEnvironment, path, should } from './utils';
 
 const languages = {
     'c++': {id: 'c++'},

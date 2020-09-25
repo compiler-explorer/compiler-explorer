@@ -22,9 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { fs } from './utils';
-import * as utils from '../lib/utils';
 import { logger } from '../lib/logger';
+import * as utils from '../lib/utils';
+
+import { fs } from './utils';
 
 describe('Splits lines', () => {
     it('handles empty input', () => {

@@ -22,9 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { chai } from '../utils';
-import { AsmDocsHandler } from '../../lib/handlers/asm-docs-api';
 import express from 'express';
+
+import { AsmDocsHandler } from '../../lib/handlers/asm-docs-api';
+import { chai } from '../utils';
 
 describe('Assembly documents', () => {
     let app;

@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import { PPCICompiler } from '../lib/compilers/ppci';
+
 import { makeCompilationEnvironment } from './utils';
 
 const languages = {

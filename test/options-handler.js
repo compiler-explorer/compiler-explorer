@@ -22,10 +22,12 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { ClientOptionsHandler } from '../lib/options-handler';
 import _ from 'underscore';
-import * as properties from '../lib/properties';
+
 import { BaseCompiler } from '../lib/base-compiler';
+import { ClientOptionsHandler } from '../lib/options-handler';
+import * as properties from '../lib/properties';
+
 import { should } from './utils';
 
 const languages = {

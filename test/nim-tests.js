@@ -23,7 +23,8 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import { NimCompiler } from '../lib/compilers/nim';
-import { should, makeCompilationEnvironment } from './utils';
+
+import { makeCompilationEnvironment, should } from './utils';
 
 const languages = {
     nim: {id: 'nim'},

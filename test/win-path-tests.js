@@ -23,8 +23,10 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import child_process from 'child_process';
-import { WslVcCompiler } from '../lib/compilers/wsl-vc';
+
 import { WineVcCompiler } from '../lib/compilers/wine-vc';
+import { WslVcCompiler } from '../lib/compilers/wsl-vc';
+
 import { makeCompilationEnvironment } from './utils';
 
 const languages = {

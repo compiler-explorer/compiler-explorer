@@ -22,9 +22,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { fs, path } from './utils';
-import { Packager } from '../lib/packager';
 import temp from 'temp';
+
+import { Packager } from '../lib/packager';
+
+import { fs, path } from './utils';
 
 function newTempDir() {
     return new Promise((resolve, reject) => {

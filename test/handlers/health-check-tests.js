@@ -22,11 +22,12 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import express from 'express';
 import mockfs from 'mock-fs';
-import { chai } from '../utils';
+
 import { CompilationQueue } from '../../lib/compilation-queue';
 import { HealthCheckHandler } from '../../lib/handlers/health-check';
-import express from 'express';
+import { chai } from '../utils';
 
 describe('Health checks', () => {
     let app;

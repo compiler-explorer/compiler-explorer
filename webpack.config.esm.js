@@ -1,12 +1,14 @@
+/* eslint-disable node/no-unpublished-import */
 import path from 'path';
 import { fileURLToPath } from 'url';
-import webpack from 'webpack';
+
 import CopyWebpackPlugin from 'copy-webpack-plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
-import ManifestPlugin from 'webpack-manifest-plugin';
-import TerserPlugin from 'terser-webpack-plugin';
-import OptimizeCssAssetsPlugin from 'optimize-css-assets-webpack-plugin';
 import MonacoEditorWebpackPlugin from 'monaco-editor-webpack-plugin';
+import OptimizeCssAssetsPlugin from 'optimize-css-assets-webpack-plugin';
+import TerserPlugin from 'terser-webpack-plugin';
+import webpack from 'webpack';
+import ManifestPlugin from 'webpack-manifest-plugin';
 
 const __dirname = path.resolve(path.dirname(fileURLToPath(import.meta.url)));
 const isDev = process.env.NODE_ENV !== 'production';

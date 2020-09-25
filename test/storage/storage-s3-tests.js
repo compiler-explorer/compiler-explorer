@@ -22,10 +22,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { should } from '../utils';
+import AWS from 'aws-sdk-mock';
+
 import * as properties from '../../lib/properties';
 import { StorageS3 } from '../../lib/storage';
-import AWS from 'aws-sdk-mock';
+import { should } from '../utils';
 
 // NB!!! Anything using mocked AWS calls needs to be initialised in the `it(...)` block! If you initialise it in the
 // `describe()` top level code then it won't be mocked in time. We only mock and de-mock before/after else we end up
@@ -49,10 +50,6 @@ function mockerise(service, method) {
     });
     return handlers;
 }
-
-
-////////////////
-
 
 describe('Find unique subhash tests', () => {
     const dynamoDbQueryHandlers = mockerise('DynamoDB', 'query');
@@ -139,7 +136,6 @@ describe('Find unique subhash tests', () => {
         );
     });
 });
-
 
 describe('Stores to s3', () => {
     const dynamoDbPutItemHandlers = mockerise('DynamoDB', 'putItem');

@@ -22,8 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { LDCCompiler } from '../lib/compilers/ldc';
 import { DMDCompiler } from '../lib/compilers/dmd';
+import { LDCCompiler } from '../lib/compilers/ldc';
+
 import { makeCompilationEnvironment } from './utils';
 
 const languages = {

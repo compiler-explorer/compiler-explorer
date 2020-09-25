@@ -23,8 +23,9 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import sinon from 'sinon';
-import { should } from '../utils';
+
 import { StorageBase } from '../../lib/storage';
+import { should } from '../utils';
 
 describe('Hash tests', () => {
     afterEach(() => sinon.restore());

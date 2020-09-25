@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import nock from 'nock';
+
 import * as google from '../lib/google';
 
 const googlDomain = 'https://goo.gl';

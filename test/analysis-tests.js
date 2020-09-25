@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import { LLVMmcaTool } from '../lib/compilers/llvm-mca';
+
 import { makeCompilationEnvironment } from './utils';
 
 const languages = {

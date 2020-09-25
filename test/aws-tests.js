@@ -23,8 +23,9 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import './utils';
-import * as aws from '../lib/aws';
 import AWS from 'aws-sdk-mock';
+
+import * as aws from '../lib/aws';
 
 const instanceA = {
     State: {Name: 'running'},

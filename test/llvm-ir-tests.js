@@ -24,6 +24,7 @@
 
 import { LLCCompiler } from '../lib/compilers/llc';
 import { OptCompiler } from '../lib/compilers/opt';
+
 import { makeCompilationEnvironment } from './utils';
 
 const languages = {
@@ -52,7 +53,6 @@ describe('LLVM IR Compiler', () => {
     before(() => {
         compiler = createCompiler(LLCCompiler);
     });
-
 
     it('llc options for at&t assembly', function () {
         compiler.optionsForFilter({

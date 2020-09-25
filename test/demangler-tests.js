@@ -22,11 +22,12 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { fs, path, resolvePathFromTestRoot } from './utils';
-import * as utils from '../lib/utils';
-import { SymbolStore } from '../lib/symbol-store';
 import { CppDemangler, Win32Demangler } from '../lib/demangler';
 import * as exec from '../lib/exec';
+import { SymbolStore } from '../lib/symbol-store';
+import * as utils from '../lib/utils';
+
+import { fs, path, resolvePathFromTestRoot } from './utils';
 
 const cppfiltpath = 'c++filt';
 

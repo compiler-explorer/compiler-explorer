@@ -24,45 +24,47 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import nopt from 'nopt';
-import os from 'os';
-import * as props from './lib/properties';
 import child_process from 'child_process';
+import os from 'os';
 import path from 'path';
 import process from 'process';
-import fs from 'fs-extra';
-import systemdSocket from 'systemd-socket';
 import url from 'url';
-import urljoin from 'url-join';
-import _ from 'underscore';
-import express from 'express';
-import responseTime from 'response-time';
+
 import * as Sentry from '@sentry/node';
-import { logger, logToPapertrail, suppressConsoleLog } from './lib/logger';
-import * as utils from './lib/utils';
-import { initialiseWine } from './lib/exec';
-import { RouteAPI } from './lib/handlers/route-api';
-import { NoScriptHandler } from './lib/handlers/noscript';
-import * as aws from './lib/aws';
-import { ShortLinkResolver } from './lib/google';
-import { languages as allLanguages } from './lib/languages';
-import { policy as csp } from './lib/csp';
-import { ClientOptionsHandler } from './lib/options-handler';
-import { CompilationQueue } from './lib/compilation-queue';
-import { CompilationEnvironment } from './lib/compilation-env';
-import { CompileHandler } from './lib/handlers/compile';
-import { getStorageTypeByKey } from './lib/storage';
-import { getShortenerTypeByKey } from './lib/shortener';
-import { SourceHandler } from './lib/handlers/source';
-import { CompilerFinder } from './lib/compiler-finder';
-import { loadSponsorsFromString } from './lib/sponsors';
-import sFavicon from 'serve-favicon';
 import bodyParser from 'body-parser';
-import morgan from 'morgan';
 import compression from 'compression';
-import * as healthCheck from './lib/handlers/health-check';
+import express from 'express';
+import fs from 'fs-extra';
+import morgan from 'morgan';
+import nopt from 'nopt';
+import responseTime from 'response-time';
+import sFavicon from 'serve-favicon';
+import systemdSocket from 'systemd-socket';
+import _ from 'underscore';
+import urljoin from 'url-join';
+
+import * as aws from './lib/aws';
 import * as normalizer from './lib/clientstate-normalizer';
+import { CompilationEnvironment } from './lib/compilation-env';
+import { CompilationQueue } from './lib/compilation-queue';
+import { CompilerFinder } from './lib/compiler-finder';
+import { policy as csp } from './lib/csp';
+import { initialiseWine } from './lib/exec';
+import { ShortLinkResolver } from './lib/google';
+import { CompileHandler } from './lib/handlers/compile';
+import * as healthCheck from './lib/handlers/health-check';
+import { NoScriptHandler } from './lib/handlers/noscript';
+import { RouteAPI } from './lib/handlers/route-api';
+import { SourceHandler } from './lib/handlers/source';
+import { languages as allLanguages } from './lib/languages';
+import { logger, logToPapertrail, suppressConsoleLog } from './lib/logger';
+import { ClientOptionsHandler } from './lib/options-handler';
+import * as props from './lib/properties';
+import { getShortenerTypeByKey } from './lib/shortener';
 import { sources } from './lib/sources';
+import { loadSponsorsFromString } from './lib/sponsors';
+import { getStorageTypeByKey } from './lib/storage';
+import * as utils from './lib/utils';
 
 // Parse arguments from command line 'node ./app.js args...'
 const opts = nopt({
@@ -267,9 +269,8 @@ let pugRequireHandler = () => {
 async function setupWebPackDevMiddleware(router) {
     logger.info('  using webpack dev middleware');
 
-    /* eslint-disable node/no-unsupported-features/es-syntax, node/no-unpublished-import */
+    /* eslint-disable node/no-unpublished-import */
     const webpackDevMiddleware = (await import('webpack-dev-middleware')).default;
-    // eslint-disable-next-line requirejs/no-js-extension
     const webpackConfig = (await import('./webpack.config.esm.js')).default;
     const webpack = (await import('webpack')).default;
     /* eslint-enable */

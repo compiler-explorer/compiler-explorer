@@ -22,13 +22,15 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import fs from 'fs-extra';
-import chai from 'chai';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { CompilerProps, fakeProps } from '../lib/properties';
-import { CompilationQueue } from '../lib/compilation-queue';
+
+import chai from 'chai';
+import fs from 'fs-extra';
+
 import { CompilationEnvironment } from '../lib/compilation-env';
+import { CompilationQueue } from '../lib/compilation-queue';
+import { CompilerProps, fakeProps } from '../lib/properties';
 
 export function makeCompilationEnvironment(options) {
     const compilerProps = new CompilerProps(options.languages, fakeProps(options.props || {}));

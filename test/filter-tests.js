@@ -22,11 +22,12 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { fs, resolvePathFromTestRoot } from './utils';
 import { AsmParser } from '../lib/asm-parser';
 import { SassAsmParser } from '../lib/asm-parser-sass';
 import { VcAsmParser } from '../lib/asm-parser-vc';
 import * as utils from '../lib/utils';
+
+import { fs, resolvePathFromTestRoot } from './utils';
 
 // eslint-disable-next-line no-unused-vars
 function bless(filename, output, filters) {
@@ -40,7 +41,6 @@ function dump(file) {
         console.log((i + 1) + ' : ' + JSON.stringify(element));
     }
 }
-
 
 // bless("filters-cases/mips5-square.asm", "filters-cases/mips5-square.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
 // bless("filters-cases/gcc-sum.asm", "filters-cases/gcc-sum.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
@@ -83,7 +83,6 @@ function processAsm(filename, filters) {
         parser = new AsmParser();
     return parser.process(file, filters);
 }
-
 
 const files = fs.readdirSync(resolvePathFromTestRoot('filters-cases'));
 const filesInCaseDir = files.map(x => resolvePathFromTestRoot('filters-cases', x));

@@ -22,8 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { fs, path, resolvePathFromTestRoot } from './utils';
 import * as cfg from '../lib/cfg';
+
+import { fs, path, resolvePathFromTestRoot } from './utils';
 
 async function DoCfgTest(cfgArg, filename) {
     const contents = await fs.readJson(filename, 'utf-8');

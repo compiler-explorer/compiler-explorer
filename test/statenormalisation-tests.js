@@ -22,9 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { fs } from './utils';
 import { ClientState } from '../lib/clientstate';
 import { ClientStateNormalizer } from '../lib/clientstate-normalizer';
+
+import { fs } from './utils';
 
 describe('Normalizing clientstate', () => {
     it('Should translate 2 compilers GL layout to clientstate', () => {

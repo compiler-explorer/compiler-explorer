@@ -39,7 +39,6 @@ describe('ASM CL parser', () => {
     });
 });
 
-
 describe('ASM regex base class', () => {
     it('should leave unfiltered lines alone', () => {
         const line = '     this    is    a line';
