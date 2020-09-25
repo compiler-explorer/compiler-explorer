@@ -14,7 +14,7 @@ Please be forgiving of that, and be ready to help in improving that.
 **Compiler Explorer** targets the latest [Node.js](https://nodejs.org/) LTS,
  so it's better if you do so as well when testing your changes locally.
 
-Nonetheless, it _should_ run in everything post-Node.js 11. [Contact us] if
+Nonetheless, it _should_ run in everything post-Node.js 12.18. [Contact us] if
  this is not the case for you.
 
 ## In brief
