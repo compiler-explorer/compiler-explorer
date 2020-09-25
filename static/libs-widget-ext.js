@@ -39,7 +39,7 @@ function LibsWidgetExt(langId, compiler, dropdownButton, state, onChangeCallback
         this.currentCompilerId = '_default_';
     }
     this.currentLangId = langId;
-    this.domRoot = $('#library-selection');
+    this.domRoot = $('#library-selection').clone(true);
     this.onChangeCallback = function () {
         this.updateButton();
         onChangeCallback();
@@ -73,6 +73,10 @@ function LibsWidgetExt(langId, compiler, dropdownButton, state, onChangeCallback
 
     this.domRoot.find('.lib-search-button').on('click', _.bind(function () {
         this.startSearching();
+    }, this));
+
+    this.dropdownButton.on('click', _.bind(function () {
+        this.domRoot.modal({});
     }, this));
 
     this.updateButton();
