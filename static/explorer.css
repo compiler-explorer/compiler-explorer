@@ -649,7 +649,6 @@ div.populararguments div.dropdown-menu {
 }
 
 #library-selection .modal-body {
-    min-height: 100%;
     overflow-y: scroll;
 }
 
