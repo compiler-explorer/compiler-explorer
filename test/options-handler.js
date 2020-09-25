@@ -56,6 +56,7 @@ const libProps = {
     'libs.fakelib.versions.noPaths.version': 'no paths',
     'libs.fakelib.versions.noPaths.path': '',
     'libs.fakelib.versions.noPaths.lookupversion': 'no-paths123',
+    'libs.fakelib.versions.noPaths.options' : '-DHELLO123 -DETC "--some thing with spaces"',
     'libs.fs.versions': 'std',
     'libs.fs.versions.std.version': 'std',
     'libs.fs.versions.std.staticliblink': 'c++fs:rt',
@@ -142,15 +143,20 @@ describe('Options handler', () => {
                 liblink: [],
                 staticliblink: [],
                 examples: ['abc', 'def'],
+                options: [],
                 versions: {
                     noPaths: {path: [], version: 'no paths', liblink: [], libpath: [], staticliblink: [], dependencies: [], alias: [],
-                        lookupversion: 'no-paths123'},
+                        lookupversion: 'no-paths123',
+                        options: [
+                            '-DHELLO123',
+                            '-DETC',
+                            '--some thing with spaces']},
                     onePath: {path: ['/dev/null'], version: 'one path', staticliblink: [], dependencies: [],
                         liblink: ['hello'],
-                        libpath: ['/lib/null'], alias: []},
+                        libpath: ['/lib/null'], alias: [], options: []},
                     twoPaths: {path: ['/dev/null', '/dev/urandom'], staticliblink: [], dependencies: [],
                         liblink: ['hello1', 'hello2'],
-                        libpath: ['/lib/null', '/lib/urandom'], version: 'two paths', alias: []},
+                        libpath: ['/lib/null', '/lib/urandom'], version: 'two paths', alias: [], options: []},
                 },
             },
             fs: {
@@ -161,6 +167,7 @@ describe('Options handler', () => {
                 liblink: [],
                 staticliblink: [],
                 examples: [],
+                options: [],
                 versions: {
                     std: {
                         libpath: [],
@@ -170,6 +177,7 @@ describe('Options handler', () => {
                         liblink: [],
                         staticliblink: ['c++fs', 'rt'],
                         dependencies: ['pthread'],
+                        options: [],
                     },
                 },
             },
@@ -181,6 +189,7 @@ describe('Options handler', () => {
                 liblink: [],
                 staticliblink: [],
                 examples: [],
+                options: [],
                 versions: {
                     trunk: {
                         libpath: [],
@@ -190,6 +199,7 @@ describe('Options handler', () => {
                         liblink: [],
                         staticliblink: ['someotherlib'],
                         dependencies: ['c++fs'],
+                        options: [],
                     },
                 },
             },
