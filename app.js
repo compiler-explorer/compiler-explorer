@@ -44,6 +44,8 @@ const nopt = require('nopt'),
     Sentry = require('@sentry/node'),
     {logger, logToPapertrail, suppressConsoleLog} = require('./lib/logger'),
     utils = require('./lib/utils'),
+    sources = require('./lib/sources'),
+    getShortenerTypeByKey = require('./lib/shortener').getShortenerTypeByKey,
     initialiseWine = require('./lib/exec').initialiseWine,
     RouteAPI = require('./lib/handlers/route-api'),
     NoScriptHandler = require('./lib/handlers/noscript');
@@ -296,13 +298,6 @@ function setupStaticMiddleware(router) {
     };
 }
 
-async function loadSources() {
-    const sourcesDir = 'lib/sources';
-    return (await fs.readdir(sourcesDir))
-        .filter(file => file.match(/.*\.js$/))
-        .map(file => require('./' + path.join(sourcesDir, file)));
-}
-
 function shouldRedactRequestData(data) {
     try {
         const parsed = JSON.parse(data);
@@ -396,20 +391,19 @@ const awsProps = props.propsFor('aws');
 async function main() {
     await aws.initConfig(awsProps);
     await initialiseWine();
-    const fileSources = await loadSources();
 
     const ClientOptionsHandler = require('./lib/options-handler');
-    const clientOptionsHandler = new ClientOptionsHandler(fileSources, compilerProps, defArgs);
+    const clientOptionsHandler = new ClientOptionsHandler(sources, compilerProps, defArgs);
     const CompilationQueue = require('./lib/compilation-queue');
     const compilationQueue = CompilationQueue.fromProps(compilerProps.ceProps);
     const CompilationEnvironment = require('./lib/compilation-env');
     const compilationEnvironment = new CompilationEnvironment(compilerProps, compilationQueue, defArgs.doCache);
     const CompileHandler = require('./lib/handlers/compile').Handler;
     const compileHandler = new CompileHandler(compilationEnvironment, awsProps);
-    const StorageHandler = require('./lib/storage/base');
-    const storageHandler = StorageHandler.storageFactory(storageSolution, compilerProps, awsProps, httpRoot);
+    const storageType = require('./lib/storage').getStorageTypeByKey(storageSolution);
+    const storageHandler = new storageType(httpRoot, compilerProps, awsProps);
     const SourceHandler = require('./lib/handlers/source').Handler;
-    const sourceHandler = new SourceHandler(fileSources, staticHeaders);
+    const sourceHandler = new SourceHandler(sources, staticHeaders);
     const CompilerFinder = require('./lib/compiler-finder');
     const compilerFinder = new CompilerFinder(compileHandler, compilerProps, awsProps, defArgs, clientOptionsHandler);
     const sponsors = require('./lib/sponsors');
@@ -589,7 +583,7 @@ async function main() {
     // Based on combined format, but: GDPR compliant IP, no timestamp & no unused fields for our usecase
     const morganFormat = isDevMode() ? 'dev' : ':gdpr_ip ":method :url" :status';
 
-    const shortenerType = require(`./lib/shortener/${clientOptionsHandler.options.urlShortenService}`);
+    const shortenerType = getShortenerTypeByKey(clientOptionsHandler.options.urlShortenService);
     const shortener = new shortenerType(storageHandler);
 
     /*
