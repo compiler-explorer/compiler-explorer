@@ -22,8 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { path } from './utils';
 import { CompilerDropinTool } from '../lib/tooling/compiler-dropin-tool';
+
+import { path } from './utils';
 
 describe('CompilerDropInTool', () => {
     it('Should support llvm based compilers', () => {
