@@ -1,5 +1,5 @@
 //    Copyright (c) 2015, Thomas E. Dunn
-//    Copyright (c) 2017, Matt Godbolt
+//    Copyright (c) 2017, Compiler Explorer Authors
 //    Copyright (c) 2018, Forschungzentrum Juelich GmbH
 //                        Juelich Supercomputing Centre
 //    All rights reserved.
