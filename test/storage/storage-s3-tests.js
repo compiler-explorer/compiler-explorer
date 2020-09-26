@@ -22,14 +22,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-const chai = require('chai'),
-    chaiAsPromised = require('chai-as-promised'),
-    properties = require('../../lib/properties'),
-    s3s = require('../../lib/storage/s3'),
-    AWS = require('aws-sdk-mock');
+import AWS from 'aws-sdk-mock';
 
-chai.use(chaiAsPromised);
-const should = chai.should();
+import * as properties from '../../lib/properties';
+import { StorageS3 } from '../../lib/storage';
+import { should } from '../utils';
 
 // NB!!! Anything using mocked AWS calls needs to be initialised in the `it(...)` block! If you initialise it in the
 // `describe()` top level code then it won't be mocked in time. We only mock and de-mock before/after else we end up
@@ -54,10 +51,6 @@ function mockerise(service, method) {
     return handlers;
 }
 
-
-////////////////
-
-
 describe('Find unique subhash tests', () => {
     const dynamoDbQueryHandlers = mockerise('DynamoDB', 'query');
     const compilerProps = properties.fakeProps({});
@@ -69,7 +62,7 @@ describe('Find unique subhash tests', () => {
         storageDynamoTable: 'table',
     });
     it('works when empty', () => {
-        const storage = new s3s(httpRootDir, compilerProps, awsProps);
+        const storage = new StorageS3(httpRootDir, compilerProps, awsProps);
         dynamoDbQueryHandlers.push((q) => {
             q.TableName.should.equal('table');
             return {};
@@ -83,7 +76,7 @@ describe('Find unique subhash tests', () => {
         );
     });
     it('works when not empty', () => {
-        const storage = new s3s(httpRootDir, compilerProps, awsProps);
+        const storage = new StorageS3(httpRootDir, compilerProps, awsProps);
         dynamoDbQueryHandlers.push(() => {
             return {
                 Items: [
@@ -103,7 +96,7 @@ describe('Find unique subhash tests', () => {
         );
     });
     it('works when there\' a collision', () => {
-        const storage = new s3s(httpRootDir, compilerProps, awsProps);
+        const storage = new StorageS3(httpRootDir, compilerProps, awsProps);
         dynamoDbQueryHandlers.push(() => {
             return {
                 Items: [
@@ -123,7 +116,7 @@ describe('Find unique subhash tests', () => {
         );
     });
     it('finds an existing match', () => {
-        const storage = new s3s(httpRootDir, compilerProps, awsProps);
+        const storage = new StorageS3(httpRootDir, compilerProps, awsProps);
         dynamoDbQueryHandlers.push(() => {
             return {
                 Items: [
@@ -144,7 +137,6 @@ describe('Find unique subhash tests', () => {
     });
 });
 
-
 describe('Stores to s3', () => {
     const dynamoDbPutItemHandlers = mockerise('DynamoDB', 'putItem');
     const s3PutObjectHandlers = mockerise('S3', 'putObject');
@@ -157,7 +149,7 @@ describe('Stores to s3', () => {
         storageDynamoTable: 'table',
     });
     it('and works ok', () => {
-        const storage = new s3s(httpRootDir, compilerProps, awsProps);
+        const storage = new StorageS3(httpRootDir, compilerProps, awsProps);
         const object = {
             prefix: 'ABCDEF',
             uniqueSubHash: 'ABCDEFG',

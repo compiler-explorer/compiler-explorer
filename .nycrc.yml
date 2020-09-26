@@ -8,3 +8,5 @@ exclude:
 report-dir: ./out/coverage
 reporter:
   - lcov
+require:
+  - esm

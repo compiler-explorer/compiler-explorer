@@ -22,9 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-const cfg = require('../lib/cfg'),
-    fs = require('fs-extra'),
-    path = require('path');
+import * as cfg from '../lib/cfg';
+
+import { fs, path, resolvePathFromTestRoot } from './utils';
 
 async function DoCfgTest(cfgArg, filename) {
     const contents = await fs.readJson(filename, 'utf-8');
@@ -33,7 +33,7 @@ async function DoCfgTest(cfgArg, filename) {
 }
 
 describe('Cfg test cases', () => {
-    const testcasespath = __dirname + '/cfg-cases';
+    const testcasespath = resolvePathFromTestRoot('cfg-cases');
 
     /*
      * NB: this readdir must *NOT* be async

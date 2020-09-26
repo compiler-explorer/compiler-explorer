@@ -1,15 +1,15 @@
 ---
 root: true
 plugins:
+- import
 - jsdoc
 - node
 - promise
-- requirejs
 - sonarjs
 - unicorn
 extends:
 - eslint:recommended
-- plugin:requirejs/recommended
+- plugin:import/recommended
 - plugin:node/recommended
 - plugin:unicorn/recommended
 env:
@@ -26,6 +26,23 @@ rules:
   eqeqeq:
   - error
   - smart
+  import/extensions: error
+  import/first: error
+  import/newline-after-import: error
+  import/no-absolute-path: error
+  import/no-cycle: error
+  import/no-default-export: warn
+  import/no-deprecated: warn
+  import/no-mutable-exports: error
+  import/no-self-import: error
+  import/no-useless-path-segments: error
+  import/no-webpack-loader-syntax: error
+  import/order:
+  - warn
+  - alphabetize:
+      order: asc
+      caseInsensitive: true
+    newlines-between: always
   indent:
   - error
   - 4
@@ -38,6 +55,7 @@ rules:
   - error
   - 50
   no-control-regex: 0
+  no-duplicate-imports: error
   no-useless-call: error
   no-useless-computed-key: error
   no-useless-concat: error
@@ -74,8 +92,13 @@ rules:
   jsdoc/newline-after-description: warn
   jsdoc/require-hyphen-before-param-description: warn
   jsdoc/valid-types: warn
+  no-multiple-empty-lines:
+  - warn
+  - max: 1
+    maxBOF: 0
+    maxEOF: 0
   no-process-exit: off
-  node/no-unpublished-require: off
+  node/no-unsupported-features/es-syntax: off
   node/shebang: off
   promise/catch-or-return: error
   promise/no-new-statics: error
@@ -88,6 +111,10 @@ rules:
   sonarjs/prefer-immediate-return: error
   sonarjs/prefer-object-literal: error
   sonarjs/prefer-single-boolean-return: error
+  sort-imports:
+  - warn
+  - ignoreCase: true
+    ignoreDeclarationSort: true
   unicorn/catch-error-name: off
   unicorn/consistent-function-scoping: off
   unicorn/no-fn-reference-in-iterator: off
@@ -101,6 +128,7 @@ rules:
   unicorn/prefer-string-slice: off
   unicorn/prevent-abbreviations: off
 parserOptions:
-  ecmaVersion: 2018
+  sourceType: module
+  ecmaVersion: 2020
 globals:
   BigInt: true

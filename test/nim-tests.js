@@ -22,13 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-const chai = require('chai');
-const chaiAsPromised = require('chai-as-promised');
-const NimCompiler = require('../lib/compilers/nim');
-const {makeCompilationEnvironment} = require('./utils');
+import { NimCompiler } from '../lib/compilers/nim';
 
-chai.use(chaiAsPromised);
-chai.should();
+import { makeCompilationEnvironment, should } from './utils';
 
 const languages = {
     nim: {id: 'nim'},
@@ -72,7 +68,8 @@ describe('Nim', () => {
         for (const lang of ['cpp', 'c', 'objc']) {
             compiler.getCacheFile([lang], input, folder).should.equal(expected[lang]);
         }
-        chai.assert.equal(compiler.getCacheFile([], input, folder), null);
-        chai.assert.equal(compiler.getCacheFile(['js'], input, folder), null);
+
+        should.equal(compiler.getCacheFile([], input, folder), null);
+        should.equal(compiler.getCacheFile(['js'], input, folder), null);
     });
 });

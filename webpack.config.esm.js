@@ -1,12 +1,16 @@
-const path = require('path'),
-    webpack = require('webpack'),
-    CopyWebpackPlugin = require('copy-webpack-plugin'),
-    MiniCssExtractPlugin = require('mini-css-extract-plugin'),
-    ManifestPlugin = require('webpack-manifest-plugin'),
-    TerserPlugin = require('terser-webpack-plugin'),
-    OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin'),
-    MonacoEditorWebpackPlugin = require('monaco-editor-webpack-plugin');
+/* eslint-disable node/no-unpublished-import */
+import path from 'path';
+import { fileURLToPath } from 'url';
 
+import CopyWebpackPlugin from 'copy-webpack-plugin';
+import MiniCssExtractPlugin from 'mini-css-extract-plugin';
+import MonacoEditorWebpackPlugin from 'monaco-editor-webpack-plugin';
+import OptimizeCssAssetsPlugin from 'optimize-css-assets-webpack-plugin';
+import TerserPlugin from 'terser-webpack-plugin';
+import webpack from 'webpack';
+import ManifestPlugin from 'webpack-manifest-plugin';
+
+const __dirname = path.resolve(path.dirname(fileURLToPath(import.meta.url)));
 const isDev = process.env.NODE_ENV !== 'production';
 
 const distPath = path.resolve(__dirname, 'out', 'dist');
@@ -40,7 +44,8 @@ const plugins = [
     }),
 ];
 
-module.exports = {
+// eslint-disable-next-line import/no-default-export
+export default {
     mode: isDev ? 'development' : 'production',
     entry: {
         main: './static/main.js',
