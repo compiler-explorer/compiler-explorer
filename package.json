@@ -32,6 +32,7 @@
     "deep-equal-in-any-order": "^1.0.27",
     "es6-promise": "^4.2.8",
     "es6-shim": "^0.35.5",
+    "eslint-plugin-header": "^3.1.0",
     "esm": "^3.2.25",
     "express": "^4.17.1",
     "file-saver": "^2.0.2",

@@ -8,6 +8,7 @@ plugins:
 - sonarjs
 - unicorn
 extends:
+- ./.eslint-license-header.yml
 - eslint:recommended
 - plugin:import/recommended
 - plugin:node/recommended
