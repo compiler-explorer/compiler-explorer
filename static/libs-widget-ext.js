@@ -51,9 +51,8 @@ function LibsWidgetExt(langId, compiler, dropdownButton, state, onChangeCallback
             this.markLibrary(lib.id, lib.version, true);
         }
     }, this));
-    this.showSelectedLibs();
-    this.showSelectedLibsAsSearchResults();
-    this.showFavorites();
+
+    this.fullRefresh();
 
     var searchInput = this.domRoot.find('.lib-search-input');
 
@@ -79,6 +78,12 @@ function LibsWidgetExt(langId, compiler, dropdownButton, state, onChangeCallback
 
     this.updateButton();
 }
+
+LibsWidgetExt.prototype.fullRefresh = function () {
+    this.showSelectedLibs();
+    this.showSelectedLibsAsSearchResults();
+    this.showFavorites();
+};
 
 LibsWidgetExt.prototype.updateButton = function () {
     var selectedLibs = this.get();
@@ -403,7 +408,8 @@ LibsWidgetExt.prototype.setNewLangId = function (langId, compilerId, possibleLib
         this.markLibrary(lib, version, true);
     }, this));
 
-    this.showSelectedLibs();
+    this.fullRefresh();
+    this.onChangeCallback();
 };
 
 LibsWidgetExt.prototype.getVersionOrAlias = function (name, version) {
