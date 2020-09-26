@@ -22,11 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-const chai = require('chai'),
-    sinon = require('sinon'),
-    {StorageBase} = require('../../lib/storage/base');
+import sinon from 'sinon';
 
-const should = chai.should();
+import { StorageBase } from '../../lib/storage';
+import { should } from '../utils';
 
 describe('Hash tests', () => {
     afterEach(() => sinon.restore());

@@ -22,15 +22,12 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-const chai = require('chai'),
-    LabelReconstructor = require('../lib/pe32-support').labelReconstructor;
-
-chai.should();
+import { PELabelReconstructor } from '../lib/pe32-support';
 
 describe('Basic reconstructions', function () {
     it('No lines', function () {
         const lines = [];
-        const reconstructor = new LabelReconstructor(lines, false, false);
+        const reconstructor = new PELabelReconstructor(lines, false, false);
         reconstructor.asmLines.length.should.equal(0);
     });
 });

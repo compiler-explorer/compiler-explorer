@@ -22,13 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-const chai = require('chai'),
-    chaiAsPromised = require('chai-as-promised'),
-    nock = require('nock'),
-    google = require('../lib/google');
+import nock from 'nock';
 
-chai.use(chaiAsPromised);
-chai.should();
+import * as google from '../lib/google';
 
 const googlDomain = 'https://goo.gl';
 const shortUrl = '/short';

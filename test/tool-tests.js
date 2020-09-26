@@ -22,12 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-const
-    path = require('path'),
-    chai = require('chai'),
-    CompilerDropinTool = require('../lib/tooling/compiler-dropin-tool');
-
-chai.should();
+import { path } from './utils';
+import { CompilerDropinTool } from '../lib/tooling/compiler-dropin-tool';
 
 describe('CompilerDropInTool', () => {
     it('Should support llvm based compilers', () => {
