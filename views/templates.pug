@@ -93,7 +93,7 @@
         .dropdown-menu
           include options-filters.pug
       .btn-group.btn-group-sm(role="group" aria-label="Compiler additions")
-        button.btn.btn-sm.btn-light.show-libs.dropdown-toggle(title="Include libs" aria-label="Toggle libraries dropdown" aria-pressed="false" aria-haspopup="true")
+        button.btn.btn-sm.btn-light.show-libs(title="Include libs" aria-label="Toggle libraries dropdown")
           span.fas.fa-book
           span.hideable &nbsp;Libraries
       .btn-group.btn-group-sm(role="group")
@@ -153,7 +153,7 @@
   #executor
     .top-bar.btn-toolbar.bg-light(role="toolbar")
       include font-size
-        button.btn.btn-sm.btn-light.show-libs.dropdown-toggle(title="Include libs" aria-label="Toggle libraries dropdown" aria-pressed="false" aria-haspopup="true")
+        button.btn.btn-sm.btn-light.show-libs(title="Include libs" aria-label="Toggle libraries dropdown")
           span.fas.fa-book
           span.hideable &nbsp;Libraries
       button.btn.btn-sm.btn-light.toggle-compilation.active
@@ -387,3 +387,31 @@
   #share-item
     a.share-item(href="javascript:;" rel="noopener noreferrer" target="_blank")
       span.share-item-text
+
+  #lib-selected-tpl
+    div
+      button.btn.btn-md.lib-name-and-version &nbsp;
+      button.btn.btn-sm.lib-remove
+        span.fas.fa-trash
+
+  #lib-favorite-tpl
+    div
+      button.btn.btn-md.lib-name-and-version &nbsp;
+
+  #lib-search-result-tpl
+    .card
+      .card-header
+        span
+          b.lib-name &nbsp;
+        span.lib-version
+          select.custom-select.custom-select-sm.lib-version-select
+            option -
+      .card-body
+        p.lib-description &nbsp;
+        .lib-examples
+        div
+          span.lib-website
+            a.lib-website-link(href='#' target='_blank' rel='noopener') Website
+          span.lib-fav
+            button.btn.btn-sm.lib-fav-button
+              span.lib-fav-btn-icon.far.fa-star

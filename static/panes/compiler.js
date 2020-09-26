@@ -37,7 +37,7 @@ var monaco = require('monaco-editor');
 var Alert = require('../alert');
 var bigInt = require('big-integer');
 var local = require('../local');
-var Libraries = require('../libs-widget');
+var Libraries = require('../libs-widget-ext');
 var codeLensHandler = require('../codelens-handler');
 var monacoConfig = require('../monaco-config');
 require('../modes/asm-mode');

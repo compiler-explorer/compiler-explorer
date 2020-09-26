@@ -42,6 +42,7 @@ const libProps = {
     'libs.fakelib.description': 'Its is a real, fake lib!',
     'libs.fakelib.versions': 'onePath:twoPaths:noPaths',
     'libs.fakelib.url': 'https://godbolt.org',
+    'libs.fakelib.examples': 'abc:def',
     'libs.fakelib.versions.onePath.version': 'one path',
     'libs.fakelib.versions.onePath.path': '/dev/null',
     'libs.fakelib.versions.onePath.libpath': '/lib/null',
@@ -139,6 +140,7 @@ describe('Options handler', () => {
                 dependencies: [],
                 liblink: [],
                 staticliblink: [],
+                examples: ['abc', 'def'],
                 options: [],
                 versions: {
                     noPaths: {path: [], version: 'no paths', liblink: [], libpath: [], staticliblink: [], dependencies: [], alias: [],
@@ -162,6 +164,7 @@ describe('Options handler', () => {
                 dependencies: [],
                 liblink: [],
                 staticliblink: [],
+                examples: [],
                 options: [],
                 versions: {
                     std: {
@@ -183,6 +186,7 @@ describe('Options handler', () => {
                 dependencies: [],
                 liblink: [],
                 staticliblink: [],
+                examples: [],
                 options: [],
                 versions: {
                     trunk: {

@@ -647,3 +647,62 @@ div.populararguments div.dropdown-menu {
 .ces-item-description {
     margin: auto;
 }
+
+#library-selection .modal-body {
+    overflow-y: scroll;
+}
+
+#library-selection .lib-search-button {
+    margin-left: 10px;
+}
+
+#library-selection .libs-how-to-use {
+    font-size: smaller;
+}
+
+#library-selection .libs-selected-col {
+    padding: 0 15px 0 0;
+    min-width: 250px;
+    max-width: 250px;
+}
+
+#library-selection .libs-results-col {
+    padding: 0 0 0 0;
+    min-width: 450px;
+    max-width: 450px;
+}
+
+#library-selection .lib-results-items .card {
+    margin-bottom: 3px;
+}
+
+#library-selection.mobile .lib-results-items .card-body {
+    display: none;
+}
+
+#library-selection.mobile .libs-results-col {
+    min-width: 250px;
+    max-width: 450px;
+}
+
+#library-selection .libs-results-col span.lib-version {
+    float: right;
+}
+
+#library-selection .libs-results-col span.lib-website {
+    float: left;
+}
+
+#library-selection .libs-results-col span.lib-fav {
+    float: right;
+}
+
+#library-selection .libs-favorites-col {
+    padding: 0 0 0 15px;
+    min-width: 200px;
+    max-width: 200px;
+}
+
+#library-selection.mobile .libs-favorites-col {
+    display: none;
+}
