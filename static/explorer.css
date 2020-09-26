@@ -656,6 +656,10 @@ div.populararguments div.dropdown-menu {
     margin-left: 10px;
 }
 
+#library-selection .libs-how-to-use {
+    font-size: smaller;
+}
+
 #library-selection .libs-selected-col {
     padding: 0 15px 0 0;
     min-width: 250px;
