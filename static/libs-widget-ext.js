@@ -299,6 +299,12 @@ LibsWidgetExt.prototype.startSearching = function () {
 
     var searchResults = this.getAndEmptySearchResults();
 
+    if (Object.keys(this.availableLibs[this.currentLangId][this.currentCompilerId]).length === 0) {
+        var nolibsMessage = $($('#libs-dropdown').children()[0].cloneNode(true));
+        searchResults.append(nolibsMessage);
+        return;
+    }
+
     _.each(this.availableLibs[this.currentLangId][this.currentCompilerId], _.bind(function (library, libId) {
         if (library.versions && library.versions.autodetect) return;
 
@@ -333,6 +339,12 @@ LibsWidgetExt.prototype.showSelectedLibs = function () {
 
 LibsWidgetExt.prototype.showSelectedLibsAsSearchResults = function () {
     var searchResults = this.getAndEmptySearchResults();
+
+    if (Object.keys(this.availableLibs[this.currentLangId][this.currentCompilerId]).length === 0) {
+        var nolibsMessage = $($('#libs-dropdown').children()[0].cloneNode(true));
+        searchResults.append(nolibsMessage);
+        return;
+    }
 
     _.each(this.availableLibs[this.currentLangId][this.currentCompilerId], _.bind(function (library, libId) {
         if (library.versions && library.versions.autodetect) return;
