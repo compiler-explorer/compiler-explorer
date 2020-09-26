@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import { path } from './utils';
 import { CompilerDropinTool } from '../lib/tooling/compiler-dropin-tool';
 
 describe('CompilerDropInTool', () => {
@@ -65,8 +66,8 @@ describe('CompilerDropInTool', () => {
         const orderedArgs = tool.getOrderedArguments(compilationInfo, includeflags, [], args, sourcefile);
         orderedArgs.should.deep.equal(
             [
-                '--gcc-toolchain=/opt/compiler-explorer/gcc-8.0',
-                '--gcc-toolchain=/opt/compiler-explorer/gcc-8.0',
+                '--gcc-toolchain=' + path.resolve('/opt/compiler-explorer/gcc-8.0'),
+                '--gcc-toolchain=' + path.resolve('/opt/compiler-explorer/gcc-8.0'),
             ],
         );
     });
@@ -106,8 +107,8 @@ describe('CompilerDropInTool', () => {
         const orderedArgs = tool.getOrderedArguments(compilationInfo, includeflags, [], args, sourcefile);
         orderedArgs.should.deep.equal(
             [
-                '--gcc-toolchain=/opt/compiler-explorer/gcc-8.2.0',
-                '--gcc-toolchain=/opt/compiler-explorer/gcc-8.2.0',
+                '--gcc-toolchain=' + path.resolve('/opt/compiler-explorer/gcc-8.2.0'),
+                '--gcc-toolchain=' + path.resolve('/opt/compiler-explorer/gcc-8.2.0'),
             ],
         );
     });
@@ -177,8 +178,8 @@ describe('CompilerDropInTool', () => {
         const orderedArgs = tool.getOrderedArguments(compilationInfo, includeflags, libOptions, args, sourcefile);
         orderedArgs.should.deep.equal(
             [
-                '--gcc-toolchain=/opt/compiler-explorer/gcc-8.2.0',
-                '--gcc-toolchain=/opt/compiler-explorer/gcc-8.2.0',
+                '--gcc-toolchain=' + path.resolve('/opt/compiler-explorer/gcc-8.2.0'),
+                '--gcc-toolchain=' + path.resolve('/opt/compiler-explorer/gcc-8.2.0'),
                 '-DMYLIBDEF',
                 '-pthread',
             ],
