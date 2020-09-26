@@ -207,6 +207,8 @@ LibsWidgetExt.prototype.conjureUpExamples = function (result, lib) {
             examplesList.append(li);
             var exampleLink = $('<a>Example</a>');
             exampleLink.attr('href', '/z/' + exampleId);
+            exampleLink.attr('target', '_blank');
+            exampleLink.attr('rel', 'noopener');
             li.append(exampleLink);
         });
 
