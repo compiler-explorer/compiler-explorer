@@ -5,6 +5,8 @@
       <option name="USE_DOUBLE_QUOTES" value="false" />
       <option name="FORCE_QUOTE_STYlE" value="true" />
       <option name="ENFORCE_TRAILING_COMMA" value="WhenMultiline" />
+      <option name="SPACES_WITHIN_IMPORTS" value="true" />
+      <option name="IMPORT_SORT_MODULE_NAME" value="true" />
     </JSCodeStyleSettings>
     <MarkdownNavigatorCodeStyleSettings>
       <option name="RIGHT_MARGIN" value="72" />
@@ -14,6 +16,10 @@
         <option name="INDENT_SIZE" value="2" />
         <option name="TAB_SIZE" value="2" />
       </indentOptions>
+    </codeStyleSettings>
+    <codeStyleSettings language="JavaScript">
+      <option name="ALIGN_MULTILINE_PARAMETERS" value="false" />
+      <option name="ALIGN_MULTILINE_FOR" value="false" />
     </codeStyleSettings>
   </code_scheme>
 </component>

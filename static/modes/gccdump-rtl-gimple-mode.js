@@ -1,6 +1,3 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
-// Released under the MIT license
-
 // Copyright (c) 2017, Marc Poulhiès - Kalray Inc.
 // All rights reserved.
 //
@@ -24,6 +21,9 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
+
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Released under the MIT license
 
 // this is mostly based on 'mylang' example from https://microsoft.github.io/monaco-editor/monarch.html
 

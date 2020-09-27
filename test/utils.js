@@ -22,12 +22,35 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-const {CompilerProps, fakeProps} = require('../lib/properties');
-const CompilationQueue = require('../lib/compilation-queue');
-const CompilationEnvironment = require('../lib/compilation-env');
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-module.exports.makeCompilationEnvironment = (options) => {
+import chai from 'chai';
+import fs from 'fs-extra';
+
+import { CompilationEnvironment } from '../lib/compilation-env';
+import { CompilationQueue } from '../lib/compilation-queue';
+import { CompilerProps, fakeProps } from '../lib/properties';
+
+export function makeCompilationEnvironment(options) {
     const compilerProps = new CompilerProps(options.languages, fakeProps(options.props || {}));
     const compilationQueue = options.queue || new CompilationQueue(options.concurrency || 1, options.timeout);
     return new CompilationEnvironment(compilerProps, compilationQueue, options.doCache);
+}
+
+export const should = chai.should();
+
+/***
+ * Absolute path to the root of the tests
+ */
+export const TEST_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)));
+
+export function resolvePathFromTestRoot(...args) {
+    return path.resolve(TEST_ROOT, ...args);
+}
+
+export {
+    fs,
+    chai,
+    path,
 };

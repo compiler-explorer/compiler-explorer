@@ -1,4 +1,4 @@
-// Copyright (c) 2017, Patrick Quist
+// Copyright (c) 2017, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,16 +22,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-const chai = require('chai');
-const chaiAsPromised = require('chai-as-promised');
-const PascalDemangler = require('../lib/demangler-pascal').Demangler;
-const PascalCompiler = require('../lib/compilers/pascal');
-const fs = require('fs-extra');
-const utils = require('../lib/utils');
-const {makeCompilationEnvironment} = require('./utils');
+import { FPCCompiler } from '../lib/compilers/pascal';
+import { PascalDemangler } from '../lib/demangler';
+import * as utils from '../lib/utils';
 
-chai.use(chaiAsPromised);
-chai.should();
+import { fs, makeCompilationEnvironment } from './utils';
 
 const languages = {
     pascal: {id: 'pascal'},
@@ -48,7 +43,7 @@ describe('Pascal', () => {
             lang: languages.pascal.id,
         };
 
-        compiler = new PascalCompiler(info, ce);
+        compiler = new FPCCompiler(info, ce);
     });
 
     it('Basic compiler setup', () => {
@@ -306,8 +301,8 @@ describe('Pascal', () => {
 
     describe('Pascal ASM line number injection', function () {
         before(() => {
-            compiler.demanglerClass = require('../lib/demangler-pascal').Demangler;
-            compiler.demangler = new compiler.demanglerClass(null, compiler);
+            compiler.demanglerClass = PascalDemangler;
+            compiler.demangler = new PascalDemangler(null, compiler);
         });
 
         it('Should have line numbering', function () {
@@ -333,7 +328,7 @@ describe('Pascal', () => {
         it('Should filter out most of the runtime', function () {
             return new Promise(function (resolve) {
                 fs.readFile('test/pascal/objdump-example.s', function (err, buffer) {
-                    const output = PascalCompiler.preProcessBinaryAsm(buffer.toString());
+                    const output = FPCCompiler.preProcessBinaryAsm(buffer.toString());
                     resolve(Promise.all([
                         utils.splitLines(output).length.should.be.below(500),
                         output.should.not.include('fpc_zeromem():'),

@@ -31,7 +31,7 @@ var FontScale = require('../fontscale');
 var options = require('../options');
 var Alert = require('../alert');
 var local = require('../local');
-var Libraries = require('../libs-widget');
+var Libraries = require('../libs-widget-ext');
 var AnsiToHtml = require('../ansi-to-html');
 require('../modes/asm-mode');
 require('../modes/ptx-mode');

@@ -1,38 +1,38 @@
-// Copyright (c) 2016, Matt Godbolt
+// Copyright (c) 2016, Compiler Explorer Authors
 // All rights reserved.
-// 
-// Redistribution and use in source and binary forms, with or without 
+//
+// Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
-// 
-//     * Redistributions of source code must retain the above copyright notice, 
+//
+//     * Redistributions of source code must retain the above copyright notice,
 //       this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above copyright 
-//       notice, this list of conditions and the following disclaimer in the 
+//     * Redistributions in binary form must reproduce the above copyright
+//       notice, this list of conditions and the following disclaimer in the
 //       documentation and/or other materials provided with the distribution.
-// 
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE 
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ,
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-const fs = require('fs-extra');
-const AsmParser = require('../lib/asm-parser');
-const AsmParserSass = require('../lib/asm-parser-sass');
-const AsmParserVC = require('../lib/asm-parser-vc');
-const utils = require('../lib/utils');
-require('chai').should();
+import { AsmParser } from '../lib/asm-parser';
+import { SassAsmParser } from '../lib/asm-parser-sass';
+import { VcAsmParser } from '../lib/asm-parser-vc';
+import * as utils from '../lib/utils';
+
+import { fs, resolvePathFromTestRoot } from './utils';
 
 // eslint-disable-next-line no-unused-vars
 function bless(filename, output, filters) {
-    const result = processAsm(__dirname + '/' + filename, filters);
-    fs.writeFileSync(__dirname + '/' + output, JSON.stringify(result, null, 2));
+    const result = processAsm(resolvePathFromTestRoot(filename), filters);
+    fs.writeFileSync(resolvePathFromTestRoot(output), JSON.stringify(result, null, 2));
 }
 
 // eslint-disable-next-line no-unused-vars
@@ -41,7 +41,6 @@ function dump(file) {
         console.log((i + 1) + ' : ' + JSON.stringify(element));
     }
 }
-
 
 // bless("filters-cases/mips5-square.asm", "filters-cases/mips5-square.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
 // bless("filters-cases/gcc-sum.asm", "filters-cases/gcc-sum.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
@@ -69,7 +68,7 @@ function dump(file) {
 // bless("filters-cases/bug-2164b.asm", "filters-cases/bug-2164b.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
 // describe('A test', function() {
 //     it('should work', function(){
-//         console.log(processAsm(__dirname + '/filters-cases/6502-square.asm', {directives: true, labels: true, commentOnly: true}));
+//         console.log(processAsm(resolvePathFromTestRoot('filters-cases/6502-square.asm'), {directives: true, labels: true, commentOnly: true}));
 //     });
 // });
 
@@ -77,17 +76,16 @@ function processAsm(filename, filters) {
     const file = fs.readFileSync(filename, 'utf-8');
     let parser;
     if (file.includes('Microsoft'))
-        parser = new AsmParserVC();
+        parser = new VcAsmParser();
     else if (filename.includes('sass-'))
-        parser = new AsmParserSass();
+        parser = new SassAsmParser();
     else
         parser = new AsmParser();
     return parser.process(file, filters);
 }
 
-
-const files = fs.readdirSync(__dirname + '/filters-cases');
-const filesInCaseDir = files.map(x => 'filters-cases/' + x);
+const files = fs.readdirSync(resolvePathFromTestRoot('filters-cases'));
+const filesInCaseDir = files.map(x => resolvePathFromTestRoot('filters-cases', x));
 
 const cases = filesInCaseDir.filter(x => x.endsWith('.asm'));
 
@@ -98,15 +96,15 @@ function testFilter(filename, suffix, filters) {
     let file;
 
     if (json) {
-        file = fs.readFileSync(__dirname + '/' + expected + '.json', 'utf-8');
+        file = fs.readFileSync(resolvePathFromTestRoot(expected + '.json'), 'utf-8');
     }
     else if (filesInCaseDir.includes(expected)) {
-        file = fs.readFileSync(__dirname + '/' + expected, 'utf-8');
+        file = fs.readFileSync(resolvePathFromTestRoot(expected), 'utf-8');
     }
     else {
         return;
     }
-    const result = processAsm(__dirname + '/' + filename, filters);
+    const result = processAsm(resolvePathFromTestRoot(filename), filters);
 
     if (json) {
         file = JSON.parse(file);

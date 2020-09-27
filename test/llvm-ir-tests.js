@@ -22,15 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-const chai = require('chai');
-const chaiAsPromised = require('chai-as-promised');
-const LLCCompiler = require('../lib/compilers/llc');
-const OPTCompiler = require('../lib/compilers/opt');
-const {makeCompilationEnvironment} = require('./utils');
+import { LLCCompiler } from '../lib/compilers/llc';
+import { OptCompiler } from '../lib/compilers/opt';
 
-chai.use(chaiAsPromised);
-chai.should();
-
+import { makeCompilationEnvironment } from './utils';
 
 const languages = {
     llvm: {id: 'llvm'},
@@ -58,7 +53,6 @@ describe('LLVM IR Compiler', () => {
     before(() => {
         compiler = createCompiler(LLCCompiler);
     });
-
 
     it('llc options for at&t assembly', function () {
         compiler.optionsForFilter({
@@ -89,7 +83,7 @@ describe('LLVM IR Compiler', () => {
     });
 
     it('opt options', function () {
-        const compiler = createCompiler(OPTCompiler);
+        const compiler = createCompiler(OptCompiler);
 
         compiler.optionsForFilter({
             intel: false,

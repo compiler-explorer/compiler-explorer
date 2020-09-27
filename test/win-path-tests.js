@@ -1,4 +1,4 @@
-// Copyright (c) 2017, Patrick Quist
+// Copyright (c) 2017, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,16 +22,12 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-const chai = require('chai');
-const chaiAsPromised = require('chai-as-promised');
-const child_process = require('child_process');
+import child_process from 'child_process';
 
-const WslCL = require('../lib/compilers/wsl-vc');
-const WineCL = require('../lib/compilers/wine-vc');
-const {makeCompilationEnvironment} = require('./utils');
+import { WineVcCompiler } from '../lib/compilers/wine-vc';
+import { WslVcCompiler } from '../lib/compilers/wsl-vc';
 
-chai.use(chaiAsPromised);
-chai.should();
+import { makeCompilationEnvironment } from './utils';
 
 const languages = {
     'c++': {id: 'c++'},
@@ -51,14 +47,14 @@ describe('Paths', () => {
     });
 
     it('Linux -> Wine path', () => {
-        const compiler = new WineCL(info, env);
+        const compiler = new WineVcCompiler(info, env);
         compiler.filename('/tmp/123456/output.s').should.equal('Z:/tmp/123456/output.s');
     });
 
     it('Linux -> Windows path', function () {
         process.env.winTmp = '/mnt/c/tmp';
 
-        const compiler = new WslCL(info, env);
+        const compiler = new WslVcCompiler(info, env);
         compiler.filename('/mnt/c/tmp/123456/output.s').should.equal('c:/tmp/123456/output.s');
     });
 });
@@ -90,7 +86,7 @@ if (process.platform === 'linux' && child_process.execSync('uname -a').toString(
         let compiler;
 
         before(() => {
-            compiler = createCompiler(WslCL);
+            compiler = createCompiler(WslVcCompiler);
         });
 
         it('Can set working directory', () => {

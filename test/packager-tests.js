@@ -21,18 +21,12 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-'use strict';
 
-const
-    chai = require('chai'),
-    chaiAsPromised = require('chai-as-promised'),
-    Packager = require('../lib/packager').Packager,
-    path = require('path'),
-    fs = require('fs-extra'),
-    temp = require('temp');
+import temp from 'temp';
 
-chai.use(chaiAsPromised);
-chai.should();
+import { Packager } from '../lib/packager';
+
+import { fs, path } from './utils';
 
 function newTempDir() {
     return new Promise((resolve, reject) => {
@@ -50,40 +44,32 @@ function writeTestFile(filepath) {
 }
 
 describe('Packager', function () {
-    it('should be able to package 1 file', function () {
+    it('should be able to package 1 file', async () => {
         const pack = new Packager();
-        return newTempDir().then((dirPath) => {
-            const executablePath = path.join(dirPath, 'hello.txt');
-            writeTestFile(executablePath).then(() => {
-                const targzPath = path.join(dirPath, 'package.tgz');
 
-                return pack.package(dirPath, targzPath).then(() => {
-                    return fs.existsSync(targzPath).should.equal(true);
-                }).catch(err => {
-                    throw err;
-                });
-            });
-        });
+        const dirPath = await newTempDir();
+        await writeTestFile(path.join(dirPath, 'hello.txt'));
+
+        const targzPath = path.join(dirPath, 'package.tgz');
+        await pack.package(dirPath, targzPath);
+
+        await fs.exists(targzPath).should.eventually.equal(true);
     });
 
-    it('should be able to unpack', function () {
+    it('should be able to unpack', async () =>  {
         const pack = new Packager();
-        return newTempDir().then((dirPath) => {
-            const executablePath = path.join(dirPath, 'hello.txt');
-            return writeTestFile(executablePath).then(() => {
-                const targzPath = path.join(dirPath, 'package.tgz');
 
-                return pack.package(dirPath, targzPath).then(() => {
-                    return newTempDir().then((unpackPath) => {
+        const dirPath = await newTempDir();
+        await writeTestFile(path.join(dirPath, 'hello.txt'));
 
-                        const pack2 = new Packager();
-                        return pack2.unpack(targzPath, unpackPath).then(() => {
-                            const unpackedFilepath = path.join(unpackPath, 'hello.txt');
-                            return fs.existsSync(unpackedFilepath).should.equal(true);
-                        });
-                    });
-                });
-            });
-        });
+        const targzPath = path.join(dirPath, 'package.tgz');
+        await pack.package(dirPath, targzPath);
+
+        const unpackPath = await newTempDir();
+        const pack2 = new Packager();
+        await pack2.unpack(targzPath, unpackPath);
+
+        const unpackedFilepath = path.join(unpackPath, 'hello.txt');
+        await fs.exists(unpackedFilepath).should.eventually.equal(true);
     });
 });
