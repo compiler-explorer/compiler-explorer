@@ -1,4 +1,4 @@
-// Copyright (c) 2017, Matt Godbolt
+// Copyright (c) 2017, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,16 +22,14 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-const chai = require('chai'),
-    source = require('../../lib/handlers/source'),
-    express = require('express');
+import express from 'express';
 
-chai.use(require('chai-http'));
-chai.should();
+import { SourceHandler } from '../../lib/handlers/source';
+import { chai } from '../utils';
 
 describe('Sources', () => {
     const app = express();
-    const handler = new source.Handler(
+    const handler = new SourceHandler(
         [{
             urlpart: 'moose',
             list: () => Promise.resolve({moose: 'pig'}),

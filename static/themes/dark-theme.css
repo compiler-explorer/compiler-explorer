@@ -450,3 +450,15 @@ a {
     color: rgba(255,255,255,.5);
     border-color: rgba(255,255,255,.1);
 }
+
+#library-selection .libs-selected-col button {
+    color: white;
+}
+
+#library-selection .libs-favorites-col button {
+    color: white;
+}
+
+#library-selection .libs-results-col .lib-fav-button {
+    color: white;
+}

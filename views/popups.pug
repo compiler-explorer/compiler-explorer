@@ -283,3 +283,36 @@
                 div.monaco-placeholder#history-diff
       .modal-footer
         button.btn.btn-light(type="button" data-dismiss="modal" aria-label="Close") Close
+
+#library-selection.modal.fade.gl_keep(tabindex="-1" role="dialog")
+  .modal-dialog.modal-lg
+    .modal-content
+      .modal-header
+        h5.modal-title Libraries
+        button.close(type="button" data-dismiss="modal" aria-hidden="true" aria-label="Close")
+          span(aria-hidden="true")
+            | &times;
+      .modal-body
+        .card
+          .card-body
+            .container
+              .row
+                .col-lg
+                  div(style='text-align: center')
+                    input.lib-search-input(value="" placeholder="Search text")
+                    button.btn.btn-primary.lib-search-button(type="button") Search
+              .row
+                .col-lg.libs-how-to-use To add a library, search for one you want and select the version in the dropdown. Or if you have favorited it before, just click the library name in the Favorites section.
+              .row
+                .col-lg &nbsp;
+              .row
+                .libs-selected-col.col-md
+                  div
+                    h6 Selected
+                  .libs-selected-items
+                .libs-results-col.col-md
+                  h6 Results
+                  .lib-results-items
+                .libs-favorites-col.col-md
+                  h6 Favorites
+                  .lib-favorites

@@ -22,12 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-const
-    path = require('path'),
-    chai = require('chai'),
-    CompilerDropinTool = require('../lib/tooling/compiler-dropin-tool');
+import { CompilerDropinTool } from '../lib/tooling/compiler-dropin-tool';
 
-chai.should();
+import { path } from './utils';
 
 describe('CompilerDropInTool', () => {
     it('Should support llvm based compilers', () => {
@@ -44,7 +41,7 @@ describe('CompilerDropInTool', () => {
         const args = [];
         const sourcefile = 'example.cpp';
 
-        const orderedArgs = tool.getOrderedArguments(compilationInfo, includeflags, args, sourcefile);
+        const orderedArgs = tool.getOrderedArguments(compilationInfo, includeflags, [], args, sourcefile);
         orderedArgs.should.deep.equal(
             [
                 '--gcc-toolchain=/opt/compiler-explorer/gcc-7.2.0',
@@ -67,7 +64,7 @@ describe('CompilerDropInTool', () => {
         const args = [];
         const sourcefile = 'example.cpp';
 
-        const orderedArgs = tool.getOrderedArguments(compilationInfo, includeflags, args, sourcefile);
+        const orderedArgs = tool.getOrderedArguments(compilationInfo, includeflags, [], args, sourcefile);
         orderedArgs.should.deep.equal(
             [
                 '--gcc-toolchain=' + path.resolve('/opt/compiler-explorer/gcc-8.0'),
@@ -90,7 +87,7 @@ describe('CompilerDropInTool', () => {
         const args = [];
         const sourcefile = 'example.cpp';
 
-        const orderedArgs = tool.getOrderedArguments(compilationInfo, includeflags, args, sourcefile);
+        const orderedArgs = tool.getOrderedArguments(compilationInfo, includeflags, [], args, sourcefile);
         orderedArgs.should.deep.equal(false);
     });
 
@@ -108,7 +105,7 @@ describe('CompilerDropInTool', () => {
         const args = [];
         const sourcefile = 'example.cpp';
 
-        const orderedArgs = tool.getOrderedArguments(compilationInfo, includeflags, args, sourcefile);
+        const orderedArgs = tool.getOrderedArguments(compilationInfo, includeflags, [], args, sourcefile);
         orderedArgs.should.deep.equal(
             [
                 '--gcc-toolchain=' + path.resolve('/opt/compiler-explorer/gcc-8.2.0'),
@@ -136,7 +133,7 @@ describe('CompilerDropInTool', () => {
         const args = ['/MD', '/STD:c++latest', '/Ox'];
         const sourcefile = 'example.cpp';
 
-        const orderedArgs = tool.getOrderedArguments(compilationInfo, includeflags, args, sourcefile);
+        const orderedArgs = tool.getOrderedArguments(compilationInfo, includeflags, [], args, sourcefile);
         orderedArgs.should.deep.equal(false);
     });
 
@@ -157,7 +154,36 @@ describe('CompilerDropInTool', () => {
         const args = [];
         const sourcefile = 'example.cpp';
 
-        const orderedArgs = tool.getOrderedArguments(compilationInfo, includeflags, args, sourcefile);
+        const orderedArgs = tool.getOrderedArguments(compilationInfo, includeflags, [], args, sourcefile);
         orderedArgs.should.deep.equal(false);
+    });
+
+    it('Should support library options', () => {
+        const tool = new CompilerDropinTool({}, {});
+
+        const compilationInfo = {
+            compiler: {
+                exe: '/opt/compiler-explorer/clang-concepts-trunk/bin/clang++',
+                options: '--gcc-toolchain=/opt/compiler-explorer/gcc-8.2.0',
+                internalIncludePaths: [
+                    '/opt/compiler-explorer/clang-concepts-trunk/something/etc/include',
+                ],
+            },
+            options: [],
+        };
+        const includeflags = [];
+        const args = [];
+        const sourcefile = 'example.cpp';
+        const libOptions = ['-DMYLIBDEF', '-pthread'];
+
+        const orderedArgs = tool.getOrderedArguments(compilationInfo, includeflags, libOptions, args, sourcefile);
+        orderedArgs.should.deep.equal(
+            [
+                '--gcc-toolchain=' + path.resolve('/opt/compiler-explorer/gcc-8.2.0'),
+                '--gcc-toolchain=' + path.resolve('/opt/compiler-explorer/gcc-8.2.0'),
+                '-DMYLIBDEF',
+                '-pthread',
+            ],
+        );
     });
 });

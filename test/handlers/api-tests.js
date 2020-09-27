@@ -1,4 +1,4 @@
-// Copyright (c) 2017, Matt Godbolt
+// Copyright (c) 2017, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,9 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-const chai = require('chai'),
-    ApiHandler = require('../../lib/handlers/api').Handler,
-    express = require('express');
+import express from 'express';
+
+import { ApiHandler } from '../../lib/handlers/api';
+import { chai } from '../utils';
 
 const languages = {
     'c++': {
@@ -78,9 +79,6 @@ const compilersLimitedFields = [
         name: 'Clang trunk',
     },
 ];
-
-chai.use(require('chai-http'));
-chai.should();
 
 describe('API handling', () => {
     let app;

@@ -1,4 +1,4 @@
-// Copyright (c) 2017, Matt Godbolt
+// Copyright (c) 2017, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,17 +22,19 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-const chai = require('chai'),
-    asmDocsApi = require('../../lib/handlers/asm-docs-api'),
-    express = require('express');
+import express from 'express';
 
-chai.use(require('chai-http'));
-chai.should();
+import { AsmDocsHandler } from '../../lib/handlers/asm-docs-api';
+import { chai } from '../utils';
 
 describe('Assembly documents', () => {
-    const app = express();
-    const handler = new asmDocsApi.Handler();
-    app.use('/asm/:opcode', handler.handle.bind(handler));
+    let app;
+
+    before(() => {
+        app = express();
+        const handler = new AsmDocsHandler();
+        app.use('/asm/:opcode', handler.handle.bind(handler));
+    });
 
     // We don't serve a 404 for unknown opcodes as it allows the not-an-opcode to be cached.
     it('should respond with "unknown opcode" for unknown opcodes', () => {

@@ -1,4 +1,4 @@
-// Copyright (c) 2018, Matt Godbolt
+// Copyright (c) 2018, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,13 +22,12 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-const AsmParser = require('../lib/asm-parser-vc');
-const AsmRegex = require('../lib/asmregex').AsmRegex;
-require('chai').should();
+import { VcAsmParser } from '../lib/asm-parser-vc';
+import { AsmRegex } from '../lib/asmregex';
 
 describe('ASM CL parser', () => {
     it('should work for error documents', () => {
-        const parser = new AsmParser();
+        const parser = new VcAsmParser();
         const result = parser.process('<Compilation failed>', {
             directives: true,
         });
@@ -39,7 +38,6 @@ describe('ASM CL parser', () => {
         }]);
     });
 });
-
 
 describe('ASM regex base class', () => {
     it('should leave unfiltered lines alone', () => {

@@ -1,6 +1,6 @@
 // Copyright (c) 2020, Lock3 Software LLC
 // All rights reserved.
-// Originally based on `./d-mode.js` by Matt Godbolt
+// Originally based on `./d-mode.js` by the Compiler Explorer Authors
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:

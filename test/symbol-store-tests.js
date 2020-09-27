@@ -1,4 +1,4 @@
-// Copyright (c) 2017, Patrick Quist
+// Copyright (c) 2017, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,10 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-const chai = require('chai');
-const SymbolStore = require('../lib/symbol-store').SymbolStore;
-
-chai.should();
+import './utils';
+import { SymbolStore } from '../lib/symbol-store';
 
 describe('SymbolStore', function () {
     it('should be empty initially', function () {
