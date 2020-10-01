@@ -40,11 +40,11 @@ There are a number of videos that showcase some of the features of Compiler Expl
 ##### Contact us
 
 For general discussion, please join the
- [cpplang](https://cpplang.slack.com/) slack channel `#compiler_explorer` or
+ [cpplang](https://cppalliance.org/slack/) slack channel `#compiler_explorer` or
  [the public mailing list](https://groups.google.com/forum/#!forum/compiler-explorer-discussion)
 
 If you are interested in developing, or want to see the discussions between
- existing developers, feel free to join the [cpplang](https://cpplang.now.sh/)
+ existing developers, feel free to join the [cpplang](https://cppalliance.org/slack/)
  slack channel `#compiler_explorer-development` or
  [the development mailing list](https://groups.google.com/forum/#!forum/compiler-explorer-development)
  
