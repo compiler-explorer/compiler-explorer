@@ -119,7 +119,6 @@ export default {
         rules: [
             {
                 test: /\.css$/,
-                exclude: path.resolve(__dirname, 'static/themes/'),
                 use: [
                     {
                         loader: MiniCssExtractPlugin.loader,
@@ -132,9 +131,18 @@ export default {
                 ],
             },
             {
-                test: /\.css$/,
-                include: path.resolve(__dirname, 'static/themes/'),
-                loader: 'css-loader',
+                test: /\.scss$/,
+                use: [
+                    {
+                        loader: MiniCssExtractPlugin.loader,
+                        options: {
+                            publicPath: './',
+                            hmr: isDev,
+                        },
+                    },
+                    'css-loader',
+                    'sass-loader',
+                ],
             },
             {
                 test: /\.(png|woff|woff2|eot|ttf|svg)$/,

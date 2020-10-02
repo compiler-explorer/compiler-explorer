@@ -1,5 +1,5 @@
-@import url("~@fortawesome/fontawesome-free/css/all.min.css");
-@import url("~vis/dist/vis.css");
+@import "~@fortawesome/fontawesome-free/css/all.min.css";
+@import "~vis/dist/vis.css";
 
 /* TEMP HACK: https://github.com/Microsoft/monaco-editor/issues/349 */
 .quick-open-tree .row {
@@ -232,7 +232,7 @@ pre.content.wrap {
     margin: 0 auto;
 }
 
-.modal-content { 
+.modal-content {
     max-width: max-content; /* modal boxes are at most as wide as their content - smaller width is handled by the browser and flexbox */
     max-height: calc(100vh - 4rem); /* modal box height scales with the viewportheight and leaves space for borders */
 }
@@ -705,4 +705,13 @@ div.populararguments div.dropdown-menu {
 
 #library-selection.mobile .libs-favorites-col {
     display: none;
+}
+
+html[data-theme=default] {
+    @import "themes/default-theme";
+}
+
+html[data-theme=dark] {
+    @import "themes/dark-theme";
+    background-color: #333 !important;
 }
