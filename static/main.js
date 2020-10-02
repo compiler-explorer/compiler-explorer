@@ -58,8 +58,8 @@ require('bootstrap/dist/css/bootstrap.min.css');
 require('golden-layout/src/css/goldenlayout-base.css');
 require('selectize/dist/css/selectize.bootstrap2.css');
 require('bootstrap-slider/dist/css/bootstrap-slider.css');
-require('./colours.css');
-require('./explorer.css');
+require('./colours.scss');
+require('./explorer.scss');
 
 // Check to see if the current unload is a UI reset.
 // Forgive me the global usage here
