@@ -78,7 +78,6 @@
   },
   "devDependencies": {
     "@sentry/cli": "^1.58.0",
-    "acorn": "^7.4.0",
     "aws-sdk-mock": "^5.1.0",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
@@ -104,7 +103,6 @@
     "nock": "^12.0.3",
     "nyc": "^15.1.0",
     "optimize-css-assets-webpack-plugin": "^5.0.4",
-    "requirejs": "2.3.6",
     "sinon": "^8.1.1",
     "supervisor": "^0.12.0",
     "terser-webpack-plugin": "^2.3.8",
