@@ -281,6 +281,7 @@ async function setupWebPackDevMiddleware(router) {
     router.use(webpackDevMiddleware(webpackCompiler, {
         publicPath: '/static',
         logger: logger,
+        stats: 'errors-only',
     }));
 
     pugRequireHandler = (path) => urljoin(httpRoot, 'static', path);

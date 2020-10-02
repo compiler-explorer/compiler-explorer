@@ -9,7 +9,18 @@ html(lang="en")
     block styles
         link(href=require("vendor.css") rel="stylesheet")
         link(href=require("main.css") rel="stylesheet")
-        style#theme
+
+    //- partially apply theme as soon as possible to minimize the page load flashbang duration when using dark theme
+    script
+      | (function () {
+      |   try {
+      |     var settings = window.localStorage.getItem("!{localStoragePrefix}settings") || '{}';
+      |     var theme = JSON.parse(settings).theme || 'default';
+      |     document.documentElement.setAttribute('data-theme', theme);
+      |   } catch (e) {
+      |     document.documentElement.setAttribute('data-theme', 'default');
+      |   }
+      | })();
 
   body(class=extraBodyClass)
     block content
