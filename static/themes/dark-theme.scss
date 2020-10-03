@@ -219,6 +219,18 @@ input:focus {
     border: 0 !important;
 }
 
+input.permalink {
+    color: #eee !important;
+    background-color: #474747;
+    opacity: 1;
+}
+
+textarea.form-control {
+    color: #eee !important;
+    background-color: #474747;
+    border: 0 !important;
+}
+
 .bg-light {
     background-color: #333 !important;
 }
