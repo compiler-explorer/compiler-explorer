@@ -213,6 +213,12 @@ input {
     border: 0 !important;
 }
 
+input:focus {
+    color: #eee !important;
+    background-color: #474747;
+    border: 0 !important;
+}
+
 .bg-light {
     background-color: #333 !important;
 }
