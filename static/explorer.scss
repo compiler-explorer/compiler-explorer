@@ -237,6 +237,12 @@ pre.content.wrap {
     max-height: calc(100vh - 4rem); /* modal box height scales with the viewportheight and leaves space for borders */
 }
 
+#history {
+    .modal-content {
+        min-width: calc(80vw);  /* force min-width on html element containing history editor */
+    }
+}
+
 .modal-body {
     min-height: 200px;
     overflow-y: auto; /* make body scrollable -> keep Header & Footer onscreen, if possible */
