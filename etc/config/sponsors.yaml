@@ -17,6 +17,14 @@ levels:
         url: https://gimpel.com/?promo=godbolt
         priority: 200
         topIcon: true
+      - name: Intel
+        description: We engineer solutions for our customers’ greatest challenges with reliable, cloud to edge computing, inspired by Moore’s Law.
+        icon: https://static.ce-cdn.net/intel/logo-classicblue-3000px-single-colour.png
+        img: https://static.ce-cdn.net/intel/logo-classicblue-3000px.png
+        url: https://intel.com/
+        priority: 400
+        topIcon: true
+        sideBySide: true
   - name: Patreon Legends
     description: 'These amazing people have pledged at the highest level of support. Huge thanks to these fine folks:'
     class: legendary
