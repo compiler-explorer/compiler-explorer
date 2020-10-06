@@ -68,6 +68,7 @@ function dump(file) {
 // bless("filters-cases/bug-2164b.asm", "filters-cases/bug-2164b.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
 // bless("filters-cases/bintest-1.asm", "filters-cases/bintest-1.asm.binary.directives.labels.comments.json", {binary: true, directives: true, labels: true, commentOnly: true});
 // bless("filters-cases/bintest-2.asm", "filters-cases/bintest-2.asm.binary.directives.labels.comments.json", {binary: true, directives: true, labels: true, commentOnly: true});
+// bless("filters-cases/bintest-unicode-1.asm", "filters-cases/bintest-unicode-1.asm.binary.directives.labels.comments.json", {binary: true, directives: true, labels: true, commentOnly: true});
 // describe('A test', function() {
 //     it('should work', function(){
 //         console.log(processAsm(resolvePathFromTestRoot('filters-cases/6502-square.asm'), {directives: true, labels: true, commentOnly: true}));
