@@ -1,4 +1,4 @@
-# For best results compile with -d:danger --passC:"-march=native" 
-proc sumArray(data: openArray[int]): int {.exportc.} = 
+# For best results compile with -d:danger
+proc sumArray(data: seq[int]): int {.exportc.} = 
   for elem in data:
     result += elem
