@@ -89,3 +89,4 @@ From oldest to newest contributor, we would like to thank:
 - [Kale Blankenship](https://github.com/vcabbage)
 - [George Gribkov](https://github.com/GeorgeGribkov)
 - [Artem Akatev](https://github.com/aakatev)
+- [Danil Yarantsev](https://github.com/Yardanico)
