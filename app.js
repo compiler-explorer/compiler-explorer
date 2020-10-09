@@ -33,6 +33,7 @@ import process from 'process';
 import url from 'url';
 
 import * as Sentry from '@sentry/node';
+import * as backtrace from 'backtrace-node';
 import bodyParser from 'body-parser';
 import compression from 'compression';
 import express from 'express';
@@ -399,6 +400,22 @@ function setupSentry(sentryDsn) {
     logger.info(`Configured with Sentry endpoint ${sentryDsn}`);
 }
 
+function setupBacktrace() {
+    const backtraceToken = ceProps('backtraceToken');
+    const backtraceEndpoint = ceProps('backtraceEndpoint');
+    if (!backtraceToken || !backtraceEndpoint) {
+        logger.info('Not configuring backtrace.io');
+    }
+    const sentryEnv = ceProps('sentryEnvironment'); // also used for backtrace
+    backtrace.initialize({
+        endpoint: backtraceEndpoint,
+        token: backtraceToken,
+        attributes: {environment: sentryEnv},
+    });
+    // TODO need redaction as per beforeSend()
+    logger.info(`Configured with backtrace endpoint ${backtraceEndpoint}`);
+}
+
 const awsProps = props.propsFor('aws');
 
 // eslint-disable-next-line max-statements
@@ -433,6 +450,7 @@ async function main() {
     }
 
     setupSentry(aws.getConfig('sentryDsn'));
+    setupBacktrace();
     const webServer = express(), router = express.Router();
     const healthCheckFilePath = ceProps('healthCheckFilePath', false);
 
@@ -500,6 +518,7 @@ async function main() {
         })
         // sentry error handler must be the first error handling middleware
         .use(Sentry.Handlers.errorHandler)
+        .use(backtrace.errorHandlerMiddleware)
         // eslint-disable-next-line no-unused-vars
         .use((err, req, res, next) => {
             const status =
@@ -514,6 +533,7 @@ async function main() {
         });
 
     const sponsorConfig = loadSponsorsFromString(fs.readFileSync(configDir + '/sponsors.yaml', 'utf-8'));
+
     function renderConfig(extra, urlOptions) {
         const urlOptionsAllowed = [
             'readOnly', 'hideEditorToolbars', 'language',
