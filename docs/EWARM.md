@@ -56,51 +56,6 @@ stubText=int main(void){return 0;/*stub provided by Compiler Explorer*/}
 ```
 **Its important to note that the `compiler.iar8.32.4.compilerType` field is set to `ewarm` this will be the custom compiler key later on**
 
-## Creating IAR custom compiler under Compiler Explorer
-To create a custom compiler class under compiler explorer, you have to copy the `ewavr.js` under `lib/compilers`, rename it to `ewarm.js` and edit the contents to be something like this 
-```js
-import temp from 'temp';
-
-import { AsmEWAVRParser } from '../asm-parser-ewavr';
-import { BaseCompiler } from '../base-compiler';
-
-export class EWARMCompiler extends BaseCompiler {
-
-    static get key() { return 'ewarm'; }
-    
-    constructor(info, env) {
-        super(info, env);
-        this.asm = new AsmEWAVRParser(this.compilerProps);
-    }
-
-    newTempDir() {
-        return new Promise((resolve, reject) => {
-            temp.mkdir({prefix: 'compiler-explorer-compiler', dir: process.env.TMP}, (err, dirPath) => {
-                if (err)
-                    reject(`Unable to open temp file: ${err}`);
-                else
-                    resolve(dirPath);
-            });
-        });
-    }
-
-    optionsForFilter(filters, outputFilename) {
-        if (filters.binary) {
-            return [];
-        }
-        
-        return [
-            '-lB', this.filename(outputFilename),
-            '-o', this.filename(outputFilename + '.obj'),
-        ];
-    }
-}
-```
-**The important part being, that the compiler key returns `ewarm`, which is the compilerType field in our c++.local.properties file**
-
-The last thing you need to do is add the newly created compiler to all compiler exports under `lib/compilers/_all.js`, insert this line `
-export { EWARMCompiler } from './ewarm';` anywhere in the file.
-
 ## Running Compiler Explorer
 
 You should be able to just `cd` into the compiler explorer repository and run `npm start`. After that just head on to [localhost:10240](http://localhost:10240)
