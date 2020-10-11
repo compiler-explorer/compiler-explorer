@@ -490,7 +490,9 @@ async function main() {
         .set('view engine', 'pug')
         .on('error', err => logger.error('Caught error in web handler; continuing:', err))
         // sentry request handler must be the first middleware on the app
-        .use(Sentry.Handlers.requestHandler())
+        .use(Sentry.Handlers.requestHandler({
+            ip: true,
+        }))
         .use(Sentry.Handlers.tracingHandler())
         // eslint-disable-next-line no-unused-vars
         .use(responseTime((req, res, time) => {
