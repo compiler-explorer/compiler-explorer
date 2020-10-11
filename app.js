@@ -33,6 +33,7 @@ import process from 'process';
 import url from 'url';
 
 import * as Sentry from '@sentry/node';
+import * as Tracing from '@sentry/tracing';
 import bodyParser from 'body-parser';
 import compression from 'compression';
 import express from 'express';
@@ -377,7 +378,7 @@ function startListening(server) {
     server.listen(_port, defArgs.hostname);
 }
 
-function setupSentry(sentryDsn) {
+function setupSentry(sentryDsn, expressApp) {
     if (!sentryDsn) {
         logger.info('Not configuring sentry');
         return;
@@ -395,6 +396,13 @@ function setupSentry(sentryDsn) {
             }
             return event;
         },
+        integrations: [
+            // enable HTTP calls tracing
+            new Sentry.Integrations.Http({ tracing: true }),
+            // enable Express.js middleware tracing
+            new Tracing.Integrations.Express({ expressApp }),
+        ],
+        tracesSampleRate: 0.1,
     });
     logger.info(`Configured with Sentry endpoint ${sentryDsn}`);
 }
@@ -432,8 +440,8 @@ async function main() {
         }
     }
 
-    setupSentry(aws.getConfig('sentryDsn'));
     const webServer = express(), router = express.Router();
+    setupSentry(aws.getConfig('sentryDsn'), webServer);
     const healthCheckFilePath = ceProps('healthCheckFilePath', false);
 
     const handlerConfig = {
@@ -483,6 +491,7 @@ async function main() {
         .on('error', err => logger.error('Caught error in web handler; continuing:', err))
         // sentry request handler must be the first middleware on the app
         .use(Sentry.Handlers.requestHandler())
+        .use(Sentry.Handlers.tracingHandler())
         // eslint-disable-next-line no-unused-vars
         .use(responseTime((req, res, time) => {
             if (sentrySlowRequestMs > 0 && time >= sentrySlowRequestMs) {
