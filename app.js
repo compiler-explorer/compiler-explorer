@@ -677,8 +677,7 @@ async function main() {
         .get('/client-options.js', (req, res) => {
             staticHeaders(res);
             res.set('Content-Type', 'application/javascript');
-            const options = JSON.stringify(clientOptionsHandler.get());
-            res.end(`window.compilerExplorerOptions = ${options};`);
+            res.end(`window.compilerExplorerOptions = ${clientOptionsHandler.getJSON()};`);
         })
         .use('/bits/:bits(\\w+).html', (req, res) => {
             staticHeaders(res);
