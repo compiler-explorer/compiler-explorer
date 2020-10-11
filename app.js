@@ -405,15 +405,27 @@ function setupBacktrace() {
     const backtraceEndpoint = ceProps('backtraceEndpoint');
     if (!backtraceToken || !backtraceEndpoint) {
         logger.info('Not configuring backtrace.io');
+        return (err, req, res, next) => next(er, req, res);
     }
     const sentryEnv = ceProps('sentryEnvironment'); // also used for backtrace
     backtrace.initialize({
         endpoint: backtraceEndpoint,
         token: backtraceToken,
+        handlePromises: true,
         attributes: {environment: sentryEnv},
     });
-    // TODO need redaction as per beforeSend()
     logger.info(`Configured with backtrace endpoint ${backtraceEndpoint}`);
+    // TODO: this only works for exceptions caught by express. If the request goes to the
+    // uncaught promise, then it won't get redacted.
+    return (err, request, response, next) => {
+        if (request
+            && request.data
+            && shouldRedactRequestData(request.data)) {
+            request.data = JSON.stringify({redacted: true});
+        }
+        backtrace.reportSync(err, {...request, ...response});
+        next(err);
+    };
 }
 
 const awsProps = props.propsFor('aws');
@@ -450,7 +462,7 @@ async function main() {
     }
 
     setupSentry(aws.getConfig('sentryDsn'));
-    setupBacktrace();
+    const ceBacktraceHandler = setupBacktrace();
     const webServer = express(), router = express.Router();
     const healthCheckFilePath = ceProps('healthCheckFilePath', false);
 
@@ -516,9 +528,12 @@ async function main() {
         .use((req, res, next) => {
             next({status: 404, message: `page "${req.path}" could not be found`});
         })
+        .use('/broken', (err, req, res, next) => {
+            throw new Error('broken');
+        })
         // sentry error handler must be the first error handling middleware
         .use(Sentry.Handlers.errorHandler)
-        .use(backtrace.errorHandlerMiddleware)
+        .use(ceBacktraceHandler)
         // eslint-disable-next-line no-unused-vars
         .use((err, req, res, next) => {
             const status =
