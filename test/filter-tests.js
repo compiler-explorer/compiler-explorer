@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import { AsmParser } from '../lib/asm-parser';
+import { AsmEWAVRParser } from '../lib/asm-parser-ewavr';
 import { SassAsmParser } from '../lib/asm-parser-sass';
 import { VcAsmParser } from '../lib/asm-parser-vc';
 import * as utils from '../lib/utils';
@@ -69,6 +70,8 @@ function dump(file) {
 // bless("filters-cases/bintest-1.asm", "filters-cases/bintest-1.asm.binary.directives.labels.comments.json", {binary: true, directives: true, labels: true, commentOnly: true});
 // bless("filters-cases/bintest-2.asm", "filters-cases/bintest-2.asm.binary.directives.labels.comments.json", {binary: true, directives: true, labels: true, commentOnly: true});
 // bless("filters-cases/bintest-unicode-1.asm", "filters-cases/bintest-unicode-1.asm.binary.directives.labels.comments.json", {binary: true, directives: true, labels: true, commentOnly: true});
+// bless("filters-cases/bintest-unicode-1.asm", "filters-cases/bintest-unicode-1.asm.binary.directives.labels.comments.json", {binary: true, directives: true, labels: true, commentOnly: true});
+// bless("filters-cases/ewarm-1.asm", "filters-cases/ewarm-1.asm.directives.labels.comments.json", {binary: true, directives: true, labels: true, commentOnly: true});
 // describe('A test', function() {
 //     it('should work', function(){
 //         console.log(processAsm(resolvePathFromTestRoot('filters-cases/6502-square.asm'), {directives: true, labels: true, commentOnly: true}));
@@ -82,6 +85,8 @@ function processAsm(filename, filters) {
         parser = new VcAsmParser();
     else if (filename.includes('sass-'))
         parser = new SassAsmParser();
+    else if (filename.includes('ewarm-'))
+        parser = new AsmEWAVRParser();
     else
         parser = new AsmParser();
     return parser.process(file, filters);
