@@ -55,6 +55,7 @@
     "p-queue": "^6.6.1",
     "popper.js": "^1.16.1",
     "profanities": "^2.14.0",
+    "prom-client": "^12.0.0",
     "pug": "^2.0.4",
     "request": "^2.88.2",
     "response-time": "^2.3.2",

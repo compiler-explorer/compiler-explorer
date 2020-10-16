@@ -40,6 +40,7 @@ import express from 'express';
 import fs from 'fs-extra';
 import morgan from 'morgan';
 import nopt from 'nopt';
+import PromClient from 'prom-client';
 import responseTime from 'response-time';
 import sFavicon from 'serve-favicon';
 import systemdSocket from 'systemd-socket';
@@ -92,6 +93,7 @@ const opts = nopt({
     logHost: [String],
     logPort: [Number],
     suppressConsoleLog: [Boolean],
+    metricsPort: [Number],
 });
 
 if (opts.debug) logger.level = 'debug';
@@ -371,7 +373,7 @@ function startListening(server) {
         _port = defArgs.port;
     }
 
-    var startupDurationMs = Math.floor(process.uptime() * 1000);
+    const startupDurationMs = Math.floor(process.uptime() * 1000);
     logger.info(`  Listening on http://${defArgs.hostname || 'localhost'}:${_port}/`);
     logger.info(`  Startup duration: ${startupDurationMs}ms`);
     logger.info('=======================================');
@@ -398,9 +400,9 @@ function setupSentry(sentryDsn, expressApp) {
         },
         integrations: [
             // enable HTTP calls tracing
-            new Sentry.Integrations.Http({ tracing: true }),
+            new Sentry.Integrations.Http({tracing: true}),
             // enable Express.js middleware tracing
-            new Tracing.Integrations.Express({ expressApp }),
+            new Tracing.Integrations.Express({expressApp}),
         ],
         tracesSampleRate: 0.1,
     });
@@ -485,6 +487,23 @@ async function main() {
 
     const sentrySlowRequestMs = ceProps('sentrySlowRequestMs', 0);
 
+    if (opts.metricsPort) {
+        logger.info(`Running metrics server on port ${opts.metricsPort}`);
+        PromClient.collectDefaultMetrics();
+        const metricsServer = express();
+
+        metricsServer.get('/metrics', async (req, res) => {
+            try {
+                res.set('Content-Type', PromClient.register.contentType);
+                res.end(await PromClient.register.metrics());
+            } catch (ex) {
+                res.status(500).end(ex);
+            }
+        });
+
+        metricsServer.listen(opts.metricsPort, defArgs.hostname);
+    }
+
     webServer
         .set('trust proxy', true)
         .set('view engine', 'pug')
@@ -525,6 +544,7 @@ async function main() {
         });
 
     const sponsorConfig = loadSponsorsFromString(fs.readFileSync(configDir + '/sponsors.yaml', 'utf-8'));
+
     function renderConfig(extra, urlOptions) {
         const urlOptionsAllowed = [
             'readOnly', 'hideEditorToolbars', 'language',
