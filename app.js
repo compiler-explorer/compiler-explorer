@@ -474,6 +474,7 @@ async function main() {
         routeApi.apiHandler.setCompilers(compilers);
         routeApi.apiHandler.setLanguages(languages);
         routeApi.apiHandler.setOptions(clientOptionsHandler);
+        compilationEnvironment.cleanupNamedPromises();
     }
 
     onCompilerChange(initialCompilers);
