@@ -250,8 +250,16 @@ function setupEventLoopLagLogging() {
     const thresWarn = ceProps('eventLoopLagThresholdWarn', 0);
     const thresErr = ceProps('eventLoopLagThresholdErr', 0);
 
+    let totalLag = 0;
+    const ceLagSecondsTotalGauge = new PromClient.Gauge({
+        name: 'ce_lag_seconds_total',
+        help: 'Total event loop lag since application startup',
+    });
+
     async function eventLoopLagHandler() {
         const lagMs = await measureEventLoopLag(lagIntervalMs);
+        totalLag += Math.max(lagMs / 1000, 0);
+        ceLagSecondsTotalGauge.set(totalLag);
 
         if (thresErr && lagMs >= thresErr) {
             logger.error(`Event Loop Lag: ${lagMs} ms`);
