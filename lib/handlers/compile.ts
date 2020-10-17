@@ -65,6 +65,12 @@ function initialise(compilerEnv) {
 }
 
 export class CompileHandler {
+    compilersById: any;
+    compilerEnv: any;
+    textBanner: any;
+    proxy: httpProxy;
+    awsProps: any;
+
     constructor(compilationEnvironment, awsProps) {
         this.compilersById = {};
         this.compilerEnv = compilationEnvironment;
@@ -77,7 +83,7 @@ export class CompileHandler {
         // https://github.com/nodejitsu/node-http-proxy/blob/master/examples/middleware/bodyDecoder-middleware.js
         // We just keep the body as-is though: no encoding using queryString.stringify(), as we don't use a form
         // decoding middleware.
-        this.proxy.on('proxyReq', function (proxyReq, req) {
+        this.proxy.on('proxyReq', function (proxyReq, req: any) {
             if (!req.body || Object.keys(req.body).length === 0) {
                 return;
             }
@@ -206,7 +212,7 @@ export class CompileHandler {
     }
 
     parseRequest(req, compiler) {
-        let source, options, backendOptions = {}, filters, bypassCache = false, tools, executionParameters = {};
+        let source, options, backendOptions: any = {}, filters, bypassCache = false, tools, executionParameters: any = {};
         let libraries = [];
         // IF YOU MODIFY ANYTHING HERE PLEASE UPDATE THE DOCUMENTATION!
         if (req.is('json')) {

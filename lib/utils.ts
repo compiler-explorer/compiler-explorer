@@ -57,7 +57,7 @@ export function splitLines(text) {
  * @param {eachLineFunc} func
  * @param {*} [context]
  */
-export function eachLine(text, func, context) {
+export function eachLine(text, func, context?) {
     return _.each(splitLines(text), func, context);
 }
 
@@ -97,7 +97,7 @@ export function expandTabs(line) {
  * @param pathPrefix
  * @returns {lineObj[]}
  */
-export function parseOutput(lines, inputFilename, pathPrefix) {
+export function parseOutput(lines: string, inputFilename?: string, pathPrefix?: string) {
     const re = /^\s*<source>[(:](\d+)(:?,?(\d+):?)?[):]*\s*(.*)/;
     const result = [];
     eachLine(lines, function (line) {
@@ -112,7 +112,7 @@ export function parseOutput(lines, inputFilename, pathPrefix) {
             }
         }
         if (line !== null) {
-            const lineObj = {text: line};
+            const lineObj: any = {text: line};
             const match = line.replace(/\x1B\[[\d;]*[Km]/g, '').match(re);
             if (match) {
                 lineObj.tag = {
@@ -258,7 +258,7 @@ export function glGetMainContents(content) {
  * @param {boolean} [atStart=true]
  * @returns {string}
  */
-export function squashHorizontalWhitespace(line, atStart) {
+export function squashHorizontalWhitespace(line, atStart?) {
     if (atStart === undefined) atStart = true;
     if (line.trim().length === 0) {
         return '';
@@ -352,7 +352,7 @@ export function base32Encode(buffer) {
 
 export function splitArguments(options) {
     return _.chain(quote.parse(options || '')
-        .map(x => typeof (x) === 'string' ? x : x.pattern))
+        .map(x => typeof (x) === 'string' ? x : (x as any).pattern))
         .compact()
         .value();
 }
@@ -360,7 +360,7 @@ export function splitArguments(options) {
 /***
  * Absolute path to the root of the application
  */
-export const APP_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+export const APP_ROOT = path.resolve(path.dirname(fileURLToPath((import.meta as any).url)), '..');
 
 export function resolvePathFromAppRoot(...args) {
     return path.resolve(APP_ROOT, ...args);

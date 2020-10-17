@@ -29,6 +29,11 @@ import { logger } from './logger';
 import { S3Bucket } from './s3-handler';
 
 export class CompilerArguments {
+    compilerId: any;
+    possibleArguments: any[];
+    maxPopularArguments: number;
+    storeSpecificArguments: boolean;
+
     constructor(compilerId) {
         this.compilerId = compilerId;
         this.possibleArguments = [];
@@ -74,7 +79,7 @@ export class CompilerArguments {
     }
 
     getPopularArguments(excludeUsedArguments) {
-        let possibleArguments = {};
+        let possibleArguments: any = {};
         if (excludeUsedArguments && excludeUsedArguments.length > 0) {
             _.forEach(this.possibleArguments, (obj, argKey) => {
                 for (let argIdx in excludeUsedArguments) {

@@ -25,6 +25,9 @@
 import _ from 'underscore';
 
 export class FakeCompiler {
+    compiler: any;
+    info: any;
+
     static get key() { return 'fake-for-test'; }
 
     constructor(info) {

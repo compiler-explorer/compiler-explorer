@@ -33,6 +33,16 @@ import _ from 'underscore';
 import { logger } from './logger';
 import { propsFor } from './properties';
 
+export interface ExecutionOptions {
+    env?: Record<string, string>;
+    wrapper?: string;
+    ldPath?: string;
+    maxOutput?: number;
+    timeoutMs?: number;
+    customCwd?: string;
+    input?: string;
+}
+
 const execProps = propsFor('execution');
 
 function setupOnError(stream, name) {
@@ -42,7 +52,7 @@ function setupOnError(stream, name) {
     });
 }
 
-function executeDirect(command, args, options, filenameTransform) {
+function executeDirect(command, args, options: ExecutionOptions, filenameTransform?) {
     // filename transform is expected to have been pre-applied by the caller.
     // it is passed through here only so clients can see it in the result.
     filenameTransform = filenameTransform || (x => x);
@@ -77,9 +87,9 @@ function executeDirect(command, args, options, filenameTransform) {
     });
     let running = true;
 
-    const kill = options.killChild || (() => {
+    const kill = () => {
         if (running) treeKill(child.pid);
-    });
+    };
 
     const streams = {
         stderr: '',
@@ -145,7 +155,7 @@ function executeDirect(command, args, options, filenameTransform) {
     });
 }
 
-function withNsjailTimeout(args, options) {
+function withNsjailTimeout(args, options: ExecutionOptions) {
     if (options && options.timeoutMs) {
         const ExtraWallClockLeewayMs = 1000;
         return args.concat([
@@ -156,7 +166,7 @@ function withNsjailTimeout(args, options) {
     return args;
 }
 
-function sandboxNsjail(command, args, options) {
+function sandboxNsjail(command, args, options: ExecutionOptions) {
     logger.info('Sandbox execution via nsjail', {command, args});
     const execPath = path.dirname(command);
     const execName = path.basename(command);
@@ -165,7 +175,7 @@ function sandboxNsjail(command, args, options) {
         '--config', 'etc/nsjail/sandbox.cfg',
         '--cwd', '/app',
         '--bindmount', `${execPath}:/app`,
-    ]);
+    ], options);
 
     if (options.ldPath) {
         jailingOptions.push(`--env=LD_LIBRARY_PATH=${options.ldPath}`);
@@ -185,7 +195,7 @@ function sandboxNsjail(command, args, options) {
 //     return `${Math.floor(totalSecs / (60 * 60))}:${Math.floor(totalSecs / 60)}:${totalSecs % 60}`;
 // }
 
-function withFirejailTimeout(args, options) {
+function withFirejailTimeout(args, options: ExecutionOptions) {
     if (options && options.timeoutMs) {
         // const ExtraWallClockLeewayMs = 1000;
         const ExtraCpuLeewayMs = 1500;
@@ -198,7 +208,7 @@ function withFirejailTimeout(args, options) {
     return args;
 }
 
-function sandboxFirejail(command, args, options) {
+function sandboxFirejail(command, args, options: ExecutionOptions) {
     logger.info('Sandbox execution via firejail', {command, args});
     const execPath = path.dirname(command);
     const execName = path.basename(command);
@@ -208,7 +218,7 @@ function sandboxFirejail(command, args, options) {
         '--terminate-orphans',
         '--profile=etc/firejail/sandbox.profile',
         `--private=${execPath}`,
-        '--private-cwd']);
+        '--private-cwd'], options);
 
     if (options.ldPath) {
         jailingOptions.push(`--env=LD_LIBRARY_PATH=${options.ldPath}`);
@@ -224,7 +234,7 @@ function sandboxFirejail(command, args, options) {
 }
 
 const sandboxDispatchTable = {
-    none: (command, args, options) => {
+    none: (command, args, options: ExecutionOptions) => {
         logger.info('Sandbox execution (sandbox disabled)', {command, args});
         return executeDirect(command, args, options);
     },
@@ -232,7 +242,7 @@ const sandboxDispatchTable = {
     firejail: sandboxFirejail,
 };
 
-export async function sandbox(command, args, options) {
+export async function sandbox(command, args, options: ExecutionOptions) {
     const type = execProps('sandboxType', 'firejail');
     const dispatchEntry = sandboxDispatchTable[type];
     if (!dispatchEntry)
@@ -367,14 +377,14 @@ function needsWine(command) {
     return command.match(/\.exe$/i) && process.platform === 'linux' && !process.env.wsl;
 }
 
-function executeWineDirect(command, args, options) {
+function executeWineDirect(command, args, options: ExecutionOptions) {
     options = options || {};
     options.env = applyWineEnv(options.env);
     args.unshift(command);
     return executeDirect(execProps('wine'), args, options);
 }
 
-function executeFirejail(command, args, options) {
+function executeFirejail(command, args, options: ExecutionOptions) {
     options = options || {};
     const firejail = execProps('firejail');
     const baseOptions = withFirejailTimeout(['--quiet', '--deterministic-exit-code', '--terminate-orphans'], options);
@@ -409,7 +419,7 @@ function executeFirejail(command, args, options) {
     return executeDirect(firejail, baseOptions.concat(args), options, filenameTransform);
 }
 
-function executeNone(command, args, options) {
+function executeNone(command, args, options: ExecutionOptions) {
     if (needsWine(command)) {
         return executeWineDirect(command, args, options);
     }
@@ -421,7 +431,7 @@ const executeDispatchTable = {
     firejail: executeFirejail,
 };
 
-export async function execute(command, args, options) {
+export async function execute(command, args, options: ExecutionOptions) {
     const type = execProps('executionType', 'none');
     const dispatchEntry = executeDispatchTable[type];
     if (!dispatchEntry)

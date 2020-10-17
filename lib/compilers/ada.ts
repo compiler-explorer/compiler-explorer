@@ -28,6 +28,8 @@ import { BaseCompiler } from '../base-compiler';
 import * as utils from '../utils';
 
 export class AdaCompiler extends BaseCompiler {
+    supportsOptOutput: boolean;
+
     static get key() { return 'ada'; }
 
     constructor(info, env) {

@@ -27,6 +27,9 @@ import * as props from '../properties';
 import { getAsmOpcode } from './asm-docs';
 
 export class AsmDocsHandler {
+    staticMaxAgeSecs: any;
+    atAndTSuffixRemover: RegExp;
+
     constructor() {
         const asmProps = props.propsFor('asm-docs');
         this.staticMaxAgeSecs = asmProps('staticMaxAgeSecs', 10);

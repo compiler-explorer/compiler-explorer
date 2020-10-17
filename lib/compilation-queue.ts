@@ -25,6 +25,8 @@
 import { default as Queue } from 'p-queue';
 
 export class CompilationQueue {
+    private _queue: any;
+
     constructor(concurrency, timeout) {
         this._queue = new Queue({
             concurrency,

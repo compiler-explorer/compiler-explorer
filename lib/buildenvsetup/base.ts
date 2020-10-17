@@ -30,6 +30,14 @@ import _ from 'underscore';
 import { logger } from '../logger';
 
 export class BuildEnvSetupBase {
+    compiler: any;
+    env: any;
+    execCompilerCached: any;
+    compilerOptionsArr: any;
+    compilerArch: any;
+    compilerTypeOrGCC: any;
+    compilerSupportsX86: boolean;
+
     constructor(compilerInfo, env, execCompilerCachedFunc) {
         this.compiler = compilerInfo;
         this.env = env;
@@ -79,9 +87,8 @@ export class BuildEnvSetupBase {
         return false;
     }
 
-    async setup(/*key, dirPath, selectedLibraries*/) {
+    async setup(key, dirPath, selectedLibraries) {
         // override with specific implementation
-        return Promise.resolve();
     }
 
     getCompilerArch() {

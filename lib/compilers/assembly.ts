@@ -36,7 +36,7 @@ export class AssemblyCompiler extends BaseCompiler {
 
     constructor(info, env) {
         super(info, env);
-        this.asm = new AsmRaw();
+        this.asm = new AsmRaw(this.compilerProps);
     }
 
     getSharedLibraryPathsAsArguments() {
@@ -69,7 +69,7 @@ export class AssemblyCompiler extends BaseCompiler {
         return this.postProcess(asmResult, outputFilename, filters);
     }
 
-    getGeneratedOutputFilename(inputFilename) {
+    getGeneratedOutputFilename(inputFilename): Promise<string> {
         const outputFolder = path.dirname(inputFilename);
 
         return new Promise((resolve, reject) => {

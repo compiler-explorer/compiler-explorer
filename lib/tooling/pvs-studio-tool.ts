@@ -33,6 +33,8 @@ import * as utils from '../utils';
 import { BaseTool } from './base-tool';
 
 export class PvsStudioTool extends BaseTool {
+    plogConverterPath: any;
+
     static get key() { return 'pvs-studio-tool'; }
 
     constructor(toolInfo, env) {

@@ -31,6 +31,8 @@ import { BaseCompiler } from '../base-compiler';
 import { RustParser } from './argument-parsers';
 
 export class RustCompiler extends BaseCompiler {
+    linker: any;
+
     static get key() { return 'rust'; }
 
     constructor(info, env) {

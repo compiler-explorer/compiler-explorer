@@ -28,6 +28,8 @@ import { BaseCache } from './base';
 // Writes get pushed to all caches, but reads are serviced from the first cache that returns
 // a hit.
 export class MultiCache extends BaseCache {
+    upstream: any[];
+
     constructor(...upstream) {
         super('Multi');
         this.upstream = upstream;
@@ -47,8 +49,8 @@ export class MultiCache extends BaseCache {
         return {hit: false};
     }
 
-    putInternal(object, value, creator) {
-        return Promise.all(this.upstream.map(cache => {
+    async putInternal(object, value, creator) {
+        await Promise.all(this.upstream.map(cache => {
             return cache.put(object, value, creator);
         }));
     }

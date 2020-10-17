@@ -23,6 +23,10 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 export class SymbolStore {
+    uniqueSymbols: {};
+    sortedSymbols: any[];
+    isSorted: boolean;
+
     constructor() {
         this.uniqueSymbols = {};
         this.sortedSymbols = [];

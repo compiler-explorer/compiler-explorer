@@ -27,6 +27,18 @@ import fs from 'fs';
 import * as utils from './utils';
 
 export class MapFileReader {
+    mapFilename: any;
+    preferredLoadAddress: number;
+    segmentMultiplier: number;
+    segmentOffsets: any[];
+    segments: any[];
+    isegments: any[];
+    namedAddresses: any[];
+    entryPoint: any;
+    lineNumbers: any[];
+    reconstructedSegments: any[];
+    regexEntryPoint: RegExp;
+
     /**
      * constructor of MapFileReader
      *  Note that this is a base class and should be overriden. (see for example map-file-vs.js)
@@ -103,11 +115,10 @@ export class MapFileReader {
      * @param {number} address
      */
     setSegmentOffset(segment, address) {
-        let info = false;
         let idx = 0;
 
         for (idx = 0; idx < this.segments.length; idx++) {
-            info = this.segments[idx];
+            const info = this.segments[idx];
             if (info.segment === segment) {
                 this.segments[idx].addressInt = address;
                 this.segments[idx].address = address.toString(16);
@@ -116,7 +127,7 @@ export class MapFileReader {
 
         if (this.segmentOffsets.length > 0) {
             for (idx = 0; idx < this.segmentOffsets.length; idx++) {
-                info = this.segmentOffsets[idx];
+                const info = this.segmentOffsets[idx];
                 if (info.segment === segment) {
                     this.segmentOffsets[idx].addressInt = address;
                     this.segmentOffsets[idx].address = address.toString(16);
@@ -267,7 +278,7 @@ export class MapFileReader {
      * @returns {(object | boolean)}
      */
     getSymbolBefore(segment, address) {
-        let maxNamed = false;
+        let maxNamed;
 
         for (let idx = 0; idx < this.namedAddresses.length; idx++) {
             const info = this.namedAddresses[idx];

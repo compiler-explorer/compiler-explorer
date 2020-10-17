@@ -34,6 +34,11 @@ import { StorageBase } from './base';
 const MIN_STORED_ID_LENGTH = 6;
 
 export class StorageS3 extends StorageBase {
+    prefix: any;
+    table: any;
+    s3: S3Bucket;
+    dynamoDb: AWS.DynamoDB;
+
     static get key() { return 's3'; }
 
     constructor(httpRootDir, compilerProps, awsProps) {

@@ -36,6 +36,17 @@ const HashVersion = 'Compiler Explorer Policies Version 1';
  * Handles the setup of the options object passed on each page request
  */
 export class ClientOptionsHandler {
+    options: any;
+    compilerProps: any;
+    ceProps: any;
+    supportsBinary: any;
+    supportsExecutePerLanguage: any;
+    supportsExecute: boolean;
+    supportsLibraryCodeFilterPerLanguage: any;
+    supportsLibraryCodeFilter: boolean;
+    optionsJSON: string;
+    optionsHash: string;
+
     /***
      *
      * @param {Object[]} fileSources - Files to show in the Load/Save pane
@@ -258,7 +269,7 @@ export class ClientOptionsHandler {
         const forbiddenKeys = new Set(['exe', 'versionFlag', 'versionRe', 'compilerType', 'demangler', 'objdumper',
             'postProcess', 'demanglerType', 'isSemVer']);
         const copiedCompilers = JSON.parse(JSON.stringify(compilers));
-        let semverGroups = {};
+        let semverGroups: any = {};
         _.each(copiedCompilers, (compiler, compilersKey) => {
             if (compiler.isSemVer) {
                 if (!semverGroups[compiler.group]) semverGroups[compiler.group] = [];

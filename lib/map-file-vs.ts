@@ -25,6 +25,10 @@
 import { MapFileReader } from './map-file';
 
 export class MapFileReaderVS extends MapFileReader {
+    regexVsNames: RegExp;
+    regexVSLoadAddress: RegExp;
+    regexVsCodeSegment: RegExp;
+
     /**
      * constructor
      *
@@ -60,14 +64,15 @@ export class MapFileReaderVS extends MapFileReader {
      * @param {string} line
      */
     tryReadingCodeSegmentInfo(line) {
-        let codesegmentObject = false;
 
         const matches = line.match(this.regexVsCodeSegment);
         if (matches) {
-            codesegmentObject = this.addressToObject(matches[1], matches[2]);
-            codesegmentObject.id = this.segments.length + 1;
-            codesegmentObject.segmentLength = parseInt(matches[3], 16);
-            codesegmentObject.unitName = false;
+            const codesegmentObject = { 
+                id: this.segments.length + 1,
+                segmentLength: parseInt(matches[3], 16),
+                unitName: false,
+                ...this.addressToObject(matches[1], matches[2]),
+            };
 
             this.segments.push(codesegmentObject);
         }
@@ -79,12 +84,10 @@ export class MapFileReaderVS extends MapFileReader {
      * @param {string} line
      */
     tryReadingNamedAddress(line) {
-        let symbolObject = false;
-
         const matches = line.match(this.regexVsNames);
         if (matches && (matches.length >= 7) && (matches[4] !== '')) {
             const addressWithOffset = parseInt(matches[4], 16);
-            symbolObject = {
+            const symbolObject = {
                 segment: matches[1],
                 addressWithoutOffset: parseInt(matches[2], 16),
                 addressInt: addressWithOffset,

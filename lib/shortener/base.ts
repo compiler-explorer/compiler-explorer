@@ -23,6 +23,8 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 export class BaseShortener {
+    storageHandler: any;
+
     constructor(storageHandler) {
         this.storageHandler = storageHandler;
     }

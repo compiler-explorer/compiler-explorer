@@ -193,6 +193,7 @@ export class JavaCompiler extends BaseCompiler {
         for (const codeAndLineNumberTable of codeAndLineNumberTables) {
             const method = {
                 instructions: [],
+                startLine: undefined,
             };
             methods.push(method);
 

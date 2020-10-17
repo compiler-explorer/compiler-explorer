@@ -23,6 +23,15 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 export class PELabelReconstructor {
+    asmLines: any;
+    addressesToLabel: any[];
+    dontLabelUnmappedAddresses: any;
+    addressRegex: RegExp;
+    jumpRegex: RegExp;
+    callRegex: RegExp;
+    int3Regex: RegExp;
+    mapFileReader: any;
+
     /**
      * 
      * @param {Array} asmLines
@@ -188,7 +197,7 @@ export class PELabelReconstructor {
     insertLabels() {
         const sourceFileId = this.mapFileReader.getSegmentIdByUnitName('output');
 
-        let currentSegment = false;
+        let currentSegment;
 
         let lineIdx = 0;
         while (lineIdx < this.asmLines.length) {
@@ -204,14 +213,11 @@ export class PELabelReconstructor {
                     currentSegment = segmentInfo;
                 }
 
-                let namedAddr = false;
-                let labelLine = false;
-
                 const isReferenced = this.addressesToLabel.indexOf(addressStr);
                 if (isReferenced !== -1) {
-                    labelLine = matches[1] + ' <L' + addressStr + '>:';
+                    let labelLine = matches[1] + ' <L' + addressStr + '>:';
 
-                    namedAddr = this.mapFileReader.getSymbolAt(false, address);
+                    const namedAddr = this.mapFileReader.getSymbolAt(false, address);
                     if (namedAddr) {
                         labelLine = matches[1] + ' <' + namedAddr.displayName + '>:';
                     }
@@ -224,9 +230,9 @@ export class PELabelReconstructor {
                     // we might have missed the reference to this address,
                     //  but if it's listed as a symbol, we should still label it.
                     // todo: the call might be in <.itext>, should we include that part of the assembly?
-                    namedAddr = this.mapFileReader.getSymbolAt(false, address);
+                    const namedAddr = this.mapFileReader.getSymbolAt(false, address);
                     if (namedAddr) {
-                        labelLine = matches[1] + ' <' + namedAddr.displayName + '>:';
+                        const labelLine = matches[1] + ' <' + namedAddr.displayName + '>:';
 
                         this.asmLines.splice(lineIdx, 0, labelLine);
                         lineIdx++;

@@ -28,8 +28,21 @@ import { logger } from './logger';
 import * as utils from './utils';
 
 export class AsmEWAVRParser extends AsmParser {
+    commentOnly: RegExp;
+    filenameComment: RegExp;
+    lineNumberComment: RegExp;
+    segmentBegin: RegExp;
+    segmentControl: RegExp;
+    definesGlobal: RegExp;
+    definesLocal: RegExp;
+    miscDirective: RegExp;
+    dataStatement: RegExp;
+    requireStatement: RegExp;
+    beginFunctionMaybe: RegExp;
+
     constructor(compilerProps) {
         super(compilerProps);
+
         this.commentOnly = /^\s*(((#|@|\$|\/\/).*)|(\/\*.*\*\/))$/;
         this.filenameComment = /^\/\/\s[A-Za-z]?:?(\\\\?([^/\\]*[/\\])*)([^/\\]+)$/;
         this.lineNumberComment = /^\/\/\s*(\d+)\s(?!bytes).*/;

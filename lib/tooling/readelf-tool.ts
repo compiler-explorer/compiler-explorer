@@ -27,9 +27,8 @@ import { BaseTool } from './base-tool';
 export class ReadElfTool extends BaseTool {
     static get key() { return 'readelf-tool'; }
 
-    runTool(compilationInfo, inputFilename, args) {
-        if(!compilationInfo.filters.binary)
-        {
+    async runTool(compilationInfo, inputFilename, args) {
+        if(!compilationInfo.filters.binary) {
             return this.createErrorResponse('readelf requires an executable');
         }
         return super.runTool(compilationInfo, compilationInfo.executableFilename, args);

@@ -28,11 +28,11 @@ export class NullCache extends BaseCache {
     constructor() {
         super('Null');
     }
-    getInternal() {
-        return Promise.resolve({hit: false});
+
+    async getInternal() {
+        return {hit: false};
     }
 
-    putInternal() {
-        return Promise.resolve();
+    async putInternal() {
     }
 }

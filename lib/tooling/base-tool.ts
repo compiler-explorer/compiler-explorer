@@ -31,6 +31,9 @@ import { logger } from '../logger';
 import * as utils from '../utils';
 
 export class BaseTool {
+    tool: any;
+    env: any;
+
     constructor(toolInfo, env) {
         this.tool = toolInfo;
         this.env = env;
@@ -60,10 +63,11 @@ export class BaseTool {
         return exec.execute(toolExe, args, options);
     }
 
-    getDefaultExecOptions() {
+    getDefaultExecOptions(): exec.ExecutionOptions {
         return {
             timeoutMs: this.env.ceProps('compileTimeoutMs', 7500),
-            maxErrorOutput: this.env.ceProps('max-error-output', 5000),
+            // TODO: this seems no longer used
+            // maxErrorOutput: this.env.ceProps('max-error-output', 5000),
             wrapper: this.env.compilerProps('compiler-wrapper'),
         };
     }
@@ -75,6 +79,7 @@ export class BaseTool {
             code: -1,
             languageId: 'stderr',
             stdout: utils.parseOutput(message),
+            stderr: [],
         };
     }
 
@@ -107,7 +112,7 @@ export class BaseTool {
         }));
     }
 
-    async runTool(compilationInfo, inputFilepath, args, stdin) {
+    async runTool(compilationInfo, inputFilepath, args, stdin?) {
         let execOptions = this.getDefaultExecOptions();
         if (inputFilepath) execOptions.customCwd = path.dirname(inputFilepath);
         execOptions.input = stdin;
@@ -126,7 +131,7 @@ export class BaseTool {
         }
     }
 
-    convertResult(result, inputFilepath, exeDir) {
+    convertResult(result, inputFilepath, exeDir?) {
         const transformedFilepath = result.filenameTransform(inputFilepath);
         return {
             id: this.tool.id,

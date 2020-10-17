@@ -27,6 +27,11 @@ import _ from 'underscore';
 import * as utils from './utils';
 
 export class LlvmIrParser {
+    maxIrLines: number;
+    debugReference: RegExp;
+    metaNodeRe: RegExp;
+    metaNodeOptionsRe: RegExp;
+
     constructor(compilerProps) {
         this.maxIrLines = 500;
         if (compilerProps) {

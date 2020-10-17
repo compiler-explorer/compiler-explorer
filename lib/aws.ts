@@ -27,6 +27,10 @@ import AWS from 'aws-sdk';
 import { logger } from './logger';
 
 export class InstanceFetcher {
+    ec2: AWS.EC2;
+    tagKey: any;
+    tagValue: any;
+
     constructor(properties) {
         const region = properties('region');
         logger.info(`New instance fetcher for region ${region}`);

@@ -28,6 +28,12 @@ import * as utils from '../utils';
 import { CppDemangler } from './cpp';
 
 export class Win32Demangler extends CppDemangler {
+    flags: string;
+    allDecoratedLabels: RegExp;
+    allDecoratedLabelsWithQuotes: RegExp;
+    hasQuotesAroundDecoratedLabels: any;
+    win32RawSymbols: any[];
+
     static get key() { return 'win32'; }
 
     constructor(demanglerExe, compiler) {

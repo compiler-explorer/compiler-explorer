@@ -28,6 +28,10 @@ import fs from 'fs-extra';
 import { logger } from '../logger';
 
 export class HealthCheckHandler {
+    handle: any;
+    compilationQueue: any;
+    filePath: any;
+
     constructor(compilationQueue, filePath) {
         this.compilationQueue = compilationQueue;
         this.filePath = filePath;

@@ -27,6 +27,10 @@ import { SymbolStore } from '../symbol-store';
 import { BaseDemangler } from './base';
 
 export class PascalDemangler extends BaseDemangler {
+    symbolStore: SymbolStore;
+    fixedsymbols: any;
+    ignoredsymbols: any[];
+
     static get key() { return 'pascal'; }
 
     constructor(demanglerExe, compiler) {

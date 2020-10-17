@@ -23,7 +23,16 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 export class ClientStateCompilerOptions {
-    constructor(jsondata) {
+    binary: boolean;
+    commentOnly: boolean;
+    demangle: boolean;
+    directives: boolean;
+    execute: boolean;
+    intel: boolean;
+    labels: boolean;
+    trim: boolean;
+
+    constructor(jsondata?) {
         this.binary = false;
         this.commentOnly = true;
         this.demangle = true;
@@ -49,7 +58,14 @@ export class ClientStateCompilerOptions {
 }
 
 export class ClientStateCompiler {
-    constructor(jsondata) {
+    id: string;
+    options: string;
+    filters: ClientStateCompilerOptions;
+    libs: any[];
+    specialoutputs: any[];
+    tools: any[];
+
+    constructor(jsondata?) {
         if (jsondata) {
             this.fromJsonData(jsondata);
         } else {
@@ -93,7 +109,15 @@ export class ClientStateCompiler {
 }
 
 export class ClientStateExecutor {
-    constructor(jsondata) {
+    compiler: ClientStateCompiler;
+    compilerVisible: boolean;
+    compilerOutputVisible: boolean;
+    arguments: any[];
+    argumentsVisible: boolean;
+    stdin: string;
+    stdinVisible: boolean;
+
+    constructor(jsondata?) {
         if (jsondata) {
             this.fromJsonData(jsondata);
         } else {
@@ -126,6 +150,9 @@ export class ClientStateExecutor {
 }
 
 export class ClientStateConformanceView {
+    libs: any[];
+    compilers: any[];
+
     constructor(jsondata) {
         this.libs = [];
         this.compilers = [];
@@ -142,11 +169,18 @@ export class ClientStateConformanceView {
 }
 
 export class ClientStateSession {
-    constructor(jsondata) {
+    id: boolean;
+    language: string;
+    source: string;
+    conformanceview?: ClientStateConformanceView;
+    compilers: any[];
+    executors: any[];
+
+    constructor(jsondata?) {
         this.id = false;
         this.language = '';
         this.source = '';
-        this.conformanceview = false;
+        this.conformanceview = undefined;
         this.compilers = [];
         this.executors = [];
 
@@ -161,7 +195,7 @@ export class ClientStateSession {
             if (jsondata.conformanceview) {
                 this.conformanceview = new ClientStateConformanceView(jsondata.conformanceview);
             } else {
-                this.conformanceview = false;
+                this.conformanceview = undefined;
             }
         }
 
@@ -206,7 +240,9 @@ export class ClientStateSession {
 }
 
 export class ClientState {
-    constructor(jsondata) {
+    sessions: any[];
+
+    constructor(jsondata?) {
         this.sessions = [];
 
         if (jsondata) this.fromJsonData(jsondata);

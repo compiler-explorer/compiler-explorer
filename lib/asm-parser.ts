@@ -28,7 +28,37 @@ import { AsmRegex } from './asmregex';
 import * as utils from './utils';
 
 export class AsmParser extends AsmRegex {
-    constructor(compilerProps) {
+    labelFindNonMips: RegExp;
+    labelFindMips: RegExp;
+    mipsLabelDefinition: RegExp;
+    dataDefn: RegExp;
+    fileFind: RegExp;
+    hasOpcodeRe: RegExp;
+    instructionRe: RegExp;
+    identifierFindRe: RegExp;
+    hasNvccOpcodeRe: RegExp;
+    definesFunction: RegExp;
+    definesGlobal: RegExp;
+    definesWeak: RegExp;
+    indentedLabelDef: RegExp;
+    assignmentDef: RegExp;
+    directive: RegExp;
+    startAppBlock: RegExp;
+    endAppBlock: RegExp;
+    startAsmNesting: RegExp;
+    endAsmNesting: RegExp;
+    cudaBeginDef: RegExp;
+    cudaEndDef: RegExp;
+    binaryHideFuncRe: any;
+    maxAsmLines: number;
+    asmOpcodeRe: RegExp;
+    lineRe: RegExp;
+    labelRe: RegExp;
+    destRe: RegExp;
+    commentRe: RegExp;
+    instOpcodeRe: RegExp;
+
+    constructor(compilerProps?) {
         super();
 
         this.labelFindNonMips = /[.A-Z_a-z][\w$.]*/g;
@@ -460,7 +490,7 @@ export class AsmParser extends AsmRegex {
         return !func.match(this.binaryHideFuncRe);
     }
 
-    processBinaryAsm(asmResult, filters) {
+    processBinaryAsm(asmResult, filters): any {
         const asm = [];
         const labelDefinitions = {};
 

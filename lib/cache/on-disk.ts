@@ -32,7 +32,7 @@ import { logger } from '../logger';
 import { BaseCache } from './base';
 
 // With thanks to https://gist.github.com/kethinov/6658166
-function getAllFiles(root, dir) {
+function getAllFiles(root, dir?) {
     dir = dir || root;
     return fs.readdirSync(dir).reduce((files, file) => {
         const fullPath = path.join(dir, file);
@@ -43,6 +43,10 @@ function getAllFiles(root, dir) {
 }
 
 export class OnDiskCache extends BaseCache {
+    path: any;
+    cacheMb: any;
+    cache: LRU<any, any>;
+
     constructor(path, cacheMb) {
         super(`OnDiskCache(${path}, ${cacheMb}mb)`);
         this.path = path;
@@ -98,6 +102,6 @@ export class OnDiskCache extends BaseCache {
             size: value.length,
         };
         await fs.writeFile(info.path, value);
-        return this.cache.set(key, info);
+        this.cache.set(key, info);
     }
 }

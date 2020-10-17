@@ -28,6 +28,9 @@ import * as exec from '../exec';
 import { logger } from '../logger';
 
 export class Formatter {
+    tools: any;
+    ceProps: any;
+
     constructor(ceProps) {
         this.tools = {};
         this.ceProps = ceProps;

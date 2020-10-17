@@ -34,7 +34,7 @@ import { PELabelReconstructor } from '../pe32-support';
 export class Win32Compiler extends BaseCompiler {
     static get key() { return 'win32'; }
 
-    newTempDir() {
+    newTempDir(): Promise<string> {
         return new Promise((resolve, reject) => {
             temp.mkdir({prefix: 'compiler-explorer-compiler', dir: process.env.TMP}, (err, dirPath) => {
                 if (err)
@@ -123,7 +123,7 @@ export class Win32Compiler extends BaseCompiler {
             libLinks, staticlibLinks);
     }
 
-    optionsForFilter(filters, outputFilename) {
+    optionsForFilter(filters, outputFilename, userOptions) {
         if (filters.binary) {
             const mapFilename = outputFilename + '.map';
             const mapFileReader = new MapFileReaderVS(mapFilename);

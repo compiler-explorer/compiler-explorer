@@ -67,7 +67,7 @@ export class ClangTidyTool extends BaseTool {
             path.join(dir, 'compile_flags.txt'),
             compileFlags.join('\n'),
         );
-        const result = await super.runTool(compilationInfo, sourcefile, args);
+        const result: any = await super.runTool(compilationInfo, sourcefile, args);
         result.sourcechanged = false;
 
         if (wantsFix) {

@@ -32,6 +32,18 @@ import { createCacheFromConfig } from './cache/from-config';
 import { logger } from './logger';
 
 export class CompilationEnvironment {
+    ceProps: any;
+    compilationQueue: any;
+    compilerProps: any;
+    okOptions: RegExp;
+    badOptions: RegExp;
+    cache: BaseCache;
+    executableCache: BaseCache;
+    compilerCache: BaseCache;
+    reportCacheEvery: any;
+    multiarch: any;
+    baseEnv: {};
+
     constructor(compilerProps, compilationQueue, doCache) {
         this.ceProps = compilerProps.ceProps;
         this.compilationQueue = compilationQueue;
@@ -69,7 +81,7 @@ export class CompilationEnvironment {
     }
 
     getEnv(needsMulti) {
-        const env = {...this.baseEnv};
+        const env: any = {...this.baseEnv};
         if (needsMulti && this.multiarch) {
             env.LIBRARY_PATH = '/usr/lib/' + this.multiarch;
             env.C_INCLUDE_PATH = '/usr/include/' + this.multiarch;

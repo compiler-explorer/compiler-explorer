@@ -40,6 +40,15 @@ const sleep = promisify(setTimeout);
  * Finds and initializes the compilers stored on the properties files
  */
 export class CompilerFinder {
+    compilerProps: any;
+    ceProps: any;
+    awsProps: any;
+    args: any;
+    compileHandler: any;
+    languages: any;
+    awsPoller: any;
+    optionsHandler: any;
+
     /***
      * @param {CompileHandler} compileHandler
      * @param {CompilerProps} compilerProps
@@ -195,7 +204,7 @@ export class CompilerFinder {
     async compilerConfigFor(langId, compilerName, parentProps) {
         const base = `compiler.${compilerName}.`;
 
-        function props(propName, def) {
+        function props(propName, def?) {
             const propsForCompiler = parentProps(langId, base + propName);
             if (propsForCompiler !== undefined) return propsForCompiler;
             return parentProps(langId, propName, def);
@@ -341,7 +350,7 @@ export class CompilerFinder {
     }
 
     ensureDistinct(compilers) {
-        const ids = {};
+        const ids: any = {};
         let foundClash = false;
         _.each(compilers, compiler => {
             if (!ids[compiler.id]) ids[compiler.id] = [];

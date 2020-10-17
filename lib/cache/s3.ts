@@ -34,6 +34,11 @@ function messageFor(e) {
 }
 
 export class S3Cache extends BaseCache {
+    bucket: any;
+    path: any;
+    region: any;
+    s3: S3Bucket;
+
     constructor(bucket, path, region) {
         super(`S3Cache(s3://${bucket}/${path} in ${region})`);
         this.bucket = bucket;
@@ -42,27 +47,30 @@ export class S3Cache extends BaseCache {
         this.s3 = new S3Bucket(bucket, region);
     }
 
-    getInternal(key) {
-        return this.s3.get(key, this.path)
-            .catch(e => {
-                Sentry.captureException(e);
-                logger.error(`Error while trying to read S3 cache: ${messageFor(e)}`);
-                return {hit: false};
-            });
+    async getInternal(key) {
+        try {
+            return await this.s3.get(key, this.path);
+        } catch (e) {
+            Sentry.captureException(e);
+            logger.error(`Error while trying to read S3 cache: ${messageFor(e)}`);
+            return {hit: false};
+        }
     }
 
-    putInternal(key, value, creator) {
-        const options = {
+    async putInternal(key, value, creator) {
+        const options: any = {
             metadata: {},
             redundancy: 'REDUCED_REDUNDANCY',
         };
         if (creator) {
             options.metadata.CreatedBy = creator;
         }
-        return this.s3.put(key, value, this.path, options)
-            .catch(e => {
-                Sentry.captureException(e);
-                logger.error(`Error while trying to write to S3 cache: ${messageFor(e)}`);
-            });
+
+        try {
+            await this.s3.put(key, value, this.path, options);
+        } catch (e) {
+            Sentry.captureException(e);
+            logger.error(`Error while trying to write to S3 cache: ${messageFor(e)}`);
+        }
     }
 }

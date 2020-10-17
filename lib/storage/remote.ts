@@ -31,6 +31,10 @@ import { logger } from '../logger';
 import { StorageBase } from './base';
 
 export class StorageRemote extends StorageBase {
+    baseUrl: any;
+    get: any;
+    post: any;
+
     static get key() { return 'remote'; }
 
     constructor(httpRootDir, compilerProps) {

@@ -27,6 +27,9 @@ import LRU from 'lru-cache';
 import { BaseCache } from './base';
 
 export class InMemoryCache extends BaseCache {
+    cacheMb: any;
+    cache: LRU<any, any>;
+
     constructor(cacheMb) {
         super(`InMemoryCache(${cacheMb}Mb)`);
         this.cacheMb = cacheMb;
@@ -40,16 +43,15 @@ export class InMemoryCache extends BaseCache {
         return `${super.statString()}, LRU has ${this.cache.itemCount} item(s) totalling ${this.cache.length} bytes`;
     }
 
-    getInternal(key) {
+    async getInternal(key) {
         const cached = this.cache.get(key);
-        return Promise.resolve({
+        return {
             hit: !!cached,
             data: cached,
-        });
+        };
     }
 
-    putInternal(key, value/*, creator*/) {
+    async putInternal(key, value/*, creator*/) {
         this.cache.set(key, value);
-        return Promise.resolve();
     }
 }

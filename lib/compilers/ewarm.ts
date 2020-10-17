@@ -35,7 +35,7 @@ export class EWARMCompiler extends BaseCompiler {
         this.asm = new AsmEWAVRParser(this.compilerProps);
     }
 
-    newTempDir() {
+    newTempDir(): Promise<string> {
         return new Promise((resolve, reject) => {
             temp.mkdir({prefix: 'compiler-explorer-compiler', dir: process.env.TMP}, (err, dirPath) => {
                 if (err)

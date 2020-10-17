@@ -34,6 +34,8 @@ import { StorageBase } from './base';
 const MIN_STORED_ID_LENGTH = 6;
 
 export class StorageLocal extends StorageBase {
+    storageFolder: string;
+
     static get key() { return 'local'; }
 
     constructor(httpRootDir, compilerProps) {

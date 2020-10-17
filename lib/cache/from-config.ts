@@ -24,6 +24,7 @@
 
 import { logger } from '../logger';
 
+import { BaseCache } from './base';
 import { InMemoryCache } from './in-memory';
 import { MultiCache } from './multi';
 import { NullCache } from './null';
@@ -37,7 +38,7 @@ function paramInt(config, param) {
     return result;
 }
 
-function createInternal(config) {
+function createInternal(config): BaseCache {
     if (!config) {
         return new NullCache();
     }
@@ -63,7 +64,7 @@ function createInternal(config) {
         case 'S3':
             if (params.length !== 3)
                 throw new Error(`Bad params: ${config}`);
-            return new S3Cache(...params);
+            return new S3Cache(params[0], params[1], params[2]);
 
         default:
             throw new Error(`Unrecognised cache type '${match[1]}'`);

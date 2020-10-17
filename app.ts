@@ -61,7 +61,7 @@ import { NoScriptHandler } from './lib/handlers/noscript';
 import { RouteAPI } from './lib/handlers/route-api';
 import { SourceHandler } from './lib/handlers/source';
 import { languages as allLanguages } from './lib/languages';
-import { logger, logToPapertrail, suppressConsoleLog } from './lib/logger';
+import { logger, logToPapertrail, streams as logStreams, suppressConsoleLog } from './lib/logger';
 import { ClientOptionsHandler } from './lib/options-handler';
 import * as props from './lib/properties';
 import { getShortenerTypeByKey } from './lib/shortener';
@@ -101,7 +101,7 @@ if (opts.debug) logger.level = 'debug';
 // AP: Detect if we're running under Windows Subsystem for Linux. Temporary modification
 // of process.env is allowed: https://nodejs.org/api/process.html#process_process_env
 if (process.platform === 'linux' && child_process.execSync('uname -a').toString().includes('Microsoft')) {
-    process.env.wsl = true;
+    process.env.wsl = 'true';
 }
 
 // AP: Allow setting of tmpDir (used in lib/base-compiler.js & lib/exec.js) through opts.
@@ -206,7 +206,7 @@ if (defArgs.wantedLanguage) {
     languages = filteredLangs;
 }
 
-if (languages.length === 0) {
+if (_.isEmpty(languages)) {
     logger.error('Trying to start Compiler Explorer without a language');
 }
 
@@ -234,7 +234,7 @@ function contentPolicyHeader(res) {
     }
 }
 
-function measureEventLoopLag(delayMs) {
+function measureEventLoopLag(delayMs): Promise<number> {
     return new Promise((resolve) => {
         const start = process.hrtime.bigint();
         setTimeout(() => {
@@ -275,7 +275,7 @@ function setupEventLoopLagLogging() {
     }
 }
 
-let pugRequireHandler = () => {
+let pugRequireHandler = (path:string) => {
     logger.error('pug require handler not configured');
 };
 
@@ -291,7 +291,7 @@ async function setupWebPackDevMiddleware(router) {
     const webpackCompiler = webpack(webpackConfig);
     router.use(webpackDevMiddleware(webpackCompiler, {
         publicPath: '/static',
-        logger: logger,
+        //logger: logger,
         stats: 'errors-only',
     }));
 
@@ -362,7 +362,7 @@ function startListening(server) {
     if (ss) {
         // ms (5 min default)
         const idleTimeout = process.env.IDLE_TIMEOUT;
-        const timeout = (typeof idleTimeout !== 'undefined' ? idleTimeout : 300) * 1000;
+        const timeout = (typeof idleTimeout !== 'undefined' ? Number(idleTimeout) : 300) * 1000;
         if (idleTimeout) {
             const exit = () => {
                 logger.info('Inactivity timeout reached, exiting.');
@@ -410,7 +410,7 @@ function setupSentry(sentryDsn, expressApp) {
             // enable HTTP calls tracing
             new Sentry.Integrations.Http({tracing: true}),
             // enable Express.js middleware tracing
-            new Tracing.Integrations.Express({expressApp}),
+            new Tracing.Integrations.Express({ app: expressApp }),
         ],
         tracesSampleRate: 0.1,
     });
@@ -467,7 +467,7 @@ async function main() {
     };
 
     const noscriptHandler = new NoScriptHandler(router, handlerConfig);
-    const routeApi = new RouteAPI(router, handlerConfig, noscriptHandler.renderNoScriptLayout);
+    const routeApi = new RouteAPI(router, handlerConfig);
 
     function onCompilerChange(compilers) {
         if (JSON.stringify(prevCompilers) === JSON.stringify(compilers)) {
@@ -526,7 +526,7 @@ async function main() {
             if (sentrySlowRequestMs > 0 && time >= sentrySlowRequestMs) {
                 Sentry.withScope(scope => {
                     scope.setExtra('duration_ms', time);
-                    Sentry.captureMessage('SlowRequest', 'warning');
+                    Sentry.captureMessage('SlowRequest', Sentry.Severity.Warning);
                 });
             }
         }))
@@ -553,7 +553,7 @@ async function main() {
 
     const sponsorConfig = loadSponsorsFromString(fs.readFileSync(configDir + '/sponsors.yaml', 'utf-8'));
 
-    function renderConfig(extra, urlOptions) {
+    function renderConfig(extra, urlOptions?) {
         const urlOptionsAllowed = [
             'readOnly', 'hideEditorToolbars', 'language',
         ];
@@ -600,7 +600,7 @@ async function main() {
         }, req.query));
     }
 
-    const embeddedHandler = function (req, res) {
+    const embeddedHandler = function (req: express.Request, res: express.Response) {
         staticHeaders(res);
         contentPolicyHeader(res);
         res.render('embed', renderConfig({
@@ -614,10 +614,10 @@ async function main() {
         await setupStaticMiddleware(router);
     }
 
-    morgan.token('gdpr_ip', req => utils.anonymizeIp(req.ip));
+    morgan.token('gdpr_ip', (req: any) => utils.anonymizeIp(req.ip));
 
     // Based on combined format, but: GDPR compliant IP, no timestamp & no unused fields for our usecase
-    const morganFormat = isDevMode() ? 'dev' : ':gdpr_ip ":method :url" :status';
+    const morganFormat: string = isDevMode() ? 'dev' : ':gdpr_ip ":method :url" :status';
 
     const shortenerType = getShortenerTypeByKey(clientOptionsHandler.options.urlShortenService);
     const shortener = new shortenerType(storageHandler);
@@ -659,17 +659,17 @@ async function main() {
 
     router
         .use(morgan(morganFormat, {
-            stream: logger.stream,
+            stream: logStreams.info,
             // Skip for non errors (2xx, 3xx)
             skip: (req, res) => res.statusCode >= 400,
         }))
         .use(morgan(morganFormat, {
-            stream: logger.warnStream,
+            stream: logStreams.warn,
             // Skip for non user errors (4xx)
             skip: (req, res) => res.statusCode < 400 || res.statusCode >= 500,
         }))
         .use(morgan(morganFormat, {
-            stream: logger.errStream,
+            stream: logStreams.error,
             // Skip for non server errors (5xx)
             skip: (req, res) => res.statusCode < 500,
         }))

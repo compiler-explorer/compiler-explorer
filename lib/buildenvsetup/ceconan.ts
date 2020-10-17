@@ -35,6 +35,9 @@ import { logger } from '../logger';
 import { BuildEnvSetupBase } from './base';
 
 export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
+    host: any;
+    onlyonstaticliblink: any;
+
     static get key() { return 'ceconan'; }
 
     constructor(compilerInfo, env, execCompilerCachedFunc) {
@@ -189,9 +192,7 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
 
     async setup(key, dirPath, libraryDetails) {
         if (this.host && (!this.onlyonstaticliblink || this.hasAtLeastOneBinaryToLink(libraryDetails))) {
-            return this.download(key, dirPath, libraryDetails);
-        } else {
-            return Promise.resolve();
+            await this.download(key, dirPath, libraryDetails);
         }
     }
 

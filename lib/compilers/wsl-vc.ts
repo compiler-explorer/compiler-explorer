@@ -53,7 +53,7 @@ export class WslVcCompiler extends Win32VcCompiler {
 
     // AP: Create CE temp directory in winTmp directory instead of the tmpDir directory.
     // NPM temp package: https://www.npmjs.com/package/temp, see Affixes
-    newTempDir() {
+    newTempDir(): Promise<string> {
         return new Promise((resolve, reject) => {
             temp.mkdir({prefix: 'compiler-explorer-compiler', dir: process.env.winTmp}, (err, dirPath) => {
                 if (err)

@@ -40,27 +40,19 @@ export const logger = winston.createLogger({
     transports: [consoleTransportInstance],
 });
 
-logger.stream = {
-    write: message => {
-        logger.info(message.trim());
-    },
-};
-
-logger.warnStream = {
-    write: message => {
-        logger.warn(message.trim());
-    },
-};
-
-logger.errStream = {
-    write: message => {
-        logger.error(message.trim());
-    },
+export const streams = {
+    info: { write: message => logger.info(message.trim()) },
+    warn: { write: message => logger.warn(message.trim()) },
+    error: { write: message => logger.error(message.trim()) },
 };
 
 // Our own transport which uses Papertrail under the hood but better adapts it to work
 // in winston 3.0
 class MyPapertrailTransport extends TransportStream {
+    hostname: string;
+    program: any;
+    transport: any;
+
     constructor(opts) {
         super(opts);
 

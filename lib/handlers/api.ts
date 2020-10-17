@@ -34,6 +34,13 @@ import { AsmDocsHandler } from './asm-docs-api';
 import { Formatter } from './formatting';
 
 export class ApiHandler {
+    compilers: any[];
+    languages: any[];
+    usedLangIds: any[];
+    options: any;
+    storageHandler: any;
+    handle: any;
+
     constructor(compileHandler, ceProps, storageHandler) {
         this.compilers = [];
         this.languages = [];

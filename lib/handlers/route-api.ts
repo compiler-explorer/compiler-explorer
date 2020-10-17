@@ -32,6 +32,11 @@ import * as utils from '../utils';
 import { ApiHandler } from './api';
 
 export class RouteAPI {
+    apiHandler: ApiHandler;
+    storageHandler: any;
+    router: any;
+    renderGoldenLayout: any;
+
     constructor(router, config) {
         this.router = router;
         this.renderGoldenLayout = config.renderGoldenLayout;
@@ -56,7 +61,7 @@ export class RouteAPI {
             .then(result => {
                 const config = JSON.parse(result.config);
 
-                let clientstate = false;
+                let clientstate;
                 if (config.content) {
                     const normalizer = new ClientStateNormalizer();
                     normalizer.fromGoldenLayout(config);

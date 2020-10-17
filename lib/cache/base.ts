@@ -28,6 +28,11 @@ import { getHash } from '../utils';
 const HashVersion = 'Compiler Explorer Cache Version 1';
 
 export class BaseCache {
+    name: any;
+    gets: number;
+    hits: number;
+    puts: number;
+
     constructor(name) {
         this.name = name;
         this.gets = 0;
@@ -60,7 +65,7 @@ export class BaseCache {
         return result;
     }
 
-    async put(key, value, creator) {
+    async put(key, value, creator?) {
         if (!(value instanceof Buffer))
             value = Buffer.from(value);
         this.puts++;
@@ -68,12 +73,12 @@ export class BaseCache {
     }
 
     // eslint-disable-next-line no-unused-vars
-    async getInternal(key) {
+    async getInternal(key): Promise<any> {
         throw new Error('should be implemented in subclass');
     }
 
     // eslint-disable-next-line no-unused-vars
-    async putInternal(key, value, creator) {
+    async putInternal(key, value, creator?) {
         throw new Error('should be implemented in subclass');
     }
 }

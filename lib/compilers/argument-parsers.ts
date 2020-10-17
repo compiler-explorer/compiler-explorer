@@ -33,7 +33,7 @@ export class BaseParser {
     }
 
     static parseLines(stdout, optionRegex) {
-        let previousOption = false;
+        let previousOption;
         let options = {};
 
         utils.eachLine(stdout, line => {
@@ -49,7 +49,7 @@ export class BaseParser {
                             options[previousOption].description = line.trim();
                     }
                 } else {
-                    previousOption = false;
+                    previousOption = undefined;
                 }
                 return;
             }
@@ -185,7 +185,7 @@ export class VCParser extends BaseParser {
     }
 
     static parseLines(stdout, optionRegex) {
-        let previousOption = false;
+        let previousOption;
         let options = {};
 
         const matchLine = (line) => {
@@ -203,7 +203,7 @@ export class VCParser extends BaseParser {
                             options[previousOption].description = line.trim();
                     }
                 } else {
-                    previousOption = false;
+                    previousOption = undefined;
                 }
                 return;
             }
