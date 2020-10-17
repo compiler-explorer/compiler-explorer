@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { logger } from '../lib/logger';
+import { logger, streams as logStreams } from '../lib/logger';
 import * as utils from '../lib/utils';
 
 import { fs } from './utils';
@@ -256,13 +256,13 @@ describe('Anonymizes all kind of IPs', () => {
 
 describe('Logger functionality', () => {
     it('has info stream with a write function', () => {
-        logger.stream.write.should.a('function');
+        logStreams.info.write.should.a('function');
     });
     it('has warning stream with a write function', () => {
-        logger.warnStream.write.should.a('function');
+        logStreams.warn.write.should.a('function');
     });
     it('has error stream with a write function', () => {
-        logger.errStream.write.should.a('function');
+        logStreams.error.write.should.a('function');
     });
 });
 

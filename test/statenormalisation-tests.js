@@ -27,6 +27,10 @@ import { ClientStateNormalizer } from '../lib/clientstate-normalizer';
 
 import { fs } from './utils';
 
+function launderUndefineds(x) {
+    return JSON.parse(JSON.stringify(x));
+}
+
 describe('Normalizing clientstate', () => {
     it('Should translate 2 compilers GL layout to clientstate', () => {
         const normalizer = new ClientStateNormalizer();
@@ -37,7 +41,7 @@ describe('Normalizing clientstate', () => {
 
         const resultdata = JSON.parse(fs.readFileSync('test/state/twocompilers.json.normalized'));
 
-        normalizer.normalized.should.deep.equal(resultdata);
+        launderUndefineds(normalizer.normalized).should.deep.equal(resultdata);
     });
 
     it('Should recognize everything and kitchensink as well', () => {
@@ -49,7 +53,7 @@ describe('Normalizing clientstate', () => {
 
         const resultdata = JSON.parse(fs.readFileSync('test/state/andthekitchensink.json.normalized'));
 
-        normalizer.normalized.should.deep.equal(resultdata);
+        launderUndefineds(normalizer.normalized).should.deep.equal(resultdata);
     });
 
     it('Should support conformanceview', () => {
@@ -61,7 +65,7 @@ describe('Normalizing clientstate', () => {
 
         const resultdata = JSON.parse(fs.readFileSync('test/state/conformanceview.json.normalized'));
 
-        normalizer.normalized.should.deep.equal(resultdata);
+        launderUndefineds(normalizer.normalized).should.deep.equal(resultdata);
     });
 
     it('Should support executors', () => {
@@ -73,7 +77,7 @@ describe('Normalizing clientstate', () => {
 
         const resultdata = JSON.parse(fs.readFileSync('test/state/executor.json.normalized'));
 
-        normalizer.normalized.should.deep.equal(resultdata);
+        launderUndefineds(normalizer.normalized).should.deep.equal(resultdata);
     });
 });
 
