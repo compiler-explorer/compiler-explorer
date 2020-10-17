@@ -28,6 +28,9 @@ import * as exec from '../exec';
 import { logger } from '../logger';
 
 export class Formatter {
+    tools: any;
+    ceProps: any;
+
     constructor(ceProps) {
         this.tools = {};
         this.ceProps = ceProps;
@@ -62,7 +65,7 @@ export class Formatter {
     }
 
     validateFormatRequest(req, res) {
-        let requestedTool = this.tools[req.params.tool];
+        const requestedTool = this.tools[req.params.tool];
         if (!requestedTool) {
             res.status(422); // Unprocessable Entity
             res.send({

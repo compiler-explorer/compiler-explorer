@@ -67,7 +67,7 @@ versionFlag | String | The flag to pass to the compiler to make it emit its vers
 versionRe | RegExp | A regular expression used to capture the version from the version output|
 compilerType | String | The name of the class handling this compiler|
 
-The `compilerType` option is special: it refers to the Javascript class in `lib/compilers/*.js` which handles running and handling
+The `compilerType` option is special: it refers to the Javascript class in `lib/compilers/*.ts` which handles running and handling
 output for this compiler type.
 
 ## Adding a new compiler locally

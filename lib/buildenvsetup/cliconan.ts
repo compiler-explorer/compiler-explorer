@@ -33,6 +33,10 @@ import { logger } from '../logger';
 import { BuildEnvSetupBase } from './base';
 
 export class BuildEnvSetupCliConan extends BuildEnvSetupBase {
+    exe: any;
+    remote: any;
+    onlyonstaticliblink: any;
+
     static get key() { return 'cliconan'; }
 
     constructor(compilerInfo, env, execCompilerCachedFunc) {
@@ -46,9 +50,7 @@ export class BuildEnvSetupCliConan extends BuildEnvSetupBase {
     async setup(key, dirPath, libraryDetails) {
         if (!this.onlyonstaticliblink || this.hasAtLeastOneBinaryToLink(libraryDetails)) {
             await this.prepareConanRequest(libraryDetails, dirPath);
-            return this.installLibrariesViaConan(key, dirPath);
-        } else {
-            return Promise.resolve();
+            await this.installLibrariesViaConan(key, dirPath);
         }
     }
 
@@ -74,7 +76,7 @@ export class BuildEnvSetupCliConan extends BuildEnvSetupBase {
             'lib, *.a -> .\n' +
             'lib, *.so* -> .\n';
 
-        return fs.writeFile(path.join(dirPath, 'conanfile.txt'), data);
+        await fs.writeFile(path.join(dirPath, 'conanfile.txt'), data);
     }
 
     async installLibrariesViaConan(key, dirPath) {
@@ -83,7 +85,7 @@ export class BuildEnvSetupCliConan extends BuildEnvSetupBase {
         const stdver = '';
         const flagcollection = '';
 
-        let args = ['install', '.'];
+        const args = ['install', '.'];
         if (this.remote) args.push('-r', this.remote);
         args.push('-s', 'os=Linux');
         args.push('-s', 'build_type=Debug');
@@ -95,6 +97,6 @@ export class BuildEnvSetupCliConan extends BuildEnvSetupBase {
         args.push('-s', `flagcollection=${flagcollection}`);
 
         logger.info('Conan install: ', args);
-        return exec.execute(this.exe, args, {customCwd: dirPath});
+        await exec.execute(this.exe, args, {customCwd: dirPath});
     }
 }

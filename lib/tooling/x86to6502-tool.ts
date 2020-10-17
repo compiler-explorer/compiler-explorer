@@ -31,17 +31,13 @@ import { BaseTool } from './base-tool';
 export class x86to6502Tool extends BaseTool {
     static get key() { return 'x86to6502-tool'; }
 
-    runTool(compilationInfo, sourcefile, args) {
+    async runTool(compilationInfo, sourcefile, args) {
         if (compilationInfo.filters.intel) {
-            return new Promise((resolve) => {
-                resolve(this.createErrorResponse('<need AT&T notation assembly>'));
-            });
+            return this.createErrorResponse('<need AT&T notation assembly>');
         }
 
         if (compilationInfo.filters.binary) {
-            return new Promise((resolve) => {
-                resolve(this.createErrorResponse('<cannot run x86to6502 on binary>'));
-            });
+            return this.createErrorResponse('<cannot run x86to6502 on binary>');
         }
 
         const parser = new AsmParser();

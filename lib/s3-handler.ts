@@ -27,6 +27,10 @@ import AWS from 'aws-sdk';
 const NoSuchKey = 'NoSuchKey';
 
 export class S3Bucket {
+    instance: AWS.S3;
+    bucket: any;
+    region: any;
+
     constructor(bucket, region) {
         this.instance = new AWS.S3({region});
         this.bucket = bucket;

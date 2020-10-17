@@ -30,6 +30,8 @@ import _ from 'underscore';
 import { BaseCompiler } from '../base-compiler';
 
 export class ZigCompiler extends BaseCompiler {
+    self_hosted_cli: boolean;
+
     static get key() { return 'zig'; }
 
     constructor(info, env) {
@@ -105,7 +107,7 @@ export class ZigCompiler extends BaseCompiler {
         }
 
         if (!filters.binary) {
-            let userRequestedEmit = _.any(userOptions, opt => opt.includes('--emit'));
+            const userRequestedEmit = _.any(userOptions, opt => opt.includes('--emit'));
             if (!userRequestedEmit) {
                 options = options.concat('--emit', 'asm');
             }

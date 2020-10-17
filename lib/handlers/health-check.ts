@@ -28,6 +28,10 @@ import fs from 'fs-extra';
 import { logger } from '../logger';
 
 export class HealthCheckHandler {
+    handle: any;
+    compilationQueue: any;
+    filePath: any;
+
     constructor(compilationQueue, filePath) {
         this.compilationQueue = compilationQueue;
         this.filePath = filePath;
@@ -42,7 +46,9 @@ export class HealthCheckHandler {
          * we perform the remainder of the health check outside of the
          * job to minimize the duration that we hold an execution slot
          */
-        await this.compilationQueue.enqueue(async () => {});
+        await this.compilationQueue.enqueue(async () => {
+            // does nothing but transit the queue.
+        });
 
         if (!this.filePath) {
             res.send('Everything is awesome');

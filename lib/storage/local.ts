@@ -34,6 +34,8 @@ import { StorageBase } from './base';
 const MIN_STORED_ID_LENGTH = 6;
 
 export class StorageLocal extends StorageBase {
+    storageFolder: string;
+
     static get key() { return 'local'; }
 
     constructor(httpRootDir, compilerProps) {
@@ -60,13 +62,13 @@ export class StorageLocal extends StorageBase {
         // This currently works on a hardcoded, local directory.
         try {
             const files = await fs.readdir(this.storageFolder);
-            let prefix = hash.substring(0, MIN_STORED_ID_LENGTH);
+            const prefix = hash.substring(0, MIN_STORED_ID_LENGTH);
             const filenames = _.chain(files)
                 .filter(filename => filename.startsWith(prefix))
                 .sort()
                 .value();
             for (let i = MIN_STORED_ID_LENGTH; i < hash.length - 1; i++) {
-                let subHash = hash.substring(0, i);
+                const subHash = hash.substring(0, i);
                 // Check if the current subHash is present in the array
                 const index = _.indexOf(filenames, subHash, true);
                 if (index === -1) {

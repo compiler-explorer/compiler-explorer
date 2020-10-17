@@ -28,8 +28,21 @@ import { logger } from './logger';
 import * as utils from './utils';
 
 export class AsmEWAVRParser extends AsmParser {
+    commentOnly: RegExp;
+    filenameComment: RegExp;
+    lineNumberComment: RegExp;
+    segmentBegin: RegExp;
+    segmentControl: RegExp;
+    definesGlobal: RegExp;
+    definesLocal: RegExp;
+    miscDirective: RegExp;
+    dataStatement: RegExp;
+    requireStatement: RegExp;
+    beginFunctionMaybe: RegExp;
+
     constructor(compilerProps) {
         super(compilerProps);
+
         this.commentOnly = /^\s*(((#|@|\$|\/\/).*)|(\/\*.*\*\/))$/;
         this.filenameComment = /^\/\/\s[A-Za-z]?:?(\\\\?([^/\\]*[/\\])*)([^/\\]+)$/;
         this.lineNumberComment = /^\/\/\s*(\d+)\s(?!bytes).*/;
@@ -93,7 +106,7 @@ export class AsmEWAVRParser extends AsmParser {
             }
         };
 
-        let asmLines = utils.splitLines(asm);
+        const asmLines = utils.splitLines(asm);
 
         const stdInLooking = /<stdin>|^-$|example\.[^/]+$|<source>/;
 
@@ -105,7 +118,7 @@ export class AsmEWAVRParser extends AsmParser {
         //   ; initialLine: int
         //   ; file: string option
         //   ; require: string array }
-        let resultObject = {
+        const resultObject = {
             prefix: [],    // line array
             labels: [],    // label array
             postfix: [],    // line array
@@ -259,9 +272,9 @@ export class AsmEWAVRParser extends AsmParser {
         const compilerGeneratedLabel = /^(initializer for |segment init: )([\w :]*)$/i;
         const segInitLabel = /^segment init: ([\w :]*)$/i;
 
-        let result = [];
+        const result = [];
         let lastLineWasWhitespace = true;
-        let pushLine = line => {
+        const pushLine = line => {
             if (line.text.trim() === '') {
                 if (!lastLineWasWhitespace) {
                     result.push({text: '', source: null});

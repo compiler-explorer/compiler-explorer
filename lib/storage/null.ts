@@ -47,5 +47,6 @@ export class StorageNull extends StorageBase {
     }
 
     async incrementViewCount() {
+        // Null storage doesn't track stats.
     }
 }

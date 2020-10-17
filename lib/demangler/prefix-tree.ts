@@ -33,6 +33,8 @@
 // It's the "find longest prefix" performance characteristic that we want for the
 // demangler.
 export class PrefixTree {
+    root: any[];
+
     constructor(mappings) {
         this.root = [];
         if (mappings) {
@@ -42,7 +44,7 @@ export class PrefixTree {
     }
 
     add(from, to) {
-        let node = this.root;
+        let node: any = this.root;
         for (let i = 0; i < from.length; ++i) {
             const character = from.charCodeAt(i);
             if (!node[character])
@@ -56,7 +58,7 @@ export class PrefixTree {
     // mismatch or reach the end of the input string. Along the way, we note the
     // most recent match (if any), which will be our return value.
     findLongestMatch(needle) {
-        let node = this.root;
+        let node: any = this.root;
         let match = [null, null];
         for (let i = 0; i < needle.length; ++i) {
             const character = needle.charCodeAt(i);

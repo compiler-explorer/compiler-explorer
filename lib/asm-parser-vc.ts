@@ -28,7 +28,22 @@ import { logger } from './logger';
 import * as utils from './utils';
 
 export class VcAsmParser extends AsmParser {
-    constructor(compilerProps) {
+    asmBinaryParser: AsmParser;
+    miscDirective: RegExp;
+    localLabelDef: RegExp;
+    commentOnly: RegExp;
+    filenameComment: RegExp;
+    lineNumberComment: RegExp;
+    beginSegment: RegExp;
+    endSegment: RegExp;
+    beginFunction: RegExp;
+    endProc: RegExp;
+    endFunction: RegExp;
+    labelFind: RegExp;
+    endAppBLock: RegExp;
+    labelDefn: RegExp;
+
+    constructor(compilerProps?) {
         super(compilerProps);
         this.asmBinaryParser = new AsmParser(compilerProps);
         this.miscDirective = /^\s*(include|INCLUDELIB|TITLE|\.|THUMB|ARM64|TTL|END$)/;
@@ -44,7 +59,7 @@ export class VcAsmParser extends AsmParser {
         // on arm, we use ENDP
         this.endFunction = /^(_TEXT\s+ENDS|\s+ENDP)/;
 
-        this.labelDef = /^\|?([$?@A-Z_a-z][\w$<>?@]*)\|?\s+(PROC|=|D[BDQW])/;
+        this.labelDefn = /^\|?([$?@A-Z_a-z][\w$<>?@]*)\|?\s+(PROC|=|D[BDQW])/;
         this.definesGlobal = /^\s*(PUBLIC|EXTRN|EXPORT)\s+/;
         this.definesFunction = /^\|?([$?@A-Z_a-z][\w$<>?@]*)\|?\s+PROC/;
         this.labelFind = /[$?@A-Z_a-z][\w$<>?@]*/g;
@@ -118,7 +133,7 @@ export class VcAsmParser extends AsmParser {
         //   ; name: string | undefined
         //   ; initialLine: int
         //   ; file: string option | undefined }
-        let resultObject = {
+        const resultObject = {
             prefix: [],    // line array
             functions: [], // func array
             postfix: null,    // line?
@@ -305,9 +320,9 @@ export class VcAsmParser extends AsmParser {
             return collator.compare(f1.file, f2.file);
         });
 
-        let result = [];
+        const result = [];
         let lastLineWasWhitespace = true;
-        let pushLine = line => {
+        const pushLine = line => {
             if (line.text.trim() === '') {
                 if (!lastLineWasWhitespace) {
                     result.push({text: '', source: null});

@@ -47,6 +47,26 @@ import { getToolchainPath } from './toolchain-utils';
 import * as utils from './utils';
 
 export class BaseCompiler {
+    compiler: any;
+    lang: any;
+    compileFilename: string;
+    env: any;
+    compilerProps: (property: any) => any;
+    alwaysResetLdPath: any;
+    delayCleanupTemp: any;
+    asm: AsmParser;
+    llvmIr: LlvmIrParser;
+    llvmAst: LlvmAstParser;
+    toolchainPath: any;
+    possibleArguments: CompilerArguments;
+    possibleTools: any[];
+    demanglerClass: any;
+    outputFilebase: string;
+    mtime: any;
+    buildenvsetup: any;
+    packager: Packager;
+    cmakeBaseEnv: any;
+
     constructor(compilerInfo, env) {
         // Information about our compiler
         this.compiler = compilerInfo;
@@ -119,7 +139,7 @@ export class BaseCompiler {
     async getCmakeBaseEnv() {
         if (!this.compiler.exe) return {};
 
-        const env = {};
+        const env: any = {};
 
         if (this.lang.id === 'c++') {
             env.CXX = this.compiler.exe;
@@ -146,7 +166,7 @@ export class BaseCompiler {
         return env;
     }
 
-    newTempDir() {
+    newTempDir(): Promise<string> {
         return new Promise((resolve, reject) => {
             temp.mkdir({prefix: 'compiler-explorer-compiler', dir: process.env.tmpDir}, (err, dirPath) => {
                 if (err)
@@ -176,7 +196,7 @@ export class BaseCompiler {
         return {mtime: this.mtime, compiler, args, options};
     }
 
-    async execCompilerCached(compiler, args, options, useExecutionQueue) {
+    async execCompilerCached(compiler, args, options: exec.ExecutionOptions, useExecutionQueue?) {
         if (!options) {
             options = this.getDefaultExecOptions();
             options.timeoutMs = 0;
@@ -196,16 +216,17 @@ export class BaseCompiler {
         return result;
     }
 
-    getDefaultExecOptions() {
+    getDefaultExecOptions(): exec.ExecutionOptions {
         return {
             timeoutMs: this.env.ceProps('compileTimeoutMs', 7500),
-            maxErrorOutput: this.env.ceProps('max-error-output', 5000),
+            // TODO: this seems no longer used
+            // maxErrorOutput: this.env.ceProps('max-error-output', 5000),
             env: this.env.getEnv(this.compiler.needsMulti),
             wrapper: this.compilerProps('compiler-wrapper'),
         };
     }
 
-    async runCompiler(compiler, options, inputFilename, execOptions) {
+    async runCompiler(compiler, options, inputFilename, execOptions: exec.ExecutionOptions) {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
         }
@@ -272,7 +293,7 @@ export class BaseCompiler {
         return fn;
     }
 
-    optionsForFilter(filters, outputFilename) {
+    optionsForFilter(filters, outputFilename, userOptions) {
         let options = ['-g', '-o', this.filename(outputFilename)];
         if (this.compiler.intelAsm && filters.intel && !filters.binary) {
             options = options.concat(this.compiler.intelAsm.split(' '));
@@ -319,13 +340,13 @@ export class BaseCompiler {
             });
         })));
 
-        let sortedlinks = [];
+        const sortedlinks = [];
 
         _.each(links, (libToInsertName) => {
             const libToInsertObj = dictionary[libToInsertName];
 
             let idxToInsert = sortedlinks.length;
-            for (const [idx, libCompareName] of sortedlinks.entries()) {
+            for (const [idx, libCompareName] of sortedlinks.entries() as any) {
                 const libCompareObj = dictionary[libCompareName];
 
                 if (libToInsertObj && libCompareObj &&
@@ -430,8 +451,8 @@ export class BaseCompiler {
             this.getSharedLibraryPaths(libraries).map(path => libPathFlag + path));
     }
 
-    getSharedLibraryPathsAsLdLibraryPaths(libraries) {
-        let paths = [];
+    getSharedLibraryPathsAsLdLibraryPaths(libraries): any {
+        let paths: any = [];
         if (!this.alwaysResetLdPath) {
             paths = process.env.LD_LIBRARY_PATH ? process.env.LD_LIBRARY_PATH : [];
         }
@@ -441,7 +462,7 @@ export class BaseCompiler {
     }
 
     getSharedLibraryPathsAsLdLibraryPathsForExecution(libraries) {
-        let paths = [];
+        let paths: any = [];
         if (!this.alwaysResetLdPath) {
             paths = process.env.LD_LIBRARY_PATH ? process.env.LD_LIBRARY_PATH : [];
         }
@@ -568,7 +589,7 @@ export class BaseCompiler {
         // Build dump options to append to the end of the -fdump command-line flag.
         // GCC accepts these options as a list of '-' separated names that may
         // appear in any order.
-        var flags = '';
+        let flags = '';
         if (gccDumpOptions.dumpFlags.address !== false) {
             flags += '-address';
         }
@@ -632,7 +653,7 @@ export class BaseCompiler {
     }
 
     runToolsOfType(tools, type, compilationInfo) {
-        let tooling = [];
+        const tooling = [];
         if (tools) {
             tools.forEach((tool) => {
                 const matches = this.possibleTools.find(possibleTool => {
@@ -736,7 +757,8 @@ export class BaseCompiler {
             if (outputFilename) {
                 logger.debug(`Using cached package ${outputFilename}`);
                 await this.packager.unpack(outputFilename, dirPath);
-                const buildResults = JSON.parse(await fs.readFile(path.join(dirPath, compilationResultFilename)));
+                const buildResults = JSON.parse(
+                    (await fs.readFile(path.join(dirPath, compilationResultFilename))).toString());
                 const endTime = process.hrtime.bigint();
                 return Object.assign({}, buildResults, {
                     code: 0,
@@ -1185,7 +1207,7 @@ export class BaseCompiler {
             }
 
             // TODO make const when I can
-            let [result, optOutput] = await this.doCompilation(
+            const [result, optOutput] = await this.doCompilation(
                 inputFilename, dirPath, key, options, filters, backendOptions, libraries, tools);
 
             return await this.afterCompilation(result, doExecute, key, executeParameters, tools, backendOptions,
@@ -1246,7 +1268,7 @@ export class BaseCompiler {
         return result;
     }
 
-    processAsm(result, filters, options) {
+    processAsm(result, filters, options): any {
         if ((options && options.includes('-emit-llvm')) || this.llvmIr.isLlvmIr(result.asm)) {
             return this.llvmIr.process(result.asm, filters);
         }
@@ -1254,7 +1276,7 @@ export class BaseCompiler {
         return this.asm.process(result.asm, filters);
     }
 
-    async postProcessAsm(result) {
+    async postProcessAsm(result, filters) {
         if (!result.okToCache || !this.demanglerClass || !result.asm) return result;
         const demangler = new this.demanglerClass(this.compiler.demangler, this);
 
@@ -1329,7 +1351,7 @@ export class BaseCompiler {
         // Phase letter is one of {i, l, r, t}
         // {outpufilename}.{extension}.{passNumber}{phaseLetter}.{phaseName}
         const dumpFilenameRegex = /^.+?\..+?\.(\d+?[ilrt]\..+)$/;
-        for (let filename of allFiles) {
+        for (const filename of allFiles) {
             const match = dumpFilenameRegex.exec(filename);
             if (match) {
                 const pass = match[1];
@@ -1493,7 +1515,7 @@ Please select another pass or change filters.`;
         return this.compiler;
     }
 
-    getDefaultFilters() {
+    getDefaultFilters(): Record<string, boolean> {
         return {
             binary: false,
             execute: false,

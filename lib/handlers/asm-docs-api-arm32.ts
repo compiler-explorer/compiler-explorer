@@ -27,6 +27,9 @@ import * as props from '../properties';
 import { getAsmOpcode } from './asm-docs-arm32';
 
 export class AsmDocsHandler {
+    staticMaxAgeSecs: any;
+    conditionalRe: RegExp;
+
     constructor() {
         const asmProps = props.propsFor('asm-docs');
         this.staticMaxAgeSecs = asmProps('staticMaxAgeSecs', 10);
@@ -57,10 +60,10 @@ export class AsmDocsHandler {
 
         const matches = opcode.match(this.conditionalRe);
         if (matches) {
-            let opcodeDescription = getAsmOpcode(matches[1]);
+            const opcodeDescription = getAsmOpcode(matches[1]);
             if (!opcodeDescription) return;
 
-            let conditionalText = conditionals[matches[2]] || '';
+            const conditionalText = conditionals[matches[2]] || '';
 
             opcodeDescription.tooltip = conditionalText + opcodeDescription.tooltip;
             opcodeDescription.html = conditionalText + opcodeDescription.html;

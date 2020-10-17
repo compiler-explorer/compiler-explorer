@@ -36,7 +36,7 @@ export class AssemblyCompiler extends BaseCompiler {
 
     constructor(info, env) {
         super(info, env);
-        this.asm = new AsmRaw();
+        this.asm = new AsmRaw(this.compilerProps);
     }
 
     getSharedLibraryPathsAsArguments() {

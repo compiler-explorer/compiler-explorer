@@ -33,6 +33,10 @@ import * as utils from '../utils';
 import { PascalParser } from './argument-parsers';
 
 export class FPCCompiler extends BaseCompiler {
+    supportsOptOutput: boolean;
+    nasmPath: any;
+    demangler: any;
+
     static get key() { return 'pascal'; }
 
     constructor(info, env) {

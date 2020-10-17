@@ -35,6 +35,9 @@ const USABLE_HASH_CHECK_LENGTH = 9; // Quite generous
 const MAX_TRIES = 4;
 
 export class StorageBase {
+    compilerProps: any;
+    httpRootDir: any;
+
     constructor(httpRootDir, compilerProps) {
         this.compilerProps = compilerProps;
         this.httpRootDir = httpRootDir;
@@ -126,15 +129,15 @@ export class StorageBase {
             });
     }
 
-    async storeItem(item) {
+    async storeItem(item, req?) {
         throw new Error(`Trying to store item from base storage: ${item}`);
     }
 
-    async findUniqueSubhash(hash) {
+    async findUniqueSubhash(hash): Promise<any> {
         throw new Error(`Trying to find unique subhash from base storage ${hash}`);
     }
 
-    async expandId(id) {
+    async expandId(id): Promise<{config, specialMetadata}> {
         throw new Error(`Trying to expand from base storage ${id}`);
     }
 

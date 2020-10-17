@@ -25,9 +25,11 @@
 import _ from 'underscore';
 
 export class FakeCompiler {
-    static get key() {
-        return 'fake-for-test';
-    }
+    compiler: any;
+    lang: any;
+    info: any;
+
+    static get key() { return 'fake-for-test'; }
 
     constructor(info) {
         this.compiler = Object.assign({
@@ -58,10 +60,9 @@ export class FakeCompiler {
                 options: options,
                 backendOptions: backendOptions,
                 filters: filters,
+                files: files,
             },
         };
-
-        if (files) inputBody.input.files = files;
 
         return Promise.resolve(_.extend(this.info.fakeResult || {}, inputBody));
     }

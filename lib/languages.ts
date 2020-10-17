@@ -27,28 +27,21 @@ import path from 'path';
 import fs from 'fs-extra';
 import _ from 'underscore';
 
-/***
- * Language object type
- *
- * @typedef {Object} CELanguage
- * @property {string} id - Id of language. Added programmatically based on CELanguages key
- * @property {string} name - UI display name of the language
- * @property {string} monaco - Monaco Editor language ID (Selects which language Monaco will use to highlight the code)
- * @property {string[]} extensions - Usual extensions associated with the language. First one is used as file input etx
- * @property {string[]} alias - Different ways in which we can also refer to this language
- */
-
-/***
- * Currently supported languages on Compiler Explorer
- *
- * @typedef {Object.<string, CELanguage>} CELanguages
- */
+interface LanguageDefinition {
+    id?: string;
+    name: string;
+    monaco: string;
+    monacoDisassembly?: string;
+    extensions: Array<string>;
+    alias: Array<string>;
+    previewFilter?: RegExp;
+    example?: string;
+}
 
 /***
  * Current supported languages
- * @type {CELanguages}
  */
-export const languages = {
+export const languages: Record<string, LanguageDefinition> = {
     'c++': {
         name: 'C++',
         monaco: 'cppp',
@@ -150,7 +143,6 @@ export const languages = {
         alias: [],
     },
     fortran: {
-        id: 'fortran',
         name: 'Fortran',
         monaco: 'fortran',
         extensions: ['.f90','.F90','.f95','.F95'],

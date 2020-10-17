@@ -27,6 +27,11 @@ import _ from 'underscore';
 import * as utils from './utils';
 
 export class LlvmIrParser {
+    maxIrLines: number;
+    debugReference: RegExp;
+    metaNodeRe: RegExp;
+    metaNodeOptionsRe: RegExp;
+
     constructor(compilerProps) {
         this.maxIrLines = 500;
         if (compilerProps) {
@@ -82,7 +87,7 @@ export class LlvmIrParser {
         if (!match) {
             return null;
         }
-        let metaNode = {
+        const metaNode = {
             metaId: match[1],
             metaType: match[2],
         };
@@ -102,16 +107,15 @@ export class LlvmIrParser {
 
     processIr(ir, filters) {
         const result = [];
-        let irLines = utils.splitLines(ir);
-        let debugInfo = {};
+        const irLines = utils.splitLines(ir);
+        const debugInfo = {};
         let prevLineEmpty = false;
 
         // Filters
         const commentOnly = /^\s*(;.*)$/;
 
         irLines.forEach(line => {
-            let source = null;
-            let match;
+            const source = null;
 
             if (line.trim().length === 0) {
                 // Avoid multiple successive empty lines.
@@ -127,7 +131,7 @@ export class LlvmIrParser {
             }
 
             // Non-Meta IR line. Metadata is attached to it using "!dbg !123"
-            match = line.match(this.debugReference);
+            const match = line.match(this.debugReference);
             if (match) {
                 result.push({
                     text: (filters.trim ? utils.squashHorizontalWhitespace(line) : line),

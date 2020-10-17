@@ -10,24 +10,24 @@ static/cppp-mode.js @RabsRincon
 static/themes.js @RabsRincon
 static/editor.js @RabsRincon
 static/compiler.js @RabsRincon
-lib/asm-docs.js @RabsRincon
-lib/asm-docs-api.js @RabsRincon
-lib/languages.js @RabsRincon
-lib/base-compiler.js @RabsRincon
-lib/compiler-finder.js @RabsRincon
+lib/asm-docs.ts @RabsRincon
+lib/asm-docs-api.ts @RabsRincon
+lib/languages.ts @RabsRincon
+lib/base-compiler.ts @RabsRincon
+lib/compiler-finder.ts @RabsRincon
 lib/compilers/ @RabsRincon
 views/sitemap.pug @RabsRincon
 
 
 # jaredwy
 static/opt-view.js @jaredwy
-lib/compilers/argument-parsers.js @jaredwy
+lib/compilers/argument-parsers.ts @jaredwy
 
 # tartanllama
 static/ast-view.js @TartanLlama
 static/haskell-mode.js @TartanLlama
-lib/compilers/haskell.js @TartanLlama
+lib/compilers/haskell.ts @TartanLlama
 
 # cppchedy
 static/cfg-view.js @cppchedy
-lib/cfg.js @cppchedy
+lib/cfg.ts @cppchedy

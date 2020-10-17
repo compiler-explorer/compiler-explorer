@@ -25,6 +25,14 @@
 import { MapFileReader } from './map-file';
 
 export class MapFileReaderDelphi extends MapFileReader {
+    regexDelphiCodeSegmentOffset: RegExp;
+    regexDelphiCodeSegment: RegExp;
+    regexDelphiICodeSegment: RegExp;
+    regexDelphiNames: RegExp;
+    regexDelphiLineNumbersStart: RegExp;
+    regexDelphiLineNumber: RegExp;
+    regexDelphiLineNumbersStartIText: RegExp;
+
     /**
      * constructor
      *
@@ -53,8 +61,6 @@ export class MapFileReaderDelphi extends MapFileReader {
      * @param {string} line
      */
     tryReadingCodeSegmentInfo(line) {
-        let codesegmentObject = false;
-
         let matches = line.match(this.regexDelphiCodeSegmentOffset);
         if (matches && !matches[4].includes('$') && (parseInt(matches[2], 16) >= this.preferredLoadAddress)) {
             const addressWithOffset = parseInt(matches[2], 16);
@@ -64,27 +70,29 @@ export class MapFileReaderDelphi extends MapFileReader {
                 address: addressWithOffset.toString(16),
                 segmentLength: parseInt(matches[3], 16),
             });
-        } else {
-            matches = line.match(this.regexDelphiCodeSegment);
-            if (matches) {
-                codesegmentObject = this.addressToObject(matches[1], matches[2]);
-                codesegmentObject.id = this.segments.length + 1;
-                codesegmentObject.segmentLength = parseInt(matches[3], 16);
-                codesegmentObject.unitName = matches[4];
-
-                this.segments.push(codesegmentObject);
-            } else {
-                matches = line.match(this.regexDelphiICodeSegment);
-                if (matches) {
-                    codesegmentObject = this.addressToObject(matches[1], matches[2]);
-                    codesegmentObject.id = this.isegments.length + 1;
-                    codesegmentObject.segmentLength = parseInt(matches[3], 16);
-                    codesegmentObject.unitName = matches[4];
-
-                    this.isegments.push(codesegmentObject);
-                }
-            }
+            return;
         }
+
+        matches = line.match(this.regexDelphiCodeSegment);
+        if (matches) {
+            this.segments.push(this.getCodesegmentObject(matches));
+            return;
+        }
+
+        matches = line.match(this.regexDelphiICodeSegment);
+        if (matches) {
+            this.isegments.push(this.getCodesegmentObject(matches));
+            
+        }
+    }
+
+    private getCodesegmentObject(matches) {
+        return {
+            id: this.segments.length + 1,
+            segmentLength: parseInt(matches[3], 16),
+            unitName: matches[4],
+            ...this.addressToObject(matches[1], matches[2]),
+        };
     }
 
     /**
@@ -93,13 +101,13 @@ export class MapFileReaderDelphi extends MapFileReader {
      * @param {string} line
      */
     tryReadingNamedAddress(line) {
-        let symbolObject = false;
-
         const matches = line.match(this.regexDelphiNames);
         if (matches) {
             if (!this.getSymbolInfoByName(matches[3])) {
-                symbolObject = this.addressToObject(matches[1], matches[2]);
-                symbolObject.displayName = matches[3];
+                const symbolObject = {
+                    displayName: matches[3],
+                    ...this.addressToObject(matches[1], matches[2]),
+                };
 
                 this.namedAddresses.push(symbolObject);
             }
@@ -128,8 +136,10 @@ export class MapFileReaderDelphi extends MapFileReader {
         for (const reference of references) {
             const matches = reference.match(this.regexDelphiLineNumber);
             if (matches) {
-                const lineObject = this.addressToObject(matches[2], matches[3]);
-                lineObject.lineNumber = parseInt(matches[1], 10);
+                const lineObject = {
+                    lineNumber: parseInt(matches[1], 10),
+                    ...this.addressToObject(matches[2], matches[3]),
+                };
 
                 this.lineNumbers.push(lineObject);
 

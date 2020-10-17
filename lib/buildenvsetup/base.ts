@@ -31,7 +31,15 @@ import { logger } from '../logger';
 import * as utils from '../utils';
 
 export class BuildEnvSetupBase {
-    constructor(compilerInfo, env, execCompilerCachedFunc) {
+    compiler: any;
+    env: any;
+    execCompilerCached: any;
+    compilerOptionsArr: any;
+    compilerArch: any;
+    compilerTypeOrGCC: any;
+    compilerSupportsX86: boolean;
+
+    constructor(compilerInfo, env, execCompilerCachedFunc?) {
         this.compiler = compilerInfo;
         this.env = env;
         this.execCompilerCached = execCompilerCachedFunc;
@@ -84,9 +92,8 @@ export class BuildEnvSetupBase {
         return false;
     }
 
-    async setup(/*key, dirPath, selectedLibraries*/) {
+    async setup(key, dirPath, selectedLibraries) {
         // override with specific implementation
-        return Promise.resolve();
     }
 
     getCompilerArch() {
@@ -102,7 +109,7 @@ export class BuildEnvSetupBase {
         if (target) {
             target = target.substr(target.indexOf('=') + 1);
         } else {
-            let targetIdx = this.compilerOptionsArr.indexOf('-target');
+            const targetIdx = this.compilerOptionsArr.indexOf('-target');
             if (targetIdx !== -1) {
                 target = this.compilerOptionsArr[targetIdx + 1];
             }
@@ -150,7 +157,7 @@ export class BuildEnvSetupBase {
         if (key.options.includes('-m32')) {
             return 'x86';
         } else {
-            let target = _.find(key.options, (option) => {
+            const target = _.find(key.options, (option) => {
                 return option.startsWith('-target=') || option.startsWith('--target=');
             });
 

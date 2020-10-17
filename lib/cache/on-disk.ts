@@ -32,7 +32,7 @@ import { logger } from '../logger';
 import { BaseCache } from './base';
 
 // With thanks to https://gist.github.com/kethinov/6658166
-function getAllFiles(root, dir) {
+function getAllFiles(root, dir?) {
     dir = dir || root;
     return fs.readdirSync(dir).reduce((files, file) => {
         const fullPath = path.join(dir, file);
@@ -43,6 +43,10 @@ function getAllFiles(root, dir) {
 }
 
 export class OnDiskCache extends BaseCache {
+    path: any;
+    cacheMb: any;
+    cache: LRU<any, any>;
+
     constructor(cacheName, path, cacheMb) {
         super(cacheName, `OnDiskCache(${path}, ${cacheMb}mb)`, 'disk');
         this.path = path;
@@ -52,10 +56,12 @@ export class OnDiskCache extends BaseCache {
             length: n => n.size,
             noDisposeOnSet: true,
             dispose: (key, n) => {
-                fs.unlink(n.path, () => {});
+                fs.unlink(n.path, () => {
+                    // Does nothing...we just care that it's not there any more.
+                });
             },
         });
-        fs.mkdirSync(path, { recursive: true });
+        fs.mkdirSync(path, {recursive: true});
         const info = getAllFiles(path).map(({name, fullPath}) => {
             const stat = fs.statSync(fullPath);
             return {
@@ -69,7 +75,7 @@ export class OnDiskCache extends BaseCache {
         });
         // Sort oldest first
         info.sort((x, y) => x.sort - y.sort);
-        for (let i of info) {
+        for (const i of info) {
             this.cache.set(i.key, i.data);
         }
     }
@@ -98,6 +104,6 @@ export class OnDiskCache extends BaseCache {
             size: value.length,
         };
         await fs.writeFile(info.path, value);
-        return this.cache.set(key, info);
+        this.cache.set(key, info);
     }
 }

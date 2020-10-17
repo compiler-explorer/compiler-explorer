@@ -35,7 +35,7 @@ import * as utils from '../utils';
 export class Win32Compiler extends BaseCompiler {
     static get key() { return 'win32'; }
 
-    newTempDir() {
+    newTempDir(): Promise<string> {
         return new Promise((resolve, reject) => {
             temp.mkdir({prefix: 'compiler-explorer-compiler', dir: process.env.TMP}, (err, dirPath) => {
                 if (err)
@@ -125,7 +125,7 @@ export class Win32Compiler extends BaseCompiler {
             libLinks, staticlibLinks);
     }
 
-    optionsForFilter(filters, outputFilename) {
+    optionsForFilter(filters, outputFilename, userOptions) {
         if (filters.binary) {
             const mapFilename = outputFilename + '.map';
             const mapFileReader = new MapFileReaderVS(mapFilename);
@@ -157,7 +157,7 @@ export class Win32Compiler extends BaseCompiler {
     }
 
     exec(compiler, args, options_) {
-        let options = Object.assign({}, options_);
+        const options = Object.assign({}, options_);
         options.env = Object.assign({}, options.env);
 
         if (this.compiler.includePath) {

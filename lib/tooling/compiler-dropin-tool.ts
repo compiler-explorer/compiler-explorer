@@ -50,7 +50,7 @@ export class CompilerDropinTool extends BaseTool {
         //  4) options manually specified in the compiler tab (options)
         //  5) flags from the clang-tidy tab
         let compileFlags = [];
-        let argsToFilterOut = new Set([sourcefile, '-stdlib=libc++']);
+        const argsToFilterOut = new Set([sourcefile, '-stdlib=libc++']);
 
         const toolchainPath = this.getToolchainPath(compilationInfo);
 
@@ -96,7 +96,7 @@ export class CompilerDropinTool extends BaseTool {
         return _.filter(compileFlags);
     }
 
-    runTool(compilationInfo, inputFilepath, args) {
+    async runTool(compilationInfo, inputFilepath, args) {
         const sourcefile = inputFilepath;
 
         const includeflags = super.getIncludeArguments(compilationInfo.libraries, compilationInfo.compiler);
@@ -104,9 +104,7 @@ export class CompilerDropinTool extends BaseTool {
 
         const compileFlags = this.getOrderedArguments(compilationInfo, includeflags, libOptions, args, sourcefile);
         if (!compileFlags) {
-            return new Promise((resolve) => {
-                resolve(this.createErrorResponse('Unable to run tool with selected compiler'));
-            });
+            return this.createErrorResponse('Unable to run tool with selected compiler');
         }
 
         return super.runTool(compilationInfo, sourcefile, compileFlags);

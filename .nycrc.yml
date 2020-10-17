@@ -1,12 +1,15 @@
 all: true
 include:
-  - app.js
-  - lib/**/*.js
+  - app.ts
+  - lib/**/*.ts
+extends: "@istanbuljs/nyc-config-typescript"
 exclude:
-  - lib/handlers/asm-docs.js
-  - lib/compilers/fake-for-test.js
+  - lib/handlers/asm-docs.ts
+  - lib/compilers/fake-for-test.ts
 report-dir: ./out/coverage
 reporter:
   - lcov
 require:
   - esm
+  - source-map-support/register
+  - ts-node/register

@@ -23,6 +23,9 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 export class LlvmAstParser {
+    maxAstLines: number;
+    spanTypes: Record<string, string>;
+
     constructor(compilerProps) {
         this.maxAstLines = 500;
         if (compilerProps) {
@@ -74,8 +77,8 @@ export class LlvmAstParser {
 
     // Link the AST lines with spans of source lines
     parseAndSetSourceLines(astDump) {
-        var lfrom, lto;
-        for (var line of astDump) {
+        let lfrom, lto;
+        for (const line of astDump) {
             const span = this.parseSpan(line.text);
             switch(span.type) {
                 case this.spanTypes.NONE:

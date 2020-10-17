@@ -38,6 +38,14 @@ import { AsmDocsHandler as AsmDocsHandlerArm32 } from './asm-docs-api-arm32';
 import { Formatter } from './formatting';
 
 export class ApiHandler {
+    compilers: any[];
+    languages: any[];
+    usedLangIds: any[];
+    options: any;
+    shortener: any;
+    storageHandler: any;
+    handle: any;
+
     constructor(compileHandler, ceProps, storageHandler, urlShortenService) {
         this.compilers = [];
         this.languages = [];
@@ -130,8 +138,8 @@ export class ApiHandler {
 
     handleLanguages(req, res) {
         const availableLanguages = this.usedLangIds.map(val => {
-            let lang = this.languages[val];
-            let newLangObj = Object.assign({}, lang);
+            const lang = this.languages[val];
+            const newLangObj = Object.assign({}, lang);
             if (this.options) {
                 newLangObj.defaultCompiler = this.options.options.defaultCompiler[lang.id];
             }
@@ -178,7 +186,7 @@ export class ApiHandler {
         return Object.keys(libsForLanguageObj).map((key) => {
             const language = libsForLanguageObj[key];
             const versionArr = Object.keys(language.versions).map((key) => {
-                let versionObj = Object.assign({}, language.versions[key]);
+                const versionObj = Object.assign({}, language.versions[key]);
                 versionObj.id = key;
                 return versionObj;
             });

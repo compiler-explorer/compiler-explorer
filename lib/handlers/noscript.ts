@@ -34,6 +34,15 @@ function isMobileViewer(req) {
 }
 
 export class NoScriptHandler {
+    router: any;
+    staticHeaders: any;
+    contentPolicyHeader: any;
+    clientOptionsHandler: any;
+    renderConfig: any;
+    storageHandler: any;
+    defaultLanguage: any;
+    compileHandler: any;
+
     constructor(router, config) {
         this.router = router;
         this.staticHeaders = config.staticHeaders;
@@ -47,7 +56,7 @@ export class NoScriptHandler {
     }
 
     InitializeRoutes(options) {
-        this.formDataParser = bodyParser.urlencoded({
+        const formDataParser = bodyParser.urlencoded({
             type: 'application/x-www-form-urlencoded',
             limit: options.limit,
             extended: false,
@@ -73,7 +82,7 @@ export class NoScriptHandler {
                 this.contentPolicyHeader(res);
                 this.renderNoScriptLayout(false, req, res);
             })
-            .post('/api/noscript/compile', this.formDataParser, this.compileHandler.handle.bind(this.compileHandler));
+            .post('/api/noscript/compile', formDataParser, this.compileHandler.handle.bind(this.compileHandler));
     }
 
     storedStateHandlerNoScript(req, res, next) {
@@ -82,7 +91,7 @@ export class NoScriptHandler {
             .then(result => {
                 const config = JSON.parse(result.config);
 
-                let clientstate = false;
+                let clientstate;
                 if (config.content) {
                     const normalizer = new ClientStateNormalizer();
                     normalizer.fromGoldenLayout(config);

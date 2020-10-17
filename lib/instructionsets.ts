@@ -25,6 +25,9 @@
 import _ from 'underscore';
 
 export class InstructionSets {
+    default: string;
+    supported: Record<string, any>;
+
     constructor() {
         this.default = 'amd64';
 
@@ -81,26 +84,24 @@ export class InstructionSets {
     }
 
     async getCompilerInstructionSetHint(compilerArch, exe) {
-        return new Promise((resolve) => {
-            if (compilerArch) {
-                _.each(this.supported, (method, instructionSet) => {
-                    for (let target of method.target) {
-                        if (compilerArch.includes(target)) {
-                            resolve(instructionSet);
-                        }
+        if (compilerArch) {
+            _.each(this.supported, (method, instructionSet) => {
+                for (const target of method.target) {
+                    if (compilerArch.includes(target)) {
+                        return instructionSet;
                     }
-                });
-            } else {
-                _.each(this.supported, (method, instructionSet) => {
-                    for (let path of method.path) {
-                        if (exe.includes(path)) {
-                            resolve(instructionSet);
-                        }
+                }
+            });
+        } else {
+            _.each(this.supported, (method, instructionSet) => {
+                for (const path of method.path) {
+                    if (exe.includes(path)) {
+                        return instructionSet;
                     }
-                });
-            }
+                }
+            });
+        }
 
-            resolve(this.default);
-        });
+        return this.default;
     }
 }

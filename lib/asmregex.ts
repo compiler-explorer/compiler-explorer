@@ -27,6 +27,8 @@ import * as utils from './utils';
 const findQuotes = /(.*?)("(?:[^"\\]|\\.)*")(.*)/;
 
 export class AsmRegex {
+    labelDef: RegExp;
+
     constructor() {
         this.labelDef = /^(?:.proc\s+)?([\w$.@]+):/i;
     }

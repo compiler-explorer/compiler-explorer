@@ -64,7 +64,7 @@ Assuming you have a compatible version of `node` installed, simply running
 
 Running with `make EXTRA_ARGS='--language LANG'` will allow you to load
  `LANG` exclusively, where `LANG` is one for the language ids/aliases defined
- in `lib/languages.js`. The `Makefile` will automatically install all the
+ in `lib/languages.ts`. The `Makefile` will automatically install all the
  third party libraries needed to run; using `npm` to install server-side and
  client side components.
 
@@ -90,9 +90,9 @@ If you want to point it at your own GCC or similar binaries, either edit the
 
 When running in a corporate setting the URL shortening service can be replaced
  by an internal one if the default storage driver isn't appropriate for your
- environment. To do this, add a new module in `lib/shortener-myservice.js` and
+ environment. To do this, add a new module in `lib/shortener-myservice.ts` and
  set the `urlShortenService` variable in configuration. This module should
- export a single function, see the [tinyurl module](lib/shortener-tinyurl.js)
+ export a single function, see the [tinyurl module](lib/shortener-tinyurl.ts)
  for an example.
 
 ### RESTful API

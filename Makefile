@@ -42,7 +42,7 @@ $(NODE_MODULES): package.json | node-installed
 WEBPACK:=./node_modules/webpack-cli/bin/cli.js
 $(WEBPACK): $(NODE_MODULES)
 
-lint: $(NODE_MODULES)  ## Checks if the source currently matches code conventions
+lint: $(NODE_MODULES) ts-compile  ## Checks if the source currently matches code conventions
 	$(NPM) run lint
 
 lint-fix: $(NODE_MODULES)  ## Checks if everything matches code conventions & fixes those which are trivial to do so
@@ -71,20 +71,25 @@ clean:  ## Cleans up everything
 run: export NODE_ENV=production
 run: export WEBPACK_ARGS="-p"
 run: prereqs webpack  ## Runs the site normally
-	./node_modules/.bin/supervisor -w app.js,lib,etc/config -e 'js|node|properties|yaml' --exec $(NODE) $(NODE_ARGS) -- -r esm ./app.js $(EXTRA_ARGS)
+	./node_modules/.bin/supervisor -w app.ts,lib,etc/config -e 'ts|node|properties|yaml' --exec $(NODE) $(NODE_ARGS) -- -r esm -r ts-node/register ./app.ts $(EXTRA_ARGS)
 
 dev: export NODE_ENV=development
 dev: prereqs install-git-hooks ## Runs the site as a developer; including live reload support and installation of git hooks
-	./node_modules/.bin/supervisor -w app.js,lib,etc/config -e 'js|node|properties|yaml' -n exit --exec $(NODE) $(NODE_ARGS) -- -r esm ./app.js $(EXTRA_ARGS)
+	./node_modules/.bin/supervisor -w app.ts,lib,etc/config -e 'ts|node|properties|yaml' -n exit --exec $(NODE) $(NODE_ARGS) -- -r esm -r ts-node/register ./app.ts $(EXTRA_ARGS)
 
 debug: export NODE_ENV=development
 debug: prereqs install-git-hooks ## Runs the site as a developer with full debugging; including live reload support and installation of git hooks
-	./node_modules/.bin/supervisor -w app.js,lib,etc/config -e 'js|node|properties|yaml' -n exit --exec $(NODE) $(NODE_ARGS) -- -r esm ./app.js --debug $(EXTRA_ARGS)
+	./node_modules/.bin/supervisor -w app.ts,lib,etc/config -e 'ts|node|properties|yaml' -n exit --exec $(NODE) $(NODE_ARGS) -- -r esm -r ts-node/register ./app.ts --debug $(EXTRA_ARGS)
+
+.PHONY: ts-compile
+# one day we'll put `--strict` in this
+ts-compile: prereqs
+	./node_modules/.bin/tsc
 
 HASH := $(shell git rev-parse HEAD)
 dist: export NODE_ENV=production
 dist: export WEBPACK_ARGS=-p
-dist: prereqs webpack  ## Creates a distribution
+dist: prereqs webpack ts-compile  ## Creates a distribution
 	echo $(HASH) > out/dist/git_hash
 
 RELEASE_FILE_NAME=$(GITHUB_RUN_NUMBER)

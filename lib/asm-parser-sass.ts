@@ -25,8 +25,12 @@
 import { AsmParser } from './asm-parser';
 
 export class SassAsmParser extends AsmParser {
-    constructor() {
-        super();
+    asmOpcodeRe: RegExp;
+    lineRe: RegExp;
+    labelRe: RegExp;
+
+    constructor(compilerProps?) {
+        super(compilerProps);
 
         // These are for parsing the output of nvdisasm.
         this.asmOpcodeRe = /^\s*\/\*([^*]+)\*\/()()\s*{?\s*([^;}]+)(?:}|;\s*\/\* 0x([\da-f]+) \*\/)$/;

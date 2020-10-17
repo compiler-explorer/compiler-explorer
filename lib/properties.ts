@@ -45,7 +45,7 @@ function debug(string) {
     if (propDebug) logger.info(`prop: ${string}`);
 }
 
-export function get(base, property, defaultValue) {
+export function get(base, property, defaultValue?) {
     let result = defaultValue;
     let source = 'default';
     hierarchy.forEach(elem => {
@@ -65,12 +65,12 @@ export function parseProperties(blob, name) {
     blob.split('\n').forEach((line, index) => {
         line = line.replace(/#.*/, '').trim();
         if (!line) return;
-        let split = line.match(/([^=]+)=(.*)/);
+        const split = line.match(/([^=]+)=(.*)/);
         if (!split) {
             logger.error(`Bad line: ${line} in ${name}: ${index + 1}`);
             return;
         }
-        let prop = split[1].trim();
+        const prop = split[1].trim();
         let val = split[2].trim();
         // hack to avoid applying toProperty to version properties
         // so that they're not parsed as numbers
@@ -106,7 +106,7 @@ export function reset() {
 }
 
 export function propsFor(base) {
-    return function (property, defaultValue) {
+    return function (property, defaultValue?) {
         return get(base, property, defaultValue);
     };
 }
@@ -121,6 +121,10 @@ export function propsFor(base) {
  * Compiler property fetcher
  */
 export class CompilerProps {
+    languages: any;
+    propsByLangId: Record<string, any>;
+    ceProps: any;
+
     /***
      * Creates a CompilerProps lookup function
      *
@@ -158,7 +162,7 @@ export class CompilerProps {
      * @param {?function} fn - Transformation to give to each value found
      * @returns {*} Transformed value(s) found or fn(defaultValue)
      */
-    get(langs, key, defaultValue, fn = _.identity) {
+    get(langs, key, defaultValue, fn?) {
         fn = fn || _.identity;
         if (_.isEmpty(langs)) {
             return fn(this.ceProps(key, defaultValue));

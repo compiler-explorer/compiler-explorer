@@ -64,12 +64,11 @@ export class JavaCompiler extends BaseCompiler {
             const objResult = await this.exec(this.compiler.objdumper, args, {maxOutput: maxSize, customCwd: dirPath});
             const oneResult = {
                 asm: objResult.stdout,
+                objdumpTime: objResult.execTime,
             };
 
             if (objResult.code !== 0) {
                 oneResult.asm = '<No output: javap returned ' + objResult.code + '>';
-            } else {
-                oneResult.objdumpTime = objResult.execTime;
             }
             return oneResult;
         }));
@@ -195,6 +194,7 @@ export class JavaCompiler extends BaseCompiler {
         for (const codeAndLineNumberTable of codeAndLineNumberTables) {
             const method = {
                 instructions: [],
+                startLine: undefined,
             };
             methods.push(method);
 
@@ -215,7 +215,7 @@ export class JavaCompiler extends BaseCompiler {
                 }
             }
 
-            let lineRegex = /line\s*(\d+):\s*(\d+)/g;
+            const lineRegex = /line\s*(\d+):\s*(\d+)/g;
             let m;
             let currentInstr = 0;
             let currentSourceLine = -1;

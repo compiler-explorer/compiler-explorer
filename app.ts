@@ -32,15 +32,16 @@ import path from 'path';
 import process from 'process';
 import url from 'url';
 
+import * as Integrations from '@sentry/integrations';
 import * as Sentry from '@sentry/node';
 import * as Tracing from '@sentry/tracing';
-import bodyParser from 'body-parser';
+import * as bodyParser from 'body-parser';
 import compression from 'compression';
 import express from 'express';
 import fs from 'fs-extra';
 import morgan from 'morgan';
 import nopt from 'nopt';
-import PromClient from 'prom-client';
+import * as PromClient from 'prom-client';
 import responseTime from 'response-time';
 import sFavicon from 'serve-favicon';
 import systemdSocket from 'systemd-socket';
@@ -61,7 +62,7 @@ import { NoScriptHandler } from './lib/handlers/noscript';
 import { RouteAPI } from './lib/handlers/route-api';
 import { SourceHandler } from './lib/handlers/source';
 import { languages as allLanguages } from './lib/languages';
-import { logger, logToLoki, logToPapertrail, suppressConsoleLog } from './lib/logger';
+import { logger, streams as logStreams, logToLoki, logToPapertrail, suppressConsoleLog } from './lib/logger';
 import { ClientOptionsHandler } from './lib/options-handler';
 import * as props from './lib/properties';
 import { sources } from './lib/sources';
@@ -69,7 +70,7 @@ import { loadSponsorsFromString } from './lib/sponsors';
 import { getStorageTypeByKey } from './lib/storage';
 import * as utils from './lib/utils';
 
-// Parse arguments from command line 'node ./app.js args...'
+// Parse arguments from command line 'node ./app.ts args...'
 const opts = nopt({
     env: [String, Array],
     rootDir: [String],
@@ -101,10 +102,10 @@ if (opts.debug) logger.level = 'debug';
 // AP: Detect if we're running under Windows Subsystem for Linux. Temporary modification
 // of process.env is allowed: https://nodejs.org/api/process.html#process_process_env
 if (process.platform === 'linux' && child_process.execSync('uname -a').toString().includes('Microsoft')) {
-    process.env.wsl = true;
+    process.env.wsl = 'true';
 }
 
-// AP: Allow setting of tmpDir (used in lib/base-compiler.js & lib/exec.js) through opts.
+// AP: Allow setting of tmpDir (used in lib/base-compiler.ts & lib/exec.ts) through opts.
 // WSL requires a directory on a Windows volume. Set that to Windows %TEMP% if no tmpDir supplied.
 // If a tempDir is supplied then assume that it will work for WSL processes as well.
 if (opts.tmpDir) {
@@ -208,7 +209,7 @@ if (defArgs.wantedLanguage) {
     languages = filteredLangs;
 }
 
-if (languages.length === 0) {
+if (_.isEmpty(languages)) {
     logger.error('Trying to start Compiler Explorer without a language');
 }
 
@@ -236,7 +237,7 @@ function contentPolicyHeader(res) {
     }
 }
 
-function measureEventLoopLag(delayMs) {
+function measureEventLoopLag(delayMs): Promise<number> {
     return new Promise((resolve) => {
         const start = process.hrtime.bigint();
         setTimeout(() => {
@@ -277,8 +278,8 @@ function setupEventLoopLagLogging() {
     }
 }
 
-let pugRequireHandler = () => {
-    logger.error('pug require handler not configured');
+let pugRequireHandler = (path: string) => {
+    logger.error(`pug require handler not configured (tried to get ${path})`);
 };
 
 async function setupWebPackDevMiddleware(router) {
@@ -293,7 +294,7 @@ async function setupWebPackDevMiddleware(router) {
     const webpackCompiler = webpack(webpackConfig);
     router.use(webpackDevMiddleware(webpackCompiler, {
         publicPath: '/static',
-        logger: logger,
+        logger: logger as any,
         stats: 'errors-only',
     }));
 
@@ -364,7 +365,7 @@ function startListening(server) {
     if (ss) {
         // ms (5 min default)
         const idleTimeout = process.env.IDLE_TIMEOUT;
-        const timeout = (typeof idleTimeout !== 'undefined' ? idleTimeout : 300) * 1000;
+        const timeout = (typeof idleTimeout !== 'undefined' ? Number(idleTimeout) : 300) * 1000;
         if (idleTimeout) {
             const exit = () => {
                 logger.info('Inactivity timeout reached, exiting.');
@@ -419,10 +420,11 @@ function setupSentry(sentryDsn, expressApp) {
             return event;
         },
         integrations: [
+            new Integrations.RewriteFrames({root: ceProps('sentryRootDir')}),
             // enable HTTP calls tracing
             new Sentry.Integrations.Http({tracing: true}),
             // enable Express.js middleware tracing
-            new Tracing.Integrations.Express({expressApp}),
+            new Tracing.Integrations.Express({app: expressApp}),
         ],
         tracesSampleRate: 0.1,
     });
@@ -479,7 +481,7 @@ async function main() {
     };
 
     const noscriptHandler = new NoScriptHandler(router, handlerConfig);
-    const routeApi = new RouteAPI(router, handlerConfig, noscriptHandler.renderNoScriptLayout);
+    const routeApi = new RouteAPI(router, handlerConfig);
 
     function onCompilerChange(compilers) {
         if (JSON.stringify(prevCompilers) === JSON.stringify(compilers)) {
@@ -539,7 +541,7 @@ async function main() {
             if (sentrySlowRequestMs > 0 && time >= sentrySlowRequestMs) {
                 Sentry.withScope(scope => {
                     scope.setExtra('duration_ms', time);
-                    Sentry.captureMessage('SlowRequest', 'warning');
+                    Sentry.captureMessage('SlowRequest', Sentry.Severity.Warning);
                 });
             }
         }))
@@ -550,8 +552,8 @@ async function main() {
             next({status: 404, message: `page "${req.path}" could not be found`});
         })
         // sentry error handler must be the first error handling middleware
-        .use(Sentry.Handlers.errorHandler)
-        // eslint-disable-next-line no-unused-vars
+        .use(Sentry.Handlers.errorHandler())
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         .use((err, req, res, next) => {
             const status =
                 err.status ||
@@ -569,7 +571,7 @@ async function main() {
 
     const sponsorConfig = loadSponsorsFromString(fs.readFileSync(configDir + '/sponsors.yaml', 'utf-8'));
 
-    function renderConfig(extra, urlOptions) {
+    function renderConfig(extra, urlOptions?) {
         const urlOptionsAllowed = [
             'readOnly', 'hideEditorToolbars', 'language',
         ];
@@ -616,7 +618,7 @@ async function main() {
         }, req.query));
     }
 
-    const embeddedHandler = function (req, res) {
+    const embeddedHandler = function (req: express.Request, res: express.Response) {
         staticHeaders(res);
         contentPolicyHeader(res);
         res.render('embed', renderConfig({
@@ -630,10 +632,10 @@ async function main() {
         await setupStaticMiddleware(router);
     }
 
-    morgan.token('gdpr_ip', req => req.ip ? utils.anonymizeIp(req.ip) : '');
+    morgan.token('gdpr_ip', (req: express.Request) => req.ip ? utils.anonymizeIp(req.ip) : '');
 
     // Based on combined format, but: GDPR compliant IP, no timestamp & no unused fields for our usecase
-    const morganFormat = isDevMode() ? 'dev' : ':gdpr_ip ":method :url" :status';
+    const morganFormat: string = isDevMode() ? 'dev' : ':gdpr_ip ":method :url" :status';
 
     /*
      * This is a workaround to make cross origin monaco web workers function
@@ -672,17 +674,17 @@ async function main() {
 
     router
         .use(morgan(morganFormat, {
-            stream: logger.stream,
+            stream: logStreams.info,
             // Skip for non errors (2xx, 3xx)
             skip: (req, res) => res.statusCode >= 400,
         }))
         .use(morgan(morganFormat, {
-            stream: logger.warnStream,
+            stream: logStreams.warn,
             // Skip for non user errors (4xx)
             skip: (req, res) => res.statusCode < 400 || res.statusCode >= 500,
         }))
         .use(morgan(morganFormat, {
-            stream: logger.errStream,
+            stream: logStreams.error,
             // Skip for non server errors (5xx)
             skip: (req, res) => res.statusCode < 500,
         }))
@@ -747,8 +749,6 @@ async function main() {
 }
 
 main()
-    .then(() => {
-    })
     .catch(err => {
         logger.error('Top-level error (shutting down):', err);
         process.exit(1);

@@ -25,6 +25,10 @@
 import _ from 'underscore';
 
 export class SourceHandler {
+    allowedActions: Set<string>;
+    sourceToHandler: _.Dictionary<any>;
+    addStaticHeaders: any;
+
     constructor(fileSources, addStaticHeaders) {
         this.allowedActions = new Set(['list', 'load', 'save']);
         this.sourceToHandler = _.indexBy(fileSources, 'urlpart');

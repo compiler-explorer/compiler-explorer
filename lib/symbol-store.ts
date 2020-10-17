@@ -23,15 +23,19 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 export class SymbolStore {
+    uniqueSymbols: Record<string, string>;
+    sortedSymbols: [string, string][];
+    isSorted: boolean;
+
     constructor() {
         this.uniqueSymbols = {};
         this.sortedSymbols = [];
         this.isSorted = true;
     }
 
-    sort() {
+    sort(): void {
         this.sortedSymbols = [];
-        for (let symbol in this.uniqueSymbols) {
+        for (const symbol in this.uniqueSymbols) {
             this.sortedSymbols.push([symbol, this.uniqueSymbols[symbol]]);
         }
 
@@ -42,7 +46,7 @@ export class SymbolStore {
         this.isSorted = true;
     }
 
-    add(symbol, demangled) {
+    add(symbol: string, demangled?: string): void {
         if (demangled !== undefined) {
             this.uniqueSymbols[symbol] = demangled;
         } else {
@@ -52,11 +56,11 @@ export class SymbolStore {
         this.isSorted = false;
     }
 
-    contains(symbol) {
+    contains(symbol: string): boolean {
         return this.uniqueSymbols[symbol] !== undefined;
     }
 
-    exclude(otherStore) {
+    exclude(otherStore: SymbolStore): void {
         for (const symbol in otherStore.uniqueSymbols) {
             delete this.uniqueSymbols[symbol];
         }
@@ -64,7 +68,7 @@ export class SymbolStore {
         this.isSorted = false;
     }
 
-    softExclude(otherStore) {
+    softExclude(otherStore: SymbolStore): void {
         for (const symbol in otherStore.uniqueSymbols) {
             let shouldExclude = false;
             let checksymbol;
@@ -81,7 +85,7 @@ export class SymbolStore {
         this.isSorted = false;
     }
 
-    addMany(symbols) {
+    addMany(symbols: string[]): void {
         symbols.forEach(symbol => {
             this.uniqueSymbols[symbol] = symbol;
         });
@@ -89,7 +93,7 @@ export class SymbolStore {
         this.isSorted = false;
     }
 
-    listSymbols() {
+    listSymbols(): string[] {
         if (!this.isSorted) this.sort();
 
         return this.sortedSymbols.map(function (elem) {
@@ -97,7 +101,7 @@ export class SymbolStore {
         });
     }
 
-    listTranslations() {
+    listTranslations(): [string, string][] {
         if (!this.isSorted) this.sort();
 
         return this.sortedSymbols;

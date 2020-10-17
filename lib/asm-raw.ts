@@ -22,19 +22,21 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { AsmRegex } from './asmregex';
+import { AsmParser } from './asm-parser';
 
-export class AsmRaw extends AsmRegex {
+export class AsmRaw extends AsmParser {
     processBinaryAsm(asm, filters) {
-        let result = [];
+        const result = [];
         const asmLines = asm.split('\n');
         const asmOpcodeRe = /^\s*([\da-f]+):\s*(([\da-f]{2} ?)+)\s*(.*)/;
         const labelRe = /^([\da-f]+)\s+<([^>]+)>:$/;
         const destRe = /.*\s([\da-f]+)\s+<([^>]+)>$/;
-        let source = null;
+        const source = null;
 
         if (asmLines.length === 1 && asmLines[0][0] === '<') {
-            return [{text: asmLines[0], source: null}];
+            return {
+                asm: [{text: asmLines[0], source: null}],
+            };
         }
 
         asmLines.forEach(line => {
@@ -56,7 +58,7 @@ export class AsmRaw extends AsmRegex {
                 const opcodes = match[2].split(' ').filter(function (x) {
                     return x;
                 });
-                const disassembly = ' ' + AsmRegex.filterAsmLine(match[4], filters);
+                const disassembly = ' ' + AsmParser.filterAsmLine(match[4], filters);
                 let links = null;
                 const destMatch = line.match(destRe);
                 if (destMatch) {

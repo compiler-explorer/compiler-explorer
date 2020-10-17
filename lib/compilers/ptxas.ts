@@ -39,7 +39,7 @@ export class PtxAssembler extends BaseCompiler {
         this.asm = new SassAsmParser();
     }
 
-    parsePtxOutput(lines, inputFilename, pathPrefix) {
+    parsePtxOutput(lines, inputFilename, pathPrefix?) {
         const re = /^ptxas\s*<source>, line (\d+);(.*)/;
         const result = [];
         utils.eachLine(lines, function (line) {
@@ -54,7 +54,7 @@ export class PtxAssembler extends BaseCompiler {
                 }
             }
             if (line !== null) {
-                const lineObj = {text: line};
+                const lineObj = {text: line, tag: undefined};
                 const match = line.replace(/\x1B\[[\d;]*[Km]/g, '').match(re);
                 if (match) {
                     lineObj.text = `<source>:${match[1]} ${match[2].trim()}`;
@@ -109,7 +109,7 @@ export class PtxAssembler extends BaseCompiler {
 
     async objdump(outputFilename, result, maxSize) {
         const dirPath = path.dirname(outputFilename);
-        let args = ['-c', '-g', '-hex', outputFilename];
+        const args = ['-c', '-g', '-hex', outputFilename];
         const objResult = await this.exec(
             this.compiler.objdumper, args, {maxOutput: maxSize, customCwd: dirPath});
         result.asm = objResult.stdout;

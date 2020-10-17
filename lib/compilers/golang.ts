@@ -102,7 +102,7 @@ export class GolangCompiler extends BaseCompiler {
                 funcCollisions[func] = collisions;
             }
 
-            let res = [];
+            const res = [];
             if (pcMatch && !labels[pcMatch]) {
                 // Create pseudo-label.
                 let label = pcMatch.replace(/^0{0,4}/, '');

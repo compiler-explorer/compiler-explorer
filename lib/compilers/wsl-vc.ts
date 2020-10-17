@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-// The main difference from wine-vc.js is that we translate
+// The main difference from wine-vc.ts is that we translate
 // compiler path from Unix mounted volume (/mnt/c/tmp) to Windows (c:/tmp)
 
 import path from 'path';
@@ -53,7 +53,7 @@ export class WslVcCompiler extends Win32VcCompiler {
 
     // AP: Create CE temp directory in winTmp directory instead of the tmpDir directory.
     // NPM temp package: https://www.npmjs.com/package/temp, see Affixes
-    newTempDir() {
+    newTempDir(): Promise<string> {
         return new Promise((resolve, reject) => {
             temp.mkdir({prefix: 'compiler-explorer-compiler', dir: process.env.winTmp}, (err, dirPath) => {
                 if (err)
@@ -65,7 +65,7 @@ export class WslVcCompiler extends Win32VcCompiler {
     }
 
     exec(compiler, args, options_) {
-        let options = Object.assign({}, options_);
+        const options = Object.assign({}, options_);
         options.env = Object.assign({}, options.env);
 
         let old_env = options.env['WSLENV'];

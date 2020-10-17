@@ -27,9 +27,8 @@ import { BaseTool } from './base-tool';
 export class StringsTool extends BaseTool {
     static get key() { return 'strings-tool'; }
 
-    runTool(compilationInfo, inputFilename, args) {
-        if(!compilationInfo.filters.binary)
-        {
+    async runTool(compilationInfo, inputFilename, args) {
+        if(!compilationInfo.filters.binary) {
             return this.createErrorResponse('Strings requires a binary output');
         }
         return super.runTool(compilationInfo, compilationInfo.executableFilename, args);

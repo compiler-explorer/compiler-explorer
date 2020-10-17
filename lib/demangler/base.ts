@@ -30,6 +30,29 @@ import * as utils from '../utils';
 import { PrefixTree } from './prefix-tree';
 
 export class BaseDemangler extends AsmRegex {
+    demanglerExe: any;
+    demanglerArguments: any[];
+    symbolstore: SymbolStore;
+    othersymbols: SymbolStore;
+    result: any;
+    input: any[];
+    includeMetadata: boolean;
+    compiler: any;
+    jumpDef: RegExp;
+    callDef: RegExp;
+    callPtrDef1: RegExp;
+    callPtrDef2: RegExp;
+    callPtrDef3: RegExp;
+    callPtrDef4: RegExp;
+    movUnderscoreDef: RegExp;
+    leaUnderscoreDef: RegExp;
+    quadUnderscoreDef: RegExp;
+
+    /**
+     *
+     * @param {string} demanglerExe
+     * @param {BaseCompiler} compiler
+     */
     constructor(demanglerExe, compiler) {
         super();
 
@@ -121,7 +144,7 @@ export class BaseDemangler extends AsmRegex {
         return this.input.join('\n');
     }
 
-    getMetadata() {
+    getMetadata(symbol) {
         return [];
     }
 

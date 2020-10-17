@@ -47,7 +47,7 @@ function getAsmDirective(txt) {
 function filterTextSection(data) {
     let useCurrentSection = true;
     const result = [];
-    for (let i in data) {
+    for (const i in data) {
         const x = data[i];
         const directive = getAsmDirective(x.text);
         if (directive != null) {
@@ -319,7 +319,7 @@ function isLLVMBased(compilerType, version) {
 
 export function generateStructure(compilerType, version, asmArr) {
     const rules = isLLVMBased(compilerType, version) ? clangX86 : gccX86;
-    const code = rules.filterData(asmArr);
+    const code: any = rules.filterData(asmArr);
     const funcs = splitToFunctions(code, rules.isFunctionEnd);
     if (funcs.length === 0) {
         return funcs;

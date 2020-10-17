@@ -42,15 +42,15 @@ If you have any questions, don't hesitate: [Contact us].
 
 Code is separated into server-side code and client-side code.
 All dependencies (server and client side) are installed via `package.json`.
-_Server code_ is in `app.js` and in the `lib` directory. 
+_Server code_ is in `app.ts` and in the `lib` directory. 
 _Client code_ is all in the `static` directory.
 
-In the server code, the `app.js` sets up a basic `express`
+In the server code, the `app.ts` sets up a basic `express`
  middleware-driven web server, delegating to the various compiler backends in
- `lib/compilers/`. All of them inherit from `lib/base-compiler.js` which does
+ `lib/compilers/`. All of them inherit from `lib/base-compiler.ts` which does
  most of the work of running compilers, then parsing the output and forming a
  JSON object to send to the client. Any assembly parsing is done in the
- `lib/asm-parser.js`, and similar, files.
+ `lib/asm-parser.ts`, and similar, files.
 
 In the client code, [GoldenLayout](https://www.golden-layout.com/) is used as
  the container. If you look at some of the components like the

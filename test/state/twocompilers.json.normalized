@@ -1,7 +1,6 @@
 {
     "sessions": [
         {
-            "conformanceview": false,
             "id": 1,
             "language": "c++",
             "source": "// Type your code here, or load an example.\r\nint square(int num) {\r\n    return num * num + 3;\r\n}\r\n\r\n",
@@ -27,7 +26,6 @@
             "executors": []
         },
         {
-            "conformanceview": false,
             "id": 2,
             "language": "c++",
             "source": "// Type your code here, or load an example.\r\nint square(int num) {\r\n    return num * num;\r\n}",

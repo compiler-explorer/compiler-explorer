@@ -42,6 +42,14 @@ const PutCounter = new Counter({
 });
 
 export class BaseCache {
+    cacheName: string;
+    details: any;
+    type: string;
+    gets: number;
+    hits: number;
+    puts: number;
+    countersEnabled: boolean;
+
     constructor(cacheName, details, type) {
         this.cacheName = cacheName;
         this.details = details;
@@ -79,7 +87,7 @@ export class BaseCache {
         return result;
     }
 
-    async put(key, value, creator) {
+    async put(key, value, creator?) {
         if (!(value instanceof Buffer))
             value = Buffer.from(value);
         this.puts++;
@@ -89,12 +97,12 @@ export class BaseCache {
     }
 
     // eslint-disable-next-line no-unused-vars
-    async getInternal(key) {
+    async getInternal(key): Promise<any> {
         throw new Error('should be implemented in subclass');
     }
 
     // eslint-disable-next-line no-unused-vars
-    async putInternal(key, value, creator) {
+    async putInternal(key, value, creator?) {
         throw new Error('should be implemented in subclass');
     }
 }

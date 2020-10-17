@@ -7,12 +7,16 @@ plugins:
   - promise
   - sonarjs
   - unicorn
+  - '@typescript-eslint'
 extends:
   - ./.eslint-license-header.yml
   - eslint:recommended
   - plugin:import/recommended
   - plugin:node/recommended
   - plugin:unicorn/recommended
+  - plugin:@typescript-eslint/eslint-recommended
+  - plugin:@typescript-eslint/recommended
+  - plugin:import/typescript
 env:
   mocha: true
   node: true
@@ -27,6 +31,7 @@ rules:
   eqeqeq:
     - error
     - smart
+  import/default: off # fs-extra trips this. the ts compiler catches actual errors
   import/extensions: error
   import/first: error
   import/newline-after-import: error
@@ -35,6 +40,7 @@ rules:
   import/no-default-export: warn
   import/no-deprecated: warn
   import/no-mutable-exports: error
+  import/no-named-as-default-member: off  # Far too many things (express, morgan, fs) trip this
   import/no-self-import: error
   import/no-useless-path-segments: error
   import/no-webpack-loader-syntax: error
@@ -64,6 +70,9 @@ rules:
   no-useless-escape: error
   no-useless-rename: error
   no-useless-return: error
+  prefer-const:
+    - error
+    - destructuring: all
   quote-props:
     - error
     - as-needed
@@ -133,3 +142,9 @@ parserOptions:
   ecmaVersion: 2020
 globals:
   BigInt: true
+settings:
+  node:
+    tryExtensions: [ .js, .ts ]
+  import/parsers:
+    "@typescript-eslint/parser": [ .ts, .tsx ]
+  import/resolver: "typescript"
