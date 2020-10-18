@@ -133,6 +133,8 @@
     "@types/webpack-manifest-plugin": "^2.1.0",
     "@types/which": "^1.3.2",
     "@types/yaml": "^1.9.7",
+    "@typescript-eslint/eslint-plugin": "^4.4.1",
+    "@typescript-eslint/parser": "^4.4.1",
     "aws-sdk-mock": "^5.1.0",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",

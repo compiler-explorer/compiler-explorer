@@ -7,12 +7,15 @@ plugins:
 - promise
 - sonarjs
 - unicorn
+- '@typescript-eslint'
 extends:
 - ./.eslint-license-header.yml
 - eslint:recommended
 - plugin:import/recommended
 - plugin:node/recommended
 - plugin:unicorn/recommended
+- plugin:@typescript-eslint/eslint-recommended
+- plugin:@typescript-eslint/recommended
 env:
   mocha: true
   node: true
