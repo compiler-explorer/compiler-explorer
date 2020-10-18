@@ -113,7 +113,7 @@ export class BaseTool {
     }
 
     async runTool(compilationInfo, inputFilepath, args, stdin?) {
-        let execOptions = this.getDefaultExecOptions();
+        const execOptions = this.getDefaultExecOptions();
         if (inputFilepath) execOptions.customCwd = path.dirname(inputFilepath);
         execOptions.input = stdin;
 

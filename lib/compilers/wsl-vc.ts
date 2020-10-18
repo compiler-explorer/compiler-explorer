@@ -65,7 +65,7 @@ export class WslVcCompiler extends Win32VcCompiler {
     }
 
     exec(compiler, args, options_) {
-        let options = Object.assign({}, options_);
+        const options = Object.assign({}, options_);
         options.env = Object.assign({}, options.env);
 
         let old_env = options.env['WSLENV'];

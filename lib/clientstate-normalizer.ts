@@ -547,7 +547,7 @@ export class ClientStateGoldenifier extends GoldenLayoutComponents {
     generatePresentationModeMobileViewerSlides(state) {
         const slides = [];
 
-        for (var idxSession = 0; idxSession < state.sessions.length; idxSession++) {
+        for (let idxSession = 0; idxSession < state.sessions.length; idxSession++) {
             const gl = this.getPresentationModeLayoutForSource(state, {
                 session: idxSession,
                 compiler: 0,
@@ -624,7 +624,7 @@ export class ClientStateGoldenifier extends GoldenLayoutComponents {
                     ],
                 };
 
-                let stack = this.newSourceStackFromSession(session, 100);
+                const stack = this.newSourceStackFromSession(session, 100);
                 this.golden.content[0].content[idxSession].content[0].content.push(stack);
 
                 const compilerWidth = 100 /
@@ -638,11 +638,11 @@ export class ClientStateGoldenifier extends GoldenLayoutComponents {
 
                 for (let idxCompiler = 0; idxCompiler < session.compilers.length; idxCompiler++) {
                     const compiler = session.compilers[idxCompiler];
-                    let stack = this.newCompilerStackFromSession(session, compiler, compilerWidth);
+                    const stack = this.newCompilerStackFromSession(session, compiler, compilerWidth);
                     this.golden.content[0].content[idxSession].content[1].content.push(stack);
 
                     compiler.specialoutputs.forEach((viewtype) => {
-                        let stack = this.newStackWithOneComponent(compilerWidth,
+                        const stack = this.newStackWithOneComponent(compilerWidth,
                             this.createSpecialOutputComponent(viewtype, session, idxCompiler));
 
                         if (stack) {
@@ -651,7 +651,7 @@ export class ClientStateGoldenifier extends GoldenLayoutComponents {
                     });
 
                     compiler.tools.forEach((tool) => {
-                        let stack = this.newToolStackFromCompiler(session, idxCompiler + 1,
+                        const stack = this.newToolStackFromCompiler(session, idxCompiler + 1,
                             tool.id, tool.args, compilerWidth);
                         this.golden.content[0].content[idxSession].content[1].content.push(stack);
                     });
@@ -659,7 +659,7 @@ export class ClientStateGoldenifier extends GoldenLayoutComponents {
 
                 for (let idxExecutor = 0; idxExecutor < session.executors.length; idxExecutor++) {
                     const executor = session.executors[idxExecutor];
-                    let stack = this.newExecutorStackFromSession(session, executor, compilerWidth);
+                    const stack = this.newExecutorStackFromSession(session, executor, compilerWidth);
                     this.golden.content[0].content[idxSession].content[1].content.push(stack);
                 }
             }
@@ -681,11 +681,11 @@ export class ClientStateGoldenifier extends GoldenLayoutComponents {
 
             for (let idxCompiler = 0; idxCompiler < session.compilers.length; idxCompiler++) {
                 const compiler = session.compilers[idxCompiler];
-                let stack = this.newCompilerStackFromSession(session, compiler, width);
+                const stack = this.newCompilerStackFromSession(session, compiler, width);
                 this.golden.content[0].content.push(stack);
 
                 compiler.specialoutputs.forEach((viewtype) => {
-                    let stack = this.newStackWithOneComponent(width,
+                    const stack = this.newStackWithOneComponent(width,
                         this.createSpecialOutputComponent(viewtype, session, idxCompiler));
 
                     if (stack) {
@@ -694,14 +694,14 @@ export class ClientStateGoldenifier extends GoldenLayoutComponents {
                 });
 
                 compiler.tools.forEach((tool) => {
-                    let stack = this.newToolStackFromCompiler(session, idxCompiler + 1,
+                    const stack = this.newToolStackFromCompiler(session, idxCompiler + 1,
                         tool.id, tool.args, width);
                     this.golden.content[0].content.push(stack);
                 });
             }
 
             session.executors.forEach((executor) => {
-                let stack = this.newExecutorStackFromSession(session, executor, width);
+                const stack = this.newExecutorStackFromSession(session, executor, width);
                 this.golden.content[0].content.push(stack);
             });
         }

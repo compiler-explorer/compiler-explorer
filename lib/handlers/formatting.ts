@@ -65,7 +65,7 @@ export class Formatter {
     }
 
     validateFormatRequest(req, res) {
-        let requestedTool = this.tools[req.params.tool];
+        const requestedTool = this.tools[req.params.tool];
         if (!requestedTool) {
             res.status(422); // Unprocessable Entity
             res.send({

@@ -73,7 +73,7 @@ export class OnDiskCache extends BaseCache {
         });
         // Sort oldest first
         info.sort((x, y) => x.sort - y.sort);
-        for (let i of info) {
+        for (const i of info) {
             this.cache.set(i.key, i.data);
         }
     }

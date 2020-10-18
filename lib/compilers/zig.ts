@@ -66,7 +66,7 @@ export class ZigCompiler extends BaseCompiler {
     optionsForFilter(filters, outputFilename, userOptions) {
         let options = [filters.execute ? 'build-exe' : 'build-obj'];
 
-        let self_hosted_cli = this.compiler.semver === 'trunk' ||
+        const self_hosted_cli = this.compiler.semver === 'trunk' ||
             (this.compiler.semver && Semver.gt(this.compiler.semver, '0.6.0'));
         const desiredName = path.basename(outputFilename);
         // strip '.s' if we aren't executing
@@ -99,7 +99,7 @@ export class ZigCompiler extends BaseCompiler {
         }
 
         if (!filters.binary) {
-            let userRequestedEmit = _.any(userOptions, opt => opt.includes('--emit'));
+            const userRequestedEmit = _.any(userOptions, opt => opt.includes('--emit'));
             if (!userRequestedEmit) {
                 options = options.concat('--emit', 'asm');
             }

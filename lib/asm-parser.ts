@@ -208,7 +208,7 @@ export class AsmParser extends AsmRegex {
 
         const MaxLabelIterations = 10;
         for (let iter = 0; iter < MaxLabelIterations; ++iter) {
-            let toAdd = [];
+            const toAdd = [];
             _.each(labelsUsed, (t, label) => { // jshint ignore:line
                 _.each(weakUsages[label], nowused => {
                     if (labelsUsed[nowused]) return;

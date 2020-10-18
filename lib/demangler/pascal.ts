@@ -64,7 +64,7 @@ export class PascalDemangler extends BaseDemangler {
     }
 
     shouldIgnoreSymbol(text) {
-        for (let k in this.ignoredsymbols) {
+        for (const k in this.ignoredsymbols) {
             if (text.startsWith(this.ignoredsymbols[k])) {
                 return true;
             }
@@ -194,7 +194,7 @@ export class PascalDemangler extends BaseDemangler {
     }
 
     async process(result, execOptions) {
-        let options = execOptions || {};
+        const options = execOptions || {};
         this.result = result;
 
         if (!this.symbolstore) {

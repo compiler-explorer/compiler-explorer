@@ -145,6 +145,7 @@
     "deep-equal-in-any-order": "^1.0.28",
     "eslint": "^7.10.0",
     "eslint-formatter-github": "^1.0.11",
+    "eslint-import-resolver-typescript": "^2.3.0",
     "eslint-plugin-import": "^2.22.1",
     "eslint-plugin-jsdoc": "^30.6.2",
     "eslint-plugin-node": "^11.1.0",

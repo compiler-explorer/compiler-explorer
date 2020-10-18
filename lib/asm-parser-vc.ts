@@ -133,7 +133,7 @@ export class VcAsmParser extends AsmParser {
         //   ; name: string | undefined
         //   ; initialLine: int
         //   ; file: string option | undefined }
-        let resultObject = {
+        const resultObject = {
             prefix: [],    // line array
             functions: [], // func array
             postfix: null,    // line?
@@ -318,9 +318,9 @@ export class VcAsmParser extends AsmParser {
             return f1.file.localeCompare(f2.file);
         });
 
-        let result = [];
+        const result = [];
         let lastLineWasWhitespace = true;
-        let pushLine = line => {
+        const pushLine = line => {
             if (line.text.trim() === '') {
                 if (!lastLineWasWhitespace) {
                     result.push({text: '', source: null});

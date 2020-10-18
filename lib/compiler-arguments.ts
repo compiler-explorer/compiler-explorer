@@ -63,9 +63,9 @@ export class CompilerArguments {
     }
 
     getOptimizationArguments(excludeUsedArguments) {
-        let possibleArguments = {};
+        const possibleArguments = {};
         _.forEach(this.possibleArguments, (obj, argKey) => {
-            for (let argIdx in excludeUsedArguments) {
+            for (const argIdx in excludeUsedArguments) {
                 if (this.match(argKey, excludeUsedArguments[argIdx])) return;
             }
 
@@ -82,7 +82,7 @@ export class CompilerArguments {
         let possibleArguments: any = {};
         if (excludeUsedArguments && excludeUsedArguments.length > 0) {
             _.forEach(this.possibleArguments, (obj, argKey) => {
-                for (let argIdx in excludeUsedArguments) {
+                for (const argIdx in excludeUsedArguments) {
                     if (this.match(argKey, excludeUsedArguments[argIdx])) return;
                 }
                 possibleArguments[argKey] = obj;

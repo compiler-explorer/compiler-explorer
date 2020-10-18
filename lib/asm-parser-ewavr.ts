@@ -106,7 +106,7 @@ export class AsmEWAVRParser extends AsmParser {
             }
         };
 
-        let asmLines = utils.splitLines(asm);
+        const asmLines = utils.splitLines(asm);
 
         const stdInLooking = /<stdin>|^-$|example\.[^/]+$|<source>/;
 
@@ -118,7 +118,7 @@ export class AsmEWAVRParser extends AsmParser {
         //   ; initialLine: int
         //   ; file: string option
         //   ; require: string array }
-        let resultObject = {
+        const resultObject = {
             prefix: [],    // line array
             labels: [],    // label array
             postfix: [],    // line array
@@ -272,9 +272,9 @@ export class AsmEWAVRParser extends AsmParser {
         const compilerGeneratedLabel = /^(initializer for |segment init: )([\w :]*)$/i;
         const segInitLabel = /^segment init: ([\w :]*)$/i;
 
-        let result = [];
+        const result = [];
         let lastLineWasWhitespace = true;
-        let pushLine = line => {
+        const pushLine = line => {
             if (line.text.trim() === '') {
                 if (!lastLineWasWhitespace) {
                     result.push({text: '', source: null});

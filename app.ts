@@ -61,7 +61,7 @@ import { NoScriptHandler } from './lib/handlers/noscript';
 import { RouteAPI } from './lib/handlers/route-api';
 import { SourceHandler } from './lib/handlers/source';
 import { languages as allLanguages } from './lib/languages';
-import { logger, logToPapertrail, streams as logStreams, suppressConsoleLog } from './lib/logger';
+import { logger, streams as logStreams, logToPapertrail, suppressConsoleLog } from './lib/logger';
 import { ClientOptionsHandler } from './lib/options-handler';
 import * as props from './lib/properties';
 import { getShortenerTypeByKey } from './lib/shortener';

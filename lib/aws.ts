@@ -54,7 +54,7 @@ let awsConfig = {};
 let awsProps = null;
 
 async function loadAwsConfig(properties) {
-    let region = properties('region');
+    const region = properties('region');
     if (!region) return {};
     const ssm = new AWS.SSM({region: region});
     const path = '/compiler-explorer/';

@@ -437,7 +437,7 @@ export class MapFileReader {
      * @param {string} unitName
      */
     getReconstructedUnitAddressSpace(unitName) {
-        let addressSpace = [];
+        const addressSpace = [];
 
         for (let idxSegment = 0; idxSegment < this.reconstructedSegments.length; ++idxSegment) {
             const segment = this.reconstructedSegments[idxSegment];

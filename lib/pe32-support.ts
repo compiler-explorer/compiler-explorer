@@ -101,7 +101,7 @@ export class PELabelReconstructor {
         // todo: deletion by reconstructed addresses is a VS specific technique,
         //  delphi mapping is more precise and doesnt need reconstruction
 
-        let unitAddressSpaces = this.mapFileReader.getReconstructedUnitAddressSpace(unitName);
+        const unitAddressSpaces = this.mapFileReader.getReconstructedUnitAddressSpace(unitName);
 
         for (let idx = 0; idx < this.mapFileReader.reconstructedSegments.length; idx++) {
             const info = this.mapFileReader.reconstructedSegments[idx];
@@ -161,7 +161,7 @@ export class PELabelReconstructor {
      */
     addAddressAsLabelAndReplaceLine(lineIdx, regex) {
         const line = this.asmLines[lineIdx];
-        let matches = line.match(regex);
+        const matches = line.match(regex);
         if (matches) {
             const address = matches[3];
             if (!address.includes('+') && !address.includes('-')) {

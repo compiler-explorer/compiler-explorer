@@ -102,7 +102,7 @@ export class GolangCompiler extends BaseCompiler {
                 funcCollisions[func] = collisions;
             }
 
-            let res = [];
+            const res = [];
             if (pcMatch && !labels[pcMatch]) {
                 // Create pseudo-label.
                 let label = pcMatch.replace(/^0{0,4}/, '');
@@ -168,7 +168,7 @@ export class GolangCompiler extends BaseCompiler {
     }
 
     extractLogging(stdout) {
-        let filepath = `./${this.compileFilename}`;
+        const filepath = `./${this.compileFilename}`;
         const reLogging = new RegExp(`^${filepath}:([0-9]*):([0-9]*):\\s(.*)`, 'i');
         return stdout.filter(obj => obj.text.match(reLogging))
             .map(obj => obj.text.replace(filepath, '<source>'))

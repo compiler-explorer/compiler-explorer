@@ -87,7 +87,7 @@ export class LlvmIrParser {
         if (!match) {
             return null;
         }
-        let metaNode = {
+        const metaNode = {
             metaId: match[1],
             metaType: match[2],
         };
@@ -107,15 +107,15 @@ export class LlvmIrParser {
 
     processIr(ir, filters) {
         const result = [];
-        let irLines = utils.splitLines(ir);
-        let debugInfo = {};
+        const irLines = utils.splitLines(ir);
+        const debugInfo = {};
         let prevLineEmpty = false;
 
         // Filters
         const commentOnly = /^\s*(;.*)$/;
 
         irLines.forEach(line => {
-            let source = null;
+            const source = null;
             let match;
 
             if (line.trim().length === 0) {

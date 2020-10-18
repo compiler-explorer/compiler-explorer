@@ -82,7 +82,7 @@ export class MapFileReaderDelphi extends MapFileReader {
         matches = line.match(this.regexDelphiICodeSegment);
         if (matches) {
             this.isegments.push(this.getCodesegmentObject(matches));
-            return;
+            
         }
     }
 

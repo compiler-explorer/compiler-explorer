@@ -119,7 +119,7 @@ export class BaseDemangler extends AsmRegex {
         for (let j = 0; j < this.result.asm.length; ++j) {
             const line = this.result.asm[j].text;
 
-            let matches = line.match(this.labelDef);
+            const matches = line.match(this.labelDef);
             if (matches) {
                 const midx = matches.length - 1;
                 this.symbolstore.add(matches[midx], matches[midx]);
@@ -206,7 +206,7 @@ export class BaseDemangler extends AsmRegex {
     }
 
     async process(result, execOptions) {
-        let options = execOptions || {};
+        const options = execOptions || {};
         this.result = result;
 
         if (!this.symbolstore) {

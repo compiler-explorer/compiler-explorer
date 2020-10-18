@@ -276,7 +276,7 @@ export class BaseCompiler {
             });
         })));
 
-        let sortedlinks = [];
+        const sortedlinks = [];
 
         _.each(links, (libToInsertName) => {
             const libToInsertObj = dictionary[libToInsertName];
@@ -512,7 +512,7 @@ export class BaseCompiler {
         // Build dump options to append to the end of the -fdump command-line flag.
         // GCC accepts these options as a list of '-' separated names that may
         // appear in any order.
-        var flags = '';
+        let flags = '';
         if (gccDumpOptions.dumpFlags.address !== false) {
             flags += '-address';
         }
@@ -576,7 +576,7 @@ export class BaseCompiler {
     }
 
     runToolsOfType(tools, type, compilationInfo) {
-        let tooling = [];
+        const tooling = [];
         if (tools) {
             tools.forEach((tool) => {
                 const matches = this.possibleTools.find(possibleTool => {
@@ -922,7 +922,7 @@ export class BaseCompiler {
             await fs.writeFile(inputFilename, source);
 
             // TODO make const when I can
-            let [result, optOutput] = await this.doCompilation(
+            const [result, optOutput] = await this.doCompilation(
                 inputFilename, dirPath, key, options, filters, backendOptions, libraries, tools);
 
             return await this.afterCompilation(result, doExecute, key, executeParameters, tools, backendOptions,
@@ -1063,7 +1063,7 @@ export class BaseCompiler {
                     // This is a system header or implicit definition,
                     // remove everything up to the next top level decl
                     // Top level decls with invalid sloc as the file don't change the most recent file
-                    let slocRegex = /<<invalid sloc>>/;
+                    const slocRegex = /<<invalid sloc>>/;
                     if (!output[i].match(slocRegex)) {
                         mostRecentIsSource = false;
                     }
@@ -1087,7 +1087,7 @@ export class BaseCompiler {
         output = output.replace(addressRegex, '$1');
 
         // Filter out <invalid sloc> and <<invalid sloc>>
-        let slocRegex = / ?<?<invalid sloc>>?/g;
+        const slocRegex = / ?<?<invalid sloc>>?/g;
         output = output.replace(slocRegex, '');
 
         // Unify file references
@@ -1119,7 +1119,7 @@ export class BaseCompiler {
         // Phase letter is one of {i, l, r, t}
         // {outpufilename}.{extension}.{passNumber}{phaseLetter}.{phaseName}
         const dumpFilenameRegex = /^.+?\..+?\.(\d+?[ilrt]\..+)$/;
-        for (let filename of allFiles) {
+        for (const filename of allFiles) {
             const match = dumpFilenameRegex.exec(filename);
             if (match) {
                 const pass = match[1];
@@ -1215,7 +1215,7 @@ Please select another pass or change filters.`;
     }
 
     getArgumentParser() {
-        let exe = this.compiler.exe.toLowerCase();
+        const exe = this.compiler.exe.toLowerCase();
         if (exe.includes('clang')) {  // check this first as "clang++" matches "g++"
             return ClangParser;
         } else if (exe.includes('g++') || exe.includes('gcc')) {

@@ -65,12 +65,12 @@ export function parseProperties(blob, name) {
     blob.split('\n').forEach((line, index) => {
         line = line.replace(/#.*/, '').trim();
         if (!line) return;
-        let split = line.match(/([^=]+)=(.*)/);
+        const split = line.match(/([^=]+)=(.*)/);
         if (!split) {
             logger.error(`Bad line: ${line} in ${name}: ${index + 1}`);
             return;
         }
-        let prop = split[1].trim();
+        const prop = split[1].trim();
         let val = split[2].trim();
         // hack to avoid applying toProperty to version properties
         // so that they're not parsed as numbers

@@ -43,7 +43,7 @@ export class CompilerDropinTool extends BaseTool {
         //  4) options manually specified in the compiler tab (options)
         //  5) flags from the clang-tidy tab
         let compileFlags = [];
-        let argsToFilterOut = new Set([sourcefile, '-stdlib=libc++']);
+        const argsToFilterOut = new Set([sourcefile, '-stdlib=libc++']);
 
         const toolchainPath = this.getToolchainPath(compilationInfo);
 

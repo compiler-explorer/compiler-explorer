@@ -235,7 +235,7 @@ export function getHash(object, HashVersion = DefaultHash) {
  * @returns {glContents}
  */
 export function glGetMainContents(content) {
-    let contents = {editors: [], compilers: []};
+    const contents = {editors: [], compilers: []};
     _.each(content, element => {
         if (element.type === 'component') {
             if (element.componentName === 'codeEditor') {

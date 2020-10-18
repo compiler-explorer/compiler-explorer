@@ -37,7 +37,7 @@ export class x86to6502Tool extends BaseTool {
         }
 
         if (compilationInfo.filters.binary) {
-            return this.createErrorResponse('<cannot run x86to6502 on binary>')
+            return this.createErrorResponse('<cannot run x86to6502 on binary>');
         }
 
         const parser = new AsmParser();

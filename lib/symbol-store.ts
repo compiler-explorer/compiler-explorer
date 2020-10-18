@@ -35,7 +35,7 @@ export class SymbolStore {
 
     sort() {
         this.sortedSymbols = [];
-        for (let symbol in this.uniqueSymbols) {
+        for (const symbol in this.uniqueSymbols) {
             this.sortedSymbols.push([symbol, this.uniqueSymbols[symbol]]);
         }
 

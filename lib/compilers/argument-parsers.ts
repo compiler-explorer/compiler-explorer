@@ -34,7 +34,7 @@ export class BaseParser {
 
     static parseLines(stdout, optionRegex) {
         let previousOption;
-        let options = {};
+        const options = {};
 
         utils.eachLine(stdout, line => {
             const match = line.match(optionRegex);
@@ -186,7 +186,7 @@ export class VCParser extends BaseParser {
 
     static parseLines(stdout, optionRegex) {
         let previousOption;
-        let options = {};
+        const options = {};
 
         const matchLine = (line) => {
             if (line.startsWith('/?')) return;

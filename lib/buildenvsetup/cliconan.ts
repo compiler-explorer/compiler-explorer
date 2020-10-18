@@ -85,7 +85,7 @@ export class BuildEnvSetupCliConan extends BuildEnvSetupBase {
         const stdver = '';
         const flagcollection = '';
 
-        let args = ['install', '.'];
+        const args = ['install', '.'];
         if (this.remote) args.push('-r', this.remote);
         args.push('-s', 'os=Linux');
         args.push('-s', 'build_type=Debug');

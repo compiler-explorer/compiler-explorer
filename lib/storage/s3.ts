@@ -105,7 +105,7 @@ export class StorageS3 extends StorageBase {
             .pluck('S')
             .value();
         for (let i = MIN_STORED_ID_LENGTH; i < hash.length - 1; i++) {
-            let subHash = hash.substring(0, i);
+            const subHash = hash.substring(0, i);
             // Check if the current base is present in the subHashes array
             const index = _.indexOf(subHashes, subHash, true);
             if (index === -1) {

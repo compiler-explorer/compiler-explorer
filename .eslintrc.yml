@@ -16,6 +16,7 @@ extends:
 - plugin:unicorn/recommended
 - plugin:@typescript-eslint/eslint-recommended
 - plugin:@typescript-eslint/recommended
+- plugin:import/typescript
 env:
   mocha: true
   node: true
@@ -136,3 +137,9 @@ parserOptions:
   ecmaVersion: 2020
 globals:
   BigInt: true
+settings:
+  node:
+    tryExtensions: [ .js, .ts ]
+  import/parsers:
+    "@typescript-eslint/parser": [ .ts, .tsx ]
+  import/resolver: "typescript"

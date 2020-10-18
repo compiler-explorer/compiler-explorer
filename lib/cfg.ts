@@ -47,7 +47,7 @@ function getAsmDirective(txt) {
 function filterTextSection(data) {
     let useCurrentSection = true;
     const result = [];
-    for (let i in data) {
+    for (const i in data) {
         const x = data[i];
         const directive = getAsmDirective(x.text);
         if (directive != null) {

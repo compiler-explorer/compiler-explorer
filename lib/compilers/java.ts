@@ -214,7 +214,7 @@ export class JavaCompiler extends BaseCompiler {
                 }
             }
 
-            let lineRegex = /line\s*(\d+):\s*(\d+)/g;
+            const lineRegex = /line\s*(\d+):\s*(\d+)/g;
             let m;
             let currentInstr = 0;
             let currentSourceLine = -1;

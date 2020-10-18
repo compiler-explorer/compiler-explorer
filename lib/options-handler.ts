@@ -269,7 +269,7 @@ export class ClientOptionsHandler {
         const forbiddenKeys = new Set(['exe', 'versionFlag', 'versionRe', 'compilerType', 'demangler', 'objdumper',
             'postProcess', 'demanglerType', 'isSemVer']);
         const copiedCompilers = JSON.parse(JSON.stringify(compilers));
-        let semverGroups: any = {};
+        const semverGroups: any = {};
         _.each(copiedCompilers, (compiler, compilersKey) => {
             if (compiler.isSemVer) {
                 if (!semverGroups[compiler.group]) semverGroups[compiler.group] = [];

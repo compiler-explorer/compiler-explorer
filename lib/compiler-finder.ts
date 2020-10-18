@@ -229,7 +229,7 @@ export class CompilerFinder {
 
         const baseOptions = props('baseOptions', '');
         const options = props('options', '');
-        let actualOptions = _.compact([baseOptions, options]).join(' ');
+        const actualOptions = _.compact([baseOptions, options]).join(' ');
 
         let supportedLibraries = null;
 

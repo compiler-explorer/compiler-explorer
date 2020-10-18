@@ -92,13 +92,13 @@ export class BuildEnvSetupBase {
     }
 
     getCompilerArch() {
-        let arch = _.find(this.compilerOptionsArr, (option) => {
+        const arch = _.find(this.compilerOptionsArr, (option) => {
             return  option.startsWith('-march=');
         });
 
         if (arch) return arch.substr(7);
 
-        let target = _.find(this.compilerOptionsArr, (option) => {
+        const target = _.find(this.compilerOptionsArr, (option) => {
             option.startsWith('-target=') ||
             option.startsWith('--target=');
         });
@@ -132,7 +132,7 @@ export class BuildEnvSetupBase {
         if (key.options.includes('-m32')) {
             return 'x86';
         } else {
-            let target = _.find(key.options, (option) => {
+            const target = _.find(key.options, (option) => {
                 return option.startsWith('-target=') || option.startsWith('--target=');
             });
 
