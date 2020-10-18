@@ -33,12 +33,14 @@ import process from 'process';
 import url from 'url';
 
 import * as Sentry from '@sentry/node';
+import * as Tracing from '@sentry/tracing';
 import bodyParser from 'body-parser';
 import compression from 'compression';
 import express from 'express';
 import fs from 'fs-extra';
 import morgan from 'morgan';
 import nopt from 'nopt';
+import PromClient from 'prom-client';
 import responseTime from 'response-time';
 import sFavicon from 'serve-favicon';
 import systemdSocket from 'systemd-socket';
@@ -91,6 +93,7 @@ const opts = nopt({
     logHost: [String],
     logPort: [Number],
     suppressConsoleLog: [Boolean],
+    metricsPort: [Number],
 });
 
 if (opts.debug) logger.level = 'debug';
@@ -247,8 +250,16 @@ function setupEventLoopLagLogging() {
     const thresWarn = ceProps('eventLoopLagThresholdWarn', 0);
     const thresErr = ceProps('eventLoopLagThresholdErr', 0);
 
+    let totalLag = 0;
+    const ceLagSecondsTotalGauge = new PromClient.Gauge({
+        name: 'ce_lag_seconds_total',
+        help: 'Total event loop lag since application startup',
+    });
+
     async function eventLoopLagHandler() {
         const lagMs = await measureEventLoopLag(lagIntervalMs);
+        totalLag += Math.max(lagMs / 1000, 0);
+        ceLagSecondsTotalGauge.set(totalLag);
 
         if (thresErr && lagMs >= thresErr) {
             logger.error(`Event Loop Lag: ${lagMs} ms`);
@@ -370,14 +381,14 @@ function startListening(server) {
         _port = defArgs.port;
     }
 
-    var startupDurationMs = Math.floor(process.uptime() * 1000);
+    const startupDurationMs = Math.floor(process.uptime() * 1000);
     logger.info(`  Listening on http://${defArgs.hostname || 'localhost'}:${_port}/`);
     logger.info(`  Startup duration: ${startupDurationMs}ms`);
     logger.info('=======================================');
     server.listen(_port, defArgs.hostname);
 }
 
-function setupSentry(sentryDsn) {
+function setupSentry(sentryDsn, expressApp) {
     if (!sentryDsn) {
         logger.info('Not configuring sentry');
         return;
@@ -395,6 +406,13 @@ function setupSentry(sentryDsn) {
             }
             return event;
         },
+        integrations: [
+            // enable HTTP calls tracing
+            new Sentry.Integrations.Http({tracing: true}),
+            // enable Express.js middleware tracing
+            new Tracing.Integrations.Express({expressApp}),
+        ],
+        tracesSampleRate: 0.1,
     });
     logger.info(`Configured with Sentry endpoint ${sentryDsn}`);
 }
@@ -432,8 +450,8 @@ async function main() {
         }
     }
 
-    setupSentry(aws.getConfig('sentryDsn'));
     const webServer = express(), router = express.Router();
+    setupSentry(aws.getConfig('sentryDsn'), webServer);
     const healthCheckFilePath = ceProps('healthCheckFilePath', false);
 
     const handlerConfig = {
@@ -477,12 +495,32 @@ async function main() {
 
     const sentrySlowRequestMs = ceProps('sentrySlowRequestMs', 0);
 
+    if (opts.metricsPort) {
+        logger.info(`Running metrics server on port ${opts.metricsPort}`);
+        PromClient.collectDefaultMetrics();
+        const metricsServer = express();
+
+        metricsServer.get('/metrics', async (req, res) => {
+            try {
+                res.set('Content-Type', PromClient.register.contentType);
+                res.end(await PromClient.register.metrics());
+            } catch (ex) {
+                res.status(500).end(ex);
+            }
+        });
+
+        metricsServer.listen(opts.metricsPort, defArgs.hostname);
+    }
+
     webServer
         .set('trust proxy', true)
         .set('view engine', 'pug')
         .on('error', err => logger.error('Caught error in web handler; continuing:', err))
         // sentry request handler must be the first middleware on the app
-        .use(Sentry.Handlers.requestHandler())
+        .use(Sentry.Handlers.requestHandler({
+            ip: true,
+        }))
+        .use(Sentry.Handlers.tracingHandler())
         // eslint-disable-next-line no-unused-vars
         .use(responseTime((req, res, time) => {
             if (sentrySlowRequestMs > 0 && time >= sentrySlowRequestMs) {
@@ -514,6 +552,7 @@ async function main() {
         });
 
     const sponsorConfig = loadSponsorsFromString(fs.readFileSync(configDir + '/sponsors.yaml', 'utf-8'));
+
     function renderConfig(extra, urlOptions) {
         const urlOptionsAllowed = [
             'readOnly', 'hideEditorToolbars', 'language',
@@ -668,8 +707,7 @@ async function main() {
         .get('/client-options.js', (req, res) => {
             staticHeaders(res);
             res.set('Content-Type', 'application/javascript');
-            const options = JSON.stringify(clientOptionsHandler.get());
-            res.end(`window.compilerExplorerOptions = ${options};`);
+            res.end(`window.compilerExplorerOptions = ${clientOptionsHandler.getJSON()};`);
         })
         .use('/bits/:bits(\\w+).html', (req, res) => {
             staticHeaders(res);

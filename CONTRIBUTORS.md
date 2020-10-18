@@ -90,3 +90,5 @@ From oldest to newest contributor, we would like to thank:
 - [George Gribkov](https://github.com/GeorgeGribkov)
 - [Artem Akatev](https://github.com/aakatev)
 - [Danil Yarantsev](https://github.com/Yardanico)
+- [Krists Niedritis](https://github.com/JesusKrists)
+- 
