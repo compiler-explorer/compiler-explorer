@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {MapFileReader} from './map-file';
+import { MapFileReader } from './map-file';
 
 export class MapFileReaderDelphi extends MapFileReader {
     regexDelphiCodeSegmentOffset: RegExp;
@@ -78,7 +78,7 @@ export class MapFileReaderDelphi extends MapFileReader {
             this.segments.push(this.getCodesegmentObject(matches));
             return;
         }
-        
+
         matches = line.match(this.regexDelphiICodeSegment);
         if (matches) {
             this.isegments.push(this.getCodesegmentObject(matches));
