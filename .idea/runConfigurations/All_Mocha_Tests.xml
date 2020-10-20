@@ -1,7 +1,7 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="All Mocha Tests" type="mocha-javascript-test-runner">
     <node-interpreter>/opt/compiler-explorer/node/bin/node</node-interpreter>
-    <node-options />
+    <node-options>-r esm</node-options>
     <mocha-package>$PROJECT_DIR$/node_modules/mocha</mocha-package>
     <working-directory>$PROJECT_DIR$</working-directory>
     <pass-parent-env>true</pass-parent-env>
