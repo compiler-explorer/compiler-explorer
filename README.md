@@ -14,7 +14,7 @@ The right, the assembly output of having compiled the code with a given
 There is also an ispc compiler _[?](https://ispc.github.io/)_ for a C variant
  with extensions for SPMD.
 
-Try out at [godbolt.org](https://godbolt.org)
+Try out at [godbolt.org](https://godbolt.org).
 
 You can support [this project on Patreon](https://patreon.com/mattgodbolt).
 
@@ -24,7 +24,8 @@ You can support [this project on Patreon](https://patreon.com/mattgodbolt).
 **Compiler Explorer** was started in 2012 to serve my needs at [my previous employer](https://drw.com) to show how
  C++ constructs translated to assembly code. It started out as a `tmux` session with `vi` running in one
  pane and `watch gcc -S foo.cc -o -` running in the other.
-Since then, it has become a public website serving around [210,000 compilations per day](https://www.stathat.com/cards/Tk5csAWI0O7x).
+
+Since then, it has become a public website serving around [2,000,000 compilations per week](https://www.stathat.com/cards/Tk5csAWI0O7x).
 
 ##### FAQ
 
@@ -33,23 +34,20 @@ There is now a FAQ section [in the repository wiki](https://github.com/compiler-
  If you find that the FAQ is lacking some important point, please free to contribute to it and/or ask us to clarify it.
 
 There are a number of videos that showcase some of the features of Compiler Explorer:
- A presentation for CppCon 2019 about the project https://www.youtube.com/watch?v=kIoZDUd5DKw
- and an older 2 part series of videos which go into a bit more detail into the more obscure features
- https://www.youtube.com/watch?v=4_HL3PH4wDg
+ A [presentation for CppCon 2019 about the project](https://www.youtube.com/watch?v=kIoZDUd5DKw)
+ and an [older 2 part series of videos](https://www.youtube.com/watch?v=4_HL3PH4wDg) which go into a bit more detail
+ into the more obscure features.
 
 ##### Contact us
 
-For general discussion, please join the
- [cpplang](https://cppalliance.org/slack/) slack channel `#compiler_explorer` or
- [the public mailing list](https://groups.google.com/forum/#!forum/compiler-explorer-discussion)
+We run a [Compiler Explorer Discord](https://discord.gg/B5WacA7), which is a place to discuss using or developing
+ Compiler Explorer. We also have a presence on the [cpplang](https://cppalliance.org/slack/) slack channel
+ `#compiler_explorer` and we have [a public mailing list](https://groups.google.com/forum/#!forum/compiler-explorer-discussion).
 
-If you are interested in developing, or want to see the discussions between
- existing developers, feel free to join the [cpplang](https://cppalliance.org/slack/)
- slack channel `#compiler_explorer-development` or
- [the development mailing list](https://groups.google.com/forum/#!forum/compiler-explorer-development)
+There's a development channel on the discord, and also a
+ [development mailing list](https://groups.google.com/forum/#!forum/compiler-explorer-development).
  
-Feel free to raise an issue on
- [github](https://github.com/compiler-explorer/compiler-explorer/issues) or
+Feel free to raise an issue on [github](https://github.com/compiler-explorer/compiler-explorer/issues) or
  [email Matt directly](mailto:matt@godbolt.org) for more help.
 
 ### Developing
@@ -112,7 +110,6 @@ You can find the API documentation [here](docs/API.md).
 We would like to thank the contributors listed in the
  [CONTRIBUTORS](CONTRIBUTORS.md) file, who have helped shape **Compiler Explorer**.
 
-
 We would also like to specially thank these people for their contributions to
  **Compiler Explorer**:
 - [Gabriel Devillers](https://github.com/voxelf)
@@ -122,7 +119,8 @@ We would also like to specially thank these people for their contributions to
 - [Marc Poulhiès](https://github.com/dkm)
 - [Andrew Pardoe](https://github.com/AndrewPardoe)
 
-We would like to thank [JetBrains](https://www.jetbrains.com/) for their support
+A number of [amazing sponsors](https://godbolt.org/#sponsors), both individuals and companies, have helped fund and
+ promote Compiler Explorer. We would also like to thank [JetBrains](https://www.jetbrains.com/) for their support
  and for donating licenses to their excellent products to develop **Compiler Explorer**.
 
 ![JetBrains](docs/jetbrains.svg)
