@@ -36,6 +36,7 @@ var diff = require('./panes/diff');
 var optView = require('./panes/opt-view');
 var astView = require('./panes/ast-view');
 var irView = require('./panes/ir-view');
+var deviceView = require('./panes/device-view');
 var gccDumpView = require('./panes/gccdump-view');
 var cfgView = require('./panes/cfg-view');
 var conformanceView = require('./panes/conformance-view');
@@ -114,6 +115,10 @@ function Hub(layout, subLangId, defaultLangId) {
     layout.registerComponent(Components.getIrView().componentName,
         function (container, state) {
             return self.irViewFactory(container, state);
+        });
+    layout.registerComponent(Components.getDeviceView().componentName,
+        function (container, state) {
+            return self.deviceViewFactory(container, state);
         });
     layout.registerComponent(Components.getGccDumpView().componentName,
         function (container, state) {
@@ -213,6 +218,10 @@ Hub.prototype.astViewFactory = function (container, state) {
 
 Hub.prototype.irViewFactory = function (container, state) {
     return new irView.Ir(this, container, state);
+};
+
+Hub.prototype.deviceViewFactory = function (container, state) {
+    return new deviceView.DeviceAsm(this, container, state);
 };
 
 Hub.prototype.gccDumpViewFactory = function (container, state) {
