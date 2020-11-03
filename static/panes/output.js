@@ -178,7 +178,7 @@ Output.prototype.onCompileResult = function (id, compiler, result) {
 };
 
 Output.prototype.programOutput = function (msg, color) {
-    var elem = $('<p></p>').appendTo(this.contentRoot)
+    var elem = $('<div/>').appendTo(this.contentRoot)
         .html(msg)
         .addClass('program-exec-output');
 
@@ -187,7 +187,7 @@ Output.prototype.programOutput = function (msg, color) {
 };
 
 Output.prototype.add = function (msg, lineNum, column) {
-    var elem = $('<p></p>').appendTo(this.contentRoot);
+    var elem = $('<div/>').appendTo(this.contentRoot);
     if (lineNum) {
         elem.html(
             $('<span class="linked-compiler-output-line"></span>')

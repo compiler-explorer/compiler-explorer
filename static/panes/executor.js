@@ -252,7 +252,7 @@ Executor.prototype.sendCompile = function (request) {
 };
 
 Executor.prototype.addCompilerOutputLine = function (msg, container, lineNum, column) {
-    var elem = $('<p></p>').appendTo(container);
+    var elem = $('<div/>').appendTo(container);
     if (lineNum) {
         elem.html(
             $('<span class="linked-compiler-output-line"></span>')
@@ -320,27 +320,27 @@ Executor.prototype.onCompileResponse = function (request, result, cached) {
     var execStdout = result.stdout || [];
     var execStderr = result.stderr || [];
     if (!result.didExecute) {
-        this.executionStatusSection.append($('<p></p>').text('Could not execute the program'));
-        this.executionStatusSection.append($('<p></p>').text('Compiler returned: ' + result.buildResult.code));
+        this.executionStatusSection.append($('<div/>').text('Could not execute the program'));
+        this.executionStatusSection.append($('<div/>').text('Compiler returned: ' + result.buildResult.code));
     }
 
     if (compileStdout.length > 0) {
-        this.compilerOutputSection.append($('<p></p>').text('Compiler stdout'));
+        this.compilerOutputSection.append($('<div/>').text('Compiler stdout'));
         this.handleOutput(compileStdout, this.compilerOutputSection, this.normalAnsiToHtml);
     }
     if (compileStderr.length > 0) {
-        this.compilerOutputSection.append($('<p></p>').text('Compiler stderr'));
+        this.compilerOutputSection.append($('<div/>').text('Compiler stderr'));
         this.handleOutput(compileStderr, this.compilerOutputSection, this.errorAnsiToHtml);
     }
     if (result.didExecute) {
-        this.executionOutputSection.append($('<p></p>').text('Program returned: ' + result.code));
+        this.executionOutputSection.append($('<div/>').text('Program returned: ' + result.code));
         if (execStdout.length > 0) {
-            this.executionOutputSection.append($('<p></p>').text('Program stdout'));
+            this.executionOutputSection.append($('<div/>').text('Program stdout'));
             var outElem = this.handleOutput(execStdout, this.executionOutputSection, this.normalAnsiToHtml);
             outElem.addClass('execution-stdout');
         }
         if (execStderr.length > 0) {
-            this.executionOutputSection.append($('<p></p>').text('Program stderr'));
+            this.executionOutputSection.append($('<div/>').text('Program stderr'));
             this.handleOutput(execStderr, this.executionOutputSection, this.normalAnsiToHtml);
         }
     }
