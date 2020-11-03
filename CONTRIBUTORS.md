@@ -91,4 +91,5 @@ From oldest to newest contributor, we would like to thank:
 - [Artem Akatev](https://github.com/aakatev)
 - [Danil Yarantsev](https://github.com/Yardanico)
 - [Krists Niedritis](https://github.com/JesusKrists)
+- [Julian Hammer](https://github.com/cod3monk)
 - 
