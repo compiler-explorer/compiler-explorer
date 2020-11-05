@@ -1,5 +1,5 @@
-[![Build Status](https://travis-ci.org/compiler-explorer/compiler-explorer.svg?branch=master)](https://travis-ci.org/github/compiler-explorer/compiler-explorer)
-[![codecov](https://codecov.io/gh/mattgodbolt/compiler-explorer/branch/master/graph/badge.svg)](https://codecov.io/gh/mattgodbolt/compiler-explorer)
+[![Build Status](https://travis-ci.com/compiler-explorer/compiler-explorer.svg?branch=master)](https://travis-ci.com/github/compiler-explorer/compiler-explorer)
+[![codecov](https://codecov.io/gh/compiler-explorer/compiler-explorer/branch/master/graph/badge.svg)](https://codecov.io/gh/compiler-explorer/compiler-explorer)
 
 ![Compiler Explorer](docs/logo.svg)
 
