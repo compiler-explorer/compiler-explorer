@@ -299,7 +299,7 @@ describe('GoldenLayout utils', () => {
                 {compiler: 'gsnapshot'},
                 {compiler: 'clang_trunk'},
                 {compiler: 'gsnapshot'},
-                {compiler: 'rv32clang'},
+                {compiler: 'rv32-clang'},
             ],
         });
     });
