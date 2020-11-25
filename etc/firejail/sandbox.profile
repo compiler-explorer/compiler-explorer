@@ -70,7 +70,6 @@ blacklist /dev/log
 blacklist /dev/random
 
 # No need to see anything here
-blacklist /celibs
 blacklist /infra
 blacklist /efs
 
