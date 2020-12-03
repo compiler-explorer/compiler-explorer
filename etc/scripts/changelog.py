@@ -51,7 +51,7 @@ def format_commit(url, commit):
         return commit_template.format(url, grouped_commit[0], html_escape(grouped_commit[1]))
     except Exception as e:
         print('There was an error in changelog.py: {}'.format(e))
-        return 'err'
+        return ''
 
 
 def get_commits(repo):
