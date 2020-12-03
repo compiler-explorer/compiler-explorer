@@ -45,7 +45,7 @@ def html_escape(text):
 
 
 def format_commit(url, commit):
-    # Input format is "<hash> <description", so split only on the first space
+    # Input format is "<hash> <description>", so split only on the first space
     grouped_commit = commit.split(' ', 1)
     try:
         return commit_template.format(url, grouped_commit[0], html_escape(grouped_commit[1]))
