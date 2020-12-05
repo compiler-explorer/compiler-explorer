@@ -79,7 +79,6 @@
     "yaml": "^1.10.0"
   },
   "devDependencies": {
-    "@sentry/cli": "^1.58.0",
     "aws-sdk-mock": "^5.1.0",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
@@ -127,7 +126,8 @@
     "dev": "cross-env NODE_ENV=DEV node -r esm app.js",
     "debug": "cross-env NODE_ENV=DEV node -r esm app.js --debug",
     "start": "npx webpack && cross-env NODE_ENV=LOCAL node -r esm app.js",
-    "codecov": "codecov --disable=gcov"
+    "codecov": "codecov --disable=gcov",
+    "sentry": "npx @sentry/cli"
   },
   "license": "BSD-2-Clause"
 }

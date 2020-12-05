@@ -1,32 +1,32 @@
 ---
 root: true
 plugins:
-- import
-- jsdoc
-- node
-- promise
-- sonarjs
-- unicorn
+  - import
+  - jsdoc
+  - node
+  - promise
+  - sonarjs
+  - unicorn
 extends:
-- ./.eslint-license-header.yml
-- eslint:recommended
-- plugin:import/recommended
-- plugin:node/recommended
-- plugin:unicorn/recommended
+  - ./.eslint-license-header.yml
+  - eslint:recommended
+  - plugin:import/recommended
+  - plugin:node/recommended
+  - plugin:unicorn/recommended
 env:
   mocha: true
   node: true
   es6: true
 rules:
   comma-dangle:
-  - error
-  - always-multiline
+    - error
+    - always-multiline
   eol-last:
-  - error
-  - always
+    - error
+    - always
   eqeqeq:
-  - error
-  - smart
+    - error
+    - smart
   import/extensions: error
   import/first: error
   import/newline-after-import: error
@@ -39,22 +39,22 @@ rules:
   import/no-useless-path-segments: error
   import/no-webpack-loader-syntax: error
   import/order:
-  - warn
-  - alphabetize:
-      order: asc
-      caseInsensitive: true
-    newlines-between: always
+    - warn
+    - alphabetize:
+        order: asc
+        caseInsensitive: true
+      newlines-between: always
   indent:
-  - error
-  - 4
-  - SwitchCase: 1
+    - error
+    - 4
+    - SwitchCase: 1
   max-len:
-  - error
-  - 120
-  - ignoreRegExpLiterals: true
+    - error
+    - 120
+    - ignoreRegExpLiterals: true
   max-statements:
-  - error
-  - 50
+    - error
+    - 50
   no-control-regex: 0
   no-duplicate-imports: error
   no-useless-call: error
@@ -65,25 +65,25 @@ rules:
   no-useless-rename: error
   no-useless-return: error
   quote-props:
-  - error
-  - as-needed
+    - error
+    - as-needed
   quotes:
-  - error
-  - single
-  - allowTemplateLiterals: true
-    avoidEscape: true
+    - error
+    - single
+    - allowTemplateLiterals: true
+      avoidEscape: true
   semi:
-  - error
-  - always
+    - error
+    - always
   space-before-function-paren:
-  - error
-  - anonymous: always
-    asyncArrow: always
-    named: never
+    - error
+    - anonymous: always
+      asyncArrow: always
+      named: never
   yoda:
-  - error
-  - never
-  - onlyEquality: true
+    - error
+    - never
+    - onlyEquality: true
   jsdoc/check-alignment: warn
   jsdoc/check-param-names: warn
   jsdoc/check-syntax: warn
@@ -94,10 +94,10 @@ rules:
   jsdoc/require-hyphen-before-param-description: warn
   jsdoc/valid-types: warn
   no-multiple-empty-lines:
-  - warn
-  - max: 1
-    maxBOF: 0
-    maxEOF: 0
+    - warn
+    - max: 1
+      maxBOF: 0
+      maxEOF: 0
   no-process-exit: off
   node/no-unsupported-features/es-syntax: off
   node/shebang: off
@@ -113,9 +113,9 @@ rules:
   sonarjs/prefer-object-literal: error
   sonarjs/prefer-single-boolean-return: error
   sort-imports:
-  - warn
-  - ignoreCase: true
-    ignoreDeclarationSort: true
+    - warn
+    - ignoreCase: true
+      ignoreDeclarationSort: true
   unicorn/catch-error-name: off
   unicorn/consistent-function-scoping: off
   unicorn/no-fn-reference-in-iterator: off

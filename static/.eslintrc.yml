@@ -1,44 +1,44 @@
 ---
 root: true
 plugins:
-- jsdoc
-- promise
-- requirejs
-- sonarjs
-- unicorn
+  - jsdoc
+  - promise
+  - requirejs
+  - sonarjs
+  - unicorn
 extends:
-- ../.eslint-license-header.yml
-- eslint:recommended
-- plugin:requirejs/recommended
+  - ../.eslint-license-header.yml
+  - eslint:recommended
+  - plugin:requirejs/recommended
 env:
   browser: true
   node: true
   es6: false
 rules:
   comma-dangle:
-  - error
-  - arrays: always-multiline
-    objects: always-multiline
-    imports: always-multiline
-    exports: always-multiline
-    functions: never
+    - error
+    - arrays: always-multiline
+      objects: always-multiline
+      imports: always-multiline
+      exports: always-multiline
+      functions: never
   eol-last:
-  - error
-  - always
+    - error
+    - always
   eqeqeq:
-  - error
-  - smart
+    - error
+    - smart
   indent:
-  - error
-  - 4
-  - SwitchCase: 1
+    - error
+    - 4
+    - SwitchCase: 1
   max-len:
-  - error
-  - 120
-  - ignoreRegExpLiterals: true
+    - error
+    - 120
+    - ignoreRegExpLiterals: true
   max-statements:
-  - error
-  - 50
+    - error
+    - 50
   no-control-regex: 0
   no-useless-call: error
   no-useless-computed-key: error
@@ -47,25 +47,25 @@ rules:
   no-useless-rename: error
   no-useless-return: error
   quote-props:
-  - error
-  - as-needed
+    - error
+    - as-needed
   quotes:
-  - error
-  - single
-  - allowTemplateLiterals: true
-    avoidEscape: true
+    - error
+    - single
+    - allowTemplateLiterals: true
+      avoidEscape: true
   semi:
-  - error
-  - always
+    - error
+    - always
   space-before-function-paren:
-  - error
-  - anonymous: always
-    asyncArrow: always
-    named: never
+    - error
+    - anonymous: always
+      asyncArrow: always
+      named: never
   yoda:
-  - error
-  - never
-  - onlyEquality: true
+    - error
+    - never
+    - onlyEquality: true
   jsdoc/check-alignment: warn
   jsdoc/check-param-names: warn
   jsdoc/check-syntax: warn

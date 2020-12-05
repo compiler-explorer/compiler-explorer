@@ -1,5 +1,5 @@
-[![Build Status](https://travis-ci.org/compiler-explorer/compiler-explorer.svg?branch=master)](https://travis-ci.org/github/compiler-explorer/compiler-explorer)
-[![codecov](https://codecov.io/gh/mattgodbolt/compiler-explorer/branch/master/graph/badge.svg)](https://codecov.io/gh/mattgodbolt/compiler-explorer)
+[![Build Status](https://travis-ci.com/compiler-explorer/compiler-explorer.svg?branch=master)](https://travis-ci.com/github/compiler-explorer/compiler-explorer)
+[![codecov](https://codecov.io/gh/compiler-explorer/compiler-explorer/branch/master/graph/badge.svg)](https://codecov.io/gh/compiler-explorer/compiler-explorer)
 
 ![Compiler Explorer](docs/logo.svg)
 
@@ -124,3 +124,6 @@ A number of [amazing sponsors](https://godbolt.org/#sponsors), both individuals 
  and for donating licenses to their excellent products to develop **Compiler Explorer**.
 
 ![JetBrains](docs/jetbrains.svg)
+
+
+test
