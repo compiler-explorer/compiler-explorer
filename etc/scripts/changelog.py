@@ -47,6 +47,7 @@ def html_escape(text):
 def format_commit(url, commit):
     # Input format is "<hash> <description>", so split only on the first space and escape the commit message
     grouped_commit = commit.split(' ', 1)
+    print(grouped_commit)
     try:
         return commit_template.format(url, grouped_commit[0], html_escape(grouped_commit[1]))
     except Exception as e:
