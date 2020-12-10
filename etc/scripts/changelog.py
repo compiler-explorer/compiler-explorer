@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2018, Compiler Explorer Authors
+# Copyright (c) 2020, Compiler Explorer Authors
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -34,11 +34,8 @@ html_escape_table = {
 }
 
 commit_template = '    <div class="row commit-entry">\n' \
-        '                <div class="col-sm-12">{}\n' \
-        '                  <a href="{}commit/{}" rel="noreferrer noopener" target="_blank">\n' \
-        '                    <sup><small class="glyphicon glyphicon-new-window opens-new-window" ' \
-        'title="Opens in a new window"></small></sup>\n' \
-        '                  </a>\n' \
+        '                <div class="col-sm-12">\n' \
+        '                  <a href="{}commit/{}" rel="noreferrer noopener" target="_blank">{}</a>\n' \
         '                </div>\n' \
         '              </div>\n'
 
@@ -48,18 +45,18 @@ def html_escape(text):
 
 
 def format_commit(url, commit):
-    grouped_commit = commit.split(' * ')
-    # --grep matches every line on the commit message, we ensure we don't get caught by it
+    # Input format is "<hash> <description>", so split only on the first space and escape the commit message
+    grouped_commit = commit.split(' ', 1)
+    print(grouped_commit)
     try:
-        formatted_commit = commit_template.format(html_escape(grouped_commit[1]), url, grouped_commit[0])
-        print(grouped_commit)
-        return formatted_commit
-    except:
+        return commit_template.format(url, grouped_commit[0], html_escape(grouped_commit[1]))
+    except Exception as e:
+        print('There was an error in changelog.py: {}'.format(e))
         return ''
 
 
 def get_commits(repo):
-    coms = subprocess.check_output(['git', 'log', '--date=local', '--after="3 months ago"', '--grep=^\* ', '--oneline'])
+    coms = subprocess.check_output(['git', 'log', '--date=local', '--after="3 months ago"', '--grep=(#[0-9]*)', '--oneline'])
     with open('static/changelog.html', 'w') as f:
         f.write('<div class="commits-list">\n')
         for commit in coms.splitlines():
