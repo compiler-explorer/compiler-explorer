@@ -58,6 +58,7 @@ function Executor(hub, container, state) {
     this.compilerService = hub.compilerService;
     this.domRoot = container.getElement();
     this.domRoot.html($('#executor').html());
+    this.contentRoot = this.domRoot.find('.content');
     this.sourceEditorId = state.source || 1;
     this.id = state.id || hub.nextExecutorId();
     this.settings = JSON.parse(local.get('settings', '{}'));
@@ -392,7 +393,7 @@ Executor.prototype.onEditorChange = function (editor, source, langId, compilerId
 
 Executor.prototype.initButtons = function (state) {
     this.filters = new Toggles(this.domRoot.find('.filters'), state.filters);
-
+    this.toggleWrapButton = new Toggles(this.domRoot.find('.options'), state);
     this.compileClearCache = this.domRoot.find('.clear-cache');
     this.outputContentRoot = this.domRoot.find('pre.content');
     this.executionStatusSection = this.outputContentRoot.find('.execution-status');
@@ -441,6 +442,9 @@ Executor.prototype.initButtons = function (state) {
     this.panelArgs = this.domRoot.find('.panel-args');
     this.panelStdin = this.domRoot.find('.panel-stdin');
 
+    this.wrapButton = this.domRoot.find('.wrap-lines');
+    this.wrapTitle = this.wrapButton.prop('title');
+
     this.initToggleButtons(state);
 };
 
@@ -465,6 +469,14 @@ Executor.prototype.initToggleButtons = function (state) {
     if (state.compilerOutShown === false) {
         this.hidePanel(this.toggleCompilerOut, this.compilerOutputSection);
     }
+
+    if (state.wrap === true) {
+        this.contentRoot.addClass('wrap');
+        this.wrapButton.prop('title', '[ON] ' + this.wrapTitle);
+    } else {
+        this.contentRoot.removeClass('wrap');
+        this.wrapButton.prop('title', '[OFF] ' + this.wrapTitle);
+    }
 };
 
 Executor.prototype.onLibsChanged = function () {
@@ -484,6 +496,7 @@ Executor.prototype.onFontScale = function () {
 Executor.prototype.initListeners = function () {
     // this.filters.on('change', _.bind(this.onFilterChange, this));
     this.fontScale.on('change', _.bind(this.onFontScale, this));
+    this.toggleWrapButton.on('change', _.bind(this.onToggleWrapChange, this));
 
     this.container.on('destroy', this.close, this);
     this.container.on('resize', this.resize, this);
@@ -498,7 +511,6 @@ Executor.prototype.initListeners = function () {
     this.eventHub.on('resendExecution', this.onResendExecutionResult, this);
     this.eventHub.on('resize', this.resize, this);
     this.eventHub.on('findExecutors', this.sendExecutor, this);
-
     this.eventHub.on('languageChange', this.onLanguageChange, this);
 };
 
@@ -650,6 +662,13 @@ Executor.prototype.onCompilerChange = function (value) {
     this.updateCompilerUI();
 };
 
+Executor.prototype.onToggleWrapChange = function () {
+    var state = this.currentState();
+    this.contentRoot.toggleClass('wrap',state.wrap);
+    this.wrapButton.prop('title', '['+(state.wrap ? 'ON' : 'OFF')+'] '+ this.wrapTitle);
+    this.saveState();
+};
+
 Executor.prototype.sendExecutor = function () {
     this.eventHub.emit('executor', this.id, this.compiler, this.options, this.sourceEditorId);
 };
@@ -679,6 +698,7 @@ Executor.prototype.currentState = function () {
         compilerOutShown: !this.compilerOutputSection.hasClass('d-none'),
         argsPanelShown: !this.panelArgs.hasClass('d-none'),
         stdinPanelShown: !this.panelStdin.hasClass('d-none'),
+        wrap: this.toggleWrapButton.get().wrap,
     };
     this.fontScale.addState(state);
     return state;
