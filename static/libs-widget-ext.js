@@ -204,7 +204,7 @@ LibsWidgetExt.prototype.newSelectedLibDiv = function (libId, versionId, lib, ver
 
 LibsWidgetExt.prototype.conjureUpExamples = function (result, lib) {
     var examples = result.find('.lib-examples');
-    if (lib.examples.length > 0) {
+    if (lib.examples && lib.examples.length > 0) {
         var examplesHeader = $('<b>Examples</b>');
         var examplesList = $('<ul />');
         _.each(lib.examples, function (exampleId) {

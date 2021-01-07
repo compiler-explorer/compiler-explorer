@@ -48,8 +48,7 @@ function Themer(eventHub, initialSettings) {
 
     this.setTheme = function (theme) {
         if (this.currentTheme === theme) return;
-        var cssData = require('./themes/' + theme.path + '-theme.css');
-        $('#theme').html(cssData.toString());
+        $('html').attr('data-theme', theme.path);
         $('#meta-theme').prop('content', theme['main-color']);
         monaco.editor.setTheme(theme.monaco);
         this.eventHub.emit('resize');

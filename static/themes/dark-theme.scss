@@ -1,4 +1,4 @@
-@import url("~golden-layout/src/css/goldenlayout-dark-theme.css");
+@import "~golden-layout/src/css/goldenlayout-dark-theme";
 
 /*
  * replace low res golden-layout icons with svg recreations to improve high DPI displays
@@ -209,7 +209,25 @@ select {
 
 input {
     color: #eee !important;
-    background-color: #474747 !important;
+    background-color: #474747;
+    border: 0 !important;
+}
+
+input:focus {
+    color: #eee !important;
+    background-color: #474747;
+    border: 0 !important;
+}
+
+input.permalink {
+    color: #eee !important;
+    background-color: #474747;
+    opacity: 1;
+}
+
+textarea.form-control {
+    color: #eee !important;
+    background-color: #474747;
     border: 0 !important;
 }
 

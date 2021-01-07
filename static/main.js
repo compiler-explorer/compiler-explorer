@@ -20,7 +20,8 @@
 // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-// POSSIBILITY OF SUCH DAMAGE
+// POSSIBILITY OF SUCH DAMAGE.
+
 'use strict';
 
 // setup analytics before anything else so we can capture any future errors in sentry
@@ -57,8 +58,8 @@ require('bootstrap/dist/css/bootstrap.min.css');
 require('golden-layout/src/css/goldenlayout-base.css');
 require('selectize/dist/css/selectize.bootstrap2.css');
 require('bootstrap-slider/dist/css/bootstrap-slider.css');
-require('./colours.css');
-require('./explorer.css');
+require('./colours.scss');
+require('./explorer.scss');
 
 // Check to see if the current unload is a UI reset.
 // Forgive me the global usage here

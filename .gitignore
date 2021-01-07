@@ -1,21 +1,21 @@
-*code-workspace
-*.swp
-/node_modules
-newrelic_agent.log
-/.npm-updated
+# build generated files
 /.node-bin
-*.vscode
-/out
-*.heapsnapshot
-etc/config/*.local.properties
-.travis-compilers
-/nbproject
-*.bundle*.js
-*.map
-static/dist
-static/vs
-lib/storage/data
-f.out
+/.npm-updated
 /.nyc_output
-/coverage
-/dist
+/node_modules
+/out
+
+# user local customizations
+/etc/config/*.local.properties
+/lib/storage/data
+
+# IDE project files
+/nbproject
+*.vscode
+*.code-workspace
+
+# random bits
+f.out
+newrelic_agent.log
+*.heapsnapshot
+*.swp

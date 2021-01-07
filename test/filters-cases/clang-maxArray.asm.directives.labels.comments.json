@@ -1,7 +1,7 @@
 {
   "asm": [
     {
-      "text": "maxArray(double*, double*):                        # @maxArray(double*, double*)",
+      "text": "_Z8maxArrayPdS_:                        # @_Z8maxArrayPdS_",
       "source": null,
       "labels": []
     },
@@ -166,6 +166,7 @@
     }
   ],
   "labelDefinitions": {
+    "_Z8maxArrayPdS_": 1,
     ".LBB0_1": 3,
     ".LBB0_3": 8,
     ".LBB0_5": 14

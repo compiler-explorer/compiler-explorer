@@ -380,7 +380,7 @@ Tool.prototype.onCompileResult = function (id, compiler, result) {
 };
 
 Tool.prototype.add = function (msg, lineNum) {
-    var elem = $('<p></p>').appendTo(this.plainContentRoot);
+    var elem = $('<div/>').appendTo(this.plainContentRoot);
     if (lineNum) {
         elem.html(
             $('<a></a>')
