@@ -66,6 +66,7 @@ function dump(file) {
 // bless("filters-cases/sass-squarelabeled.asm", "filters-cases/sass-squarelabeled.asm.binary.directives.labels.comments.json", {binary: true, directives: true, labels: true, commentOnly: true});
 // bless("filters-cases/bug-2164.asm", "filters-cases/bug-2164.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
 // bless("filters-cases/bug-2164b.asm", "filters-cases/bug-2164b.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
+// bless('filters-cases/diab.asm', 'filters-cases/diab.asm.directives.labels.comments.json', {directives: true, labels: true, commentOnly: true});
 // bless("filters-cases/bintest-1.asm", "filters-cases/bintest-1.asm.binary.directives.labels.comments.json", {binary: true, directives: true, labels: true, commentOnly: true});
 // bless("filters-cases/bintest-2.asm", "filters-cases/bintest-2.asm.binary.directives.labels.comments.json", {binary: true, directives: true, labels: true, commentOnly: true});
 // bless("filters-cases/bintest-unicode-1.asm", "filters-cases/bintest-unicode-1.asm.binary.directives.labels.comments.json", {binary: true, directives: true, labels: true, commentOnly: true});
