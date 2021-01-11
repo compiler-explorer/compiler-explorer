@@ -339,6 +339,8 @@ Tool.prototype.onCompileResult = function (id, compiler, result) {
                 this.stdinField.prop('placeholder', toolInfo.tool.stdinHint);
                 if (toolInfo.tool.stdinHint === 'disabled') {
                     this.toggleStdin.prop('disabled', true);
+                } else {
+                    this.showPanel(this.toggleStdin, this.panelStdin);
                 }
             } else {
                 this.stdinField.prop('placeholder', 'Tool stdin...');
