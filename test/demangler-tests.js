@@ -28,7 +28,7 @@ import * as exec from '../lib/exec';
 import { SymbolStore } from '../lib/symbol-store';
 import * as utils from '../lib/utils';
 
-import { fs, path, resolvePathFromTestRoot } from './utils';
+import { fs, path, resolvePathFromTestRoot, chai } from './utils';
 
 const cppfiltpath = 'c++filt';
 
@@ -284,7 +284,7 @@ describe('File demangling', () => {
     }
 });
 
-describe('Demangling replacements', () => {
+describe('Demangler prefix tree', () => {
     const replacements = new PrefixTree();
     replacements.add('a', 'short_a');
     replacements.add('aa', 'long_a');
@@ -311,5 +311,17 @@ describe('Demangling replacements', () => {
     it('should handle a mixture', () => {
         replacements.replaceAll('Everyone loves an aardvark')
             .should.eq('Everyone loves short_an long_ardvshort_ark');
+    });
+    it('should find exact matches', () => {
+        replacements.findExact('a').should.eq('short_a');
+        replacements.findExact('aa').should.eq('long_a');
+        replacements.findExact('aa_shouldnotmatch').should.eq('ERROR');
+    });
+    it('should find not find mismatches', () => {
+        chai.expect(replacements.findExact('aaa')).to.be.null;
+        chai.expect(replacements.findExact(' aa')).to.be.null;
+        chai.expect(replacements.findExact(' a')).to.be.null;
+        chai.expect(replacements.findExact('Oh noes')).to.be.null;
+        chai.expect(replacements.findExact('')).to.be.null;
     });
 });
