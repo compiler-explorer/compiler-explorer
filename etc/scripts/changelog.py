@@ -33,11 +33,12 @@ html_escape_table = {
     "<": "&lt;",
 }
 
-commit_template = '    <div class="row commit-entry">\n' \
-        '                <div class="col-sm-12">\n' \
-        '                  <a href="{}commit/{}" rel="noreferrer noopener" target="_blank">{}</a>\n' \
-        '                </div>\n' \
-        '              </div>\n'
+commit_template = '''  <div class="row commit-entry">
+    <div class="col-sm-12">
+      <a href="{}commit/{}" rel="noreferrer noopener" target="_blank">{}</a>
+    </div>
+  </div>
+'''
 
 
 def html_escape(text):
@@ -56,7 +57,7 @@ def format_commit(url, commit):
 
 
 def get_commits(repo):
-    coms = subprocess.check_output(['git', 'log', '--date=local', '--after="3 months ago"', '--grep=(#[0-9]*)', '--oneline'])
+    coms = subprocess.check_output(['git', 'log', '--date=local', '--after="3 months ago"', '--grep=(#[0-9]*)', '--oneline']).decode('utf-8')
     with open('static/changelog.html', 'w') as f:
         f.write('<div class="commits-list">\n')
         for commit in coms.splitlines():
