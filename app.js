@@ -549,6 +549,9 @@ async function main() {
             const message = err.message || 'Internal Server Error';
             res.status(status);
             res.render('error', renderConfig({error: {code: status, message: message}}));
+            if (status >= 500) {
+                logger.error('Internal server error:', err);
+            }
         });
 
     const sponsorConfig = loadSponsorsFromString(fs.readFileSync(configDir + '/sponsors.yaml', 'utf-8'));
