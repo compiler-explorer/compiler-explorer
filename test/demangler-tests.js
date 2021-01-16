@@ -182,7 +182,7 @@ describe('Basic demangling', function () {
             ],
         );
     });
-    
+
     it('Should NOT handle undecorated labels', () => {
         const result = {};
         result.asm = [
@@ -196,8 +196,7 @@ describe('Basic demangling', function () {
 
         const output = demangler.win32RawSymbols;
         output.should.deep.equal(
-            [
-            ],
+            [],
         );
     });
 
@@ -245,10 +244,10 @@ describe('Basic demangling', function () {
 async function readResultFile(filename) {
     const data = await fs.readFile(filename);
     const asm = utils.splitLines(data.toString()).map(line => {
-        return { text: line };
+        return {text: line};
     });
 
-    return { asm };
+    return {asm};
 }
 
 async function DoDemangleTest(filename) {
@@ -278,7 +277,7 @@ describe('File demangling', () => {
     for (const filename of files) {
         if (filename.endsWith('.asm')) {
             it(filename, async () => {
-                DoDemangleTest(path.join(testcasespath, filename));
+                await DoDemangleTest(path.join(testcasespath, filename));
             });
         }
     }
