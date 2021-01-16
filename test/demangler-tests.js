@@ -256,7 +256,7 @@ async function DoDemangleTest(filename) {
 
     const demangler = new CppDemangler(cppfiltpath, new DummyCompiler());
     demangler.demanglerArguments = ['-n'];
-    await demangler.process(resultIn).should.eventually.deep.equal(resultOut);
+    return demangler.process(resultIn).should.eventually.deep.equal(resultOut);
 }
 
 describe('File demangling', () => {
