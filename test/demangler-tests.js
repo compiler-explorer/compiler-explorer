@@ -28,7 +28,7 @@ import * as exec from '../lib/exec';
 import { SymbolStore } from '../lib/symbol-store';
 import * as utils from '../lib/utils';
 
-import { fs, path, resolvePathFromTestRoot, chai } from './utils';
+import { chai, fs, path, resolvePathFromTestRoot } from './utils';
 
 const cppfiltpath = 'c++filt';
 
