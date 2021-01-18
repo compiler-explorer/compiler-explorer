@@ -75,7 +75,7 @@ const opts = nopt({
     env: [String, Array],
     rootDir: [String],
     host: [String],
-    port: [Number],
+    port: [String, Number],
     propDebug: [Boolean],
     debug: [Boolean],
     dist: [Boolean],
@@ -382,10 +382,20 @@ function startListening(server) {
     }
 
     const startupDurationMs = Math.floor(process.uptime() * 1000);
-    logger.info(`  Listening on http://${defArgs.hostname || 'localhost'}:${_port}/`);
-    logger.info(`  Startup duration: ${startupDurationMs}ms`);
-    logger.info('=======================================');
-    server.listen(_port, defArgs.hostname);
+    if (isNaN(parseInt(_port))) {
+        // unix socket, not a port number...
+        logger.info(`  Listening on socket: //${_port}/`);
+        logger.info(`  Startup duration: ${startupDurationMs}ms`);
+        logger.info('=======================================');
+        server.listen(_port);
+    }
+    else {
+        // normal port number
+        logger.info(`  Listening on http://${defArgs.hostname || 'localhost'}:${_port}/`);
+        logger.info(`  Startup duration: ${startupDurationMs}ms`);
+        logger.info('=======================================');
+        server.listen(_port, defArgs.hostname);
+    }
 }
 
 function setupSentry(sentryDsn, expressApp) {
