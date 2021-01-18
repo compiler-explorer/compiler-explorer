@@ -1,15 +1,15 @@
+_Z2aai:
+        push    rbp
+        mov     rbp, rsp
+        mov     DWORD PTR [rbp-4], edi
+        nop
+        pop     rbp
+        ret
 _Z2aaii:
         push    rbp
         mov     rbp, rsp
         mov     DWORD PTR [rbp-4], edi
         mov     DWORD PTR [rbp-8], esi
-        nop
-        pop     rbp
-        ret
-_Z2aai:
-        push    rbp
-        mov     rbp, rsp
-        mov     DWORD PTR [rbp-4], edi
         nop
         pop     rbp
         ret
