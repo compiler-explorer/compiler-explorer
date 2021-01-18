@@ -23,11 +23,12 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import { CppDemangler, Win32Demangler } from '../lib/demangler';
+import { PrefixTree } from '../lib/demangler/prefix-tree';
 import * as exec from '../lib/exec';
 import { SymbolStore } from '../lib/symbol-store';
 import * as utils from '../lib/utils';
 
-import { fs, path, resolvePathFromTestRoot } from './utils';
+import { chai, fs, path, resolvePathFromTestRoot } from './utils';
 
 const cppfiltpath = 'c++filt';
 
@@ -256,7 +257,7 @@ async function DoDemangleTest(filename) {
 
     const demangler = new CppDemangler(cppfiltpath, new DummyCompiler());
     demangler.demanglerArguments = ['-n'];
-    await demangler.process(resultIn).should.eventually.deep.equal(resultOut);
+    return demangler.process(resultIn).should.eventually.deep.equal(resultOut);
 }
 
 describe('File demangling', () => {
@@ -281,4 +282,46 @@ describe('File demangling', () => {
             });
         }
     }
+});
+
+describe('Demangler prefix tree', () => {
+    const replacements = new PrefixTree();
+    replacements.add('a', 'short_a');
+    replacements.add('aa', 'long_a');
+    replacements.add('aa_shouldnotmatch', 'ERROR');
+    it('should replace a short match', () => {
+        replacements.replaceAll('a').should.eq('short_a');
+    });
+    it('should replace using the longest match', () => {
+        replacements.replaceAll('aa').should.eq('long_a');
+    });
+    it('should replace using both', () => {
+        replacements.replaceAll('aaa').should.eq('long_ashort_a');
+    });
+    it('should replace using both', () => {
+        replacements.replaceAll('a aa a aa').should.eq('short_a long_a short_a long_a');
+    });
+    it('should work with empty replacements', () => {
+        new PrefixTree().replaceAll('Testing 123').should.eq('Testing 123');
+    });
+    it('should leave unmatching text alone', () => {
+        replacements.replaceAll('Some text with none of the first letter of the ordered letter list')
+            .should.eq('Some text with none of the first letter of the ordered letter list');
+    });
+    it('should handle a mixture', () => {
+        replacements.replaceAll('Everyone loves an aardvark')
+            .should.eq('Everyone loves short_an long_ardvshort_ark');
+    });
+    it('should find exact matches', () => {
+        replacements.findExact('a').should.eq('short_a');
+        replacements.findExact('aa').should.eq('long_a');
+        replacements.findExact('aa_shouldnotmatch').should.eq('ERROR');
+    });
+    it('should find not find mismatches', () => {
+        chai.expect(replacements.findExact('aaa')).to.be.null;
+        chai.expect(replacements.findExact(' aa')).to.be.null;
+        chai.expect(replacements.findExact(' a')).to.be.null;
+        chai.expect(replacements.findExact('Oh noes')).to.be.null;
+        chai.expect(replacements.findExact('')).to.be.null;
+    });
 });

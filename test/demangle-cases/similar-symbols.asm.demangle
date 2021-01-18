@@ -1,0 +1,26 @@
+aa(int):
+        push    rbp
+        mov     rbp, rsp
+        mov     DWORD PTR [rbp-4], edi
+        nop
+        pop     rbp
+        ret
+aa(int, int):
+        push    rbp
+        mov     rbp, rsp
+        mov     DWORD PTR [rbp-4], edi
+        mov     DWORD PTR [rbp-8], esi
+        nop
+        pop     rbp
+        ret
+main:
+        push    rbp
+        mov     rbp, rsp
+        mov     esi, 1
+        mov     edi, 0
+        call    aa(int, int)
+        mov     edi, 1
+        call    aa(int)
+        mov     eax, 0
+        pop     rbp
+        ret
