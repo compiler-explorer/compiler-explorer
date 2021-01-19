@@ -13,3 +13,5 @@ whitelist /opt/intel
 read-only /opt/intel
 whitelist /opt/arm
 read-only /opt/arm
+whitelist /opt/mcst
+read-only /opt/mcst
