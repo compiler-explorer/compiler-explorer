@@ -627,7 +627,7 @@ async function main() {
         await setupStaticMiddleware(router);
     }
 
-    morgan.token('gdpr_ip', req => utils.anonymizeIp(req.ip));
+    morgan.token('gdpr_ip', req => req.ip ? utils.anonymizeIp(req.ip) : '');
 
     // Based on combined format, but: GDPR compliant IP, no timestamp & no unused fields for our usecase
     const morganFormat = isDevMode() ? 'dev' : ':gdpr_ip ":method :url" :status';
