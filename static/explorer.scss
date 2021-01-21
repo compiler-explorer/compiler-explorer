@@ -163,6 +163,11 @@ pre.content.wrap {
     white-space: pre-wrap;
 }
 
+pre.content.wrap * {
+    word-wrap: break-word;
+    white-space: pre-wrap; /* Preserve sequences of white space */
+}
+
 .compile-time {
     font-size: x-small;
     font-style: italic;

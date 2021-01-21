@@ -116,12 +116,18 @@
     "webpack-dev-server": "^3.11.0",
     "webpack-manifest-plugin": "^2.2.0"
   },
+  "mocha": {
+    "require": [
+      "esm",
+      "test/_setup"
+    ]
+  },
   "scripts": {
     "ci-lint": "eslint --format github .",
     "ci-test": "nyc mocha --recursive",
     "lint": "eslint .",
     "lint-fix": "eslint --fix .",
-    "test": "mocha -r esm --recursive",
+    "test": "mocha --recursive",
     "check": "npm run lint && npm run test",
     "dev": "cross-env NODE_ENV=DEV node -r esm app.js",
     "debug": "cross-env NODE_ENV=DEV node -r esm app.js --debug",

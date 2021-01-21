@@ -31,9 +31,9 @@ import { chai, makeCompilationEnvironment } from '../utils';
 SetTestMode();
 
 const languages = {
-    a: {id: 'a'},
-    b: {id: 'b'},
-    d: {id: 'd'},
+    a: {id: 'a', name: 'A lang'},
+    b: {id: 'b', name: 'B lang'},
+    d: {id: 'd', name: 'D lang'},
 };
 
 describe('Compiler tests', () => {

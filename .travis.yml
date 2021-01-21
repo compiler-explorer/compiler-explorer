@@ -4,6 +4,7 @@ git:
   depth: false
 node_js:
 - '12'
+dist: focal
 script:
 - npm run lint
 - npm run ci-test
