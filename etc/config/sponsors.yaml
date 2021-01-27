@@ -52,6 +52,8 @@ levels:
       - name: Ben Barbour
       - name: Embark Studios
         url: https://www.embark-studios.com/
+      - name: Embarcadero Marketing
+        url: https://www.embarcadero.com/products/cbuilder
   - name: Patreons
     description: 'Thanks to all my patrons:'
     sponsors:
