@@ -354,7 +354,7 @@ export function getAsmOpcode(opcode) {
     }
 }
 """)
-
+    print "REMINDER: Check if https://github.com/compiler-explorer/compiler-explorer/issues/2380 is still relevant"
 
 if __name__ == '__main__':
     docenizer()
