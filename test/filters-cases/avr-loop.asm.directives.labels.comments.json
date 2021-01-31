@@ -21,7 +21,7 @@
       "labels": []
     },
     {
-      "text": "foo():",
+      "text": "foo:",
       "source": null,
       "labels": []
     },
@@ -175,7 +175,7 @@
       "labels": []
     },
     {
-      "text": "        rcall bar()",
+      "text": "        rcall bar",
       "source": {
         "file": null,
         "line": 5
@@ -486,6 +486,7 @@
     "__SP_L__": 2,
     "__tmp_reg__": 3,
     "__zero_reg__": 4,
+    "foo": 5,
     ".L4": 17,
     ".L2": 30,
     ".L3": 38

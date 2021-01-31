@@ -25,6 +25,8 @@
 import { AsmParser } from '../lib/asm-parser';
 import { SassAsmParser } from '../lib/asm-parser-sass';
 import { VcAsmParser } from '../lib/asm-parser-vc';
+import { BaseCompiler } from '../lib/base-compiler';
+import { execute } from '../lib/exec';
 import * as utils from '../lib/utils';
 
 import { fs, resolvePathFromTestRoot } from './utils';
@@ -66,6 +68,8 @@ function dump(file) {
 // bless("filters-cases/sass-squarelabeled.asm", "filters-cases/sass-squarelabeled.asm.binary.directives.labels.comments.json", {binary: true, directives: true, labels: true, commentOnly: true});
 // bless("filters-cases/bug-2164.asm", "filters-cases/bug-2164.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
 // bless("filters-cases/bug-2164b.asm", "filters-cases/bug-2164b.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
+// bless('filters-cases/arm-jump-table.asm', 'filters-cases/arm-jump-table.asm.directives.labels.comments.json', {directives: true, labels: true, commentOnly: true});
+// bless('filters-cases/arm-hellow.asm', 'filters-cases/arm-hellow.asm.directives.json', {directives: true});
 // bless('filters-cases/diab.asm', 'filters-cases/diab.asm.directives.labels.comments.json', {directives: true, labels: true, commentOnly: true});
 // bless("filters-cases/bintest-1.asm", "filters-cases/bintest-1.asm.binary.directives.labels.comments.json", {binary: true, directives: true, labels: true, commentOnly: true});
 // bless("filters-cases/bintest-2.asm", "filters-cases/bintest-2.asm.binary.directives.labels.comments.json", {binary: true, directives: true, labels: true, commentOnly: true});
@@ -103,6 +107,39 @@ function processAsm(filename, filters) {
     return parser.process(file, filters);
 }
 
+function processAsmTheNewWay(filename, filters) {
+    if (filename.includes('sass-')) {
+        return new Promise((resolve) => {
+            const parser = new SassAsmParser();
+            const file = fs.readFileSync(filename, 'utf-8');
+            const result = parser.process(file, filters);
+            resolve(result);
+        });
+    } else {
+        const file = fs.readFileSync(filename, 'utf-8');
+        if (file.includes('Microsoft')) {
+            return new Promise((resolve) => {
+                const parser = new VcAsmParser();
+                const result = parser.process(file, filters);
+                resolve(result);
+            });
+        }
+    }
+
+    const asmParserPath = '/opt/compiler-explorer/asm-parser/build/bin/asm-parser';
+    const filterParams = BaseCompiler.getAsmParserParametersBasedOnFilter(filters, false);
+    filterParams.push(filename);
+
+    return execute(asmParserPath, filterParams, {}).then(result => {
+        result = Object.assign({}, JSON.parse(result.stdout));
+        if (result.stderr) {
+            throw result.stderr;
+        }
+
+        return result;
+    });
+}
+
 const files = fs.readdirSync(resolvePathFromTestRoot('filters-cases'));
 const filesInCaseDir = files.map(x => resolvePathFromTestRoot('filters-cases', x));
 
@@ -123,6 +160,7 @@ function testFilter(filename, suffix, filters) {
     else {
         return;
     }
+
     const result = processAsm(resolvePathFromTestRoot(filename), filters);
 
     if (json) {
@@ -132,10 +170,20 @@ function testFilter(filename, suffix, filters) {
     }
 
     it(filename, () => {
+        const newResultPromise = processAsmTheNewWay(resolvePathFromTestRoot(filename), filters);
+
         if (json) {
-            result.should.deep.equal(file, `${filename} case error`);
+            result.should.deep.equal(file, `${filename} OLD ASM PARSER case error`);
+
+            return newResultPromise.then(res => {
+                res.should.deep.equal(file, `${filename} NEW ASM PARSER case error`);
+            });
         } else {
-            result.asm.map(x => x.text).should.deep.equal(file, `${filename} case error`);
+            result.asm.map(x => x.text).should.deep.equal(file, `${filename} OLD ASM PARSER case error`);
+
+            return newResultPromise.then(res => {
+                return res.asm.map(x => x.text).should.deep.equal(file, `${filename} NEW ASM PARSER case error`);
+            });
         }
     });
 }
@@ -149,32 +197,32 @@ describe('Filter test cases', function () {
     describe('No filters', function () {
         cases.forEach(x => testFilter(x, '.none', {}));
     });
-    describe('Directive filters', function () {
-        cases.forEach(x => testFilter(x, '.directives', {directives: true}));
-    });
-    describe('Directives and labels together', function () {
-        cases.forEach(x => testFilter(x, '.directives.labels', {directives: true, labels: true}));
-    });
-    describe('Directives, labels and comments', function () {
-        cases.forEach(function (x) {
-            testFilter(x, '.directives.labels.comments', {directives: true, labels: true, commentOnly: true});
-        });
-    });
-    describe('Binary, directives, labels and comments', function () {
-        cases.forEach(function (x) {
-            testFilter(x, '.binary.directives.labels.comments', {binary: true, directives: true, labels: true, commentOnly: true});
-        });
-    });
-    describe('Directives and comments', function () {
-        cases.forEach(x => testFilter(x, '.directives.comments', {directives: true, commentOnly: true}));
-    });
-    describe('Directives and library code', function () {
-        cases.forEach(x => testFilter(x, '.directives.library', {directives: true, libraryCode: true}));
-    });
-    describe('Directives, labels, comments and library code', function () {
-        cases.forEach(function (x) {
-            testFilter(x, '.directives.labels.comments.library',
-                {directives: true, labels: true, commentOnly: true, libraryCode: true});
-        });
-    });
+    // describe('Directive filters', function () {
+    //     cases.forEach(x => testFilter(x, '.directives', {directives: true}));
+    // });
+    // describe('Directives and labels together', function () {
+    //     cases.forEach(x => testFilter(x, '.directives.labels', {directives: true, labels: true}));
+    // });
+    // describe('Directives, labels and comments', function () {
+    //     cases.forEach(function (x) {
+    //         testFilter(x, '.directives.labels.comments', {directives: true, labels: true, commentOnly: true});
+    //     });
+    // });
+    // describe('Binary, directives, labels and comments', function () {
+    //     cases.forEach(function (x) {
+    //         testFilter(x, '.binary.directives.labels.comments', {binary: true, directives: true, labels: true, commentOnly: true});
+    //     });
+    // });
+    // describe('Directives and comments', function () {
+    //     cases.forEach(x => testFilter(x, '.directives.comments', {directives: true, commentOnly: true}));
+    // });
+    // describe('Directives and library code', function () {
+    //     cases.forEach(x => testFilter(x, '.directives.library', {directives: true, libraryCode: true}));
+    // });
+    // describe('Directives, labels, comments and library code', function () {
+    //     cases.forEach(function (x) {
+    //         testFilter(x, '.directives.labels.comments.library',
+    //             {directives: true, labels: true, commentOnly: true, libraryCode: true});
+    //     });
+    // });
 });

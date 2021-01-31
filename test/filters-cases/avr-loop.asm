@@ -37,10 +37,10 @@ __zero_reg__ = 1
         .stabs  "wchar_t:t(0,21)=r(0,21);-32768;32767;",128,0,0,0
         .stabs  "bool:t(0,22)=@s8;-16;",128,0,0,0
         .stabs  "__vtbl_ptr_type:t(0,23)=*(0,24)=f(0,7)",128,0,0,0
-        .stabs  "foo():F(0,7)",36,0,2,foo()
-.global foo()
-        .type   foo(), @function
-foo():
+        .stabs  "foo:F(0,7)",36,0,2,foo
+.global foo
+        .type   foo, @function
+foo:
         .stabd  46,0,0
         .stabn  68,0,2,.LM0-.LFBB1
 .LM0:
@@ -69,7 +69,7 @@ foo():
 .L4:
         .stabn  68,0,5,.LM3-.LFBB1
 .LM3:
-        rcall bar()
+        rcall bar
         ldd r18,Y+1
         ldd r19,Y+2
         add r24,r18
@@ -112,7 +112,7 @@ foo():
         pop r28
         pop r29
         ret
-        .size   foo(), .-foo()
+        .size   foo, .-foo
         .stabs  "a:(0,7)",128,0,3,1
         .stabn  192,0,0,.LBB2-.LFBB1
         .stabs  "i:(0,7)",128,0,4,3
