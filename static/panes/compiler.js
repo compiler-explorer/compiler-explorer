@@ -1116,7 +1116,12 @@ Compiler.prototype.supportsTool = function (toolId) {
 
 Compiler.prototype.initToolButton = function (togglePannerAdder, button, toolId) {
     var createToolView = _.bind(function () {
-        return Components.getToolViewWith(this.id, this.sourceEditorId, toolId, '');
+        var args = '';
+        var langTools = options.tools[this.currentLangId];
+        if (langTools && langTools[toolId] && langTools[toolId].tool && langTools[toolId].tool.args !== undefined) {
+            args = langTools[toolId].tool.args;
+        }
+        return Components.getToolViewWith(this.id, this.sourceEditorId, toolId, args);
     }, this);
 
     this.container.layoutManager
