@@ -227,7 +227,11 @@ LibsWidgetExt.prototype.newSearchResult = function (libId, lib) {
 
     var result = $(template.children()[0].cloneNode(true));
     result.find('.lib-name').html(lib.name);
-    result.find('.lib-description').html(lib.description ? lib.description : '&nbsp;');
+    if (!lib.description) {
+        result.find('.lib-description').hide();
+    } else {
+        result.find('.lib-description').html(lib.description);
+    }
     result.find('.lib-website-link').attr('href', lib.url ? lib.url : '#');
 
     this.conjureUpExamples(result, lib);
