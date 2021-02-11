@@ -197,6 +197,8 @@ LibsWidgetExt.prototype.newSelectedLibDiv = function (libId, versionId, lib, ver
         libDiv.remove();
         this.showSelectedLibs();
         this.onChangeCallback();
+        // We need to refresh the library lists, or the selector will still show up with the old library version
+        this.startSearching();
     }, this));
 
     return libDiv;
