@@ -693,6 +693,9 @@ Compiler.prototype.setAssembly = function (asm) {
                     line + 1, label.range.endCol),
                 options: {
                     inlineClassName: 'asm-label-link',
+                    hoverMessage: [{
+                        value: 'Ctrl + Left click to follow the label',
+                    }],
                 },
             });
         }, this);
