@@ -24,6 +24,7 @@ jobs:
             ${{ runner.os }}-node-
       - name: npm install, build, and test
         run: |
+          npm ci
           npm run lint
           npm run ci-test
           make changelog
