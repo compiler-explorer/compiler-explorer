@@ -24,6 +24,7 @@ jobs:
             ${{ runner.os }}-node-
       - name: npm install, build, and test
         run: |
+          export TRAVIS_BUILD_NUMBER=$((GITHUB_RUN_NUMBER + 7000))
           npm ci
           npm run lint
           npm run ci-test
