@@ -1,0 +1,31 @@
+name: Node tests
+
+on: [ push, pull_request ]
+
+jobs:
+  build-node:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js 12.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+      - name: Get npm cache directory
+        id: npm-cache
+        run: |
+          echo "::set-output name=dir::$(npm config get cache)"
+      - uses: actions/cache@v1
+        with:
+          path: ${{ steps.npm-cache.outputs.dir }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+      - name: npm install, build, and test
+        run: |
+          npm run lint
+          npm run ci-test
+          make changelog
+          make policies
+          make -j$(nproc) travis-dist NPM_FLAGS="--no-audit"
