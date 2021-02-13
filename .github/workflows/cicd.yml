@@ -23,17 +23,18 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
       - name: npm install, build, and test
-        id: build_dist
         run: |
-          export SENTRY_AUTH_TOKEN='${{ secrets.SENTRY_AUTH_TOKEN }}'
           make prereqs
           npm run lint
           npm run ci-test
+      - name: code coverage
+        run: npm run codecov
+      - name: Build distribution
+        id: build_dist
+          export SENTRY_AUTH_TOKEN='${{ secrets.SENTRY_AUTH_TOKEN }}'
           make changelog
           make policies
           make -j$(nproc) gh-dist NPM_FLAGS="--no-audit"
-      - name: code coverage
-        run: npm run codecov
       - name: deploy
         if: github.event_name == 'push'
         uses: jakejarvis/s3-sync-action@master

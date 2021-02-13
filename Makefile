@@ -90,7 +90,7 @@ dist: prereqs webpack  ## Creates a distribution
 RELEASE_BUILD_NUMBER=$(shell echo $$(( $(GITHUB_RUN_NUMBER) + 7000)))
 gh-dist: dist  ## Creates a distribution as if we were running on github
 	# Output some magic for GH to set the branch name
-	echo "##[set-output name=branch;]$${GITHUB_REF#refs/heads/}"
+	echo "::set-output name=branch::$${GITHUB_REF#refs/heads/}"
 	echo $(RELEASE_BUILD_NUMBER) > out/dist/release_build
 	rm -rf out/dist-bin
 	mkdir -p out/dist-bin
