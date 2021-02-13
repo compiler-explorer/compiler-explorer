@@ -97,7 +97,7 @@ gh-dist: dist  ## Creates a distribution as if we were running on github
 	mkdir -p out/dist-bin
 	tar -Jcf out/dist-bin/$(RELEASE_FILE_NAME).tar.xz -T gh-dist-files.txt
 	tar -Jcf out/dist-bin/$(RELEASE_FILE_NAME).static.tar.xz --transform="s,^out/dist/static/,," out/dist/static/*
-	echo $(HASH) > out/dist-bin/$(RELEASE_NAME).txt
+	echo $(HASH) > out/dist-bin/$(RELEASE_FILE_NAME).txt
 	du -ch out/**/*
 	# Create and set commits for a sentry release if and only if we have the secure token set
 	# External GitHub PRs etc won't have the variable set.
