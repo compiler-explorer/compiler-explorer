@@ -1,4 +1,4 @@
-name: Node tests
+name: Compiler Explorer
 
 on: [ push, pull_request ]
 
