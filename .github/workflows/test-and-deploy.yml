@@ -1,6 +1,6 @@
 name: Compiler Explorer
 
-on: [ push, pull_request ]
+on: [ push ]
 
 jobs:
   build-and-test:
@@ -14,10 +14,6 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: 12.x
-      - name: TEST
-        run: |
-          which npx
-          npx --version
       - name: Get npm cache directory
         id: npm-cache
         run: |
