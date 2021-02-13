@@ -40,9 +40,7 @@ $(NODE_MODULES): package.json | node-installed
 	@touch $@
 
 WEBPACK:=./node_modules/webpack-cli/bin/cli.js
-webpack: $(NODE_MODULES)  ## Runs webpack (useful only for debugging webpack)
-	rm -rf out/dist/static out/dist/manifest.json
-	$(WEBPACK) $(WEBPACK_ARGS)
+$(WEBPACK): $(NODE_MODULES)
 
 lint: $(NODE_MODULES)  ## Checks if the source currently matches code conventions
 	$(NPM) run lint
@@ -54,7 +52,9 @@ ci-lint: $(NODE_MODULES)
 	$(NPM) run ci-lint
 
 node_modules: $(NODE_MODULES)
-webpack: $(WEBPACK)
+webpack: $(WEBPACK)  ## Runs webpack (useful only for debugging webpack)
+	rm -rf out/dist/static out/dist/manifest.json
+	$(WEBPACK) $(WEBPACK_ARGS)
 
 test: $(NODE_MODULES)  ## Runs the tests
 	$(NPM) run test

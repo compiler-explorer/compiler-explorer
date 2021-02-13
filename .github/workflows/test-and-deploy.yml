@@ -1,13 +1,15 @@
-name: Node tests
+name: Compiler Explorer
 
 on: [ push, pull_request ]
 
 jobs:
-  build-node:
+  build-and-test:
     runs-on: ubuntu-20.04
 
     steps:
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
       - name: Use Node.js 12.x
         uses: actions/setup-node@v1
         with:
@@ -26,13 +28,42 @@ jobs:
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
-      - name: npm install, build, and test
+      - name: Install prerequisites
+        run: make prereqs
+      - name: Build and test
         run: |
-          make prereqs
           npm run lint
           npm run ci-test
       - name: Code coverage
         run: npm run codecov
+
+  build-dist-and-deploy:
+    needs: build-and-test
+    if: github.repository_owner == 'compiler-explorer'
+    runs-on: ubuntu-20.04
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Use Node.js 12.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+      - name: TEST
+        run: |
+          which npx
+          npx --version
+      - name: Get npm cache directory
+        id: npm-cache
+        run: |
+          echo "::set-output name=dir::$(npm config get cache)"
+      - uses: actions/cache@v1
+        with:
+          path: ${{ steps.npm-cache.outputs.dir }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
       - name: Build distribution
         id: build_dist
         run: |
@@ -44,10 +75,9 @@ jobs:
           make policies
           make -j$(nproc) gh-dist NPM_FLAGS="--no-audit"
       - name: Deploy
-        if: github.event_name == 'push'
         uses: jakejarvis/s3-sync-action@master
         with:
-          args: --acl public-read --follow-symlinks --delete
+          args: --acl public-read --follow-symlinks
         env:
           AWS_S3_BUCKET: compiler-explorer
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
