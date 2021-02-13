@@ -1,13 +1,45 @@
-name: CE Deploy
+name: Compiler Explorer
 
-on:
-  workflow_run:
-    workflows: [ "Compiler Explorer" ]
-    types: [ completed ]
+on: [ push, pull_request ]
 
 jobs:
-  build-node:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+  build-and-test:
+    runs-on: ubuntu-20.04
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Use Node.js 12.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+      - name: TEST
+        run: |
+          which npx
+          npx --version
+      - name: Get npm cache directory
+        id: npm-cache
+        run: |
+          echo "::set-output name=dir::$(npm config get cache)"
+      - uses: actions/cache@v1
+        with:
+          path: ${{ steps.npm-cache.outputs.dir }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+      - name: Install prerequisites
+        run: make prereqs
+      - name: Build and test
+        run: |
+          npm run lint
+          npm run ci-test
+      - name: Code coverage
+        run: npm run codecov
+
+  build-dist-and-deploy:
+    needs: build-and-test
+    if: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
     runs-on: ubuntu-20.04
 
     steps:
