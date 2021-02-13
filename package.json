@@ -131,9 +131,9 @@
     "check": "npm run lint && npm run test",
     "dev": "cross-env NODE_ENV=DEV node -r esm app.js",
     "debug": "cross-env NODE_ENV=DEV node -r esm app.js --debug",
-    "start": "npx webpack && cross-env NODE_ENV=LOCAL node -r esm app.js",
+    "start": "webpack && cross-env NODE_ENV=LOCAL node -r esm app.js",
     "codecov": "codecov --disable=gcov",
-    "sentry": "npx @sentry/cli"
+    "sentry": "@sentry/cli"
   },
   "license": "BSD-2-Clause"
 }
