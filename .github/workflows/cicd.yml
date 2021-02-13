@@ -25,7 +25,7 @@ jobs:
       - name: npm install, build, and test
         id: build_dist
         run: |
-          export RELEASE_BUILD_NUMBER=$((GITHUB_RUN_NUMBER + 7000))
+          export SENTRY_AUTH_TOKEN='${{ secrets.SENTRY_AUTH_TOKEN }}'
           make prereqs
           npm run lint
           npm run ci-test

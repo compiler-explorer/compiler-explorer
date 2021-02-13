@@ -83,7 +83,7 @@
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "chai-http": "^4.2.1",
-    "codecov": "^3.7.2",
+    "codecov": "^3.8.1",
     "copy-webpack-plugin": "^5.1.2",
     "css-loader": "^3.6.0",
     "deep-equal-in-any-order": "^1.0.28",
