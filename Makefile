@@ -87,21 +87,22 @@ dist: export WEBPACK_ARGS=-p
 dist: prereqs webpack  ## Creates a distribution
 	echo $(HASH) > out/dist/git_hash
 
-RELEASE_BUILD_NUMBER=$(GITHUB_RUN_NUMBER)
+RELEASE_FILE_NAME=$(GITHUB_RUN_NUMBER)
+RELEASE_NAME=gh-$(RELEASE_BUILD_NUMBER)
 gh-dist: dist  ## Creates a distribution as if we were running on github
 	# Output some magic for GH to set the branch name
 	echo "::set-output name=branch::$${GITHUB_REF#refs/heads/}"
-	echo $(RELEASE_BUILD_NUMBER) > out/dist/release_build
+	echo $(RELEASE_NAME) > out/dist/release_build
 	rm -rf out/dist-bin
 	mkdir -p out/dist-bin
-	tar -Jcf out/dist-bin/$(RELEASE_BUILD_NUMBER).tar.xz -T gh-dist-files.txt
-	tar -Jcf out/dist-bin/$(RELEASE_BUILD_NUMBER).static.tar.xz --transform="s,^out/dist/static/,," out/dist/static/*
-	echo $(HASH) > out/dist-bin/$(RELEASE_BUILD_NUMBER).txt
+	tar -Jcf out/dist-bin/$(RELEASE_FILE_NAME).tar.xz -T gh-dist-files.txt
+	tar -Jcf out/dist-bin/$(RELEASE_FILE_NAME).static.tar.xz --transform="s,^out/dist/static/,," out/dist/static/*
+	echo $(HASH) > out/dist-bin/$(RELEASE_NAME).txt
 	du -ch out/**/*
 	# Create and set commits for a sentry release if and only if we have the secure token set
 	# External GitHub PRs etc won't have the variable set.
-	@[ -z "$(SENTRY_AUTH_TOKEN)" ] || $(NPM) run sentry -- releases new -p compiler-explorer gh-$(RELEASE_BUILD_NUMBER)
-	@[ -z "$(SENTRY_AUTH_TOKEN)" ] || $(NPM) run sentry -- releases set-commits --auto gh-$(RELEASE_BUILD_NUMBER)
+	@[ -z "$(SENTRY_AUTH_TOKEN)" ] || $(NPM) run sentry -- releases new -p compiler-explorer $(RELEASE_NAME)
+	@[ -z "$(SENTRY_AUTH_TOKEN)" ] || $(NPM) run sentry -- releases set-commits --auto $(RELEASE_NAME)
 
 install-git-hooks:  ## Install git hooks that will ensure code is linted and tests are run before allowing a check in
 	mkdir -p "$(shell git rev-parse --git-dir)/hooks"
