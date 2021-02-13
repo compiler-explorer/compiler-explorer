@@ -27,16 +27,19 @@ jobs:
           make prereqs
           npm run lint
           npm run ci-test
-      - name: code coverage
+      - name: Code coverage
         run: npm run codecov
       - name: Build distribution
         id: build_dist
         run: |
           export SENTRY_AUTH_TOKEN='${{ secrets.SENTRY_AUTH_TOKEN }}'
+          export SENTRY_DSN='${{ secrets.SENTRY_DSN }}'
+          export SENTRY_ORG=compiler-explorer
+          export SENTRY_PROJECT=compiler-explorer
           make changelog
           make policies
           make -j$(nproc) gh-dist NPM_FLAGS="--no-audit"
-      - name: deploy
+      - name: Deploy
         if: github.event_name == 'push'
         uses: jakejarvis/s3-sync-action@master
         with:
