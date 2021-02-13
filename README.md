@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.com/compiler-explorer/compiler-explorer.svg?branch=master)](https://travis-ci.com/github/compiler-explorer/compiler-explorer)
+[![Build Status](https://github.com/compiler-explorer/compiler-explorer/workflows/Node%20tests/badge.svg)](https://github.com/compiler-explorer/compiler-explorer/actions?query=workflow%3A%22Node+tests%22)
 [![codecov](https://codecov.io/gh/compiler-explorer/compiler-explorer/branch/master/graph/badge.svg)](https://codecov.io/gh/compiler-explorer/compiler-explorer)
 
 ![Compiler Explorer](docs/logo.svg)

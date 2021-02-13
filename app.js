@@ -137,14 +137,12 @@ const gitReleaseName = (() => {
     return '';
 })();
 
-const travisBuildNumber = (() => {
-    // Use the canned travis_build only if provided
-    const travisBuildPath = path.join(distPath, 'travis_build');
-    if (opts.dist && fs.existsSync(travisBuildPath)) {
-        return fs.readFileSync(travisBuildPath).toString().trim();
+const releaseBuildNumber = (() => {
+    // Use the canned build only if provided
+    const releaseBuildPath = path.join(distPath, 'release_build');
+    if (opts.dist && fs.existsSync(releaseBuildPath)) {
+        return fs.readFileSync(releaseBuildPath).toString().trim();
     }
-
-    // non-travis build
     return '';
 })();
 
@@ -155,7 +153,7 @@ const defArgs = {
     hostname: opts.host,
     port: opts.port || 10240,
     gitReleaseName: gitReleaseName,
-    travisBuildNumber: travisBuildNumber,
+    releaseBuildNumber: releaseBuildNumber,
     wantedLanguage: opts.language || null,
     doCache: !opts.noCache,
     fetchCompilersFromRemote: !opts.noRemoteFetch,
@@ -406,7 +404,7 @@ function setupSentry(sentryDsn, expressApp) {
     const sentryEnv = ceProps('sentryEnvironment');
     Sentry.init({
         dsn: sentryDsn,
-        release: travisBuildNumber || gitReleaseName,
+        release: releaseBuildNumber || gitReleaseName,
         environment: sentryEnv || defArgs.env[0],
         beforeSend(event) {
             if (event.request
@@ -445,7 +443,7 @@ async function main() {
 
     logger.info('=======================================');
     if (gitReleaseName) logger.info(`  git release ${gitReleaseName}`);
-    if (travisBuildNumber) logger.info(`  travis build ${travisBuildNumber}`);
+    if (releaseBuildNumber) logger.info(`  release build ${releaseBuildNumber}`);
 
     const initialFindResults = await compilerFinder.find();
     const initialCompilers = initialFindResults.compilers;

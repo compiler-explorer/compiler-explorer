@@ -30,7 +30,7 @@ info: node-installed ## print out some useful variables
 	@echo PATH is $(PATH)
 
 .PHONY: clean run test run-amazon
-.PHONY: dist lint lint-fix ci-lint prereqs node_modules travis-dist check pre-commit
+.PHONY: dist lint lint-fix ci-lint prereqs node_modules gh-dist check pre-commit
 prereqs: node_modules
 
 NODE_MODULES=.npm-updated
@@ -87,18 +87,21 @@ dist: export WEBPACK_ARGS=-p
 dist: prereqs webpack  ## Creates a distribution
 	echo $(HASH) > out/dist/git_hash
 
-travis-dist: dist  ## Creates a distribution as if we were running on travis
-	echo $(TRAVIS_BUILD_NUMBER) > out/dist/travis_build
+RELEASE_BUILD_NUMBER=$(shell echo $$(( $(GITHUB_RUN_NUMBER) + 7000)))
+gh-dist: dist  ## Creates a distribution as if we were running on github
+	echo "##[set-output name=branch;]${GITHUB_REF#refs/heads/}"
+	echo $(RELEASE_BUILD_NUMBER) > out/dist/release_build
 	rm -rf out/dist-bin
 	mkdir -p out/dist-bin
-	tar -Jcf out/dist-bin/$(TRAVIS_BUILD_NUMBER).tar.xz -T travis-dist-files.txt
-	tar -Jcf out/dist-bin/$(TRAVIS_BUILD_NUMBER).static.tar.xz --transform="s,^out/dist/static/,," out/dist/static/*
-	echo $(HASH) > out/dist-bin/$(TRAVIS_BUILD_NUMBER).txt
+	tar -Jcf out/dist-bin/$(RELEASE_BUILD_NUMBER).tar.xz -T gh-dist-files.txt
+	tar -Jcf out/dist-bin/$(RELEASE_BUILD_NUMBER).static.tar.xz --transform="s,^out/dist/static/,," out/dist/static/*
+	echo $(HASH) > out/dist-bin/$(RELEASE_BUILD_NUMBER).txt
 	du -ch out/**/*
 	# Create and set commits for a sentry release if and only if we have the secure token set
 	# External GitHub PRs etc won't have the variable set.
-	@[ -z "$(SENTRY_AUTH_TOKEN)" ] || $(NPM) run sentry -- releases new -p compiler-explorer $(TRAVIS_BUILD_NUMBER)
-	@[ -z "$(SENTRY_AUTH_TOKEN)" ] || $(NPM) run sentry -- releases set-commits --auto $(TRAVIS_BUILD_NUMBER)
+	@[ -z "$(SENTRY_AUTH_TOKEN)" ] || $(NPM) run sentry -- releases new -p compiler-explorer $(RELEASE_BUILD_NUMBER)
+	@[ -z "$(SENTRY_AUTH_TOKEN)" ] || $(NPM) run sentry -- releases set-commits --auto $(RELEASE_BUILD_NUMBER)
+	# Output some magic for GH to set the branch name
 
 install-git-hooks:  ## Install git hooks that will ensure code is linted and tests are run before allowing a check in
 	mkdir -p "$(shell git rev-parse --git-dir)/hooks"

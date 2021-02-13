@@ -4,7 +4,7 @@ on: [ push, pull_request ]
 
 jobs:
   build-node:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     steps:
       - uses: actions/checkout@v2
@@ -23,11 +23,25 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
       - name: npm install, build, and test
+        id: build_dist
         run: |
-          export TRAVIS_BUILD_NUMBER=$((GITHUB_RUN_NUMBER + 7000))
-          npm ci
+          export RELEASE_BUILD_NUMBER=$((GITHUB_RUN_NUMBER + 7000))
+          make prereqs
           npm run lint
           npm run ci-test
           make changelog
           make policies
-          make -j$(nproc) travis-dist NPM_FLAGS="--no-audit"
+          make -j$(nproc) gh-dist NPM_FLAGS="--no-audit"
+      - name: code coverage
+        run: npm run codecov
+      - name: deploy
+        if: github.event_name == 'push'
+        uses: jakejarvis/s3-sync-action@master
+        with:
+          args: --acl public-read --follow-symlinks --delete
+        env:
+          AWS_S3_BUCKET: compiler-explorer
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          SOURCE_DIR: out/dist-bin
+          DEST_DIR: dist/gh/${{ steps.build_dist.outputs.branch }}
