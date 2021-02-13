@@ -88,7 +88,7 @@ dist: prereqs webpack  ## Creates a distribution
 	echo $(HASH) > out/dist/git_hash
 
 RELEASE_FILE_NAME=$(GITHUB_RUN_NUMBER)
-RELEASE_NAME=gh-$(RELEASE_BUILD_NUMBER)
+RELEASE_NAME=gh-$(RELEASE_FILE_NAME)
 gh-dist: dist  ## Creates a distribution as if we were running on github
 	# Output some magic for GH to set the branch name
 	echo "::set-output name=branch::$${GITHUB_REF#refs/heads/}"
