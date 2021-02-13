@@ -45,7 +45,7 @@ def check_policy_file(police_name):
     with open(policy_path, 'w') as f:
         for line in file_lines:
             if re.match(date_placeholder_regex, line):
-                f.write(re.sub(date_placeholder_regex, f'\\1Last changed on: <time id="changed-date" datetime="{policy_last_time}" onload="javascript:console.log(this);">{policy_last_time}</time> <i>(<a href="https://github.com/compiler-explorer/compiler-explorer/commit/{policy_last_commit}" target="_blank">diff</a>)</i>\\2', line))
+                f.write(re.sub(date_placeholder_regex, f'\\1Last changed on: <time id="changed-date" datetime="{policy_last_time}">{policy_last_time}</time> <i>(<a href="https://github.com/compiler-explorer/compiler-explorer/commit/{policy_last_commit}" target="_blank">diff</a>)</i>\\2', line))
             else:
                 f.write(line)
 
