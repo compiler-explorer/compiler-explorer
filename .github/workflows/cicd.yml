@@ -31,6 +31,7 @@ jobs:
         run: npm run codecov
       - name: Build distribution
         id: build_dist
+        run: |
           export SENTRY_AUTH_TOKEN='${{ secrets.SENTRY_AUTH_TOKEN }}'
           make changelog
           make policies
