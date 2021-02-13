@@ -1,9 +1,13 @@
-name: Compiler Explorer
+name: CE Deploy
 
-on: [ push, pull_request ]
+on:
+  workflow_run:
+    workflows: [ "Compiler Explorer" ]
+    types: [ completed ]
 
 jobs:
   build-node:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-20.04
 
     steps:
@@ -28,13 +32,6 @@ jobs:
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
-      - name: npm install, build, and test
-        run: |
-          make prereqs
-          npm run lint
-          npm run ci-test
-      - name: Code coverage
-        run: npm run codecov
       - name: Build distribution
         id: build_dist
         run: |
@@ -46,7 +43,6 @@ jobs:
           make policies
           make -j$(nproc) gh-dist NPM_FLAGS="--no-audit"
       - name: Deploy
-        if: github.event_name == 'push'
         uses: jakejarvis/s3-sync-action@master
         with:
           args: --acl public-read --follow-symlinks
