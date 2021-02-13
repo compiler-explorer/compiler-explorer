@@ -39,7 +39,7 @@ jobs:
 
   build-dist-and-deploy:
     needs: build-and-test
-    if: secrets.AWS_SECRET_ACCESS_KEY
+    if: github.repository_owner == 'compiler-explorer'
     runs-on: ubuntu-20.04
 
     steps:
