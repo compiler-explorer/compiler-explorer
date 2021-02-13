@@ -89,7 +89,8 @@ dist: prereqs webpack  ## Creates a distribution
 
 RELEASE_BUILD_NUMBER=$(shell echo $$(( $(GITHUB_RUN_NUMBER) + 7000)))
 gh-dist: dist  ## Creates a distribution as if we were running on github
-	echo "##[set-output name=branch;]${GITHUB_REF#refs/heads/}"
+	# Output some magic for GH to set the branch name
+	echo "##[set-output name=branch;]$${GITHUB_REF#refs/heads/}"
 	echo $(RELEASE_BUILD_NUMBER) > out/dist/release_build
 	rm -rf out/dist-bin
 	mkdir -p out/dist-bin
@@ -101,7 +102,6 @@ gh-dist: dist  ## Creates a distribution as if we were running on github
 	# External GitHub PRs etc won't have the variable set.
 	@[ -z "$(SENTRY_AUTH_TOKEN)" ] || $(NPM) run sentry -- releases new -p compiler-explorer $(RELEASE_BUILD_NUMBER)
 	@[ -z "$(SENTRY_AUTH_TOKEN)" ] || $(NPM) run sentry -- releases set-commits --auto $(RELEASE_BUILD_NUMBER)
-	# Output some magic for GH to set the branch name
 
 install-git-hooks:  ## Install git hooks that will ensure code is linted and tests are run before allowing a check in
 	mkdir -p "$(shell git rev-parse --git-dir)/hooks"
