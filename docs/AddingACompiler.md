@@ -94,7 +94,7 @@ If you would like to have both gcc and MSVC running in the "same" compiler explo
 Linux machine and add a proxy to the MSVC compiler, which is running on a remote Window host. To achieve this, you could
 
 * Setup compiler explorer on your Linux host as usual
-* Follow [this guide](https://github.com/compiler-explorer/compiler-explorer/blob/master/docs/WindowsNative.md)
+* Follow [this guide](https://github.com/compiler-explorer/compiler-explorer/blob/main/docs/WindowsNative.md)
 to setup another compiler explorer instance on your Windows host
 * Add your Windows compiler explorer as a proxy to your Linux compiler explorer. You can simply modify your
 `etc/config/c++.local.properties` on your Linux host
