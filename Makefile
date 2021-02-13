@@ -112,6 +112,6 @@ changelog:  ## Create the changelog
 	python ./etc/scripts/changelog.py
 
 policies:
-	python ./etc/scripts/politic.py
+	python3 ./etc/scripts/politic.py
 
 .PHONY: changelog
