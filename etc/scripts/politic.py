@@ -37,7 +37,7 @@ def check_policy_file(police_name):
     if len(policy_last_time) == 0:
         print(f'No need to update {policy_path}')
         return
-    policy_last_commit = subprocess.check_output(['git', 'log', '-1', '--format=%H', policy_path]).decode('utf-8').rstrip()
+    policy_last_commit = subprocess.check_output(['git', 'log', '-1', '--format=%h', policy_path]).decode('utf-8').rstrip()
     print(f'Setting policy {policy_path} last updated time to {policy_last_time} with commit {policy_last_commit}')
     f = open(policy_path, 'r')
     file_lines = f.readlines()
