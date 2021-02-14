@@ -52,7 +52,7 @@ def format_commit(url, commit):
     try:
         return commit_template.format(url, grouped_commit[0], html_escape(grouped_commit[1]))
     except Exception as e:
-        print('There was an error in changelog.py: {}'.format(e))
+        print(f'There was an error in changelog.py: {e}')
         return ''
 
 

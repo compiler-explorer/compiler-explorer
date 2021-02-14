@@ -110,9 +110,9 @@ install-git-hooks:  ## Install git hooks that will ensure code is linted and tes
 .PHONY: install-git-hooks
 
 changelog:  ## Create the changelog
-	python ./etc/scripts/changelog.py
+	python3 ./etc/scripts/changelog.py
 
 policies:
-	python ./etc/scripts/politic.py
+	python3 ./etc/scripts/politic.py
 
 .PHONY: changelog
