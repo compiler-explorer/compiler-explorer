@@ -25,6 +25,7 @@
 import express from 'express';
 
 import { ApiHandler } from '../../lib/handlers/api';
+import { StorageNull } from '../../lib/storage';
 import { chai } from '../utils';
 
 const languages = {
@@ -85,30 +86,27 @@ describe('API handling', () => {
 
     before(() => {
         app = express();
-        const apiHandler = new ApiHandler({
-            handle: res => {
-                res.send('compile');
+        const apiHandler = new ApiHandler(
+            {
+                handle: res => res.send('compile'),
+                handlePopularArguments: res => res.send('ok'),
+                handleOptimizationArguments: res => res.send('ok'),
+            }, (key, def) => {
+                switch (key) {
+                    case 'formatters':
+                        return 'formatt:badformatt';
+                    case 'formatter.formatt.exe':
+                        return 'echo';
+                    case 'formatter.formatt.version':
+                        return 'Release';
+                    case 'formatter.formatt.name':
+                        return 'FormatT';
+                    default:
+                        return def;
+                }
             },
-            handlePopularArguments: res => {
-                res.send('ok');
-            },
-            handleOptimizationArguments: res => {
-                res.send('ok');
-            },
-        }, (key, def) => {
-            switch (key) {
-                case 'formatters':
-                    return 'formatt:badformatt';
-                case 'formatter.formatt.exe':
-                    return 'echo';
-                case 'formatter.formatt.version':
-                    return 'Release';
-                case 'formatter.formatt.name':
-                    return 'FormatT';
-                default:
-                    return def;
-            }
-        });
+            new StorageNull('/', {}),
+            'default');
         app.use('/api', apiHandler.handle);
         apiHandler.setCompilers(compilers);
         apiHandler.setLanguages(languages);
