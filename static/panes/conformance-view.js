@@ -30,7 +30,7 @@ var $ = require('jquery');
 var Promise = require('es6-promise').Promise;
 var ga = require('../analytics');
 var Components = require('../components');
-var Libraries = require('../libs-widget');
+var Libraries = require('../libs-widget-ext');
 
 require('selectize');
 

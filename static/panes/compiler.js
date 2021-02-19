@@ -1,4 +1,4 @@
-// Copyright (c) 2012, Matt Godbolt
+// Copyright (c) 2012, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -37,7 +37,7 @@ var monaco = require('monaco-editor');
 var Alert = require('../alert');
 var bigInt = require('big-integer');
 var local = require('../local');
-var Libraries = require('../libs-widget');
+var Libraries = require('../libs-widget-ext');
 var codeLensHandler = require('../codelens-handler');
 var monacoConfig = require('../monaco-config');
 require('../modes/asm-mode');
@@ -693,6 +693,9 @@ Compiler.prototype.setAssembly = function (asm) {
                     line + 1, label.range.endCol),
                 options: {
                     inlineClassName: 'asm-label-link',
+                    hoverMessage: [{
+                        value: 'Ctrl + Left click to follow the label',
+                    }],
                 },
             });
         }, this);
@@ -1116,7 +1119,12 @@ Compiler.prototype.supportsTool = function (toolId) {
 
 Compiler.prototype.initToolButton = function (togglePannerAdder, button, toolId) {
     var createToolView = _.bind(function () {
-        return Components.getToolViewWith(this.id, this.sourceEditorId, toolId, '');
+        var args = '';
+        var langTools = options.tools[this.currentLangId];
+        if (langTools && langTools[toolId] && langTools[toolId].tool && langTools[toolId].tool.args !== undefined) {
+            args = langTools[toolId].tool.args;
+        }
+        return Components.getToolViewWith(this.id, this.sourceEditorId, toolId, args);
     }, this);
 
     this.container.layoutManager

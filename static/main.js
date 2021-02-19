@@ -1,4 +1,4 @@
-// Copyright (c) 2016, Matt Godbolt
+// Copyright (c) 2016, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -20,7 +20,8 @@
 // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-// POSSIBILITY OF SUCH DAMAGE
+// POSSIBILITY OF SUCH DAMAGE.
+
 'use strict';
 
 // setup analytics before anything else so we can capture any future errors in sentry
@@ -57,8 +58,8 @@ require('bootstrap/dist/css/bootstrap.min.css');
 require('golden-layout/src/css/goldenlayout-base.css');
 require('selectize/dist/css/selectize.bootstrap2.css');
 require('bootstrap-slider/dist/css/bootstrap-slider.css');
-require('./colours.css');
-require('./explorer.css');
+require('./colours.scss');
+require('./explorer.scss');
 
 // Check to see if the current unload is a UI reset.
 // Forgive me the global usage here
@@ -134,10 +135,12 @@ function setupButtons(options) {
     // so we instead trigger a click here when we want it to open with this effect. Sorry!
     if (options.policies.privacy.enabled) {
         $('#privacy').click(function (event, data) {
-            alertSystem.alert(
+            var modal = alertSystem.alert(
                 data && data.title ? data.title : 'Privacy policy',
                 require('./policies/privacy.html')
             );
+            var timestamp = modal.find('#changed-date');
+            timestamp.text(new Date(timestamp.attr('datetime')).toLocaleString());
             // I can't remember why this check is here as it seems superfluous
             if (options.policies.privacy.enabled) {
                 jsCookie.set(options.policies.privacy.key, options.policies.privacy.hash, {expires: 365});
@@ -152,7 +155,7 @@ function setupButtons(options) {
                 (hasCookieConsented(options) ? 'Granted' : 'Denied') + '</span></p>';
         };
         $('#cookies').click(function () {
-            alertSystem.ask(getCookieTitle(), $(require('./policies/cookies.html')), {
+            var modal = alertSystem.ask(getCookieTitle(), $(require('./policies/cookies.html')), {
                 yes: function () {
                     simpleCooks.callDoConsent.apply(simpleCooks);
                 },
@@ -162,6 +165,8 @@ function setupButtons(options) {
                 },
                 noHtml: 'Do NOT consent',
             });
+            var timestamp = modal.find('#changed-date');
+            timestamp.text(new Date(timestamp.attr('datetime')).toLocaleString());
         });
     }
 

@@ -88,3 +88,8 @@ From oldest to newest contributor, we would like to thank:
 - [Ethan Slattery](https://github.com/CrustyAuklet)
 - [Kale Blankenship](https://github.com/vcabbage)
 - [George Gribkov](https://github.com/GeorgeGribkov)
+- [Artem Akatev](https://github.com/aakatev)
+- [Danil Yarantsev](https://github.com/Yardanico)
+- [Krists Niedritis](https://github.com/JesusKrists)
+- [Julian Hammer](https://github.com/cod3monk)
+- [Peter Schussheim](https://github.com/peterschussheim)

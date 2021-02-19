@@ -1,4 +1,4 @@
-// Copyright (c) 2016, Matt Godbolt
+// Copyright (c) 2016, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -21,6 +21,7 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
+
 'use strict';
 var _ = require('underscore');
 var $ = require('jquery');

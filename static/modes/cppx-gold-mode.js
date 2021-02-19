@@ -1,6 +1,5 @@
 // Copyright (c) 2020, Lock3 Software LLC
 // All rights reserved.
-// Originally based on `./d-mode.js` by Matt Godbolt
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -22,6 +21,8 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
+
+// Originally based on `./d-mode.js` by the Compiler Explorer Authors
 
 'use strict';
 var monaco = require('monaco-editor');

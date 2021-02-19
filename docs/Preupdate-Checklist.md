@@ -25,7 +25,7 @@ Ensure that the beta environment is active by running
  the current version is marked as active.
 
 Check what `versionId` the desired commit has. This can be checked on the
- Travis CI build logs as its build number for that specific commit, or
+ Github CI build logs as its build number for that specific commit, or
  by running `ce --env beta builds list` which shows a list of the
  most recent builds with their corresponding commit hash.
 

@@ -18,17 +18,14 @@
 // CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
 // SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
 // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ,
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-'use strict';
 
-const chai = require('chai');
-const clientstate = require('../lib/clientstate');
-const fs = require('fs');
-const ClientStateNormalizer = require('../lib/clientstate-normalizer').ClientStateNormalizer;
+import { ClientState } from '../lib/clientstate';
+import { ClientStateNormalizer } from '../lib/clientstate-normalizer';
 
-chai.should();
+import { fs } from './utils';
 
 describe('Normalizing clientstate', () => {
     it('Should translate 2 compilers GL layout to clientstate', () => {
@@ -82,7 +79,7 @@ describe('Normalizing clientstate', () => {
 
 describe('ClientState parsing', () => {
     it('Should work without executors', () => {
-        const state = new clientstate.State({
+        const state = new ClientState({
             sessions: [
                 {id:1,
                     language:'c++',
@@ -96,7 +93,7 @@ describe('ClientState parsing', () => {
     });
 
     it('Should work with executor', () => {
-        const state = new clientstate.State({
+        const state = new ClientState({
             sessions: [
                 {id:1,
                     language:'c++',

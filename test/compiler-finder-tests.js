@@ -22,13 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-const chai = require('chai');
-const chaiAsPromised = require('chai-as-promised');
-const CompilerFinder = require('../lib/compiler-finder');
-const properties = require('../lib/properties');
-
-chai.use(chaiAsPromised);
-chai.should();
+import './utils';
+import { CompilerFinder } from '../lib/compiler-finder';
+import * as properties from '../lib/properties';
 
 const languages = {
     'a-lang': {

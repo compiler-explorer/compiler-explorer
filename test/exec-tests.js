@@ -1,4 +1,4 @@
-// Copyright (c) 2017, Matt Godbolt
+// Copyright (c) 2017, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,12 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-const chai = require('chai'),
-    chaiAsPromised = require('chai-as-promised'),
-    exec = require('../lib/exec');
-
-chai.use(chaiAsPromised);
-chai.should();
+import './utils';
+import * as exec from '../lib/exec';
 
 function testExecOutput(x) {
     // Work around chai not being able to deepEquals with a function

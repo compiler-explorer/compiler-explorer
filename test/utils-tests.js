@@ -1,4 +1,4 @@
-// Copyright (c) 2017, Matt Godbolt
+// Copyright (c) 2017, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,12 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-const chai = require('chai'),
-    utils = require('../lib/utils'),
-    logger = require('../lib/logger').logger,
-    fs = require('fs-extra');
+import { logger } from '../lib/logger';
+import * as utils from '../lib/utils';
 
-chai.should();
+import { fs } from './utils';
 
 describe('Splits lines', () => {
     it('handles empty input', () => {
@@ -286,26 +284,24 @@ describe('Hash interface', () => {
 });
 
 describe('GoldenLayout utils', () => {
-    it('finds every editor & compiler', () => {
-        fs.readJson('test/example-states/default-state.json')
-            .then(state => {
-                const contents = utils.glGetMainContents(state.content);
-                contents.should.deep.equal({
-                    editors: [
-                        {source: 'Editor 1', language: 'c++'},
-                        {source: 'Editor 2', language: 'c++'},
-                        {source: 'Editor 3', language: 'c++'},
-                        {source: 'Editor 4', language: 'c++'},
-                    ],
-                    compilers: [
-                        {compiler: 'clang_trunk'},
-                        {compiler: 'gsnapshot'},
-                        {compiler: 'clang_trunk'},
-                        {compiler: 'gsnapshot'},
-                        {compiler: 'rv32clang'},
-                    ],
-                });
-            });
+    it('finds every editor & compiler', async () => {
+        const state = await fs.readJson('test/example-states/default-state.json');
+        const contents = utils.glGetMainContents(state.content);
+        contents.should.deep.equal({
+            editors: [
+                {source: 'Editor 1', language: 'c++'},
+                {source: 'Editor 2', language: 'c++'},
+                {source: 'Editor 3', language: 'c++'},
+                {source: 'Editor 4', language: 'c++'},
+            ],
+            compilers: [
+                {compiler: 'clang_trunk'},
+                {compiler: 'gsnapshot'},
+                {compiler: 'clang_trunk'},
+                {compiler: 'gsnapshot'},
+                {compiler: 'rv32-clang'},
+            ],
+        });
     });
 });
 

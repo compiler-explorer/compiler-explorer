@@ -22,9 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-const LLVMmcaTool = require('../lib/compilers/llvm-mca');
-const {makeCompilationEnvironment} = require('./utils');
-require('chai').should();
+import { LLVMmcaTool } from '../lib/compilers/llvm-mca';
+
+import { makeCompilationEnvironment } from './utils';
 
 const languages = {
     analysis: {id: 'analysis'},

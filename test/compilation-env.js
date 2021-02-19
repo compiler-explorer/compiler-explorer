@@ -1,4 +1,4 @@
-// Copyright (c) 2016, Matt Godbolt
+// Copyright (c) 2016, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -18,17 +18,13 @@
 // CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
 // SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
 // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ,
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-const chai = require('chai');
-const chaiAsPromised = require('chai-as-promised');
-const CompilationEnvironment = require('../lib/compilation-env');
-const properties = require('../lib/properties');
-
-chai.use(chaiAsPromised);
-chai.should();
+import './utils';
+import { CompilationEnvironment } from '../lib/compilation-env';
+import { CompilerProps, fakeProps } from '../lib/properties';
 
 const props = {
     optionsAllowedRe: '.*',
@@ -40,7 +36,7 @@ describe('Compilation environment', () => {
     let compilerProps;
 
     before(() => {
-        compilerProps = new properties.CompilerProps({}, properties.fakeProps(props));
+        compilerProps = new CompilerProps({}, fakeProps(props));
     });
 
     it('Should cache by default', () => {

@@ -14,7 +14,7 @@ Please be forgiving of that, and be ready to help in improving that.
 **Compiler Explorer** targets the latest [Node.js](https://nodejs.org/) LTS,
  so it's better if you do so as well when testing your changes locally.
 
-Nonetheless, it _should_ run in everything post-Node.js 11. [Contact us] if
+Nonetheless, it _should_ run in everything post-Node.js 12.18. [Contact us] if
  this is not the case for you.
 
 ## In brief
@@ -84,3 +84,9 @@ Note that a current issue makes every project media asset to be locally
  any in-memory state.
 
 [Contact us]: README.md#contact-us
+
+# Where to start
+
+We have a project that lists a couple of issues that *Should* be easy to do @ https://github.com/compiler-explorer/compiler-explorer/projects/15 
+
+If there is something you would like to do yourself, it might help to make an issue so people can weigh in and point you in the right direction.

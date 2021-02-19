@@ -62,7 +62,7 @@
             include resources/quickbench.svg
           span.hideable &nbsp;Quick-bench
       .btn-group.btn-group-sm.ml-auto(role="group" aria-label="Editor language")
-        select.change-language(title="Change this editor's (and associated panels) language" disabled=embedded && readOnly)
+        select.change-language(title="Change this editor's (and associated panels) language" placeholder="Language" disabled=embedded && readOnly)
     div#v-status
     .monaco-placeholder
 
@@ -93,7 +93,7 @@
         .dropdown-menu
           include options-filters.pug
       .btn-group.btn-group-sm(role="group" aria-label="Compiler additions")
-        button.btn.btn-sm.btn-light.show-libs.dropdown-toggle(title="Include libs" aria-label="Toggle libraries dropdown" aria-pressed="false" aria-haspopup="true")
+        button.btn.btn-sm.btn-light.show-libs(title="Include libs" aria-label="Toggle libraries dropdown")
           span.fas.fa-book
           span.hideable &nbsp;Libraries
       .btn-group.btn-group-sm(role="group")
@@ -153,7 +153,12 @@
   #executor
     .top-bar.btn-toolbar.bg-light(role="toolbar")
       include font-size
-        button.btn.btn-sm.btn-light.show-libs.dropdown-toggle(title="Include libs" aria-label="Toggle libraries dropdown" aria-pressed="false" aria-haspopup="true")
+      .btn-group.btn-group-sm.options(role="group" aria-label="Output options")
+        .button-checkbox
+          button.btn.btn-sm.btn-light.wrap-lines(type="button" title="Wrap lines" data-bind="wrap" aria-pressed="false" aria-label="Wrap lines")
+            span Wrap lines
+          input.d-none(type="checkbox" checked=false)
+        button.btn.btn-sm.btn-light.show-libs(title="Include libs" aria-label="Toggle libraries dropdown")
           span.fas.fa-book
           span.hideable &nbsp;Libraries
       button.btn.btn-sm.btn-light.toggle-compilation.active
@@ -387,3 +392,31 @@
   #share-item
     a.share-item(href="javascript:;" rel="noopener noreferrer" target="_blank")
       span.share-item-text
+
+  #lib-selected-tpl
+    div
+      button.btn.btn-md.lib-name-and-version &nbsp;
+      button.btn.btn-sm.lib-remove
+        span.fas.fa-trash
+
+  #lib-favorite-tpl
+    div
+      button.btn.btn-md.lib-name-and-version &nbsp;
+
+  #lib-search-result-tpl
+    .card
+      .card-header
+        span
+          b.lib-name &nbsp;
+        span.lib-version
+          select.custom-select.custom-select-sm.lib-version-select
+            option -
+      .card-body
+        p.lib-description &nbsp;
+        .lib-examples
+        div
+          span.lib-website
+            a.lib-website-link(href='#' target='_blank' rel='noopener') Website
+          span.lib-fav
+            button.btn.btn-sm.lib-fav-button
+              span.lib-fav-btn-icon.far.fa-star

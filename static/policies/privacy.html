@@ -10,7 +10,7 @@ Be aware: modifying this file in any way will cause a pop-up to users telling th
 <!--
 No need to update this! It's done by the CLI build process
 -->
-<time id="changed-date"></time>
+<span id="last-changed"></span>
 <h2>Compiler Explorer Privacy Policy</h2>
 
 <p>
@@ -24,7 +24,7 @@ No need to update this! It's done by the CLI build process
     Compiler Explorer was created by and is primarily administrated by
     <a href="mailto:matt@godbolt.org">Matt Godbolt</a>,
     along with a number of volunteers (including, but not limited to those listed in our "<a
-        href="https://github.com/compiler-explorer/compiler-explorer/blob/master/AUTHORS.md" target="_blank"
+        href="https://github.com/compiler-explorer/compiler-explorer/blob/main/AUTHORS.md" target="_blank"
         rel="noreferrer noopener">Authors</a>" documentation).
     It is run on a best-effort basis, and is not a commercial product. We do our best
     to keep your data safe, but welcome help from the community: See our
@@ -85,21 +85,28 @@ No need to update this! It's done by the CLI build process
     the short URL provider, not Compiler Explorer.
 </p>
 
-<h4>Web logs</h4>
+<h4>Application, web and error logs</h4>
 
 <p>
-    Compiler Explorer keeps web logs, which contain semi-anonymised IP addresses, but no other personally identifying
-    information. When a long URL is clicked, the hash part of the URL is not sent to the server, so the user state
-    (including the source code) is NOT exposed in the web log. If a user clicks a short URL, then the short form IS
-    exposed in the web log (as <code>https://godbolt.org/g/SHORTURLPART</code>) and from this the source code can be
+    Compiler Explorer keeps application logs, which contain semi-anonymised IP addresses, but no other personally
+    identifying information. When a long URL is clicked, the hash part of the URL is not sent to the server, so the user
+    state (including the source code) is NOT exposed in the web log. If a user clicks a short URL, then the short form
+    IS exposed in the web log (as <code>https://godbolt.org/g/SHORTURLPART</code>) and from this the source code can be
     retrieved. As such, if you create a short URL of your code, your source code and other user state can in principle
     be retrieved from the web log of Compiler Explorer.
 </p>
 
 <p>
-    In order to debug and diagnose Compiler Explorer, to help track down and block Denial of Service attacks, and to
-    gather statistics about Compiler Explorer's performance and usage, the web logs are archived. These logs are kept
-    for one month, after which they are permanently deleted.
+    Compiler Explorer uses Amazon's web serving, load balancing and edge caching systems. In order to debug and diagnose
+    Compiler Explorer, to help track down and block Denial of Service attacks, and to gather statistics about Compiler
+    Explorer's performance and usage, the logs from these systems are archived. These logs contain the full IP addresses
+    of requests. Thy are kept for no more than one month, after which they are permanently deleted.
+</p>
+
+<p>
+    If your web browser experiences an error, we use a third party reporting system (<a
+        href="https://sentry.io/">Sentry</a>). This keeps information, including your IP address and web browser user
+    agent, for no more than 90 days.
 </p>
 
 <h4>Executing your code</h4>

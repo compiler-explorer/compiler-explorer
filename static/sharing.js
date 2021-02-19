@@ -1,4 +1,4 @@
-// Copyright (c) 2016, Matt Godbolt
+// Copyright (c) 2016, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -294,7 +294,7 @@ function getShortLink(config, root, done) {
     });
     $.ajax({
         type: 'POST',
-        url: window.location.origin + root + 'shortener',
+        url: window.location.origin + root + 'api/shortener',
         dataType: 'json',  // Expected
         contentType: 'application/json',  // Sent
         data: data,
