@@ -61,7 +61,7 @@ import { NoScriptHandler } from './lib/handlers/noscript';
 import { RouteAPI } from './lib/handlers/route-api';
 import { SourceHandler } from './lib/handlers/source';
 import { languages as allLanguages } from './lib/languages';
-import { logger, logToPapertrail, suppressConsoleLog } from './lib/logger';
+import { logger, logToLoki, logToPapertrail, suppressConsoleLog } from './lib/logger';
 import { ClientOptionsHandler } from './lib/options-handler';
 import * as props from './lib/properties';
 import { sources } from './lib/sources';
@@ -93,6 +93,7 @@ const opts = nopt({
     logPort: [Number],
     suppressConsoleLog: [Boolean],
     metricsPort: [Number],
+    loki: [String],
 });
 
 if (opts.debug) logger.level = 'debug';
@@ -162,6 +163,10 @@ const defArgs = {
 
 if (opts.logHost && opts.logPort) {
     logToPapertrail(opts.logHost, opts.logPort, defArgs.env.join('.'));
+}
+
+if (opts.loki) {
+    logToLoki(opts.loki);
 }
 
 if (defArgs.suppressConsoleLog) {
