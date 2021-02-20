@@ -750,7 +750,8 @@ Executor.prototype.setCompilerVersionPopover = function (version, notification) 
     // `version` comes from compiler output, so isn't, and is escaped.
     this.fullCompilerName.popover({
         html: true,
-        title: notification ? $.parseHTML('<span>Compiler Version: ' + notification + '</span>')[0] : 'Full compiler version',
+        title: notification ? $.parseHTML('<span>Compiler Version: ' + notification + '</span>')[0] :
+            'Full compiler version',
         content: _.escape(version) || '',
         template: '<div class="popover' +
             (version ? ' compiler-options-popover' : '') +
