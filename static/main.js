@@ -489,7 +489,7 @@ function start() {
         setupButtons(options);
     }
 
-    sharing.initShareButton($('#share'), layout, function (config, extra) {
+    sharing.initShareButtons($('#shareShort'), $('#shareFull'), layout, function (config, extra) {
         window.history.pushState(null, null, extra);
         storedPaths[JSON.stringify(config)] = extra;
     });
