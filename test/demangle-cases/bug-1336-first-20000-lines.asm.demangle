@@ -5,7 +5,7 @@ __gnu_cxx::__ops::__iter_less_iter():
   mov rbp, rsp
   pop rbp
   ret
-__gnu_cxx::__ops::_Iter_less_val::_Iter_less_val(__gnu_cxx::__ops::_Iter_less_iter):
+__gnu_cxx::__ops::_Iter_less_val::_Iter_less_val(__gnu_cxx::__ops::_Iter_less_iter) [base object constructor]:
   push rbp
   mov rbp, rsp
   mov QWORD PTR [rbp-8], rdi
@@ -724,7 +724,7 @@ std::regex_constants::operator~(std::regex_constants::match_flag_type):
   not eax
   pop rbp
   ret
-std::regex_error::regex_error(std::regex_constants::error_type, char const*):
+std::regex_error::regex_error(std::regex_constants::error_type, char const*) [base object constructor]:
   push rbp
   mov rbp, rsp
   sub rsp, 32
@@ -735,7 +735,7 @@ std::regex_error::regex_error(std::regex_constants::error_type, char const*):
   mov rdx, QWORD PTR [rbp-24]
   mov rsi, rdx
   mov rdi, rax
-  call std::runtime_error::runtime_error(char const*)
+  call std::runtime_error::runtime_error(char const*) [base object constructor]
   mov edx, OFFSET FLAT:_ZTVSt11regex_error+16
   mov rax, QWORD PTR [rbp-8]
   mov QWORD PTR [rax], rdx
@@ -760,7 +760,7 @@ std::__throw_regex_error(std::regex_constants::error_type, char const*):
   mov eax, DWORD PTR [rbp-20]
   mov esi, eax
   mov rdi, rbx
-  call std::regex_error::regex_error(std::regex_constants::error_type, char const*)
+  call std::regex_error::regex_error(std::regex_constants::error_type, char const*) [complete object constructor]
   mov edx, OFFSET FLAT:_ZNSt11regex_errorD1Ev
   mov esi, OFFSET FLAT:_ZTISt11regex_error
   mov rdi, rbx
@@ -771,7 +771,7 @@ std::__throw_regex_error(std::regex_constants::error_type, char const*):
   mov rax, r12
   mov rdi, rax
   call _Unwind_Resume
-std::__detail::_State_base::_State_base(std::__detail::_Opcode):
+std::__detail::_State_base::_State_base(std::__detail::_Opcode) [base object constructor]:
   push rbp
   mov rbp, rsp
   mov QWORD PTR [rbp-8], rdi
@@ -808,7 +808,7 @@ std::__detail::_State_base::_M_has_alt():
 .L114:
   pop rbp
   ret
-std::__detail::_NFA_base::_NFA_base(std::regex_constants::syntax_option_type):
+std::__detail::_NFA_base::_NFA_base(std::regex_constants::syntax_option_type) [base object constructor]:
   push rbp
   mov rbp, rsp
   sub rsp, 16
@@ -891,7 +891,7 @@ std::pair<char, char>::pair<char, char, true>(char&&, char&&):
   .string ".[\\()*+?{|^$\n"
 .LC4:
   .string ".[\\*^$\n"
-std::__detail::_ScannerBase::_ScannerBase(std::regex_constants::syntax_option_type):
+std::__detail::_ScannerBase::_ScannerBase(std::regex_constants::syntax_option_type) [base object constructor]:
   push rbp
   mov rbp, rsp
   sub rsp, 16
@@ -1227,7 +1227,7 @@ main:
   mov edx, 16
   mov esi, OFFSET FLAT:.LC5
   mov rdi, rax
-  call std::__cxx11::basic_regex<char, std::__cxx11::regex_traits<char> >::basic_regex(char const*, std::regex_constants::syntax_option_type)
+  call std::__cxx11::basic_regex<char, std::__cxx11::regex_traits<char> >::basic_regex(char const*, std::regex_constants::syntax_option_type) [complete object constructor]
   lea rax, [rbp-48]
   mov edx, 0
   mov rsi, rax
@@ -1496,7 +1496,7 @@ std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >:
   mov rdx, rax
   mov rsi, rcx
   mov rdi, rbx
-  call std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_Alloc_hider::_Alloc_hider(char*, std::allocator<char>&&)
+  call std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_Alloc_hider::_Alloc_hider(char*, std::allocator<char>&&) [complete object constructor]
   lea rax, [rbp-17]
   mov rdi, rax
   call std::allocator<char>::~allocator() [complete object destructor]
@@ -1509,7 +1509,7 @@ std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >:
   pop rbx
   pop rbp
   ret
-std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::basic_string(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&&):
+std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::basic_string(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >&&) [base object constructor]:
   push rbp
   mov rbp, rsp
   push r12
@@ -1530,7 +1530,7 @@ std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >:
   mov rdx, r12
   mov rsi, rax
   mov rdi, rbx
-  call std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_Alloc_hider::_Alloc_hider(char*, std::allocator<char>&&)
+  call std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_Alloc_hider::_Alloc_hider(char*, std::allocator<char>&&) [complete object constructor]
   mov rax, QWORD PTR [rbp-32]
   mov rdi, rax
   call std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_M_is_local() const
@@ -1670,7 +1670,7 @@ std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >:
   lea rax, [rbp-33]
   mov rsi, rdx
   mov rdi, rax
-  call std::allocator<char>::allocator(std::allocator<char> const&)
+  call std::allocator<char>::allocator(std::allocator<char> const&) [complete object constructor]
   mov rax, QWORD PTR [rbp-24]
   lea rdx, [rax+1]
   lea rax, [rbp-33]
@@ -1759,7 +1759,7 @@ std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >:
   nop
   leave
   ret
-std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::basic_string(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&):
+std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::basic_string(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&) [base object constructor]:
   push rbp
   mov rbp, rsp
   push rbx
@@ -1783,7 +1783,7 @@ std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >:
   mov rdx, rax
   mov rsi, rcx
   mov rdi, rbx
-  call std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_Alloc_hider::_Alloc_hider(char*, std::allocator<char>&&)
+  call std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_Alloc_hider::_Alloc_hider(char*, std::allocator<char>&&) [complete object constructor]
   lea rax, [rbp-17]
   mov rdi, rax
   call std::allocator<char>::~allocator() [complete object destructor]
@@ -2047,7 +2047,7 @@ std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >:
   pop r12
   pop rbp
   ret
-std::__cxx11::basic_regex<char, std::__cxx11::regex_traits<char> >::basic_regex(char const*, std::regex_constants::syntax_option_type):
+std::__cxx11::basic_regex<char, std::__cxx11::regex_traits<char> >::basic_regex(char const*, std::regex_constants::syntax_option_type) [base object constructor]:
   push rbp
   mov rbp, rsp
   sub rsp, 32
@@ -2199,7 +2199,7 @@ std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >:
   mov rdx, rax
   mov rsi, rcx
   mov rdi, rbx
-  call std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_Alloc_hider::_Alloc_hider(char*, std::allocator<char> const&)
+  call std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_Alloc_hider::_Alloc_hider(char*, std::allocator<char> const&) [complete object constructor]
   mov rdx, QWORD PTR [rbp-40]
   mov rcx, QWORD PTR [rbp-32]
   mov rax, QWORD PTR [rbp-24]
@@ -2251,7 +2251,7 @@ std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >:
   call std::pointer_traits<char*>::pointer_to(char&)
   leave
   ret
-std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_Alloc_hider::_Alloc_hider(char*, std::allocator<char> const&):
+std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_Alloc_hider::_Alloc_hider(char*, std::allocator<char> const&) [base object constructor]:
   push rbp
   mov rbp, rsp
   sub rsp, 32
@@ -2262,7 +2262,7 @@ std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >:
   mov rax, QWORD PTR [rbp-8]
   mov rsi, rdx
   mov rdi, rax
-  call std::allocator<char>::allocator(std::allocator<char> const&)
+  call std::allocator<char>::allocator(std::allocator<char> const&) [base object constructor]
   mov rax, QWORD PTR [rbp-8]
   mov rdx, QWORD PTR [rbp-16]
   mov QWORD PTR [rax], rdx
@@ -2423,7 +2423,7 @@ std::__shared_count<(__gnu_cxx::_Lock_policy)2>::_M_swap(std::__shared_count<(__
   nop
   pop rbp
   ret
-std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_Alloc_hider::_Alloc_hider(char*, std::allocator<char>&&):
+std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_Alloc_hider::_Alloc_hider(char*, std::allocator<char>&&) [base object constructor]:
   push rbp
   mov rbp, rsp
   sub rsp, 32
@@ -2437,7 +2437,7 @@ std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >:
   mov rax, QWORD PTR [rbp-8]
   mov rsi, rdx
   mov rdi, rax
-  call std::allocator<char>::allocator(std::allocator<char> const&)
+  call std::allocator<char>::allocator(std::allocator<char> const&) [base object constructor]
   mov rax, QWORD PTR [rbp-8]
   mov rdx, QWORD PTR [rbp-16]
   mov QWORD PTR [rax], rdx
@@ -2929,7 +2929,7 @@ bool std::regex_match<char const*, char, std::__cxx11::regex_traits<char> >(char
   lea rax, [rbp-64]
   mov rsi, rdx
   mov rdi, rax
-  call std::__cxx11::match_results<char const*, std::allocator<std::__cxx11::sub_match<char const*> > >::match_results(std::allocator<std::__cxx11::sub_match<char const*> > const&)
+  call std::__cxx11::match_results<char const*, std::allocator<std::__cxx11::sub_match<char const*> > >::match_results(std::allocator<std::__cxx11::sub_match<char const*> > const&) [complete object constructor]
   lea rax, [rbp-17]
   mov rdi, rax
   call std::allocator<std::__cxx11::sub_match<char const*> >::~allocator() [complete object destructor]
@@ -3291,7 +3291,7 @@ std::allocator_traits<std::allocator<char> >::select_on_container_copy_construct
   mov rax, QWORD PTR [rbp-8]
   mov rsi, rdx
   mov rdi, rax
-  call std::allocator<char>::allocator(std::allocator<char> const&)
+  call std::allocator<char>::allocator(std::allocator<char> const&) [complete object constructor]
   mov rax, QWORD PTR [rbp-8]
   leave
   ret
@@ -3554,7 +3554,7 @@ std::__cxx11::basic_regex<char, std::__cxx11::regex_traits<char> >::basic_regex<
   call std::remove_reference<std::locale&>::type&& std::move<std::locale&>(std::locale&)
   mov rsi, rax
   mov rdi, rbx
-  call std::locale::locale(std::locale const&)
+  call std::locale::locale(std::locale const&) [complete object constructor]
   mov rax, QWORD PTR [rbp-40]
   mov r13d, DWORD PTR [rax]
   mov rax, QWORD PTR [rbp-40]
@@ -3612,7 +3612,7 @@ std::allocator<std::__cxx11::sub_match<char const*> >::~allocator() [base object
   nop
   leave
   ret
-std::__cxx11::match_results<char const*, std::allocator<std::__cxx11::sub_match<char const*> > >::match_results(std::allocator<std::__cxx11::sub_match<char const*> > const&):
+std::__cxx11::match_results<char const*, std::allocator<std::__cxx11::sub_match<char const*> > >::match_results(std::allocator<std::__cxx11::sub_match<char const*> > const&) [base object constructor]:
   push rbp
   mov rbp, rsp
   sub rsp, 16
@@ -3622,7 +3622,7 @@ std::__cxx11::match_results<char const*, std::allocator<std::__cxx11::sub_match<
   mov rdx, QWORD PTR [rbp-16]
   mov rsi, rdx
   mov rdi, rax
-  call std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > >::vector(std::allocator<std::__cxx11::sub_match<char const*> > const&)
+  call std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > >::vector(std::allocator<std::__cxx11::sub_match<char const*> > const&) [base object constructor]
   nop
   leave
   ret
@@ -4037,7 +4037,7 @@ std::enable_if<std::__detail::__is_contiguous_normal_iter<char const*>::value, s
   mov rcx, rdx
   mov rdx, rdi
   mov rdi, rax
-  call std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_Compiler(char const*, char const*, std::locale const&, std::regex_constants::syntax_option_type)
+  call std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_Compiler(char const*, char const*, std::locale const&, std::regex_constants::syntax_option_type) [complete object constructor]
   mov rax, QWORD PTR [rbp-424]
   lea rdx, [rbp-416]
   mov rsi, rdx
@@ -4063,7 +4063,7 @@ __gnu_cxx::new_allocator<std::__cxx11::sub_match<char const*> >::~new_allocator(
   nop
   pop rbp
   ret
-std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > >::vector(std::allocator<std::__cxx11::sub_match<char const*> > const&):
+std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > >::vector(std::allocator<std::__cxx11::sub_match<char const*> > const&) [base object constructor]:
   push rbp
   mov rbp, rsp
   sub rsp, 16
@@ -4073,7 +4073,7 @@ std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::s
   mov rdx, QWORD PTR [rbp-16]
   mov rsi, rdx
   mov rdi, rax
-  call std::_Vector_base<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > >::_Vector_base(std::allocator<std::__cxx11::sub_match<char const*> > const&)
+  call std::_Vector_base<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > >::_Vector_base(std::allocator<std::__cxx11::sub_match<char const*> > const&) [base object constructor]
   nop
   leave
   ret
@@ -4237,7 +4237,7 @@ bool std::__detail::__regex_algo_impl<char const*, std::allocator<std::__cxx11::
   mov r9d, r8d
   mov r8, rdi
   mov rdi, rax
-  call std::__detail::_Executor<char const*, std::allocator<std::__cxx11::sub_match<char const*> >, std::__cxx11::regex_traits<char>, false>::_Executor(char const*, char const*, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > >&, std::__cxx11::basic_regex<char, std::__cxx11::regex_traits<char> > const&, std::regex_constants::match_flag_type)
+  call std::__detail::_Executor<char const*, std::allocator<std::__cxx11::sub_match<char const*> >, std::__cxx11::regex_traits<char>, false>::_Executor(char const*, char const*, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > >&, std::__cxx11::basic_regex<char, std::__cxx11::regex_traits<char> > const&, std::regex_constants::match_flag_type) [complete object constructor]
   lea rax, [rbp-288]
   mov rdi, rax
   call std::__detail::_Executor<char const*, std::allocator<std::__cxx11::sub_match<char const*> >, std::__cxx11::regex_traits<char>, false>::_M_match()
@@ -4256,7 +4256,7 @@ bool std::__detail::__regex_algo_impl<char const*, std::allocator<std::__cxx11::
   mov r9d, r8d
   mov r8, rdi
   mov rdi, rax
-  call std::__detail::_Executor<char const*, std::allocator<std::__cxx11::sub_match<char const*> >, std::__cxx11::regex_traits<char>, true>::_Executor(char const*, char const*, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > >&, std::__cxx11::basic_regex<char, std::__cxx11::regex_traits<char> > const&, std::regex_constants::match_flag_type)
+  call std::__detail::_Executor<char const*, std::allocator<std::__cxx11::sub_match<char const*> >, std::__cxx11::regex_traits<char>, true>::_Executor(char const*, char const*, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > >&, std::__cxx11::basic_regex<char, std::__cxx11::regex_traits<char> > const&, std::regex_constants::match_flag_type) [complete object constructor]
   lea rax, [rbp-288]
   mov rdi, rax
   call std::__detail::_Executor<char const*, std::allocator<std::__cxx11::sub_match<char const*> >, std::__cxx11::regex_traits<char>, true>::_M_match()
@@ -4493,7 +4493,7 @@ char const* std::__addressof<char const>(char const&):
   mov rax, QWORD PTR [rbp-8]
   pop rbp
   ret
-std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_Compiler(char const*, char const*, std::locale const&, std::regex_constants::syntax_option_type):
+std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_Compiler(char const*, char const*, std::locale const&, std::regex_constants::syntax_option_type) [base object constructor]:
   push rbp
   mov rbp, rsp
   push rbx
@@ -4541,7 +4541,7 @@ std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_Compiler(char cons
   lea rax, [rbp-56]
   mov rsi, rdx
   mov rdi, rax
-  call std::locale::locale(std::locale const&)
+  call std::locale::locale(std::locale const&) [complete object constructor]
   mov rax, QWORD PTR [rbp-88]
   mov ecx, DWORD PTR [rax]
   lea rsi, [rbp-56]
@@ -4550,7 +4550,7 @@ std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_Compiler(char cons
   mov r8, rsi
   mov rsi, rax
   mov rdi, rbx
-  call std::__detail::_Scanner<char>::_Scanner(char const*, char const*, std::regex_constants::syntax_option_type, std::locale)
+  call std::__detail::_Scanner<char>::_Scanner(char const*, char const*, std::regex_constants::syntax_option_type, std::locale) [complete object constructor]
   lea rax, [rbp-56]
   mov rdi, rax
   call std::locale::~locale() [complete object destructor]
@@ -4598,7 +4598,7 @@ std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_Compiler(char cons
   mov rdx, rbx
   mov rsi, rcx
   mov rdi, rax
-  call std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >::_StateSeq(std::__detail::_NFA<std::__cxx11::regex_traits<char> >&, long)
+  call std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >::_StateSeq(std::__detail::_NFA<std::__cxx11::regex_traits<char> >&, long) [complete object constructor]
   mov rax, QWORD PTR [rbp-88]
   add rax, 256
   mov rdi, rax
@@ -4763,7 +4763,7 @@ std::_Vector_base<std::__cxx11::sub_match<char const*>, std::allocator<std::__cx
   nop
   leave
   ret
-std::_Vector_base<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > >::_Vector_base(std::allocator<std::__cxx11::sub_match<char const*> > const&):
+std::_Vector_base<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > >::_Vector_base(std::allocator<std::__cxx11::sub_match<char const*> > const&) [base object constructor]:
   push rbp
   mov rbp, rsp
   sub rsp, 16
@@ -4773,7 +4773,7 @@ std::_Vector_base<std::__cxx11::sub_match<char const*>, std::allocator<std::__cx
   mov rdx, QWORD PTR [rbp-16]
   mov rsi, rdx
   mov rdi, rax
-  call std::_Vector_base<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > >::_Vector_impl::_Vector_impl(std::allocator<std::__cxx11::sub_match<char const*> > const&)
+  call std::_Vector_base<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > >::_Vector_impl::_Vector_impl(std::allocator<std::__cxx11::sub_match<char const*> > const&) [complete object constructor]
   nop
   leave
   ret
@@ -4874,7 +4874,7 @@ std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::s
   lea rax, [rbp-8]
   mov rsi, rdx
   mov rdi, rax
-  call __gnu_cxx::__normal_iterator<std::__cxx11::sub_match<char const*>*, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > >::__normal_iterator(std::__cxx11::sub_match<char const*>* const&)
+  call __gnu_cxx::__normal_iterator<std::__cxx11::sub_match<char const*>*, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > >::__normal_iterator(std::__cxx11::sub_match<char const*>* const&) [complete object constructor]
   mov rax, QWORD PTR [rbp-8]
   leave
   ret
@@ -4888,7 +4888,7 @@ std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::s
   lea rax, [rbp-8]
   mov rsi, rdx
   mov rdi, rax
-  call __gnu_cxx::__normal_iterator<std::__cxx11::sub_match<char const*>*, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > >::__normal_iterator(std::__cxx11::sub_match<char const*>* const&)
+  call __gnu_cxx::__normal_iterator<std::__cxx11::sub_match<char const*>*, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > >::__normal_iterator(std::__cxx11::sub_match<char const*>* const&) [complete object constructor]
   mov rax, QWORD PTR [rbp-8]
   leave
   ret
@@ -4941,7 +4941,7 @@ std::__cxx11::basic_regex<char, std::__cxx11::regex_traits<char> >::flags() cons
   mov eax, DWORD PTR [rax]
   pop rbp
   ret
-std::__detail::_Executor<char const*, std::allocator<std::__cxx11::sub_match<char const*> >, std::__cxx11::regex_traits<char>, false>::_Executor(char const*, char const*, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > >&, std::__cxx11::basic_regex<char, std::__cxx11::regex_traits<char> > const&, std::regex_constants::match_flag_type):
+std::__detail::_Executor<char const*, std::allocator<std::__cxx11::sub_match<char const*> >, std::__cxx11::regex_traits<char>, false>::_Executor(char const*, char const*, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > >&, std::__cxx11::basic_regex<char, std::__cxx11::regex_traits<char> > const&, std::regex_constants::match_flag_type) [base object constructor]:
   push rbp
   mov rbp, rsp
   push r12
@@ -4990,7 +4990,7 @@ std::__detail::_Executor<char const*, std::allocator<std::__cxx11::sub_match<cha
   mov rdx, rax
   mov rsi, rcx
   mov rdi, rbx
-  call std::vector<std::pair<char const*, int>, std::allocator<std::pair<char const*, int> > >::vector(unsigned long, std::allocator<std::pair<char const*, int> > const&)
+  call std::vector<std::pair<char const*, int>, std::allocator<std::pair<char const*, int> > >::vector(unsigned long, std::allocator<std::pair<char const*, int> > const&) [complete object constructor]
   lea rax, [rbp-17]
   mov rdi, rax
   call std::allocator<std::pair<char const*, int> >::~allocator() [complete object destructor]
@@ -5009,7 +5009,7 @@ std::__detail::_Executor<char const*, std::allocator<std::__cxx11::sub_match<cha
   mov rdx, r12
   mov rsi, rax
   mov rdi, rbx
-  call std::__detail::_Executor<char const*, std::allocator<std::__cxx11::sub_match<char const*> >, std::__cxx11::regex_traits<char>, false>::_State_info<std::integral_constant<bool, false>, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > >::_State_info(long, unsigned long)
+  call std::__detail::_Executor<char const*, std::allocator<std::__cxx11::sub_match<char const*> >, std::__cxx11::regex_traits<char>, false>::_State_info<std::integral_constant<bool, false>, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > >::_State_info(long, unsigned long) [complete object constructor]
   mov eax, DWORD PTR [rbp-76]
   mov esi, 128
   mov edi, eax
@@ -5146,7 +5146,7 @@ std::__detail::_Executor<char const*, std::allocator<std::__cxx11::sub_match<cha
   call std::__detail::_Executor<char const*, std::allocator<std::__cxx11::sub_match<char const*> >, std::__cxx11::regex_traits<char>, false>::_M_main(std::__detail::_Executor<char const*, std::allocator<std::__cxx11::sub_match<char const*> >, std::__cxx11::regex_traits<char>, false>::_Match_mode)
   leave
   ret
-std::__detail::_Executor<char const*, std::allocator<std::__cxx11::sub_match<char const*> >, std::__cxx11::regex_traits<char>, true>::_Executor(char const*, char const*, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > >&, std::__cxx11::basic_regex<char, std::__cxx11::regex_traits<char> > const&, std::regex_constants::match_flag_type):
+std::__detail::_Executor<char const*, std::allocator<std::__cxx11::sub_match<char const*> >, std::__cxx11::regex_traits<char>, true>::_Executor(char const*, char const*, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > >&, std::__cxx11::basic_regex<char, std::__cxx11::regex_traits<char> > const&, std::regex_constants::match_flag_type) [base object constructor]:
   push rbp
   mov rbp, rsp
   push r12
@@ -5195,7 +5195,7 @@ std::__detail::_Executor<char const*, std::allocator<std::__cxx11::sub_match<cha
   mov rdx, rax
   mov rsi, rcx
   mov rdi, rbx
-  call std::vector<std::pair<char const*, int>, std::allocator<std::pair<char const*, int> > >::vector(unsigned long, std::allocator<std::pair<char const*, int> > const&)
+  call std::vector<std::pair<char const*, int>, std::allocator<std::pair<char const*, int> > >::vector(unsigned long, std::allocator<std::pair<char const*, int> > const&) [complete object constructor]
   lea rax, [rbp-17]
   mov rdi, rax
   call std::allocator<std::pair<char const*, int> >::~allocator() [complete object destructor]
@@ -5214,7 +5214,7 @@ std::__detail::_Executor<char const*, std::allocator<std::__cxx11::sub_match<cha
   mov rdx, r12
   mov rsi, rax
   mov rdi, rbx
-  call std::__detail::_Executor<char const*, std::allocator<std::__cxx11::sub_match<char const*> >, std::__cxx11::regex_traits<char>, true>::_State_info<std::integral_constant<bool, true>, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > >::_State_info(long, unsigned long)
+  call std::__detail::_Executor<char const*, std::allocator<std::__cxx11::sub_match<char const*> >, std::__cxx11::regex_traits<char>, true>::_State_info<std::integral_constant<bool, true>, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > >::_State_info(long, unsigned long) [complete object constructor]
   mov eax, DWORD PTR [rbp-76]
   mov esi, 128
   mov edi, eax
@@ -5377,7 +5377,7 @@ std::__shared_ptr_access<std::__detail::_NFA<std::__cxx11::regex_traits<char> >,
   call std::__shared_ptr_access<std::__detail::_NFA<std::__cxx11::regex_traits<char> >, (__gnu_cxx::_Lock_policy)2, false, false>::_M_get() const
   leave
   ret
-std::__detail::_Scanner<char>::_Scanner(char const*, char const*, std::regex_constants::syntax_option_type, std::locale):
+std::__detail::_Scanner<char>::_Scanner(char const*, char const*, std::regex_constants::syntax_option_type, std::locale) [base object constructor]:
   push rbp
   mov rbp, rsp
   push rbx
@@ -5391,7 +5391,7 @@ std::__detail::_Scanner<char>::_Scanner(char const*, char const*, std::regex_con
   mov edx, DWORD PTR [rbp-44]
   mov esi, edx
   mov rdi, rax
-  call std::__detail::_ScannerBase::_ScannerBase(std::regex_constants::syntax_option_type)
+  call std::__detail::_ScannerBase::_ScannerBase(std::regex_constants::syntax_option_type) [base object constructor]
   mov rax, QWORD PTR [rbp-24]
   mov rdx, QWORD PTR [rbp-32]
   mov QWORD PTR [rax+176], rdx
@@ -5462,7 +5462,7 @@ std::__shared_ptr_access<std::__detail::_NFA<std::__cxx11::regex_traits<char> >,
   call std::__shared_ptr_access<std::__detail::_NFA<std::__cxx11::regex_traits<char> >, (__gnu_cxx::_Lock_policy)2, false, false>::_M_get() const
   leave
   ret
-std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >::_StateSeq(std::__detail::_NFA<std::__cxx11::regex_traits<char> >&, long):
+std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >::_StateSeq(std::__detail::_NFA<std::__cxx11::regex_traits<char> >&, long) [base object constructor]:
   push rbp
   mov rbp, rsp
   mov QWORD PTR [rbp-8], rdi
@@ -5500,7 +5500,7 @@ std::__detail::_NFA<std::__cxx11::regex_traits<char> >::_M_insert_subexpr_begin(
   lea rax, [rbp-128]
   mov esi, 8
   mov rdi, rax
-  call std::__detail::_State<char>::_State(std::__detail::_Opcode)
+  call std::__detail::_State<char>::_State(std::__detail::_Opcode) [complete object constructor]
   mov rax, QWORD PTR [rbp-72]
   mov QWORD PTR [rbp-112], rax
   lea rax, [rbp-128]
@@ -5510,7 +5510,7 @@ std::__detail::_NFA<std::__cxx11::regex_traits<char> >::_M_insert_subexpr_begin(
   lea rax, [rbp-64]
   mov rsi, rdx
   mov rdi, rax
-  call std::__detail::_State<char>::_State(std::__detail::_State<char>&&)
+  call std::__detail::_State<char>::_State(std::__detail::_State<char>&&) [complete object constructor]
   lea rdx, [rbp-64]
   mov rax, QWORD PTR [rbp-136]
   mov rsi, rdx
@@ -5638,7 +5638,7 @@ std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_disjunction():
   mov rcx, rdx
   mov rdx, r12
   mov rdi, rax
-  call std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >::_StateSeq(std::__detail::_NFA<std::__cxx11::regex_traits<char> >&, long, long)
+  call std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >::_StateSeq(std::__detail::_NFA<std::__cxx11::regex_traits<char> >&, long, long) [complete object constructor]
   lea rax, [rbp-48]
   mov rsi, rax
   mov rdi, rbx
@@ -5748,7 +5748,7 @@ std::__detail::_NFA<std::__cxx11::regex_traits<char> >::_M_insert_subexpr_end():
   lea rax, [rbp-112]
   mov esi, 9
   mov rdi, rax
-  call std::__detail::_State<char>::_State(std::__detail::_Opcode)
+  call std::__detail::_State<char>::_State(std::__detail::_Opcode) [complete object constructor]
   mov rax, QWORD PTR [rbp-120]
   mov rdi, rax
   call std::vector<unsigned long, std::allocator<unsigned long> >::back()
@@ -5764,7 +5764,7 @@ std::__detail::_NFA<std::__cxx11::regex_traits<char> >::_M_insert_subexpr_end():
   lea rax, [rbp-64]
   mov rsi, rdx
   mov rdi, rax
-  call std::__detail::_State<char>::_State(std::__detail::_State<char>&&)
+  call std::__detail::_State<char>::_State(std::__detail::_State<char>&&) [complete object constructor]
   lea rdx, [rbp-64]
   mov rax, QWORD PTR [rbp-120]
   mov rsi, rdx
@@ -5806,7 +5806,7 @@ std::__detail::_NFA<std::__cxx11::regex_traits<char> >::_M_insert_accept():
   lea rax, [rbp-80]
   mov esi, 12
   mov rdi, rax
-  call std::__detail::_State<char>::_State(std::__detail::_Opcode)
+  call std::__detail::_State<char>::_State(std::__detail::_Opcode) [complete object constructor]
   lea rdx, [rbp-80]
   mov rax, QWORD PTR [rbp-88]
   mov rsi, rdx
@@ -5997,7 +5997,7 @@ std::deque<std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >, std::all
   mov rax, QWORD PTR [rbp-8]
   mov rsi, rdx
   mov rdi, rax
-  call std::_Deque_iterator<std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >, std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >&, std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >*>::_Deque_iterator(std::_Deque_iterator<std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >, std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >&, std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >*> const&)
+  call std::_Deque_iterator<std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >, std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >&, std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >*>::_Deque_iterator(std::_Deque_iterator<std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >, std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >&, std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >*> const&) [complete object constructor]
   mov rax, QWORD PTR [rbp-8]
   leave
   ret
@@ -6012,7 +6012,7 @@ std::deque<std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >, std::all
   mov rax, QWORD PTR [rbp-8]
   mov rsi, rdx
   mov rdi, rax
-  call std::_Deque_iterator<std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >, std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >&, std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >*>::_Deque_iterator(std::_Deque_iterator<std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >, std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >&, std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >*> const&)
+  call std::_Deque_iterator<std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >, std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >&, std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >*>::_Deque_iterator(std::_Deque_iterator<std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >, std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >&, std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >*> const&) [complete object constructor]
   mov rax, QWORD PTR [rbp-8]
   leave
   ret
@@ -6059,7 +6059,7 @@ std::shared_ptr<std::__detail::_NFA<std::__cxx11::regex_traits<char> > const>::s
   pop rbx
   pop rbp
   ret
-std::_Vector_base<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > >::_Vector_impl::_Vector_impl(std::allocator<std::__cxx11::sub_match<char const*> > const&):
+std::_Vector_base<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > >::_Vector_impl::_Vector_impl(std::allocator<std::__cxx11::sub_match<char const*> > const&) [base object constructor]:
   push rbp
   mov rbp, rsp
   sub rsp, 16
@@ -6069,7 +6069,7 @@ std::_Vector_base<std::__cxx11::sub_match<char const*>, std::allocator<std::__cx
   mov rax, QWORD PTR [rbp-8]
   mov rsi, rdx
   mov rdi, rax
-  call std::allocator<std::__cxx11::sub_match<char const*> >::allocator(std::allocator<std::__cxx11::sub_match<char const*> > const&)
+  call std::allocator<std::__cxx11::sub_match<char const*> >::allocator(std::allocator<std::__cxx11::sub_match<char const*> > const&) [base object constructor]
   mov rax, QWORD PTR [rbp-8]
   mov QWORD PTR [rax], 0
   mov rax, QWORD PTR [rbp-8]
@@ -6181,7 +6181,7 @@ std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::s
   nop
   leave
   ret
-__gnu_cxx::__normal_iterator<std::__cxx11::sub_match<char const*>*, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > >::__normal_iterator(std::__cxx11::sub_match<char const*>* const&):
+__gnu_cxx::__normal_iterator<std::__cxx11::sub_match<char const*>*, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > >::__normal_iterator(std::__cxx11::sub_match<char const*>* const&) [base object constructor]:
   push rbp
   mov rbp, rsp
   mov QWORD PTR [rbp-8], rdi
@@ -6259,7 +6259,7 @@ std::allocator<std::pair<char const*, int> >::~allocator() [base object destruct
   nop
   leave
   ret
-std::vector<std::pair<char const*, int>, std::allocator<std::pair<char const*, int> > >::vector(unsigned long, std::allocator<std::pair<char const*, int> > const&):
+std::vector<std::pair<char const*, int>, std::allocator<std::pair<char const*, int> > >::vector(unsigned long, std::allocator<std::pair<char const*, int> > const&) [base object constructor]:
   push rbp
   mov rbp, rsp
   push rbx
@@ -6272,7 +6272,7 @@ std::vector<std::pair<char const*, int>, std::allocator<std::pair<char const*, i
   mov rcx, QWORD PTR [rbp-32]
   mov rsi, rcx
   mov rdi, rax
-  call std::_Vector_base<std::pair<char const*, int>, std::allocator<std::pair<char const*, int> > >::_Vector_base(unsigned long, std::allocator<std::pair<char const*, int> > const&)
+  call std::_Vector_base<std::pair<char const*, int>, std::allocator<std::pair<char const*, int> > >::_Vector_base(unsigned long, std::allocator<std::pair<char const*, int> > const&) [base object constructor]
   mov rdx, QWORD PTR [rbp-32]
   mov rax, QWORD PTR [rbp-24]
   mov rsi, rdx
@@ -6291,7 +6291,7 @@ std::vector<std::pair<char const*, int>, std::allocator<std::pair<char const*, i
   pop rbx
   pop rbp
   ret
-std::__detail::_Executor<char const*, std::allocator<std::__cxx11::sub_match<char const*> >, std::__cxx11::regex_traits<char>, false>::_State_info<std::integral_constant<bool, false>, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > >::_State_info(long, unsigned long):
+std::__detail::_Executor<char const*, std::allocator<std::__cxx11::sub_match<char const*> >, std::__cxx11::regex_traits<char>, false>::_State_info<std::integral_constant<bool, false>, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > >::_State_info(long, unsigned long) [base object constructor]:
   push rbp
   mov rbp, rsp
   push r12
@@ -6525,7 +6525,7 @@ std::__detail::_Executor<char const*, std::allocator<std::__cxx11::sub_match<cha
   call std::__detail::_Executor<char const*, std::allocator<std::__cxx11::sub_match<char const*> >, std::__cxx11::regex_traits<char>, false>::_M_main(std::__detail::_Executor<char const*, std::allocator<std::__cxx11::sub_match<char const*> >, std::__cxx11::regex_traits<char>, false>::_Match_mode)
   leave
   ret
-std::__detail::_Executor<char const*, std::allocator<std::__cxx11::sub_match<char const*> >, std::__cxx11::regex_traits<char>, true>::_State_info<std::integral_constant<bool, true>, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > >::_State_info(long, unsigned long):
+std::__detail::_Executor<char const*, std::allocator<std::__cxx11::sub_match<char const*> >, std::__cxx11::regex_traits<char>, true>::_State_info<std::integral_constant<bool, true>, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > >::_State_info(long, unsigned long) [base object constructor]:
   push rbp
   mov rbp, rsp
   mov QWORD PTR [rbp-8], rdi
@@ -7198,7 +7198,7 @@ std::vector<unsigned long, std::allocator<unsigned long> >::push_back(unsigned l
   nop
   leave
   ret
-std::__detail::_State<char>::_State(std::__detail::_Opcode):
+std::__detail::_State<char>::_State(std::__detail::_Opcode) [base object constructor]:
   push rbp
   mov rbp, rsp
   sub rsp, 16
@@ -7208,7 +7208,7 @@ std::__detail::_State<char>::_State(std::__detail::_Opcode):
   mov edx, DWORD PTR [rbp-12]
   mov esi, edx
   mov rdi, rax
-  call std::__detail::_State_base::_State_base(std::__detail::_Opcode)
+  call std::__detail::_State_base::_State_base(std::__detail::_Opcode) [base object constructor]
   mov rax, QWORD PTR [rbp-8]
   mov rdi, rax
   call std::__detail::_State<char>::_M_opcode() const
@@ -7306,7 +7306,7 @@ std::remove_reference<std::__detail::_State<char>&>::type&& std::move<std::__det
   mov rax, QWORD PTR [rbp-8]
   pop rbp
   ret
-std::__detail::_State<char>::_State(std::__detail::_State<char>&&):
+std::__detail::_State<char>::_State(std::__detail::_State<char>&&) [base object constructor]:
   push rbp
   mov rbp, rsp
   push rbx
@@ -7349,7 +7349,7 @@ std::__detail::_State<char>::_State(std::__detail::_State<char>&&):
   call operator new(unsigned long, void*)
   mov rsi, rbx
   mov rdi, rax
-  call std::function<bool (char)>::function(std::function<bool (char)>&&)
+  call std::function<bool (char)>::function(std::function<bool (char)>&&) [complete object constructor]
 .L765:
   nop
   add rsp, 24
@@ -7427,7 +7427,7 @@ std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_alternative():
   mov rdx, r12
   mov rsi, rcx
   mov rdi, rax
-  call std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >::_StateSeq(std::__detail::_NFA<std::__cxx11::regex_traits<char> >&, long)
+  call std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >::_StateSeq(std::__detail::_NFA<std::__cxx11::regex_traits<char> >&, long) [complete object constructor]
   lea rax, [rbp-48]
   mov rsi, rax
   mov rdi, rbx
@@ -7448,7 +7448,7 @@ std::__detail::_NFA<std::__cxx11::regex_traits<char> >::_M_insert_dummy():
   lea rax, [rbp-64]
   mov esi, 10
   mov rdi, rax
-  call std::__detail::_State<char>::_State(std::__detail::_Opcode)
+  call std::__detail::_State<char>::_State(std::__detail::_Opcode) [complete object constructor]
   lea rdx, [rbp-64]
   mov rax, QWORD PTR [rbp-72]
   mov rsi, rdx
@@ -7485,7 +7485,7 @@ std::__detail::_NFA<std::__cxx11::regex_traits<char> >::_M_insert_alt(long, long
   lea rax, [rbp-112]
   mov esi, 1
   mov rdi, rax
-  call std::__detail::_State<char>::_State(std::__detail::_Opcode)
+  call std::__detail::_State<char>::_State(std::__detail::_Opcode) [complete object constructor]
   mov rax, QWORD PTR [rbp-128]
   mov QWORD PTR [rbp-104], rax
   mov rax, QWORD PTR [rbp-136]
@@ -7497,7 +7497,7 @@ std::__detail::_NFA<std::__cxx11::regex_traits<char> >::_M_insert_alt(long, long
   lea rax, [rbp-64]
   mov rsi, rdx
   mov rdi, rax
-  call std::__detail::_State<char>::_State(std::__detail::_State<char>&&)
+  call std::__detail::_State<char>::_State(std::__detail::_State<char>&&) [complete object constructor]
   lea rdx, [rbp-64]
   mov rax, QWORD PTR [rbp-120]
   mov rsi, rdx
@@ -7527,7 +7527,7 @@ std::__detail::_NFA<std::__cxx11::regex_traits<char> >::_M_insert_alt(long, long
   pop rbx
   pop rbp
   ret
-std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >::_StateSeq(std::__detail::_NFA<std::__cxx11::regex_traits<char> >&, long, long):
+std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >::_StateSeq(std::__detail::_NFA<std::__cxx11::regex_traits<char> >&, long, long) [base object constructor]:
   push rbp
   mov rbp, rsp
   mov QWORD PTR [rbp-8], rdi
@@ -7650,7 +7650,7 @@ std::vector<std::__detail::_State<char>, std::allocator<std::__detail::_State<ch
   lea rax, [rbp-8]
   mov rsi, rdx
   mov rdi, rax
-  call __gnu_cxx::__normal_iterator<std::__detail::_State<char>*, std::vector<std::__detail::_State<char>, std::allocator<std::__detail::_State<char> > > >::__normal_iterator(std::__detail::_State<char>* const&)
+  call __gnu_cxx::__normal_iterator<std::__detail::_State<char>*, std::vector<std::__detail::_State<char>, std::allocator<std::__detail::_State<char> > > >::__normal_iterator(std::__detail::_State<char>* const&) [complete object constructor]
   mov rax, QWORD PTR [rbp-8]
   leave
   ret
@@ -7664,7 +7664,7 @@ std::vector<std::__detail::_State<char>, std::allocator<std::__detail::_State<ch
   lea rax, [rbp-8]
   mov rsi, rdx
   mov rdi, rax
-  call __gnu_cxx::__normal_iterator<std::__detail::_State<char>*, std::vector<std::__detail::_State<char>, std::allocator<std::__detail::_State<char> > > >::__normal_iterator(std::__detail::_State<char>* const&)
+  call __gnu_cxx::__normal_iterator<std::__detail::_State<char>*, std::vector<std::__detail::_State<char>, std::allocator<std::__detail::_State<char> > > >::__normal_iterator(std::__detail::_State<char>* const&) [complete object constructor]
   mov rax, QWORD PTR [rbp-8]
   leave
   ret
@@ -7777,7 +7777,7 @@ std::_Deque_base<std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >, st
   nop
   leave
   ret
-std::_Deque_iterator<std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >, std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >&, std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >*>::_Deque_iterator(std::_Deque_iterator<std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >, std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >&, std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >*> const&):
+std::_Deque_iterator<std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >, std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >&, std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >*>::_Deque_iterator(std::_Deque_iterator<std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >, std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >&, std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >*> const&) [base object constructor]:
   push rbp
   mov rbp, rsp
   mov QWORD PTR [rbp-8], rdi
@@ -7827,7 +7827,7 @@ std::__shared_ptr<std::__detail::_NFA<std::__cxx11::regex_traits<char> > const, 
   nop
   leave
   ret
-std::allocator<std::__cxx11::sub_match<char const*> >::allocator(std::allocator<std::__cxx11::sub_match<char const*> > const&):
+std::allocator<std::__cxx11::sub_match<char const*> >::allocator(std::allocator<std::__cxx11::sub_match<char const*> > const&) [base object constructor]:
   push rbp
   mov rbp, rsp
   sub rsp, 16
@@ -7837,7 +7837,7 @@ std::allocator<std::__cxx11::sub_match<char const*> >::allocator(std::allocator<
   mov rax, QWORD PTR [rbp-8]
   mov rsi, rdx
   mov rdi, rax
-  call __gnu_cxx::new_allocator<std::__cxx11::sub_match<char const*> >::new_allocator(__gnu_cxx::new_allocator<std::__cxx11::sub_match<char const*> > const&)
+  call __gnu_cxx::new_allocator<std::__cxx11::sub_match<char const*> >::new_allocator(__gnu_cxx::new_allocator<std::__cxx11::sub_match<char const*> > const&) [base object constructor]
   nop
   leave
   ret
@@ -8140,7 +8140,7 @@ __gnu_cxx::new_allocator<std::pair<char const*, int> >::~new_allocator() [base o
   nop
   pop rbp
   ret
-std::_Vector_base<std::pair<char const*, int>, std::allocator<std::pair<char const*, int> > >::_Vector_base(unsigned long, std::allocator<std::pair<char const*, int> > const&):
+std::_Vector_base<std::pair<char const*, int>, std::allocator<std::pair<char const*, int> > >::_Vector_base(unsigned long, std::allocator<std::pair<char const*, int> > const&) [base object constructor]:
   push rbp
   mov rbp, rsp
   push rbx
@@ -8152,7 +8152,7 @@ std::_Vector_base<std::pair<char const*, int>, std::allocator<std::pair<char con
   mov rdx, QWORD PTR [rbp-40]
   mov rsi, rdx
   mov rdi, rax
-  call std::_Vector_base<std::pair<char const*, int>, std::allocator<std::pair<char const*, int> > >::_Vector_impl::_Vector_impl(std::allocator<std::pair<char const*, int> > const&)
+  call std::_Vector_base<std::pair<char const*, int>, std::allocator<std::pair<char const*, int> > >::_Vector_impl::_Vector_impl(std::allocator<std::pair<char const*, int> > const&) [complete object constructor]
   mov rdx, QWORD PTR [rbp-32]
   mov rax, QWORD PTR [rbp-24]
   mov rsi, rdx
@@ -8214,7 +8214,7 @@ std::unique_ptr<bool [], std::default_delete<bool []> >::unique_ptr<bool*, std::
   mov rdx, QWORD PTR [rbp-16]
   mov rsi, rdx
   mov rdi, rax
-  call std::__uniq_ptr_impl<bool, std::default_delete<bool []> >::__uniq_ptr_impl(bool*)
+  call std::__uniq_ptr_impl<bool, std::default_delete<bool []> >::__uniq_ptr_impl(bool*) [complete object constructor]
   nop
   leave
   ret
@@ -8367,7 +8367,7 @@ std::__detail::_Executor<char const*, std::allocator<std::__cxx11::sub_match<cha
   lea rax, [rbp-80]
   mov rsi, rdx
   mov rdi, rax
-  call std::vector<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > >, std::allocator<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > > > >::vector(std::vector<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > >, std::allocator<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > > > >&&)
+  call std::vector<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > >, std::allocator<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > > > >::vector(std::vector<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > >, std::allocator<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > > > >&&) [complete object constructor]
   lea rax, [rbp-80]
   mov QWORD PTR [rbp-32], rax
   mov rax, QWORD PTR [rbp-32]
@@ -9447,7 +9447,7 @@ std::vector<unsigned long, std::allocator<unsigned long> >::end():
   lea rax, [rbp-8]
   mov rsi, rdx
   mov rdi, rax
-  call __gnu_cxx::__normal_iterator<unsigned long*, std::vector<unsigned long, std::allocator<unsigned long> > >::__normal_iterator(unsigned long* const&)
+  call __gnu_cxx::__normal_iterator<unsigned long*, std::vector<unsigned long, std::allocator<unsigned long> > >::__normal_iterator(unsigned long* const&) [complete object constructor]
   mov rax, QWORD PTR [rbp-8]
   leave
   ret
@@ -9660,7 +9660,7 @@ std::remove_reference<std::function<bool (char)>&>::type&& std::move<std::functi
   mov rax, QWORD PTR [rbp-8]
   pop rbp
   ret
-std::function<bool (char)>::function(std::function<bool (char)>&&):
+std::function<bool (char)>::function(std::function<bool (char)>&&) [base object constructor]:
   push rbp
   mov rbp, rsp
   sub rsp, 16
@@ -9815,7 +9815,7 @@ __gnu_cxx::__normal_iterator<unsigned long*, std::vector<unsigned long, std::all
   lea rax, [rbp-16]
   mov rsi, rdx
   mov rdi, rax
-  call __gnu_cxx::__normal_iterator<unsigned long*, std::vector<unsigned long, std::allocator<unsigned long> > >::__normal_iterator(unsigned long* const&)
+  call __gnu_cxx::__normal_iterator<unsigned long*, std::vector<unsigned long, std::allocator<unsigned long> > >::__normal_iterator(unsigned long* const&) [complete object constructor]
   mov rax, QWORD PTR [rbp-16]
   leave
   ret
@@ -9841,7 +9841,7 @@ void std::allocator_traits<std::allocator<unsigned long> >::destroy<unsigned lon
   nop
   leave
   ret
-__gnu_cxx::__normal_iterator<std::__detail::_State<char>*, std::vector<std::__detail::_State<char>, std::allocator<std::__detail::_State<char> > > >::__normal_iterator(std::__detail::_State<char>* const&):
+__gnu_cxx::__normal_iterator<std::__detail::_State<char>*, std::vector<std::__detail::_State<char>, std::allocator<std::__detail::_State<char> > > >::__normal_iterator(std::__detail::_State<char>* const&) [base object constructor]:
   push rbp
   mov rbp, rsp
   mov QWORD PTR [rbp-8], rdi
@@ -9928,7 +9928,7 @@ std::allocator_traits<std::allocator<std::__detail::_StateSeq<std::__cxx11::rege
   nop
   leave
   ret
-__gnu_cxx::new_allocator<std::__cxx11::sub_match<char const*> >::new_allocator(__gnu_cxx::new_allocator<std::__cxx11::sub_match<char const*> > const&):
+__gnu_cxx::new_allocator<std::__cxx11::sub_match<char const*> >::new_allocator(__gnu_cxx::new_allocator<std::__cxx11::sub_match<char const*> > const&) [base object constructor]:
   push rbp
   mov rbp, rsp
   mov QWORD PTR [rbp-8], rdi
@@ -10101,7 +10101,7 @@ std::_Vector_base<std::__cxx11::sub_match<char const*>, std::allocator<std::__cx
   nop
   leave
   ret
-std::_Vector_base<std::pair<char const*, int>, std::allocator<std::pair<char const*, int> > >::_Vector_impl::_Vector_impl(std::allocator<std::pair<char const*, int> > const&):
+std::_Vector_base<std::pair<char const*, int>, std::allocator<std::pair<char const*, int> > >::_Vector_impl::_Vector_impl(std::allocator<std::pair<char const*, int> > const&) [base object constructor]:
   push rbp
   mov rbp, rsp
   sub rsp, 16
@@ -10111,7 +10111,7 @@ std::_Vector_base<std::pair<char const*, int>, std::allocator<std::pair<char con
   mov rax, QWORD PTR [rbp-8]
   mov rsi, rdx
   mov rdi, rax
-  call std::allocator<std::pair<char const*, int> >::allocator(std::allocator<std::pair<char const*, int> > const&)
+  call std::allocator<std::pair<char const*, int> >::allocator(std::allocator<std::pair<char const*, int> > const&) [base object constructor]
   mov rax, QWORD PTR [rbp-8]
   mov QWORD PTR [rax], 0
   mov rax, QWORD PTR [rbp-8]
@@ -10174,7 +10174,7 @@ std::_Vector_base<std::pair<long, std::vector<std::__cxx11::sub_match<char const
   nop
   leave
   ret
-std::__uniq_ptr_impl<bool, std::default_delete<bool []> >::__uniq_ptr_impl(bool*):
+std::__uniq_ptr_impl<bool, std::default_delete<bool []> >::__uniq_ptr_impl(bool*) [base object constructor]:
   push rbp
   mov rbp, rsp
   push rbx
@@ -10354,7 +10354,7 @@ std::remove_reference<std::vector<std::pair<long, std::vector<std::__cxx11::sub_
   mov rax, QWORD PTR [rbp-8]
   pop rbp
   ret
-std::vector<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > >, std::allocator<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > > > >::vector(std::vector<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > >, std::allocator<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > > > >&&):
+std::vector<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > >, std::allocator<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > > > >::vector(std::vector<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > >, std::allocator<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > > > >&&) [base object constructor]:
   push rbp
   mov rbp, rsp
   push rbx
@@ -10367,7 +10367,7 @@ std::vector<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, st
   call std::remove_reference<std::vector<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > >, std::allocator<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > > > >&>::type&& std::move<std::vector<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > >, std::allocator<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > > > >&>(std::vector<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > >, std::allocator<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > > > >&)
   mov rsi, rax
   mov rdi, rbx
-  call std::_Vector_base<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > >, std::allocator<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > > > >::_Vector_base(std::_Vector_base<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > >, std::allocator<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > > > >&&)
+  call std::_Vector_base<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > >, std::allocator<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > > > >::_Vector_base(std::_Vector_base<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > >, std::allocator<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > > > >&&) [base object constructor]
   nop
   add rsp, 24
   pop rbx
@@ -10382,7 +10382,7 @@ std::vector<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, st
   lea rax, [rbp-8]
   mov rsi, rdx
   mov rdi, rax
-  call __gnu_cxx::__normal_iterator<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > >*, std::vector<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > >, std::allocator<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > > > > >::__normal_iterator(std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > >* const&)
+  call __gnu_cxx::__normal_iterator<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > >*, std::vector<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > >, std::allocator<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > > > > >::__normal_iterator(std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > >* const&) [complete object constructor]
   mov rax, QWORD PTR [rbp-8]
   leave
   ret
@@ -10396,7 +10396,7 @@ std::vector<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, st
   lea rax, [rbp-8]
   mov rsi, rdx
   mov rdi, rax
-  call __gnu_cxx::__normal_iterator<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > >*, std::vector<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > >, std::allocator<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > > > > >::__normal_iterator(std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > >* const&)
+  call __gnu_cxx::__normal_iterator<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > >*, std::vector<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > >, std::allocator<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > > > > >::__normal_iterator(std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > >* const&) [complete object constructor]
   mov rax, QWORD PTR [rbp-8]
   leave
   ret
@@ -11364,7 +11364,7 @@ void __gnu_cxx::new_allocator<unsigned long>::construct<unsigned long, unsigned 
   pop rbx
   pop rbp
   ret
-__gnu_cxx::__normal_iterator<unsigned long*, std::vector<unsigned long, std::allocator<unsigned long> > >::__normal_iterator(unsigned long* const&):
+__gnu_cxx::__normal_iterator<unsigned long*, std::vector<unsigned long, std::allocator<unsigned long> > >::__normal_iterator(unsigned long* const&) [base object constructor]:
   push rbp
   mov rbp, rsp
   mov QWORD PTR [rbp-8], rdi
@@ -11449,7 +11449,7 @@ std::vector<unsigned long, std::allocator<unsigned long> >::begin():
   lea rax, [rbp-8]
   mov rsi, rdx
   mov rdi, rax
-  call __gnu_cxx::__normal_iterator<unsigned long*, std::vector<unsigned long, std::allocator<unsigned long> > >::__normal_iterator(unsigned long* const&)
+  call __gnu_cxx::__normal_iterator<unsigned long*, std::vector<unsigned long, std::allocator<unsigned long> > >::__normal_iterator(unsigned long* const&) [complete object constructor]
   mov rax, QWORD PTR [rbp-8]
   leave
   ret
@@ -11640,7 +11640,7 @@ std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_assertion():
   mov rdx, r12
   mov rsi, rcx
   mov rdi, rax
-  call std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >::_StateSeq(std::__detail::_NFA<std::__cxx11::regex_traits<char> >&, long)
+  call std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >::_StateSeq(std::__detail::_NFA<std::__cxx11::regex_traits<char> >&, long) [complete object constructor]
   lea rax, [rbp-144]
   mov rsi, rax
   mov rdi, rbx
@@ -11671,7 +11671,7 @@ std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_assertion():
   mov rdx, r12
   mov rsi, rcx
   mov rdi, rax
-  call std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >::_StateSeq(std::__detail::_NFA<std::__cxx11::regex_traits<char> >&, long)
+  call std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >::_StateSeq(std::__detail::_NFA<std::__cxx11::regex_traits<char> >&, long) [complete object constructor]
   lea rax, [rbp-112]
   mov rsi, rax
   mov rdi, rbx
@@ -11713,7 +11713,7 @@ std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_assertion():
   mov rdx, r12
   mov rsi, rcx
   mov rdi, rax
-  call std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >::_StateSeq(std::__detail::_NFA<std::__cxx11::regex_traits<char> >&, long)
+  call std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >::_StateSeq(std::__detail::_NFA<std::__cxx11::regex_traits<char> >&, long) [complete object constructor]
   lea rax, [rbp-80]
   mov rsi, rax
   mov rdi, rbx
@@ -11787,7 +11787,7 @@ std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_assertion():
   mov rdx, r12
   mov rsi, rcx
   mov rdi, rax
-  call std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >::_StateSeq(std::__detail::_NFA<std::__cxx11::regex_traits<char> >&, long)
+  call std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >::_StateSeq(std::__detail::_NFA<std::__cxx11::regex_traits<char> >&, long) [complete object constructor]
   lea rax, [rbp-48]
   mov rsi, rax
   mov rdi, rbx
@@ -12003,7 +12003,7 @@ std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_atom():
   mov rdx, r12
   mov rsi, rcx
   mov rdi, rax
-  call std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >::_StateSeq(std::__detail::_NFA<std::__cxx11::regex_traits<char> >&, long)
+  call std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >::_StateSeq(std::__detail::_NFA<std::__cxx11::regex_traits<char> >&, long) [complete object constructor]
   lea rax, [rbp-112]
   mov rsi, rax
   mov rdi, rbx
@@ -12085,7 +12085,7 @@ std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_atom():
   mov rdx, rbx
   mov rsi, rcx
   mov rdi, rax
-  call std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >::_StateSeq(std::__detail::_NFA<std::__cxx11::regex_traits<char> >&, long)
+  call std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >::_StateSeq(std::__detail::_NFA<std::__cxx11::regex_traits<char> >&, long) [complete object constructor]
   mov rax, QWORD PTR [rbp-184]
   mov rdi, rax
   call std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_disjunction()
@@ -12140,7 +12140,7 @@ std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_atom():
   mov rdx, rbx
   mov rsi, rcx
   mov rdi, rax
-  call std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >::_StateSeq(std::__detail::_NFA<std::__cxx11::regex_traits<char> >&, long)
+  call std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >::_StateSeq(std::__detail::_NFA<std::__cxx11::regex_traits<char> >&, long) [complete object constructor]
   mov rax, QWORD PTR [rbp-184]
   mov rdi, rax
   call std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_disjunction()
@@ -12313,7 +12313,7 @@ std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_quantifier():
   mov rdx, rbx
   mov rsi, rcx
   mov rdi, rax
-  call std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >::_StateSeq(std::__detail::_NFA<std::__cxx11::regex_traits<char> >&, long)
+  call std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >::_StateSeq(std::__detail::_NFA<std::__cxx11::regex_traits<char> >&, long) [complete object constructor]
   lea rdx, [rbp-240]
   lea rax, [rbp-208]
   mov rsi, rdx
@@ -12409,7 +12409,7 @@ std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_quantifier():
   mov rdx, rbx
   mov rsi, rcx
   mov rdi, rax
-  call std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >::_StateSeq(std::__detail::_NFA<std::__cxx11::regex_traits<char> >&, long)
+  call std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >::_StateSeq(std::__detail::_NFA<std::__cxx11::regex_traits<char> >&, long) [complete object constructor]
   mov rdx, QWORD PTR [rbp-56]
   lea rax, [rbp-304]
   mov rsi, rdx
@@ -12476,7 +12476,7 @@ std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_quantifier():
   mov rdx, rbx
   mov rsi, rcx
   mov rdi, rax
-  call std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >::_StateSeq(std::__detail::_NFA<std::__cxx11::regex_traits<char> >&, long)
+  call std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >::_StateSeq(std::__detail::_NFA<std::__cxx11::regex_traits<char> >&, long) [complete object constructor]
   mov rax, QWORD PTR [rbp-600]
   mov esi, 10
   mov rdi, rax
@@ -12583,7 +12583,7 @@ std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_quantifier():
   mov rdx, rbx
   mov rsi, rcx
   mov rdi, rax
-  call std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >::_StateSeq(std::__detail::_NFA<std::__cxx11::regex_traits<char> >&, long)
+  call std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >::_StateSeq(std::__detail::_NFA<std::__cxx11::regex_traits<char> >&, long) [complete object constructor]
   lea rdx, [rbp-464]
   lea rax, [rbp-432]
   mov rsi, rdx
@@ -12650,7 +12650,7 @@ std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_quantifier():
   mov rcx, r12
   mov rdx, rbx
   mov rdi, rax
-  call std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >::_StateSeq(std::__detail::_NFA<std::__cxx11::regex_traits<char> >&, long, long)
+  call std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >::_StateSeq(std::__detail::_NFA<std::__cxx11::regex_traits<char> >&, long, long) [complete object constructor]
   lea rdx, [rbp-112]
   lea rax, [rbp-400]
   mov rsi, rdx
@@ -13013,7 +13013,7 @@ std::move_iterator<std::__cxx11::sub_match<char const*>*> std::__make_move_if_no
   lea rax, [rbp-8]
   mov rsi, rdx
   mov rdi, rax
-  call std::move_iterator<std::__cxx11::sub_match<char const*>*>::move_iterator(std::__cxx11::sub_match<char const*>*)
+  call std::move_iterator<std::__cxx11::sub_match<char const*>*>::move_iterator(std::__cxx11::sub_match<char const*>*) [complete object constructor]
   mov rax, QWORD PTR [rbp-8]
   leave
   ret
@@ -13033,7 +13033,7 @@ std::__cxx11::sub_match<char const*>* std::__uninitialized_copy_a<std::move_iter
   call std::__cxx11::sub_match<char const*>* std::uninitialized_copy<std::move_iterator<std::__cxx11::sub_match<char const*>*>, std::__cxx11::sub_match<char const*>*>(std::move_iterator<std::__cxx11::sub_match<char const*>*>, std::move_iterator<std::__cxx11::sub_match<char const*>*>, std::__cxx11::sub_match<char const*>*)
   leave
   ret
-std::allocator<std::pair<char const*, int> >::allocator(std::allocator<std::pair<char const*, int> > const&):
+std::allocator<std::pair<char const*, int> >::allocator(std::allocator<std::pair<char const*, int> > const&) [base object constructor]:
   push rbp
   mov rbp, rsp
   sub rsp, 16
@@ -13043,7 +13043,7 @@ std::allocator<std::pair<char const*, int> >::allocator(std::allocator<std::pair
   mov rax, QWORD PTR [rbp-8]
   mov rsi, rdx
   mov rdi, rax
-  call __gnu_cxx::new_allocator<std::pair<char const*, int> >::new_allocator(__gnu_cxx::new_allocator<std::pair<char const*, int> > const&)
+  call __gnu_cxx::new_allocator<std::pair<char const*, int> >::new_allocator(__gnu_cxx::new_allocator<std::pair<char const*, int> > const&) [base object constructor]
   nop
   leave
   ret
@@ -13256,7 +13256,7 @@ std::vector<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, st
   lea rax, [rbp-16]
   mov rsi, rdx
   mov rdi, rax
-  call __gnu_cxx::__normal_iterator<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > > const*, std::vector<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > >, std::allocator<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > > > > >::__normal_iterator(std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > > const* const&)
+  call __gnu_cxx::__normal_iterator<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > > const*, std::vector<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > >, std::allocator<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > > > > >::__normal_iterator(std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > > const* const&) [complete object constructor]
   mov rax, QWORD PTR [rbp-16]
   leave
   ret
@@ -13272,7 +13272,7 @@ std::vector<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, st
   lea rax, [rbp-16]
   mov rsi, rdx
   mov rdi, rax
-  call __gnu_cxx::__normal_iterator<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > > const*, std::vector<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > >, std::allocator<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > > > > >::__normal_iterator(std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > > const* const&)
+  call __gnu_cxx::__normal_iterator<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > > const*, std::vector<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > >, std::allocator<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > > > > >::__normal_iterator(std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > > const* const&) [complete object constructor]
   mov rax, QWORD PTR [rbp-16]
   leave
   ret
@@ -13339,7 +13339,7 @@ __gnu_cxx::__enable_if<std::__is_scalar<bool>::__value, bool*>::__type std::__fi
   mov rax, QWORD PTR [rbp-24]
   pop rbp
   ret
-std::_Vector_base<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > >, std::allocator<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > > > >::_Vector_base(std::_Vector_base<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > >, std::allocator<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > > > >&&):
+std::_Vector_base<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > >, std::allocator<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > > > >::_Vector_base(std::_Vector_base<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > >, std::allocator<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > > > >&&) [base object constructor]:
   push rbp
   mov rbp, rsp
   push rbx
@@ -13354,7 +13354,7 @@ std::_Vector_base<std::pair<long, std::vector<std::__cxx11::sub_match<char const
   call std::remove_reference<std::allocator<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > > >&>::type&& std::move<std::allocator<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > > >&>(std::allocator<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > > >&)
   mov rsi, rax
   mov rdi, rbx
-  call std::_Vector_base<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > >, std::allocator<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > > > >::_Vector_impl::_Vector_impl(std::allocator<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > > >&&)
+  call std::_Vector_base<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > >, std::allocator<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > > > >::_Vector_impl::_Vector_impl(std::allocator<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > > >&&) [complete object constructor]
   mov rax, QWORD PTR [rbp-24]
   mov rdx, QWORD PTR [rbp-32]
   mov rsi, rdx
@@ -13365,7 +13365,7 @@ std::_Vector_base<std::pair<long, std::vector<std::__cxx11::sub_match<char const
   pop rbx
   pop rbp
   ret
-__gnu_cxx::__normal_iterator<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > >*, std::vector<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > >, std::allocator<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > > > > >::__normal_iterator(std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > >* const&):
+__gnu_cxx::__normal_iterator<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > >*, std::vector<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > >, std::allocator<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > > > > >::__normal_iterator(std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > >* const&) [base object constructor]:
   push rbp
   mov rbp, rsp
   mov QWORD PTR [rbp-8], rdi
@@ -13400,7 +13400,7 @@ std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::s
   lea rax, [rbp-48]
   mov rsi, rdx
   mov rdi, rax
-  call std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > >::vector(std::allocator<std::__cxx11::sub_match<char const*> > const&)
+  call std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > >::vector(std::allocator<std::__cxx11::sub_match<char const*> > const&) [complete object constructor]
   lea rax, [rbp-17]
   mov rdi, rax
   call std::allocator<std::__cxx11::sub_match<char const*> >::~allocator() [complete object destructor]
@@ -13908,7 +13908,7 @@ std::__detail::_Executor<char const*, std::allocator<std::__cxx11::sub_match<cha
   mov rdx, rbx
   mov esi, ecx
   mov rdi, rax
-  call std::__detail::_Backref_matcher<char const*, std::__cxx11::regex_traits<char> >::_Backref_matcher(bool, std::__cxx11::regex_traits<char> const&)
+  call std::__detail::_Backref_matcher<char const*, std::__cxx11::regex_traits<char> >::_Backref_matcher(bool, std::__cxx11::regex_traits<char> const&) [complete object constructor]
   mov rax, QWORD PTR [rbp-88]
   mov rcx, QWORD PTR [rax+24]
   mov rax, QWORD PTR [rbp-48]
@@ -14185,7 +14185,7 @@ std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::s
   lea rax, [rbp-16]
   mov rsi, rdx
   mov rdi, rax
-  call __gnu_cxx::__normal_iterator<std::__cxx11::sub_match<char const*> const*, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > >::__normal_iterator(std::__cxx11::sub_match<char const*> const* const&)
+  call __gnu_cxx::__normal_iterator<std::__cxx11::sub_match<char const*> const*, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > >::__normal_iterator(std::__cxx11::sub_match<char const*> const* const&) [complete object constructor]
   mov rax, QWORD PTR [rbp-16]
   leave
   ret
@@ -14201,7 +14201,7 @@ std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::s
   lea rax, [rbp-16]
   mov rsi, rdx
   mov rdi, rax
-  call __gnu_cxx::__normal_iterator<std::__cxx11::sub_match<char const*> const*, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > >::__normal_iterator(std::__cxx11::sub_match<char const*> const* const&)
+  call __gnu_cxx::__normal_iterator<std::__cxx11::sub_match<char const*> const*, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > >::__normal_iterator(std::__cxx11::sub_match<char const*> const* const&) [complete object constructor]
   mov rax, QWORD PTR [rbp-16]
   leave
   ret
@@ -14763,7 +14763,7 @@ std::__detail::_Executor<char const*, std::allocator<std::__cxx11::sub_match<cha
   mov rdx, rbx
   mov esi, ecx
   mov rdi, rax
-  call std::__detail::_Backref_matcher<char const*, std::__cxx11::regex_traits<char> >::_Backref_matcher(bool, std::__cxx11::regex_traits<char> const&)
+  call std::__detail::_Backref_matcher<char const*, std::__cxx11::regex_traits<char> >::_Backref_matcher(bool, std::__cxx11::regex_traits<char> const&) [complete object constructor]
   mov rax, QWORD PTR [rbp-88]
   mov rcx, QWORD PTR [rax+24]
   mov rax, QWORD PTR [rbp-48]
@@ -15044,7 +15044,7 @@ std::__shared_count<(__gnu_cxx::_Lock_policy)2>::__shared_count<std::__detail::_
   lea rax, [rbp-65]
   mov rsi, rdx
   mov rdi, rax
-  call std::allocator<std::__detail::_NFA<std::__cxx11::regex_traits<char> > >::allocator(std::allocator<std::__detail::_NFA<std::__cxx11::regex_traits<char> > > const&)
+  call std::allocator<std::__detail::_NFA<std::__cxx11::regex_traits<char> > >::allocator(std::allocator<std::__detail::_NFA<std::__cxx11::regex_traits<char> > > const&) [complete object constructor]
   lea r13, [rbp-65]
   mov rax, QWORD PTR [rbp-128]
   mov rdi, rax
@@ -15308,7 +15308,7 @@ std::move_iterator<unsigned long*> std::__make_move_if_noexcept_iterator<unsigne
   lea rax, [rbp-8]
   mov rsi, rdx
   mov rdi, rax
-  call std::move_iterator<unsigned long*>::move_iterator(unsigned long*)
+  call std::move_iterator<unsigned long*>::move_iterator(unsigned long*) [complete object constructor]
   mov rax, QWORD PTR [rbp-8]
   leave
   ret
@@ -15657,7 +15657,7 @@ std::__detail::_NFA<std::__cxx11::regex_traits<char> >::_M_insert_line_begin():
   lea rax, [rbp-64]
   mov esi, 4
   mov rdi, rax
-  call std::__detail::_State<char>::_State(std::__detail::_Opcode)
+  call std::__detail::_State<char>::_State(std::__detail::_Opcode) [complete object constructor]
   lea rdx, [rbp-64]
   mov rax, QWORD PTR [rbp-72]
   mov rsi, rdx
@@ -15690,7 +15690,7 @@ std::__detail::_NFA<std::__cxx11::regex_traits<char> >::_M_insert_line_end():
   lea rax, [rbp-64]
   mov esi, 5
   mov rdi, rax
-  call std::__detail::_State<char>::_State(std::__detail::_Opcode)
+  call std::__detail::_State<char>::_State(std::__detail::_Opcode) [complete object constructor]
   lea rdx, [rbp-64]
   mov rax, QWORD PTR [rbp-72]
   mov rsi, rdx
@@ -15739,7 +15739,7 @@ std::__detail::_NFA<std::__cxx11::regex_traits<char> >::_M_insert_word_bound(boo
   lea rax, [rbp-112]
   mov esi, 6
   mov rdi, rax
-  call std::__detail::_State<char>::_State(std::__detail::_Opcode)
+  call std::__detail::_State<char>::_State(std::__detail::_Opcode) [complete object constructor]
   movzx eax, BYTE PTR [rbp-124]
   mov BYTE PTR [rbp-88], al
   lea rax, [rbp-112]
@@ -15749,7 +15749,7 @@ std::__detail::_NFA<std::__cxx11::regex_traits<char> >::_M_insert_word_bound(boo
   lea rax, [rbp-64]
   mov rsi, rdx
   mov rdi, rax
-  call std::__detail::_State<char>::_State(std::__detail::_State<char>&&)
+  call std::__detail::_State<char>::_State(std::__detail::_State<char>&&) [complete object constructor]
   lea rdx, [rbp-64]
   mov rax, QWORD PTR [rbp-120]
   mov rsi, rdx
@@ -15791,7 +15791,7 @@ std::__detail::_NFA<std::__cxx11::regex_traits<char> >::_M_insert_lookahead(long
   lea rax, [rbp-112]
   mov esi, 7
   mov rdi, rax
-  call std::__detail::_State<char>::_State(std::__detail::_Opcode)
+  call std::__detail::_State<char>::_State(std::__detail::_Opcode) [complete object constructor]
   mov rax, QWORD PTR [rbp-128]
   mov QWORD PTR [rbp-96], rax
   movzx eax, BYTE PTR [rbp-132]
@@ -15803,7 +15803,7 @@ std::__detail::_NFA<std::__cxx11::regex_traits<char> >::_M_insert_lookahead(long
   lea rax, [rbp-64]
   mov rsi, rdx
   mov rdi, rax
-  call std::__detail::_State<char>::_State(std::__detail::_State<char>&&)
+  call std::__detail::_State<char>::_State(std::__detail::_State<char>&&) [complete object constructor]
   lea rdx, [rbp-64]
   mov rax, QWORD PTR [rbp-120]
   mov rsi, rdx
@@ -15852,7 +15852,7 @@ void std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_insert_any_
   lea rax, [rbp-17]
   mov rsi, rdx
   mov rdi, rax
-  call std::__detail::_AnyMatcher<std::__cxx11::regex_traits<char>, false, false, false>::_AnyMatcher(std::__cxx11::regex_traits<char> const&)
+  call std::__detail::_AnyMatcher<std::__cxx11::regex_traits<char>, false, false, false>::_AnyMatcher(std::__cxx11::regex_traits<char> const&) [complete object constructor]
   lea rax, [rbp-64]
   mov rdi, rax
   call std::function<bool (char)>::function<std::__detail::_AnyMatcher<std::__cxx11::regex_traits<char>, false, false, false>, void, void>(std::__detail::_AnyMatcher<std::__cxx11::regex_traits<char>, false, false, false>)
@@ -15870,7 +15870,7 @@ void std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_insert_any_
   mov rdx, r12
   mov rsi, rcx
   mov rdi, rax
-  call std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >::_StateSeq(std::__detail::_NFA<std::__cxx11::regex_traits<char> >&, long)
+  call std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >::_StateSeq(std::__detail::_NFA<std::__cxx11::regex_traits<char> >&, long) [complete object constructor]
   lea rax, [rbp-96]
   mov rsi, rax
   mov rdi, rbx
@@ -15911,7 +15911,7 @@ void std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_insert_any_
   lea rax, [rbp-24]
   mov rsi, rdx
   mov rdi, rax
-  call std::__detail::_AnyMatcher<std::__cxx11::regex_traits<char>, false, false, true>::_AnyMatcher(std::__cxx11::regex_traits<char> const&)
+  call std::__detail::_AnyMatcher<std::__cxx11::regex_traits<char>, false, false, true>::_AnyMatcher(std::__cxx11::regex_traits<char> const&) [complete object constructor]
   mov rdx, QWORD PTR [rbp-24]
   lea rax, [rbp-64]
   mov rsi, rdx
@@ -15931,7 +15931,7 @@ void std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_insert_any_
   mov rdx, r12
   mov rsi, rcx
   mov rdi, rax
-  call std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >::_StateSeq(std::__detail::_NFA<std::__cxx11::regex_traits<char> >&, long)
+  call std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >::_StateSeq(std::__detail::_NFA<std::__cxx11::regex_traits<char> >&, long) [complete object constructor]
   lea rax, [rbp-96]
   mov rsi, rax
   mov rdi, rbx
@@ -15972,7 +15972,7 @@ void std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_insert_any_
   lea rax, [rbp-24]
   mov rsi, rdx
   mov rdi, rax
-  call std::__detail::_AnyMatcher<std::__cxx11::regex_traits<char>, false, true, false>::_AnyMatcher(std::__cxx11::regex_traits<char> const&)
+  call std::__detail::_AnyMatcher<std::__cxx11::regex_traits<char>, false, true, false>::_AnyMatcher(std::__cxx11::regex_traits<char> const&) [complete object constructor]
   mov rdx, QWORD PTR [rbp-24]
   lea rax, [rbp-64]
   mov rsi, rdx
@@ -15992,7 +15992,7 @@ void std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_insert_any_
   mov rdx, r12
   mov rsi, rcx
   mov rdi, rax
-  call std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >::_StateSeq(std::__detail::_NFA<std::__cxx11::regex_traits<char> >&, long)
+  call std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >::_StateSeq(std::__detail::_NFA<std::__cxx11::regex_traits<char> >&, long) [complete object constructor]
   lea rax, [rbp-96]
   mov rsi, rax
   mov rdi, rbx
@@ -16033,7 +16033,7 @@ void std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_insert_any_
   lea rax, [rbp-24]
   mov rsi, rdx
   mov rdi, rax
-  call std::__detail::_AnyMatcher<std::__cxx11::regex_traits<char>, false, true, true>::_AnyMatcher(std::__cxx11::regex_traits<char> const&)
+  call std::__detail::_AnyMatcher<std::__cxx11::regex_traits<char>, false, true, true>::_AnyMatcher(std::__cxx11::regex_traits<char> const&) [complete object constructor]
   mov rdx, QWORD PTR [rbp-24]
   lea rax, [rbp-64]
   mov rsi, rdx
@@ -16053,7 +16053,7 @@ void std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_insert_any_
   mov rdx, r12
   mov rsi, rcx
   mov rdi, rax
-  call std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >::_StateSeq(std::__detail::_NFA<std::__cxx11::regex_traits<char> >&, long)
+  call std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >::_StateSeq(std::__detail::_NFA<std::__cxx11::regex_traits<char> >&, long) [complete object constructor]
   lea rax, [rbp-96]
   mov rsi, rax
   mov rdi, rbx
@@ -16094,7 +16094,7 @@ void std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_insert_any_
   lea rax, [rbp-17]
   mov rsi, rdx
   mov rdi, rax
-  call std::__detail::_AnyMatcher<std::__cxx11::regex_traits<char>, true, false, false>::_AnyMatcher(std::__cxx11::regex_traits<char> const&)
+  call std::__detail::_AnyMatcher<std::__cxx11::regex_traits<char>, true, false, false>::_AnyMatcher(std::__cxx11::regex_traits<char> const&) [complete object constructor]
   lea rax, [rbp-64]
   mov rdi, rax
   call std::function<bool (char)>::function<std::__detail::_AnyMatcher<std::__cxx11::regex_traits<char>, true, false, false>, void, void>(std::__detail::_AnyMatcher<std::__cxx11::regex_traits<char>, true, false, false>)
@@ -16112,7 +16112,7 @@ void std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_insert_any_
   mov rdx, r12
   mov rsi, rcx
   mov rdi, rax
-  call std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >::_StateSeq(std::__detail::_NFA<std::__cxx11::regex_traits<char> >&, long)
+  call std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >::_StateSeq(std::__detail::_NFA<std::__cxx11::regex_traits<char> >&, long) [complete object constructor]
   lea rax, [rbp-96]
   mov rsi, rax
   mov rdi, rbx
@@ -16153,7 +16153,7 @@ void std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_insert_any_
   lea rax, [rbp-24]
   mov rsi, rdx
   mov rdi, rax
-  call std::__detail::_AnyMatcher<std::__cxx11::regex_traits<char>, true, false, true>::_AnyMatcher(std::__cxx11::regex_traits<char> const&)
+  call std::__detail::_AnyMatcher<std::__cxx11::regex_traits<char>, true, false, true>::_AnyMatcher(std::__cxx11::regex_traits<char> const&) [complete object constructor]
   mov rdx, QWORD PTR [rbp-24]
   lea rax, [rbp-64]
   mov rsi, rdx
@@ -16173,7 +16173,7 @@ void std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_insert_any_
   mov rdx, r12
   mov rsi, rcx
   mov rdi, rax
-  call std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >::_StateSeq(std::__detail::_NFA<std::__cxx11::regex_traits<char> >&, long)
+  call std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >::_StateSeq(std::__detail::_NFA<std::__cxx11::regex_traits<char> >&, long) [complete object constructor]
   lea rax, [rbp-96]
   mov rsi, rax
   mov rdi, rbx
@@ -16214,7 +16214,7 @@ void std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_insert_any_
   lea rax, [rbp-24]
   mov rsi, rdx
   mov rdi, rax
-  call std::__detail::_AnyMatcher<std::__cxx11::regex_traits<char>, true, true, false>::_AnyMatcher(std::__cxx11::regex_traits<char> const&)
+  call std::__detail::_AnyMatcher<std::__cxx11::regex_traits<char>, true, true, false>::_AnyMatcher(std::__cxx11::regex_traits<char> const&) [complete object constructor]
   mov rdx, QWORD PTR [rbp-24]
   lea rax, [rbp-64]
   mov rsi, rdx
@@ -16234,7 +16234,7 @@ void std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_insert_any_
   mov rdx, r12
   mov rsi, rcx
   mov rdi, rax
-  call std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >::_StateSeq(std::__detail::_NFA<std::__cxx11::regex_traits<char> >&, long)
+  call std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >::_StateSeq(std::__detail::_NFA<std::__cxx11::regex_traits<char> >&, long) [complete object constructor]
   lea rax, [rbp-96]
   mov rsi, rax
   mov rdi, rbx
@@ -16275,7 +16275,7 @@ void std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_insert_any_
   lea rax, [rbp-24]
   mov rsi, rdx
   mov rdi, rax
-  call std::__detail::_AnyMatcher<std::__cxx11::regex_traits<char>, true, true, true>::_AnyMatcher(std::__cxx11::regex_traits<char> const&)
+  call std::__detail::_AnyMatcher<std::__cxx11::regex_traits<char>, true, true, true>::_AnyMatcher(std::__cxx11::regex_traits<char> const&) [complete object constructor]
   mov rdx, QWORD PTR [rbp-24]
   lea rax, [rbp-64]
   mov rsi, rdx
@@ -16295,7 +16295,7 @@ void std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_insert_any_
   mov rdx, r12
   mov rsi, rcx
   mov rdi, rax
-  call std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >::_StateSeq(std::__detail::_NFA<std::__cxx11::regex_traits<char> >&, long)
+  call std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >::_StateSeq(std::__detail::_NFA<std::__cxx11::regex_traits<char> >&, long) [complete object constructor]
   lea rax, [rbp-96]
   mov rsi, rax
   mov rdi, rbx
@@ -16405,7 +16405,7 @@ void std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_insert_char
   mov rdx, rbx
   mov esi, ecx
   mov rdi, rax
-  call std::__detail::_CharMatcher<std::__cxx11::regex_traits<char>, false, false>::_CharMatcher(char, std::__cxx11::regex_traits<char> const&)
+  call std::__detail::_CharMatcher<std::__cxx11::regex_traits<char>, false, false>::_CharMatcher(char, std::__cxx11::regex_traits<char> const&) [complete object constructor]
   movzx edx, WORD PTR [rbp-34]
   lea rax, [rbp-80]
   mov esi, edx
@@ -16425,7 +16425,7 @@ void std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_insert_char
   mov rdx, rbx
   mov rsi, rcx
   mov rdi, rax
-  call std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >::_StateSeq(std::__detail::_NFA<std::__cxx11::regex_traits<char> >&, long)
+  call std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >::_StateSeq(std::__detail::_NFA<std::__cxx11::regex_traits<char> >&, long) [complete object constructor]
   lea rax, [rbp-112]
   mov rsi, rax
   mov rdi, r12
@@ -16476,7 +16476,7 @@ void std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_insert_char
   mov rdx, rbx
   mov esi, ecx
   mov rdi, rax
-  call std::__detail::_CharMatcher<std::__cxx11::regex_traits<char>, false, true>::_CharMatcher(char, std::__cxx11::regex_traits<char> const&)
+  call std::__detail::_CharMatcher<std::__cxx11::regex_traits<char>, false, true>::_CharMatcher(char, std::__cxx11::regex_traits<char> const&) [complete object constructor]
   mov rcx, QWORD PTR [rbp-48]
   mov rdx, QWORD PTR [rbp-40]
   lea rax, [rbp-80]
@@ -16497,7 +16497,7 @@ void std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_insert_char
   mov rdx, rbx
   mov rsi, rcx
   mov rdi, rax
-  call std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >::_StateSeq(std::__detail::_NFA<std::__cxx11::regex_traits<char> >&, long)
+  call std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >::_StateSeq(std::__detail::_NFA<std::__cxx11::regex_traits<char> >&, long) [complete object constructor]
   lea rax, [rbp-112]
   mov rsi, rax
   mov rdi, r12
@@ -16548,7 +16548,7 @@ void std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_insert_char
   mov rdx, rbx
   mov esi, ecx
   mov rdi, rax
-  call std::__detail::_CharMatcher<std::__cxx11::regex_traits<char>, true, false>::_CharMatcher(char, std::__cxx11::regex_traits<char> const&)
+  call std::__detail::_CharMatcher<std::__cxx11::regex_traits<char>, true, false>::_CharMatcher(char, std::__cxx11::regex_traits<char> const&) [complete object constructor]
   mov rcx, QWORD PTR [rbp-48]
   mov rdx, QWORD PTR [rbp-40]
   lea rax, [rbp-80]
@@ -16569,7 +16569,7 @@ void std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_insert_char
   mov rdx, rbx
   mov rsi, rcx
   mov rdi, rax
-  call std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >::_StateSeq(std::__detail::_NFA<std::__cxx11::regex_traits<char> >&, long)
+  call std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >::_StateSeq(std::__detail::_NFA<std::__cxx11::regex_traits<char> >&, long) [complete object constructor]
   lea rax, [rbp-112]
   mov rsi, rax
   mov rdi, r12
@@ -16620,7 +16620,7 @@ void std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_insert_char
   mov rdx, rbx
   mov esi, ecx
   mov rdi, rax
-  call std::__detail::_CharMatcher<std::__cxx11::regex_traits<char>, true, true>::_CharMatcher(char, std::__cxx11::regex_traits<char> const&)
+  call std::__detail::_CharMatcher<std::__cxx11::regex_traits<char>, true, true>::_CharMatcher(char, std::__cxx11::regex_traits<char> const&) [complete object constructor]
   mov rcx, QWORD PTR [rbp-48]
   mov rdx, QWORD PTR [rbp-40]
   lea rax, [rbp-80]
@@ -16641,7 +16641,7 @@ void std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_insert_char
   mov rdx, rbx
   mov rsi, rcx
   mov rdi, rax
-  call std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >::_StateSeq(std::__detail::_NFA<std::__cxx11::regex_traits<char> >&, long)
+  call std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >::_StateSeq(std::__detail::_NFA<std::__cxx11::regex_traits<char> >&, long) [complete object constructor]
   lea rax, [rbp-112]
   mov rsi, rax
   mov rdi, r12
@@ -16787,7 +16787,7 @@ std::__detail::_NFA<std::__cxx11::regex_traits<char> >::_M_insert_backref(unsign
   lea rax, [rbp-128]
   mov esi, 3
   mov rdi, rax
-  call std::__detail::_State<char>::_State(std::__detail::_Opcode)
+  call std::__detail::_State<char>::_State(std::__detail::_Opcode) [complete object constructor]
   mov rax, QWORD PTR [rbp-160]
   mov QWORD PTR [rbp-112], rax
   lea rax, [rbp-128]
@@ -16797,7 +16797,7 @@ std::__detail::_NFA<std::__cxx11::regex_traits<char> >::_M_insert_backref(unsign
   lea rax, [rbp-80]
   mov rsi, rdx
   mov rdi, rax
-  call std::__detail::_State<char>::_State(std::__detail::_State<char>&&)
+  call std::__detail::_State<char>::_State(std::__detail::_State<char>&&) [complete object constructor]
   lea rdx, [rbp-80]
   mov rax, QWORD PTR [rbp-152]
   mov rsi, rdx
@@ -16850,7 +16850,7 @@ std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, false, false>::
   nop
   leave
   ret
-std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, false, false>::_BracketMatcher(std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, false, false>&&):
+std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, false, false>::_BracketMatcher(std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, false, false>&&) [base object constructor]:
   push rbp
   mov rbp, rsp
   sub rsp, 16
@@ -16860,28 +16860,28 @@ std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, false, false>::
   mov rdx, QWORD PTR [rbp-16]
   mov rsi, rdx
   mov rdi, rax
-  call std::vector<char, std::allocator<char> >::vector(std::vector<char, std::allocator<char> >&&)
+  call std::vector<char, std::allocator<char> >::vector(std::vector<char, std::allocator<char> >&&) [complete object constructor]
   mov rax, QWORD PTR [rbp-8]
   add rax, 24
   mov rdx, QWORD PTR [rbp-16]
   add rdx, 24
   mov rsi, rdx
   mov rdi, rax
-  call std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::vector(std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >&&)
+  call std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::vector(std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >&&) [complete object constructor]
   mov rax, QWORD PTR [rbp-8]
   add rax, 48
   mov rdx, QWORD PTR [rbp-16]
   add rdx, 48
   mov rsi, rdx
   mov rdi, rax
-  call std::vector<std::pair<char, char>, std::allocator<std::pair<char, char> > >::vector(std::vector<std::pair<char, char>, std::allocator<std::pair<char, char> > >&&)
+  call std::vector<std::pair<char, char>, std::allocator<std::pair<char, char> > >::vector(std::vector<std::pair<char, char>, std::allocator<std::pair<char, char> > >&&) [complete object constructor]
   mov rax, QWORD PTR [rbp-8]
   add rax, 72
   mov rdx, QWORD PTR [rbp-16]
   add rdx, 72
   mov rsi, rdx
   mov rdi, rax
-  call std::vector<std::__cxx11::regex_traits<char>::_RegexMask, std::allocator<std::__cxx11::regex_traits<char>::_RegexMask> >::vector(std::vector<std::__cxx11::regex_traits<char>::_RegexMask, std::allocator<std::__cxx11::regex_traits<char>::_RegexMask> >&&)
+  call std::vector<std::__cxx11::regex_traits<char>::_RegexMask, std::allocator<std::__cxx11::regex_traits<char>::_RegexMask> >::vector(std::vector<std::__cxx11::regex_traits<char>::_RegexMask, std::allocator<std::__cxx11::regex_traits<char>::_RegexMask> >&&) [complete object constructor]
   mov rax, QWORD PTR [rbp-8]
   mov rdx, QWORD PTR [rbp-16]
   mov edx, DWORD PTR [rdx+96]
@@ -16934,7 +16934,7 @@ void std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_insert_char
   mov rdx, rbx
   mov esi, ecx
   mov rdi, rax
-  call std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, false, false>::_BracketMatcher(bool, std::__cxx11::regex_traits<char> const&)
+  call std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, false, false>::_BracketMatcher(bool, std::__cxx11::regex_traits<char> const&) [complete object constructor]
   mov rax, QWORD PTR [rbp-408]
   lea rcx, [rax+272]
   lea rax, [rbp-400]
@@ -16959,7 +16959,7 @@ void std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_insert_char
   lea rax, [rbp-176]
   mov rsi, rdx
   mov rdi, rax
-  call std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, false, false>::_BracketMatcher(std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, false, false>&&)
+  call std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, false, false>::_BracketMatcher(std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, false, false>&&) [complete object constructor]
   lea rdx, [rbp-176]
   lea rax, [rbp-208]
   mov rsi, rdx
@@ -16979,7 +16979,7 @@ void std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_insert_char
   mov rdx, r12
   mov rsi, rcx
   mov rdi, rax
-  call std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >::_StateSeq(std::__detail::_NFA<std::__cxx11::regex_traits<char> >&, long)
+  call std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >::_StateSeq(std::__detail::_NFA<std::__cxx11::regex_traits<char> >&, long) [complete object constructor]
   lea rax, [rbp-240]
   mov rsi, rax
   mov rdi, rbx
@@ -17042,7 +17042,7 @@ std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, false, true>::~
   nop
   leave
   ret
-std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, false, true>::_BracketMatcher(std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, false, true>&&):
+std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, false, true>::_BracketMatcher(std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, false, true>&&) [base object constructor]:
   push rbp
   mov rbp, rsp
   sub rsp, 16
@@ -17052,28 +17052,28 @@ std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, false, true>::_
   mov rdx, QWORD PTR [rbp-16]
   mov rsi, rdx
   mov rdi, rax
-  call std::vector<char, std::allocator<char> >::vector(std::vector<char, std::allocator<char> >&&)
+  call std::vector<char, std::allocator<char> >::vector(std::vector<char, std::allocator<char> >&&) [complete object constructor]
   mov rax, QWORD PTR [rbp-8]
   add rax, 24
   mov rdx, QWORD PTR [rbp-16]
   add rdx, 24
   mov rsi, rdx
   mov rdi, rax
-  call std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::vector(std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >&&)
+  call std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::vector(std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >&&) [complete object constructor]
   mov rax, QWORD PTR [rbp-8]
   add rax, 48
   mov rdx, QWORD PTR [rbp-16]
   add rdx, 48
   mov rsi, rdx
   mov rdi, rax
-  call std::vector<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >::vector(std::vector<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >&&)
+  call std::vector<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >::vector(std::vector<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >&&) [complete object constructor]
   mov rax, QWORD PTR [rbp-8]
   add rax, 72
   mov rdx, QWORD PTR [rbp-16]
   add rdx, 72
   mov rsi, rdx
   mov rdi, rax
-  call std::vector<std::__cxx11::regex_traits<char>::_RegexMask, std::allocator<std::__cxx11::regex_traits<char>::_RegexMask> >::vector(std::vector<std::__cxx11::regex_traits<char>::_RegexMask, std::allocator<std::__cxx11::regex_traits<char>::_RegexMask> >&&)
+  call std::vector<std::__cxx11::regex_traits<char>::_RegexMask, std::allocator<std::__cxx11::regex_traits<char>::_RegexMask> >::vector(std::vector<std::__cxx11::regex_traits<char>::_RegexMask, std::allocator<std::__cxx11::regex_traits<char>::_RegexMask> >&&) [complete object constructor]
   mov rax, QWORD PTR [rbp-8]
   mov rdx, QWORD PTR [rbp-16]
   mov edx, DWORD PTR [rdx+96]
@@ -17130,7 +17130,7 @@ void std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_insert_char
   mov rdx, rbx
   mov esi, ecx
   mov rdi, rax
-  call std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, false, true>::_BracketMatcher(bool, std::__cxx11::regex_traits<char> const&)
+  call std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, false, true>::_BracketMatcher(bool, std::__cxx11::regex_traits<char> const&) [complete object constructor]
   mov rax, QWORD PTR [rbp-408]
   lea rcx, [rax+272]
   lea rax, [rbp-400]
@@ -17155,7 +17155,7 @@ void std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_insert_char
   lea rax, [rbp-176]
   mov rsi, rdx
   mov rdi, rax
-  call std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, false, true>::_BracketMatcher(std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, false, true>&&)
+  call std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, false, true>::_BracketMatcher(std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, false, true>&&) [complete object constructor]
   lea rdx, [rbp-176]
   lea rax, [rbp-208]
   mov rsi, rdx
@@ -17175,7 +17175,7 @@ void std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_insert_char
   mov rdx, r12
   mov rsi, rcx
   mov rdi, rax
-  call std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >::_StateSeq(std::__detail::_NFA<std::__cxx11::regex_traits<char> >&, long)
+  call std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >::_StateSeq(std::__detail::_NFA<std::__cxx11::regex_traits<char> >&, long) [complete object constructor]
   lea rax, [rbp-240]
   mov rsi, rax
   mov rdi, rbx
@@ -17238,7 +17238,7 @@ std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, true, false>::~
   nop
   leave
   ret
-std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, true, false>::_BracketMatcher(std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, true, false>&&):
+std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, true, false>::_BracketMatcher(std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, true, false>&&) [base object constructor]:
   push rbp
   mov rbp, rsp
   sub rsp, 16
@@ -17248,28 +17248,28 @@ std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, true, false>::_
   mov rdx, QWORD PTR [rbp-16]
   mov rsi, rdx
   mov rdi, rax
-  call std::vector<char, std::allocator<char> >::vector(std::vector<char, std::allocator<char> >&&)
+  call std::vector<char, std::allocator<char> >::vector(std::vector<char, std::allocator<char> >&&) [complete object constructor]
   mov rax, QWORD PTR [rbp-8]
   add rax, 24
   mov rdx, QWORD PTR [rbp-16]
   add rdx, 24
   mov rsi, rdx
   mov rdi, rax
-  call std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::vector(std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >&&)
+  call std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::vector(std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >&&) [complete object constructor]
   mov rax, QWORD PTR [rbp-8]
   add rax, 48
   mov rdx, QWORD PTR [rbp-16]
   add rdx, 48
   mov rsi, rdx
   mov rdi, rax
-  call std::vector<std::pair<char, char>, std::allocator<std::pair<char, char> > >::vector(std::vector<std::pair<char, char>, std::allocator<std::pair<char, char> > >&&)
+  call std::vector<std::pair<char, char>, std::allocator<std::pair<char, char> > >::vector(std::vector<std::pair<char, char>, std::allocator<std::pair<char, char> > >&&) [complete object constructor]
   mov rax, QWORD PTR [rbp-8]
   add rax, 72
   mov rdx, QWORD PTR [rbp-16]
   add rdx, 72
   mov rsi, rdx
   mov rdi, rax
-  call std::vector<std::__cxx11::regex_traits<char>::_RegexMask, std::allocator<std::__cxx11::regex_traits<char>::_RegexMask> >::vector(std::vector<std::__cxx11::regex_traits<char>::_RegexMask, std::allocator<std::__cxx11::regex_traits<char>::_RegexMask> >&&)
+  call std::vector<std::__cxx11::regex_traits<char>::_RegexMask, std::allocator<std::__cxx11::regex_traits<char>::_RegexMask> >::vector(std::vector<std::__cxx11::regex_traits<char>::_RegexMask, std::allocator<std::__cxx11::regex_traits<char>::_RegexMask> >&&) [complete object constructor]
   mov rax, QWORD PTR [rbp-8]
   mov rdx, QWORD PTR [rbp-16]
   mov edx, DWORD PTR [rdx+96]
@@ -17326,7 +17326,7 @@ void std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_insert_char
   mov rdx, rbx
   mov esi, ecx
   mov rdi, rax
-  call std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, true, false>::_BracketMatcher(bool, std::__cxx11::regex_traits<char> const&)
+  call std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, true, false>::_BracketMatcher(bool, std::__cxx11::regex_traits<char> const&) [complete object constructor]
   mov rax, QWORD PTR [rbp-408]
   lea rcx, [rax+272]
   lea rax, [rbp-400]
@@ -17351,7 +17351,7 @@ void std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_insert_char
   lea rax, [rbp-176]
   mov rsi, rdx
   mov rdi, rax
-  call std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, true, false>::_BracketMatcher(std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, true, false>&&)
+  call std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, true, false>::_BracketMatcher(std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, true, false>&&) [complete object constructor]
   lea rdx, [rbp-176]
   lea rax, [rbp-208]
   mov rsi, rdx
@@ -17371,7 +17371,7 @@ void std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_insert_char
   mov rdx, r12
   mov rsi, rcx
   mov rdi, rax
-  call std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >::_StateSeq(std::__detail::_NFA<std::__cxx11::regex_traits<char> >&, long)
+  call std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >::_StateSeq(std::__detail::_NFA<std::__cxx11::regex_traits<char> >&, long) [complete object constructor]
   lea rax, [rbp-240]
   mov rsi, rax
   mov rdi, rbx
@@ -17434,7 +17434,7 @@ std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, true, true>::~_
   nop
   leave
   ret
-std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, true, true>::_BracketMatcher(std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, true, true>&&):
+std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, true, true>::_BracketMatcher(std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, true, true>&&) [base object constructor]:
   push rbp
   mov rbp, rsp
   sub rsp, 16
@@ -17444,28 +17444,28 @@ std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, true, true>::_B
   mov rdx, QWORD PTR [rbp-16]
   mov rsi, rdx
   mov rdi, rax
-  call std::vector<char, std::allocator<char> >::vector(std::vector<char, std::allocator<char> >&&)
+  call std::vector<char, std::allocator<char> >::vector(std::vector<char, std::allocator<char> >&&) [complete object constructor]
   mov rax, QWORD PTR [rbp-8]
   add rax, 24
   mov rdx, QWORD PTR [rbp-16]
   add rdx, 24
   mov rsi, rdx
   mov rdi, rax
-  call std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::vector(std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >&&)
+  call std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >::vector(std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >&&) [complete object constructor]
   mov rax, QWORD PTR [rbp-8]
   add rax, 48
   mov rdx, QWORD PTR [rbp-16]
   add rdx, 48
   mov rsi, rdx
   mov rdi, rax
-  call std::vector<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >::vector(std::vector<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >&&)
+  call std::vector<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >::vector(std::vector<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >&&) [complete object constructor]
   mov rax, QWORD PTR [rbp-8]
   add rax, 72
   mov rdx, QWORD PTR [rbp-16]
   add rdx, 72
   mov rsi, rdx
   mov rdi, rax
-  call std::vector<std::__cxx11::regex_traits<char>::_RegexMask, std::allocator<std::__cxx11::regex_traits<char>::_RegexMask> >::vector(std::vector<std::__cxx11::regex_traits<char>::_RegexMask, std::allocator<std::__cxx11::regex_traits<char>::_RegexMask> >&&)
+  call std::vector<std::__cxx11::regex_traits<char>::_RegexMask, std::allocator<std::__cxx11::regex_traits<char>::_RegexMask> >::vector(std::vector<std::__cxx11::regex_traits<char>::_RegexMask, std::allocator<std::__cxx11::regex_traits<char>::_RegexMask> >&&) [complete object constructor]
   mov rax, QWORD PTR [rbp-8]
   mov rdx, QWORD PTR [rbp-16]
   mov edx, DWORD PTR [rdx+96]
@@ -17522,7 +17522,7 @@ void std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_insert_char
   mov rdx, rbx
   mov esi, ecx
   mov rdi, rax
-  call std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, true, true>::_BracketMatcher(bool, std::__cxx11::regex_traits<char> const&)
+  call std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, true, true>::_BracketMatcher(bool, std::__cxx11::regex_traits<char> const&) [complete object constructor]
   mov rax, QWORD PTR [rbp-408]
   lea rcx, [rax+272]
   lea rax, [rbp-400]
@@ -17547,7 +17547,7 @@ void std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_insert_char
   lea rax, [rbp-176]
   mov rsi, rdx
   mov rdi, rax
-  call std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, true, true>::_BracketMatcher(std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, true, true>&&)
+  call std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, true, true>::_BracketMatcher(std::__detail::_BracketMatcher<std::__cxx11::regex_traits<char>, true, true>&&) [complete object constructor]
   lea rdx, [rbp-176]
   lea rax, [rbp-208]
   mov rsi, rdx
@@ -17567,7 +17567,7 @@ void std::__detail::_Compiler<std::__cxx11::regex_traits<char> >::_M_insert_char
   mov rdx, r12
   mov rsi, rcx
   mov rdi, rax
-  call std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >::_StateSeq(std::__detail::_NFA<std::__cxx11::regex_traits<char> >&, long)
+  call std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >::_StateSeq(std::__detail::_NFA<std::__cxx11::regex_traits<char> >&, long) [complete object constructor]
   lea rax, [rbp-240]
   mov rsi, rax
   mov rdi, rbx
@@ -17719,7 +17719,7 @@ std::__detail::_NFA<std::__cxx11::regex_traits<char> >::_M_insert_repeat(long, l
   lea rax, [rbp-112]
   mov esi, 2
   mov rdi, rax
-  call std::__detail::_State<char>::_State(std::__detail::_Opcode)
+  call std::__detail::_State<char>::_State(std::__detail::_Opcode) [complete object constructor]
   mov rax, QWORD PTR [rbp-128]
   mov QWORD PTR [rbp-104], rax
   mov rax, QWORD PTR [rbp-136]
@@ -17733,7 +17733,7 @@ std::__detail::_NFA<std::__cxx11::regex_traits<char> >::_M_insert_repeat(long, l
   lea rax, [rbp-64]
   mov rsi, rdx
   mov rdi, rax
-  call std::__detail::_State<char>::_State(std::__detail::_State<char>&&)
+  call std::__detail::_State<char>::_State(std::__detail::_State<char>&&) [complete object constructor]
   lea rdx, [rbp-64]
   mov rax, QWORD PTR [rbp-120]
   mov rsi, rdx
@@ -17852,7 +17852,7 @@ std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >::_M_clone():
   lea rax, [rbp-320]
   mov rsi, rdx
   mov rdi, rax
-  call std::__detail::_State<char>::_State(std::__detail::_State<char> const&)
+  call std::__detail::_State<char>::_State(std::__detail::_State<char> const&) [complete object constructor]
   mov rax, QWORD PTR [rbp-336]
   mov rbx, QWORD PTR [rax]
   lea rax, [rbp-320]
@@ -17862,7 +17862,7 @@ std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >::_M_clone():
   lea rax, [rbp-96]
   mov rsi, rdx
   mov rdi, rax
-  call std::__detail::_State<char>::_State(std::__detail::_State<char>&&)
+  call std::__detail::_State<char>::_State(std::__detail::_State<char>&&) [complete object constructor]
   lea rax, [rbp-96]
   mov rsi, rax
   mov rdi, rbx
@@ -18041,7 +18041,7 @@ std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >::_M_clone():
   mov rax, QWORD PTR [rbp-328]
   mov rcx, rbx
   mov rdi, rax
-  call std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >::_StateSeq(std::__detail::_NFA<std::__cxx11::regex_traits<char> >&, long, long)
+  call std::__detail::_StateSeq<std::__cxx11::regex_traits<char> >::_StateSeq(std::__detail::_NFA<std::__cxx11::regex_traits<char> >&, long, long) [complete object constructor]
   lea rax, [rbp-224]
   mov rdi, rax
   call std::stack<long, std::deque<long, std::allocator<long> > >::~stack() [complete object destructor]
@@ -18440,7 +18440,7 @@ __gnu_cxx::new_allocator<std::__cxx11::sub_match<char const*> >::allocate(unsign
   nop
   leave
   ret
-std::move_iterator<std::__cxx11::sub_match<char const*>*>::move_iterator(std::__cxx11::sub_match<char const*>*):
+std::move_iterator<std::__cxx11::sub_match<char const*>*>::move_iterator(std::__cxx11::sub_match<char const*>*) [base object constructor]:
   push rbp
   mov rbp, rsp
   mov QWORD PTR [rbp-8], rdi
@@ -18467,7 +18467,7 @@ std::__cxx11::sub_match<char const*>* std::uninitialized_copy<std::move_iterator
   call std::__cxx11::sub_match<char const*>* std::__uninitialized_copy<false>::__uninit_copy<std::move_iterator<std::__cxx11::sub_match<char const*>*>, std::__cxx11::sub_match<char const*>*>(std::move_iterator<std::__cxx11::sub_match<char const*>*>, std::move_iterator<std::__cxx11::sub_match<char const*>*>, std::__cxx11::sub_match<char const*>*)
   leave
   ret
-__gnu_cxx::new_allocator<std::pair<char const*, int> >::new_allocator(__gnu_cxx::new_allocator<std::pair<char const*, int> > const&):
+__gnu_cxx::new_allocator<std::pair<char const*, int> >::new_allocator(__gnu_cxx::new_allocator<std::pair<char const*, int> > const&) [base object constructor]:
   push rbp
   mov rbp, rsp
   mov QWORD PTR [rbp-8], rdi
@@ -18796,7 +18796,7 @@ std::vector<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, st
   nop
   leave
   ret
-__gnu_cxx::__normal_iterator<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > > const*, std::vector<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > >, std::allocator<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > > > > >::__normal_iterator(std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > > const* const&):
+__gnu_cxx::__normal_iterator<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > > const*, std::vector<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > >, std::allocator<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > > > > >::__normal_iterator(std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > > const* const&) [base object constructor]:
   push rbp
   mov rbp, rsp
   mov QWORD PTR [rbp-8], rdi
@@ -18832,7 +18832,7 @@ std::remove_reference<std::allocator<std::pair<long, std::vector<std::__cxx11::s
   mov rax, QWORD PTR [rbp-8]
   pop rbp
   ret
-std::_Vector_base<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > >, std::allocator<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > > > >::_Vector_impl::_Vector_impl(std::allocator<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > > >&&):
+std::_Vector_base<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > >, std::allocator<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > > > >::_Vector_impl::_Vector_impl(std::allocator<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > > >&&) [base object constructor]:
   push rbp
   mov rbp, rsp
   sub rsp, 16
@@ -18845,7 +18845,7 @@ std::_Vector_base<std::pair<long, std::vector<std::__cxx11::sub_match<char const
   mov rax, QWORD PTR [rbp-8]
   mov rsi, rdx
   mov rdi, rax
-  call std::allocator<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > > >::allocator(std::allocator<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > > > const&)
+  call std::allocator<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > > >::allocator(std::allocator<std::pair<long, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > > > const&) [base object constructor]
   mov rax, QWORD PTR [rbp-8]
   mov QWORD PTR [rax], 0
   mov rax, QWORD PTR [rbp-8]
@@ -18896,7 +18896,7 @@ std::_Vector_base<std::__cxx11::sub_match<char const*>, std::allocator<std::__cx
   mov rax, QWORD PTR [rbp-8]
   mov rsi, rdx
   mov rdi, rax
-  call std::allocator<std::__cxx11::sub_match<char const*> >::allocator(std::allocator<std::__cxx11::sub_match<char const*> > const&)
+  call std::allocator<std::__cxx11::sub_match<char const*> >::allocator(std::allocator<std::__cxx11::sub_match<char const*> > const&) [complete object constructor]
   mov rax, QWORD PTR [rbp-8]
   leave
   ret
@@ -19240,7 +19240,7 @@ std::__detail::_Executor<char const*, std::allocator<std::__cxx11::sub_match<cha
   lea rax, [rbp-48]
   mov rsi, rdx
   mov rdi, rax
-  call std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > >::vector(std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > const&)
+  call std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > >::vector(std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > const&) [complete object constructor]
   mov rax, QWORD PTR [rbp-200]
   mov r8d, DWORD PTR [rax+136]
   mov rax, QWORD PTR [rbp-200]
@@ -19254,7 +19254,7 @@ std::__detail::_Executor<char const*, std::allocator<std::__cxx11::sub_match<cha
   mov r9d, r8d
   mov r8, rdi
   mov rdi, rax
-  call std::__detail::_Executor<char const*, std::allocator<std::__cxx11::sub_match<char const*> >, std::__cxx11::regex_traits<char>, false>::_Executor(char const*, char const*, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > >&, std::__cxx11::basic_regex<char, std::__cxx11::regex_traits<char> > const&, std::regex_constants::match_flag_type)
+  call std::__detail::_Executor<char const*, std::allocator<std::__cxx11::sub_match<char const*> >, std::__cxx11::regex_traits<char>, false>::_Executor(char const*, char const*, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > >&, std::__cxx11::basic_regex<char, std::__cxx11::regex_traits<char> > const&, std::regex_constants::match_flag_type) [complete object constructor]
   mov rax, QWORD PTR [rbp-208]
   mov QWORD PTR [rbp-64], rax
   lea rax, [rbp-192]
@@ -19345,7 +19345,7 @@ std::__detail::_State<char>::_M_matches(char) const:
   call std::function<bool (char)>::operator()(char) const
   leave
   ret
-std::__detail::_Backref_matcher<char const*, std::__cxx11::regex_traits<char> >::_Backref_matcher(bool, std::__cxx11::regex_traits<char> const&):
+std::__detail::_Backref_matcher<char const*, std::__cxx11::regex_traits<char> >::_Backref_matcher(bool, std::__cxx11::regex_traits<char> const&) [base object constructor]:
   push rbp
   mov rbp, rsp
   mov QWORD PTR [rbp-8], rdi
@@ -19462,7 +19462,7 @@ void std::__do_alloc_on_copy<std::allocator<std::__cxx11::sub_match<char const*>
   nop
   pop rbp
   ret
-__gnu_cxx::__normal_iterator<std::__cxx11::sub_match<char const*> const*, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > >::__normal_iterator(std::__cxx11::sub_match<char const*> const* const&):
+__gnu_cxx::__normal_iterator<std::__cxx11::sub_match<char const*> const*, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > >::__normal_iterator(std::__cxx11::sub_match<char const*> const* const&) [base object constructor]:
   push rbp
   mov rbp, rsp
   mov QWORD PTR [rbp-8], rdi
@@ -19526,7 +19526,7 @@ __gnu_cxx::__normal_iterator<std::__cxx11::sub_match<char const*>*, std::vector<
   lea rax, [rbp-32]
   mov rsi, rdx
   mov rdi, rax
-  call __gnu_cxx::__normal_iterator<std::__cxx11::sub_match<char const*>*, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > >::__normal_iterator(std::__cxx11::sub_match<char const*>* const&)
+  call __gnu_cxx::__normal_iterator<std::__cxx11::sub_match<char const*>*, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > >::__normal_iterator(std::__cxx11::sub_match<char const*>* const&) [complete object constructor]
   mov rax, QWORD PTR [rbp-32]
   add rsp, 48
   pop rbx
@@ -19867,7 +19867,7 @@ std::__detail::_Executor<char const*, std::allocator<std::__cxx11::sub_match<cha
   lea rax, [rbp-48]
   mov rsi, rdx
   mov rdi, rax
-  call std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > >::vector(std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > const&)
+  call std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > >::vector(std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > > const&) [complete object constructor]
   mov rax, QWORD PTR [rbp-184]
   mov r8d, DWORD PTR [rax+112]
   mov rax, QWORD PTR [rbp-184]
@@ -19881,7 +19881,7 @@ std::__detail::_Executor<char const*, std::allocator<std::__cxx11::sub_match<cha
   mov r9d, r8d
   mov r8, rdi
   mov rdi, rax
-  call std::__detail::_Executor<char const*, std::allocator<std::__cxx11::sub_match<char const*> >, std::__cxx11::regex_traits<char>, true>::_Executor(char const*, char const*, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > >&, std::__cxx11::basic_regex<char, std::__cxx11::regex_traits<char> > const&, std::regex_constants::match_flag_type)
+  call std::__detail::_Executor<char const*, std::allocator<std::__cxx11::sub_match<char const*> >, std::__cxx11::regex_traits<char>, true>::_Executor(char const*, char const*, std::vector<std::__cxx11::sub_match<char const*>, std::allocator<std::__cxx11::sub_match<char const*> > >&, std::__cxx11::basic_regex<char, std::__cxx11::regex_traits<char> > const&, std::regex_constants::match_flag_type) [complete object constructor]
   mov rax, QWORD PTR [rbp-192]
   mov QWORD PTR [rbp-80], rax
   lea rax, [rbp-176]
@@ -19993,7 +19993,7 @@ std::__allocated_ptr<std::allocator<std::_Sp_counted_ptr_inplace<std::__detail::
   mov rax, QWORD PTR [rbp-8]
   mov rsi, rcx
   mov rdi, rax
-  call std::__allocated_ptr<std::allocator<std::_Sp_counted_ptr_inplace<std::__detail::_NFA<std::__cxx11::regex_traits<char> >, std::allocator<std::__detail::_NFA<std::__cxx11::regex_traits<char> > >, (__gnu_cxx::_Lock_policy)2> > >::__allocated_ptr(std::allocator<std::_Sp_counted_ptr_inplace<std::__detail::_NFA<std::__cxx11::regex_traits<char> >, std::allocator<std::__detail::_NFA<std::__cxx11::regex_traits<char> > >, (__gnu_cxx::_Lock_policy)2> >&, std::_Sp_counted_ptr_inplace<std::__detail::_NFA<std::__cxx11::regex_traits<char> >, std::allocator<std::__detail::_NFA<std::__cxx11::regex_traits<char> > >, (__gnu_cxx::_Lock_policy)2>*)
+  call std::__allocated_ptr<std::allocator<std::_Sp_counted_ptr_inplace<std::__detail::_NFA<std::__cxx11::regex_traits<char> >, std::allocator<std::__detail::_NFA<std::__cxx11::regex_traits<char> > >, (__gnu_cxx::_Lock_policy)2> > >::__allocated_ptr(std::allocator<std::_Sp_counted_ptr_inplace<std::__detail::_NFA<std::__cxx11::regex_traits<char> >, std::allocator<std::__detail::_NFA<std::__cxx11::regex_traits<char> > >, (__gnu_cxx::_Lock_policy)2> >&, std::_Sp_counted_ptr_inplace<std::__detail::_NFA<std::__cxx11::regex_traits<char> >, std::allocator<std::__detail::_NFA<std::__cxx11::regex_traits<char> > >, (__gnu_cxx::_Lock_policy)2>*) [complete object constructor]
   mov rax, QWORD PTR [rbp-8]
   leave
   ret
