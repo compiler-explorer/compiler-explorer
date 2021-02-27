@@ -4,6 +4,8 @@
 /.nyc_output
 /node_modules
 /out
+/asm-docs
+/static/dist
 
 # user local customizations
 /etc/config/*.local.properties
