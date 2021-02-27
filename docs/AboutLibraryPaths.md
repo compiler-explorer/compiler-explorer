@@ -21,7 +21,7 @@ We have a couple of seperate stages where we use and mix different techniques to
   * We always add '.' as a path as well because that's where we put libraries that are downloaded from our Conan server.
   * We use `-l` (or equivalent `linkFlag`) to say we want to statically or dynamically link to a named library binary (the compiler and linker decide if it's gonna be static or dynamic).
 * Running the executable
-  * We use `LD_LIBRARY_PATH` just in case these are dependencies inherited from the compiler.
+  * We use `LD_LIBRARY_PATH` just in case these are dependencies inherited from the compiler - and for the libraries that are used (also just in case).
 
 
 ## Specific properties that are used in certain situations
@@ -35,7 +35,7 @@ We have a couple of seperate stages where we use and mix different techniques to
   * is used for `LD_LIBRARY_PATH` to enable the users's executable to find `.so` files
 * Library .libPath
   * is used for linking (`-Wl,-rpath=` and/or `-L`) during building binaries
-  * is used for `LD_LIBRARY_PATH` to enable the users's executable to find `.so` files
+  * is used for `LD_LIBRARY_PATH` to enable the users's executable to find `.so` files (just in case)
 
 
 ## Example
@@ -77,4 +77,4 @@ This will result in the following situations if we want to compile some code wit
     * `-L/home/ubuntu/mylib/lib` (mylib library path used to find `libmylib.a`)
     * `-lmylib` (mylib library name)
 * Running the executable
-  * `LD_LIBRARY_PATH` is set to `/home/ubuntu/mycl/lib/lib64`
+  * `LD_LIBRARY_PATH` is set to `/home/ubuntu/mycl/lib/lib64:/home/ubuntu/mylib/lib`
