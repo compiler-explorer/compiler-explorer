@@ -77,4 +77,4 @@ This will result in the following situations if we want to compile some code wit
     * `-L/home/ubuntu/mylib/lib` (mylib library path used to find `libmylib.a`)
     * `-lmylib` (mylib library name)
 * Running the executable
-  * `LD_LIBRARY_PATH` is set to `/home/ubuntu/mycl/lib/lib64:/home/ubuntu/mylib/lib`
+  * `LD_LIBRARY_PATH` is set to `/home/ubuntu/mycl/lib/lib64:/home/ubuntu/mycl/lib/lib32:/home/ubuntu/mylib/lib`
