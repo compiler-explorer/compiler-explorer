@@ -91,6 +91,7 @@ describe('Compiler execution', function () {
         remote: true,
         lang: languages['c++'].id,
         ldPath: [],
+        libPath: [],
         supportsExecute: true,
         supportsBinary: true,
     };
@@ -99,6 +100,7 @@ describe('Compiler execution', function () {
         remote: true,
         lang: languages['c++'].id,
         ldPath: [],
+        libPath: [],
     };
 
     before(() => {
