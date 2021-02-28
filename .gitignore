@@ -4,7 +4,7 @@
 /.nyc_output
 /node_modules
 /out
-/asm-docs
+/asm-docs*
 /static/dist
 
 # user local customizations
