@@ -216,16 +216,7 @@ def parse(filename, f):
         else:
             print(filename + ": Failed to read instruction table")
             return None
-    sections = {}
-    for section_header in doc.find_all("h2"):
-        children = []
-        first = section_header.next_sibling
-        while first and first.name != 'h2':
-            if str(first).strip():
-                children.append(first)
-            first = first.next_sibling
-        sections[section_header.text] = children
-
+ 
     description_paragraphs = get_description_paragraphs(doc)
 
     for para in description_paragraphs:
