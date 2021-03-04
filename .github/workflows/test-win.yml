@@ -30,5 +30,3 @@ jobs:
         run: |
           npm run lint
           npm run ci-test
-      - name: Code coverage
-        run: npm run codecov
