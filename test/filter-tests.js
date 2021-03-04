@@ -146,9 +146,11 @@ describe('Filter test cases', function () {
         });
     });
     describe('Binary, directives, labels and comments', function () {
-        cases.forEach(function (x) {
-            testFilter(x, '.binary.directives.labels.comments', {binary: true, directives: true, labels: true, commentOnly: true});
-        });
+        if (process.platform !== 'win32') {
+            cases.forEach(function (x) {
+                testFilter(x, '.binary.directives.labels.comments', {binary: true, directives: true, labels: true, commentOnly: true});
+            });
+        }
     });
     describe('Directives and comments', function () {
         cases.forEach(x => testFilter(x, '.directives.comments', {directives: true, commentOnly: true}));
