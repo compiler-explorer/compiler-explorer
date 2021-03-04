@@ -1,4 +1,4 @@
-name: Compiler Explorer
+name: Compiler Explorer on Windows
 
 on: [ push ]
 
