@@ -429,7 +429,7 @@ Executor.prototype.initButtons = function (state) {
 
     this.shortCompilerName = this.domRoot.find('.short-compiler-name');
     this.compilerPicker = this.domRoot.find('.compiler-picker');
-    this.setCompilerVersionPopover('');
+    this.setCompilerVersionPopover('', '');
 
     this.topBar = this.domRoot.find('.top-bar');
     this.bottomBar = this.domRoot.find('.bottom-bar');
@@ -727,9 +727,10 @@ Executor.prototype.getPaneName = function () {
 Executor.prototype.updateCompilerName = function () {
     var compilerName = this.getCompilerName();
     var compilerVersion = this.compiler ? this.compiler.version : '';
+    var compilerNotification = this.compiler ? this.compiler.notification : '';
     this.container.setTitle(this.getPaneName());
     this.shortCompilerName.text(compilerName);
-    this.setCompilerVersionPopover(compilerVersion);
+    this.setCompilerVersionPopover(compilerVersion, compilerNotification);
 };
 
 Executor.prototype.setCompilationOptionsPopover = function (content) {
@@ -743,10 +744,15 @@ Executor.prototype.setCompilationOptionsPopover = function (content) {
     });
 };
 
-Executor.prototype.setCompilerVersionPopover = function (version) {
+Executor.prototype.setCompilerVersionPopover = function (version, notification) {
     this.fullCompilerName.popover('dispose');
+    // `notification` contains HTML from a config file, so is 'safe'.
+    // `version` comes from compiler output, so isn't, and is escaped.
     this.fullCompilerName.popover({
-        content: version || '',
+        html: true,
+        title: notification ? $.parseHTML('<span>Compiler Version: ' + notification + '</span>')[0] :
+            'Full compiler version',
+        content: _.escape(version) || '',
         template: '<div class="popover' +
             (version ? ' compiler-options-popover' : '') +
             '" role="tooltip"><div class="arrow"></div>' +

@@ -179,8 +179,8 @@ describe('CompilerDropInTool', () => {
         const orderedArgs = tool.getOrderedArguments(compilationInfo, includeflags, libOptions, args, sourcefile);
         orderedArgs.should.deep.equal(
             [
-                '--gcc-toolchain=' + path.resolve('/opt/compiler-explorer/gcc-8.2.0'),
-                '--gcc-toolchain=' + path.resolve('/opt/compiler-explorer/gcc-8.2.0'),
+                '--gcc-toolchain=/opt/compiler-explorer/gcc-8.2.0',
+                '--gcc-toolchain=/opt/compiler-explorer/gcc-8.2.0',
                 '-DMYLIBDEF',
                 '-pthread',
             ],

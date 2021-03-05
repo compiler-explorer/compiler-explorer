@@ -25,6 +25,8 @@
 import sinon from 'sinon';
 
 import { BaseCompiler } from '../lib/base-compiler';
+import { BuildEnvSetupBase } from '../lib/buildenvsetup';
+import { Win32Compiler } from '../lib/compilers/win32';
 import * as exec from '../lib/exec';
 
 import { fs, makeCompilationEnvironment, path, should } from './utils';
@@ -85,25 +87,38 @@ describe('Basic compiler invariants', function () {
 });
 
 describe('Compiler execution', function () {
-    let ce, compiler, compilerNoExec;
+    let ce, compiler, compilerNoExec, win32compiler;
     const executingCompilerInfo = {
+        exe: null,
+        remote: true,
+        lang: languages['c++'].id,
+        ldPath: [],
+        libPath: [],
+        supportsExecute: true,
+        supportsBinary: true,
+        options: '--hello-abc -I"/opt/some thing 1.0/include" -march="magic 8bit"',
+    };
+    const win32CompilerInfo = {
         exe: null,
         remote: true,
         lang: languages['c++'].id,
         ldPath: [],
         supportsExecute: true,
         supportsBinary: true,
+        options: '/std=c++17 /I"C:/program files (x86)/Company name/Compiler 1.2.3/include" /D "MAGIC=magic 8bit"',
     };
     const noExecuteSupportCompilerInfo = {
         exe: null,
         remote: true,
         lang: languages['c++'].id,
         ldPath: [],
+        libPath: [],
     };
 
     before(() => {
         ce = makeCompilationEnvironment({ languages });
         compiler = new BaseCompiler(executingCompilerInfo, ce);
+        win32compiler = new Win32Compiler(win32CompilerInfo, ce);
         compilerNoExec = new BaseCompiler(noExecuteSupportCompilerInfo, ce);
     });
 
@@ -120,6 +135,55 @@ describe('Compiler execution', function () {
             return Promise.resolve(result);
         });
     }
+
+    it('basecompiler should handle spaces in options correctly', () => {
+        const userOptions = [];
+        const filters = {};
+        const backendOptions = {};
+        const inputFilename = 'example.cpp';
+        const outputFilename = 'example.s';
+        const libraries = [];
+
+        const args = compiler.prepareArguments(userOptions, filters, backendOptions, inputFilename, outputFilename, libraries);
+        args.should.deep.equal([
+            '-g',
+            '-o',
+            'example.s',
+            '-S',
+            '--hello-abc',
+            '-I/opt/some thing 1.0/include',
+            '-march=magic 8bit',
+            'example.cpp',
+        ]);
+    });
+
+    it('win32 compiler should handle spaces in options correctly', () => {
+        const userOptions = [];
+        const filters = {};
+        const backendOptions = {};
+        const inputFilename = 'example.cpp';
+        const outputFilename = 'example.s';
+        const libraries = [];
+
+        const win32args = win32compiler.prepareArguments(userOptions, filters, backendOptions, inputFilename, outputFilename, libraries);
+        win32args.should.deep.equal([
+            '/nologo',
+            '/FA',
+            '/c',
+            '/Faexample.s',
+            '/Foexample.s.obj',
+            '/std=c++17',
+            '/IC:/program files (x86)/Company name/Compiler 1.2.3/include',
+            '/D',
+            'MAGIC=magic 8bit',
+            'example.cpp',
+        ]);
+    });
+
+    it('buildenv should handle spaces correctly', () => {
+        const buildenv = new BuildEnvSetupBase(executingCompilerInfo, ce);
+        buildenv.getCompilerArch().should.equal('magic 8bit');
+    });
 
     it('should compile', async () => {
         const execStub = sinon.stub(compiler, 'exec');

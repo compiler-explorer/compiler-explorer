@@ -124,6 +124,3 @@ A number of [amazing sponsors](https://godbolt.org/#sponsors), both individuals 
  and for donating licenses to their excellent products to develop **Compiler Explorer**.
 
 ![JetBrains](docs/jetbrains.svg)
-
-
-test
