@@ -178,13 +178,12 @@ def docenizer():
         sys.exit(3)
     print("Writing {} instructions".format(len(instructions)))
     with open(args.outputpath, 'w') as f:
-        f.write("""
-export function getAsmOpcode(opcode) {
+        f.write("""export function getAsmOpcode(opcode) {
     if (!opcode) return;
     switch (opcode.toUpperCase()) {
 """)
         for inst in instructions:
-            for name in inst.names:
+            for name in sorted(inst.names):
                 f.write('        case "{}":\n'.format(name))
             f.write('            return {}'.format(json.dumps({
                 "tooltip": inst.tooltip,
@@ -195,7 +194,5 @@ export function getAsmOpcode(opcode) {
     }
 }
 """)
-    print("REMINDER: Check if https://github.com/compiler-explorer/compiler-explorer/issues/2380 is still relevant")
-
 if __name__ == '__main__':
     docenizer()

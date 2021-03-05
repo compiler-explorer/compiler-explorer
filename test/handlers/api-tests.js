@@ -167,7 +167,7 @@ describe('API handling', () => {
     });
     it('should respond to ASM doc requests', () => {
         return chai.request(app)
-            .get('/api/asm/MOVQ')
+            .get('/api/asm/MOV')
             .set('Accept', 'application/json')
             .then(res => {
                 res.should.have.status(200);
