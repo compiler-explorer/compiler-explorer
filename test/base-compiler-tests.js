@@ -93,6 +93,7 @@ describe('Compiler execution', function () {
         remote: true,
         lang: languages['c++'].id,
         ldPath: [],
+        libPath: [],
         supportsExecute: true,
         supportsBinary: true,
         options: '--hello-abc -I"/opt/some thing 1.0/include" -march="magic 8bit"',
@@ -111,6 +112,7 @@ describe('Compiler execution', function () {
         remote: true,
         lang: languages['c++'].id,
         ldPath: [],
+        libPath: [],
     };
 
     before(() => {
