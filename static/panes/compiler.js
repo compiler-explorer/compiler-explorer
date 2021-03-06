@@ -40,10 +40,13 @@ var local = require('../local');
 var Libraries = require('../libs-widget-ext');
 var codeLensHandler = require('../codelens-handler');
 var monacoConfig = require('../monaco-config');
+var timingInfoWidget = require('../timing-info-widget');
 require('../modes/asm-mode');
 require('../modes/ptx-mode');
 
 require('selectize');
+
+var timingInfo = new timingInfoWidget.TimingInfo();
 
 var OpcodeCache = new LruCache({
     max: 64 * 1024,
@@ -91,6 +94,7 @@ function Compiler(hub, container, state) {
     this.assembly = [];
     this.colours = [];
     this.lastResult = {};
+    this.lastTimeTaken = 0;
     this.pendingRequestSentAt = 0;
     this.nextRequest = null;
     this.optViewOpen = false;
@@ -752,6 +756,7 @@ Compiler.prototype.onCompileResponse = function (request, result, cached) {
     result.source = this.source;
     this.lastResult = result;
     var timeTaken = Math.max(0, Date.now() - this.pendingRequestSentAt);
+    this.lastTimeTaken = timeTaken;
     var wasRealReply = this.pendingRequestSentAt > 0;
     this.pendingRequestSentAt = 0;
     ga.proxy('send', {
@@ -1012,41 +1017,7 @@ Compiler.prototype.onCfgViewClosed = function (id) {
     }
 };
 
-Compiler.prototype.initButtons = function (state) {
-    this.filters = new Toggles(this.domRoot.find('.filters'), patchOldFilters(state.filters));
-
-    this.optButton = this.domRoot.find('.btn.view-optimization');
-    this.astButton = this.domRoot.find('.btn.view-ast');
-    this.irButton = this.domRoot.find('.btn.view-ir');
-    this.gccDumpButton = this.domRoot.find('.btn.view-gccdump');
-    this.cfgButton = this.domRoot.find('.btn.view-cfg');
-    this.executorButton = this.domRoot.find('.create-executor');
-    this.libsButton = this.domRoot.find('.btn.show-libs');
-
-    this.compileTimeLabel = this.domRoot.find('.compile-time');
-    this.compileClearCache = this.domRoot.find('.clear-cache');
-
-    this.outputBtn = this.domRoot.find('.output-btn');
-    this.outputTextCount = this.domRoot.find('span.text-count');
-    this.outputErrorCount = this.domRoot.find('span.err-count');
-
-    this.optionsField = this.domRoot.find('.options');
-    this.prependOptions = this.domRoot.find('.prepend-options');
-    this.fullCompilerName = this.domRoot.find('.full-compiler-name');
-    this.setCompilationOptionsPopover(this.compiler ? this.compiler.options : null);
-    // Dismiss on any click that isn't either in the opening element, inside
-    // the popover or on any alert
-    $(document).on('mouseup', _.bind(function (e) {
-        var target = $(e.target);
-        if (!target.is(this.prependOptions) && this.prependOptions.has(target).length === 0 &&
-            target.closest('.popover').length === 0)
-            this.prependOptions.popover('hide');
-
-        if (!target.is(this.fullCompilerName) && this.fullCompilerName.has(target).length === 0 &&
-            target.closest('.popover').length === 0)
-            this.fullCompilerName.popover('hide');
-    }, this));
-
+Compiler.prototype.initFilterButtons = function () {
     this.filterBinaryButton = this.domRoot.find("[data-bind='binary']");
     this.filterBinaryTitle = this.filterBinaryButton.prop('title');
 
@@ -1075,8 +1046,49 @@ Compiler.prototype.initButtons = function (state) {
     this.filterDemangleTitle = this.filterDemangleButton.prop('title');
 
     this.noBinaryFiltersButtons = this.domRoot.find('.nonbinary');
-    this.filterExecuteButton.toggle(options.supportsExecute);
-    this.filterLibraryCodeButton.toggle(options.supportsLibraryCodeFilter);
+};
+
+Compiler.prototype.initButtons = function (state) {
+    this.filters = new Toggles(this.domRoot.find('.filters'), patchOldFilters(state.filters));
+
+    this.optButton = this.domRoot.find('.btn.view-optimization');
+    this.astButton = this.domRoot.find('.btn.view-ast');
+    this.irButton = this.domRoot.find('.btn.view-ir');
+    this.gccDumpButton = this.domRoot.find('.btn.view-gccdump');
+    this.cfgButton = this.domRoot.find('.btn.view-cfg');
+    this.executorButton = this.domRoot.find('.create-executor');
+    this.libsButton = this.domRoot.find('.btn.show-libs');
+
+    this.compileTimeLabel = this.domRoot.find('.compile-time');
+    this.compileClearCache = this.domRoot.find('.clear-cache');
+
+    this.outputBtn = this.domRoot.find('.output-btn');
+    this.outputTextCount = this.domRoot.find('span.text-count');
+    this.outputErrorCount = this.domRoot.find('span.err-count');
+
+    this.optionsField = this.domRoot.find('.options');
+    this.prependOptions = this.domRoot.find('.prepend-options');
+    this.fullCompilerName = this.domRoot.find('.full-compiler-name');
+    this.fullTimingInfo = this.domRoot.find('.full-timing-info');
+    this.setCompilationOptionsPopover(this.compiler ? this.compiler.options : null);
+    // Dismiss on any click that isn't either in the opening element, inside
+    // the popover or on any alert
+    $(document).on('mouseup', _.bind(function (e) {
+        var target = $(e.target);
+        if (!target.is(this.prependOptions) && this.prependOptions.has(target).length === 0 &&
+            target.closest('.popover').length === 0)
+            this.prependOptions.popover('hide');
+
+        if (!target.is(this.fullCompilerName) && this.fullCompilerName.has(target).length === 0 &&
+            target.closest('.popover').length === 0)
+            this.fullCompilerName.popover('hide');
+    }, this));
+
+    this.initFilterButtons(state);
+
+    this.filterExecuteButton.toggle(this.options.supportsExecute);
+    this.filterLibraryCodeButton.toggle(this.options.supportsLibraryCodeFilter);
+
     this.optionsField.val(this.options);
 
     this.shortCompilerName = this.domRoot.find('.short-compiler-name');
@@ -1327,6 +1339,13 @@ Compiler.prototype.initListeners = function () {
         }
     }, this);
     this.eventHub.on('languageChange', this.onLanguageChange, this);
+
+    this.fullTimingInfo
+        .off('click')
+        .click(_.bind(function () {
+            timingInfo.run(_.bind(function () {
+            }, this), this.lastResult, this.lastTimeTaken);
+        }, this));
 };
 
 Compiler.prototype.initCallbacks = function () {
