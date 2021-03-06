@@ -13,7 +13,7 @@ from urllib import parse
 try:
     from bs4 import BeautifulSoup
 except ImportError:
-    raise ImportError("Please install BeautifulSoup (apt-get install python-bs4 or pip install beautifulsoup4 should do it)")
+    raise ImportError("Please install BeautifulSoup (apt-get install python3-bs4 or pip install beautifulsoup4 should do it)")
 
 parser = argparse.ArgumentParser(description='Docenizes XML version of the official ARM documents')
 parser.add_argument('-i', '--inputfolder', type=str,
@@ -180,7 +180,7 @@ def docenizer():
     with open(args.outputpath, 'w') as f:
         f.write("""export function getAsmOpcode(opcode) {
     if (!opcode) return;
-    switch (opcode.toUpperCase()) {
+    switch (opcode) {
 """)
         for inst in instructions:
             for name in sorted(inst.names):

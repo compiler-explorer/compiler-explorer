@@ -13,7 +13,7 @@ from urllib import parse
 try:
     from bs4 import BeautifulSoup
 except ImportError:
-    raise ImportError("Please install BeautifulSoup (apt-get install python-bs4 or pip install beautifulsoup4 should do it)")
+    raise ImportError("Please install BeautifulSoup (apt-get install python3-bs4 or pip install beautifulsoup4 should do it)")
 
 parser = argparse.ArgumentParser(description='Docenizes HTML version of the official Intel Asm PDFs')
 parser.add_argument('-i', '--inputfolder', type=str,
