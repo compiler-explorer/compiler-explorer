@@ -316,6 +316,8 @@ LibsWidgetExt.prototype.startSearching = function () {
         return;
     }
 
+    var descriptionSearchResults = [];
+
     _.each(this.availableLibs[this.currentLangId][this.currentCompilerId], _.bind(function (library, libId) {
         if (library.versions && library.versions.autodetect) return;
 
@@ -328,9 +330,18 @@ LibsWidgetExt.prototype.startSearching = function () {
 
         if (library.description) {
             if (library.description.toLowerCase().includes(lcSearchtext)) {
-                this.addSearchResult(libId, library, searchResults);
+
+                descriptionSearchResults.push({
+                    libId: libId,
+                    library: library,
+                    searchResults: searchResults,
+                });
             }
         }
+    }, this));
+
+    _.each(descriptionSearchResults, _.bind(function (res) {
+        this.addSearchResult(res.libId, res.library, res.searchResults);
     }, this));
 };
 
