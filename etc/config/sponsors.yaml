@@ -55,6 +55,7 @@ levels:
       - name: C++Builder
         description: Discover C++Builder
         url: https://www.embarcadero.com/products/cbuilder
+      - Kade Phillips
   - name: Patreons
     description: 'Thanks to all my patrons:'
     sponsors:
@@ -307,3 +308,7 @@ levels:
       - Ashwin Sawant
       - Amin Aramoon
       - Jason Orendorff
+      - Walrus
+      - Nicholas Bellamy
+      - Emily A. Bellows
+      - tattarattat
