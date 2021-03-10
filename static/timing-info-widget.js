@@ -63,51 +63,87 @@ TimingInfo.prototype.initializeChartDataFromResult = function (compileResult, to
         'violet',
     ];
 
-    if (compileResult.packageDownloadAndUnzipTime) {
+    if (compileResult.retreivedFromCache) {
         timings.push({
-            step: 'Download from cache',
-            time: compileResult.execTime,
+            step: 'Retreive ASM from cache',
+            time: compileResult.retreivedFromCacheTime,
         });
+
+        if (compileResult.packageDownloadAndUnzipTime) {
+            timings.push({
+                step: 'Download binary from cache',
+                time: compileResult.execTime,
+            });
+        }
+
+        if (compileResult.execResult && compileResult.execResult.execTime) {
+            timings.push({
+                step: 'Execution',
+                time: compileResult.execResult.execTime,
+            });
+        }
     } else {
 
-        if (compileResult.execResult) {
-            if (compileResult.execResult.buildResult) {
-                if (compileResult.execResult.buildResult.packageDownloadAndUnzipTime) {
-                    timings.push({
-                        step: 'Download from cache',
-                        time: compileResult.execResult.buildResult.packageDownloadAndUnzipTime,
-                    });
-                } else {
-                    if (compileResult.execResult.buildResult.downloads) {
-                        timings = timings.concat(compileResult.execResult.buildResult.downloads);
-                    }
+        if (compileResult.packageDownloadAndUnzipTime) {
+            timings.push({
+                step: 'Download binary from cache',
+                time: compileResult.execTime,
+            });
+        } else {
 
-                    if (compileResult.execResult.buildResult.execTime) {
+            if (compileResult.execResult) {
+                if (compileResult.execResult.buildResult) {
+                    if (compileResult.execResult.buildResult.packageDownloadAndUnzipTime) {
                         timings.push({
-                            step: 'Compilation',
-                            time: compileResult.execTime,
+                            step: 'Download binary from cache',
+                            time: compileResult.execResult.buildResult.packageDownloadAndUnzipTime,
                         });
+                    } else {
+                        if (compileResult.execResult.buildResult.downloads) {
+                            timings = timings.concat(compileResult.execResult.buildResult.downloads);
+                        }
+
+                        if (compileResult.execResult.buildResult.execTime) {
+                            timings.push({
+                                step: 'Compilation',
+                                time: compileResult.execResult.buildResult.execTime,
+                            });
+                        }
                     }
                 }
-            }
 
-            if (compileResult.execResult.execTime) {
-                timings.push({
-                    step: 'Execution',
-                    time: compileResult.execResult.execTime,
-                });
-            }
+                if (compileResult.objdumpTime) {
+                    timings.push({
+                        step: 'Disassembly',
+                        time: compileResult.objdumpTime,
+                    });
+                }
 
-        } else {
-            if (compileResult.downloads) {
-                timings = timings.concat(compileResult.downloads);
-            }
+                if (compileResult.execResult.execTime) {
+                    timings.push({
+                        step: 'Execution',
+                        time: compileResult.execResult.execTime,
+                    });
+                }
 
-            if (compileResult.execTime) {
-                timings.push({
-                    step: 'Compilation',
-                    time: compileResult.execTime,
-                });
+            } else {
+                if (compileResult.downloads) {
+                    timings = timings.concat(compileResult.downloads);
+                }
+
+                if (compileResult.execTime) {
+                    timings.push({
+                        step: 'Compilation',
+                        time: compileResult.execTime,
+                    });
+                }
+
+                if (compileResult.objdumpTime) {
+                    timings.push({
+                        step: 'Disassembly',
+                        time: compileResult.objdumpTime,
+                    });
+                }
             }
         }
     }
