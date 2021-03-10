@@ -43,6 +43,15 @@ function TimingInfo() {
             label: 'time in ms',
             data: [12, 19, 3, 5, 2, 3],
             borderWidth: 1,
+            backgroundColor: [
+                'red',
+                'orange',
+                'yellow',
+                'green',
+                'blue',
+                'indigo',
+                'violet',
+            ],
         }],
     };
 }
@@ -53,15 +62,6 @@ TimingInfo.prototype.initializeChartDataFromResult = function (compileResult, to
     this.data.labels = [];
     this.data.datasets[0].barThickness = 20;
     this.data.datasets[0].data = [];
-    this.data.datasets[0].backgroundColor = [
-        'red',
-        'orange',
-        'yellow',
-        'green',
-        'blue',
-        'indigo',
-        'violet',
-    ];
 
     if (compileResult.retreivedFromCache) {
         timings.push({
@@ -197,9 +197,12 @@ TimingInfo.prototype.initializeChartDataFromResult = function (compileResult, to
         stepsTotal += parseInt(timing.time, 10);
     }, this));
 
-    if (totalTime > 0) {
-        this.data.labels.push('Network, JS, waiting, etc.');
-        this.data.datasets[0].data.push(totalTime - stepsTotal);
+    this.data.labels.push('Network, JS, waiting, etc.');
+    this.data.datasets[0].data.push(totalTime - stepsTotal);
+
+    if (totalTime - stepsTotal < 0) {
+        this.data.datasets[0].data = [totalTime];
+        this.data.labels = ['Browser cache'];
     }
 };
 
