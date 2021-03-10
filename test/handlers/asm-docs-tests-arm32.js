@@ -119,4 +119,17 @@ describe('Assembly documents', () => {
             });
     });
 
+    it('should respond with "unknown opcode" for unknown opcodes that can be parsed as conditional', () => {
+        return chai.request(app)
+            .get('/asm/jne')
+            .then(res => {
+                res.should.have.status(200);
+                res.should.be.html;
+                res.text.should.equal('Unknown opcode');
+            })
+            .catch(function (err) {
+                throw err;
+            });
+    });
+
 });
