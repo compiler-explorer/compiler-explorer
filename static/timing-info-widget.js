@@ -169,11 +169,17 @@ TimingInfo.prototype.initializeChartDataFromResult = function (compileResult, to
                     step: 'Download binary from cache',
                     time: compileResult.buildResult.packageDownloadAndUnzipTime,
                 });
-            } else if (compileResult.buildResult.execTime) {
-                timings.push({
-                    step: 'Compilation',
-                    time: compileResult.buildResult.execTime,
-                });
+            } else {
+                if (compileResult.buildResult.downloads) {
+                    timings = timings.concat(compileResult.buildResult.downloads);
+                }
+
+                if (compileResult.buildResult.execTime) {
+                    timings.push({
+                        step: 'Compilation',
+                        time: compileResult.buildResult.execTime,
+                    });
+                }
             }
         }
 
