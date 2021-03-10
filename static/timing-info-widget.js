@@ -65,7 +65,7 @@ TimingInfo.prototype.initializeChartDataFromResult = function (compileResult, to
 
     if (compileResult.retreivedFromCache) {
         timings.push({
-            step: 'Retreive ASM from cache',
+            step: 'Retreive result from cache',
             time: compileResult.retreivedFromCacheTime,
         });
 
@@ -119,6 +119,13 @@ TimingInfo.prototype.initializeChartDataFromResult = function (compileResult, to
                     });
                 }
 
+                if (compileResult.parsingTime) {
+                    timings.push({
+                        step: 'ASM parsing',
+                        time: compileResult.parsingTime,
+                    });
+                }
+
                 if (compileResult.execResult.execTime) {
                     timings.push({
                         step: 'Execution',
@@ -142,6 +149,13 @@ TimingInfo.prototype.initializeChartDataFromResult = function (compileResult, to
                     timings.push({
                         step: 'Disassembly',
                         time: compileResult.objdumpTime,
+                    });
+                }
+
+                if (compileResult.parsingTime) {
+                    timings.push({
+                        step: 'ASM parsing',
+                        time: compileResult.parsingTime,
                     });
                 }
             }

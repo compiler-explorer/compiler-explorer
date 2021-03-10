@@ -117,6 +117,7 @@ function testFilter(filename, suffix, filters) {
     }
 
     it(filename, () => {
+        delete result.parsingTime;
         if (json) {
             result.should.deep.equal(file, `${filename} case error`);
         } else {
