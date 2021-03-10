@@ -138,7 +138,7 @@ TimingInfo.prototype.initializeChartDataFromResult = function (compileResult, to
                     timings = timings.concat(compileResult.downloads);
                 }
 
-                if (compileResult.execTime) {
+                if (!compileResult.didExecute && compileResult.execTime) {
                     timings.push({
                         step: 'Compilation',
                         time: compileResult.execTime,
@@ -162,6 +162,27 @@ TimingInfo.prototype.initializeChartDataFromResult = function (compileResult, to
         }
     }
 
+    if (compileResult.didExecute) {
+        if (compileResult.buildResult) {
+            if (compileResult.buildResult.packageDownloadAndUnzipTime) {
+                timings.push({
+                    step: 'Download binary from cache',
+                    time: compileResult.buildResult.packageDownloadAndUnzipTime,
+                });
+            } else if (compileResult.buildResult.execTime) {
+                timings.push({
+                    step: 'Compilation',
+                    time: compileResult.buildResult.execTime,
+                });
+            }
+        }
+
+        timings.push({
+            step: 'Execution',
+            time: compileResult.execTime,
+        });
+    }
+
     var stepsTotal = 0;
     timings.forEach(_.bind(function (timing) {
         this.data.labels.push(timing.step);
@@ -170,8 +191,10 @@ TimingInfo.prototype.initializeChartDataFromResult = function (compileResult, to
         stepsTotal += parseInt(timing.time, 10);
     }, this));
 
-    this.data.labels.push('Network, JS, waiting, etc.');
-    this.data.datasets[0].data.push(totalTime - stepsTotal);
+    if (totalTime > 0) {
+        this.data.labels.push('Network, JS, waiting, etc.');
+        this.data.datasets[0].data.push(totalTime - stepsTotal);
+    }
 };
 
 TimingInfo.prototype.initializeIfNeeded = function () {
