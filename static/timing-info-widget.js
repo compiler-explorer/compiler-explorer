@@ -137,7 +137,7 @@ TimingInfo.prototype.initializeIfNeeded = function () {
 
     this.ctx = canvas[0].getContext('2d');
     this.chart = new Chart(this.ctx, {
-        type: 'doughnut',
+        type: 'bar',
         data: this.data,
         options: {
             scales: {
