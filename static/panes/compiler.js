@@ -1086,8 +1086,8 @@ Compiler.prototype.initButtons = function (state) {
 
     this.initFilterButtons(state);
 
-    this.filterExecuteButton.toggle(this.options.supportsExecute);
-    this.filterLibraryCodeButton.toggle(this.options.supportsLibraryCodeFilter);
+    this.filterExecuteButton.toggle(options.supportsExecute);
+    this.filterLibraryCodeButton.toggle(options.supportsLibraryCodeFilter);
 
     this.optionsField.val(this.options);
 
