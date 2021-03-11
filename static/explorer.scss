@@ -729,6 +729,11 @@ div.populararguments div.dropdown-menu {
     display: none;
 }
 
+#timing-info .modal-content {
+    min-width: 500px;
+    min-height: 400px;
+}
+
 html[data-theme=default] {
     @import "themes/default-theme";
 }

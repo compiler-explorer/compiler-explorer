@@ -26,6 +26,7 @@
     "body-parser": "^1.18.2",
     "bootstrap": "^4.5.2",
     "bootstrap-slider": "^10.6.2",
+    "chart.js": "^2.9.4",
     "clipboard": "^2.0.6",
     "compiler-opt-info": "0.0.4",
     "compression": "^1.7.1",
