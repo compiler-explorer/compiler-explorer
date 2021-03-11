@@ -228,6 +228,11 @@ TimingInfo.prototype.initializeIfNeeded = function () {
                         beginAtZero: true,
                     },
                 }],
+                yAxes: [{
+                    ticks: {
+                        beginAtZero: true,
+                    },
+                }],
             },
         },
     });
