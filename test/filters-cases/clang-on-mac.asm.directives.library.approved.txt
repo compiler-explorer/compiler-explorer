@@ -1,0 +1,192 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "_main:                                  ## @main"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "Lfunc_begin0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "## BB#0:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 2
+      },
+      "text": "        pushq   %rbp"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "Ltmp0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "Ltmp1:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 2
+      },
+      "text": "        movq    %rsp, %rbp"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "Ltmp2:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 2
+      },
+      "text": "        xorl    %eax, %eax"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "Ltmp3:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 2
+      },
+      "text": "        popq    %rbp"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 2
+      },
+      "text": "        retq"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "Ltmp4:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "Lfunc_end0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "Linfo_string:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "Lsection_debug_loc:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "Lsection_abbrev:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "Lsection_info:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "Lcu_begin0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "Lset0 = Lsection_abbrev-Lsection_abbrev ## Offset Into Abbrev. Section"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "Lset1 = Lline_table_start0-Lsection_line ## DW_AT_stmt_list"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "Ldebug_range:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "Ldebug_macinfo:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "Lcu_macro_begin0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "Lnames_begin:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "LNames0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "Lobjc_begin:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "Lnamespac_begin:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "Ltypes_begin:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "Ltypes0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "Lsection_line:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "Lline_table_start0:"
+    }
+  ],
+  "labelDefinitions": {
+    "_main": 1
+  }
+}

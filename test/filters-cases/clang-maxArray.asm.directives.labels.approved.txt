@@ -1,0 +1,284 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "_Z8maxArrayPdS_:                        # @_Z8maxArrayPdS_"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "# BB#0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        #DEBUG_VALUE: maxArray:x <- RDI"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        #DEBUG_VALUE: maxArray:y <- RSI"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 1
+      },
+      "text": "        xor     eax, eax"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        #DEBUG_VALUE: i <- 0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB0_1:                                # =>This Inner Loop Header: Depth=1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        #DEBUG_VALUE: maxArray:x <- RDI"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        #DEBUG_VALUE: maxArray:y <- RSI"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        #DEBUG_VALUE: i <- 0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "text": "        movsd   xmm0, qword ptr [rsi + 8*rax]"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "text": "        ucomisd xmm0, qword ptr [rdi + 8*rax]"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_3",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "text": "        jbe     .LBB0_3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "# BB#2:                                 #   in Loop: Header=BB0_1 Depth=1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        #DEBUG_VALUE: maxArray:x <- RDI"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        #DEBUG_VALUE: maxArray:y <- RSI"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        #DEBUG_VALUE: i <- 0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "text": "        movsd   qword ptr [rdi + 8*rax], xmm0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB0_3:                                #   in Loop: Header=BB0_1 Depth=1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        #DEBUG_VALUE: maxArray:x <- RDI"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        #DEBUG_VALUE: maxArray:y <- RSI"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        #DEBUG_VALUE: i <- 0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 2
+      },
+      "text": "        lea     rcx, qword ptr [rax + 1]"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "text": "        movsd   xmm0, qword ptr [rsi + 8*rax + 8]"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "text": "        ucomisd xmm0, qword ptr [rdi + 8*rax + 8]"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "text": "        jbe     .LBB0_5"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "# BB#4:                                 #   in Loop: Header=BB0_1 Depth=1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        #DEBUG_VALUE: maxArray:x <- RDI"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        #DEBUG_VALUE: maxArray:y <- RSI"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        #DEBUG_VALUE: i <- 0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "text": "        movsd   qword ptr [rdi + 8*rax + 8], xmm0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB0_5:                                #   in Loop: Header=BB0_1 Depth=1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        #DEBUG_VALUE: maxArray:x <- RDI"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        #DEBUG_VALUE: maxArray:y <- RSI"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        #DEBUG_VALUE: i <- 0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 2
+      },
+      "text": "        inc     rcx"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 2
+      },
+      "text": "        cmp     rcx, 65536"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 2
+      },
+      "text": "        mov     rax, rcx"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_1",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 2
+      },
+      "text": "        jne     .LBB0_1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "# BB#6:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 5
+      },
+      "text": "        ret"
+    }
+  ],
+  "labelDefinitions": {
+    ".LBB0_1": 7,
+    ".LBB0_3": 19,
+    ".LBB0_5": 32,
+    "_Z8maxArrayPdS_": 1
+  }
+}

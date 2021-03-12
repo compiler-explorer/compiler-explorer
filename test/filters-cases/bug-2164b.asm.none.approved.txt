@@ -1,0 +1,989 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .text"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .syntax unified"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .eabi_attribute 67, \"2.09\"        @ Tag_conformance"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .cpu    arm7tdmi"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .eabi_attribute 6, 2      @ Tag_CPU_arch"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .eabi_attribute 8, 1      @ Tag_ARM_ISA_use"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .eabi_attribute 9, 1      @ Tag_THUMB_ISA_use"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .eabi_attribute 34, 0     @ Tag_CPU_unaligned_access"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .eabi_attribute 15, 1     @ Tag_ABI_PCS_RW_data"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .eabi_attribute 16, 1     @ Tag_ABI_PCS_RO_data"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .eabi_attribute 17, 2     @ Tag_ABI_PCS_GOT_use"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .eabi_attribute 20, 1     @ Tag_ABI_FP_denormal"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .eabi_attribute 21, 0     @ Tag_ABI_FP_exceptions"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .eabi_attribute 23, 3     @ Tag_ABI_FP_number_model"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .eabi_attribute 24, 1     @ Tag_ABI_align_needed"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .eabi_attribute 25, 1     @ Tag_ABI_align_preserved"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .eabi_attribute 38, 1     @ Tag_ABI_FP_16bit_format"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .eabi_attribute 18, 4     @ Tag_ABI_PCS_wchar_t"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .eabi_attribute 26, 2     @ Tag_ABI_enum_size"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .eabi_attribute 14, 0     @ Tag_ABI_PCS_R9_use"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .file   \"example.c\""
+    },
+    {
+      "labels": [
+        {
+          "name": "trap_arm",
+          "range": {
+            "endCol": 25,
+            "startCol": 17
+          }
+        },
+        {
+          "name": "trap_arm",
+          "range": {
+            "endCol": 69,
+            "startCol": 61
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .globl  trap_arm                @ -- Begin function trap_arm"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .p2align        2"
+    },
+    {
+      "labels": [
+        {
+          "name": "trap_arm",
+          "range": {
+            "endCol": 25,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .type   trap_arm,%function"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .code   32                      @ @trap_arm"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "trap_arm:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lfunc_begin0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .file   1 \"/home/ce\" \"./example.c\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .loc    1 2 0                   @ ./example.c:2:0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .fnstart"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .cfi_sections .debug_frame"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .cfi_startproc"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .loc    1 3 5 prologue_end      @ ./example.c:3:5"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "text": "        .inst   0xe7ffdefe"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lfunc_end0:"
+    },
+    {
+      "labels": [
+        {
+          "name": "trap_arm",
+          "range": {
+            "endCol": 25,
+            "startCol": 17
+          }
+        },
+        {
+          "name": ".Lfunc_end0",
+          "range": {
+            "endCol": 38,
+            "startCol": 27
+          }
+        },
+        {
+          "name": "trap_arm",
+          "range": {
+            "endCol": 47,
+            "startCol": 39
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .size   trap_arm, .Lfunc_end0-trap_arm"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .cfi_endproc"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .cantunwind"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .fnend"
+    },
+    {
+      "labels": [
+        {
+          "name": "trap_thumb",
+          "range": {
+            "endCol": 27,
+            "startCol": 17
+          }
+        },
+        {
+          "name": "trap_thumb",
+          "range": {
+            "endCol": 71,
+            "startCol": 61
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .globl  trap_thumb              @ -- Begin function trap_thumb"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .p2align        1"
+    },
+    {
+      "labels": [
+        {
+          "name": "trap_thumb",
+          "range": {
+            "endCol": 27,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .type   trap_thumb,%function"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .code   16                      @ @trap_thumb"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .thumb_func"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "trap_thumb:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lfunc_begin1:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .loc    1 7 0                   @ ./example.c:7:0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .fnstart"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .cfi_startproc"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .loc    1 8 5 prologue_end      @ ./example.c:8:5"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 8
+      },
+      "text": "        .inst.n 0xdefe"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lfunc_end1:"
+    },
+    {
+      "labels": [
+        {
+          "name": "trap_thumb",
+          "range": {
+            "endCol": 27,
+            "startCol": 17
+          }
+        },
+        {
+          "name": ".Lfunc_end1",
+          "range": {
+            "endCol": 40,
+            "startCol": 29
+          }
+        },
+        {
+          "name": "trap_thumb",
+          "range": {
+            "endCol": 51,
+            "startCol": 41
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .size   trap_thumb, .Lfunc_end1-trap_thumb"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .cfi_endproc"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .cantunwind"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .fnend"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_str,\"MS\",%progbits,1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Linfo_string0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .asciz  \"clang version 10.0.0 (https://github.com/llvm/llvm-project.git d32170dbd5b0d54436537b6b75beaf44324e0c28)\" @ string offset=0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Linfo_string1:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .asciz  \"example.c\"             @ string offset=105"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Linfo_string2:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .asciz  \"/home/ce\"              @ string offset=115"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Linfo_string3:"
+    },
+    {
+      "labels": [
+        {
+          "name": "trap_arm",
+          "range": {
+            "endCol": 26,
+            "startCol": 18
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .asciz  \"trap_arm\"              @ string offset=124"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Linfo_string4:"
+    },
+    {
+      "labels": [
+        {
+          "name": "trap_thumb",
+          "range": {
+            "endCol": 28,
+            "startCol": 18
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .asciz  \"trap_thumb\"            @ string offset=133"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_abbrev,\"\",%progbits"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   1                       @ Abbreviation Code"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   17                      @ DW_TAG_compile_unit"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   1                       @ DW_CHILDREN_yes"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   37                      @ DW_AT_producer"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   14                      @ DW_FORM_strp"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   19                      @ DW_AT_language"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   5                       @ DW_FORM_data2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   3                       @ DW_AT_name"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   14                      @ DW_FORM_strp"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   16                      @ DW_AT_stmt_list"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   23                      @ DW_FORM_sec_offset"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   27                      @ DW_AT_comp_dir"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   14                      @ DW_FORM_strp"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   17                      @ DW_AT_low_pc"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   1                       @ DW_FORM_addr"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   18                      @ DW_AT_high_pc"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   6                       @ DW_FORM_data4"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0                       @ EOM(1)"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0                       @ EOM(2)"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   2                       @ Abbreviation Code"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   46                      @ DW_TAG_subprogram"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0                       @ DW_CHILDREN_no"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   17                      @ DW_AT_low_pc"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   1                       @ DW_FORM_addr"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   18                      @ DW_AT_high_pc"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   6                       @ DW_FORM_data4"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   64                      @ DW_AT_frame_base"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   24                      @ DW_FORM_exprloc"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .ascii  \"\\227B\"                 @ DW_AT_GNU_all_call_sites"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   25                      @ DW_FORM_flag_present"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   3                       @ DW_AT_name"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   14                      @ DW_FORM_strp"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   58                      @ DW_AT_decl_file"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   11                      @ DW_FORM_data1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   59                      @ DW_AT_decl_line"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   11                      @ DW_FORM_data1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   63                      @ DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   25                      @ DW_FORM_flag_present"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0                       @ EOM(1)"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0                       @ EOM(2)"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0                       @ EOM(3)"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_info,\"\",%progbits"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Ldebug_info_end0",
+          "range": {
+            "endCol": 34,
+            "startCol": 17
+          }
+        },
+        {
+          "name": ".Ldebug_info_start0",
+          "range": {
+            "endCol": 54,
+            "startCol": 35
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .long   .Ldebug_info_end0-.Ldebug_info_start0 @ Length of Unit"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ldebug_info_start0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .short  4                       @ DWARF version number"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   .debug_abbrev           @ Offset Into Abbrev. Section"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   4                       @ Address Size (in bytes)"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   1                       @ Abbrev [1] 0xb:0x3e DW_TAG_compile_unit"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Linfo_string0",
+          "range": {
+            "endCol": 31,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .long   .Linfo_string0          @ DW_AT_producer"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .short  12                      @ DW_AT_language"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Linfo_string1",
+          "range": {
+            "endCol": 31,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .long   .Linfo_string1          @ DW_AT_name"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Lline_table_start0",
+          "range": {
+            "endCol": 36,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .long   .Lline_table_start0     @ DW_AT_stmt_list"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Linfo_string2",
+          "range": {
+            "endCol": 31,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .long   .Linfo_string2          @ DW_AT_comp_dir"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Lfunc_begin0",
+          "range": {
+            "endCol": 30,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .long   .Lfunc_begin0           @ DW_AT_low_pc"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Lfunc_end1",
+          "range": {
+            "endCol": 28,
+            "startCol": 17
+          }
+        },
+        {
+          "name": ".Lfunc_begin0",
+          "range": {
+            "endCol": 42,
+            "startCol": 29
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .long   .Lfunc_end1-.Lfunc_begin0 @ DW_AT_high_pc"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   2                       @ Abbrev [2] 0x26:0x11 DW_TAG_subprogram"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Lfunc_begin0",
+          "range": {
+            "endCol": 30,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .long   .Lfunc_begin0           @ DW_AT_low_pc"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Lfunc_end0",
+          "range": {
+            "endCol": 28,
+            "startCol": 17
+          }
+        },
+        {
+          "name": ".Lfunc_begin0",
+          "range": {
+            "endCol": 42,
+            "startCol": 29
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .long   .Lfunc_end0-.Lfunc_begin0 @ DW_AT_high_pc"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   1                       @ DW_AT_frame_base"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   91"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Linfo_string3",
+          "range": {
+            "endCol": 31,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .long   .Linfo_string3          @ DW_AT_name"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   1                       @ DW_AT_decl_file"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   2                       @ DW_AT_decl_line"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   2                       @ Abbrev [2] 0x37:0x11 DW_TAG_subprogram"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Lfunc_begin1",
+          "range": {
+            "endCol": 30,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .long   .Lfunc_begin1           @ DW_AT_low_pc"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Lfunc_end1",
+          "range": {
+            "endCol": 28,
+            "startCol": 17
+          }
+        },
+        {
+          "name": ".Lfunc_begin1",
+          "range": {
+            "endCol": 42,
+            "startCol": 29
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .long   .Lfunc_end1-.Lfunc_begin1 @ DW_AT_high_pc"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   1                       @ DW_AT_frame_base"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   87"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Linfo_string4",
+          "range": {
+            "endCol": 31,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .long   .Linfo_string4          @ DW_AT_name"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   1                       @ DW_AT_decl_file"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   7                       @ DW_AT_decl_line"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0                       @ End Of Children Mark"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ldebug_info_end0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .ident  \"clang version 10.0.0 (https://github.com/llvm/llvm-project.git d32170dbd5b0d54436537b6b75beaf44324e0c28)\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        \".note.GNU-stack\",\"\",%progbits"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_line,\"\",%progbits"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lline_table_start0:"
+    }
+  ],
+  "labelDefinitions": {
+    ".Ldebug_info_end0": 141,
+    ".Ldebug_info_start0": 112,
+    ".Lfunc_begin0": 27,
+    ".Lfunc_begin1": 46,
+    ".Lfunc_end0": 35,
+    ".Lfunc_end1": 52,
+    ".Linfo_string0": 58,
+    ".Linfo_string1": 60,
+    ".Linfo_string2": 62,
+    ".Linfo_string3": 64,
+    ".Linfo_string4": 66,
+    ".Lline_table_start0": 145,
+    "trap_arm": 26,
+    "trap_thumb": 45
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "my_own_address:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ltmp0:"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Ltmp0",
+          "range": {
+            "endCol": 23,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .quad   .Ltmp0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "ptr:"
+    },
+    {
+      "labels": [
+        {
+          "name": "my_own_address",
+          "range": {
+            "endCol": 31,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .quad   my_own_address"
+    }
+  ],
+  "labelDefinitions": {
+    ".Ltmp0": 2,
+    "my_own_address": 1,
+    "ptr": 5
+  }
+}

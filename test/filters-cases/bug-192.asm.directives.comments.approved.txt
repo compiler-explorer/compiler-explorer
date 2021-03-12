@@ -1,0 +1,260 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "main:                                   # @main"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lfunc_begin0:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 15
+      },
+      "text": "        mov     eax, 3"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 15
+      },
+      "text": "        ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ltmp0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lfunc_end0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "__cxx_global_var_init:                  # @__cxx_global_var_init"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lfunc_begin1:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 5
+      },
+      "text": "        cmp     byte ptr [rip + guard variable for asdf<float>], 0"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB1_2",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 5
+      },
+      "text": "        jne     .LBB1_2"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 5
+      },
+      "text": "        mov     qword ptr [rip + guard variable for asdf<float>], 1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB1_2:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 5
+      },
+      "text": "        ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ltmp1:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lfunc_end1:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "asdf<float>:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "guard variable for asdf<float>:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Linfo_string0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Linfo_string1:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Linfo_string2:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Linfo_string3:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Linfo_string4:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Linfo_string5:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Linfo_string6:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Linfo_string7:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Linfo_string8:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Linfo_string9:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Linfo_string10:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lsection_abbrev:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lsection_info:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lcu_begin0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ldebug_range:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ldebug_ranges0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ldebug_macinfo:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lcu_macro_begin0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LpubNames_begin0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LpubNames_end0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LpubTypes_begin0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LpubTypes_end0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lline_table_start0:"
+    }
+  ],
+  "labelDefinitions": {
+    ".LBB1_2": 13,
+    "__cxx_global_var_init": 8,
+    "main": 1
+  }
+}
