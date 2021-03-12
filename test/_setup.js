@@ -30,6 +30,7 @@ import chaiAsPromised from 'chai-as-promised';
 import chaiHttp from 'chai-http';
 import deepEqualInAnyOrder from 'deep-equal-in-any-order';
 
+chai.should();
 chai.use(chaiAsPromised);
 chai.use(chaiHttp);
 chai.use(deepEqualInAnyOrder);
