@@ -1682,8 +1682,8 @@ function getNumericToolTip(value) {
     return null;
 }
 
-function getAsmInfo(opcode) {
-    var cacheName = 'asm/' + opcode;
+function getAsmInfo(opcode, instructionSet) {
+    var cacheName = 'asm/' + (instructionSet ? (instructionSet + '/') : '' ) + opcode;
     var cached = OpcodeCache.get(cacheName);
     if (cached) {
         return Promise.resolve(cached.found ? cached.result : null);
@@ -1692,7 +1692,7 @@ function getAsmInfo(opcode) {
     return new Promise(function (resolve, reject) {
         $.ajax({
             type: 'GET',
-            url: window.location.origin + base + 'api/asm/' + opcode,
+            url: window.location.origin + base + 'api/asm/' + (instructionSet ? (instructionSet + '/') : '' ) + opcode,
             dataType: 'json',  // Expected,
             contentType: 'text/plain',  // Sent
             success: function (result) {
@@ -1777,7 +1777,7 @@ Compiler.prototype.onMouseMove = function (e) {
                 _.some(lineTokens(this.outputEditor.getModel(), currentWord.range.startLineNumber), function (t) {
                     return t.offset + 1 === currentWord.startColumn && t.type === 'keyword.asm';
                 })) {
-                getAsmInfo(currentWord.word).then(_.bind(function (response) {
+                getAsmInfo(currentWord.word, this.compiler.instructionSet).then(_.bind(function (response) {
                     if (!response) return;
                     this.decorations.asmToolTip = {
                         range: currentWord.range,
@@ -1824,7 +1824,7 @@ Compiler.prototype.onAsmToolTip = function (ed) {
             'title="Opens in a new window"></small></sup></a>.';
     }
 
-    getAsmInfo(word.word).then(_.bind(function (asmHelp) {
+    getAsmInfo(word.word, this.compiler.instructionSet).then(_.bind(function (asmHelp) {
         if (asmHelp) {
             this.alertSystem.alert(opcode + ' help', asmHelp.html + appendInfo(asmHelp.url), function () {
                 ed.focus();

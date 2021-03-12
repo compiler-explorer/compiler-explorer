@@ -94,3 +94,4 @@ From oldest to newest contributor, we would like to thank:
 - [Julian Hammer](https://github.com/cod3monk)
 - [Peter Schussheim](https://github.com/peterschussheim)
 - [Robert Cohn](https://github.com/rscohn2)
+- [Jeremy Overesch](https://github.com/jovere)
