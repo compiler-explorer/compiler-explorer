@@ -456,7 +456,7 @@ Compiler.prototype.initEditorActions = function () {
 
     this.outputEditor.addAction({
         id: 'viewasmdoc',
-        label: 'View x86-64 opcode doc',
+        label: 'View assembly documentation',
         keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.F8],
         keybindingContext: null,
         contextMenuGroupId: 'help',
