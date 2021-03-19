@@ -734,6 +734,10 @@ div.populararguments div.dropdown-menu {
     min-height: 400px;
 }
 
+.icon-link > span {
+    margin-right: 2pt;
+}
+
 html[data-theme=default] {
     @import "themes/default-theme";
 }
