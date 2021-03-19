@@ -671,16 +671,13 @@ Compiler.prototype.setAssembly = function (asm, filteredCount) {
     this.assembly = asm;
     if (!this.outputEditor || !this.outputEditor.getModel()) return;
     var editorModel = this.outputEditor.getModel();
-    var msg;
+    var msg = '<No assembly generated>';
     if (asm.length) {
         msg = _.pluck(asm, 'text').join('\n');
-    } else {
-        msg = '<No assembly generated';
-        if (filteredCount > 0) {
-            msg += ' (~' + filteredCount + (filteredCount === 1 ? ' line' : ' lines') + ' filtered)';
-        }
-        msg += '>';
+    } else if (filteredCount > 0) {
+        msg = '<No assembly to display (~' + filteredCount + (filteredCount === 1 ? ' line' : ' lines') + ' filtered)>';
     }
+
     editorModel.setValue(msg);
 
     if (!this.awaitingInitialResults) {
