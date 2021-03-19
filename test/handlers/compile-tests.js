@@ -119,6 +119,36 @@ describe('Compiler tests', () => {
                     });
             });
         });
+
+        it('supports alias compile', () => {
+            return compileHandler.setCompilers([{
+                id: 'newcompilerid',
+                alias: ['oldid1', 'oldid2'],
+                compilerType: 'fake-for-test',
+                exe: 'fake',
+                fakeResult: {
+                    code: 0,
+                    stdout: [{text: 'Something from stdout'}],
+                    stderr: [{text: 'Something from stderr'}],
+                    asm: [{text: 'ASMASMASM'}],
+                },
+            }]).then(() => {
+                return chai.request(app)
+                    .post('/oldid1/compile')
+                    .set('Content-Type', 'application/x-www-form-urlencoded')
+                    .send('I am a program /* &compiler=NOT_A_COMPILER&source=etc */')
+                    .then(res => {
+                        res.should.have.status(200);
+                        res.should.be.text;
+                        res.text.should.contain('Something from stdout');
+                        res.text.should.contain('Something from stderr');
+                        res.text.should.contain('ASMASMASM');
+                    })
+                    .catch(err => {
+                        throw err;
+                    });
+            });
+        });
     });
 
     describe('JSON API', () => {
