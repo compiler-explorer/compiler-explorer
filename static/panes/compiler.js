@@ -624,7 +624,7 @@ Compiler.prototype.sendCompile = function (request) {
     // After a short delay, give the user some indication that we're working on their
     // compilation.
     var progress = setTimeout(_.bind(function () {
-        this.setAssembly(fakeAsm('<Compiling...>'));
+        this.setAssembly(fakeAsm('<Compiling...>'), 0);
     }, this), 500);
     this.compilerService.submit(request)
         .then(function (x) {
@@ -667,11 +667,21 @@ Compiler.prototype.getBinaryForLine = function (line) {
     }
 };
 
-Compiler.prototype.setAssembly = function (asm) {
+Compiler.prototype.setAssembly = function (asm, filteredCount) {
     this.assembly = asm;
     if (!this.outputEditor || !this.outputEditor.getModel()) return;
     var editorModel = this.outputEditor.getModel();
-    editorModel.setValue(asm.length ? _.pluck(asm, 'text').join('\n') : '<No assembly generated>');
+    var msg;
+    if (asm.length) {
+        msg = _.pluck(asm, 'text').join('\n');
+    } else {
+        msg = '<No assembly generated';
+        if (filteredCount > 0) {
+            msg += ' (~' + filteredCount + (filteredCount === 1 ? ' line' : ' lines') + ' filtered)';
+        }
+        msg += '>';
+    }
+    editorModel.setValue(msg);
 
     if (!this.awaitingInitialResults) {
         if (this.selection) {
@@ -774,7 +784,7 @@ Compiler.prototype.onCompileResponse = function (request, result, cached) {
     });
 
     this.labelDefinitions = result.labelDefinitions || {};
-    this.setAssembly(result.asm || fakeAsm('<No output>'));
+    this.setAssembly(result.asm || fakeAsm('<No output>'), result.filteredCount);
 
     var stdout = result.stdout || [];
     var stderr = result.stderr || [];
