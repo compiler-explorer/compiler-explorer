@@ -29,6 +29,7 @@ function testExecOutput(x) {
     // Work around chai not being able to deepEquals with a function
     x.filenameTransform.should.be.a('function');
     delete x.filenameTransform;
+    delete x.execTime;
     return x;
 }
 

@@ -30,7 +30,7 @@ info: node-installed ## print out some useful variables
 	@echo PATH is $(PATH)
 
 .PHONY: clean run test run-amazon
-.PHONY: dist lint lint-fix ci-lint prereqs node_modules travis-dist check pre-commit
+.PHONY: dist lint lint-fix ci-lint prereqs node_modules gh-dist check pre-commit
 prereqs: node_modules
 
 NODE_MODULES=.npm-updated
@@ -40,9 +40,7 @@ $(NODE_MODULES): package.json | node-installed
 	@touch $@
 
 WEBPACK:=./node_modules/webpack-cli/bin/cli.js
-webpack: $(NODE_MODULES)  ## Runs webpack (useful only for debugging webpack)
-	rm -rf out/dist/static out/dist/manifest.json
-	$(WEBPACK) $(WEBPACK_ARGS)
+$(WEBPACK): $(NODE_MODULES)
 
 lint: $(NODE_MODULES)  ## Checks if the source currently matches code conventions
 	$(NPM) run lint
@@ -54,7 +52,9 @@ ci-lint: $(NODE_MODULES)
 	$(NPM) run ci-lint
 
 node_modules: $(NODE_MODULES)
-webpack: $(WEBPACK)
+webpack: $(WEBPACK)  ## Runs webpack (useful only for debugging webpack)
+	rm -rf out/dist/static out/dist/manifest.json
+	$(WEBPACK) $(WEBPACK_ARGS)
 
 test: $(NODE_MODULES)  ## Runs the tests
 	$(NPM) run test
@@ -87,18 +87,22 @@ dist: export WEBPACK_ARGS=-p
 dist: prereqs webpack  ## Creates a distribution
 	echo $(HASH) > out/dist/git_hash
 
-travis-dist: dist  ## Creates a distribution as if we were running on travis
-	echo $(TRAVIS_BUILD_NUMBER) > out/dist/travis_build
+RELEASE_FILE_NAME=$(GITHUB_RUN_NUMBER)
+RELEASE_NAME=gh-$(RELEASE_FILE_NAME)
+gh-dist: dist  ## Creates a distribution as if we were running on github
+	# Output some magic for GH to set the branch name
+	echo "::set-output name=branch::$${GITHUB_REF#refs/heads/}"
+	echo $(RELEASE_NAME) > out/dist/release_build
 	rm -rf out/dist-bin
 	mkdir -p out/dist-bin
-	tar -Jcf out/dist-bin/$(TRAVIS_BUILD_NUMBER).tar.xz -T travis-dist-files.txt
-	tar -Jcf out/dist-bin/$(TRAVIS_BUILD_NUMBER).static.tar.xz --transform="s,^out/dist/static/,," out/dist/static/*
-	echo $(HASH) > out/dist-bin/$(TRAVIS_BUILD_NUMBER).txt
+	tar -Jcf out/dist-bin/$(RELEASE_FILE_NAME).tar.xz -T gh-dist-files.txt
+	tar -Jcf out/dist-bin/$(RELEASE_FILE_NAME).static.tar.xz --transform="s,^out/dist/static/,," out/dist/static/*
+	echo $(HASH) > out/dist-bin/$(RELEASE_FILE_NAME).txt
 	du -ch out/**/*
 	# Create and set commits for a sentry release if and only if we have the secure token set
 	# External GitHub PRs etc won't have the variable set.
-	@[ -z "$(SENTRY_AUTH_TOKEN)" ] || $(NPM) run sentry -- releases new -p compiler-explorer $(TRAVIS_BUILD_NUMBER)
-	@[ -z "$(SENTRY_AUTH_TOKEN)" ] || $(NPM) run sentry -- releases set-commits --auto $(TRAVIS_BUILD_NUMBER)
+	@[ -z "$(SENTRY_AUTH_TOKEN)" ] || $(NPM) run sentry -- releases new -p compiler-explorer $(RELEASE_NAME)
+	@[ -z "$(SENTRY_AUTH_TOKEN)" ] || $(NPM) run sentry -- releases set-commits --auto $(RELEASE_NAME)
 
 install-git-hooks:  ## Install git hooks that will ensure code is linted and tests are run before allowing a check in
 	mkdir -p "$(shell git rev-parse --git-dir)/hooks"
@@ -106,9 +110,9 @@ install-git-hooks:  ## Install git hooks that will ensure code is linted and tes
 .PHONY: install-git-hooks
 
 changelog:  ## Create the changelog
-	python ./etc/scripts/changelog.py
+	python3 ./etc/scripts/changelog.py
 
 policies:
-	python ./etc/scripts/politic.py
+	python3 ./etc/scripts/politic.py
 
 .PHONY: changelog

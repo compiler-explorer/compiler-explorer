@@ -1,0 +1,63 @@
+{
+    "sessions": [
+        {
+            "id": 1,
+            "language": "c++",
+            "source": "#include <Groundfloor/Atoms/Defines.h>\n#include <cstdio>\n\nint main() {\n    const char crlf[] = GFNATIVENEXTLINE;\n\n    printf(\"hello%s\", crlf);\n    return 46;\n}\n\n\n",
+            "conformanceview": false,
+            "compilers": [
+                {
+                    "id": "vc2017_64",
+                    "options": "",
+                    "filters": {
+                        "binary": true,
+                        "commentOnly": false,
+                        "demangle": false,
+                        "directives": false,
+                        "execute": false,
+                        "intel": true,
+                        "labels": false,
+                        "trim": false
+                    },
+                    "libs": [
+                        {
+                            "name": "openssl",
+                            "ver": "111c"
+                        },
+                        {
+                            "name": "crosscables",
+                            "ver": "trunk"
+                        }
+                    ],
+                    "specialoutputs": [],
+                    "tools": []
+                },
+                {
+                    "id": "",
+                    "options": "",
+                    "filters": {
+                        "binary": false,
+                        "commentOnly": true,
+                        "demangle": true,
+                        "directives": true,
+                        "execute": false,
+                        "intel": true,
+                        "labels": true,
+                        "trim": false
+                    },
+                    "libs": [],
+                    "specialoutputs": [
+                        "compilerOutput"
+                    ],
+                    "tools": [
+                        {
+                            "id": "strings",
+                            "args": ""
+                        }
+                    ]
+                }
+            ],
+            "executors": []
+        }
+    ]
+}

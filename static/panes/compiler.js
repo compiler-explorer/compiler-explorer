@@ -40,10 +40,13 @@ var local = require('../local');
 var Libraries = require('../libs-widget-ext');
 var codeLensHandler = require('../codelens-handler');
 var monacoConfig = require('../monaco-config');
+var timingInfoWidget = require('../timing-info-widget');
 require('../modes/asm-mode');
 require('../modes/ptx-mode');
 
 require('selectize');
+
+var timingInfo = new timingInfoWidget.TimingInfo();
 
 var OpcodeCache = new LruCache({
     max: 64 * 1024,
@@ -91,6 +94,7 @@ function Compiler(hub, container, state) {
     this.assembly = [];
     this.colours = [];
     this.lastResult = {};
+    this.lastTimeTaken = 0;
     this.pendingRequestSentAt = 0;
     this.nextRequest = null;
     this.optViewOpen = false;
@@ -452,7 +456,7 @@ Compiler.prototype.initEditorActions = function () {
 
     this.outputEditor.addAction({
         id: 'viewasmdoc',
-        label: 'View x86-64 opcode doc',
+        label: 'View assembly documentation',
         keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.F8],
         keybindingContext: null,
         contextMenuGroupId: 'help',
@@ -693,6 +697,9 @@ Compiler.prototype.setAssembly = function (asm) {
                     line + 1, label.range.endCol),
                 options: {
                     inlineClassName: 'asm-label-link',
+                    hoverMessage: [{
+                        value: 'Ctrl + Left click to follow the label',
+                    }],
                 },
             });
         }, this);
@@ -749,6 +756,7 @@ Compiler.prototype.onCompileResponse = function (request, result, cached) {
     result.source = this.source;
     this.lastResult = result;
     var timeTaken = Math.max(0, Date.now() - this.pendingRequestSentAt);
+    this.lastTimeTaken = timeTaken;
     var wasRealReply = this.pendingRequestSentAt > 0;
     this.pendingRequestSentAt = 0;
     ga.proxy('send', {
@@ -1009,41 +1017,7 @@ Compiler.prototype.onCfgViewClosed = function (id) {
     }
 };
 
-Compiler.prototype.initButtons = function (state) {
-    this.filters = new Toggles(this.domRoot.find('.filters'), patchOldFilters(state.filters));
-
-    this.optButton = this.domRoot.find('.btn.view-optimization');
-    this.astButton = this.domRoot.find('.btn.view-ast');
-    this.irButton = this.domRoot.find('.btn.view-ir');
-    this.gccDumpButton = this.domRoot.find('.btn.view-gccdump');
-    this.cfgButton = this.domRoot.find('.btn.view-cfg');
-    this.executorButton = this.domRoot.find('.create-executor');
-    this.libsButton = this.domRoot.find('.btn.show-libs');
-
-    this.compileTimeLabel = this.domRoot.find('.compile-time');
-    this.compileClearCache = this.domRoot.find('.clear-cache');
-
-    this.outputBtn = this.domRoot.find('.output-btn');
-    this.outputTextCount = this.domRoot.find('span.text-count');
-    this.outputErrorCount = this.domRoot.find('span.err-count');
-
-    this.optionsField = this.domRoot.find('.options');
-    this.prependOptions = this.domRoot.find('.prepend-options');
-    this.fullCompilerName = this.domRoot.find('.full-compiler-name');
-    this.setCompilationOptionsPopover(this.compiler ? this.compiler.options : null);
-    // Dismiss on any click that isn't either in the opening element, inside
-    // the popover or on any alert
-    $(document).on('mouseup', _.bind(function (e) {
-        var target = $(e.target);
-        if (!target.is(this.prependOptions) && this.prependOptions.has(target).length === 0 &&
-            target.closest('.popover').length === 0)
-            this.prependOptions.popover('hide');
-
-        if (!target.is(this.fullCompilerName) && this.fullCompilerName.has(target).length === 0 &&
-            target.closest('.popover').length === 0)
-            this.fullCompilerName.popover('hide');
-    }, this));
-
+Compiler.prototype.initFilterButtons = function () {
     this.filterBinaryButton = this.domRoot.find("[data-bind='binary']");
     this.filterBinaryTitle = this.filterBinaryButton.prop('title');
 
@@ -1072,13 +1046,54 @@ Compiler.prototype.initButtons = function (state) {
     this.filterDemangleTitle = this.filterDemangleButton.prop('title');
 
     this.noBinaryFiltersButtons = this.domRoot.find('.nonbinary');
+};
+
+Compiler.prototype.initButtons = function (state) {
+    this.filters = new Toggles(this.domRoot.find('.filters'), patchOldFilters(state.filters));
+
+    this.optButton = this.domRoot.find('.btn.view-optimization');
+    this.astButton = this.domRoot.find('.btn.view-ast');
+    this.irButton = this.domRoot.find('.btn.view-ir');
+    this.gccDumpButton = this.domRoot.find('.btn.view-gccdump');
+    this.cfgButton = this.domRoot.find('.btn.view-cfg');
+    this.executorButton = this.domRoot.find('.create-executor');
+    this.libsButton = this.domRoot.find('.btn.show-libs');
+
+    this.compileTimeLabel = this.domRoot.find('.compile-time');
+    this.compileClearCache = this.domRoot.find('.clear-cache');
+
+    this.outputBtn = this.domRoot.find('.output-btn');
+    this.outputTextCount = this.domRoot.find('span.text-count');
+    this.outputErrorCount = this.domRoot.find('span.err-count');
+
+    this.optionsField = this.domRoot.find('.options');
+    this.prependOptions = this.domRoot.find('.prepend-options');
+    this.fullCompilerName = this.domRoot.find('.full-compiler-name');
+    this.fullTimingInfo = this.domRoot.find('.full-timing-info');
+    this.setCompilationOptionsPopover(this.compiler ? this.compiler.options : null);
+    // Dismiss on any click that isn't either in the opening element, inside
+    // the popover or on any alert
+    $(document).on('mouseup', _.bind(function (e) {
+        var target = $(e.target);
+        if (!target.is(this.prependOptions) && this.prependOptions.has(target).length === 0 &&
+            target.closest('.popover').length === 0)
+            this.prependOptions.popover('hide');
+
+        if (!target.is(this.fullCompilerName) && this.fullCompilerName.has(target).length === 0 &&
+            target.closest('.popover').length === 0)
+            this.fullCompilerName.popover('hide');
+    }, this));
+
+    this.initFilterButtons(state);
+
     this.filterExecuteButton.toggle(options.supportsExecute);
     this.filterLibraryCodeButton.toggle(options.supportsLibraryCodeFilter);
+
     this.optionsField.val(this.options);
 
     this.shortCompilerName = this.domRoot.find('.short-compiler-name');
     this.compilerPicker = this.domRoot.find('.compiler-picker');
-    this.setCompilerVersionPopover('');
+    this.setCompilerVersionPopover('', '');
 
     this.topBar = this.domRoot.find('.top-bar');
     this.bottomBar = this.domRoot.find('.bottom-bar');
@@ -1116,7 +1131,12 @@ Compiler.prototype.supportsTool = function (toolId) {
 
 Compiler.prototype.initToolButton = function (togglePannerAdder, button, toolId) {
     var createToolView = _.bind(function () {
-        return Components.getToolViewWith(this.id, this.sourceEditorId, toolId, '');
+        var args = '';
+        var langTools = options.tools[this.currentLangId];
+        if (langTools && langTools[toolId] && langTools[toolId].tool && langTools[toolId].tool.args !== undefined) {
+            args = langTools[toolId].tool.args;
+        }
+        return Components.getToolViewWith(this.id, this.sourceEditorId, toolId, args);
     }, this);
 
     this.container.layoutManager
@@ -1319,6 +1339,13 @@ Compiler.prototype.initListeners = function () {
         }
     }, this);
     this.eventHub.on('languageChange', this.onLanguageChange, this);
+
+    this.fullTimingInfo
+        .off('click')
+        .click(_.bind(function () {
+            timingInfo.run(_.bind(function () {
+            }, this), this.lastResult, this.lastTimeTaken);
+        }, this));
 };
 
 Compiler.prototype.initCallbacks = function () {
@@ -1507,9 +1534,10 @@ Compiler.prototype.getPaneName = function () {
 Compiler.prototype.updateCompilerName = function () {
     var compilerName = this.getCompilerName();
     var compilerVersion = this.compiler ? this.compiler.version : '';
+    var compilerNotification = this.compiler ? this.compiler.notification : '';
     this.container.setTitle(this.getPaneName());
     this.shortCompilerName.text(compilerName);
-    this.setCompilerVersionPopover(compilerVersion);
+    this.setCompilerVersionPopover(compilerVersion, compilerNotification);
 };
 
 Compiler.prototype.resendResult = function () {
@@ -1595,10 +1623,15 @@ Compiler.prototype.setCompilationOptionsPopover = function (content) {
     });
 };
 
-Compiler.prototype.setCompilerVersionPopover = function (version) {
+Compiler.prototype.setCompilerVersionPopover = function (version, notification) {
     this.fullCompilerName.popover('dispose');
+    // `notification` contains HTML from a config file, so is 'safe'.
+    // `version` comes from compiler output, so isn't, and is escaped.
     this.fullCompilerName.popover({
-        content: version || '',
+        html: true,
+        title: notification ? $.parseHTML('<span>Compiler Version: ' + notification + '</span>')[0] :
+            'Full compiler version',
+        content: _.escape(version) || '',
         template: '<div class="popover' +
             (version ? ' compiler-options-popover' : '') +
             '" role="tooltip"><div class="arrow"></div>' +
@@ -1649,8 +1682,8 @@ function getNumericToolTip(value) {
     return null;
 }
 
-function getAsmInfo(opcode) {
-    var cacheName = 'asm/' + opcode;
+function getAsmInfo(opcode, instructionSet) {
+    var cacheName = 'asm/' + (instructionSet ? (instructionSet + '/') : '' ) + opcode;
     var cached = OpcodeCache.get(cacheName);
     if (cached) {
         return Promise.resolve(cached.found ? cached.result : null);
@@ -1659,7 +1692,7 @@ function getAsmInfo(opcode) {
     return new Promise(function (resolve, reject) {
         $.ajax({
             type: 'GET',
-            url: window.location.origin + base + 'api/asm/' + opcode,
+            url: window.location.origin + base + 'api/asm/' + (instructionSet ? (instructionSet + '/') : '' ) + opcode,
             dataType: 'json',  // Expected,
             contentType: 'text/plain',  // Sent
             success: function (result) {
@@ -1744,7 +1777,7 @@ Compiler.prototype.onMouseMove = function (e) {
                 _.some(lineTokens(this.outputEditor.getModel(), currentWord.range.startLineNumber), function (t) {
                     return t.offset + 1 === currentWord.startColumn && t.type === 'keyword.asm';
                 })) {
-                getAsmInfo(currentWord.word).then(_.bind(function (response) {
+                getAsmInfo(currentWord.word, this.compiler.instructionSet).then(_.bind(function (response) {
                     if (!response) return;
                     this.decorations.asmToolTip = {
                         range: currentWord.range,
@@ -1791,7 +1824,7 @@ Compiler.prototype.onAsmToolTip = function (ed) {
             'title="Opens in a new window"></small></sup></a>.';
     }
 
-    getAsmInfo(word.word).then(_.bind(function (asmHelp) {
+    getAsmInfo(word.word, this.compiler.instructionSet).then(_.bind(function (asmHelp) {
         if (asmHelp) {
             this.alertSystem.alert(opcode + ' help', asmHelp.html + appendInfo(asmHelp.url), function () {
                 ed.focus();
