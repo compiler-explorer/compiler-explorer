@@ -781,7 +781,7 @@ Compiler.prototype.onCompileResponse = function (request, result, cached) {
     });
 
     this.labelDefinitions = result.labelDefinitions || {};
-    this.setAssembly(result.asm || fakeAsm('<No output>'), result.filteredCount);
+    this.setAssembly(result.asm || fakeAsm('<No output>'), result.filteredCount || 0);
 
     var stdout = result.stdout || [];
     var stderr = result.stderr || [];
