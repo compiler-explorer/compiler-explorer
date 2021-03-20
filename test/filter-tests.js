@@ -66,6 +66,10 @@ function dump(file) {
 // bless("filters-cases/sass-squarelabeled.asm", "filters-cases/sass-squarelabeled.asm.binary.directives.labels.comments.json", {binary: true, directives: true, labels: true, commentOnly: true});
 // bless("filters-cases/bug-2164.asm", "filters-cases/bug-2164.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
 // bless("filters-cases/bug-2164b.asm", "filters-cases/bug-2164b.asm.directives.labels.comments.json", {directives: true, labels: true, commentOnly: true});
+// bless('filters-cases/diab.asm', 'filters-cases/diab.asm.directives.labels.comments.json', {directives: true, labels: true, commentOnly: true});
+// bless("filters-cases/bintest-1.asm", "filters-cases/bintest-1.asm.binary.directives.labels.comments.json", {binary: true, directives: true, labels: true, commentOnly: true});
+// bless("filters-cases/bintest-2.asm", "filters-cases/bintest-2.asm.binary.directives.labels.comments.json", {binary: true, directives: true, labels: true, commentOnly: true});
+// bless("filters-cases/bintest-unicode-1.asm", "filters-cases/bintest-unicode-1.asm.binary.directives.labels.comments.json", {binary: true, directives: true, labels: true, commentOnly: true});
 // describe('A test', function() {
 //     it('should work', function(){
 //         console.log(processAsm(resolvePathFromTestRoot('filters-cases/6502-square.asm'), {directives: true, labels: true, commentOnly: true}));
@@ -113,6 +117,7 @@ function testFilter(filename, suffix, filters) {
     }
 
     it(filename, () => {
+        delete result.parsingTime;
         if (json) {
             result.should.deep.equal(file, `${filename} case error`);
         } else {
@@ -142,9 +147,11 @@ describe('Filter test cases', function () {
         });
     });
     describe('Binary, directives, labels and comments', function () {
-        cases.forEach(function (x) {
-            testFilter(x, '.binary.directives.labels.comments', {binary: true, directives: true, labels: true, commentOnly: true});
-        });
+        if (process.platform !== 'win32') {
+            cases.forEach(function (x) {
+                testFilter(x, '.binary.directives.labels.comments', {binary: true, directives: true, labels: true, commentOnly: true});
+            });
+        }
     });
     describe('Directives and comments', function () {
         cases.forEach(x => testFilter(x, '.directives.comments', {directives: true, commentOnly: true}));

@@ -294,7 +294,7 @@ function getShortLink(config, root, done) {
     });
     $.ajax({
         type: 'POST',
-        url: window.location.origin + root + 'shortener',
+        url: window.location.origin + root + 'api/shortener',
         dataType: 'json',  // Expected
         contentType: 'application/json',  // Sent
         data: data,

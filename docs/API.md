@@ -208,9 +208,9 @@ If JSON is present in the request's `Accept` header, the compilation results
 }
 ```
 
-### `POST /shortener` - saves given state *forever* to a shortlink and returns the unique id for the link
+### `POST /api/shortener` - saves given state *forever* to a shortlink and returns the unique id for the link
 
-The body of this post should be in the format of a [ClientState](https://github.com/compiler-explorer/compiler-explorer/blob/master/lib/clientstate.js)
+The body of this post should be in the format of a [ClientState](https://github.com/compiler-explorer/compiler-explorer/blob/main/lib/clientstate.js)
 Be sure that the Content-Type of your post is application/json
 
 An example of one the easiest forms of a clientstate:
@@ -266,7 +266,7 @@ If there were multiple editors during the saved session, you can retreive them b
 
 ### `GET /clientstate/<base64>` - Opens the website in a given state
 
-This call is to open the website with a given state (without having to store the state first with /shortener)
+This call is to open the website with a given state (without having to store the state first with /api/shortener)
 Instead of sending the ClientState JSON in the post body, it will have to be encoded with base64 and attached directly onto the URL.
 
 
@@ -279,3 +279,4 @@ Here are some examples of projects using the Compiler Explorer API:
 * [QTCreator Plugin by dobokirisame](https://github.com/dobokirisame/CompilerExplorer) (C++)
 * [CLion plugin by ogrebenyuk](https://github.com/ogrebenyuk/compilerexplorer) (Java)
 * [QCompilerExplorer - frontend in Qt](https://github.com/Waqar144/QCompilerExplorer) (C++)
+* [Emacs client - compiler-explorer.el](https://github.com/mkcms/compiler-explorer.el)

@@ -33,12 +33,14 @@ import process from 'process';
 import url from 'url';
 
 import * as Sentry from '@sentry/node';
+import * as Tracing from '@sentry/tracing';
 import bodyParser from 'body-parser';
 import compression from 'compression';
 import express from 'express';
 import fs from 'fs-extra';
 import morgan from 'morgan';
 import nopt from 'nopt';
+import PromClient from 'prom-client';
 import responseTime from 'response-time';
 import sFavicon from 'serve-favicon';
 import systemdSocket from 'systemd-socket';
@@ -59,10 +61,9 @@ import { NoScriptHandler } from './lib/handlers/noscript';
 import { RouteAPI } from './lib/handlers/route-api';
 import { SourceHandler } from './lib/handlers/source';
 import { languages as allLanguages } from './lib/languages';
-import { logger, logToPapertrail, suppressConsoleLog } from './lib/logger';
+import { logger, logToLoki, logToPapertrail, suppressConsoleLog } from './lib/logger';
 import { ClientOptionsHandler } from './lib/options-handler';
 import * as props from './lib/properties';
-import { getShortenerTypeByKey } from './lib/shortener';
 import { sources } from './lib/sources';
 import { loadSponsorsFromString } from './lib/sponsors';
 import { getStorageTypeByKey } from './lib/storage';
@@ -73,7 +74,7 @@ const opts = nopt({
     env: [String, Array],
     rootDir: [String],
     host: [String],
-    port: [Number],
+    port: [String, Number],
     propDebug: [Boolean],
     debug: [Boolean],
     dist: [Boolean],
@@ -91,6 +92,8 @@ const opts = nopt({
     logHost: [String],
     logPort: [Number],
     suppressConsoleLog: [Boolean],
+    metricsPort: [Number],
+    loki: [String],
 });
 
 if (opts.debug) logger.level = 'debug';
@@ -134,14 +137,12 @@ const gitReleaseName = (() => {
     return '';
 })();
 
-const travisBuildNumber = (() => {
-    // Use the canned travis_build only if provided
-    const travisBuildPath = path.join(distPath, 'travis_build');
-    if (opts.dist && fs.existsSync(travisBuildPath)) {
-        return fs.readFileSync(travisBuildPath).toString().trim();
+const releaseBuildNumber = (() => {
+    // Use the canned build only if provided
+    const releaseBuildPath = path.join(distPath, 'release_build');
+    if (opts.dist && fs.existsSync(releaseBuildPath)) {
+        return fs.readFileSync(releaseBuildPath).toString().trim();
     }
-
-    // non-travis build
     return '';
 })();
 
@@ -152,7 +153,7 @@ const defArgs = {
     hostname: opts.host,
     port: opts.port || 10240,
     gitReleaseName: gitReleaseName,
-    travisBuildNumber: travisBuildNumber,
+    releaseBuildNumber: releaseBuildNumber,
     wantedLanguage: opts.language || null,
     doCache: !opts.noCache,
     fetchCompilersFromRemote: !opts.noRemoteFetch,
@@ -162,6 +163,10 @@ const defArgs = {
 
 if (opts.logHost && opts.logPort) {
     logToPapertrail(opts.logHost, opts.logPort, defArgs.env.join('.'));
+}
+
+if (opts.loki) {
+    logToLoki(opts.loki);
 }
 
 if (defArgs.suppressConsoleLog) {
@@ -247,8 +252,16 @@ function setupEventLoopLagLogging() {
     const thresWarn = ceProps('eventLoopLagThresholdWarn', 0);
     const thresErr = ceProps('eventLoopLagThresholdErr', 0);
 
+    let totalLag = 0;
+    const ceLagSecondsTotalGauge = new PromClient.Gauge({
+        name: 'ce_lag_seconds_total',
+        help: 'Total event loop lag since application startup',
+    });
+
     async function eventLoopLagHandler() {
         const lagMs = await measureEventLoopLag(lagIntervalMs);
+        totalLag += Math.max(lagMs / 1000, 0);
+        ceLagSecondsTotalGauge.set(totalLag);
 
         if (thresErr && lagMs >= thresErr) {
             logger.error(`Event Loop Lag: ${lagMs} ms`);
@@ -281,6 +294,7 @@ async function setupWebPackDevMiddleware(router) {
     router.use(webpackDevMiddleware(webpackCompiler, {
         publicPath: '/static',
         logger: logger,
+        stats: 'errors-only',
     }));
 
     pugRequireHandler = (path) => urljoin(httpRoot, 'static', path);
@@ -369,14 +383,24 @@ function startListening(server) {
         _port = defArgs.port;
     }
 
-    var startupDurationMs = Math.floor(process.uptime() * 1000);
-    logger.info(`  Listening on http://${defArgs.hostname || 'localhost'}:${_port}/`);
-    logger.info(`  Startup duration: ${startupDurationMs}ms`);
-    logger.info('=======================================');
-    server.listen(_port, defArgs.hostname);
+    const startupDurationMs = Math.floor(process.uptime() * 1000);
+    if (isNaN(parseInt(_port))) {
+        // unix socket, not a port number...
+        logger.info(`  Listening on socket: //${_port}/`);
+        logger.info(`  Startup duration: ${startupDurationMs}ms`);
+        logger.info('=======================================');
+        server.listen(_port);
+    }
+    else {
+        // normal port number
+        logger.info(`  Listening on http://${defArgs.hostname || 'localhost'}:${_port}/`);
+        logger.info(`  Startup duration: ${startupDurationMs}ms`);
+        logger.info('=======================================');
+        server.listen(_port, defArgs.hostname);
+    }
 }
 
-function setupSentry(sentryDsn) {
+function setupSentry(sentryDsn, expressApp) {
     if (!sentryDsn) {
         logger.info('Not configuring sentry');
         return;
@@ -384,7 +408,7 @@ function setupSentry(sentryDsn) {
     const sentryEnv = ceProps('sentryEnvironment');
     Sentry.init({
         dsn: sentryDsn,
-        release: travisBuildNumber || gitReleaseName,
+        release: releaseBuildNumber || gitReleaseName,
         environment: sentryEnv || defArgs.env[0],
         beforeSend(event) {
             if (event.request
@@ -394,6 +418,13 @@ function setupSentry(sentryDsn) {
             }
             return event;
         },
+        integrations: [
+            // enable HTTP calls tracing
+            new Sentry.Integrations.Http({tracing: true}),
+            // enable Express.js middleware tracing
+            new Tracing.Integrations.Express({expressApp}),
+        ],
+        tracesSampleRate: 0.1,
     });
     logger.info(`Configured with Sentry endpoint ${sentryDsn}`);
 }
@@ -416,7 +447,7 @@ async function main() {
 
     logger.info('=======================================');
     if (gitReleaseName) logger.info(`  git release ${gitReleaseName}`);
-    if (travisBuildNumber) logger.info(`  travis build ${travisBuildNumber}`);
+    if (releaseBuildNumber) logger.info(`  release build ${releaseBuildNumber}`);
 
     const initialFindResults = await compilerFinder.find();
     const initialCompilers = initialFindResults.compilers;
@@ -431,8 +462,8 @@ async function main() {
         }
     }
 
-    setupSentry(aws.getConfig('sentryDsn'));
     const webServer = express(), router = express.Router();
+    setupSentry(aws.getConfig('sentryDsn'), webServer);
     const healthCheckFilePath = ceProps('healthCheckFilePath', false);
 
     const handlerConfig = {
@@ -454,6 +485,7 @@ async function main() {
         if (JSON.stringify(prevCompilers) === JSON.stringify(compilers)) {
             return;
         }
+        logger.info(`Compiler scan count: ${_.size(compilers)}`);
         logger.debug('Compilers:', compilers);
         if (compilers.length === 0) {
             logger.error('#### No compilers found: no compilation will be done!');
@@ -476,12 +508,32 @@ async function main() {
 
     const sentrySlowRequestMs = ceProps('sentrySlowRequestMs', 0);
 
+    if (opts.metricsPort) {
+        logger.info(`Running metrics server on port ${opts.metricsPort}`);
+        PromClient.collectDefaultMetrics();
+        const metricsServer = express();
+
+        metricsServer.get('/metrics', async (req, res) => {
+            try {
+                res.set('Content-Type', PromClient.register.contentType);
+                res.end(await PromClient.register.metrics());
+            } catch (ex) {
+                res.status(500).end(ex);
+            }
+        });
+
+        metricsServer.listen(opts.metricsPort, defArgs.hostname);
+    }
+
     webServer
         .set('trust proxy', true)
         .set('view engine', 'pug')
         .on('error', err => logger.error('Caught error in web handler; continuing:', err))
         // sentry request handler must be the first middleware on the app
-        .use(Sentry.Handlers.requestHandler())
+        .use(Sentry.Handlers.requestHandler({
+            ip: true,
+        }))
+        .use(Sentry.Handlers.tracingHandler())
         // eslint-disable-next-line no-unused-vars
         .use(responseTime((req, res, time) => {
             if (sentrySlowRequestMs > 0 && time >= sentrySlowRequestMs) {
@@ -510,9 +562,13 @@ async function main() {
             const message = err.message || 'Internal Server Error';
             res.status(status);
             res.render('error', renderConfig({error: {code: status, message: message}}));
+            if (status >= 500) {
+                logger.error('Internal server error:', err);
+            }
         });
 
     const sponsorConfig = loadSponsorsFromString(fs.readFileSync(configDir + '/sponsors.yaml', 'utf-8'));
+
     function renderConfig(extra, urlOptions) {
         const urlOptionsAllowed = [
             'readOnly', 'hideEditorToolbars', 'language',
@@ -574,13 +630,10 @@ async function main() {
         await setupStaticMiddleware(router);
     }
 
-    morgan.token('gdpr_ip', req => utils.anonymizeIp(req.ip));
+    morgan.token('gdpr_ip', req => req.ip ? utils.anonymizeIp(req.ip) : '');
 
     // Based on combined format, but: GDPR compliant IP, no timestamp & no unused fields for our usecase
     const morganFormat = isDevMode() ? 'dev' : ':gdpr_ip ":method :url" :status';
-
-    const shortenerType = getShortenerTypeByKey(clientOptionsHandler.options.urlShortenService);
-    const shortener = new shortenerType(storageHandler);
 
     /*
      * This is a workaround to make cross origin monaco web workers function
@@ -667,8 +720,7 @@ async function main() {
         .get('/client-options.js', (req, res) => {
             staticHeaders(res);
             res.set('Content-Type', 'application/javascript');
-            const options = JSON.stringify(clientOptionsHandler.get());
-            res.end(`window.compilerExplorerOptions = ${options};`);
+            res.end(`window.compilerExplorerOptions = ${clientOptionsHandler.getJSON()};`);
         })
         .use('/bits/:bits(\\w+).html', (req, res) => {
             staticHeaders(res);
@@ -681,7 +733,8 @@ async function main() {
         .use(bodyParser.json({limit: ceProps('bodyParserLimit', maxUploadSize)}))
         .use('/source', sourceHandler.handle.bind(sourceHandler))
         .use('/g', oldGoogleUrlHandler)
-        .post('/shortener', shortener.handle.bind(shortener));
+        // Deprecated old route for this -- TODO remove in late 2021
+        .post('/shortener', routeApi.apiHandler.shortener.handle.bind(routeApi.apiHandler.shortener));
 
     noscriptHandler.InitializeRoutes({limit: ceProps('bodyParserLimit', maxUploadSize)});
     routeApi.InitializeRoutes();

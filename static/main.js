@@ -58,8 +58,8 @@ require('bootstrap/dist/css/bootstrap.min.css');
 require('golden-layout/src/css/goldenlayout-base.css');
 require('selectize/dist/css/selectize.bootstrap2.css');
 require('bootstrap-slider/dist/css/bootstrap-slider.css');
-require('./colours.css');
-require('./explorer.css');
+require('./colours.scss');
+require('./explorer.scss');
 
 // Check to see if the current unload is a UI reset.
 // Forgive me the global usage here
@@ -135,10 +135,12 @@ function setupButtons(options) {
     // so we instead trigger a click here when we want it to open with this effect. Sorry!
     if (options.policies.privacy.enabled) {
         $('#privacy').click(function (event, data) {
-            alertSystem.alert(
+            var modal = alertSystem.alert(
                 data && data.title ? data.title : 'Privacy policy',
                 require('./policies/privacy.html')
             );
+            var timestamp = modal.find('#changed-date');
+            timestamp.text(new Date(timestamp.attr('datetime')).toLocaleString());
             // I can't remember why this check is here as it seems superfluous
             if (options.policies.privacy.enabled) {
                 jsCookie.set(options.policies.privacy.key, options.policies.privacy.hash, {expires: 365});
@@ -153,7 +155,7 @@ function setupButtons(options) {
                 (hasCookieConsented(options) ? 'Granted' : 'Denied') + '</span></p>';
         };
         $('#cookies').click(function () {
-            alertSystem.ask(getCookieTitle(), $(require('./policies/cookies.html')), {
+            var modal = alertSystem.ask(getCookieTitle(), $(require('./policies/cookies.html')), {
                 yes: function () {
                     simpleCooks.callDoConsent.apply(simpleCooks);
                 },
@@ -163,6 +165,8 @@ function setupButtons(options) {
                 },
                 noHtml: 'Do NOT consent',
             });
+            var timestamp = modal.find('#changed-date');
+            timestamp.text(new Date(timestamp.attr('datetime')).toLocaleString());
         });
     }
 

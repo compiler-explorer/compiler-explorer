@@ -49,6 +49,7 @@ Alert.prototype.alert = function (title, body, onClose) {
         modal.off('hidden.bs.modal');
         modal.on('hidden.bs.modal', onClose);
     }
+    return modal;
 };
 
 /***

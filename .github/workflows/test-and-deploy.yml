@@ -1,0 +1,82 @@
+name: Compiler Explorer
+
+on: [ push ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-20.04
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Use Node.js 12.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+      - name: Get npm cache directory
+        id: npm-cache
+        run: |
+          echo "::set-output name=dir::$(npm config get cache)"
+      - uses: actions/cache@v1
+        with:
+          path: ${{ steps.npm-cache.outputs.dir }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+      - name: Install prerequisites
+        run: make prereqs
+      - name: Build and test
+        run: |
+          npm run lint
+          npm run ci-test
+      - name: Code coverage
+        run: npm run codecov
+
+  build-dist-and-deploy:
+    needs: build-and-test
+    if: github.repository_owner == 'compiler-explorer'
+    runs-on: ubuntu-20.04
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Use Node.js 12.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+      - name: TEST
+        run: |
+          which npx
+          npx --version
+      - name: Get npm cache directory
+        id: npm-cache
+        run: |
+          echo "::set-output name=dir::$(npm config get cache)"
+      - uses: actions/cache@v1
+        with:
+          path: ${{ steps.npm-cache.outputs.dir }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+      - name: Build distribution
+        id: build_dist
+        run: |
+          export SENTRY_AUTH_TOKEN='${{ secrets.SENTRY_AUTH_TOKEN }}'
+          export SENTRY_DSN='${{ secrets.SENTRY_DSN }}'
+          export SENTRY_ORG=compiler-explorer
+          export SENTRY_PROJECT=compiler-explorer
+          make changelog
+          make policies
+          make -j$(nproc) gh-dist NPM_FLAGS="--no-audit"
+      - name: Deploy
+        uses: jakejarvis/s3-sync-action@master
+        with:
+          args: --acl public-read --follow-symlinks
+        env:
+          AWS_S3_BUCKET: compiler-explorer
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          SOURCE_DIR: out/dist-bin
+          DEST_DIR: dist/gh/${{ steps.build_dist.outputs.branch }}

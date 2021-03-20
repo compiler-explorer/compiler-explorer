@@ -43,7 +43,7 @@ const staticPath = path.join(distPath, 'static');
 // Hack alert: due to a variety of issues, sometimes we need to change
 // the name here. Mostly it's things like webpack changes that affect
 // how minification is done, even though that's supposed not to matter.
-const webjackJsHack = '.v3.';
+const webjackJsHack = '.v4.';
 const plugins = [
     new MonacoEditorWebpackPlugin({
         languages: [ 'cpp', 'go', 'pascal', 'python', 'rust', 'swift' ],
@@ -119,7 +119,6 @@ export default {
         rules: [
             {
                 test: /\.css$/,
-                exclude: path.resolve(__dirname, 'static/themes/'),
                 use: [
                     {
                         loader: MiniCssExtractPlugin.loader,
@@ -132,9 +131,18 @@ export default {
                 ],
             },
             {
-                test: /\.css$/,
-                include: path.resolve(__dirname, 'static/themes/'),
-                loader: 'css-loader',
+                test: /\.scss$/,
+                use: [
+                    {
+                        loader: MiniCssExtractPlugin.loader,
+                        options: {
+                            publicPath: './',
+                            hmr: isDev,
+                        },
+                    },
+                    'css-loader',
+                    'sass-loader',
+                ],
             },
             {
                 test: /\.(png|woff|woff2|eot|ttf|svg)$/,

@@ -197,6 +197,8 @@ LibsWidgetExt.prototype.newSelectedLibDiv = function (libId, versionId, lib, ver
         libDiv.remove();
         this.showSelectedLibs();
         this.onChangeCallback();
+        // We need to refresh the library lists, or the selector will still show up with the old library version
+        this.startSearching();
     }, this));
 
     return libDiv;
@@ -204,7 +206,7 @@ LibsWidgetExt.prototype.newSelectedLibDiv = function (libId, versionId, lib, ver
 
 LibsWidgetExt.prototype.conjureUpExamples = function (result, lib) {
     var examples = result.find('.lib-examples');
-    if (lib.examples.length > 0) {
+    if (lib.examples && lib.examples.length > 0) {
         var examplesHeader = $('<b>Examples</b>');
         var examplesList = $('<ul />');
         _.each(lib.examples, function (exampleId) {
@@ -227,7 +229,11 @@ LibsWidgetExt.prototype.newSearchResult = function (libId, lib) {
 
     var result = $(template.children()[0].cloneNode(true));
     result.find('.lib-name').html(lib.name);
-    result.find('.lib-description').html(lib.description ? lib.description : '&nbsp;');
+    if (!lib.description) {
+        result.find('.lib-description').hide();
+    } else {
+        result.find('.lib-description').html(lib.description);
+    }
     result.find('.lib-website-link').attr('href', lib.url ? lib.url : '#');
 
     this.conjureUpExamples(result, lib);
@@ -310,6 +316,8 @@ LibsWidgetExt.prototype.startSearching = function () {
         return;
     }
 
+    var descriptionSearchResults = [];
+
     _.each(this.availableLibs[this.currentLangId][this.currentCompilerId], _.bind(function (library, libId) {
         if (library.versions && library.versions.autodetect) return;
 
@@ -322,9 +330,18 @@ LibsWidgetExt.prototype.startSearching = function () {
 
         if (library.description) {
             if (library.description.toLowerCase().includes(lcSearchtext)) {
-                this.addSearchResult(libId, library, searchResults);
+
+                descriptionSearchResults.push({
+                    libId: libId,
+                    library: library,
+                    searchResults: searchResults,
+                });
             }
         }
+    }, this));
+
+    _.each(descriptionSearchResults, _.bind(function (res) {
+        this.addSearchResult(res.libId, res.library, res.searchResults);
     }, this));
 };
 

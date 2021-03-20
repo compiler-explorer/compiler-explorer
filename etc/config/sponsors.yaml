@@ -17,6 +17,14 @@ levels:
         url: https://gimpel.com/?promo=godbolt
         priority: 200
         topIcon: true
+      - name: Intel
+        description: We engineer solutions for our customers’ greatest challenges with reliable, cloud to edge computing, inspired by Moore’s Law.
+        icon: https://static.ce-cdn.net/intel/logo-classicblue-3000px-single-colour.png
+        img: https://static.ce-cdn.net/intel/logo-classicblue-3000px.png
+        url: https://intel.com/
+        priority: 400
+        topIcon: true
+        sideBySide: true
   - name: Patreon Legends
     description: 'These amazing people have pledged at the highest level of support. Huge thanks to these fine folks:'
     class: legendary
@@ -44,6 +52,10 @@ levels:
       - name: Ben Barbour
       - name: Embark Studios
         url: https://www.embark-studios.com/
+      - name: C++Builder
+        description: Discover C++Builder
+        url: https://www.embarcadero.com/products/cbuilder
+      - Kade Phillips
   - name: Patreons
     description: 'Thanks to all my patrons:'
     sponsors:
@@ -278,4 +290,25 @@ levels:
       - Petr Leonov
       - Niall Cooling
       - Ian
-
+      - Carlos Galán
+      - Jake Hemstad
+      - Conor Hoekstra
+      - Thomas Kristensen
+      - Jean-Daniel Deschênes
+      - Cypher Signal
+      - chad royal
+      - Reto Kramer
+      - SEG BRK
+      - JR Smith
+      - Zeke Templin
+      - Christoffer
+      - Осипов Георгий Андреевич
+      - Tomas Michalik
+      - Volker Hantschel
+      - Ashwin Sawant
+      - Amin Aramoon
+      - Jason Orendorff
+      - Walrus
+      - Nicholas Bellamy
+      - Emily A. Bellows
+      - tattarattat
