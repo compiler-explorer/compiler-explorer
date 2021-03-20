@@ -808,7 +808,7 @@ Compiler.prototype.onCompileResponse = function (request, result, cached) {
         infoLabelText += ' (' + result.asmSize + 'B)';
     }
 
-    if (result.filteredCount > 0) {
+    if (result.filteredCount && result.filteredCount > 0) {
         infoLabelText += ' ~'+ result.filteredCount + (result.filteredCount === 1 ? ' line' : ' lines') + ' filtered';
     }
 
