@@ -92,7 +92,6 @@ describe('API handling', () => {
                 handleCmake: res => res.send('cmake'),
                 handlePopularArguments: res => res.send('ok'),
                 handleOptimizationArguments: res => res.send('ok'),
-            },
             }, (key, def) => {
                 switch (key) {
                     case 'formatters':
