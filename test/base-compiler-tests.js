@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import cloneDeep from 'lodash.clonedeep';
 import sinon from 'sinon';
 
 import { BaseCompiler } from '../lib/base-compiler';
@@ -524,12 +525,12 @@ describe('llvm-ast', function () {
 
     it('keeps fewer lines than the original', () => {
         let origHeight = astDump.length;
-        let processed = compiler.processAstOutput(compilerOutput);
+        let processed = compiler.processAstOutput(cloneDeep(compilerOutput));
         processed.length.should.be.below(origHeight);
     });
 
     it('removes invalid slocs', () => {
-        let processed = compiler.processAstOutput(compilerOutput);
+        let processed = compiler.processAstOutput(cloneDeep(compilerOutput));
         astDump.should.match(/<invalid sloc>/);
         let fullText = processed.map(l => l.text).join('\n');
         fullText.should.not.match(/<invalid sloc>/);
@@ -541,5 +542,15 @@ describe('llvm-ast', function () {
         let output = mockAstOutput(astDumpWithCTime);
         let processed = compiler.processAstOutput(output);
         processed.length.should.be.below(100);
+    });
+
+    it('links some source lines', () => {
+        should.exist(compilerOutput.stdout.find(l => l.text.match(/col:21, line:4:1/)));
+        should.exist(compilerOutput.stdout.find(l => l.text.match(/line:3:5, col:18/)));
+        let processed = compiler.processAstOutput(cloneDeep(compilerOutput));
+        should.exist(processed.find(l => l.source && 0 < l.source.from));
+        processed.find(l => l.text.match(/col:21, line:4:1/)).source.to.should.equal(4);
+        processed.find(l => l.text.match(/line:3:5, col:18/)).source.from.should.equal(3);
+        processed.find(l => l.text.match(/line:3:5, col:18/)).source.to.should.equal(3);
     });
 });
