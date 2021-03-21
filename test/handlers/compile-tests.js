@@ -51,6 +51,7 @@ describe('Compiler tests', () => {
 
         app.post('/noscript/compile', formParser, compileHandler.handle.bind(compileHandler));
         app.post('/:compiler/compile', textParser, compileHandler.handle.bind(compileHandler));
+        app.post('/cmake/:compiler', compileHandler.handleCmake.bind(compileHandler));
     });
 
     it('throws for unknown compilers', () => {
@@ -197,6 +198,22 @@ describe('Compiler tests', () => {
                     }));
         }
 
+        function makeFakeCmakeJson(source, options, fakeResult, files) {
+            return compileHandler.setCompilers([{
+                compilerType: 'fake-for-test',
+                exe: 'fake',
+                fakeResult: fakeResult || {},
+            }])
+                .then(() => chai.request(app)
+                    .post('/cmake/fake-for-test')
+                    .set('Accept', 'application/json')
+                    .send({
+                        options: options || {},
+                        source: source || '',
+                        files: files || [],
+                    }));
+        }
+
         it('handles JSON output', () => {
             return makeFakeJson('I am a program', {}, {
                 code: 0,
@@ -234,6 +251,35 @@ describe('Compiler tests', () => {
                     res.should.be.json;
                     res.body.input.options.should.deep.equals(['-O1', '-monkey', 'badger badger']);
                     res.body.input.filters.should.deep.equals({a: true, b: true, c: true});
+                });
+        });
+
+        it('cmakes', () => {
+            return makeFakeCmakeJson('I am a program', {
+                userArguments: '-O1 -monkey "badger badger"',
+                filters: {a: true, b: true, c: true},
+            }, {
+            }, [])
+                .then(res => {
+                    res.should.have.status(200);
+                    res.should.be.json;
+                    res.body.input.options.should.deep.equals({
+                        backendOptions: {},
+                        bypassCache: false,
+                        executionParameters: {
+                            args: [],
+                        },
+                        filters: {
+                            a: true,
+                            b: true,
+                            c: true,
+                        },
+                        libraries: [],
+                        options: ['-O1', '-monkey', 'badger badger'],
+                        source: 'I am a program',
+                        tools: [],
+                    });
+                    res.body.input.files.should.deep.equals([]);
                 });
         });
     });
