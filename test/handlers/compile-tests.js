@@ -166,7 +166,7 @@ describe('Compiler tests', () => {
                 return chai.request(app)
                     .post('/fake-for-test/compile')
                     .send({
-                        options: '',
+                        options: {},
                         source: 'I am a program',
                     })
                     .then(res => {
