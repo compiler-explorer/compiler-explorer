@@ -110,7 +110,7 @@ Ast.prototype.onCompileResult = function (id, compiler, result, lang) {
         this.showAstResults(result.astOutput);
     }
     else if (compiler.supportsAstView) {
-        this.showAstResults('<No output>');
+        this.showAstResults([{text: '<No output>'}]);
     }
 
     if (lang && lang.monaco && this.getCurrentEditorLanguage() !== lang.monaco) {
@@ -134,7 +134,8 @@ Ast.prototype.getDisplayableAst = function (astResult) {
 };
 
 Ast.prototype.showAstResults = function (results) {
-    this.astEditor.setValue(results);
+    var fullText = results.map(function (x) { return x.text; }).join('\n');
+    this.astEditor.setValue(fullText);
 
     if (!this.awaitingInitialResults) {
         if (this.selection) {

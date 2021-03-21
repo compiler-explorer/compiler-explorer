@@ -525,13 +525,14 @@ describe('llvm-ast', function () {
     it('keeps fewer lines than the original', () => {
         let origHeight = astDump.length;
         let processed = compiler.processAstOutput(compilerOutput);
-        utils.splitLines(processed).length.should.be.below(origHeight);
+        processed.length.should.be.below(origHeight);
     });
 
     it('removes invalid slocs', () => {
         let processed = compiler.processAstOutput(compilerOutput);
         astDump.should.match(/<invalid sloc>/);
-        processed.should.not.match(/<invalid sloc>/);
+        let fullText = processed.map(l => l.text).join('\n');
+        fullText.should.not.match(/<invalid sloc>/);
     });
 
     it('keeps reasonable-sized output', () => {
@@ -539,6 +540,6 @@ describe('llvm-ast', function () {
 
         let output = mockAstOutput(astDumpWithCTime);
         let processed = compiler.processAstOutput(output);
-        utils.splitLines(processed).length.should.be.below(100);
+        processed.length.should.be.below(100);
     });
 });
