@@ -198,6 +198,22 @@ describe('Compiler tests', () => {
                     }));
         }
 
+        function makeFakeWithExtraFilesJson(source, options, files, fakeResult) {
+            return compileHandler.setCompilers([{
+                compilerType: 'fake-for-test',
+                exe: 'fake',
+                fakeResult: fakeResult || {},
+            }])
+                .then(() => chai.request(app)
+                    .post('/fake-for-test/compile')
+                    .set('Accept', 'application/json')
+                    .send({
+                        options: options || {},
+                        source: source || '',
+                        files: files || [],
+                    }));
+        }
+
         function makeFakeCmakeJson(source, options, fakeResult, files) {
             return compileHandler.setCompilers([{
                 compilerType: 'fake-for-test',
@@ -254,12 +270,35 @@ describe('Compiler tests', () => {
                 });
         });
 
+        it('parses extra files', () => {
+            return makeFakeWithExtraFilesJson('I am a program', {
+                userArguments: '-O1 -monkey "badger badger"',
+                filters: {a: true, b: true, c: true},
+            }, [{
+                filename: 'myresource.txt',
+                contents: 'Hello, World!\nHow are you?\n',
+            }], {})
+                .then(res => {
+                    res.should.have.status(200);
+                    res.should.be.json;
+                    res.body.input.options.should.deep.equals(['-O1', '-monkey', 'badger badger']);
+                    res.body.input.filters.should.deep.equals({a: true, b: true, c: true});
+                    res.body.input.files.should.deep.equals([{
+                        filename: 'myresource.txt',
+                        contents: 'Hello, World!\nHow are you?\n',
+                    }]);
+                });
+        });
+
         it('cmakes', () => {
             return makeFakeCmakeJson('I am a program', {
                 userArguments: '-O1 -monkey "badger badger"',
                 filters: {a: true, b: true, c: true},
             }, {
-            }, [])
+            }, [{
+                filename: 'myresource.txt',
+                contents: 'Hello, World!\nHow are you?\n',
+            }])
                 .then(res => {
                     res.should.have.status(200);
                     res.should.be.json;
@@ -279,7 +318,10 @@ describe('Compiler tests', () => {
                         source: 'I am a program',
                         tools: [],
                     });
-                    res.body.input.files.should.deep.equals([]);
+                    res.body.input.files.should.deep.equals([{
+                        filename: 'myresource.txt',
+                        contents: 'Hello, World!\nHow are you?\n',
+                    }]);
                 });
         });
     });
