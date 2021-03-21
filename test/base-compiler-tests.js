@@ -498,10 +498,15 @@ Args: []
     });
 });
 
+function mockAstOutput(astLines) {
+    return { stdout : astLines.map(l => ( { text : l } ))};
+}
+
 describe('llvm-ast', function () {
     let ce, compiler;
     let astDump;
     let compilerOutput;
+    let astDumpWithCTime;
     const info = {
         exe: null,
         remote: true,
@@ -512,14 +517,15 @@ describe('llvm-ast', function () {
     before(() => {
         ce = makeCompilationEnvironment({ languages });
         compiler = new BaseCompiler(info, ce);
-        astDump = fs.readFileSync('test/ast/square.ast').toString();
-        compilerOutput = { stdout : [ { text : astDump } ] };
+        astDump = utils.splitLines(fs.readFileSync('test/ast/square.ast').toString());
+        compilerOutput = mockAstOutput(astDump);
+        astDumpWithCTime = utils.splitLines(fs.readFileSync('test/ast/ctime.ast').toString());
     });
 
-    it('keeps all the lines', () => {
-        let origHeight = utils.splitLines(astDump).length;
+    it('keeps fewer lines than the original', () => {
+        let origHeight = astDump.length;
         let processed = compiler.processAstOutput(compilerOutput);
-        utils.splitLines(processed).length.should.equal(origHeight);
+        utils.splitLines(processed).length.should.be.below(origHeight);
     });
 
     it('removes invalid slocs', () => {
@@ -528,4 +534,11 @@ describe('llvm-ast', function () {
         processed.should.not.match(/<invalid sloc>/);
     });
 
+    it('keeps reasonable-sized output', () => {
+        astDumpWithCTime.length.should.be.above(100);
+
+        let output = mockAstOutput(astDumpWithCTime);
+        let processed = compiler.processAstOutput(output);
+        utils.splitLines(processed).length.should.be.below(100);
+    });
 });
