@@ -28,6 +28,7 @@ import { BaseCompiler } from '../lib/base-compiler';
 import { BuildEnvSetupBase } from '../lib/buildenvsetup';
 import { Win32Compiler } from '../lib/compilers/win32';
 import * as exec from '../lib/exec';
+import * as utils from '../lib/utils';
 
 import { fs, makeCompilationEnvironment, path, should } from './utils';
 
@@ -495,4 +496,36 @@ Args: []
             optType: 'Missed',
         }]);
     });
+});
+
+describe('llvm-ast', function () {
+    let ce, compiler;
+    let astDump;
+    let compilerOutput;
+    const info = {
+        exe: null,
+        remote: true,
+        lang: languages['c++'].id,
+        ldPath: [],
+    };
+
+    before(() => {
+        ce = makeCompilationEnvironment({ languages });
+        compiler = new BaseCompiler(info, ce);
+        astDump = fs.readFileSync('test/ast/square.ast').toString();
+        compilerOutput = { stdout : [ { text : astDump } ] };
+    });
+
+    it('keeps all the lines', () => {
+        let origHeight = utils.splitLines(astDump).length;
+        let processed = compiler.processAstOutput(compilerOutput);
+        utils.splitLines(processed).length.should.equal(origHeight);
+    });
+
+    it('removes invalid slocs', () => {
+        let processed = compiler.processAstOutput(compilerOutput);
+        astDump.should.match(/<invalid sloc>/);
+        processed.should.not.match(/<invalid sloc>/);
+    });
+
 });
