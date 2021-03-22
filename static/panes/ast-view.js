@@ -28,6 +28,7 @@ var FontScale = require('../fontscale');
 var monaco = require('monaco-editor');
 var _ = require('underscore');
 var $ = require('jquery');
+var colour = require('../colour');
 var ga = require('../analytics');
 var monacoConfig = require('../monaco-config');
 
@@ -50,6 +51,12 @@ function Ast(hub, container, state) {
 
     this.awaitingInitialResults = false;
     this.selection = state.selection;
+
+    this.colours = [];
+    this.astCode = [];
+    this.lastColours = [];
+    this.lastColourScheme = {};
+
 
     this.initButtons(state);
     this.initCallbacks();
@@ -79,6 +86,7 @@ Ast.prototype.initCallbacks = function () {
 
     this.eventHub.on('compileResult', this.onCompileResult, this);
     this.eventHub.on('compiler', this.onCompiler, this);
+    this.eventHub.on('colours', this.onColours, this);
     this.eventHub.on('compilerClose', this.onCompilerClose, this);
     this.eventHub.on('settingsChange', this.onSettingsChange, this);
     this.eventHub.emit('astViewOpened', this._compilerid);
@@ -110,12 +118,17 @@ Ast.prototype.onCompileResult = function (id, compiler, result, lang) {
         this.showAstResults(result.astOutput);
     }
     else if (compiler.supportsAstView) {
-        this.showAstResults('<No output>');
+        this.showAstResults([{text: '<No output>'}]);
     }
 
     if (lang && lang.monaco && this.getCurrentEditorLanguage() !== lang.monaco) {
         monaco.editor.setModelLanguage(this.astEditor.getModel(), lang.monaco);
     }
+
+    // Copied over from ir-view.js:onCompileResponse
+    // Why call this explicitly instead of just listening to the "colours" event?
+    // Because the recolouring happens before this editors value is set using "showIrResults".
+    this.onColours(this._compilerid, this.lastColours, this.lastColourScheme);
 };
 
 // Monaco language id of the current editor
@@ -134,7 +147,9 @@ Ast.prototype.getDisplayableAst = function (astResult) {
 };
 
 Ast.prototype.showAstResults = function (results) {
-    this.astEditor.setValue(results);
+    var fullText = results.map(function (x) { return x.text; }).join('\n');
+    this.astEditor.setValue(fullText);
+    this.astCode = results;
 
     if (!this.awaitingInitialResults) {
         if (this.selection) {
@@ -156,6 +171,29 @@ Ast.prototype.onCompiler = function (id, compiler, options, editorid) {
         }
     }
 };
+
+Ast.prototype.onColours = function (id, colours, scheme) {
+    if (id === this._compilerid) {
+        this.lastColours = colours;
+        this.lastColourScheme = scheme;
+
+        var astColours = {};
+        _.each(this.astCode, function (x, index) {
+            if (x.source && x.source.from && x.source.to &&
+                x.source.from <= x.source.to && x.source.to < x.source.from + 100) {
+                var i;
+                for (i = x.source.from; i <= x.source.to; ++i) {
+                    if (colours[i - 1] !== undefined) {
+                        astColours[index] = colours[i - 1];
+                        break;
+                    }
+                }
+            }
+        });
+        this.colours = colour.applyColours(this.astEditor, astColours, scheme, this.colours);
+    }
+};
+
 
 Ast.prototype.onCompilerClose = function (id) {
     if (id === this._compilerid) {

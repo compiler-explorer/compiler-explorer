@@ -95,3 +95,4 @@ From oldest to newest contributor, we would like to thank:
 - [Peter Schussheim](https://github.com/peterschussheim)
 - [Robert Cohn](https://github.com/rscohn2)
 - [Jeremy Overesch](https://github.com/jovere)
+- [Arseniy Zaostrovnykh](https://github.com/necto)
