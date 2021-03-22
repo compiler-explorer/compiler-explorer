@@ -168,7 +168,7 @@ export class GolangCompiler extends BaseCompiler {
     }
 
     extractLogging(stdout) {
-        let filepath = `./${this.compileFilename}`;
+        const filepath = `./${this.compileFilename}`;
         const reLogging = /^[^:]+:\d+:(\d+:)?\s.*/;
         return stdout.filter(obj => obj.text.match(reLogging))
             .map(obj => obj.text.replace(filepath, '<source>'))

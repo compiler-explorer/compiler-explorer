@@ -46,7 +46,7 @@ describe('llvm-ast', function () {
     let astDumpWithCTime;
 
     before(() => {
-        let fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
+        const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
         compilerProps = fakeProps.get.bind(fakeProps, 'c++');
 
         astParser = new LlvmAstParser(compilerProps);
@@ -56,30 +56,30 @@ describe('llvm-ast', function () {
     });
 
     it('keeps fewer lines than the original', () => {
-        let origHeight = astDump.length;
-        let processed = astParser.processAst(cloneDeep(compilerOutput));
+        const origHeight = astDump.length;
+        const processed = astParser.processAst(cloneDeep(compilerOutput));
         processed.length.should.be.below(origHeight);
     });
 
     it('removes invalid slocs', () => {
-        let processed = astParser.processAst(cloneDeep(compilerOutput));
+        const processed = astParser.processAst(cloneDeep(compilerOutput));
         astDump.should.match(/<invalid sloc>/);
-        let fullText = processed.map(l => l.text).join('\n');
+        const fullText = processed.map(l => l.text).join('\n');
         fullText.should.not.match(/<invalid sloc>/);
     });
 
     it('keeps reasonable-sized output', () => {
         astDumpWithCTime.length.should.be.above(100);
 
-        let output = mockAstOutput(astDumpWithCTime);
-        let processed = astParser.processAst(output);
+        const output = mockAstOutput(astDumpWithCTime);
+        const processed = astParser.processAst(output);
         processed.length.should.be.below(100);
     });
 
     it('links some source lines', () => {
         should.exist(compilerOutput.stdout.find(l => l.text.match(/col:21, line:4:1/)));
         should.exist(compilerOutput.stdout.find(l => l.text.match(/line:3:5, col:18/)));
-        let processed = astParser.processAst(cloneDeep(compilerOutput));
+        const processed = astParser.processAst(cloneDeep(compilerOutput));
         should.exist(processed.find(l => l.source && 0 < l.source.from));
         processed.find(l => l.text.match(/col:21, line:4:1/)).source.to.should.equal(4);
         processed.find(l => l.text.match(/line:3:5, col:18/)).source.from.should.equal(3);

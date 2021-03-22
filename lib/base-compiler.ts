@@ -119,20 +119,6 @@ export class BaseCompiler {
             });
         }
 
-        if (!this.compiler.instructionSet) {
-            const isets = new InstructionSets();
-            if (this.buildenvsetup) {
-                isets.getCompilerInstructionSetHint(this.buildenvsetup.compilerArch, this.compiler.exe).then(
-                    (res) => this.compiler.instructionSet = res,
-                ).catch(() => {});
-            } else {
-                const temp = new BuildEnvSetupBase(this.compiler, this.env);
-                isets.getCompilerInstructionSetHint(temp.compilerArch, this.compiler.exe).then(
-                    (res) => this.compiler.instructionSet = res,
-                ).catch(() => {});
-            }
-        }
-
         this.packager = new Packager();
     }
 
@@ -702,7 +688,7 @@ export class BaseCompiler {
         const writerOfSource = fs.writeFile(inputFilename, key.source);
 
         if (key.files) {
-            for (let file of key.files) {
+            for (const file of key.files) {
                 await fs.writeFile(this.getExtraFilepath(dirPath, file.filename), file.contents);
             }
         }
@@ -1054,7 +1040,7 @@ export class BaseCompiler {
         if (!fullResult) {
             const filesToWrite = [];
             filesToWrite.push(fs.writeFile(path.join(dirPath, 'CMakeLists.txt'), cacheKey.source));
-            for (let file of files) {
+            for (const file of files) {
                 filesToWrite.push(fs.writeFile(this.getExtraFilepath(dirPath, file.filename), file.contents));
             }
 
@@ -1201,7 +1187,7 @@ export class BaseCompiler {
             await fs.writeFile(inputFilename, source);
 
             if (files) {
-                for (let file of files) {
+                for (const file of files) {
                     await fs.writeFile(this.getExtraFilepath(dirPath, file.filename), file.contents);
                 }
             }
@@ -1448,7 +1434,7 @@ Please select another pass or change filters.`;
     }
 
     getArgumentParser() {
-        let exe = this.compiler.exe.toLowerCase();
+        const exe = this.compiler.exe.toLowerCase();
         if (exe.includes('clang')
             || exe.includes('icpx')
             || exe.includes('icx')) {  // check this first as "clang++" matches "g++"
@@ -1506,6 +1492,19 @@ Please select another pass or change filters.`;
             this.cmakeBaseEnv = await this.getCmakeBaseEnv();
         } catch (e) {
             logger.error(e);
+        }
+
+        if (!this.compiler.instructionSet) {
+            const isets = new InstructionSets();
+            const compilerArch = this.buildenvsetup
+                ? this.buildenvsetup.compilerArch
+                : new BuildEnvSetupBase(this.compiler, this.env).compilerArch;
+
+            try {
+                this.compiler.instructionSet = isets.getCompilerInstructionSetHint(compilerArch, this.compiler.exe);
+            } catch (e) {
+                logger.error(e);
+            }
         }
 
         return this.getArgumentParser().parse(this);
