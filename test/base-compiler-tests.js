@@ -114,6 +114,16 @@ describe('Compiler execution', function () {
         ldPath: [],
         libPath: [],
     };
+    const someOptionsCompilerInfo = {
+        exe: null,
+        remote: true,
+        lang: languages['c++'].id,
+        ldPath: [],
+        libPath: [],
+        supportsExecute: true,
+        supportsBinary: true,
+        options: '--hello-abc -I"/opt/some thing 1.0/include"',
+    };
 
     before(() => {
         ce = makeCompilationEnvironment({ languages });
@@ -183,6 +193,18 @@ describe('Compiler execution', function () {
     it('buildenv should handle spaces correctly', () => {
         const buildenv = new BuildEnvSetupBase(executingCompilerInfo, ce);
         buildenv.getCompilerArch().should.equal('magic 8bit');
+    });
+
+    it('buildenv compiler without target/march', () => {
+        const buildenv = new BuildEnvSetupBase(noExecuteSupportCompilerInfo, ce);
+        buildenv.getCompilerArch().should.equal(false);
+        buildenv.compilerSupportsX86.should.equal(true);
+    });
+
+    it('buildenv compiler without target/march but with options', () => {
+        const buildenv = new BuildEnvSetupBase(someOptionsCompilerInfo, ce);
+        buildenv.getCompilerArch().should.equal(false);
+        buildenv.compilerSupportsX86.should.equal(true);
     });
 
     it('should compile', async () => {
