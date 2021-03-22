@@ -51,7 +51,7 @@ describe('Compiler tests', () => {
 
         app.post('/noscript/compile', formParser, compileHandler.handle.bind(compileHandler));
         app.post('/:compiler/compile', textParser, compileHandler.handle.bind(compileHandler));
-        app.post('/cmake/:compiler', compileHandler.handleCmake.bind(compileHandler));
+        app.post('/:compiler/cmake', compileHandler.handleCmake.bind(compileHandler));
     });
 
     it('throws for unknown compilers', () => {
@@ -221,7 +221,7 @@ describe('Compiler tests', () => {
                 fakeResult: fakeResult || {},
             }])
                 .then(() => chai.request(app)
-                    .post('/cmake/fake-for-test')
+                    .post('/fake-for-test/cmake')
                     .set('Accept', 'application/json')
                     .send({
                         options: options || {},
