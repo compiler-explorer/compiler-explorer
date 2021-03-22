@@ -556,7 +556,6 @@ Args: []
             compiler.getExtraFilepath('/tmp/somefolder', 'test.txt').should.equal('/tmp/somefolder/test.txt');
         }
 
-
         // note: subfolders currently not supported, but maybe in the future?
         try {
             compiler.getExtraFilepath('/tmp/somefolder', 'subfolder/hello.h');
