@@ -22,14 +22,12 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import cloneDeep from 'lodash.clonedeep';
 import sinon from 'sinon';
 
 import { BaseCompiler } from '../lib/base-compiler';
 import { BuildEnvSetupBase } from '../lib/buildenvsetup';
 import { Win32Compiler } from '../lib/compilers/win32';
 import * as exec from '../lib/exec';
-import * as utils from '../lib/utils';
 
 import { fs, makeCompilationEnvironment, path, should } from './utils';
 
@@ -496,61 +494,5 @@ Args: []
             displayString: '',
             optType: 'Missed',
         }]);
-    });
-});
-
-function mockAstOutput(astLines) {
-    return { stdout : astLines.map(l => ( { text : l } ))};
-}
-
-describe('llvm-ast', function () {
-    let ce, compiler;
-    let astDump;
-    let compilerOutput;
-    let astDumpWithCTime;
-    const info = {
-        exe: null,
-        remote: true,
-        lang: languages['c++'].id,
-        ldPath: [],
-    };
-
-    before(() => {
-        ce = makeCompilationEnvironment({ languages });
-        compiler = new BaseCompiler(info, ce);
-        astDump = utils.splitLines(fs.readFileSync('test/ast/square.ast').toString());
-        compilerOutput = mockAstOutput(astDump);
-        astDumpWithCTime = utils.splitLines(fs.readFileSync('test/ast/ctime.ast').toString());
-    });
-
-    it('keeps fewer lines than the original', () => {
-        let origHeight = astDump.length;
-        let processed = compiler.processAstOutput(cloneDeep(compilerOutput));
-        processed.length.should.be.below(origHeight);
-    });
-
-    it('removes invalid slocs', () => {
-        let processed = compiler.processAstOutput(cloneDeep(compilerOutput));
-        astDump.should.match(/<invalid sloc>/);
-        let fullText = processed.map(l => l.text).join('\n');
-        fullText.should.not.match(/<invalid sloc>/);
-    });
-
-    it('keeps reasonable-sized output', () => {
-        astDumpWithCTime.length.should.be.above(100);
-
-        let output = mockAstOutput(astDumpWithCTime);
-        let processed = compiler.processAstOutput(output);
-        processed.length.should.be.below(100);
-    });
-
-    it('links some source lines', () => {
-        should.exist(compilerOutput.stdout.find(l => l.text.match(/col:21, line:4:1/)));
-        should.exist(compilerOutput.stdout.find(l => l.text.match(/line:3:5, col:18/)));
-        let processed = compiler.processAstOutput(cloneDeep(compilerOutput));
-        should.exist(processed.find(l => l.source && 0 < l.source.from));
-        processed.find(l => l.text.match(/col:21, line:4:1/)).source.to.should.equal(4);
-        processed.find(l => l.text.match(/line:3:5, col:18/)).source.from.should.equal(3);
-        processed.find(l => l.text.match(/line:3:5, col:18/)).source.to.should.equal(3);
     });
 });
