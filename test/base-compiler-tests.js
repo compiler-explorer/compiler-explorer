@@ -499,7 +499,11 @@ Args: []
     it('should normalize extra file path', () => {
         const withDemangler = {...noExecuteSupportCompilerInfo, demangler: 'demangler-exe', demanglerType: 'cpp'};
         const compiler = new BaseCompiler(withDemangler, ce);
-        compiler.getExtraFilepath('/tmp/somefolder', 'test.h').should.equal('/tmp/somefolder/test.h');
+        if (process.platform === 'win32') {
+            compiler.getExtraFilepath('c:/tmp/somefolder', 'test.h').should.equal('c:\\tmp\\somefolder\\test.h');
+        } else {
+            compiler.getExtraFilepath('/tmp/somefolder', 'test.h').should.equal('/tmp/somefolder/test.h');
+        }
 
         try {
             compiler.getExtraFilepath('/tmp/somefolder', '../test.h');
@@ -546,7 +550,12 @@ Args: []
             }
         }
 
-        compiler.getExtraFilepath('/tmp/somefolder', 'test.txt').should.equal('/tmp/somefolder/test.txt');
+        if (process.platform === 'win32') {
+            compiler.getExtraFilepath('c:/tmp/somefolder', 'test.txt').should.equal('c:\\tmp\\somefolder\\test.txt');
+        } else {
+            compiler.getExtraFilepath('/tmp/somefolder', 'test.txt').should.equal('/tmp/somefolder/test.txt');
+        }
+
 
         // note: subfolders currently not supported, but maybe in the future?
         try {
