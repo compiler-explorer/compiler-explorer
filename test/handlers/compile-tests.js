@@ -51,6 +51,7 @@ describe('Compiler tests', () => {
 
         app.post('/noscript/compile', formParser, compileHandler.handle.bind(compileHandler));
         app.post('/:compiler/compile', textParser, compileHandler.handle.bind(compileHandler));
+        app.post('/:compiler/cmake', compileHandler.handleCmake.bind(compileHandler));
     });
 
     it('throws for unknown compilers', () => {
@@ -166,7 +167,7 @@ describe('Compiler tests', () => {
                 return chai.request(app)
                     .post('/fake-for-test/compile')
                     .send({
-                        options: '',
+                        options: {},
                         source: 'I am a program',
                     })
                     .then(res => {
@@ -194,6 +195,38 @@ describe('Compiler tests', () => {
                     .send({
                         options: options || {},
                         source: source || '',
+                    }));
+        }
+
+        function makeFakeWithExtraFilesJson(source, options, files, fakeResult) {
+            return compileHandler.setCompilers([{
+                compilerType: 'fake-for-test',
+                exe: 'fake',
+                fakeResult: fakeResult || {},
+            }])
+                .then(() => chai.request(app)
+                    .post('/fake-for-test/compile')
+                    .set('Accept', 'application/json')
+                    .send({
+                        options: options || {},
+                        source: source || '',
+                        files: files || [],
+                    }));
+        }
+
+        function makeFakeCmakeJson(source, options, fakeResult, files) {
+            return compileHandler.setCompilers([{
+                compilerType: 'fake-for-test',
+                exe: 'fake',
+                fakeResult: fakeResult || {},
+            }])
+                .then(() => chai.request(app)
+                    .post('/fake-for-test/cmake')
+                    .set('Accept', 'application/json')
+                    .send({
+                        options: options || {},
+                        source: source || '',
+                        files: files || [],
                     }));
         }
 
@@ -234,6 +267,61 @@ describe('Compiler tests', () => {
                     res.should.be.json;
                     res.body.input.options.should.deep.equals(['-O1', '-monkey', 'badger badger']);
                     res.body.input.filters.should.deep.equals({a: true, b: true, c: true});
+                });
+        });
+
+        it('parses extra files', () => {
+            return makeFakeWithExtraFilesJson('I am a program', {
+                userArguments: '-O1 -monkey "badger badger"',
+                filters: {a: true, b: true, c: true},
+            }, [{
+                filename: 'myresource.txt',
+                contents: 'Hello, World!\nHow are you?\n',
+            }], {})
+                .then(res => {
+                    res.should.have.status(200);
+                    res.should.be.json;
+                    res.body.input.options.should.deep.equals(['-O1', '-monkey', 'badger badger']);
+                    res.body.input.filters.should.deep.equals({a: true, b: true, c: true});
+                    res.body.input.files.should.deep.equals([{
+                        filename: 'myresource.txt',
+                        contents: 'Hello, World!\nHow are you?\n',
+                    }]);
+                });
+        });
+
+        it('cmakes', () => {
+            return makeFakeCmakeJson('I am a program', {
+                userArguments: '-O1 -monkey "badger badger"',
+                filters: {a: true, b: true, c: true},
+            }, {
+            }, [{
+                filename: 'myresource.txt',
+                contents: 'Hello, World!\nHow are you?\n',
+            }])
+                .then(res => {
+                    res.should.have.status(200);
+                    res.should.be.json;
+                    res.body.input.options.should.deep.equals({
+                        backendOptions: {},
+                        bypassCache: false,
+                        executionParameters: {
+                            args: [],
+                        },
+                        filters: {
+                            a: true,
+                            b: true,
+                            c: true,
+                        },
+                        libraries: [],
+                        options: ['-O1', '-monkey', 'badger badger'],
+                        source: 'I am a program',
+                        tools: [],
+                    });
+                    res.body.input.files.should.deep.equals([{
+                        filename: 'myresource.txt',
+                        contents: 'Hello, World!\nHow are you?\n',
+                    }]);
                 });
         });
     });
