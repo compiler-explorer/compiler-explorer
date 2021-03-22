@@ -125,6 +125,7 @@ Ast.prototype.onCompileResult = function (id, compiler, result, lang) {
         monaco.editor.setModelLanguage(this.astEditor.getModel(), lang.monaco);
     }
 
+    // Copied over from ir-view.js:onCompileResponse
     // Why call this explicitly instead of just listening to the "colours" event?
     // Because the recolouring happens before this editors value is set using "showIrResults".
     this.onColours(this._compilerid, this.lastColours, this.lastColourScheme);
@@ -172,10 +173,10 @@ Ast.prototype.onCompiler = function (id, compiler, options, editorid) {
 };
 
 Ast.prototype.onColours = function (id, colours, scheme) {
-    this.lastColours = colours;
-    this.lastColourScheme = scheme;
-
     if (id === this._compilerid) {
+        this.lastColours = colours;
+        this.lastColourScheme = scheme;
+
         var astColours = {};
         _.each(this.astCode, function (x, index) {
             if (x.source && x.source.from && x.source.to &&
