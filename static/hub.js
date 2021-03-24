@@ -28,6 +28,7 @@ var _ = require('underscore');
 var Sentry = require('@sentry/browser');
 var editor = require('./panes/editor');
 var compiler = require('./panes/compiler');
+var tree = require('./panes/tree');
 var executor = require('./panes/executor');
 var output = require('./panes/output');
 var tool = require('./panes/tool');
@@ -68,6 +69,7 @@ function Hub(layout, subLangId, defaultLangId) {
     this.editorIds = new Ids();
     this.compilerIds = new Ids();
     this.executorIds = new Ids();
+    this.treeIds = new Ids();
     this.compilerService = new CompilerService(layout.eventHub);
     this.deferred = true;
     this.deferredEmissions = [];
@@ -86,6 +88,10 @@ function Hub(layout, subLangId, defaultLangId) {
     layout.registerComponent(Components.getCompiler().componentName,
         function (container, state) {
             return self.compilerFactory(container, state);
+        });
+    layout.registerComponent(Components.getTree().componentName,
+        function (container, state) {
+            return self.treeFactory(container, state);
         });
     layout.registerComponent(Components.getExecutor().componentName,
         function (container, state) {
@@ -140,6 +146,12 @@ function Hub(layout, subLangId, defaultLangId) {
     layout.eventHub.on('compilerClose', function (id) {
         this.compilerIds.remove(id);
     }, this);
+    layout.eventHub.on('treeOpen', function (id) {
+        this.treeIds.add(id);
+    }, this);
+    layout.eventHub.on('treeClose', function (id) {
+        this.treeIds.remove(id);
+    }, this);
     layout.eventHub.on('executorOpen', function (id) {
         this.executorIds.add(id);
     }, this);
@@ -163,6 +175,10 @@ Hub.prototype.undefer = function () {
     this.deferredEmissions = [];
 };
 
+Hub.prototype.nextTreeId = function () {
+    return this.treeIds.next();
+};
+
 Hub.prototype.nextEditorId = function () {
     return this.editorIds.next();
 };
@@ -181,6 +197,10 @@ Hub.prototype.codeEditorFactory = function (container, state) {
     // has used it yet.
     container.parent.config.isClosable = true;
     return new editor.Editor(this, state, container);
+};
+
+Hub.prototype.treeFactory = function (container, state) {
+    return new tree.Tree(this, state, container);
 };
 
 Hub.prototype.compilerFactory = function (container, state) {

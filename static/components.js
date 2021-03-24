@@ -80,6 +80,13 @@ module.exports = {
             componentState: {id: id, source: source, options: options},
         };
     },
+    getTree: function (id) {
+        return {
+            type: 'component',
+            componentName: 'filelisting',
+            componentState: {id: id},
+        };
+    },
     getOutput: function (compiler, editor) {
         return {
             type: 'component',

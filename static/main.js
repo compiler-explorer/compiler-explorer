@@ -507,6 +507,9 @@ function start() {
     setupAdd($('#add-diff'), function () {
         return Components.getDiff();
     });
+    setupAdd($('#add-tree'), function () {
+        return Components.getTree();
+    });
 
     if (hashPart) {
         var element = $(hashPart);
