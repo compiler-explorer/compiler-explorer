@@ -280,11 +280,27 @@ function initPolicies(options) {
 
     jsCookie.remove('fs_uid');
     jsCookie.remove('cookieconsent_status');
-    if (options.policies.privacy.enabled &&
-        options.policies.privacy.hash !== jsCookie.get(options.policies.privacy.key)) {
-        $('#privacy').trigger('click', {
-            title: 'New Privacy Policy. Please take a moment to read it',
-        });
+    var policyBellNotification = $(document).find('#policyBellNotification');
+    var privacyBellNotification = $(document).find('#privacyBellNotification');
+    var cookiesBellNotification = $(document).find('#cookiesBellNotification');
+    if (options.policies.privacy.enabled) {
+        if (jsCookie.get(options.policies.privacy.key) == null) {
+            $('#privacy').trigger('click', {
+                title: 'New Privacy Policy. Please take a moment to read it',
+            });
+        } else if (options.policies.privacy.hash !== jsCookie.get(options.policies.privacy.key)) {
+            // When the user has already accepted the privacy, just show a pretty notification.
+            policyBellNotification.removeClass('d-none');
+            privacyBellNotification.removeClass('d-none');
+            $(document).find('#privacy')
+                .on('click', function () {
+                    // Only hide if the other policy does not also have a bell
+                    if (cookiesBellNotification.hasClass('d-none')) {
+                        policyBellNotification.addClass('d-none');
+                    }
+                    privacyBellNotification.addClass('d-none');
+                });
+        }
     }
     simpleCooks.onDoConsent = function () {
         jsCookie.set(options.policies.cookies.key, options.policies.cookies.hash, {expires: 365});
@@ -299,11 +315,22 @@ function initPolicies(options) {
     };
     // '' means no consent. Hash match means consent of old. Null means new user!
     var storedCookieConsent = jsCookie.get(options.policies.cookies.key);
-    if (options.policies.cookies.enabled && storedCookieConsent !== '' &&
-        options.policies.cookies.hash !== storedCookieConsent) {
-        simpleCooks.show();
-    } else if (options.policies.cookies.enabled && hasCookieConsented(options)) {
-        analytics.initialise();
+    if (options.policies.cookies.enabled) {
+        if (storedCookieConsent !== '' && options.policies.cookies.hash !== storedCookieConsent) {
+            simpleCooks.show();
+
+            policyBellNotification.removeClass('d-none');
+            cookiesBellNotification.removeClass('d-none');
+            $(document).find('#cookies')
+                .on('click', function () {
+                    if (privacyBellNotification.hasClass('d-none')) {
+                        policyBellNotification.addClass('d-none');
+                    }
+                    cookiesBellNotification.addClass('d-none');
+                });
+        } else if (hasCookieConsented(options)) {
+            analytics.initialise();
+        }
     }
 }
 

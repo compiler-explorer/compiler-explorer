@@ -65,7 +65,10 @@ block prepend content
             include menu-other.pug
         if policies.cookies.enabled || policies.privacy.enabled
           li.nav-item.dropdown
-            a.nav-link.dropdown-toggle#policiesDropdown(href="javascript:;" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") Policies
+            a.nav-link.dropdown-toggle#policiesDropdown(href="javascript:;" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
+              | &nbsp;Policies
+              span#policyBellNotification.d-none.badge.badge-pill.badge-primary
+                span.fa.fa-bell
             div.dropdown-menu.dropdown-menu-right(aria-labelledby="policiesDropdown")
               include menu-policies.pug
 
