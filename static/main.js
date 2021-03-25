@@ -277,12 +277,8 @@ function initializeResetLayoutLink() {
 
 function initPolicies(options) {
     // Ensure old cookies are removed, to avoid user confusion
-
     jsCookie.remove('fs_uid');
     jsCookie.remove('cookieconsent_status');
-    var policyBellNotification = $(document).find('#policyBellNotification');
-    var privacyBellNotification = $(document).find('#privacyBellNotification');
-    var cookiesBellNotification = $(document).find('#cookiesBellNotification');
     if (options.policies.privacy.enabled) {
         if (jsCookie.get(options.policies.privacy.key) == null) {
             $('#privacy').trigger('click', {
@@ -290,6 +286,9 @@ function initPolicies(options) {
             });
         } else if (options.policies.privacy.hash !== jsCookie.get(options.policies.privacy.key)) {
             // When the user has already accepted the privacy, just show a pretty notification.
+            var policyBellNotification = $(document).find('#policyBellNotification');
+            var privacyBellNotification = $(document).find('#privacyBellNotification');
+            var cookiesBellNotification = $(document).find('#cookiesBellNotification');
             policyBellNotification.removeClass('d-none');
             privacyBellNotification.removeClass('d-none');
             $(document).find('#privacy')
@@ -318,7 +317,9 @@ function initPolicies(options) {
     if (options.policies.cookies.enabled) {
         if (storedCookieConsent !== '' && options.policies.cookies.hash !== storedCookieConsent) {
             simpleCooks.show();
-
+            var policyBellNotification = $(document).find('#policyBellNotification');
+            var privacyBellNotification = $(document).find('#privacyBellNotification');
+            var cookiesBellNotification = $(document).find('#cookiesBellNotification');
             policyBellNotification.removeClass('d-none');
             cookiesBellNotification.removeClass('d-none');
             $(document).find('#cookies')
