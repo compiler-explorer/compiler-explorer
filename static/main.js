@@ -286,18 +286,18 @@ function initPolicies(options) {
             });
         } else if (options.policies.privacy.hash !== jsCookie.get(options.policies.privacy.key)) {
             // When the user has already accepted the privacy, just show a pretty notification.
-            var policyBellNotification = $(document).find('#policyBellNotification');
-            var privacyBellNotification = $(document).find('#privacyBellNotification');
-            var cookiesBellNotification = $(document).find('#cookiesBellNotification');
-            policyBellNotification.removeClass('d-none');
-            privacyBellNotification.removeClass('d-none');
+            var ppolicyBellNotification = $(document).find('#policyBellNotification');
+            var pprivacyBellNotification = $(document).find('#privacyBellNotification');
+            var pcookiesBellNotification = $(document).find('#cookiesBellNotification');
+            ppolicyBellNotification.removeClass('d-none');
+            pprivacyBellNotification.removeClass('d-none');
             $(document).find('#privacy')
                 .on('click', function () {
                     // Only hide if the other policy does not also have a bell
-                    if (cookiesBellNotification.hasClass('d-none')) {
-                        policyBellNotification.addClass('d-none');
+                    if (pcookiesBellNotification.hasClass('d-none')) {
+                        ppolicyBellNotification.addClass('d-none');
                     }
-                    privacyBellNotification.addClass('d-none');
+                    pprivacyBellNotification.addClass('d-none');
                 });
         }
     }
@@ -317,17 +317,17 @@ function initPolicies(options) {
     if (options.policies.cookies.enabled) {
         if (storedCookieConsent !== '' && options.policies.cookies.hash !== storedCookieConsent) {
             simpleCooks.show();
-            var policyBellNotification = $(document).find('#policyBellNotification');
-            var privacyBellNotification = $(document).find('#privacyBellNotification');
-            var cookiesBellNotification = $(document).find('#cookiesBellNotification');
-            policyBellNotification.removeClass('d-none');
-            cookiesBellNotification.removeClass('d-none');
+            var cpolicyBellNotification = $(document).find('#policyBellNotification');
+            var cprivacyBellNotification = $(document).find('#privacyBellNotification');
+            var ccookiesBellNotification = $(document).find('#cookiesBellNotification');
+            cpolicyBellNotification.removeClass('d-none');
+            ccookiesBellNotification.removeClass('d-none');
             $(document).find('#cookies')
                 .on('click', function () {
-                    if (privacyBellNotification.hasClass('d-none')) {
-                        policyBellNotification.addClass('d-none');
+                    if (cprivacyBellNotification.hasClass('d-none')) {
+                        cpolicyBellNotification.addClass('d-none');
                     }
-                    cookiesBellNotification.addClass('d-none');
+                    ccookiesBellNotification.addClass('d-none');
                 });
         } else if (hasCookieConsented(options)) {
             analytics.initialise();
