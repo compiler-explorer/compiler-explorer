@@ -309,6 +309,14 @@ function initPolicies(options) {
         jsCookie.set(options.policies.cookies.key, '');
     };
     simpleCooks.onHide = function () {
+        var spolicyBellNotification = $('#policyBellNotification');
+        var sprivacyBellNotification = $('#privacyBellNotification');
+        var scookiesBellNotification = $('#cookiesBellNotification');
+        // Only hide if the other policy does not also have a bell
+        if (sprivacyBellNotification.hasClass('d-none')) {
+            spolicyBellNotification.addClass('d-none');
+        }
+        scookiesBellNotification.addClass('d-none');
         $(window).trigger('resize');
     };
     // '' means no consent. Hash match means consent of old. Null means new user!
