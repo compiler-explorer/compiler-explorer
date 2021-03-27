@@ -108,4 +108,10 @@ describe('ClientState parsing', () => {
         state.sessions[0].compilers.length.should.equal(0);
         state.sessions[0].executors.length.should.equal(1);
     });
+
+    it('Should not contain id-less compilers', () => {
+        const jsonStr = fs.readFileSync('test/state/bug-2231.json');
+        const state = new ClientState(JSON.parse(jsonStr));
+        state.sessions[0].compilers.length.should.equal(1);
+    });
 });

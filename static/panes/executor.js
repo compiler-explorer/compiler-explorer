@@ -33,11 +33,13 @@ var Alert = require('../alert');
 var local = require('../local');
 var Libraries = require('../libs-widget-ext');
 var AnsiToHtml = require('../ansi-to-html');
+var timingInfoWidget = require('../timing-info-widget');
 require('../modes/asm-mode');
 require('../modes/ptx-mode');
 
 require('selectize');
 
+var timingInfo = new timingInfoWidget.TimingInfo();
 
 var languages = options.languages;
 
@@ -71,6 +73,7 @@ function Executor(hub, container, state) {
     this.executionStdin = state.execStdin || '';
     this.source = '';
     this.lastResult = {};
+    this.lastTimeTaken = 0;
     this.pendingRequestSentAt = 0;
     this.nextRequest = null;
 
@@ -299,6 +302,7 @@ Executor.prototype.onCompileResponse = function (request, result, cached) {
     result.source = this.source;
     this.lastResult = result;
     var timeTaken = Math.max(0, Date.now() - this.pendingRequestSentAt);
+    this.lastTimeTaken = timeTaken;
     var wasRealReply = this.pendingRequestSentAt > 0;
     this.pendingRequestSentAt = 0;
     ga.proxy('send', {
@@ -405,6 +409,7 @@ Executor.prototype.initButtons = function (state) {
     this.execStdinField = this.domRoot.find('.execution-stdin');
     this.prependOptions = this.domRoot.find('.prepend-options');
     this.fullCompilerName = this.domRoot.find('.full-compiler-name');
+    this.fullTimingInfo = this.domRoot.find('.full-timing-info');
     this.setCompilationOptionsPopover(this.compiler ? this.compiler.options : null);
 
     this.compileTimeLabel = this.domRoot.find('.compile-time');
@@ -512,6 +517,13 @@ Executor.prototype.initListeners = function () {
     this.eventHub.on('resize', this.resize, this);
     this.eventHub.on('findExecutors', this.sendExecutor, this);
     this.eventHub.on('languageChange', this.onLanguageChange, this);
+
+    this.fullTimingInfo
+        .off('click')
+        .click(_.bind(function () {
+            timingInfo.run(_.bind(function () {
+            }, this), this.lastResult, this.lastTimeTaken);
+        }, this));
 };
 
 Executor.prototype.showPanel = function (button, panel) {

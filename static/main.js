@@ -128,6 +128,11 @@ function isMobileViewer() {
     return window.compilerExplorerOptions.mobileViewer;
 }
 
+function calcLocaleChangedDate(policyModal) {
+    var timestamp = policyModal.find('#changed-date');
+    timestamp.text(new Date(timestamp.attr('datetime')).toLocaleString());
+}
+
 function setupButtons(options) {
     var alertSystem = new Alert();
 
@@ -139,8 +144,7 @@ function setupButtons(options) {
                 data && data.title ? data.title : 'Privacy policy',
                 require('./policies/privacy.html')
             );
-            var timestamp = modal.find('#changed-date');
-            timestamp.text(new Date(timestamp.attr('datetime')).toLocaleString());
+            calcLocaleChangedDate(modal);
             // I can't remember why this check is here as it seems superfluous
             if (options.policies.privacy.enabled) {
                 jsCookie.set(options.policies.privacy.key, options.policies.privacy.hash, {expires: 365});
@@ -165,8 +169,7 @@ function setupButtons(options) {
                 },
                 noHtml: 'Do NOT consent',
             });
-            var timestamp = modal.find('#changed-date');
-            timestamp.text(new Date(timestamp.attr('datetime')).toLocaleString());
+            calcLocaleChangedDate(modal);
         });
     }
 

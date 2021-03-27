@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 import argparse
 import json
@@ -7,12 +7,13 @@ import re
 import sys
 import tarfile
 import urllib
-from urlparse import urljoin
+from urllib import request
+from urllib import parse
 
 try:
     from bs4 import BeautifulSoup
 except ImportError:
-    raise ImportError("Please install BeautifulSoup (apt-get install python-bs4 should do it)")
+    raise ImportError("Please install BeautifulSoup (apt-get install python3-bs4 or pip install beautifulsoup4 should do it)")
 
 parser = argparse.ArgumentParser(description='Docenizes HTML version of the official Intel Asm PDFs')
 parser.add_argument('-i', '--inputfolder', type=str,
@@ -123,23 +124,23 @@ class Instruction(object):
 
 
 def get_url_for_instruction(instr):
-    return "http://www.felixcloutier.com/x86/{}.html".format(urllib.quote(instr.name))
+    return "http://www.felixcloutier.com/x86/{}.html".format(urllib.parse.quote(instr.name))
 
 
 def download_asm_doc_archive(downloadfolder):
     if not os.path.exists(downloadfolder):
-        print "Creating {} as download folder".format(downloadfolder)
+        print("Creating {} as download folder".format(downloadfolder))
         os.makedirs(downloadfolder)
     elif not os.path.isdir(downloadfolder):
-        print "Error: download folder {} is not a directory".format(downloadfolder)
+        print("Error: download folder {} is not a directory".format(downloadfolder))
         sys.exit(1)
     archive_name = os.path.join(downloadfolder, ARCHIVE_NAME)
     print("Downloading archive...")
-    urllib.urlretrieve(ARCHIVE_URL, archive_name)
+    urllib.request.urlretrieve(ARCHIVE_URL, archive_name)
 
 
 def extract_asm_doc_archive(downloadfolder, inputfolder):
-    print "Extracting file..."
+    print("Extracting file...")
     if os.path.isdir(os.path.join(inputfolder, "html")):
         for root, dirs, files in os.walk(os.path.join(inputfolder, "html")):
             for file in files:
@@ -179,7 +180,7 @@ def get_description_paragraphs(document_soup):
 def parse(filename, f):
     doc = BeautifulSoup(f, 'html.parser')
     if doc.table is None:
-        print filename + ": Failed to find table"
+        print(filename + ": Failed to find table")
         return None
     table = read_table(doc.table)
     names = set()
@@ -204,7 +205,7 @@ def parse(filename, f):
         elif 'Instruction' in inst:
             instruction_name = instr_name(inst['Instruction'])
             if not instruction_name:
-                print "Unable to get instruction from:", inst['Instruction']
+                print("Unable to get instruction from:", inst['Instruction'])
             else:
                 names.add(instruction_name)
         # else, skip the line
@@ -213,25 +214,16 @@ def parse(filename, f):
             for inst in filename.split(":"):
                 names.add(inst)
         else:
-            print filename + ": Failed to read instruction table"
+            print(filename + ": Failed to read instruction table")
             return None
-    sections = {}
-    for section_header in doc.find_all("h2"):
-        children = []
-        first = section_header.next_sibling
-        while first and first.name != 'h2':
-            if str(first).strip():
-                children.append(first)
-            first = first.next_sibling
-        sections[section_header.text] = children
-
+ 
     description_paragraphs = get_description_paragraphs(doc)
 
     for para in description_paragraphs:
         for link in para.find_all('a'):
             # this urljoin will only ensure relative urls are prefixed
             # if a url is already absolute it does nothing
-            link['href'] = urljoin('http://www.felixcloutier.com/x86/', link['href'])
+            link['href'] = urllib.parse.urljoin('http://www.felixcloutier.com/x86/', link['href'])
             link['target'] = '_blank'
             link['rel'] = 'noreferrer noopener'
 
@@ -249,7 +241,7 @@ def read_table(table):
     # that are only whitespace, keep `get_text()` on the others.
     headers = list(
         map(lambda th: th.get_text(),
-            filter(lambda th: unicode(th).strip(), table.tr.children)))
+            filter(lambda th: str(th).strip(), table.tr.children)))
 
     result = []
     if headers:
@@ -277,12 +269,12 @@ def read_table(table):
 
 
 def parse_html(directory):
-    print "Parsing instructions..."
+    print("Parsing instructions...")
     instructions = []
     for root, dirs, files in os.walk(directory):
         for file in files:
             if file.endswith(".html") and file != 'index.html':
-                with open(os.path.join(root, file)) as f2:
+                with open(os.path.join(root, file), encoding='utf-8') as f2:
                     name = os.path.splitext(file)[0]
                     if name in IGNORED_DUPLICATES or name in IGNORED_FILE_NAMES:
                         continue
@@ -307,7 +299,7 @@ def self_test(instructions, directory):
 
 def docenizer():
     args = parser.parse_args()
-    print "Called with: {}".format(args)
+    print("Called with: {}".format(args))
     # If we don't have the html folder already...
     if not os.path.isdir(os.path.join(args.inputfolder, 'html')):
         # We don't, try with the compressed file
@@ -324,18 +316,18 @@ def docenizer():
             # We have a file already downloaded
             extract_asm_doc_archive(args.downloadfolder, args.inputfolder)
     instructions = parse_html(args.inputfolder)
-    instructions.sort(lambda x, y: cmp(x.name, y.name))
+    instructions.sort(key=lambda b: b.name)
     self_test(instructions, args.inputfolder)
     all_inst = set()
     for inst in instructions:
         if not all_inst.isdisjoint(inst.names):
-            print "Overlap in instruction names: {} for {}".format(
-                inst.names.intersection(all_inst), inst.name)
+            print("Overlap in instruction names: {} for {}".format(
+                inst.names.intersection(all_inst), inst.name))
         all_inst = all_inst.union(inst.names)
     if not self_test(instructions, args.inputfolder):
         print("Tests do not pass. Not writing output file. Aborting.")
         sys.exit(3)
-    print "Writing {} instructions".format(len(instructions))
+    print("Writing {} instructions".format(len(instructions)))
     with open(args.outputpath, 'w') as f:
         f.write("""
 export function getAsmOpcode(opcode) {
@@ -354,7 +346,7 @@ export function getAsmOpcode(opcode) {
     }
 }
 """)
-    print "REMINDER: Check if https://github.com/compiler-explorer/compiler-explorer/issues/2380 is still relevant"
+    print("REMINDER: Check if https://github.com/compiler-explorer/compiler-explorer/issues/2380 is still relevant")
 
 if __name__ == '__main__':
     docenizer()

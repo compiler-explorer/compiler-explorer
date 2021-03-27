@@ -89,6 +89,7 @@ describe('API handling', () => {
         const apiHandler = new ApiHandler(
             {
                 handle: res => res.send('compile'),
+                handleCmake: res => res.send('cmake'),
                 handlePopularArguments: res => res.send('ok'),
                 handleOptimizationArguments: res => res.send('ok'),
             }, (key, def) => {
@@ -167,7 +168,7 @@ describe('API handling', () => {
     });
     it('should respond to ASM doc requests', () => {
         return chai.request(app)
-            .get('/api/asm/MOVQ')
+            .get('/api/asm/MOV')
             .set('Accept', 'application/json')
             .then(res => {
                 res.should.have.status(200);
