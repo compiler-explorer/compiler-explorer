@@ -738,6 +738,10 @@ div.populararguments div.dropdown-menu {
     margin-right: 2pt;
 }
 
+span.badge.badge-pill {
+    margin-left: 2pt;
+}
+
 html[data-theme=default] {
     @import "themes/default-theme";
 }
