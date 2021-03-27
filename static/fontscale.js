@@ -80,6 +80,8 @@ function FontScale(domRoot, state, fontSelectorOrEditor) {
     this.domRoot = domRoot;
     // Old scale went from 0.3 to 3. New one uses 8 up to 30, so we can convert the old ones to the new format
     this.scale = state.fontScale || options.defaultFontScale;
+    // The check seems pointless, but it ensures a false in case it's undefined
+    this.usePxUnits = state.fontUsePx === true;
     if (this.scale < 8) {
         this.scale = convertOldScale(this.scale);
     }
@@ -92,7 +94,7 @@ _.extend(FontScale.prototype, EventEmitter.prototype);
 
 FontScale.prototype.apply = function () {
     if (this.isFontOfStr) {
-        this.domRoot.find(this.fontSelectorOrEditor).css('font-size', this.scale + 'pt');
+        this.domRoot.find(this.fontSelectorOrEditor).css('font-size', this.scale + (this.usePxUnits ? 'px' : 'pt'));
     } else {
         this.fontSelectorOrEditor.updateOptions({
             fontSize: this.scale,
@@ -102,6 +104,7 @@ FontScale.prototype.apply = function () {
 
 FontScale.prototype.addState = function (state) {
     state.fontScale = this.scale;
+    state.fontUsePx = true;
 };
 
 FontScale.prototype.setScale = function (scale) {
