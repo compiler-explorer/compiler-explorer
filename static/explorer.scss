@@ -179,7 +179,7 @@ pre.content.wrap * {
     white-space: pre-wrap; /* Preserve sequences of white space */
 }
 
-.compile-time {
+.compile-info {
     font-size: x-small;
     font-style: italic;
 }
@@ -727,6 +727,15 @@ div.populararguments div.dropdown-menu {
 
 #library-selection.mobile .libs-favorites-col {
     display: none;
+}
+
+#timing-info .modal-content {
+    min-width: 500px;
+    min-height: 400px;
+}
+
+.icon-link > span {
+    margin-right: 2pt;
 }
 
 html[data-theme=default] {

@@ -114,6 +114,16 @@ describe('Compiler execution', function () {
         ldPath: [],
         libPath: [],
     };
+    const someOptionsCompilerInfo = {
+        exe: null,
+        remote: true,
+        lang: languages['c++'].id,
+        ldPath: [],
+        libPath: [],
+        supportsExecute: true,
+        supportsBinary: true,
+        options: '--hello-abc -I"/opt/some thing 1.0/include"',
+    };
 
     before(() => {
         ce = makeCompilationEnvironment({ languages });
@@ -183,6 +193,18 @@ describe('Compiler execution', function () {
     it('buildenv should handle spaces correctly', () => {
         const buildenv = new BuildEnvSetupBase(executingCompilerInfo, ce);
         buildenv.getCompilerArch().should.equal('magic 8bit');
+    });
+
+    it('buildenv compiler without target/march', () => {
+        const buildenv = new BuildEnvSetupBase(noExecuteSupportCompilerInfo, ce);
+        buildenv.getCompilerArch().should.equal(false);
+        buildenv.compilerSupportsX86.should.equal(true);
+    });
+
+    it('buildenv compiler without target/march but with options', () => {
+        const buildenv = new BuildEnvSetupBase(someOptionsCompilerInfo, ce);
+        buildenv.getCompilerArch().should.equal(false);
+        buildenv.compilerSupportsX86.should.equal(true);
     });
 
     it('should compile', async () => {
@@ -494,5 +516,76 @@ Args: []
             displayString: '',
             optType: 'Missed',
         }]);
+    });
+
+    it('should normalize extra file path', () => {
+        const withDemangler = {...noExecuteSupportCompilerInfo, demangler: 'demangler-exe', demanglerType: 'cpp'};
+        const compiler = new BaseCompiler(withDemangler, ce);
+        if (process.platform === 'win32') {
+            compiler.getExtraFilepath('c:/tmp/somefolder', 'test.h').should.equal('c:\\tmp\\somefolder\\test.h');
+        } else {
+            compiler.getExtraFilepath('/tmp/somefolder', 'test.h').should.equal('/tmp/somefolder/test.h');
+        }
+
+        try {
+            compiler.getExtraFilepath('/tmp/somefolder', '../test.h');
+            throw 'Should throw exception';
+        } catch (error) {
+            if (!(error instanceof Error)) {
+                throw error;
+            }
+        }
+
+        try {
+            compiler.getExtraFilepath('/tmp/somefolder', './../test.h');
+            throw 'Should throw exception';
+        } catch (error) {
+            if (!(error instanceof Error)) {
+                throw error;
+            }
+        }
+
+        try {
+            compiler.getExtraFilepath('/tmp/somefolder', '/tmp/someotherfolder/test.h');
+            throw 'Should throw exception';
+        } catch (error) {
+            if (!(error instanceof Error)) {
+                throw error;
+            }
+        }
+
+        try {
+            compiler.getExtraFilepath('/tmp/somefolder', '\\test.h');
+            throw 'Should throw exception';
+        } catch (error) {
+            if (!(error instanceof Error)) {
+                throw error;
+            }
+        }
+
+        try {
+            compiler.getExtraFilepath('/tmp/somefolder', 'test_hello/../../etc/passwd');
+            throw 'Should throw exception';
+        } catch (error) {
+            if (!(error instanceof Error)) {
+                throw error;
+            }
+        }
+
+        if (process.platform === 'win32') {
+            compiler.getExtraFilepath('c:/tmp/somefolder', 'test.txt').should.equal('c:\\tmp\\somefolder\\test.txt');
+        } else {
+            compiler.getExtraFilepath('/tmp/somefolder', 'test.txt').should.equal('/tmp/somefolder/test.txt');
+        }
+
+        // note: subfolders currently not supported, but maybe in the future?
+        try {
+            compiler.getExtraFilepath('/tmp/somefolder', 'subfolder/hello.h');
+            throw 'Should throw exception';
+        } catch (error) {
+            if (!(error instanceof Error)) {
+                throw error;
+            }
+        }
     });
 });

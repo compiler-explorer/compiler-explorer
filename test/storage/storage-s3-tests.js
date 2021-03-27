@@ -70,8 +70,8 @@ describe('Find unique subhash tests', () => {
         return storage.findUniqueSubhash('ABCDEFGHIJKLMNOPQRSTUV').should.eventually.deep.equal(
             {
                 alreadyPresent: false,
-                prefix: 'ABCDEF',
-                uniqueSubHash: 'ABCDEF',
+                prefix: 'ABCDEFGHI',
+                uniqueSubHash: 'ABCDEFGHI',
             },
         );
     });
@@ -90,8 +90,8 @@ describe('Find unique subhash tests', () => {
         return storage.findUniqueSubhash('ABCDEFGHIJKLMNOPQRSTUV').should.eventually.deep.equal(
             {
                 alreadyPresent: false,
-                prefix: 'ABCDEF',
-                uniqueSubHash: 'ABCDEF',
+                prefix: 'ABCDEFGHI',
+                uniqueSubHash: 'ABCDEFGHI',
             },
         );
     });
@@ -101,8 +101,8 @@ describe('Find unique subhash tests', () => {
             return {
                 Items: [
                     {
-                        full_hash: {S: 'ABCDEFZZ'},
-                        unique_subhash: {S: 'ABCDEF'},
+                        full_hash: {S: 'ABCDEFGHIZZ'},
+                        unique_subhash: {S: 'ABCDEFGHI'},
                     },
                 ],
             };
@@ -110,8 +110,8 @@ describe('Find unique subhash tests', () => {
         return storage.findUniqueSubhash('ABCDEFGHIJKLMNOPQRSTUV').should.eventually.deep.equal(
             {
                 alreadyPresent: false,
-                prefix: 'ABCDEF',
-                uniqueSubHash: 'ABCDEFG',
+                prefix: 'ABCDEFGHI',
+                uniqueSubHash: 'ABCDEFGHIJ',
             },
         );
     });
@@ -122,7 +122,7 @@ describe('Find unique subhash tests', () => {
                 Items: [
                     {
                         full_hash: {S: 'ABCDEFGHIJKLMNOPQRSTUV'},
-                        unique_subhash: {S: 'ABCDEF'},
+                        unique_subhash: {S: 'ABCDEFGHI'},
                     },
                 ],
             };
@@ -130,8 +130,8 @@ describe('Find unique subhash tests', () => {
         return storage.findUniqueSubhash('ABCDEFGHIJKLMNOPQRSTUV').should.eventually.deep.equal(
             {
                 alreadyPresent: true,
-                prefix: 'ABCDEF',
-                uniqueSubHash: 'ABCDEF',
+                prefix: 'ABCDEFGHI',
+                uniqueSubHash: 'ABCDEFGHI',
             },
         );
     });
