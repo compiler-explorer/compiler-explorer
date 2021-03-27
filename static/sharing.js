@@ -107,74 +107,151 @@ function updateShares(container, url) {
     });
 }
 
-function initShareButtons(shortDomLink, fullDomLink, layout, noteNewState) {
+function initShareButton(getLink, layout, noteNewState, startingBind) {
     var baseUrl = window.location.protocol + '//' + window.location.hostname;
     var html = $('.template .urls').html();
-    //TODO: Everything
-    function init(domLink, currentBind) {
-        domLink.popover({
-            container: 'body',
-            content: html,
-            html: true,
-            placement: 'top',
-            sanitize: false,
-        }).on('inserted.bs.popover', function () {
-            ga.proxy('send', {
-                hitType: 'event',
-                eventCategory: 'OpenModalPane',
-                eventAction: 'Sharing',
-            });
+    var currentNode = null;
+    // Explicit because webstorm gets confused about the type of this variable.
+    /***
+     * Current URL bind
+     * @type {string}
+     */
+    var currentBind = startingBind;
+    var title = getLink.prop('title'); // preserve before popover/tooltip breaks it
 
-            //var popoverElement = $($(this).data('bs.popover').tip);
-            //var root = $('.urls-container:visible');
-            var permalink = $('.permalink');
+    getLink.popover({
+        container: 'body',
+        content: html,
+        html: true,
+        placement: 'bottom',
+        trigger: 'manual',
+        sanitize: false,
+    }).click(function () {
+        getLink.popover('toggle');
+    }).on('inserted.bs.popover', function () {
+        ga.proxy('send', {
+            hitType: 'event',
+            eventCategory: 'OpenModalPane',
+            eventAction: 'Sharing',
+        });
+        var popoverElement = $($(this).data('bs.popover').tip);
+        var socialSharingElements = popoverElement.find('.socialsharing');
+        var root = $('.urls-container:visible');
+        var label = root.find('.current');
+        var permalink = $('.permalink');
+        var urls = {};
+        if (!currentNode) currentNode = $(root.find('.sources button')[0]);
+        if (!currentBind) currentBind = currentNode.data().bind;
 
+        function setCurrent(node) {
+            currentNode = node;
+            currentBind = node.data().bind;
+        }
+
+        function setSocialSharing(element, sharedUrl) {
+            if (options.sharingEnabled) {
+                updateShares(element, sharedUrl);
+                // Disable the links for every share item which does not support embed html as links
+                if (currentBind !== 'Full' && currentBind !== 'Short') {
+                    element.children('.share-no-embeddable')
+                        .addClass('share-disabled')
+                        .prop('title', 'Embed links are not supported in this service')
+                        .on('click', false);
+                }
+            }
+        }
+
+        function onUpdate(socialSharing, config, bind, result) {
+            if (result.updateState) {
+                noteNewState(config, result.extra);
+            }
+            label.text(bind);
+            permalink.val(result.url);
+            setSocialSharing(socialSharing, result.url);
+        }
+
+        function getEmbeddedCacheLinkId() {
+            if ($('#shareembedlink input:checked').length === 0) return 'Embed';
+
+            return 'Embed|' + $('#shareembedlink input:checked').map(function () {
+                return $(this).prop('class');
+            })
+                .get()
+                .join();
+        }
+
+        function update() {
+            var socialSharing = socialSharingElements;
+            socialSharing.empty();
+            if (!currentBind) return;
             permalink.prop('disabled', false);
             var config = layout.toConfig();
-            permalink.val('');
-            getLinks(config, currentBind, function (error, newUrl, extra, updateState) {
-                if (error || !newUrl) {
-                    permalink.prop('disabled', true);
-                    permalink.val(error || 'Error providing URL');
-                } else {
-                    var result = {
-                        updateState: updateState,
-                        extra: extra,
-                        url: newUrl,
-                    };
-                    if (result.updateState) {
-                        noteNewState(config, result.extra);
-                    }
-                    permalink.val(result.url);
-                }
-            });
-        });
-
-        // Dismiss the popover on escape.
-        $(document).on('keyup.editable', function (e) {
-            if (e.which === 27) {
-                domLink.popover('hide');
+            var cacheLinkId = currentBind;
+            if (currentBind === 'Embed') {
+                cacheLinkId = getEmbeddedCacheLinkId();
             }
+            if (!urls[cacheLinkId]) {
+                label.text(currentNode.text());
+                permalink.val('');
+                getLinks(config, currentBind, function (error, newUrl, extra, updateState) {
+                    if (error || !newUrl) {
+                        permalink.prop('disabled', true);
+                        permalink.val(error || 'Error providing URL');
+                    } else {
+                        urls[cacheLinkId] = {
+                            updateState: updateState,
+                            extra: extra,
+                            url: newUrl,
+                        };
+                        onUpdate(socialSharing, config, currentBind, urls[cacheLinkId]);
+                    }
+                });
+            } else {
+                onUpdate(socialSharing, config, currentBind, urls[cacheLinkId]);
+            }
+        }
+
+        root.find('.sources button').on('click', function () {
+            setCurrent($(this));
+            update();
         });
 
-        // Dismiss on any click that isn't either in the opening element, inside
-        // the popover or on any alert
-        $(document).on('mouseup', function (e) {
-            var target = $(e.target);
-            if (!target.is(domLink) && domLink.has(target).length === 0 && target.closest('.popover').length === 0)
-                domLink.popover('hide');
+        var embeddedButton = $('.shareembed');
+        embeddedButton.on('click', function () {
+            setCurrent(embeddedButton);
+            update();
+            getLink.popover('hide');
         });
-    }
 
-    init(fullDomLink, 'Full');
-    init(shortDomLink, 'Short');
+        $('#embedsettings input').off('click').on('click', function () {
+            setCurrent(embeddedButton);
+            update();
+        });
 
-    // Opens the full link popup if asked to by the editor
-    layout.eventHub.on('displaySharingPopover', function () {
-        fullDomLink.popover('show');
+        update();
+    }).prop('title', title);
+
+    // Dismiss the popover on escape.
+    $(document).on('keyup.editable', function (e) {
+        if (e.which === 27) {
+            getLink.popover('hide');
+        }
     });
 
-    if (options.sharingEnabled) {
+    // Dismiss on any click that isn't either in the opening element, inside
+    // the popover or on any alert
+    $(document).on('mouseup', function (e) {
+        var target = $(e.target);
+        if (!target.is(getLink) && getLink.has(target).length === 0 && target.closest('.popover').length === 0)
+            getLink.popover('hide');
+    });
+
+    if (startingBind === 'Full') {
+        // Opens the popup if asked to by the editor
+        layout.eventHub.on('displaySharingPopover', function () {
+            getLink.popover('show');
+        });
+    } else if (startingBind === 'Short' && options.sharingEnabled) {
         updateShares($('#socialshare'), baseUrl);
     }
 }
@@ -257,6 +334,6 @@ function getLinks(config, currentBind, done) {
 }
 
 module.exports = {
-    initShareButtons: initShareButtons,
+    initShareButton: initShareButton,
     configFromEmbedded: configFromEmbedded,
 };

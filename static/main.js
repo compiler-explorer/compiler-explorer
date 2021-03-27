@@ -489,10 +489,15 @@ function start() {
         setupButtons(options);
     }
 
-    sharing.initShareButtons($('#shareShort'), $('#shareFull'), layout, function (config, extra) {
+    sharing.initShareButton($('#shareShort'), layout, function (config, extra) {
         window.history.pushState(null, null, extra);
         storedPaths[JSON.stringify(config)] = extra;
-    });
+    }, 'Short');
+
+    sharing.initShareButton($('#shareFull'), layout, function (config, extra) {
+        window.history.pushState(null, null, extra);
+        storedPaths[JSON.stringify(config)] = extra;
+    }, 'Full');
 
     function setupAdd(thing, func) {
         layout.createDragSource(thing, func);
