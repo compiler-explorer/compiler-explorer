@@ -75,6 +75,8 @@ let optionsOverride = {
     forceApproveAll: false, // set to true to automatically regenerate all the cases.
     reporters: ['donothing'],
     errorOnStaleApprovedFiles: false,
+    blockUntilReporterExits: false,
+    maxLaunches: 1,
 };
 
 if (process.env.REPORT === '1') {
