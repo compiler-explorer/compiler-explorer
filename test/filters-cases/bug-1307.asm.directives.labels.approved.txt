@@ -1,0 +1,242 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "_Z8testfuncf:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": "/opt/compiler-explorer/gcc-trunk-20190430/include/c++/10.0.0/cmath",
+        "line": 261
+      },
+      "text": "        movss   xmm3, DWORD PTR .LC1[rip]"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": "/opt/compiler-explorer/gcc-trunk-20190430/include/c++/10.0.0/cmath",
+        "line": 261
+      },
+      "text": "        movss   xmm4, DWORD PTR .LC0[rip]"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": "/opt/compiler-explorer/gcc-trunk-20190430/include/c++/10.0.0/cmath",
+        "line": 261
+      },
+      "text": "        movaps  xmm2, xmm0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": "/opt/compiler-explorer/gcc-trunk-20190430/include/c++/10.0.0/cmath",
+        "line": 261
+      },
+      "text": "        movaps  xmm1, xmm0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": "/opt/compiler-explorer/gcc-trunk-20190430/include/c++/10.0.0/cmath",
+        "line": 261
+      },
+      "text": "        andps   xmm2, xmm3"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": "/opt/compiler-explorer/gcc-trunk-20190430/include/c++/10.0.0/cmath",
+        "line": 261
+      },
+      "text": "        ucomiss xmm4, xmm2"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L2",
+          "range": {
+            "endCol": 20,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": {
+        "file": "/opt/compiler-explorer/gcc-trunk-20190430/include/c++/10.0.0/cmath",
+        "line": 261
+      },
+      "text": "        jbe     .L2"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": "/opt/compiler-explorer/gcc-trunk-20190430/include/c++/10.0.0/cmath",
+        "line": 261
+      },
+      "text": "        cvttss2si       eax, xmm0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": "/opt/compiler-explorer/gcc-trunk-20190430/include/c++/10.0.0/cmath",
+        "line": 261
+      },
+      "text": "        pxor    xmm2, xmm2"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": "/opt/compiler-explorer/gcc-trunk-20190430/include/c++/10.0.0/cmath",
+        "line": 261
+      },
+      "text": "        movss   xmm4, DWORD PTR .LC2[rip]"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": "/opt/compiler-explorer/gcc-trunk-20190430/include/c++/10.0.0/cmath",
+        "line": 261
+      },
+      "text": "        andnps  xmm3, xmm0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": "/opt/compiler-explorer/gcc-trunk-20190430/include/c++/10.0.0/cmath",
+        "line": 261
+      },
+      "text": "        cvtsi2ss        xmm2, eax"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": "/opt/compiler-explorer/gcc-trunk-20190430/include/c++/10.0.0/cmath",
+        "line": 261
+      },
+      "text": "        movaps  xmm5, xmm2"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": "/opt/compiler-explorer/gcc-trunk-20190430/include/c++/10.0.0/cmath",
+        "line": 261
+      },
+      "text": "        cmpnless        xmm5, xmm0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": "/opt/compiler-explorer/gcc-trunk-20190430/include/c++/10.0.0/cmath",
+        "line": 261
+      },
+      "text": "        movaps  xmm1, xmm5"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": "/opt/compiler-explorer/gcc-trunk-20190430/include/c++/10.0.0/cmath",
+        "line": 261
+      },
+      "text": "        andps   xmm1, xmm4"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": "/opt/compiler-explorer/gcc-trunk-20190430/include/c++/10.0.0/cmath",
+        "line": 261
+      },
+      "text": "        subss   xmm2, xmm1"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": "/opt/compiler-explorer/gcc-trunk-20190430/include/c++/10.0.0/cmath",
+        "line": 261
+      },
+      "text": "        movaps  xmm1, xmm2"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": "/opt/compiler-explorer/gcc-trunk-20190430/include/c++/10.0.0/cmath",
+        "line": 261
+      },
+      "text": "        orps    xmm1, xmm3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L2:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 5
+      },
+      "text": "        cvttss2si       eax, xmm1"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 6
+      },
+      "text": "        ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LC0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   1258291200"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LC1:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   2147483647"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LC2:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   1065353216"
+    }
+  ],
+  "labelDefinitions": {
+    ".L2": 21,
+    ".LC0": 24,
+    ".LC1": 26,
+    ".LC2": 31,
+    "_Z8testfuncf": 1
+  }
+}

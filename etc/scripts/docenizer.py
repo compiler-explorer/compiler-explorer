@@ -216,7 +216,7 @@ def parse(filename, f):
         else:
             print(filename + ": Failed to read instruction table")
             return None
- 
+
     description_paragraphs = get_description_paragraphs(doc)
 
     for para in description_paragraphs:

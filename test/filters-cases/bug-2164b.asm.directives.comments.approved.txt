@@ -1,0 +1,94 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "trap_arm:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lfunc_begin0:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "text": "        .inst   0xe7ffdefe"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lfunc_end0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "trap_thumb:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lfunc_begin1:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 8
+      },
+      "text": "        .inst.n 0xdefe"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lfunc_end1:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Linfo_string0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Linfo_string1:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Linfo_string2:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Linfo_string3:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Linfo_string4:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ldebug_info_start0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ldebug_info_end0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lline_table_start0:"
+    }
+  ],
+  "labelDefinitions": {
+    "trap_arm": 1,
+    "trap_thumb": 5
+  }
+}

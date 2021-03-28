@@ -1,0 +1,133 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .file   \"example.d\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .text"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .align  1"
+    },
+    {
+      "labels": [
+        {
+          "name": "square",
+          "range": {
+            "endCol": 23,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .export square"
+    },
+    {
+      "labels": [
+        {
+          "name": "square",
+          "range": {
+            "endCol": 23,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .type   square, @function"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "square:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        subi    sp,16"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        stw     r8,(sp,8)"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        mov     r8,sp"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        stw     r2,(r8)"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ldw     r7,(r8)"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        mult    r7,r7"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        mov     r2,r7"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        mov     sp,r8"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ldw     r8,(sp,8)"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        addi    sp,16"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        jmp     r15"
+    },
+    {
+      "labels": [
+        {
+          "name": "square",
+          "range": {
+            "endCol": 23,
+            "startCol": 17
+          }
+        },
+        {
+          "name": "square",
+          "range": {
+            "endCol": 33,
+            "startCol": 27
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .size   square, .-square"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .ident  \"GCC: (GNU) 9.0.1 20190425 (experimental)\""
+    }
+  ],
+  "labelDefinitions": {
+    "square": 6
+  }
+}

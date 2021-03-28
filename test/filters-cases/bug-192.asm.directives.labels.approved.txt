@@ -1,0 +1,110 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "main:                                   # @main"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 15
+      },
+      "text": "        mov     eax, 3"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 15
+      },
+      "text": "        ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "__cxx_global_var_init:                  # @__cxx_global_var_init"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 5
+      },
+      "text": "        cmp     byte ptr [rip + guard variable for asdf<float>], 0"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB1_2",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 5
+      },
+      "text": "        jne     .LBB1_2"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 5
+      },
+      "text": "        mov     qword ptr [rip + guard variable for asdf<float>], 1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB1_2:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 5
+      },
+      "text": "        ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "asdf<float>:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "guard variable for asdf<float>:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    }
+  ],
+  "labelDefinitions": {
+    ".LBB1_2": 9,
+    "__cxx_global_var_init": 5,
+    "main": 1
+  }
+}

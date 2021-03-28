@@ -1,0 +1,141 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LC0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .string \"hello world!\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "s_sA:"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LC0",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .quad   .LC0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "s_sB:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .string \"hey there\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "main:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 6
+      },
+      "text": "        push    rbp"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 6
+      },
+      "text": "        mov     rbp, rsp"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 7
+      },
+      "text": "        mov     rax, QWORD PTR s_sA[rip]"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 7
+      },
+      "text": "        mov     rdi, rax"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 7
+      },
+      "text": "        call    puts"
+    },
+    {
+      "labels": [
+        {
+          "name": "s_sB",
+          "range": {
+            "endCol": 38,
+            "startCol": 34
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 8
+      },
+      "text": "        mov     edi, OFFSET FLAT:s_sB"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 8
+      },
+      "text": "        call    puts"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 9
+      },
+      "text": "        mov     eax, 0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 9
+      },
+      "text": "        pop     rbp"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 9
+      },
+      "text": "        ret"
+    }
+  ],
+  "labelDefinitions": {
+    ".LC0": 1,
+    "main": 7,
+    "s_sA": 3,
+    "s_sB": 5
+  }
+}

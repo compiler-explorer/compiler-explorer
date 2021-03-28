@@ -1,8 +1,0 @@
-Char:
-        .byte   128                     # 0x80
-Short:
-        .short  4660                    # 0x1234
-Int:
-        .long   123                     # 0x7b
-Long:
-        .quad   2345                    # 0x929

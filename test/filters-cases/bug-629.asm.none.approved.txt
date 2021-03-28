@@ -1,0 +1,2085 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .file   \"example.cpp\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .intel_syntax noprefix"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .text"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ltext0:"
+    },
+    {
+      "labels": [
+        {
+          "name": "y",
+          "range": {
+            "endCol": 18,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .globl  y"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .data"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .align 4"
+    },
+    {
+      "labels": [
+        {
+          "name": "y",
+          "range": {
+            "endCol": 18,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .type   y, @object"
+    },
+    {
+      "labels": [
+        {
+          "name": "y",
+          "range": {
+            "endCol": 18,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .size   y, 4"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "y:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   100"
+    },
+    {
+      "labels": [
+        {
+          "name": "d",
+          "range": {
+            "endCol": 18,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .globl  d"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .align 4"
+    },
+    {
+      "labels": [
+        {
+          "name": "d",
+          "range": {
+            "endCol": 18,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .type   d, @object"
+    },
+    {
+      "labels": [
+        {
+          "name": "d",
+          "range": {
+            "endCol": 18,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .size   d, 4"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "d:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   98"
+    },
+    {
+      "labels": [
+        {
+          "name": "f",
+          "range": {
+            "endCol": 18,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .globl  f"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .align 8"
+    },
+    {
+      "labels": [
+        {
+          "name": "f",
+          "range": {
+            "endCol": 18,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .type   f, @object"
+    },
+    {
+      "labels": [
+        {
+          "name": "f",
+          "range": {
+            "endCol": 18,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .size   f, 8"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "f:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   3435973837"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   1092337616"
+    },
+    {
+      "labels": [
+        {
+          "name": "v",
+          "range": {
+            "endCol": 18,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .globl  v"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .bss"
+    },
+    {
+      "labels": [
+        {
+          "name": "v",
+          "range": {
+            "endCol": 18,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .type   v, @object"
+    },
+    {
+      "labels": [
+        {
+          "name": "v",
+          "range": {
+            "endCol": 18,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .size   v, 1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "v:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .zero   1"
+    },
+    {
+      "labels": [
+        {
+          "name": "dd",
+          "range": {
+            "endCol": 19,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .globl  dd"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .align 4"
+    },
+    {
+      "labels": [
+        {
+          "name": "dd",
+          "range": {
+            "endCol": 19,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .type   dd, @object"
+    },
+    {
+      "labels": [
+        {
+          "name": "dd",
+          "range": {
+            "endCol": 19,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .size   dd, 4"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "dd:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .zero   4"
+    },
+    {
+      "labels": [
+        {
+          "name": "yuu",
+          "range": {
+            "endCol": 20,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .globl  yuu"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .align 4"
+    },
+    {
+      "labels": [
+        {
+          "name": "yuu",
+          "range": {
+            "endCol": 20,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .type   yuu, @object"
+    },
+    {
+      "labels": [
+        {
+          "name": "yuu",
+          "range": {
+            "endCol": 20,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .size   yuu, 4"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "yuu:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .zero   4"
+    },
+    {
+      "labels": [
+        {
+          "name": "jj",
+          "range": {
+            "endCol": 19,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .globl  jj"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .align 8"
+    },
+    {
+      "labels": [
+        {
+          "name": "jj",
+          "range": {
+            "endCol": 19,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .type   jj, @object"
+    },
+    {
+      "labels": [
+        {
+          "name": "jj",
+          "range": {
+            "endCol": 19,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .size   jj, 8"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "jj:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .zero   8"
+    },
+    {
+      "labels": [
+        {
+          "name": "q",
+          "range": {
+            "endCol": 18,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .globl  q"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .align 4"
+    },
+    {
+      "labels": [
+        {
+          "name": "q",
+          "range": {
+            "endCol": 18,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .type   q, @object"
+    },
+    {
+      "labels": [
+        {
+          "name": "q",
+          "range": {
+            "endCol": 18,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .size   q, 4"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "q:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .zero   4"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .text"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .globl  x()"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .type   x(), @function"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "x():"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LFB0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .file 1 \"/tmp/compiler-explorer-compiler1171024-7041-8xnwpl.6xrlw/example.cpp\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .loc 1 11 0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .cfi_startproc"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 11
+      },
+      "text": "        push    rbp"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .cfi_def_cfa_offset 16"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .cfi_offset 6, -16"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 11
+      },
+      "text": "        mov     rbp, rsp"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .cfi_def_cfa_register 6"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .loc 1 12 0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 12
+      },
+      "text": "        mov     eax, DWORD PTR d[rip]"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .loc 1 13 0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 13
+      },
+      "text": "        pop     rbp"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .cfi_def_cfa 7, 8"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 13
+      },
+      "text": "        ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .cfi_endproc"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LFE0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .size   x(), .-x()"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Letext0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_info,\"\",@progbits"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ldebug_info0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   0x10f"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .value  0x4"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Ldebug_abbrev0",
+          "range": {
+            "endCol": 32,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .long   .Ldebug_abbrev0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0x8"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x1"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LASF5",
+          "range": {
+            "endCol": 23,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .long   .LASF5"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0x4"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LASF6",
+          "range": {
+            "endCol": 23,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .long   .LASF6"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LASF7",
+          "range": {
+            "endCol": 23,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .long   .LASF7"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Ltext0",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .quad   .Ltext0"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Letext0",
+          "range": {
+            "endCol": 25,
+            "startCol": 17
+          }
+        },
+        {
+          "name": ".Ltext0",
+          "range": {
+            "endCol": 33,
+            "startCol": 26
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .quad   .Letext0-.Ltext0"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Ldebug_line0",
+          "range": {
+            "endCol": 30,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .long   .Ldebug_line0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x2"
+    },
+    {
+      "labels": [
+        {
+          "name": "y",
+          "range": {
+            "endCol": 19,
+            "startCol": 18
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .string \"y\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0x1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0x2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   0x40"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x9"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0x3"
+    },
+    {
+      "labels": [
+        {
+          "name": "y",
+          "range": {
+            "endCol": 18,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .quad   y"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0x4"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0x5"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .string \"int\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x2"
+    },
+    {
+      "labels": [
+        {
+          "name": "d",
+          "range": {
+            "endCol": 19,
+            "startCol": 18
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .string \"d\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0x1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0x3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   0x40"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x9"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0x3"
+    },
+    {
+      "labels": [
+        {
+          "name": "d",
+          "range": {
+            "endCol": 18,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .quad   d"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x2"
+    },
+    {
+      "labels": [
+        {
+          "name": "f",
+          "range": {
+            "endCol": 19,
+            "startCol": 18
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .string \"f\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0x1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0x4"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   0x6d"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x9"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0x3"
+    },
+    {
+      "labels": [
+        {
+          "name": "f",
+          "range": {
+            "endCol": 18,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .quad   f"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x4"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0x8"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0x4"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LASF0",
+          "range": {
+            "endCol": 23,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .long   .LASF0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x2"
+    },
+    {
+      "labels": [
+        {
+          "name": "v",
+          "range": {
+            "endCol": 19,
+            "startCol": 18
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .string \"v\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0x1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0x5"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   0x87"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x9"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0x3"
+    },
+    {
+      "labels": [
+        {
+          "name": "v",
+          "range": {
+            "endCol": 18,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .quad   v"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x4"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0x1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0x6"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LASF1",
+          "range": {
+            "endCol": 23,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .long   .LASF1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x2"
+    },
+    {
+      "labels": [
+        {
+          "name": "dd",
+          "range": {
+            "endCol": 20,
+            "startCol": 18
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .string \"dd\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0x1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0x6"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   0xa2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x9"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0x3"
+    },
+    {
+      "labels": [
+        {
+          "name": "dd",
+          "range": {
+            "endCol": 19,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .quad   dd"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x4"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0x4"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0x4"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LASF2",
+          "range": {
+            "endCol": 23,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .long   .LASF2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x2"
+    },
+    {
+      "labels": [
+        {
+          "name": "yuu",
+          "range": {
+            "endCol": 21,
+            "startCol": 18
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .string \"yuu\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0x1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0x7"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   0x40"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x9"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0x3"
+    },
+    {
+      "labels": [
+        {
+          "name": "yuu",
+          "range": {
+            "endCol": 20,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .quad   yuu"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x2"
+    },
+    {
+      "labels": [
+        {
+          "name": "jj",
+          "range": {
+            "endCol": 20,
+            "startCol": 18
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .string \"jj\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0x1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0x8"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   0xd2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x9"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0x3"
+    },
+    {
+      "labels": [
+        {
+          "name": "jj",
+          "range": {
+            "endCol": 19,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .quad   jj"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x4"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0x8"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0x5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LASF3",
+          "range": {
+            "endCol": 23,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .long   .LASF3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x2"
+    },
+    {
+      "labels": [
+        {
+          "name": "q",
+          "range": {
+            "endCol": 19,
+            "startCol": 18
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .string \"q\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0x1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0x9"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   0xec"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x9"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0x3"
+    },
+    {
+      "labels": [
+        {
+          "name": "q",
+          "range": {
+            "endCol": 18,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .quad   q"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x4"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0x4"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0x7"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LASF4",
+          "range": {
+            "endCol": 23,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .long   .LASF4"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x5"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .string \"x\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0x1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0xb"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LASF8",
+          "range": {
+            "endCol": 23,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .long   .LASF8"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   0x40"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LFB0",
+          "range": {
+            "endCol": 22,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .quad   .LFB0"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LFE0",
+          "range": {
+            "endCol": 22,
+            "startCol": 17
+          }
+        },
+        {
+          "name": ".LFB0",
+          "range": {
+            "endCol": 28,
+            "startCol": 23
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .quad   .LFE0-.LFB0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0x9c"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_abbrev,\"\",@progbits"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ldebug_abbrev0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x11"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0x1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x25"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0xe"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x13"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0xb"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0xe"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x1b"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0xe"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x11"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x12"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x7"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x10"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x17"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x34"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x8"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x3a"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0xb"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x3b"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0xb"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x49"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x13"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x3f"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x19"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x18"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x24"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0xb"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0xb"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x3e"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0xb"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x8"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x4"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x24"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0xb"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0xb"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x3e"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0xb"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0xe"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x5"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x2e"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x3f"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x19"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x8"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x3a"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0xb"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x3b"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0xb"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x6e"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0xe"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x49"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x13"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x11"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x12"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x7"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x40"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x18"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x2117"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x19"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_aranges,\"\",@progbits"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   0x2c"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .value  0x2"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Ldebug_info0",
+          "range": {
+            "endCol": 30,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .long   .Ldebug_info0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0x8"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .value  0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .value  0"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Ltext0",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .quad   .Ltext0"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Letext0",
+          "range": {
+            "endCol": 25,
+            "startCol": 17
+          }
+        },
+        {
+          "name": ".Ltext0",
+          "range": {
+            "endCol": 33,
+            "startCol": 26
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .quad   .Letext0-.Ltext0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .quad   0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .quad   0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_line,\"\",@progbits"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ldebug_line0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_str,\"MS\",@progbits,1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF4:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .string \"unsigned int\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF5:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .string \"GNU C++14 7.2.0 -masm=intel -mtune=generic -march=x86-64 -g -fstack-protector\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF8:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .string \"x()\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF2:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .string \"float\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF3:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .string \"long int\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .string \"double\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF7:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .string \"/home/chedy/Documents/DevEnv/Projects/compiler-explorer\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF6:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .string \"/tmp/compiler-explorer-compiler1171024-7041-8xnwpl.6xrlw/example.cpp\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF1:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .string \"char\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .ident  \"GCC: (Ubuntu 7.2.0-1ubuntu1~14.04) 7.2.0\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .note.GNU-stack,\"\",@progbits"
+    }
+  ],
+  "labelDefinitions": {
+    ".LASF0": 302,
+    ".LASF1": 308,
+    ".LASF2": 298,
+    ".LASF3": 300,
+    ".LASF4": 292,
+    ".LASF5": 294,
+    ".LASF6": 306,
+    ".LASF7": 304,
+    ".LASF8": 296,
+    ".LFB0": 59,
+    ".LFE0": 75,
+    ".Ldebug_abbrev0": 192,
+    ".Ldebug_info0": 79,
+    ".Ldebug_line0": 290,
+    ".Letext0": 77,
+    ".Ltext0": 4,
+    "d": 16,
+    "dd": 35,
+    "f": 22,
+    "jj": 47,
+    "q": 53,
+    "v": 29,
+    "y": 10,
+    "yuu": 41
+  }
+}

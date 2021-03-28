@@ -1,0 +1,188 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .text"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .align  2"
+    },
+    {
+      "labels": [
+        {
+          "name": "issue1989",
+          "range": {
+            "endCol": 34,
+            "startCol": 25
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .weakext        issue1989"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$LFB0:"
+    },
+    {
+      "labels": [
+        {
+          "name": "issue1989",
+          "range": {
+            "endCol": 26,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .ent    issue1989"
+    },
+    {
+      "labels": [
+        {
+          "name": "issue1989",
+          "range": {
+            "endCol": 26,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .type   issue1989, @function"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "issue1989:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .frame  r1,0,r15            # vars= 0, regs= 0, args= 0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .mask   0x00000000"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        addk    r6,r5,r6"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        cmp     r18,r6,r5"
+    },
+    {
+      "labels": [
+        {
+          "name": "$L2",
+          "range": {
+            "endCol": 24,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        bltid   r18,$L2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        addik   r3,r0,1       # 0x1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        addk    r3,r0,r0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$L2:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        rtsd    r15,8"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        andi    r3,r3,1 #and1"
+    },
+    {
+      "labels": [
+        {
+          "name": "issue1989",
+          "range": {
+            "endCol": 26,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .end    issue1989"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$LFE0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$Lfe1:"
+    },
+    {
+      "labels": [
+        {
+          "name": "issue1989",
+          "range": {
+            "endCol": 26,
+            "startCol": 17
+          }
+        },
+        {
+          "name": "$Lfe1",
+          "range": {
+            "endCol": 32,
+            "startCol": 27
+          }
+        },
+        {
+          "name": "issue1989",
+          "range": {
+            "endCol": 42,
+            "startCol": 33
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .size   issue1989,$Lfe1-issue1989"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .note.GNU-stack,\"\",@progbits"
+    }
+  ],
+  "labelDefinitions": {
+    "$L2": 15,
+    "$LFB0": 4,
+    "$LFE0": 20,
+    "$Lfe1": 21,
+    "issue1989": 7
+  }
+}

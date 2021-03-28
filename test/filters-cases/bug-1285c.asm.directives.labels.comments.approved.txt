@@ -1,0 +1,104 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "_Z3foov:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "text": "        mov     eax, 42"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "text": "        ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "_Z3barv:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": "/opt/compiler-explorer/gcc-8.3.0/include/c++/8.3.0/typeinfo",
+        "line": 100
+      },
+      "text": "        mov     rax, QWORD PTR _ZTIi[rip+8]"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": "/opt/compiler-explorer/gcc-8.3.0/include/c++/8.3.0/typeinfo",
+        "line": 100
+      },
+      "text": "        cmp     BYTE PTR [rax], 42"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": "/opt/compiler-explorer/gcc-8.3.0/include/c++/8.3.0/typeinfo",
+        "line": 100
+      },
+      "text": "        sete    dl"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": "/opt/compiler-explorer/gcc-8.3.0/include/c++/8.3.0/typeinfo",
+        "line": 100
+      },
+      "text": "        movzx   edx, dl"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "text": "        movsx   eax, BYTE PTR [rax+rdx]"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "text": "        ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "_Z3bazv:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 6
+      },
+      "text": "        mov     eax, 53"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 6
+      },
+      "text": "        ret"
+    }
+  ],
+  "labelDefinitions": {
+    "_Z3barv": 4,
+    "_Z3bazv": 11,
+    "_Z3foov": 1
+  }
+}
