@@ -54,6 +54,8 @@ const cases = filesInCaseDir.filter(x => x.endsWith('.asm'));
 
 const optionsOverride = {
     forceApproveAll: false, // set to true to automatically regenerate all the cases.
+    blockUntilReporterExits: false,
+    maxLaunches: 1,
 };
 
 function testFilter(filename, suffix, filters) {
