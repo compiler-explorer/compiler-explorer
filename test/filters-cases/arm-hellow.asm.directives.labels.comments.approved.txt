@@ -22,7 +22,15 @@
       "text": "        movs    r0, #1"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": ".LC0",
+          "range": {
+            "endCol": 35,
+            "startCol": 31
+          }
+        }
+      ],
       "source": {
         "file": "/usr/arm-linux-gnueabi/include/bits/stdio2.h",
         "line": 105
@@ -30,7 +38,15 @@
       "text": "        movw    r1, #:lower16:.LC0"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": ".LC0",
+          "range": {
+            "endCol": 35,
+            "startCol": 31
+          }
+        }
+      ],
       "source": {
         "file": "/usr/arm-linux-gnueabi/include/bits/stdio2.h",
         "line": 105
@@ -54,7 +70,15 @@
       "text": "        movs    r0, #1"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": ".LC1",
+          "range": {
+            "endCol": 35,
+            "startCol": 31
+          }
+        }
+      ],
       "source": {
         "file": "/usr/arm-linux-gnueabi/include/bits/stdio2.h",
         "line": 105
@@ -62,7 +86,15 @@
       "text": "        movw    r1, #:lower16:.LC1"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": ".LC1",
+          "range": {
+            "endCol": 35,
+            "startCol": 31
+          }
+        }
+      ],
       "source": {
         "file": "/usr/arm-linux-gnueabi/include/bits/stdio2.h",
         "line": 105
