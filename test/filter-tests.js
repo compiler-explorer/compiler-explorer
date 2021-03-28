@@ -56,7 +56,8 @@ const optionsOverride = {
     forceApproveAll: false, // set to true to automatically regenerate all the cases.
     blockUntilReporterExits: false,
     maxLaunches: 1,
-    normalizeLineEndingsTo: '\n',
+    normalizeLineEndingsTo: process.env === 'win32' ? '\r\n' : '\n',
+    errorOnStaleApprovedFiles: process.env !== 'win32',
 };
 
 function testFilter(filename, suffix, filters) {
