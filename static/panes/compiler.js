@@ -456,7 +456,7 @@ Compiler.prototype.initEditorActions = function () {
 
     this.outputEditor.addAction({
         id: 'viewasmdoc',
-        label: 'View x86-64 opcode doc',
+        label: 'View assembly documentation',
         keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.F8],
         keybindingContext: null,
         contextMenuGroupId: 'help',
@@ -563,7 +563,7 @@ Compiler.prototype.compile = function (bypassCache, newTools) {
         return;
     }
     this.needsCompile = false;
-    this.compileTimeLabel.text(' - Compiling...');
+    this.compileInfoLabel.text(' - Compiling...');
     var options = {
         userArguments: this.options,
         compilerOptions: {
@@ -624,7 +624,7 @@ Compiler.prototype.sendCompile = function (request) {
     // After a short delay, give the user some indication that we're working on their
     // compilation.
     var progress = setTimeout(_.bind(function () {
-        this.setAssembly(fakeAsm('<Compiling...>'));
+        this.setAssembly(fakeAsm('<Compiling...>'), 0);
     }, this), 500);
     this.compilerService.submit(request)
         .then(function (x) {
@@ -667,11 +667,18 @@ Compiler.prototype.getBinaryForLine = function (line) {
     }
 };
 
-Compiler.prototype.setAssembly = function (asm) {
+Compiler.prototype.setAssembly = function (asm, filteredCount) {
     this.assembly = asm;
     if (!this.outputEditor || !this.outputEditor.getModel()) return;
     var editorModel = this.outputEditor.getModel();
-    editorModel.setValue(asm.length ? _.pluck(asm, 'text').join('\n') : '<No assembly generated>');
+    var msg = '<No assembly generated>';
+    if (asm.length) {
+        msg = _.pluck(asm, 'text').join('\n');
+    } else if (filteredCount > 0) {
+        msg = '<No assembly to display (~' + filteredCount + (filteredCount === 1 ? ' line' : ' lines') + ' filtered)>';
+    }
+
+    editorModel.setValue(msg);
 
     if (!this.awaitingInitialResults) {
         if (this.selection) {
@@ -774,7 +781,7 @@ Compiler.prototype.onCompileResponse = function (request, result, cached) {
     });
 
     this.labelDefinitions = result.labelDefinitions || {};
-    this.setAssembly(result.asm || fakeAsm('<No output>'));
+    this.setAssembly(result.asm || fakeAsm('<No output>'), result.filteredCount || 0);
 
     var stdout = result.stdout || [];
     var stderr = result.stderr || [];
@@ -790,18 +797,22 @@ Compiler.prototype.onCompileResponse = function (request, result, cached) {
     } else {
         this.outputBtn.prop('title', allText.replace(/\x1b\[[0-9;]*m(.\[K)?/g, ''));
     }
-    var timeLabelText = '';
+    var infoLabelText = '';
     if (cached) {
-        timeLabelText = ' - cached';
+        infoLabelText = ' - cached';
     } else if (wasRealReply) {
-        timeLabelText = ' - ' + timeTaken + 'ms';
+        infoLabelText = ' - ' + timeTaken + 'ms';
     }
 
     if (result.asmSize !== undefined) {
-        timeLabelText += ' (' + result.asmSize + 'B)';
+        infoLabelText += ' (' + result.asmSize + 'B)';
     }
 
-    this.compileTimeLabel.text(timeLabelText);
+    if (result.filteredCount && result.filteredCount > 0) {
+        infoLabelText += ' ~'+ result.filteredCount + (result.filteredCount === 1 ? ' line' : ' lines') + ' filtered';
+    }
+
+    this.compileInfoLabel.text(infoLabelText);
 
     this.postCompilationResult(request, result);
     this.eventHub.emit('compileResult', this.id, this.compiler, result, languages[this.currentLangId]);
@@ -1059,7 +1070,7 @@ Compiler.prototype.initButtons = function (state) {
     this.executorButton = this.domRoot.find('.create-executor');
     this.libsButton = this.domRoot.find('.btn.show-libs');
 
-    this.compileTimeLabel = this.domRoot.find('.compile-time');
+    this.compileInfoLabel = this.domRoot.find('.compile-info');
     this.compileClearCache = this.domRoot.find('.clear-cache');
 
     this.outputBtn = this.domRoot.find('.output-btn');
@@ -1682,8 +1693,8 @@ function getNumericToolTip(value) {
     return null;
 }
 
-function getAsmInfo(opcode) {
-    var cacheName = 'asm/' + opcode;
+function getAsmInfo(opcode, instructionSet) {
+    var cacheName = 'asm/' + (instructionSet ? (instructionSet + '/') : '' ) + opcode;
     var cached = OpcodeCache.get(cacheName);
     if (cached) {
         return Promise.resolve(cached.found ? cached.result : null);
@@ -1692,7 +1703,7 @@ function getAsmInfo(opcode) {
     return new Promise(function (resolve, reject) {
         $.ajax({
             type: 'GET',
-            url: window.location.origin + base + 'api/asm/' + opcode,
+            url: window.location.origin + base + 'api/asm/' + (instructionSet ? (instructionSet + '/') : '' ) + opcode,
             dataType: 'json',  // Expected,
             contentType: 'text/plain',  // Sent
             success: function (result) {
@@ -1777,7 +1788,7 @@ Compiler.prototype.onMouseMove = function (e) {
                 _.some(lineTokens(this.outputEditor.getModel(), currentWord.range.startLineNumber), function (t) {
                     return t.offset + 1 === currentWord.startColumn && t.type === 'keyword.asm';
                 })) {
-                getAsmInfo(currentWord.word).then(_.bind(function (response) {
+                getAsmInfo(currentWord.word, this.compiler.instructionSet).then(_.bind(function (response) {
                     if (!response) return;
                     this.decorations.asmToolTip = {
                         range: currentWord.range,
@@ -1824,7 +1835,7 @@ Compiler.prototype.onAsmToolTip = function (ed) {
             'title="Opens in a new window"></small></sup></a>.';
     }
 
-    getAsmInfo(word.word).then(_.bind(function (asmHelp) {
+    getAsmInfo(word.word, this.compiler.instructionSet).then(_.bind(function (asmHelp) {
         if (asmHelp) {
             this.alertSystem.alert(opcode + ' help', asmHelp.html + appendInfo(asmHelp.url), function () {
                 ed.focus();

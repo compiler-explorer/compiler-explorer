@@ -485,6 +485,7 @@ async function main() {
         if (JSON.stringify(prevCompilers) === JSON.stringify(compilers)) {
             return;
         }
+        logger.info(`Compiler scan count: ${_.size(compilers)}`);
         logger.debug('Compilers:', compilers);
         if (compilers.length === 0) {
             logger.error('#### No compilers found: no compilation will be done!');

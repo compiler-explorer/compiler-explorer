@@ -128,6 +128,11 @@ function isMobileViewer() {
     return window.compilerExplorerOptions.mobileViewer;
 }
 
+function calcLocaleChangedDate(policyModal) {
+    var timestamp = policyModal.find('#changed-date');
+    timestamp.text(new Date(timestamp.attr('datetime')).toLocaleString());
+}
+
 function setupButtons(options) {
     var alertSystem = new Alert();
 
@@ -139,8 +144,7 @@ function setupButtons(options) {
                 data && data.title ? data.title : 'Privacy policy',
                 require('./policies/privacy.html')
             );
-            var timestamp = modal.find('#changed-date');
-            timestamp.text(new Date(timestamp.attr('datetime')).toLocaleString());
+            calcLocaleChangedDate(modal);
             // I can't remember why this check is here as it seems superfluous
             if (options.policies.privacy.enabled) {
                 jsCookie.set(options.policies.privacy.key, options.policies.privacy.hash, {expires: 365});
@@ -165,8 +169,7 @@ function setupButtons(options) {
                 },
                 noHtml: 'Do NOT consent',
             });
-            var timestamp = modal.find('#changed-date');
-            timestamp.text(new Date(timestamp.attr('datetime')).toLocaleString());
+            calcLocaleChangedDate(modal);
         });
     }
 
@@ -274,14 +277,28 @@ function initializeResetLayoutLink() {
 
 function initPolicies(options) {
     // Ensure old cookies are removed, to avoid user confusion
-
     jsCookie.remove('fs_uid');
     jsCookie.remove('cookieconsent_status');
-    if (options.policies.privacy.enabled &&
-        options.policies.privacy.hash !== jsCookie.get(options.policies.privacy.key)) {
-        $('#privacy').trigger('click', {
-            title: 'New Privacy Policy. Please take a moment to read it',
-        });
+    if (options.policies.privacy.enabled) {
+        if (jsCookie.get(options.policies.privacy.key) == null) {
+            $('#privacy').trigger('click', {
+                title: 'New Privacy Policy. Please take a moment to read it',
+            });
+        } else if (options.policies.privacy.hash !== jsCookie.get(options.policies.privacy.key)) {
+            // When the user has already accepted the privacy, just show a pretty notification.
+            var ppolicyBellNotification = $('#policyBellNotification');
+            var pprivacyBellNotification = $('#privacyBellNotification');
+            var pcookiesBellNotification = $('#cookiesBellNotification');
+            ppolicyBellNotification.removeClass('d-none');
+            pprivacyBellNotification.removeClass('d-none');
+            $('#privacy').on('click', function () {
+                // Only hide if the other policy does not also have a bell
+                if (pcookiesBellNotification.hasClass('d-none')) {
+                    ppolicyBellNotification.addClass('d-none');
+                }
+                pprivacyBellNotification.addClass('d-none');
+            });
+        }
     }
     simpleCooks.onDoConsent = function () {
         jsCookie.set(options.policies.cookies.key, options.policies.cookies.hash, {expires: 365});
@@ -292,15 +309,35 @@ function initPolicies(options) {
         jsCookie.set(options.policies.cookies.key, '');
     };
     simpleCooks.onHide = function () {
+        var spolicyBellNotification = $('#policyBellNotification');
+        var sprivacyBellNotification = $('#privacyBellNotification');
+        var scookiesBellNotification = $('#cookiesBellNotification');
+        // Only hide if the other policy does not also have a bell
+        if (sprivacyBellNotification.hasClass('d-none')) {
+            spolicyBellNotification.addClass('d-none');
+        }
+        scookiesBellNotification.addClass('d-none');
         $(window).trigger('resize');
     };
     // '' means no consent. Hash match means consent of old. Null means new user!
     var storedCookieConsent = jsCookie.get(options.policies.cookies.key);
-    if (options.policies.cookies.enabled && storedCookieConsent !== '' &&
-        options.policies.cookies.hash !== storedCookieConsent) {
-        simpleCooks.show();
-    } else if (options.policies.cookies.enabled && hasCookieConsented(options)) {
-        analytics.initialise();
+    if (options.policies.cookies.enabled) {
+        if (storedCookieConsent !== '' && options.policies.cookies.hash !== storedCookieConsent) {
+            simpleCooks.show();
+            var cpolicyBellNotification = $('#policyBellNotification');
+            var cprivacyBellNotification = $('#privacyBellNotification');
+            var ccookiesBellNotification = $('#cookiesBellNotification');
+            cpolicyBellNotification.removeClass('d-none');
+            ccookiesBellNotification.removeClass('d-none');
+            $('#cookies').on('click', function () {
+                if (cprivacyBellNotification.hasClass('d-none')) {
+                    cpolicyBellNotification.addClass('d-none');
+                }
+                ccookiesBellNotification.addClass('d-none');
+            });
+        } else if (hasCookieConsented(options)) {
+            analytics.initialise();
+        }
     }
 }
 

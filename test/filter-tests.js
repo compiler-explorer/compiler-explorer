@@ -22,8 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import approvals from 'approvals';
 import * as path from 'path';
+
+import approvals from 'approvals';
 
 import { AsmParser } from '../lib/asm-parser';
 import { SassAsmParser } from '../lib/asm-parser-sass';
@@ -63,6 +64,7 @@ function testFilter(filename, suffix, filters) {
     it(testName, () => {
         const result = processAsm(filename, filters);
         delete result.parsingTime;
+        delete result.filteredCount;
         approvals.verifyAsJSON(
             casesRoot,
             testName,

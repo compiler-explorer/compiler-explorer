@@ -179,7 +179,7 @@ pre.content.wrap * {
     white-space: pre-wrap; /* Preserve sequences of white space */
 }
 
-.compile-time {
+.compile-info {
     font-size: x-small;
     font-style: italic;
 }
@@ -732,6 +732,14 @@ div.populararguments div.dropdown-menu {
 #timing-info .modal-content {
     min-width: 500px;
     min-height: 400px;
+}
+
+.icon-link > span {
+    margin-right: 2pt;
+}
+
+span.badge.badge-pill {
+    margin-left: 2pt;
 }
 
 html[data-theme=default] {

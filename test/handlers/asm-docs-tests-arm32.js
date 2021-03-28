@@ -1,4 +1,4 @@
-// Copyright (c) 2017, Compiler Explorer Authors
+// Copyright (c) 2021, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -24,7 +24,7 @@
 
 import express from 'express';
 
-import { AsmDocsHandler } from '../../lib/handlers/asm-docs-api-amd64';
+import { AsmDocsHandler } from '../../lib/handlers/asm-docs-api-arm32';
 import { chai } from '../utils';
 
 describe('Assembly documents', () => {
@@ -56,7 +56,7 @@ describe('Assembly documents', () => {
             .then(res => {
                 res.should.have.status(200);
                 res.should.be.html;
-                res.text.should.contain('Copies the second operand');
+                res.text.should.contain('writes an immediate value to the destination register');
             })
             .catch(function (err) {
                 throw err;
@@ -71,9 +71,9 @@ describe('Assembly documents', () => {
                 res.should.have.status(200);
                 res.should.be.json;
                 res.body.found.should.equal(true);
-                res.body.result.html.should.contain('Copies the second operand');
-                res.body.result.tooltip.should.contain('Copies the second operand');
-                res.body.result.url.should.contain('www.felixcloutier.com');
+                res.body.result.html.should.contain('writes an immediate value');
+                res.body.result.tooltip.should.contain('writes an immediate value');
+                res.body.result.url.should.contain('https://developer.arm.com/documentation/');
             })
             .catch(function (err) {
                 throw err;
@@ -93,16 +93,43 @@ describe('Assembly documents', () => {
             });
     });
 
-    it('should handle at&t syntax', () => {
+    it('should handle opcodes with a conditional type suffix that are not conditionals', () => {
         return chai.request(app)
-            .get('/asm/addq')
+            .get('/asm/adcs')
             .then(res => {
                 res.should.have.status(200);
                 res.should.be.html;
-                res.text.should.contain('Adds the destination operand');
+                res.text.should.contain('adds an immediate value and the Carry flag');
             })
             .catch(function (err) {
                 throw err;
             });
     });
+
+    it('should handle conditional opcodes', () => {
+        return chai.request(app)
+            .get('/asm/beq')
+            .then(res => {
+                res.should.have.status(200);
+                res.should.be.html;
+                res.text.should.contain('If equal, <p>Branch causes a branch');
+            })
+            .catch(function (err) {
+                throw err;
+            });
+    });
+
+    it('should respond with "unknown opcode" for unknown opcodes that can be parsed as conditional', () => {
+        return chai.request(app)
+            .get('/asm/jne')
+            .then(res => {
+                res.should.have.status(200);
+                res.should.be.html;
+                res.text.should.equal('Unknown opcode');
+            })
+            .catch(function (err) {
+                throw err;
+            });
+    });
+
 });

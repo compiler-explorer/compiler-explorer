@@ -46,7 +46,7 @@ function definition() {
                 // Label definition (ARM style)
                 [/^\s*[|][^|]*[|]/, {token: 'type.identifier'}],
                 // Label definition (CL style)
-                [/^\s*[.a-zA-Z0-9_$|]*\s*(PROC|ENDP|DB|DD)/, {token: 'type.identifier'}],
+                [/^\s*[.a-zA-Z0-9_$|]*\s+(PROC|ENDP|DB|DD)/, {token: 'type.identifier'}],
                 // Constant definition
                 [/^[.a-zA-Z0-9_$?@][^=]*=/, {token: 'type.identifier'}],
                 // opcode
