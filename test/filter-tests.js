@@ -22,9 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import * as path from 'path';
-
 import approvals from 'approvals';
+import * as path from 'path';
 
 import { AsmParser } from '../lib/asm-parser';
 import { SassAsmParser } from '../lib/asm-parser-sass';
@@ -56,6 +55,7 @@ const optionsOverride = {
     forceApproveAll: false, // set to true to automatically regenerate all the cases.
     blockUntilReporterExits: false,
     maxLaunches: 1,
+    normalizeLineEndingsTo: '\n',
 };
 
 function testFilter(filename, suffix, filters) {
