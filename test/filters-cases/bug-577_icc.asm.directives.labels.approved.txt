@@ -1,0 +1,381 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "# mark_description \"Intel(R) C Intel(R) 64 Compiler for applications running on Intel(R) 64, Version 18.0.0.128 Build 20170811\";"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "# mark_description \"-g -o /tmp/compiler-explorer-compiler1171120-54-1t2ppc6.m4k6/output.s -masm=intel -S -gxx-name=/opt/compiler\";"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "# mark_description \"-explorer/gcc-6.3.0/bin/g++\";"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "# -- Begin  _Z6squarei"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "# mark_begin;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "# --- square(int)"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "_Z6squarei:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "# parameter 1(num): edi"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                # Execution count [0.00e+00]"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                                          #2.21"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 2
+      },
+      "text": "        push      rbp                                           #2.21"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 2
+      },
+      "text": "        mov       rbp, rsp                                      #2.21"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 2
+      },
+      "text": "        sub       rsp, 16                                       #2.21"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 2
+      },
+      "text": "        mov       DWORD PTR [-16+rbp], edi                      #2.21"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                # LOE rbx rbp rsp r12 r13 r14 r15 rip"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                # Execution count [0.00e+00]"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "# Begin ASM"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "# Begin ASM"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "# End ASM                                                       #3.0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "# End ASM"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                # LOE rbx rbp rsp r12 r13 r14 r15 rip"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                # Execution count [0.00e+00]"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "text": "        mov       eax, DWORD PTR [-16+rbp]                      #4.18"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "text": "        imul      eax, DWORD PTR [-16+rbp]                      #4.18"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "text": "        leave                                                   #4.18"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "text": "        ret                                                     #4.18"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                # LOE"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "# mark_end;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "# -- End  _Z6squarei"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "// -- Begin DWARF2 SEGMENT .debug_info"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "//      DW_TAG_compile_unit:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "//      DW_AT_comp_dir:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "//      DW_AT_name:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "//      DW_AT_producer:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "//      DW_AT_language:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "//      DW_AT_use_UTF8:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "//      DW_AT_low_pc:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "//      DW_AT_high_pc:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "//      DW_AT_stmt_list:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "//      DW_TAG_namespace:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "//      DW_AT_name:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "//      DW_TAG_namespace:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "//      DW_AT_name:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "//      DW_TAG_namespace:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "//      DW_AT_name:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "//      DW_TAG_base_type:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "//      DW_AT_byte_size:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "//      DW_AT_encoding:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "//      DW_AT_name:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "//      DW_TAG_subprogram:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "//      DW_AT_decl_line:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "//      DW_AT_decl_file:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "//      DW_AT_type:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "//      DW_AT_name:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "//      DW_AT_low_pc:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "//      DW_AT_high_pc:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "//      DW_AT_external:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "//      DW_TAG_formal_parameter:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "//      DW_AT_decl_line:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "//      DW_AT_decl_file:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "//      DW_AT_type:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "//      DW_AT_name:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "//      DW_AT_location:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "// -- Begin DWARF2 SEGMENT .debug_line"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "// -- Begin DWARF2 SEGMENT .debug_abbrev"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "// -- Begin DWARF2 SEGMENT .debug_frame"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "// -- Begin DWARF2 SEGMENT .debug_str"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "// -- Begin DWARF2 SEGMENT .eh_frame"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "# End"
+    }
+  ],
+  "labelDefinitions": {
+    "_Z6squarei": 8
+  }
+}

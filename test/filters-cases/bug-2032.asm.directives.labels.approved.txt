@@ -1,0 +1,74 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "square(int):"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 2
+      },
+      "text": "        endbr64"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 2
+      },
+      "text": "        push    rbp"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 2
+      },
+      "text": "        mov     rbp, rsp"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 2
+      },
+      "text": "        mov     DWORD PTR [rbp-4], edi"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "text": "        mov     eax, DWORD PTR [rbp-4]"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "text": "        imul    eax, eax"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "text": "        pop     rbp"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "text": "        ret"
+    }
+  ],
+  "labelDefinitions": {}
+}

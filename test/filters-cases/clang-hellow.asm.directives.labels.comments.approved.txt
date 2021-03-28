@@ -1,0 +1,114 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "main:                                   # @main"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 2
+      },
+      "text": "        pushq   %rbp"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 2
+      },
+      "text": "        movq    %rsp, %rbp"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "text": "        movl    $.L.str, %edi"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "text": "        xorb    %al, %al"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "text": "        callq   printf"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "text": "        movl    $str, %edi"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "text": "        callq   puts"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "text": "        xorl    %eax, %eax"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 5
+      },
+      "text": "        popq    %rbp"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 5
+      },
+      "text": "        ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L.str:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .asciz   \"Hello world\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "str:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .asciz   \"moo\""
+    }
+  ],
+  "labelDefinitions": {
+    ".L.str": 12,
+    "main": 1,
+    "str": 14
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "_main:                                  ## @main"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "## BB#0:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 2
+      },
+      "text": "        pushq   %rbp"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 2
+      },
+      "text": "        movq    %rsp, %rbp"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 2
+      },
+      "text": "        xorl    %eax, %eax"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 2
+      },
+      "text": "        popq    %rbp"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 2
+      },
+      "text": "        retq"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    }
+  ],
+  "labelDefinitions": {
+    "_main": 1
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "trap_arm:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "text": "        .inst   0xe7ffdefe"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "trap_thumb:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 8
+      },
+      "text": "        .inst.n 0xdefe"
+    }
+  ],
+  "labelDefinitions": {
+    "trap_arm": 1,
+    "trap_thumb": 3
+  }
+}
