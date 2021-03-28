@@ -73,10 +73,9 @@ const casesRoot = resolvePathFromTestRoot('filters-cases');
 
 let optionsOverride = {
     forceApproveAll: false, // set to true to automatically regenerate all the cases.
-    reporters: ['donothing'],
     errorOnStaleApprovedFiles: false,
     blockUntilReporterExits: false,
-    maxLaunches: 1,
+    maxLaunches: 0,
 };
 
 if (process.env.REPORT === '1') {
@@ -115,11 +114,11 @@ function testAllForFile(filename) {
 
 describe('Filter test cases', function () {
     testAllForFile('6502-square.asm');
-    //testAllForFile('arm-hellow.asm');
-    // testAllForFile('arm-jump-table.asm');
-    // testAllForFile('arm-moose.asm');
-    // testAllForFile('arm-static.asm');
-    // testAllForFile('avr-loop.asm');
+    testAllForFile('arm-hellow.asm');
+    testAllForFile('arm-jump-table.asm');
+    testAllForFile('arm-moose.asm');
+    testAllForFile('arm-static.asm');
+    testAllForFile('avr-loop.asm');
     // testAllForFile('bintest-1.asm');
     // testAllForFile('bintest-2.asm');
     // testAllForFile('bintest-unicode-1.asm');
