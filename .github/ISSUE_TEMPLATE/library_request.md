@@ -1,7 +1,7 @@
 ---
 name: Library request
 about: Request a new library
-title: '[LIB REQUEST] INSERT LIB NAME HERE
+title: '[LIB REQUEST] INSERT LIB NAME HERE'
 labels:
     - 'request'
     - 'new-libs'
