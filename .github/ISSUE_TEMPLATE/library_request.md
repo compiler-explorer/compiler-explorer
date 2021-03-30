@@ -1,7 +1,7 @@
 ---
 name: Library request
 about: Request a new library
-title: '[LIB REQUEST] **INSERT LIB NAME HERE**'
+title: '[LIB REQUEST] INSERT LIB NAME HERE
 labels:
     - 'request'
     - 'new-libs'
@@ -24,3 +24,7 @@ assignees: ''
 
 **Motivation:**
 <!-- Is there any specific reason as to why you want this library to be added? -->
+
+<!-- EXTRA: 
+ It would be very helpful for the implementator to have some small snippet of code to tell when the library has been properly installed.
+ BUT Do not feel forced to provide one, this is just a nice-to-have extra! If you do, please attach it after this line -->
