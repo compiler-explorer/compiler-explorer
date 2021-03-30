@@ -424,7 +424,18 @@ function setupSentry(sentryDsn, expressApp) {
             // enable Express.js middleware tracing
             new Tracing.Integrations.Express({expressApp}),
         ],
-        tracesSampleRate: 0.1,
+        tracesSampler: samplingContext => {
+            // always inherit
+            if (samplingContext.parentSampled !== undefined)
+                return samplingContext.parentSampled;
+
+            // never sample healthcheck
+            if (samplingContext.transactionContext.name === 'GET /healthcheck')
+                return 0;
+
+            // default sample rate of 10%
+            return 0.1;
+        },
     });
     logger.info(`Configured with Sentry endpoint ${sentryDsn}`);
 }
