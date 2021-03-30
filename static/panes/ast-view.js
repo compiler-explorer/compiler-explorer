@@ -37,6 +37,9 @@ function Ast(hub, container, state) {
     this.eventHub = hub.createEventHub();
     this.domRoot = container.getElement();
     this.domRoot.html($('#ast').html());
+
+    this.decorations = {};
+    this.prevDecorations = [];
     var root = this.domRoot.find('.monaco-placeholder');
     this.astEditor = monaco.editor.create(root[0], monacoConfig.extendConfig({
         language: 'plaintext',
@@ -51,6 +54,8 @@ function Ast(hub, container, state) {
 
     this.awaitingInitialResults = false;
     this.selection = state.selection;
+
+    this.settings = {};
 
     this.colours = [];
     this.astCode = [];
@@ -80,6 +85,12 @@ Ast.prototype.initButtons = function (state) {
 };
 
 Ast.prototype.initCallbacks = function () {
+    this.linkedFadeTimeoutId = -1;
+    this.mouseMoveThrottledFunction = _.throttle(_.bind(this.onMouseMove, this), 50);
+    this.astEditor.onMouseMove(_.bind(function (e) {
+        this.mouseMoveThrottledFunction(e);
+    }, this));
+
     this.fontScale.on('change', _.bind(this.updateState, this));
 
     this.container.on('destroy', this.close, this);
@@ -87,6 +98,7 @@ Ast.prototype.initCallbacks = function () {
     this.eventHub.on('compileResult', this.onCompileResult, this);
     this.eventHub.on('compiler', this.onCompiler, this);
     this.eventHub.on('colours', this.onColours, this);
+    this.eventHub.on('panesLinkLine', this.onPanesLinkLine, this);
     this.eventHub.on('compilerClose', this.onCompilerClose, this);
     this.eventHub.on('settingsChange', this.onSettingsChange, this);
     this.eventHub.emit('astViewOpened', this._compilerid);
@@ -136,10 +148,12 @@ Ast.prototype.getCurrentEditorLanguage = function () {
     return this.astEditor.getModel().getModeId();
 };
 
+Ast.prototype.getPaneName = function () {
+    return this._compilerName + ' Ast Viewer (Editor #' + this._editorid + ', Compiler #' + this._compilerid + ')';
+};
+
 Ast.prototype.setTitle = function () {
-    this.container.setTitle(
-        this._compilerName + ' Ast Viewer (Editor #' + this._editorid + ', Compiler #' + this._compilerid + ')'
-    );
+    this.container.setTitle(this.getPaneName());
 };
 
 Ast.prototype.getDisplayableAst = function (astResult) {
@@ -231,6 +245,7 @@ Ast.prototype.onCompilerClose = function (id) {
 };
 
 Ast.prototype.onSettingsChange = function (newSettings) {
+    this.settings = newSettings;
     this.astEditor.updateOptions({
         contextmenu: newSettings.useCustomContextMenu,
         minimap: {
@@ -241,10 +256,68 @@ Ast.prototype.onSettingsChange = function (newSettings) {
     });
 };
 
+Ast.prototype.onMouseMove = function (e) {
+    if (e === null || e.target === null || e.target.position === null) return;
+    if (this.settings.hoverShowSource === true && this.astCode) {
+        this.clearLinkedLines();
+        var hoverCode = this.astCode[e.target.position.lineNumber - 1];
+        if (hoverCode) {
+            // We check that we actually have something to show at this point!
+            var sourceLine = (hoverCode.source && hoverCode.source.from && hoverCode.source.to)
+                ? hoverCode.source.from
+                : -1;
+            this.eventHub.emit('editorLinkLine', this._editorid, sourceLine, -1, false);
+            this.eventHub.emit('panesLinkLine', this._compilerid, sourceLine, false, this.getPaneName());
+        }
+    }
+};
+
 Ast.prototype.onDidChangeCursorSelection = function (e) {
     if (this.awaitingInitialResults) {
         this.selection = e.selection;
         this.updateState();
+    }
+};
+
+Ast.prototype.updateDecorations = function () {
+    this.prevDecorations = this.astEditor.deltaDecorations(
+        this.prevDecorations, _.flatten(_.values(this.decorations)));
+};
+
+Ast.prototype.clearLinkedLines = function () {
+    this.decorations.linkedCode = [];
+    this.updateDecorations();
+};
+
+Ast.prototype.onPanesLinkLine = function (compilerId, lineNumber, revealLine, sender) {
+    if (Number(compilerId) === this._compilerid) {
+        var lineNums = [];
+        _.each(this.astCode, function (astLine, i) {
+            if (astLine.source && astLine.source.from <= lineNumber && lineNumber <= astLine.source.to) {
+                var line = i + 1;
+                lineNums.push(line);
+            }
+        });
+        if (revealLine && lineNums[0]) this.astEditor.revealLineInCenter(lineNums[0]);
+        var lineClass = sender !== this.getPaneName() ? 'linked-code-decoration-line' : '';
+        this.decorations.linkedCode = _.map(lineNums, function (line) {
+            return {
+                range: new monaco.Range(line, 1, line, 1),
+                options: {
+                    isWholeLine: true,
+                    linesDecorationsClassName: 'linked-code-decoration-margin',
+                    className: lineClass,
+                },
+            };
+        });
+        if (this.linkedFadeTimeoutId !== -1) {
+            clearTimeout(this.linkedFadeTimeoutId);
+        }
+        this.linkedFadeTimeoutId = setTimeout(_.bind(function () {
+            this.clearLinkedLines();
+            this.linkedFadeTimeoutId = -1;
+        }, this), 5000);
+        this.updateDecorations();
     }
 };
 
