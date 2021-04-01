@@ -1,5 +1,6 @@
 name: Update browsers list
 on:
+  workflow_dispatch:
   schedule:
     # Monthly
     - cron: '0 0 1 * *'
