@@ -1,0 +1,20 @@
+name: Update browsers list
+on:
+  schedule:
+    # Monthly
+    - cron: '0 0 1 * *'
+
+jobs:
+  label:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Update browerslist
+        run: |
+          git config user.name 'Peter Evans'
+          git config user.email 'peter-evans@users.noreply.github.com'
+          make prereqs
+          npm run update-browserslist
+          git commit -am "Automated checkin - update browsers list"
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v3
