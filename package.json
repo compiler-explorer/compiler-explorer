@@ -136,7 +136,8 @@
     "debug": "cross-env NODE_ENV=DEV node -r esm app.js --debug",
     "start": "webpack && cross-env NODE_ENV=LOCAL node -r esm app.js",
     "codecov": "codecov --disable=gcov",
-    "sentry": "npx -p @sentry/cli sentry-cli"
+    "sentry": "npx -p @sentry/cli sentry-cli",
+    "update-browserslist": "npx browserslist@latest -- --update-db"
   },
   "license": "BSD-2-Clause"
 }
