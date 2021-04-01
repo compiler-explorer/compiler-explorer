@@ -54,7 +54,7 @@ No need to update this! It's done by the CLI build process
 <p>
     The source code and options are also subject to a one-way hash, which is used to cache the results to speed up
     subsequent compilations of the same code. The cache is in-memory and on-disk. It's impossible to reconstruct the
-    source code from the hash; but the resulting assembly code or binary output (the compilation result) is stored as
+    source code from the hash, but the resulting assembly code or binary output (the compilation result) is stored as
     plain text. There's no way to enumerate the in-memory cache contents. In exceptional cases, administrator members of
     the Compiler Explorer team may be able to enumerate the disk caches and retrieve the compilation output, but with no
     way to trace it back to the source code.
@@ -74,7 +74,7 @@ No need to update this! It's done by the CLI build process
     <code>https://godbolt.org/#ui_state_and_code</code>). For short URLs, the interface state is stored on Compiler
     Explorer's servers, and a shortened name uniquely referring to this data is returned. The shortened name comes from
     a secure hash of the state, and without knowing the name it is infeasible to access the data. Only Compiler Explorer
-    administrators can access this data directly . Obfuscated IP addresses and creation time are stored alongside this
+    administrators can access this data directly. Obfuscated IP addresses and creation time are stored alongside this
     data, to enable spam detection. Links of this form look like <code>https://godbolt.org/z/SHORTNAME</code>.
 </p>
 
@@ -100,7 +100,7 @@ No need to update this! It's done by the CLI build process
     Compiler Explorer uses Amazon's web serving, load balancing and edge caching systems. In order to debug and diagnose
     Compiler Explorer, to help track down and block Denial of Service attacks, and to gather statistics about Compiler
     Explorer's performance and usage, the logs from these systems are archived. These logs contain the full IP addresses
-    of requests. Thy are kept for no more than one month, after which they are permanently deleted.
+    of requests. They are kept for no more than one month, after which they are permanently deleted.
 </p>
 
 <p>
@@ -125,8 +125,8 @@ No need to update this! It's done by the CLI build process
     Storage. Cookies are only used with the user's permission, and are used with external analytics services (e.g.
     Google Analytics) to gather statistics on Compiler Explorer usage. This information is used to help the Compiler
     Explorer team plan for future updates and hardware upgrades in order to ensure the site remains stable and
-    responsive. Local storage is used to remember user's settings, source code and user interface configuration, so that
-    it's available when the user visits the Compiler Explorer site again. This information is not transmitted to
+    responsive. Local storage is used to remember the user's settings, source code and user interface configuration, so
+    that it's available when the user visits the Compiler Explorer site again. This information is not transmitted to
     Compiler Explorer, except as described above in order to fulfil the user's requests. There is a
     <a href="#cookies" rel="noreferrer noopener">separate document</a> covering more on this. Statistics tracking
     information is kept for 14 months, after which it is removed.
