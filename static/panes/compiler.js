@@ -624,7 +624,7 @@ Compiler.prototype.sendCompile = function (request) {
     // After a short delay, give the user some indication that we're working on their
     // compilation.
     var progress = setTimeout(_.bind(function () {
-        this.setAssembly(fakeAsm('<Compiling...>'), 0);
+        this.setAssembly({asm: fakeAsm('<Compiling...>')}, 0);
     }, this), 500);
     this.compilerService.submit(request)
         .then(function (x) {
@@ -667,7 +667,8 @@ Compiler.prototype.getBinaryForLine = function (line) {
     }
 };
 
-Compiler.prototype.setAssembly = function (asm, filteredCount) {
+Compiler.prototype.setAssembly = function (result, filteredCount) {
+    var asm = result.asm || fakeAsm('<No output>');
     this.assembly = asm;
     if (!this.outputEditor || !this.outputEditor.getModel()) return;
     var editorModel = this.outputEditor.getModel();
@@ -676,6 +677,13 @@ Compiler.prototype.setAssembly = function (asm, filteredCount) {
         msg = _.pluck(asm, 'text').join('\n');
     } else if (filteredCount > 0) {
         msg = '<No assembly to display (~' + filteredCount + (filteredCount === 1 ? ' line' : ' lines') + ' filtered)>';
+    }
+
+    if (asm.length === 1 && result.code !== 0 && (result.stderr || result.stdout)) {
+        msg += '\n\n# For more information see the output window';
+        if (!this.isOutputOpened) {
+            msg += '\n# To open the output window, click or drag the "Output" icon at the bottom of this window';
+        }
     }
 
     editorModel.setValue(msg);
@@ -781,7 +789,7 @@ Compiler.prototype.onCompileResponse = function (request, result, cached) {
     });
 
     this.labelDefinitions = result.labelDefinitions || {};
-    this.setAssembly(result.asm || fakeAsm('<No output>'), result.filteredCount || 0);
+    this.setAssembly(result, result.filteredCount || 0);
 
     var stdout = result.stdout || [];
     var stderr = result.stderr || [];
@@ -809,7 +817,7 @@ Compiler.prototype.onCompileResponse = function (request, result, cached) {
     }
 
     if (result.filteredCount && result.filteredCount > 0) {
-        infoLabelText += ' ~'+ result.filteredCount + (result.filteredCount === 1 ? ' line' : ' lines') + ' filtered';
+        infoLabelText += ' ~' + result.filteredCount + (result.filteredCount === 1 ? ' line' : ' lines') + ' filtered';
     }
 
     this.compileInfoLabel.text(infoLabelText);
@@ -1029,31 +1037,31 @@ Compiler.prototype.onCfgViewClosed = function (id) {
 };
 
 Compiler.prototype.initFilterButtons = function () {
-    this.filterBinaryButton = this.domRoot.find("[data-bind='binary']");
+    this.filterBinaryButton = this.domRoot.find('[data-bind=\'binary\']');
     this.filterBinaryTitle = this.filterBinaryButton.prop('title');
 
-    this.filterExecuteButton = this.domRoot.find("[data-bind='execute']");
+    this.filterExecuteButton = this.domRoot.find('[data-bind=\'execute\']');
     this.filterExecuteTitle = this.filterExecuteButton.prop('title');
 
-    this.filterLabelsButton = this.domRoot.find("[data-bind='labels']");
+    this.filterLabelsButton = this.domRoot.find('[data-bind=\'labels\']');
     this.filterLabelsTitle = this.filterLabelsButton.prop('title');
 
-    this.filterDirectivesButton = this.domRoot.find("[data-bind='directives']");
+    this.filterDirectivesButton = this.domRoot.find('[data-bind=\'directives\']');
     this.filterDirectivesTitle = this.filterDirectivesButton.prop('title');
 
-    this.filterLibraryCodeButton = this.domRoot.find("[data-bind='libraryCode']");
+    this.filterLibraryCodeButton = this.domRoot.find('[data-bind=\'libraryCode\']');
     this.filterLibraryCodeTitle = this.filterLibraryCodeButton.prop('title');
 
-    this.filterCommentsButton = this.domRoot.find("[data-bind='commentOnly']");
+    this.filterCommentsButton = this.domRoot.find('[data-bind=\'commentOnly\']');
     this.filterCommentsTitle = this.filterCommentsButton.prop('title');
 
-    this.filterTrimButton = this.domRoot.find("[data-bind='trim']");
+    this.filterTrimButton = this.domRoot.find('[data-bind=\'trim\']');
     this.filterTrimTitle = this.filterTrimButton.prop('title');
 
-    this.filterIntelButton = this.domRoot.find("[data-bind='intel']");
+    this.filterIntelButton = this.domRoot.find('[data-bind=\'intel\']');
     this.filterIntelTitle = this.filterIntelButton.prop('title');
 
-    this.filterDemangleButton = this.domRoot.find("[data-bind='demangle']");
+    this.filterDemangleButton = this.domRoot.find('[data-bind=\'demangle\']');
     this.filterDemangleTitle = this.filterDemangleButton.prop('title');
 
     this.noBinaryFiltersButtons = this.domRoot.find('.nonbinary');
@@ -1169,10 +1177,10 @@ Compiler.prototype.initToolButtons = function (togglePannerAdder) {
     if (!this.compiler) return;
 
     var addTool = _.bind(function (toolName, title) {
-        var btn = $("<button class='dropdown-item btn btn-light btn-sm'>");
+        var btn = $('<button class=\'dropdown-item btn btn-light btn-sm\'>');
         btn.addClass('view-' + toolName);
         btn.data('toolname', toolName);
-        btn.append("<span class='dropdown-icon fas fa-cog'></span>" + title);
+        btn.append('<span class=\'dropdown-icon fas fa-cog\'></span>' + title);
         this.toolsMenu.append(btn);
 
         if (toolName !== 'none') {
@@ -1198,7 +1206,7 @@ Compiler.prototype.enableToolButtons = function () {
         var toolName = toolButton.data('toolname');
         toolButton.prop('disabled',
             !(this.supportsTool(toolName)
-            && !this.isToolActive(activeTools, toolName)));
+                && !this.isToolActive(activeTools, toolName)));
     }, this));
 };
 
@@ -1262,9 +1270,9 @@ Compiler.prototype.handlePopularArgumentsResult = function (result) {
             argumentButton.attr('title', arg.description);
             argumentButton.data('arg', key);
             argumentButton.html(
-                "<div class='argmenuitem'>" +
-                "<span class='argtitle'>" + _.escape(key) + '</span>' +
-                "<span class='argdescription'>" + arg.description + '</span>' +
+                '<div class=\'argmenuitem\'>' +
+                '<span class=\'argtitle\'>' + _.escape(key) + '</span>' +
+                '<span class=\'argdescription\'>' + arg.description + '</span>' +
                 '</div>');
 
             argumentButton.click(_.bind(function () {
@@ -1694,7 +1702,7 @@ function getNumericToolTip(value) {
 }
 
 function getAsmInfo(opcode, instructionSet) {
-    var cacheName = 'asm/' + (instructionSet ? (instructionSet + '/') : '' ) + opcode;
+    var cacheName = 'asm/' + (instructionSet ? (instructionSet + '/') : '') + opcode;
     var cached = OpcodeCache.get(cacheName);
     if (cached) {
         return Promise.resolve(cached.found ? cached.result : null);
@@ -1703,7 +1711,7 @@ function getAsmInfo(opcode, instructionSet) {
     return new Promise(function (resolve, reject) {
         $.ajax({
             type: 'GET',
-            url: window.location.origin + base + 'api/asm/' + (instructionSet ? (instructionSet + '/') : '' ) + opcode,
+            url: window.location.origin + base + 'api/asm/' + (instructionSet ? (instructionSet + '/') : '') + opcode,
             dataType: 'json',  // Expected,
             contentType: 'text/plain',  // Sent
             success: function (result) {
