@@ -24,6 +24,7 @@
 // OTHER DEALINGS IN THE SOFTWARE.
 
 // Converted from https://github.com/rburns/ansi-to-html
+// Includes patches from https://github.com/rburns/ansi-to-html/pull/84
 
 'use strict';
 
@@ -137,10 +138,21 @@ function generateOutput(stack, token, data, options) {
     } else if (token === 'display') {
         result = handleDisplay(stack, data, options);
     } else if (token === 'xterm256') {
-        result = pushForegroundColor(stack, options.colors[data]);
+        result = handleXterm256(stack, data, options);
     }
 
     return result;
+}
+
+function handleXterm256(stack, data, options) {
+    data = data.substring(2).slice(0, -1);
+    var operation = +data.substr(0, 2);
+    var color = +data.substr(5);
+    if (operation === 38) {
+        return pushForegroundColor(stack, options.colors[color]);
+    } else {
+        return pushBackgroundColor(stack, options.colors[color]);
+    }
 }
 
 /**
@@ -365,8 +377,8 @@ function tokenize(text, options, callback) {
         return '';
     }
 
-    function removeXterm256(m, g1) {
-        callback('xterm256', g1);
+    function removeXterm256(m) {
+        callback('xterm256', m);
         return '';
     }
 
@@ -409,13 +421,13 @@ function tokenize(text, options, callback) {
         pattern: /^\x1b\[[012]?K/,
         sub: remove,
     }, {
-        pattern: /^\x1b\[38;5;(\d+)m/,
+        pattern: /^\x1b\[[34]8;5;(\d+)m/,
         sub: removeXterm256,
     }, {
         pattern: /^\n/,
         sub: newline,
     }, {
-        pattern: /^\x1b\[((?:\d{1,3};?)+|)m/,
+        pattern: /^\x1b\[((?:\d{1,3};)*\d{1,3}|)m/,
         sub: ansiMess,
     }, {
         pattern: /^\x1b\[?[\d;]{0,3}/,
