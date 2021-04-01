@@ -75,7 +75,9 @@ function initialise(url, motdNode, defaultLanguage, adsEnabled, onMotd, onHide) 
             handleMotd(res, motdNode, defaultLanguage, adsEnabled, onHide);
         })
         .catch(function (jqXHR, textStatus, errorThrown) {
-            Sentry.captureMessage('MOTD error for ' + url + ' - ' + textStatus + ' - ' + errorThrown, 'warning');
+            var message = 'MOTD error for ' + url + ' - ' + textStatus + ' - ' + (errorThrown || 'no error') +
+                ' - readyState=' + jqXHR.readyState + ' - status=' + jqXHR.status;
+            Sentry.captureMessage(message, 'warning');
         });
 }
 
