@@ -90,9 +90,9 @@ If you want to point it at your own GCC or similar binaries, either edit the
 
 When running in a corporate setting the URL shortening service can be replaced
  by an internal one if the default storage driver isn't appropriate for your
- environment. To do this, add a new module in `lib/shortener-myservice.js` and
+ environment. To do this, add a new module in `lib/shortener/myservice.js` and
  set the `urlShortenService` variable in configuration. This module should
- export a single function, see the [tinyurl module](lib/shortener-tinyurl.js)
+ export a single function, see the [tinyurl module](lib/shortener/tinyurl.js)
  for an example.
 
 ### RESTful API
