@@ -449,7 +449,7 @@ Compiler.prototype.initEditorActions = function () {
             var source = this.assembly[desiredLine].source;
             if (source !== null && source.file === null) {
                 // a null file means it was the user's source
-                this.eventHub.emit('editorLinkLine', this.sourceEditorId, source.line, -1, true);
+                this.eventHub.emit('editorLinkLine', this.sourceEditorId, source.line, -1, -1, true);
             }
         }, this),
     });
@@ -1749,7 +1749,7 @@ Compiler.prototype.onMouseMove = function (e) {
         if (hoverAsm) {
             // We check that we actually have something to show at this point!
             var sourceLine = hoverAsm.source && !hoverAsm.source.file ? hoverAsm.source.line : -1;
-            this.eventHub.emit('editorLinkLine', this.sourceEditorId, sourceLine, -1, false);
+            this.eventHub.emit('editorLinkLine', this.sourceEditorId, sourceLine, -1, -1, false);
             this.eventHub.emit('panesLinkLine', this.id, sourceLine, false, this.getPaneName());
         }
     }

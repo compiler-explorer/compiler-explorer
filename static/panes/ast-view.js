@@ -266,7 +266,7 @@ Ast.prototype.onMouseMove = function (e) {
             var sourceLine = (hoverCode.source && hoverCode.source.from && hoverCode.source.to)
                 ? hoverCode.source.from
                 : -1;
-            this.eventHub.emit('editorLinkLine', this._editorid, sourceLine, -1, false);
+            this.eventHub.emit('editorLinkLine', this._editorid, sourceLine, -1, -1, false);
             this.eventHub.emit('panesLinkLine', this._compilerid, sourceLine, false, this.getPaneName());
         }
     }

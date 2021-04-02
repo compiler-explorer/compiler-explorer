@@ -1029,7 +1029,7 @@ Editor.prototype.onSelectLine = function (id, lineNum) {
     }
 };
 
-Editor.prototype.onEditorLinkLine = function (editorId, lineNum, columnNum, reveal) {
+Editor.prototype.onEditorLinkLine = function (editorId, lineNum, columnBegin, columnEnd, reveal) {
     if (Number(editorId) === this.id) {
         if (reveal && lineNum) this.editor.revealLineInCenter(lineNum);
         this.decorations.linkedCode = lineNum === -1 || !lineNum ? [] : [{
@@ -1041,9 +1041,9 @@ Editor.prototype.onEditorLinkLine = function (editorId, lineNum, columnNum, reve
             },
         }];
 
-        if (lineNum > 0 && columnNum !== -1) {
+        if (lineNum > 0 && columnBegin !== -1) {
             this.decorations.linkedCode.push({
-                range: new monaco.Range(lineNum, columnNum, lineNum, columnNum + 1),
+                range: new monaco.Range(lineNum, columnBegin, lineNum, columnEnd),
                 options: {
                     isWholeLine: false,
                     inlineClassName: 'linked-code-decoration-column',
