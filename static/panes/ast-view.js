@@ -262,11 +262,19 @@ Ast.prototype.onMouseMove = function (e) {
         this.clearLinkedLines();
         var hoverCode = this.astCode[e.target.position.lineNumber - 1];
         if (hoverCode) {
+            var sourceLine = -1;
+            var colBegin = -1;
+            var colEnd = -1;
             // We check that we actually have something to show at this point!
-            var sourceLine = (hoverCode.source && hoverCode.source.from.line && hoverCode.source.to.line)
-                ? hoverCode.source.from.line
-                : -1;
-            this.eventHub.emit('editorLinkLine', this._editorid, sourceLine, -1, -1, false);
+            if (hoverCode.source && hoverCode.source.from) {
+                sourceLine = hoverCode.source.from.line;
+                // Highlight part of a line corresponding to the node if it fits on one line
+                if (hoverCode.source.to && hoverCode.source.from.line === hoverCode.source.to.line) {
+                    colBegin = hoverCode.source.from.col;
+                    colEnd = hoverCode.source.to.col;
+                }
+            }
+            this.eventHub.emit('editorLinkLine', this._editorid, sourceLine, colBegin, colEnd, false);
             this.eventHub.emit('panesLinkLine', this._compilerid, sourceLine, false, this.getPaneName());
         }
     }

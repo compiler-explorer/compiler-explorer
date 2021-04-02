@@ -1042,6 +1042,12 @@ Editor.prototype.onEditorLinkLine = function (editorId, lineNum, columnBegin, co
         }];
 
         if (lineNum > 0 && columnBegin !== -1) {
+            var line = this.editor.getModel().getLineContent(lineNum);
+            // Highlight the entire last token
+            if (0 < columnEnd && columnEnd < line.length) {
+                var tokenLen = line.slice(columnEnd).search(/[^\w]/);
+                columnEnd += tokenLen + 1;
+            }
             this.decorations.linkedCode.push({
                 range: new monaco.Range(lineNum, columnBegin, lineNum, columnEnd),
                 options: {
