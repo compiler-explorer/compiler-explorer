@@ -80,9 +80,15 @@ describe('llvm-ast', function () {
         should.exist(compilerOutput.stdout.find(l => l.text.match(/col:21, line:4:1/)));
         should.exist(compilerOutput.stdout.find(l => l.text.match(/line:3:5, col:18/)));
         let processed = astParser.processAst(cloneDeep(compilerOutput));
-        should.exist(processed.find(l => l.source && 0 < l.source.from));
-        processed.find(l => l.text.match(/col:21, line:4:1/)).source.to.should.equal(4);
-        processed.find(l => l.text.match(/line:3:5, col:18/)).source.from.should.equal(3);
-        processed.find(l => l.text.match(/line:3:5, col:18/)).source.to.should.equal(3);
+        should.exist(processed.find(l => l.source && 0 < l.source.from.line));
+        processed.find(l => l.text.match(/col:21, line:4:1/)).source.to.line.should.equal(4);
+        processed.find(l => l.text.match(/col:21, line:4:1/)).source.to.col.should.equal(1);
+        processed.find(l => l.text.match(/col:21, line:4:1/)).source.from.col.should.equal(21);
+        processed.find(l => l.text.match(/line:3:5, col:18/)).source.from.line.should.equal(3);
+        processed.find(l => l.text.match(/line:3:5, col:18/)).source.from.col.should.equal(5);
+        processed.find(l => l.text.match(/line:3:5, col:18/)).source.to.line.should.equal(3);
+        processed.find(l => l.text.match(/line:3:5, col:18/)).source.to.col.should.equal(18);
+        // Here "from.line" is inherited from the parent "FunctionDecl <<source>:2:1, line:4:1>"
+        processed.find(l => l.text.match(/CompoundStmt.*<col:21, line:4:1>/)).source.from.line.should.equal(2);
     });
 });

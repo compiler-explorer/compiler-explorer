@@ -193,10 +193,10 @@ Ast.prototype.onColours = function (id, colours, scheme) {
 
         var astColours = {};
         _.each(this.astCode, function (x, index) {
-            if (x.source && x.source.from && x.source.to &&
-                x.source.from <= x.source.to && x.source.to < x.source.from + 100) {
+            if (x.source && x.source.from.line && x.source.to.line &&
+                x.source.from.line <= x.source.to.line && x.source.to.line < x.source.from.line + 100) {
                 var i;
-                for (i = x.source.from; i <= x.source.to; ++i) {
+                for (i = x.source.from.line; i <= x.source.to.line; ++i) {
                     if (colours[i - 1] !== undefined) {
                         astColours[index] = colours[i - 1];
                         break;
@@ -263,8 +263,8 @@ Ast.prototype.onMouseMove = function (e) {
         var hoverCode = this.astCode[e.target.position.lineNumber - 1];
         if (hoverCode) {
             // We check that we actually have something to show at this point!
-            var sourceLine = (hoverCode.source && hoverCode.source.from && hoverCode.source.to)
-                ? hoverCode.source.from
+            var sourceLine = (hoverCode.source && hoverCode.source.from.line && hoverCode.source.to.line)
+                ? hoverCode.source.from.line
                 : -1;
             this.eventHub.emit('editorLinkLine', this._editorid, sourceLine, -1, -1, false);
             this.eventHub.emit('panesLinkLine', this._compilerid, sourceLine, false, this.getPaneName());
@@ -293,7 +293,7 @@ Ast.prototype.onPanesLinkLine = function (compilerId, lineNumber, revealLine, se
     if (Number(compilerId) === this._compilerid) {
         var lineNums = [];
         _.each(this.astCode, function (astLine, i) {
-            if (astLine.source && astLine.source.from <= lineNumber && lineNumber <= astLine.source.to) {
+            if (astLine.source && astLine.source.from.line <= lineNumber && lineNumber <= astLine.source.to.line) {
                 var line = i + 1;
                 lineNums.push(line);
             }
