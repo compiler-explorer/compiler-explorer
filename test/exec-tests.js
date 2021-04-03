@@ -221,12 +221,12 @@ describe('nsjail unit tests', () => {
         options.should.deep.equals({});
         args.should.include('--env=LD_LIBRARY_PATH=/a/lib/path');
     });
-    it('should handle additional envs', () => {
+    it('should handle envs', () => {
         const {args, options} = exec.getNsJailOptions(
             'sandbox',
             '/path/to/compiler',
             [],
-            {additionalEnv: {ENV1: '1', ENV2: '2'}},
+            {env: {ENV1: '1', ENV2: '2'}},
         );
         options.should.deep.equals({});
         args.should.include('--env=ENV1=1');
