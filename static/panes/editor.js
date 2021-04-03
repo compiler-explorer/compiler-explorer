@@ -107,11 +107,12 @@ function Editor(hub, state, container) {
     if (state.source && state.source.match(startFolded)) {
         // With reference to https://github.com/Microsoft/monaco-editor/issues/115
         // I tried that and it didn't work, but a delay of 500 seems to "be enough".
+        // FIXME: Currently not working - No folding is performed
         setTimeout(_.bind(function () {
             this.editor.setSelection(new monaco.Selection(1, 1, 1, 1));
             this.editor.focus();
             this.editor.getAction('editor.fold').run();
-            this.editor.clearSelection();
+            //this.editor.clearSelection();
         }, this), 500);
     }
 
