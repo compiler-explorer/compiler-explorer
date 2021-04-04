@@ -1002,14 +1002,22 @@ Editor.prototype.onCompileResponse = function (compilerId, compiler, result) {
         var severity = 3; // error
         if (obj.tag.text.match(/^warning/)) severity = 2;
         if (obj.tag.text.match(/^note/)) severity = 1;
+        var colBegin = 0;
+        var colEnd = Infinity;
+        if (obj.tag.column) {
+            var span = this.getTokenSpan(obj.tag.line, obj.tag.column);
+            colBegin = obj.tag.column;
+            if (span.colEnd === obj.tag.column) colEnd = -1;
+            else colEnd = span.colEnd + 1;
+        }
         return {
             severity: severity,
             message: obj.tag.text,
             source: compiler.name + ' #' + compilerId,
             startLineNumber: obj.tag.line,
-            startColumn: obj.tag.column || 0,
+            startColumn: colBegin,
             endLineNumber: obj.tag.line,
-            endColumn: obj.tag.column ? -1 : Infinity,
+            endColumn: colEnd,
         };
     }, this));
     monaco.editor.setModelMarkers(this.editor.getModel(), compilerId, widgets);
