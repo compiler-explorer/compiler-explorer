@@ -275,7 +275,8 @@ Ast.prototype.onMouseMove = function (e) {
                 }
             }
             this.eventHub.emit('editorLinkLine', this._editorid, sourceLine, colBegin, colEnd, false);
-            this.eventHub.emit('panesLinkLine', this._compilerid, sourceLine, false, this.getPaneName());
+            this.eventHub.emit('panesLinkLine', this._compilerid, sourceLine,
+                colBegin, colEnd, false, this.getPaneName());
         }
     }
 };
@@ -297,18 +298,26 @@ Ast.prototype.clearLinkedLines = function () {
     this.updateDecorations();
 };
 
-Ast.prototype.onPanesLinkLine = function (compilerId, lineNumber, revealLine, sender) {
+Ast.prototype.onPanesLinkLine = function (compilerId, lineNumber, colBegin, colEnd, revealLine, sender) {
     if (Number(compilerId) === this._compilerid) {
         var lineNums = [];
+        var singleNodeLines = [];
+        var signalFromAnotherPane = sender !== this.getPaneName();
         _.each(this.astCode, function (astLine, i) {
-            if (astLine.source && astLine.source.from.line <= lineNumber && lineNumber <= astLine.source.to.line) {
+            if (astLine.source
+                && astLine.source.from.line <= lineNumber && lineNumber <= astLine.source.to.line) {
                 var line = i + 1;
                 lineNums.push(line);
+                if (signalFromAnotherPane &&
+                    astLine.source.from.line === lineNumber && astLine.source.to.line === lineNumber &&
+                    astLine.source.from.col <= colEnd && colBegin <= astLine.source.to.col) {
+                    singleNodeLines.push(line);
+                }
             }
         });
         if (revealLine && lineNums[0]) this.astEditor.revealLineInCenter(lineNums[0]);
-        var lineClass = sender !== this.getPaneName() ? 'linked-code-decoration-line' : '';
-        this.decorations.linkedCode = _.map(lineNums, function (line) {
+        var lineClass = signalFromAnotherPane ? 'linked-code-decoration-line' : '';
+        var contextLines = _.map(lineNums, function (line) {
             return {
                 range: new monaco.Range(line, 1, line, 1),
                 options: {
@@ -318,6 +327,16 @@ Ast.prototype.onPanesLinkLine = function (compilerId, lineNumber, revealLine, se
                 },
             };
         });
+        var directlyLinkedLines = _.map(singleNodeLines, function (line) {
+            return {
+                range: new monaco.Range(line, 1, line, 1),
+                options: {
+                    isWholeLine: true,
+                    inlineClassName: 'linked-code-decoration-column',
+                },
+            };
+        });
+        this.decorations.linkedCode = contextLines.concat(directlyLinkedLines);
         if (this.linkedFadeTimeoutId !== -1) {
             clearTimeout(this.linkedFadeTimeoutId);
         }

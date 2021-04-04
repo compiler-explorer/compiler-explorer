@@ -1583,7 +1583,7 @@ Compiler.prototype.clearLinkedLines = function () {
     this.updateDecorations();
 };
 
-Compiler.prototype.onPanesLinkLine = function (compilerId, lineNumber, revealLine, sender) {
+Compiler.prototype.onPanesLinkLine = function (compilerId, lineNumber, colBegin, colEnd, revealLine, sender) {
     if (Number(compilerId) === this.id) {
         var lineNums = [];
         _.each(this.assembly, function (asmLine, i) {
@@ -1750,7 +1750,7 @@ Compiler.prototype.onMouseMove = function (e) {
             // We check that we actually have something to show at this point!
             var sourceLine = hoverAsm.source && !hoverAsm.source.file ? hoverAsm.source.line : -1;
             this.eventHub.emit('editorLinkLine', this.sourceEditorId, sourceLine, -1, -1, false);
-            this.eventHub.emit('panesLinkLine', this.id, sourceLine, false, this.getPaneName());
+            this.eventHub.emit('panesLinkLine', this.id, sourceLine, -1, -1, false, this.getPaneName());
         }
     }
     var currentWord = this.outputEditor.getModel().getWordAtPosition(e.target.position);
