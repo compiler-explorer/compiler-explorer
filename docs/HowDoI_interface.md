@@ -6,12 +6,11 @@ This is a how-to guide for the user-interface presented by [the compiler explore
 * [Adding a tool](./AddingATool.md)
 * and many more at [compiler-explorer/docs](https://github.com/compiler-explorer/compiler-explorer/tree/main/docs)
 
-## Table of Contents
-
-How do I
-* [change the assembly syntax from Intel](change-the-assembly-syntax-from-intel)
-* [compare the time taken by compilation and networking](compare-the-time-taken-by-compilation-and-networking)
-* [view intermediate information provided by the compilers](view-intermediate-information-provided-by-the-compilers)
+Fast links:
+- [How do I ?](#how-do-i-)
+  - [Change the assembly syntax from Intel](#change-the-assembly-syntax-from-intel)
+  - [Compare the time taken by compilation and networking](#compare-the-time-taken-by-compilation-and-networking)
+  - [View intermediate information provided by the compilers](#view-intermediate-information-provided-by-the-compilers)
 
 ## Change the assembly syntax from Intel
 ![Output, intel and at&t](./images/asm_info.png)
