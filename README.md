@@ -43,18 +43,6 @@ There are a number of videos that showcase some of the features of Compiler Expl
  into the more obscure features.
 * [playlist: Compiler Explorer](https://www.youtube.com/playlist?list=PL2HVqYf7If8dNYVN6ayjB06FPyhHCcnhG): A collection of videos discussing Compiler Explorer; using it, installing it, what it's for, etc.
 
-## Contact us
-
-We run a [Compiler Explorer Discord](https://discord.gg/B5WacA7), which is a place to discuss using or developing
- Compiler Explorer. We also have a presence on the [cpplang](https://cppalliance.org/slack/) slack channel
- `#compiler_explorer` and we have [a public mailing list](https://groups.google.com/forum/#!forum/compiler-explorer-discussion).
-
-There's a development channel on the discord, and also a
- [development mailing list](https://groups.google.com/forum/#!forum/compiler-explorer-development).
- 
-Feel free to raise an issue on [github](https://github.com/compiler-explorer/compiler-explorer/issues) or
- [email Matt directly](mailto:matt@godbolt.org) for more help.
-
 ## Developing
 
 **Compiler Explorer** is written in [Node.js](https://nodejs.org/).
@@ -106,6 +94,18 @@ There's a simple restful API that can be used to do compiles to asm and to
  list compilers. 
 
 You can find the API documentation [here](docs/API.md).
+
+## Contact us
+
+We run a [Compiler Explorer Discord](https://discord.gg/B5WacA7), which is a place to discuss using or developing
+Compiler Explorer. We also have a presence on the [cpplang](https://cppalliance.org/slack/) slack channel
+`#compiler_explorer` and we have [a public mailing list](https://groups.google.com/forum/#!forum/compiler-explorer-discussion).
+
+There's a development channel on the discord, and also a
+[development mailing list](https://groups.google.com/forum/#!forum/compiler-explorer-development).
+
+Feel free to raise an issue on [github](https://github.com/compiler-explorer/compiler-explorer/issues) or
+[email Matt directly](mailto:matt@godbolt.org) for more help.
 
 ## Credits
 
