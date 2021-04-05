@@ -3,8 +3,7 @@
 
 ![Compiler Explorer](docs/logo.svg)
 
-Compiler Explorer
-------------
+# Compiler Explorer
 
 **Compiler Explorer** is an interactive compiler. The left-hand pane shows
  editable C, C++, Rust, Go, D, Haskell, Swift, Pascal (and some more!) code.
@@ -27,13 +26,15 @@ You can support [this project on Patreon](https://patreon.com/mattgodbolt).
 
 Since then, it has become a public website serving around [2,000,000 compilations per week](https://www.stathat.com/cards/Tk5csAWI0O7x).
 
-##### FAQ
+## Using Compiler Explorer
+
+### FAQ
 
 There is now a FAQ section [in the repository wiki](https://github.com/compiler-explorer/compiler-explorer/wiki/FAQ).
  If your question is not present, please contact us as described below so we can help you.
  If you find that the FAQ is lacking some important point, please free to contribute to it and/or ask us to clarify it.
 
-##### Videos
+### Videos
 
 There are a number of videos that showcase some of the features of Compiler Explorer:
 
@@ -42,19 +43,7 @@ There are a number of videos that showcase some of the features of Compiler Expl
  into the more obscure features.
 * [playlist: Compiler Explorer](https://www.youtube.com/playlist?list=PL2HVqYf7If8dNYVN6ayjB06FPyhHCcnhG): A collection of videos discussing Compiler Explorer; using it, installing it, what it's for, etc.
 
-##### Contact us
-
-We run a [Compiler Explorer Discord](https://discord.gg/B5WacA7), which is a place to discuss using or developing
- Compiler Explorer. We also have a presence on the [cpplang](https://cppalliance.org/slack/) slack channel
- `#compiler_explorer` and we have [a public mailing list](https://groups.google.com/forum/#!forum/compiler-explorer-discussion).
-
-There's a development channel on the discord, and also a
- [development mailing list](https://groups.google.com/forum/#!forum/compiler-explorer-development).
- 
-Feel free to raise an issue on [github](https://github.com/compiler-explorer/compiler-explorer/issues) or
- [email Matt directly](mailto:matt@godbolt.org) for more help.
-
-### Developing
+## Developing
 
 **Compiler Explorer** is written in [Node.js](https://nodejs.org/).
 
@@ -106,7 +95,19 @@ There's a simple restful API that can be used to do compiles to asm and to
 
 You can find the API documentation [here](docs/API.md).
 
-### Credits
+## Contact us
+
+We run a [Compiler Explorer Discord](https://discord.gg/B5WacA7), which is a place to discuss using or developing
+Compiler Explorer. We also have a presence on the [cpplang](https://cppalliance.org/slack/) slack channel
+`#compiler_explorer` and we have [a public mailing list](https://groups.google.com/forum/#!forum/compiler-explorer-discussion).
+
+There's a development channel on the discord, and also a
+[development mailing list](https://groups.google.com/forum/#!forum/compiler-explorer-development).
+
+Feel free to raise an issue on [github](https://github.com/compiler-explorer/compiler-explorer/issues) or
+[email Matt directly](mailto:matt@godbolt.org) for more help.
+
+## Credits
 
 **Compiler Explorer** is maintained by the awesome people listed in the
  [AUTHORS](AUTHORS.md) file.
