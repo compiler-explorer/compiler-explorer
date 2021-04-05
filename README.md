@@ -33,10 +33,14 @@ There is now a FAQ section [in the repository wiki](https://github.com/compiler-
  If your question is not present, please contact us as described below so we can help you.
  If you find that the FAQ is lacking some important point, please free to contribute to it and/or ask us to clarify it.
 
+##### Videos
+
 There are a number of videos that showcase some of the features of Compiler Explorer:
- A [presentation for CppCon 2019 about the project](https://www.youtube.com/watch?v=kIoZDUd5DKw)
- and an [older 2 part series of videos](https://www.youtube.com/watch?v=4_HL3PH4wDg) which go into a bit more detail
+
+* [presentation for CppCon 2019 about the project](https://www.youtube.com/watch?v=kIoZDUd5DKw)
+* [older 2 part series of videos](https://www.youtube.com/watch?v=4_HL3PH4wDg) which go into a bit more detail
  into the more obscure features.
+* [playlist: Compiler Explorer](https://www.youtube.com/playlist?list=PL2HVqYf7If8dNYVN6ayjB06FPyhHCcnhG): A collection of videos discussing Compiler Explorer; using it, installing it, what it's for, etc.
 
 ##### Contact us
 
