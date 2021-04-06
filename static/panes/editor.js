@@ -1058,7 +1058,7 @@ Editor.prototype.getTokenSpan = function (lineNum, column) {
             for (var i = 0; i < tokens[0].length; ++i) {
                 // Treat all the contiguous string tokens as one,
                 // For example "hello \" world" is treated as one token
-                // instead of 3 "string.cpp", "strign.escape.cpp", "string.cpp"
+                // instead of 3 "string.cpp", "string.escape.cpp", "string.cpp"
                 if (tokens[0][i].type.startsWith('string')) {
                     if (lastWasString) {
                         continue;
