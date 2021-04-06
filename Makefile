@@ -103,6 +103,7 @@ gh-dist: dist  ## Creates a distribution as if we were running on github
 	# External GitHub PRs etc won't have the variable set.
 	@[ -z "$(SENTRY_AUTH_TOKEN)" ] || $(NPM) run sentry -- releases new -p compiler-explorer $(RELEASE_NAME)
 	@[ -z "$(SENTRY_AUTH_TOKEN)" ] || $(NPM) run sentry -- releases set-commits --auto $(RELEASE_NAME)
+	@[ -z "$(SENTRY_AUTH_TOKEN)" ] || $(NPM) run sentry -- releases files $(RELEASE_NAME) upload-sourcemaps out/dist/static
 
 install-git-hooks:  ## Install git hooks that will ensure code is linted and tests are run before allowing a check in
 	mkdir -p "$(shell git rev-parse --git-dir)/hooks"
