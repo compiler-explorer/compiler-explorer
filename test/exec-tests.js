@@ -22,8 +22,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import './utils';
 import * as exec from '../lib/exec';
+
+import { chai } from './utils';
+
+const expect = chai.expect;
 
 function testExecOutput(x) {
     // Work around chai not being able to deepEquals with a function
@@ -148,3 +151,87 @@ if (process.platform !== 'win32') { // POSIX
         });
     });
 }
+
+describe('nsjail unit tests', () => {
+    it('should handle simple cases', () => {
+        const {args, options, filenameTransform} = exec.getNsJailOptions(
+            'sandbox',
+            '/path/to/compiler',
+            ['1', '2', '3'],
+        );
+        args.should.deep.equals([
+            '--config',
+            'etc/nsjail/sandbox.cfg',
+            '--env=HOME=/app',
+            '--',
+            '/path/to/compiler',
+            '1',
+            '2',
+            '3']);
+        options.should.deep.equals({});
+        expect(filenameTransform).to.be.undefined;
+    });
+    it('should pass through options', () => {
+        const options = exec.getNsJailOptions(
+            'sandbox',
+            '/path/to/compiler',
+            [],
+            {some: 1, thing: 2},
+        ).options;
+        options.should.deep.equals({some: 1, thing: 2});
+    });
+    it('should remap paths when using customCwd', () => {
+        const {args, options, filenameTransform} = exec.getNsJailOptions(
+            'sandbox',
+            './exec',
+            ['/some/custom/cwd/file', '/not/custom/file'],
+            {customCwd: '/some/custom/cwd'},
+        );
+        args.should.deep.equals([
+            '--config',
+            'etc/nsjail/sandbox.cfg',
+            '--cwd',
+            '/app',
+            '--bindmount',
+            '/some/custom/cwd:/app',
+            '--env=HOME=/app',
+            '--',
+            './exec',
+            '/app/file',
+            '/not/custom/file']);
+        options.should.deep.equals({});
+        expect(filenameTransform).to.not.be.undefined;
+        filenameTransform('moo').should.equal('moo');
+        filenameTransform('/some/custom/cwd/file').should.equal('/app/file');
+    });
+    it('should handle timeouts', () => {
+        const args = exec.getNsJailOptions(
+            'sandbox',
+            '/path/to/compiler',
+            [],
+            {timeoutMs: 1234},
+        ).args;
+        args.should.include('--time_limit=2');
+    });
+    it('should handle linker paths', () => {
+        const {args, options} = exec.getNsJailOptions(
+            'sandbox',
+            '/path/to/compiler',
+            [],
+            {ldPath: '/a/lib/path'},
+        );
+        options.should.deep.equals({});
+        args.should.include('--env=LD_LIBRARY_PATH=/a/lib/path');
+    });
+    it('should handle envs', () => {
+        const {args, options} = exec.getNsJailOptions(
+            'sandbox',
+            '/path/to/compiler',
+            [],
+            {env: {ENV1: '1', ENV2: '2'}},
+        );
+        options.should.deep.equals({});
+        args.should.include('--env=ENV1=1');
+        args.should.include('--env=ENV2=2');
+    });
+});
