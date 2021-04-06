@@ -162,6 +162,7 @@ describe('nsjail unit tests', () => {
         args.should.deep.equals([
             '--config',
             'etc/nsjail/sandbox.cfg',
+            '--env=HOME=/app',
             '--',
             '/path/to/compiler',
             '1',
@@ -193,6 +194,7 @@ describe('nsjail unit tests', () => {
             '/app',
             '--bindmount',
             '/some/custom/cwd:/app',
+            '--env=HOME=/app',
             '--',
             './exec',
             '/app/file',
