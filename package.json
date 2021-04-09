@@ -41,6 +41,7 @@
     "golden-layout": "^1.5.9",
     "html-loader": "^0.5.5",
     "http-proxy": "^1.18.1",
+    "ioredis": "^4.26.0",
     "jquery": "^3.5.1",
     "js-cookie": "^2.2.1",
     "lodash": "^4.17.20",
