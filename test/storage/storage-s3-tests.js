@@ -151,18 +151,32 @@ describe('Stores to s3', () => {
     it('and works ok', () => {
         const storage = new StorageS3(httpRootDir, compilerProps, awsProps);
         const object = {
-            prefix: 'ABCDEF',
+            prefix: 'ABCDEFG',
             uniqueSubHash: 'ABCDEFG',
             fullHash: 'ABCDEFGHIJKLMNOP',
             config: 'yo',
         };
 
-        const ran = {s3: false, dynamo: false};
+        const ran = {s3: false, dynamo: 0};
         s3PutObjectHandlers.push((q) => {
             q.Bucket.should.equal('bucket');
             q.Key.should.equal('prefix/ABCDEFGHIJKLMNOP');
             q.Body.should.equal('yo');
             ran.s3 = true;
+            return {};
+        });
+        dynamoDbPutItemHandlers.push((q) => {
+            q.TableName.should.equals('table');
+            q.Item.should.deep.equals({
+                prefix: {S: 'ABCDEFG'},
+                unique_subhash: {S: 'ABCDEFG'},
+                full_hash: {S: 'ABCDEFGHIJKLMNOP'},
+                stats: {M: {clicks: {N: '0'}}},
+                creation_ip: {S: 'localhost'},
+                // Cheat the date
+                creation_date: {S: q.Item.creation_date.S},
+            });
+            ran.dynamo += 1;
             return {};
         });
         dynamoDbPutItemHandlers.push((q) => {
@@ -176,11 +190,11 @@ describe('Stores to s3', () => {
                 // Cheat the date
                 creation_date: {S: q.Item.creation_date.S},
             });
-            ran.dynamo = true;
+            ran.dynamo += 1;
             return {};
         });
         return storage.storeItem(object, {get: () => 'localhost'}).then(() => {
-            ran.should.deep.equal({s3: true, dynamo: true});
+            ran.should.deep.equal({s3: true, dynamo: 2});
         });
     });
 });
