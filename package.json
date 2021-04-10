@@ -133,6 +133,7 @@
     "test": "mocha --recursive",
     "check": "npm run lint && npm run test",
     "dev": "cross-env NODE_ENV=DEV node -r esm app.js",
+    "debugger": "cross-env NODE_ENV=DEV node --inspect -r esm app.js --debug",
     "debug": "cross-env NODE_ENV=DEV node -r esm app.js --debug",
     "start": "webpack && cross-env NODE_ENV=LOCAL node -r esm app.js",
     "codecov": "codecov --disable=gcov",
