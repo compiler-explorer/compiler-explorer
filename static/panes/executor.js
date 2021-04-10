@@ -262,14 +262,14 @@ Executor.prototype.addCompilerOutputLine = function (msg, container, lineNum, co
             $('<span class="linked-compiler-output-line"></span>')
                 .html(msg)
                 .click(_.bind(function (e) {
-                    this.eventHub.emit('editorLinkLine', this.sourceEditorId, lineNum, column, true);
+                    this.eventHub.emit('editorLinkLine', this.sourceEditorId, lineNum, column, column + 1, true);
                     // do not bring user to the top of index.html
                     // http://stackoverflow.com/questions/3252730
                     e.preventDefault();
                     return false;
                 }, this))
                 .on('mouseover', _.bind(function () {
-                    this.eventHub.emit('editorLinkLine', this.sourceEditorId, lineNum, column, false);
+                    this.eventHub.emit('editorLinkLine', this.sourceEditorId, lineNum, column, column + 1, false);
                 }, this))
         );
     } else {

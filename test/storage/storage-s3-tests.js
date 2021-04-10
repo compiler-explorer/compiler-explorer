@@ -70,7 +70,7 @@ describe('Find unique subhash tests', () => {
         return storage.findUniqueSubhash('ABCDEFGHIJKLMNOPQRSTUV').should.eventually.deep.equal(
             {
                 alreadyPresent: false,
-                prefix: 'ABCDEFGHI',
+                prefix: 'ABCDEF',
                 uniqueSubHash: 'ABCDEFGHI',
             },
         );
@@ -90,7 +90,7 @@ describe('Find unique subhash tests', () => {
         return storage.findUniqueSubhash('ABCDEFGHIJKLMNOPQRSTUV').should.eventually.deep.equal(
             {
                 alreadyPresent: false,
-                prefix: 'ABCDEFGHI',
+                prefix: 'ABCDEF',
                 uniqueSubHash: 'ABCDEFGHI',
             },
         );
@@ -110,7 +110,7 @@ describe('Find unique subhash tests', () => {
         return storage.findUniqueSubhash('ABCDEFGHIJKLMNOPQRSTUV').should.eventually.deep.equal(
             {
                 alreadyPresent: false,
-                prefix: 'ABCDEFGHI',
+                prefix: 'ABCDEF',
                 uniqueSubHash: 'ABCDEFGHIJ',
             },
         );
@@ -130,7 +130,7 @@ describe('Find unique subhash tests', () => {
         return storage.findUniqueSubhash('ABCDEFGHIJKLMNOPQRSTUV').should.eventually.deep.equal(
             {
                 alreadyPresent: true,
-                prefix: 'ABCDEFGHI',
+                prefix: 'ABCDEF',
                 uniqueSubHash: 'ABCDEFGHI',
             },
         );
@@ -151,7 +151,7 @@ describe('Stores to s3', () => {
     it('and works ok', () => {
         const storage = new StorageS3(httpRootDir, compilerProps, awsProps);
         const object = {
-            prefix: 'ABCDEF',
+            prefix: 'ABCDEFG',
             uniqueSubHash: 'ABCDEFG',
             fullHash: 'ABCDEFGHIJKLMNOP',
             config: 'yo',
@@ -168,7 +168,7 @@ describe('Stores to s3', () => {
         dynamoDbPutItemHandlers.push((q) => {
             q.TableName.should.equals('table');
             q.Item.should.deep.equals({
-                prefix: {S: 'ABCDEF'},
+                prefix: {S: 'ABCDEFG'},
                 unique_subhash: {S: 'ABCDEFG'},
                 full_hash: {S: 'ABCDEFGHIJKLMNOP'},
                 stats: {M: {clicks: {N: '0'}}},

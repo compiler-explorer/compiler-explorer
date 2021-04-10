@@ -120,6 +120,22 @@ describe('Filter test cases', function () {
     });
 });
 
+describe('AsmParser tests', () => {
+    const parser = new AsmParser();
+    it('should identify generic opcodes', () => {
+        parser.hasOpcode('  mov r0, #1').should.be.true;
+        parser.hasOpcode('  ROL A').should.be.true;
+    });
+    it('should not identify non-opcodes as opcodes', () => {
+        parser.hasOpcode('  ;mov r0, #1').should.be.false;
+        parser.hasOpcode('').should.be.false;
+        parser.hasOpcode('# moose').should.be.false;
+    });
+    it('should identify llvm opcodes', () => {
+        parser.hasOpcode('  %i1 = phi i32 [ %i2, %.preheader ], [ 0, %bb ]').should.be.true;
+    });
+});
+
 describe('forceApproveAll should be false', () => {
     it('should have forceApproveAll false', () => {
         optionsOverride.forceApproveAll.should.be.false;

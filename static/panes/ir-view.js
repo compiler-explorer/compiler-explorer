@@ -92,7 +92,7 @@ Ir.prototype.initEditorActions = function () {
             var source = this.irCode[desiredLine].source;
             if (source !== null && source.file === null) {
                 // a null file means it was the user's source
-                this.eventHub.emit('editorLinkLine', this._editorid, source.line, -1, true);
+                this.eventHub.emit('editorLinkLine', this._editorid, source.line, -1, -1, true);
             }
         }, this),
     });
@@ -260,8 +260,8 @@ Ir.prototype.onMouseMove = function (e) {
         if (hoverCode) {
             // We check that we actually have something to show at this point!
             var sourceLine = hoverCode.source && !hoverCode.source.file ? hoverCode.source.line : -1;
-            this.eventHub.emit('editorLinkLine', this._editorid, sourceLine, -1, false);
-            this.eventHub.emit('panesLinkLine', this._compilerid, sourceLine, false, this.getPaneName());
+            this.eventHub.emit('editorLinkLine', this._editorid, sourceLine, -1, -1, false);
+            this.eventHub.emit('panesLinkLine', this._compilerid, sourceLine, -1, -1, false, this.getPaneName());
         }
     }
 };
@@ -284,7 +284,7 @@ Ir.prototype.clearLinkedLines = function () {
     this.updateDecorations();
 };
 
-Ir.prototype.onPanesLinkLine = function (compilerId, lineNumber, revealLine, sender) {
+Ir.prototype.onPanesLinkLine = function (compilerId, lineNumber, colBegin, colEnd, revealLine, sender) {
     if (Number(compilerId) === this._compilerid) {
         var lineNums = [];
         _.each(this.irCode, function (irLine, i) {

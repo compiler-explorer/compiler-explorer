@@ -75,7 +75,20 @@ function initialise(url, motdNode, defaultLanguage, adsEnabled, onMotd, onHide) 
             handleMotd(res, motdNode, defaultLanguage, adsEnabled, onHide);
         })
         .catch(function (jqXHR, textStatus, errorThrown) {
-            Sentry.captureMessage('MOTD error for ' + url + ' - ' + textStatus + ' - ' + errorThrown, 'warning');
+            var extraInfo = '';
+            // Get a resource performance entry in hopes of finding #1057, checking that it's actually supported!
+            if (typeof performance !== 'undefined' && typeof performance.getEntriesByType !== 'undefined') {
+                var perfEntries = performance.getEntriesByType('navigation');
+                var entry = perfEntries[0];
+
+                if (typeof entry.unloadEventStart  !== 'undefined') {
+                    extraInfo = ' - unloadStart=' + entry.unloadEventStart;
+                }
+            }
+
+            var message = 'MOTD error for ' + url + ' - ' + textStatus + ' - ' + (errorThrown || 'no error') +
+                ' - readyState=' + jqXHR.readyState + ' - status=' + jqXHR.status + extraInfo;
+            Sentry.captureMessage(message, 'warning');
         });
 }
 

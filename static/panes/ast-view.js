@@ -193,10 +193,10 @@ Ast.prototype.onColours = function (id, colours, scheme) {
 
         var astColours = {};
         _.each(this.astCode, function (x, index) {
-            if (x.source && x.source.from && x.source.to &&
-                x.source.from <= x.source.to && x.source.to < x.source.from + 100) {
+            if (x.source && x.source.from.line && x.source.to.line &&
+                x.source.from.line <= x.source.to.line && x.source.to.line < x.source.from.line + 100) {
                 var i;
-                for (i = x.source.from; i <= x.source.to; ++i) {
+                for (i = x.source.from.line; i <= x.source.to.line; ++i) {
                     if (colours[i - 1] !== undefined) {
                         astColours[index] = colours[i - 1];
                         break;
@@ -262,12 +262,21 @@ Ast.prototype.onMouseMove = function (e) {
         this.clearLinkedLines();
         var hoverCode = this.astCode[e.target.position.lineNumber - 1];
         if (hoverCode) {
+            var sourceLine = -1;
+            var colBegin = -1;
+            var colEnd = -1;
             // We check that we actually have something to show at this point!
-            var sourceLine = (hoverCode.source && hoverCode.source.from && hoverCode.source.to)
-                ? hoverCode.source.from
-                : -1;
-            this.eventHub.emit('editorLinkLine', this._editorid, sourceLine, -1, false);
-            this.eventHub.emit('panesLinkLine', this._compilerid, sourceLine, false, this.getPaneName());
+            if (hoverCode.source && hoverCode.source.from) {
+                sourceLine = hoverCode.source.from.line;
+                // Highlight part of a line corresponding to the node if it fits on one line
+                if (hoverCode.source.to && hoverCode.source.from.line === hoverCode.source.to.line) {
+                    colBegin = hoverCode.source.from.col;
+                    colEnd = hoverCode.source.to.col;
+                }
+            }
+            this.eventHub.emit('editorLinkLine', this._editorid, sourceLine, colBegin, colEnd, false);
+            this.eventHub.emit('panesLinkLine', this._compilerid, sourceLine,
+                colBegin, colEnd, false, this.getPaneName());
         }
     }
 };
@@ -289,18 +298,26 @@ Ast.prototype.clearLinkedLines = function () {
     this.updateDecorations();
 };
 
-Ast.prototype.onPanesLinkLine = function (compilerId, lineNumber, revealLine, sender) {
+Ast.prototype.onPanesLinkLine = function (compilerId, lineNumber, colBegin, colEnd, revealLine, sender) {
     if (Number(compilerId) === this._compilerid) {
         var lineNums = [];
+        var singleNodeLines = [];
+        var signalFromAnotherPane = sender !== this.getPaneName();
         _.each(this.astCode, function (astLine, i) {
-            if (astLine.source && astLine.source.from <= lineNumber && lineNumber <= astLine.source.to) {
+            if (astLine.source
+                && astLine.source.from.line <= lineNumber && lineNumber <= astLine.source.to.line) {
                 var line = i + 1;
                 lineNums.push(line);
+                if (signalFromAnotherPane &&
+                    astLine.source.from.line === lineNumber && astLine.source.to.line === lineNumber &&
+                    astLine.source.from.col <= colEnd && colBegin <= astLine.source.to.col) {
+                    singleNodeLines.push(line);
+                }
             }
         });
         if (revealLine && lineNums[0]) this.astEditor.revealLineInCenter(lineNums[0]);
-        var lineClass = sender !== this.getPaneName() ? 'linked-code-decoration-line' : '';
-        this.decorations.linkedCode = _.map(lineNums, function (line) {
+        var lineClass = signalFromAnotherPane ? 'linked-code-decoration-line' : '';
+        var contextLines = _.map(lineNums, function (line) {
             return {
                 range: new monaco.Range(line, 1, line, 1),
                 options: {
@@ -310,6 +327,16 @@ Ast.prototype.onPanesLinkLine = function (compilerId, lineNumber, revealLine, se
                 },
             };
         });
+        var directlyLinkedLines = _.map(singleNodeLines, function (line) {
+            return {
+                range: new monaco.Range(line, 1, line, 1),
+                options: {
+                    isWholeLine: true,
+                    inlineClassName: 'linked-code-decoration-column',
+                },
+            };
+        });
+        this.decorations.linkedCode = contextLines.concat(directlyLinkedLines);
         if (this.linkedFadeTimeoutId !== -1) {
             clearTimeout(this.linkedFadeTimeoutId);
         }
