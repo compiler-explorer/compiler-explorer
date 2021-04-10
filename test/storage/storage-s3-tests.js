@@ -70,7 +70,7 @@ describe('Find unique subhash tests', () => {
         return storage.findUniqueSubhash('ABCDEFGHIJKLMNOPQRSTUV').should.eventually.deep.equal(
             {
                 alreadyPresent: false,
-                prefix: 'ABCDEFGHI',
+                prefix: 'ABCDEF',
                 uniqueSubHash: 'ABCDEFGHI',
             },
         );
@@ -90,7 +90,7 @@ describe('Find unique subhash tests', () => {
         return storage.findUniqueSubhash('ABCDEFGHIJKLMNOPQRSTUV').should.eventually.deep.equal(
             {
                 alreadyPresent: false,
-                prefix: 'ABCDEFGHI',
+                prefix: 'ABCDEF',
                 uniqueSubHash: 'ABCDEFGHI',
             },
         );
@@ -110,7 +110,7 @@ describe('Find unique subhash tests', () => {
         return storage.findUniqueSubhash('ABCDEFGHIJKLMNOPQRSTUV').should.eventually.deep.equal(
             {
                 alreadyPresent: false,
-                prefix: 'ABCDEFGHI',
+                prefix: 'ABCDEF',
                 uniqueSubHash: 'ABCDEFGHIJ',
             },
         );
@@ -130,7 +130,7 @@ describe('Find unique subhash tests', () => {
         return storage.findUniqueSubhash('ABCDEFGHIJKLMNOPQRSTUV').should.eventually.deep.equal(
             {
                 alreadyPresent: true,
-                prefix: 'ABCDEFGHI',
+                prefix: 'ABCDEF',
                 uniqueSubHash: 'ABCDEFGHI',
             },
         );
@@ -157,7 +157,7 @@ describe('Stores to s3', () => {
             config: 'yo',
         };
 
-        const ran = {s3: false, dynamo: 0};
+        const ran = {s3: false, dynamo: false};
         s3PutObjectHandlers.push((q) => {
             q.Bucket.should.equal('bucket');
             q.Key.should.equal('prefix/ABCDEFGHIJKLMNOP');
@@ -176,25 +176,11 @@ describe('Stores to s3', () => {
                 // Cheat the date
                 creation_date: {S: q.Item.creation_date.S},
             });
-            ran.dynamo += 1;
-            return {};
-        });
-        dynamoDbPutItemHandlers.push((q) => {
-            q.TableName.should.equals('table');
-            q.Item.should.deep.equals({
-                prefix: {S: 'ABCDEF'},
-                unique_subhash: {S: 'ABCDEFG'},
-                full_hash: {S: 'ABCDEFGHIJKLMNOP'},
-                stats: {M: {clicks: {N: '0'}}},
-                creation_ip: {S: 'localhost'},
-                // Cheat the date
-                creation_date: {S: q.Item.creation_date.S},
-            });
-            ran.dynamo += 1;
+            ran.dynamo = true;
             return {};
         });
         return storage.storeItem(object, {get: () => 'localhost'}).then(() => {
-            ran.should.deep.equal({s3: true, dynamo: 2});
+            ran.should.deep.equal({s3: true, dynamo: true});
         });
     });
 });
