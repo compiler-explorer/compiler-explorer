@@ -89,42 +89,66 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 2
+      },
       "text": "                                # LOE rbx rbp rsp r12 r13 r14 r15 rip"
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 2
+      },
       "text": "                                # Execution count [0.00e+00]"
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 2
+      },
       "text": "# Begin ASM"
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 3
+      },
       "text": "# Begin ASM"
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 3
+      },
       "text": "# End ASM                                                       #3.0"
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 3
+      },
       "text": "# End ASM"
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 3
+      },
       "text": "                                # LOE rbx rbp rsp r12 r13 r14 r15 rip"
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 3
+      },
       "text": "                                # Execution count [0.00e+00]"
     },
     {
@@ -161,7 +185,10 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 4
+      },
       "text": "                                # LOE"
     },
     {

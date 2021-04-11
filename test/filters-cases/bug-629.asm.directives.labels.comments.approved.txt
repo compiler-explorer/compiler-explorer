@@ -107,7 +107,15 @@
       "text": "        mov     rbp, rsp"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": "d",
+          "range": {
+            "endCol": 33,
+            "startCol": 32
+          }
+        }
+      ],
       "source": {
         "file": null,
         "line": 12

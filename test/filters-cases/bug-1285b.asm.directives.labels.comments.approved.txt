@@ -31,10 +31,7 @@
     },
     {
       "labels": [],
-      "source": {
-        "file": null,
-        "line": 0
-      },
+      "source": null,
       "text": "        mov     al, byte ptr [rdi]"
     },
     {
@@ -55,42 +52,27 @@
     },
     {
       "labels": [],
-      "source": {
-        "file": null,
-        "line": 0
-      },
+      "source": null,
       "text": "        lea     rcx, [rsp + 16]"
     },
     {
       "labels": [],
-      "source": {
-        "file": null,
-        "line": 0
-      },
+      "source": null,
       "text": "        lea     rdi, [rbx + 8]"
     },
     {
       "labels": [],
-      "source": {
-        "file": null,
-        "line": 0
-      },
+      "source": null,
       "text": "        mov     rsi, qword ptr [rcx + 8]"
     },
     {
       "labels": [],
-      "source": {
-        "file": null,
-        "line": 0
-      },
+      "source": null,
       "text": "        mov     rdx, qword ptr [rcx + 16]"
     },
     {
       "labels": [],
-      "source": {
-        "file": null,
-        "line": 0
-      },
+      "source": null,
       "text": "        test    al, al"
     },
     {
@@ -140,10 +122,7 @@
     },
     {
       "labels": [],
-      "source": {
-        "file": null,
-        "line": 0
-      },
+      "source": null,
       "text": "        test    al, al"
     },
     {

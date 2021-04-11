@@ -23,7 +23,7 @@
     {
       "labels": [],
       "source": null,
-      "text": "foo():"
+      "text": "foo:"
     },
     {
       "labels": [],
@@ -91,17 +91,26 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 2
+      },
       "text": "/* prologue: function */"
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 2
+      },
       "text": "/* frame size = 4 */"
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 2
+      },
       "text": "/* stack size = 6 */"
     },
     {
@@ -409,7 +418,10 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 7
+      },
       "text": "/* epilogue start */"
     },
     {
@@ -508,6 +520,7 @@
     "__SP_H__": 1,
     "__SP_L__": 2,
     "__tmp_reg__": 3,
-    "__zero_reg__": 4
+    "__zero_reg__": 4,
+    "foo": 5
   }
 }

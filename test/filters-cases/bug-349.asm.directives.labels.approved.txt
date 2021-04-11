@@ -7,47 +7,74 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 1
+      },
       "text": "; start of function"
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 1
+      },
       "text": "; framesize_regs:     2"
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 1
+      },
       "text": "; framesize_locals:   0"
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 1
+      },
       "text": "; framesize_outgoing: 0"
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 1
+      },
       "text": "; framesize:          2"
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 1
+      },
       "text": "; elim ap -> fp       4"
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 1
+      },
       "text": "; elim fp -> sp       0"
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 1
+      },
       "text": "; saved regs: R4"
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 1
+      },
       "text": "        ; start of prologue"
     },
     {
@@ -68,7 +95,10 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 1
+      },
       "text": "        ; end of prologue"
     },
     {
@@ -81,7 +111,10 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 3
+      },
       "text": "        ; start of epilogue"
     },
     {

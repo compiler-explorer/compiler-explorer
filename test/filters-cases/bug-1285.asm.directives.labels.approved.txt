@@ -7,52 +7,82 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 7
+      },
       "text": "# %bb.0:"
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 7
+      },
       "text": "        #DEBUG_VALUE: apply_known_mask:bits <- $rdi"
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 7
+      },
       "text": "        #DEBUG_VALUE: apply_known_mask:bits <- $rdi"
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 7
+      },
       "text": "        #DEBUG_VALUE: operator&=:this <- $rdi"
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 7
+      },
       "text": "        #DEBUG_VALUE: operator&=:this <- $rdi"
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 7
+      },
       "text": "        #DEBUG_VALUE: _M_do_and:this <- $rdi"
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 7
+      },
       "text": "        #DEBUG_VALUE: _M_do_and:this <- $rdi"
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 7
+      },
       "text": "        #DEBUG_VALUE: operator&=:__rhs <- undef"
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 7
+      },
       "text": "        #DEBUG_VALUE: _M_do_and:__x <- undef"
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 7
+      },
       "text": "        #DEBUG_VALUE: apply_known_mask:mask <- [DW_OP_deref] undef"
     },
     {

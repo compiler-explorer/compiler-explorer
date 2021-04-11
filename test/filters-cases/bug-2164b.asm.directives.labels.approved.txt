@@ -2,7 +2,10 @@
   "asm": [
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 3
+      },
       "text": "trap_arm:"
     },
     {
@@ -15,7 +18,10 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 8
+      },
       "text": "trap_thumb:"
     },
     {

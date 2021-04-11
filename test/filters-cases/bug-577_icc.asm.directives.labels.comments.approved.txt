@@ -3,6 +3,11 @@
     {
       "labels": [],
       "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
       "text": "_Z6squarei:"
     },
     {
@@ -71,6 +76,6 @@
     }
   ],
   "labelDefinitions": {
-    "_Z6squarei": 1
+    "_Z6squarei": 2
   }
 }

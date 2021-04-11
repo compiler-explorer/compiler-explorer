@@ -31,22 +31,34 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 3
+      },
       "text": "#APP"
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 3
+      },
       "text": "# 3 \"example.cpp\" 1"
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 3
+      },
       "text": "# 0 \"\" 2"
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 4
+      },
       "text": "#NO_APP"
     },
     {

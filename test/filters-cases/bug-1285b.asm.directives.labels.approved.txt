@@ -7,7 +7,10 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 50
+      },
       "text": "# %bb.0:"
     },
     {
@@ -20,27 +23,42 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 50
+      },
       "text": "        #DEBUG_VALUE: SetValue:this <- $rdi"
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 50
+      },
       "text": "        #DEBUG_VALUE: emplace<absl::string_view &, void>:this <- $rdi"
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 50
+      },
       "text": "        #DEBUG_VALUE: construct<absl::string_view &>:this <- $rdi"
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 50
+      },
       "text": "        #DEBUG_VALUE: operator=:this <- $rdi"
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 50
+      },
       "text": "        #DEBUG_VALUE: destruct:this <- $rdi"
     },
     {
@@ -53,32 +71,50 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 50
+      },
       "text": "        #DEBUG_VALUE: destruct:this <- $rbx"
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 50
+      },
       "text": "        #DEBUG_VALUE: operator=:this <- $rbx"
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 50
+      },
       "text": "        #DEBUG_VALUE: construct<absl::string_view &>:this <- $rbx"
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 50
+      },
       "text": "        #DEBUG_VALUE: emplace<absl::string_view &, void>:this <- $rbx"
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 50
+      },
       "text": "        #DEBUG_VALUE: operator bool:this <- [DW_OP_plus_uconst 16] [$rsp+0]"
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 50
+      },
       "text": "        #DEBUG_VALUE: SetValue:this <- $rbx"
     },
     {
@@ -91,10 +127,7 @@
     },
     {
       "labels": [],
-      "source": {
-        "file": null,
-        "line": 0
-      },
+      "source": null,
       "text": "        mov     al, byte ptr [rdi]"
     },
     {
@@ -115,52 +148,43 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 54
+      },
       "text": "# %bb.1:"
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 54
+      },
       "text": "        #DEBUG_VALUE: SetValue:this <- $rbx"
     },
     {
       "labels": [],
-      "source": {
-        "file": null,
-        "line": 0
-      },
+      "source": null,
       "text": "        lea     rcx, [rsp + 16]"
     },
     {
       "labels": [],
-      "source": {
-        "file": null,
-        "line": 0
-      },
+      "source": null,
       "text": "        lea     rdi, [rbx + 8]"
     },
     {
       "labels": [],
-      "source": {
-        "file": null,
-        "line": 0
-      },
+      "source": null,
       "text": "        mov     rsi, qword ptr [rcx + 8]"
     },
     {
       "labels": [],
-      "source": {
-        "file": null,
-        "line": 0
-      },
+      "source": null,
       "text": "        mov     rdx, qword ptr [rcx + 16]"
     },
     {
       "labels": [],
-      "source": {
-        "file": null,
-        "line": 0
-      },
+      "source": null,
       "text": "        test    al, al"
     },
     {
@@ -181,12 +205,18 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 55
+      },
       "text": "# %bb.2:"
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 55
+      },
       "text": "        #DEBUG_VALUE: SetValue:this <- $rbx"
     },
     {
@@ -220,25 +250,31 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 64
+      },
       "text": "        #DEBUG_VALUE: SetValue:this <- $rbx"
-    },
-    {
-      "labels": [],
-      "source": null,
-      "text": "        #DEBUG_VALUE: operator=:this <- $rbx"
-    },
-    {
-      "labels": [],
-      "source": null,
-      "text": "        #DEBUG_VALUE: destruct:this <- $rbx"
     },
     {
       "labels": [],
       "source": {
         "file": null,
-        "line": 0
+        "line": 64
       },
+      "text": "        #DEBUG_VALUE: operator=:this <- $rbx"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 64
+      },
+      "text": "        #DEBUG_VALUE: destruct:this <- $rbx"
+    },
+    {
+      "labels": [],
+      "source": null,
       "text": "        test    al, al"
     },
     {
@@ -259,22 +295,34 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": "/opt/compiler-explorer/libs/abseil/absl/types/internal/optional.h",
+        "line": 92
+      },
       "text": "# %bb.5:"
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": "/opt/compiler-explorer/libs/abseil/absl/types/internal/optional.h",
+        "line": 92
+      },
       "text": "        #DEBUG_VALUE: SetValue:this <- $rbx"
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": "/opt/compiler-explorer/libs/abseil/absl/types/internal/optional.h",
+        "line": 92
+      },
       "text": "        #DEBUG_VALUE: operator=:this <- $rbx"
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": "/opt/compiler-explorer/libs/abseil/absl/types/internal/optional.h",
+        "line": 92
+      },
       "text": "        #DEBUG_VALUE: destruct:this <- $rbx"
     },
     {
@@ -308,7 +356,10 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": "/opt/compiler-explorer/libs/abseil/absl/types/internal/optional.h",
+        "line": 94
+      },
       "text": "        #DEBUG_VALUE: SetValue:this <- $rbx"
     },
     {
@@ -334,7 +385,10 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 64
+      },
       "text": "        #DEBUG_VALUE: SetValue:this <- $rbx"
     },
     {

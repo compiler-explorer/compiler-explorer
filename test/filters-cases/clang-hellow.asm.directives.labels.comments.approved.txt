@@ -2,7 +2,10 @@
   "asm": [
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 2
+      },
       "text": "main:                                   # @main"
     },
     {
@@ -22,7 +25,15 @@
       "text": "        movq    %rsp, %rbp"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": ".L.str",
+          "range": {
+            "endCol": 24,
+            "startCol": 18
+          }
+        }
+      ],
       "source": {
         "file": null,
         "line": 3
@@ -46,7 +57,15 @@
       "text": "        callq   printf"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": "str",
+          "range": {
+            "endCol": 21,
+            "startCol": 18
+          }
+        }
+      ],
       "source": {
         "file": null,
         "line": 4
