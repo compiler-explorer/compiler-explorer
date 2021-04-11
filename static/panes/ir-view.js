@@ -299,11 +299,13 @@ Ir.prototype.onPanesLinkLine = function (compilerId, lineNumber, colBegin, colEn
     if (Number(compilerId) === this._compilerid) {
         var lineNums = [];
         var directlyLinkedLineNums = [];
+        var signalFromAnotherPane = sender !== this.getPaneName();
         _.each(this.irCode, function (irLine, i) {
             if (irLine.source && irLine.source.file === null && irLine.source.line === lineNumber) {
                 var line = i + 1;
                 lineNums.push(line);
-                if (irLine.source.column && colBegin <= irLine.source.column && irLine.source.column <= colEnd) {
+                var currentCol = irLine.source.column;
+                if (signalFromAnotherPane && currentCol && colBegin <= currentCol && currentCol <= colEnd) {
                     directlyLinkedLineNums.push(line);
                 }
             }
