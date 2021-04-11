@@ -64,6 +64,8 @@ Running with `make EXTRA_ARGS='--language LANG'` will allow you to load
 For development, we suggest using `make dev` to enable some useful features,
  such as automatic reloading on file changes and shorter startup times.
 
+You can also use `npm run dev` to run if `make dev` doesn't work on your machine.
+
 Some languages need extra tools to demangle them, e.g. `rust`, `d`, or `haskell`.
  Such tools are kept separately in the
  [tools repo](https://github.com/compiler-explorer/compiler-explorer-tools).
