@@ -60,8 +60,6 @@ function Ir(hub, container, state) {
 
     this.colours = [];
     this.irCode = [];
-    this.lastColours = [];
-    this.lastColourScheme = {};
 
     this.initButtons(state);
     this.initCallbacks();
@@ -121,9 +119,11 @@ Ir.prototype.initCallbacks = function () {
 
     this.container.on('destroy', this.close, this);
 
-    this.eventHub.on('compileResult', this.onCompileResponse, this);
+    var onColoursOnCompile = this.eventHub.mediateDependentCalls(this.onColours, this.onCompileResponse);
+
+    this.eventHub.on('compileResult', onColoursOnCompile.dependencyProxy, this);
     this.eventHub.on('compiler', this.onCompiler, this);
-    this.eventHub.on('colours', this.onColours, this);
+    this.eventHub.on('colours', onColoursOnCompile.dependentProxy, this);
     this.eventHub.on('panesLinkLine', this.onPanesLinkLine, this);
     this.eventHub.on('compilerClose', this.onCompilerClose, this);
     this.eventHub.on('settingsChange', this.onSettingsChange, this);
@@ -150,10 +150,6 @@ Ir.prototype.onCompileResponse = function (id, compiler, result) {
     } else if (compiler.supportsIrView) {
         this.showIrResults([{text: '<No output>'}]);
     }
-
-    // Why call this explicitly instead of just listening to the "colours" event?
-    // Because the recolouring happens before this editors value is set using "showIrResults".
-    this.onColours(this._compilerid, this.lastColours, this.lastColourScheme);
 };
 
 Ir.prototype.getPaneName = function () {
@@ -191,9 +187,6 @@ Ir.prototype.onCompiler = function (id, compiler, options, editorid) {
 };
 
 Ir.prototype.onColours = function (id, colours, scheme) {
-    this.lastColours = colours;
-    this.lastColourScheme = scheme;
-
     if (id === this._compilerid) {
         var irColours = {};
         _.each(this.irCode, function (x, index) {

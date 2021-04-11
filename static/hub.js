@@ -260,6 +260,28 @@ WrappedEventHub.prototype.unsubscribe = function () {
     this.subscriptions = [];
 };
 
+WrappedEventHub.prototype.mediateDependentCalls = function (dependent, dependency) {
+    var dependencyExecuted = false;
+    var lastDependentArgs = null;
+    var dependencyProxy = function () {
+        dependency.apply(this, arguments);
+        dependencyExecuted = true;
+        if (lastDependentArgs) {
+            dependent.apply(this, lastDependentArgs);
+            lastDependentArgs = null;
+        }
+    };
+    var dependentProxy = function () {
+        if (dependencyExecuted) {
+            dependent.apply(this, arguments);
+        } else {
+            lastDependentArgs = arguments;
+        }
+    };
+    return {dependencyProxy: dependencyProxy,
+        dependentProxy: dependentProxy};
+};
+
 Hub.prototype.createEventHub = function () {
     return new WrappedEventHub(this, this.layout.eventHub);
 };
