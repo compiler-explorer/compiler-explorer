@@ -28,6 +28,7 @@
     {
       "labels": [],
       "source": {
+        "column": 0,
         "file": null,
         "line": 2
       },
@@ -44,6 +45,7 @@
         }
       ],
       "source": {
+        "column": 0,
         "file": "/usr/include/x86_64-linux-gnu/bits/stdio2.h",
         "line": 105
       },
@@ -52,6 +54,7 @@
     {
       "labels": [],
       "source": {
+        "column": 0,
         "file": "/usr/include/x86_64-linux-gnu/bits/stdio2.h",
         "line": 105
       },
@@ -60,6 +63,7 @@
     {
       "labels": [],
       "source": {
+        "column": 0,
         "file": "/usr/include/x86_64-linux-gnu/bits/stdio2.h",
         "line": 105
       },
@@ -68,6 +72,7 @@
     {
       "labels": [],
       "source": {
+        "column": 0,
         "file": "/usr/include/x86_64-linux-gnu/bits/stdio2.h",
         "line": 105
       },
@@ -84,6 +89,7 @@
         }
       ],
       "source": {
+        "column": 0,
         "file": "/usr/include/x86_64-linux-gnu/bits/stdio2.h",
         "line": 105
       },
@@ -92,6 +98,7 @@
     {
       "labels": [],
       "source": {
+        "column": 0,
         "file": "/usr/include/x86_64-linux-gnu/bits/stdio2.h",
         "line": 105
       },
@@ -100,6 +107,7 @@
     {
       "labels": [],
       "source": {
+        "column": 0,
         "file": "/usr/include/x86_64-linux-gnu/bits/stdio2.h",
         "line": 105
       },
@@ -108,6 +116,7 @@
     {
       "labels": [],
       "source": {
+        "column": 0,
         "file": "/usr/include/x86_64-linux-gnu/bits/stdio2.h",
         "line": 105
       },
@@ -116,6 +125,7 @@
     {
       "labels": [],
       "source": {
+        "column": 0,
         "file": null,
         "line": 5
       },
@@ -124,6 +134,7 @@
     {
       "labels": [],
       "source": {
+        "column": 0,
         "file": null,
         "line": 5
       },
@@ -132,6 +143,7 @@
     {
       "labels": [],
       "source": {
+        "column": 0,
         "file": null,
         "line": 5
       },

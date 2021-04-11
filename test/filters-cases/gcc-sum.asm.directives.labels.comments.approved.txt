@@ -8,6 +8,7 @@
     {
       "labels": [],
       "source": {
+        "column": 0,
         "file": null,
         "line": 1
       },
@@ -16,6 +17,7 @@
     {
       "labels": [],
       "source": {
+        "column": 0,
         "file": null,
         "line": 1
       },
@@ -24,6 +26,7 @@
     {
       "labels": [],
       "source": {
+        "column": 0,
         "file": null,
         "line": 1
       },
@@ -32,6 +35,7 @@
     {
       "labels": [],
       "source": {
+        "column": 0,
         "file": null,
         "line": 1
       },
@@ -40,6 +44,7 @@
     {
       "labels": [],
       "source": {
+        "column": 0,
         "file": null,
         "line": 2
       },
@@ -48,6 +53,7 @@
     {
       "labels": [],
       "source": {
+        "column": 0,
         "file": null,
         "line": 3
       },
@@ -61,6 +67,7 @@
     {
       "labels": [],
       "source": {
+        "column": 0,
         "file": null,
         "line": 3
       },
@@ -69,6 +76,7 @@
     {
       "labels": [],
       "source": {
+        "column": 0,
         "file": null,
         "line": 3
       },
@@ -85,6 +93,7 @@
         }
       ],
       "source": {
+        "column": 0,
         "file": null,
         "line": 3
       },
@@ -93,6 +102,7 @@
     {
       "labels": [],
       "source": {
+        "column": 0,
         "file": null,
         "line": 4
       },
@@ -101,6 +111,7 @@
     {
       "labels": [],
       "source": {
+        "column": 0,
         "file": null,
         "line": 4
       },
@@ -109,6 +120,7 @@
     {
       "labels": [],
       "source": {
+        "column": 0,
         "file": null,
         "line": 4
       },
@@ -117,6 +129,7 @@
     {
       "labels": [],
       "source": {
+        "column": 0,
         "file": null,
         "line": 4
       },
@@ -125,6 +138,7 @@
     {
       "labels": [],
       "source": {
+        "column": 0,
         "file": null,
         "line": 4
       },
@@ -133,6 +147,7 @@
     {
       "labels": [],
       "source": {
+        "column": 0,
         "file": null,
         "line": 4
       },
@@ -141,6 +156,7 @@
     {
       "labels": [],
       "source": {
+        "column": 0,
         "file": null,
         "line": 4
       },
@@ -149,6 +165,7 @@
     {
       "labels": [],
       "source": {
+        "column": 0,
         "file": null,
         "line": 3
       },
@@ -165,6 +182,7 @@
         }
       ],
       "source": {
+        "column": 0,
         "file": null,
         "line": 3
       },
@@ -178,6 +196,7 @@
     {
       "labels": [],
       "source": {
+        "column": 0,
         "file": null,
         "line": 6
       },
@@ -186,6 +205,7 @@
     {
       "labels": [],
       "source": {
+        "column": 0,
         "file": null,
         "line": 7
       },
@@ -194,6 +214,7 @@
     {
       "labels": [],
       "source": {
+        "column": 0,
         "file": null,
         "line": 7
       },

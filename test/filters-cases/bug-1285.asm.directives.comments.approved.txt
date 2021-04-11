@@ -13,6 +13,7 @@
     {
       "labels": [],
       "source": {
+        "column": 14,
         "file": "/opt/compiler-explorer/gcc-8.3.0/lib/gcc/x86_64-linux-gnu/8.3.0/../../../../include/c++/8.3.0/bitset",
         "line": 433
       },
@@ -26,6 +27,7 @@
     {
       "labels": [],
       "source": {
+        "column": 1,
         "file": null,
         "line": 15
       },

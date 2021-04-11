@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import { AsmParser } from '../lib/asm-parser';
 import { VcAsmParser } from '../lib/asm-parser-vc';
 import { AsmRegex } from '../lib/asmregex';
 
@@ -55,5 +56,53 @@ describe('ASM regex base class', () => {
     });
     it('should not get upset by mismatched strings', () => {
         AsmRegex.filterAsmLine("a   \"string    'yeah", {trim: true}).should.equal("a \"string 'yeah");
+    });
+});
+
+describe('ASM parser base class', () => {
+    it('should recognize source column numbers', () => {
+        const asm = `
+    .text
+    .intel_syntax noprefix
+    .file	"tmp.cpp"
+    .file	1 "/usr/include" "stdlib.h"
+    .file	2 "/usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../../include/c++/9/bits" "std_abs.h"
+    .file	3 "/usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../../include/c++/9" "cstdlib"
+    .file	4 "/usr/lib/llvm-11/lib/clang/11.0.0/include" "stddef.h"
+    .file	5 "/usr/bin/../lib/gcc/x86_64-linux-gnu/9/../../../../include/c++/9" "stdlib.h"
+    .globl	main                            # -- Begin function main
+    .p2align	4, 0x90
+    .type	main,@function
+main:                                   # @main
+    .Lfunc_begin0:
+    .file	6 "/home/necto/proj/compiler-explorer" "tmp.cpp"
+    .loc	6 3 0                           # tmp.cpp:3:0
+    .cfi_startproc
+# %bb.0:                                # %entry
+    push	rbp
+    .cfi_def_cfa_offset 16
+    .cfi_offset rbp, -16
+    mov1	rbp, rsp
+    .cfi_def_cfa_register rbp
+    sub	rsp, 48
+    mov2	dword ptr [rbp - 4], 0
+.Ltmp0:
+    .loc	6 4 20 prologue_end             # tmp.cpp:4:20
+    mov3	edi, 16
+    call	malloc
+    .loc	6 4 9 is_stmt 0                 # tmp.cpp:4:9
+    mov4	qword ptr [rbp - 16], rax
+`;
+        const filters = {};
+        const parser = new AsmParser();
+        const output = parser.process(asm, filters);
+        const push_line = output.asm.find(line => line.text.trim().startsWith('push'));
+        const mov1_line = output.asm.find(line => line.text.trim().startsWith('mov1'));
+        const call_line = output.asm.find(line => line.text.trim().startsWith('call'));
+        const mov4_line = output.asm.find(line => line.text.trim().startsWith('mov4'));
+        push_line.source.column.should.equal(0);
+        mov1_line.source.column.should.equal(0);
+        call_line.source.column.should.equal(20);
+        mov4_line.source.column.should.equal(9);
     });
 });

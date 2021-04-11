@@ -84,6 +84,7 @@
     {
       "labels": [],
       "source": {
+        "column": 0,
         "file": null,
         "line": 5
       },
@@ -102,6 +103,7 @@
     {
       "labels": [],
       "source": {
+        "column": 0,
         "file": null,
         "line": 4
       },
@@ -145,6 +147,7 @@
     {
       "labels": [],
       "source": {
+        "column": 0,
         "file": "/opt/compiler-explorer/gcc-7.1.0/include/c++/7.1.0/bits/stl_vector.h",
         "line": 671
       },
@@ -153,6 +156,7 @@
     {
       "labels": [],
       "source": {
+        "column": 0,
         "file": "/opt/compiler-explorer/gcc-7.1.0/include/c++/7.1.0/bits/stl_vector.h",
         "line": 671
       },
@@ -161,6 +165,7 @@
     {
       "labels": [],
       "source": {
+        "column": 0,
         "file": "/opt/compiler-explorer/gcc-7.1.0/include/c++/7.1.0/bits/stl_vector.h",
         "line": 671
       },
@@ -169,6 +174,7 @@
     {
       "labels": [],
       "source": {
+        "column": 0,
         "file": "/opt/compiler-explorer/gcc-7.1.0/include/c++/7.1.0/bits/stl_vector.h",
         "line": 671
       },
@@ -197,6 +203,7 @@
     {
       "labels": [],
       "source": {
+        "column": 0,
         "file": null,
         "line": 6
       },
@@ -213,6 +220,7 @@
         }
       ],
       "source": {
+        "column": 0,
         "file": null,
         "line": 6
       },
@@ -226,6 +234,7 @@
     {
       "labels": [],
       "source": {
+        "column": 0,
         "file": null,
         "line": 8
       },
@@ -244,6 +253,7 @@
     {
       "labels": [],
       "source": {
+        "column": 0,
         "file": null,
         "line": 5
       },
@@ -265,6 +275,7 @@
         }
       ],
       "source": {
+        "column": 0,
         "file": null,
         "line": 5
       },
@@ -288,6 +299,7 @@
     {
       "labels": [],
       "source": {
+        "column": 0,
         "file": null,
         "line": 10
       },

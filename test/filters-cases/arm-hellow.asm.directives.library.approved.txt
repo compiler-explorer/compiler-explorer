@@ -33,6 +33,7 @@
     {
       "labels": [],
       "source": {
+        "column": 0,
         "file": null,
         "line": 2
       },
@@ -56,6 +57,7 @@
     {
       "labels": [],
       "source": {
+        "column": 0,
         "file": "/usr/arm-linux-gnueabi/include/bits/stdio2.h",
         "line": 105
       },
@@ -64,6 +66,7 @@
     {
       "labels": [],
       "source": {
+        "column": 0,
         "file": "/usr/arm-linux-gnueabi/include/bits/stdio2.h",
         "line": 105
       },
@@ -72,6 +75,7 @@
     {
       "labels": [],
       "source": {
+        "column": 0,
         "file": "/usr/arm-linux-gnueabi/include/bits/stdio2.h",
         "line": 105
       },
@@ -80,6 +84,7 @@
     {
       "labels": [],
       "source": {
+        "column": 0,
         "file": "/usr/arm-linux-gnueabi/include/bits/stdio2.h",
         "line": 105
       },
@@ -113,6 +118,7 @@
     {
       "labels": [],
       "source": {
+        "column": 0,
         "file": "/usr/arm-linux-gnueabi/include/bits/stdio2.h",
         "line": 105
       },
@@ -121,6 +127,7 @@
     {
       "labels": [],
       "source": {
+        "column": 0,
         "file": "/usr/arm-linux-gnueabi/include/bits/stdio2.h",
         "line": 105
       },
@@ -129,6 +136,7 @@
     {
       "labels": [],
       "source": {
+        "column": 0,
         "file": "/usr/arm-linux-gnueabi/include/bits/stdio2.h",
         "line": 105
       },
@@ -137,6 +145,7 @@
     {
       "labels": [],
       "source": {
+        "column": 0,
         "file": "/usr/arm-linux-gnueabi/include/bits/stdio2.h",
         "line": 105
       },
@@ -155,6 +164,7 @@
     {
       "labels": [],
       "source": {
+        "column": 0,
         "file": null,
         "line": 5
       },
@@ -163,6 +173,7 @@
     {
       "labels": [],
       "source": {
+        "column": 0,
         "file": null,
         "line": 5
       },

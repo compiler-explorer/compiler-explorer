@@ -333,6 +333,7 @@
     {
       "labels": [],
       "source": {
+        "column": 1,
         "file": null,
         "line": 5
       },
@@ -341,6 +342,7 @@
     {
       "labels": [],
       "source": {
+        "column": 1,
         "file": null,
         "line": 5
       },
@@ -349,6 +351,7 @@
     {
       "labels": [],
       "source": {
+        "column": 1,
         "file": null,
         "line": 5
       },
@@ -357,6 +360,7 @@
     {
       "labels": [],
       "source": {
+        "column": 1,
         "file": null,
         "line": 5
       },
@@ -365,6 +369,7 @@
     {
       "labels": [],
       "source": {
+        "column": 17,
         "file": null,
         "line": 6
       },
@@ -373,6 +378,7 @@
     {
       "labels": [],
       "source": {
+        "column": 17,
         "file": null,
         "line": 6
       },
@@ -381,6 +387,7 @@
     {
       "labels": [],
       "source": {
+        "column": 17,
         "file": null,
         "line": 6
       },
@@ -389,6 +396,7 @@
     {
       "labels": [],
       "source": {
+        "column": 17,
         "file": null,
         "line": 6
       },
@@ -397,6 +405,7 @@
     {
       "labels": [],
       "source": {
+        "column": 17,
         "file": null,
         "line": 6
       },
@@ -405,6 +414,7 @@
     {
       "labels": [],
       "source": {
+        "column": 17,
         "file": null,
         "line": 6
       },
@@ -413,6 +423,7 @@
     {
       "labels": [],
       "source": {
+        "column": 17,
         "file": null,
         "line": 6
       },
@@ -426,6 +437,7 @@
     {
       "labels": [],
       "source": {
+        "column": 17,
         "file": null,
         "line": 6
       },
@@ -439,6 +451,7 @@
     {
       "labels": [],
       "source": {
+        "column": 8,
         "file": null,
         "line": 7
       },
@@ -447,6 +460,7 @@
     {
       "labels": [],
       "source": {
+        "column": 8,
         "file": null,
         "line": 7
       },
@@ -455,6 +469,7 @@
     {
       "labels": [],
       "source": {
+        "column": 8,
         "file": null,
         "line": 7
       },
@@ -463,6 +478,7 @@
     {
       "labels": [],
       "source": {
+        "column": 8,
         "file": null,
         "line": 7
       },
@@ -484,6 +500,7 @@
         }
       ],
       "source": {
+        "column": 8,
         "file": null,
         "line": 7
       },
@@ -492,6 +509,7 @@
     {
       "labels": [],
       "source": {
+        "column": 10,
         "file": null,
         "line": 7
       },
@@ -500,6 +518,7 @@
     {
       "labels": [],
       "source": {
+        "column": 10,
         "file": null,
         "line": 7
       },
@@ -508,6 +527,7 @@
     {
       "labels": [],
       "source": {
+        "column": 8,
         "file": null,
         "line": 8
       },
@@ -516,6 +536,7 @@
     {
       "labels": [],
       "source": {
+        "column": 8,
         "file": null,
         "line": 8
       },
@@ -524,6 +545,7 @@
     {
       "labels": [],
       "source": {
+        "column": 8,
         "file": null,
         "line": 8
       },
@@ -532,6 +554,7 @@
     {
       "labels": [],
       "source": {
+        "column": 8,
         "file": null,
         "line": 8
       },
@@ -548,6 +571,7 @@
         }
       ],
       "source": {
+        "column": 8,
         "file": null,
         "line": 8
       },
@@ -556,6 +580,7 @@
     {
       "labels": [],
       "source": {
+        "column": 10,
         "file": null,
         "line": 8
       },
@@ -564,6 +589,7 @@
     {
       "labels": [],
       "source": {
+        "column": 10,
         "file": null,
         "line": 8
       },
@@ -572,6 +598,7 @@
     {
       "labels": [],
       "source": {
+        "column": 8,
         "file": null,
         "line": 9
       },
@@ -580,6 +607,7 @@
     {
       "labels": [],
       "source": {
+        "column": 8,
         "file": null,
         "line": 9
       },
@@ -588,6 +616,7 @@
     {
       "labels": [],
       "source": {
+        "column": 8,
         "file": null,
         "line": 9
       },
@@ -596,6 +625,7 @@
     {
       "labels": [],
       "source": {
+        "column": 8,
         "file": null,
         "line": 9
       },
@@ -612,6 +642,7 @@
         }
       ],
       "source": {
+        "column": 8,
         "file": null,
         "line": 9
       },
@@ -620,6 +651,7 @@
     {
       "labels": [],
       "source": {
+        "column": 10,
         "file": null,
         "line": 9
       },
@@ -628,6 +660,7 @@
     {
       "labels": [],
       "source": {
+        "column": 10,
         "file": null,
         "line": 9
       },
@@ -636,6 +669,7 @@
     {
       "labels": [],
       "source": {
+        "column": 17,
         "file": null,
         "line": 10
       },
@@ -644,6 +678,7 @@
     {
       "labels": [],
       "source": {
+        "column": 17,
         "file": null,
         "line": 10
       },
@@ -652,6 +687,7 @@
     {
       "labels": [],
       "source": {
+        "column": 17,
         "file": null,
         "line": 10
       },
@@ -660,6 +696,7 @@
     {
       "labels": [],
       "source": {
+        "column": 17,
         "file": null,
         "line": 10
       },
@@ -676,6 +713,7 @@
         }
       ],
       "source": {
+        "column": 17,
         "file": null,
         "line": 10
       },
@@ -684,6 +722,7 @@
     {
       "labels": [],
       "source": {
+        "column": 13,
         "file": null,
         "line": 10
       },
@@ -692,6 +731,7 @@
     {
       "labels": [],
       "source": {
+        "column": 13,
         "file": null,
         "line": 10
       },
@@ -700,6 +740,7 @@
     {
       "labels": [],
       "source": {
+        "column": 26,
         "file": null,
         "line": 10
       },
@@ -708,6 +749,7 @@
     {
       "labels": [],
       "source": {
+        "column": 26,
         "file": null,
         "line": 10
       },
@@ -716,6 +758,7 @@
     {
       "labels": [],
       "source": {
+        "column": 26,
         "file": null,
         "line": 10
       },
@@ -724,6 +767,7 @@
     {
       "labels": [],
       "source": {
+        "column": 26,
         "file": null,
         "line": 10
       },
@@ -740,6 +784,7 @@
         }
       ],
       "source": {
+        "column": 26,
         "file": null,
         "line": 10
       },
@@ -748,6 +793,7 @@
     {
       "labels": [],
       "source": {
+        "column": 22,
         "file": null,
         "line": 10
       },
@@ -756,6 +802,7 @@
     {
       "labels": [],
       "source": {
+        "column": 19,
         "file": null,
         "line": 10
       },
@@ -764,6 +811,7 @@
     {
       "labels": [],
       "source": {
+        "column": 19,
         "file": null,
         "line": 10
       },
@@ -772,6 +820,7 @@
     {
       "labels": [],
       "source": {
+        "column": 8,
         "file": null,
         "line": 10
       },
@@ -780,6 +829,7 @@
     {
       "labels": [],
       "source": {
+        "column": 8,
         "file": null,
         "line": 10
       },
@@ -788,6 +838,7 @@
     {
       "labels": [],
       "source": {
+        "column": 8,
         "file": null,
         "line": 10
       },
@@ -796,6 +847,7 @@
     {
       "labels": [],
       "source": {
+        "column": 8,
         "file": null,
         "line": 10
       },
@@ -812,6 +864,7 @@
         }
       ],
       "source": {
+        "column": 8,
         "file": null,
         "line": 10
       },
@@ -820,6 +873,7 @@
     {
       "labels": [],
       "source": {
+        "column": 10,
         "file": null,
         "line": 10
       },
@@ -828,6 +882,7 @@
     {
       "labels": [],
       "source": {
+        "column": 10,
         "file": null,
         "line": 10
       },
@@ -836,6 +891,7 @@
     {
       "labels": [],
       "source": {
+        "column": 16,
         "file": null,
         "line": 11
       },
@@ -844,6 +900,7 @@
     {
       "labels": [],
       "source": {
+        "column": 16,
         "file": null,
         "line": 11
       },
@@ -852,6 +909,7 @@
     {
       "labels": [],
       "source": {
+        "column": 16,
         "file": null,
         "line": 11
       },
@@ -868,6 +926,7 @@
         }
       ],
       "source": {
+        "column": 16,
         "file": null,
         "line": 11
       },
@@ -876,6 +935,7 @@
     {
       "labels": [],
       "source": {
+        "column": 26,
         "file": null,
         "line": 11
       },
@@ -884,6 +944,7 @@
     {
       "labels": [],
       "source": {
+        "column": 26,
         "file": null,
         "line": 11
       },
@@ -892,6 +953,7 @@
     {
       "labels": [],
       "source": {
+        "column": 26,
         "file": null,
         "line": 11
       },
@@ -905,6 +967,7 @@
     {
       "labels": [],
       "source": {
+        "column": 17,
         "file": null,
         "line": 6
       },
@@ -913,6 +976,7 @@
     {
       "labels": [],
       "source": {
+        "column": 17,
         "file": null,
         "line": 6
       },
@@ -921,6 +985,7 @@
     {
       "labels": [],
       "source": {
+        "column": 17,
         "file": null,
         "line": 6
       },
@@ -929,6 +994,7 @@
     {
       "labels": [],
       "source": {
+        "column": 1,
         "file": null,
         "line": 12
       },
@@ -945,6 +1011,7 @@
         }
       ],
       "source": {
+        "column": 1,
         "file": null,
         "line": 12
       },
@@ -958,6 +1025,7 @@
     {
       "labels": [],
       "source": {
+        "column": 1,
         "file": null,
         "line": 12
       },
@@ -966,6 +1034,7 @@
     {
       "labels": [],
       "source": {
+        "column": 17,
         "file": null,
         "line": 6
       },
@@ -974,6 +1043,7 @@
     {
       "labels": [],
       "source": {
+        "column": 17,
         "file": null,
         "line": 6
       },
@@ -982,6 +1052,7 @@
     {
       "labels": [],
       "source": {
+        "column": 17,
         "file": null,
         "line": 6
       },
@@ -990,6 +1061,7 @@
     {
       "labels": [],
       "source": {
+        "column": 17,
         "file": null,
         "line": 6
       },
@@ -998,6 +1070,7 @@
     {
       "labels": [],
       "source": {
+        "column": 17,
         "file": null,
         "line": 6
       },
@@ -1011,6 +1084,7 @@
     {
       "labels": [],
       "source": {
+        "column": 17,
         "file": null,
         "line": 6
       },
@@ -1029,6 +1103,7 @@
     {
       "labels": [],
       "source": {
+        "column": 1,
         "file": null,
         "line": 12
       },
@@ -1037,6 +1112,7 @@
     {
       "labels": [],
       "source": {
+        "column": 1,
         "file": null,
         "line": 12
       },
@@ -1045,6 +1121,7 @@
     {
       "labels": [],
       "source": {
+        "column": 1,
         "file": null,
         "line": 12
       },
@@ -1053,6 +1130,7 @@
     {
       "labels": [],
       "source": {
+        "column": 1,
         "file": null,
         "line": 12
       },
@@ -2441,6 +2519,7 @@
     {
       "labels": [],
       "source": {
+        "column": 1,
         "file": null,
         "line": 12
       },
@@ -2449,6 +2528,7 @@
     {
       "labels": [],
       "source": {
+        "column": 1,
         "file": null,
         "line": 12
       },
@@ -2457,6 +2537,7 @@
     {
       "labels": [],
       "source": {
+        "column": 1,
         "file": null,
         "line": 12
       },
@@ -2465,6 +2546,7 @@
     {
       "labels": [],
       "source": {
+        "column": 1,
         "file": null,
         "line": 12
       },
@@ -2473,6 +2555,7 @@
     {
       "labels": [],
       "source": {
+        "column": 1,
         "file": null,
         "line": 12
       },
@@ -2481,6 +2564,7 @@
     {
       "labels": [],
       "source": {
+        "column": 1,
         "file": null,
         "line": 12
       },
@@ -2497,6 +2581,7 @@
         }
       ],
       "source": {
+        "column": 1,
         "file": null,
         "line": 12
       },
@@ -2505,6 +2590,7 @@
     {
       "labels": [],
       "source": {
+        "column": 1,
         "file": null,
         "line": 12
       },
@@ -2521,6 +2607,7 @@
         }
       ],
       "source": {
+        "column": 1,
         "file": null,
         "line": 12
       },
@@ -2529,6 +2616,7 @@
     {
       "labels": [],
       "source": {
+        "column": 25,
         "file": "/opt/compiler-explorer/gcc-8.3.0/include/c++/8.3.0/iostream",
         "line": 74
       },
@@ -2537,6 +2625,7 @@
     {
       "labels": [],
       "source": {
+        "column": 25,
         "file": "/opt/compiler-explorer/gcc-8.3.0/include/c++/8.3.0/iostream",
         "line": 74
       },
@@ -2545,6 +2634,7 @@
     {
       "labels": [],
       "source": {
+        "column": 25,
         "file": "/opt/compiler-explorer/gcc-8.3.0/include/c++/8.3.0/iostream",
         "line": 74
       },
@@ -2553,6 +2643,7 @@
     {
       "labels": [],
       "source": {
+        "column": 25,
         "file": "/opt/compiler-explorer/gcc-8.3.0/include/c++/8.3.0/iostream",
         "line": 74
       },
@@ -2561,6 +2652,7 @@
     {
       "labels": [],
       "source": {
+        "column": 25,
         "file": "/opt/compiler-explorer/gcc-8.3.0/include/c++/8.3.0/iostream",
         "line": 74
       },
@@ -2569,6 +2661,7 @@
     {
       "labels": [],
       "source": {
+        "column": 25,
         "file": "/opt/compiler-explorer/gcc-8.3.0/include/c++/8.3.0/iostream",
         "line": 74
       },
@@ -2582,6 +2675,7 @@
     {
       "labels": [],
       "source": {
+        "column": 1,
         "file": null,
         "line": 12
       },
@@ -2590,6 +2684,7 @@
     {
       "labels": [],
       "source": {
+        "column": 1,
         "file": null,
         "line": 12
       },
@@ -2598,6 +2693,7 @@
     {
       "labels": [],
       "source": {
+        "column": 1,
         "file": null,
         "line": 12
       },
@@ -2621,6 +2717,7 @@
     {
       "labels": [],
       "source": {
+        "column": 1,
         "file": null,
         "line": 12
       },
@@ -2629,6 +2726,7 @@
     {
       "labels": [],
       "source": {
+        "column": 1,
         "file": null,
         "line": 12
       },
@@ -2637,6 +2735,7 @@
     {
       "labels": [],
       "source": {
+        "column": 1,
         "file": null,
         "line": 12
       },
@@ -2645,6 +2744,7 @@
     {
       "labels": [],
       "source": {
+        "column": 1,
         "file": null,
         "line": 12
       },
@@ -2661,6 +2761,7 @@
         }
       ],
       "source": {
+        "column": 1,
         "file": null,
         "line": 12
       },
@@ -2669,6 +2770,7 @@
     {
       "labels": [],
       "source": {
+        "column": 1,
         "file": null,
         "line": 12
       },
@@ -2677,6 +2779,7 @@
     {
       "labels": [],
       "source": {
+        "column": 1,
         "file": null,
         "line": 12
       },

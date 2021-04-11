@@ -8,6 +8,7 @@
     {
       "labels": [],
       "source": {
+        "column": 0,
         "file": null,
         "line": 1
       },
@@ -21,6 +22,7 @@
     {
       "labels": [],
       "source": {
+        "column": 13,
         "file": null,
         "line": 3
       },
@@ -29,6 +31,7 @@
     {
       "labels": [],
       "source": {
+        "column": 13,
         "file": null,
         "line": 3
       },
@@ -45,6 +48,7 @@
         }
       ],
       "source": {
+        "column": 13,
         "file": null,
         "line": 3
       },
@@ -53,6 +57,7 @@
     {
       "labels": [],
       "source": {
+        "column": 26,
         "file": null,
         "line": 3
       },
@@ -66,6 +71,7 @@
     {
       "labels": [],
       "source": {
+        "column": 10,
         "file": null,
         "line": 2
       },
@@ -74,6 +80,7 @@
     {
       "labels": [],
       "source": {
+        "column": 13,
         "file": null,
         "line": 3
       },
@@ -82,6 +89,7 @@
     {
       "labels": [],
       "source": {
+        "column": 13,
         "file": null,
         "line": 3
       },
@@ -98,6 +106,7 @@
         }
       ],
       "source": {
+        "column": 13,
         "file": null,
         "line": 3
       },
@@ -106,6 +115,7 @@
     {
       "labels": [],
       "source": {
+        "column": 26,
         "file": null,
         "line": 3
       },
@@ -119,6 +129,7 @@
     {
       "labels": [],
       "source": {
+        "column": 10,
         "file": null,
         "line": 2
       },
@@ -127,6 +138,7 @@
     {
       "labels": [],
       "source": {
+        "column": 10,
         "file": null,
         "line": 2
       },
@@ -135,6 +147,7 @@
     {
       "labels": [],
       "source": {
+        "column": 10,
         "file": null,
         "line": 2
       },
@@ -151,6 +164,7 @@
         }
       ],
       "source": {
+        "column": 10,
         "file": null,
         "line": 2
       },
@@ -159,6 +173,7 @@
     {
       "labels": [],
       "source": {
+        "column": 1,
         "file": null,
         "line": 5
       },

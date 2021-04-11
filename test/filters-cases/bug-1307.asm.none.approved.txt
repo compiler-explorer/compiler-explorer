@@ -114,6 +114,7 @@
     {
       "labels": [],
       "source": {
+        "column": 28,
         "file": "/opt/compiler-explorer/gcc-trunk-20190430/include/c++/10.0.0/cmath",
         "line": 261
       },
@@ -122,6 +123,7 @@
     {
       "labels": [],
       "source": {
+        "column": 28,
         "file": "/opt/compiler-explorer/gcc-trunk-20190430/include/c++/10.0.0/cmath",
         "line": 261
       },
@@ -130,6 +132,7 @@
     {
       "labels": [],
       "source": {
+        "column": 28,
         "file": "/opt/compiler-explorer/gcc-trunk-20190430/include/c++/10.0.0/cmath",
         "line": 261
       },
@@ -138,6 +141,7 @@
     {
       "labels": [],
       "source": {
+        "column": 28,
         "file": "/opt/compiler-explorer/gcc-trunk-20190430/include/c++/10.0.0/cmath",
         "line": 261
       },
@@ -146,6 +150,7 @@
     {
       "labels": [],
       "source": {
+        "column": 28,
         "file": "/opt/compiler-explorer/gcc-trunk-20190430/include/c++/10.0.0/cmath",
         "line": 261
       },
@@ -154,6 +159,7 @@
     {
       "labels": [],
       "source": {
+        "column": 28,
         "file": "/opt/compiler-explorer/gcc-trunk-20190430/include/c++/10.0.0/cmath",
         "line": 261
       },
@@ -170,6 +176,7 @@
         }
       ],
       "source": {
+        "column": 28,
         "file": "/opt/compiler-explorer/gcc-trunk-20190430/include/c++/10.0.0/cmath",
         "line": 261
       },
@@ -178,6 +185,7 @@
     {
       "labels": [],
       "source": {
+        "column": 28,
         "file": "/opt/compiler-explorer/gcc-trunk-20190430/include/c++/10.0.0/cmath",
         "line": 261
       },
@@ -186,6 +194,7 @@
     {
       "labels": [],
       "source": {
+        "column": 28,
         "file": "/opt/compiler-explorer/gcc-trunk-20190430/include/c++/10.0.0/cmath",
         "line": 261
       },
@@ -194,6 +203,7 @@
     {
       "labels": [],
       "source": {
+        "column": 28,
         "file": "/opt/compiler-explorer/gcc-trunk-20190430/include/c++/10.0.0/cmath",
         "line": 261
       },
@@ -202,6 +212,7 @@
     {
       "labels": [],
       "source": {
+        "column": 28,
         "file": "/opt/compiler-explorer/gcc-trunk-20190430/include/c++/10.0.0/cmath",
         "line": 261
       },
@@ -210,6 +221,7 @@
     {
       "labels": [],
       "source": {
+        "column": 28,
         "file": "/opt/compiler-explorer/gcc-trunk-20190430/include/c++/10.0.0/cmath",
         "line": 261
       },
@@ -218,6 +230,7 @@
     {
       "labels": [],
       "source": {
+        "column": 28,
         "file": "/opt/compiler-explorer/gcc-trunk-20190430/include/c++/10.0.0/cmath",
         "line": 261
       },
@@ -226,6 +239,7 @@
     {
       "labels": [],
       "source": {
+        "column": 28,
         "file": "/opt/compiler-explorer/gcc-trunk-20190430/include/c++/10.0.0/cmath",
         "line": 261
       },
@@ -234,6 +248,7 @@
     {
       "labels": [],
       "source": {
+        "column": 28,
         "file": "/opt/compiler-explorer/gcc-trunk-20190430/include/c++/10.0.0/cmath",
         "line": 261
       },
@@ -242,6 +257,7 @@
     {
       "labels": [],
       "source": {
+        "column": 28,
         "file": "/opt/compiler-explorer/gcc-trunk-20190430/include/c++/10.0.0/cmath",
         "line": 261
       },
@@ -250,6 +266,7 @@
     {
       "labels": [],
       "source": {
+        "column": 28,
         "file": "/opt/compiler-explorer/gcc-trunk-20190430/include/c++/10.0.0/cmath",
         "line": 261
       },
@@ -258,6 +275,7 @@
     {
       "labels": [],
       "source": {
+        "column": 28,
         "file": "/opt/compiler-explorer/gcc-trunk-20190430/include/c++/10.0.0/cmath",
         "line": 261
       },
@@ -266,6 +284,7 @@
     {
       "labels": [],
       "source": {
+        "column": 28,
         "file": "/opt/compiler-explorer/gcc-trunk-20190430/include/c++/10.0.0/cmath",
         "line": 261
       },
@@ -299,6 +318,7 @@
     {
       "labels": [],
       "source": {
+        "column": 24,
         "file": null,
         "line": 5
       },
@@ -312,6 +332,7 @@
     {
       "labels": [],
       "source": {
+        "column": 1,
         "file": null,
         "line": 6
       },
