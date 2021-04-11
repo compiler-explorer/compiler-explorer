@@ -60,6 +60,13 @@ describe('ASM regex base class', () => {
 });
 
 describe('ASM parser base class', () => {
+    let parser;
+    const filters = {};
+
+    before(() => {
+        parser = new AsmParser();
+    });
+
     it('should recognize source column numbers', () => {
         const asm = `
     .text
@@ -93,16 +100,40 @@ main:                                   # @main
     .loc	6 4 9 is_stmt 0                 # tmp.cpp:4:9
     mov4	qword ptr [rbp - 16], rax
 `;
-        const filters = {};
-        const parser = new AsmParser();
         const output = parser.process(asm, filters);
         const push_line = output.asm.find(line => line.text.trim().startsWith('push'));
         const mov1_line = output.asm.find(line => line.text.trim().startsWith('mov1'));
         const call_line = output.asm.find(line => line.text.trim().startsWith('call'));
         const mov4_line = output.asm.find(line => line.text.trim().startsWith('mov4'));
-        push_line.source.column.should.equal(0);
-        mov1_line.source.column.should.equal(0);
+        push_line.source.should.not.have.ownProperty('column');
+        mov1_line.source.should.not.have.ownProperty('column');
         call_line.source.column.should.equal(20);
         mov4_line.source.column.should.equal(9);
+    });
+
+    it('should parse line numbers when a column is not specified', () => {
+        const asm = `
+        .section .text
+.LNDBG_TX:
+# mark_description "Intel(R) C Intel(R) 64 Compiler XE for applications running on Intel(R) 64, Version 12.1 Build 20120410";
+        .file "iccKTGaIssTdIn_"
+        .text
+..TXTST0:
+# -- Begin  main
+# mark_begin;
+       .align    16,0x90
+        .globl main
+main:
+..B1.1:                         # Preds ..B1.0
+..___tag_value_main.2:                                          #
+..LN0:
+  .file   1 "-"
+   .loc    1  2  is_stmt 1
+        pushq     %rbp                                          #2.12
+`;
+        const output = parser.process(asm, filters);
+        const pushq_line = output.asm.find(line => line.text.trim().startsWith('pushq'));
+        pushq_line.source.should.not.have.ownProperty('column');
+        pushq_line.source.line.should.equal(2);
     });
 });

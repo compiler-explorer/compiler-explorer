@@ -505,7 +505,6 @@
     {
       "labels": [],
       "source": {
-        "column": 0,
         "file": null,
         "line": 11
       },
@@ -524,7 +523,6 @@
     {
       "labels": [],
       "source": {
-        "column": 0,
         "file": null,
         "line": 11
       },
@@ -543,7 +541,6 @@
     {
       "labels": [],
       "source": {
-        "column": 0,
         "file": null,
         "line": 12
       },
@@ -557,7 +554,6 @@
     {
       "labels": [],
       "source": {
-        "column": 0,
         "file": null,
         "line": 13
       },
@@ -571,7 +567,6 @@
     {
       "labels": [],
       "source": {
-        "column": 0,
         "file": null,
         "line": 13
       },

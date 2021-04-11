@@ -74,7 +74,6 @@
     {
       "labels": [],
       "source": {
-        "column": 0,
         "file": null,
         "line": 2
       },
@@ -93,7 +92,6 @@
     {
       "labels": [],
       "source": {
-        "column": 0,
         "file": null,
         "line": 2
       },
@@ -107,7 +105,6 @@
     {
       "labels": [],
       "source": {
-        "column": 0,
         "file": null,
         "line": 2
       },
@@ -151,7 +148,6 @@
     {
       "labels": [],
       "source": {
-        "column": 0,
         "file": null,
         "line": 4
       },
@@ -160,7 +156,6 @@
     {
       "labels": [],
       "source": {
-        "column": 0,
         "file": null,
         "line": 4
       },
@@ -174,7 +169,6 @@
     {
       "labels": [],
       "source": {
-        "column": 0,
         "file": null,
         "line": 5
       },
@@ -188,7 +182,6 @@
     {
       "labels": [],
       "source": {
-        "column": 0,
         "file": null,
         "line": 5
       },

@@ -23,7 +23,6 @@
     {
       "labels": [],
       "source": {
-        "column": 0,
         "file": null,
         "line": 1
       },

@@ -13,7 +13,6 @@
     {
       "labels": [],
       "source": {
-        "column": 0,
         "file": null,
         "line": 50
       },
@@ -47,7 +46,6 @@
     {
       "labels": [],
       "source": {
-        "column": 0,
         "file": null,
         "line": 50
       },
@@ -95,7 +93,6 @@
     {
       "labels": [],
       "source": {
-        "column": 0,
         "file": null,
         "line": 0
       },
@@ -250,7 +247,6 @@
     {
       "labels": [],
       "source": {
-        "column": 0,
         "file": null,
         "line": 0
       },

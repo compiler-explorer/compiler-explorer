@@ -13,7 +13,6 @@
     {
       "labels": [],
       "source": {
-        "column": 0,
         "file": null,
         "line": 9
       },
@@ -431,7 +430,6 @@
     {
       "labels": [],
       "source": {
-        "column": 0,
         "file": "/tmp/compiler-explorer-compiler1181120-2080-yfo6a1.y1o4e//opt/compiler-explorer/libs/ctre/master/include/ctre/evaluation.hpp",
         "line": 235
       },
@@ -440,7 +438,6 @@
     {
       "labels": [],
       "source": {
-        "column": 0,
         "file": "/tmp/compiler-explorer-compiler1181120-2080-yfo6a1.y1o4e//opt/compiler-explorer/libs/ctre/master/include/ctre/evaluation.hpp",
         "line": 235
       },
@@ -454,7 +451,6 @@
     {
       "labels": [],
       "source": {
-        "column": 0,
         "file": "/tmp/compiler-explorer-compiler1181120-2080-yfo6a1.y1o4e//opt/compiler-explorer/libs/ctre/master/include/ctre/evaluation.hpp",
         "line": 235
       },
