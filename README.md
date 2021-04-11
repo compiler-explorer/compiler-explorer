@@ -59,7 +59,8 @@ Running with `make EXTRA_ARGS='--language LANG'` will allow you to load
  `LANG` exclusively, where `LANG` is one for the language ids/aliases defined
  in `lib/languages.js`. The `Makefile` will automatically install all the
  third party libraries needed to run; using `npm` to install server-side and
- client side components.
+ client side components. So you can also use `npm run dev` to run CE on your 
+ local machine.
 
 For development, we suggest using `make dev` to enable some useful features,
  such as automatic reloading on file changes and shorter startup times.
