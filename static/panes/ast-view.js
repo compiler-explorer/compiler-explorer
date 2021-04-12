@@ -59,9 +59,6 @@ function Ast(hub, container, state) {
 
     this.colours = [];
     this.astCode = [];
-    this.lastColours = [];
-    this.lastColourScheme = {};
-
 
     this.initButtons(state);
     this.initCallbacks();
@@ -95,9 +92,11 @@ Ast.prototype.initCallbacks = function () {
 
     this.container.on('destroy', this.close, this);
 
-    this.eventHub.on('compileResult', this.onCompileResult, this);
+    var onColoursOnCompile = this.eventHub.mediateDependentCalls(this.onColours, this.onCompileResult);
+
+    this.eventHub.on('compileResult', onColoursOnCompile.dependencyProxy, this);
     this.eventHub.on('compiler', this.onCompiler, this);
-    this.eventHub.on('colours', this.onColours, this);
+    this.eventHub.on('colours', onColoursOnCompile.dependentProxy, this);
     this.eventHub.on('panesLinkLine', this.onPanesLinkLine, this);
     this.eventHub.on('compilerClose', this.onCompilerClose, this);
     this.eventHub.on('settingsChange', this.onSettingsChange, this);
@@ -136,11 +135,6 @@ Ast.prototype.onCompileResult = function (id, compiler, result, lang) {
     if (lang && lang.monaco && this.getCurrentEditorLanguage() !== lang.monaco) {
         monaco.editor.setModelLanguage(this.astEditor.getModel(), lang.monaco);
     }
-
-    // Copied over from ir-view.js:onCompileResponse
-    // Why call this explicitly instead of just listening to the "colours" event?
-    // Because the recolouring happens before this editors value is set using "showIrResults".
-    this.onColours(this._compilerid, this.lastColours, this.lastColourScheme);
 };
 
 // Monaco language id of the current editor
@@ -188,9 +182,6 @@ Ast.prototype.onCompiler = function (id, compiler, options, editorid) {
 
 Ast.prototype.onColours = function (id, colours, scheme) {
     if (id === this._compilerid) {
-        this.lastColours = colours;
-        this.lastColourScheme = scheme;
-
         var astColours = {};
         _.each(this.astCode, function (x, index) {
             if (x.source && x.source.from.line && x.source.to.line &&
