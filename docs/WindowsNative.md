@@ -82,7 +82,7 @@ Similar to [WindowsSubsystemForLinux](WindowsSubsystemForLinux.md), the followin
 
 Launch CE with `npm run-script debugger` to have node listen on port 9229. 
 
-Because you can only attach to the process, as opposed to launching the process, in order to debug startup code you need to attach while npm is starting up.  The `debugger` script also enables `debug` logging level so debug print statements can be seen during the CE startup and run.
+Because only attaches to the process, as opposed to launching the process, in order to debug startup code you need to attach while npm is starting up.  The `debugger` script also enables `debug` logging level so debug print statements can be seen during the CE startup and run.
 
 ### Setting up binary mode and execution
 
