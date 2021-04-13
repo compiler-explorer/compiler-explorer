@@ -252,9 +252,20 @@ Ir.prototype.onMouseMove = function (e) {
         var hoverCode = this.irCode[e.target.position.lineNumber - 1];
         if (hoverCode) {
             // We check that we actually have something to show at this point!
-            var sourceLine = hoverCode.source && !hoverCode.source.file ? hoverCode.source.line : -1;
-            this.eventHub.emit('editorLinkLine', this._editorid, sourceLine, -1, -1, false);
-            this.eventHub.emit('panesLinkLine', this._compilerid, sourceLine, -1, -1, false, this.getPaneName());
+            var sourceLine = -1;
+            var sourceColBegin = -1;
+            var sourceColEnd = -1;
+            if (hoverCode.source && !hoverCode.source.file) {
+                sourceLine = hoverCode.source.line;
+                if (hoverCode.source.column) {
+                    sourceColBegin = hoverCode.source.column;
+                    sourceColEnd = sourceColBegin;
+                }
+            }
+            this.eventHub.emit('editorLinkLine', this._editorid, sourceLine, sourceColBegin, sourceColEnd, false);
+            this.eventHub.emit('panesLinkLine', this._compilerid,
+                sourceLine, sourceColBegin, sourceColEnd,
+                false, this.getPaneName());
         }
     }
 };
@@ -280,15 +291,21 @@ Ir.prototype.clearLinkedLines = function () {
 Ir.prototype.onPanesLinkLine = function (compilerId, lineNumber, colBegin, colEnd, revealLine, sender) {
     if (Number(compilerId) === this._compilerid) {
         var lineNums = [];
+        var directlyLinkedLineNums = [];
+        var signalFromAnotherPane = sender !== this.getPaneName();
         _.each(this.irCode, function (irLine, i) {
             if (irLine.source && irLine.source.file === null && irLine.source.line === lineNumber) {
                 var line = i + 1;
                 lineNums.push(line);
+                var currentCol = irLine.source.column;
+                if (signalFromAnotherPane && currentCol && colBegin <= currentCol && currentCol <= colEnd) {
+                    directlyLinkedLineNums.push(line);
+                }
             }
         });
         if (revealLine && lineNums[0]) this.irEditor.revealLineInCenter(lineNums[0]);
         var lineClass = sender !== this.getPaneName() ? 'linked-code-decoration-line' : '';
-        this.decorations.linkedCode = _.map(lineNums, function (line) {
+        var linkedLineDecorations = _.map(lineNums, function (line) {
             return {
                 range: new monaco.Range(line, 1, line, 1),
                 options: {
@@ -298,6 +315,16 @@ Ir.prototype.onPanesLinkLine = function (compilerId, lineNumber, colBegin, colEn
                 },
             };
         });
+        var directlyLinkedLineDecorations = _.map(directlyLinkedLineNums, function (line) {
+            return {
+                range: new monaco.Range(line, 1, line, 1),
+                options: {
+                    isWholeLine: true,
+                    inlineClassName: 'linked-code-decoration-column',
+                },
+            };
+        });
+        this.decorations.linkedCode = linkedLineDecorations.concat(directlyLinkedLineDecorations);
         if (this.linkedFadeTimeoutId !== -1) {
             clearTimeout(this.linkedFadeTimeoutId);
         }

@@ -1586,14 +1586,21 @@ Compiler.prototype.clearLinkedLines = function () {
 Compiler.prototype.onPanesLinkLine = function (compilerId, lineNumber, colBegin, colEnd, revealLine, sender) {
     if (Number(compilerId) === this.id) {
         var lineNums = [];
+        var directlyLinkedLineNums = [];
+        var signalFromAnotherPane = sender !== this.getPaneName();
         _.each(this.assembly, function (asmLine, i) {
             if (asmLine.source && asmLine.source.file === null && asmLine.source.line === lineNumber) {
-                lineNums.push(i + 1);
+                var line = i + 1;
+                lineNums.push(line);
+                var currentCol = asmLine.source.column;
+                if (signalFromAnotherPane && currentCol && colBegin <= currentCol && currentCol <= colEnd) {
+                    directlyLinkedLineNums.push(line);
+                }
             }
         });
         if (revealLine && lineNums[0]) this.outputEditor.revealLineInCenter(lineNums[0]);
         var lineClass = sender !== this.getPaneName() ? 'linked-code-decoration-line' : '';
-        this.decorations.linkedCode = _.map(lineNums, function (line) {
+        var linkedLinesDecoration = _.map(lineNums, function (line) {
             return {
                 range: new monaco.Range(line, 1, line, 1),
                 options: {
@@ -1603,6 +1610,16 @@ Compiler.prototype.onPanesLinkLine = function (compilerId, lineNumber, colBegin,
                 },
             };
         });
+        var directlyLinkedLinesDecoration = _.map(directlyLinkedLineNums, function (line) {
+            return {
+                range: new monaco.Range(line, 1, line, 1),
+                options: {
+                    isWholeLine: true,
+                    inlineClassName: 'linked-code-decoration-column',
+                },
+            };
+        });
+        this.decorations.linkedCode = linkedLinesDecoration.concat(directlyLinkedLinesDecoration);
         if (this.linkedFadeTimeoutId !== -1) {
             clearTimeout(this.linkedFadeTimeoutId);
         }
@@ -1748,9 +1765,20 @@ Compiler.prototype.onMouseMove = function (e) {
         var hoverAsm = this.assembly[e.target.position.lineNumber - 1];
         if (hoverAsm) {
             // We check that we actually have something to show at this point!
-            var sourceLine = hoverAsm.source && !hoverAsm.source.file ? hoverAsm.source.line : -1;
-            this.eventHub.emit('editorLinkLine', this.sourceEditorId, sourceLine, -1, -1, false);
-            this.eventHub.emit('panesLinkLine', this.id, sourceLine, -1, -1, false, this.getPaneName());
+            var sourceLine = -1;
+            var sourceColBegin = -1;
+            var sourceColEnd = -1;
+            if (hoverAsm.source && !hoverAsm.source.file) {
+                sourceLine = hoverAsm.source.line;
+                if (hoverAsm.source.column) {
+                    sourceColBegin = hoverAsm.source.column;
+                    sourceColEnd = sourceColBegin;
+                }
+            }
+            this.eventHub.emit('editorLinkLine', this.sourceEditorId, sourceLine, sourceColBegin, sourceColEnd, false);
+            this.eventHub.emit('panesLinkLine', this.id,
+                sourceLine, sourceColBegin, sourceColEnd,
+                false, this.getPaneName());
         }
     }
     var currentWord = this.outputEditor.getModel().getWordAtPosition(e.target.position);

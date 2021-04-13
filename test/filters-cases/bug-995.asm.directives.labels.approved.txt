@@ -8,6 +8,7 @@
     {
       "labels": [],
       "source": {
+        "column": 1,
         "file": "/tmp/foo.cc",
         "line": 24
       },
@@ -16,6 +17,7 @@
     {
       "labels": [],
       "source": {
+        "column": 1,
         "file": "/tmp/foo.cc",
         "line": 24
       },
@@ -32,6 +34,7 @@
         }
       ],
       "source": {
+        "column": 25,
         "file": "/tmp/foo.cc",
         "line": 26
       },
@@ -40,6 +43,7 @@
     {
       "labels": [],
       "source": {
+        "column": 1,
         "file": "/tmp/foo.cc",
         "line": 27
       },
@@ -48,6 +52,7 @@
     {
       "labels": [],
       "source": {
+        "column": 1,
         "file": "/tmp/foo.cc",
         "line": 27
       },
@@ -56,6 +61,7 @@
     {
       "labels": [],
       "source": {
+        "column": 1,
         "file": "/tmp/foo.cc",
         "line": 27
       },
@@ -69,6 +75,7 @@
     {
       "labels": [],
       "source": {
+        "column": 39,
         "file": "/tmp/foo.cc",
         "line": 12
       },
@@ -77,6 +84,7 @@
     {
       "labels": [],
       "source": {
+        "column": 39,
         "file": "/tmp/foo.cc",
         "line": 12
       },
