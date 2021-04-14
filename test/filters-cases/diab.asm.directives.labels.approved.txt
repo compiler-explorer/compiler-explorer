@@ -57,7 +57,10 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 4
+      },
       "text": "#$$ld"
     },
     {
@@ -67,8 +70,16 @@
     },
     {
       "labels": [],
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "text": "#$$bf   _ZtestFunction2dd,interprocedural,rasave,nostackparams"
+    },
+    {
+      "labels": [],
       "source": null,
-      "text": "#$$bf   testFunction(double*, double),interprocedural,rasave,nostackparams"
+      "text": "_ZtestFunction2dd:"
     },
     {
       "labels": [],
@@ -76,11 +87,6 @@
         "file": null,
         "line": 4
       },
-      "text": "testFunction(double*, double):"
-    },
-    {
-      "labels": [],
-      "source": null,
       "text": "#$$dr 0 0 0"
     },
     {
@@ -221,8 +227,8 @@
         {
           "name": ".L44",
           "range": {
-            "endCol": 29,
-            "startCol": 25
+            "endCol": 45,
+            "startCol": 41
           }
         }
       ],
@@ -391,7 +397,10 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 10
+      },
       "text": "#$$ef"
     },
     {
@@ -412,7 +421,7 @@
     {
       "labels": [],
       "source": null,
-      "text": "# Allocations for testFunction(double*, double)"
+      "text": "# Allocations for _ZtestFunction2dd"
     },
     {
       "labels": [],
@@ -436,7 +445,10 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 12
+      },
       "text": "#$$ld"
     },
     {
@@ -446,8 +458,16 @@
     },
     {
       "labels": [],
+      "source": {
+        "file": null,
+        "line": 12
+      },
+      "text": "#$$bf   _Zfibo1i,interprocedural,rasave,nostackparams"
+    },
+    {
+      "labels": [],
       "source": null,
-      "text": "#$$bf   fibo(int),interprocedural,rasave,nostackparams"
+      "text": "_Zfibo1i:"
     },
     {
       "labels": [],
@@ -455,11 +475,6 @@
         "file": null,
         "line": 12
       },
-      "text": "fibo(int):"
-    },
-    {
-      "labels": [],
-      "source": null,
       "text": "#$$dr 0 0 0"
     },
     {
@@ -515,8 +530,8 @@
         {
           "name": ".L46",
           "range": {
-            "endCol": 30,
-            "startCol": 26
+            "endCol": 45,
+            "startCol": 41
           }
         }
       ],
@@ -556,12 +571,20 @@
       "text": "        addi            r3,r3,-1                # n=r3 n=r3"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": "_Zfibo1i",
+          "range": {
+            "endCol": 29,
+            "startCol": 21
+          }
+        }
+      ],
       "source": {
         "file": null,
         "line": 16
       },
-      "text": "        bl          fibo(int)"
+      "text": "        bl          _Zfibo1i"
     },
     {
       "labels": [],
@@ -580,12 +603,20 @@
       "text": "        addi            r3,r31,-2             # n=r3 n=r31"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": "_Zfibo1i",
+          "range": {
+            "endCol": 29,
+            "startCol": 21
+          }
+        }
+      ],
       "source": {
         "file": null,
         "line": 16
       },
-      "text": "        bl          fibo(int)"
+      "text": "        bl          _Zfibo1i"
     },
     {
       "labels": [],
@@ -642,7 +673,10 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 17
+      },
       "text": "#$$ef"
     },
     {
@@ -663,7 +697,7 @@
     {
       "labels": [],
       "source": null,
-      "text": "# Allocations for fibo(int)"
+      "text": "# Allocations for _Zfibo1i"
     },
     {
       "labels": [],
@@ -682,7 +716,10 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 19
+      },
       "text": "#$$ld"
     },
     {
@@ -692,8 +729,16 @@
     },
     {
       "labels": [],
+      "source": {
+        "file": null,
+        "line": 19
+      },
+      "text": "#$$bf   _Zfizz_buzz0,interprocedural,rasave,nostackparams"
+    },
+    {
+      "labels": [],
       "source": null,
-      "text": "#$$bf   fizz_buzz(),interprocedural,rasave,nostackparams"
+      "text": "_Zfizz_buzz0:"
     },
     {
       "labels": [],
@@ -701,11 +746,6 @@
         "file": null,
         "line": 19
       },
-      "text": "fizz_buzz():"
-    },
-    {
-      "labels": [],
-      "source": null,
       "text": "#$$dr 0 0 0"
     },
     {
@@ -766,8 +806,8 @@
         {
           "name": ".L50",
           "range": {
-            "endCol": 30,
-            "startCol": 26
+            "endCol": 45,
+            "startCol": 41
           }
         }
       ],
@@ -846,8 +886,8 @@
         {
           "name": ".L51",
           "range": {
-            "endCol": 29,
-            "startCol": 25
+            "endCol": 45,
+            "startCol": 41
           }
         }
       ],
@@ -979,8 +1019,8 @@
         {
           "name": ".L52",
           "range": {
-            "endCol": 29,
-            "startCol": 25
+            "endCol": 45,
+            "startCol": 41
           }
         }
       ],
@@ -1104,8 +1144,8 @@
         {
           "name": ".L53",
           "range": {
-            "endCol": 30,
-            "startCol": 26
+            "endCol": 45,
+            "startCol": 41
           }
         }
       ],
@@ -1192,8 +1232,8 @@
         {
           "name": ".L53",
           "range": {
-            "endCol": 30,
-            "startCol": 26
+            "endCol": 45,
+            "startCol": 41
           }
         }
       ],
@@ -1375,7 +1415,10 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 34
+      },
       "text": "#$$ef"
     },
     {
@@ -1396,7 +1439,7 @@
     {
       "labels": [],
       "source": null,
-      "text": "# Allocations for fizz_buzz()"
+      "text": "# Allocations for _Zfizz_buzz0"
     },
     {
       "labels": [],
@@ -1405,7 +1448,10 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 37
+      },
       "text": "#$$ld"
     },
     {
@@ -1415,8 +1461,16 @@
     },
     {
       "labels": [],
+      "source": {
+        "file": null,
+        "line": 37
+      },
+      "text": "#$$bf   _ZprintEvenNumbers1i,interprocedural,rasave,nostackparams"
+    },
+    {
+      "labels": [],
       "source": null,
-      "text": "#$$bf   printEvenNumbers(int),interprocedural,rasave,nostackparams"
+      "text": "_ZprintEvenNumbers1i:"
     },
     {
       "labels": [],
@@ -1424,11 +1478,6 @@
         "file": null,
         "line": 37
       },
-      "text": "printEvenNumbers(int):"
-    },
-    {
-      "labels": [],
-      "source": null,
       "text": "#$$dr 0 0 0"
     },
     {
@@ -1505,8 +1554,8 @@
         {
           "name": ".L54",
           "range": {
-            "endCol": 30,
-            "startCol": 26
+            "endCol": 45,
+            "startCol": 41
           }
         }
       ],
@@ -1553,8 +1602,8 @@
         {
           "name": ".L58",
           "range": {
-            "endCol": 29,
-            "startCol": 25
+            "endCol": 45,
+            "startCol": 41
           }
         }
       ],
@@ -1688,7 +1737,10 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 45
+      },
       "text": "#$$ef"
     },
     {
@@ -1709,7 +1761,7 @@
     {
       "labels": [],
       "source": null,
-      "text": "# Allocations for printEvenNumbers(int)"
+      "text": "# Allocations for _ZprintEvenNumbers1i"
     },
     {
       "labels": [],
@@ -1723,7 +1775,10 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 48
+      },
       "text": "#$$ld"
     },
     {
@@ -1733,8 +1788,16 @@
     },
     {
       "labels": [],
+      "source": {
+        "file": null,
+        "line": 48
+      },
+      "text": "#$$bf   _ZprintOddNumbers1i,interprocedural,rasave,nostackparams"
+    },
+    {
+      "labels": [],
       "source": null,
-      "text": "#$$bf   printOddNumbers(int),interprocedural,rasave,nostackparams"
+      "text": "_ZprintOddNumbers1i:"
     },
     {
       "labels": [],
@@ -1742,11 +1805,6 @@
         "file": null,
         "line": 48
       },
-      "text": "printOddNumbers(int):"
-    },
-    {
-      "labels": [],
-      "source": null,
       "text": "#$$dr 0 0 0"
     },
     {
@@ -1823,8 +1881,8 @@
         {
           "name": ".L59",
           "range": {
-            "endCol": 30,
-            "startCol": 26
+            "endCol": 45,
+            "startCol": 41
           }
         }
       ],
@@ -1871,8 +1929,8 @@
         {
           "name": ".L63",
           "range": {
-            "endCol": 30,
-            "startCol": 26
+            "endCol": 45,
+            "startCol": 41
           }
         }
       ],
@@ -2006,7 +2064,10 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 56
+      },
       "text": "#$$ef"
     },
     {
@@ -2027,7 +2088,7 @@
     {
       "labels": [],
       "source": null,
-      "text": "# Allocations for printOddNumbers(int)"
+      "text": "# Allocations for _ZprintOddNumbers1i"
     },
     {
       "labels": [],
@@ -2041,7 +2102,10 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 58
+      },
       "text": "#$$ld"
     },
     {
@@ -2051,8 +2115,16 @@
     },
     {
       "labels": [],
+      "source": {
+        "file": null,
+        "line": 58
+      },
+      "text": "#$$bf   _ZtokenizeString0,interprocedural,rasave,nostackparams"
+    },
+    {
+      "labels": [],
       "source": null,
-      "text": "#$$bf   tokenizeString(),interprocedural,rasave,nostackparams"
+      "text": "_ZtokenizeString0:"
     },
     {
       "labels": [],
@@ -2060,11 +2132,6 @@
         "file": null,
         "line": 58
       },
-      "text": "tokenizeString():"
-    },
-    {
-      "labels": [],
-      "source": null,
       "text": "#$$dr 0 0 0"
     },
     {
@@ -2282,8 +2349,8 @@
         {
           "name": ".L64",
           "range": {
-            "endCol": 30,
-            "startCol": 26
+            "endCol": 45,
+            "startCol": 41
           }
         }
       ],
@@ -2298,8 +2365,8 @@
         {
           "name": ".L160",
           "range": {
-            "endCol": 33,
-            "startCol": 28
+            "endCol": 56,
+            "startCol": 51
           }
         }
       ],
@@ -2314,8 +2381,8 @@
         {
           "name": ".L160",
           "range": {
-            "endCol": 36,
-            "startCol": 31
+            "endCol": 64,
+            "startCol": 59
           }
         }
       ],
@@ -2338,8 +2405,8 @@
         {
           "name": ".L159",
           "range": {
-            "endCol": 33,
-            "startCol": 28
+            "endCol": 56,
+            "startCol": 51
           }
         }
       ],
@@ -2354,8 +2421,8 @@
         {
           "name": ".L159",
           "range": {
-            "endCol": 36,
-            "startCol": 31
+            "endCol": 64,
+            "startCol": 59
           }
         }
       ],
@@ -2444,7 +2511,10 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 72
+      },
       "text": "#$$ef"
     },
     {
@@ -2465,7 +2535,7 @@
     {
       "labels": [],
       "source": null,
-      "text": "# Allocations for tokenizeString()"
+      "text": "# Allocations for _ZtokenizeString0"
     },
     {
       "labels": [],
@@ -2489,7 +2559,10 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 74
+      },
       "text": "#$$ld"
     },
     {
@@ -2499,17 +2572,26 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 74
+      },
       "text": "#$$bf   main,interprocedural,rasave,nostackparams"
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 74
+      },
       "text": "main:"
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 74
+      },
       "text": "#$$dr 0 0 0"
     },
     {
@@ -2553,12 +2635,20 @@
       "text": "        diab.li   r3,10"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": "_Zfibo1i",
+          "range": {
+            "endCol": 29,
+            "startCol": 21
+          }
+        }
+      ],
       "source": {
         "file": null,
         "line": 76
       },
-      "text": "        bl          fibo(int)"
+      "text": "        bl          _Zfibo1i"
     },
     {
       "labels": [],
@@ -2569,12 +2659,20 @@
       "text": "        mr          r31,r3"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": "_Zfizz_buzz0",
+          "range": {
+            "endCol": 33,
+            "startCol": 21
+          }
+        }
+      ],
       "source": {
         "file": null,
         "line": 77
       },
-      "text": "        bl          fizz_buzz()"
+      "text": "        bl          _Zfizz_buzz0"
     },
     {
       "labels": [],
@@ -2585,12 +2683,20 @@
       "text": "        mr          r3,r31"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": "_ZprintOddNumbers1i",
+          "range": {
+            "endCol": 40,
+            "startCol": 21
+          }
+        }
+      ],
       "source": {
         "file": null,
         "line": 78
       },
-      "text": "        bl          printOddNumbers(int)"
+      "text": "        bl          _ZprintOddNumbers1i"
     },
     {
       "labels": [],
@@ -2729,20 +2835,36 @@
       "text": "        addi            r3,r1,8"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": "_ZtestFunction2dd",
+          "range": {
+            "endCol": 38,
+            "startCol": 21
+          }
+        }
+      ],
       "source": {
         "file": null,
         "line": 80
       },
-      "text": "        bl          testFunction(double*, double)"
+      "text": "        bl          _ZtestFunction2dd"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": "_ZtokenizeString0",
+          "range": {
+            "endCol": 38,
+            "startCol": 21
+          }
+        }
+      ],
       "source": {
         "file": null,
         "line": 81
       },
-      "text": "        bl          tokenizeString()"
+      "text": "        bl          _ZtokenizeString0"
     },
     {
       "labels": [],
@@ -2794,7 +2916,10 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 83
+      },
       "text": "#$$ef"
     },
     {
@@ -2991,6 +3116,16 @@
       "labels": [],
       "source": null,
       "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
     }
   ],
   "labelDefinitions": {
@@ -3020,6 +3155,12 @@
     ".L64": 296,
     ".L65": 364,
     ".L66": 284,
+    "_Zfibo1i": 66,
+    "_Zfizz_buzz0": 100,
+    "_ZprintEvenNumbers1i": 182,
+    "_ZprintOddNumbers1i": 222,
+    "_ZtestFunction2dd": 15,
+    "_ZtokenizeString0": 262,
     "main": 313
   }
 }

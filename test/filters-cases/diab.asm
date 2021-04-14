@@ -34,10 +34,10 @@
 #$$ld
 .L84:
 
-#$$bf   testFunction(double*, double),interprocedural,rasave,nostackparams
-        .globl      testFunction(double*, double)
+#$$bf   _ZtestFunction2dd,interprocedural,rasave,nostackparams
+        .globl      _ZtestFunction2dd
         .d2_cfa_start.r __cie
-testFunction(double*, double):
+_ZtestFunction2dd:
 #$$dr 0 0 0
 .Llo1:
         stwu            r1,-48(r1)          
@@ -102,11 +102,11 @@ testFunction(double*, double):
         .text
 #$$ld
 .L85:
-        .type         testFunction(double*, double),@function
-        .size         testFunction(double*, double),.-testFunction(double*, double)
+        .type         _ZtestFunction2dd,@function
+        .size         _ZtestFunction2dd,.-_ZtestFunction2dd
 # Number of nodes = 24
 
-# Allocations for testFunction(double*, double)
+# Allocations for _ZtestFunction2dd
 #       ?a4         input
 #       ?a5         length
 #       ?a7         sum
@@ -117,10 +117,10 @@ testFunction(double*, double):
 #$$ld
 .L101:
 
-#$$bf   fibo(int),interprocedural,rasave,nostackparams
-        .globl      fibo(int)
+#$$bf   _Zfibo1i,interprocedural,rasave,nostackparams
+        .globl      _Zfibo1i
         .d2_cfa_start.r __cie
-fibo(int):
+_Zfibo1i:
 #$$dr 0 0 0
 .Llo5:
         stwu            r1,-32(r1)          
@@ -143,10 +143,10 @@ fibo(int):
         .d2line   16
 .Llo7:
         addi            r3,r3,-1                # n=r3 n=r3
-        bl          fibo(int)
+        bl          _Zfibo1i
         mr          r30,r3      # n=r30
         addi            r3,r31,-2             # n=r3 n=r31
-        bl          fibo(int)
+        bl          _Zfibo1i
         add       r3,r3,r30         # n=r3 n=r3 n=r30
 .L45:
         .d2line   17
@@ -167,11 +167,11 @@ fibo(int):
         .text
 #$$ld
 .L102:
-        .type         fibo(int),@function
-        .size         fibo(int),.-fibo(int)
+        .type         _Zfibo1i,@function
+        .size         _Zfibo1i,.-_Zfibo1i
 # Number of nodes = 27
 
-# Allocations for fibo(int)
+# Allocations for _Zfibo1i
 #       ?a4         n
 #       ?a5         $$2
 #       ?a6         $$1
@@ -181,10 +181,10 @@ fibo(int):
 #$$ld
 .L108:
 
-#$$bf   fizz_buzz(),interprocedural,rasave,nostackparams
-        .globl      fizz_buzz()
+#$$bf   _Zfizz_buzz0,interprocedural,rasave,nostackparams
+        .globl      _Zfizz_buzz0
         .d2_cfa_start.r __cie
-fizz_buzz():
+_Zfizz_buzz0:
 #$$dr 0 0 0
 .Llo11:
         stwu            r1,-32(r1)          
@@ -284,11 +284,11 @@ fizz_buzz():
         .text
 #$$ld
 .L109:
-        .type         fizz_buzz(),@function
-        .size         fizz_buzz(),.-fizz_buzz()
+        .type         _Zfizz_buzz0,@function
+        .size         _Zfizz_buzz0,.-_Zfizz_buzz0
 # Number of nodes = 50
 
-# Allocations for fizz_buzz()
+# Allocations for _Zfizz_buzz0
 #       ?a4         i
         .align      2
         .text
@@ -296,10 +296,10 @@ fizz_buzz():
 #$$ld
 .L120:
 
-#$$bf   printEvenNumbers(int),interprocedural,rasave,nostackparams
-        .globl      printEvenNumbers(int)
+#$$bf   _ZprintEvenNumbers1i,interprocedural,rasave,nostackparams
+        .globl      _ZprintEvenNumbers1i
         .d2_cfa_start.r __cie
-printEvenNumbers(int):
+_ZprintEvenNumbers1i:
 #$$dr 0 0 0
 .Llo13:
         stwu            r1,-32(r1)          
@@ -358,11 +358,11 @@ printEvenNumbers(int):
         .text
 #$$ld
 .L121:
-        .type         printEvenNumbers(int),@function
-        .size         printEvenNumbers(int),.-printEvenNumbers(int)
+        .type         _ZprintEvenNumbers1i,@function
+        .size         _ZprintEvenNumbers1i,.-_ZprintEvenNumbers1i
 # Number of nodes = 23
 
-# Allocations for printEvenNumbers(int)
+# Allocations for _ZprintEvenNumbers1i
 #       ?a4         N
 #       ?a5         i
         .align      2
@@ -371,10 +371,10 @@ printEvenNumbers(int):
 #$$ld
 .L134:
 
-#$$bf   printOddNumbers(int),interprocedural,rasave,nostackparams
-        .globl      printOddNumbers(int)
+#$$bf   _ZprintOddNumbers1i,interprocedural,rasave,nostackparams
+        .globl      _ZprintOddNumbers1i
         .d2_cfa_start.r __cie
-printOddNumbers(int):
+_ZprintOddNumbers1i:
 #$$dr 0 0 0
 .Llo19:
         stwu            r1,-32(r1)          
@@ -433,11 +433,11 @@ printOddNumbers(int):
         .text
 #$$ld
 .L135:
-        .type         printOddNumbers(int),@function
-        .size         printOddNumbers(int),.-printOddNumbers(int)
+        .type         _ZprintOddNumbers1i,@function
+        .size         _ZprintOddNumbers1i,.-_ZprintOddNumbers1i
 # Number of nodes = 23
 
-# Allocations for printOddNumbers(int)
+# Allocations for _ZprintOddNumbers1i
 #       ?a4         N
 #       ?a5         i
         .align      2
@@ -446,10 +446,10 @@ printOddNumbers(int):
 #$$ld
 .L147:
 
-#$$bf   tokenizeString(),interprocedural,rasave,nostackparams
-        .globl      tokenizeString()
+#$$bf   _ZtokenizeString0,interprocedural,rasave,nostackparams
+        .globl      _ZtokenizeString0
         .d2_cfa_start.r __cie
-tokenizeString():
+_ZtokenizeString0:
 #$$dr 0 0 0
         stwu            r1,-32(r1)          
         .d2_cfa_def_cfa_offset  32
@@ -514,11 +514,11 @@ tokenizeString():
         .text
 #$$ld
 .L148:
-        .type         tokenizeString(),@function
-        .size         tokenizeString(),.-tokenizeString()
+        .type         _ZtokenizeString0,@function
+        .size         _ZtokenizeString0,.-_ZtokenizeString0
 # Number of nodes = 37
 
-# Allocations for tokenizeString()
+# Allocations for _ZtokenizeString0
 #       ?a4         $$4
 #       ?a5         $$3
 #       SP,8      str
@@ -545,13 +545,13 @@ main:
         .d2prologue_end
         .d2line   76
         diab.li   r3,10
-        bl          fibo(int)
+        bl          _Zfibo1i
         mr          r31,r3
         .d2line   77
-        bl          fizz_buzz()
+        bl          _Zfizz_buzz0
         .d2line   78
         mr          r3,r31
-        bl          printOddNumbers(int)
+        bl          _ZprintOddNumbers1i
         .d2line   79
         lis       r0,16368
         diab.li   r6,0
@@ -571,9 +571,9 @@ main:
         stw       r6,44(r1)
         .d2line   80
         addi            r3,r1,8
-        bl          testFunction(double*, double)
+        bl          _ZtestFunction2dd
         .d2line   81
-        bl          tokenizeString()
+        bl          _ZtokenizeString0
         .d2line   82
         diab.li   r3,0
         .d2line   83
@@ -1286,29 +1286,29 @@ FLOAT_TEMP.165:
         .wrcm.nelem "functions"
         .wrcm.nelem "main"
         .wrcm.nint32 "frameSize", 64
-        .wrcm.nstrlist "calls", "testFunction(double*, double)","tokenizeString()","printOddNumbers(int)","fibo(int)","fizz_buzz()"
+        .wrcm.nstrlist "calls", "_ZtestFunction2dd","_ZtokenizeString0","_ZprintOddNumbers1i","_Zfibo1i","_Zfizz_buzz0"
         .wrcm.end
-        .wrcm.nelem "tokenizeString()"
+        .wrcm.nelem "_ZtokenizeString0"
         .wrcm.nint32 "frameSize", 32
         .wrcm.nstrlist "calls", "printf","strtok"
         .wrcm.end
-        .wrcm.nelem "printOddNumbers(int)"
+        .wrcm.nelem "_ZprintOddNumbers1i"
         .wrcm.nint32 "frameSize", 32
         .wrcm.nstrlist "calls", "printf"
         .wrcm.end
-        .wrcm.nelem "printEvenNumbers(int)"
+        .wrcm.nelem "_ZprintEvenNumbers1i"
         .wrcm.nint32 "frameSize", 32
         .wrcm.nstrlist "calls", "printf"
         .wrcm.end
-        .wrcm.nelem "fizz_buzz()"
+        .wrcm.nelem "_Zfizz_buzz0"
         .wrcm.nint32 "frameSize", 32
         .wrcm.nstrlist "calls", "printf"
         .wrcm.end
-        .wrcm.nelem "fibo(int)"
+        .wrcm.nelem "_Zfibo1i"
         .wrcm.nint32 "frameSize", 32
-        .wrcm.nstrlist "calls", "fibo(int)"
+        .wrcm.nstrlist "calls", "_Zfibo1i"
         .wrcm.end
-        .wrcm.nelem "testFunction(double*, double)"
+        .wrcm.nelem "_ZtestFunction2dd"
         .wrcm.nint32 "frameSize", 48
         .wrcm.nstrlist "calls", "_d_add","_d_fge","_d_itod"
         .wrcm.end

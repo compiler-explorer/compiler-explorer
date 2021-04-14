@@ -3258,7 +3258,10 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 5
+      },
       "text": "main:"
     },
     {
@@ -3406,7 +3409,15 @@
       "text": "        call    _ZN5Eigen15DenseCoeffsBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEELi1EEclEll"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": ".LC3",
+          "range": {
+            "endCol": 37,
+            "startCol": 33
+          }
+        }
+      ],
       "source": {
         "file": null,
         "line": 7
@@ -3470,7 +3481,15 @@
       "text": "        call    _ZN5Eigen15DenseCoeffsBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEELi1EEclEll"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": ".LC4",
+          "range": {
+            "endCol": 37,
+            "startCol": 33
+          }
+        }
+      ],
       "source": {
         "file": null,
         "line": 8
@@ -3534,7 +3553,15 @@
       "text": "        call    _ZN5Eigen15DenseCoeffsBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEELi1EEclEll"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": ".LC5",
+          "range": {
+            "endCol": 37,
+            "startCol": 33
+          }
+        }
+      ],
       "source": {
         "file": null,
         "line": 9
@@ -24923,245 +24950,6 @@
     {
       "labels": [],
       "source": null,
-      "text": "_Z41__static_initialization_and_destruction_0ii:"
-    },
-    {
-      "labels": [],
-      "source": {
-        "file": null,
-        "line": 12
-      },
-      "text": "        push    rbp"
-    },
-    {
-      "labels": [],
-      "source": {
-        "file": null,
-        "line": 12
-      },
-      "text": "        mov     rbp, rsp"
-    },
-    {
-      "labels": [],
-      "source": {
-        "file": null,
-        "line": 12
-      },
-      "text": "        sub     rsp, 16"
-    },
-    {
-      "labels": [],
-      "source": {
-        "file": null,
-        "line": 12
-      },
-      "text": "        mov     DWORD PTR [rbp-4], edi"
-    },
-    {
-      "labels": [],
-      "source": {
-        "file": null,
-        "line": 12
-      },
-      "text": "        mov     DWORD PTR [rbp-8], esi"
-    },
-    {
-      "labels": [],
-      "source": {
-        "file": null,
-        "line": 12
-      },
-      "text": "        cmp     DWORD PTR [rbp-4], 1"
-    },
-    {
-      "labels": [
-        {
-          "name": ".L328",
-          "range": {
-            "endCol": 22,
-            "startCol": 17
-          }
-        }
-      ],
-      "source": {
-        "file": null,
-        "line": 12
-      },
-      "text": "        jne     .L328"
-    },
-    {
-      "labels": [],
-      "source": {
-        "file": null,
-        "line": 12
-      },
-      "text": "        cmp     DWORD PTR [rbp-8], 65535"
-    },
-    {
-      "labels": [
-        {
-          "name": ".L328",
-          "range": {
-            "endCol": 22,
-            "startCol": 17
-          }
-        }
-      ],
-      "source": {
-        "file": null,
-        "line": 12
-      },
-      "text": "        jne     .L328"
-    },
-    {
-      "labels": [],
-      "source": {
-        "file": "/opt/compiler-explorer/gcc-8.3.0/include/c++/8.3.0/iostream",
-        "line": 74
-      },
-      "text": "        mov     edi, OFFSET FLAT:_ZStL8__ioinit"
-    },
-    {
-      "labels": [],
-      "source": {
-        "file": "/opt/compiler-explorer/gcc-8.3.0/include/c++/8.3.0/iostream",
-        "line": 74
-      },
-      "text": "        call    _ZNSt8ios_base4InitC1Ev"
-    },
-    {
-      "labels": [],
-      "source": {
-        "file": "/opt/compiler-explorer/gcc-8.3.0/include/c++/8.3.0/iostream",
-        "line": 74
-      },
-      "text": "        mov     edx, OFFSET FLAT:__dso_handle"
-    },
-    {
-      "labels": [],
-      "source": {
-        "file": "/opt/compiler-explorer/gcc-8.3.0/include/c++/8.3.0/iostream",
-        "line": 74
-      },
-      "text": "        mov     esi, OFFSET FLAT:_ZStL8__ioinit"
-    },
-    {
-      "labels": [],
-      "source": {
-        "file": "/opt/compiler-explorer/gcc-8.3.0/include/c++/8.3.0/iostream",
-        "line": 74
-      },
-      "text": "        mov     edi, OFFSET FLAT:_ZNSt8ios_base4InitD1Ev"
-    },
-    {
-      "labels": [],
-      "source": {
-        "file": "/opt/compiler-explorer/gcc-8.3.0/include/c++/8.3.0/iostream",
-        "line": 74
-      },
-      "text": "        call    __cxa_atexit"
-    },
-    {
-      "labels": [],
-      "source": null,
-      "text": ".L328:"
-    },
-    {
-      "labels": [],
-      "source": {
-        "file": null,
-        "line": 12
-      },
-      "text": "        nop"
-    },
-    {
-      "labels": [],
-      "source": {
-        "file": null,
-        "line": 12
-      },
-      "text": "        leave"
-    },
-    {
-      "labels": [],
-      "source": {
-        "file": null,
-        "line": 12
-      },
-      "text": "        ret"
-    },
-    {
-      "labels": [],
-      "source": null,
-      "text": "_GLOBAL__sub_I_main:"
-    },
-    {
-      "labels": [],
-      "source": {
-        "file": null,
-        "line": 12
-      },
-      "text": "        push    rbp"
-    },
-    {
-      "labels": [],
-      "source": {
-        "file": null,
-        "line": 12
-      },
-      "text": "        mov     rbp, rsp"
-    },
-    {
-      "labels": [],
-      "source": {
-        "file": null,
-        "line": 12
-      },
-      "text": "        mov     esi, 65535"
-    },
-    {
-      "labels": [],
-      "source": {
-        "file": null,
-        "line": 12
-      },
-      "text": "        mov     edi, 1"
-    },
-    {
-      "labels": [
-        {
-          "name": "_Z41__static_initialization_and_destruction_0ii",
-          "range": {
-            "endCol": 64,
-            "startCol": 17
-          }
-        }
-      ],
-      "source": {
-        "file": null,
-        "line": 12
-      },
-      "text": "        call    _Z41__static_initialization_and_destruction_0ii"
-    },
-    {
-      "labels": [],
-      "source": {
-        "file": null,
-        "line": 12
-      },
-      "text": "        pop     rbp"
-    },
-    {
-      "labels": [],
-      "source": {
-        "file": null,
-        "line": 12
-      },
-      "text": "        ret"
-    },
-    {
-      "labels": [],
-      "source": null,
       "text": "_ZZN5Eigen15PlainObjectBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEE6resizeEllE19__PRETTY_FUNCTION__:"
     },
     {
@@ -25297,7 +25085,6 @@
     ".L302": 2784,
     ".L31": 283,
     ".L317": 2865,
-    ".L328": 2925,
     ".L33": 327,
     ".L35": 322,
     ".L36": 334,
@@ -25332,15 +25119,13 @@
     ".LC12": 2233,
     ".LC13": 2427,
     ".LC2": 206,
-    ".LC3": 2943,
-    ".LC4": 2946,
-    ".LC5": 2949,
+    ".LC3": 2915,
+    ".LC4": 2918,
+    ".LC5": 2921,
     ".LC6": 731,
     ".LC7": 733,
     ".LC8": 806,
     ".LC9": 808,
-    "_GLOBAL__sub_I_main": 2929,
-    "_Z41__static_initialization_and_destruction_0ii": 2909,
     "_ZN5Eigen10MatrixBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEEC2Ev": 1945,
     "_ZN5Eigen12DenseStorageIdLin1ELin1ELin1ELi0EE6resizeElll": 2499,
     "_ZN5Eigen12DenseStorageIdLin1ELin1ELin1ELi0EEC2Ev": 1956,
@@ -25467,9 +25252,9 @@
     "_ZSt9addressofIKcEPT_RS1_": 2833,
     "_ZSt9addressofIcEPT_RS0_": 2207,
     "_ZStorSt13_Ios_OpenmodeS_": 89,
-    "_ZZN5Eigen15DenseCoeffsBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEELi1EEclEllE19__PRETTY_FUNCTION__": 2941,
-    "_ZZN5Eigen15PlainObjectBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEE6resizeEllE19__PRETTY_FUNCTION__": 2937,
-    "_ZZN5Eigen8internal14aligned_mallocEmE19__PRETTY_FUNCTION__": 2939,
+    "_ZZN5Eigen15DenseCoeffsBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEELi1EEclEllE19__PRETTY_FUNCTION__": 2913,
+    "_ZZN5Eigen15PlainObjectBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEE6resizeEllE19__PRETTY_FUNCTION__": 2909,
+    "_ZZN5Eigen8internal14aligned_mallocEmE19__PRETTY_FUNCTION__": 2911,
     "main": 391
   }
 }

@@ -12,7 +12,10 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 2
+      },
       "text": "main:"
     },
     {

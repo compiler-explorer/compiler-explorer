@@ -7,17 +7,26 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 1
+      },
       "text": "# BB#0:"
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 1
+      },
       "text": "        #DEBUG_VALUE: maxArray:x <- RDI"
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 1
+      },
       "text": "        #DEBUG_VALUE: maxArray:y <- RSI"
     },
     {
@@ -30,7 +39,10 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 1
+      },
       "text": "        #DEBUG_VALUE: i <- 0"
     },
     {
@@ -40,17 +52,26 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 1
+      },
       "text": "        #DEBUG_VALUE: maxArray:x <- RDI"
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 1
+      },
       "text": "        #DEBUG_VALUE: maxArray:y <- RSI"
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 1
+      },
       "text": "        #DEBUG_VALUE: i <- 0"
     },
     {
@@ -87,22 +108,34 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 3
+      },
       "text": "# BB#2:                                 #   in Loop: Header=BB0_1 Depth=1"
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 3
+      },
       "text": "        #DEBUG_VALUE: maxArray:x <- RDI"
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 3
+      },
       "text": "        #DEBUG_VALUE: maxArray:y <- RSI"
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 3
+      },
       "text": "        #DEBUG_VALUE: i <- 0"
     },
     {
@@ -120,17 +153,26 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 3
+      },
       "text": "        #DEBUG_VALUE: maxArray:x <- RDI"
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 3
+      },
       "text": "        #DEBUG_VALUE: maxArray:y <- RSI"
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 3
+      },
       "text": "        #DEBUG_VALUE: i <- 0"
     },
     {
@@ -175,22 +217,34 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 3
+      },
       "text": "# BB#4:                                 #   in Loop: Header=BB0_1 Depth=1"
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 3
+      },
       "text": "        #DEBUG_VALUE: maxArray:x <- RDI"
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 3
+      },
       "text": "        #DEBUG_VALUE: maxArray:y <- RSI"
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 3
+      },
       "text": "        #DEBUG_VALUE: i <- 0"
     },
     {
@@ -208,17 +262,26 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 3
+      },
       "text": "        #DEBUG_VALUE: maxArray:x <- RDI"
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 3
+      },
       "text": "        #DEBUG_VALUE: maxArray:y <- RSI"
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 3
+      },
       "text": "        #DEBUG_VALUE: i <- 0"
     },
     {
@@ -263,7 +326,10 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 2
+      },
       "text": "# BB#6:"
     },
     {

@@ -2,11 +2,13 @@
   "asm": [
     {
       "labels": [],
-      "source": {
-        "file": null,
-        "line": 4
-      },
-      "text": "testFunction(double*, double):"
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "_ZtestFunction2dd:"
     },
     {
       "labels": [],
@@ -146,8 +148,8 @@
         {
           "name": ".L44",
           "range": {
-            "endCol": 29,
-            "startCol": 25
+            "endCol": 45,
+            "startCol": 41
           }
         }
       ],
@@ -321,11 +323,13 @@
     },
     {
       "labels": [],
-      "source": {
-        "file": null,
-        "line": 12
-      },
-      "text": "fibo(int):"
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "_Zfibo1i:"
     },
     {
       "labels": [],
@@ -380,8 +384,8 @@
         {
           "name": ".L46",
           "range": {
-            "endCol": 30,
-            "startCol": 26
+            "endCol": 45,
+            "startCol": 41
           }
         }
       ],
@@ -421,12 +425,20 @@
       "text": "        addi            r3,r3,-1                # n=r3 n=r3"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": "_Zfibo1i",
+          "range": {
+            "endCol": 29,
+            "startCol": 21
+          }
+        }
+      ],
       "source": {
         "file": null,
         "line": 16
       },
-      "text": "        bl          fibo(int)"
+      "text": "        bl          _Zfibo1i"
     },
     {
       "labels": [],
@@ -445,12 +457,20 @@
       "text": "        addi            r3,r31,-2             # n=r3 n=r31"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": "_Zfibo1i",
+          "range": {
+            "endCol": 29,
+            "startCol": 21
+          }
+        }
+      ],
       "source": {
         "file": null,
         "line": 16
       },
-      "text": "        bl          fibo(int)"
+      "text": "        bl          _Zfibo1i"
     },
     {
       "labels": [],
@@ -512,11 +532,13 @@
     },
     {
       "labels": [],
-      "source": {
-        "file": null,
-        "line": 19
-      },
-      "text": "fizz_buzz():"
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "_Zfizz_buzz0:"
     },
     {
       "labels": [],
@@ -576,8 +598,8 @@
         {
           "name": ".L50",
           "range": {
-            "endCol": 30,
-            "startCol": 26
+            "endCol": 45,
+            "startCol": 41
           }
         }
       ],
@@ -656,8 +678,8 @@
         {
           "name": ".L51",
           "range": {
-            "endCol": 29,
-            "startCol": 25
+            "endCol": 45,
+            "startCol": 41
           }
         }
       ],
@@ -789,8 +811,8 @@
         {
           "name": ".L52",
           "range": {
-            "endCol": 29,
-            "startCol": 25
+            "endCol": 45,
+            "startCol": 41
           }
         }
       ],
@@ -914,8 +936,8 @@
         {
           "name": ".L53",
           "range": {
-            "endCol": 30,
-            "startCol": 26
+            "endCol": 45,
+            "startCol": 41
           }
         }
       ],
@@ -1002,8 +1024,8 @@
         {
           "name": ".L53",
           "range": {
-            "endCol": 30,
-            "startCol": 26
+            "endCol": 45,
+            "startCol": 41
           }
         }
       ],
@@ -1190,11 +1212,13 @@
     },
     {
       "labels": [],
-      "source": {
-        "file": null,
-        "line": 37
-      },
-      "text": "printEvenNumbers(int):"
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "_ZprintEvenNumbers1i:"
     },
     {
       "labels": [],
@@ -1270,8 +1294,8 @@
         {
           "name": ".L54",
           "range": {
-            "endCol": 30,
-            "startCol": 26
+            "endCol": 45,
+            "startCol": 41
           }
         }
       ],
@@ -1318,8 +1342,8 @@
         {
           "name": ".L58",
           "range": {
-            "endCol": 29,
-            "startCol": 25
+            "endCol": 45,
+            "startCol": 41
           }
         }
       ],
@@ -1458,11 +1482,13 @@
     },
     {
       "labels": [],
-      "source": {
-        "file": null,
-        "line": 48
-      },
-      "text": "printOddNumbers(int):"
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "_ZprintOddNumbers1i:"
     },
     {
       "labels": [],
@@ -1538,8 +1564,8 @@
         {
           "name": ".L59",
           "range": {
-            "endCol": 30,
-            "startCol": 26
+            "endCol": 45,
+            "startCol": 41
           }
         }
       ],
@@ -1586,8 +1612,8 @@
         {
           "name": ".L63",
           "range": {
-            "endCol": 30,
-            "startCol": 26
+            "endCol": 45,
+            "startCol": 41
           }
         }
       ],
@@ -1726,11 +1752,13 @@
     },
     {
       "labels": [],
-      "source": {
-        "file": null,
-        "line": 58
-      },
-      "text": "tokenizeString():"
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "_ZtokenizeString0:"
     },
     {
       "labels": [],
@@ -1947,8 +1975,8 @@
         {
           "name": ".L64",
           "range": {
-            "endCol": 30,
-            "startCol": 26
+            "endCol": 45,
+            "startCol": 41
           }
         }
       ],
@@ -1963,8 +1991,8 @@
         {
           "name": ".L160",
           "range": {
-            "endCol": 33,
-            "startCol": 28
+            "endCol": 56,
+            "startCol": 51
           }
         }
       ],
@@ -1979,8 +2007,8 @@
         {
           "name": ".L160",
           "range": {
-            "endCol": 36,
-            "startCol": 31
+            "endCol": 64,
+            "startCol": 59
           }
         }
       ],
@@ -2003,8 +2031,8 @@
         {
           "name": ".L159",
           "range": {
-            "endCol": 33,
-            "startCol": 28
+            "endCol": 56,
+            "startCol": 51
           }
         }
       ],
@@ -2019,8 +2047,8 @@
         {
           "name": ".L159",
           "range": {
-            "endCol": 36,
-            "startCol": 31
+            "endCol": 64,
+            "startCol": 59
           }
         }
       ],
@@ -2115,6 +2143,14 @@
     {
       "labels": [],
       "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 74
+      },
       "text": "main:"
     },
     {
@@ -2158,12 +2194,20 @@
       "text": "        diab.li   r3,10"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": "_Zfibo1i",
+          "range": {
+            "endCol": 29,
+            "startCol": 21
+          }
+        }
+      ],
       "source": {
         "file": null,
         "line": 76
       },
-      "text": "        bl          fibo(int)"
+      "text": "        bl          _Zfibo1i"
     },
     {
       "labels": [],
@@ -2174,12 +2218,20 @@
       "text": "        mr          r31,r3"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": "_Zfizz_buzz0",
+          "range": {
+            "endCol": 33,
+            "startCol": 21
+          }
+        }
+      ],
       "source": {
         "file": null,
         "line": 77
       },
-      "text": "        bl          fizz_buzz()"
+      "text": "        bl          _Zfizz_buzz0"
     },
     {
       "labels": [],
@@ -2190,12 +2242,20 @@
       "text": "        mr          r3,r31"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": "_ZprintOddNumbers1i",
+          "range": {
+            "endCol": 40,
+            "startCol": 21
+          }
+        }
+      ],
       "source": {
         "file": null,
         "line": 78
       },
-      "text": "        bl          printOddNumbers(int)"
+      "text": "        bl          _ZprintOddNumbers1i"
     },
     {
       "labels": [],
@@ -2334,20 +2394,36 @@
       "text": "        addi            r3,r1,8"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": "_ZtestFunction2dd",
+          "range": {
+            "endCol": 38,
+            "startCol": 21
+          }
+        }
+      ],
       "source": {
         "file": null,
         "line": 80
       },
-      "text": "        bl          testFunction(double*, double)"
+      "text": "        bl          _ZtestFunction2dd"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": "_ZtokenizeString0",
+          "range": {
+            "endCol": 38,
+            "startCol": 21
+          }
+        }
+      ],
       "source": {
         "file": null,
         "line": 81
       },
-      "text": "        bl          tokenizeString()"
+      "text": "        bl          _ZtokenizeString0"
     },
     {
       "labels": [],
@@ -2526,35 +2602,51 @@
       "labels": [],
       "source": null,
       "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
     }
   ],
   "labelDefinitions": {
-    ".L114": 275,
-    ".L115": 278,
-    ".L116": 281,
-    ".L117": 284,
-    ".L131": 287,
-    ".L158": 206,
-    ".L159": 290,
-    ".L160": 293,
-    ".L42": 12,
-    ".L44": 31,
-    ".L45": 56,
-    ".L46": 49,
-    ".L48": 69,
-    ".L50": 128,
-    ".L51": 84,
-    ".L52": 98,
-    ".L53": 122,
-    ".L54": 159,
-    ".L55": 143,
-    ".L58": 156,
-    ".L59": 189,
-    ".L60": 173,
-    ".L63": 186,
-    ".L64": 229,
-    ".L65": 272,
-    ".L66": 217,
-    "main": 235
+    ".L114": 282,
+    ".L115": 285,
+    ".L116": 288,
+    ".L117": 291,
+    ".L131": 294,
+    ".L158": 212,
+    ".L159": 297,
+    ".L160": 300,
+    ".L42": 13,
+    ".L44": 32,
+    ".L45": 58,
+    ".L46": 51,
+    ".L48": 72,
+    ".L50": 131,
+    ".L51": 87,
+    ".L52": 101,
+    ".L53": 125,
+    ".L54": 163,
+    ".L55": 147,
+    ".L58": 160,
+    ".L59": 194,
+    ".L60": 178,
+    ".L63": 191,
+    ".L64": 235,
+    ".L65": 279,
+    ".L66": 223,
+    "_Zfibo1i": 42,
+    "_Zfizz_buzz0": 66,
+    "_ZprintEvenNumbers1i": 140,
+    "_ZprintOddNumbers1i": 171,
+    "_ZtestFunction2dd": 2,
+    "_ZtokenizeString0": 202,
+    "main": 242
   }
 }

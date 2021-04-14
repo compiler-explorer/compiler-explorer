@@ -17,7 +17,10 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 2
+      },
       "text": "main:"
     },
     {
@@ -70,7 +73,10 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 2
+      },
       "text": "                                # LOE rbx r12 r13 r14 r15"
     },
     {
@@ -82,7 +88,15 @@
       "text": "        stmxcsr   (%rsp)                                        #2.12"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": ".L_2__STRING.0",
+          "range": {
+            "endCol": 34,
+            "startCol": 20
+          }
+        }
+      ],
       "source": {
         "file": null,
         "line": 3
@@ -123,11 +137,22 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 3
+      },
       "text": "                                # LOE rbx r12 r13 r14 r15"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": ".L_2__STRING.1",
+          "range": {
+            "endCol": 34,
+            "startCol": 20
+          }
+        }
+      ],
       "source": {
         "file": null,
         "line": 4
@@ -152,7 +177,10 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 4
+      },
       "text": "                                # LOE rbx r12 r13 r14 r15"
     },
     {
@@ -189,12 +217,18 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 5
+      },
       "text": "                                # LOE"
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 5
+      },
       "text": "# mark_end;"
     },
     {

@@ -103,13 +103,17 @@ function testFilter(filename, suffix, filters) {
 }
 
 function testAllForFile(filename) {
-    // testFilter(filename, '.none', {});
-    // testFilter(filename, '.directives', {directives: true});
-    // testFilter(filename, '.directives.comments', {directives: true, commentOnly: true});
-    testFilter(filename, '.directives.labels', {directives: true, labels: true});
-    testFilter(filename, '.directives.labels.comments', {directives: true, labels: true, commentOnly: true});
-    // testFilter(filename, '.directives.labels.comments.library', {directives: true, labels: true, commentOnly: true, libraryCode: true});
-    // testFilter(filename, '.directives.library', {directives: true, libraryCode: true});
+    if (filename.includes('bintest')) {
+        testFilter(filename, '.binary.directives.labels.comments', {binary: true, directives: true, labels: true, commentOnly: true});
+    } else {
+        // testFilter(filename, '.none', {});
+        // testFilter(filename, '.directives', {directives: true});
+        // testFilter(filename, '.directives.comments', {directives: true, commentOnly: true});
+        testFilter(filename, '.directives.labels', {directives: true, labels: true});
+        testFilter(filename, '.directives.labels.comments', {directives: true, labels: true, commentOnly: true});
+        // testFilter(filename, '.directives.labels.comments.library', {directives: true, labels: true, commentOnly: true, libraryCode: true});
+        // testFilter(filename, '.directives.library', {directives: true, libraryCode: true});
+    }
 }
 
 describe('Filter test cases', function () {
@@ -119,9 +123,9 @@ describe('Filter test cases', function () {
     testAllForFile('arm-moose.asm');
     testAllForFile('arm-static.asm');
     testAllForFile('avr-loop.asm');
-    // testAllForFile('bintest-1.asm');
-    // testAllForFile('bintest-2.asm');
-    // testAllForFile('bintest-unicode-1.asm');
+    testAllForFile('bintest-1.asm');
+    testAllForFile('bintest-2.asm');
+    testAllForFile('bintest-unicode-1.asm');
     testAllForFile('bug-1179.asm');
     testAllForFile('bug-1229.asm');
     testAllForFile('bug-1285.asm');
@@ -141,32 +145,32 @@ describe('Filter test cases', function () {
     testAllForFile('bug-577_gcc.asm');
     testAllForFile('bug-577_icc.asm');
     testAllForFile('bug-629.asm');
-    // testAllForFile('bug-660.asm');
+    testAllForFile('bug-660.asm');
     testAllForFile('bug-725_rust.asm');
     // testAllForFile('bug-995.asm');
     // testAllForFile('clang-cuda-example.asm');
     testAllForFile('clang-hellow.asm');
-    // testAllForFile('clang-maxArray.asm');
-    // testAllForFile('clang-on-mac.asm');
-    // testAllForFile('clang-static.asm');
-    // testAllForFile('diab.asm');
-    // testAllForFile('eigen-test.asm');
-    // testAllForFile('gcc-arm-sum.asm');
-    // testAllForFile('gcc-avr-sum.asm');
-    // testAllForFile('gcc-sum.asm');
-    // testAllForFile('gcc-x86-vector.asm');
-    // testAllForFile('gcc4.6-hellow.asm');
-    // testAllForFile('gcc4.6-static.asm');
-    // testAllForFile('icc-static.asm');
-    // testAllForFile('icc.hellow.asm');
-    // testAllForFile('kalray-hellow.asm');
-    // testAllForFile('mcore-square.asm');
-    // testAllForFile('mips5-square.asm');
+    testAllForFile('clang-maxArray.asm');
+    testAllForFile('clang-on-mac.asm');
+    testAllForFile('clang-static.asm');
+    testAllForFile('diab.asm');
+    testAllForFile('eigen-test.asm');
+    testAllForFile('gcc-arm-sum.asm');
+    testAllForFile('gcc-avr-sum.asm');
+    testAllForFile('gcc-sum.asm');
+    testAllForFile('gcc-x86-vector.asm');
+    testAllForFile('gcc4.6-hellow.asm');
+    testAllForFile('gcc4.6-static.asm');
+    testAllForFile('icc-static.asm');
+    testAllForFile('icc.hellow.asm');
+    testAllForFile('kalray-hellow.asm');
+    testAllForFile('mcore-square.asm');
+    testAllForFile('mips5-square.asm');
     // testAllForFile('nvcc-example.asm');
-    // testAllForFile('rx-mas100-square.asm');
-    // testAllForFile('sass-square.asm');
-    // testAllForFile('sass-squarelabeled.asm');
-    // testAllForFile('string-constant.asm');
+    testAllForFile('rx-mas100-square.asm');
+    testAllForFile('sass-square.asm');
+    testAllForFile('sass-squarelabeled.asm');
+    testAllForFile('string-constant.asm');
     // testAllForFile('vc-main-opt-out.asm');
     // testAllForFile('vc-numbers.asm');
     // testAllForFile('vc-regex.asm');

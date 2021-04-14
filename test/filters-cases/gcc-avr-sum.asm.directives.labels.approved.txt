@@ -174,17 +174,26 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 1
+      },
       "text": "/* prologue: function */"
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 1
+      },
       "text": "/* frame size = 8 */"
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 1
+      },
       "text": "/* stack size = 10 */"
     },
     {
@@ -620,7 +629,10 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "file": null,
+        "line": 6
+      },
       "text": "/* epilogue start */"
     },
     {
