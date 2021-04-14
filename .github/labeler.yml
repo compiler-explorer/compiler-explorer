@@ -1,2 +1,71 @@
 ui:
     - static/**/*
+lang-ada:
+    - lib/compilers/ada.js
+    - etc/config/ada.*.properties
+lang-asm:
+    - lib/compilers/assembly.js
+    - lib/compilers/nasm.js
+    - lib/compilers/ptxas.js
+    - etc/config/assembly.*.properties
+lang-c:
+    - lib/compilers/cc65.js
+    - lib/compilers/ellcc.js
+    - lib/compilers/ewarm.js
+    - lib/compilers/awavr.js
+    - lib/compilers/ppci.js
+    - lib/compilers/sdcc.js
+    - lib/compilers/tendra.js
+    - etc/config/c.*.properties
+lang-c++:
+    - lib/compilers/ewarm.js
+    - lib/compilers/awavr.js
+    - etc/config/c++.*.properties
+lang-clean:
+    - lib/compilers/clean.js
+    - etc/config/clean.*.properties
+lang-cppx:
+    - etc/config/cppx?(_blue|_gold).*.properties
+lang-cuda:
+    - lib/compilers/nvcc.js
+    - etc/config/cuda.*.properties
+lang-d:
+    - lib/compilers/dmd.js
+    - lib/compilers/ldc.js
+    - etc/config/d.*.properties
+lang-fortran:
+    - lib/compilers/fortran.js
+    - etc/config/fortran.*.properties
+lang-go:
+    - lib/compilers/golang.js
+    - etc/config/go.*.properties
+lang-haskell:
+    - lib/compilers/haskell.js
+    - etc/config/haskell.*.properties
+lang-ispc:
+    - lib/compilers/ispc.js
+    - etc/config/ispc.*.properties
+lang-java:
+    - lib/compilers/java.js
+    - etc/config/java.*.properties
+lang-nim:
+    - lib/compilers/nim.js
+    - etc/config/nim.*.properties
+lang-ocaml:
+    - lib/compilers/ocaml.js
+    - etc/config/ocaml.*.properties
+lang-pascal:
+    - lib/compilers/pascal.js
+    - etc/config/pascal.*.properties
+lang-python:
+    - lib/compilers/python.js
+    - etc/config/python.*.properties
+lang-rust:
+    - lib/compilers/rust.js
+    - etc/config/rust.*.properties
+lang-swift:
+    - lib/compilers/swift.js
+    - etc/config/swift.*.properties
+lang-zig:
+    - lib/compilers/zig.js
+    - etc/config/zig.*.properties
