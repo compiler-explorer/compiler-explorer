@@ -1,5 +1,6 @@
 ui:
     - static/**/*
+    - views/**/*
 lang-ada:
     - lib/compilers/ada.js
     - etc/config/ada.*.properties
@@ -69,3 +70,7 @@ lang-swift:
 lang-zig:
     - lib/compilers/zig.js
     - etc/config/zig.*.properties
+documentation:
+    - docs/**/*
+    - README.md
+    - CONTRIBUTING.md
