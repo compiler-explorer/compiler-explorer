@@ -1,0 +1,154 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .set noreorder"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .set volatile"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .set noat"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .set nomacro"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .arch ev4"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .text"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .align 2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .align 4"
+    },
+    {
+      "labels": [
+        {
+          "name": "issue1989",
+          "range": {
+            "endCol": 26,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .weak   issue1989"
+    },
+    {
+      "labels": [
+        {
+          "name": "issue1989",
+          "range": {
+            "endCol": 23,
+            "startCol": 14
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .ent issue1989"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$issue1989..ng:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "issue1989:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .frame $30,0,$26,0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$LFB0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .cfi_startproc"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .prologue 0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        addl $16,$17,$0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        cmplt $16,$0,$0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ret $31,($26),1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .cfi_endproc"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$LFE0:"
+    },
+    {
+      "labels": [
+        {
+          "name": "issue1989",
+          "range": {
+            "endCol": 23,
+            "startCol": 14
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .end issue1989"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .ident  \"GCC: (GNU) 9.0.1 20190425 (experimental)\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .note.GNU-stack,\"\",@progbits"
+    }
+  ],
+  "labelDefinitions": {
+    "$LFB0": 14,
+    "$LFE0": 21,
+    "$issue1989..ng": 11,
+    "issue1989": 12
+  }
+}

@@ -62,7 +62,7 @@
             include resources/quickbench.svg
           span.hideable &nbsp;Quick-bench
       .btn-group.btn-group-sm.ml-auto(role="group" aria-label="Editor language")
-        select.change-language(title="Change this editor's (and associated panels) language" disabled=embedded && readOnly)
+        select.change-language(title="Change this editor's (and associated panels) language" placeholder="Language" disabled=embedded && readOnly)
     div#v-status
     .monaco-placeholder
 
@@ -150,12 +150,18 @@
                   | 0
                 | )
         span.short-compiler-name
-        button.btn.btn-sm.btn-light.fas.fa-info.full-compiler-name(data-trigger="click" style="cursor: pointer;" role="button" title="Full compiler version")
-        span.compile-time(title="Compilation time (Result size)")
+        button.btn.btn-sm.btn-light.fas.fa-info.full-compiler-name(data-trigger="click" style="cursor: pointer;" role="button")
+        span.compile-info(title="Compilation info")
+        button.btn.btn-sm.btn-light.fas.fa-signal.full-timing-info(data-trigger="click" style="cursor: pointer;" role="button")
 
   #executor
     .top-bar.btn-toolbar.bg-light(role="toolbar")
       include font-size
+      .btn-group.btn-group-sm.options(role="group" aria-label="Output options")
+        .button-checkbox
+          button.btn.btn-sm.btn-light.wrap-lines(type="button" title="Wrap lines" data-bind="wrap" aria-pressed="false" aria-label="Wrap lines")
+            span Wrap lines
+          input.d-none(type="checkbox" checked=false)
         button.btn.btn-sm.btn-light.show-libs(title="Include libs" aria-label="Toggle libraries dropdown")
           span.fas.fa-book
           span.hideable &nbsp;Libraries
@@ -191,8 +197,9 @@
       .execution-output
     .bottom-bar.bg-light
       span.short-compiler-name
-      button.btn.btn-sm.btn-light.fas.fa-info.full-compiler-name(data-trigger="click" style="cursor: pointer;" role="button" title="Full compiler version")
+      button.btn.btn-sm.btn-light.fas.fa-info.full-compiler-name(data-trigger="click" style="cursor: pointer;" role="button")
       span.compile-time(title="Compilation time (Result size)")
+      button.btn.btn-sm.btn-light.fas.fa-signal.full-timing-info(data-trigger="click" style="cursor: pointer;" role="button")
 
   #compiler-output
     .top-bar.btn-toolbar.options-toolbar.bg-light(role="toolbar")

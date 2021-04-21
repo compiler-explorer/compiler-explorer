@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import path from 'path';
+
 import { NimCompiler } from '../lib/compilers/nim';
 
 import { makeCompilationEnvironment, should } from './utils';
@@ -58,7 +60,7 @@ describe('Nim', () => {
     it('test getCacheFile from possible user-options', () => {
         const compiler = new NimCompiler(info, ce),
             input = 'test.min',
-            folder = '/tmp/',
+            folder = path.join('/', 'tmp/'),
             expected = {
                 cpp: folder + '@m' + input + '.cpp.o',
                 c: folder + '@m' + input + '.c.o',

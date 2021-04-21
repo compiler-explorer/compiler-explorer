@@ -1,10 +1,9 @@
-[![Build Status](https://travis-ci.com/compiler-explorer/compiler-explorer.svg?branch=master)](https://travis-ci.com/github/compiler-explorer/compiler-explorer)
-[![codecov](https://codecov.io/gh/compiler-explorer/compiler-explorer/branch/master/graph/badge.svg)](https://codecov.io/gh/compiler-explorer/compiler-explorer)
+[![Build Status](https://github.com/compiler-explorer/compiler-explorer/workflows/Compiler%20Explorer/badge.svg)](https://github.com/compiler-explorer/compiler-explorer/actions?query=workflow%3A%22Compiler+Explorer%22)
+[![codecov](https://codecov.io/gh/compiler-explorer/compiler-explorer/branch/main/graph/badge.svg)](https://codecov.io/gh/compiler-explorer/compiler-explorer)
 
 ![Compiler Explorer](docs/logo.svg)
 
-Compiler Explorer
-------------
+# Compiler Explorer
 
 **Compiler Explorer** is an interactive compiler. The left-hand pane shows
  editable C, C++, Rust, Go, D, Haskell, Swift, Pascal (and some more!) code.
@@ -27,30 +26,24 @@ You can support [this project on Patreon](https://patreon.com/mattgodbolt).
 
 Since then, it has become a public website serving around [2,000,000 compilations per week](https://www.stathat.com/cards/Tk5csAWI0O7x).
 
-##### FAQ
+## Using Compiler Explorer
+
+### FAQ
 
 There is now a FAQ section [in the repository wiki](https://github.com/compiler-explorer/compiler-explorer/wiki/FAQ).
  If your question is not present, please contact us as described below so we can help you.
  If you find that the FAQ is lacking some important point, please free to contribute to it and/or ask us to clarify it.
 
+### Videos
+
 There are a number of videos that showcase some of the features of Compiler Explorer:
- A [presentation for CppCon 2019 about the project](https://www.youtube.com/watch?v=kIoZDUd5DKw)
- and an [older 2 part series of videos](https://www.youtube.com/watch?v=4_HL3PH4wDg) which go into a bit more detail
+
+* [presentation for CppCon 2019 about the project](https://www.youtube.com/watch?v=kIoZDUd5DKw)
+* [older 2 part series of videos](https://www.youtube.com/watch?v=4_HL3PH4wDg) which go into a bit more detail
  into the more obscure features.
+* [playlist: Compiler Explorer](https://www.youtube.com/playlist?list=PL2HVqYf7If8dNYVN6ayjB06FPyhHCcnhG): A collection of videos discussing Compiler Explorer; using it, installing it, what it's for, etc.
 
-##### Contact us
-
-We run a [Compiler Explorer Discord](https://discord.gg/B5WacA7), which is a place to discuss using or developing
- Compiler Explorer. We also have a presence on the [cpplang](https://cppalliance.org/slack/) slack channel
- `#compiler_explorer` and we have [a public mailing list](https://groups.google.com/forum/#!forum/compiler-explorer-discussion).
-
-There's a development channel on the discord, and also a
- [development mailing list](https://groups.google.com/forum/#!forum/compiler-explorer-development).
- 
-Feel free to raise an issue on [github](https://github.com/compiler-explorer/compiler-explorer/issues) or
- [email Matt directly](mailto:matt@godbolt.org) for more help.
-
-### Developing
+## Developing
 
 **Compiler Explorer** is written in [Node.js](https://nodejs.org/).
 
@@ -68,14 +61,16 @@ Running with `make EXTRA_ARGS='--language LANG'` will allow you to load
  third party libraries needed to run; using `npm` to install server-side and
  client side components.
 
+For development, we suggest using `make dev` to enable some useful features,
+ such as automatic reloading on file changes and shorter startup times.
+
+You can also use `npm run dev` to run if `make dev` doesn't work on your machine.
+
 Some languages need extra tools to demangle them, e.g. `rust`, `d`, or `haskell`.
  Such tools are kept separately in the
  [tools repo](https://github.com/compiler-explorer/compiler-explorer-tools).
 
-The config system leaves a lot to be desired.
- [Work has been done](https://github.com/rabsrincon/ccs-js) on porting
- [CCS](https://github.com/hellige/ccs-cpp) to Javascript and then something
- more rational can be used.
+The config system leaves a lot to be desired. This is something we want to improve.
 
 
 A [Road map](Roadmap.md) is available which gives a little insight into
@@ -90,9 +85,9 @@ If you want to point it at your own GCC or similar binaries, either edit the
 
 When running in a corporate setting the URL shortening service can be replaced
  by an internal one if the default storage driver isn't appropriate for your
- environment. To do this, add a new module in `lib/shortener-myservice.js` and
+ environment. To do this, add a new module in `lib/shortener/myservice.js` and
  set the `urlShortenService` variable in configuration. This module should
- export a single function, see the [tinyurl module](lib/shortener-tinyurl.js)
+ export a single function, see the [tinyurl module](lib/shortener/tinyurl.js)
  for an example.
 
 ### RESTful API
@@ -102,7 +97,19 @@ There's a simple restful API that can be used to do compiles to asm and to
 
 You can find the API documentation [here](docs/API.md).
 
-### Credits
+## Contact us
+
+We run a [Compiler Explorer Discord](https://discord.gg/B5WacA7), which is a place to discuss using or developing
+Compiler Explorer. We also have a presence on the [cpplang](https://cppalliance.org/slack/) slack channel
+`#compiler_explorer` and we have [a public mailing list](https://groups.google.com/forum/#!forum/compiler-explorer-discussion).
+
+There's a development channel on the discord, and also a
+[development mailing list](https://groups.google.com/forum/#!forum/compiler-explorer-development).
+
+Feel free to raise an issue on [github](https://github.com/compiler-explorer/compiler-explorer/issues) or
+[email Matt directly](mailto:matt@godbolt.org) for more help.
+
+## Credits
 
 **Compiler Explorer** is maintained by the awesome people listed in the
  [AUTHORS](AUTHORS.md) file.
@@ -124,6 +131,3 @@ A number of [amazing sponsors](https://godbolt.org/#sponsors), both individuals 
  and for donating licenses to their excellent products to develop **Compiler Explorer**.
 
 ![JetBrains](docs/jetbrains.svg)
-
-
-test

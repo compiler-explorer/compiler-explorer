@@ -192,7 +192,6 @@ Conformance.prototype.addCompilerSelector = function (config) {
         onCompilerChange($(e.target).val());
         this.compileChild(newEntry);
     }, this));
-    onCompilerChange(config.compilerId);
 
 
     var getCompilerConfig = _.bind(function () {

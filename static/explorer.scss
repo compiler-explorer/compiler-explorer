@@ -24,6 +24,17 @@
     cursor: pointer;
 }
 
+// The :root and .monaco-editor .codelens-decoration are used to set the codelens font
+// Official support using the IEditorOptions.codeLensFontFamily property has landed in vscode
+// These blocks should be removed once a downstream release of monaco is cut
+:root {
+    // updated at runtime
+    --user-selected-font-stack: Consolas, "Liberation Mono", Courier, monospace; 
+}
+.monaco-editor .codelens-decoration {
+    font-family: var(--user-selected-font-stack);
+}
+
 body {
     overflow: hidden;
 }
@@ -166,6 +177,16 @@ pre.content.wrap {
     word-break: keep-all;
     overflow-x: hidden;
     white-space: pre-wrap;
+}
+
+pre.content.wrap * {
+    word-wrap: break-word;
+    white-space: pre-wrap; /* Preserve sequences of white space */
+}
+
+.compile-info {
+    font-size: x-small;
+    font-style: italic;
 }
 
 .compile-time {
@@ -716,6 +737,19 @@ div.populararguments div.dropdown-menu {
 
 #library-selection.mobile .libs-favorites-col {
     display: none;
+}
+
+#timing-info .modal-content {
+    min-width: 500px;
+    min-height: 400px;
+}
+
+.icon-link > span {
+    margin-right: 2pt;
+}
+
+span.badge.badge-pill {
+    margin-left: 2pt;
 }
 
 html[data-theme=default] {

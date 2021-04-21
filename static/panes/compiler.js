@@ -40,10 +40,13 @@ var local = require('../local');
 var Libraries = require('../libs-widget-ext');
 var codeLensHandler = require('../codelens-handler');
 var monacoConfig = require('../monaco-config');
+var timingInfoWidget = require('../timing-info-widget');
 require('../modes/asm-mode');
 require('../modes/ptx-mode');
 
 require('selectize');
+
+var timingInfo = new timingInfoWidget.TimingInfo();
 
 var OpcodeCache = new LruCache({
     max: 64 * 1024,
@@ -92,6 +95,7 @@ function Compiler(hub, container, state) {
     this.assembly = [];
     this.colours = [];
     this.lastResult = {};
+    this.lastTimeTaken = 0;
     this.pendingRequestSentAt = 0;
     this.nextRequest = null;
     this.optViewOpen = false;
@@ -461,14 +465,14 @@ Compiler.prototype.initEditorActions = function () {
             var source = this.assembly[desiredLine].source;
             if (source !== null && source.file === null) {
                 // a null file means it was the user's source
-                this.eventHub.emit('editorLinkLine', this.sourceEditorId, source.line, -1, true);
+                this.eventHub.emit('editorLinkLine', this.sourceEditorId, source.line, -1, -1, true);
             }
         }, this),
     });
 
     this.outputEditor.addAction({
         id: 'viewasmdoc',
-        label: 'View x86-64 opcode doc',
+        label: 'View assembly documentation',
         keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.F8],
         keybindingContext: null,
         contextMenuGroupId: 'help',
@@ -575,7 +579,7 @@ Compiler.prototype.compile = function (bypassCache, newTools) {
         return;
     }
     this.needsCompile = false;
-    this.compileTimeLabel.text(' - Compiling...');
+    this.compileInfoLabel.text(' - Compiling...');
     var options = {
         userArguments: this.options,
         compilerOptions: {
@@ -637,7 +641,7 @@ Compiler.prototype.sendCompile = function (request) {
     // After a short delay, give the user some indication that we're working on their
     // compilation.
     var progress = setTimeout(_.bind(function () {
-        this.setAssembly(fakeAsm('<Compiling...>'));
+        this.setAssembly({asm: fakeAsm('<Compiling...>')}, 0);
     }, this), 500);
     this.compilerService.submit(request)
         .then(function (x) {
@@ -680,11 +684,26 @@ Compiler.prototype.getBinaryForLine = function (line) {
     }
 };
 
-Compiler.prototype.setAssembly = function (asm) {
+Compiler.prototype.setAssembly = function (result, filteredCount) {
+    var asm = result.asm || fakeAsm('<No output>');
     this.assembly = asm;
     if (!this.outputEditor || !this.outputEditor.getModel()) return;
     var editorModel = this.outputEditor.getModel();
-    editorModel.setValue(asm.length ? _.pluck(asm, 'text').join('\n') : '<No assembly generated>');
+    var msg = '<No assembly generated>';
+    if (asm.length) {
+        msg = _.pluck(asm, 'text').join('\n');
+    } else if (filteredCount > 0) {
+        msg = '<No assembly to display (~' + filteredCount + (filteredCount === 1 ? ' line' : ' lines') + ' filtered)>';
+    }
+
+    if (asm.length === 1 && result.code !== 0 && (result.stderr || result.stdout)) {
+        msg += '\n\n# For more information see the output window';
+        if (!this.isOutputOpened) {
+            msg += '\n# To open the output window, click or drag the "Output" icon at the bottom of this window';
+        }
+    }
+
+    editorModel.setValue(msg);
 
     if (!this.awaitingInitialResults) {
         if (this.selection) {
@@ -710,6 +729,9 @@ Compiler.prototype.setAssembly = function (asm) {
                     line + 1, label.range.endCol),
                 options: {
                     inlineClassName: 'asm-label-link',
+                    hoverMessage: [{
+                        value: 'Ctrl + Left click to follow the label',
+                    }],
                 },
             });
         }, this);
@@ -766,6 +788,7 @@ Compiler.prototype.onCompileResponse = function (request, result, cached) {
     result.source = this.source;
     this.lastResult = result;
     var timeTaken = Math.max(0, Date.now() - this.pendingRequestSentAt);
+    this.lastTimeTaken = timeTaken;
     var wasRealReply = this.pendingRequestSentAt > 0;
     this.pendingRequestSentAt = 0;
     ga.proxy('send', {
@@ -783,7 +806,7 @@ Compiler.prototype.onCompileResponse = function (request, result, cached) {
     });
 
     this.labelDefinitions = result.labelDefinitions || {};
-    this.setAssembly(result.asm || fakeAsm('<No output>'));
+    this.setAssembly(result, result.filteredCount || 0);
 
     var stdout = result.stdout || [];
     var stderr = result.stderr || [];
@@ -799,18 +822,22 @@ Compiler.prototype.onCompileResponse = function (request, result, cached) {
     } else {
         this.outputBtn.prop('title', allText.replace(/\x1b\[[0-9;]*m(.\[K)?/g, ''));
     }
-    var timeLabelText = '';
+    var infoLabelText = '';
     if (cached) {
-        timeLabelText = ' - cached';
+        infoLabelText = ' - cached';
     } else if (wasRealReply) {
-        timeLabelText = ' - ' + timeTaken + 'ms';
+        infoLabelText = ' - ' + timeTaken + 'ms';
     }
 
     if (result.asmSize !== undefined) {
-        timeLabelText += ' (' + result.asmSize + 'B)';
+        infoLabelText += ' (' + result.asmSize + 'B)';
     }
 
-    this.compileTimeLabel.text(timeLabelText);
+    if (result.filteredCount && result.filteredCount > 0) {
+        infoLabelText += ' ~' + result.filteredCount + (result.filteredCount === 1 ? ' line' : ' lines') + ' filtered';
+    }
+
+    this.compileInfoLabel.text(infoLabelText);
 
     this.postCompilationResult(request, result);
     this.eventHub.emit('compileResult', this.id, this.compiler, result, languages[this.currentLangId]);
@@ -1047,6 +1074,37 @@ Compiler.prototype.onCfgViewClosed = function (id) {
     }
 };
 
+Compiler.prototype.initFilterButtons = function () {
+    this.filterBinaryButton = this.domRoot.find('[data-bind=\'binary\']');
+    this.filterBinaryTitle = this.filterBinaryButton.prop('title');
+
+    this.filterExecuteButton = this.domRoot.find('[data-bind=\'execute\']');
+    this.filterExecuteTitle = this.filterExecuteButton.prop('title');
+
+    this.filterLabelsButton = this.domRoot.find('[data-bind=\'labels\']');
+    this.filterLabelsTitle = this.filterLabelsButton.prop('title');
+
+    this.filterDirectivesButton = this.domRoot.find('[data-bind=\'directives\']');
+    this.filterDirectivesTitle = this.filterDirectivesButton.prop('title');
+
+    this.filterLibraryCodeButton = this.domRoot.find('[data-bind=\'libraryCode\']');
+    this.filterLibraryCodeTitle = this.filterLibraryCodeButton.prop('title');
+
+    this.filterCommentsButton = this.domRoot.find('[data-bind=\'commentOnly\']');
+    this.filterCommentsTitle = this.filterCommentsButton.prop('title');
+
+    this.filterTrimButton = this.domRoot.find('[data-bind=\'trim\']');
+    this.filterTrimTitle = this.filterTrimButton.prop('title');
+
+    this.filterIntelButton = this.domRoot.find('[data-bind=\'intel\']');
+    this.filterIntelTitle = this.filterIntelButton.prop('title');
+
+    this.filterDemangleButton = this.domRoot.find('[data-bind=\'demangle\']');
+    this.filterDemangleTitle = this.filterDemangleButton.prop('title');
+
+    this.noBinaryFiltersButtons = this.domRoot.find('.nonbinary');
+};
+
 Compiler.prototype.initButtons = function (state) {
     this.filters = new Toggles(this.domRoot.find('.filters'), patchOldFilters(state.filters));
 
@@ -1059,7 +1117,7 @@ Compiler.prototype.initButtons = function (state) {
     this.executorButton = this.domRoot.find('.create-executor');
     this.libsButton = this.domRoot.find('.btn.show-libs');
 
-    this.compileTimeLabel = this.domRoot.find('.compile-time');
+    this.compileInfoLabel = this.domRoot.find('.compile-info');
     this.compileClearCache = this.domRoot.find('.clear-cache');
 
     this.outputBtn = this.domRoot.find('.output-btn');
@@ -1069,6 +1127,7 @@ Compiler.prototype.initButtons = function (state) {
     this.optionsField = this.domRoot.find('.options');
     this.prependOptions = this.domRoot.find('.prepend-options');
     this.fullCompilerName = this.domRoot.find('.full-compiler-name');
+    this.fullTimingInfo = this.domRoot.find('.full-timing-info');
     this.setCompilationOptionsPopover(this.compiler ? this.compiler.options : null);
     // Dismiss on any click that isn't either in the opening element, inside
     // the popover or on any alert
@@ -1083,41 +1142,16 @@ Compiler.prototype.initButtons = function (state) {
             this.fullCompilerName.popover('hide');
     }, this));
 
-    this.filterBinaryButton = this.domRoot.find("[data-bind='binary']");
-    this.filterBinaryTitle = this.filterBinaryButton.prop('title');
+    this.initFilterButtons(state);
 
-    this.filterExecuteButton = this.domRoot.find("[data-bind='execute']");
-    this.filterExecuteTitle = this.filterExecuteButton.prop('title');
-
-    this.filterLabelsButton = this.domRoot.find("[data-bind='labels']");
-    this.filterLabelsTitle = this.filterLabelsButton.prop('title');
-
-    this.filterDirectivesButton = this.domRoot.find("[data-bind='directives']");
-    this.filterDirectivesTitle = this.filterDirectivesButton.prop('title');
-
-    this.filterLibraryCodeButton = this.domRoot.find("[data-bind='libraryCode']");
-    this.filterLibraryCodeTitle = this.filterLibraryCodeButton.prop('title');
-
-    this.filterCommentsButton = this.domRoot.find("[data-bind='commentOnly']");
-    this.filterCommentsTitle = this.filterCommentsButton.prop('title');
-
-    this.filterTrimButton = this.domRoot.find("[data-bind='trim']");
-    this.filterTrimTitle = this.filterTrimButton.prop('title');
-
-    this.filterIntelButton = this.domRoot.find("[data-bind='intel']");
-    this.filterIntelTitle = this.filterIntelButton.prop('title');
-
-    this.filterDemangleButton = this.domRoot.find("[data-bind='demangle']");
-    this.filterDemangleTitle = this.filterDemangleButton.prop('title');
-
-    this.noBinaryFiltersButtons = this.domRoot.find('.nonbinary');
     this.filterExecuteButton.toggle(options.supportsExecute);
     this.filterLibraryCodeButton.toggle(options.supportsLibraryCodeFilter);
+
     this.optionsField.val(this.options);
 
     this.shortCompilerName = this.domRoot.find('.short-compiler-name');
     this.compilerPicker = this.domRoot.find('.compiler-picker');
-    this.setCompilerVersionPopover('');
+    this.setCompilerVersionPopover('', '');
 
     this.topBar = this.domRoot.find('.top-bar');
     this.bottomBar = this.domRoot.find('.bottom-bar');
@@ -1155,7 +1189,12 @@ Compiler.prototype.supportsTool = function (toolId) {
 
 Compiler.prototype.initToolButton = function (togglePannerAdder, button, toolId) {
     var createToolView = _.bind(function () {
-        return Components.getToolViewWith(this.id, this.sourceEditorId, toolId, '');
+        var args = '';
+        var langTools = options.tools[this.currentLangId];
+        if (langTools && langTools[toolId] && langTools[toolId].tool && langTools[toolId].tool.args !== undefined) {
+            args = langTools[toolId].tool.args;
+        }
+        return Components.getToolViewWith(this.id, this.sourceEditorId, toolId, args);
     }, this);
 
     this.container.layoutManager
@@ -1177,10 +1216,10 @@ Compiler.prototype.initToolButtons = function (togglePannerAdder) {
     if (!this.compiler) return;
 
     var addTool = _.bind(function (toolName, title) {
-        var btn = $("<button class='dropdown-item btn btn-light btn-sm'>");
+        var btn = $('<button class=\'dropdown-item btn btn-light btn-sm\'>');
         btn.addClass('view-' + toolName);
         btn.data('toolname', toolName);
-        btn.append("<span class='dropdown-icon fas fa-cog'></span>" + title);
+        btn.append('<span class=\'dropdown-icon fas fa-cog\'></span>' + title);
         this.toolsMenu.append(btn);
 
         if (toolName !== 'none') {
@@ -1206,7 +1245,7 @@ Compiler.prototype.enableToolButtons = function () {
         var toolName = toolButton.data('toolname');
         toolButton.prop('disabled',
             !(this.supportsTool(toolName)
-            && !this.isToolActive(activeTools, toolName)));
+                && !this.isToolActive(activeTools, toolName)));
     }, this));
 };
 
@@ -1271,9 +1310,9 @@ Compiler.prototype.handlePopularArgumentsResult = function (result) {
             argumentButton.attr('title', arg.description);
             argumentButton.data('arg', key);
             argumentButton.html(
-                "<div class='argmenuitem'>" +
-                "<span class='argtitle'>" + _.escape(key) + '</span>' +
-                "<span class='argdescription'>" + arg.description + '</span>' +
+                '<div class=\'argmenuitem\'>' +
+                '<span class=\'argtitle\'>' + _.escape(key) + '</span>' +
+                '<span class=\'argdescription\'>' + arg.description + '</span>' +
                 '</div>');
 
             argumentButton.click(_.bind(function () {
@@ -1363,6 +1402,13 @@ Compiler.prototype.initListeners = function () {
         }
     }, this);
     this.eventHub.on('languageChange', this.onLanguageChange, this);
+
+    this.fullTimingInfo
+        .off('click')
+        .click(_.bind(function () {
+            timingInfo.run(_.bind(function () {
+            }, this), this.lastResult, this.lastTimeTaken);
+        }, this));
 };
 
 Compiler.prototype.initCallbacks = function () {
@@ -1551,9 +1597,10 @@ Compiler.prototype.getPaneName = function () {
 Compiler.prototype.updateCompilerName = function () {
     var compilerName = this.getCompilerName();
     var compilerVersion = this.compiler ? this.compiler.version : '';
+    var compilerNotification = this.compiler ? this.compiler.notification : '';
     this.container.setTitle(this.getPaneName());
     this.shortCompilerName.text(compilerName);
-    this.setCompilerVersionPopover(compilerVersion);
+    this.setCompilerVersionPopover(compilerVersion, compilerNotification);
 };
 
 Compiler.prototype.resendResult = function () {
@@ -1580,17 +1627,24 @@ Compiler.prototype.clearLinkedLines = function () {
     this.updateDecorations();
 };
 
-Compiler.prototype.onPanesLinkLine = function (compilerId, lineNumber, revealLine, sender) {
+Compiler.prototype.onPanesLinkLine = function (compilerId, lineNumber, colBegin, colEnd, revealLine, sender) {
     if (Number(compilerId) === this.id) {
         var lineNums = [];
+        var directlyLinkedLineNums = [];
+        var signalFromAnotherPane = sender !== this.getPaneName();
         _.each(this.assembly, function (asmLine, i) {
             if (asmLine.source && asmLine.source.file === null && asmLine.source.line === lineNumber) {
-                lineNums.push(i + 1);
+                var line = i + 1;
+                lineNums.push(line);
+                var currentCol = asmLine.source.column;
+                if (signalFromAnotherPane && currentCol && colBegin <= currentCol && currentCol <= colEnd) {
+                    directlyLinkedLineNums.push(line);
+                }
             }
         });
         if (revealLine && lineNums[0]) this.outputEditor.revealLineInCenter(lineNums[0]);
         var lineClass = sender !== this.getPaneName() ? 'linked-code-decoration-line' : '';
-        this.decorations.linkedCode = _.map(lineNums, function (line) {
+        var linkedLinesDecoration = _.map(lineNums, function (line) {
             return {
                 range: new monaco.Range(line, 1, line, 1),
                 options: {
@@ -1600,6 +1654,16 @@ Compiler.prototype.onPanesLinkLine = function (compilerId, lineNumber, revealLin
                 },
             };
         });
+        var directlyLinkedLinesDecoration = _.map(directlyLinkedLineNums, function (line) {
+            return {
+                range: new monaco.Range(line, 1, line, 1),
+                options: {
+                    isWholeLine: true,
+                    inlineClassName: 'linked-code-decoration-column',
+                },
+            };
+        });
+        this.decorations.linkedCode = linkedLinesDecoration.concat(directlyLinkedLinesDecoration);
         if (this.linkedFadeTimeoutId !== -1) {
             clearTimeout(this.linkedFadeTimeoutId);
         }
@@ -1639,10 +1703,15 @@ Compiler.prototype.setCompilationOptionsPopover = function (content) {
     });
 };
 
-Compiler.prototype.setCompilerVersionPopover = function (version) {
+Compiler.prototype.setCompilerVersionPopover = function (version, notification) {
     this.fullCompilerName.popover('dispose');
+    // `notification` contains HTML from a config file, so is 'safe'.
+    // `version` comes from compiler output, so isn't, and is escaped.
     this.fullCompilerName.popover({
-        content: version || '',
+        html: true,
+        title: notification ? $.parseHTML('<span>Compiler Version: ' + notification + '</span>')[0] :
+            'Full compiler version',
+        content: _.escape(version) || '',
         template: '<div class="popover' +
             (version ? ' compiler-options-popover' : '') +
             '" role="tooltip"><div class="arrow"></div>' +
@@ -1693,8 +1762,8 @@ function getNumericToolTip(value) {
     return null;
 }
 
-function getAsmInfo(opcode) {
-    var cacheName = 'asm/' + opcode;
+function getAsmInfo(opcode, instructionSet) {
+    var cacheName = 'asm/' + (instructionSet ? (instructionSet + '/') : '') + opcode;
     var cached = OpcodeCache.get(cacheName);
     if (cached) {
         return Promise.resolve(cached.found ? cached.result : null);
@@ -1703,7 +1772,7 @@ function getAsmInfo(opcode) {
     return new Promise(function (resolve, reject) {
         $.ajax({
             type: 'GET',
-            url: window.location.origin + base + 'api/asm/' + opcode,
+            url: window.location.origin + base + 'api/asm/' + (instructionSet ? (instructionSet + '/') : '') + opcode,
             dataType: 'json',  // Expected,
             contentType: 'text/plain',  // Sent
             success: function (result) {
@@ -1740,9 +1809,20 @@ Compiler.prototype.onMouseMove = function (e) {
         var hoverAsm = this.assembly[e.target.position.lineNumber - 1];
         if (hoverAsm) {
             // We check that we actually have something to show at this point!
-            var sourceLine = hoverAsm.source && !hoverAsm.source.file ? hoverAsm.source.line : -1;
-            this.eventHub.emit('editorLinkLine', this.sourceEditorId, sourceLine, -1, false);
-            this.eventHub.emit('panesLinkLine', this.id, sourceLine, false, this.getPaneName());
+            var sourceLine = -1;
+            var sourceColBegin = -1;
+            var sourceColEnd = -1;
+            if (hoverAsm.source && !hoverAsm.source.file) {
+                sourceLine = hoverAsm.source.line;
+                if (hoverAsm.source.column) {
+                    sourceColBegin = hoverAsm.source.column;
+                    sourceColEnd = sourceColBegin;
+                }
+            }
+            this.eventHub.emit('editorLinkLine', this.sourceEditorId, sourceLine, sourceColBegin, sourceColEnd, false);
+            this.eventHub.emit('panesLinkLine', this.id,
+                sourceLine, sourceColBegin, sourceColEnd,
+                false, this.getPaneName());
         }
     }
     var currentWord = this.outputEditor.getModel().getWordAtPosition(e.target.position);
@@ -1788,7 +1868,7 @@ Compiler.prototype.onMouseMove = function (e) {
                 _.some(lineTokens(this.outputEditor.getModel(), currentWord.range.startLineNumber), function (t) {
                     return t.offset + 1 === currentWord.startColumn && t.type === 'keyword.asm';
                 })) {
-                getAsmInfo(currentWord.word).then(_.bind(function (response) {
+                getAsmInfo(currentWord.word, this.compiler.instructionSet).then(_.bind(function (response) {
                     if (!response) return;
                     this.decorations.asmToolTip = {
                         range: currentWord.range,
@@ -1835,7 +1915,7 @@ Compiler.prototype.onAsmToolTip = function (ed) {
             'title="Opens in a new window"></small></sup></a>.';
     }
 
-    getAsmInfo(word.word).then(_.bind(function (asmHelp) {
+    getAsmInfo(word.word, this.compiler.instructionSet).then(_.bind(function (asmHelp) {
         if (asmHelp) {
             this.alertSystem.alert(opcode + ' help', asmHelp.html + appendInfo(asmHelp.url), function () {
                 ed.focus();

@@ -5,6 +5,9 @@
 /node_modules
 /out
 
+# generated from opcode docenzier.py scripts
+/asm-docs*
+
 # user local customizations
 /etc/config/*.local.properties
 /lib/storage/data
@@ -19,3 +22,6 @@ f.out
 newrelic_agent.log
 *.heapsnapshot
 *.swp
+
+# approval tests
+*.received.*

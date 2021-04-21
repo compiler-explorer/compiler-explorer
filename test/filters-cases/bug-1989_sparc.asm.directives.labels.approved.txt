@@ -1,0 +1,42 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "issue1989:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        add     %o1, %o0, %o1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        mov     0, %g1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        cmp     %o1, %o0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        movg    %icc, 1, %g1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        jmp     %o7+8"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "         mov    %g1, %o0"
+    }
+  ],
+  "labelDefinitions": {
+    "issue1989": 1
+  }
+}

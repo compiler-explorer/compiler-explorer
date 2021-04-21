@@ -1,0 +1,940 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "/tmp/compiler-explorer-compiler202096-18936-1ray3vi.419rk/output.s:     file format elf64-x86-64"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "Disassembly of section .init:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "0000000000401000 <_init>:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "_init():"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  401000:       f3 0f 1e fa                                           endbr64"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  401004:       48 83 ec 08                                           sub    rsp,0x8"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  401008:       48 8b 05 e9 2f 00 00                                  mov    rax,QWORD PTR [rip+0x2fe9]        # 403ff8 <__gmon_start__>"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  40100f:       48 85 c0                                              test   rax,rax"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  401012:       74 02                                                 je     401016 <_init+0x16>"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  401014:       ff d0                                                 call   rax"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  401016:       48 83 c4 08                                           add    rsp,0x8"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  40101a:       c3                                                    ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "Disassembly of section .text:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "0000000000401020 <_start>:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "_start():"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  401020:       f3 0f 1e fa                                           endbr64"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  401024:       31 ed                                                 xor    ebp,ebp"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  401026:       49 89 d1                                              mov    r9,rdx"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  401029:       5e                                                    pop    rsi"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  40102a:       48 89 e2                                              mov    rdx,rsp"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  40102d:       48 83 e4 f0                                           and    rsp,0xfffffffffffffff0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  401031:       50                                                    push   rax"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  401032:       54                                                    push   rsp"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  401033:       49 c7 c0 b0 11 40 00                                  mov    r8,0x4011b0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  40103a:       48 c7 c1 40 11 40 00                                  mov    rcx,0x401140"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  401041:       48 c7 c7 29 11 40 00                                  mov    rdi,0x401129"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  401048:       ff 15 a2 2f 00 00                                     call   QWORD PTR [rip+0x2fa2]        # 403ff0 <__libc_start_main@GLIBC_2.2.5>"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  40104e:       f4                                                    hlt"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  40104f:       90                                                    nop"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "0000000000401050 <_dl_relocate_static_pie>:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "_dl_relocate_static_pie():"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  401050:       f3 0f 1e fa                                           endbr64"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  401054:       c3                                                    ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  401055:       66 2e 0f 1f 84 00 00 00 00 00                         nop    WORD PTR cs:[rax+rax*1+0x0]"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  40105f:       90                                                    nop"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "0000000000401060 <deregister_tm_clones>:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "deregister_tm_clones():"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  401060:       b8 28 40 40 00                                        mov    eax,0x404028"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  401065:       48 3d 28 40 40 00                                     cmp    rax,0x404028"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  40106b:       74 13                                                 je     401080 <deregister_tm_clones+0x20>"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  40106d:       b8 00 00 00 00                                        mov    eax,0x0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  401072:       48 85 c0                                              test   rax,rax"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  401075:       74 09                                                 je     401080 <deregister_tm_clones+0x20>"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  401077:       bf 28 40 40 00                                        mov    edi,0x404028"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  40107c:       ff e0                                                 jmp    rax"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  40107e:       66 90                                                 xchg   ax,ax"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  401080:       c3                                                    ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  401081:       66 66 2e 0f 1f 84 00 00 00 00 00                      data16 nop WORD PTR cs:[rax+rax*1+0x0]"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  40108c:       0f 1f 40 00                                           nop    DWORD PTR [rax+0x0]"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "0000000000401090 <register_tm_clones>:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "register_tm_clones():"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  401090:       be 28 40 40 00                                        mov    esi,0x404028"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  401095:       48 81 ee 28 40 40 00                                  sub    rsi,0x404028"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  40109c:       48 89 f0                                              mov    rax,rsi"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  40109f:       48 c1 ee 3f                                           shr    rsi,0x3f"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  4010a3:       48 c1 f8 03                                           sar    rax,0x3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  4010a7:       48 01 c6                                              add    rsi,rax"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  4010aa:       48 d1 fe                                              sar    rsi,1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  4010ad:       74 11                                                 je     4010c0 <register_tm_clones+0x30>"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  4010af:       b8 00 00 00 00                                        mov    eax,0x0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  4010b4:       48 85 c0                                              test   rax,rax"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  4010b7:       74 07                                                 je     4010c0 <register_tm_clones+0x30>"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  4010b9:       bf 28 40 40 00                                        mov    edi,0x404028"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  4010be:       ff e0                                                 jmp    rax"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  4010c0:       c3                                                    ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  4010c1:       66 66 2e 0f 1f 84 00 00 00 00 00                      data16 nop WORD PTR cs:[rax+rax*1+0x0]"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  4010cc:       0f 1f 40 00                                           nop    DWORD PTR [rax+0x0]"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "00000000004010d0 <__do_global_dtors_aux>:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "__do_global_dtors_aux():"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  4010d0:       80 3d 51 2f 00 00 00                                  cmp    BYTE PTR [rip+0x2f51],0x0        # 404028 <__TMC_END__>"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  4010d7:       75 17                                                 jne    4010f0 <__do_global_dtors_aux+0x20>"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  4010d9:       55                                                    push   rbp"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  4010da:       48 89 e5                                              mov    rbp,rsp"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  4010dd:       e8 7e ff ff ff                                        call   401060 <deregister_tm_clones>"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  4010e2:       c6 05 3f 2f 00 00 01                                  mov    BYTE PTR [rip+0x2f3f],0x1        # 404028 <__TMC_END__>"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  4010e9:       5d                                                    pop    rbp"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  4010ea:       c3                                                    ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  4010eb:       0f 1f 44 00 00                                        nop    DWORD PTR [rax+rax*1+0x0]"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  4010f0:       c3                                                    ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  4010f1:       66 66 2e 0f 1f 84 00 00 00 00 00                      data16 nop WORD PTR cs:[rax+rax*1+0x0]"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  4010fc:       0f 1f 40 00                                           nop    DWORD PTR [rax+0x0]"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "0000000000401100 <frame_dummy>:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "frame_dummy():"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  401100:       eb 8e                                                 jmp    401090 <register_tm_clones>"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "0000000000401102 <fun🤔()>:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "_Z7fun🤔v():"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "/tmp/compiler-explorer-compiler202096-18936-1ray3vi.419rk/example.cpp:1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  401102:       55                                                    push   rbp"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  401103:       48 89 e5                                              mov    rbp,rsp"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "/tmp/compiler-explorer-compiler202096-18936-1ray3vi.419rk/example.cpp:2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  401106:       b8 02 00 00 00                                        mov    eax,0x2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "/tmp/compiler-explorer-compiler202096-18936-1ray3vi.419rk/example.cpp:3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  40110b:       5d                                                    pop    rbp"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  40110c:       c3                                                    ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "000000000040110d <foo()>:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "_Z3foov():"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "/tmp/compiler-explorer-compiler202096-18936-1ray3vi.419rk/example.cpp:5"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  40110d:       55                                                    push   rbp"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  40110e:       48 89 e5                                              mov    rbp,rsp"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "/tmp/compiler-explorer-compiler202096-18936-1ray3vi.419rk/example.cpp:6"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  401111:       c7 45 fc 02 00 00 00                                  mov    DWORD PTR [rbp-0x4],0x2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  401118:       c7 45 f8 03 00 00 00                                  mov    DWORD PTR [rbp-0x8],0x3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "/tmp/compiler-explorer-compiler202096-18936-1ray3vi.419rk/example.cpp:7"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  40111f:       83 45 f8 01                                           add    DWORD PTR [rbp-0x8],0x1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "/tmp/compiler-explorer-compiler202096-18936-1ray3vi.419rk/example.cpp:8"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  401123:       d1 65 fc                                              shl    DWORD PTR [rbp-0x4],1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "/tmp/compiler-explorer-compiler202096-18936-1ray3vi.419rk/example.cpp:9"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  401126:       90                                                    nop"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  401127:       5d                                                    pop    rbp"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  401128:       c3                                                    ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "0000000000401129 <main>:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "main():"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "/tmp/compiler-explorer-compiler202096-18936-1ray3vi.419rk/example.cpp:11"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  401129:       55                                                    push   rbp"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  40112a:       48 89 e5                                              mov    rbp,rsp"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "/tmp/compiler-explorer-compiler202096-18936-1ray3vi.419rk/example.cpp:12"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  40112d:       e8 d0 ff ff ff                                        call   401102 <fun🤔()>"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  401132:       90                                                    nop"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "/tmp/compiler-explorer-compiler202096-18936-1ray3vi.419rk/example.cpp:13"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  401133:       5d                                                    pop    rbp"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  401134:       c3                                                    ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  401135:       66 2e 0f 1f 84 00 00 00 00 00                         nop    WORD PTR cs:[rax+rax*1+0x0]"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  40113f:       90                                                    nop"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "0000000000401140 <__libc_csu_init>:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "__libc_csu_init():"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  401140:       f3 0f 1e fa                                           endbr64"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  401144:       41 57                                                 push   r15"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  401146:       4c 8d 3d b3 2c 00 00                                  lea    r15,[rip+0x2cb3]        # 403e00 <__frame_dummy_init_array_entry>"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  40114d:       41 56                                                 push   r14"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  40114f:       49 89 d6                                              mov    r14,rdx"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  401152:       41 55                                                 push   r13"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  401154:       49 89 f5                                              mov    r13,rsi"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  401157:       41 54                                                 push   r12"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  401159:       41 89 fc                                              mov    r12d,edi"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  40115c:       55                                                    push   rbp"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  40115d:       48 8d 2d a4 2c 00 00                                  lea    rbp,[rip+0x2ca4]        # 403e08 <__do_global_dtors_aux_fini_array_entry>"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  401164:       53                                                    push   rbx"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  401165:       4c 29 fd                                              sub    rbp,r15"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  401168:       48 83 ec 08                                           sub    rsp,0x8"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  40116c:       e8 8f fe ff ff                                        call   401000 <_init>"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  401171:       48 c1 fd 03                                           sar    rbp,0x3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  401175:       74 1f                                                 je     401196 <__libc_csu_init+0x56>"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  401177:       31 db                                                 xor    ebx,ebx"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  401179:       0f 1f 80 00 00 00 00                                  nop    DWORD PTR [rax+0x0]"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  401180:       4c 89 f2                                              mov    rdx,r14"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  401183:       4c 89 ee                                              mov    rsi,r13"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  401186:       44 89 e7                                              mov    edi,r12d"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  401189:       41 ff 14 df                                           call   QWORD PTR [r15+rbx*8]"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  40118d:       48 83 c3 01                                           add    rbx,0x1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  401191:       48 39 dd                                              cmp    rbp,rbx"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  401194:       75 ea                                                 jne    401180 <__libc_csu_init+0x40>"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  401196:       48 83 c4 08                                           add    rsp,0x8"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  40119a:       5b                                                    pop    rbx"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  40119b:       5d                                                    pop    rbp"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  40119c:       41 5c                                                 pop    r12"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  40119e:       41 5d                                                 pop    r13"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  4011a0:       41 5e                                                 pop    r14"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  4011a2:       41 5f                                                 pop    r15"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  4011a4:       c3                                                    ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  4011a5:       66 66 2e 0f 1f 84 00 00 00 00 00                      data16 nop WORD PTR cs:[rax+rax*1+0x0]"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "00000000004011b0 <__libc_csu_fini>:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "__libc_csu_fini():"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  4011b0:       f3 0f 1e fa                                           endbr64"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  4011b4:       c3                                                    ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "Disassembly of section .fini:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "00000000004011b8 <_fini>:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "_fini():"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  4011b8:       f3 0f 1e fa                                           endbr64"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  4011bc:       48 83 ec 08                                           sub    rsp,0x8"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  4011c0:       48 83 c4 08                                           add    rsp,0x8"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  4011c4:       c3                                                    ret"
+    }
+  ],
+  "labelDefinitions": {}
+}

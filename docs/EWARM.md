@@ -23,7 +23,7 @@ We need to install this toolchain through [MSYS2](https://www.msys2.org/), as it
 
 # Setup and Configuration
 ## Running compiler explorer on Windows
-Refer to the [readme](https://github.com/compiler-explorer/compiler-explorer/blob/master/docs/WindowsNative.md) on running Native on Windows for general setup of Compiler Explorer and other compilers.
+Refer to the [readme](https://github.com/compiler-explorer/compiler-explorer/blob/main/docs/WindowsNative.md) on running Native on Windows for general setup of Compiler Explorer and other compilers.
 
 ## Setting up c++.local.properties
 The next step is to create a `c++.local.properties` file under `etc/config` folder. The next step is going to be different for everyone, as you can choose what compiler options you pass to the compiler and so on, but im going to paste my template here and you can just modify, what you need

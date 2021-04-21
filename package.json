@@ -18,14 +18,15 @@
   "esm": true,
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.15.0",
-    "@sentry/browser": "^5.25.0",
-    "@sentry/node": "^5.25.0",
-    "@sentry/tracing": "^5.25.0",
+    "@sentry/browser": "^6.2.4",
+    "@sentry/node": "^6.2.4",
+    "@sentry/tracing": "^6.2.4",
     "aws-sdk": "^2.765.0",
     "big-integer": "^1.6.48",
     "body-parser": "^1.18.2",
     "bootstrap": "^4.5.2",
     "bootstrap-slider": "^10.6.2",
+    "chart.js": "^2.9.4",
     "clipboard": "^2.0.6",
     "compiler-opt-info": "0.0.4",
     "compression": "^1.7.1",
@@ -46,8 +47,8 @@
     "lodash.clonedeep": "^4.5.0",
     "lru-cache": "^5.1.1",
     "lz-string": "^1.4.4",
-    "monaco-editor": "~0.20.0",
-    "monaco-vim": "^0.1.8",
+    "monaco-editor": "~0.23.0",
+    "monaco-vim": "^0.1.13",
     "morgan": "^1.10.0",
     "node-graceful": "^3.0.0",
     "node-targz": "^0.2.0",
@@ -56,7 +57,7 @@
     "popper.js": "^1.16.1",
     "profanities": "^2.14.0",
     "prom-client": "^12.0.0",
-    "pug": "^2.0.4",
+    "pug": "^3.0.2",
     "request": "^2.88.2",
     "response-time": "^2.3.2",
     "selectize": "0.12.4",
@@ -73,17 +74,19 @@
     "vis": "4.20.1",
     "which": "^2.0.2",
     "winston": "^3.3.3",
+    "winston-loki": "^6.0.0-rc.9",
     "winston-papertrail": "^1.0.5",
     "winston-transport": "^4.4.0",
     "wolfy87-eventemitter": "^5.2.9",
     "yaml": "^1.10.0"
   },
   "devDependencies": {
+    "approvals": "^4.0.0-beta.1",
     "aws-sdk-mock": "^5.1.0",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "chai-http": "^4.2.1",
-    "codecov": "^3.7.2",
+    "codecov": "^3.8.1",
     "copy-webpack-plugin": "^5.1.2",
     "css-loader": "^3.6.0",
     "deep-equal-in-any-order": "^1.0.28",
@@ -100,7 +103,7 @@
     "mini-css-extract-plugin": "^0.9.0",
     "mocha": "^8.1.3",
     "mock-fs": "^4.13.0",
-    "monaco-editor-webpack-plugin": "^1.9.1",
+    "monaco-editor-webpack-plugin": "^3.0.1",
     "nock": "^12.0.3",
     "nyc": "^15.1.0",
     "optimize-css-assets-webpack-plugin": "^5.0.4",
@@ -116,18 +119,26 @@
     "webpack-dev-server": "^3.11.0",
     "webpack-manifest-plugin": "^2.2.0"
   },
+  "mocha": {
+    "require": [
+      "esm",
+      "test/_setup"
+    ]
+  },
   "scripts": {
     "ci-lint": "eslint --format github .",
     "ci-test": "nyc mocha --recursive",
     "lint": "eslint .",
     "lint-fix": "eslint --fix .",
-    "test": "mocha -r esm --recursive",
+    "test": "mocha --recursive",
     "check": "npm run lint && npm run test",
     "dev": "cross-env NODE_ENV=DEV node -r esm app.js",
+    "debugger": "cross-env NODE_ENV=DEV node --inspect -r esm app.js --debug",
     "debug": "cross-env NODE_ENV=DEV node -r esm app.js --debug",
-    "start": "npx webpack && cross-env NODE_ENV=LOCAL node -r esm app.js",
+    "start": "webpack && cross-env NODE_ENV=LOCAL node -r esm app.js",
     "codecov": "codecov --disable=gcov",
-    "sentry": "npx @sentry/cli"
+    "sentry": "npx -p @sentry/cli sentry-cli",
+    "update-browserslist": "npx browserslist@latest -- --update-db"
   },
   "license": "BSD-2-Clause"
 }
