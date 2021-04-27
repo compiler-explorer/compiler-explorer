@@ -44,6 +44,7 @@ describe('llvm-ast', function () {
     let astDump;
     let compilerOutput;
     let astDumpWithCTime;
+    let astDumpNestedDecl1346;
 
     before(() => {
         let fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
@@ -53,6 +54,7 @@ describe('llvm-ast', function () {
         astDump = utils.splitLines(fs.readFileSync('test/ast/square.ast').toString());
         compilerOutput = mockAstOutput(astDump);
         astDumpWithCTime = utils.splitLines(fs.readFileSync('test/ast/ctime.ast').toString());
+        astDumpNestedDecl1346 = utils.splitLines(fs.readFileSync('test/ast/bug-1346-typedef-struct.ast').toString());
     });
 
     it('keeps fewer lines than the original', () => {
@@ -90,5 +92,17 @@ describe('llvm-ast', function () {
         processed.find(l => l.text.match(/line:3:5, col:18/)).source.to.col.should.equal(18);
         // Here "from.line" is inherited from the parent "FunctionDecl <<source>:2:1, line:4:1>"
         processed.find(l => l.text.match(/CompoundStmt.*<col:21, line:4:1>/)).source.from.line.should.equal(2);
+    });
+
+    it('does not truncate nested declarations', () => {
+        // See https://github.com/compiler-explorer/compiler-explorer/issues/1346
+        let output = mockAstOutput(astDumpNestedDecl1346);
+        let processed = astParser.processAst(output);
+        processed.length.should.be.above(2);
+        should.exist(processed.find(l => l.text.match(/CXXRecordDecl.*struct x/)));
+        should.exist(processed.find(l => l.text.match(/TypedefDecl.*struct x/)));
+        should.exist(processed.find(l => l.text.match(/ElaboratedType/)));
+        should.exist(processed.find(l => l.text.match(/RecordType/)));
+        should.exist(processed.find(l => l.text.match(/CXXRecord/)));
     });
 });
