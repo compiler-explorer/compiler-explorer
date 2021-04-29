@@ -98,3 +98,4 @@ From oldest to newest contributor, we would like to thank:
 - [Arseniy Zaostrovnykh](https://github.com/necto)
 - [Dan Okken](https://github.com/okkenator)
 - [Shivam Gupta](https://github.com/xgupta)
+- [Tamir Bahar](https://github.com/tmr232)
