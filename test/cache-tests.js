@@ -30,6 +30,7 @@ import { InMemoryCache } from '../lib/cache/in-memory';
 import { MultiCache } from '../lib/cache/multi';
 import { NullCache } from '../lib/cache/null';
 import { OnDiskCache } from '../lib/cache/on-disk';
+import { RedisClusterCache } from '../lib/cache/redis-cluster';
 import { S3Cache } from '../lib/cache/s3';
 
 import { fs, path } from './utils';
@@ -257,6 +258,14 @@ describe('Config tests', () => {
         (() => createCacheFromConfig('test', 'S3()')).should.throw();
         (() => createCacheFromConfig('test', 'S3(argh,yibble)')).should.throw();
         (() => createCacheFromConfig('test', 'S3(/tmp/moo,456,blah,nork)')).should.throw();
+    });
+    it('should create redis cluster caches', () => {
+        const cache = createCacheFromConfig('test', 'RedisCluster(127.0.0.1,30001)');
+        cache.constructor.should.eql(RedisClusterCache);
+        cache.redis.startupNodes.should.eql([{hostname: '127.0.0.1', port: 30001}]);
+        (() => createCacheFromConfig('test', 'RedisCluster()')).should.throw();
+        (() => createCacheFromConfig('test', 'RedisCluster(127.0.0.1)')).should.throw();
+        (() => createCacheFromConfig('test', 'RedisCluster(127.0.0.1,30001,blarg)')).should.throw();
     });
     it('should create multi caches', () => {
         const tempDir = newTempDir();
