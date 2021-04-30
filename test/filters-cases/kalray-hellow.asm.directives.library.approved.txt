@@ -1,0 +1,438 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LC0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .string \"%s , %s , %lld , %d , %lld\\n\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ; This is a comment"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "toto:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        add $r12 = $r12, -16"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        get $r8 = $ra"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ;;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ;; This is also a comment"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        sw 28[$r12] = $r10"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        add $r10 = $r12, 16"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ;;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ld $r0r1 = 40[$r10]"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ;;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ld $r4r5 = 24[$r10]"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ;;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        sw 24[$r12] = $r8"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ;;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        sd 16[$r12] = $r0r1"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LC0",
+          "range": {
+            "endCol": 24,
+            "startCol": 20
+          }
+        }
+      ],
+      "source": null,
+      "text": "        make $r0 = .LC0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ;;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        lw $r1 = 16[$r10]"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ;;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        lw $r2 = 20[$r10]"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ;;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        lw $r6 = 32[$r10]"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        call printf"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ;;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        add $r12 = $r10, -16"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ;;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        lw $r1 = 24[$r12]"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        make $r0 = 0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ;;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        lw $r10 = 28[$r12]"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        add $r12 = $r12, 16"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ;;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        set $ra = $r1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ;;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ;;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LC1:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .string \"chaine1\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LC2:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .string \"chaine2\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "main:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        add $r12 = $r12, -16"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        get $r8 = $ra"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LC2",
+          "range": {
+            "endCol": 24,
+            "startCol": 20
+          }
+        }
+      ],
+      "source": null,
+      "text": "        make $r2 = .LC2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ;;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        sw 28[$r12] = $r10"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        maked $r0r1 = 123456"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        add $r10 = $r12, 16"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        make $r6 = 256"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ;;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        sw 24[$r12] = $r8"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        maked $r4r5 = 12345"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ;;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        sd 16[$r12] = $r0r1"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LC1",
+          "range": {
+            "endCol": 24,
+            "startCol": 20
+          }
+        }
+      ],
+      "source": null,
+      "text": "        make $r1 = .LC1"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LC0",
+          "range": {
+            "endCol": 24,
+            "startCol": 20
+          }
+        }
+      ],
+      "source": null,
+      "text": "        make $r0 = .LC0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ;;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        call printf"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ;;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        add $r12 = $r10, -16"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ;;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".DUMMY:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        lw $r1 = 24[$r12]"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        make $r0 = 0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ;;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        lw $r10 = 28[$r12]"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        add $r12 = $r12, 16"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ;;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".OTHERDUMMY:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        set $ra = $r1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ;;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ;;"
+    }
+  ],
+  "labelDefinitions": {
+    ".LC0": 1,
+    ".LC1": 41,
+    ".LC2": 44,
+    "main": 47,
+    "toto": 4
+  }
+}

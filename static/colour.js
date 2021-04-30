@@ -25,6 +25,7 @@
 'use strict';
 
 var _ = require('underscore');
+var monaco = require('monaco-editor');
 
 // If you want to use an scheme in every theme, set `theme: ['all']`
 var schemes = [

@@ -1,0 +1,462 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "$Ltext0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$LC0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  .ascii \"hello world\\000\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$LFB12 = ."
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "main:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 2
+      },
+      "text": "  addiu $sp,$sp,-32"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 2
+      },
+      "text": "  sw $31,28($sp)"
+    },
+    {
+      "labels": [
+        {
+          "name": "$LC0",
+          "range": {
+            "endCol": 18,
+            "startCol": 14
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "text": "  lui $4,%hi($LC0)"
+    },
+    {
+      "labels": [
+        {
+          "name": "$LC0",
+          "range": {
+            "endCol": 23,
+            "startCol": 19
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "text": "  addiu $4,$4,%lo($LC0)"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "text": "  jal puts"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "text": "  nop"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$LVL0 = ."
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "text": "  move $2,$0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "text": "  lw $31,28($sp)"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "text": "  nop"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "text": "  j $31"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "text": "  addiu $sp,$sp,32"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$LFE12:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$Letext0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$Ldebug_info0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$Ldebug_abbrev0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$Ldebug_line0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$LASF23:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$LASF9:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$LASF31:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$LASF56:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$LASF26:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$LASF5:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$LASF8:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$LASF13:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$LASF36:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$LASF20:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$LASF15:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$LASF22:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$LASF27:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$LASF17:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$LASF51:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$LASF6:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$LASF35:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$LASF11:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$LASF32:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$LASF52:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$LASF48:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$LASF47:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$LASF44:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$LASF1:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$LASF4:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$LASF7:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$LASF0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$LASF45:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$LASF34:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$LASF55:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$LASF19:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$LASF43:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$LASF16:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$LASF2:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$LASF14:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$LASF54:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$LASF46:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$LASF37:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$LASF38:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$LASF39:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$LASF40:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$LASF41:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$LASF3:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$LASF21:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$LASF12:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$LASF10:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$LASF28:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$LASF25:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$LASF49:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$LASF30:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$LASF42:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$LASF18:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$LASF33:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$LASF24:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$LASF29:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$LASF50:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$LASF53:"
+    }
+  ],
+  "labelDefinitions": {
+    "$LC0": 2,
+    "main": 5
+  }
+}

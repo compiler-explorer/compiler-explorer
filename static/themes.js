@@ -24,6 +24,7 @@
 
 'use strict';
 var $ = require('jquery');
+var monaco = require('monaco-editor');
 
 var themes = {
     default: {

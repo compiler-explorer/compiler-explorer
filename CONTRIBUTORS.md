@@ -96,3 +96,5 @@ From oldest to newest contributor, we would like to thank:
 - [Robert Cohn](https://github.com/rscohn2)
 - [Jeremy Overesch](https://github.com/jovere)
 - [Arseniy Zaostrovnykh](https://github.com/necto)
+- [Dan Okken](https://github.com/okkenator)
+- [Shivam Gupta](https://github.com/xgupta)

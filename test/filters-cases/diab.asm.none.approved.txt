@@ -1,0 +1,9106 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "#$$eb"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#$$sz 0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#$$ss 0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#$$sg 0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#$$fp 0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#$$m2         - PowerPC mnemonics"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#$$pPPC - PowerPC instructions"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#$$oPPCE200Z1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#$$ko 1   - Reorder info"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .file         \"example.cpp\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#$$dg 1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .PPC.EMB.apuinfo,,@note"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .4byte      8"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .4byte      0+4+4"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .4byte      2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         \"APUinfo\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .align      2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .4byte      0x01000001"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .4byte      0x00400001"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .text"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_line,,n"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L8:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .text"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#$$ld"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L4:"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L2",
+          "range": {
+            "endCol": 24,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .0byte      .L2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2_line_start  .debug_line"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .text"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .align      2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .text"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2file   \"/tmp/compiler-explorer-compiler202107-8023-z5iran.8cqm/example.cpp\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2line         4,8"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#$$ld"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L84:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#$$bf   testFunction(double*, double),interprocedural,rasave,nostackparams"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .globl      testFunction(double*, double)"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2_cfa_start.r __cie"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "text": "testFunction(double*, double):"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#$$dr 0 0 0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Llo1:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "text": "        stwu            r1,-48(r1)          "
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2_cfa_def_cfa_offset  48"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "text": "        mfspr         r0,lr"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "text": "        stmw            r26,24(r1)          # offset r1+24  0x18"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2_cfa_offset_list     26,31,1,1"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "text": "        stw       r0,52(r1)"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2_cfa_offset    108,-1"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "text": "        mr          r31,r3      # input=r31 input=r3"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "text": "        mr          r30,r5"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "text": "        mr          r29,r6"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2prologue_end"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2line   5"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 5
+      },
+      "text": "        diab.li   r28,0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 5
+      },
+      "text": "        diab.li   r27,0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .text"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L92:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2line   6"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Llo2:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 6
+      },
+      "text": "        diab.li   r26,0             # i=r26"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L42:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Llo3:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 6
+      },
+      "text": "        mr          r3,r26      # i=r3 i=r26"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 6
+      },
+      "text": "        bl          _d_itod"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 6
+      },
+      "text": "        mr          r6,r29"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 6
+      },
+      "text": "        mr          r5,r30"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 6
+      },
+      "text": "        bl          _d_fge"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 6
+      },
+      "text": "        extsb.      r0,r3         # i=r3"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L44",
+          "range": {
+            "endCol": 29,
+            "startCol": 25
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 6
+      },
+      "text": "        bc          4,2,.L44        # ne cr0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2line   7"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 7
+      },
+      "text": "        rlwinm      r0,r26,3,0,28         # i=r26"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 7
+      },
+      "text": "        add       r3,r31,r0         # i=r3 input=r31"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 7
+      },
+      "text": "        lwzx            r5,r31,r0             # input=r31"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 7
+      },
+      "text": "        lwz       r6,4(r3)            # i=r3"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 7
+      },
+      "text": "        mr          r4,r27"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 7
+      },
+      "text": "        mr          r3,r28      # i=r3"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 7
+      },
+      "text": "        bl          _d_add"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 7
+      },
+      "text": "        mr          r27,r4"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 7
+      },
+      "text": "        mr          r28,r3      # i=r28"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2line   8"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 8
+      },
+      "text": "        addi            r26,r26,1             # i=r26 i=r26"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L42",
+          "range": {
+            "endCol": 27,
+            "startCol": 23
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 8
+      },
+      "text": "        b             .L42"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L44:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .text"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L93:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2line   9"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Llo4:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 9
+      },
+      "text": "        mr          r4,r27"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 9
+      },
+      "text": "        mr          r3,r28      # i=r3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2line   10"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2epilogue_begin"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 10
+      },
+      "text": "        lmw       r26,24(r1)      # offset r1+24  0x18"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2_cfa_restore_list    2,10"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 10
+      },
+      "text": "        lwz       r0,52(r1)"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 10
+      },
+      "text": "        mtspr         lr,r0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 10
+      },
+      "text": "        addi            r1,r1,48                "
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2_cfa_def_cfa_offset  0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 10
+      },
+      "text": "        blr"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#$$ef"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2_cfa_end 2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .text"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#$$ld"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L85:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .type         testFunction(double*, double),@function"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .size         testFunction(double*, double),.-testFunction(double*, double)"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "# Number of nodes = 24"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "# Allocations for testFunction(double*, double)"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#       ?a4         input"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#       ?a5         length"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#       ?a7         sum"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#       ?a9         i"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .align      2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .text"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2line         12,5"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#$$ld"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L101:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#$$bf   fibo(int),interprocedural,rasave,nostackparams"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .globl      fibo(int)"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2_cfa_start.r __cie"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 12
+      },
+      "text": "fibo(int):"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#$$dr 0 0 0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Llo5:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 12
+      },
+      "text": "        stwu            r1,-32(r1)          "
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2_cfa_def_cfa_offset  32"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 12
+      },
+      "text": "        mfspr         r0,lr"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 12
+      },
+      "text": "        stmw            r30,24(r1)          # offset r1+24  0x18"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2_cfa_offset_list     30,31,1,1"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 12
+      },
+      "text": "        stw       r0,36(r1)"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2_cfa_offset    108,-1"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L105",
+          "range": {
+            "endCol": 44,
+            "startCol": 39
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .frame_info.r   r30,,,1,0,0,0,.L105"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 12
+      },
+      "text": "        mr          r31,r3      # n=r31 n=r3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2prologue_end"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2line   14"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 14
+      },
+      "text": "        cmpi            0,0,r3,1                # n=r3"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L46",
+          "range": {
+            "endCol": 30,
+            "startCol": 26
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 14
+      },
+      "text": "        bc          12,1,.L46       # gt cr0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2line   15"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Llo6:"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L45",
+          "range": {
+            "endCol": 27,
+            "startCol": 23
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 15
+      },
+      "text": "        b             .L45"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L46:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2line   16"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Llo7:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 16
+      },
+      "text": "        addi            r3,r3,-1                # n=r3 n=r3"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 16
+      },
+      "text": "        bl          fibo(int)"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 16
+      },
+      "text": "        mr          r30,r3      # n=r30"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 16
+      },
+      "text": "        addi            r3,r31,-2             # n=r3 n=r31"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 16
+      },
+      "text": "        bl          fibo(int)"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 16
+      },
+      "text": "        add       r3,r3,r30         # n=r3 n=r3 n=r30"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L45:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2line   17"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2epilogue_begin"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L105:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Llo8:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 17
+      },
+      "text": "        lmw       r30,24(r1)      # offset r1+24  0x18"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2_cfa_restore_list    3,10"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Llo9:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 17
+      },
+      "text": "        lwz       r0,36(r1)"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 17
+      },
+      "text": "        mtspr         lr,r0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 17
+      },
+      "text": "        addi            r1,r1,32                "
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2_cfa_def_cfa_offset  0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 17
+      },
+      "text": "        blr"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Llo10:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#$$ef"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2_cfa_end 2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .text"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#$$ld"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L102:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .type         fibo(int),@function"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .size         fibo(int),.-fibo(int)"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "# Number of nodes = 27"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "# Allocations for fibo(int)"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#       ?a4         n"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#       ?a5         $$2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#       ?a6         $$1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .align      2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .text"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2line         19,5"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#$$ld"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L108:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#$$bf   fizz_buzz(),interprocedural,rasave,nostackparams"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .globl      fizz_buzz()"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2_cfa_start.r __cie"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 19
+      },
+      "text": "fizz_buzz():"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#$$dr 0 0 0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Llo11:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 19
+      },
+      "text": "        stwu            r1,-32(r1)          "
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2_cfa_def_cfa_offset  32"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 19
+      },
+      "text": "        mfspr         r0,lr"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 19
+      },
+      "text": "        stw       r31,28(r1)      # offset r1+28  0x1c"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2_cfa_offset_list     31,31,1,1"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 19
+      },
+      "text": "        stw       r0,36(r1)"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2_cfa_offset    108,-1"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L113",
+          "range": {
+            "endCol": 44,
+            "startCol": 39
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .frame_info.r   r31,,,1,0,0,0,.L113"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2prologue_end"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2line   22"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 22
+      },
+      "text": "        diab.li   r31,1             # i=r31"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L48:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 22
+      },
+      "text": "        cmpi            0,0,r31,100       # i=r31"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L50",
+          "range": {
+            "endCol": 30,
+            "startCol": 26
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 22
+      },
+      "text": "        bc          12,1,.L50       # gt cr0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2line   24"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 24
+      },
+      "text": "        lis       r0,21845"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 24
+      },
+      "text": "        ori       r0,r0,21846"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 24
+      },
+      "text": "        mulhw         r0,r0,r31         # i=r31"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 24
+      },
+      "text": "        srawi         r3,r31,31         # i=r31"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 24
+      },
+      "text": "        subf            r0,r3,r0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 24
+      },
+      "text": "        add       r3,r0,r0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 24
+      },
+      "text": "        add       r0,r0,r3"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 24
+      },
+      "text": "        subf.         r0,r0,r31         # i=?a4"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L51",
+          "range": {
+            "endCol": 29,
+            "startCol": 25
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 24
+      },
+      "text": "        bc          4,2,.L51        # ne cr0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2line   25"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L114",
+          "range": {
+            "endCol": 33,
+            "startCol": 28
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 25
+      },
+      "text": "        addis         r3,0,.L114@ha"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L114",
+          "range": {
+            "endCol": 36,
+            "startCol": 31
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 25
+      },
+      "text": "        addi            r3,r3,.L114@l"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 25
+      },
+      "text": "        bl          printf"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L51:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2line   26"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 26
+      },
+      "text": "        lis       r0,26214"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 26
+      },
+      "text": "        ori       r0,r0,26215"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 26
+      },
+      "text": "        mulhw         r0,r0,r31         # i=r31"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 26
+      },
+      "text": "        srawi         r0,r0,1"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 26
+      },
+      "text": "        srawi         r3,r31,31         # i=r31"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 26
+      },
+      "text": "        subf            r0,r3,r0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 26
+      },
+      "text": "        rlwinm      r3,r0,2,0,29"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 26
+      },
+      "text": "        add       r0,r0,r3"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 26
+      },
+      "text": "        subf.         r0,r0,r31         # i=?a4"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L52",
+          "range": {
+            "endCol": 29,
+            "startCol": 25
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 26
+      },
+      "text": "        bc          4,2,.L52        # ne cr0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2line   27"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L115",
+          "range": {
+            "endCol": 33,
+            "startCol": 28
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 27
+      },
+      "text": "        addis         r3,0,.L115@ha"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L115",
+          "range": {
+            "endCol": 36,
+            "startCol": 31
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 27
+      },
+      "text": "        addi            r3,r3,.L115@l"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 27
+      },
+      "text": "        bl          printf"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L52:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2line   28"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 28
+      },
+      "text": "        lis       r0,21845"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 28
+      },
+      "text": "        ori       r0,r0,21846"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 28
+      },
+      "text": "        mulhw         r0,r0,r31         # i=r31"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 28
+      },
+      "text": "        srawi         r3,r31,31         # i=r31"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 28
+      },
+      "text": "        subf            r0,r3,r0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 28
+      },
+      "text": "        add       r3,r0,r0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 28
+      },
+      "text": "        add       r0,r0,r3"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 28
+      },
+      "text": "        subf.         r0,r0,r31         # i=?a4"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L53",
+          "range": {
+            "endCol": 30,
+            "startCol": 26
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 28
+      },
+      "text": "        bc          12,2,.L53       # eq cr0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 28
+      },
+      "text": "        lis       r0,26214"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 28
+      },
+      "text": "        ori       r0,r0,26215"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 28
+      },
+      "text": "        mulhw         r0,r0,r31         # i=r31"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 28
+      },
+      "text": "        srawi         r0,r0,1"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 28
+      },
+      "text": "        srawi         r3,r31,31         # i=r31"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 28
+      },
+      "text": "        subf            r0,r3,r0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 28
+      },
+      "text": "        rlwinm      r3,r0,2,0,29"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 28
+      },
+      "text": "        add       r0,r0,r3"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 28
+      },
+      "text": "        subf.         r0,r0,r31         # i=?a4"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L53",
+          "range": {
+            "endCol": 30,
+            "startCol": 26
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 28
+      },
+      "text": "        bc          12,2,.L53       # eq cr0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2line   29"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L116",
+          "range": {
+            "endCol": 33,
+            "startCol": 28
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 29
+      },
+      "text": "        addis         r3,0,.L116@ha"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L116",
+          "range": {
+            "endCol": 36,
+            "startCol": 31
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 29
+      },
+      "text": "        addi            r3,r3,.L116@l"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 29
+      },
+      "text": "        mr          r4,r31      # i=r4 i=r31"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 29
+      },
+      "text": "        bl          printf"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L53:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2line   30"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L117",
+          "range": {
+            "endCol": 33,
+            "startCol": 28
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 30
+      },
+      "text": "        addis         r3,0,.L117@ha"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L117",
+          "range": {
+            "endCol": 36,
+            "startCol": 31
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 30
+      },
+      "text": "        addi            r3,r3,.L117@l"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 30
+      },
+      "text": "        bl          printf"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2line   31"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 31
+      },
+      "text": "        addi            r31,r31,1             # i=r31 i=r31"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L48",
+          "range": {
+            "endCol": 27,
+            "startCol": 23
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 31
+      },
+      "text": "        b             .L48"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L50:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2line   33"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 33
+      },
+      "text": "        diab.li   r3,0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2line   34"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2epilogue_begin"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L113:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Llo12:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 34
+      },
+      "text": "        lwz       r31,28(r1)      # offset r1+28  0x1c"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2_cfa_restore_list    3,10"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 34
+      },
+      "text": "        lwz       r0,36(r1)"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 34
+      },
+      "text": "        mtspr         lr,r0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 34
+      },
+      "text": "        addi            r1,r1,32                "
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2_cfa_def_cfa_offset  0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 34
+      },
+      "text": "        blr"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#$$ef"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2_cfa_end 2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .text"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#$$ld"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L109:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .type         fizz_buzz(),@function"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .size         fizz_buzz(),.-fizz_buzz()"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "# Number of nodes = 50"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "# Allocations for fizz_buzz()"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#       ?a4         i"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .align      2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .text"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2line         37,6"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#$$ld"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L120:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#$$bf   printEvenNumbers(int),interprocedural,rasave,nostackparams"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .globl      printEvenNumbers(int)"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2_cfa_start.r __cie"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 37
+      },
+      "text": "printEvenNumbers(int):"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#$$dr 0 0 0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Llo13:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 37
+      },
+      "text": "        stwu            r1,-32(r1)          "
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2_cfa_def_cfa_offset  32"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 37
+      },
+      "text": "        mfspr         r0,lr"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 37
+      },
+      "text": "        stmw            r30,24(r1)          # offset r1+24  0x18"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2_cfa_offset_list     30,31,1,1"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 37
+      },
+      "text": "        stw       r0,36(r1)"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2_cfa_offset    108,-1"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L124",
+          "range": {
+            "endCol": 44,
+            "startCol": 39
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .frame_info.r   r30,,,1,0,0,0,.L124"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 37
+      },
+      "text": "        mr          r31,r3      # N=r31 N=r3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2prologue_end"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .text"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L125:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2line   39"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Llo14:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 39
+      },
+      "text": "        diab.li   r30,1             # i=r30"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L55:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Llo15:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 39
+      },
+      "text": "        rlwinm      r0,r31,1,0,30         # N=r31"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 39
+      },
+      "text": "        cmp       0,0,r0,r30      # i=r30"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L54",
+          "range": {
+            "endCol": 30,
+            "startCol": 26
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 39
+      },
+      "text": "        bc          12,0,.L54       # lt cr0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2line   42"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 42
+      },
+      "text": "        srawi         r0,r30,1            # i=r30"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 42
+      },
+      "text": "        addze         r0,r0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 42
+      },
+      "text": "        add       r0,r0,r0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 42
+      },
+      "text": "        subf.         r0,r0,r30         # i=?a5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L58",
+          "range": {
+            "endCol": 29,
+            "startCol": 25
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 42
+      },
+      "text": "        bc          4,2,.L58        # ne cr0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2line   43"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L131",
+          "range": {
+            "endCol": 33,
+            "startCol": 28
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 43
+      },
+      "text": "        addis         r3,0,.L131@ha"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L131",
+          "range": {
+            "endCol": 36,
+            "startCol": 31
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 43
+      },
+      "text": "        addi            r3,r3,.L131@l"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 43
+      },
+      "text": "        mr          r4,r30      # i=r4 i=r30"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 43
+      },
+      "text": "        bl          printf"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L58:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2line   44"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 44
+      },
+      "text": "        addi            r30,r30,1             # i=r30 i=r30"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L55",
+          "range": {
+            "endCol": 27,
+            "startCol": 23
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 44
+      },
+      "text": "        b             .L55"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .text"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L126:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L54:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2line   45"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2epilogue_begin"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L124:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Llo16:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 45
+      },
+      "text": "        lmw       r30,24(r1)      # offset r1+24  0x18"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2_cfa_restore_list    3,10"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Llo17:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 45
+      },
+      "text": "        lwz       r0,36(r1)"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 45
+      },
+      "text": "        mtspr         lr,r0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 45
+      },
+      "text": "        addi            r1,r1,32                "
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2_cfa_def_cfa_offset  0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 45
+      },
+      "text": "        blr"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Llo18:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#$$ef"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2_cfa_end 2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .text"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#$$ld"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L121:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .type         printEvenNumbers(int),@function"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .size         printEvenNumbers(int),.-printEvenNumbers(int)"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "# Number of nodes = 23"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "# Allocations for printEvenNumbers(int)"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#       ?a4         N"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#       ?a5         i"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .align      2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .text"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2line         48,6"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#$$ld"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L134:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#$$bf   printOddNumbers(int),interprocedural,rasave,nostackparams"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .globl      printOddNumbers(int)"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2_cfa_start.r __cie"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 48
+      },
+      "text": "printOddNumbers(int):"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#$$dr 0 0 0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Llo19:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 48
+      },
+      "text": "        stwu            r1,-32(r1)          "
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2_cfa_def_cfa_offset  32"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 48
+      },
+      "text": "        mfspr         r0,lr"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 48
+      },
+      "text": "        stmw            r30,24(r1)          # offset r1+24  0x18"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2_cfa_offset_list     30,31,1,1"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 48
+      },
+      "text": "        stw       r0,36(r1)"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2_cfa_offset    108,-1"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L138",
+          "range": {
+            "endCol": 44,
+            "startCol": 39
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .frame_info.r   r30,,,1,0,0,0,.L138"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 48
+      },
+      "text": "        mr          r31,r3      # N=r31 N=r3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2prologue_end"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .text"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L139:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2line   50"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Llo20:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 50
+      },
+      "text": "        diab.li   r30,1             # i=r30"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L60:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Llo21:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 50
+      },
+      "text": "        rlwinm      r0,r31,1,0,30         # N=r31"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 50
+      },
+      "text": "        cmp       0,0,r0,r30      # i=r30"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L59",
+          "range": {
+            "endCol": 30,
+            "startCol": 26
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 50
+      },
+      "text": "        bc          12,0,.L59       # lt cr0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2line   53"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 53
+      },
+      "text": "        srawi         r0,r30,1            # i=r30"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 53
+      },
+      "text": "        addze         r0,r0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 53
+      },
+      "text": "        add       r0,r0,r0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 53
+      },
+      "text": "        subf.         r0,r0,r30         # i=?a5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L63",
+          "range": {
+            "endCol": 30,
+            "startCol": 26
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 53
+      },
+      "text": "        bc          12,2,.L63       # eq cr0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2line   54"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L131",
+          "range": {
+            "endCol": 33,
+            "startCol": 28
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 54
+      },
+      "text": "        addis         r3,0,.L131@ha"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L131",
+          "range": {
+            "endCol": 36,
+            "startCol": 31
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 54
+      },
+      "text": "        addi            r3,r3,.L131@l"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 54
+      },
+      "text": "        mr          r4,r30      # i=r4 i=r30"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 54
+      },
+      "text": "        bl          printf"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L63:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2line   55"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 55
+      },
+      "text": "        addi            r30,r30,1             # i=r30 i=r30"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L60",
+          "range": {
+            "endCol": 27,
+            "startCol": 23
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 55
+      },
+      "text": "        b             .L60"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .text"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L140:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L59:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2line   56"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2epilogue_begin"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L138:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Llo22:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 56
+      },
+      "text": "        lmw       r30,24(r1)      # offset r1+24  0x18"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2_cfa_restore_list    3,10"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Llo23:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 56
+      },
+      "text": "        lwz       r0,36(r1)"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 56
+      },
+      "text": "        mtspr         lr,r0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 56
+      },
+      "text": "        addi            r1,r1,32                "
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2_cfa_def_cfa_offset  0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 56
+      },
+      "text": "        blr"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Llo24:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#$$ef"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2_cfa_end 2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .text"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#$$ld"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L135:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .type         printOddNumbers(int),@function"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .size         printOddNumbers(int),.-printOddNumbers(int)"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "# Number of nodes = 23"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "# Allocations for printOddNumbers(int)"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#       ?a4         N"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#       ?a5         i"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .align      2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .text"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2line         58,6"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#$$ld"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L147:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#$$bf   tokenizeString(),interprocedural,rasave,nostackparams"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .globl      tokenizeString()"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2_cfa_start.r __cie"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 58
+      },
+      "text": "tokenizeString():"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#$$dr 0 0 0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 58
+      },
+      "text": "        stwu            r1,-32(r1)          "
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2_cfa_def_cfa_offset  32"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 58
+      },
+      "text": "        mfspr         r0,lr"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 58
+      },
+      "text": "        stw       r0,36(r1)"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2_cfa_offset    108,-1"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L157",
+          "range": {
+            "endCol": 41,
+            "startCol": 36
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .frame_info.r   ,,,1,0,0,0,.L157"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2prologue_end"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2line   60"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L65",
+          "range": {
+            "endCol": 33,
+            "startCol": 29
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 60
+      },
+      "text": "        addis         r12,0,.L65@ha"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L65",
+          "range": {
+            "endCol": 37,
+            "startCol": 33
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 60
+      },
+      "text": "        addi            r12,r12,.L65@l"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 60
+      },
+      "text": "        addi            r12,r12,-1"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 60
+      },
+      "text": "        addi            r11,r1,7"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 60
+      },
+      "text": "        diab.li   r10,8"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 60
+      },
+      "text": "        mtspr         ctr,r10"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L158:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 60
+      },
+      "text": "        lbzu            r9,1(r12)"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 60
+      },
+      "text": "        lbzu            r10,1(r12)"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 60
+      },
+      "text": "        stbu            r9,1(r11)"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 60
+      },
+      "text": "        stbu            r10,1(r11)"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L158",
+          "range": {
+            "endCol": 31,
+            "startCol": 26
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 60
+      },
+      "text": "        bc          16,0,.L158"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2line   63"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 63
+      },
+      "text": "        addi            r3,r1,8"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L159",
+          "range": {
+            "endCol": 33,
+            "startCol": 28
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 63
+      },
+      "text": "        addis         r4,0,.L159@ha"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L159",
+          "range": {
+            "endCol": 36,
+            "startCol": 31
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 63
+      },
+      "text": "        addi            r4,r4,.L159@l"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 63
+      },
+      "text": "        bl          strtok"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Llo25:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 63
+      },
+      "text": "        mr          r4,r3         # token=r4 token=r3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L66:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2line   67"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 67
+      },
+      "text": "        cmpi            0,0,r3,0                # token=r3"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L64",
+          "range": {
+            "endCol": 30,
+            "startCol": 26
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 67
+      },
+      "text": "        bc          12,2,.L64       # eq cr0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2line   69"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Llo26:"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L160",
+          "range": {
+            "endCol": 33,
+            "startCol": 28
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 69
+      },
+      "text": "        addis         r3,0,.L160@ha             # token=r3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Llo27:"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L160",
+          "range": {
+            "endCol": 36,
+            "startCol": 31
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 69
+      },
+      "text": "        addi            r3,r3,.L160@l         # token=r3 token=r3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Llo28:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 69
+      },
+      "text": "        bl          printf"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2line   70"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L159",
+          "range": {
+            "endCol": 33,
+            "startCol": 28
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 70
+      },
+      "text": "        addis         r4,0,.L159@ha             # token=r4"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Llo29:"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L159",
+          "range": {
+            "endCol": 36,
+            "startCol": 31
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 70
+      },
+      "text": "        addi            r4,r4,.L159@l         # token=r4 token=r4"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Llo30:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 70
+      },
+      "text": "        diab.li   r3,0                # token=r3"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 70
+      },
+      "text": "        bl          strtok"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Llo31:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 70
+      },
+      "text": "        mr          r4,r3         # token=r4 token=r3"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L66",
+          "range": {
+            "endCol": 27,
+            "startCol": 23
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 70
+      },
+      "text": "        b             .L66"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L64:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2line   72"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2epilogue_begin"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L157:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Llo32:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 72
+      },
+      "text": "        lwz       r0,36(r1)"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 72
+      },
+      "text": "        mtspr         lr,r0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 72
+      },
+      "text": "        addi            r1,r1,32                "
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2_cfa_def_cfa_offset  0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 72
+      },
+      "text": "        blr"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#$$ef"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2_cfa_end 2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .text"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#$$ld"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L148:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .type         tokenizeString(),@function"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .size         tokenizeString(),.-tokenizeString()"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "# Number of nodes = 37"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "# Allocations for tokenizeString()"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#       ?a4         $$4"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#       ?a5         $$3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#       SP,8      str"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#       ?a6         token"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .align      2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .text"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2line         74,5"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#$$ld"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L168:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#$$bf   main,interprocedural,rasave,nostackparams"
+    },
+    {
+      "labels": [
+        {
+          "name": "main",
+          "range": {
+            "endCol": 25,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .globl      main"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2_cfa_start.r __cie"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "main:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#$$dr 0 0 0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 74
+      },
+      "text": "        stwu            r1,-64(r1)          "
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2_cfa_def_cfa_offset  64"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 74
+      },
+      "text": "        mfspr         r0,lr"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 74
+      },
+      "text": "        stw       r31,60(r1)      # offset r1+60  0x3c"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2_cfa_offset_list     31,31,1,1"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 74
+      },
+      "text": "        stw       r0,68(r1)"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2_cfa_offset    108,-1"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L177",
+          "range": {
+            "endCol": 44,
+            "startCol": 39
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .frame_info.r   r31,,,1,0,0,0,.L177"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2prologue_end"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2line   76"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 76
+      },
+      "text": "        diab.li   r3,10"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 76
+      },
+      "text": "        bl          fibo(int)"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 76
+      },
+      "text": "        mr          r31,r3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2line   77"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 77
+      },
+      "text": "        bl          fizz_buzz()"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2line   78"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 78
+      },
+      "text": "        mr          r3,r31"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 78
+      },
+      "text": "        bl          printOddNumbers(int)"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2line   79"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 79
+      },
+      "text": "        lis       r0,16368"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 79
+      },
+      "text": "        diab.li   r6,0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 79
+      },
+      "text": "        stw       r0,8(r1)"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 79
+      },
+      "text": "        stw       r6,12(r1)"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 79
+      },
+      "text": "        lis       r0,16384"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 79
+      },
+      "text": "        stw       r0,16(r1)"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 79
+      },
+      "text": "        stw       r6,20(r1)"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 79
+      },
+      "text": "        lis       r0,16392"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 79
+      },
+      "text": "        stw       r0,24(r1)"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 79
+      },
+      "text": "        stw       r6,28(r1)"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 79
+      },
+      "text": "        lis       r0,16400"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 79
+      },
+      "text": "        stw       r0,32(r1)"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 79
+      },
+      "text": "        stw       r6,36(r1)"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 79
+      },
+      "text": "        lis       r5,16404"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 79
+      },
+      "text": "        stw       r5,40(r1)"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 79
+      },
+      "text": "        stw       r6,44(r1)"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2line   80"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 80
+      },
+      "text": "        addi            r3,r1,8"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 80
+      },
+      "text": "        bl          testFunction(double*, double)"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2line   81"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 81
+      },
+      "text": "        bl          tokenizeString()"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2line   82"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 82
+      },
+      "text": "        diab.li   r3,0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2line   83"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2epilogue_begin"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L177:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 83
+      },
+      "text": "        lwz       r31,60(r1)      # offset r1+60  0x3c"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2_cfa_restore_list    3,10"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 83
+      },
+      "text": "        lwz       r0,68(r1)"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 83
+      },
+      "text": "        mtspr         lr,r0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 83
+      },
+      "text": "        addi            r1,r1,64                "
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2_cfa_def_cfa_offset  0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 83
+      },
+      "text": "        blr"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#$$ef"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2_cfa_end 2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .text"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#$$ld"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L169:"
+    },
+    {
+      "labels": [
+        {
+          "name": "main",
+          "range": {
+            "endCol": 27,
+            "startCol": 23
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .type         main,@function"
+    },
+    {
+      "labels": [
+        {
+          "name": "main",
+          "range": {
+            "endCol": 27,
+            "startCol": 23
+          }
+        },
+        {
+          "name": "main",
+          "range": {
+            "endCol": 34,
+            "startCol": 30
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .size         main,.-main"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "# Number of nodes = 64"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "# Allocations for main"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#       ?a4         $$5"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#       ?a5         n"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#       SP,8      a"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#       ?a6         sum"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "# Allocations for module"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .text"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .align      2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#       Begin local data area"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#       LDA + 0"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L65",
+          "range": {
+            "endCol": 27,
+            "startCol": 23
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .type         .L65,@object"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L65",
+          "range": {
+            "endCol": 27,
+            "startCol": 23
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .size         .L65,16"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .align      2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#       static                __static_init1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L65:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         71,101,101,107,115,45,102,111,114,45,71,101,101,107,115"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .sdata2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .type         FLOAT_TEMP.161,@object"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .size         FLOAT_TEMP.161,8"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .align      3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "FLOAT_TEMP.161:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .double   +1.0000000000000000000"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .type         FLOAT_TEMP.162,@object"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .size         FLOAT_TEMP.162,8"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .align      3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "FLOAT_TEMP.162:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .double   +2.0000000000000000000"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .type         FLOAT_TEMP.163,@object"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .size         FLOAT_TEMP.163,8"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .align      3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "FLOAT_TEMP.163:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .double   +3.0000000000000000000"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .type         FLOAT_TEMP.164,@object"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .size         FLOAT_TEMP.164,8"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .align      3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "FLOAT_TEMP.164:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .double   +4.0000000000000000000"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .type         FLOAT_TEMP.165,@object"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .size         FLOAT_TEMP.165,8"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .align      3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "FLOAT_TEMP.165:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .double   +5.0000000000000000000"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .text"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .align      2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L114:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         70,105,122,122"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .text"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .align      2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L115:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         66,117,122,122"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .text"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .align      2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L116:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         110,117,109,98,101,114,61,37,100"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .text"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .align      2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L117:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         10"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .text"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .align      2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L131:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         37,100"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .text"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .align      2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L159:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         45"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .text"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .align      2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L160:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         37,115,10"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .text"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#$$ld"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L5:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L86:   .d2filenum \"/tmp/compiler-explorer-compiler202107-8023-z5iran.8cqm/example.cpp\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2_line_end"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_abbrev,,n"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L9:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_abbrev,,n"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        17"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0x1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        19"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        8"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        37"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        8"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        27"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        8"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        19"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        15"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        17"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        18"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        16"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        6"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_abbrev,,n"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        46"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0x1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        19"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        8"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        58"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        6"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        59"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        15"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        57"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        15"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        73"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        16"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        63"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        12"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        39"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        12"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        17"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        18"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_abbrev,,n"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        5"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0x0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        58"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        6"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        59"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        15"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        57"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        15"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        8"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        73"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        16"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        6"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_abbrev,,n"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        4"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        5"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0x0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        58"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        6"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        59"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        15"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        57"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        15"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        8"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        73"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        16"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_abbrev,,n"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        5"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        52"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0x0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        58"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        6"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        59"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        15"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        57"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        15"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        8"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        73"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        16"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_abbrev,,n"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        6"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        11"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0x1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        16"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        17"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        18"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_abbrev,,n"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        7"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        52"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0x0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        58"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        6"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        59"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        15"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        57"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        15"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        8"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        73"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        16"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        6"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_abbrev,,n"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        8"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        46"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0x1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        19"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        8"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        58"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        6"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        59"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        15"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        57"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        15"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        63"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        12"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        39"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        12"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        17"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        18"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_abbrev,,n"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        9"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        52"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0x0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        58"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        6"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        59"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        15"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        57"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        15"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        8"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        73"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        16"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        9"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_abbrev,,n"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        10"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        36"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0x0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        8"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        62"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        11"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        11"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        11"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_abbrev,,n"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        11"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        15"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0x0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        73"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        16"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_abbrev,,n"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        12"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0x1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        19"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        73"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        16"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_abbrev,,n"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        13"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        33"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0x0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        47"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        15"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_abbrev,,n"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .sleb128        0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_info,,n"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L2:"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L3",
+          "range": {
+            "endCol": 24,
+            "startCol": 21
+          }
+        },
+        {
+          "name": ".L1",
+          "range": {
+            "endCol": 28,
+            "startCol": 25
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L3-.L1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L1:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .2byte      0x2"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L9",
+          "range": {
+            "endCol": 24,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L9"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0x4"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_info,,n"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .sleb128        1"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L7",
+          "range": {
+            "endCol": 24,
+            "startCol": 21
+          }
+        },
+        {
+          "name": ".L2",
+          "range": {
+            "endCol": 28,
+            "startCol": 25
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L7-.L2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         \"/tmp/compiler-explorer-compiler202107-8023-z5iran.8cqm/example.cpp\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         \"Diab Data, Inc:dplus Rel 5.9.7.1-a_1:PPCE200Z1N\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         \"/tmp/compiler-explorer-compiler202107-8023-z5iran.8cqm\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        4"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L4",
+          "range": {
+            "endCol": 24,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L4"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L5",
+          "range": {
+            "endCol": 24,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L8",
+          "range": {
+            "endCol": 24,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L8"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_info,,n"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L88:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .sleb128        2"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L83",
+          "range": {
+            "endCol": 25,
+            "startCol": 21
+          }
+        },
+        {
+          "name": ".L2",
+          "range": {
+            "endCol": 29,
+            "startCol": 26
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L83-.L2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         \"testFunction\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L86",
+          "range": {
+            "endCol": 25,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L86"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        4"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        8"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L87",
+          "range": {
+            "endCol": 25,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L87"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0x1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0x1"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L84",
+          "range": {
+            "endCol": 25,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L84"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L85",
+          "range": {
+            "endCol": 25,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L85"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_info,,n"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .sleb128        3"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L86",
+          "range": {
+            "endCol": 25,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L86"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        4"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        8"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         \"input\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L89",
+          "range": {
+            "endCol": 25,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L89"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L90",
+          "range": {
+            "endCol": 25,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L90"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_info,,n"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .sleb128        4"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L86",
+          "range": {
+            "endCol": 25,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L86"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        4"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        8"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         \"length\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L87",
+          "range": {
+            "endCol": 25,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L87"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_info,,n"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L91:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .sleb128        5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L86",
+          "range": {
+            "endCol": 25,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L86"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        5"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        10"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         \"sum\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L87",
+          "range": {
+            "endCol": 25,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L87"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_info,,n"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .sleb128        6"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L95",
+          "range": {
+            "endCol": 25,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L95"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L92",
+          "range": {
+            "endCol": 25,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L92"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L93",
+          "range": {
+            "endCol": 25,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L93"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_info,,n"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L96:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .sleb128        7"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L86",
+          "range": {
+            "endCol": 25,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L86"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        6"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        12"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         \"i\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L97",
+          "range": {
+            "endCol": 25,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L97"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L98",
+          "range": {
+            "endCol": 25,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L98"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_info,,n"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .sleb128        0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L95:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_info,,n"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .sleb128        0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L83:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_info,,n"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L103:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .sleb128        2"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L100",
+          "range": {
+            "endCol": 26,
+            "startCol": 21
+          }
+        },
+        {
+          "name": ".L2",
+          "range": {
+            "endCol": 30,
+            "startCol": 27
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L100-.L2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         \"fibo\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L86",
+          "range": {
+            "endCol": 25,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L86"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        12"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L97",
+          "range": {
+            "endCol": 25,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L97"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0x1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0x1"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L101",
+          "range": {
+            "endCol": 26,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L101"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L102",
+          "range": {
+            "endCol": 26,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L102"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .sleb128        3"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L86",
+          "range": {
+            "endCol": 25,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L86"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        12"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        5"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         \"n\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L97",
+          "range": {
+            "endCol": 25,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L97"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L104",
+          "range": {
+            "endCol": 26,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L104"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_info,,n"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .sleb128        0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L100:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_info,,n"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L110:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .sleb128        2"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L107",
+          "range": {
+            "endCol": 26,
+            "startCol": 21
+          }
+        },
+        {
+          "name": ".L2",
+          "range": {
+            "endCol": 30,
+            "startCol": 27
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L107-.L2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         \"fizz_buzz\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L86",
+          "range": {
+            "endCol": 25,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L86"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        19"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L97",
+          "range": {
+            "endCol": 25,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L97"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0x1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0x1"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L108",
+          "range": {
+            "endCol": 26,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L108"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L109",
+          "range": {
+            "endCol": 26,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L109"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L111:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .sleb128        7"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L86",
+          "range": {
+            "endCol": 25,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L86"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        21"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        9"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         \"i\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L97",
+          "range": {
+            "endCol": 25,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L97"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L112",
+          "range": {
+            "endCol": 26,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L112"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_info,,n"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .sleb128        0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L107:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_info,,n"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L122:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .sleb128        8"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L119",
+          "range": {
+            "endCol": 26,
+            "startCol": 21
+          }
+        },
+        {
+          "name": ".L2",
+          "range": {
+            "endCol": 30,
+            "startCol": 27
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L119-.L2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         \"printEvenNumbers\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L86",
+          "range": {
+            "endCol": 25,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L86"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        37"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        6"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0x1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0x1"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L120",
+          "range": {
+            "endCol": 26,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L120"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L121",
+          "range": {
+            "endCol": 26,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L121"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .sleb128        3"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L86",
+          "range": {
+            "endCol": 25,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L86"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        37"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        6"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         \"N\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L97",
+          "range": {
+            "endCol": 25,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L97"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L123",
+          "range": {
+            "endCol": 26,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L123"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_info,,n"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .sleb128        6"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L128",
+          "range": {
+            "endCol": 26,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L128"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L125",
+          "range": {
+            "endCol": 26,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L125"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L126",
+          "range": {
+            "endCol": 26,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L126"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L129:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .sleb128        7"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L86",
+          "range": {
+            "endCol": 25,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L86"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        39"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        14"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         \"i\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L97",
+          "range": {
+            "endCol": 25,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L97"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L130",
+          "range": {
+            "endCol": 26,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L130"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_info,,n"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .sleb128        0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L128:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_info,,n"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .sleb128        0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L119:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_info,,n"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L136:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .sleb128        8"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L133",
+          "range": {
+            "endCol": 26,
+            "startCol": 21
+          }
+        },
+        {
+          "name": ".L2",
+          "range": {
+            "endCol": 30,
+            "startCol": 27
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L133-.L2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         \"printOddNumbers\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L86",
+          "range": {
+            "endCol": 25,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L86"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        48"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        6"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0x1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0x1"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L134",
+          "range": {
+            "endCol": 26,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L134"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L135",
+          "range": {
+            "endCol": 26,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L135"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .sleb128        3"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L86",
+          "range": {
+            "endCol": 25,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L86"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        48"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        6"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         \"N\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L97",
+          "range": {
+            "endCol": 25,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L97"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L137",
+          "range": {
+            "endCol": 26,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L137"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_info,,n"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .sleb128        6"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L142",
+          "range": {
+            "endCol": 26,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L142"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L139",
+          "range": {
+            "endCol": 26,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L139"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L140",
+          "range": {
+            "endCol": 26,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L140"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L143:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .sleb128        7"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L86",
+          "range": {
+            "endCol": 25,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L86"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        50"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        14"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         \"i\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L97",
+          "range": {
+            "endCol": 25,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L97"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L144",
+          "range": {
+            "endCol": 26,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L144"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_info,,n"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .sleb128        0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L142:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_info,,n"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .sleb128        0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L133:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_info,,n"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L149:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .sleb128        8"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L146",
+          "range": {
+            "endCol": 26,
+            "startCol": 21
+          }
+        },
+        {
+          "name": ".L2",
+          "range": {
+            "endCol": 30,
+            "startCol": 27
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L146-.L2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         \"tokenizeString\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L86",
+          "range": {
+            "endCol": 25,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L86"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        58"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        6"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0x1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0x1"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L147",
+          "range": {
+            "endCol": 26,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L147"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L148",
+          "range": {
+            "endCol": 26,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L148"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_info,,n"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L150:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .sleb128        9"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L86",
+          "range": {
+            "endCol": 25,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L86"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        60"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        10"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         \"str\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L151",
+          "range": {
+            "endCol": 26,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L151"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .sleb128        3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0x92"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .sleb128        8"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L154:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .sleb128        7"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L86",
+          "range": {
+            "endCol": 25,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L86"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        63"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        11"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         \"token\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L155",
+          "range": {
+            "endCol": 26,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L155"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L156",
+          "range": {
+            "endCol": 26,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L156"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_info,,n"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .sleb128        0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L146:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_info,,n"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L170:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .sleb128        2"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L167",
+          "range": {
+            "endCol": 26,
+            "startCol": 21
+          }
+        },
+        {
+          "name": ".L2",
+          "range": {
+            "endCol": 30,
+            "startCol": 27
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L167-.L2"
+    },
+    {
+      "labels": [
+        {
+          "name": "main",
+          "range": {
+            "endCol": 28,
+            "startCol": 24
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .byte         \"main\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L86",
+          "range": {
+            "endCol": 25,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L86"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        74"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L97",
+          "range": {
+            "endCol": 25,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L97"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0x1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0x1"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L168",
+          "range": {
+            "endCol": 26,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L168"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L169",
+          "range": {
+            "endCol": 26,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L169"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L171:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .sleb128        7"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L86",
+          "range": {
+            "endCol": 25,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L86"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        76"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        9"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         \"n\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L97",
+          "range": {
+            "endCol": 25,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L97"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L172",
+          "range": {
+            "endCol": 26,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L172"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L173:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .sleb128        9"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L86",
+          "range": {
+            "endCol": 25,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L86"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        79"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        12"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         \"a\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L174",
+          "range": {
+            "endCol": 26,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L174"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .sleb128        3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0x92"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .sleb128        8"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L176:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .sleb128        5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L86",
+          "range": {
+            "endCol": 25,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L86"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        80"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        12"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         \"sum\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L87",
+          "range": {
+            "endCol": 25,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L87"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_info,,n"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .sleb128        0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L167:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_info,,n"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L87:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .sleb128        10"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         \"double\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0x4"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0x8"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_info,,n"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L89:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .sleb128        11"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L87",
+          "range": {
+            "endCol": 25,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L87"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L97:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .sleb128        10"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         \"int\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0x5"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0x4"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L153:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .sleb128        10"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         \"char\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0x8"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0x1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_info,,n"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L151:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .sleb128        12"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L152",
+          "range": {
+            "endCol": 26,
+            "startCol": 21
+          }
+        },
+        {
+          "name": ".L2",
+          "range": {
+            "endCol": 30,
+            "startCol": 27
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L152-.L2"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L153",
+          "range": {
+            "endCol": 26,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L153"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_info,,n"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .sleb128        13"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        15"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .sleb128        0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L152:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L155:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .sleb128        11"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L153",
+          "range": {
+            "endCol": 26,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L153"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L174:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .sleb128        12"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L175",
+          "range": {
+            "endCol": 26,
+            "startCol": 21
+          }
+        },
+        {
+          "name": ".L2",
+          "range": {
+            "endCol": 30,
+            "startCol": 27
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L175-.L2"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L87",
+          "range": {
+            "endCol": 25,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .4byte      .L87"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .sleb128        13"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128        4"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .sleb128        0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L175:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L7:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .sleb128        0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L3:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_loc,,n"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .align  0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L90:"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Llo1",
+          "range": {
+            "endCol": 40,
+            "startCol": 35
+          }
+        },
+        {
+          "name": ".Llo2",
+          "range": {
+            "endCol": 58,
+            "startCol": 53
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .d2locreg       %offsetof(.Llo1), %offsetof(.Llo2),3"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Llo3",
+          "range": {
+            "endCol": 40,
+            "startCol": 35
+          }
+        },
+        {
+          "name": ".Llo4",
+          "range": {
+            "endCol": 58,
+            "startCol": 53
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .d2locreg       %offsetof(.Llo3), %offsetof(.Llo4),31"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2locend"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L98:"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Llo3",
+          "range": {
+            "endCol": 40,
+            "startCol": 35
+          }
+        },
+        {
+          "name": ".Llo4",
+          "range": {
+            "endCol": 58,
+            "startCol": 53
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .d2locreg       %offsetof(.Llo3), %offsetof(.Llo4),26"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2locend"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L104:"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Llo5",
+          "range": {
+            "endCol": 40,
+            "startCol": 35
+          }
+        },
+        {
+          "name": ".Llo6",
+          "range": {
+            "endCol": 58,
+            "startCol": 53
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .d2locreg       %offsetof(.Llo5), %offsetof(.Llo6),3"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Llo7",
+          "range": {
+            "endCol": 40,
+            "startCol": 35
+          }
+        },
+        {
+          "name": ".Llo8",
+          "range": {
+            "endCol": 58,
+            "startCol": 53
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .d2locreg       %offsetof(.Llo7), %offsetof(.Llo8),31"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Llo9",
+          "range": {
+            "endCol": 40,
+            "startCol": 35
+          }
+        },
+        {
+          "name": ".Llo10",
+          "range": {
+            "endCol": 59,
+            "startCol": 53
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .d2locreg       %offsetof(.Llo9), %offsetof(.Llo10),3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2locend"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L112:"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Llo11",
+          "range": {
+            "endCol": 41,
+            "startCol": 35
+          }
+        },
+        {
+          "name": ".Llo12",
+          "range": {
+            "endCol": 60,
+            "startCol": 54
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .d2locreg       %offsetof(.Llo11), %offsetof(.Llo12),31"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2locend"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L123:"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Llo13",
+          "range": {
+            "endCol": 41,
+            "startCol": 35
+          }
+        },
+        {
+          "name": ".Llo14",
+          "range": {
+            "endCol": 60,
+            "startCol": 54
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .d2locreg       %offsetof(.Llo13), %offsetof(.Llo14),3"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Llo15",
+          "range": {
+            "endCol": 41,
+            "startCol": 35
+          }
+        },
+        {
+          "name": ".Llo16",
+          "range": {
+            "endCol": 60,
+            "startCol": 54
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .d2locreg       %offsetof(.Llo15), %offsetof(.Llo16),31"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Llo17",
+          "range": {
+            "endCol": 41,
+            "startCol": 35
+          }
+        },
+        {
+          "name": ".Llo18",
+          "range": {
+            "endCol": 60,
+            "startCol": 54
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .d2locreg       %offsetof(.Llo17), %offsetof(.Llo18),3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2locend"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L130:"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Llo15",
+          "range": {
+            "endCol": 41,
+            "startCol": 35
+          }
+        },
+        {
+          "name": ".Llo16",
+          "range": {
+            "endCol": 60,
+            "startCol": 54
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .d2locreg       %offsetof(.Llo15), %offsetof(.Llo16),30"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2locend"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L137:"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Llo19",
+          "range": {
+            "endCol": 41,
+            "startCol": 35
+          }
+        },
+        {
+          "name": ".Llo20",
+          "range": {
+            "endCol": 60,
+            "startCol": 54
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .d2locreg       %offsetof(.Llo19), %offsetof(.Llo20),3"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Llo21",
+          "range": {
+            "endCol": 41,
+            "startCol": 35
+          }
+        },
+        {
+          "name": ".Llo22",
+          "range": {
+            "endCol": 60,
+            "startCol": 54
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .d2locreg       %offsetof(.Llo21), %offsetof(.Llo22),31"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Llo23",
+          "range": {
+            "endCol": 41,
+            "startCol": 35
+          }
+        },
+        {
+          "name": ".Llo24",
+          "range": {
+            "endCol": 60,
+            "startCol": 54
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .d2locreg       %offsetof(.Llo23), %offsetof(.Llo24),3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2locend"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L144:"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Llo21",
+          "range": {
+            "endCol": 41,
+            "startCol": 35
+          }
+        },
+        {
+          "name": ".Llo22",
+          "range": {
+            "endCol": 60,
+            "startCol": 54
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .d2locreg       %offsetof(.Llo21), %offsetof(.Llo22),30"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2locend"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L156:"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Llo25",
+          "range": {
+            "endCol": 41,
+            "startCol": 35
+          }
+        },
+        {
+          "name": ".Llo26",
+          "range": {
+            "endCol": 60,
+            "startCol": 54
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .d2locreg       %offsetof(.Llo25), %offsetof(.Llo26),3"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Llo27",
+          "range": {
+            "endCol": 41,
+            "startCol": 35
+          }
+        },
+        {
+          "name": ".Llo28",
+          "range": {
+            "endCol": 60,
+            "startCol": 54
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .d2locreg       %offsetof(.Llo27), %offsetof(.Llo28),3"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Llo29",
+          "range": {
+            "endCol": 41,
+            "startCol": 35
+          }
+        },
+        {
+          "name": ".Llo30",
+          "range": {
+            "endCol": 60,
+            "startCol": 54
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .d2locreg       %offsetof(.Llo29), %offsetof(.Llo30),4"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Llo31",
+          "range": {
+            "endCol": 41,
+            "startCol": 35
+          }
+        },
+        {
+          "name": ".Llo32",
+          "range": {
+            "endCol": 60,
+            "startCol": 54
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .d2locreg       %offsetof(.Llo31), %offsetof(.Llo32),3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2locend"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L172:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .d2locend"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .wrcm.doc"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .wrcm.elem"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .wrcm.nelem \"code\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .wrcm.nelem \"functions\""
+    },
+    {
+      "labels": [
+        {
+          "name": "main",
+          "range": {
+            "endCol": 26,
+            "startCol": 22
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .wrcm.nelem \"main\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .wrcm.nint32 \"frameSize\", 64"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .wrcm.nstrlist \"calls\", \"testFunction(double*, double)\",\"tokenizeString()\",\"printOddNumbers(int)\",\"fibo(int)\",\"fizz_buzz()\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .wrcm.end"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .wrcm.nelem \"tokenizeString()\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .wrcm.nint32 \"frameSize\", 32"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .wrcm.nstrlist \"calls\", \"printf\",\"strtok\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .wrcm.end"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .wrcm.nelem \"printOddNumbers(int)\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .wrcm.nint32 \"frameSize\", 32"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .wrcm.nstrlist \"calls\", \"printf\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .wrcm.end"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .wrcm.nelem \"printEvenNumbers(int)\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .wrcm.nint32 \"frameSize\", 32"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .wrcm.nstrlist \"calls\", \"printf\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .wrcm.end"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .wrcm.nelem \"fizz_buzz()\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .wrcm.nint32 \"frameSize\", 32"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .wrcm.nstrlist \"calls\", \"printf\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .wrcm.end"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .wrcm.nelem \"fibo(int)\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .wrcm.nint32 \"frameSize\", 32"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .wrcm.nstrlist \"calls\", \"fibo(int)\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .wrcm.end"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .wrcm.nelem \"testFunction(double*, double)\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .wrcm.nint32 \"frameSize\", 48"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .wrcm.nstrlist \"calls\", \"_d_add\",\"_d_fge\",\"_d_itod\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .wrcm.end"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .wrcm.end"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .wrcm.end"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .wrcm.nelem \"tools\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .wrcm.nelem \"llopt\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .wrcm.nelem \"version\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .wrcm.nstr \"string\", \"5.9.7.1\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .wrcm.nint32 \"number\", 5971"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .wrcm.nstr \"path\", \"/home/ubuntu/WindRiver/compilers/diab-5.9.7.1/LINUX386/bin/llopt\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .wrcm.nstr \"label\", \"DIAB_5_9_7_1-FCS_20191207_153706\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .wrcm.end"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .wrcm.end"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .wrcm.nelem \"etoa\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .wrcm.nelem \"version\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .wrcm.nstr \"string\", \"5.9.7.1-a_1\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .wrcm.nint32 \"number\", 5971"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .wrcm.nstr \"path\", \"/home/ubuntu/WindRiver/compilers/diab-5.9.7.1/LINUX386/lib/etoa\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .wrcm.nstr \"label\", \"DIAB_5_9_7_1-a_1-FCS_20200605_220353\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .wrcm.end"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .wrcm.nstr \"options\", \"-Xmake-opt-key=/tmp/compiler-explorer-compiler202107-8023-z5iran.8cqm/output.s -Xuser-specified-proc=PPCE200Z1N -XPPCE200Z1 -Xstsw-slow -Xintrinsic-mask=0xc00041 -Xconventions-eabi -Xsoft-float -Xcoloring -Xtarget-family=2 -Xlicense-proxy-use -Xlicense-proxy-path=/home/ubuntu/WindRiver/compilers/diab-5.9.7.1/LINUX386 -Xmake-opt-key=/tmp/compiler-explorer-compiler202107-8023-z5iran.8cqm/output.s -M/home/ubuntu/WindRiver/compilers/diab-5.9.7.1/PPC/PPC.cd -Z/home/ubuntu/WindRiver/compilers/diab-5.9.7.1/LINUX386/lib/cderror.cat -Xuser-specified-proc=PPCE200Z1N -XPPCE200Z1 -Xstsw-slow -Xintrinsic-mask=0xc00041 -Xconventions-eabi -Xsoft-float -Xcoloring -Xtarget-family=2 -Xlicense-proxy-use -Xlicense-proxy-path=/home/ubuntu/WindRiver/compilers/diab-5.9.7.1/LINUX386 -g\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .wrcm.end"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .wrcm.end"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .wrcm.nelem \"file\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .wrcm.nstr \"input\", \"/tmp/compiler-explorer-compiler202107-8023-z5iran.8cqm/example.cpp\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .wrcm.end"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .wrcm.end"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .wrcm.end"
+    }
+  ],
+  "labelDefinitions": {
+    ".L1": 899,
+    ".L100": 1001,
+    ".L101": 118,
+    ".L102": 169,
+    ".L104": 1251,
+    ".L105": 154,
+    ".L107": 1027,
+    ".L108": 182,
+    ".L109": 286,
+    ".L112": 1256,
+    ".L113": 273,
+    ".L114": 644,
+    ".L115": 649,
+    ".L116": 654,
+    ".L117": 659,
+    ".L119": 1068,
+    ".L120": 297,
+    ".L121": 360,
+    ".L123": 1259,
+    ".L124": 345,
+    ".L125": 316,
+    ".L126": 341,
+    ".L128": 1065,
+    ".L130": 1264,
+    ".L131": 664,
+    ".L133": 1109,
+    ".L134": 372,
+    ".L135": 435,
+    ".L137": 1267,
+    ".L138": 420,
+    ".L139": 391,
+    ".L140": 416,
+    ".L142": 1106,
+    ".L144": 1272,
+    ".L146": 1147,
+    ".L147": 447,
+    ".L148": 516,
+    ".L151": 1218,
+    ".L152": 1226,
+    ".L153": 1211,
+    ".L155": 1227,
+    ".L156": 1275,
+    ".L157": 505,
+    ".L158": 468,
+    ".L159": 669,
+    ".L160": 674,
+    ".L167": 1193,
+    ".L168": 530,
+    ".L169": 593,
+    ".L172": 1281,
+    ".L174": 1230,
+    ".L175": 1237,
+    ".L177": 581,
+    ".L2": 897,
+    ".L3": 1240,
+    ".L4": 26,
+    ".L42": 62,
+    ".L44": 84,
+    ".L45": 151,
+    ".L46": 142,
+    ".L48": 201,
+    ".L5": 679,
+    ".L50": 268,
+    ".L51": 218,
+    ".L52": 234,
+    ".L53": 260,
+    ".L54": 342,
+    ".L55": 320,
+    ".L58": 336,
+    ".L59": 417,
+    ".L60": 395,
+    ".L63": 411,
+    ".L64": 502,
+    ".L65": 613,
+    ".L66": 481,
+    ".L7": 1238,
+    ".L8": 23,
+    ".L83": 976,
+    ".L84": 35,
+    ".L85": 104,
+    ".L86": 680,
+    ".L87": 1195,
+    ".L89": 1202,
+    ".L9": 684,
+    ".L90": 1244,
+    ".L92": 58,
+    ".L93": 86,
+    ".L95": 973,
+    ".L97": 1205,
+    ".L98": 1248,
+    ".Llo1": 42,
+    ".Llo10": 164,
+    ".Llo11": 189,
+    ".Llo12": 274,
+    ".Llo13": 304,
+    ".Llo14": 318,
+    ".Llo15": 321,
+    ".Llo16": 346,
+    ".Llo17": 349,
+    ".Llo18": 355,
+    ".Llo19": 379,
+    ".Llo2": 60,
+    ".Llo20": 393,
+    ".Llo21": 396,
+    ".Llo22": 421,
+    ".Llo23": 424,
+    ".Llo24": 430,
+    ".Llo25": 479,
+    ".Llo26": 486,
+    ".Llo27": 488,
+    ".Llo28": 490,
+    ".Llo29": 494,
+    ".Llo3": 63,
+    ".Llo30": 496,
+    ".Llo31": 499,
+    ".Llo32": 506,
+    ".Llo4": 88,
+    ".Llo5": 125,
+    ".Llo6": 140,
+    ".Llo7": 144,
+    ".Llo8": 155,
+    ".Llo9": 158,
+    "FLOAT_TEMP.161": 620,
+    "FLOAT_TEMP.162": 625,
+    "FLOAT_TEMP.163": 630,
+    "FLOAT_TEMP.164": 635,
+    "FLOAT_TEMP.165": 640,
+    "main": 535
+  }
+}

@@ -91,5 +91,4 @@ parserOptions:
   ecmaVersion: 5
 globals:
   define: false
-  monaco: true
   __webpack_public_path__: true

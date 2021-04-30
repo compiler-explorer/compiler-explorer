@@ -466,16 +466,17 @@ describe('Compiler execution', function () {
         // TODO all with demangle: false
     });
 
-    it('should run objdump properly', async () => {
-        const withDemangler = {...noExecuteSupportCompilerInfo, objdumper: 'objdump-exe'};
-        const compiler = new BaseCompiler(withDemangler, ce);
+    async function objdumpTest(type, expectedArgs) {
+        const withObjdumper = {
+            ...noExecuteSupportCompilerInfo,
+            objdumper: 'objdump-exe',
+            objdumperType: type,
+        };
+        const compiler = new BaseCompiler(withObjdumper, ce);
         const execStub = sinon.stub(compiler, 'exec');
         execStub.onCall(0).callsFake((objdumper, args, options) => {
             objdumper.should.equal('objdump-exe');
-            args.should.deep.equal([
-                '-d', 'output',
-                '-l', '--insn-width=16',
-                '-C', '-M', 'intel']);
+            args.should.deep.equal(expectedArgs);
             options.maxOutput.should.equal(123456);
             return Promise.resolve({
                 code: 0,
@@ -492,6 +493,34 @@ describe('Compiler execution', function () {
             true,
             true);
         result.asm.should.deep.equal('the output');
+    }
+
+    it('should run default objdump properly', async () => {
+        return objdumpTest('default', [
+            '-d', 'output',
+            '-l', '--insn-width=16',
+            '-C', '-M', 'intel']);
+    });
+
+    it('should run binutils objdump properly', async () => {
+        return objdumpTest('binutils', [
+            '-d', 'output',
+            '-l', '--insn-width=16',
+            '-C', '-M', 'intel']);
+    });
+
+    it('should run ELF Tool Chain objdump properly', async () => {
+        return objdumpTest('elftoolchain', [
+            '-d', 'output',
+            '-l',
+            '-C', '-M', 'intel']);
+    });
+
+    it('should run LLVM objdump properly', async () => {
+        return objdumpTest('llvm', [
+            '-d', 'output',
+            '-l',
+            '-C', '--x86-asm-syntax=intel']);
     });
 
     it('should run process opt output', async () => {
