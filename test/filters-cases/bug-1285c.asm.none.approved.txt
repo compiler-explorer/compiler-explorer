@@ -84,6 +84,7 @@
     {
       "labels": [],
       "source": {
+        "column": 24,
         "file": null,
         "line": 3
       },
@@ -92,6 +93,7 @@
     {
       "labels": [],
       "source": {
+        "column": 24,
         "file": null,
         "line": 3
       },
@@ -211,6 +213,7 @@
     {
       "labels": [],
       "source": {
+        "column": 14,
         "file": "/opt/compiler-explorer/gcc-8.3.0/include/c++/8.3.0/typeinfo",
         "line": 100
       },
@@ -224,6 +227,7 @@
     {
       "labels": [],
       "source": {
+        "column": 31,
         "file": "/opt/compiler-explorer/gcc-8.3.0/include/c++/8.3.0/typeinfo",
         "line": 100
       },
@@ -232,6 +236,7 @@
     {
       "labels": [],
       "source": {
+        "column": 31,
         "file": "/opt/compiler-explorer/gcc-8.3.0/include/c++/8.3.0/typeinfo",
         "line": 100
       },
@@ -240,6 +245,7 @@
     {
       "labels": [],
       "source": {
+        "column": 31,
         "file": "/opt/compiler-explorer/gcc-8.3.0/include/c++/8.3.0/typeinfo",
         "line": 100
       },
@@ -268,6 +274,7 @@
     {
       "labels": [],
       "source": {
+        "column": 40,
         "file": null,
         "line": 4
       },
@@ -281,6 +288,7 @@
     {
       "labels": [],
       "source": {
+        "column": 43,
         "file": null,
         "line": 4
       },
@@ -385,6 +393,7 @@
     {
       "labels": [],
       "source": {
+        "column": 45,
         "file": null,
         "line": 6
       },
@@ -393,6 +402,7 @@
     {
       "labels": [],
       "source": {
+        "column": 45,
         "file": null,
         "line": 6
       },

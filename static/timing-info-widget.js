@@ -56,6 +56,33 @@ function TimingInfo() {
     };
 }
 
+TimingInfo.prototype.addBuildResultToTimings = function (timings, buildResult) {
+    if (buildResult.packageDownloadAndUnzipTime) {
+        timings.push({
+            step: 'Download binary from cache',
+            time: buildResult.packageDownloadAndUnzipTime,
+        });
+    } else {
+        if (buildResult.downloads) {
+            timings = timings.concat(buildResult.downloads);
+        }
+
+        if (buildResult.buildsteps) {
+            _.forEach(buildResult.buildsteps, function (step) {
+                timings.push({
+                    step: step.step,
+                    time: step.execTime,
+                });
+            });
+        } else if (buildResult.execTime) {
+            timings.push({
+                step: 'Compilation',
+                time: buildResult.execTime,
+            });
+        }
+    }
+};
+
 TimingInfo.prototype.initializeChartDataFromResult = function (compileResult, totalTime) {
     var timings = [];
 
@@ -93,23 +120,7 @@ TimingInfo.prototype.initializeChartDataFromResult = function (compileResult, to
 
             if (compileResult.execResult) {
                 if (compileResult.execResult.buildResult) {
-                    if (compileResult.execResult.buildResult.packageDownloadAndUnzipTime) {
-                        timings.push({
-                            step: 'Download binary from cache',
-                            time: compileResult.execResult.buildResult.packageDownloadAndUnzipTime,
-                        });
-                    } else {
-                        if (compileResult.execResult.buildResult.downloads) {
-                            timings = timings.concat(compileResult.execResult.buildResult.downloads);
-                        }
-
-                        if (compileResult.execResult.buildResult.execTime) {
-                            timings.push({
-                                step: 'Compilation',
-                                time: compileResult.execResult.buildResult.execTime,
-                            });
-                        }
-                    }
+                    this.addBuildResultToTimings(timings, compileResult.execResult.buildResult);
                 }
 
                 if (compileResult.objdumpTime) {
@@ -170,15 +181,8 @@ TimingInfo.prototype.initializeChartDataFromResult = function (compileResult, to
                     time: compileResult.buildResult.packageDownloadAndUnzipTime,
                 });
             } else {
-                if (compileResult.buildResult.downloads) {
-                    timings = timings.concat(compileResult.buildResult.downloads);
-                }
-
-                if (compileResult.buildResult.execTime) {
-                    timings.push({
-                        step: 'Compilation',
-                        time: compileResult.buildResult.execTime,
-                    });
+                if (compileResult.execResult.buildResult) {
+                    this.addBuildResultToTimings(timings, compileResult.execResult.buildResult);
                 }
             }
         }

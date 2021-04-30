@@ -61,14 +61,16 @@ Running with `make EXTRA_ARGS='--language LANG'` will allow you to load
  third party libraries needed to run; using `npm` to install server-side and
  client side components.
 
+For development, we suggest using `make dev` to enable some useful features,
+ such as automatic reloading on file changes and shorter startup times.
+
+You can also use `npm run dev` to run if `make dev` doesn't work on your machine.
+
 Some languages need extra tools to demangle them, e.g. `rust`, `d`, or `haskell`.
  Such tools are kept separately in the
  [tools repo](https://github.com/compiler-explorer/compiler-explorer-tools).
 
-The config system leaves a lot to be desired.
- [Work has been done](https://github.com/rabsrincon/ccs-js) on porting
- [CCS](https://github.com/hellige/ccs-cpp) to Javascript and then something
- more rational can be used.
+The config system leaves a lot to be desired. This is something we want to improve.
 
 
 A [Road map](Roadmap.md) is available which gives a little insight into

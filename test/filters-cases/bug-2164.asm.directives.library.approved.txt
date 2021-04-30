@@ -13,6 +13,7 @@
     {
       "labels": [],
       "source": {
+        "column": 5,
         "file": null,
         "line": 5
       },
@@ -21,6 +22,7 @@
     {
       "labels": [],
       "source": {
+        "column": 5,
         "file": null,
         "line": 5
       },

@@ -99,6 +99,7 @@
     {
       "labels": [],
       "source": {
+        "column": 68,
         "file": "/opt/compiler-explorer/libs/abseil/absl/types/optional.h",
         "line": 447
       },
@@ -133,6 +134,7 @@
         }
       ],
       "source": {
+        "column": 7,
         "file": null,
         "line": 54
       },
@@ -156,6 +158,7 @@
     {
       "labels": [],
       "source": {
+        "column": 7,
         "file": null,
         "line": 0
       },
@@ -169,6 +172,7 @@
     {
       "labels": [],
       "source": {
+        "column": 7,
         "file": null,
         "line": 0
       },
@@ -177,6 +181,7 @@
     {
       "labels": [],
       "source": {
+        "column": 7,
         "file": null,
         "line": 0
       },
@@ -185,6 +190,7 @@
     {
       "labels": [],
       "source": {
+        "column": 7,
         "file": null,
         "line": 0
       },
@@ -198,6 +204,7 @@
     {
       "labels": [],
       "source": {
+        "column": 7,
         "file": null,
         "line": 0
       },
@@ -219,6 +226,7 @@
         }
       ],
       "source": {
+        "column": 9,
         "file": null,
         "line": 55
       },
@@ -242,6 +250,7 @@
     {
       "labels": [],
       "source": {
+        "column": 15,
         "file": null,
         "line": 56
       },
@@ -255,6 +264,7 @@
     {
       "labels": [],
       "source": {
+        "column": 1,
         "file": null,
         "line": 64
       },
@@ -268,6 +278,7 @@
     {
       "labels": [],
       "source": {
+        "column": 1,
         "file": null,
         "line": 64
       },
@@ -322,6 +333,7 @@
         }
       ],
       "source": {
+        "column": 9,
         "file": "/opt/compiler-explorer/libs/abseil/absl/types/internal/optional.h",
         "line": 92
       },
@@ -355,6 +367,7 @@
     {
       "labels": [],
       "source": {
+        "column": 7,
         "file": "/opt/compiler-explorer/libs/abseil/absl/types/internal/optional.h",
         "line": 93
       },
@@ -363,6 +376,7 @@
     {
       "labels": [],
       "source": {
+        "column": 14,
         "file": "/opt/compiler-explorer/libs/abseil/absl/types/internal/optional.h",
         "line": 93
       },
@@ -371,6 +385,7 @@
     {
       "labels": [],
       "source": {
+        "column": 16,
         "file": "/opt/compiler-explorer/libs/abseil/absl/types/internal/optional.h",
         "line": 94
       },
@@ -394,6 +409,7 @@
     {
       "labels": [],
       "source": {
+        "column": 1,
         "file": null,
         "line": 64
       },
@@ -407,6 +423,7 @@
     {
       "labels": [],
       "source": {
+        "column": 1,
         "file": null,
         "line": 64
       },
@@ -430,6 +447,7 @@
     {
       "labels": [],
       "source": {
+        "column": 47,
         "file": "/opt/compiler-explorer/libs/abseil/absl/types/internal/optional.h",
         "line": 152
       },
@@ -438,6 +456,7 @@
     {
       "labels": [],
       "source": {
+        "column": 20,
         "file": "/opt/compiler-explorer/libs/abseil/absl/types/internal/optional.h",
         "line": 153
       },
@@ -451,6 +470,7 @@
     {
       "labels": [],
       "source": {
+        "column": 1,
         "file": null,
         "line": 64
       },
@@ -464,6 +484,7 @@
     {
       "labels": [],
       "source": {
+        "column": 1,
         "file": null,
         "line": 64
       },

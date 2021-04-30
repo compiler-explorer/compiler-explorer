@@ -24,7 +24,6 @@
 
 'use strict';
 var $ = require('jquery'),
-    Sentry = require('@sentry/browser'),
     _ = require('underscore'),
     ga = require('analytics');
 
@@ -74,21 +73,10 @@ function initialise(url, motdNode, defaultLanguage, adsEnabled, onMotd, onHide) 
             onMotd(res);
             handleMotd(res, motdNode, defaultLanguage, adsEnabled, onHide);
         })
-        .catch(function (jqXHR, textStatus, errorThrown) {
-            var extraInfo = '';
-            // Get a resource performance entry in hopes of finding #1057, checking that it's actually supported!
-            if (typeof performance !== 'undefined' && typeof performance.getEntriesByType !== 'undefined') {
-                var perfEntries = performance.getEntriesByType('navigation');
-                var entry = perfEntries[0];
-
-                if (typeof entry.unloadEventStart  !== 'undefined') {
-                    extraInfo = ' - unloadStart=' + entry.unloadEventStart;
-                }
-            }
-
-            var message = 'MOTD error for ' + url + ' - ' + textStatus + ' - ' + (errorThrown || 'no error') +
-                ' - readyState=' + jqXHR.readyState + ' - status=' + jqXHR.status + extraInfo;
-            Sentry.captureMessage(message, 'warning');
+        .catch(function () {
+            // do nothing! we've long tried to find out why this might fail, and it seems page load cancels or ad
+            // blockers might reasonably cause a failure here, and it's no big deal.
+            // Some history at https://github.com/compiler-explorer/compiler-explorer/issues/1057
         });
 }
 

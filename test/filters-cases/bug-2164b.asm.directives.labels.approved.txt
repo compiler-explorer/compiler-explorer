@@ -8,6 +8,7 @@
     {
       "labels": [],
       "source": {
+        "column": 5,
         "file": null,
         "line": 3
       },
@@ -21,6 +22,7 @@
     {
       "labels": [],
       "source": {
+        "column": 5,
         "file": null,
         "line": 8
       },

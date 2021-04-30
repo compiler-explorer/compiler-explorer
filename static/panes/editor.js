@@ -319,7 +319,8 @@ Editor.prototype.initCallbacks = function () {
 
 Editor.prototype.onMouseMove = function (e) {
     if (e !== null && e.target !== null && this.settings.hoverShowSource && e.target.position !== null) {
-        this.tryPanesLinkLine(e.target.position.lineNumber, false);
+        var pos = e.target.position;
+        this.tryPanesLinkLine(pos.lineNumber, pos.column, false);
     }
 };
 
@@ -622,9 +623,11 @@ Editor.prototype.clearLinkedLine = function () {
     this.updateDecorations();
 };
 
-Editor.prototype.tryPanesLinkLine = function (thisLineNumber, reveal) {
+Editor.prototype.tryPanesLinkLine = function (thisLineNumber, column, reveal) {
+    var selectedToken = this.getTokenSpan(thisLineNumber, column);
     _.each(this.asmByCompiler, _.bind(function (asms, compilerId) {
-        this.eventHub.emit('panesLinkLine', compilerId, thisLineNumber, reveal);
+        this.eventHub.emit('panesLinkLine', compilerId, thisLineNumber,
+            selectedToken.colBegin, selectedToken.colEnd, reveal);
     }, this));
 };
 
@@ -695,7 +698,8 @@ Editor.prototype.initEditorActions = function () {
         contextMenuGroupId: 'navigation',
         contextMenuOrder: 1.5,
         run: _.bind(function (ed) {
-            this.tryPanesLinkLine(ed.getPosition().lineNumber, true);
+            var pos = ed.getPosition();
+            this.tryPanesLinkLine(pos.lineNumber, pos.column, true);
         }, this),
     });
 
@@ -998,14 +1002,22 @@ Editor.prototype.onCompileResponse = function (compilerId, compiler, result) {
         var severity = 3; // error
         if (obj.tag.text.match(/^warning/)) severity = 2;
         if (obj.tag.text.match(/^note/)) severity = 1;
+        var colBegin = 0;
+        var colEnd = Infinity;
+        if (obj.tag.column) {
+            var span = this.getTokenSpan(obj.tag.line, obj.tag.column);
+            colBegin = obj.tag.column;
+            if (span.colEnd === obj.tag.column) colEnd = -1;
+            else colEnd = span.colEnd + 1;
+        }
         return {
             severity: severity,
             message: obj.tag.text,
             source: compiler.name + ' #' + compilerId,
             startLineNumber: obj.tag.line,
-            startColumn: obj.tag.column || 0,
+            startColumn: colBegin,
             endLineNumber: obj.tag.line,
-            endColumn: obj.tag.column ? -1 : Infinity,
+            endColumn: colEnd,
         };
     }, this));
     monaco.editor.setModelMarkers(this.editor.getModel(), compilerId, widgets);
@@ -1029,7 +1041,46 @@ Editor.prototype.onSelectLine = function (id, lineNum) {
     }
 };
 
-Editor.prototype.onEditorLinkLine = function (editorId, lineNum, columnNum, reveal) {
+// Returns a half-segment [a, b) for the token on the line lineNum
+// that spans across the column.
+// a - colStart points to the first character of the token
+// b - colEnd points to the character immediately following the token
+// e.g.: "this->callableMethod ( x, y );"
+//              ^a   ^column  ^b
+Editor.prototype.getTokenSpan = function (lineNum, column) {
+    var model = this.editor.getModel();
+    var line = model.getLineContent(lineNum);
+    if (0 < column && column < line.length) {
+        var tokens = monaco.editor.tokenize(line, model.getModeId());
+        if (tokens.length > 0) {
+            var lastOffset = 0;
+            var lastWasString = false;
+            for (var i = 0; i < tokens[0].length; ++i) {
+                // Treat all the contiguous string tokens as one,
+                // For example "hello \" world" is treated as one token
+                // instead of 3 "string.cpp", "string.escape.cpp", "string.cpp"
+                if (tokens[0][i].type.startsWith('string')) {
+                    if (lastWasString) {
+                        continue;
+                    }
+                    lastWasString = true;
+                } else {
+                    lastWasString = false;
+                }
+                var currentOffset = tokens[0][i].offset;
+                if (column <= currentOffset) {
+                    return { colBegin : lastOffset, colEnd : currentOffset };
+                } else {
+                    lastOffset = currentOffset;
+                }
+            }
+            return { colBegin : lastOffset, colEnd : line.length };
+        }
+    }
+    return { colBegin : column, colEnd : column + 1 };
+};
+
+Editor.prototype.onEditorLinkLine = function (editorId, lineNum, columnBegin, columnEnd, reveal) {
     if (Number(editorId) === this.id) {
         if (reveal && lineNum) this.editor.revealLineInCenter(lineNum);
         this.decorations.linkedCode = lineNum === -1 || !lineNum ? [] : [{
@@ -1041,9 +1092,10 @@ Editor.prototype.onEditorLinkLine = function (editorId, lineNum, columnNum, reve
             },
         }];
 
-        if (lineNum > 0 && columnNum !== -1) {
+        if (lineNum > 0 && columnBegin !== -1) {
+            var lastTokenSpan = this.getTokenSpan(lineNum, columnEnd);
             this.decorations.linkedCode.push({
-                range: new monaco.Range(lineNum, columnNum, lineNum, columnNum + 1),
+                range: new monaco.Range(lineNum, columnBegin, lineNum, lastTokenSpan.colEnd + 1),
                 options: {
                     isWholeLine: false,
                     inlineClassName: 'linked-code-decoration-column',
