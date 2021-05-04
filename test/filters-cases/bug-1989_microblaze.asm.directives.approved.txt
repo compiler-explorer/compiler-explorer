@@ -1,0 +1,81 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "$LFB0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "issue1989:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        addk    r6,r5,r6"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        cmp     r18,r6,r5"
+    },
+    {
+      "labels": [
+        {
+          "name": "$L2",
+          "range": {
+            "endCol": 24,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        bltid   r18,$L2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        addik   r3,r0,1       # 0x1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        addk    r3,r0,r0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$L2:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        rtsd    r15,8"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        andi    r3,r3,1 #and1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$LFE0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "$Lfe1:"
+    }
+  ],
+  "labelDefinitions": {
+    "$L2": 8,
+    "issue1989": 2
+  }
+}

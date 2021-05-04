@@ -1,0 +1,128 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .file   \"example.d\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        \".text\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .align 4"
+    },
+    {
+      "labels": [
+        {
+          "name": "issue1989",
+          "range": {
+            "endCol": 26,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .weak   issue1989"
+    },
+    {
+      "labels": [
+        {
+          "name": "issue1989",
+          "range": {
+            "endCol": 26,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .type   issue1989, #function"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .proc   00"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "issue1989:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LFB0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        add     %o1, %o0, %o1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        mov     0, %g1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        cmp     %o1, %o0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        movg    %icc, 1, %g1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        jmp     %o7+8"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "         mov    %g1, %o0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LFE0:"
+    },
+    {
+      "labels": [
+        {
+          "name": "issue1989",
+          "range": {
+            "endCol": 26,
+            "startCol": 17
+          }
+        },
+        {
+          "name": "issue1989",
+          "range": {
+            "endCol": 39,
+            "startCol": 30
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .size   issue1989, .-issue1989"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .ident  \"GCC: (GNU) 9.0.1 20190425 (experimental)\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .note.GNU-stack,\"\",@progbits"
+    }
+  ],
+  "labelDefinitions": {
+    "issue1989": 7
+  }
+}

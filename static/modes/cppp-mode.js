@@ -63,16 +63,9 @@ function definition() {
         'char32_t', 'compl', 'concept', 'consteval', 'constinit', 'co_await', 'co_return', 'co_yield', 'not', 'not_eq',
         'or', 'or_eq', 'requires', 'xor', 'xor_eq']);
 
-    // #880, patch annotations to handle [ [ something ] ]
-    function patchAnnotation(root) {
-        for (var i = 0; i < root.length; ++i) {
-            if (root[i][1] === 'annotation') {
-                root[i][0] = /\[\s*\[[^\]]*]\s*]/;
-            }
-        }
-    }
-
-    patchAnnotation(cppp.tokenizer.root);
+    // See #879 and waiting on monaco-languages#127
+    cppp.tokenizer.root.unshift([/^\s*#\s*\w+/, 'keyword.directive']);
+    cppp.tokenizer.root.unshift([/^\s*#\s*include/, { token: 'keyword.directive.include', next: '@include' }]);
 
     return cppp;
 }

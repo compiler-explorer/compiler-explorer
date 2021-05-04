@@ -184,6 +184,11 @@ pre.content.wrap * {
     font-style: italic;
 }
 
+.compile-time {
+    font-size: x-small;
+    font-style: italic;
+}
+
 .url-parse-info {
     font-size: small;
     margin-top: 1em;
@@ -736,6 +741,10 @@ div.populararguments div.dropdown-menu {
 
 .icon-link > span {
     margin-right: 2pt;
+}
+
+span.badge.badge-pill {
+    margin-left: 2pt;
 }
 
 html[data-theme=default] {

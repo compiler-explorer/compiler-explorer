@@ -6,7 +6,7 @@ Currently, the people referred to when the documentation or policies mention
 - [Austin Morton](https://github.com/apmorton)
 
 ##
-Additionally, these people have been inmensely helpful in the development of Compiler Explorer:
+Additionally, these people have been immensely helpful in the development of Compiler Explorer:
 - [Jared Wyles](https://github.com/jaredwy)
 - [Chedy Najjar](https://github.com/CppChedy)
 - [Simon Brand](https://blog.tartanllama.xyz/)

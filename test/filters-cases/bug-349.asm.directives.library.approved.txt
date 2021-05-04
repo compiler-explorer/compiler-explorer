@@ -1,0 +1,195 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ltext0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "foo():"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LFB0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "; start of function"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "; framesize_regs:     2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "; framesize_locals:   0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "; framesize_outgoing: 0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "; framesize:          2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "; elim ap -> fp       4"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "; elim fp -> sp       0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "; saved regs: R4"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ; start of prologue"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 1
+      },
+      "text": "        PUSHM.W #1, R4"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LCFI0:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 1
+      },
+      "text": "        MOV.W   R1, R4"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LCFI1:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ; end of prologue"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 2
+      },
+      "text": "        MOV.B   #3, R12"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ; start of epilogue"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "text": "        POPM.W  #1, r4"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "text": "        RET"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LFE0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lframe0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LSCIE0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LECIE0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LSFDE0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASFDE0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LEFDE0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Letext0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ldebug_info0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ldebug_abbrev0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ldebug_line0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF2:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF1:"
+    }
+  ],
+  "labelDefinitions": {}
+}

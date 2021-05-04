@@ -5,10 +5,19 @@ First off, if you're reading this: thank you! Even considering contributing to
 Before we go too far, an apology: **Compiler Explorer** grew out of a bit of
  hacky JavaScript into a pretty large and well-used project pretty quickly.
 Not all the code was originally well-written or well-tested.
-Please be forgiving of that, and be ready to help in improving that.
+Please be forgiving of that.
 
 **Compiler Explorer** follows a [Code of Conduct](CODE_OF_CONDUCT.md) which
  aims to foster an open and welcoming environment.
+
+# Where to start
+
+We have labeled issues which should be easy to do that you can find [here](https://github.com/compiler-explorer/compiler-explorer/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22)
+
+If you have any questions, don't hesitate: [Contact us].
+
+If there is something you would like to do yourself, it might help to make an issue so people can weigh in and point you in the right direction.
+
 
 ## Node version
 **Compiler Explorer** targets the latest [Node.js](https://nodejs.org/) LTS,
@@ -35,8 +44,6 @@ Nonetheless, it _should_ run in everything post-Node.js 12.18. [Contact us] if
  areas you'd expect to have changed, but if you can, click about generally to
  help check you haven't unintentionally broken something else
 * Submit a Pull Request.
-
-If you have any questions, don't hesitate: [Contact us].
 
 ## Basic code layout
 
@@ -84,9 +91,3 @@ Note that a current issue makes every project media asset to be locally
  any in-memory state.
 
 [Contact us]: README.md#contact-us
-
-# Where to start
-
-We have a project that lists a couple of issues that *Should* be easy to do @ https://github.com/compiler-explorer/compiler-explorer/projects/15 
-
-If there is something you would like to do yourself, it might help to make an issue so people can weigh in and point you in the right direction.

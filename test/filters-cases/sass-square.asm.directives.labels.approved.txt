@@ -1,0 +1,107 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "//--------------------- .text._Z6squarePii        --------------------------"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "_Z6squarePii:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        //## File \"/home/partouf/./example.cu\", line 3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                                                                /* 0x2282c042e2c28307 */"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        /*0008*/                   MOV R1, c[0x0][0x44];                        /* 0x2800400110005de4 */"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        /*0010*/                   S2R R0, SR_CTAID.X;                          /* 0x2c00000094001c04 */"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        //## File \"/home/partouf/./example.cu\", line 4"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        /*0018*/                   ISETP.GE.AND P0, PT, R0, c[0x0][0x148], PT;  /* 0x1b0e40052001dc23 */"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        /*0020*/               @P0 EXIT;                                        /* 0x80000000000001e7 */"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        //## File \"/home/partouf/./example.cu\", line 5"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        /*0028*/                   ISCADD R2.CC, R0, c[0x0][0x140], 0x2;        /* 0x4001400500009c43 */"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        /*0030*/                   MOV32I R3, 0x4;                              /* 0x180000001000dde2 */"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        /*0038*/                   IMAD.HI.X R3, R0, R3, c[0x0][0x144];         /* 0x208680051000dce3 */"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                                                                /* 0x20000002f04283f7 */"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        /*0048*/                   LD.E R0, [R2];                               /* 0x8400000000201c85 */"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        /*0050*/                   IMUL R4, R0, R0;                             /* 0x5000000000011ca3 */"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        /*0058*/                   ST.E [R2], R4;                               /* 0x9400000000211c85 */"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        //## File \"/home/partouf/./example.cu\", line 6"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        /*0060*/                   EXIT;                                        /* 0x8000000000001de7 */"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        /*0068*/                   BRA `(.L_1);                                 /* 0x4003ffffe0001de7 */"
+    }
+  ],
+  "labelDefinitions": {
+    "_Z6squarePii": 2
+  }
+}
