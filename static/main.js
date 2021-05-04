@@ -536,6 +536,11 @@ function start() {
         storedPaths[JSON.stringify(config)] = extra;
     }, 'Full');
 
+    sharing.initShareButton($('#shareEmbed'), layout, function (config, extra) {
+        window.history.pushState(null, null, extra);
+        storedPaths[JSON.stringify(config)] = extra;
+    }, 'Embed');
+
     function setupAdd(thing, func) {
         layout.createDragSource(thing, func);
         thing.click(function () {

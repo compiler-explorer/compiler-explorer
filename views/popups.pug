@@ -227,7 +227,7 @@
   .modal-dialog.modal-lg
     .modal-content
       .modal-header
-        h5.modal-title Share embedded
+        h5.modal-title Share
         button.close(type="button" data-dismiss="modal" aria-hidden="true" aria-label="Close")
           span(aria-hidden="true")
             | &times;
@@ -247,6 +247,8 @@
                 label
                   input.hideEditorToolbars(type="checkbox")
                   | Hide Editor Toolbars
+            if sharingEnabled
+              .socialsharing
 
 #history.modal.fade.gl_keep(tabindex="-1" role="dialog")
   .modal-dialog.modal-lg
