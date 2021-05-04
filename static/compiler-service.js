@@ -108,10 +108,10 @@ CompilerService.prototype.getGroupsInUse = function (langId) {
         .map(function (compiler) {
             return {value: compiler.group, label: compiler.groupName || compiler.group};
         })
-        .sort(function(a, b){
+        .sort(function (a, b){
             return a.label.localeCompare(b.label,
-                                         undefined /* Ignore language */,
-                                         { sensitivity: 'base' });
+                undefined /* Ignore language */,
+                { sensitivity: 'base' });
         })
         .value();
 };
