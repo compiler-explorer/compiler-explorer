@@ -5,12 +5,12 @@ const fn square(num: i32) -> i32 {
 }
 
 pub fn main() {
-    let args: Vec<String> = env::args().collect();
-    if args.len() > 1 {
-        let r: i32 = args[1].parse::<i32>().unwrap();
-        let sq = square(r);
-        println!("{}", sq);
-    } else {
-        println!("Supply a number to square")
+    match env::args().nth(1).map(|r| r.parse::<i32>()) {
+        Some(Ok(r)) => {
+            println!("{}", square(r))
+        }
+        _ => {
+            println!("Supply a number to square")
+        }
     }
 }
