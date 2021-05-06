@@ -69,7 +69,7 @@
     "temp": "^0.9.1",
     "tree-kill": "^1.2.2",
     "triple-beam": "^1.3.0",
-    "underscore": "^1.11.0",
+    "underscore": "^1.12.1",
     "url-join": "^4.0.1",
     "vis": "4.20.1",
     "which": "^2.0.2",
