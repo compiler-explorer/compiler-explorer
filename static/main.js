@@ -56,7 +56,7 @@ var presentation = require('./presentation');
 //css
 require('bootstrap/dist/css/bootstrap.min.css');
 require('golden-layout/src/css/goldenlayout-base.css');
-require('selectize/dist/css/selectize.bootstrap2.css');
+require('tom-select/dist/css/tom-select.bootstrap4.css');
 require('bootstrap-slider/dist/css/bootstrap-slider.css');
 require('./colours.scss');
 require('./explorer.scss');

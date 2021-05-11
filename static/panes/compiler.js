@@ -41,10 +41,9 @@ var Libraries = require('../libs-widget-ext');
 var codeLensHandler = require('../codelens-handler');
 var monacoConfig = require('../monaco-config');
 var timingInfoWidget = require('../timing-info-widget');
+const TomSelect = require('tom-select');
 require('../modes/asm-mode');
 require('../modes/ptx-mode');
-
-require('selectize');
 
 var timingInfo = new timingInfoWidget.TimingInfo();
 
@@ -130,7 +129,7 @@ function Compiler(hub, container, state) {
 
     this.fontScale = new FontScale(this.domRoot, state, this.outputEditor);
 
-    this.compilerPicker.selectize({
+	this.compilerSelectizer = new TomSelect(this.compilerPicker[0],{
         sortField: this.compilerService.getSelectizerOrder(),
         valueField: 'id',
         labelField: 'name',
@@ -144,19 +143,18 @@ function Compiler(hub, container, state) {
         items: this.compiler ? [this.compiler.id] : [],
         dropdownParent: 'body',
         closeAfterSelect: true,
-    }).on('change', _.bind(function (e) {
-        var val = $(e.target).val();
-        if (val) {
-            ga.proxy('send', {
-                hitType: 'event',
-                eventCategory: 'SelectCompiler',
-                eventAction: val,
-            });
-            this.onCompilerChange(val);
-        }
-    }, this));
-
-    this.compilerSelectizer = this.compilerPicker[0].selectize;
+		plugins:['input_autogrow'],
+    	onChange: (val) => {
+	        if (val) {
+	            ga.proxy('send', {
+	                hitType: 'event',
+	                eventCategory: 'SelectCompiler',
+	                eventAction: val,
+	            });
+	            this.onCompilerChange(val);
+	        }
+		}
+    });
 
     this.initLibraries(state);
 
