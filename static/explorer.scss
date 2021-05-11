@@ -755,3 +755,20 @@ html[data-theme=dark] {
     @import "themes/dark-theme";
     background-color: #333 !important;
 }
+
+.toggle-fav{
+
+	color: #6c757d; // text-muted
+
+	&:hover{
+		color: #e3cf7a;
+	}
+
+}
+
+.option.fav .toggle-fav{
+	color: #e3cf7a;
+	&:hover{
+		color: #6c757d; // text-muted
+	}
+}

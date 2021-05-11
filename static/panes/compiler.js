@@ -129,13 +129,16 @@ function Compiler(hub, container, state) {
 
     this.fontScale = new FontScale(this.domRoot, state, this.outputEditor);
 
+	const optgroups = this.compilerService.getGroupsInUse(this.currentLangId);
+	optgroups.unshift({value:'favs',label:'Favorites'});
+
 	this.compilerSelectizer = new TomSelect(this.compilerPicker[0],{
         sortField: this.compilerService.getSelectizerOrder(),
         valueField: 'id',
         labelField: 'name',
         searchField: ['name'],
         optgroupField: 'group',
-        optgroups: this.compilerService.getGroupsInUse(this.currentLangId),
+        optgroups: optgroups,
         lockOptgroupOrder: true,
         options: _.filter(this.getCurrentLangCompilers(), function (e) {
             return !e.hidden || e.id === state.compiler;
@@ -153,8 +156,48 @@ function Compiler(hub, container, state) {
 	            });
 	            this.onCompilerChange(val);
 	        }
+		},
+		duplicates: true,
+		render:{
+			option:(data,escape)=>{
+				return '<div class="d-flex"><div>'+escape(data.name)+'</div><div class="ml-auto toggle-fav"><i class="fas fa-star"></i></div></div>';
+			}
 		}
     });
+
+	var self = this;
+	$(this.compilerSelectizer.dropdown_content).on('mousedown','.toggle-fav',function(evt){
+		evt.preventDefault();
+		evt.stopPropagation();
+
+		var option_el		= this.closest('.option');
+		var value			= option_el.dataset.value;
+		var data			= self.compilerSelectizer.options[value];
+		var remove_fav		= false;
+
+		data.group = Array.isArray(data.group) ? data.group : [data.group];
+
+		if( option_el.classList.contains('fav') ){
+			remove_fav = true;
+			var index = data.group.indexOf('favs');
+			data.group.splice(index, 1);
+
+		}else{
+			data.group.push('favs');
+			option_el.classList.add('fav');
+		}
+
+		self.compilerSelectizer.refreshOptions(false);
+
+
+		// when removing, there are two options with the fav class until after refreshOptions()
+		if( remove_fav ){
+			option_el = self.compilerSelectizer.getOption(value);
+			option_el.classList.remove('fav');
+		}
+
+	});
+
 
     this.initLibraries(state);
 
