@@ -32,7 +32,7 @@ var _ = require('underscore');
 var $ = require('jquery');
 var ga = require('../analytics');
 var monacoConfig = require('../monaco-config');
-const TomSelect = require('tom-select');
+var TomSelect = require('tom-select');
 
 
 function GccDump(hub, container, state) {
@@ -51,15 +51,15 @@ function GccDump(hub, container, state) {
 
     this.initButtons(state);
 
-	const gccdump_picker = this.domRoot[0].querySelector('.gccdump-pass-picker');
-	this.selectize = new TomSelect(gccdump_picker,{
+    var gccdump_picker = this.domRoot[0].querySelector('.gccdump-pass-picker');
+    this.selectize = new TomSelect(gccdump_picker,{
         sortField: 'name',
         valueField: 'name',
         labelField: 'name',
         searchField: ['name'],
         options: [],
         items: [],
-		plugins:['input_autogrow'],
+        plugins:['input_autogrow'],
     });
 
     // this is used to save internal state.

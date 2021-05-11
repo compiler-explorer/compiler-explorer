@@ -30,7 +30,7 @@ var _ = require('underscore');
 var Toggles = require('../toggles');
 var ga = require('../analytics');
 
-const TomSelect = require('tom-select');
+var TomSelect = require('tom-select');
 
 function Cfg(hub, container, state) {
     this.container = container;
@@ -102,27 +102,28 @@ function Cfg(hub, container, state) {
     this._editorid = state.editorid;
     this._binaryFilter = false;
 
-	const pickerEl = this.domRoot[0].querySelector('.function-picker');
-	this.functionPicker = new TomSelect(pickerEl,{
+    var self = this;
+    var pickerEl = this.domRoot[0].querySelector('.function-picker');
+    this.functionPicker = new TomSelect(pickerEl,{
         sortField: 'name',
         valueField: 'name',
         labelField: 'name',
         searchField: ['name'],
         dropdownParent: 'body',
-		plugins:['input_autogrow'],
-    	onChange: (val) => {
-	        var selectedFn = this.functions[val];
-	        if (selectedFn) {
-	            this.currentFunc = val;
-	            this.showCfgResults({
-	                nodes: selectedFn.nodes,
-	                edges: selectedFn.edges,
-	            });
-	            this.cfgVisualiser.selectNodes([selectedFn.nodes[0].id]);
-	            this.resize();
-	            this.saveState();
-	        }
-		}
+        plugins:['input_autogrow'],
+        onChange: function (val){
+            var selectedFn = self.functions[val];
+            if (selectedFn) {
+                self.currentFunc = val;
+                self.showCfgResults({
+                    nodes: selectedFn.nodes,
+                    edges: selectedFn.edges,
+                });
+                self.cfgVisualiser.selectNodes([selectedFn.nodes[0].id]);
+                self.resize();
+                self.saveState();
+            }
+        },
     });
 
     this.initCallbacks();

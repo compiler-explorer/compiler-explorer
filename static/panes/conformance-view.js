@@ -31,7 +31,7 @@ var Promise = require('es6-promise').Promise;
 var ga = require('../analytics');
 var Components = require('../components');
 var Libraries = require('../libs-widget-ext');
-const TomSelect = require('tom-select');
+var TomSelect = require('tom-select');
 
 function Conformance(hub, container, state) {
     this.hub = hub;
@@ -173,8 +173,9 @@ Conformance.prototype.addCompilerSelector = function (config) {
         this.updateLibraries();
     }, this);
 
+    var self = this;
     var compilerPicker = newEntry[0].querySelector('.compiler-picker');
-	new TomSelect(compilerPicker,{
+    new TomSelect(compilerPicker,{
         sortField: this.compilerService.getSelectizerOrder(),
         valueField: 'id',
         labelField: 'name',
@@ -188,12 +189,12 @@ Conformance.prototype.addCompilerSelector = function (config) {
         items: config.compilerId ? [config.compilerId] : [],
         dropdownParent: 'body',
         closeAfterSelect: true,
-		plugins:['input_autogrow'],
-    	onChange: (value)=>{
-        	onCompilerChange(value);
-        	this.compileChild(newEntry);
-		}
-	});
+        plugins:['input_autogrow'],
+        onChange: function (value){
+            onCompilerChange(value);
+            self.compileChild(newEntry);
+        },
+    });
 
 
     var getCompilerConfig = _.bind(function () {

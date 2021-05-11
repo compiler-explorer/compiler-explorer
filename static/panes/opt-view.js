@@ -30,7 +30,6 @@ var _ = require('underscore');
 var $ = require('jquery');
 var ga = require('../analytics');
 var monacoConfig = require('../monaco-config');
-const TomSelect = require('tom-select');
 
 require('../modes/asm-mode');
 

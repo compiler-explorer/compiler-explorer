@@ -36,7 +36,7 @@ var local = require('../local');
 var ga = require('../analytics');
 var monacoVim = require('monaco-vim');
 var monacoConfig = require('../monaco-config');
-const TomSelect = require('tom-select');
+var TomSelect = require('tom-select');
 require('../modes/cppp-mode');
 require('../modes/cppx-gold-mode');
 require('../modes/d-mode');
@@ -129,18 +129,19 @@ function Editor(hub, state, container) {
         return hub.compilerService.compilersByLang[language.id];
     });
 
-	this.selectize = new TomSelect(this.languageBtn,{
-		sortField: 'name',
+    var self = this;
+    this.selectize = new TomSelect(this.languageBtn,{
+        sortField: 'name',
         valueField: 'id',
         labelField: 'name',
         searchField: ['name'],
         options: _.map(usableLanguages, _.identity),
         items: [this.currentLanguage.id],
         dropdownParent: 'body',
-		plugins:['input_autogrow'],
-		onChange:(value)=>{
-			this.onLanguageChange(value);
-		}
+        plugins:['input_autogrow'],
+        onChange:function (value){
+            self.onLanguageChange(value);
+        },
     });
 
 
