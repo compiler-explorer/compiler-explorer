@@ -173,7 +173,6 @@ Conformance.prototype.addCompilerSelector = function (config) {
         this.updateLibraries();
     }, this);
 
-    var self = this;
     var compilerPicker = newEntry[0].querySelector('.compiler-picker');
     new TomSelect(compilerPicker,{
         sortField: this.compilerService.getSelectizerOrder(),
@@ -190,10 +189,10 @@ Conformance.prototype.addCompilerSelector = function (config) {
         dropdownParent: 'body',
         closeAfterSelect: true,
         plugins:['input_autogrow'],
-        onChange: function (value){
+        onChange: _.bind(function (value){
             onCompilerChange(value);
-            self.compileChild(newEntry);
-        },
+            this.compileChild(newEntry);
+        },this),
     });
 
 

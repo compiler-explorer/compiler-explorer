@@ -102,7 +102,6 @@ function Cfg(hub, container, state) {
     this._editorid = state.editorid;
     this._binaryFilter = false;
 
-    var self = this;
     var pickerEl = this.domRoot[0].querySelector('.function-picker');
     this.functionPicker = new TomSelect(pickerEl,{
         sortField: 'name',
@@ -111,19 +110,19 @@ function Cfg(hub, container, state) {
         searchField: ['name'],
         dropdownParent: 'body',
         plugins:['input_autogrow'],
-        onChange: function (val){
-            var selectedFn = self.functions[val];
+        onChange: _.bind(function (val){
+            var selectedFn = this.functions[val];
             if (selectedFn) {
-                self.currentFunc = val;
-                self.showCfgResults({
+                this.currentFunc = val;
+                this.showCfgResults({
                     nodes: selectedFn.nodes,
                     edges: selectedFn.edges,
                 });
-                self.cfgVisualiser.selectNodes([selectedFn.nodes[0].id]);
-                self.resize();
-                self.saveState();
+                this.cfgVisualiser.selectNodes([selectedFn.nodes[0].id]);
+                this.resize();
+                this.saveState();
             }
-        },
+        }, this),
     });
 
     this.initCallbacks();

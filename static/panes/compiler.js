@@ -148,16 +148,16 @@ function Compiler(hub, container, state) {
         dropdownParent: 'body',
         closeAfterSelect: true,
         plugins:['dropdown_input'],
-        onChange: function (val){
+        onChange: _.bind(function (val){
             if (val) {
                 ga.proxy('send', {
                     hitType: 'event',
                     eventCategory: 'SelectCompiler',
                     eventAction: val,
                 });
-                self.onCompilerChange(val);
+                this.onCompilerChange(val);
             }
-        },
+        },this),
         duplicates: true,
         render:{
             option:function (data,escape){

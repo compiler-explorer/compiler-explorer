@@ -118,7 +118,6 @@ function Diff(hub, container, state) {
 
     this.selectize = {};
 
-
     this.domRoot[0].querySelectorAll('.difftype-picker').forEach( function (picker) {
 
         var instance = new TomSelect(picker,{
