@@ -28,6 +28,7 @@ var _ = require('underscore');
 var options = require('./options');
 var Components = require('./components');
 var url = require('./url');
+var ga = require('./analytics');
 
 var shareServices = {
     twitter: {
@@ -198,6 +199,12 @@ function initShareButton(getLink, layout, noteNewState, startingBind) {
     }
 
     getLink.on('click', function () {
+        ga.proxy('send', {
+            hitType: 'event',
+            eventCategory: 'OpenModalPane',
+            eventAction: 'Sharing',
+        });
+
         setCurrent($(this));
         update();
     });
