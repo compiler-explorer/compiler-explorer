@@ -147,7 +147,7 @@ function Compiler(hub, container, state) {
         items: this.compiler ? [this.compiler.id] : [],
         dropdownParent: 'body',
         closeAfterSelect: true,
-        plugins:['input_autogrow'],
+        plugins:['dropdown_input'],
         onChange: function (val){
             if (val) {
                 ga.proxy('send', {
@@ -168,7 +168,7 @@ function Compiler(hub, container, state) {
         },
     });
 
-    $(this.compilerSelectizer.dropdown_content).on('mousedown','.toggle-fav',function (evt){
+    $(this.compilerSelectizer.dropdown_content).on('click','.toggle-fav',function (evt){
         evt.preventDefault();
         evt.stopPropagation();
 
