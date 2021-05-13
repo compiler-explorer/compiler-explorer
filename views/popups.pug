@@ -223,30 +223,34 @@
 
 #notifications
 
-#shareembedlink.modal.fade.gl_keep(tabindex="-1" role="dialog")
+#sharelinkdialog.modal.fade.gl_keep(tabindex="-1" role="dialog")
   .modal-dialog.modal-lg
     .modal-content
       .modal-header
-        h5.modal-title Share embedded
+        h5.modal-title Share
         button.close(type="button" data-dismiss="modal" aria-hidden="true" aria-label="Close")
           span(aria-hidden="true")
             | &times;
       .modal-body
         .card
           .card-body
-            .input-group-append
-              input.form-control.input-sm.permalink(type="text" placeholder="Loading" readonly size="1024" style="font-size: 10px")
-              button.input-group-btn.btn.btn-outline-secondary.btn-sm.clippy(type="button" data-clipboard-target="#shareembedlink .permalink" title="Copy to clipboard")
-                span.fa.fa-clipboard
-            #embedsettings.form-group(role="group")
-              .checkbox
-                label
-                  input.readOnly(type="checkbox")
-                  | Read Only
-              .checkbox
-                label
-                  input.hideEditorToolbars(type="checkbox")
-                  | Hide Editor Toolbars
+            .container
+              .input-group-append
+                input.form-control.input-sm.permalink(type="text" placeholder="Loading" readonly size="1024" style="font-size: 10px")
+                button.input-group-btn.btn.btn-outline-secondary.btn-sm.clippy(type="button" data-clipboard-target="#sharelinkdialog .permalink" title="Copy to clipboard")
+                  span.fa.fa-clipboard
+              #embedsettings.form-group(role="group")
+                .checkbox
+                  label
+                    input.readOnly(type="checkbox")
+                    | Read Only
+                .checkbox
+                  label
+                    input.hideEditorToolbars(type="checkbox")
+                    | Hide Editor Toolbars
+              .spacer &nbsp;
+              if sharingEnabled
+                .socialsharing
 
 #history.modal.fade.gl_keep(tabindex="-1" role="dialog")
   .modal-dialog.modal-lg

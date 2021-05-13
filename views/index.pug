@@ -56,9 +56,23 @@ block prepend content
         if showSponsors
           li.nav-item.btn.btn-outline-primary#ces(data-toggle="modal") Sponsors
             include sponsor-icons.pug
-        li.nav-item
-          a.nav-link#share(href="javascript:;") Share
-            b.fas.fa-caret-down
+        li.nav-item.dropdown
+          a.nav-link.dropdown-toggle#share(href="javascript:;" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") Share
+          div.dropdown-menu.dropdown-menu-right
+            if storageSolution !== "null"
+              a.dropdown-item#shareShort(href="javascript:;" data-target="#sharelinkdialog" data-toggle="modal" data-bind="Short")
+                span.dropdown-icon.fas.fa-cloud
+                | Short Link
+                | &nbsp;
+            a.dropdown-item#shareFull(href="javascript:;" data-target="#sharelinkdialog" data-toggle="modal" data-bind="Full")
+              span.dropdown-icon.fas.fa-store-slash
+              | Full Link
+              | &nbsp;
+            a.dropdown-item#shareEmbed(href="javascript:;" data-target="#sharelinkdialog" data-toggle="modal" data-bind="Embed")
+              span.dropdown-icon.fas.fa-window-restore
+              | Embed in iframe
+              | &nbsp;
+
         li.nav-item.dropdown
           a.nav-link.dropdown-toggle#otherDropdown(href="javascript:;" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") Other
           div.dropdown-menu.dropdown-menu-right(aria-labelledby="otherDropdown")
