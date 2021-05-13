@@ -60,15 +60,15 @@ block prepend content
           a.nav-link.dropdown-toggle#share(href="javascript:;" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") Share
           div.dropdown-menu.dropdown-menu-right
             if storageSolution !== "null"
-              a.dropdown-item#shareShort(href="javascript:;" data-target="#shareembedlink" data-toggle="modal" data-bind="Short")
+              a.dropdown-item#shareShort(href="javascript:;" data-target="#sharelinkdialog" data-toggle="modal" data-bind="Short")
                 span.dropdown-icon.fas.fa-cloud
                 | Short Link
                 | &nbsp;
-            a.dropdown-item#shareFull(href="javascript:;" data-target="#shareembedlink" data-toggle="modal" data-bind="Full")
+            a.dropdown-item#shareFull(href="javascript:;" data-target="#sharelinkdialog" data-toggle="modal" data-bind="Full")
               span.dropdown-icon.fas.fa-store-slash
               | Full Link
               | &nbsp;
-            a.dropdown-item#shareEmbed(href="javascript:;" data-target="#shareembedlink" data-toggle="modal" data-bind="Embed")
+            a.dropdown-item#shareEmbed(href="javascript:;" data-target="#sharelinkdialog" data-toggle="modal" data-bind="Embed")
               span.dropdown-icon.fas.fa-window-restore
               | Embed in iframe
               | &nbsp;

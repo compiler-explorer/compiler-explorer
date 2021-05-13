@@ -115,7 +115,7 @@ function initShareButton(getLink, layout, noteNewState, startingBind) {
      */
     var currentBind = startingBind;
 
-    var popoverModal = $('#shareembedlink');
+    var popoverModal = $('#sharelinkdialog');
     var socialSharingElements = popoverModal.find('.socialsharing');
     var root = $('.urls-container:visible');
     var label = root.find('.current');
@@ -138,7 +138,7 @@ function initShareButton(getLink, layout, noteNewState, startingBind) {
         if (options.sharingEnabled) {
             updateShares(element, sharedUrl);
             // Disable the links for every share item which does not support embed html as links
-            if (currentBind !== 'Full' && currentBind !== 'Short') {
+            if (currentBind === 'Embed') {
                 element.children('.share-no-embeddable')
                     .addClass('share-disabled')
                     .prop('title', 'Embed links are not supported in this service')
@@ -157,9 +157,9 @@ function initShareButton(getLink, layout, noteNewState, startingBind) {
     }
 
     function getEmbeddedCacheLinkId() {
-        if ($('#shareembedlink input:checked').length === 0) return 'Embed';
+        if ($('#sharelinkdialog input:checked').length === 0) return 'Embed';
 
-        return 'Embed|' + $('#shareembedlink input:checked').map(function () {
+        return 'Embed|' + $('#sharelinkdialog input:checked').map(function () {
             return $(this).prop('class');
         })
             .get()
@@ -276,7 +276,7 @@ function getLinks(config, currentBind, done) {
         default:
             if (currentBind.substr(0, 5) === 'Embed') {
                 var options = {};
-                $('#shareembedlink input:checked').each(function () {
+                $('#sharelinkdialog input:checked').each(function () {
                     options[$(this).prop('class')] = true;
                 });
                 done(null, getEmbeddedHtml(config, root, false, options), false);

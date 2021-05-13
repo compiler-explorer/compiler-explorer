@@ -223,7 +223,7 @@
 
 #notifications
 
-#shareembedlink.modal.fade.gl_keep(tabindex="-1" role="dialog")
+#sharelinkdialog.modal.fade.gl_keep(tabindex="-1" role="dialog")
   .modal-dialog.modal-lg
     .modal-content
       .modal-header
@@ -237,7 +237,7 @@
             .container
               .input-group-append
                 input.form-control.input-sm.permalink(type="text" placeholder="Loading" readonly size="1024" style="font-size: 10px")
-                button.input-group-btn.btn.btn-outline-secondary.btn-sm.clippy(type="button" data-clipboard-target="#shareembedlink .permalink" title="Copy to clipboard")
+                button.input-group-btn.btn.btn-outline-secondary.btn-sm.clippy(type="button" data-clipboard-target="#sharelinkdialog .permalink" title="Copy to clipboard")
                   span.fa.fa-clipboard
               #embedsettings.form-group(role="group")
                 .checkbox
@@ -248,6 +248,7 @@
                   label
                     input.hideEditorToolbars(type="checkbox")
                     | Hide Editor Toolbars
+              .spacer &nbsp;
               if sharingEnabled
                 .socialsharing
 
