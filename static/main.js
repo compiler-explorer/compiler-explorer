@@ -526,20 +526,18 @@ function start() {
         setupButtons(options);
     }
 
-    sharing.initShareButton($('#shareShort'), layout, function (config, extra) {
+    function storeCurrentConfig(config, extra) {
         window.history.pushState(null, null, extra);
         storedPaths[JSON.stringify(config)] = extra;
-    }, 'Short');
+    }
 
-    sharing.initShareButton($('#shareFull'), layout, function (config, extra) {
-        window.history.pushState(null, null, extra);
-        storedPaths[JSON.stringify(config)] = extra;
-    }, 'Full');
+    sharing.initShareButton($('#shareShort'), layout, storeCurrentConfig, 'Short');
+    sharing.initShareButton($('#shareFull'), layout, storeCurrentConfig, 'Full');
+    sharing.initShareButton($('#shareEmbed'), layout, storeCurrentConfig, 'Embed');
 
-    sharing.initShareButton($('#shareEmbed'), layout, function (config, extra) {
-        window.history.pushState(null, null, extra);
-        storedPaths[JSON.stringify(config)] = extra;
-    }, 'Embed');
+    layout.eventHub.on('displaySharingPopover', function () {
+        $('#shareShort').trigger('click');
+    });
 
     function setupAdd(thing, func) {
         layout.createDragSource(thing, func);
