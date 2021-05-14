@@ -6,22 +6,18 @@ html(lang="en")
     block meta
         include meta.pug
 
-    if storedStateId
-      script
-        | (function () {
-        |   var isIE11 = !!window.MSInputMethodContext && !!document.documentMode;
-        |   if (isIE11) {
-        |     location.href = '#{httpRoot}noscript/z/#{storedStateId}';
-        |   }
-        | })();
-    else
-      script
-        | (function () {
-        |   var isIE11 = !!window.MSInputMethodContext && !!document.documentMode;
-        |   if (isIE11) {
-        |     location.href = '#{httpRoot}noscript';
-        |   }
-        | })();
+    script
+      | (function () {
+      |   var isIE11 = !!window.MSInputMethodContext && !!document.documentMode;
+      |   var storedState = '#{storedStateId}';
+      |   if (isIE11) {
+      |     if (storedState) {
+      |       location.href = '#{httpRoot}noscript/z/' + storedState;
+      |     } else {
+      |       location.href = '#{httpRoot}noscript';
+      |     }
+      |   }
+      | })();
 
     block styles
         link(href=require("vendor.css") rel="stylesheet")
