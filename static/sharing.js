@@ -108,7 +108,6 @@ function updateShares(container, url) {
 }
 
 function initShareButton(getLink, layout, noteNewState, startingBind) {
-    var currentNode = null;
     // Explicit because webstorm gets confused about the type of this variable.
     /***
      * Current URL bind
@@ -118,15 +117,11 @@ function initShareButton(getLink, layout, noteNewState, startingBind) {
 
     var popoverModal = $('#sharelinkdialog');
     var socialSharingElements = popoverModal.find('.socialsharing');
-    var root = $('.urls-container:visible');
-    var label = root.find('.current');
     var permalink = $('.permalink');
-    var urls = {};
 
     var embedsettings = $('#embedsettings');
 
     function setCurrent(node) {
-        currentNode = node;
         currentBind = node.data().bind;
         if (currentBind === 'Embed') {
             embedsettings.show();
@@ -152,19 +147,8 @@ function initShareButton(getLink, layout, noteNewState, startingBind) {
         if (result.updateState) {
             noteNewState(config, result.extra);
         }
-        label.text(bind);
         permalink.val(result.url);
         setSocialSharing(socialSharing, result.url);
-    }
-
-    function getEmbeddedCacheLinkId() {
-        if ($('#sharelinkdialog input:checked').length === 0) return 'Embed';
-
-        return 'Embed|' + $('#sharelinkdialog input:checked').map(function () {
-            return $(this).prop('class');
-        })
-            .get()
-            .join();
     }
 
     function update() {
@@ -173,29 +157,19 @@ function initShareButton(getLink, layout, noteNewState, startingBind) {
         if (!currentBind) return;
         permalink.prop('disabled', false);
         var config = layout.toConfig();
-        var cacheLinkId = currentBind;
-        if (currentBind === 'Embed') {
-            cacheLinkId = getEmbeddedCacheLinkId();
-        }
-        if (!urls[cacheLinkId]) {
-            label.text(currentNode.text());
-            permalink.val('');
-            getLinks(config, currentBind, function (error, newUrl, extra, updateState) {
-                if (error || !newUrl) {
-                    permalink.prop('disabled', true);
-                    permalink.val(error || 'Error providing URL');
-                } else {
-                    urls[cacheLinkId] = {
-                        updateState: updateState,
-                        extra: extra,
-                        url: newUrl,
-                    };
-                    onUpdate(socialSharing, config, currentBind, urls[cacheLinkId]);
-                }
-            });
-        } else {
-            onUpdate(socialSharing, config, currentBind, urls[cacheLinkId]);
-        }
+        permalink.val('');
+        getLinks(config, currentBind, function (error, newUrl, extra, updateState) {
+            if (error || !newUrl) {
+                permalink.prop('disabled', true);
+                permalink.val(error || 'Error providing URL');
+            } else {
+                onUpdate(socialSharing, config, currentBind, {
+                    updateState: updateState,
+                    extra: extra,
+                    url: newUrl,
+                });
+            }
+        });
     }
 
     getLink.on('click', function () {
