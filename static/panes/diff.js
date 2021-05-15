@@ -29,9 +29,10 @@ var monaco = require('monaco-editor');
 var _ = require('underscore');
 var $ = require('jquery');
 var ga = require('../analytics');
+var TomSelect = require('tom-select');
 
 require('../modes/asm-mode');
-require('selectize');
+
 
 // note that these variables are saved to state, so don't change, only add to it
 var
@@ -102,6 +103,7 @@ function Diff(hub, container, state) {
     this.domRoot.html($('#diff').html());
     this.compilers = {};
     var root = this.domRoot.find('.monaco-placeholder');
+    var self = this;
 
     this.outputEditor = monaco.editor.createDiffEditor(root[0], {
         fontFamily: 'Consolas, "Liberation Mono", Courier, monospace',
@@ -114,74 +116,96 @@ function Diff(hub, container, state) {
     this.rhs = new State(state.rhs, monaco.editor.createModel('', 'asm'), state.rhsdifftype || DiffType_ASM);
     this.outputEditor.setModel({ original: this.lhs.model, modified: this.rhs.model });
 
-    var selectizeType = this.domRoot.find('.difftype-picker').selectize({
-        sortField: 'name',
-        valueField: 'id',
-        labelField: 'name',
-        searchField: ['name'],
-        options: [
-            { id: DiffType_ASM, name: 'Assembly' },
-            { id: DiffType_CompilerStdOut, name: 'Compiler stdout' },
-            { id: DiffType_CompilerStdErr, name: 'Compiler stderr' },
-            { id: DiffType_ExecStdOut, name: 'Execution stdout' },
-            { id: DiffType_ExecStdErr, name: 'Execution stderr' },
-        ],
-        items: [],
-        render: {
-            option: function (item, escape) {
-                return '<div>' + escape(item.name) + '</div>';
-            },
-        },
-        dropdownParent: 'body',
-    }).on('change', _.bind(function (e) {
-        var target = $(e.target);
-        if (target.hasClass('lhsdifftype')) {
-            this.lhs.difftype = parseInt(target.val());
-            this.lhs.refresh();
-        } else {
-            this.rhs.difftype = parseInt(target.val());
-            this.rhs.refresh();
-        }
-        this.updateState();
-    }, this));
+    this.selectize = {};
 
-    var selectize = this.domRoot.find('.diff-picker').selectize({
-        sortField: 'name',
-        valueField: 'id',
-        labelField: 'name',
-        searchField: ['name'],
-        options: [],
-        items: [],
-        render: {
-            option: function (item, escape) {
-                return '<div>' +
-                    '<span class="compiler">' + escape(item.compiler.name) + '</span>' +
-                    '<span class="options">' + escape(item.options) + '</span>' +
-                    '<ul class="meta">' +
-                    '<li class="editor">Editor #' + escape(item.editorId) + '</li>' +
-                    '<li class="compilerId">' + escape(getItemDisplayTitle(item)) + '</li>' +
-                    '</ul></div>';
-            },
-        },
-        dropdownParent: 'body',
-    }).on('change', _.bind(function (e) {
-        var target = $(e.target);
-        var compiler = this.compilers[target.val()];
-        if (!compiler) return;
-        if (target.hasClass('lhs')) {
-            this.lhs.compiler = compiler;
-            this.lhs.id = compiler.id;
-        } else {
-            this.rhs.compiler = compiler;
-            this.rhs.id = compiler.id;
-        }
-        this.onDiffSelect(compiler.id);
-    }, this));
+    this.domRoot[0].querySelectorAll('.difftype-picker').forEach( function (picker) {
 
-    this.selectize = {
-        lhs: selectize[0].selectize, rhs: selectize[1].selectize,
-        lhsdifftype: selectizeType[0].selectize, rhsdifftype: selectizeType[1].selectize,
-    };
+        var instance = new TomSelect(picker,{
+            sortField: 'name',
+            valueField: 'id',
+            labelField: 'name',
+            searchField: ['name'],
+            options: [
+                { id: DiffType_ASM, name: 'Assembly' },
+                { id: DiffType_CompilerStdOut, name: 'Compiler stdout' },
+                { id: DiffType_CompilerStdErr, name: 'Compiler stderr' },
+                { id: DiffType_ExecStdOut, name: 'Execution stdout' },
+                { id: DiffType_ExecStdErr, name: 'Execution stderr' },
+            ],
+            items: [],
+            render: {
+                option: function (item, escape) {
+                    return '<div>' + escape(item.name) + '</div>';
+                },
+            },
+            dropdownParent: 'body',
+            plugins:['input_autogrow'],
+            onChange: function (value) {
+                if( picker.classList.contains('lhsdifftype') ){
+                    self.lhs.difftype = parseInt(value);
+                    self.lhs.refresh();
+                } else {
+                    self.rhs.difftype = parseInt(value);
+                    self.rhs.refresh();
+                }
+                self.updateState();
+            },
+        });
+
+        if( picker.classList.contains('lhsdifftype') ){
+            self.selectize.lhsdifftype = instance;
+        }else{
+            self.selectize.rhsdifftype = instance;
+        }
+
+    });
+
+
+    this.domRoot[0].querySelectorAll('.diff-picker').forEach( function (picker) {
+
+        var instance = new TomSelect(picker,{
+            sortField: 'name',
+            valueField: 'id',
+            labelField: 'name',
+            searchField: ['name'],
+            options: [],
+            items: [],
+            render: {
+                option: function (item, escape) {
+                    return '<div>' +
+                        '<span class="compiler">' + escape(item.compiler.name) + '</span>' +
+                        '<span class="options">' + escape(item.options) + '</span>' +
+                        '<ul class="meta">' +
+                        '<li class="editor">Editor #' + escape(item.editorId) + '</li>' +
+                        '<li class="compilerId">' + escape(getItemDisplayTitle(item)) + '</li>' +
+                        '</ul></div>';
+                },
+            },
+            dropdownParent: 'body',
+            plugins:['input_autogrow'],
+            onChange: function (value) {
+
+                var compiler = self.compilers[value];
+                if (!compiler) return;
+                if (picker.classList.contains('lhs')) {
+                    self.lhs.compiler = compiler;
+                    self.lhs.id = compiler.id;
+                } else {
+                    self.rhs.compiler = compiler;
+                    self.rhs.id = compiler.id;
+                }
+                self.onDiffSelect(compiler.id);
+            },
+        });
+
+        if (picker.classList.contains('lhs')) {
+            self.selectize.lhs = instance;
+        }else{
+            self.selectize.rhs = instance;
+        }
+
+    });
+
 
     this.initButtons(state);
     this.initCallbacks();

@@ -31,8 +31,7 @@ var Promise = require('es6-promise').Promise;
 var ga = require('../analytics');
 var Components = require('../components');
 var Libraries = require('../libs-widget-ext');
-
-require('selectize');
+var TomSelect = require('tom-select');
 
 function Conformance(hub, container, state) {
     this.hub = hub;
@@ -174,7 +173,8 @@ Conformance.prototype.addCompilerSelector = function (config) {
         this.updateLibraries();
     }, this);
 
-    var compilerPicker = newEntry.find('.compiler-picker').selectize({
+    var compilerPicker = newEntry[0].querySelector('.compiler-picker');
+    new TomSelect(compilerPicker,{
         sortField: this.compilerService.getSelectizerOrder(),
         valueField: 'id',
         labelField: 'name',
@@ -188,15 +188,17 @@ Conformance.prototype.addCompilerSelector = function (config) {
         items: config.compilerId ? [config.compilerId] : [],
         dropdownParent: 'body',
         closeAfterSelect: true,
-    }).on('change', _.bind(function (e) {
-        onCompilerChange($(e.target).val());
-        this.compileChild(newEntry);
-    }, this));
+        plugins:['input_autogrow'],
+        onChange: _.bind(function (value){
+            onCompilerChange(value);
+            this.compileChild(newEntry);
+        },this),
+    });
 
 
     var getCompilerConfig = _.bind(function () {
         return Components.getCompilerWith(
-            this.editorId, undefined, optionsField.val(), compilerPicker.val(), this.langId, this.lastState.libs);
+            this.editorId, undefined, optionsField.val(), compilerPicker.value, this.langId, this.lastState.libs);
     }, this);
 
     this.container.layoutManager
@@ -433,7 +435,7 @@ Conformance.prototype.getOverlappingLibraries = function (compilerIds) {
             } else {
                 var libsInCommon = _.intersection(_.keys(libraries),
                     _.keys(compiler.libs));
-    
+
                 _.forEach(libraries, function (lib, libkey) {
                     if (libsInCommon.includes(libkey)) {
                         var versionsInCommon = _.intersection(_.keys(lib.versions),
@@ -447,7 +449,7 @@ Conformance.prototype.getOverlappingLibraries = function (compilerIds) {
                         libraries[libkey] = false;
                     }
                 });
-    
+
                 libraries = _.omit(libraries, function (lib) {
                     return !lib || _.isEmpty(lib.versions);
                 });

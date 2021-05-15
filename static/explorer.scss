@@ -29,7 +29,7 @@
 // These blocks should be removed once a downstream release of monaco is cut
 :root {
     // updated at runtime
-    --user-selected-font-stack: Consolas, "Liberation Mono", Courier, monospace; 
+    --user-selected-font-stack: Consolas, "Liberation Mono", Courier, monospace;
 }
 .monaco-editor .codelens-decoration {
     font-family: var(--user-selected-font-stack);
@@ -88,7 +88,7 @@ body {
     min-width: 14em;
 }
 
-.compiler-picker .selectize-input {
+.compiler-picker .ts-input {
     text-align: center;
 }
 
@@ -461,11 +461,11 @@ input.vim-check {
 }
 
 /* While we find a better solution, lets up this a bit */
-.compiler-picker .selectize-dropdown-content {
+.compiler-picker .ts-dropdown-content {
     max-height: 300px !important;
 }
 
-.compiler-picker .selectize-dropdown-content .option {
+.compiler-picker .ts-dropdown-content .option {
     padding: 0 10px;
 }
 
@@ -754,6 +754,23 @@ html[data-theme=default] {
 html[data-theme=dark] {
     @import "themes/dark-theme";
     background-color: #333 !important;
+}
+
+.toggle-fav{
+
+	color: #6c757d; // text-muted
+
+	&:hover{
+		color: #e3cf7a;
+	}
+
+}
+
+.option.fav .toggle-fav{
+	color: #e3cf7a;
+	&:hover{
+		color: #6c757d; // text-muted
+	}
 }
 
 .socialsharing {
