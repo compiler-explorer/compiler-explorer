@@ -34,10 +34,12 @@ var local = require('../local');
 var Libraries = require('../libs-widget-ext');
 var AnsiToHtml = require('../ansi-to-html');
 var timingInfoWidget = require('../timing-info-widget');
+var TomSelect = require('tom-select');
 require('../modes/asm-mode');
 require('../modes/ptx-mode');
 
-require('selectize');
+
+
 
 var timingInfo = new timingInfoWidget.TimingInfo();
 
@@ -87,7 +89,9 @@ function Executor(hub, container, state) {
 
     this.fontScale = new FontScale(this.domRoot, state, 'pre.content');
 
-    this.compilerPicker.selectize({
+
+    var self = this;
+    this.compilerSelectizer = new TomSelect(this.compilerPicker,{
         sortField: this.compilerService.getSelectizerOrder(),
         valueField: 'id',
         labelField: 'name',
@@ -99,19 +103,18 @@ function Executor(hub, container, state) {
         items: this.compiler ? [this.compiler.id] : [],
         dropdownParent: 'body',
         closeAfterSelect: true,
-    }).on('change', _.bind(function (e) {
-        var val = $(e.target).val();
-        if (val) {
-            ga.proxy('send', {
-                hitType: 'event',
-                eventCategory: 'SelectCompiler',
-                eventAction: val,
-            });
-            this.onCompilerChange(val);
-        }
-    }, this));
-
-    this.compilerSelectizer = this.compilerPicker[0].selectize;
+        plugins:['input_autogrow'],
+        onChange:function (val){
+            if (val) {
+                ga.proxy('send', {
+                    hitType: 'event',
+                    eventCategory: 'SelectCompiler',
+                    eventAction: val,
+                });
+                self.onCompilerChange(val);
+            }
+        },
+    });
 
     this.initLibraries(state);
     this.initCallbacks();

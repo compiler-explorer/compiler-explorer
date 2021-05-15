@@ -36,6 +36,7 @@ var local = require('../local');
 var ga = require('../analytics');
 var monacoVim = require('monaco-vim');
 var monacoConfig = require('../monaco-config');
+var TomSelect = require('tom-select');
 require('../modes/cppp-mode');
 require('../modes/cppx-gold-mode');
 require('../modes/d-mode');
@@ -50,7 +51,7 @@ require('../modes/zig-mode');
 require('../modes/nc-mode');
 require('../modes/ada-mode');
 require('../modes/nim-mode');
-require('selectize');
+
 
 var loadSave = new loadSaveLib.LoadSave();
 var languages = options.languages;
@@ -128,7 +129,8 @@ function Editor(hub, state, container) {
         return hub.compilerService.compilersByLang[language.id];
     });
 
-    this.languageBtn.selectize({
+    var self = this;
+    this.selectize = new TomSelect(this.languageBtn,{
         sortField: 'name',
         valueField: 'id',
         labelField: 'name',
@@ -136,10 +138,13 @@ function Editor(hub, state, container) {
         options: _.map(usableLanguages, _.identity),
         items: [this.currentLanguage.id],
         dropdownParent: 'body',
-    }).on('change', _.bind(function (e) {
-        this.onLanguageChange($(e.target).val());
-    }, this));
-    this.selectize = this.languageBtn[0].selectize;
+        plugins:['input_autogrow'],
+        onChange:function (value){
+            self.onLanguageChange(value);
+        },
+    });
+
+
     // We suppress posting changes until the user has stopped typing by:
     // * Using _.debounce() to run emitChange on any key event or change
     //   only after a delay.
