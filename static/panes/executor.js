@@ -34,12 +34,10 @@ var local = require('../local');
 var Libraries = require('../libs-widget-ext');
 var AnsiToHtml = require('../ansi-to-html');
 var timingInfoWidget = require('../timing-info-widget');
-var TomSelect = require('tom-select');
+var CompilerPicker = require('../compiler-picker');
+
 require('../modes/asm-mode');
 require('../modes/ptx-mode');
-
-
-
 
 var timingInfo = new timingInfoWidget.TimingInfo();
 
@@ -88,33 +86,13 @@ function Executor(hub, container, state) {
     this.initButtons(state);
 
     this.fontScale = new FontScale(this.domRoot, state, 'pre.content');
-
-
-    var self = this;
-    this.compilerSelectizer = new TomSelect(this.compilerPicker,{
-        sortField: this.compilerService.getSelectizerOrder(),
-        valueField: 'id',
-        labelField: 'name',
-        searchField: ['name'],
-        optgroupField: 'group',
-        optgroups: this.compilerService.getGroupsInUse(this.currentLangId),
-        lockOptgroupOrder: true,
-        options: _.map(this.getCurrentLangCompilers(), _.identity),
-        items: this.compiler ? [this.compiler.id] : [],
-        dropdownParent: 'body',
-        closeAfterSelect: true,
-        plugins:['input_autogrow'],
-        onChange:function (val){
-            if (val) {
-                ga.proxy('send', {
-                    hitType: 'event',
-                    eventCategory: 'SelectCompiler',
-                    eventAction: val,
-                });
-                self.onCompilerChange(val);
-            }
-        },
-    });
+    this.compilerPicker = new CompilerPicker(
+        this.domRoot,
+        this.hub,
+        this.currentLangId,
+        this.compiler ? this.compiler.id : null,
+        _.bind(this.onCompilerChange, this)
+    );
 
     this.initLibraries(state);
     this.initCallbacks();
@@ -140,6 +118,7 @@ Executor.prototype.initLangAndCompiler = function (state) {
 
 Executor.prototype.close = function () {
     this.eventHub.unsubscribe();
+    this.compilerPicker.close();
     this.eventHub.emit('executorClose', this.id);
 };
 
@@ -854,15 +833,7 @@ Executor.prototype.getCurrentLangCompilers = function () {
 };
 
 Executor.prototype.updateCompilersSelector = function (info) {
-    this.compilerSelectizer.clearOptions(true);
-    this.compilerSelectizer.clearOptionGroups();
-    _.each(this.compilerService.getGroupsInUse(this.currentLangId), function (group) {
-        this.compilerSelectizer.addOptionGroup(group.value, {label: group.label});
-    }, this);
-    this.compilerSelectizer.load(_.bind(function (callback) {
-        callback(_.map(this.getCurrentLangCompilers(), _.identity));
-    }, this));
-    this.compilerSelectizer.setValue([this.compiler ? this.compiler.id : null], true);
+    this.compilerPicker.update(this.currentLangId, this.compiler ? this.compiler.id : null);
     this.options = info.options || '';
     this.optionsField.val(this.options);
     this.executionArguments = info.execArgs || '';

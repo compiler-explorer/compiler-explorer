@@ -41,7 +41,8 @@ var Libraries = require('../libs-widget-ext');
 var codeLensHandler = require('../codelens-handler');
 var monacoConfig = require('../monaco-config');
 var timingInfoWidget = require('../timing-info-widget');
-var TomSelect = require('tom-select');
+var CompilerPicker = require('../compiler-picker');
+
 require('../modes/asm-mode');
 require('../modes/ptx-mode');
 
@@ -128,87 +129,13 @@ function Compiler(hub, container, state) {
     }, this.settings));
 
     this.fontScale = new FontScale(this.domRoot, state, this.outputEditor);
-
-    var optgroups = this.compilerService.getGroupsInUse(this.currentLangId);
-    var favoriteGroupName = '__favorites__';
-    optgroups.unshift({value: favoriteGroupName, label: 'Favorites'});
-
-    var favorites = this.getFavorites();
-
-    this.compilerSelectizer = new TomSelect(this.compilerPicker[0], {
-        sortField: this.compilerService.getSelectizerOrder(),
-        valueField: 'id',
-        labelField: 'name',
-        searchField: ['name'],
-        optgroupField: 'group',
-        optgroups: optgroups,
-        lockOptgroupOrder: true,
-        options: _.chain(this.getCurrentLangCompilers())
-            .filter(function (e) {
-                return !e.hidden || e.id === state.compiler;
-            })
-            .map(function (e) {
-                e.group = [e.group];
-                if (favorites[e.id])
-                    e.group.push(favoriteGroupName);
-                return e;
-            })
-            .value(),
-        items: this.compiler ? [this.compiler.id] : [],
-        dropdownParent: 'body',
-        closeAfterSelect: true,
-        plugins: ['dropdown_input'],
-        onChange: _.bind(function (val) {
-            if (val) {
-                ga.proxy('send', {
-                    hitType: 'event',
-                    eventCategory: 'SelectCompiler',
-                    eventAction: val,
-                });
-                this.onCompilerChange(val);
-            }
-        }, this),
-        duplicates: true,
-        render: {
-            option: function (data, escape) {
-                var extraClasses = data.group.indexOf(favoriteGroupName) !== -1 ? ' fav' : '';
-                return '<div class="d-flex' + extraClasses + '"><div>' + escape(data.name) + '</div>' +
-                    '<div title="Click to mark or unmark as a favorite" class="ml-auto toggle-fav">' +
-                    '<i class="fas fa-star"></i>' +
-                    '</div>' +
-                    '</div>';
-            },
-        },
-    });
-
-    $(this.compilerSelectizer.dropdown_content).on('click', '.toggle-fav', _.bind(function (evt) {
-        evt.preventDefault();
-        evt.stopPropagation();
-
-        var optionElement = evt.currentTarget.closest('.option');
-        var value = optionElement.dataset.value;
-        var data = this.compilerSelectizer.options[value];
-        var isAddingNewFavorite = data.group.indexOf(favoriteGroupName) === -1;
-
-        if (isAddingNewFavorite) {
-            data.group.push(favoriteGroupName);
-            optionElement.classList.add('fav');
-            this.addToFavorites(data.id);
-        } else {
-            data.group.splice(data.group.indexOf(favoriteGroupName), 1);
-            this.removeFromFavorites(data.id);
-        }
-
-        this.compilerSelectizer.refreshOptions(false);
-
-        // Ensure that the favorite class is removed from the option in the case where the user
-        // un-favorites from the "favorite" group itself. After the refreshOptions, the element in
-        // the "Favorite" group will be removed, so this option just gets the main element itself.
-        if (!isAddingNewFavorite) {
-            optionElement = this.compilerSelectizer.getOption(value);
-            optionElement.classList.remove('fav');
-        }
-    }, this));
+    this.compilerPicker = new CompilerPicker(
+        this.domRoot,
+        this.hub,
+        this.currentLangId,
+        this.compiler ? this.compiler.id : null,
+        _.bind(this.onCompilerChange, this)
+    );
 
     this.initLibraries(state);
 
@@ -228,27 +155,6 @@ function Compiler(hub, container, state) {
         eventAction: 'Compiler',
     });
 }
-
-var favoriteStoreKey = 'favCompilerIds';
-Compiler.prototype.getFavorites = function () {
-    return JSON.parse(local.get(favoriteStoreKey, '{}'));
-};
-Compiler.prototype.setFavorites = function (faves) {
-    local.set(favoriteStoreKey, JSON.stringify(faves));
-};
-Compiler.prototype.isAFavorite = function (compilerId) {
-    return !!this.getFavorites()[compilerId];
-};
-Compiler.prototype.addToFavorites = function (compilerId) {
-    var faves = this.getFavorites();
-    faves[compilerId] = true;
-    this.setFavorites(faves);
-};
-Compiler.prototype.removeFromFavorites = function (compilerId) {
-    var faves = this.getFavorites();
-    delete faves[compilerId];
-    this.setFavorites(faves);
-};
 
 Compiler.prototype.initLangAndCompiler = function (state) {
     var langId = state.lang;
@@ -2045,21 +1951,7 @@ Compiler.prototype.getCurrentLangCompilers = function () {
 };
 
 Compiler.prototype.updateCompilersSelector = function (info) {
-    this.compilerSelectizer.clearOptions(true);
-    this.compilerSelectizer.clearOptionGroups();
-    _.each(this.compilerService.getGroupsInUse(this.currentLangId), function (group) {
-        this.compilerSelectizer.addOptionGroup(group.value, {label: group.label});
-    }, this);
-
-    var selectedCompilerId = this.compiler ? this.compiler.id : null;
-    var filteredCompilers = _.filter(this.getCurrentLangCompilers(), function (e) {
-        return !e.hidden || e.id === selectedCompilerId;
-    });
-
-    this.compilerSelectizer.load(_.bind(function (callback) {
-        callback(_.map(filteredCompilers, _.identity));
-    }, this));
-    this.compilerSelectizer.setValue([this.compiler ? this.compiler.id : null], true);
+    this.compilerPicker.update(this.currentLangId, this.compiler ? this.compiler.id : null);
     this.options = info.options || '';
     this.optionsField.val(this.options);
 };

@@ -31,7 +31,7 @@ var Promise = require('es6-promise').Promise;
 var ga = require('../analytics');
 var Components = require('../components');
 var Libraries = require('../libs-widget-ext');
-var TomSelect = require('tom-select');
+var CompilerPicker = require('../compiler-picker');
 
 function Conformance(hub, container, state) {
     this.hub = hub;
@@ -46,6 +46,7 @@ function Conformance(hub, container, state) {
     this.source = state.source || '';
     this.sourceNeedsExpanding = true;
     this.expandedSource = null;
+    this.compilerPickers = [];
 
     this.status = {
         allowCompile: false,
@@ -120,7 +121,7 @@ Conformance.prototype.initCallbacks = function () {
     this.eventHub.on('languageChange', this.onLanguageChange, this);
 
     this.addCompilerButton.on('click', _.bind(function () {
-        this.addCompilerSelector();
+        this.addCompilerPicker();
         this.saveState();
     }, this));
 };
@@ -131,7 +132,7 @@ Conformance.prototype.setTitle = function (compilerCount) {
     ));
 };
 
-Conformance.prototype.addCompilerSelector = function (config) {
+Conformance.prototype.addCompilerPicker = function (config) {
     if (!config) {
         config = {
             // Compiler id which is being used
@@ -153,9 +154,10 @@ Conformance.prototype.addCompilerSelector = function (config) {
         .on('change', onOptionsChange)
         .on('keyup', onOptionsChange);
 
+    var compilerPicker = null;
     newEntry.find('.close').not('.extract-compiler')
         .on('click', _.bind(function () {
-            this.removeCompilerSelector(newEntry);
+            this.removeCompilerPicker(compilerPicker, newEntry);
         }, this));
 
     this.selectorList.append(newEntry);
@@ -173,32 +175,19 @@ Conformance.prototype.addCompilerSelector = function (config) {
         this.updateLibraries();
     }, this);
 
-    var compilerPicker = newEntry[0].querySelector('.compiler-picker');
-    new TomSelect(compilerPicker,{
-        sortField: this.compilerService.getSelectizerOrder(),
-        valueField: 'id',
-        labelField: 'name',
-        searchField: ['name'],
-        optgroupField: 'group',
-        optgroups: this.compilerService.getGroupsInUse(this.langId),
-        lockOptgroupOrder: true,
-        options: _.filter(this.getCurrentLangCompilers(), function (e) {
-            return !e.hidden || e.id === config.compilerId;
-        }),
-        items: config.compilerId ? [config.compilerId] : [],
-        dropdownParent: 'body',
-        closeAfterSelect: true,
-        plugins:['input_autogrow'],
-        onChange: _.bind(function (value){
+    var compilerPickerNode = newEntry[0].querySelector('.compiler-picker');
+    compilerPicker = new CompilerPicker(
+        $(newEntry[0]), this.hub, this.langId, config.compilerId,
+        _.bind(function (value) {
             onCompilerChange(value);
             this.compileChild(newEntry);
-        },this),
-    });
-
+        }, this)
+    );
+    this.compilerPickers.push(compilerPicker);
 
     var getCompilerConfig = _.bind(function () {
         return Components.getCompilerWith(
-            this.editorId, undefined, optionsField.val(), compilerPicker.value, this.langId, this.lastState.libs);
+            this.editorId, undefined, optionsField.val(), compilerPickerNode.value, this.langId, this.lastState.libs);
     }, this);
 
     this.container.layoutManager
@@ -214,10 +203,6 @@ Conformance.prototype.addCompilerSelector = function (config) {
     this.saveState();
 };
 
-Conformance.prototype.getCurrentLangCompilers = function () {
-    return this.compilerService.getCompilersForLang(this.langId);
-};
-
 Conformance.prototype.setCompilationOptionsPopover = function (element, content) {
     element.popover('dispose');
     element.popover({
@@ -229,7 +214,8 @@ Conformance.prototype.setCompilationOptionsPopover = function (element, content)
     });
 };
 
-Conformance.prototype.removeCompilerSelector = function (element) {
+Conformance.prototype.removeCompilerPicker = function (picker, element) {
+    if (picker) picker.close();
     if (element) element.remove();
     this.updateLibraries();
     this.handleToolbarUI();
@@ -483,6 +469,10 @@ Conformance.prototype.onLanguageChange = function (editorId, newLangId) {
 
         this.langId = newLangId;
         this.selectorList.children().remove();
+        _.each(this.compilerPickers, function (picker) {
+            picker.close();
+        });
+        this.compilerPickers = [];
         var langState = this.stateByLang[newLangId];
         this.initFromState(langState);
         this.updateLibraries();
@@ -493,13 +483,16 @@ Conformance.prototype.onLanguageChange = function (editorId, newLangId) {
 
 Conformance.prototype.close = function () {
     this.eventHub.unsubscribe();
+    _.each(this.compilerPickers, function (picker) {
+        picker.close();
+    });
     this.eventHub.emit('conformanceViewClose', this.editorId);
 };
 
 Conformance.prototype.initFromState = function (state) {
     if (state && state.compilers) {
         this.lastState = state;
-        _.each(state.compilers, _.bind(this.addCompilerSelector, this));
+        _.each(state.compilers, _.bind(this.addCompilerPicker, this));
     } else {
         this.lastState = this.currentState();
     }
