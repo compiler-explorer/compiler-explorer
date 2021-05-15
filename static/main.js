@@ -526,9 +526,17 @@ function start() {
         setupButtons(options);
     }
 
-    sharing.initShareButton($('#share'), layout, function (config, extra) {
+    function storeCurrentConfig(config, extra) {
         window.history.pushState(null, null, extra);
         storedPaths[JSON.stringify(config)] = extra;
+    }
+
+    sharing.initShareButton($('#shareShort'), layout, storeCurrentConfig, 'Short');
+    sharing.initShareButton($('#shareFull'), layout, storeCurrentConfig, 'Full');
+    sharing.initShareButton($('#shareEmbed'), layout, storeCurrentConfig, 'Embed');
+
+    layout.eventHub.on('displaySharingPopover', function () {
+        $('#shareShort').trigger('click');
     });
 
     function setupAdd(thing, func) {
