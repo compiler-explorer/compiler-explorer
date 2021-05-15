@@ -41,9 +41,10 @@ var Libraries = require('../libs-widget-ext');
 var codeLensHandler = require('../codelens-handler');
 var monacoConfig = require('../monaco-config');
 var timingInfoWidget = require('../timing-info-widget');
-var TomSelect = require('tom-select');
 require('../modes/asm-mode');
 require('../modes/ptx-mode');
+
+require('selectize');
 
 var timingInfo = new timingInfoWidget.TimingInfo();
 
@@ -129,17 +130,13 @@ function Compiler(hub, container, state) {
 
     this.fontScale = new FontScale(this.domRoot, state, this.outputEditor);
 
-    var self = this;
-    var optgroups = this.compilerService.getGroupsInUse(this.currentLangId);
-    optgroups.unshift({value:'favs',label:'Favorites'});
-
-    this.compilerSelectizer = new TomSelect(this.compilerPicker[0],{
+    this.compilerPicker.selectize({
         sortField: this.compilerService.getSelectizerOrder(),
         valueField: 'id',
         labelField: 'name',
         searchField: ['name'],
         optgroupField: 'group',
-        optgroups: optgroups,
+        optgroups: this.compilerService.getGroupsInUse(this.currentLangId),
         lockOptgroupOrder: true,
         options: _.filter(this.getCurrentLangCompilers(), function (e) {
             return !e.hidden || e.id === state.compiler;
@@ -147,59 +144,19 @@ function Compiler(hub, container, state) {
         items: this.compiler ? [this.compiler.id] : [],
         dropdownParent: 'body',
         closeAfterSelect: true,
-        plugins:['dropdown_input'],
-        onChange: _.bind(function (val){
-            if (val) {
-                ga.proxy('send', {
-                    hitType: 'event',
-                    eventCategory: 'SelectCompiler',
-                    eventAction: val,
-                });
-                this.onCompilerChange(val);
-            }
-        },this),
-        duplicates: true,
-        render:{
-            option:function (data,escape){
-                return '<div class="d-flex"><div>'
-					+ escape(data.name)
-					+ '</div><div class="ml-auto toggle-fav"><i class="fas fa-star"></i></div></div>';
-            },
-        },
-    });
-
-    $(this.compilerSelectizer.dropdown_content).on('click','.toggle-fav',function (evt){
-        evt.preventDefault();
-        evt.stopPropagation();
-
-        var option_el        = this.closest('.option');
-        var value            = option_el.dataset.value;
-        var data            = self.compilerSelectizer.options[value];
-        var remove_fav        = false;
-
-        data.group = Array.isArray(data.group) ? data.group : [data.group];
-
-        if( option_el.classList.contains('fav') ){
-            remove_fav = true;
-            var index = data.group.indexOf('favs');
-            data.group.splice(index, 1);
-
-        }else{
-            data.group.push('favs');
-            option_el.classList.add('fav');
+    }).on('change', _.bind(function (e) {
+        var val = $(e.target).val();
+        if (val) {
+            ga.proxy('send', {
+                hitType: 'event',
+                eventCategory: 'SelectCompiler',
+                eventAction: val,
+            });
+            this.onCompilerChange(val);
         }
+    }, this));
 
-        self.compilerSelectizer.refreshOptions(false);
-
-
-        // when removing, there are two options with the fav class until after refreshOptions()
-        if( remove_fav ){
-            option_el = self.compilerSelectizer.getOption(value);
-            option_el.classList.remove('fav');
-        }
-
-    });
-
+    this.compilerSelectizer = this.compilerPicker[0].selectize;
 
     this.initLibraries(state);
 

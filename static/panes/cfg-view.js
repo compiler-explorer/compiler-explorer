@@ -30,7 +30,7 @@ var _ = require('underscore');
 var Toggles = require('../toggles');
 var ga = require('../analytics');
 
-var TomSelect = require('tom-select');
+require('selectize');
 
 function Cfg(hub, container, state) {
     this.container = container;
@@ -102,28 +102,25 @@ function Cfg(hub, container, state) {
     this._editorid = state.editorid;
     this._binaryFilter = false;
 
-    var pickerEl = this.domRoot[0].querySelector('.function-picker');
-    this.functionPicker = new TomSelect(pickerEl,{
+    this.functionPicker = $(this.domRoot).find('.function-picker').selectize({
         sortField: 'name',
         valueField: 'name',
         labelField: 'name',
         searchField: ['name'],
         dropdownParent: 'body',
-        plugins:['input_autogrow'],
-        onChange: _.bind(function (val){
-            var selectedFn = this.functions[val];
-            if (selectedFn) {
-                this.currentFunc = val;
-                this.showCfgResults({
-                    nodes: selectedFn.nodes,
-                    edges: selectedFn.edges,
-                });
-                this.cfgVisualiser.selectNodes([selectedFn.nodes[0].id]);
-                this.resize();
-                this.saveState();
-            }
-        }, this),
-    });
+    }).on('change', _.bind(function (e) {
+        var selectedFn = this.functions[e.target.value];
+        if (selectedFn) {
+            this.currentFunc = e.target.value;
+            this.showCfgResults({
+                nodes: selectedFn.nodes,
+                edges: selectedFn.edges,
+            });
+            this.cfgVisualiser.selectNodes([selectedFn.nodes[0].id]);
+            this.resize();
+            this.saveState();
+        }
+    }, this));
 
     this.initCallbacks();
     this.adaptStructure = function (names) {
@@ -160,13 +157,13 @@ Cfg.prototype.onCompileResult = function (id, compiler, result) {
             this.showCfgResults(this._binaryFilter ? this.binaryModeSupport : this.defaultCfgOutput);
         }
 
-        this.functionPicker.clearOptions();
-        this.functionPicker.addOption(functionNames.length ?
+        this.functionPicker[0].selectize.clearOptions();
+        this.functionPicker[0].selectize.addOption(functionNames.length ?
             this.adaptStructure(functionNames) : {name: 'The input does not contain functions'});
-        this.functionPicker.refreshOptions(false);
+        this.functionPicker[0].selectize.refreshOptions(false);
 
-        this.functionPicker.clear();
-        this.functionPicker.addItem(functionNames.length ?
+        this.functionPicker[0].selectize.clear();
+        this.functionPicker[0].selectize.addItem(functionNames.length ?
             this.currentFunc : 'The input does not contain any function', true);
         this.saveState();
     }
