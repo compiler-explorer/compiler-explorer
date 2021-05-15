@@ -757,20 +757,11 @@ html[data-theme=dark] {
 }
 
 .toggle-fav{
-
-	color: #6c757d; // text-muted
-
-	&:hover{
-		color: #e3cf7a;
-	}
-
+    color: #6c757d; // text-muted
 }
 
 .option.fav .toggle-fav{
 	color: #e3cf7a;
-	&:hover{
-		color: #6c757d; // text-muted
-	}
 }
 
 .socialsharing {
