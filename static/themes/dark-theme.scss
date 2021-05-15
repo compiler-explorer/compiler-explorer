@@ -143,8 +143,11 @@ a.navbar-brand img.logo.normal {
     border-color: #728690 transparent transparent transparent;
 }
 
-.ts-dropdown .option:hover {
+.ts-dropdown .option:hover{
     background-color: #8d8d8e;
+}
+.ts-dropdown .active {
+    background-color: #68688e;
 }
 
 .ts-dropdown {
