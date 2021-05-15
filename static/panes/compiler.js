@@ -129,13 +129,11 @@ function Compiler(hub, container, state) {
 
     this.fontScale = new FontScale(this.domRoot, state, this.outputEditor);
 
+    var self = this;
     var optgroups = this.compilerService.getGroupsInUse(this.currentLangId);
-    var favoriteGroupName = '__favorites__';
-    optgroups.unshift({value: favoriteGroupName, label: 'Favorites'});
+    optgroups.unshift({value:'favs',label:'Favorites'});
 
-    var favorites = this.getFavorites();
-
-    this.compilerSelectizer = new TomSelect(this.compilerPicker[0], {
+    this.compilerSelectizer = new TomSelect(this.compilerPicker[0],{
         sortField: this.compilerService.getSelectizerOrder(),
         valueField: 'id',
         labelField: 'name',
@@ -143,22 +141,14 @@ function Compiler(hub, container, state) {
         optgroupField: 'group',
         optgroups: optgroups,
         lockOptgroupOrder: true,
-        options: _.chain(this.getCurrentLangCompilers())
-            .filter(function (e) {
-                return !e.hidden || e.id === state.compiler;
-            })
-            .map(function (e) {
-                e.group = [e.group];
-                if (favorites[e.id])
-                    e.group.push(favoriteGroupName);
-                return e;
-            })
-            .value(),
+        options: _.filter(this.getCurrentLangCompilers(), function (e) {
+            return !e.hidden || e.id === state.compiler;
+        }),
         items: this.compiler ? [this.compiler.id] : [],
         dropdownParent: 'body',
         closeAfterSelect: true,
-        plugins: ['dropdown_input'],
-        onChange: _.bind(function (val) {
+        plugins:['dropdown_input'],
+        onChange: _.bind(function (val){
             if (val) {
                 ga.proxy('send', {
                     hitType: 'event',
@@ -167,48 +157,49 @@ function Compiler(hub, container, state) {
                 });
                 this.onCompilerChange(val);
             }
-        }, this),
+        },this),
         duplicates: true,
-        render: {
-            option: function (data, escape) {
-                var extraClasses = data.group.indexOf(favoriteGroupName) !== -1 ? ' fav' : '';
-                return '<div class="d-flex' + extraClasses + '"><div>' + escape(data.name) + '</div>' +
-                    '<div title="Click to mark or unmark as a favorite" class="ml-auto toggle-fav">' +
-                    '<i class="fas fa-star"></i>' +
-                    '</div>' +
-                    '</div>';
+        render:{
+            option:function (data,escape){
+                return '<div class="d-flex"><div>'
+					+ escape(data.name)
+					+ '</div><div class="ml-auto toggle-fav"><i class="fas fa-star"></i></div></div>';
             },
         },
     });
 
-    $(this.compilerSelectizer.dropdown_content).on('click', '.toggle-fav', _.bind(function (evt) {
+    $(this.compilerSelectizer.dropdown_content).on('click','.toggle-fav',function (evt){
         evt.preventDefault();
         evt.stopPropagation();
 
-        var optionElement = evt.currentTarget.closest('.option');
-        var value = optionElement.dataset.value;
-        var data = this.compilerSelectizer.options[value];
-        var isAddingNewFavorite = data.group.indexOf(favoriteGroupName) === -1;
+        var option_el        = this.closest('.option');
+        var value            = option_el.dataset.value;
+        var data            = self.compilerSelectizer.options[value];
+        var remove_fav        = false;
 
-        if (isAddingNewFavorite) {
-            data.group.push(favoriteGroupName);
-            optionElement.classList.add('fav');
-            this.addToFavorites(data.id);
-        } else {
-            data.group.splice(data.group.indexOf(favoriteGroupName), 1);
-            this.removeFromFavorites(data.id);
+        data.group = Array.isArray(data.group) ? data.group : [data.group];
+
+        if( option_el.classList.contains('fav') ){
+            remove_fav = true;
+            var index = data.group.indexOf('favs');
+            data.group.splice(index, 1);
+
+        }else{
+            data.group.push('favs');
+            option_el.classList.add('fav');
         }
 
-        this.compilerSelectizer.refreshOptions(false);
+        self.compilerSelectizer.refreshOptions(false);
 
-        // Ensure that the favorite class is removed from the option in the case where the user
-        // un-favorites from the "favorite" group itself. After the refreshOptions, the element in
-        // the "Favorite" group will be removed, so this option just gets the main element itself.
-        if (!isAddingNewFavorite) {
-            optionElement = this.compilerSelectizer.getOption(value);
-            optionElement.classList.remove('fav');
+
+        // when removing, there are two options with the fav class until after refreshOptions()
+        if( remove_fav ){
+            option_el = self.compilerSelectizer.getOption(value);
+            option_el.classList.remove('fav');
         }
-    }, this));
+
+    });
+
 
     this.initLibraries(state);
 
@@ -228,27 +219,6 @@ function Compiler(hub, container, state) {
         eventAction: 'Compiler',
     });
 }
-
-var favoriteStoreKey = 'favCompilerIds';
-Compiler.prototype.getFavorites = function () {
-    return JSON.parse(local.get(favoriteStoreKey, '{}'));
-};
-Compiler.prototype.setFavorites = function (faves) {
-    local.set(favoriteStoreKey, JSON.stringify(faves));
-};
-Compiler.prototype.isAFavorite = function (compilerId) {
-    return !!this.getFavorites()[compilerId];
-};
-Compiler.prototype.addToFavorites = function (compilerId) {
-    var faves = this.getFavorites();
-    faves[compilerId] = true;
-    this.setFavorites(faves);
-};
-Compiler.prototype.removeFromFavorites = function (compilerId) {
-    var faves = this.getFavorites();
-    delete faves[compilerId];
-    this.setFavorites(faves);
-};
 
 Compiler.prototype.initLangAndCompiler = function (state) {
     var langId = state.lang;
