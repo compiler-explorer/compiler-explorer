@@ -292,8 +292,8 @@ pre.content.wrap * {
 }
 
 .community-advert {
-    display: none;
-    max-width: 300px;
+    display: flex;
+    max-width: 500px;
     height: 44px;
     margin-top: 3px;
     margin-bottom: 3px;
@@ -306,15 +306,9 @@ pre.content.wrap * {
     padding-right: 4px;
 }
 
-@media (min-width: 1000px) {
+@media (max-width: 1200px) {
     .community-advert {
-        display: flex;
-    }
-}
-
-@media (min-width: 1200px) {
-    .community-advert {
-        max-width: 500px;
+        display: none;
     }
 }
 
@@ -586,6 +580,12 @@ div.populararguments div.dropdown-menu {
 @media (max-width: 1000px) {
     .ces-content-root {
         font-size: 60%;
+    }
+}
+
+@media (max-width: 1250px) {
+    #ces-banner-text {
+        display: none;
     }
 }
 
