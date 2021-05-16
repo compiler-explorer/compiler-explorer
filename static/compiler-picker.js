@@ -71,6 +71,7 @@ CompilerPicker.prototype.initialize = function (langId, compilerId) {
         dropdownParent: 'body',
         closeAfterSelect: true,
         plugins: ['dropdown_input'],
+        maxOptions: 1000,
         onChange: _.bind(function (val) {
             if (val) {
                 ga.proxy('send', {
