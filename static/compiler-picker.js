@@ -107,25 +107,18 @@ CompilerPicker.prototype.initialize = function (langId, compilerId) {
 
         if (isAddingNewFavorite) {
             data.$groups.push(favoriteGroupName);
-            optionElement.classList.add('fav');
             this.addToFavorites(data.id);
         } else {
             data.$groups.splice(data.group.indexOf(favoriteGroupName), 1);
             this.removeFromFavorites(data.id);
         }
 
+        this.tomSelect.updateOption(value,data);
         this.tomSelect.refreshOptions(false);
 
-
         if (isAddingNewFavorite) {
-            // Scroll with the new element to keep the list in place
             this.tomSelect.dropdown_content.scrollTop = currentScroll + optionElement.offsetHeight;
         } else {
-            // Ensure that the favorite class is removed from the option in the case where the user
-            // un-favorites from the "favorite" group itself. After the refreshOptions, the element in
-            // the "Favorite" group will be removed, so this option just gets the main element itself.
-            optionElement = this.tomSelect.getOption(value);
-            optionElement.classList.remove('fav');
             this.tomSelect.dropdown_content.scrollTop = currentScroll - optionElement.offsetHeight;
         }
 
