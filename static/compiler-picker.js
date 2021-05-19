@@ -167,18 +167,22 @@ CompilerPicker.prototype.onCompilerFavoriteChange = function (id) {
 CompilerPicker.prototype.getFavorites = function () {
     return JSON.parse(local.get(favoriteStoreKey, '{}'));
 };
+
 CompilerPicker.prototype.setFavorites = function (faves) {
     local.set(favoriteStoreKey, JSON.stringify(faves));
 };
+
 CompilerPicker.prototype.isAFavorite = function (compilerId) {
     return !!this.getFavorites()[compilerId];
 };
+
 CompilerPicker.prototype.addToFavorites = function (compilerId) {
     var faves = this.getFavorites();
     faves[compilerId] = true;
     this.setFavorites(faves);
     this.eventHub.emit('compilerFavoriteChange', this.id);
 };
+
 CompilerPicker.prototype.removeFromFavorites = function (compilerId) {
     var faves = this.getFavorites();
     delete faves[compilerId];
