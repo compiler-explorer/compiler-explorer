@@ -100,10 +100,11 @@ CompilerPicker.prototype.initialize = function (langId, compilerId) {
         evt.stopPropagation();
 
         var optionElement = evt.currentTarget.closest('.option');
+        var clickedGroup = optionElement.parentElement.dataset.group;
         var value = optionElement.dataset.value;
         var data = this.tomSelect.options[value];
         var isAddingNewFavorite = data.$groups.indexOf(favoriteGroupName) === -1;
-        var currentScroll = this.tomSelect.dropdown_content.scrollTop;
+        var elemTop = optionElement.offsetTop;
 
         if (isAddingNewFavorite) {
             data.$groups.push(favoriteGroupName);
@@ -113,15 +114,16 @@ CompilerPicker.prototype.initialize = function (langId, compilerId) {
             this.removeFromFavorites(data.id);
         }
 
-        this.tomSelect.updateOption(value,data);
+        this.tomSelect.updateOption(value, data);
         this.tomSelect.refreshOptions(false);
 
-        if (isAddingNewFavorite) {
-            this.tomSelect.dropdown_content.scrollTop = currentScroll + optionElement.offsetHeight;
-        } else {
-            this.tomSelect.dropdown_content.scrollTop = currentScroll - optionElement.offsetHeight;
+        if (clickedGroup !== favoriteGroupName) {
+            // If the user clicked on an option that wasn't in the top "Favorite" group, then we just added
+            // or removed a bunch of controls way up in the list. Find the new element top and adjust the scroll
+            // so the element that was just clicked is back under the mouse.
+            optionElement = this.tomSelect.getOption(value);
+            this.tomSelect.dropdown_content.scrollTop += (optionElement.offsetTop - elemTop);
         }
-
     }, this));
 };
 
