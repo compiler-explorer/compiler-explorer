@@ -172,6 +172,36 @@ function initShareButton(getLink, layout, noteNewState, startingBind) {
         });
     }
 
+    // TODO, if navigator.clipboard is undefined, hide the clip icon. For IE. Or ignore it
+    getLink.find('.clip-icon').on('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var config = layout.toConfig();
+        getLinks(config, currentBind, function (error, newUrl, extra, updateState) {
+            if (error || !newUrl) {
+                // TODO pop up something saying "there was a problem"
+            } else {
+                if (updateState) {
+                    noteNewState(config, extra);
+                }
+                navigator.clipboard.writeText(newUrl)
+                    .then(function () {
+                        // TODO pop up "yay copied"
+                        console.log('yay copied');
+                    })
+                    .catch(function () {
+                        // TODO pop up "oh that didn't work"
+                        // This happens e.g. if you have a breakpoint over here and so lose focus before the clipboard
+                        // stuff happens.
+                        console.log('oh noes');
+                    });
+            }
+        });
+        // TODO once this has happened the modals are broken...
+        getLink.closest('.dropdown-menu').dropdown('toggle');
+        return false;
+    });
+
     getLink.on('click', function () {
         ga.proxy('send', {
             hitType: 'event',
