@@ -767,3 +767,15 @@ html[data-theme=dark] {
 .socialsharing {
     max-width: 250px;
 }
+
+.ts-input, .ts-dropdown .option {
+    font-family: Helvetica Neue,Helvetica,Arial,sans-serif;
+    font-size: 14px;
+    line-height: 20px;
+}
+
+.ts-dropdown .optgroup-header {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
