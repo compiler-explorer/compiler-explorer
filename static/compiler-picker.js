@@ -122,7 +122,10 @@ CompilerPicker.prototype.initialize = function (langId, compilerId) {
             // or removed a bunch of controls way up in the list. Find the new element top and adjust the scroll
             // so the element that was just clicked is back under the mouse.
             optionElement = this.tomSelect.getOption(value);
+            var previousSmooth = this.tomSelect.dropdown_content.style.scrollBehavior;
+            this.tomSelect.dropdown_content.style.scrollBehavior = 'auto';
             this.tomSelect.dropdown_content.scrollTop += (optionElement.offsetTop - elemTop);
+            this.tomSelect.dropdown_content.style.scrollBehavior = previousSmooth;
         }
     }, this));
 };
