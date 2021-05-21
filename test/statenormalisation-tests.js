@@ -75,6 +75,18 @@ describe('Normalizing clientstate', () => {
 
         normalizer.normalized.should.deep.equal(resultdata);
     });
+
+    it('Should support newer features', () => {
+        const normalizer = new ClientStateNormalizer();
+
+        const data =  JSON.parse(fs.readFileSync('test/state/executorwrap.json'));
+
+        normalizer.fromGoldenLayout(data);
+
+        const resultdata = JSON.parse(fs.readFileSync('test/state/executorwrap.json.normalized'));
+
+        normalizer.normalized.should.deep.equal(resultdata);
+    });
 });
 
 describe('ClientState parsing', () => {

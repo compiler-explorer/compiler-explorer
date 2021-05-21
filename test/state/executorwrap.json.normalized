@@ -3,9 +3,12 @@
         {
             "id": 1,
             "language": "c++",
-            "source": "// Type your code here, or load an example.\nint square(int num) {\n    auto x = 344 + 5 + 1;\n    return num * num + 234 + x;\n}\n\nint main() {\n    return square(23);\n}\n",
+            "source": "// Type your code here, or load an example.\nint square(int num) {\n    return num * num;\n}",
+            "conformanceview": false,
             "compilers": [
                 {
+                    "id": "g111",
+                    "options": "",
                     "filters": {
                         "binary": false,
                         "commentOnly": true,
@@ -16,29 +19,22 @@
                         "labels": true,
                         "trim": false
                     },
-                    "id": "g92",
                     "libs": [],
-                    "options": "-O3",
                     "specialoutputs": [],
                     "tools": []
                 }
             ],
-            "conformanceview": false,
             "executors": [
                 {
-                    "arguments": "test",
-                    "argumentsVisible": true,
+                    "compilerVisible": true,
+                    "compilerOutputVisible": true,
+                    "arguments": "",
+                    "argumentsVisible": false,
+                    "stdin": "",
+                    "stdinVisible": false,
                     "compiler": {
-                        "id": "g92",
-                        "libs": [
-                            {
-                                "name": "openssl",
-                                "ver": "111c"
-                            }
-                        ],
-                        "options": "-O3",
-                        "specialoutputs": [],
-                        "tools": [],
+                        "id": "g111",
+                        "options": "",
                         "filters": {
                             "binary": false,
                             "commentOnly": true,
@@ -48,13 +44,12 @@
                             "intel": true,
                             "labels": true,
                             "trim": false
-                        }
+                        },
+                        "libs": [],
+                        "specialoutputs": [],
+                        "tools": []
                     },
-                    "compilerOutputVisible": true,
-                    "compilerVisible": false,
-                    "stdin": "",
-                    "stdinVisible": false,
-                    "wrap": false
+                    "wrap": true
                 }
             ]
         }
