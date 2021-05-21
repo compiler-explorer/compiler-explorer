@@ -36,7 +36,7 @@ There is now a FAQ section [in the repository wiki](https://github.com/compiler-
 
 ### Videos
 
-There are a number of videos that showcase some of the features of Compiler Explorer:
+There are a number of videos that showcase some features of Compiler Explorer:
 
 * [presentation for CppCon 2019 about the project](https://www.youtube.com/watch?v=kIoZDUd5DKw)
 * [older 2 part series of videos](https://www.youtube.com/watch?v=4_HL3PH4wDg) which go into a bit more detail
@@ -57,7 +57,8 @@ Assuming you have a compatible version of `node` installed, simply running
 
 Running with `make EXTRA_ARGS='--language LANG'` will allow you to load
  `LANG` exclusively, where `LANG` is one for the language ids/aliases defined
- in `lib/languages.js`. The `Makefile` will automatically install all the
+ in `lib/languages.js`. For example, to only run CE with C++ support, you'd run
+ `make EXTRA_ARGS='--language c++'. `The `Makefile` will automatically install all the
  third party libraries needed to run; using `npm` to install server-side and
  client side components.
 
