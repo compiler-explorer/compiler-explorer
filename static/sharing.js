@@ -107,152 +107,87 @@ function updateShares(container, url) {
     });
 }
 
-function initShareButton(getLink, layout, noteNewState) {
-    var baseUrl = window.location.protocol + '//' + window.location.hostname;
-    var html = $('.template .urls').html();
-    var currentNode = null;
+function initShareButton(getLink, layout, noteNewState, startingBind) {
     // Explicit because webstorm gets confused about the type of this variable.
     /***
      * Current URL bind
      * @type {string}
      */
-    var currentBind = '';
-    var title = getLink.prop('title'); // preserve before popover/tooltip breaks it
+    var currentBind = startingBind;
 
-    getLink.popover({
-        container: 'body',
-        content: html,
-        html: true,
-        placement: 'bottom',
-        trigger: 'manual',
-        sanitize: false,
-    }).click(function () {
-        getLink.popover('toggle');
-    }).on('inserted.bs.popover', function () {
+    var popoverModal = $('#sharelinkdialog');
+    var socialSharingElements = popoverModal.find('.socialsharing');
+    var permalink = $('.permalink');
+
+    var embedsettings = $('#embedsettings');
+
+    function setCurrent(node) {
+        currentBind = node.data().bind;
+        if (currentBind === 'Embed') {
+            embedsettings.show();
+        } else {
+            embedsettings.hide();
+        }
+    }
+
+    function setSocialSharing(element, sharedUrl) {
+        if (options.sharingEnabled) {
+            updateShares(element, sharedUrl);
+            // Disable the links for every share item which does not support embed html as links
+            if (currentBind === 'Embed') {
+                element.children('.share-no-embeddable')
+                    .addClass('share-disabled')
+                    .prop('title', 'Embed links are not supported in this service')
+                    .on('click', false);
+            }
+        }
+    }
+
+    function onUpdate(socialSharing, config, bind, result) {
+        if (result.updateState) {
+            noteNewState(config, result.extra);
+        }
+        permalink.val(result.url);
+        setSocialSharing(socialSharing, result.url);
+    }
+
+    function update() {
+        var socialSharing = socialSharingElements;
+        socialSharing.empty();
+        if (!currentBind) return;
+        permalink.prop('disabled', false);
+        var config = layout.toConfig();
+        permalink.val('');
+        getLinks(config, currentBind, function (error, newUrl, extra, updateState) {
+            if (error || !newUrl) {
+                permalink.prop('disabled', true);
+                permalink.val(error || 'Error providing URL');
+            } else {
+                onUpdate(socialSharing, config, currentBind, {
+                    updateState: updateState,
+                    extra: extra,
+                    url: newUrl,
+                });
+            }
+        });
+    }
+
+    getLink.on('click', function () {
         ga.proxy('send', {
             hitType: 'event',
             eventCategory: 'OpenModalPane',
             eventAction: 'Sharing',
         });
-        var popoverElement = $($(this).data('bs.popover').tip);
-        var socialSharingElements = popoverElement.find('.socialsharing');
-        var root = $('.urls-container:visible');
-        var label = root.find('.current');
-        var permalink = $('.permalink');
-        var urls = {};
-        if (!currentNode) currentNode = $(root.find('.sources button')[0]);
-        if (!currentBind) currentBind = currentNode.data().bind;
 
-        function setCurrent(node) {
-            currentNode = node;
-            currentBind = node.data().bind;
-        }
-
-        function setSocialSharing(element, sharedUrl) {
-            if (options.sharingEnabled) {
-                updateShares(element, sharedUrl);
-                // Disable the links for every share item which does not support embed html as links
-                if (currentBind !== 'Full' && currentBind !== 'Short') {
-                    element.children('.share-no-embeddable')
-                        .addClass('share-disabled')
-                        .prop('title', 'Embed links are not supported in this service')
-                        .on('click', false);
-                }
-            }
-        }
-
-        function onUpdate(socialSharing, config, bind, result) {
-            if (result.updateState) {
-                noteNewState(config, result.extra);
-            }
-            label.text(bind);
-            permalink.val(result.url);
-            setSocialSharing(socialSharing, result.url);
-        }
-
-        function getEmbeddedCacheLinkId() {
-            if ($('#shareembedlink input:checked').length === 0) return 'Embed';
-
-            return 'Embed|' + $('#shareembedlink input:checked').map(function () {
-                return $(this).prop('class');
-            })
-                .get()
-                .join();
-        }
-
-        function update() {
-            var socialSharing = socialSharingElements;
-            socialSharing.empty();
-            if (!currentBind) return;
-            permalink.prop('disabled', false);
-            var config = layout.toConfig();
-            var cacheLinkId = currentBind;
-            if (currentBind === 'Embed') {
-                cacheLinkId = getEmbeddedCacheLinkId();
-            }
-            if (!urls[cacheLinkId]) {
-                label.text(currentNode.text());
-                permalink.val('');
-                getLinks(config, currentBind, function (error, newUrl, extra, updateState) {
-                    if (error || !newUrl) {
-                        permalink.prop('disabled', true);
-                        permalink.val(error || 'Error providing URL');
-                    } else {
-                        urls[cacheLinkId] = {
-                            updateState: updateState,
-                            extra: extra,
-                            url: newUrl,
-                        };
-                        onUpdate(socialSharing, config, currentBind, urls[cacheLinkId]);
-                    }
-                });
-            } else {
-                onUpdate(socialSharing, config, currentBind, urls[cacheLinkId]);
-            }
-        }
-
-        root.find('.sources button').on('click', function () {
-            setCurrent($(this));
-            update();
-        });
-
-        var embeddedButton = $('.shareembed');
-        embeddedButton.on('click', function () {
-            setCurrent(embeddedButton);
-            update();
-            getLink.popover('hide');
-        });
-
-        $('#embedsettings input').off('click').on('click', function () {
-            setCurrent(embeddedButton);
-            update();
-        });
-
+        setCurrent($(this));
         update();
-    }).prop('title', title);
-
-    // Dismiss the popover on escape.
-    $(document).on('keyup.editable', function (e) {
-        if (e.which === 27) {
-            getLink.popover('hide');
-        }
     });
 
-    // Dismiss on any click that isn't either in the opening element, inside
-    // the popover or on any alert
-    $(document).on('mouseup', function (e) {
-        var target = $(e.target);
-        if (!target.is(getLink) && getLink.has(target).length === 0 && target.closest('.popover').length === 0)
-            getLink.popover('hide');
-    });
-
-    // Opens the popup if asked to by the editor
-    layout.eventHub.on('displaySharingPopover', function () {
-        getLink.popover('show');
-    });
-
-    if (options.sharingEnabled) {
-        updateShares($('#socialshare'), baseUrl);
+    if (startingBind === 'Embed') {
+        embedsettings.find('input').on('click', function () {
+            setCurrent(getLink);
+            update();
+        });
     }
 }
 
@@ -322,7 +257,7 @@ function getLinks(config, currentBind, done) {
         default:
             if (currentBind.substr(0, 5) === 'Embed') {
                 var options = {};
-                $('#shareembedlink input:checked').each(function () {
+                $('#sharelinkdialog input:checked').each(function () {
                     options[$(this).prop('class')] = true;
                 });
                 done(null, getEmbeddedHtml(config, root, false, options), false);

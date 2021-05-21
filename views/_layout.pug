@@ -6,6 +6,19 @@ html(lang="en")
     block meta
         include meta.pug
 
+    script
+      | (function () {
+      |   var isIE11 = !!window.MSInputMethodContext && !!document.documentMode;
+      |   var storedState = '#{storedStateId}';
+      |   if (isIE11) {
+      |     if (storedState) {
+      |       location.href = '#{httpRoot}noscript/z/' + storedState;
+      |     } else {
+      |       location.href = '#{httpRoot}noscript';
+      |     }
+      |   }
+      | })();
+
     block styles
         link(href=require("vendor.css") rel="stylesheet")
         link(href=require("main.css") rel="stylesheet")
