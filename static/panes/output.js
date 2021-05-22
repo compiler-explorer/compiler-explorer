@@ -143,15 +143,23 @@ Output.prototype.onCompileResult = function (id, compiler, result) {
 
     this.contentRoot.empty();
 
-    this.addOutputLines(result);
-    if (!result.execResult) {
-        this.add('Compiler returned: ' + result.code);
+    if (result.buildsteps) {
+        _.each(result.buildsteps, _.bind(function (step) {
+            this.add('Step ' + step.step + ' returned: ' + step.code);
+            this.addOutputLines(step);
+        }, this));
     } else {
-        this.add('ASM generation compiler returned: ' + result.code);
-        this.addOutputLines(result.execResult.buildResult);
-        this.add('Execution build compiler returned: ' + result.execResult.buildResult.code);
+        this.addOutputLines(result);
+        if (!result.execResult) {
+            this.add('Compiler returned: ' + result.code);
+        } else {
+            this.add('ASM generation compiler returned: ' + result.code);
+            this.addOutputLines(result.execResult.buildResult);
+            this.add('Execution build compiler returned: ' + result.execResult.buildResult.code);
+        }
     }
-    if (result.execResult && result.execResult.didExecute) {
+
+    if (result.execResult && (result.execResult.didExecute || result.didExecute)) {
         this.add('Program returned: ' + result.execResult.code);
         if (result.execResult.stderr.length || result.execResult.stdout.length) {
             _.each(result.execResult.stderr, function (obj) {

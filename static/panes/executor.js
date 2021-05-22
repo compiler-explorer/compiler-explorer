@@ -215,6 +215,7 @@ Executor.prototype.compile = function (bypassCache) {
             compiler: this.compiler ? this.compiler.id : '',
             options: options,
             lang: this.currentLangId,
+            files: [],
         };
         if (bypassCache) request.bypassCache = true;
         if (!this.compiler) {

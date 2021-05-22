@@ -297,6 +297,7 @@ Conformance.prototype.compileChild = function (child) {
                 skipAsm: true,
             },
             lang: this.langId,
+            files: [],
         };
 
         _.each(this.libsWidget.getLibsInUse(), function (item) {

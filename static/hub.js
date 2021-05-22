@@ -70,6 +70,7 @@ function Hub(layout, subLangId, defaultLangId) {
     this.compilerIds = new Ids();
     this.executorIds = new Ids();
     this.treeIds = new Ids();
+    this.trees = [];
     this.compilerService = new CompilerService(layout.eventHub);
     this.deferred = true;
     this.deferredEmissions = [];
@@ -200,7 +201,16 @@ Hub.prototype.codeEditorFactory = function (container, state) {
 };
 
 Hub.prototype.treeFactory = function (container, state) {
-    return new tree.Tree(this, state, container);
+    var treeObj = new tree.Tree(this, state, container);
+    this.trees.push(treeObj);
+
+    return treeObj;
+};
+
+Hub.prototype.getTreeById = function (treeId) {
+    return _.find(this.trees, function (treeObj) {
+        return treeObj.id === treeId;
+    });
 };
 
 Hub.prototype.compilerFactory = function (container, state) {

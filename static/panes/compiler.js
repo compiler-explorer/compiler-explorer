@@ -82,7 +82,12 @@ function Compiler(hub, container, state) {
     this.domRoot = container.getElement();
     this.domRoot.html($('#compiler').html());
     this.id = state.id || hub.nextCompilerId();
-    this.sourceEditorId = state.source || 1;
+    this.sourceTreeId = state.tree ? state.tree : false;
+    if (this.sourceTreeId) {
+        this.sourceEditorId = false;
+    } else {
+        this.sourceEditorId = state.source;
+    }
     this.settings = JSON.parse(local.get('settings', '{}'));
     this.originalCompilerId = state.compiler;
     this.initLangAndCompiler(state);
@@ -592,12 +597,44 @@ Compiler.prototype.compile = function (bypassCache, newTools) {
         });
     });
 
+    if (this.sourceTreeId) {
+        this.compileFromTree(options, bypassCache);
+    } else {
+        this.compileFromEditorSource(options, bypassCache);
+    }
+};
+
+Compiler.prototype.compileFromTree = function (options, bypassCache) {
+    var tree = this.hub.getTreeById(this.sourceTreeId);
+
+    var request = {
+        source: tree.getMainSource(),
+        compiler: this.compiler ? this.compiler.id : '',
+        options: options,
+        lang: this.currentLangId,
+        files: tree.getFiles(),
+    };
+
+    if (bypassCache) request.bypassCache = true;
+    if (!this.compiler) {
+        this.onCompileResponse(request, errorResult('<Please select a compiler>'), false);
+    } else {
+        if (tree.isCMakeProject) {
+            this.sendCMakeCompile(request);
+        } else {
+            this.sendCompile(request);
+        }
+    }
+};
+
+Compiler.prototype.compileFromEditorSource = function (options, bypassCache) {
     this.compilerService.expand(this.source).then(_.bind(function (expanded) {
         var request = {
             source: expanded || '',
             compiler: this.compiler ? this.compiler.id : '',
             options: options,
             lang: this.currentLangId,
+            files: [],
         };
         if (bypassCache) request.bypassCache = true;
         if (!this.compiler) {
@@ -606,6 +643,42 @@ Compiler.prototype.compile = function (bypassCache, newTools) {
             this.sendCompile(request);
         }
     }, this));
+};
+
+Compiler.prototype.sendCMakeCompile = function (request) {
+    var onCompilerResponse = _.bind(this.onCompileResponse, this);
+
+    if (this.pendingRequestSentAt) {
+        // If we have a request pending, then just store this request to do once the
+        // previous request completes.
+        this.nextRequest = request;
+        return;
+    }
+    this.eventHub.emit('compiling', this.id, this.compiler);
+    // Display the spinner
+    this.handleCompilationStatus({code: 4});
+    this.pendingRequestSentAt = Date.now();
+    // After a short delay, give the user some indication that we're working on their
+    // compilation.
+    var progress = setTimeout(_.bind(function () {
+        this.setAssembly({asm: fakeAsm('<Compiling...>')}, 0);
+    }, this), 500);
+    this.compilerService.submitCMake(request)
+        .then(function (x) {
+            clearTimeout(progress);
+            onCompilerResponse(request, x.result, x.localCacheHit);
+        })
+        .catch(function (x) {
+            clearTimeout(progress);
+            var message = 'Unknown error';
+            if (_.isString(x)) {
+                message = x;
+            } else if (x) {
+                message = x.error || x.code;
+            }
+            onCompilerResponse(request,
+                errorResult('<Compilation failed: ' + message + '>'), false);
+        });
 };
 
 Compiler.prototype.sendCompile = function (request) {
@@ -789,7 +862,11 @@ Compiler.prototype.onCompileResponse = function (request, result, cached) {
     });
 
     this.labelDefinitions = result.labelDefinitions || {};
-    this.setAssembly(result, result.filteredCount || 0);
+    if (result.asm) {
+        this.setAssembly(result, result.filteredCount || 0);
+    } else if (result.result && result.result.asm) {
+        this.setAssembly(result.result, result.result.filteredCount || 0);
+    }
 
     var stdout = result.stdout || [];
     var stderr = result.stderr || [];

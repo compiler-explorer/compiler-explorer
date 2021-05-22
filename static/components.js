@@ -46,6 +46,13 @@ module.exports = {
             },
         };
     },
+    getCompilerForTree: function (treeId, lang) {
+        return {
+            type: 'component',
+            componentName: 'compiler',
+            componentState: {tree: treeId, lang: lang},
+        };
+    },
     getExecutor: function (editorId, lang) {
         return {
             type: 'component',
@@ -64,6 +71,13 @@ module.exports = {
                 libs: libraries,
                 options: compilerArgs,
             },
+        };
+    },
+    getExecutorForTree: function (treeId, lang) {
+        return {
+            type: 'component',
+            componentName: 'executor',
+            componentState: {tree: treeId, lang: lang},
         };
     },
     getEditor: function (id, langId) {
