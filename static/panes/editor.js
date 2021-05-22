@@ -251,7 +251,7 @@ Editor.prototype.initCallbacks = function () {
     this.container.on('resize', this.resize, this);
     this.container.on('shown', this.resize, this);
     this.container.on('open', _.bind(function () {
-        this.eventHub.emit('editorOpen', this.id);
+        this.eventHub.emit('editorOpen', this.id, this);
     }, this));
     this.container.on('destroy', this.close, this);
     this.container.layoutManager.on('initialised', function () {
@@ -275,6 +275,7 @@ Editor.prototype.initCallbacks = function () {
     this.eventHub.on('resize', this.resize, this);
     this.eventHub.on('newSource', this.onNewSource, this);
     this.eventHub.on('motd', this.onMotd, this);
+    this.eventHub.on('findEditors', this.sendEditor, this);
     this.eventHub.emit('requestMotd');
 
     this.editor.getModel().onDidChangeContent(_.bind(function () {
@@ -315,6 +316,10 @@ Editor.prototype.initCallbacks = function () {
             }
         }
     }, this));
+};
+
+Editor.prototype.sendEditor = function () {
+    this.eventHub.emit('editorOpen', this.id, this);
 };
 
 Editor.prototype.onMouseMove = function (e) {

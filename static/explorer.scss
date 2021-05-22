@@ -759,3 +759,10 @@ html[data-theme=dark] {
 .socialsharing {
     max-width: 250px;
 }
+
+.filelisting-editor-file {
+    cursor: pointer;
+}
+.filelisting-editor-file span {
+    font-family: Consolas, "Liberation Mono", Courier, monospace;
+}

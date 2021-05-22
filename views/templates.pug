@@ -400,16 +400,15 @@
   #filelisting
     .top-bar.btn-toolbar.bg-light(role="toolbar")
       .btn-group.btn-group-sm(role="group" aria-label="Tree settings")
-        button.btn.btn-sm.btn-light.add-pane(type="button" title="Add a file" aria-label="Add a file" aria-haspopup="true" aria-expanded="false")
-          span.fa.fa-plus
-          span.hideable &nbsp;Add file
     .tree
       ul.list-group
         li.root.list-group-item.far-fa-folder
-          ul.list-group
-            li.list-group-item.file.far.fa-file
-              span.filename example.cpp
-            li.list-group-item.file.far.fa-file
-              span.filename test.h
-            li.list-group-item.file.far.fa-file
-              span.filename someresource.txt
+          .group-header Included files
+          ul.list-group.named-editors
+        li.root.list-group-item.far-fa-folder
+          .group-header Excluded files
+          ul.list-group.unnamed-editors
+
+  #filelisting-editor-tpl
+    li.list-group-item.filelisting-editor-file.span.fa.fa-plus
+      span.filename someresource.txt

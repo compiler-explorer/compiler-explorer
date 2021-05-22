@@ -28,7 +28,10 @@ var $ = require('jquery');
 var Alert = require('../alert');
 var local = require('../local');
 var ga = require('../analytics');
+var options = require('../options');
 require('selectize');
+
+var languages = options.languages;
 
 function Tree(hub, state, container) {
     this.id = state.id || hub.nextTreeId();
@@ -46,6 +49,8 @@ function Tree(hub, state, container) {
 
     this.root = this.domRoot.find('.tree');
 
+    this.currentEditors = [];
+
     this.initButtons(state);
     this.initCallbacks();
     this.onSettingsChange(this.settings);
@@ -57,6 +62,8 @@ function Tree(hub, state, container) {
         eventCategory: 'OpenViewPane',
         eventAction: 'Tree',
     });
+
+    this.eventHub.emit('findEditors');
 }
 
 Tree.prototype.updateState = function () {
@@ -75,6 +82,117 @@ Tree.prototype.initCallbacks = function () {
         this.eventHub.emit('treeOpen', this.id);
     }, this));
     this.container.on('destroy', this.close, this);
+
+    this.eventHub.on('editorOpen', this.onEditorOpen, this);
+    this.eventHub.on('editorClose', this.onEditorClose, this);
+    this.eventHub.on('languageChange', this.onLanguageChange, this);
+};
+
+Tree.prototype.onLanguageChange = function () {
+    this.refresh();
+};
+
+Tree.prototype.onEditorOpen = function (id, editor) {
+    if (!editor) return;
+    if (_.find(this.currentEditors, function (obj) {
+        return obj.id === id;
+    })) return;
+
+    this.currentEditors.push({
+        id: id,
+        isIncluded: false,
+        isOpen: true,
+        filename: '',
+        content: '',
+        editor: editor,
+        langId: '',
+    });
+
+    this.refresh();
+};
+
+Tree.prototype.onEditorClose = function (id) {
+    var editor = _.find(this.currentEditors, function (obj) {
+        return obj.id === id;
+    });
+
+    if (editor) {
+        editor.isOpen = false;
+        editor.langId = editor.editor.currentLanguage.id;
+        editor.content = editor.editor.getSource();
+    }
+};
+
+Tree.prototype.removeEditor = function (id) {
+    this.currentEditors = this.currentEditors.filter(function (obj) {
+        return obj.id !== id;
+    });
+};
+
+Tree.prototype.refresh = function () {
+    var namedItems = this.domRoot.find('.named-editors');
+    namedItems.html('');
+    var unnamedItems = this.domRoot.find('.unnamed-editors');
+    unnamedItems.html('');
+
+    var editorTemplate = $('#filelisting-editor-tpl');
+    _.each(this.currentEditors, _.bind(function (editor) {
+        var item = $(editorTemplate.children()[0].cloneNode(true));
+        if (editor.isIncluded) {
+            item.data('id', editor.id);
+            item.find('.filename').html(editor.filename);
+            item.removeClass('fa-plus').addClass('fa-minus');
+            item.on('click', _.bind(function (e) {
+                var id = $(e.currentTarget).data('id');
+                this.moveToExclude(id);
+            }, this));
+            namedItems.append(item);
+        } else {
+            item.data('id', editor.id);
+            if (editor.filename) {
+                item.find('.filename').html(editor.filename);
+            } else {
+                item.find('.filename').html(editor.editor.getPaneName());
+            }
+            item.removeClass('fa-minus').addClass('fa-plus');
+            item.on('click', _.bind(function (e) {
+                var id = $(e.currentTarget).data('id');
+                this.moveToInclude(id);
+            }, this));
+            unnamedItems.append(item);
+        }
+    }, this));
+};
+
+Tree.prototype.moveToInclude = function (id) {
+    var editor = _.find(this.currentEditors, function (obj) {
+        return obj.id === id;
+    });
+
+    if (editor.filename === '') {
+        var langId = editor.isOpen ? editor.editor.currentLanguage.id : editor.langId;
+        var lang = languages[langId];
+        var ext0 = lang.extensions[0];
+
+        this.alertSystem.enterSomething('Filename', 'Please enter a filename for this editor', 'example' + ext0, {
+            yes: _.bind(function (value) {
+                editor.filename = value;
+                this.moveToInclude(id);
+            }, this),
+        });
+    } else {
+        editor.isIncluded = true;
+        this.refresh();
+    }
+};
+
+Tree.prototype.moveToExclude = function (id) {
+    var editor = _.find(this.currentEditors, function (obj) {
+        return obj.id === id;
+    });
+
+    editor.isIncluded = false;
+    this.refresh();
 };
 
 Tree.prototype.initButtons = function (/*state*/) {
@@ -100,7 +218,6 @@ Tree.prototype.updateTitle = function () {
 Tree.prototype.close = function () {
     this.eventHub.unsubscribe();
     this.eventHub.emit('treeClose', this.id);
-    this.editor.dispose();
 };
 
 module.exports = {
