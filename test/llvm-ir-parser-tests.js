@@ -133,6 +133,48 @@ describe('llvm-ir getSourceLineNumber', function () {
     });
 });
 
+describe('llvm-ir getSourceColumn', function () {
+    let llvmIrParser;
+    let compilerProps;
+
+    before(() => {
+        let fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
+        compilerProps = fakeProps.get.bind(fakeProps, 'c++');
+
+        llvmIrParser = new LlvmIrParser(compilerProps);
+    });
+
+    const debugInfo = {
+        '!10': { column: 10 },
+        '!20': { column: 20, scope: '!10' },
+        '!11': { scope: '!10' },
+        '!12': { column: 0, scope: '!10' },
+        '!14': { },
+        '!15': { scope: '!14' },
+        '!16': { scope: '!42' },
+    };
+
+    it('should return a column number', function () {
+        expect(llvmIrParser.getSourceColumn(debugInfo, '!10')).to.equal(10);
+        expect(llvmIrParser.getSourceColumn(debugInfo, '!20')).to.equal(20);
+    });
+
+    it('should return the column number of its parent scope', function () {
+        expect(llvmIrParser.getSourceColumn(debugInfo, '!11')).to.equal(10);
+        expect(llvmIrParser.getSourceColumn(debugInfo, '!12')).to.equal(10);
+    });
+
+    it('should return null on non-existend node', function () {
+        expect(llvmIrParser.getSourceColumn(debugInfo, '!16')).to.equal(null);
+        expect(llvmIrParser.getSourceColumn(debugInfo, '!30')).to.equal(null);
+    });
+
+    it('should return null if no higher scope has a column', function () {
+        expect(llvmIrParser.getSourceColumn(debugInfo, '!14')).to.equal(null);
+        expect(llvmIrParser.getSourceColumn(debugInfo, '!15')).to.equal(null);
+    });
+});
+
 describe('llvm-ir getFileName', function () {
     let llvmIrParser;
     let compilerProps;

@@ -37,6 +37,10 @@ parser.add_argument('-i', '--inputfile', type=str,
 parser.add_argument('-o', '--outputfile', type=str,
                     help='Optional output file to write output (or error message if syntax error).',
                     default='')
+parser.add_argument('-O', action='store_true', dest='optimize_1',
+                    help="Enable Python's -O optimization flag (remove assert and __debug__-dependent statements)")
+parser.add_argument('-OO', action='store_true', dest='optimize_2',
+                    help="Enable Python's -OO optimization flag (do -O changes and also discard docstrings)")
 
 
 def _disassemble_recursive(co, depth=None):
@@ -114,8 +118,15 @@ if __name__ == '__main__':
         source = fp.read()
 
     name = os.path.basename(args.inputfile)
+
+    optimize=0
+    if args.optimize_1:
+        optimize = 1
+    if args.optimize_2:
+        optimize = 2
+
     try:
-        code = compile(source, name, 'exec')
+        code = compile(source, name, 'exec', optimize=optimize)
     except Exception as e:
         # redirect any other by compile(..) to stderr in order to hide traceback of this script
         sys.stderr.write(''.join(traceback.format_exception_only(type(e), e)))

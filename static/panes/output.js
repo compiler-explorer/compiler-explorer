@@ -193,14 +193,14 @@ Output.prototype.add = function (msg, lineNum, column) {
             $('<span class="linked-compiler-output-line"></span>')
                 .html(msg)
                 .click(_.bind(function (e) {
-                    this.eventHub.emit('editorLinkLine', this.editorId, lineNum, column, true);
+                    this.eventHub.emit('editorLinkLine', this.editorId, lineNum, column, column + 1, true);
                     // do not bring user to the top of index.html
                     // http://stackoverflow.com/questions/3252730
                     e.preventDefault();
                     return false;
                 }, this))
                 .on('mouseover', _.bind(function () {
-                    this.eventHub.emit('editorLinkLine', this.editorId, lineNum, column, false);
+                    this.eventHub.emit('editorLinkLine', this.editorId, lineNum, column, column + 1, false);
                 }, this))
         );
     } else {

@@ -335,16 +335,18 @@ function shouldRedactRequestData(data) {
 const googleShortUrlResolver = new ShortLinkResolver();
 
 function oldGoogleUrlHandler(req, res, next) {
-    const bits = req.url.split('/');
-    if (bits.length !== 2 || req.method !== 'GET') return next();
-    const googleUrl = `https://goo.gl/${encodeURIComponent(bits[1])}`;
+    const id = req.params.id;
+    const googleUrl = `https://goo.gl/${encodeURIComponent(id)}`;
     googleShortUrlResolver.resolve(googleUrl)
         .then(resultObj => {
             const parsed = new url.URL(resultObj.longUrl);
             const allowedRe = new RegExp(ceProps('allowedShortUrlHostRe'));
             if (parsed.host.match(allowedRe) === null) {
-                logger.warn(`Denied access to short URL ${bits[1]} - linked to ${resultObj.longUrl}`);
-                return next();
+                logger.warn(`Denied access to short URL ${id} - linked to ${resultObj.longUrl}`);
+                return next({
+                    statusCode: 404,
+                    message: `ID "${id}" could not be found`,
+                });
             }
             res.writeHead(301, {
                 Location: resultObj.longUrl,
@@ -354,7 +356,10 @@ function oldGoogleUrlHandler(req, res, next) {
         })
         .catch(e => {
             logger.error(`Failed to expand ${googleUrl} - ${e}`);
-            next();
+            next({
+                statusCode: 404,
+                message: `ID "${id}" could not be found`,
+            });
         });
 }
 
@@ -424,7 +429,18 @@ function setupSentry(sentryDsn, expressApp) {
             // enable Express.js middleware tracing
             new Tracing.Integrations.Express({expressApp}),
         ],
-        tracesSampleRate: 0.1,
+        tracesSampler: samplingContext => {
+            // always inherit
+            if (samplingContext.parentSampled !== undefined)
+                return samplingContext.parentSampled;
+
+            // never sample healthcheck
+            if (samplingContext.transactionContext.name === 'GET /healthcheck')
+                return 0;
+
+            // default sample rate of 10%
+            return 0.1;
+        },
     });
     logger.info(`Configured with Sentry endpoint ${sentryDsn}`);
 }
@@ -732,7 +748,7 @@ async function main() {
         })
         .use(bodyParser.json({limit: ceProps('bodyParserLimit', maxUploadSize)}))
         .use('/source', sourceHandler.handle.bind(sourceHandler))
-        .use('/g', oldGoogleUrlHandler)
+        .get('/g/:id', oldGoogleUrlHandler)
         // Deprecated old route for this -- TODO remove in late 2021
         .post('/shortener', routeApi.apiHandler.shortener.handle.bind(routeApi.apiHandler.shortener));
 

@@ -1,0 +1,223 @@
+{
+  "asm": [
+    {
+      "labels": [
+        {
+          "name": "Char",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .globl  Char"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "Char:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   128                     # 0x80"
+    },
+    {
+      "labels": [
+        {
+          "name": "Char",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .size   Char, 1"
+    },
+    {
+      "labels": [
+        {
+          "name": "Short",
+          "range": {
+            "endCol": 22,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .type   Short,@object           # @Short"
+    },
+    {
+      "labels": [
+        {
+          "name": "Short",
+          "range": {
+            "endCol": 22,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .globl  Short"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .align  2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "Short:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .short  4660                    # 0x1234"
+    },
+    {
+      "labels": [
+        {
+          "name": "Short",
+          "range": {
+            "endCol": 22,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .size   Short, 2"
+    },
+    {
+      "labels": [
+        {
+          "name": "Int",
+          "range": {
+            "endCol": 20,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .type   Int,@object             # @Int"
+    },
+    {
+      "labels": [
+        {
+          "name": "Int",
+          "range": {
+            "endCol": 20,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .globl  Int"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .align  4"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "Int:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   123                     # 0x7b"
+    },
+    {
+      "labels": [
+        {
+          "name": "Int",
+          "range": {
+            "endCol": 20,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .size   Int, 4"
+    },
+    {
+      "labels": [
+        {
+          "name": "Long",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .type   Long,@object            # @Long"
+    },
+    {
+      "labels": [
+        {
+          "name": "Long",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .globl  Long"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .align  8"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "Long:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .quad   2345                    # 0x929"
+    },
+    {
+      "labels": [
+        {
+          "name": "Long",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .size   Long, 8"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .type   LongLong,@object        # @LongLong"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .globl  LongLong"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .align  8"
+    }
+  ],
+  "labelDefinitions": {
+    "Char": 2,
+    "Int": 14,
+    "Long": 20,
+    "Short": 8
+  }
+}
