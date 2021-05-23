@@ -1,9 +1,10 @@
 # How do I ?
 
-This is a how-to guide for the user-interface presented by [the compiler explorer](https://godbolt.org). This doesn't cover the details of how to setup or modify the compiler explorer for your own needs. For that, please check the documents which already cover topics like:
-* [Adding a language](./AddingALanguage.md)
-* [Adding a compiler](./AddingACompiler.md)
-* [Adding a tool](./AddingATool.md)
+This is a how-to guide for the user-interface presented by [Compiler Explorer](https://godbolt.org). This doesn't cover the details of how to setup or modify Compiler Explorer for your own needs. For that, please check the documents which already cover topics like:
+* [Adding a language](AddingALanguage.md)
+* [Adding a compiler](AddingACompiler.md)
+* [Adding a library](AddingALibrary.md)
+* [Adding a tool](AddingATool.md)
 * and many more at [compiler-explorer/docs](https://github.com/compiler-explorer/compiler-explorer/tree/main/docs)
 
 Fast links:
