@@ -50,9 +50,9 @@ function Tree(hub, state, container) {
 
     this.root = this.domRoot.find('.tree');
 
-    this.isCMakeProject = false;
-    this.compilerLanguageId = '';
-    this.files = [];
+    this.isCMakeProject = state.isCMakeProject || false;
+    this.compilerLanguageId = state.compilerLanguageId || '';
+    this.files = state.files || [];
 
     this.initButtons(state);
     this.initCallbacks();
@@ -66,12 +66,16 @@ function Tree(hub, state, container) {
         eventAction: 'Tree',
     });
 
+    this.refresh();
     this.eventHub.emit('findEditors');
 }
 
 Tree.prototype.updateState = function () {
     var state = {
         id: this.id,
+        isCMakeProject: this.isCMakeProject,
+        compilerLanguageId: this.compilerLanguageId,
+        files: this.files,
     };
     this.container.setState(state);
 
@@ -95,7 +99,7 @@ Tree.prototype.onLanguageChange = function () {
     this.refresh();
 };
 
-Tree.prototype.onEditorOpen = function (editorId, editor) {
+Tree.prototype.onEditorOpen = function (editorId) {
     var file = this.getFileByEditorId(editorId);
     if (file) return;
 
@@ -109,7 +113,6 @@ Tree.prototype.onEditorOpen = function (editorId, editor) {
         filename: '',
         content: '',
         editorId: editorId,
-        editor: editor,
         langId: '',
     };
     this.files.push(file);
@@ -122,9 +125,9 @@ Tree.prototype.onEditorClose = function (editorId) {
 
     if (file) {
         file.isOpen = false;
-        file.langId = file.editor.currentLanguage.id;
-        file.content = file.editor.getSource();
-        file.editor = null;
+        var editor = this.hub.getEditorById(editorId);
+        file.langId = editor.currentLanguage.id;
+        file.content = editor.getSource();
         file.editorId = -1;
     }
 
@@ -138,6 +141,8 @@ Tree.prototype.removeFile = function (fileId) {
 };
 
 Tree.prototype.refresh = function () {
+    this.updateState();
+
     var namedItems = this.domRoot.find('.named-editors');
     namedItems.html('');
     var unnamedItems = this.domRoot.find('.unnamed-editors');
@@ -146,30 +151,54 @@ Tree.prototype.refresh = function () {
     var editorTemplate = $('#filelisting-editor-tpl');
     _.each(this.files, _.bind(function (file) {
         var item = $(editorTemplate.children()[0].cloneNode(true));
-        if (file.isIncluded) {
-            item.data('fileId', file.fileId);
+
+        item.data('fileId', file.fileId);
+        if (file.filename) {
             item.find('.filename').html(file.filename);
-            item.removeClass('fa-plus').addClass('fa-minus');
-            item.on('click', _.bind(function (e) {
-                var fileId = $(e.currentTarget).data('fileId');
+        } else if (file.editorId > 0) {
+            var editor = this.hub.getEditorById(file.editorId);
+            item.find('.filename').html(editor.getPaneName());
+        } else {
+            item.find('.filename').html('Unknown file');
+        }
+
+        var stagingButton = item.find('.stage-file');
+        var editButton = item.find('.edit-file');
+        editButton.on('click', _.bind(function (e) {
+            var fileId = $(e.currentTarget).parent('li').data('fileId');
+            this.editFile(fileId);
+        }, this));
+
+        if (file.isIncluded) {
+            stagingButton.removeClass('fa-plus').addClass('fa-minus');
+            stagingButton.on('click', _.bind(function (e) {
+                var fileId = $(e.currentTarget).parent('li').data('fileId');
                 this.moveToExclude(fileId);
             }, this));
             namedItems.append(item);
         } else {
-            item.data('fileId', file.fileId);
-            if (file.filename) {
-                item.find('.filename').html(file.filename);
-            } else {
-                item.find('.filename').html(file.editor.getPaneName());
-            }
-            item.removeClass('fa-minus').addClass('fa-plus');
-            item.on('click', _.bind(function (e) {
-                var fileId = $(e.currentTarget).data('fileId');
+            stagingButton.removeClass('fa-minus').addClass('fa-plus');
+            stagingButton.on('click', _.bind(function (e) {
+                var fileId = $(e.currentTarget).parent('li').data('fileId');
                 this.moveToInclude(fileId);
             }, this));
             unnamedItems.append(item);
         }
     }, this));
+};
+
+Tree.prototype.editFile = function (fileId) {
+    var file = this.getFileByFileId(fileId);
+    if (file.isOpen) {
+
+    } else {
+        var dragConfig = this.getConfigForNewEditor(file);
+        file.isOpen = true;
+
+        var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
+            this.container.layoutManager.root.contentItems[0];
+        insertPoint.addChild(dragConfig);
+    }
 };
 
 Tree.prototype.getFileByFileId = function (fileId) {
@@ -204,7 +233,8 @@ Tree.prototype.moveToInclude = function (fileId) {
     });
 
     if (file.filename === '') {
-        var langId = file.isOpen ? file.editor.currentLanguage.id : file.langId;
+        var editor = this.hub.getEditorById(file.editorId);
+        var langId = file.isOpen ? editor.currentLanguage.id : file.langId;
         var lang = languages[langId];
         var ext0 = lang.extensions[0];
 
@@ -234,7 +264,8 @@ Tree.prototype.moveToExclude = function (fileId) {
 
 Tree.prototype.getFileContents = function (file) {
     if (file.isOpen) {
-        return file.editor.getSource();
+        var editor = this.hub.getEditorById(file.editorId);
+        return editor.getSource();
     } else {
         return file.content;
     }
@@ -265,28 +296,40 @@ Tree.prototype.getFiles = function () {
     }, this));
 };
 
+Tree.prototype.bindClickToOpenPane = function (dragSource, dragConfig) {
+    dragSource.on('click', _.bind(function () {
+        var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
+            this.container.layoutManager.root.contentItems[0];
+        insertPoint.addChild(_.bind(dragConfig, this));
+    }, this));
+};
+
+Tree.prototype.getConfigForNewCompiler = function () {
+    return Components.getCompilerForTree(this.id, this.compilerLanguageId);
+};
+
+Tree.prototype.getConfigForNewExecutor = function () {
+    return Components.getCompilerForTree(this.id, this.compilerLanguageId);
+};
+
+Tree.prototype.getConfigForNewEditor = function (file) {
+    file.editorId = this.hub.nextEditorId();
+    var editor = Components.getEditor(
+        file.editorId,
+        file.compilerLanguageId
+    );
+
+    editor.componentState.source = file.content;
+
+    return editor;
+};
+
 Tree.prototype.initButtons = function (/*state*/) {
     var addCompilerButton = this.domRoot.find('.add-compiler');
     var addExecutorButton = this.domRoot.find('.add-executor');
 
-    var getCompilerConfig = _.bind(function () {
-        return Components.getCompilerForTree(this.id, this.compilerLanguageId);
-    }, this);
-
-    var getExecutorConfig = _.bind(function () {
-        return Components.getExecutorForTree(this.id, this.compilerLanguageId);
-    }, this);
-
-    var bindClickEvent = _.bind(function (dragSource, dragConfig) {
-        dragSource.click(_.bind(function () {
-            var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
-                this.container.layoutManager.root.contentItems[0];
-            insertPoint.addChild(dragConfig);
-        }, this));
-    }, this);
-
-    bindClickEvent(addCompilerButton, getCompilerConfig);
-    bindClickEvent(addExecutorButton, getExecutorConfig);
+    this.bindClickToOpenPane(addCompilerButton, this.getConfigForNewCompiler);
+    this.bindClickToOpenPane(addExecutorButton, this.getConfigForNewExecutor);
 };
 
 Tree.prototype.updateButtons = function () {
@@ -309,6 +352,7 @@ Tree.prototype.updateTitle = function () {
 Tree.prototype.close = function () {
     this.eventHub.unsubscribe();
     this.eventHub.emit('treeClose', this.id);
+    this.hub.removeTree(this.id);
 };
 
 module.exports = {

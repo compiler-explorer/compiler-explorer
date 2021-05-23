@@ -71,6 +71,7 @@ function Hub(layout, subLangId, defaultLangId) {
     this.executorIds = new Ids();
     this.treeIds = new Ids();
     this.trees = [];
+    this.editors = [];
     this.compilerService = new CompilerService(layout.eventHub);
     this.deferred = true;
     this.deferredEmissions = [];
@@ -197,7 +198,8 @@ Hub.prototype.codeEditorFactory = function (container, state) {
     // NB there doesn't seem to be a better way to do this than reach into the config and rely on the fact nothing
     // has used it yet.
     container.parent.config.isClosable = true;
-    return new editor.Editor(this, state, container);
+    var editorObj = new editor.Editor(this, state, container);
+    this.editors.push(editorObj);
 };
 
 Hub.prototype.treeFactory = function (container, state) {
@@ -210,6 +212,24 @@ Hub.prototype.treeFactory = function (container, state) {
 Hub.prototype.getTreeById = function (treeId) {
     return _.find(this.trees, function (treeObj) {
         return treeObj.id === treeId;
+    });
+};
+
+Hub.prototype.removeTree = function (treeId) {
+    this.trees = _.filter(this.trees, function (treeObj) {
+        return treeObj.id !== treeId;
+    });
+};
+
+Hub.prototype.getEditorById = function (editorId) {
+    return _.find(this.editors, function (editorObj) {
+        return editorObj.id === editorId;
+    });
+};
+
+Hub.prototype.removeEditor = function (editorId) {
+    this.editors = _.filter(this.editors, function (editorObj) {
+        return editorObj.id !== editorId;
     });
 };
 

@@ -1583,6 +1583,7 @@ Compiler.prototype.currentState = function () {
         id: this.id,
         compiler: this.compiler ? this.compiler.id : '',
         source: this.sourceEditorId,
+        tree: this.sourceTreeId,
         options: this.options,
         // NB must *not* be effective filters
         filters: this.filters.get(),

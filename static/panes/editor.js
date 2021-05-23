@@ -1215,6 +1215,7 @@ Editor.prototype.close = function () {
     this.eventHub.unsubscribe();
     this.eventHub.emit('editorClose', this.id);
     this.editor.dispose();
+    this.hub.removeEditor(this.id);
 };
 
 module.exports = {

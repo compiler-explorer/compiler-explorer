@@ -136,6 +136,11 @@ Alert.prototype.enterSomething = function (title, question, defaultValue, handle
         modal.off('hidden.bs.modal');
         modal.on('hidden.bs.modal', handlers.onClose);
     }
+
+    modal.on('shown.bs.modal', function () {
+        modal.find('.modal-body .question-answer').trigger('focus');
+    });
+
     return modal.modal();
 };
 
