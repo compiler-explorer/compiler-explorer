@@ -1164,8 +1164,9 @@ Editor.prototype.initLoadSaver = function () {
     this.loadSaveButton
         .off('click')
         .click(_.bind(function () {
-            loadSave.run(_.bind(function (text) {
+            loadSave.run(_.bind(function (text, filename) {
                 this.setSource(text);
+                this.setCustomPaneName(filename);
                 this.updateState();
                 this.maybeEmitChange(true);
                 this.requestCompilation();

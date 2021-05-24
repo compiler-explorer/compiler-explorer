@@ -56,6 +56,7 @@ function Tree(hub, state, container) {
     this.isCMakeProject = state.isCMakeProject || false;
     this.compilerLanguageId = state.compilerLanguageId || '';
     this.files = state.files || [];
+    this.newFileId = state.newFileId || 1;
 
     this.initButtons(state);
     this.initCallbacks();
@@ -79,6 +80,7 @@ Tree.prototype.updateState = function () {
         isCMakeProject: this.isCMakeProject,
         compilerLanguageId: this.compilerLanguageId,
         files: this.files,
+        newFileId: this.newFileId,
     };
     this.container.setState(state);
 
@@ -106,10 +108,8 @@ Tree.prototype.onEditorOpen = function (editorId) {
     var file = this.getFileByEditorId(editorId);
     if (file) return;
 
-    var newFileId = this.files.length + 1;
-
     file = {
-        fileId: newFileId,
+        fileId: this.newFileId,
         isIncluded: false,
         isOpen: true,
         isMainSource: false,
@@ -118,6 +118,7 @@ Tree.prototype.onEditorOpen = function (editorId) {
         editorId: editorId,
         langId: '',
     };
+    this.newFileId++;
     this.files.push(file);
 
     this.refresh();
@@ -138,9 +139,21 @@ Tree.prototype.onEditorClose = function (editorId) {
 };
 
 Tree.prototype.removeFile = function (fileId) {
-    this.files = this.files.filter(function (obj) {
-        return obj.fileId !== fileId;
-    });
+    var file = this.getFileByFileId(fileId);
+    if (file) {
+        this.files = this.files.filter(function (obj) {
+            return obj.fileId !== fileId;
+        });
+
+        if (file.isOpen) {
+            var editor = this.hub.getEditorById(file.editorId);
+            if (editor) {
+                editor.container.close();
+            }
+        }
+    }
+
+    this.refresh();
 };
 
 Tree.prototype.addRowToTreelist = function (file) {
@@ -148,6 +161,7 @@ Tree.prototype.addRowToTreelist = function (file) {
     var stagingButton = item.find('.stage-file');
     var editButton = item.find('.edit-file');
     var renameButton = item.find('.rename-file');
+    var deleteButton = item.find('.delete-file');
 
     item.data('fileId', file.fileId);
     if (file.filename) {
@@ -169,6 +183,11 @@ Tree.prototype.addRowToTreelist = function (file) {
         this.renameFile(fileId, _.bind(function () {
             this.refresh();
         }, this));
+    }, this));
+
+    deleteButton.on('click', _.bind(function (e) {
+        var fileId = $(e.currentTarget).parent('li').data('fileId');
+        this.removeFile(fileId);
     }, this));
 
     if (file.isIncluded) {
@@ -205,9 +224,7 @@ Tree.prototype.editFile = function (fileId) {
         var dragConfig = this.getConfigForNewEditor(file);
         file.isOpen = true;
 
-        var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
-            this.container.layoutManager.root.contentItems[0];
-        insertPoint.addChild(dragConfig);
+        this.hub.addInEditorStackIfPossible(dragConfig);
     }
 };
 
@@ -246,11 +263,16 @@ Tree.prototype.renameFile = function (fileId, callback) {
         if (file.isOpen && file.editorId > 0) {
             var editor = this.hub.getEditorById(file.editorId);
             langId = editor.currentLanguage.id;
+            if (editor.customPaneName) {
+                suggestedFilename = editor.customPaneName;
+            }
         }
 
-        var lang = languages[langId];
-        var ext0 = lang.extensions[0];
-        suggestedFilename = 'example' + ext0;
+        if (!suggestedFilename) {
+            var lang = languages[langId];
+            var ext0 = lang.extensions[0];
+            suggestedFilename = 'example' + ext0;
+        }
     }
 
     this.alertSystem.enterSomething('Rename file', 'Please enter a filename', suggestedFilename, {

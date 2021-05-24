@@ -542,7 +542,11 @@ function start() {
     function setupAdd(thing, func) {
         layout.createDragSource(thing, func);
         thing.click(function () {
-            hub.addAtRoot(func());
+            if (hub.hasTree()) {
+                hub.addInEditorStackIfPossible(func());
+            } else {
+                hub.addAtRoot(func());
+            }
         });
     }
 

@@ -344,6 +344,51 @@ Hub.prototype.findParentRowOrColumn = function (elem) {
     return elem;
 };
 
+Hub.prototype.findParentRowOrColumnOrStack = function (elem) {
+    while (elem) {
+        if (elem.isRow || elem.isColumn || elem.isStack) return elem;
+        elem = elem.parent;
+    }
+    return elem;
+};
+
+Hub.prototype.hasTree = function () {
+    return (this.trees.length > 0);
+};
+
+Hub.prototype.findEditorInChildren = function (elem) {
+    var count = elem.contentItems.length;
+    var idx = 0;
+    while (idx < count) {
+        var child = elem.contentItems[idx];
+
+        if (child.componentName === 'codeEditor') {
+            return this.findParentRowOrColumnOrStack(child);
+        } else {
+            if (child.isRow || child.isColumn || child.isStack) {
+                var editorFound = this.findEditorInChildren(child);
+                if (editorFound) return editorFound;
+            }
+        }
+        idx++;
+    }
+
+    return false;
+};
+
+Hub.prototype.findEditorParentRowOrColumn = function () {
+    return this.findEditorInChildren(this.layout.root);
+};
+
+Hub.prototype.addInEditorStackIfPossible = function (newElem) {
+    var insertPoint = this.findEditorParentRowOrColumn();
+    if (insertPoint) {
+        insertPoint.addChild(newElem);
+    } else {
+        this.addAtRoot(newElem);
+    }
+};
+
 Hub.prototype.addAtRoot = function (newElem) {
     var rootFirstItem = this.layout.root.contentItems[0];
     if (rootFirstItem) {
