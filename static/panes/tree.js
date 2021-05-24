@@ -49,6 +49,9 @@ function Tree(hub, state, container) {
     this.alertSystem.prefixMessage = 'Tree #' + this.id + ': ';
 
     this.root = this.domRoot.find('.tree');
+    this.rowTemplate = $('#filelisting-editor-tpl');
+    this.namedItems = this.domRoot.find('.named-editors');
+    this.unnamedItems = this.domRoot.find('.unnamed-editors');
 
     this.isCMakeProject = state.isCMakeProject || false;
     this.compilerLanguageId = state.compilerLanguageId || '';
@@ -140,58 +143,65 @@ Tree.prototype.removeFile = function (fileId) {
     });
 };
 
+Tree.prototype.addRowToTreelist = function (file) {
+    var item = $(this.rowTemplate.children()[0].cloneNode(true));
+    var stagingButton = item.find('.stage-file');
+    var editButton = item.find('.edit-file');
+    var renameButton = item.find('.rename-file');
+
+    item.data('fileId', file.fileId);
+    if (file.filename) {
+        item.find('.filename').html(file.filename);
+    } else if (file.editorId > 0) {
+        var editor = this.hub.getEditorById(file.editorId);
+        item.find('.filename').html(editor.getPaneName());
+    } else {
+        item.find('.filename').html('Unknown file');
+    }
+
+    editButton.on('click', _.bind(function (e) {
+        var fileId = $(e.currentTarget).parent('li').data('fileId');
+        this.editFile(fileId);
+    }, this));
+
+    renameButton.on('click', _.bind(function (e) {
+        var fileId = $(e.currentTarget).parent('li').data('fileId');
+        this.renameFile(fileId, _.bind(function () {
+            this.refresh();
+        }, this));
+    }, this));
+
+    if (file.isIncluded) {
+        stagingButton.removeClass('fa-plus').addClass('fa-minus');
+        stagingButton.on('click', _.bind(function (e) {
+            var fileId = $(e.currentTarget).parent('li').data('fileId');
+            this.moveToExclude(fileId);
+        }, this));
+        this.namedItems.append(item);
+    } else {
+        stagingButton.removeClass('fa-minus').addClass('fa-plus');
+        stagingButton.on('click', _.bind(function (e) {
+            var fileId = $(e.currentTarget).parent('li').data('fileId');
+            this.moveToInclude(fileId);
+        }, this));
+        this.unnamedItems.append(item);
+    }
+};
+
 Tree.prototype.refresh = function () {
     this.updateState();
 
-    var namedItems = this.domRoot.find('.named-editors');
-    namedItems.html('');
-    var unnamedItems = this.domRoot.find('.unnamed-editors');
-    unnamedItems.html('');
+    this.namedItems.html('');
+    this.unnamedItems.html('');
 
-    var editorTemplate = $('#filelisting-editor-tpl');
     _.each(this.files, _.bind(function (file) {
-        var item = $(editorTemplate.children()[0].cloneNode(true));
-
-        item.data('fileId', file.fileId);
-        if (file.filename) {
-            item.find('.filename').html(file.filename);
-        } else if (file.editorId > 0) {
-            var editor = this.hub.getEditorById(file.editorId);
-            item.find('.filename').html(editor.getPaneName());
-        } else {
-            item.find('.filename').html('Unknown file');
-        }
-
-        var stagingButton = item.find('.stage-file');
-        var editButton = item.find('.edit-file');
-        editButton.on('click', _.bind(function (e) {
-            var fileId = $(e.currentTarget).parent('li').data('fileId');
-            this.editFile(fileId);
-        }, this));
-
-        if (file.isIncluded) {
-            stagingButton.removeClass('fa-plus').addClass('fa-minus');
-            stagingButton.on('click', _.bind(function (e) {
-                var fileId = $(e.currentTarget).parent('li').data('fileId');
-                this.moveToExclude(fileId);
-            }, this));
-            namedItems.append(item);
-        } else {
-            stagingButton.removeClass('fa-minus').addClass('fa-plus');
-            stagingButton.on('click', _.bind(function (e) {
-                var fileId = $(e.currentTarget).parent('li').data('fileId');
-                this.moveToInclude(fileId);
-            }, this));
-            unnamedItems.append(item);
-        }
+        this.addRowToTreelist(file);
     }, this));
 };
 
 Tree.prototype.editFile = function (fileId) {
     var file = this.getFileByFileId(fileId);
-    if (file.isOpen) {
-
-    } else {
+    if (!file.isOpen) {
         var dragConfig = this.getConfigForNewEditor(file);
         file.isOpen = true;
 
@@ -227,23 +237,43 @@ Tree.prototype.setAsCMakeProject = function () {
     this.isCMakeProject = true;
 };
 
-Tree.prototype.moveToInclude = function (fileId) {
-    var file = _.find(this.files, function (obj) {
-        return obj.fileId === fileId;
-    });
+Tree.prototype.renameFile = function (fileId, callback) {
+    var file = this.getFileByFileId(fileId);
 
+    var suggestedFilename = file.filename;
     if (file.filename === '') {
-        var editor = this.hub.getEditorById(file.editorId);
-        var langId = file.isOpen ? editor.currentLanguage.id : file.langId;
+        var langId = file.langId;
+        if (file.isOpen && file.editorId > 0) {
+            var editor = this.hub.getEditorById(file.editorId);
+            langId = editor.currentLanguage.id;
+        }
+
         var lang = languages[langId];
         var ext0 = lang.extensions[0];
+        suggestedFilename = 'example' + ext0;
+    }
 
-        this.alertSystem.enterSomething('Filename', 'Please enter a filename for this editor', 'example' + ext0, {
-            yes: _.bind(function (value) {
-                file.filename = value;
-                this.moveToInclude(fileId);
-            }, this),
-        });
+    this.alertSystem.enterSomething('Rename file', 'Please enter a filename', suggestedFilename, {
+        yes: _.bind(function (value) {
+            file.filename = value;
+
+            if (file.isOpen && file.editorId > 0) {
+                var editor = this.hub.getEditorById(file.editorId);
+                editor.setCustomPaneName(file.filename);
+            }
+
+            callback();
+        }, this),
+    });
+};
+
+Tree.prototype.moveToInclude = function (fileId) {
+    var file = this.getFileByFileId(fileId);
+
+    if (file.filename === '') {
+        this.renameFile(fileId, _.bind(function () {
+            this.moveToInclude(fileId);
+        }, this));
     } else {
         file.isIncluded = true;
 
@@ -320,6 +350,9 @@ Tree.prototype.getConfigForNewEditor = function (file) {
     );
 
     editor.componentState.source = file.content;
+    if (file.filename) {
+        editor.componentState.customPaneName = file.filename;
+    }
 
     return editor;
 };

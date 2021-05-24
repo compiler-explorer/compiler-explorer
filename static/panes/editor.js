@@ -82,6 +82,8 @@ function Editor(hub, state, container) {
     this.alertSystem = new Alert();
     this.alertSystem.prefixMessage = 'Editor #' + this.id + ': ';
 
+    this.customPaneName = state.customPaneName || false;
+
     this.awaitingInitialResults = false;
     this.selection = state.selection;
 
@@ -207,6 +209,7 @@ Editor.prototype.updateState = function () {
         source: this.getSource(),
         lang: this.currentLanguage.id,
         selection: this.selection,
+        customPaneName: this.customPaneName,
     };
     this.fontScale.addState(state);
     this.container.setState(state);
@@ -1199,7 +1202,16 @@ Editor.prototype.onLanguageChange = function (newLangId) {
 };
 
 Editor.prototype.getPaneName = function () {
-    return this.currentLanguage.name + ' source #' + this.id;
+    if (this.customPaneName) {
+        return this.customPaneName;
+    } else {
+        return this.currentLanguage.name + ' source #' + this.id;
+    }
+};
+
+Editor.prototype.setCustomPaneName = function (name) {
+    this.customPaneName = name;
+    this.updateTitle();
 };
 
 Editor.prototype.updateTitle = function () {
