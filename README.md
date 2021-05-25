@@ -5,24 +5,21 @@
 
 # Compiler Explorer
 
-**Compiler Explorer** is an interactive compiler. The left-hand pane shows
- editable C, C++, Rust, Go, D, Haskell, Swift, Pascal (and some more!) code.
-The right, the assembly output of having compiled the code with a given
- compiler and settings. Multiple compilers are supported, and the UI layout
+**Compiler Explorer** is an interactive compiler exploration website. Edit C, C++, Rust, Go, D, Haskell, Swift, Pascal, [ispc](https://ispc.github.io/) or other language code, and see how that code looks after being compiled in real time.
+  Multiple compilers are supported, many different tools and visualations are available, and the UI layout
  is configurable (thanks to [GoldenLayout](https://www.golden-layout.com/)).
-There is also an ispc compiler _[?](https://ispc.github.io/)_ for a C variant
- with extensions for SPMD.
 
-Try out at [godbolt.org](https://godbolt.org).
+Try out at [godbolt.org](https://godbolt.org), or [run your own local instance](#running-a-local-instance).
 
-You can support [this project on Patreon](https://patreon.com/mattgodbolt).
+You can financially support [this project on Patreon](https://patreon.com/mattgodbolt),
+ [GitHub](https://github.com/sponsors/mattgodbolt/), [Paypal](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=KQWQZ7GPY2GZ6&item_name=Compiler+Explorer+development&currency_code=USD&source=url), or by
+ buying cool gear on the [Compiler Explorer store](https://shop.spreadshirt.com/compiler-explorer/).
 
 **Compiler Explorer** follows a [Code of Conduct](CODE_OF_CONDUCT.md) which
  aims to foster an open and welcoming environment.
 
-**Compiler Explorer** was started in 2012 to serve my needs at [my previous employer](https://drw.com) to show how
- C++ constructs translated to assembly code. It started out as a `tmux` session with `vi` running in one
- pane and `watch gcc -S foo.cc -o -` running in the other.
+**Compiler Explorer** was started in 2012 to show how C++ constructs translated to assembly code. It started out as a
+ `tmux` session with `vi` running in one pane and `watch gcc -S foo.cc -o -` running in the other.
 
 Since then, it has become a public website serving around [2,000,000 compilations per week](https://www.stathat.com/cards/Tk5csAWI0O7x).
 
@@ -31,12 +28,12 @@ Since then, it has become a public website serving around [2,000,000 compilation
 ### FAQ
 
 There is now a FAQ section [in the repository wiki](https://github.com/compiler-explorer/compiler-explorer/wiki/FAQ).
- If your question is not present, please contact us as described below so we can help you.
+ If your question is not present, please contact us as described below, so we can help you.
  If you find that the FAQ is lacking some important point, please free to contribute to it and/or ask us to clarify it.
 
 ### Videos
 
-There are a number of videos that showcase some of the features of Compiler Explorer:
+There are a number of videos that showcase some features of Compiler Explorer:
 
 * [presentation for CppCon 2019 about the project](https://www.youtube.com/watch?v=kIoZDUd5DKw)
 * [older 2 part series of videos](https://www.youtube.com/watch?v=4_HL3PH4wDg) which go into a bit more detail
@@ -47,9 +44,10 @@ There are a number of videos that showcase some of the features of Compiler Expl
 
 **Compiler Explorer** is written in [Node.js](https://nodejs.org/).
 
-Assuming you have a compatible version of `node` installed, simply running
+Assuming you have a compatible version of `node` installed, on Linux simply running
  `make` ought to get you up and running with an Explorer running on port 10240
- on your local machine: http://localhost:10240/.
+ on your local machine: [http://localhost:10240/](http://localhost:10240/). If this doesn't work for you, please contact
+ us, as we consider it important you can quickly and easily get running.
  Currently **Compiler Explorer**
  [requires the latest LTS](CONTRIBUTING.md#node-version) `node` version
  (_v12_) installed, either on the path or at `NODE_DIR`
@@ -57,7 +55,8 @@ Assuming you have a compatible version of `node` installed, simply running
 
 Running with `make EXTRA_ARGS='--language LANG'` will allow you to load
  `LANG` exclusively, where `LANG` is one for the language ids/aliases defined
- in `lib/languages.js`. The `Makefile` will automatically install all the
+ in `lib/languages.js`. For example, to only run CE with C++ support, you'd run
+ `make EXTRA_ARGS='--language c++'`. The `Makefile` will automatically install all the
  third party libraries needed to run; using `npm` to install server-side and
  client side components.
 
@@ -70,10 +69,13 @@ Some languages need extra tools to demangle them, e.g. `rust`, `d`, or `haskell`
  Such tools are kept separately in the
  [tools repo](https://github.com/compiler-explorer/compiler-explorer-tools).
 
-The config system leaves a lot to be desired. This is something we want to improve.
+Configuring compiler explorer is achieved via configuration files in the `etc/config` directory. Values are
+ `key=value`. Options in a `{type}.local.properties` file (where `{type}` is `c++` or similar) override anything in the
+ `{type}.defaults.properties` file. There is a `.gitignore` file to ignore `*.local.*` files, so these won't be checked
+ into git and you won't find yourself fighting with updated versions when you `git pull`. For more information see
+ [Adding a Compiler](docs/AddingACompiler.md).
 
-
-A [Road map](Roadmap.md) is available which gives a little insight into
+A [Road map](docs/Roadmap.md) is available which gives a little insight into
  the future plans for **Compiler Explorer**.
 
 ### Running a local instance
