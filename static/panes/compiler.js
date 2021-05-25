@@ -182,6 +182,25 @@ function Compiler(hub, container, state) {
     });
 }
 
+Compiler.prototype.getEditorIdBySourcefile = function (sourcefile) {
+    if (this.sourceTreeId) {
+        var tree = this.hub.getTreeById(this.sourceTreeId);
+        if (tree) {
+            if (sourcefile === null) {
+                return tree.getEditorIdForMainsource();
+            } else {
+                return tree.getEditorIdBySourcefile(sourcefile.file);
+            }
+        }
+    } else {
+        if (sourcefile !== null && sourcefile.file === null) {
+            return this.sourceEditorId;
+        }
+    }
+
+    return false;
+};
+
 Compiler.prototype.initLangAndCompiler = function (state) {
     var langId = state.lang;
     var compilerId = state.compiler;
@@ -247,6 +266,7 @@ Compiler.prototype.initPanerButtons = function () {
     var createExecutor = _.bind(function () {
         var currentState = this.currentState();
         var editorId = currentState.source;
+        //        var treeId = currentState.sourceTreeId;
         var langId = currentState.lang;
         var compilerId = currentState.compiler;
         var libs = [];
@@ -256,6 +276,7 @@ Compiler.prototype.initPanerButtons = function () {
                 ver: item.versionId,
             });
         });
+        // todo: pass on treeId
         return Components.getExecutorWith(editorId, langId, compilerId, libs, currentState.options);
     }, this);
 
@@ -452,9 +473,10 @@ Compiler.prototype.initEditorActions = function () {
         run: _.bind(function (ed) {
             var desiredLine = ed.getPosition().lineNumber - 1;
             var source = this.assembly[desiredLine].source;
-            if (source !== null && source.file === null) {
+            var editorId = this.getEditorIdBySourcefile(source);
+            if (editorId) {
                 // a null file means it was the user's source
-                this.eventHub.emit('editorLinkLine', this.sourceEditorId, source.line, -1, -1, true);
+                this.eventHub.emit('editorLinkLine', editorId, source.line, -1, -1, true);
             }
         }, this),
     });
@@ -938,6 +960,19 @@ Compiler.prototype.postCompilationResult = function (request, result) {
 };
 
 Compiler.prototype.onEditorChange = function (editor, source, langId, compilerId) {
+    if (this.sourceTreeId) {
+        var tree = this.hub.getTreeById(this.sourceTreeId);
+        if (tree) {
+            if (tree.isEditorPartOfProject(editor)) {
+                if (this.settings.compileOnChange) {
+                    this.compile();
+
+                    return;
+                }
+            }
+        }
+    }
+
     if (editor === this.sourceEditorId && langId === this.currentLangId &&
         (compilerId === undefined || compilerId === this.id)) {
         this.source = source;
@@ -1403,6 +1438,7 @@ Compiler.prototype.initListeners = function () {
     }, this);
     this.eventHub.on('editorChange', this.onEditorChange, this);
     this.eventHub.on('editorClose', this.onEditorClose, this);
+    this.eventHub.on('treeClose', this.onTreeClose, this);
     this.eventHub.on('colours', this.onColours, this);
     this.eventHub.on('resendCompilation', this.onResendCompilation, this);
     this.eventHub.on('findCompilers', this.sendCompiler, this);
@@ -1565,13 +1601,22 @@ Compiler.prototype.onCompilerChange = function (value) {
 };
 
 Compiler.prototype.sendCompiler = function () {
-    this.eventHub.emit('compiler', this.id, this.compiler, this.options, this.sourceEditorId);
+    this.eventHub.emit('compiler', this.id, this.compiler, this.options, this.sourceEditorId, this.sourceTreeId);
 };
 
 Compiler.prototype.onEditorClose = function (editor) {
     if (editor === this.sourceEditorId) {
         // We can't immediately close as an outer loop somewhere in GoldenLayout is iterating over
         // the hierarchy. We can't modify while it's being iterated over.
+        this.close();
+        _.defer(function (self) {
+            self.container.close();
+        }, this);
+    }
+};
+
+Compiler.prototype.onTreeClose = function (tree) {
+    if (tree === this.sourceTreeId) {
         this.close();
         _.defer(function (self) {
             self.container.close();
@@ -1610,15 +1655,26 @@ Compiler.prototype.saveState = function () {
 };
 
 Compiler.prototype.onColours = function (editor, colours, scheme) {
-    if (editor === this.sourceEditorId) {
-        var asmColours = {};
-        _.each(this.assembly, function (x, index) {
-            if (x.source && x.source.file === null && x.source.line > 0) {
-                asmColours[index] = colours[x.source.line - 1];
+    // todo: what to do about the editor param?
+    //if (editor === this.sourceEditorId) {
+    var asmColours = {};
+    _.each(this.assembly, _.bind(function (x, index) {
+        var editorId = this.getEditorIdBySourcefile(x.source);
+        if (editorId) {
+            if (!asmColours[editorId]) {
+                asmColours[editorId] = {};
             }
-        });
-        this.colours = colour.applyColours(this.outputEditor, asmColours, scheme, this.colours);
-    }
+            asmColours[editorId][index] = colours[x.source.line - 1];
+        }
+    }, this));
+
+    _.each(this.asmColours, _.bind(function (col, editorId) {
+        var editor = this.hub.getEditorById(editorId);
+        if (editor) {
+            this.colours = colour.applyColours(editor, col, scheme, this.colours);
+        }
+    }, this));
+    //}
 };
 
 Compiler.prototype.getCompilerName = function () {
@@ -1634,7 +1690,13 @@ Compiler.prototype.getLanguageName = function () {
 Compiler.prototype.getPaneName = function () {
     var langName = this.getLanguageName();
     var compName = this.getCompilerName();
-    return compName + ' (Editor #' + this.sourceEditorId + ', Compiler #' + this.id + ') ' + langName;
+    if (this.sourceEditorId) {
+        return compName + ' (Editor #' + this.sourceEditorId + ', Compiler #' + this.id + ') ' + langName;
+    } else if (this.sourceTreeId) {
+        return compName + ' (Tree #' + this.sourceTreeId + ', Compiler #' + this.id + ') ' + langName;
+    } else {
+        return '';
+    }
 };
 
 Compiler.prototype.updateCompilerName = function () {
@@ -1675,8 +1737,9 @@ Compiler.prototype.onPanesLinkLine = function (compilerId, lineNumber, colBegin,
         var lineNums = [];
         var directlyLinkedLineNums = [];
         var signalFromAnotherPane = sender !== this.getPaneName();
-        _.each(this.assembly, function (asmLine, i) {
-            if (asmLine.source && asmLine.source.file === null && asmLine.source.line === lineNumber) {
+        _.each(this.assembly, _.bind(function (asmLine, i) {
+            var editorId = this.getEditorIdBySourcefile(asmLine.source);
+            if (editorId && asmLine.source && asmLine.source.line === lineNumber) {
                 var line = i + 1;
                 lineNums.push(line);
                 var currentCol = asmLine.source.column;
@@ -1684,7 +1747,7 @@ Compiler.prototype.onPanesLinkLine = function (compilerId, lineNumber, colBegin,
                     directlyLinkedLineNums.push(line);
                 }
             }
-        });
+        }, this));
         if (revealLine && lineNums[0]) this.outputEditor.revealLineInCenter(lineNums[0]);
         var lineClass = sender !== this.getPaneName() ? 'linked-code-decoration-line' : '';
         var linkedLinesDecoration = _.map(lineNums, function (line) {

@@ -1002,7 +1002,11 @@ Editor.prototype.onCompiling = function (compilerId) {
 };
 
 Editor.prototype.onCompileResponse = function (compilerId, compiler, result) {
-    if (!this.ourCompilers[compilerId]) return;
+    if (!this.ourCompilers[compilerId]) {
+        // todo: take sourceTree into account
+        return;
+    }
+
     this.busyCompilers[compilerId] = false;
     var output = (result.stdout || []).concat(result.stderr || []);
     var widgets = _.compact(_.map(output, function (obj) {

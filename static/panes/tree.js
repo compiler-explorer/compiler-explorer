@@ -240,6 +240,31 @@ Tree.prototype.getFileByEditorId = function (editorId) {
     });
 };
 
+Tree.prototype.getEditorIdByFilename = function (filename) {
+    var found = _.find(this.files, function (file) {
+        if (filename.includes('/')) {
+            if (filename.endsWith('/' + file.filename)) {
+                return true;
+            }
+        }
+        return false;
+    });
+
+    if (found) {
+        return found.editorId;
+    } else {
+        return false;
+    }
+};
+
+Tree.prototype.isEditorPartOfProject = function (editorId) {
+    var found = _.find(this.files, function (file) {
+        return (file.isIncluded) && file.isOpen && (editorId === file.editorId);
+    });
+
+    return !!found;
+};
+
 Tree.prototype.setAsMainSource = function (mainFileId) {
     _.each(this.files, function (file) {
         file.isMainSource = false;
@@ -333,6 +358,25 @@ Tree.prototype.getMainSource = function () {
     } else {
         return '';
     }
+};
+
+Tree.prototype.getEditorIdForMainsource = function () {
+    var mainFile = null;
+    if (this.isCMakeProject) {
+        mainFile = _.find(this.files, function (file) {
+            return file.isIncluded && (file.filename === 'example.cpp');
+        });
+
+        if (mainFile) return mainFile.editorId;
+    } else {
+        mainFile = _.find(this.files, function (file) {
+            return file.isMainSource && file.isIncluded;
+        });
+
+        if (mainFile) return mainFile.editorId;
+    }
+
+    return false;
 };
 
 Tree.prototype.getFiles = function () {
