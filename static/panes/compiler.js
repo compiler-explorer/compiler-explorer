@@ -870,10 +870,19 @@ Compiler.prototype.onCompileResponse = function (request, result, cached) {
 
     var stdout = result.stdout || [];
     var stderr = result.stderr || [];
+    var failed = result.code ? result.code !== 0 : false;
+
+    if (result.buildsteps) {
+        _.each(result.buildsteps, function (step) {
+            stdout = stdout.concat(step.stdout || []);
+            stderr = stderr.concat(step.stderr || []);
+            failed = failed | (step.code !== 0);
+        });
+    }
 
     var allText = _.pluck(stdout.concat(stderr), 'text').join('\n');
-    var failed = result.code !== 0;
     var warns = !failed && !!allText;
+
     this.handleCompilationStatus({code: failed ? 3 : (warns ? 2 : 1), compilerOut: result.code});
     this.outputTextCount.text(stdout.length);
     this.outputErrorCount.text(stderr.length);
