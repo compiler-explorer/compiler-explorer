@@ -53,6 +53,8 @@ function Tree(hub, state, container) {
     this.namedItems = this.domRoot.find('.named-editors');
     this.unnamedItems = this.domRoot.find('.unnamed-editors');
 
+    this.ourCompilers = {};
+
     this.isCMakeProject = state.isCMakeProject || false;
     this.compilerLanguageId = state.compilerLanguageId || '';
     this.files = state.files || [];
@@ -98,10 +100,43 @@ Tree.prototype.initCallbacks = function () {
     this.eventHub.on('editorOpen', this.onEditorOpen, this);
     this.eventHub.on('editorClose', this.onEditorClose, this);
     this.eventHub.on('languageChange', this.onLanguageChange, this);
+    this.eventHub.on('compilerOpen', this.onCompilerOpen, this);
+    this.eventHub.on('compilerClose', this.onCompilerClose, this);
 };
 
 Tree.prototype.onLanguageChange = function () {
     this.refresh();
+};
+
+Tree.prototype.sendCompilerChangesToEditor = function (compilerId) {
+    _.each(this.files, _.bind(function (file) {
+        if (file.isOpen && file.editorId > 0) {
+            if (file.isIncluded) {
+                this.eventHub.emit('treeCompilerEditorIncludeChange', this.id, file.editorId, compilerId);
+            } else {
+                this.eventHub.emit('treeCompilerEditorExcludeChange', this.id, file.editorId, compilerId);
+            }
+        }
+    }, this));
+};
+
+Tree.prototype.sendChangesToAllEditors = function () {
+    _.each(this.ourCompilers, _.bind(function (unused, compilerId) {
+        this.sendCompilerChangesToEditor(Number(compilerId));
+    }, this));
+};
+
+Tree.prototype.onCompilerOpen = function (compilerId, unused, treeId) {
+    if (treeId === this.id) {
+        this.ourCompilers[compilerId] = true;
+        this.sendCompilerChangesToEditor(Number(compilerId));
+    }
+};
+
+Tree.prototype.onCompilerClose = function (compilerId, unused, treeId) {
+    if (treeId === this.id) {
+        delete this.ourCompilers[compilerId];
+    }
 };
 
 Tree.prototype.onEditorOpen = function (editorId) {
@@ -122,6 +157,8 @@ Tree.prototype.onEditorOpen = function (editorId) {
     this.files.push(file);
 
     this.refresh();
+
+    this.sendChangesToAllEditors();
 };
 
 Tree.prototype.onEditorClose = function (editorId) {
@@ -241,11 +278,15 @@ Tree.prototype.getFileByEditorId = function (editorId) {
 };
 
 Tree.prototype.getEditorIdByFilename = function (filename) {
+    if (!filename) return false;
+
     var found = _.find(this.files, function (file) {
         if (filename.includes('/')) {
             if (filename.endsWith('/' + file.filename)) {
                 return true;
             }
+        } else if (filename === file.filename) {
+            return true;
         }
         return false;
     });
@@ -331,18 +372,27 @@ Tree.prototype.moveToInclude = function (fileId) {
 
         this.refresh();
     }
+
+    this.sendChangesToAllEditors();
 };
 
 Tree.prototype.moveToExclude = function (fileId) {
     var file = this.getFileByFileId(fileId);
     file.isIncluded = false;
     this.refresh();
+
+    this.sendChangesToAllEditors();
 };
 
 Tree.prototype.getFileContents = function (file) {
     if (file.isOpen) {
         var editor = this.hub.getEditorById(file.editorId);
-        return editor.getSource();
+        if (editor) {
+            return editor.getSource();
+        } else {
+            file.isOpen = false;
+            file.editorId = -1;
+        }
     } else {
         return file.content;
     }

@@ -356,6 +356,12 @@ Hub.prototype.hasTree = function () {
     return (this.trees.length > 0);
 };
 
+Hub.prototype.getTreesWithEditorId = function (editorId) {
+    return _.filter(this.trees, function (tree) {
+        return tree.isEditorPartOfProject(editorId);
+    });
+};
+
 Hub.prototype.findEditorInChildren = function (elem) {
     var count = elem.contentItems.length;
     var idx = 0;

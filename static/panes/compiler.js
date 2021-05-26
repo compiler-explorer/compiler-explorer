@@ -186,10 +186,10 @@ Compiler.prototype.getEditorIdBySourcefile = function (sourcefile) {
     if (this.sourceTreeId) {
         var tree = this.hub.getTreeById(this.sourceTreeId);
         if (tree) {
-            if (sourcefile === null) {
+            if (sourcefile === null || sourcefile.file === null) {
                 return tree.getEditorIdForMainsource();
             } else {
-                return tree.getEditorIdBySourcefile(sourcefile.file);
+                return tree.getEditorIdByFilename(sourcefile.file);
             }
         }
     } else {
@@ -473,10 +473,12 @@ Compiler.prototype.initEditorActions = function () {
         run: _.bind(function (ed) {
             var desiredLine = ed.getPosition().lineNumber - 1;
             var source = this.assembly[desiredLine].source;
-            var editorId = this.getEditorIdBySourcefile(source);
-            if (editorId) {
-                // a null file means it was the user's source
-                this.eventHub.emit('editorLinkLine', editorId, source.line, -1, -1, true);
+            if (source && source.line > 0) {
+                var editorId = this.getEditorIdBySourcefile(source);
+                if (editorId) {
+                    // a null file means it was the user's source
+                    this.eventHub.emit('editorLinkLine', editorId, source.line, -1, -1, true);
+                }
             }
         }, this),
     });
@@ -1434,7 +1436,7 @@ Compiler.prototype.initListeners = function () {
     this.container.on('resize', this.resize, this);
     this.container.on('shown', this.resize, this);
     this.container.on('open', function () {
-        this.eventHub.emit('compilerOpen', this.id, this.sourceEditorId);
+        this.eventHub.emit('compilerOpen', this.id, this.sourceEditorId, this.sourceTreeId);
     }, this);
     this.eventHub.on('editorChange', this.onEditorChange, this);
     this.eventHub.on('editorClose', this.onEditorClose, this);
@@ -1656,25 +1658,22 @@ Compiler.prototype.saveState = function () {
 
 Compiler.prototype.onColours = function (editor, colours, scheme) {
     // todo: what to do about the editor param?
-    //if (editor === this.sourceEditorId) {
     var asmColours = {};
     _.each(this.assembly, _.bind(function (x, index) {
-        var editorId = this.getEditorIdBySourcefile(x.source);
-        if (editorId) {
-            if (!asmColours[editorId]) {
-                asmColours[editorId] = {};
+        if (x.source && x.source.line > 0) {
+            var editorId = this.getEditorIdBySourcefile(x.source);
+            if (editorId) {
+                if (!asmColours[editorId]) {
+                    asmColours[editorId] = {};
+                }
+                asmColours[editorId][index] = colours[x.source.line - 1];
             }
-            asmColours[editorId][index] = colours[x.source.line - 1];
         }
     }, this));
 
-    _.each(this.asmColours, _.bind(function (col, editorId) {
-        var editor = this.hub.getEditorById(editorId);
-        if (editor) {
-            this.colours = colour.applyColours(editor, col, scheme, this.colours);
-        }
+    _.each(asmColours, _.bind(function (col) {
+        this.colours = colour.applyColours(this.outputEditor, col, scheme, this.colours);
     }, this));
-    //}
 };
 
 Compiler.prototype.getCompilerName = function () {
@@ -1738,13 +1737,15 @@ Compiler.prototype.onPanesLinkLine = function (compilerId, lineNumber, colBegin,
         var directlyLinkedLineNums = [];
         var signalFromAnotherPane = sender !== this.getPaneName();
         _.each(this.assembly, _.bind(function (asmLine, i) {
-            var editorId = this.getEditorIdBySourcefile(asmLine.source);
-            if (editorId && asmLine.source && asmLine.source.line === lineNumber) {
-                var line = i + 1;
-                lineNums.push(line);
-                var currentCol = asmLine.source.column;
-                if (signalFromAnotherPane && currentCol && colBegin <= currentCol && currentCol <= colEnd) {
-                    directlyLinkedLineNums.push(line);
+            if (asmLine.source && asmLine.source.line === lineNumber) {
+                var editorId = this.getEditorIdBySourcefile(asmLine.source);
+                if (editorId) {
+                    var line = i + 1;
+                    lineNums.push(line);
+                    var currentCol = asmLine.source.column;
+                    if (signalFromAnotherPane && currentCol && colBegin <= currentCol && currentCol <= colEnd) {
+                        directlyLinkedLineNums.push(line);
+                    }
                 }
             }
         }, this));
@@ -1918,7 +1919,7 @@ Compiler.prototype.onMouseMove = function (e) {
             var sourceLine = -1;
             var sourceColBegin = -1;
             var sourceColEnd = -1;
-            if (hoverAsm.source && !hoverAsm.source.file) {
+            if (hoverAsm.source) {
                 sourceLine = hoverAsm.source.line;
                 if (hoverAsm.source.column) {
                     sourceColBegin = hoverAsm.source.column;

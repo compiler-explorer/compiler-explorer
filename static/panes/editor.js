@@ -55,6 +55,7 @@ require('selectize');
 var loadSave = new loadSaveLib.LoadSave();
 var languages = options.languages;
 
+// eslint-disable-next-line max-statements
 function Editor(hub, state, container) {
     this.id = state.id || hub.nextEditorId();
     this.container = container;
@@ -69,8 +70,10 @@ function Editor(hub, state, container) {
     this.httpRoot = window.httpRoot;
     this.widgetsByCompiler = {};
     this.asmByCompiler = {};
+    this.defaultFileByCompiler = {};
     this.busyCompilers = {};
     this.colours = [];
+    this.treeCompilers = {};
 
     this.decorations = {};
     this.prevDecorations = [];
@@ -264,6 +267,8 @@ Editor.prototype.initCallbacks = function () {
         this.requestCompilation();
     }, this);
 
+    this.eventHub.on('treeCompilerEditorIncludeChange', this.onTreeCompilerEditorIncludeChange, this);
+    this.eventHub.on('treeCompilerEditorExcludeChange', this.onTreeCompilerEditorExcludeChange, this);
     this.eventHub.on('compilerOpen', this.onCompilerOpen, this);
     this.eventHub.on('executorOpen', this.onExecutorOpen, this);
     this.eventHub.on('compilerClose', this.onCompilerClose, this);
@@ -926,24 +931,47 @@ Editor.prototype.onSettingsChange = function (newSettings) {
 };
 
 Editor.prototype.numberUsedLines = function () {
+    if (_.any(this.busyCompilers)) return;
+
+    if (!this.settings.colouriseAsm) {
+        this.updateColours([]);
+        return;
+    }
+
     var result = {};
     // First, note all lines used.
-    _.each(this.asmByCompiler, function (asm) {
-        _.each(asm, function (asmLine) {
-            // If the line has a source indicator, and the source indicator is null (i.e. the
-            // user's input file), then tag it as used.
-            if (asmLine.source && asmLine.source.file === null && asmLine.source.line > 0)
-                result[asmLine.source.line - 1] = true;
-        });
-    });
+    _.each(this.asmByCompiler, _.bind(function (asm, compilerId) {
+        _.each(asm, _.bind(function (asmLine) {
+            var foundInTrees = false;
+
+            _.each(this.treeCompilers, _.bind(function (compilerIds, treeId) {
+                if (compilerIds[compilerId]) {
+                    var tree = this.hub.getTreeById(Number(treeId));
+                    var defaultFile = this.defaultFileByCompiler[compilerId];
+                    foundInTrees = true;
+
+                    if (asmLine.source && asmLine.source.line > 0) {
+                        var sourcefilename = asmLine.source.file ? asmLine.source.file : defaultFile;
+                        if (this.id === tree.getEditorIdByFilename(sourcefilename)) {
+                            result[asmLine.source.line - 1] = true;
+                        }
+                    }
+                }
+            }, this));
+
+            if (!foundInTrees) {
+                if (asmLine.source && asmLine.source.file === null && asmLine.source.line > 0)
+                    result[asmLine.source.line - 1] = true;
+            }
+        }, this));
+    }, this));
     // Now assign an ordinal to each used line.
     var ordinal = 0;
     _.each(result, function (v, k) {
         result[k] = ordinal++;
     });
 
-    if (_.any(this.busyCompilers)) return;
-    this.updateColours(this.settings.colouriseAsm ? result : []);
+    this.updateColours(result);
 };
 
 Editor.prototype.updateColours = function (colours) {
@@ -951,7 +979,7 @@ Editor.prototype.updateColours = function (colours) {
     this.eventHub.emit('colours', this.id, colours, this.settings.colourScheme);
 };
 
-Editor.prototype.onCompilerOpen = function (compilerId, editorId) {
+Editor.prototype.onCompilerOpen = function (compilerId, editorId, treeId) {
     if (editorId === this.id) {
         // On any compiler open, rebroadcast our state in case they need to know it.
         if (this.waitingForLanguage) {
@@ -969,6 +997,25 @@ Editor.prototype.onCompilerOpen = function (compilerId, editorId) {
         }
         this.maybeEmitChange(true, compilerId);
         this.ourCompilers[compilerId] = true;
+
+        if (treeId > 0) {
+            if (!this.treeCompilers[treeId]) {
+                this.treeCompilers[treeId] = {};
+            }
+            this.treeCompilers[treeId][compilerId] = true;
+        }
+    }
+};
+
+Editor.prototype.onTreeCompilerEditorIncludeChange = function (treeId, editorId, compilerId) {
+    if (this.id === editorId) {
+        this.onCompilerOpen(compilerId, editorId, treeId);
+    }
+};
+
+Editor.prototype.onTreeCompilerEditorExcludeChange = function (treeId, editorId, compilerId) {
+    if (this.id === editorId) {
+        this.onCompilerClose(compilerId);
     }
 };
 
@@ -979,13 +1026,18 @@ Editor.prototype.onExecutorOpen = function (executorId, editorId) {
     }
 };
 
-Editor.prototype.onCompilerClose = function (compilerId) {
+Editor.prototype.onCompilerClose = function (compilerId, unused, treeId) {
+    if (this.treeCompilers[treeId]) {
+        delete this.treeCompilers[treeId][compilerId];
+    }
+
     if (this.ourCompilers[compilerId]) {
         monaco.editor.setModelMarkers(this.editor.getModel(), compilerId, []);
         delete this.widgetsByCompiler[compilerId];
         delete this.asmByCompiler[compilerId];
         delete this.busyCompilers[compilerId];
         delete this.ourCompilers[compilerId];
+        delete this.defaultFileByCompiler[compilerId];
         this.numberUsedLines();
     }
 };
@@ -1002,10 +1054,7 @@ Editor.prototype.onCompiling = function (compilerId) {
 };
 
 Editor.prototype.onCompileResponse = function (compilerId, compiler, result) {
-    if (!this.ourCompilers[compilerId]) {
-        // todo: take sourceTree into account
-        return;
-    }
+    if (!this.ourCompilers[compilerId]) return;
 
     this.busyCompilers[compilerId] = false;
     var output = (result.stdout || []).concat(result.stderr || []);
@@ -1043,7 +1092,19 @@ Editor.prototype.onCompileResponse = function (compilerId, compiler, result) {
         };
     }, this);
     this.updateDecorations();
-    this.asmByCompiler[compilerId] = result.asm;
+
+    if (result.result && result.result.asm) {
+        this.asmByCompiler[compilerId] = result.result.asm;
+    } else {
+        this.asmByCompiler[compilerId] = result.asm;
+    }
+
+    if (result.inputFilename) {
+        this.defaultFileByCompiler[compilerId] = result.inputFilename;
+    } else {
+        this.defaultFileByCompiler[compilerId] = 'example' + this.currentLanguage.extensions[0];
+    }
+
     this.numberUsedLines();
 };
 
