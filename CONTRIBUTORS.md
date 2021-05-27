@@ -21,6 +21,7 @@ From oldest to newest contributor, we would like to thank:
 - [Amila Welihinda](https://github.com/amilajack)
 - [Jason Turner](https://github.com/lefticus)
 - [Adrian Bibby Walther](https://github.com/Som1Lse)
+- [Johan Engelen](https://github.com/JohanEngelen)
 - [Sahnvour](https://github.com/Sahnvour)
 - [Brian Cain](https://github.com/androm3da)
 - [Alexander Monakov](https://github.com/amonakov)
