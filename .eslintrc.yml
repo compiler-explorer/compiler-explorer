@@ -143,7 +143,6 @@ rules:
   unicorn/prefer-array-flat: off
   unicorn/no-array-callback-reference: off
   unicorn/prefer-switch: off
-  unicorn/explicit-length-check: off
   unicorn/no-static-only-class: off
 parserOptions:
   sourceType: module
