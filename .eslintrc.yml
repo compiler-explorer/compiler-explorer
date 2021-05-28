@@ -118,16 +118,35 @@ rules:
       ignoreDeclarationSort: true
   unicorn/catch-error-name: off
   unicorn/consistent-function-scoping: off
+  unicorn/empty-brace-spaces: off
   unicorn/no-fn-reference-in-iterator: off
   unicorn/no-hex-escape: off
   unicorn/no-null: off
   unicorn/no-reduce: off
+  unicorn/numeric-separators-style: off
   unicorn/prefer-add-event-listener: off
   unicorn/prefer-flat-map: error
   unicorn/prefer-optional-catch-binding: off
+  unicorn/prefer-node-protocol: off # until we get node 16+
   unicorn/prefer-number-properties: off
   unicorn/prefer-string-slice: off
   unicorn/prevent-abbreviations: off
+  # things we'd like to turn on but need fairly extensive code changes:
+  unicorn/prefer-regexp-test: off
+  unicorn/prefer-ternary: off
+  unicorn/no-array-for-each: off
+  unicorn/prefer-array-some: off
+  unicorn/prefer-spread: off
+  unicorn/no-array-push-push: off
+  unicorn/no-lonely-if: off
+  unicorn/no-array-reduce: off
+  unicorn/prefer-array-flat: off
+  unicorn/no-array-callback-reference: off
+  unicorn/prefer-switch: off
+  unicorn/explicit-length-check: off
+  unicorn/no-static-only-class: off
+  unicorn/prefer-includes: off
+  unicorn/consistent-destructuring: off
 parserOptions:
   sourceType: module
   ecmaVersion: 2020

@@ -176,13 +176,13 @@ if (defArgs.suppressConsoleLog) {
 
 const isDevMode = () => process.env.NODE_ENV !== 'production';
 
-const propHierarchy = _.flatten([
+const propHierarchy = [
     'defaults',
     defArgs.env,
     _.map(defArgs.env, e => `${e}.${process.platform}`),
     process.platform,
     os.hostname(),
-    'local']);
+    'local'].flat();
 logger.info(`properties hierarchy: ${propHierarchy.join(', ')}`);
 
 // Propagate debug mode if need be
@@ -395,8 +395,7 @@ function startListening(server) {
         logger.info(`  Startup duration: ${startupDurationMs}ms`);
         logger.info('=======================================');
         server.listen(_port);
-    }
-    else {
+    } else {
         // normal port number
         logger.info(`  Listening on http://${defArgs.hostname || 'localhost'}:${_port}/`);
         logger.info(`  Startup duration: ${startupDurationMs}ms`);
@@ -640,11 +639,7 @@ async function main() {
             mobileViewer: isMobileViewer(req),
         }, req.query));
     };
-    if (isDevMode()) {
-        await setupWebPackDevMiddleware(router);
-    } else {
-        await setupStaticMiddleware(router);
-    }
+    await (isDevMode() ? setupWebPackDevMiddleware(router) : setupStaticMiddleware(router));
 
     morgan.token('gdpr_ip', req => req.ip ? utils.anonymizeIp(req.ip) : '');
 
@@ -763,8 +758,7 @@ async function main() {
 }
 
 main()
-    .then(() => {
-    })
+    .then(() => null)
     .catch(err => {
         logger.error('Top-level error (shutting down):', err);
         process.exit(1);
