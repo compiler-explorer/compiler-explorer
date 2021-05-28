@@ -19437,7 +19437,7 @@ std::__detail::_Backref_matcher<char const*, std::__cxx11::regex_traits<char> >:
   mov r8, r12
   mov r9, r13
   mov rdi, rax
-  call bool std::__equal4<char const*, char const*, std::__detail::_Backref_matcher<char const*, std::__cxx11::regex_traits<char> >::_M_apply(char const*, char const*, char const*, char const*)::{lambda(char, char)#1}>(char const*, std::__detail::_Backref_matcher<char const*, std::__cxx11::regex_traits<char> >::_M_apply(char const*, char const*, char const*, char const*)::{lambda(char, char)#1}, char const*, char const*, std::__detail::_Backref_matcher<char const*, std::__cxx11::regex_traits<char> >::_M_apply(char const*, char const*, char const*, char const*)::{lambda(char, char)#1})
+  call THIS_CALL_USED_TO_BE_ZSt8__equal4IPKcS1_ZNSt8__detail16_Backref_matcherIS1_NSt7__cxx1112regex_traitsIcEEE8_M_applyES1_S1_S1_S1_EUlccE_EbT_S9_T0_SA_T1_
   nop
   jmp .L1816
   mov rbx, rax
