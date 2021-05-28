@@ -52,7 +52,7 @@ import * as normalizer from './lib/clientstate-normalizer';
 import { CompilationEnvironment } from './lib/compilation-env';
 import { CompilationQueue } from './lib/compilation-queue';
 import { CompilerFinder } from './lib/compiler-finder';
-import { policy as csp } from './lib/csp';
+// import { policy as csp } from './lib/csp';
 import { initialiseWine } from './lib/exec';
 import { ShortLinkResolver } from './lib/google';
 import { CompileHandler } from './lib/handlers/compile';
@@ -229,11 +229,11 @@ function staticHeaders(res) {
     }
 }
 
-function contentPolicyHeader(res) {
+function contentPolicyHeader(/*res*/) {
     // TODO: re-enable CSP
-    if (csp && 0) {
-        res.setHeader('Content-Security-Policy', csp);
-    }
+    // if (csp) {
+    //     res.setHeader('Content-Security-Policy', csp);
+    // }
 }
 
 function measureEventLoopLag(delayMs) {
@@ -284,7 +284,7 @@ let pugRequireHandler = () => {
 async function setupWebPackDevMiddleware(router) {
     logger.info('  using webpack dev middleware');
 
-    /* eslint-disable node/no-unpublished-import */
+    /* eslint-disable node/no-unpublished-import,import/extensions */
     const webpackDevMiddleware = (await import('webpack-dev-middleware')).default;
     const webpackConfig = (await import('./webpack.config.esm.js')).default;
     const webpack = (await import('webpack')).default;
