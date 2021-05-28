@@ -132,7 +132,6 @@ rules:
   unicorn/prefer-string-slice: off
   unicorn/prevent-abbreviations: off
   # things we'd like to turn on but need fairly extensive code changes:
-  unicorn/prefer-regexp-test: off
   unicorn/prefer-ternary: off
   unicorn/no-array-for-each: off
   unicorn/prefer-array-some: off
