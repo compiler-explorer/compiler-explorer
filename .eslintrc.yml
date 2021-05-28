@@ -136,7 +136,6 @@ rules:
   unicorn/no-array-for-each: off
   unicorn/prefer-array-some: off
   unicorn/prefer-spread: off
-  unicorn/no-array-push-push: off
   unicorn/no-lonely-if: off
   unicorn/no-array-reduce: off
   unicorn/prefer-array-flat: off
