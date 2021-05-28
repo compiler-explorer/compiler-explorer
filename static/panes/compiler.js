@@ -1662,7 +1662,7 @@ Compiler.prototype.onColours = function (editor, colours, scheme) {
     _.each(this.assembly, _.bind(function (x, index) {
         if (x.source && x.source.line > 0) {
             var editorId = this.getEditorIdBySourcefile(x.source);
-            if (editorId) {
+            if (editorId === editor) {
                 if (!asmColours[editorId]) {
                     asmColours[editorId] = {};
                 }

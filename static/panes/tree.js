@@ -102,6 +102,8 @@ Tree.prototype.initCallbacks = function () {
     this.eventHub.on('languageChange', this.onLanguageChange, this);
     this.eventHub.on('compilerOpen', this.onCompilerOpen, this);
     this.eventHub.on('compilerClose', this.onCompilerClose, this);
+
+    this.eventHub.on('compilerResult', this.onCompileResponse, this);
 };
 
 Tree.prototype.onLanguageChange = function () {
@@ -479,6 +481,60 @@ Tree.prototype.initButtons = function (/*state*/) {
 
     this.bindClickToOpenPane(addCompilerButton, this.getConfigForNewCompiler);
     this.bindClickToOpenPane(addExecutorButton, this.getConfigForNewExecutor);
+};
+
+Tree.prototype.numberUsedLines = function () {
+    if (_.any(this.busyCompilers)) return;
+
+    if (!this.settings.colouriseAsm) {
+        this.updateColours([]);
+        return;
+    }
+
+    var resultByCompiler = {};
+    var resultByEditor = {};
+    _.each(this.asmByCompiler, _.bind(function (asm, compilerId) {
+        _.each(asm, _.bind(function (asmLine) {
+            if (asmLine.source && asmLine.source.line > 0) {
+                if (!resultByCompiler[compilerId]) resultByCompiler[compilerId] = {};
+
+                var editorId = this.getEditorIdByFilename(asmLine.source.file);
+                if (!resultByEditor[editorId]) resultByEditor[editorId] = {};
+
+                resultByEditor[editorId][asmLine.source.line - 1] = true;
+                resultByCompiler[compilerId][asmLine.source.line - 1] = true;
+            }
+        }, this));
+    }, this));
+
+    var ordinal = 0;
+    _.each(resultByCompiler[0], function (v, k) {
+        resultByCompiler[0][k] = ordinal++;
+    });
+
+    this.updateColours(resultByCompiler[0]);
+};
+
+Tree.prototype.updateColours = function (/*colours*/) {
+    //this.colours = colour.applyColours(this.editor, colours, this.settings.colourScheme, this.colours);
+    //this.eventHub.emit('colours', this.id, colours, this.settings.colourScheme);
+};
+
+Tree.prototype.onCompileResponse = function (compilerId, compiler, result) {
+    if (!this.ourCompilers[compilerId]) return;
+
+    this.busyCompilers[compilerId] = false;
+
+    // todo: parse errors and warnings and relate them to lines in the code
+    // note: requires info about the filename, do we currently have that?
+
+    if (result.result && result.result.asm) {
+        this.asmByCompiler[compilerId] = result.result.asm;
+    } else {
+        this.asmByCompiler[compilerId] = result.asm;
+    }
+
+    this.numberUsedLines();
 };
 
 Tree.prototype.updateButtons = function () {
