@@ -81,42 +81,42 @@ function testFilter(filename, suffix, filters) {
 describe('Filter test cases', function () {
 
     describe('No filters', function () {
-        cases.forEach(x => testFilter(x, '.none', {}));
+        for (const x of cases)  testFilter(x, '.none', {});
     });
     describe('Directive filters', function () {
-        cases.forEach(x => testFilter(x, '.directives', {directives: true}));
+        for (const x of cases)  testFilter(x, '.directives', {directives: true});
     });
     describe('Directives and labels together', function () {
-        cases.forEach(x => testFilter(x, '.directives.labels', {directives: true, labels: true}));
+        for (const x of cases)  testFilter(x, '.directives.labels', {directives: true, labels: true});
     });
     describe('Directives, labels and comments', function () {
-        cases.forEach(function (x) {
+        for (const x of cases) {
             testFilter(x, '.directives.labels.comments', {directives: true, labels: true, commentOnly: true});
-        });
+        }
     });
     describe('Binary, directives, labels and comments', function () {
         if (process.platform !== 'win32') {
-            cases.forEach(function (x) {
+            for (const x of cases) {
                 testFilter(x, '.binary.directives.labels.comments', {
                     binary: true,
                     directives: true,
                     labels: true,
                     commentOnly: true,
                 });
-            });
+            }
         }
     });
     describe('Directives and comments', function () {
-        cases.forEach(x => testFilter(x, '.directives.comments', {directives: true, commentOnly: true}));
+        for (const x of cases)  testFilter(x, '.directives.comments', {directives: true, commentOnly: true});
     });
     describe('Directives and library code', function () {
-        cases.forEach(x => testFilter(x, '.directives.library', {directives: true, libraryCode: true}));
+        for (const x of cases)  testFilter(x, '.directives.library', {directives: true, libraryCode: true});
     });
     describe('Directives, labels, comments and library code', function () {
-        cases.forEach(function (x) {
+        for (const x of cases) {
             testFilter(x, '.directives.labels.comments.library',
                 {directives: true, labels: true, commentOnly: true, libraryCode: true});
-        });
+        }
     });
 });
 

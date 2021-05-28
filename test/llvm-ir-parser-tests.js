@@ -246,14 +246,14 @@ describe('llvm-ir isLineLlvmDirective', function () {
     ];
 
     it('should recognize directives', function () {
-        directives.forEach(directive => {
+        for (const directive of directives) {
             llvmIrParser.isLineLlvmDirective(directive).should.be.true;
-        });
+        }
     });
 
     it('should recognize non-directives', function () {
-        nonDirectives.forEach(directive => {
+        for (const directive of nonDirectives) {
             llvmIrParser.isLineLlvmDirective(directive).should.be.false;
-        });
+        }
     });
 });
