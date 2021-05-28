@@ -145,7 +145,6 @@ rules:
   unicorn/prefer-switch: off
   unicorn/explicit-length-check: off
   unicorn/no-static-only-class: off
-  unicorn/prefer-includes: off
 parserOptions:
   sourceType: module
   ecmaVersion: 2020
