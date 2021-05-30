@@ -269,6 +269,7 @@ Editor.prototype.initCallbacks = function () {
 
     this.eventHub.on('treeCompilerEditorIncludeChange', this.onTreeCompilerEditorIncludeChange, this);
     this.eventHub.on('treeCompilerEditorExcludeChange', this.onTreeCompilerEditorExcludeChange, this);
+    this.eventHub.on('coloursForEditor', this.onColoursForEditor, this);
     this.eventHub.on('compilerOpen', this.onCompilerOpen, this);
     this.eventHub.on('executorOpen', this.onExecutorOpen, this);
     this.eventHub.on('compilerClose', this.onCompilerClose, this);
@@ -938,6 +939,11 @@ Editor.prototype.numberUsedLines = function () {
         return;
     }
 
+    var trees = this.hub.getTreesWithEditorId(this.id);
+    if (trees.length > 0) {
+        return;
+    }
+
     var result = {};
     // First, note all lines used.
     _.each(this.asmByCompiler, _.bind(function (asm, compilerId) {
@@ -1016,6 +1022,12 @@ Editor.prototype.onTreeCompilerEditorIncludeChange = function (treeId, editorId,
 Editor.prototype.onTreeCompilerEditorExcludeChange = function (treeId, editorId, compilerId) {
     if (this.id === editorId) {
         this.onCompilerClose(compilerId);
+    }
+};
+
+Editor.prototype.onColoursForEditor = function (editorId, colours, scheme) {
+    if (this.id === editorId) {
+        this.colours = colour.applyColours(this.editor, colours, scheme, this.colours);
     }
 };
 

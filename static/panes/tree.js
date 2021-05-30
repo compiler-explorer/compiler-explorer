@@ -30,6 +30,8 @@ var Components = require('../components');
 var local = require('../local');
 var ga = require('../analytics');
 var mf = require('../multifile-service');
+var lc = require('../line-colouring');
+var LineColouring = lc.LineColouring;
 var MultifileService = mf.MultifileService;
 require('selectize');
 
@@ -53,7 +55,10 @@ function Tree(hub, state, container) {
     this.unnamedItems = this.domRoot.find('.unnamed-editors');
 
     this.multifileService = new MultifileService(this.hub, this.eventHub, this.alertSystem, state);
+    this.lineColouring = new LineColouring(this.multifileService);
     this.ourCompilers = {};
+    this.busyCompilers = {};
+    this.asmByCompiler = {};
 
     this.initButtons(state);
     this.initCallbacks();
@@ -94,7 +99,7 @@ Tree.prototype.initCallbacks = function () {
     this.eventHub.on('compilerOpen', this.onCompilerOpen, this);
     this.eventHub.on('compilerClose', this.onCompilerClose, this);
 
-    this.eventHub.on('compilerResult', this.onCompileResponse, this);
+    this.eventHub.on('compileResult', this.onCompileResponse, this);
 };
 
 Tree.prototype.onLanguageChange = function () {
@@ -121,10 +126,6 @@ Tree.prototype.getMainSource = function () {
 
 Tree.prototype.getFiles = function () {
     return this.multifileService.getFiles();
-};
-
-Tree.prototype.getEditorIdForMainsource = function () {
-    return this.multifileService.getEditorIdForMainsource();
 };
 
 Tree.prototype.getEditorIdByFilename = function (filename) {
@@ -320,37 +321,41 @@ Tree.prototype.numberUsedLines = function () {
     if (_.any(this.busyCompilers)) return;
 
     if (!this.settings.colouriseAsm) {
-        this.updateColours([]);
+        this.updateColoursNone();
         return;
     }
 
-    var resultByCompiler = {};
-    var resultByEditor = {};
+    this.lineColouring.clear();
+
     _.each(this.asmByCompiler, _.bind(function (asm, compilerId) {
-        _.each(asm, _.bind(function (asmLine) {
-            if (asmLine.source && asmLine.source.line > 0) {
-                if (!resultByCompiler[compilerId]) resultByCompiler[compilerId] = {};
-
-                var editorId = this.getEditorIdByFilename(asmLine.source.file);
-                if (!resultByEditor[editorId]) resultByEditor[editorId] = {};
-
-                resultByEditor[editorId][asmLine.source.line - 1] = true;
-                resultByCompiler[compilerId][asmLine.source.line - 1] = true;
-            }
-        }, this));
+        this.lineColouring.addFromAssembly(parseInt(compilerId), asm);
     }, this));
 
-    var ordinal = 0;
-    _.each(resultByCompiler[0], function (v, k) {
-        resultByCompiler[0][k] = ordinal++;
-    });
+    this.lineColouring.calculate();
 
-    this.updateColours(resultByCompiler[0]);
+    this.updateColours();
 };
 
-Tree.prototype.updateColours = function (/*colours*/) {
-    //this.colours = colour.applyColours(this.editor, colours, this.settings.colourScheme, this.colours);
-    //this.eventHub.emit('colours', this.id, colours, this.settings.colourScheme);
+Tree.prototype.updateColours = function () {
+    _.each(this.ourCompilers, _.bind(function (unused, compilerId) {
+        this.eventHub.emit('coloursForCompiler', parseInt(compilerId),
+            this.lineColouring.getColoursForCompiler(compilerId), this.settings.colourScheme);
+    }, this));
+
+    this.multifileService.forEachOpenFile(_.bind(function (file) {
+        this.eventHub.emit('coloursForEditor', file.editorId,
+            this.lineColouring.getColoursForCompiler(file.editorId), this.settings.colourScheme);
+    }, this));
+};
+
+Tree.prototype.updateColoursNone = function () {
+    _.each(this.ourCompilers, _.bind(function (unused, compilerId) {
+        this.eventHub.emit('coloursForCompiler', parseInt(compilerId), {}, this.settings.colourScheme);
+    }, this));
+
+    this.multifileService.forEachOpenFile(_.bind(function (file) {
+        this.eventHub.emit('coloursForEditor', file.editorId, {}, this.settings.colourScheme);
+    }, this));
 };
 
 Tree.prototype.onCompileResponse = function (compilerId, compiler, result) {

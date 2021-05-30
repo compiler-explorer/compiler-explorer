@@ -13,6 +13,11 @@ export class File {
     langId: string;
 }
 
+export class FiledataPair {
+    filename: string;
+    contents: string;
+}
+
 export class MultifileService {
     private files: Array<File>;
     private compilerLanguageId: string;
@@ -84,26 +89,26 @@ export class MultifileService {
         mainfile.isMainSource = true;
     }
 
-    public getEditorIdForMainsource() {
-        let mainFile: File = null;
-        if (this.isCMakeProject) {
-            mainFile = _.find(this.files, (file: File) => {
-                return file.isIncluded && (file.filename === 'example.cpp');
-            });
+    // public getEditorIdForMainsource() {
+    //     let mainFile: File = null;
+    //     if (this.isCMakeProject) {
+    //         mainFile = _.find(this.files, (file: File) => {
+    //             return file.isIncluded && (file.filename === 'example.cpp');
+    //         });
 
-            if (mainFile) return mainFile.editorId;
-        } else {
-            mainFile = _.find(this.files, (file: File) => {
-                return file.isMainSource && file.isIncluded;
-            });
+    //         if (mainFile) return mainFile.editorId;
+    //     } else {
+    //         mainFile = _.find(this.files, (file: File) => {
+    //             return file.isMainSource && file.isIncluded;
+    //         });
 
-            if (mainFile) return mainFile.editorId;
-        }
+    //         if (mainFile) return mainFile.editorId;
+    //     }
 
-        return false;
-    }
+    //     return false;
+    // }
 
-    public getFiles() {
+    public getFiles(): Array<FiledataPair> {
         var filtered = _.filter(this.files, (file: File) => {
             return !file.isMainSource && file.isIncluded;
         });
@@ -116,7 +121,7 @@ export class MultifileService {
         });
     }
 
-    public getMainSource() {
+    public getMainSource(): string {
         var mainFile = _.find(this.files, (file: File) => {
             return file.isMainSource && file.isIncluded;
         });
@@ -128,10 +133,18 @@ export class MultifileService {
         }
     }
 
-    public getFileByEditorId(editorId: Number) {
+    public getFileByEditorId(editorId: number): File {
         return _.find(this.files, (file: File) => {
             return file.editorId === editorId;
         });
+    }
+
+    public getEditorIdByFilename(filename: string): number {
+        const file: File = _.find(this.files, (file: File) => {
+            return file.isIncluded && (file.filename === filename);
+        });
+
+        return (file && file.editorId > 0) ? file.editorId : null;
     }
 
     public addFileForEditorId(editorId) {
@@ -150,7 +163,7 @@ export class MultifileService {
         this.files.push(file);
     }
 
-    public removeFileByFileId(fileId: number) {
+    public removeFileByFileId(fileId: number): File {
         const file: File = this.getFileByFileId(fileId);
 
         this.files = this.files.filter((obj: File) => obj.fileId !== fileId);
@@ -194,7 +207,7 @@ export class MultifileService {
         }
     }
 
-    private getSuggestedFilename(file: File, editor: any) {
+    private getSuggestedFilename(file: File, editor: any): string {
         let suggestedFilename = file.filename;
         if (file.filename === '') {
             let langId: string = file.langId;
@@ -226,7 +239,7 @@ export class MultifileService {
         let suggestedFilename = this.getSuggestedFilename(file, editor);
 
         return new Promise((resolve) => {
-            this.alertSystem.enterSomething('RENOM file', 'PLES enter a filenAme', suggestedFilename, {
+            this.alertSystem.enterSomething('Rename file', 'Please enter a filename', suggestedFilename, {
                 yes: (value) => {
                     file.filename = value;
 

@@ -186,11 +186,7 @@ Compiler.prototype.getEditorIdBySourcefile = function (sourcefile) {
     if (this.sourceTreeId) {
         var tree = this.hub.getTreeById(this.sourceTreeId);
         if (tree) {
-            if (sourcefile === null || sourcefile.file === null) {
-                return tree.getEditorIdForMainsource();
-            } else {
-                return tree.getEditorIdByFilename(sourcefile.file);
-            }
+            return tree.getEditorIdByFilename(sourcefile.file);
         }
     } else {
         if (sourcefile !== null && sourcefile.file === null) {
@@ -643,7 +639,7 @@ Compiler.prototype.compileFromTree = function (options, bypassCache) {
     if (!this.compiler) {
         this.onCompileResponse(request, errorResult('<Please select a compiler>'), false);
     } else {
-        if (tree.isCMakeProject) {
+        if (tree.multifileService.getState().isCMakeProject) {
             this.sendCMakeCompile(request);
         } else {
             this.sendCompile(request);
@@ -1442,6 +1438,7 @@ Compiler.prototype.initListeners = function () {
     this.eventHub.on('editorClose', this.onEditorClose, this);
     this.eventHub.on('treeClose', this.onTreeClose, this);
     this.eventHub.on('colours', this.onColours, this);
+    this.eventHub.on('coloursForCompiler', this.onColoursForCompiler, this);
     this.eventHub.on('resendCompilation', this.onResendCompilation, this);
     this.eventHub.on('findCompilers', this.sendCompiler, this);
     this.eventHub.on('compilerSetDecorations', this.onCompilerSetDecorations, this);
@@ -1676,10 +1673,15 @@ Compiler.prototype.onColours = function (editor, colours, scheme) {
     }, this));
 };
 
+Compiler.prototype.onColoursForCompiler = function (compilerId, colours, scheme) {
+    if (this.id === compilerId) {
+        this.colours = colour.applyColours(this.outputEditor, colours, scheme, this.colours);
+    }
+};
+
 Compiler.prototype.getCompilerName = function () {
     return this.compiler ? this.compiler.name : 'No compiler set';
 };
-
 
 Compiler.prototype.getLanguageName = function () {
     var lang = options.languages[this.currentLangId];
